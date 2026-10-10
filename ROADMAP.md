@@ -28,10 +28,10 @@ Goal: reliable pitch detection, proven by unit tests, with no device involved.
 - ☑ Nearest-string lookup for Auto mode (compared in cents; allocation-free; ties go to the lower string)
 - ☑ `FrameAssembler` ring buffer (window 4096, hop 1024, no allocations per frame; accepts chunks of any size)
 - ☑ `SignalGate`: RMS / dBFS level and DC removal (opens at −50 dBFS, 6 dB hysteresis)
-- ☐ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence
+- ☑ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence (plus 4 kHz low-pass and adaptive least-squares refinement, see ARCHITECTURE §3)
 - ☐ `PitchSmoother`: median filter, octave-jump rejection, EMA on cents, note-change hysteresis
 - ☑ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck): band-limited, seeded; `testFixtures` so `:core:audio` can reuse it
-- ☐ Tests: ±1 cent for 60–1500 Hz synthetic signals; no octave errors on the weak-fundamental case
+- ☑ Tests: ±1 cent for 60–1500 Hz synthetic signals; no octave errors on the weak-fundamental case (measured worst: 0.1 c sine, 0.5 c harmonic-rich, < 1 c at 20 dB SNR)
 - ☐ Microbenchmark: under 2 ms per 4096-sample frame on the JVM
 
 ## Phase 2 — Audio capture (`:core:audio`)

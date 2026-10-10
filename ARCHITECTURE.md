@@ -63,8 +63,8 @@ Rules:
     ▼
  SignalGate            RMS level check (< ~-50 dBFS → "no signal"), DC offset removal
     ▼
- PitchDetector (YIN)   difference fn → CMNDF → absolute threshold → parabolic interpolation
-    │                  → PitchResult(frequencyHz, confidence) or null
+ PitchDetector (YIN)   4 kHz low-pass → difference fn → CMNDF → absolute threshold → least-squares
+    │                  refinement → PitchResult(frequencyHz, confidence), or PitchResult.NONE
     ▼
  PitchSmoother         median of last N estimates + outlier/octave-jump rejection + EMA on cents
     ▼
@@ -80,7 +80,7 @@ Rules:
 - **Analysis window**: 4096 samples, or about 85 ms. Low E (82.41 Hz) has a 12.1 ms period, so the window holds about 7 periods. That is enough for YIN, which needs at least 2. Bass and 7-string support (down to ~30 Hz) will need 8192 samples.
 - **Hop**: 1024 samples, or about 21 ms. That gives ~47 pitch estimates per second, which the smoother turns into a calm needle.
 - **Detection range**: 60 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min).
-- **YIN threshold**: 0.10–0.15 (tunable). Below it, the first CMNDF dip is accepted as the period.
+- **YIN threshold**: 0.15 (tunable; the paper suggests 0.10–0.15). The first CMNDF dip below it is accepted as the period.
 - **Accuracy target**: ±1 cent on synthetic test signals and ±3 cents on recorded guitar fixtures.
 - **"In tune"**: |cents| ≤ 5 held for at least 300 ms. Then show a green state and trigger one haptic tick.
 
@@ -89,6 +89,13 @@ Rules:
 
 ### Signal gate
 `SignalGate.process(frame)` removes the DC offset in place (it subtracts the mean), then measures the RMS level in dBFS as `20 · log10(rms)`, so a full-scale square wave reads 0 dBFS and a full-scale sine about −3 dBFS. Silence is floored at −120 dBFS. The gate opens at **−50 dBFS** and closes only below **−56 dBFS** (6 dB hysteresis), so a decaying note doesn't flicker on and off. Frames are only sent to the pitch detector while the gate is open.
+
+### Pitch detection (YIN)
+`YinPitchDetector` follows de Cheveigné & Kawahara (2002), steps 2–5, with two additions. Both were added because measurements on synthetic signals missed the ±1 cent target without them.
+1. **Low-pass pre-filter.** A 4th-order Butterworth at 4 kHz (two RBJ-cookbook biquads) runs into a scratch buffer, and its ~92-sample start-up transient is skipped. Without it, very bright tones (full-band sawtooth/square near 1.4 kHz) give a V-shaped dip that 3-point parabolic interpolation misjudges by ~2.5 cents. The filter also removes hiss above 4 kHz.
+2. **Adaptive least-squares refinement.** Instead of a fixed 3-point parabola, a cubic is fitted to the raw difference function over the lags `τ ± k` that lie within 5% of the way from the dip to the mean (`k` ≤ τ/16). Sharp dips use k = 1, which is the classic parabola. Broad dips (pure low notes) average over dozens of lags. With white noise at 20 dB SNR this cut the worst low-E error from ~23 cents to under 1. The cubic term removes a ~0.3-cent bias that a wide parabola picks up from the fixed integration window.
+
+Search range τ = 32…800 (1500…60 Hz) plus 51 extra lags for the fit. The integration window is `W = 4096 − 92 − 851 = 3153` samples. Confidence = 1 − d′(τ). `PitchResult` is a value class that packs two floats into a `Long`, and `PitchResult.NONE` means "no pitch". It is never nullable, so returning it doesn't box. Measured on synthetic signals: worst error ≈ 0.1 cent for sines, ≈ 0.5 cent for saw/square/pluck/weak-fundamental, < 1 cent at 20 dB SNR, < 5 cents at 10 dB SNR. There are no octave errors. Allocation-free `detect()` is checked by a test that counts the bytes allocated.
 
 ### Note math
 ```
@@ -113,7 +120,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
 - DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
-- The YIN difference function starts as the direct O(N·τ_max) form, roughly 1.6 M multiply-adds per frame. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
+- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.7 M multiply-adds per frame (3153 × 851 lags), using four independent accumulators so the additions overlap. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
 - UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` so it moves smoothly between estimates.
 
 ## 5. Lifecycle & permissions
@@ -146,7 +153,7 @@ sealed interface TunerUiState {
 
 ```
 core/dsp/src/main/kotlin/com/intune/core/dsp/
-    pitch/      PitchDetector (interface), YinPitchDetector, PitchResult, SignalGate
+    pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, LowPassFilter, SignalGate
     music/      Note, NoteMapper, Tuning, Tunings (presets), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     buffer/     FrameAssembler (ring buffer)

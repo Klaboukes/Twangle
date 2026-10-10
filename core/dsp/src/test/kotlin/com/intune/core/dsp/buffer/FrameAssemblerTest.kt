@@ -1,5 +1,6 @@
 package com.intune.core.dsp.buffer
 
+import com.intune.core.dsp.allocatedBytes
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -95,6 +96,24 @@ class FrameAssemblerTest {
         assertThrows(IllegalArgumentException::class.java) { assembler.push(FloatArray(4), offset = 2, length = 3) }
         assembler.push(ramp(0, 4))
         assertThrows(IllegalArgumentException::class.java) { assembler.readFrame(FloatArray(3)) }
+    }
+
+    @Test
+    fun `push and readFrame do not allocate`() {
+        val assembler = FrameAssembler()
+        val chunk = ramp(0, 480)
+        val out = FloatArray(assembler.windowSize)
+        fun run() {
+            repeat(1_000) {
+                var pos = 0
+                while (pos < chunk.size) {
+                    pos += assembler.push(chunk, pos, chunk.size - pos)
+                    if (assembler.isFrameReady) assembler.readFrame(out)
+                }
+            }
+        }
+        repeat(20) { run() }
+        assertEquals(0L, allocatedBytes { run() })
     }
 
     private fun collectFrames(assembler: FrameAssembler, input: FloatArray, chunkSize: Int): List<FloatArray> {

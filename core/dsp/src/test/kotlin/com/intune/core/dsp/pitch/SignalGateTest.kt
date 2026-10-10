@@ -1,5 +1,6 @@
 package com.intune.core.dsp.pitch
 
+import com.intune.core.dsp.allocatedBytes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -84,6 +85,14 @@ class SignalGateTest {
         gate.reset()
         assertFalse(gate.isOpen)
         assertEquals(SignalGate.SILENCE_DBFS, gate.levelDbfs)
+    }
+
+    @Test
+    fun `process does not allocate`() {
+        val gate = SignalGate()
+        val frame = sine(amplitude = 0.3f)
+        repeat(1_000) { gate.process(frame) }
+        assertEquals(0L, allocatedBytes { repeat(1_000) { gate.process(frame) } })
     }
 
     @Test
