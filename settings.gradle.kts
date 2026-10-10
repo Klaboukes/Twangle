@@ -14,7 +14,7 @@ pluginManagement {
 
 plugins {
     // Lets `jvmToolchain(17)` auto-download a JDK 17 if none is installed.
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {

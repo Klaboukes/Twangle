@@ -1,0 +1,4 @@
+<resources>
+    <string name="tuner_placeholder_note" translatable="false">—</string>
+    <string name="tuner_placeholder_status">Tuner coming soon</string>
+</resources>

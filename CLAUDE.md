@@ -9,8 +9,10 @@ Guidance for Claude Code (and humans) working in this repository.
 - Plan and progress: [ROADMAP.md](ROADMAP.md). Tick items (☐ → ☑) as you finish them.
 
 ## Tech stack
-Kotlin 2.x · Jetpack Compose + Material 3 · Coroutines/Flow · AndroidX ViewModel · `AudioRecord` · manual DI · DataStore · Gradle Kotlin DSL with version catalog · JUnit 4.
-minSdk 26, targetSdk/compileSdk 35, JVM toolchain 17.
+Kotlin 2.4 · Jetpack Compose + Material 3 · Coroutines/Flow · AndroidX ViewModel · `AudioRecord` · manual DI · DataStore · Gradle 9 Kotlin DSL with version catalog · JUnit 4.
+minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
+
+**AGP 9 uses built-in Kotlin:** Android modules must NOT apply `org.jetbrains.kotlin.android`. Only `:core:dsp` applies `kotlin-jvm`, and Compose modules apply `kotlin-compose`. The `kotlin-jvm` entry in the root `build.gradle.kts` pins the Kotlin compiler version.
 
 ## Modules
 | Module | Type | Purpose |
@@ -30,7 +32,18 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew lint                          # Android lint
 ./gradlew connectedDebugAndroidTest     # instrumented tests (device required)
 ```
-> **Environment note:** as of 2026-10-10 the dev machine has no JDK, Android SDK or Gradle wrapper. Install Android Studio and open the project once. That generates `gradlew` and `gradle/wrapper/gradle-wrapper.jar` and sets `sdk.dir` in `local.properties` (which is git-ignored).
+### Dev machine environment (Windows)
+- No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
+  `export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"` (Git Bash) or
+  `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"` (PowerShell).
+  Gradle runs on JBR (JDK 25). The foojay plugin auto-provisions JDK 17 for compilation.
+- Android SDK: `%LOCALAPPDATA%\Android\Sdk`. `adb` is at `<sdk>/platform-tools/adb.exe` and is not on PATH.
+- `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
+- Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
+- **Physical test device: Samsung Galaxy S26.** Samsung's *Auto Blocker* (Settings → Security and privacy → Auto Blocker) must be OFF, or USB debugging stays greyed out and adb can't connect. If `adb devices` shows nothing or `unauthorized`, check Auto Blocker first, then the USB-debugging prompt on the phone.
+
+### CI
+`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main`, and uploads the debug APK as the `intune-debug-apk` artifact.
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.
@@ -66,6 +79,6 @@ Remote: `https://github.com/Klaboukes/InTune` (private). Default branch: `main`.
 4. Tick the finished items in ROADMAP.md (☐ → ☑) in the same branch.
 5. Build and test locally (see Workflow above). Don't open a PR on a red build.
 6. `git push -u origin <branch>`, then `gh pr create --base main --fill` (title = increment name, body = what changed + how it was verified).
-7. Once checks pass, `gh pr merge --squash --delete-branch`, then `git switch main && git pull`.
+7. Once CI is green, `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Never merge on a red or still-pending CI.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.

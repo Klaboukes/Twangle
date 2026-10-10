@@ -14,9 +14,10 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 | State holder | **AndroidX ViewModel** | Survives configuration changes and owns the audio pipeline's lifetime. |
 | DI | **Manual (`AppContainer`)** | The object graph is tiny. Hilt would cost build time and add complexity without much benefit. Revisit if the graph grows. |
 | Persistence | **Jetpack DataStore (Preferences)** (Phase 4) | Stores settings: A4 reference, selected tuning, notation, theme. |
-| Build | **Gradle Kotlin DSL + version catalog** (`gradle/libs.versions.toml`) | Standard for modern Android. Versions live in one place. |
+| Build | **Gradle 9 + AGP 9 (built-in Kotlin), Kotlin DSL + version catalog** (`gradle/libs.versions.toml`) | Standard for modern Android. Versions live in one place. |
 | Testing | JUnit 4 (JVM), kotlinx-coroutines-test, Compose UI test | DSP is checked with synthesized signals. UI is tested with Compose test rules. |
-| Min / target SDK | **minSdk 26** (Android 8.0) / targetSdk 35 | `ENCODING_PCM_FLOAT` and the `UNPROCESSED` audio source work reliably from API 24+. 26 covers about 97% of active devices. |
+| CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug on every PR. The debug APK is uploaded as an artifact. |
+| Min / target SDK | **minSdk 26** (Android 8.0) / targetSdk 37 | `ENCODING_PCM_FLOAT` and the `UNPROCESSED` audio source work reliably from API 24+. 26 covers about 97% of active devices. minSdk 26 also means adaptive icons need no PNG fallbacks. |
 
 ### Rejected alternatives
 - **Flutter / React Native**: microphone DSP would go through platform channels, which adds latency and complexity for a single-platform app.

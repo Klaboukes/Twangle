@@ -13,11 +13,12 @@ Goal: an empty multi-module project that builds and launches a blank Compose scr
 - ☑ Folder structure and Gradle module skeletons (`:app`, `:feature:tuner`, `:core:audio`, `:core:dsp`)
 - ☑ Version catalog `gradle/libs.versions.toml`
 - ☑ GitHub repo connected; branch → PR → squash-merge workflow (see CLAUDE.md); `.gitattributes` for line endings
-- ☐ Install Android Studio (bundled JDK 21) and the Android SDK (API 35). Open the project and let it generate the Gradle wrapper (`gradlew`, `gradle-wrapper.jar`)
-- ☐ Bump dependency versions in the catalog to the latest stable
-- ☐ `MainActivity` + `InTuneApplication` + theme showing a placeholder screen
-- ☐ `./gradlew assembleDebug test lint` passes
-- ☐ CI: GitHub Actions workflow running `test`, `lint` and `assembleDebug` on every PR
+- ☑ Install Android Studio (bundled JDK) and the Android SDK (API 37); generate the Gradle wrapper (9.8.1, checksum-pinned)
+- ☑ Bump dependency versions to latest stable (AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00)
+- ☑ `MainActivity` + `InTuneApplication` + `AppContainer` + Material 3 theme (dynamic color) + placeholder tuner screen + adaptive launcher icon
+- ☑ `./gradlew assembleDebug test lint` passes
+- ☑ CI: GitHub Actions workflow running `test`, `lint` and `assembleDebug` on every PR
+- ☑ App verified on a device: Samsung Galaxy S26 (Android 16), launches cleanly in dark mode
 
 ## Phase 1 — DSP core (`:core:dsp`, pure JVM)
 Goal: reliable pitch detection, proven by unit tests, with no device involved.
