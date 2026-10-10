@@ -29,7 +29,7 @@ class TunerInterpreterTest {
         frames: Int = 40,
     ): TunerUiState {
         var state: TunerUiState? = null
-        repeat(frames) { state = interpreter.interpret(reading, mode, standard) }
+        repeat(frames) { state = interpreter.interpret(reading, TunerOptions(mode, standard)) }
         return state!!
     }
 
@@ -105,7 +105,7 @@ class TunerInterpreterTest {
     @Test
     fun `switching mode keeps the reading`() {
         play(pitched(hz(45.05f)))
-        val state = interpreter.interpret(pitched(hz(45.05f)), TunerMode.CHROMATIC, standard).detected()
+        val state = interpreter.interpret(pitched(hz(45.05f)), TunerOptions(TunerMode.CHROMATIC, standard)).detected()
 
         assertEquals(TunerMode.CHROMATIC, state.mode)
         assertNull(state.targetString)
@@ -145,6 +145,36 @@ class TunerInterpreterTest {
     fun `silence ends in tune`() {
         play(pitched(hz(45f)))
         play(silent, frames = 5)
-        assertFalse(interpreter.interpret(pitched(hz(45f)), TunerMode.AUTO, standard).detected().inTune)
+        assertFalse(interpreter.interpret(pitched(hz(45f)), TunerOptions(TunerMode.AUTO, standard)).detected().inTune)
+    }
+
+    @Test
+    fun `notes are measured against the calibrated A4`() {
+        val a442 = TunerOptions(TunerMode.CHROMATIC, standard, a4Hz = 442f)
+        var state: TunerUiState? = null
+        // 442 Hz is A4 exactly once A4 is calibrated to 442 Hz, but 7.85 cents sharp at 440 Hz.
+        repeat(40) { state = interpreter.interpret(pitched(442f), a442) }
+
+        val detected = state!!.detected()
+        assertEquals("A", detected.noteName)
+        assertEquals(0f, detected.cents, 0.1f)
+        assertEquals(442f, detected.a4Hz)
+        assertEquals(442f, detected.frequencyHz, 0.05f)
+    }
+
+    @Test
+    fun `changing A4 while a note plays re-measures it`() {
+        val before = play(pitched(442f), TunerMode.CHROMATIC).detected()
+        assertEquals(7.85f, before.cents, 0.2f)
+
+        var state: TunerUiState? = null
+        repeat(40) { state = interpreter.interpret(pitched(442f), TunerOptions(TunerMode.CHROMATIC, standard, a4Hz = 442f)) }
+        assertEquals(0f, state!!.detected().cents, 0.1f)
+    }
+
+    @Test
+    fun `listening reports the A4 in use`() {
+        val state = interpreter.interpret(silent, TunerOptions(TunerMode.AUTO, standard, a4Hz = 432f))
+        assertEquals(TunerUiState.Listening(TunerMode.AUTO, standard, a4Hz = 432f), state)
     }
 }

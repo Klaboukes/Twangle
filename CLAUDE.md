@@ -17,8 +17,9 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity`, `InTuneApplication`, `AppContainer` (DI), theme |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ settings), `InTuneApplication`, `AppContainer` (DI), theme |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
+| `:feature:settings` | Android library | Settings screen UI, `SettingsViewModel` |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, theme, keep screen on |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |

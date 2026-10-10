@@ -14,21 +14,28 @@ import kotlin.math.abs
  * It also tracks whether the note is in tune ([InTuneDetector]), restarting whenever the target
  * changes. [frameSeconds] is the time between readings (hop / sample rate).
  *
- * Mode and tuning are passed with every reading, so switching them takes effect on the next frame
- * without losing the smoothing history. Create one per listening session; it keeps state and is
- * not thread-safe. Apart from the returned state nothing is allocated per frame.
+ * The [TunerOptions] are passed with every reading, so switching mode or tuning takes effect on the
+ * next frame without losing the smoothing history. A new A4 restarts the smoothing, because the
+ * smoothed notes were measured against the old one. Create one per listening session; it keeps
+ * state and is not thread-safe. Apart from the returned state nothing is allocated per frame.
  */
 class TunerInterpreter(
     private val frameSeconds: Float,
-    private val noteMapper: NoteMapper = NoteMapper(),
     private val smoother: PitchSmoother = PitchSmoother(),
     private val inTuneDetector: InTuneDetector = InTuneDetector(),
 ) {
+    private var noteMapper = NoteMapper()
     private var stringIndex = NO_STRING
     private var stringTuning: Tuning? = null
     private var targetMidi = NO_TARGET
 
-    fun interpret(reading: PitchReading, mode: TunerMode, tuning: Tuning): TunerUiState {
+    fun interpret(reading: PitchReading, options: TunerOptions): TunerUiState {
+        val mode = options.mode
+        val tuning = options.tuning
+        if (options.a4Hz != noteMapper.a4Hz) {
+            noteMapper = NoteMapper(options.a4Hz)
+            smoother.reset()
+        }
         if (reading.isPitched) {
             smoother.update(noteMapper.midiOf(reading.frequencyHz))
         } else {
@@ -38,16 +45,16 @@ class TunerInterpreter(
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
             inTuneDetector.reset()
-            return TunerUiState.Listening(mode, tuning)
+            return TunerUiState.Listening(mode, tuning, noteMapper.a4Hz)
         }
 
         val midi = smoother.midi
         val frequencyHz = noteMapper.frequencyOf(midi)
         return when (mode) {
-            TunerMode.CHROMATIC -> detected(mode, tuning, smoother.note, frequencyHz, smoother.cents, null)
+            TunerMode.CHROMATIC -> detected(options, smoother.note, frequencyHz, smoother.cents, null)
             TunerMode.AUTO -> {
                 val string = trackString(midi, tuning)
-                detected(mode, tuning, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string)
+                detected(options, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string)
             }
         }
     }
@@ -71,8 +78,7 @@ class TunerInterpreter(
     }
 
     private fun detected(
-        mode: TunerMode,
-        tuning: Tuning,
+        options: TunerOptions,
         target: Note,
         frequencyHz: Float,
         cents: Float,
@@ -84,8 +90,9 @@ class TunerInterpreter(
             inTuneDetector.reset()
         }
         return TunerUiState.Detected(
-            mode = mode,
-            tuning = tuning,
+            mode = options.mode,
+            tuning = options.tuning,
+            a4Hz = options.a4Hz,
             noteName = target.pitchClass.symbol,
             octave = target.octave,
             frequencyHz = frequencyHz,

@@ -29,21 +29,21 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 ```
 :app               Android application: Activity, Application, AppContainer (DI), theme, navigation
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, gauge components
+:feature:settings  Settings screen: A4 calibration and the other preferences, SettingsViewModel
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>, permission helpers
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, note math, tunings, smoothing
 ```
 
-Dependency graph (arrows = "depends on"):
+Dependencies ("→" = depends on):
 
 ```
-                 :app
-           /      |      \
- :feature:tuner   |       \
-     |     \      |        \
-     |   :core:audio   :core:settings
-     |      /            /
-   :core:dsp ------------
+:app               → every module below (it wires them together)
+:feature:tuner     → :core:audio, :core:settings, :core:dsp
+:feature:settings  → :core:settings (and through it :core:dsp)
+:core:settings     → :core:dsp
+:core:audio        → no other module
+:core:dsp          → no other module
 ```
 
 Rules:
@@ -51,7 +51,7 @@ Rules:
 - `:core:audio` knows about Android audio but knows nothing about notes or UI.
 - `:core:settings` knows how settings are saved, and nothing about audio or UI. It uses `Tuning` and `Notation` from `:core:dsp`.
 - `:feature:*` modules never depend on each other.
-- Only `:app` wires concrete implementations together (`AppContainer`).
+- Only `:app` wires concrete implementations together (`AppContainer`) and switches between screens (`MainActivity`).
 
 ## 3. Signal pipeline
 
@@ -135,7 +135,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 
 `PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame.
 
-`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. Mode and tuning are read on every frame, so switching modes takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history.
+`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. The mode switch and the saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4), rebuilt only when one of them changes and read on every frame. Listening waits until the settings have loaded, so it never starts with the wrong tuning. Switching modes or changing a setting takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history. A new A4 is the exception: it restarts the smoother, because the smoothed notes were measured against the old A4.
 - **Chromatic:** the smoother's note (with its ±15-cent hysteresis) and cents.
 - **Auto:** the closest string (`nearestStringIndex`) and `centsFromString`, not wrapped. The target string is sticky: it only changes once another string is closer by more than 15 cents, so a note half-way between two strings doesn't flicker.
 - The frequency shown is the smoothed one (`NoteMapper.frequencyOf(smoother.midi)`), not the raw reading.
@@ -171,6 +171,9 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - If another app holds the mic, or `AudioRecord` fails to initialize, the UI shows a recoverable error state.
 
 ### Settings
+The gear button in the tuner's top corner opens the settings screen (`:feature:settings`). `MainActivity` switches between the two screens with one saved `Screen` value, so the app needs no navigation library. A `SaveableStateHolder` keeps each screen's saved state while the other one is shown, and the back button returns from settings. While settings are open the tuner isn't visible, so the mic is released after the usual 5 s. `SettingsViewModel` shows the saved settings and saves every change straight away; there is no "save" button.
+- **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
+
 `SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true) and `keepScreenOn` (true).
 - `DataStoreSettingsRepository` stores them with DataStore Preferences in `files/datastore/settings.preferences_pb`. `AppContainer` creates the only instance, because DataStore allows one per file. The tuning is saved by its `id` and enums by their `name`, so those must never be renamed.
 - Reading is forgiving. A missing, unknown or out-of-range value falls back to its default: a tuning id that no longer exists becomes Standard, and A4 is clamped to 415–466 Hz and rounded to whole Hz (`AppSettings.normalizeA4`, which the setter applies too). An unreadable file gives all defaults, and a corrupt one is replaced with defaults so saving works again.
@@ -184,10 +187,11 @@ enum class TunerMode { AUTO, CHROMATIC }
 sealed interface TunerUiState {
     data object PermissionRequired : TunerUiState
     data class  Error(val reason: TunerError) : TunerUiState
-    data class  Listening(val mode: TunerMode, val tuning: Tuning) : TunerUiState   // no usable signal
+    data class  Listening(val mode: TunerMode, val tuning: Tuning, val a4Hz: Float) : TunerUiState   // no usable signal
     data class  Detected(
         val mode: TunerMode,
         val tuning: Tuning,
+        val a4Hz: Float,               // concert pitch in use (A4 calibration)
         val noteName: String,          // target note, e.g. "E"
         val octave: Int,               // e.g. 2
         val frequencyHz: Float,        // smoothed
@@ -198,9 +202,9 @@ sealed interface TunerUiState {
 }
 ```
 
-`TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. The tuning is fixed to `Tunings.DEFAULT` until Phase 4 adds settings.
+`TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. Tuning and A4 come from `SettingsRepository`.
 
-`TunerScreen` wires the ViewModel; `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄) under the readout, with `targetString` highlighted and marked `selected` for accessibility. In chromatic mode its slot stays empty but keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to a theme-aware green (`InTuneColor.kt`; Material 3 has no success role). A shape cue for colour-blind users follows in Phase 5.
+`TunerScreen` wires the ViewModel and shows the settings gear (also on the permission prompt); `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄) under the readout, with `targetString` highlighted and marked `selected` for accessibility. In chromatic mode its slot stays empty but keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to a theme-aware green (`InTuneColor.kt`; Material 3 has no success role). A shape cue for colour-blind users follows in Phase 5.
 
 ## 7. Package layout (per module)
 
@@ -228,9 +232,13 @@ core/settings/src/testFixtures/kotlin/com/intune/core/settings/
     FakeSettingsRepository
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
-    TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, InTuneDetector, TunerScreen, PitchPipeline (+ PitchReading), TunerError
+    TunerViewModel, TunerUiState (+ TunerMode), TunerOptions, TunerInterpreter, InTuneDetector, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
     components/  NeedleGauge, NoteDisplay, StringSelector, ModeSwitch, InTuneColor, PermissionPrompt
+
+feature/settings/src/main/kotlin/com/intune/feature/settings/
+    SettingsScreen (+ SettingsContent), SettingsViewModel
+    components/  A4Calibration
 
 app/src/main/kotlin/com/intune/app/
     InTuneApplication, AppContainer, MainActivity, ui/theme/
@@ -243,6 +251,7 @@ app/src/main/kotlin/com/intune/app/
 | `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
 | `:core:settings` | JVM tests of `DataStoreSettingsRepository` on a real DataStore file in a temporary folder: defaults, saving, surviving a restart, clamping, and falling back on unknown or unreadable values. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
+| `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`. Compose UI tests (`SettingsContentTest`, device needed) for each control. |
 | `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 

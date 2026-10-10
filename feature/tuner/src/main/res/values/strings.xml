@@ -18,6 +18,8 @@
     <!-- Tuner screen. -->
     <string name="tuner_mode_guitar">Guitar</string>
     <string name="tuner_mode_chromatic">Chromatic</string>
+    <string name="tuner_a4">A4 = %1$d Hz</string>
+    <string name="tuner_open_settings">Settings</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
     <string name="tuner_frequency">%1$.1f Hz</string>

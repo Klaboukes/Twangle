@@ -3,8 +3,7 @@ package com.intune.feature.tuner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.intune.core.audio.AudioRecorder
-import com.intune.core.dsp.music.Tuning
-import com.intune.core.dsp.music.Tunings
+import com.intune.core.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,11 +30,13 @@ import kotlinx.coroutines.flow.stateIn
  * The microphone opens only when the permission is granted ([onPermissionChanged]) *and* the UI
  * collects [state]. It stays open 5 s after the UI stops collecting, so a rotation doesn't reopen
  * it (CLAUDE.md, hard rule 4). Switching [mode] takes effect on the next frame without reopening
- * the mic. Smoothing runs on [dspDispatcher] together with the pitch detection.
+ * the mic. Saved settings (tuning, A4) are followed live, also while listening.
+ * Smoothing runs on [dspDispatcher] together with the pitch detection.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
     recorder: AudioRecorder,
+    settingsRepository: SettingsRepository,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
@@ -42,10 +45,16 @@ class TunerViewModel(
     private val attempt = MutableStateFlow(0)
     private val _mode = MutableStateFlow(TunerMode.AUTO)
 
-    /** The selected tuning. Fixed to standard until the settings screen arrives (Phase 4). */
-    private val tuning: Tuning = Tunings.DEFAULT
-
     val mode: StateFlow<TunerMode> = _mode.asStateFlow()
+
+    /**
+     * What readings are compared with; null until the saved settings have loaded. Rebuilt only
+     * when an input changes, and read by the DSP loop on every frame.
+     */
+    private val options: StateFlow<TunerOptions?> =
+        combine(settingsRepository.settings, _mode) { settings, mode ->
+            TunerOptions(mode = mode, tuning = settings.tuning, a4Hz = settings.a4Hz)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
         .flatMapLatest { granted -> if (granted) listen() else flowOf(TunerUiState.PermissionRequired) }
@@ -67,8 +76,9 @@ class TunerViewModel(
 
     private fun listen(): Flow<TunerUiState> = flow {
         val interpreter = TunerInterpreter(pipeline.frameSeconds)
-        emit(TunerUiState.Listening(_mode.value, tuning))
-        emitAll(pipeline.readings().map { interpreter.interpret(it, _mode.value, tuning) })
+        val initial = options.filterNotNull().first()
+        emit(TunerUiState.Listening(initial.mode, initial.tuning, initial.a4Hz))
+        emitAll(pipeline.readings().map { interpreter.interpret(it, options.value ?: initial) })
     }
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)

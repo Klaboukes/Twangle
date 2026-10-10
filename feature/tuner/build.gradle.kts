@@ -24,6 +24,7 @@ kotlin {
 dependencies {
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))
+    implementation(project(":core:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -41,6 +42,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(testFixtures(project(":core:audio")))
     testImplementation(testFixtures(project(":core:dsp")))
+    testImplementation(testFixtures(project(":core:settings")))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

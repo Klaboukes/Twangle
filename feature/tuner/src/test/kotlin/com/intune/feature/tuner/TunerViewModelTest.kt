@@ -4,6 +4,8 @@ import com.intune.core.audio.AudioRecorderException
 import com.intune.core.audio.FakeAudioRecorder
 import com.intune.core.dsp.music.Tunings
 import com.intune.core.dsp.testsignals.TestSignals
+import com.intune.core.settings.AppSettings
+import com.intune.core.settings.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -37,8 +39,10 @@ class TunerViewModelTest {
     /** One second of A2 (110 Hz, the 5th string): a whole number of periods, so looping it has no click. */
     private fun a2Recorder() = FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true)
 
+    private val settings = FakeSettingsRepository()
+
     private fun TestScope.viewModel(recorder: FakeAudioRecorder) =
-        TunerViewModel(recorder, StandardTestDispatcher(testScheduler))
+        TunerViewModel(recorder, settings, StandardTestDispatcher(testScheduler))
 
     private fun TunerViewModel.detected(): TunerUiState.Detected {
         val state = state.value
@@ -157,5 +161,40 @@ class TunerViewModelTest {
 
         assertEquals(2, recorder.startCount)
         assertTrue(vm.state.value is TunerUiState.Detected)
+    }
+
+    @Test
+    fun `uses the saved tuning and A4`() = runTest(dispatcher) {
+        settings.current = AppSettings(a4Hz = 442f, tuning = Tunings.DROP_D)
+        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(110.5f, length = 48_000), loop = true))
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+
+        val state = vm.detected()
+        assertEquals(Tunings.DROP_D, state.tuning)
+        assertEquals(442f, state.a4Hz)
+        // A2 at A4 = 442 Hz is 110.5 Hz.
+        assertEquals("A", state.noteName)
+        assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
+    }
+
+    @Test
+    fun `a new A4 applies while listening, without reopening the mic`() = runTest(dispatcher) {
+        val recorder = a2Recorder()
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertTrue(abs(vm.detected().cents) < 1f)
+
+        settings.setA4(442f)
+        advanceTimeBy(500)
+
+        val state = vm.detected()
+        assertEquals(442f, state.a4Hz)
+        // 110 Hz is 7.85 cents flat of A2 once A4 is 442 Hz.
+        assertEquals(-7.85f, state.cents, 1f)
+        assertEquals(1, recorder.startCount)
     }
 }

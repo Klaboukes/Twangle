@@ -1,0 +1,12 @@
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+
+    <!-- A4 calibration. -->
+    <string name="settings_a4_title">Reference pitch (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Most music uses 440 Hz. Orchestras often tune to 442 Hz, baroque ensembles to 415 Hz.</string>
+    <string name="settings_a4_lower">Lower A4 by 1 Hz</string>
+    <string name="settings_a4_raise">Raise A4 by 1 Hz</string>
+    <string name="settings_a4_reset">Reset to %1$d Hz</string>
+</resources>

@@ -1,5 +1,6 @@
 package com.intune.feature.tuner
 
+import com.intune.core.dsp.music.NoteMapper
 import com.intune.core.dsp.music.Tuning
 
 /** What the tuner compares a note against. */
@@ -21,12 +22,19 @@ sealed interface TunerUiState {
     data class Error(val reason: TunerError) : TunerUiState
 
     /** Listening, but there is no usable note (too quiet, or no clear pitch). */
-    data class Listening(val mode: TunerMode, val tuning: Tuning) : TunerUiState
+    data class Listening(
+        val mode: TunerMode,
+        val tuning: Tuning,
+        /** Concert pitch the notes are measured against. */
+        val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
+    ) : TunerUiState
 
     /** A steady note is being played. */
     data class Detected(
         val mode: TunerMode,
         val tuning: Tuning,
+        /** Concert pitch the notes are measured against. */
+        val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
         /** Target note name without octave, e.g. "E" or "C#". */
         val noteName: String,
         /** Octave of the target note in scientific pitch notation, e.g. 2 for low E. */

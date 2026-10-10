@@ -16,10 +16,11 @@ InTune is and will always be **free**:
 - **Guitar mode:** picks the nearest string of the selected tuning automatically.
 - **Chromatic mode:** tunes any note, for any instrument.
 - **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E.
+- **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
 - **Accurate:** within ±1 cent on test signals, from low E up to the highest frets.
 - The microphone is only on while the tuner is on screen.
 
-Coming later: A4 calibration (415–466 Hz), a tuning picker, manual string selection, sharps/flats/solfège notation, light/dark themes and accessibility support. See the [roadmap](ROADMAP.md) for progress.
+Coming later: a tuning picker, manual string selection, sharps/flats/solfège notation, light/dark themes and accessibility support. See the [roadmap](ROADMAP.md) for progress.
 
 ## Status
 
@@ -33,6 +34,7 @@ InTune listens to the microphone, finds the pitch of the note with the [YIN algo
 |---|---|
 | `:app` | App entry point, theme, wiring |
 | `:feature:tuner` | The tuner screen |
+| `:feature:settings` | The settings screen |
 | `:core:audio` | Microphone capture |
 | `:core:settings` | Saved settings |
 | `:core:dsp` | Pitch detection, note math, tunings (pure Kotlin, no Android) |

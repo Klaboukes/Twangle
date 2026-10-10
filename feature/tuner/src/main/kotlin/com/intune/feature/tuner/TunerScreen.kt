@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -16,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,21 +28,29 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.intune.core.audio.AudioRecorder
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
+import com.intune.core.settings.SettingsRepository
 import com.intune.feature.tuner.components.ModeSwitch
 import com.intune.feature.tuner.components.NeedleGauge
 import com.intune.feature.tuner.components.NoteDisplay
 import com.intune.feature.tuner.components.NoteReadout
 import com.intune.feature.tuner.components.PermissionPrompt
 import com.intune.feature.tuner.components.StringSelector
+import kotlin.math.roundToInt
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
- * with the lifecycle releases the mic when the screen isn't visible.
+ * with the lifecycle releases the mic when the screen isn't visible. The gear button in the corner
+ * calls [onOpenSettings], also while the permission prompt is shown.
  */
 @Composable
-fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
+fun TunerScreen(
+    audioRecorder: AudioRecorder,
+    settingsRepository: SettingsRepository,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val mic = rememberMicPermissionState()
-    val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder) }
+    val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val granted = mic.status == MicPermissionStatus.GRANTED
@@ -56,6 +67,9 @@ fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
                 TunerContent(state = state, mode = mode, onModeChange = viewModel::setMode, onRetry = viewModel::retry)
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
+            }
+            IconButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
             }
         }
     }
@@ -80,7 +94,10 @@ fun TunerContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        ModeSwitch(mode = mode, onModeChange = onModeChange)
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ModeSwitch(mode = mode, onModeChange = onModeChange)
+            A4Label(state)
+        }
         when (state) {
             is TunerUiState.Error -> TunerErrorMessage(state.reason, onRetry)
             is TunerUiState.Detected -> {
@@ -118,6 +135,21 @@ private fun StringRowSlot(mode: TunerMode, tuning: Tuning?, targetString: Int?, 
 }
 
 private val STRING_ROW_HEIGHT = 48.dp
+
+/** "A4 = 440 Hz", the reference the readings use. Blank (same height) before listening starts. */
+@Composable
+private fun A4Label(state: TunerUiState) {
+    val a4Hz = when (state) {
+        is TunerUiState.Listening -> state.a4Hz
+        is TunerUiState.Detected -> state.a4Hz
+        else -> null
+    }
+    Text(
+        text = if (a4Hz != null) stringResource(R.string.tuner_a4, a4Hz.roundToInt()) else "",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
 
 private fun listeningHint(mode: TunerMode): Int = when (mode) {
     TunerMode.AUTO -> R.string.tuner_hint_play_string
