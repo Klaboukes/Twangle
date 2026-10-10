@@ -77,7 +77,7 @@ Rules:
 ```
 
 ### Key numbers
-- **Sample rate**: 48 000 Hz. This is the device's native rate on most phones, which avoids resampling. Read it from `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` and fall back to 44 100.
+- **Sample rate**: 48 000 Hz. This is the device's native rate on most phones, which avoids resampling. `SampleRateSelector` reads `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` and uses it if it is between 44 100 and 48 000 Hz (the DSP window sizes assume that range), then tries 48 000 and 44 100. The first rate `AudioRecord.getMinBufferSize` accepts wins.
 - **Analysis window**: 4096 samples, or about 85 ms. Low E (82.41 Hz) has a 12.1 ms period, so the window holds about 7 periods. That is enough for YIN, which needs at least 2. Bass and 7-string support (down to ~30 Hz) will need 8192 samples.
 - **Hop**: 1024 samples, or about 21 ms. That gives ~47 pitch estimates per second, which the smoother turns into a calm needle.
 - **Detection range**: 60 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min).
@@ -130,6 +130,12 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 
 ### Audio capture
 `AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads 1024-sample chunks with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
+
+Failures end the flow with a typed `AudioRecorderException`, which the ViewModel maps to a recoverable error state:
+- `PermissionMissing`: `RECORD_AUDIO` isn't granted (checked before opening, and on `SecurityException`).
+- `InitializationFailed`: no input could be opened at the chosen rate.
+- `MicrophoneBusy`: another app holds the mic. Before Android 10, `startRecording()` fails or the record never reaches `RECORDSTATE_RECORDING`. From Android 10 the mic is shared and a higher-priority app (such as a phone call) silences us with zeros instead, so `isClientSilenced` is checked after the first chunk. Silencing that starts mid-session just looks like silence (the gate closes) and recording resumes when the other app lets go.
+- `ReadFailed(code)`: `read()` returned an error, e.g. `ERROR_DEAD_OBJECT` when the audio server restarts. Collecting again reopens the mic.
 
 ## 4. Threading & performance
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
