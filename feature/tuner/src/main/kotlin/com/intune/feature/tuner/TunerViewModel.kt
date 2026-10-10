@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -49,14 +51,26 @@ class TunerViewModel(
 
     val mode: StateFlow<TunerMode> = _mode.asStateFlow()
 
+    /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
+    private val lockedString = MutableStateFlow<Int?>(null)
+
     /**
      * What readings are compared with; null until the saved settings have loaded. Rebuilt only
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, _mode) { settings, mode ->
-            TunerOptions(mode = mode, tuning = settings.tuning, a4Hz = settings.a4Hz)
+        combine(settingsRepository.settings, _mode, lockedString) { settings, mode, locked ->
+            TunerOptions(mode = mode, tuning = settings.tuning, a4Hz = settings.a4Hz, lockedString = locked)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    init {
+        // A lock belongs to one tuning: a string index means something else in another tuning.
+        viewModelScope.launch {
+            settingsRepository.settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
+                lockedString.value = null
+            }
+        }
+    }
 
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
         .flatMapLatest { granted -> if (granted) listen() else flowOf(TunerUiState.PermissionRequired) }
@@ -69,6 +83,14 @@ class TunerViewModel(
 
     fun setMode(mode: TunerMode) {
         _mode.value = mode
+    }
+
+    /**
+     * Locks guitar mode to string [index] (lowest = 0), or back to automatic if it was already
+     * locked. Kept while switching to chromatic and back.
+     */
+    fun toggleString(index: Int) {
+        lockedString.value = if (lockedString.value == index) null else index
     }
 
     /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */

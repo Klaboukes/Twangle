@@ -26,6 +26,7 @@ class TunerContentTest {
     private var retries = 0
     private val modeChanges = mutableListOf<TunerMode>()
     private val tuningChanges = mutableListOf<Tuning>()
+    private val stringClicks = mutableListOf<Int>()
 
     private fun show(state: TunerUiState, mode: TunerMode = TunerMode.AUTO) {
         compose.setContent {
@@ -35,6 +36,7 @@ class TunerContentTest {
                     mode,
                     onModeChange = { modeChanges += it },
                     onTuningChange = { tuningChanges += it },
+                    onStringClick = { stringClicks += it },
                     onRetry = { retries++ },
                 )
             }
@@ -134,5 +136,20 @@ class TunerContentTest {
     fun chromaticModeHidesTheTuningPicker() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
         compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
+    }
+
+    @Test
+    fun tappingAStringReportsIt() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        stringChip("G3").performClick()
+        assertEquals(listOf(3), stringClicks)
+    }
+
+    @Test
+    fun aLockedStringIsHighlightedAndNamedInTheHint() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
+        stringChip("A2").assertIsSelected()
+        stringChip("E2").assertIsNotSelected()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed()
     }
 }

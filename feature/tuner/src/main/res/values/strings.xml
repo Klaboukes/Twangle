@@ -32,6 +32,11 @@
     <string name="tuning_open_e">Open E</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
+    <!-- %1$s is a string's note and octave, e.g. "A2". -->
+    <string name="tuner_hint_play_locked_string">Play the %1$s string</string>
+    <string name="tuner_string_lock">Lock to this string</string>
+    <string name="tuner_string_unlock">Pick strings automatically</string>
+    <string name="tuner_string_locked">Locked</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cents</string>
     <plurals name="tuner_cents_flat">

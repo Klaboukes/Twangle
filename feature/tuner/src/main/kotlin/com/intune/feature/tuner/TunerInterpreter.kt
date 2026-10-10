@@ -9,7 +9,7 @@ import kotlin.math.abs
 /**
  * Turns raw [PitchReading]s (one per hop) into [TunerUiState]s: smooths the pitch with
  * [PitchSmoother], then picks the target, either the nearest note ([TunerMode.CHROMATIC]) or the
- * closest string of the tuning ([TunerMode.AUTO]).
+ * closest string of the tuning ([TunerMode.AUTO]), or the string the user locked.
  *
  * It also tracks whether the note is in tune ([InTuneDetector]), restarting whenever the target
  * changes. [frameSeconds] is the time between readings (hop / sample rate).
@@ -45,7 +45,7 @@ class TunerInterpreter(
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
             inTuneDetector.reset()
-            return TunerUiState.Listening(mode, tuning, noteMapper.a4Hz)
+            return TunerUiState.Listening(mode, tuning, noteMapper.a4Hz, lockedString(options))
         }
 
         val midi = smoother.midi
@@ -53,11 +53,22 @@ class TunerInterpreter(
         return when (mode) {
             TunerMode.CHROMATIC -> detected(options, smoother.note, frequencyHz, smoother.cents, null)
             TunerMode.AUTO -> {
-                val string = trackString(midi, tuning)
+                val locked = lockedString(options)
+                val string = if (locked != null) {
+                    // Tracking starts afresh once the lock is released.
+                    stringIndex = NO_STRING
+                    locked
+                } else {
+                    trackString(midi, tuning)
+                }
                 detected(options, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string)
             }
         }
     }
+
+    /** The locked string in guitar mode, if it exists in the tuning; null means automatic. */
+    private fun lockedString(options: TunerOptions): Int? =
+        options.lockedString?.takeIf { options.mode == TunerMode.AUTO && it in 0 until options.tuning.stringCount }
 
     /**
      * The nearest string, but sticky: the current string is kept until another one is closer by
@@ -98,6 +109,7 @@ class TunerInterpreter(
             frequencyHz = frequencyHz,
             cents = cents,
             targetString = targetString,
+            lockedString = lockedString(options),
             inTune = inTuneDetector.update(cents, frameSeconds),
         )
     }

@@ -217,4 +217,41 @@ class TunerViewModelTest {
         assertEquals("D", state.noteName)
         assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
     }
+
+    @Test
+    fun `tapping a string locks it and tapping it again unlocks`() = runTest(dispatcher) {
+        // A2 is played, but the 4th string (D3) is locked: the needle shows the distance to D3.
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+
+        vm.toggleString(2)
+        advanceTimeBy(500)
+        val locked = vm.detected()
+        assertEquals(2, locked.targetString)
+        assertEquals(2, locked.lockedString)
+        assertEquals(-500f, locked.cents, 1f)
+
+        vm.toggleString(2)
+        advanceTimeBy(500)
+        val auto = vm.detected()
+        assertEquals(1, auto.targetString)
+        assertNull(auto.lockedString)
+    }
+
+    @Test
+    fun `changing the tuning releases the lock`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.toggleString(4)
+        advanceTimeBy(500)
+        assertEquals(4, vm.detected().lockedString)
+
+        vm.setTuning(Tunings.DROP_D)
+        advanceTimeBy(500)
+
+        assertNull(vm.detected().lockedString)
+        assertEquals(1, vm.detected().targetString)
+    }
 }

@@ -70,6 +70,7 @@ fun TunerScreen(
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
+                    onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
                 )
             } else {
@@ -92,6 +93,7 @@ fun TunerContent(
     mode: TunerMode,
     onModeChange: (TunerMode) -> Unit,
     onTuningChange: (Tuning) -> Unit,
+    onStringClick: (Int) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,18 +116,19 @@ fun TunerContent(
                     readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                     hint = "",
                 )
-                GuitarSlot(mode, state.tuning, onTuningChange, state.targetString, state.inTune)
+                GuitarSlot(mode, state.tuning, onTuningChange, onStringClick, state.targetString, state.lockedString, state.inTune)
             }
             is TunerUiState.Listening -> {
                 NeedleGauge(cents = null)
-                NoteDisplay(readout = null, hint = stringResource(listeningHint(mode)))
-                GuitarSlot(mode, state.tuning, onTuningChange, targetString = null)
+                NoteDisplay(readout = null, hint = listeningHint(mode, state.tuning, state.lockedString))
+                // A locked string is the target before anything is played, so it stays highlighted.
+                GuitarSlot(mode, state.tuning, onTuningChange, onStringClick, state.lockedString, state.lockedString)
             }
             // Only for a moment, until the ViewModel hears that the permission is granted.
             TunerUiState.PermissionRequired -> {
                 NeedleGauge(cents = null)
                 NoteDisplay(readout = null, hint = "")
-                GuitarSlot(TunerMode.CHROMATIC, tuning = null, onTuningChange, targetString = null)
+                GuitarSlot(TunerMode.CHROMATIC, tuning = null, onTuningChange, onStringClick, targetString = null, lockedString = null)
             }
         }
     }
@@ -140,7 +143,9 @@ private fun GuitarSlot(
     mode: TunerMode,
     tuning: Tuning?,
     onTuningChange: (Tuning) -> Unit,
+    onStringClick: (Int) -> Unit,
     targetString: Int?,
+    lockedString: Int?,
     inTune: Boolean = false,
 ) {
     Column(
@@ -150,7 +155,7 @@ private fun GuitarSlot(
     ) {
         if (mode == TunerMode.AUTO && tuning != null) {
             TuningPicker(selected = tuning, onSelect = onTuningChange)
-            StringSelector(tuning, targetString, inTune = inTune)
+            StringSelector(tuning, targetString, inTune = inTune, lockedString = lockedString, onStringClick = onStringClick)
         }
     }
 }
@@ -173,9 +178,11 @@ private fun A4Label(state: TunerUiState) {
     )
 }
 
-private fun listeningHint(mode: TunerMode): Int = when (mode) {
-    TunerMode.AUTO -> R.string.tuner_hint_play_string
-    TunerMode.CHROMATIC -> R.string.tuner_hint_play_note
+@Composable
+private fun listeningHint(mode: TunerMode, tuning: Tuning, lockedString: Int?): String = when {
+    mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
+    lockedString != null -> stringResource(R.string.tuner_hint_play_locked_string, tuning.strings[lockedString].toString())
+    else -> stringResource(R.string.tuner_hint_play_string)
 }
 
 @Composable
@@ -213,6 +220,7 @@ private fun TunerContentDetectedPreview() {
             mode = TunerMode.AUTO,
             onModeChange = {},
             onTuningChange = {},
+            onStringClick = {},
             onRetry = {},
         )
     }
@@ -226,6 +234,7 @@ private fun TunerContentListeningPreview() {
             mode = TunerMode.CHROMATIC,
             onModeChange = {},
             onTuningChange = {},
+            onStringClick = {},
             onRetry = {},
         ) }
 }

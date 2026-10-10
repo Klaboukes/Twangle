@@ -27,6 +27,8 @@ sealed interface TunerUiState {
         val tuning: Tuning,
         /** Concert pitch the notes are measured against. */
         val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
+        /** String the user locked in [TunerMode.AUTO], or null for automatic. */
+        val lockedString: Int? = null,
     ) : TunerUiState
 
     /** A steady note is being played. */
@@ -49,6 +51,8 @@ sealed interface TunerUiState {
         val cents: Float,
         /** Index into [Tuning.strings] of the target string in [TunerMode.AUTO], otherwise null. */
         val targetString: Int?,
+        /** String the user locked in [TunerMode.AUTO] (then also [targetString]), or null for automatic. */
+        val lockedString: Int? = null,
         /** Within 5 cents of the target for at least 300 ms (see [InTuneDetector]). */
         val inTune: Boolean,
     ) : TunerUiState

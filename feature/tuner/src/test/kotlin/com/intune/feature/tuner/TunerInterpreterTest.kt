@@ -177,4 +177,47 @@ class TunerInterpreterTest {
         val state = interpreter.interpret(silent, TunerOptions(TunerMode.AUTO, standard, a4Hz = 432f))
         assertEquals(TunerUiState.Listening(TunerMode.AUTO, standard, a4Hz = 432f), state)
     }
+
+    @Test
+    fun `a locked string is the target even when another string is closer`() {
+        // E2 is played but A2 is locked: the reading shows the 5 semitones to A2, not the nearby E2.
+        val locked = TunerOptions(TunerMode.AUTO, standard, lockedString = 1)
+        var state: TunerUiState? = null
+        repeat(40) { state = interpreter.interpret(pitched(hz(40f)), locked) }
+
+        val detected = state!!.detected()
+        assertEquals(1, detected.targetString)
+        assertEquals(1, detected.lockedString)
+        assertEquals("A", detected.noteName)
+        assertEquals(-500f, detected.cents, 0.5f)
+    }
+
+    @Test
+    fun `releasing the lock goes back to the nearest string`() {
+        repeat(40) { interpreter.interpret(pitched(hz(40f)), TunerOptions(TunerMode.AUTO, standard, lockedString = 1)) }
+        val state = play(pitched(hz(40f)), TunerMode.AUTO).detected()
+
+        assertEquals(0, state.targetString)
+        assertNull(state.lockedString)
+        assertEquals(0f, state.cents, 0.5f)
+    }
+
+    @Test
+    fun `listening shows the locked string`() {
+        val state = interpreter.interpret(silent, TunerOptions(TunerMode.AUTO, standard, lockedString = 3))
+        assertEquals(TunerUiState.Listening(TunerMode.AUTO, standard, lockedString = 3), state)
+    }
+
+    @Test
+    fun `the lock is ignored in chromatic mode and when the string doesn't exist`() {
+        val chromatic = TunerOptions(TunerMode.CHROMATIC, standard, lockedString = 1)
+        var state: TunerUiState? = null
+        repeat(40) { state = interpreter.interpret(pitched(hz(40f)), chromatic) }
+        assertEquals("E", state!!.detected().noteName)
+        assertNull(state!!.detected().lockedString)
+
+        repeat(40) { state = interpreter.interpret(pitched(hz(40f)), TunerOptions(TunerMode.AUTO, standard, lockedString = 9)) }
+        assertEquals(0, state!!.detected().targetString)
+        assertNull(state!!.detected().lockedString)
+    }
 }

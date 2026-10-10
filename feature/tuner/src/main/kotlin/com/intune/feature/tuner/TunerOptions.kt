@@ -14,4 +14,6 @@ data class TunerOptions(
     val tuning: Tuning = Tunings.DEFAULT,
     /** Concert pitch in Hz (A4 calibration). */
     val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
+    /** String index the user locked in guitar mode, or null to pick the nearest string automatically. */
+    val lockedString: Int? = null,
 )
