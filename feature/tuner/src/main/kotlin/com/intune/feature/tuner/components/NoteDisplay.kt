@@ -66,11 +66,12 @@ data class NoteReadout(
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
  * frequency. With [showWaves] the wave view ([WaveView]) replaces both: the dial already shows how
- * far off the note is, so the pill stays empty until the note is in tune. [compact] makes the
+ * far off the note is, so the pill only shows [hint] and stays empty during a note. [compact] makes the
  * note and the wave view smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
- * colour, a soft glow lights up behind it with a small pop, and the pill fills with that colour and
- * shows a check mark, so the state doesn't rely on colour alone. Without a [readout] it shows a
+ * colour, a soft glow lights up behind it with a small pop, and (without [showWaves]) the pill fills
+ * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
+ * view the ribbon smoothing out does that. Without a [readout] it shows a
  * faint dash and [hint], e.g. "Play a string".
  *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
@@ -89,7 +90,7 @@ fun NoteDisplay(
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
-    val checkShown by animateFloatAsState(if (inTune) 1f else 0f, label = "check")
+    val checkShown by animateFloatAsState(if (inTune && !showWaves) 1f else 0f, label = "check")
     val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(GLOW_MS), label = "glow")
     val pop = remember { Animatable(1f) }
     LaunchedEffect(inTune) {
@@ -100,9 +101,8 @@ fun NoteDisplay(
     }
     val pillColor = animateColorAsState(
         when {
-            readout == null -> Color.Transparent
+            readout == null || showWaves -> Color.Transparent
             inTune -> tuneColor
-            showWaves -> Color.Transparent
             else -> colors.surfaceContainerHigh.copy(alpha = 0.85f)
         },
         label = "pill",
@@ -199,8 +199,8 @@ fun NoteDisplay(
             Text(
                 text = when {
                     readout == null -> hint
-                    // Empty but still there, so the screen doesn't jump when "In tune" appears.
-                    showWaves -> if (inTune) stringResource(R.string.tuner_wave_in_tune) else ""
+                    // Empty but still there, so the screen doesn't jump when a note starts or stops.
+                    showWaves -> ""
                     else -> centsText(readout.cents)
                 },
                 style = when {

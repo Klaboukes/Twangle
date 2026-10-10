@@ -79,7 +79,7 @@ Goal: a usable guitar tuner.
   - ☑ Tuner screen redesign: note in the style's lettering (shrinks to fit), cents in a pill that fills when in tune, glow and pop on reaching pitch, style-shaped string chips with a backing, palette button opening the style cards on the tuner (S26: all seven styles with a live note from short laptop test tones; landscape, tablet and 2× font via the UI tests)
   - ☑ Wave view: the string's wave against the target's, drawn in each style, with the advice in words ("A little low – tune up"); a Settings switch goes back to cents (S26: every style rendered off-pitch and in tune, light and dark; UI tests for words, TalkBack, landscape and 2× font)
   - ☑ Calmer wave view: a low, frameless sound ribbon that pulses when off and settles into one smooth glowing band in tune, in each style's own marks (S26: every style rendered off, nearly there and in tune, light and dark)
-  - ☑ Wave view without the tips in words: the dial already shows how far off, so the pill only says "In tune" (TalkBack still hears the cents)
+  - ☑ Wave view without the tips in words: the dial already shows how far off, so the pill stays empty, also in tune (TalkBack still hears the cents)
 
 ## Phase 6 — Release → **v1.0**
 - ☐ App icon, adaptive icon, splash screen

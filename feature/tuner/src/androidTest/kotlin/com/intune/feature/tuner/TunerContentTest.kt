@@ -285,16 +285,16 @@ class TunerContentTest {
     fun waveViewShowsNoNumbersOrWordsWhileOff() {
         show(detected(-12.3f), showWaves = true)
         compose.onNodeWithText("E").assertIsDisplayed()
-        // No cents, no frequency and no "In tune": the dial and the ribbon show how far off it is.
+        // No cents and no frequency: the dial and the ribbon show how far off it is.
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).assertDoesNotExist()
     }
 
     @Test
-    fun waveViewSaysInTune() {
+    fun waveViewHasNoLabelInTune() {
         show(detected(2f, inTune = true), showWaves = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).assertIsDisplayed()
+        compose.onNodeWithText("E").assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_in_tune), ignoreCase = true).assertDoesNotExist()
     }
 
     @Test
@@ -314,15 +314,15 @@ class TunerContentTest {
     fun phoneOnItsSideFitsTheWaveView() {
         show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, showWaves = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val pill = compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("pill ends at ${pill.bottom}, window at ${window.bottom}", pill.bottom <= window.bottom)
+        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
+        assertTrue("note ends at ${note.bottom}, window at ${window.bottom}", note.bottom <= window.bottom)
         stringChip("E4").assertIsDisplayed()
     }
 
     @Test
     fun withTheLargestFontTheWaveViewCanStillBeReached() {
         show(detected(-0.4f, inTune = true), fontScale = 2f, showWaves = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
     }
 
