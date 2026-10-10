@@ -47,6 +47,16 @@
         <item quantity="one">%1$d cent sharp</item>
         <item quantity="other">%1$d cents sharp</item>
     </plurals>
+    <string name="tuner_in_tune">in tune</string>
+
+    <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cents flat" or "in tune". -->
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <!-- A note name with a sharp or flat, read aloud. %1$s is the letter or syllable, e.g. "C", "Sol". -->
+    <string name="tuner_spoken_sharp">%1$s sharp</string>
+    <string name="tuner_spoken_flat">%1$s flat</string>
+    <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_change_tuning">Change tuning</string>
     <string name="tuner_flat_symbol" translatable="false">♭</string>
     <string name="tuner_sharp_symbol" translatable="false">♯</string>
 </resources>

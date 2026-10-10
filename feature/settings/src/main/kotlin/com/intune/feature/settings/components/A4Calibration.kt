@@ -22,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.core.dsp.music.NoteMapper
@@ -41,15 +44,17 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
     LaunchedEffect(a4Hz) { pending = null }
     val shown = pending ?: a4Hz
 
+    val a4Title = stringResource(R.string.settings_a4_title)
+    val a4Value = stringResource(R.string.settings_a4_value, shown.roundToInt())
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.settings_a4_title),
+                text = a4Title,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = stringResource(R.string.settings_a4_value, shown.roundToInt()),
+                text = a4Value,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -72,7 +77,13 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
                 steps = (MAX_HZ - MIN_HZ).toInt() - 1,
                 // 50 stops would draw a row of dots; the value above says where the thumb is.
                 colors = SliderDefaults.colors(activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent),
-                modifier = Modifier.weight(1f),
+                // TalkBack would otherwise read the position as a percentage.
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics {
+                        contentDescription = a4Title
+                        stateDescription = a4Value
+                    },
             )
             IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
                 Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.settings_a4_raise))

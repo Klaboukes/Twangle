@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +39,17 @@ fun TuningPicker(
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Box(modifier = modifier) {
-        TextButton(onClick = { expanded = true }) {
+        val changeTuning = stringResource(R.string.tuner_change_tuning)
+        // TalkBack: "Standard, button, double-tap to change tuning".
+        TextButton(
+            onClick = { expanded = true },
+            modifier = Modifier.semantics {
+                onClick(label = changeTuning) {
+                    expanded = true
+                    true
+                }
+            },
+        ) {
             Text(tuningLabel(selected), style = MaterialTheme.typography.titleMedium)
             Icon(painterResource(R.drawable.ic_arrow_drop_down), contentDescription = null)
         }

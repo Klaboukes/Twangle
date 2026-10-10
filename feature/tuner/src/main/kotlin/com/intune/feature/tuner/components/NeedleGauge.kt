@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.feature.tuner.R
@@ -34,7 +35,7 @@ import kotlin.math.sin
  * needle and the centre tick turn green.
  *
  * The animated values are only read while drawing, so a new reading redraws the gauge without
- * recomposing it.
+ * recomposing it. TalkBack skips it: [NoteDisplay] speaks the same reading in words.
  */
 @Composable
 fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier, inTune: Boolean = false) {
@@ -51,7 +52,7 @@ fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier, inTune: Boolean = 
     val centreColor = animateInTuneColor(inTune, colors.primary, "centreTick")
     val needleColor = animateInTuneColor(inTune, colors.onSurface, "needleColor")
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
         Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(2f)) {
             // Keep the pivot dot inside the canvas.
             val pivotInset = 10.dp.toPx()

@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -125,6 +127,8 @@ fun TunerContent(
 ) {
     Column(
         modifier = modifier
+            // With a very large system font it can be taller than the screen; then it scrolls.
+            .verticalScroll(rememberScrollState())
             .widthIn(max = 480.dp)
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,7 +186,9 @@ private fun GuitarSlot(
     inTune: Boolean = false,
 ) {
     Column(
-        modifier = Modifier.height(GUITAR_SLOT_HEIGHT),
+        // At least this tall, so switching modes doesn't move anything; taller only with a large
+        // system font, where the tuning picker grows.
+        modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {

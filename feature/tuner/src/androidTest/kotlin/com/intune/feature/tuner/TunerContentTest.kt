@@ -1,12 +1,17 @@
 package com.intune.feature.tuner
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.intune.core.dsp.music.Notation
@@ -29,31 +34,35 @@ class TunerContentTest {
     private val tuningChanges = mutableListOf<Tuning>()
     private val stringClicks = mutableListOf<Int>()
 
-    private fun show(state: TunerUiState, mode: TunerMode = TunerMode.AUTO) {
+    private fun show(state: TunerUiState, mode: TunerMode = TunerMode.AUTO, fontScale: Float? = null) {
         compose.setContent {
-            MaterialTheme {
-                TunerContent(
-                    state,
-                    mode,
-                    onModeChange = { modeChanges += it },
-                    onTuningChange = { tuningChanges += it },
-                    onStringClick = { stringClicks += it },
-                    onRetry = { retries++ },
-                )
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale ?: density.fontScale)) {
+                MaterialTheme {
+                    TunerContent(
+                        state,
+                        mode,
+                        onModeChange = { modeChanges += it },
+                        onTuningChange = { tuningChanges += it },
+                        onStringClick = { stringClicks += it },
+                        onRetry = { retries++ },
+                    )
+                }
             }
         }
     }
 
-    private fun detected(cents: Float, targetString: Int? = 0) = TunerUiState.Detected(
-        mode = TunerMode.AUTO,
-        tuning = Tunings.STANDARD,
-        noteName = "E",
-        octave = 2,
-        frequencyHz = 81.84f,
-        cents = cents,
-        targetString = targetString,
-        inTune = false,
-    )
+    private fun detected(cents: Float, targetString: Int? = 0, inTune: Boolean = false, noteName: String = "E") =
+        TunerUiState.Detected(
+            mode = TunerMode.AUTO,
+            tuning = Tunings.STANDARD,
+            noteName = noteName,
+            octave = 2,
+            frequencyHz = 81.84f,
+            cents = cents,
+            targetString = targetString,
+            inTune = inTune,
+        )
 
     /** String chips read e.g. "A2": note name plus subscript octave. */
     private fun stringChip(label: String) = compose.onNodeWithText(label)
@@ -160,5 +169,37 @@ class TunerContentTest {
         stringChip("La2").assertIsSelected()
         stringChip("Mi2").assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "La2")).assertIsDisplayed()
+    }
+
+    @Test
+    fun talkBackHearsTheReadingAsOneSentence() {
+        show(detected(-12.3f))
+        compose.onNode(hasContentDescription("E 2, 12 cents flat")).assertExists()
+    }
+
+    @Test
+    fun talkBackHearsInTuneAndSharpsAsWords() {
+        show(detected(2f, inTune = true, noteName = "F♯"))
+        compose.onNode(hasContentDescription("F sharp 2, in tune")).assertExists()
+    }
+
+    @Test
+    fun talkBackHearsTheHintWhileListening() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNode(hasContentDescription(context.getString(R.string.tuner_hint_play_string))).assertExists()
+    }
+
+    @Test
+    fun stringsAreSpokenWithTheirOctave() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNode(hasContentDescription("A 2")).assertExists()
+    }
+
+    @Test
+    fun withTheLargestFontEverythingCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f)
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
+        stringChip("E4").performScrollTo().assertIsDisplayed()
+        stringChip("E2").performScrollTo().assertIsDisplayed()
     }
 }

@@ -14,12 +14,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -28,11 +31,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.feature.tuner.R
+import com.intune.feature.tuner.spokenNoteName
 
 /**
  * The open strings of [tuning], lowest on the left, with the [targetString] (if any) highlighted.
@@ -55,14 +60,22 @@ fun StringSelector(
     val lockLabel = stringResource(R.string.tuner_string_lock)
     val unlockLabel = stringResource(R.string.tuner_string_unlock)
     val lockedState = stringResource(R.string.tuner_string_locked)
+    val spokenSharp = stringResource(R.string.tuner_spoken_sharp)
+    val spokenFlat = stringResource(R.string.tuner_spoken_flat)
+    val spokenString = stringResource(R.string.tuner_spoken_string)
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         tuning.strings.forEachIndexed { index, note ->
             val locked = index == lockedString
+            val name = notation.nameOf(note.pitchClass)
             StringChip(
-                name = notation.nameOf(note.pitchClass),
+                name = name,
+                spokenName = spokenString.format(
+                    spokenNoteName(name, { spokenSharp.format(it) }, { spokenFlat.format(it) }),
+                    note.octave,
+                ),
                 octave = note.octave,
                 highlighted = index == targetString,
                 inTune = inTune,
@@ -78,6 +91,7 @@ fun StringSelector(
 @Composable
 private fun StringChip(
     name: String,
+    spokenName: String,
     octave: Int,
     highlighted: Boolean,
     inTune: Boolean,
@@ -116,22 +130,33 @@ private fun StringChip(
             .background(background, CircleShape)
             .border(1.dp, if (highlighted) accent else colors.outlineVariant, CircleShape)
             .semantics(mergeDescendants = true) {
+                contentDescription = spokenName
                 selected = highlighted
                 if (locked) stateDescription = lockedState
             },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = buildAnnotatedString {
-                append(name)
-                withStyle(octaveStyle) { append(octave.toString()) }
-            },
-            // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.
-            style = if (name.length <= 2) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelMedium,
-            color = content,
-        )
+        // The circle has a fixed size, so its label grows with the system font only up to a point.
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(MAX_CHIP_FONT_SCALE)),
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    append(name)
+                    withStyle(octaveStyle) { append(octave.toString()) }
+                },
+                // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.
+                style = if (name.length <= 2) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelMedium,
+                color = content,
+                maxLines = 1,
+            )
+        }
     }
 }
+
+/** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */
+private const val MAX_CHIP_FONT_SCALE = 1.3f
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable
