@@ -2,10 +2,15 @@ package com.intune.feature.tuner
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,11 +26,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,6 +50,8 @@ import com.intune.feature.tuner.components.NoteReadout
 import com.intune.feature.tuner.components.PermissionPrompt
 import com.intune.feature.tuner.components.StringSelector
 import com.intune.feature.tuner.components.TuningPicker
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -72,7 +82,8 @@ fun TunerScreen(
         enabled = vibrateInTune,
     )
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
+    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,6 +125,10 @@ private fun KeepScreenOn() {
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
+ *
+ * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
+ * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
+ * in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
 fun TunerContent(
@@ -125,48 +140,143 @@ fun TunerContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            // With a very large system font it can be taller than the screen; then it scrolls.
-            .verticalScroll(rememberScrollState())
-            .widthIn(max = 480.dp)
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
+    val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ModeSwitch(mode = mode, onModeChange = onModeChange)
             A4Label(state)
         }
+    }
+    val guitarSlot = @Composable { GuitarSlotFor(state, mode, onTuningChange, onStringClick) }
+    val gauge = @Composable {
+        val detected = state as? TunerUiState.Detected
+        NeedleGauge(cents = detected?.cents, inTune = detected?.inTune == true)
+    }
+    val note = @Composable {
         when (state) {
-            is TunerUiState.Error -> TunerErrorMessage(state.reason, onRetry)
-            is TunerUiState.Detected -> {
-                NeedleGauge(cents = state.cents, inTune = state.inTune)
-                NoteDisplay(
-                    readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
-                    hint = "",
-                )
-                GuitarSlot(
-                    mode, state.tuning, state.notation, onTuningChange, onStringClick,
-                    state.targetString, state.lockedString, state.inTune,
-                )
+            is TunerUiState.Detected -> NoteDisplay(
+                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
+                hint = "",
+            )
+            is TunerUiState.Listening -> NoteDisplay(readout = null, hint = listeningHint(mode, state))
+            else -> NoteDisplay(readout = null, hint = "")
+        }
+    }
+    val error = (state as? TunerUiState.Error)?.reason
+
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        when (tunerLayoutFor(maxWidth.value, maxHeight.value)) {
+            TunerLayout.SINGLE_COLUMN -> Column(
+                modifier = Modifier
+                    // With a very large system font it can be taller than the screen; then it scrolls.
+                    .verticalScroll(rememberScrollState())
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+            ) {
+                header()
+                if (error != null) {
+                    TunerErrorMessage(error, onRetry)
+                } else {
+                    gauge()
+                    note()
+                    guitarSlot()
+                }
             }
-            is TunerUiState.Listening -> {
-                NeedleGauge(cents = null)
-                NoteDisplay(readout = null, hint = listeningHint(mode, state))
-                // A locked string is the target before anything is played, so it stays highlighted.
-                GuitarSlot(mode, state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
-            }
-            // Only for a moment, until the ViewModel hears that the permission is granted.
-            TunerUiState.PermissionRequired -> {
-                NeedleGauge(cents = null)
-                NoteDisplay(readout = null, hint = "")
-                GuitarSlot(
-                    TunerMode.CHROMATIC, tuning = null, Notation.DEFAULT, onTuningChange, onStringClick,
-                    targetString = null, lockedString = null,
-                )
+            TunerLayout.TWO_PANE -> Row(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+            ) {
+                // Readout side. The gauge shrinks to fit the height, so the note stays in view.
+                BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    val paneHeight = maxHeight
+                    Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState()).widthIn(max = READOUT_PANE_MAX_WIDTH),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+                    ) {
+                        if (error != null) {
+                            TunerErrorMessage(error, onRetry)
+                        } else {
+                            GaugeAboveNote(gauge = gauge, note = note, targetHeight = paneHeight)
+                        }
+                    }
+                }
+                // Controls side, at the end where the settings gear sits. The vertical padding keeps
+                // them clear of the gear when they scroll.
+                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .widthIn(max = COLUMN_MAX_WIDTH)
+                            .padding(vertical = GEAR_CLEARANCE),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+                    ) {
+                        header()
+                        guitarSlot()
+                    }
+                }
             }
         }
+    }
+}
+
+/**
+ * [gauge] above [note], for the two-pane layout. The note keeps its natural size and the gauge
+ * shrinks (keeping its shape, down to [GAUGE_MIN_WIDTH]) so both fit in [targetHeight]: a phone on
+ * its side is too short for the full-width gauge. Taller than [targetHeight] only with a very large
+ * font, where the pane scrolls.
+ */
+@Composable
+private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -> Unit, targetHeight: Dp) {
+    Layout(contents = listOf(gauge, note)) { (gaugeMeasurables, noteMeasurables), constraints ->
+        val maxWidth = constraints.maxWidth
+        val notePlaceable = noteMeasurables.single().measure(Constraints(maxWidth = maxWidth))
+        val gaugeMeasurable = gaugeMeasurables.single()
+        val spacing = GAUGE_NOTE_SPACING.roundToPx()
+
+        val available = targetHeight.roundToPx() - notePlaceable.height - spacing
+        val fullHeight = gaugeMeasurable.minIntrinsicHeight(maxWidth)
+        val gaugeWidth = if (fullHeight <= available) {
+            maxWidth
+        } else {
+            // The dial is twice as wide as it is tall; the flat/sharp labels under it keep their height.
+            val labels = fullHeight - maxWidth / 2
+            ((available - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), maxWidth), maxWidth)
+        }
+        val gaugePlaceable = gaugeMeasurable.measure(Constraints.fixedWidth(gaugeWidth))
+
+        val width = max(gaugePlaceable.width, notePlaceable.width)
+        layout(width, gaugePlaceable.height + spacing + notePlaceable.height) {
+            gaugePlaceable.placeRelative((width - gaugePlaceable.width) / 2, 0)
+            notePlaceable.placeRelative((width - notePlaceable.width) / 2, gaugePlaceable.height + spacing)
+        }
+    }
+}
+
+/** The [GuitarSlot] for each [TunerUiState]. */
+@Composable
+private fun GuitarSlotFor(
+    state: TunerUiState,
+    mode: TunerMode,
+    onTuningChange: (Tuning) -> Unit,
+    onStringClick: (Int) -> Unit,
+) {
+    when (state) {
+        is TunerUiState.Detected -> GuitarSlot(
+            mode, state.tuning, state.notation, onTuningChange, onStringClick,
+            state.targetString, state.lockedString, state.inTune,
+        )
+        // A locked string is the target before anything is played, so it stays highlighted.
+        is TunerUiState.Listening ->
+            GuitarSlot(mode, state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
+        // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
+        // permission is granted): empty space of the same height.
+        else -> GuitarSlot(
+            TunerMode.CHROMATIC, tuning = null, Notation.DEFAULT, onTuningChange, onStringClick,
+            targetString = null, lockedString = null,
+        )
     }
 }
 
@@ -205,6 +315,23 @@ private fun GuitarSlot(
         }
     }
 }
+
+private val SECTION_SPACING = 24.dp
+
+/** The single column, and the controls pane, never get wider than this. */
+private val COLUMN_MAX_WIDTH = 480.dp
+
+/** On a wide screen the gauge stops growing here. */
+private val READOUT_PANE_MAX_WIDTH = 560.dp
+
+/** A phone on its side shrinks the gauge to fit, but not below this. */
+private val GAUGE_MIN_WIDTH = 160.dp
+
+/** Between gauge and note in the two-pane layout, where height is scarce. */
+private val GAUGE_NOTE_SPACING = 8.dp
+
+/** Room for the settings gear's 48 dp touch target in the top corner. */
+private val GEAR_CLEARANCE = 48.dp
 
 /** Tuning picker (a 48 dp touch target) + 8 dp + string row (48 dp). */
 private val GUITAR_SLOT_HEIGHT = 104.dp
@@ -286,4 +413,28 @@ private fun TunerContentListeningPreview() {
             onStringClick = {},
             onRetry = {},
         ) }
+}
+
+@Preview(showBackground = true, widthDp = 780, heightDp = 340)
+@Composable
+private fun TunerContentLandscapePreview() {
+    MaterialTheme {
+        TunerContent(
+            state = TunerUiState.Detected(
+                mode = TunerMode.AUTO,
+                tuning = Tunings.STANDARD,
+                noteName = "A",
+                octave = 2,
+                frequencyHz = 110.2f,
+                cents = 3f,
+                targetString = 1,
+                inTune = true,
+            ),
+            mode = TunerMode.AUTO,
+            onModeChange = {},
+            onTuningChange = {},
+            onStringClick = {},
+            onRetry = {},
+        )
+    }
 }

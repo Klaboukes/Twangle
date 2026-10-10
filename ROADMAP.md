@@ -68,7 +68,7 @@ Goal: a usable guitar tuner.
 ## Phase 5 — Polish → **v0.9 (beta)**
 - ☑ Haptic tick on reaching in-tune (one click from the vibration motor, switch in settings, default on; the same note doesn't tick again within 1.5 s; S26: plays even with the phone's touch vibration off)
 - ☑ Accessibility: TalkBack live region ("E, 3 cents flat"), content descriptions, large-font layout, color-blind-safe in-tune indicator (shape as well as color) (throttled: new note after 400 ms, cents at most every 2 s; check mark beside the cents; everything reachable at 2× font; S26 accessibility tree reads "A 2, in tune")
-- ☐ Landscape and tablet layouts
+- ☑ Landscape and tablet layouts (two panes once the window is ≥ 600 dp wide and wider than tall: gauge + note beside the controls, gauge shrinks to fit a phone on its side; settings in a centred column ≤ 600 dp; S26: landscape, 2× font and a simulated 800×1280 dp tablet in both orientations, locked string and mic survive rotation)
 - ☐ Performance: profile CPU and battery; switch YIN to FFT-based difference if needed; Baseline Profile
 - ☐ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay
 - ☐ Localization scaffolding (English, Dutch)

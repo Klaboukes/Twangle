@@ -1,27 +1,38 @@
 package com.intune.feature.settings
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.ThemeMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.math.abs
 
 @RunWith(AndroidJUnit4::class)
 class SettingsContentTest {
@@ -38,21 +49,26 @@ class SettingsContentTest {
     private val vibrateChanges = mutableListOf<Boolean>()
     private var backs = 0
 
-    private fun show(settings: AppSettings, dynamicColorAvailable: Boolean = true) {
+    /** Shows [settings], or as if the window were [size]; [ForcedSize] scales it down to fit. */
+    private fun show(settings: AppSettings, dynamicColorAvailable: Boolean = true, size: DpSize? = null) {
         compose.setContent {
-            MaterialTheme {
-                SettingsContent(
-                    settings,
-                    onBack = { backs++ },
-                    onA4Change = { a4Changes += it },
-                    onNotationChange = { notationChanges += it },
-                    onThemeChange = { themeChanges += it },
-                    onDynamicColorChange = { dynamicColorChanges += it },
-                    onKeepScreenOnChange = { keepScreenOnChanges += it },
-                    onVibrateInTuneChange = { vibrateChanges += it },
-                    dynamicColorAvailable = dynamicColorAvailable,
-                )
+            val content = @Composable {
+                MaterialTheme {
+                    SettingsContent(
+                        settings,
+                        onBack = { backs++ },
+                        onA4Change = { a4Changes += it },
+                        onNotationChange = { notationChanges += it },
+                        onThemeChange = { themeChanges += it },
+                        onDynamicColorChange = { dynamicColorChanges += it },
+                        onKeepScreenOnChange = { keepScreenOnChanges += it },
+                        onVibrateInTuneChange = { vibrateChanges += it },
+                        modifier = Modifier.testTag(WINDOW),
+                        dynamicColorAvailable = dynamicColorAvailable,
+                    )
+                }
             }
+            if (size != null) DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size)) { content() } else content()
         }
     }
 
@@ -132,5 +148,22 @@ class SettingsContentTest {
     fun wallpaperColoursAreHiddenWithoutDynamicColor() {
         show(AppSettings(), dynamicColorAvailable = false)
         compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun onAWideScreenTheSettingsStayInAReadableColumn() {
+        show(AppSettings(), size = DpSize(1200.dp, 800.dp))
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val row = compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().getBoundsInRoot()
+        // 600 of the 1200 dp, in the middle.
+        val share = (row.right - row.left) / (window.right - window.left)
+        assertTrue("row takes $share of the width", share in 0.4f..0.51f)
+        val leftGap = row.left - window.left
+        val rightGap = window.right - row.right
+        assertTrue("gaps $leftGap and $rightGap", abs((leftGap - rightGap).value) < 2f)
+    }
+
+    private companion object {
+        const val WINDOW = "window"
     }
 }

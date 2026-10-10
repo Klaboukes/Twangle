@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +36,8 @@ fun PermissionPrompt(
     val permanentlyDenied = status == MicPermissionStatus.PERMANENTLY_DENIED
     Column(
         modifier = modifier
+            // A phone on its side with a large font is shorter than this prompt; then it scrolls.
+            .verticalScroll(rememberScrollState())
             .widthIn(max = 420.dp)
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
