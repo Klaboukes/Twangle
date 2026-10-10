@@ -1,5 +1,6 @@
 package com.intune.feature.settings
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,8 +27,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
+import com.intune.core.settings.ThemeMode
 import com.intune.feature.settings.components.A4Calibration
 import com.intune.feature.settings.components.RadioGroupSetting
+import com.intune.feature.settings.components.SwitchSetting
 
 /** Settings entry point. Every change is saved straight away; [onBack] returns to the tuner. */
 @Composable
@@ -39,11 +42,17 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onBack = onBack,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
+        onThemeChange = viewModel::setTheme,
+        onDynamicColorChange = viewModel::setDynamicColor,
+        onKeepScreenOnChange = viewModel::setKeepScreenOn,
         modifier = modifier,
     )
 }
 
-/** The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings] load. */
+/**
+ * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
+ * load. The wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsContent(
@@ -51,7 +60,11 @@ fun SettingsContent(
     onBack: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
+    onThemeChange: (ThemeMode) -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit,
+    onKeepScreenOnChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -83,6 +96,28 @@ fun SettingsContent(
                     selected = settings.notation,
                     onSelect = onNotationChange,
                 ) { stringResource(notationLabel(it)) }
+                HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    onSelect = onThemeChange,
+                ) { stringResource(themeLabel(it)) }
+                if (dynamicColorAvailable) {
+                    SwitchSetting(
+                        title = stringResource(R.string.settings_dynamic_color_title),
+                        summary = stringResource(R.string.settings_dynamic_color_summary),
+                        checked = settings.dynamicColor,
+                        onCheckedChange = onDynamicColorChange,
+                    )
+                }
+                HorizontalDivider()
+                SwitchSetting(
+                    title = stringResource(R.string.settings_keep_screen_on_title),
+                    summary = stringResource(R.string.settings_keep_screen_on_summary),
+                    checked = settings.keepScreenOn,
+                    onCheckedChange = onKeepScreenOnChange,
+                )
             }
         }
     }
@@ -94,8 +129,24 @@ private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SOLFEGE -> R.string.settings_notation_solfege
 }
 
+private fun themeLabel(theme: ThemeMode): Int = when (theme) {
+    ThemeMode.SYSTEM -> R.string.settings_theme_system
+    ThemeMode.LIGHT -> R.string.settings_theme_light
+    ThemeMode.DARK -> R.string.settings_theme_dark
+}
+
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 private fun SettingsContentPreview() {
-    MaterialTheme { SettingsContent(AppSettings(a4Hz = 442f), onBack = {}, onA4Change = {}, onNotationChange = {}) }
+    MaterialTheme {
+        SettingsContent(
+            AppSettings(a4Hz = 442f),
+            onBack = {},
+            onA4Change = {},
+            onNotationChange = {},
+            onThemeChange = {},
+            onDynamicColorChange = {},
+            onKeepScreenOnChange = {},
+        )
+    }
 }

@@ -62,8 +62,8 @@ Goal: a usable guitar tuner.
 - ☑ Tuning picker (presets): "Standard ▾" above the string row in guitar mode, menu shows each preset's notes; saved (S26: Open G kept after restart)
 - ☑ Manual string selection (lock target string instead of auto-detect): tap a string to lock it (outer ring, "Play the A2 string"), tap again for auto; released on tuning change
 - ☑ Notation: sharps ♯ / flats ♭ / solfège (Do-Re-Mi): fixed-do with Si; note, strings, tuning menu and hint follow it (S26: "Sol♯₂" fits the string circle)
-- ☐ Theme: system / light / dark, and dynamic color on Android 12+
-- ☐ Keep screen on while tuning (toggle)
+- ☑ Theme: system / light / dark, and dynamic color on Android 12+ (applied instantly; status-bar icons follow the app theme)
+- ☑ Keep screen on while tuning (toggle, default on; S26: `FLAG_KEEP_SCREEN_ON` set only while the tuner is shown)
 
 ## Phase 5 — Polish → **v0.9 (beta)**
 - ☐ Haptic tick on reaching in-tune

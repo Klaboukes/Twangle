@@ -270,4 +270,16 @@ class TunerViewModelTest {
         assertEquals("La", vm.detected().noteName)
         assertEquals(Notation.SOLFEGE, vm.detected().notation)
     }
+
+    @Test
+    fun `keepScreenOn follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.keepScreenOn.collect {} }
+        runCurrent()
+        assertTrue("on by default", vm.keepScreenOn.value)
+
+        settings.setKeepScreenOn(false)
+        runCurrent()
+        assertFalse(vm.keepScreenOn.value)
+    }
 }

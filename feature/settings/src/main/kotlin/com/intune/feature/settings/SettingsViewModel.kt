@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
+import com.intune.core.settings.ThemeMode
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -23,5 +24,17 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setNotation(notation: Notation) {
         viewModelScope.launch { repository.setNotation(notation) }
+    }
+
+    fun setTheme(theme: ThemeMode) {
+        viewModelScope.launch { repository.setTheme(theme) }
+    }
+
+    fun setDynamicColor(enabled: Boolean) {
+        viewModelScope.launch { repository.setDynamicColor(enabled) }
+    }
+
+    fun setKeepScreenOn(enabled: Boolean) {
+        viewModelScope.launch { repository.setKeepScreenOn(enabled) }
     }
 }

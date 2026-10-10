@@ -51,6 +51,11 @@ class TunerViewModel(
 
     val mode: StateFlow<TunerMode> = _mode.asStateFlow()
 
+    /** Whether the screen should stay on while the tuner is shown (a saved setting). */
+    val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.keepScreenOn }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
 

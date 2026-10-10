@@ -15,4 +15,16 @@
     <string name="settings_notation_sharps">Sharps: C, C♯, D …</string>
     <string name="settings_notation_flats">Flats: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <!-- Appearance. -->
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color_title">Wallpaper colours</string>
+    <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
+
+    <!-- Screen. -->
+    <string name="settings_keep_screen_on_title">Keep screen on</string>
+    <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
 </resources>

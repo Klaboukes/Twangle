@@ -17,15 +17,17 @@ InTune is and will always be **free**:
 - **Chromatic mode:** tunes any note, for any instrument.
 - **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
 - **Note names:** sharps (C♯), flats (D♭) or Do Re Mi.
+- **Your look:** light, dark or follow the phone, with colours from your wallpaper on Android 12+.
+- **Keeps the screen on** while you tune (can be turned off).
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
 - **Accurate:** within ±1 cent on test signals, from low E up to the highest frets.
 - The microphone is only on while the tuner is on screen.
 
-Coming later: light/dark themes and accessibility support. See the [roadmap](ROADMAP.md) for progress.
+Coming later: accessibility support. See the [roadmap](ROADMAP.md) for progress.
 
 ## Status
 
-Early development. Pitch detection and microphone capture work; the tuner screen itself is being built now (Phase 3 of the [roadmap](ROADMAP.md)). The app is not on the Play Store yet.
+Early development. The tuner works, with its settings (Phases 0–4 of the [roadmap](ROADMAP.md)); polish and accessibility come next. The app is not on the Play Store yet.
 
 ## How it works
 

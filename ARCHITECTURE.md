@@ -175,6 +175,8 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 ### Settings
 The gear button in the tuner's top corner opens the settings screen (`:feature:settings`). `MainActivity` switches between the two screens with one saved `Screen` value, so the app needs no navigation library. A `SaveableStateHolder` keeps each screen's saved state while the other one is shown, and the back button returns from settings. While settings are open the tuner isn't visible, so the mic is released after the usual 5 s. `SettingsViewModel` shows the saved settings and saves every change straight away; there is no "save" button.
 - **Note names:** radio buttons for sharps, flats or Do Re Mi (`RadioGroupSetting`, a reusable titled radio group). The interpreter writes `noteName` in the chosen notation, and the string row, tuning menu and "Play the La2 string" hint follow it. Long names such as "Sol♯" use a smaller font to fit the string circles.
+- **Theme:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+. `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `InTuneTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
+- **Keep screen on** (default on): while the tuner is shown and the mic permission is granted, `TunerScreen` sets `View.keepScreenOn` (`FLAG_KEEP_SCREEN_ON` on the window). Leaving the tuner (settings, home, lock) clears it, so the screen times out normally. It is a window flag, not a wake lock, so no extra permission is needed. `TunerViewModel.keepScreenOn` exposes the setting.
 - **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
 
 `SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true) and `keepScreenOn` (true).
@@ -243,7 +245,7 @@ feature/tuner/src/main/kotlin/com/intune/feature/tuner/
 
 feature/settings/src/main/kotlin/com/intune/feature/settings/
     SettingsScreen (+ SettingsContent), SettingsViewModel
-    components/  A4Calibration, RadioGroupSetting
+    components/  A4Calibration, RadioGroupSetting, SwitchSetting
 
 app/src/main/kotlin/com/intune/app/
     InTuneApplication, AppContainer, MainActivity, ui/theme/

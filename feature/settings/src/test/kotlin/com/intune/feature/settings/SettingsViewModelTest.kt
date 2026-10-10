@@ -3,6 +3,7 @@ package com.intune.feature.settings
 import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
+import com.intune.core.settings.ThemeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -58,5 +59,18 @@ class SettingsViewModelTest {
         vm.setNotation(Notation.SOLFEGE)
         runCurrent()
         assertEquals(Notation.SOLFEGE, repository.current.notation)
+    }
+
+    @Test
+    fun `saves theme, wallpaper colours and keep screen on`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setTheme(ThemeMode.LIGHT)
+        vm.setDynamicColor(false)
+        vm.setKeepScreenOn(false)
+        runCurrent()
+
+        assertEquals(ThemeMode.LIGHT, repository.current.theme)
+        assertEquals(false, repository.current.dynamicColor)
+        assertEquals(false, repository.current.keepScreenOn)
     }
 }

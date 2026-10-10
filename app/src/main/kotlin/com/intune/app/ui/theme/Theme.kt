@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.intune.core.settings.ThemeMode
 
 private val LightColors = lightColorScheme(
     primary = Teal40,
@@ -21,6 +22,13 @@ private val DarkColors = darkColorScheme(
     secondary = Slate80,
     tertiary = Amber80,
 )
+
+/** Whether [this] theme choice means dark colours, given the phone's own dark-theme setting. */
+fun ThemeMode.useDarkTheme(systemDark: Boolean): Boolean = when (this) {
+    ThemeMode.SYSTEM -> systemDark
+    ThemeMode.LIGHT -> false
+    ThemeMode.DARK -> true
+}
 
 @Composable
 fun InTuneTheme(

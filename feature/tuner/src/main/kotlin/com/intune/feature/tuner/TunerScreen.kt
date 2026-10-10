@@ -14,10 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -55,8 +57,10 @@ fun TunerScreen(
     val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val mode by viewModel.mode.collectAsStateWithLifecycle()
+    val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
+    if (granted && keepScreenOn) KeepScreenOn()
 
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Box(
@@ -81,6 +85,19 @@ fun TunerScreen(
                 Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
             }
         }
+    }
+}
+
+/**
+ * Stops the screen from dimming and locking while this is in the composition, i.e. while the tuner
+ * is shown. Leaving the screen (or the app) lets it time out normally again.
+ */
+@Composable
+private fun KeepScreenOn() {
+    val view = LocalView.current
+    DisposableEffect(view) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
     }
 }
 
