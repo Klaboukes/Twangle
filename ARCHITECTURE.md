@@ -164,6 +164,7 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
   - `GRANTED`: the tuner. The status is checked again on every `ON_RESUME`, so a grant made in Settings is picked up on return. Revoking in Settings kills the process, so the app starts fresh.
   - The status survives rotation (`rememberSaveable`). It isn't persisted: on a fresh start, an earlier permanent denial shows as `NOT_REQUESTED` until the automatic request comes back denied without a dialog.
 - The microphone is open **only while the tuner screen is visible**. The ViewModel shares the pipeline with `SharingStarted.WhileSubscribed(5_000)`. The UI collects with `collectAsStateWithLifecycle()`, which stops in the background, so `AudioRecord` is released and the privacy indicator turns off.
+- `MicLifecycleTest` (`:app` instrumented test, needs a device) checks this against Android's own list of active recordings (`AudioManager.activeRecordingConfigurations`): open while the tuner is shown, still open 3 s after `onStop`, released within about 5 s, reopened on return, released when the activity closes. Home, the lock screen and screen-off all go through `onStop`, so they follow the same path.
 - There is no foreground service. Background microphone capture is neither needed nor allowed for this use case.
 - If another app holds the mic, or `AudioRecord` fails to initialize, the UI shows a recoverable error state.
 
@@ -227,6 +228,7 @@ app/src/main/kotlin/com/intune/app/
 | `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
 | `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
+| `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 
 ## 9. Privacy
