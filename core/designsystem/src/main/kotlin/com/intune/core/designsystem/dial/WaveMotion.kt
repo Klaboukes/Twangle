@@ -1,4 +1,4 @@
-package com.intune.feature.tuner.components
+package com.intune.core.designsystem.dial
 
 import kotlin.math.PI
 import kotlin.math.abs
@@ -15,9 +15,10 @@ import kotlin.math.floor
  * - The pulses drift right when sharp and left when flat, faster the further off.
  * - In tune they smooth out into one even band that slowly breathes ([swell]).
  *
- * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame.
+ * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and
+ * the previews in Settings both use it.
  */
-internal class WaveMotion {
+class WaveMotion {
 
     /** The eased deviation the ribbon shows, in cents, within ±[WAVE_RANGE_CENTS]. */
     var shownCents = 0f

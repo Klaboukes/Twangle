@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.core.designsystem.InTuneTheme
+import com.intune.core.designsystem.dial.WaveMotion
 import com.intune.core.designsystem.dial.drawWave
 import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.VisualStyle

@@ -1,5 +1,6 @@
-package com.intune.feature.tuner.components
+package com.intune.core.designsystem
 
+import com.intune.core.designsystem.dial.WaveMotion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

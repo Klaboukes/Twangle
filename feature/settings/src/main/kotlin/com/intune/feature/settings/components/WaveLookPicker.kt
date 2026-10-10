@@ -1,5 +1,6 @@
 package com.intune.feature.settings.components
 
+import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -14,26 +15,34 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.intune.core.designsystem.dial.WaveMotion
 import com.intune.core.designsystem.dial.drawWave
 import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.WaveLook
 import com.intune.feature.settings.R
+import kotlin.math.exp
 
 /**
- * A titled grid of cards, three to a row, to pick the wave view's look from. Each card shows a still
- * picture of its look a little off pitch, drawn in the current style, with its [label] under it. The
- * [selected] card has a ring; tapping a card calls [onSelect]. The cards form one selectable group
- * for TalkBack, which reads each card's name.
+ * A titled grid of cards, three to a row, to pick the wave view's look from. Each card shows its
+ * look moving, drawn in the current style, with its [label] under it. All cards play the same short
+ * loop ([WaveDemo]): flat, in tune, sharp, in tune. The [selected] card has a ring; tapping a card
+ * calls [onSelect]. The cards form one selectable group for TalkBack, which reads each card's name.
+ *
+ * Each frame only redraws the cards' previews: nothing is recomposed.
  */
 @Composable
 fun WaveLookPicker(
@@ -43,6 +52,18 @@ fun WaveLookPicker(
     modifier: Modifier = Modifier,
     label: @Composable (WaveLook) -> String,
 ) {
+    val demo = remember { WaveDemo() }
+    LaunchedEffect(demo) {
+        // An "infinite" animation, like the tuner's wave view: UI tests skip these.
+        var last = withInfiniteAnimationFrameNanos { it }
+        while (true) {
+            withInfiniteAnimationFrameNanos { now ->
+                demo.advance((now - last) / 1_000_000_000f)
+                last = now
+                demo.frame.longValue = now
+            }
+        }
+    }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
         Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -51,6 +72,7 @@ fun WaveLookPicker(
                     row.forEach { look ->
                         WaveLookCard(
                             look = look,
+                            demo = demo,
                             label = label(look),
                             selected = look == selected,
                             onClick = { onSelect(look) },
@@ -66,9 +88,19 @@ fun WaveLookPicker(
 }
 
 @Composable
-private fun WaveLookCard(look: WaveLook, label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun WaveLookCard(
+    look: WaveLook,
+    demo: WaveDemo,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
+    val tokens = MaterialTheme.styleTokens
+    val style = tokens.style
+    val offColor = if (selected) colors.primary else colors.onSurfaceVariant
+    val tuneColor = tokens.inTune
     val path = remember { Path() }
     Column(
         modifier = modifier
@@ -84,18 +116,21 @@ private fun WaveLookCard(look: WaveLook, label: String, selected: Boolean, onCli
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Canvas(modifier = Modifier.fillMaxWidth().height(PREVIEW_HEIGHT)) {
+        // Its own layer, so a new frame redraws only the preview.
+        Canvas(modifier = Modifier.fillMaxWidth().height(PREVIEW_HEIGHT).graphicsLayer()) {
+            demo.frame.longValue // Redraw on every animation frame.
+            val motion = demo.motion
             drawWave(
                 look = look,
                 style = style,
-                color = if (selected) colors.primary else colors.onSurfaceVariant,
-                beats = 3f,
-                phase = 0.15f,
-                depth = 0.6f,
-                level = 1f,
-                glow = 0f,
-                lean = -0.3f,
-                breath = 0.25f,
+                color = lerp(offColor, tuneColor, demo.tuned),
+                beats = motion.beats,
+                phase = motion.phase,
+                depth = motion.depth,
+                level = motion.swell,
+                glow = demo.tuned,
+                lean = motion.lean,
+                breath = motion.breath,
                 path = path,
             )
         }
@@ -107,6 +142,38 @@ private fun WaveLookCard(look: WaveLook, label: String, selected: Boolean, onCli
         )
     }
 }
+
+/**
+ * The short loop the previews play, the same for every card: [DEMO_FLAT_CENTS] off, in tune,
+ * [DEMO_SHARP_CENTS] off, in tune again, over [DEMO_SECONDS]. [tuned] eases between 0 and 1 for the
+ * "in tune" colour and halo.
+ */
+private class WaveDemo {
+    val motion = WaveMotion()
+    val frame = mutableLongStateOf(0L)
+    var tuned = 0f
+        private set
+    private var clock = 0f
+
+    fun advance(seconds: Float) {
+        val dt = seconds.coerceIn(0f, MAX_STEP_SECONDS)
+        clock = (clock + dt) % DEMO_SECONDS
+        val inTune = clock in 3f..5f || clock >= 8f
+        val cents = if (clock < 5f) DEMO_FLAT_CENTS else DEMO_SHARP_CENTS
+        motion.advance(dt, cents, inTune)
+        tuned += ((if (inTune) 1f else 0f) - tuned) * (1f - exp(-dt * TUNE_RATE))
+    }
+}
+
+private const val DEMO_SECONDS = 10f
+private const val DEMO_FLAT_CENTS = -18f
+private const val DEMO_SHARP_CENTS = 14f
+
+/** How quickly the colour turns to "in tune" and back (per second). */
+private const val TUNE_RATE = 3f
+
+/** A long pause (e.g. coming back to the app) counts as one short step. */
+private const val MAX_STEP_SECONDS = 0.1f
 
 private const val PER_ROW = 3
 private val PREVIEW_HEIGHT = 32.dp
