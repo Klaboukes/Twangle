@@ -25,7 +25,7 @@ class WaveViewTest {
     val compose = createComposeRule()
 
     @Test
-    fun everyStyleDrawsItsWaves() {
+    fun everyStyleDrawsItsRibbon() {
         compose.setContent {
             // Light and dark side by side, small enough that all fit on the screen at once.
             Column {
@@ -33,7 +33,7 @@ class WaveViewTest {
                     Row {
                         for (dark in listOf(false, true)) {
                             InTuneTheme(style = style, darkTheme = dark, animate = false) {
-                                WaveView(cents = -12f, inTune = false, modifier = Modifier.size(170.dp, 60.dp).testTag(tag(style, dark)))
+                                WaveView(cents = -12f, inTune = false, modifier = Modifier.size(170.dp, 40.dp).testTag(tag(style, dark)))
                             }
                         }
                     }
@@ -43,11 +43,11 @@ class WaveViewTest {
         for (style in VisualStyle.entries) {
             for (dark in listOf(false, true)) {
                 val pixels = compose.onNodeWithTag(tag(style, dark)).captureToImage().toPixelMap()
-                val colours = buildSet {
-                    for (x in 0 until pixels.width step 4) for (y in 0 until pixels.height step 4) add(pixels[x, y])
-                }
-                // A panel with two waves on it has many shades, an empty box has one.
-                assertTrue("$style dark=$dark drew ${colours.size} colours", colours.size > 8)
+                val empty = pixels[0, 0]
+                var marked = 0
+                for (x in 0 until pixels.width step 2) for (y in 0 until pixels.height step 2) if (pixels[x, y] != empty) marked++
+                // The ribbon covers a good part of the box; an empty box has nothing on it.
+                assertTrue("$style dark=$dark marked $marked pixels", marked > 60)
             }
         }
     }

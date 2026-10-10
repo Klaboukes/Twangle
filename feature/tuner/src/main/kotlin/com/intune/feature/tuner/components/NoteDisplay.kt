@@ -67,7 +67,7 @@ data class NoteReadout(
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
  * frequency. With [showWaves] the wave view ([WaveView]) shows how far off it is instead, the pill
  * says it in words ("A little low – tune up") and the frequency is left out. [compact] makes the
- * note and the waves smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
+ * note and the wave view smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and the pill fills with that colour and
  * shows a check mark, so the state doesn't rely on colour alone. Without a [readout] it shows a
@@ -232,10 +232,10 @@ private const val BIG_NOTE_LINE_RATIO = 120f / 112f
 private val COMPACT_NOTE_SIZE = 80.dp
 private val CHECK_SIZE = 24.dp
 
-/** The wave view fits the narrowest phones (320 dp, less the tuner's margins). */
-private val WAVE_WIDTH = 264.dp
-private val WAVE_HEIGHT = 72.dp
-private val COMPACT_WAVE_HEIGHT = 56.dp
+/** The wave view: narrower than the note's pill can grow, and low, so it stays in the background. */
+private val WAVE_WIDTH = 240.dp
+private val WAVE_HEIGHT = 40.dp
+private val COMPACT_WAVE_HEIGHT = 30.dp
 
 /** The note shrinks rather than grow wider than this, e.g. "Sol♯" in the wide Space Age face. */
 private val BIG_NOTE_MAX_WIDTH = 260.dp
@@ -259,7 +259,7 @@ private fun centsText(cents: Float): String {
     }
 }
 
-/** What the wave view says under the waves, e.g. "A little low – tune up". */
+/** What the wave view says under the ribbon, e.g. "A little low – tune up". */
 @Composable
 private fun adviceText(advice: WaveAdvice): String = stringResource(
     when (advice) {

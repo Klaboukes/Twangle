@@ -1,5 +1,6 @@
 package com.intune.feature.tuner.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
@@ -21,18 +22,19 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.core.designsystem.InTuneTheme
-import com.intune.core.designsystem.dial.drawWaveMeter
+import com.intune.core.designsystem.dial.drawSoundRibbon
 import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.VisualStyle
 
 /**
- * The wave view: the target note's wave and the played string's wave in a panel drawn in the
- * current style (`drawWaveMeter`). Off pitch, the played wave is squeezed (sharp) or stretched
- * (flat) and drifts away from the target; in tune it lies on top of it and lights up. See
- * [WaveMotion] for how they move. Without a reading ([cents] null) both flatten to a line.
+ * The wave view: a soft ribbon of sound drawn in the current style's marks (`drawSoundRibbon`),
+ * with no frame so it stays quiet next to the dial. Off pitch it pinches into pulses that drift
+ * right (sharp) or left (flat); in tune it smooths into one even band that breathes, in the "in
+ * tune" colour. See [WaveMotion] for how it moves. Without a reading ([cents] null) it rests as a
+ * faint line.
  *
- * The waves move only while there is a reading. Each frame only redraws this panel's own layer:
- * nothing is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
+ * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
+ * is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
  */
 @Composable
 fun WaveView(cents: Float?, inTune: Boolean, modifier: Modifier = Modifier) {
@@ -56,46 +58,54 @@ fun WaveView(cents: Float?, inTune: Boolean, modifier: Modifier = Modifier) {
     }
     val level = animateFloatAsState(if (hasReading) 1f else 0f, tween(LEVEL_MS), label = "waveLevel")
     val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(GLOW_MS), label = "waveGlow")
-    val tokens = MaterialTheme.styleTokens
-    val dial = tokens.dial
-    val panel = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
-    val played = animateInTuneColor(inTune, dial.needle, "waveColor", dial.needleInTune)
-    val targetPath = remember { Path() }
-    val playedPath = remember { Path() }
+    val scheme = MaterialTheme.colorScheme
+    val tuneColor = inTuneColor()
+    val color = animateColorAsState(
+        when {
+            !hasReading -> scheme.onSurfaceVariant.copy(alpha = REST_ALPHA)
+            inTune -> tuneColor
+            else -> scheme.primary.copy(alpha = OFF_ALPHA)
+        },
+        tween(GLOW_MS),
+        label = "waveColor",
+    )
+    val style = MaterialTheme.styleTokens.style
+    val path = remember { Path() }
     Spacer(
         modifier = modifier
             .clearAndSetSemantics {}
-            // Its own layer, so a new frame redraws only the panel.
+            // Its own layer, so a new frame redraws only the ribbon.
             .graphicsLayer()
             .drawBehind {
                 frame.longValue // Redraw on every animation frame.
-                drawWaveMeter(
-                    style = tokens.style,
-                    colors = dial,
-                    panel = panel,
-                    played = played.value,
-                    ratio = motion.ratio,
-                    targetPhase = motion.targetPhase,
-                    playedPhase = motion.playedPhase,
-                    level = level.value,
+                drawSoundRibbon(
+                    style = style,
+                    color = color.value,
+                    beats = motion.beats,
+                    phase = motion.phase,
+                    depth = motion.depth,
+                    level = level.value * motion.swell,
                     glow = glow.value,
-                    targetPath = targetPath,
-                    playedPath = playedPath,
+                    path = path,
                 )
             },
     )
 }
 
-/** The waves grow from a flat line (or flatten) over this when a note starts (or stops). */
+/** The ribbon grows from a line (or settles back) over this when a note starts (or stops). */
 private const val LEVEL_MS = 350
 
-/** The "in tune" glow fades in and out over this. */
+/** The colour and the "in tune" halo fade over this. */
 private const val GLOW_MS = 600
+
+/** Off pitch the ribbon is a quiet tint of the style's colour, at rest fainter still. */
+private const val OFF_ALPHA = 0.6f
+private const val REST_ALPHA = 0.3f
 
 @Preview(showBackground = true)
 @Composable
 private fun WaveViewPreview() {
-    InTuneTheme(style = VisualStyle.RETRO, darkTheme = false) {
-        WaveView(cents = -12f, inTune = false, modifier = Modifier.width(264.dp).height(64.dp))
+    InTuneTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false) {
+        WaveView(cents = -12f, inTune = false, modifier = Modifier.width(240.dp).height(40.dp))
     }
 }

@@ -3,7 +3,6 @@ package com.intune.feature.tuner.components
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.math.abs
 
 class WaveMotionTest {
 
@@ -13,70 +12,79 @@ class WaveMotionTest {
     }
 
     @Test
-    fun `a sharp string is squeezed and runs ahead`() {
+    fun `a sharp note's pulses drift right`() {
         val motion = WaveMotion()
-        run(motion, 0.1f, 20f)
-        assertTrue("ratio ${motion.ratio}", motion.ratio > 1f)
-        assertTrue("drift ${motion.drift}", motion.drift > 0f)
+        run(motion, 0.5f, 20f)
+        assertTrue("phase ${motion.phase}", motion.phase in 0.01f..0.5f)
     }
 
     @Test
-    fun `a flat string is stretched and falls behind`() {
+    fun `a flat note's pulses drift left`() {
         val motion = WaveMotion()
-        run(motion, 0.1f, -20f)
-        assertTrue("ratio ${motion.ratio}", motion.ratio < 1f)
-        assertTrue("drift ${motion.drift}", motion.drift < 0f)
+        run(motion, 0.5f, -20f)
+        assertTrue("phase ${motion.phase}", motion.phase in 0.5f..0.99f)
     }
 
     @Test
-    fun `the shape follows the reading`() {
-        val motion = WaveMotion()
-        run(motion, 2f, -20f)
-        assertEquals(1f - 20f / WaveMotion.WAVE_RANGE_CENTS * WaveMotion.MAX_STRETCH, motion.ratio, 0.001f)
-    }
-
-    @Test
-    fun `further off drifts faster`() {
+    fun `further off is deeper, busier and faster`() {
         val near = WaveMotion().also { run(it, 2f, 4f) }
-        val far = WaveMotion().also { run(it, 2f, 25f) }
-        val nearBefore = near.drift
-        val farBefore = far.drift
+        val far = WaveMotion().also { run(it, 2f, 30f) }
+        assertTrue(far.depth > near.depth)
+        assertTrue(far.beats > near.beats)
+        val nearBefore = near.phase
+        val farBefore = far.phase
         near.advance(0.05f, 4f, inTune = false)
-        far.advance(0.05f, 25f, inTune = false)
-        assertTrue(abs(far.drift - farBefore) > abs(near.drift - nearBefore))
+        far.advance(0.05f, 30f, inTune = false)
+        assertTrue(far.phase - farBefore > near.phase - nearBefore)
     }
 
     @Test
-    fun `in tune the played wave settles onto the target`() {
+    fun `a little off already pulses clearly`() {
+        val motion = WaveMotion().also { run(it, 2f, WaveMotion.FULL_DEPTH_CENTS) }
+        assertEquals(WaveMotion.MAX_DEPTH, motion.depth, 0.01f)
+    }
+
+    @Test
+    fun `in tune it smooths out`() {
         val motion = WaveMotion()
         run(motion, 1f, 30f)
-        run(motion, 2f, 3f, inTune = true)
-        assertEquals(1f, motion.ratio, 0.001f)
-        assertEquals(0f, motion.drift, 0.01f)
-        assertEquals(motion.targetPhase, motion.playedPhase, 0.01f)
+        run(motion, 3f, 3f, inTune = true)
+        assertEquals(0f, motion.depth, 0.001f)
+    }
+
+    @Test
+    fun `it breathes gently`() {
+        val motion = WaveMotion()
+        var lowest = 1f
+        repeat(300) {
+            motion.advance(1f / 60f, 0f, inTune = true)
+            lowest = minOf(lowest, motion.swell)
+            assertTrue(motion.swell <= 1f)
+        }
+        assertEquals(1f - WaveMotion.BREATH_DEPTH, lowest, 0.01f)
     }
 
     @Test
     fun `far off looks like the edge of the range`() {
         val far = WaveMotion().also { run(it, 3f, 300f) }
         val edge = WaveMotion().also { run(it, 3f, WaveMotion.WAVE_RANGE_CENTS) }
-        assertEquals(edge.ratio, far.ratio, 0.0001f)
+        assertEquals(edge.beats, far.beats, 0.0001f)
+        assertEquals(WaveMotion.MAX_BEATS, far.beats, 0.01f)
     }
 
     @Test
-    fun `phases stay small however long it runs`() {
+    fun `phase stays small however long it runs`() {
         val motion = WaveMotion()
         run(motion, 120f, 40f)
-        assertTrue(motion.targetPhase in 0f..1f)
-        assertTrue(motion.drift in -0.5f..0.5f)
+        assertTrue(motion.phase in 0f..1f)
     }
 
     @Test
     fun `a long pause counts as one short step`() {
         val paused = WaveMotion().apply { advance(30f, 20f, inTune = false) }
         val step = WaveMotion().apply { advance(0.1f, 20f, inTune = false) }
-        assertEquals(step.ratio, paused.ratio, 0.0001f)
-        assertEquals(step.drift, paused.drift, 0.0001f)
+        assertEquals(step.depth, paused.depth, 0.0001f)
+        assertEquals(step.phase, paused.phase, 0.0001f)
     }
 
     @Test
