@@ -1,5 +1,6 @@
 package com.intune.core.audio
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
@@ -16,6 +17,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FakeAudioRecorderTest {
 
     private val config = AudioConfig(sampleRate = 48_000, chunkSize = 4)

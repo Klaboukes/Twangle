@@ -44,9 +44,9 @@ class AndroidAudioRecorder(
 
     private val readDispatcher = Dispatchers.IO.limitedParallelism(1)
 
-    /** The input currently recording, or null when the microphone is closed. For diagnostics. */
+    /** The input currently recording, or null when the microphone is closed. */
     @Volatile
-    var activeInput: AudioInput? = null
+    override var activeInput: AudioInput? = null
         private set
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)

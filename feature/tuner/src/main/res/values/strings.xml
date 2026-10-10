@@ -1,6 +1,5 @@
 <resources>
     <string name="tuner_placeholder_note" translatable="false">—</string>
-    <string name="tuner_placeholder_status">Tuner coming soon</string>
 
     <string name="mic_permission_title">InTune needs your microphone</string>
     <string name="mic_permission_intro">To tune, InTune listens to your instrument. Sound is analysed on your phone and never recorded or sent anywhere.</string>
@@ -8,4 +7,21 @@
     <string name="mic_permission_settings_hint">Microphone access is turned off for InTune. Open Settings, tap Permissions, then Microphone, and choose Allow.</string>
     <string name="mic_permission_allow">Allow microphone</string>
     <string name="mic_permission_open_settings">Open settings</string>
+
+    <!-- Errors when the microphone can't be used. -->
+    <string name="error_mic_permission">Microphone access was turned off. Allow it again to keep tuning.</string>
+    <string name="error_mic_busy">Another app is using the microphone. Close it, then try again.</string>
+    <string name="error_mic_unavailable">The microphone could not be opened on this phone.</string>
+    <string name="error_mic_stopped">The microphone stopped unexpectedly.</string>
+    <string name="error_retry">Try again</string>
+
+    <!-- Temporary Phase 2 debug screen. -->
+    <string name="debug_starting">Starting microphone…</string>
+    <string name="debug_listening">Listening… (too quiet)</string>
+    <string name="debug_no_pitch">No clear pitch</string>
+    <string name="debug_cents">%1$+.1f cents</string>
+    <string name="debug_frequency">%1$.2f Hz</string>
+    <string name="debug_confidence">Confidence %1$.0f%%</string>
+    <string name="debug_level">Level %1$.1f dBFS</string>
+    <string name="debug_source">Debug view · %1$d Hz · %2$s</string>
 </resources>

@@ -1,23 +1,22 @@
 package com.intune.feature.tuner
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import com.intune.core.audio.AudioRecorder
 import com.intune.feature.tuner.components.PermissionPrompt
+import com.intune.feature.tuner.debug.DebugPitchRoute
 
-/** Tuner entry point: asks for the microphone first, then shows the tuner. */
+/**
+ * Tuner entry point: asks for the microphone first, then listens. Until Phase 3 brings the gauge,
+ * the listening part is the temporary debug readout.
+ */
 @Composable
-fun TunerScreen(modifier: Modifier = Modifier) {
+fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
     val mic = rememberMicPermissionState()
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Box(
@@ -27,35 +26,10 @@ fun TunerScreen(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             if (mic.status == MicPermissionStatus.GRANTED) {
-                TunerPlaceholder()
+                DebugPitchRoute(audioRecorder)
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
         }
     }
-}
-
-/** Placeholder until Phase 3 replaces it with the real gauge driven by TunerViewModel. */
-@Composable
-private fun TunerPlaceholder() {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.tuner_placeholder_note),
-            style = MaterialTheme.typography.displayLarge,
-        )
-        Text(
-            text = stringResource(R.string.tuner_placeholder_status),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TunerPlaceholderPreview() {
-    MaterialTheme { TunerPlaceholder() }
 }

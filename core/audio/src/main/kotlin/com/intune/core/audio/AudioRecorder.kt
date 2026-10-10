@@ -8,6 +8,9 @@ interface AudioRecorder {
     /** Sample rate and chunk size of the audio from [chunks]. */
     val config: AudioConfig
 
+    /** The microphone input in use while [chunks] is being collected, if known. For diagnostics. */
+    val activeInput: AudioInput? get() = null
+
     /**
      * Cold flow of mono float chunks of [AudioConfig.chunkSize] samples in −1..1. The microphone
      * opens when collection starts and is released when it stops.

@@ -131,11 +131,17 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 ### Audio capture
 `AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads 1024-sample chunks with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
 
+`PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame. Phase 3 adds `PitchSmoother` and the tuning logic on top.
+
 Failures end the flow with a typed `AudioRecorderException`, which the ViewModel maps to a recoverable error state:
 - `PermissionMissing`: `RECORD_AUDIO` isn't granted (checked before opening, and on `SecurityException`).
 - `InitializationFailed`: no input could be opened at the chosen rate.
 - `MicrophoneBusy`: another app holds the mic. Before Android 10, `startRecording()` fails or the record never reaches `RECORDSTATE_RECORDING`. From Android 10 the mic is shared and a higher-priority app (such as a phone call) silences us with zeros instead, so `isClientSilenced` is checked after the first chunk. Silencing that starts mid-session just looks like silence (the gate closes) and recording resumes when the other app lets go.
 - `ReadFailed(code)`: `read()` returned an error, e.g. `ERROR_DEAD_OBJECT` when the audio server restarts. Collecting again reopens the mic.
+
+`Throwable.toTunerError()` maps these to `TunerError` (`MIC_PERMISSION_MISSING`, `MIC_BUSY`, `MIC_UNAVAILABLE`, `MIC_STOPPED`). The UI shows a message and a "Try again" button that restarts collection.
+
+**Measured on the Galaxy S26 (Android 16):** the device doesn't offer `UNPROCESSED`, so the recorder uses `VOICE_RECOGNITION` at 48 kHz. `dumpsys audio` shows no effects attached and `silenced:false`. A 440 Hz tone from a PC speaker read 439.98 Hz (−0.1 cents) at about −31 dBFS, and quiet room noise sits around −52 to −56 dBFS, right at the gate threshold.
 
 ## 4. Threading & performance
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
@@ -195,8 +201,9 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
-    TunerViewModel, TunerUiState, TunerScreen
+    TunerViewModel, TunerUiState, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
+    debug/       DebugViewModel, DebugPitchScreen (temporary, Phase 2)
     components/  NeedleGauge, NoteDisplay, StringSelector, PermissionPrompt
 
 app/src/main/kotlin/com/intune/app/
