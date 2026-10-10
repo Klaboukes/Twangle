@@ -27,7 +27,7 @@ Goal: reliable pitch detection, proven by unit tests, with no device involved.
 - ☑ `Tuning` model + presets: Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E
 - ☑ Nearest-string lookup for Auto mode (compared in cents; allocation-free; ties go to the lower string)
 - ☑ `FrameAssembler` ring buffer (window 4096, hop 1024, no allocations per frame; accepts chunks of any size)
-- ☐ `SignalGate`: RMS / dBFS level and DC removal
+- ☑ `SignalGate`: RMS / dBFS level and DC removal (opens at −50 dBFS, 6 dB hysteresis)
 - ☐ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence
 - ☐ `PitchSmoother`: median filter, octave-jump rejection, EMA on cents, note-change hysteresis
 - ☐ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck)

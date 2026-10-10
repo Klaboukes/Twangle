@@ -87,6 +87,9 @@ Rules:
 ### Frame assembly
 `FrameAssembler` keeps a 4096-sample ring buffer. Callers `push()` audio chunks of any size. Each call consumes samples until a frame is ready, then stops so no frame is skipped. `readFrame(out)` copies the window oldest-first into a caller-owned array. The first frame arrives after one full window, then one every hop (1024). The ring and the output window are allocated once.
 
+### Signal gate
+`SignalGate.process(frame)` removes the DC offset in place (it subtracts the mean), then measures the RMS level in dBFS as `20 · log10(rms)`, so a full-scale square wave reads 0 dBFS and a full-scale sine about −3 dBFS. Silence is floored at −120 dBFS. The gate opens at **−50 dBFS** and closes only below **−56 dBFS** (6 dB hysteresis), so a decaying note doesn't flicker on and off. Frames are only sent to the pitch detector while the gate is open.
+
 ### Note math
 ```
 midi  = 69 + 12 · log2(f / A4)        (A4 default 440 Hz, configurable 415–466)
