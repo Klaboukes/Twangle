@@ -50,6 +50,7 @@ class SettingsContentTest {
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
+    private val showWavesChanges = mutableListOf<Boolean>()
     private var backs = 0
 
     /** Shows [settings], or as if the window were [size]; [ForcedSize] scales it down to fit. */
@@ -67,6 +68,7 @@ class SettingsContentTest {
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
+                        onShowWavesChange = { showWavesChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                     )
@@ -136,7 +138,7 @@ class SettingsContentTest {
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showWaves = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
@@ -146,6 +148,9 @@ class SettingsContentTest {
         assertEquals(listOf(false), dynamicColorChanges)
         assertEquals(listOf(true), keepScreenOnChanges)
         assertEquals(listOf(false), vibrateChanges)
+        val waves = compose.onNodeWithText(context.getString(R.string.settings_show_waves_title))
+        waves.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), showWavesChanges)
     }
 
     @Test

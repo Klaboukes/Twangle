@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.core.designsystem.InTuneTheme
@@ -64,7 +65,9 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. The note is set in the style's display face and shrinks to fit when a face or a
+ * frequency. With [showWaves] the wave view ([WaveView]) shows how far off it is instead, the pill
+ * says it in words ("A little low – tune up") and the frequency is left out. [compact] makes the
+ * note and the waves smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and the pill fills with that colour and
  * shows a check mark, so the state doesn't rely on colour alone. Without a [readout] it shows a
@@ -75,7 +78,13 @@ data class NoteReadout(
  * "E 2, in tune", throttled by [SpokenReadingThrottle] so it doesn't talk over itself.
  */
 @Composable
-fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifier) {
+fun NoteDisplay(
+    readout: NoteReadout?,
+    hint: String,
+    modifier: Modifier = Modifier,
+    showWaves: Boolean = false,
+    compact: Boolean = false,
+) {
     val inTune = readout?.inTune == true
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
@@ -99,10 +108,11 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
     )
     val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
     val spoken = rememberSpokenReading(
-        text = if (readout != null) spokenReading(readout) else hint,
+        text = if (readout != null) spokenReading(readout, showWaves) else hint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
     )
     val density = LocalDensity.current
+    val noteSize = if (compact) COMPACT_NOTE_SIZE else BIG_NOTE_SIZE
     Column(
         // The texts below are hidden from TalkBack; this block speaks for them.
         modifier = modifier.semantics {
@@ -133,12 +143,12 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
                 // Already huge, so it doesn't grow further with the system font size; that would
                 // push the rest of the tuner off the screen.
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = with(density) { BIG_NOTE_SIZE.toSp() },
-                    lineHeight = with(density) { BIG_NOTE_LINE_HEIGHT.toSp() },
+                    fontSize = with(density) { noteSize.toSp() },
+                    lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
                 ),
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
-                    maxFontSize = with(density) { BIG_NOTE_SIZE.toSp() },
+                    maxFontSize = with(density) { noteSize.toSp() },
                     stepSize = with(density) { 4.dp.toSp() },
                 ),
                 color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
@@ -156,6 +166,13 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
                     modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
                 )
             }
+        }
+        if (showWaves) {
+            WaveView(
+                cents = readout?.cents,
+                inTune = inTune,
+                modifier = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT),
+            )
         }
         Row(
             modifier = Modifier
@@ -179,23 +196,30 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
                     },
             )
             Text(
-                text = if (readout != null) centsText(readout.cents) else hint,
-                style = if (readout != null) {
-                    MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
-                } else {
-                    MaterialTheme.typography.titleLarge
+                text = when {
+                    readout == null -> hint
+                    showWaves -> adviceText(waveAdvice(readout.cents, readout.inTune))
+                    else -> centsText(readout.cents)
+                },
+                style = when {
+                    showWaves -> MaterialTheme.typography.titleMedium
+                    readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
+                    else -> MaterialTheme.typography.titleLarge
                 },
                 color = if (readout != null) pillText else colors.onSurface,
-                modifier = Modifier.hiddenFromTalkBack(),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f, fill = false).hiddenFromTalkBack(),
             )
             Box(Modifier.size(CHECK_SIZE))
         }
-        Text(
-            text = if (readout != null) stringResource(R.string.tuner_frequency, readout.frequencyHz) else "",
-            style = MaterialTheme.typography.bodyLarge,
-            color = colors.onSurfaceVariant,
-            modifier = Modifier.hiddenFromTalkBack(),
-        )
+        if (!showWaves) {
+            Text(
+                text = if (readout != null) stringResource(R.string.tuner_frequency, readout.frequencyHz) else "",
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.hiddenFromTalkBack(),
+            )
+        }
     }
 }
 
@@ -204,8 +228,14 @@ private fun Modifier.hiddenFromTalkBack(): Modifier = semantics { hideFromAccess
 
 private val BIG_NOTE_SIZE = 112.dp
 private val BIG_NOTE_MIN_SIZE = 56.dp
-private val BIG_NOTE_LINE_HEIGHT = 120.dp
+private const val BIG_NOTE_LINE_RATIO = 120f / 112f
+private val COMPACT_NOTE_SIZE = 80.dp
 private val CHECK_SIZE = 24.dp
+
+/** The wave view fits the narrowest phones (320 dp, less the tuner's margins). */
+private val WAVE_WIDTH = 264.dp
+private val WAVE_HEIGHT = 72.dp
+private val COMPACT_WAVE_HEIGHT = 56.dp
 
 /** The note shrinks rather than grow wider than this, e.g. "Sol♯" in the wide Space Age face. */
 private val BIG_NOTE_MAX_WIDTH = 260.dp
@@ -229,13 +259,33 @@ private fun centsText(cents: Float): String {
     }
 }
 
-/** "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it. */
+/** What the wave view says under the waves, e.g. "A little low – tune up". */
 @Composable
-private fun spokenReading(readout: NoteReadout): String {
+private fun adviceText(advice: WaveAdvice): String = stringResource(
+    when (advice) {
+        WaveAdvice.IN_TUNE -> R.string.tuner_wave_in_tune
+        WaveAdvice.ALMOST -> R.string.tuner_wave_almost
+        WaveAdvice.LITTLE_LOW -> R.string.tuner_wave_little_low
+        WaveAdvice.LOW -> R.string.tuner_wave_low
+        WaveAdvice.LITTLE_HIGH -> R.string.tuner_wave_little_high
+        WaveAdvice.HIGH -> R.string.tuner_wave_high
+    },
+)
+
+/**
+ * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it. With
+ * [showWaves] it says the advice instead of the cents, e.g. "E 2, a little low – tune up".
+ */
+@Composable
+private fun spokenReading(readout: NoteReadout, showWaves: Boolean): String {
     val sharp = stringResource(R.string.tuner_spoken_sharp)
     val flat = stringResource(R.string.tuner_spoken_flat)
     val note = spokenNoteName(readout.noteName, { sharp.format(it) }, { flat.format(it) })
-    val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
+    val state = when {
+        readout.inTune -> stringResource(R.string.tuner_in_tune)
+        showWaves -> adviceText(waveAdvice(readout.cents, inTune = false))
+        else -> centsText(readout.cents)
+    }
     return stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
 }
 

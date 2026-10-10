@@ -58,6 +58,15 @@ class StylePaletteTest {
     }
 
     @Test
+    fun `the played wave stands out from its panel`() = forEach { name, p ->
+        val scheme = p.toColorScheme(dark = p.background.luminance() < 0.5f)
+        // The wave view's panel: the dial's face, or the surface the tuner lays over the background.
+        val panel = if (p.dial.face == Color.Transparent) scheme.surfaceContainerHigh.copy(alpha = 0.85f).compositeOver(p.background) else p.dial.face
+        assertContrast("$name wave", p.dial.needle, panel, 3.0)
+        assertContrast("$name wave in tune", p.dial.needleInTune, panel, 3.0)
+    }
+
+    @Test
     fun `dark versions are dark and light versions are light`() {
         for ((style, dark, p) in all) {
             assertEquals("$style dark=$dark", dark, p.background.luminance() < 0.2f)

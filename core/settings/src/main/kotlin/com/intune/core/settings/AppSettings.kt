@@ -48,6 +48,8 @@ data class AppSettings(
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
+    /** Show how far off a note is as the string's wave against the target's, instead of in cents. */
+    val showWaves: Boolean = true,
 ) {
     companion object {
         /** Rounds [hz] to whole Hz and keeps it in the range [NoteMapper] accepts. NaN gives the default. */

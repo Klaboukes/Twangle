@@ -51,6 +51,14 @@
     </plurals>
     <string name="tuner_in_tune">in tune</string>
 
+    <!-- The wave view says how far off the note is in words. -->
+    <string name="tuner_wave_in_tune">In tune</string>
+    <string name="tuner_wave_almost">Almost there</string>
+    <string name="tuner_wave_little_low">A little low – tune up</string>
+    <string name="tuner_wave_low">Too low – tune up</string>
+    <string name="tuner_wave_little_high">A little high – tune down</string>
+    <string name="tuner_wave_high">Too high – tune down</string>
+
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cents flat" or "in tune". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <!-- A note name with a sharp or flat, read aloud. %1$s is the letter or syllable, e.g. "C", "Sol". -->

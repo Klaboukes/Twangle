@@ -91,6 +91,7 @@ fun TunerScreen(
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
+    val showWaves by viewModel.showWaves.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -126,6 +127,7 @@ fun TunerScreen(
                     onTuningChange = viewModel::setTuning,
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
+                    showWaves = showWaves,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -199,7 +201,8 @@ private fun KeepScreenOn() {
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
- * exact cents there and a [state] rounded to what the text shows ([asShown]).
+ * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
+ * far off a note is with the wave view instead of in cents (a saved setting).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -215,6 +218,7 @@ fun TunerContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
+    showWaves: Boolean = false,
 ) {
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -226,14 +230,17 @@ fun TunerContent(
     val gauge = @Composable {
         NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
     }
-    val note = @Composable {
+    val note = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                 hint = "",
+                showWaves = showWaves,
+                compact = compact,
             )
-            is TunerUiState.Listening -> NoteDisplay(readout = null, hint = listeningHint(mode, state))
-            else -> NoteDisplay(readout = null, hint = "")
+            is TunerUiState.Listening ->
+                NoteDisplay(readout = null, hint = listeningHint(mode, state), showWaves = showWaves, compact = compact)
+            else -> NoteDisplay(readout = null, hint = "", showWaves = showWaves, compact = compact)
         }
     }
     val error = (state as? TunerUiState.Error)?.reason
@@ -254,7 +261,7 @@ fun TunerContent(
                     TunerErrorMessage(error, onRetry)
                 } else {
                     gauge()
-                    note()
+                    note(false)
                     guitarSlot()
                 }
             }
@@ -273,7 +280,10 @@ fun TunerContent(
                         if (error != null) {
                             TunerErrorMessage(error, onRetry)
                         } else {
-                            GaugeAboveNote(gauge = gauge, note = note, targetHeight = paneHeight)
+                            // The wave view makes the readout taller; on a phone on its side it
+                            // only fits with a smaller note.
+                            val compact = showWaves && paneHeight < COMPACT_PANE_HEIGHT
+                            GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
                         }
                     }
                 }
@@ -401,6 +411,9 @@ private val READOUT_PANE_MAX_WIDTH = 560.dp
 
 /** A phone on its side shrinks the gauge to fit, but not below this. */
 private val GAUGE_MIN_WIDTH = 160.dp
+
+/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view. */
+private val COMPACT_PANE_HEIGHT = 420.dp
 
 /** Between gauge and note in the two-pane layout, where height is scarce. */
 private val GAUGE_NOTE_SPACING = 8.dp

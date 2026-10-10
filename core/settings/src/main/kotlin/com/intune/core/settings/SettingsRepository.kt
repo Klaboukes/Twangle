@@ -27,4 +27,6 @@ interface SettingsRepository {
     suspend fun setKeepScreenOn(enabled: Boolean)
 
     suspend fun setVibrateInTune(enabled: Boolean)
+
+    suspend fun setShowWaves(enabled: Boolean)
 }

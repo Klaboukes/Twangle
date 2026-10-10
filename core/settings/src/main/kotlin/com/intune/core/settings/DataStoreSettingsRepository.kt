@@ -68,6 +68,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[VIBRATE_IN_TUNE] = enabled }
     }
 
+    override suspend fun setShowWaves(enabled: Boolean) {
+        dataStore.edit { it[SHOW_WAVES] = enabled }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         return AppSettings(
@@ -79,6 +83,7 @@ class DataStoreSettingsRepository internal constructor(
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
+            showWaves = prefs[SHOW_WAVES] ?: defaults.showWaves,
         )
     }
 
@@ -94,6 +99,7 @@ class DataStoreSettingsRepository internal constructor(
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
+        private val SHOW_WAVES = booleanPreferencesKey("show_waves")
 
         /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
         fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(

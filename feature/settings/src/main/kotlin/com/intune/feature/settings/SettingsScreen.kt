@@ -60,6 +60,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
+        onShowWavesChange = viewModel::setShowWaves,
         modifier = modifier,
     )
 }
@@ -82,6 +83,7 @@ fun SettingsContent(
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
+    onShowWavesChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
@@ -128,6 +130,7 @@ fun SettingsContent(
                     onDynamicColorChange = onDynamicColorChange,
                     onKeepScreenOnChange = onKeepScreenOnChange,
                     onVibrateInTuneChange = onVibrateInTuneChange,
+                    onShowWavesChange = onShowWavesChange,
                     dynamicColorAvailable = dynamicColorAvailable,
                     modifier = Modifier
                         .widthIn(max = CONTENT_MAX_WIDTH)
@@ -165,6 +168,7 @@ private fun SettingsList(
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
+    onShowWavesChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -196,6 +200,12 @@ private fun SettingsList(
             )
         }
         HorizontalDivider()
+        SwitchSetting(
+            title = stringResource(R.string.settings_show_waves_title),
+            summary = stringResource(R.string.settings_show_waves_summary),
+            checked = settings.showWaves,
+            onCheckedChange = onShowWavesChange,
+        )
         SwitchSetting(
             title = stringResource(R.string.settings_keep_screen_on_title),
             summary = stringResource(R.string.settings_keep_screen_on_summary),
@@ -240,6 +250,7 @@ private fun SettingsContentPreview() {
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
+            onShowWavesChange = {},
         )
     }
 }

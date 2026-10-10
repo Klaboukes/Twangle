@@ -293,6 +293,18 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `showWaves follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.showWaves.collect {} }
+        runCurrent()
+        assertTrue("on by default", vm.showWaves.value)
+
+        settings.setShowWaves(false)
+        runCurrent()
+        assertFalse(vm.showWaves.value)
+    }
+
+    @Test
     fun `vibrateInTune follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.vibrateInTune.collect {} }
