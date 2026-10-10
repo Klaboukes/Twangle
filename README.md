@@ -34,6 +34,7 @@ InTune listens to the microphone, finds the pitch of the note with the [YIN algo
 | `:app` | App entry point, theme, wiring |
 | `:feature:tuner` | The tuner screen |
 | `:core:audio` | Microphone capture |
+| `:core:settings` | Saved settings |
 | `:core:dsp` | Pitch detection, note math, tunings (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md).

@@ -13,7 +13,7 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 | Async | **Kotlin Coroutines + Flow / StateFlow** | Audio frames → pitch → UI state is naturally a stream. |
 | State holder | **AndroidX ViewModel** | Survives configuration changes and owns the audio pipeline's lifetime. |
 | DI | **Manual (`AppContainer`)** | The object graph is tiny. Hilt would cost build time and add complexity without much benefit. Revisit if the graph grows. |
-| Persistence | **Jetpack DataStore (Preferences)** (Phase 4) | Stores settings: A4 reference, selected tuning, notation, theme. |
+| Persistence | **Jetpack DataStore (Preferences)** (`:core:settings`) | Stores settings: A4 reference, selected tuning, notation, theme, keep screen on. |
 | Build | **Gradle 9 + AGP 9 (built-in Kotlin), Kotlin DSL + version catalog** (`gradle/libs.versions.toml`) | Standard for modern Android. Versions live in one place. |
 | Testing | JUnit 4 (JVM), kotlinx-coroutines-test, Compose UI test | DSP is checked with synthesized signals. UI is tested with Compose test rules. |
 | CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug on every PR. The debug APK is uploaded as an artifact. |
@@ -30,24 +30,26 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 :app               Android application: Activity, Application, AppContainer (DI), theme, navigation
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, gauge components
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>, permission helpers
+:core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, note math, tunings, smoothing
 ```
 
 Dependency graph (arrows = "depends on"):
 
 ```
-            :app
-           /    \
- :feature:tuner  |
-     |     \     |
-     |   :core:audio
-     |      /
-   :core:dsp
+                 :app
+           /      |      \
+ :feature:tuner   |       \
+     |     \      |        \
+     |   :core:audio   :core:settings
+     |      /            /
+   :core:dsp ------------
 ```
 
 Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module. It must never import `android.*`. This keeps the most important code fast to test and reusable.
 - `:core:audio` knows about Android audio but knows nothing about notes or UI.
+- `:core:settings` knows how settings are saved, and nothing about audio or UI. It uses `Tuning` and `Notation` from `:core:dsp`.
 - `:feature:*` modules never depend on each other.
 - Only `:app` wires concrete implementations together (`AppContainer`).
 
@@ -168,6 +170,12 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - There is no foreground service. Background microphone capture is neither needed nor allowed for this use case.
 - If another app holds the mic, or `AudioRecord` fails to initialize, the UI shows a recoverable error state.
 
+### Settings
+`SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true) and `keepScreenOn` (true).
+- `DataStoreSettingsRepository` stores them with DataStore Preferences in `files/datastore/settings.preferences_pb`. `AppContainer` creates the only instance, because DataStore allows one per file. The tuning is saved by its `id` and enums by their `name`, so those must never be renamed.
+- Reading is forgiving. A missing, unknown or out-of-range value falls back to its default: a tuning id that no longer exists becomes Standard, and A4 is clamped to 415–466 Hz and rounded to whole Hz (`AppSettings.normalizeA4`, which the setter applies too). An unreadable file gives all defaults, and a corrupt one is replaced with defaults so saving works again.
+- `FakeSettingsRepository` (in the `:core:settings` `testFixtures`) keeps settings in memory for ViewModel tests.
+
 ## 6. UI state model
 
 ```kotlin
@@ -213,6 +221,12 @@ core/audio/src/main/kotlin/com/intune/core/audio/
 core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
 
+core/settings/src/main/kotlin/com/intune/core/settings/
+    AppSettings (+ ThemeMode), SettingsRepository (interface), DataStoreSettingsRepository
+
+core/settings/src/testFixtures/kotlin/com/intune/core/settings/
+    FakeSettingsRepository
+
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, InTuneDetector, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
@@ -227,6 +241,7 @@ app/src/main/kotlin/com/intune/app/
 |---|---|
 | `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
 | `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
+| `:core:settings` | JVM tests of `DataStoreSettingsRepository` on a real DataStore file in a temporary folder: defaults, saving, surviving a restart, clamping, and falling back on unknown or unreadable values. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |

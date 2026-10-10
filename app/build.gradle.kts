@@ -37,6 +37,7 @@ dependencies {
     implementation(project(":feature:tuner"))
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))
+    implementation(project(":core:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
