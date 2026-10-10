@@ -16,6 +16,8 @@
     <string name="error_retry">Try again</string>
 
     <!-- Tuner screen. -->
+    <string name="tuner_mode_guitar">Guitar</string>
+    <string name="tuner_mode_chromatic">Chromatic</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
     <string name="tuner_frequency">%1$.1f Hz</string>

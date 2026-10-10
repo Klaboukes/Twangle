@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
@@ -22,11 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.intune.core.audio.AudioRecorder
+import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
+import com.intune.feature.tuner.components.ModeSwitch
 import com.intune.feature.tuner.components.NeedleGauge
 import com.intune.feature.tuner.components.NoteDisplay
 import com.intune.feature.tuner.components.NoteReadout
 import com.intune.feature.tuner.components.PermissionPrompt
+import com.intune.feature.tuner.components.StringSelector
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
@@ -37,6 +41,7 @@ fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val mode by viewModel.mode.collectAsStateWithLifecycle()
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
 
@@ -48,7 +53,7 @@ fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             if (granted) {
-                TunerContent(state = state, onRetry = viewModel::retry)
+                TunerContent(state = state, mode = mode, onModeChange = viewModel::setMode, onRetry = viewModel::retry)
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
@@ -56,9 +61,18 @@ fun TunerScreen(audioRecorder: AudioRecorder, modifier: Modifier = Modifier) {
     }
 }
 
-/** The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it. */
+/**
+ * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
+ * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
+ */
 @Composable
-fun TunerContent(state: TunerUiState, onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun TunerContent(
+    state: TunerUiState,
+    mode: TunerMode,
+    onModeChange: (TunerMode) -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = modifier
             .widthIn(max = 480.dp)
@@ -66,6 +80,7 @@ fun TunerContent(state: TunerUiState, onRetry: () -> Unit, modifier: Modifier = 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
+        ModeSwitch(mode = mode, onModeChange = onModeChange)
         when (state) {
             is TunerUiState.Error -> TunerErrorMessage(state.reason, onRetry)
             is TunerUiState.Detected -> {
@@ -74,19 +89,35 @@ fun TunerContent(state: TunerUiState, onRetry: () -> Unit, modifier: Modifier = 
                     readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents),
                     hint = "",
                 )
+                StringRowSlot(mode, state.tuning, state.targetString)
             }
             is TunerUiState.Listening -> {
                 NeedleGauge(cents = null)
-                NoteDisplay(readout = null, hint = stringResource(listeningHint(state.mode)))
+                NoteDisplay(readout = null, hint = stringResource(listeningHint(mode)))
+                StringRowSlot(mode, state.tuning, targetString = null)
             }
             // Only for a moment, until the ViewModel hears that the permission is granted.
             TunerUiState.PermissionRequired -> {
                 NeedleGauge(cents = null)
                 NoteDisplay(readout = null, hint = "")
+                StringRowSlot(TunerMode.CHROMATIC, tuning = null, targetString = null)
             }
         }
     }
 }
+
+/**
+ * The string row in guitar mode, empty space of the same height otherwise, so switching modes
+ * doesn't shift the layout (and the mode switch under the user's finger).
+ */
+@Composable
+private fun StringRowSlot(mode: TunerMode, tuning: Tuning?, targetString: Int?) {
+    Box(modifier = Modifier.height(STRING_ROW_HEIGHT), contentAlignment = Alignment.Center) {
+        if (mode == TunerMode.AUTO && tuning != null) StringSelector(tuning, targetString)
+    }
+}
+
+private val STRING_ROW_HEIGHT = 48.dp
 
 private fun listeningHint(mode: TunerMode): Int = when (mode) {
     TunerMode.AUTO -> R.string.tuner_hint_play_string
@@ -124,6 +155,8 @@ private fun TunerContentDetectedPreview() {
                 cents = -12f,
                 targetString = 0,
             ),
+            mode = TunerMode.AUTO,
+            onModeChange = {},
             onRetry = {},
         )
     }
@@ -132,5 +165,10 @@ private fun TunerContentDetectedPreview() {
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 private fun TunerContentListeningPreview() {
-    MaterialTheme { TunerContent(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), onRetry = {}) }
+    MaterialTheme { TunerContent(
+            state = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD),
+            mode = TunerMode.CHROMATIC,
+            onModeChange = {},
+            onRetry = {},
+        ) }
 }

@@ -2,6 +2,8 @@ package com.intune.feature.tuner
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -21,20 +23,28 @@ class TunerContentTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private var retries = 0
+    private val modeChanges = mutableListOf<TunerMode>()
 
-    private fun show(state: TunerUiState) {
-        compose.setContent { MaterialTheme { TunerContent(state, onRetry = { retries++ }) } }
+    private fun show(state: TunerUiState, mode: TunerMode = TunerMode.AUTO) {
+        compose.setContent {
+            MaterialTheme {
+                TunerContent(state, mode, onModeChange = { modeChanges += it }, onRetry = { retries++ })
+            }
+        }
     }
 
-    private fun detected(cents: Float) = TunerUiState.Detected(
+    private fun detected(cents: Float, targetString: Int? = 0) = TunerUiState.Detected(
         mode = TunerMode.AUTO,
         tuning = Tunings.STANDARD,
         noteName = "E",
         octave = 2,
         frequencyHz = 81.84f,
         cents = cents,
-        targetString = 0,
+        targetString = targetString,
     )
+
+    /** String chips read e.g. "A2": note name plus subscript octave. */
+    private fun stringChip(label: String) = compose.onNodeWithText(label)
 
     @Test
     fun detectedShowsNoteOctaveCentsAndFrequency() {
@@ -69,5 +79,28 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.error_mic_busy)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.error_retry)).performClick()
         assertEquals(1, retries)
+    }
+
+    @Test
+    fun guitarModeHighlightsTheTargetString() {
+        show(detected(3f, targetString = 1))
+        stringChip("A2").assertIsSelected()
+        stringChip("D3").assertIsNotSelected()
+        stringChip("E2").assertIsNotSelected()
+    }
+
+    @Test
+    fun chromaticModeHidesTheStrings() {
+        show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
+        stringChip("A2").assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
+    }
+
+    @Test
+    fun modeSwitchReportsTheChoice() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performClick()
+        assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
     }
 }

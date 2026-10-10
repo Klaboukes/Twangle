@@ -50,8 +50,8 @@ Goal: a usable guitar tuner.
 - ☑ `TunerViewModel` + `TunerUiState` (PermissionRequired / Listening / Detected / Error; smoothing via `TunerInterpreter`, sticky target string in Auto mode)
 - ☑ Needle gauge (−50…+50 cents) drawn on a Compose `Canvas`, with animated needle (spring; pinned at the edges beyond ±50)
 - ☑ Big note name + octave, frequency, cents readout (S26: 194 Hz test tone shown as G3, 16 cents flat, 194.1 Hz); debug screen removed
-- ☐ String row for the selected tuning; detected string highlighted
-- ☐ Auto (guitar) mode vs Chromatic mode toggle
+- ☑ String row for the selected tuning; detected string highlighted (S26: 111 Hz tone lit A₂, 16 cents sharp)
+- ☑ Auto (guitar) mode vs Chromatic mode toggle (segmented "Guitar / Chromatic"; switching keeps the mic open and the layout still)
 - ☐ "In tune" state: |cents| ≤ 5 for ≥ 300 ms → color change
 - ☐ Mic is released whenever the screen is not visible
 - ☐ Tested on at least 2 physical devices with a real guitar
