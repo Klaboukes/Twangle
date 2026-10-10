@@ -55,6 +55,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 6. **Any DSP change needs tests.** Add or adjust synthetic-signal tests in `core/dsp/src/test`. Accuracy target: ±1 cent on synthetic signals.
 7. **Privacy:** audio is never written to disk or sent anywhere. Do not add the `INTERNET` permission.
 8. Dependency versions live only in `gradle/libs.versions.toml`. Never hard-code versions in module build files.
+9. **Free forever:** no ads, no account creation, no in-app purchases, no analytics or tracking SDKs. This promise is stated in README.md.
 
 ## Conventions
 - Kotlin official code style (`kotlin.code.style=official`), 4-space indent, see `.editorconfig`.
