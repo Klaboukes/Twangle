@@ -22,22 +22,28 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.intune.core.designsystem.InTuneTheme
-import com.intune.core.designsystem.dial.drawSoundRibbon
+import com.intune.core.designsystem.dial.drawWave
 import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 
 /**
- * The wave view: a soft ribbon of sound drawn in the current style's marks (`drawSoundRibbon`),
- * with no frame so it stays quiet next to the dial. Off pitch it pinches into pulses that drift
- * right (sharp) or left (flat); in tune it smooths into one even band that breathes, in the "in
- * tune" colour. See [WaveMotion] for how it moves. Without a reading ([cents] null) it rests as a
- * faint line.
+ * The wave view in the [look] the user picked (`drawWave`): by default a soft ribbon of sound in the
+ * current style's marks, with no frame so it stays quiet next to the dial. Off pitch it pinches
+ * into pulses that drift right (sharp) or left (flat); in tune it settles into one calm shape that
+ * breathes, in the "in tune" colour. See [WaveMotion] for how it moves. Without a reading ([cents]
+ * null) it rests as a faint line.
  *
  * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
  * is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
  */
 @Composable
-fun WaveView(cents: Float?, inTune: Boolean, modifier: Modifier = Modifier) {
+fun WaveView(
+    cents: Float?,
+    inTune: Boolean,
+    modifier: Modifier = Modifier,
+    look: WaveLook = WaveLook.DEFAULT,
+) {
     val reading by rememberUpdatedState(cents)
     val tuned by rememberUpdatedState(inTune)
     val motion = remember { WaveMotion() }
@@ -74,11 +80,12 @@ fun WaveView(cents: Float?, inTune: Boolean, modifier: Modifier = Modifier) {
     Spacer(
         modifier = modifier
             .clearAndSetSemantics {}
-            // Its own layer, so a new frame redraws only the ribbon.
+            // Its own layer, so a new frame redraws only the wave.
             .graphicsLayer()
             .drawBehind {
                 frame.longValue // Redraw on every animation frame.
-                drawSoundRibbon(
+                drawWave(
+                    look = look,
                     style = style,
                     color = color.value,
                     beats = motion.beats,
@@ -86,6 +93,8 @@ fun WaveView(cents: Float?, inTune: Boolean, modifier: Modifier = Modifier) {
                     depth = motion.depth,
                     level = level.value * motion.swell,
                     glow = glow.value,
+                    lean = motion.lean,
+                    breath = motion.breath,
                     path = path,
                 )
             },

@@ -7,6 +7,7 @@ import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.ThemeMode
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -49,5 +50,9 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setShowWaves(enabled: Boolean) {
         viewModelScope.launch { repository.setShowWaves(enabled) }
+    }
+
+    fun setWaveLook(look: WaveLook) {
+        viewModelScope.launch { repository.setWaveLook(look) }
     }
 }

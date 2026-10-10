@@ -28,6 +28,13 @@
     <!-- While tuning. -->
     <string name="settings_show_waves_title">Wave view</string>
     <string name="settings_show_waves_summary">Show a moving sound wave instead of a number of cents</string>
+    <string name="settings_wave_look_title">Wave look</string>
+    <string name="settings_wave_look_ribbon">Ribbon</string>
+    <string name="settings_wave_look_stripes">Stripes</string>
+    <string name="settings_wave_look_dots">Dots</string>
+    <string name="settings_wave_look_fireflies">Fireflies</string>
+    <string name="settings_wave_look_loop">Loop</string>
+    <string name="settings_wave_look_ripples">Ripples</string>
     <string name="settings_keep_screen_on_title">Keep screen on</string>
     <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>

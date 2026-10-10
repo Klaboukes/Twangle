@@ -27,13 +27,18 @@ internal class WaveMotion {
     var phase = 0f
         private set
 
-    private var breath = 0f
+    /** A slow clock (0..1, wrapping) for the breathing and the fireflies' twinkle. */
+    var breath = 0f
+        private set
 
     /** How deeply the ribbon is pinched into pulses: 0 in tune, up to [MAX_DEPTH]. */
     val depth: Float get() = (abs(shownCents) / FULL_DEPTH_CENTS).coerceAtMost(1f) * MAX_DEPTH
 
     /** How many pulses fit across the ribbon: [MIN_BEATS] just off, [MAX_BEATS] at the range's edge. */
     val beats: Float get() = MIN_BEATS + abs(shownCents) / WAVE_RANGE_CENTS * (MAX_BEATS - MIN_BEATS)
+
+    /** How far off the shown note is and which way: −1 at the flat edge of the range, 1 at the sharp edge. */
+    val lean: Float get() = shownCents / WAVE_RANGE_CENTS
 
     /** The ribbon's slow breathing, as a share of its full height (1 − [BREATH_DEPTH]..1). */
     val swell: Float get() = 1f - BREATH_DEPTH * (0.5f - 0.5f * cos(2f * PI.toFloat() * breath))

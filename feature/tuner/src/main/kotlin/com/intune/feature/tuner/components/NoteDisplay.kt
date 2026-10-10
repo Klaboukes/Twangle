@@ -47,6 +47,7 @@ import com.intune.core.designsystem.InTuneTheme
 import com.intune.core.designsystem.numberFontFor
 import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import com.intune.feature.tuner.R
 import com.intune.feature.tuner.SpokenReadingThrottle
 import com.intune.feature.tuner.spokenNoteName
@@ -65,13 +66,13 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. With [showWaves] the wave view ([WaveView]) replaces both: the dial already shows how
+ * frequency. With [showWaves] the wave view ([WaveView], in [waveLook]) replaces both: the dial already shows how
  * far off the note is, so the pill only shows [hint] and stays empty during a note. [compact] makes the
  * note and the wave view smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and (without [showWaves]) the pill fills
  * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
- * view the ribbon smoothing out does that. Without a [readout] it shows a
+ * view the wave settling into its calm shape does that. Without a [readout] it shows a
  * faint dash and [hint], e.g. "Play a string".
  *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
@@ -85,6 +86,7 @@ fun NoteDisplay(
     modifier: Modifier = Modifier,
     showWaves: Boolean = false,
     compact: Boolean = false,
+    waveLook: WaveLook = WaveLook.DEFAULT,
 ) {
     val inTune = readout?.inTune == true
     val colors = MaterialTheme.colorScheme
@@ -173,6 +175,7 @@ fun NoteDisplay(
                 cents = readout?.cents,
                 inTune = inTune,
                 modifier = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT),
+                look = waveLook,
             )
         }
         Row(

@@ -56,6 +56,7 @@ import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import com.intune.feature.tuner.components.InTuneHaptic
 import com.intune.feature.tuner.components.ModeSwitch
 import com.intune.feature.tuner.components.NeedleGauge
@@ -92,6 +93,7 @@ fun TunerScreen(
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val showWaves by viewModel.showWaves.collectAsStateWithLifecycle()
+    val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -128,6 +130,7 @@ fun TunerScreen(
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
                     showWaves = showWaves,
+                    waveLook = waveLook,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -202,7 +205,7 @@ private fun KeepScreenOn() {
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
- * far off a note is with the wave view instead of in cents (a saved setting).
+ * far off a note is with the wave view, in [waveLook], instead of in cents (saved settings).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -219,6 +222,7 @@ fun TunerContent(
     modifier: Modifier = Modifier,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
     showWaves: Boolean = false,
+    waveLook: WaveLook = WaveLook.DEFAULT,
 ) {
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -237,10 +241,17 @@ fun TunerContent(
                 hint = "",
                 showWaves = showWaves,
                 compact = compact,
+                waveLook = waveLook,
             )
             is TunerUiState.Listening ->
-                NoteDisplay(readout = null, hint = listeningHint(mode, state), showWaves = showWaves, compact = compact)
-            else -> NoteDisplay(readout = null, hint = "", showWaves = showWaves, compact = compact)
+                NoteDisplay(
+                    readout = null,
+                    hint = listeningHint(mode, state),
+                    showWaves = showWaves,
+                    compact = compact,
+                    waveLook = waveLook,
+                )
+            else -> NoteDisplay(readout = null, hint = "", showWaves = showWaves, compact = compact, waveLook = waveLook)
         }
     }
     val error = (state as? TunerUiState.Error)?.reason

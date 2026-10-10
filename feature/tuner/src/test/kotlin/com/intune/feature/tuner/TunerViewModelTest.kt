@@ -8,6 +8,7 @@ import com.intune.core.dsp.testsignals.TestSignals
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -302,6 +303,18 @@ class TunerViewModelTest {
         settings.setShowWaves(false)
         runCurrent()
         assertFalse(vm.showWaves.value)
+    }
+
+    @Test
+    fun `waveLook follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.waveLook.collect {} }
+        runCurrent()
+        assertEquals(WaveLook.RIBBON, vm.waveLook.value)
+
+        settings.setWaveLook(WaveLook.LOOP)
+        runCurrent()
+        assertEquals(WaveLook.LOOP, vm.waveLook.value)
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
 import com.intune.core.settings.ThemeMode
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -68,6 +69,14 @@ class SettingsViewModelTest {
         vm.setStyle(VisualStyle.RETRO)
         runCurrent()
         assertEquals(VisualStyle.RETRO, repository.current.style)
+    }
+
+    @Test
+    fun `saves the wave look`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setWaveLook(WaveLook.RIPPLES)
+        runCurrent()
+        assertEquals(WaveLook.RIPPLES, repository.current.waveLook)
     }
 
     @Test

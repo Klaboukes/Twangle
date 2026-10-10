@@ -71,6 +71,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals(true, settings.showWaves)
+        assertEquals(WaveLook.RIBBON, settings.waveLook)
     }
 
     @Test
@@ -85,6 +86,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setShowWaves(false)
+        repo.setWaveLook(WaveLook.FIREFLIES)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -96,6 +98,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             showWaves = false,
+            waveLook = WaveLook.FIREFLIES,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -137,6 +140,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("notation")] = "GERMAN"
             it[stringPreferencesKey("theme")] = "SEPIA"
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
+            it[stringPreferencesKey("wave_look")] = "LAVA_LAMP"
             it[floatPreferencesKey("a4_hz")] = 1000f
         }
 
@@ -145,6 +149,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.DEFAULT, settings.notation)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.DEFAULT, settings.style)
+        assertEquals(WaveLook.DEFAULT, settings.waveLook)
         assertEquals(466f, settings.a4Hz)
     }
 

@@ -72,6 +72,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[SHOW_WAVES] = enabled }
     }
 
+    override suspend fun setWaveLook(look: WaveLook) {
+        dataStore.edit { it[WAVE_LOOK] = look.name }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         return AppSettings(
@@ -84,6 +88,7 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             showWaves = prefs[SHOW_WAVES] ?: defaults.showWaves,
+            waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
         )
     }
 
@@ -100,6 +105,7 @@ class DataStoreSettingsRepository internal constructor(
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
+        private val WAVE_LOOK = stringPreferencesKey("wave_look")
 
         /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
         fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(

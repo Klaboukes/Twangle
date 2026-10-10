@@ -41,9 +41,11 @@ import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.ThemeMode
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import com.intune.feature.settings.components.A4Calibration
 import com.intune.feature.settings.components.RadioGroupSetting
 import com.intune.feature.settings.components.SwitchSetting
+import com.intune.feature.settings.components.WaveLookPicker
 
 /** Settings entry point. Every change is saved straight away; [onBack] returns to the tuner. */
 @Composable
@@ -61,6 +63,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onShowWavesChange = viewModel::setShowWaves,
+        onWaveLookChange = viewModel::setWaveLook,
         modifier = modifier,
     )
 }
@@ -68,7 +71,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. It opens with the style cards; the wallpaper-colours switch only shows in the contemporary
- * style when [dynamicColorAvailable] (Android 12+). The screen is see-through, so the style's
+ * style when [dynamicColorAvailable] (Android 12+), and the wave looks only while the wave view is on. The screen is see-through, so the style's
  * background shows behind it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +87,7 @@ fun SettingsContent(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowWavesChange: (Boolean) -> Unit,
+    onWaveLookChange: (WaveLook) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
@@ -131,6 +135,7 @@ fun SettingsContent(
                     onKeepScreenOnChange = onKeepScreenOnChange,
                     onVibrateInTuneChange = onVibrateInTuneChange,
                     onShowWavesChange = onShowWavesChange,
+                    onWaveLookChange = onWaveLookChange,
                     dynamicColorAvailable = dynamicColorAvailable,
                     modifier = Modifier
                         .widthIn(max = CONTENT_MAX_WIDTH)
@@ -169,6 +174,7 @@ private fun SettingsList(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowWavesChange: (Boolean) -> Unit,
+    onWaveLookChange: (WaveLook) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -206,6 +212,13 @@ private fun SettingsList(
             checked = settings.showWaves,
             onCheckedChange = onShowWavesChange,
         )
+        if (settings.showWaves) {
+            WaveLookPicker(
+                title = stringResource(R.string.settings_wave_look_title),
+                selected = settings.waveLook,
+                onSelect = onWaveLookChange,
+            ) { stringResource(waveLookLabel(it)) }
+        }
         SwitchSetting(
             title = stringResource(R.string.settings_keep_screen_on_title),
             summary = stringResource(R.string.settings_keep_screen_on_summary),
@@ -230,6 +243,15 @@ private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SOLFEGE -> R.string.settings_notation_solfege
 }
 
+private fun waveLookLabel(look: WaveLook): Int = when (look) {
+    WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
+    WaveLook.STRIPES -> R.string.settings_wave_look_stripes
+    WaveLook.DOTS -> R.string.settings_wave_look_dots
+    WaveLook.FIREFLIES -> R.string.settings_wave_look_fireflies
+    WaveLook.LOOP -> R.string.settings_wave_look_loop
+    WaveLook.RIPPLES -> R.string.settings_wave_look_ripples
+}
+
 private fun themeLabel(theme: ThemeMode): Int = when (theme) {
     ThemeMode.SYSTEM -> R.string.settings_theme_system
     ThemeMode.LIGHT -> R.string.settings_theme_light
@@ -251,6 +273,7 @@ private fun SettingsContentPreview() {
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
             onShowWavesChange = {},
+            onWaveLookChange = {},
         )
     }
 }

@@ -29,6 +29,7 @@ import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.ThemeMode
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -51,6 +52,7 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val showWavesChanges = mutableListOf<Boolean>()
+    private val waveLookChanges = mutableListOf<WaveLook>()
     private var backs = 0
 
     /** Shows [settings], or as if the window were [size]; [ForcedSize] scales it down to fit. */
@@ -69,6 +71,7 @@ class SettingsContentTest {
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onShowWavesChange = { showWavesChanges += it },
+                        onWaveLookChange = { waveLookChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                     )
@@ -151,6 +154,22 @@ class SettingsContentTest {
         val waves = compose.onNodeWithText(context.getString(R.string.settings_show_waves_title))
         waves.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), showWavesChanges)
+    }
+
+    @Test
+    fun waveLooksShowTheChoiceAndReportANewOne() {
+        show(AppSettings(showWaves = true, waveLook = WaveLook.LOOP))
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_loop)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_fireflies)).performScrollTo().performClick()
+        assertEquals(listOf(WaveLook.FIREFLIES), waveLookChanges)
+    }
+
+    @Test
+    fun waveLooksAreHiddenWhileTheWaveViewIsOff() {
+        show(AppSettings(showWaves = false))
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertDoesNotExist()
     }
 
     @Test

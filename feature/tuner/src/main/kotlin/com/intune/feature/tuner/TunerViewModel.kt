@@ -7,6 +7,7 @@ import com.intune.core.dsp.music.Tuning
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -67,6 +68,11 @@ class TunerViewModel(
     val showWaves: StateFlow<Boolean> = settingsRepository.settings
         .map { it.showWaves }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showWaves)
+
+    /** What the wave view looks like (a saved setting). */
+    val waveLook: StateFlow<WaveLook> = settingsRepository.settings
+        .map { it.waveLook }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
 
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)

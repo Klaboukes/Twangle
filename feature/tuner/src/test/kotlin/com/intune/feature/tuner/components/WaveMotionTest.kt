@@ -73,6 +73,16 @@ class WaveMotionTest {
     }
 
     @Test
+    fun `it leans the way the note is off, and stands up straight in tune`() {
+        val sharp = WaveMotion().also { run(it, 3f, 25f) }
+        val flat = WaveMotion().also { run(it, 3f, -300f) }
+        assertEquals(0.5f, sharp.lean, 0.01f)
+        assertEquals(-1f, flat.lean, 0.0001f)
+        run(sharp, 3f, 2f, inTune = true)
+        assertEquals(0f, sharp.lean, 0.001f)
+    }
+
+    @Test
     fun `phase stays small however long it runs`() {
         val motion = WaveMotion()
         run(motion, 120f, 40f)

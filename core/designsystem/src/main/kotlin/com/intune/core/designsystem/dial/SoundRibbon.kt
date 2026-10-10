@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.intune.core.settings.VisualStyle
+import com.intune.core.settings.WaveLook
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
@@ -20,7 +21,7 @@ import kotlin.math.sin
  * marks and without a frame, so it stays in the background. Off pitch it swells into pulses that
  * drift along, like the beats you hear when two notes are close but not the same; in tune it
  * settles into one smooth, even band. It is eye candy, not a measurement: WaveMotion in
- * :feature:tuner decides how the pulses move.
+ * :feature:tuner decides how the pulses move. The other looks the user can pick are in WaveLooks.kt.
  */
 
 /**
@@ -28,28 +29,17 @@ import kotlin.math.sin
  * and narrows to nothing at both ends. [depth] (0..1) pinches it into [beats] pulses across the
  * width, moved along by [phase] pulses: a larger [phase] moves the pulses to the right.
  */
-fun ribbonAt(u: Float, beats: Float, phase: Float, depth: Float): Float {
-    val lens = max(0f, sin(PI.toFloat() * u.coerceIn(0f, 1f)))
+fun ribbonAt(u: Float, beats: Float, phase: Float, depth: Float): Float =
+    max(0f, sin(PI.toFloat() * u.coerceIn(0f, 1f))) * pulseAt(u, beats, phase, depth)
+
+/** [ribbonAt] without the narrowing at the ends: 1 on a pulse, down to 1 − [depth] between them. */
+fun pulseAt(u: Float, beats: Float, phase: Float, depth: Float): Float {
     val pulse = 0.5f + 0.5f * cos(2f * PI.toFloat() * (beats * (u - 0.5f) - phase))
-    return lens * (1f - depth.coerceIn(0f, 1f) * (1f - pulse))
+    return 1f - depth.coerceIn(0f, 1f) * (1f - pulse)
 }
 
-/**
- * [style]'s sound ribbon in [color], filling the draw area. [beats], [phase] and [depth] shape it
- * (see [ribbonAt]); [level] scales it (0 is a faint line at rest: no note). [glow] (0..1) adds a
- * soft halo while the note is in tune. [path] is reused from frame to frame.
- */
-fun DrawScope.drawSoundRibbon(
-    style: VisualStyle,
-    color: Color,
-    beats: Float,
-    phase: Float,
-    depth: Float,
-    level: Float,
-    glow: Float,
-    path: Path,
-) {
-    val ribbon = Ribbon(color, beats, phase, depth, level, glow)
+/** [style]'s own sound ribbon: the [WaveLook.RIBBON] look. */
+internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path: Path) {
     when (style) {
         // Dabs of paint that swell and shrink.
         VisualStyle.PREHISTORIC -> dots(ribbon)
@@ -68,14 +58,16 @@ fun DrawScope.drawSoundRibbon(
     }
 }
 
-/** What every style's ribbon needs, gathered so the skins below stay short. */
-private class Ribbon(
+/** What every look needs, gathered so the skins stay short. See [drawWave] for what each means. */
+internal class Ribbon(
     val color: Color,
     val beats: Float,
     val phase: Float,
     val depth: Float,
     val level: Float,
     val glow: Float,
+    val lean: Float,
+    val breath: Float,
 ) {
     /** The ribbon's height at [u] as a share of its full height (0..1). */
     fun at(u: Float): Float = level * ribbonAt(u, beats, phase, depth)
@@ -88,7 +80,7 @@ private class Ribbon(
 }
 
 /** The halo's strength while in tune. */
-private const val HALO = 0.3f
+internal const val HALO = 0.3f
 
 private fun DrawScope.bars(
     ribbon: Ribbon,
