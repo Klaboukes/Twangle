@@ -65,7 +65,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow
-- **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. It runs one increment per session: announce in plain language → branch → build → verify → land.
+- **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment.
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the S26.
 - When a design decision changes, update ARCHITECTURE.md in the same change.

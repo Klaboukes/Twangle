@@ -1,12 +1,20 @@
 ---
 name: roadmap-step
-description: Do the next InTune roadmap increment end to end. Announce it in plain language, branch, implement, verify locally (and on the phone when relevant), tick ROADMAP.md, then land it on main through a squash-merged PR. Use when the user says "next roadmap step", "continue the roadmap", "/roadmap-step", or names a specific roadmap item to build.
-argument-hint: "[optional: specific roadmap item or phase to work on]"
+description: Do the next InTune roadmap increment (or, with a phase number, every remaining item of that phase) end to end. Announce it in plain language, branch, implement, verify locally (and on the phone when relevant), tick ROADMAP.md, then land it on main through a squash-merged PR. Use when the user says "next roadmap step", "continue the roadmap", "finish phase N", "/roadmap-step", "/roadmap-step <phase number>", or names a specific roadmap item to build.
+argument-hint: "[optional: phase number to finish, e.g. 2, or a specific roadmap item]"
 ---
 
 # Roadmap step
 
-Run **one increment** of [ROADMAP.md](../../../ROADMAP.md) from start to finish: pick it → announce it → branch → build → verify → land on `main`.
+Run [ROADMAP.md](../../../ROADMAP.md) work from start to finish: pick an increment → announce it → branch → build → verify → land on `main`.
+
+**What the argument means:**
+
+| How it's called | What to do |
+|---|---|
+| `/roadmap-step` (no argument) | **One increment**: the next ☐ item, then stop. |
+| `/roadmap-step <number>`, e.g. `/roadmap-step 2` | **Phase mode**: the number is always a **phase**, never an item. Finish *every* remaining ☐ item of that phase in this session (see "Phase mode" below). |
+| `/roadmap-step <text>`, e.g. `/roadmap-step tuning presets` | **One increment**: the named item, then stop. |
 
 The project owner does not write code. Every message to them must be plain language: what changed for the app and what they need to do (if anything). Keep code details in the PR, not in chat.
 
@@ -28,11 +36,23 @@ gh run list --branch main --limit 1   # did CI pass on the last merge?
 
 ## 1. Pick the increment
 
-- If the user passed an argument, work on that item.
+- Phase mode: take the first ☐ item of the requested phase.
+- If the user named an item, work on that item.
 - Otherwise take the **first ☐ item in the earliest phase that still has ☐ items**.
 - One increment = one roadmap item. You may bundle 2–3 *small, tightly linked* items from the same phase when one isn't meaningful alone (e.g. a model class plus its presets). Never span two phases.
 - Read the ARCHITECTURE.md sections that cover the item before designing anything.
 - If the item can't be done without the user (a decision, a real guitar, a second device, a Play Store account), say so plainly, propose what you *can* do instead, and wait for their answer.
+
+### Phase mode
+
+When called with a phase number N:
+
+1. **Check earlier phases first.** If any phase before N still has ☐ items, tell the user which ones in plain language and ask whether to (a) finish those first or (b) start phase N anyway. Wait for the answer. CLAUDE.md says phases go in order.
+2. **Announce the whole phase once** before starting: a plain-language list of the remaining items, grouped into the increments you plan, plus anything the user will need to do along the way (e.g. "keep the phone connected for the last two").
+3. **Loop steps 1–7 for each increment, one after another.** Each increment still gets its own branch, its own local verification and its own squash-merged PR. Never put a whole phase in one PR. Start each new branch from the freshly pulled `main`.
+4. Between increments, post a one-line progress note (e.g. "3 of 6 done: tunings and string lookup are in"). No full report until the end.
+5. **Stop early only when blocked**: something needs the user (a decision, a real guitar, a device that isn't connected), or a failure you can't fix. Land what's finished, then explain plainly what's left and what you need.
+6. When no ☐ items remain in phase N, do a single step-8 report for the whole phase.
 
 ## 2. Announce it in simple terms (before touching any code)
 
@@ -113,4 +133,6 @@ Merging right after the PR opens is intentional (the user chose "merge after loc
 > **Next up:** one sentence naming the next roadmap item.
 > To continue, start a new session and run `/roadmap-step`.
 
-Then stop. One increment per run keeps each session's context small and each PR easy to review.
+Then stop. Without a phase number, one increment per run keeps each session's context small and each PR easy to review.
+
+**Phase mode report:** list every PR landed (one line each, plain language), what the app can do now that the phase is done, how it was checked, any items left open and why, and the next phase. Suggest `/roadmap-step <next phase number>` to continue.
