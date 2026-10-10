@@ -37,8 +37,8 @@ Goal: reliable pitch detection, proven by unit tests, with no device involved.
 ## Phase 2 — Audio capture (`:core:audio`)
 Goal: live microphone frames reach the DSP pipeline.
 
-- ☐ `AudioRecorder` interface + `AndroidAudioRecorder` (48 kHz, mono, PCM float, `Flow<FloatArray>`)
-- ☐ Audio source selection: `UNPROCESSED`, then `VOICE_RECOGNITION` as fallback
+- ☑ `AudioRecorder` interface + `AndroidAudioRecorder` (48 kHz, mono, PCM float, `Flow<FloatArray>`; pool of 4 reused chunk arrays, checked on the S26 by instrumented tests)
+- ☑ Audio source selection: `UNPROCESSED`, then `VOICE_RECOGNITION` as fallback (also falls back if `UNPROCESSED` fails to open)
 - ☐ Native sample-rate detection, plus handling for errors and a busy mic
 - ☐ `RECORD_AUDIO` permission flow: rationale, denied, permanently denied → settings
 - ☐ `FakeAudioRecorder` for tests

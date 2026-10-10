@@ -126,6 +126,11 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 2. Otherwise use `VOICE_RECOGNITION`. It is required to have AGC and noise suppression turned off.
 3. Never use `MIC` or `VOICE_COMMUNICATION`. Their AGC and noise suppression distort pitch and level.
 
+`AudioSourceSelector.candidates()` returns the inputs to try in that order (`AudioInput` lists only these two). `AndroidAudioRecorder` opens the first one whose `AudioRecord` initializes, so a device that claims `UNPROCESSED` support but fails to open it still falls back to `VOICE_RECOGNITION`.
+
+### Audio capture
+`AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads 1024-sample chunks with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
+
 ## 4. Threading & performance
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
 - DSP runs on `Dispatchers.Default`.
@@ -172,7 +177,7 @@ core/dsp/src/testFixtures/kotlin/com/intune/core/dsp/
     testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise)
 
 core/audio/src/main/kotlin/com/intune/core/audio/
-    AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioSourceSelector
+    AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioSourceSelector (+ AudioInput)
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState, TunerScreen
@@ -186,7 +191,7 @@ app/src/main/kotlin/com/intune/app/
 | Layer | How |
 |---|---|
 | `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
-| `:core:audio` | A `FakeAudioRecorder` emits fixture or synthetic frames, so everything downstream can be tested without a device. |
+| `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. A `FakeAudioRecorder` emits fixture or synthetic frames, so everything downstream can be tested without a device. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 

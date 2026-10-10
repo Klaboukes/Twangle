@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The recorder needs the microphone. Declared here so this module's own tests get it too. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+</manifest>
