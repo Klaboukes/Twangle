@@ -29,6 +29,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew installDebug                  # install on connected device/emulator
 ./gradlew test                          # all JVM unit tests
 ./gradlew :core:dsp:test                # DSP tests only (fast, no Android)
+./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
 ./gradlew connectedDebugAndroidTest     # instrumented tests (device required)
 ```

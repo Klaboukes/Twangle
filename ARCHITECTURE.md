@@ -130,7 +130,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
 - DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
-- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.7 M multiply-adds per frame (3153 × 851 lags), using four independent accumulators so the additions overlap. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
+- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.7 M multiply-adds per frame (3153 × 851 lags), using four independent accumulators so the additions overlap. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine) measured a median of **1.1 ms per frame** on the JVM, against a 2 ms budget. Phones are slower, so check again on the device in Phase 5. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
 - UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` so it moves smoothly between estimates.
 
 ## 5. Lifecycle & permissions

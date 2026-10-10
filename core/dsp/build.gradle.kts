@@ -12,3 +12,21 @@ kotlin {
 dependencies {
     testImplementation(libs.junit)
 }
+
+// Timing benchmarks (classes named *Benchmark) are slow and machine-dependent, so they stay out of
+// `test` and CI. Run them on demand with `./gradlew :core:dsp:benchmark`.
+tasks.test {
+    exclude("**/*Benchmark*")
+}
+
+tasks.register<Test>("benchmark") {
+    description = "Runs the DSP timing benchmarks."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    include("**/*Benchmark*")
+    outputs.upToDateWhen { false }
+    testLogging {
+        showStandardStreams = true
+    }
+}

@@ -32,7 +32,7 @@ Goal: reliable pitch detection, proven by unit tests, with no device involved.
 - ☑ `PitchSmoother`: median filter, octave-jump rejection, EMA on cents, note-change hysteresis (median 5, α 0.3, snap > 50 c, ±15 c hysteresis, octave confirm 3 frames)
 - ☑ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck): band-limited, seeded; `testFixtures` so `:core:audio` can reuse it
 - ☑ Tests: ±1 cent for 60–1500 Hz synthetic signals; no octave errors on the weak-fundamental case (measured worst: 0.1 c sine, 0.5 c harmonic-rich, < 1 c at 20 dB SNR)
-- ☐ Microbenchmark: under 2 ms per 4096-sample frame on the JVM
+- ☑ Microbenchmark: under 2 ms per 4096-sample frame on the JVM (`./gradlew :core:dsp:benchmark`: median 1.1 ms for YIN and for gate + YIN + smoother, JDK 17, dev laptop)
 
 ## Phase 2 — Audio capture (`:core:audio`)
 Goal: live microphone frames reach the DSP pipeline.
