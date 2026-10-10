@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.feature.tuner.R
@@ -46,6 +47,7 @@ fun StringSelector(
     tuning: Tuning,
     targetString: Int?,
     modifier: Modifier = Modifier,
+    notation: Notation = Notation.DEFAULT,
     inTune: Boolean = false,
     lockedString: Int? = null,
     onStringClick: ((Int) -> Unit)? = null,
@@ -60,7 +62,7 @@ fun StringSelector(
         tuning.strings.forEachIndexed { index, note ->
             val locked = index == lockedString
             StringChip(
-                name = note.pitchClass.symbol,
+                name = notation.nameOf(note.pitchClass),
                 octave = note.octave,
                 highlighted = index == targetString,
                 inTune = inTune,
@@ -124,7 +126,8 @@ private fun StringChip(
                 append(name)
                 withStyle(octaveStyle) { append(octave.toString()) }
             },
-            style = MaterialTheme.typography.titleMedium,
+            // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.
+            style = if (name.length <= 2) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelMedium,
             color = content,
         )
     }

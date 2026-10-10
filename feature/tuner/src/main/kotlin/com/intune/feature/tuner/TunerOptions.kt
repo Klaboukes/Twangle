@@ -1,5 +1,6 @@
 package com.intune.feature.tuner
 
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.NoteMapper
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
@@ -16,4 +17,6 @@ data class TunerOptions(
     val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
     /** String index the user locked in guitar mode, or null to pick the nearest string automatically. */
     val lockedString: Int? = null,
+    /** How note names are written. */
+    val notation: Notation = Notation.DEFAULT,
 )

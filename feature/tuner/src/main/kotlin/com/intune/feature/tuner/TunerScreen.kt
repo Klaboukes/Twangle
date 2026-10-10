@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.intune.core.audio.AudioRecorder
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.core.settings.SettingsRepository
@@ -116,19 +117,25 @@ fun TunerContent(
                     readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                     hint = "",
                 )
-                GuitarSlot(mode, state.tuning, onTuningChange, onStringClick, state.targetString, state.lockedString, state.inTune)
+                GuitarSlot(
+                    mode, state.tuning, state.notation, onTuningChange, onStringClick,
+                    state.targetString, state.lockedString, state.inTune,
+                )
             }
             is TunerUiState.Listening -> {
                 NeedleGauge(cents = null)
-                NoteDisplay(readout = null, hint = listeningHint(mode, state.tuning, state.lockedString))
+                NoteDisplay(readout = null, hint = listeningHint(mode, state))
                 // A locked string is the target before anything is played, so it stays highlighted.
-                GuitarSlot(mode, state.tuning, onTuningChange, onStringClick, state.lockedString, state.lockedString)
+                GuitarSlot(mode, state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
             }
             // Only for a moment, until the ViewModel hears that the permission is granted.
             TunerUiState.PermissionRequired -> {
                 NeedleGauge(cents = null)
                 NoteDisplay(readout = null, hint = "")
-                GuitarSlot(TunerMode.CHROMATIC, tuning = null, onTuningChange, onStringClick, targetString = null, lockedString = null)
+                GuitarSlot(
+                    TunerMode.CHROMATIC, tuning = null, Notation.DEFAULT, onTuningChange, onStringClick,
+                    targetString = null, lockedString = null,
+                )
             }
         }
     }
@@ -142,6 +149,7 @@ fun TunerContent(
 private fun GuitarSlot(
     mode: TunerMode,
     tuning: Tuning?,
+    notation: Notation,
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
     targetString: Int?,
@@ -154,8 +162,15 @@ private fun GuitarSlot(
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
         if (mode == TunerMode.AUTO && tuning != null) {
-            TuningPicker(selected = tuning, onSelect = onTuningChange)
-            StringSelector(tuning, targetString, inTune = inTune, lockedString = lockedString, onStringClick = onStringClick)
+            TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange)
+            StringSelector(
+                tuning,
+                targetString,
+                notation = notation,
+                inTune = inTune,
+                lockedString = lockedString,
+                onStringClick = onStringClick,
+            )
         }
     }
 }
@@ -179,10 +194,13 @@ private fun A4Label(state: TunerUiState) {
 }
 
 @Composable
-private fun listeningHint(mode: TunerMode, tuning: Tuning, lockedString: Int?): String = when {
-    mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
-    lockedString != null -> stringResource(R.string.tuner_hint_play_locked_string, tuning.strings[lockedString].toString())
-    else -> stringResource(R.string.tuner_hint_play_string)
+private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening): String {
+    val locked = state.lockedString
+    return when {
+        mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
+        locked != null -> stringResource(R.string.tuner_hint_play_locked_string, state.notation.nameOf(state.tuning.strings[locked]))
+        else -> stringResource(R.string.tuner_hint_play_string)
+    }
 }
 
 @Composable

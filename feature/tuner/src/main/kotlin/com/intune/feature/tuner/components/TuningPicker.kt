@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.feature.tuner.R
@@ -29,7 +30,12 @@ import com.intune.feature.tuner.R
  * strings (low to high); the current one is ticked. Choosing one calls [onSelect].
  */
 @Composable
-fun TuningPicker(selected: Tuning, onSelect: (Tuning) -> Unit, modifier: Modifier = Modifier) {
+fun TuningPicker(
+    selected: Tuning,
+    onSelect: (Tuning) -> Unit,
+    modifier: Modifier = Modifier,
+    notation: Notation = Notation.DEFAULT,
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Box(modifier = modifier) {
         TextButton(onClick = { expanded = true }) {
@@ -44,7 +50,7 @@ fun TuningPicker(selected: Tuning, onSelect: (Tuning) -> Unit, modifier: Modifie
                         Column {
                             Text(tuningLabel(tuning), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                text = openStrings(tuning),
+                                text = openStrings(tuning, notation),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -71,7 +77,8 @@ fun TuningPicker(selected: Tuning, onSelect: (Tuning) -> Unit, modifier: Modifie
 fun tuningLabel(tuning: Tuning): String = tuningNameRes(tuning.id)?.let { stringResource(it) } ?: tuning.id
 
 /** Open-string note names, low to high, e.g. "D A D G B E". */
-private fun openStrings(tuning: Tuning): String = tuning.strings.joinToString(" ") { it.pitchClass.symbol }
+private fun openStrings(tuning: Tuning, notation: Notation): String =
+    tuning.strings.joinToString(" ") { notation.nameOf(it.pitchClass) }
 
 @StringRes
 private fun tuningNameRes(id: String): Int? = when (id) {

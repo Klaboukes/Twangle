@@ -45,7 +45,7 @@ class TunerInterpreter(
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
             inTuneDetector.reset()
-            return TunerUiState.Listening(mode, tuning, noteMapper.a4Hz, lockedString(options))
+            return listening(options)
         }
 
         val midi = smoother.midi
@@ -65,6 +65,15 @@ class TunerInterpreter(
             }
         }
     }
+
+    /** The state while nothing usable is heard. */
+    fun listening(options: TunerOptions): TunerUiState.Listening = TunerUiState.Listening(
+        mode = options.mode,
+        tuning = options.tuning,
+        a4Hz = options.a4Hz,
+        lockedString = lockedString(options),
+        notation = options.notation,
+    )
 
     /** The locked string in guitar mode, if it exists in the tuning; null means automatic. */
     private fun lockedString(options: TunerOptions): Int? =
@@ -104,12 +113,13 @@ class TunerInterpreter(
             mode = options.mode,
             tuning = options.tuning,
             a4Hz = options.a4Hz,
-            noteName = target.pitchClass.symbol,
+            noteName = options.notation.nameOf(target.pitchClass),
             octave = target.octave,
             frequencyHz = frequencyHz,
             cents = cents,
             targetString = targetString,
             lockedString = lockedString(options),
+            notation = options.notation,
             inTune = inTuneDetector.update(cents, frameSeconds),
         )
     }

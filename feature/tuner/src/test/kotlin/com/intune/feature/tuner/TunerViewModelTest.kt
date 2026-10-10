@@ -2,6 +2,7 @@ package com.intune.feature.tuner
 
 import com.intune.core.audio.AudioRecorderException
 import com.intune.core.audio.FakeAudioRecorder
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tunings
 import com.intune.core.dsp.testsignals.TestSignals
 import com.intune.core.settings.AppSettings
@@ -253,5 +254,20 @@ class TunerViewModelTest {
 
         assertNull(vm.detected().lockedString)
         assertEquals(1, vm.detected().targetString)
+    }
+
+    @Test
+    fun `a new notation applies while listening`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertEquals("A", vm.detected().noteName)
+
+        settings.setNotation(Notation.SOLFEGE)
+        advanceTimeBy(100)
+
+        assertEquals("La", vm.detected().noteName)
+        assertEquals(Notation.SOLFEGE, vm.detected().notation)
     }
 }

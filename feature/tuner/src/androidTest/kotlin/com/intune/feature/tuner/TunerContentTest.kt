@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import org.junit.Assert.assertEquals
@@ -151,5 +152,13 @@ class TunerContentTest {
         stringChip("A2").assertIsSelected()
         stringChip("E2").assertIsNotSelected()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed()
+    }
+
+    @Test
+    fun stringsAndHintFollowTheNotation() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1, notation = Notation.SOLFEGE))
+        stringChip("La2").assertIsSelected()
+        stringChip("Mi2").assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "La2")).assertIsDisplayed()
     }
 }

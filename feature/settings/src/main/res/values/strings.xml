@@ -9,4 +9,10 @@
     <string name="settings_a4_lower">Lower A4 by 1 Hz</string>
     <string name="settings_a4_raise">Raise A4 by 1 Hz</string>
     <string name="settings_a4_reset">Reset to %1$d Hz</string>
+
+    <!-- Notation. -->
+    <string name="settings_notation_title">Note names</string>
+    <string name="settings_notation_sharps">Sharps: C, C♯, D …</string>
+    <string name="settings_notation_flats">Flats: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
 </resources>

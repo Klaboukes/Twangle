@@ -1,5 +1,6 @@
 package com.intune.feature.tuner
 
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.NoteMapper
 import com.intune.core.dsp.music.Tunings
 import org.junit.Assert.assertEquals
@@ -57,7 +58,7 @@ class TunerInterpreterTest {
     @Test
     fun `chromatic mode names sharps`() {
         val state = play(pitched(hz(61f)), TunerMode.CHROMATIC).detected()
-        assertEquals("C#", state.noteName)
+        assertEquals("C♯", state.noteName)
         assertEquals(4, state.octave)
     }
 
@@ -219,5 +220,17 @@ class TunerInterpreterTest {
         repeat(40) { state = interpreter.interpret(pitched(hz(40f)), TunerOptions(TunerMode.AUTO, standard, lockedString = 9)) }
         assertEquals(0, state!!.detected().targetString)
         assertNull(state!!.detected().lockedString)
+    }
+
+    @Test
+    fun `note names follow the notation`() {
+        fun nameOf(notation: Notation): String {
+            var state: TunerUiState? = null
+            repeat(40) { state = interpreter.interpret(pitched(hz(61f)), TunerOptions(TunerMode.CHROMATIC, standard, notation = notation)) }
+            return state!!.detected().noteName
+        }
+        assertEquals("C♯", nameOf(Notation.SHARPS))
+        assertEquals("D♭", nameOf(Notation.FLATS))
+        assertEquals("Do♯", nameOf(Notation.SOLFEGE))
     }
 }

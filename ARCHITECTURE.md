@@ -116,6 +116,7 @@ note  = ceil(midi − 0.5)               (round half down, so exactly half-way r
 cents = 100 · (midi − note)            range (−50, +50]
 ```
 Octaves use scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI number, so passing notes through the pipeline doesn't allocate.
+`Notation` (`SHARPS`, `FLATS`, `SOLFEGE`) names a pitch class for display: C♯ / D♭ / Do♯, using the real ♯ and ♭ signs. Solfège is fixed-do (Do is always C, B is Si). Each entry holds its 12 names, so `nameOf()` returns the same string instances every frame. `PitchClass.symbol` (with `#`) is only used internally, e.g. to parse the presets.
 In **Auto (guitar) mode** the target is the closest string of the selected tuning, measured in cents, not Hz. In **Chromatic mode** the target is the nearest equal-tempered note.
 
 ### Tunings
@@ -135,7 +136,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 
 `PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame.
 
-`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. The mode switch and the saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4), rebuilt only when one of them changes and read on every frame. Listening waits until the settings have loaded, so it never starts with the wrong tuning. Switching modes or changing a setting takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history. A new A4 is the exception: it restarts the smoother, because the smoothed notes were measured against the old A4.
+`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. The mode switch and the saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4, locked string, notation), rebuilt only when one of them changes and read on every frame. Listening waits until the settings have loaded, so it never starts with the wrong tuning. Switching modes or changing a setting takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history. A new A4 is the exception: it restarts the smoother, because the smoothed notes were measured against the old A4.
 - **Chromatic:** the smoother's note (with its ±15-cent hysteresis) and cents.
 - **Auto:** the closest string (`nearestStringIndex`) and `centsFromString`, not wrapped. The target string is sticky: it only changes once another string is closer by more than 15 cents, so a note half-way between two strings doesn't flicker.
 - **Auto, string locked:** tapping a string in the string row locks the target to it (`TunerViewModel.toggleString`, `TunerOptions.lockedString`); tapping it again goes back to automatic. The cents are the full distance to that string, so a string tuned far off, or one closer to its neighbour, can still be brought up to pitch. The lock is kept in memory only, survives switching to chromatic and back, and is released when the tuning changes (an index means a different string in another tuning). A lock on a string that doesn't exist is ignored.
@@ -173,6 +174,7 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 
 ### Settings
 The gear button in the tuner's top corner opens the settings screen (`:feature:settings`). `MainActivity` switches between the two screens with one saved `Screen` value, so the app needs no navigation library. A `SaveableStateHolder` keeps each screen's saved state while the other one is shown, and the back button returns from settings. While settings are open the tuner isn't visible, so the mic is released after the usual 5 s. `SettingsViewModel` shows the saved settings and saves every change straight away; there is no "save" button.
+- **Note names:** radio buttons for sharps, flats or Do Re Mi (`RadioGroupSetting`, a reusable titled radio group). The interpreter writes `noteName` in the chosen notation, and the string row, tuning menu and "Play the La2 string" hint follow it. Long names such as "Sol♯" use a smaller font to fit the string circles.
 - **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
 
 `SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true) and `keepScreenOn` (true).
@@ -188,12 +190,13 @@ enum class TunerMode { AUTO, CHROMATIC }
 sealed interface TunerUiState {
     data object PermissionRequired : TunerUiState
     data class  Error(val reason: TunerError) : TunerUiState
-    data class  Listening(val mode: TunerMode, val tuning: Tuning, val a4Hz: Float, val lockedString: Int?) : TunerUiState   // no usable signal
+    data class  Listening(val mode: TunerMode, val tuning: Tuning, val a4Hz: Float, val lockedString: Int?, val notation: Notation) : TunerUiState   // no usable signal
     data class  Detected(
         val mode: TunerMode,
         val tuning: Tuning,
         val a4Hz: Float,               // concert pitch in use (A4 calibration)
-        val noteName: String,          // target note, e.g. "E"
+        val notation: Notation,        // how note names are written
+        val noteName: String,          // target note in that notation, e.g. "E", "D♭", "Re"
         val octave: Int,               // e.g. 2
         val frequencyHz: Float,        // smoothed
         val cents: Float,              // smoothed; Auto: unwrapped distance to the string, Chromatic: about ±65
@@ -204,7 +207,7 @@ sealed interface TunerUiState {
 }
 ```
 
-`TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)`, `setTuning(tuning)`, `toggleString(index)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. Tuning and A4 come from `SettingsRepository`.
+`TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)`, `setTuning(tuning)`, `toggleString(index)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. Tuning, A4 and notation come from `SettingsRepository`.
 
 `TunerScreen` wires the ViewModel and shows the settings gear (also on the permission prompt); `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `TuningPicker` shows the selected tuning's name ("Standard ▾") under the readout. Tapping it opens a menu of every preset with its open strings, the current one ticked, and the choice is saved through `TunerViewModel.setTuning` (user-facing names are string resources keyed by `Tuning.id`). Below it `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄), with `targetString` highlighted and marked `selected` for accessibility. Each string is a button (`onClickLabel` "Lock to this string" / "Pick strings automatically"). The locked string gets an extra outer ring and the state description "Locked", stays highlighted while listening, and the hint becomes "Play the A2 string". In chromatic mode the picker and string row are hidden, but their slot keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to a theme-aware green (`InTuneColor.kt`; Material 3 has no success role). A shape cue for colour-blind users follows in Phase 5.
 
@@ -240,7 +243,7 @@ feature/tuner/src/main/kotlin/com/intune/feature/tuner/
 
 feature/settings/src/main/kotlin/com/intune/feature/settings/
     SettingsScreen (+ SettingsContent), SettingsViewModel
-    components/  A4Calibration
+    components/  A4Calibration, RadioGroupSetting
 
 app/src/main/kotlin/com/intune/app/
     InTuneApplication, AppContainer, MainActivity, ui/theme/

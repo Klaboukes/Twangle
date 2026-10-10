@@ -16,11 +16,12 @@ InTune is and will always be **free**:
 - **Guitar mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
 - **Chromatic mode:** tunes any note, for any instrument.
 - **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
+- **Note names:** sharps (C♯), flats (D♭) or Do Re Mi.
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
 - **Accurate:** within ±1 cent on test signals, from low E up to the highest frets.
 - The microphone is only on while the tuner is on screen.
 
-Coming later: sharps/flats/solfège notation, light/dark themes and accessibility support. See the [roadmap](ROADMAP.md) for progress.
+Coming later: light/dark themes and accessibility support. See the [roadmap](ROADMAP.md) for progress.
 
 ## Status
 

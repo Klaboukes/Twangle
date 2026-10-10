@@ -1,5 +1,6 @@
 package com.intune.feature.settings
 
+import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -49,5 +50,13 @@ class SettingsViewModelTest {
         vm.setA4(400f)
         runCurrent()
         assertEquals(415f, repository.current.a4Hz)
+    }
+
+    @Test
+    fun `saves the notation`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setNotation(Notation.SOLFEGE)
+        runCurrent()
+        assertEquals(Notation.SOLFEGE, repository.current.notation)
     }
 }

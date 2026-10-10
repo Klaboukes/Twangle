@@ -2,6 +2,7 @@ package com.intune.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,5 +19,9 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setA4(hz: Float) {
         viewModelScope.launch { repository.setA4(hz) }
+    }
+
+    fun setNotation(notation: Notation) {
+        viewModelScope.launch { repository.setNotation(notation) }
     }
 }

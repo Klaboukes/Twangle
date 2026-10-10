@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
  * The microphone opens only when the permission is granted ([onPermissionChanged]) *and* the UI
  * collects [state]. It stays open 5 s after the UI stops collecting, so a rotation doesn't reopen
  * it (CLAUDE.md, hard rule 4). Switching [mode] takes effect on the next frame without reopening
- * the mic. Saved settings (tuning, A4) are followed live, also while listening.
+ * the mic. Saved settings (tuning, A4, notation) are followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,7 +60,13 @@ class TunerViewModel(
      */
     private val options: StateFlow<TunerOptions?> =
         combine(settingsRepository.settings, _mode, lockedString) { settings, mode, locked ->
-            TunerOptions(mode = mode, tuning = settings.tuning, a4Hz = settings.a4Hz, lockedString = locked)
+            TunerOptions(
+                mode = mode,
+                tuning = settings.tuning,
+                a4Hz = settings.a4Hz,
+                lockedString = locked,
+                notation = settings.notation,
+            )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
@@ -106,7 +112,7 @@ class TunerViewModel(
     private fun listen(): Flow<TunerUiState> = flow {
         val interpreter = TunerInterpreter(pipeline.frameSeconds)
         val initial = options.filterNotNull().first()
-        emit(TunerUiState.Listening(initial.mode, initial.tuning, initial.a4Hz))
+        emit(interpreter.listening(initial))
         emitAll(pipeline.readings().map { interpreter.interpret(it, options.value ?: initial) })
     }
         .catch { emit(TunerUiState.Error(it.toTunerError())) }

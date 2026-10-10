@@ -1,5 +1,6 @@
 package com.intune.feature.tuner
 
+import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.NoteMapper
 import com.intune.core.dsp.music.Tuning
 
@@ -29,6 +30,8 @@ sealed interface TunerUiState {
         val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
         /** String the user locked in [TunerMode.AUTO], or null for automatic. */
         val lockedString: Int? = null,
+        /** How note names (strings, hint) are written. */
+        val notation: Notation = Notation.DEFAULT,
     ) : TunerUiState
 
     /** A steady note is being played. */
@@ -37,7 +40,7 @@ sealed interface TunerUiState {
         val tuning: Tuning,
         /** Concert pitch the notes are measured against. */
         val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
-        /** Target note name without octave, e.g. "E" or "C#". */
+        /** Target note name without octave in the chosen [notation], e.g. "E", "C♯", "D♭" or "Re". */
         val noteName: String,
         /** Octave of the target note in scientific pitch notation, e.g. 2 for low E. */
         val octave: Int,
@@ -53,6 +56,8 @@ sealed interface TunerUiState {
         val targetString: Int?,
         /** String the user locked in [TunerMode.AUTO] (then also [targetString]), or null for automatic. */
         val lockedString: Int? = null,
+        /** How note names (strings, hint) are written; [noteName] already uses it. */
+        val notation: Notation = Notation.DEFAULT,
         /** Within 5 cents of the target for at least 300 ms (see [InTuneDetector]). */
         val inTune: Boolean,
     ) : TunerUiState
