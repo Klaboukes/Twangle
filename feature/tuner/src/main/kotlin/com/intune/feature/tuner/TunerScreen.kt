@@ -23,7 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
@@ -69,7 +72,11 @@ fun TunerScreen(
 ) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository) }
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val readings = viewModel.state.collectAsStateWithLifecycle()
+    // The ViewModel only sends readings that look different, but most of them just move the needle.
+    // Composing from the state as its text shows it recomposes only when the text changes; the
+    // needle follows the exact cents without recomposing (see NeedleGauge).
+    val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
@@ -94,6 +101,7 @@ fun TunerScreen(
             if (granted) {
                 TunerContent(
                     state = state,
+                    needleCents = { (readings.value as? TunerUiState.Detected)?.cents },
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
@@ -138,6 +146,8 @@ private fun KeepScreenOn() {
 /**
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
+ * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
+ * exact cents there and a [state] rounded to what the text shows ([asShown]).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -152,6 +162,7 @@ fun TunerContent(
     onStringClick: (Int) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
 ) {
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -161,8 +172,7 @@ fun TunerContent(
     }
     val guitarSlot = @Composable { GuitarSlotFor(state, mode, onTuningChange, onStringClick) }
     val gauge = @Composable {
-        val detected = state as? TunerUiState.Detected
-        NeedleGauge(cents = detected?.cents, inTune = detected?.inTune == true)
+        NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
     }
     val note = @Composable {
         when (state) {

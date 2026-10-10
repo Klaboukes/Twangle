@@ -184,7 +184,10 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
 - **YIN difference function via FFT.** It started as the direct O(W·τ_max) sum, about 2.6 M multiply-adds per frame (3179 × 825 lags): **1.1 ms per frame** on the JVM, but on the S26 simpleperf showed it taking 69 % of the app's CPU cycles and about 7 ms of CPU per frame, a third of a core whenever a note sounds. `FftDifference` now computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): the energies `e` as a running sum, the cross-correlation `r` from one complex FFT carrying both real inputs plus one inverse FFT (N = 4096 at 48 kHz, radix-2 `Fft` with precomputed tables, all in doubles, no allocation). `FftDifferenceTest` checks it against the direct sum (within 1e-10 of `d`); all accuracy and edge-case tests are unchanged. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine): YIN detect **1.05 → 0.48 ms** per frame on the JVM, gate + detect + smoother 1.06 → 0.49 ms, 8 kHz upsampled ≈ 0.5 ms (dominated by the upsampler). Budget: 2 ms. The `PitchDetector` interface is unchanged.
 - **Silent frames stay off the main thread.** While nothing is heard every frame gives an equal `Listening` state. `TunerViewModel` drops repeats with `distinctUntilChanged()` on the DSP dispatcher, before `stateIn`, so they no longer wake the main thread ~47 times a second.
-- UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` (a spring, damping 0.8) so it moves smoothly between estimates. `NeedleGauge` reads the animated angle only inside its `Canvas` draw block, so the ~47 updates a second redraw the gauge without recomposing it.
+- UI updates go through one `StateFlow<TunerUiState>`, and the screen only does work for what visibly changes:
+  - **ViewModel:** `distinctUntilChanged { old, new -> old.looksLike(new) }` on the DSP dispatcher drops every reading that would look the same as the last one sent: same text (cents in whole cents, frequency to 0.1 Hz, as `NoteDisplay` writes them) and the needle less than `NEEDLE_STEP_CENTS` = 0.03 cents away (≈ 0.2 dp at the needle tip of the widest gauge, below a pixel), or pinned to the same edge. `looksLike` compares field by field so it allocates nothing; `TunerUiStateShownTest` fails if `Detected` gains a field it doesn't compare. The comparison is against the last state *sent*, so slow drift still gets through once it adds up.
+  - **Composition:** `TunerScreen` composes from `state.asShown()` (the same rounding) through `derivedStateOf`, so the screen recomposes only when the text changes. The exact cents reach the gauge as a lambda (`TunerContent(needleCents = …)`) that is never read while composing.
+  - **Needle:** `NeedleGauge` follows the lambda with `snapshotFlow` into an `Animatable` (the same spring, damping 0.8, that `animateFloatAsState` used; each new target is started with `launch` so the spring keeps its speed). The needle is drawn pointing up in its own `graphicsLayer`, and the animated value only sets that layer's `rotationZ`, so a moving needle neither recomposes nor re-records any drawing; the dial is a separate, static `Canvas`.
 
 ### Measured on the Galaxy S26 (Phase 5)
 Minified `benchmarkRelease` build, Android 16, tuner listening in portrait, 48 kHz `VOICE_RECOGNITION`. CPU from `/proc/<pid>/task/*/stat` (percent of one core), frames from `dumpsys gfxinfo`, hotspots from `simpleperf record --app`. The "note" rows used 10 s bursts of a 440 Hz tone from a laptop speaker.
@@ -194,11 +197,19 @@ Minified `benchmarkRelease` build, Android 16, tuner listening in portrait, 48 k
 | Silence: whole app | 7.8 % (main thread 2.3 %) | 5.6 % (main thread ≈ 0) |
 | Note sounding: whole app | ≈ 45 % | ≈ 20 % |
 | Note sounding: DSP thread | ≈ 34 % (≈ 7 ms/frame) | ≈ 9 % |
-| Note sounding: main thread | ≈ 9–10 % | ≈ 11 % |
+| Note sounding: main thread | ≈ 9–10 % | ≈ 11 % (see the recomposition fix below) |
 
 - **Frames:** nothing is drawn in silence (0 frames in 30 s). With a steady note only the frames whose readout changes are drawn, 4–8 a second; median frame 5–7 ms, 90th percentile 5–10 ms.
 - **Battery:** `batterystats` puts the app's CPU cost at ≈ 0.02 mAh per 90 s of listening (≈ 0.8 mAh an hour of a 4300 mAh battery). The screen, which the tuner keeps on, costs far more than the app's own work.
-- **Main thread:** with a note sounding the tuner recomposes on every frame (~47 a second), because the smoothed cents and Hz change slightly each time, although only a few frames a second look different. That is now the largest single cost; see the open ROADMAP sub-item.
+- **Main thread:** with a note sounding the tuner used to recompose on every reading (~47 a second), because the smoothed cents and Hz change slightly each time, although only a few frames a second looked different. Now readings that look the same never reach the main thread, the screen recomposes only when its text changes, and the needle moves by turning its layer (see above). Measured with the same per-thread CPU method, 3 × 7 s each, on a temporary build that fed a synthetic 440 Hz tone (±3 cent slow drift, noise at −20 dB) instead of the mic, so both builds got identical input:
+
+  | Main thread, note sounding | Before | After |
+  |---|---|---|
+  | Guitar mode (needle pinned at the edge, text changing) | 11.6 % | 5.1 % |
+  | Chromatic mode (needle moving all the time) | 15.8 % at ~75 frames/s | 12.2 % at ~110 frames/s |
+  | Main-thread CPU per drawn frame (chromatic) | ≈ 2.1 ms | ≈ 1.1 ms |
+
+  Laptop-speaker bursts (the earlier method) were tried too, but how well the phone picked them up changed during the session (frame counts varied fivefold between runs), so the synthetic input is the comparison of record. In chromatic mode the needle now gets a frame whenever it moves (up to the display's 120 Hz) instead of waiting behind recompositions, so it is at least as smooth; that costs RenderThread time, but the main thread still does less.
 
 ### Baseline Profile
 A Baseline Profile lists the classes and methods used at startup and on the tuner screen, so Android compiles them ahead of time on install instead of interpreting them first.

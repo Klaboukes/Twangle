@@ -125,9 +125,10 @@ class TunerViewModel(
         emit(interpreter.listening(initial))
         emitAll(pipeline.readings().map { interpreter.interpret(it, options.value ?: initial) })
     }
-        // While nothing is heard every frame gives an equal Listening state. Dropping repeats here,
-        // on the DSP thread, keeps them from waking the main thread ~47 times a second.
-        .distinctUntilChanged()
+        // Most frames look the same on screen as the last state sent: an equal Listening state in
+        // silence, or a note whose readout and needle moved less than the screen shows. Dropping
+        // them here, on the DSP thread, keeps them from waking the main thread ~47 times a second.
+        .distinctUntilChanged { old, new -> old.looksLike(new) }
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)
 }

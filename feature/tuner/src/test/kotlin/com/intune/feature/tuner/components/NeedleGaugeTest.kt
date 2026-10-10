@@ -26,4 +26,12 @@ class NeedleGaugeTest {
     fun `no reading rests the needle in the centre`() {
         assertEquals(0f, needleCents(null))
     }
+
+    @Test
+    fun `the needle layer turns clockwise in degrees, a quarter turn at each end`() {
+        assertEquals(0f, needleDegrees(0f), 1e-4f)
+        assertEquals(90f, needleDegrees(50f), 1e-4f)
+        assertEquals(-90f, needleDegrees(-50f), 1e-4f)
+        assertEquals(-18f, needleDegrees(-10f), 1e-4f)
+    }
 }

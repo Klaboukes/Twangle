@@ -23,6 +23,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, theme, keep screen on |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |
+| `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
 Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash.
@@ -34,6 +35,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
 ./gradlew connectedDebugAndroidTest     # instrumented tests (device required)
+./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
 ```
 ### Dev machine environment (Windows)
 - No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
