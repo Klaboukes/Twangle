@@ -66,9 +66,10 @@ Rules:
  PitchDetector (YIN)   4 kHz low-pass → difference fn → CMNDF → absolute threshold → least-squares
     │                  refinement → PitchResult(frequencyHz, confidence), or PitchResult.NONE
     ▼
- PitchSmoother         median of last N estimates + outlier/octave-jump rejection + EMA on cents
+ PitchSmoother         Hz → fractional MIDI (NoteMapper.midiOf, honours A4) → octave-jump rejection
+    │                  → median of 5 → EMA (snaps on a new note) → note with ±15-cent hysteresis
     ▼
- NoteMapper            Hz → (note, octave, cents) given A4; in Auto mode → nearest string in tuning
+ NoteMapper / Tuning   note name + octave; in Auto mode → nearest string in tuning, cents from it
     ▼
  TunerViewModel        combine with settings → StateFlow<TunerUiState>
     ▼
@@ -96,6 +97,15 @@ Rules:
 2. **Adaptive least-squares refinement.** Instead of a fixed 3-point parabola, a cubic is fitted to the raw difference function over the lags `τ ± k` that lie within 5% of the way from the dip to the mean (`k` ≤ τ/16). Sharp dips use k = 1, which is the classic parabola. Broad dips (pure low notes) average over dozens of lags. With white noise at 20 dB SNR this cut the worst low-E error from ~23 cents to under 1. The cubic term removes a ~0.3-cent bias that a wide parabola picks up from the fixed integration window.
 
 Search range τ = 32…800 (1500…60 Hz) plus 51 extra lags for the fit. The integration window is `W = 4096 − 92 − 851 = 3153` samples. Confidence = 1 − d′(τ). `PitchResult` is a value class that packs two floats into a `Long`, and `PitchResult.NONE` means "no pitch". It is never nullable, so returning it doesn't box. Measured on synthetic signals: worst error ≈ 0.1 cent for sines, ≈ 0.5 cent for saw/square/pluck/weak-fundamental, < 1 cent at 20 dB SNR, < 5 cents at 10 dB SNR. There are no octave errors. Allocation-free `detect()` is checked by a test that counts the bytes allocated.
+
+### Smoothing
+`PitchSmoother` works on fractional MIDI numbers, so cents are just ×100 and A4 calibration is already applied. Each frame passes through four stages:
+1. **Octave-jump rejection.** A reading a whole number of octaves (±30 cents) away from the running median is dropped. If it holds for 3 frames in a row (~64 ms), it's a real octave change: the filters restart there.
+2. **Median of the last 5** (~107 ms) removes other single-frame outliers.
+3. **EMA, α = 0.3,** settles a step within about 10 frames. If the median is more than 50 cents from the EMA (a new string was plucked), the EMA snaps to it instead of sliding the needle across.
+4. **Note hysteresis.** The shown note only changes once the reading is more than 65 cents (50 + 15) from it, so the displayed cents can reach ±65.
+
+Frames without a pitch call `noReading()`. Up to 4 missed frames (~85 ms) keep the last reading; after that it is cleared. `MedianFilter` and `ExponentialSmoother` are reusable building blocks. Everything is allocation-free.
 
 ### Note math
 ```
