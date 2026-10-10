@@ -17,6 +17,8 @@ import kotlin.math.roundToInt
  * 2. **Median** of the last [medianSize] readings removes other one-frame outliers.
  * 3. **EMA** with [emaAlpha] averages out remaining jitter. When the median is more than
  *    [snapCents] away (a new string was plucked), it snaps instead of sliding the needle across.
+ *    Readings the detector is less sure of (confidence below [CONFIDENT], as in a noisy room or
+ *    the quiet end of a note) move it less, down to [MIN_WEIGHT] × [emaAlpha] at [UNSURE].
  * 4. **Note hysteresis.** The displayed [note] only changes once the reading is more than
  *    50 + [hysteresisCents] cents from it, so a note right between two semitones doesn't flicker.
  *    As a result [cents] can reach ±(50 + [hysteresisCents]).
@@ -62,11 +64,12 @@ class PitchSmoother(
     val cents: Float get() = CENTS_PER_SEMITONE * (ema.value - noteMidi)
 
     /**
-     * Feeds one pitch estimate as a fractional MIDI note number.
+     * Feeds one pitch estimate as a fractional MIDI note number, with the detector's [confidence]
+     * (0..1, see `PitchResult.confidence`).
      *
      * @return false if it was rejected as an octave glitch, true if it was used.
      */
-    fun update(midi: Float): Boolean {
+    fun update(midi: Float, confidence: Float = 1f): Boolean {
         require(midi.isFinite()) { "midi must be finite, was $midi" }
         missedFrames = 0
         if (medianFilter.count > 0 && isOctaveJump(midi - medianFilter.median)) {
@@ -84,7 +87,7 @@ class PitchSmoother(
         if (current.isNaN() || CENTS_PER_SEMITONE * abs(median - current) > snapCents) {
             ema.snapTo(median)
         } else {
-            ema.update(median)
+            ema.update(median, weightOf(confidence))
         }
         updateNote(ema.value)
         return true
@@ -104,6 +107,11 @@ class PitchSmoother(
         pendingOctaveFrames = 0
         missedFrames = 0
     }
+
+    // 1 at CONFIDENT and above, falling linearly to MIN_WEIGHT at UNSURE and below. A clean tone
+    // has confidence ≈ 1; white noise 10 dB below the tone ≈ 0.97, at the same level ≈ 0.86.
+    private fun weightOf(confidence: Float): Float =
+        ((confidence - UNSURE) / (CONFIDENT - UNSURE)).coerceIn(MIN_WEIGHT, 1f)
 
     private fun isOctaveJump(semitones: Float): Boolean {
         val octaves = (semitones / SEMITONES_PER_OCTAVE).roundToInt()
@@ -132,6 +140,14 @@ class PitchSmoother(
 
         /** 4 frames ≈ 85 ms of dropout before the reading is cleared. */
         const val DEFAULT_MAX_MISSED_FRAMES = 4
+
+        /** Confidence from which a reading gets the full EMA step. */
+        const val CONFIDENT = 0.97f
+
+        /** Confidence at and below which a reading gets only [MIN_WEIGHT] of the step. */
+        const val UNSURE = 0.88f
+
+        const val MIN_WEIGHT = 0.2f
 
         private const val CENTS_PER_SEMITONE = 100f
         private const val SEMITONES_PER_OCTAVE = 12f

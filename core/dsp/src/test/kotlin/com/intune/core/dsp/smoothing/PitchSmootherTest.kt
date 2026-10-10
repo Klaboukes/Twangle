@@ -104,6 +104,37 @@ class PitchSmootherTest {
     }
 
     @Test
+    fun `unsure readings move the needle less than confident ones`() {
+        val unsure = PitchSmoother()
+        repeat(10) {
+            smoother.update(E2, confidence = 1f)
+            unsure.update(E2, confidence = 1f)
+        }
+        repeat(3) {
+            smoother.update(E2 + 0.2f, confidence = 0.99f)
+            unsure.update(E2 + 0.2f, confidence = 0.85f)
+        }
+        // Same median input; the confident one has moved further towards +20 cents.
+        assertTrue("${smoother.cents} vs ${unsure.cents}", smoother.cents > 2 * unsure.cents)
+        assertTrue(unsure.cents > 0f)
+        // Both still get there.
+        repeat(60) {
+            smoother.update(E2 + 0.2f, confidence = 0.99f)
+            unsure.update(E2 + 0.2f, confidence = 0.85f)
+        }
+        assertEquals(20f, smoother.cents, 0.1f)
+        assertEquals(20f, unsure.cents, 0.5f)
+    }
+
+    @Test
+    fun `an unsure reading of a new string still snaps to it`() {
+        repeat(10) { smoother.update(E2) }
+        repeat(5) { smoother.update(A2, confidence = 0.8f) }
+        assertEquals(Note(45), smoother.note)
+        assertEquals(0f, smoother.cents, 0.01f)
+    }
+
+    @Test
     fun `short dropouts keep the reading and long ones clear it`() {
         repeat(10) { smoother.update(E2) }
         repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES) { smoother.noReading() }

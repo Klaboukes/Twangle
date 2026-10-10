@@ -70,7 +70,8 @@ Goal: a usable guitar tuner.
 - ☑ Accessibility: TalkBack live region ("E, 3 cents flat"), content descriptions, large-font layout, color-blind-safe in-tune indicator (shape as well as color) (throttled: new note after 400 ms, cents at most every 2 s; check mark beside the cents; everything reachable at 2× font; S26 accessibility tree reads "A 2, in tune")
 - ☑ Landscape and tablet layouts (two panes once the window is ≥ 600 dp wide and wider than tall: gauge + note beside the controls, gauge shrinks to fit a phone on its side; settings in a centred column ≤ 600 dp; S26: landscape, 2× font and a simulated 800×1280 dp tablet in both orientations, locked string and mic survive rotation)
 - ☐ Performance: profile CPU and battery; switch YIN to FFT-based difference if needed; Baseline Profile
-- ☐ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay
+- ☑ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay (synthetic, whole chain: right note at 0–10 dB white noise, ≤ 1 cent at 10 dB; hum 10 dB below the string ≤ 3 cents, hum alone shows nothing; strong-2nd-harmonic high strings no longer read an octave up; long decays stay on the note and the gate closes once; any rate 8–96 kHz within 1 cent (low rates upsampled); built-in mic pinned while a Bluetooth headset is connected)
+  - ☐ Owner check with a real Bluetooth headset connected: the tuner still listens through the phone's mic and reads a string correctly (can't be tested without a headset)
 - ☑ Localization scaffolding (English, Dutch): every text in Dutch, follows the phone or the Android 13+ per-app language; `LocalizationTest` guards missing translations and hard-coded text
 
 ## Phase 6 — Release → **v1.0**

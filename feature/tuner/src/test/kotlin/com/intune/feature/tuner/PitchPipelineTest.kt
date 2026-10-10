@@ -45,6 +45,33 @@ class PitchPipelineTest {
     }
 
     @Test
+    fun `low headset-style rates work end to end at the same pace`() = runTest {
+        for (rate in listOf(8_000, 16_000)) {
+            val config = AudioConfig.forSampleRate(rate)
+            // A whole number of chunks, so the fake recorder doesn't pad the end with silence.
+            val signal = TestSignals.pluck(82.41f, length = 94 * config.chunkSize, sampleRate = rate, decaySeconds = 2.0)
+            val pipeline = PitchPipeline(FakeAudioRecorder(signal, config), StandardTestDispatcher(testScheduler))
+            val readings = pipeline.readings().toList()
+
+            assertEquals("frame time at $rate Hz", 1024f / 48_000f, pipeline.frameSeconds, 1e-4f)
+            // One reading per hop after the first window (≈ 4 hops): 90–91 of the 94 chunks.
+            assertTrue("${readings.size} readings at $rate Hz", readings.size in 90..91)
+            for (r in readings) {
+                assertTrue("$rate Hz: off by ${cents(r.frequencyHz, 82.41f)} c", abs(cents(r.frequencyHz, 82.41f)) < 1f)
+            }
+        }
+    }
+
+    @Test
+    fun `an unsupported sample rate ends with an initialization error instead of crashing`() = runTest {
+        val recorder = FakeAudioRecorder(FloatArray(4000), AudioConfig(sampleRate = 4_000))
+        var failure: Throwable? = null
+        PitchPipeline(recorder, StandardTestDispatcher(testScheduler)).readings().catch { failure = it }.toList()
+
+        assertTrue("got $failure", failure is AudioRecorderException.InitializationFailed)
+    }
+
+    @Test
     fun `quiet input keeps the gate closed and reports no pitch`() = runTest {
         val quiet = TestSignals.sine(110f, length = 8192, amplitude = 0.001f) // ≈ −63 dBFS
         val readings = PitchPipeline(FakeAudioRecorder(quiet), StandardTestDispatcher(testScheduler))

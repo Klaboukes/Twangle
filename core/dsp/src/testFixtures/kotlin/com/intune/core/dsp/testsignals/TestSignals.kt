@@ -3,6 +3,7 @@ package com.intune.core.dsp.testsignals
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.pow
 import kotlin.math.sin
@@ -100,6 +101,88 @@ object TestSignals {
         harmonicCount: Int = 12,
     ): FloatArray = additive(frequencyHz, harmonicCount, length, sampleRate, amplitude, sampleRate / 2f) { k, t ->
         exp(-t * (1 + (k - 1) / 2.0) / decaySeconds) / k
+    }
+
+    /**
+     * Like [pluck], but harmonic k starts at `harmonicAmplitudes[k − 1]` instead of 1/k, e.g. a
+     * high string heard with a weak fundamental and strong 2nd/3rd harmonics. Harmonics at or above
+     * Nyquist are left out.
+     */
+    fun pluck(
+        frequencyHz: Float,
+        harmonicAmplitudes: FloatArray,
+        length: Int = DEFAULT_LENGTH,
+        sampleRate: Int = SAMPLE_RATE,
+        amplitude: Float = DEFAULT_AMPLITUDE,
+        decaySeconds: Double = 0.5,
+    ): FloatArray = additive(frequencyHz, harmonicAmplitudes.size, length, sampleRate, amplitude, sampleRate / 2f) { k, t ->
+        harmonicAmplitudes[k - 1] * exp(-t * (1 + (k - 1) / 2.0) / decaySeconds)
+    }
+
+    /**
+     * Mains-style hum or a machine drone: [baseHz] and its harmonics up to [harmonicCount], each at
+     * 1/k, scaled to an RMS of [rms]. Real rooms hum at 50 Hz (Europe) or 60 Hz (Americas).
+     */
+    fun hum(
+        baseHz: Float = 50f,
+        length: Int = DEFAULT_LENGTH,
+        sampleRate: Int = SAMPLE_RATE,
+        rms: Float = 0.05f,
+        harmonicCount: Int = 6,
+    ): FloatArray {
+        val raw = additive(baseHz, harmonicCount, length, sampleRate, 1f, sampleRate / 2f) { k, _ -> 1.0 / k }
+        val scale = (rms / rms(raw)).toFloat()
+        return FloatArray(length) { raw[it] * scale }
+    }
+
+    /** [signal] plus [interference] scaled so that the signal-to-interference ratio is [snrDb] (RMS based). */
+    fun mix(signal: FloatArray, interference: FloatArray, snrDb: Float): FloatArray {
+        require(interference.size >= signal.size) { "interference is shorter than the signal" }
+        val scale = (rms(signal) / 10.0.pow(snrDb / 20.0) / rms(interference)).toFloat()
+        return FloatArray(signal.size) { signal[it] + scale * interference[it] }
+    }
+
+    /**
+     * [signal] through a 4th-order Butterworth band-pass: two high-pass biquads at [lowHz] and two
+     * low-pass biquads at [highHz] (R. Bristow-Johnson, "Audio EQ Cookbook"). Models the narrow
+     * band of a Bluetooth headset mic: about 300–3400 Hz for narrowband (CVSD, 8 kHz) calls and
+     * 100–7000 Hz for wideband (mSBC, 16 kHz). Pass 0 as [lowHz] to skip the high-pass.
+     */
+    fun bandLimit(signal: FloatArray, sampleRate: Int = SAMPLE_RATE, lowHz: Float, highHz: Float): FloatArray {
+        require(highHz < sampleRate / 2f && lowHz < highHz) { "need lowHz < highHz < Nyquist" }
+        val out = signal.copyOf()
+        // Butterworth Qs for two cascaded 2nd-order sections.
+        for (q in doubleArrayOf(1.0 / (2 * cos(PI / 8)), 1.0 / (2 * cos(3 * PI / 8)))) {
+            if (lowHz > 0f) biquad(out, sampleRate, lowHz, q, highPass = true)
+            biquad(out, sampleRate, highHz, q, highPass = false)
+        }
+        return out
+    }
+
+    // In-place Cookbook biquad (low- or high-pass), direct form I.
+    private fun biquad(x: FloatArray, sampleRate: Int, cutoffHz: Float, q: Double, highPass: Boolean) {
+        val w0 = 2 * PI * cutoffHz / sampleRate
+        val alpha = sin(w0) / (2 * q)
+        val c = cos(w0)
+        val a0 = 1 + alpha
+        val b1 = (if (highPass) -(1 + c) else 1 - c) / a0
+        val b0 = abs(b1) / 2
+        val b2 = b0
+        val a1 = -2 * c / a0
+        val a2 = (1 - alpha) / a0
+        var x1 = 0.0
+        var x2 = 0.0
+        var y1 = 0.0
+        var y2 = 0.0
+        for (i in x.indices) {
+            val x0 = x[i].toDouble()
+            val y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2
+            x2 = x1
+            x1 = x0
+            y2 = y1
+            y1 = y0
+            x[i] = y0.toFloat()
+        }
     }
 
     /** Gaussian white noise with RMS [rms]. The same [seed] always gives the same samples. */

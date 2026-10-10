@@ -20,7 +20,7 @@ class YinPitchDetectorTest {
     private val mapper = NoteMapper()
 
     @Test
-    fun `sines from 60 to 1500 Hz are within 1 cent at any phase`() {
+    fun `sines from 62 to 1500 Hz are within 1 cent at any phase`() {
         for (f in sweep(121)) {
             for (phase in listOf(0.0, 1.3, 4.0)) {
                 val result = yin.detect(TestSignals.sine(f, phase = phase))
@@ -31,7 +31,7 @@ class YinPitchDetectorTest {
     }
 
     @Test
-    fun `harmonic-rich tones from 60 to 1500 Hz are within 1 cent`() {
+    fun `harmonic-rich tones from 62 to 1500 Hz are within 1 cent`() {
         val signals = mapOf<String, (Float) -> FloatArray>(
             "sawtooth" to { TestSignals.sawtooth(it) },
             "square" to { TestSignals.square(it) },
@@ -90,6 +90,10 @@ class YinPitchDetectorTest {
     @Test
     fun `notes below the detection range are not reported`() {
         assertFalse(yin.detect(TestSignals.sine(40f)).isPitched)
+        // Just below 62 Hz the dip is still falling at the longest lag: not a note in range.
+        for (f in listOf(55f, 60f, 61f)) assertFalse("$f Hz", yin.detect(TestSignals.sine(f)).isPitched)
+        assertFalse("60 Hz hum", yin.detect(TestSignals.hum(60f)).isPitched)
+        assertWithinCents("drop C", 65.41f, yin.detect(TestSignals.weakFundamental(65.41f)), ACCURACY_CENTS)
     }
 
     @Test
@@ -168,7 +172,7 @@ class YinPitchDetectorTest {
         assertFalse(PitchResult.NONE.isPitched)
     }
 
-    // [count] frequencies spaced evenly in pitch from 60 to 1500 Hz, both ends included.
+    // [count] frequencies spaced evenly in pitch from 62 to 1500 Hz, both ends included.
     private fun sweep(count: Int): List<Float> =
         (0 until count).map { (MIN_HZ * (MAX_HZ / MIN_HZ).pow(it / (count - 1.0))).toFloat() }
 
@@ -180,7 +184,7 @@ class YinPitchDetectorTest {
 
     private companion object {
         const val ACCURACY_CENTS = 1f
-        const val MIN_HZ = 60.0
+        const val MIN_HZ = 62.0
         const val MAX_HZ = 1500.0
         const val WARM_UP = 300
     }

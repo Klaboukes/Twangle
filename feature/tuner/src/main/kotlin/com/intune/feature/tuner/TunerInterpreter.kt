@@ -37,7 +37,7 @@ class TunerInterpreter(
             smoother.reset()
         }
         if (reading.isPitched) {
-            smoother.update(noteMapper.midiOf(reading.frequencyHz))
+            smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence)
         } else {
             smoother.noReading()
         }

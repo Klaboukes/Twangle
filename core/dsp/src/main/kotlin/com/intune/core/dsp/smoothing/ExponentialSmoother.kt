@@ -15,8 +15,12 @@ class ExponentialSmoother(val alpha: Float) {
     var value: Float = Float.NaN
         private set
 
-    fun update(x: Float): Float {
-        value = if (value.isNaN()) x else value + alpha * (x - value)
+    /**
+     * Pulls the output towards [x]. A [weight] below 1 (0..1) trusts this value less: the step is
+     * `alpha · weight` of the way instead of [alpha].
+     */
+    fun update(x: Float, weight: Float = 1f): Float {
+        value = if (value.isNaN()) x else value + alpha * weight * (x - value)
         return value
     }
 

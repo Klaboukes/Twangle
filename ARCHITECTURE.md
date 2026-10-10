@@ -57,19 +57,22 @@ Rules:
 
 ```
  Microphone
-    │  AudioRecord.read()  (dedicated thread, 48 kHz mono float, blocking)
+    │  AudioRecord.read()  (dedicated thread, 48 kHz mono float, blocking; built-in mic while a
+    │                      Bluetooth headset is connected)
     ▼
- AudioRecorder ──Flow<FloatArray>(hop = 1024 samples)──►
+ AudioRecorder ──Flow<FloatArray>(chunk = one hop ≈ 21 ms, 1024 samples at 48 kHz)──►
     ▼
- FrameAssembler        ring buffer → overlapping analysis window (4096 samples ≈ 85 ms)
+ FrameAssembler        ring buffer → overlapping analysis window (≈ 85 ms, 4096 samples at 48 kHz)
     ▼
  SignalGate            RMS level check (< ~-50 dBFS → "no signal"), DC offset removal
     ▼
- PitchDetector (YIN)   4 kHz low-pass → difference fn → CMNDF → absolute threshold → least-squares
+ PitchDetector (YIN)   [upsample to ≥ 32 kHz if the rate is lower] → 4 kHz low-pass → difference fn
+    │                  → CMNDF → absolute threshold → whole-period checks → least-squares
     │                  refinement → PitchResult(frequencyHz, confidence), or PitchResult.NONE
     ▼
  PitchSmoother         Hz → fractional MIDI (NoteMapper.midiOf, honours A4) → octave-jump rejection
-    │                  → median of 5 → EMA (snaps on a new note) → note with ±15-cent hysteresis
+    │                  → median of 5 → EMA (snaps on a new note, smaller steps when unsure)
+    │                  → note with ±15-cent hysteresis
     ▼
  NoteMapper / Tuning   note name + octave; in Auto mode → nearest string in tuning, cents from it
     ▼
@@ -79,13 +82,18 @@ Rules:
 ```
 
 ### Key numbers
-- **Sample rate**: 48 000 Hz. This is the device's native rate on most phones, which avoids resampling. `SampleRateSelector` reads `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` and uses it if it is between 44 100 and 48 000 Hz (the DSP window sizes assume that range), then tries 48 000 and 44 100. The first rate `AudioRecord.getMinBufferSize` accepts wins.
+- **Sample rate**: 48 000 Hz. This is the device's native rate on most phones, which avoids resampling. `SampleRateSelector` reads `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` and uses it if it is between 44 100 and 48 000 Hz (higher native rates would only cost CPU), then tries 48 000, 44 100, 32 000, 16 000 and 8 000. The first rate `AudioRecord.getMinBufferSize` accepts wins. The low ones are a last resort; any rate from 8 to 96 kHz works end to end (see "Other sample rates" below).
 - **Analysis window**: 4096 samples, or about 85 ms. Low E (82.41 Hz) has a 12.1 ms period, so the window holds about 7 periods. That is enough for YIN, which needs at least 2. Bass and 7-string support (down to ~30 Hz) will need 8192 samples.
 - **Hop**: 1024 samples, or about 21 ms. That gives ~47 pitch estimates per second, which the smoother turns into a calm needle.
-- **Detection range**: 60 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min).
+- **Detection range**: 62 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min). The floor sits just above 60 Hz mains hum, so a humming amplifier or fridge alone reads nothing, and still below drop C (C2, 65.4 Hz).
 - **YIN threshold**: 0.15 (tunable; the paper suggests 0.10–0.15). The first CMNDF dip below it is accepted as the period.
 - **Accuracy target**: ±1 cent on synthetic test signals and ±3 cents on recorded guitar fixtures.
 - **"In tune"**: |cents| ≤ 5 held for at least 300 ms (counted in frames: 15 hops at 48 kHz). It then stays in tune until the reading drifts past 7 cents, so a note hovering at 5 cents doesn't flicker. Show a green state and give one haptic tick (see §5, Settings).
+
+### Other sample rates
+`AnalysisSettings.forSampleRate(rate)` (8–96 kHz) scales the window and hop with the rate, so they always last ≈ 85 ms and ≈ 21 ms and the smoother's frame counts mean the same time. 48 kHz gives exactly the numbers above, 44.1 kHz a 3763-sample window and 941-sample hop. `PitchPipeline` builds its `FrameAssembler` and detector from it, and `AudioConfig.forSampleRate` makes the recorder's chunks one hop long. A rate outside 8–96 kHz ends the flow with `InitializationFailed` instead of crashing.
+
+Below 32 kHz a period spans too few samples for the ±1 cent target (≈ 5 cents at 8 kHz, ≈ 2.5 at 16 kHz). There `UpsamplingPitchDetector` first interpolates the frame by an integer factor to ≥ 32 kHz (×4 at 8 kHz, ×2 at 16 or 22.05 kHz) with a polyphase windowed-sinc FIR (Kaiser, β = 8, 32 taps per phase, cut-off 0.45 × the input rate), then runs YIN at that rate. YIN's low-pass drops to 0.4 × the input rate (3.2 kHz at 8 kHz) so no interpolation images get through. Measured: every rate from 8 to 96 kHz within 1 cent on sines, saws, plucks and weak fundamentals; 8 kHz costs 0.5 ms per frame on the JVM.
 
 ### Frame assembly
 `FrameAssembler` keeps a 4096-sample ring buffer. Callers `push()` audio chunks of any size. Each call consumes samples until a frame is ready, then stops so no frame is skipped. `readFrame(out)` copies the window oldest-first into a caller-owned array. The first frame arrives after one full window, then one every hop (1024). The ring and the output window are allocated once.
@@ -98,16 +106,28 @@ Rules:
 1. **Low-pass pre-filter.** A 4th-order Butterworth at 4 kHz (two RBJ-cookbook biquads) runs into a scratch buffer, and its ~92-sample start-up transient is skipped. Without it, very bright tones (full-band sawtooth/square near 1.4 kHz) give a V-shaped dip that 3-point parabolic interpolation misjudges by ~2.5 cents. The filter also removes hiss above 4 kHz.
 2. **Adaptive least-squares refinement.** Instead of a fixed 3-point parabola, a cubic is fitted to the raw difference function over the lags `τ ± k` that lie within 5% of the way from the dip to the mean (`k` ≤ τ/16). Sharp dips use k = 1, which is the classic parabola. Broad dips (pure low notes) average over dozens of lags. With white noise at 20 dB SNR this cut the worst low-E error from ~23 cents to under 1. The cubic term removes a ~0.3-cent bias that a wide parabola picks up from the fixed integration window.
 
-Search range τ = 32…800 (1500…60 Hz) plus 51 extra lags for the fit. The integration window is `W = 4096 − 92 − 851 = 3153` samples. Confidence = 1 − d′(τ). `PitchResult` is a value class that packs two floats into a `Long`, and `PitchResult.NONE` means "no pitch". It is never nullable, so returning it doesn't box. Measured on synthetic signals: worst error ≈ 0.1 cent for sines, ≈ 0.5 cent for saw/square/pluck/weak-fundamental, < 1 cent at 20 dB SNR, < 5 cents at 10 dB SNR. There are no octave errors. Allocation-free `detect()` is checked by a test that counts the bytes allocated.
+**Range edge and whole-period checks.** The first dip is followed down to its minimum; if that is still falling at τ_max, the real minimum lies below 62 Hz and the frame has no pitch (this is what keeps 60 Hz hum out). Two checks then catch the period being off by a whole factor, both comparing raw `d` values:
+- *Too long (noise).* In heavy noise `d′` is inflated at short lags (the cumulative mean is still small there), so the true period can miss the threshold and the first accepted dip is at 2 or 3 periods. If `d` at a local minimum near τ/k is at most 15 % above `d(τ)` (and `d′` there < 0.5), τ/k is taken. For a tone plus noise every multiple of the period has the same expected `d`, while τ/k of a true period carries the out-of-phase harmonics.
+- *Too short (harmonics).* A high note with a strong 2nd harmonic and weak odd harmonics (e.g. 0.2 : 1 : 0.2) nearly repeats every half period, `d′(τ/2) ≈ 0.15`. If `d′(τ) ≥ 0.05` and `d` at 2τ or 3τ is below a quarter of `d(τ)`, that longer lag is the period.
+
+Search range τ = 32…775 (1500…62 Hz) plus 50 extra lags for the fit. The integration window is `W = 4096 − 92 − 825 = 3179` samples. Confidence = 1 − d′(τ). `PitchResult` is a value class that packs two floats into a `Long`, and `PitchResult.NONE` means "no pitch". It is never nullable, so returning it doesn't box. Measured on synthetic signals: worst error ≈ 0.1 cent for sines, ≈ 0.5 cent for saw/square/pluck/weak-fundamental, < 1 cent at 20 dB SNR, < 5 cents at 10 dB SNR. There are no octave errors, including high strings with dominant 2nd/3rd harmonics. Allocation-free `detect()` is checked by a test that counts the bytes allocated.
 
 ### Smoothing
 `PitchSmoother` works on fractional MIDI numbers, so cents are just ×100 and A4 calibration is already applied. Each frame passes through four stages:
 1. **Octave-jump rejection.** A reading a whole number of octaves (±30 cents) away from the running median is dropped. If it holds for 3 frames in a row (~64 ms), it's a real octave change: the filters restart there.
 2. **Median of the last 5** (~107 ms) removes other single-frame outliers.
-3. **EMA, α = 0.3,** settles a step within about 10 frames. If the median is more than 50 cents from the EMA (a new string was plucked), the EMA snaps to it instead of sliding the needle across.
+3. **EMA, α = 0.3,** settles a step within about 10 frames. If the median is more than 50 cents from the EMA (a new string was plucked), the EMA snaps to it instead of sliding the needle across. Readings the detector is unsure of take smaller steps: the step is weighted by the confidence, 1 from 0.97 up, falling linearly to 0.2 at 0.88 and below. A clean tone scores ≈ 0.99; white noise 10 dB below it ≈ 0.97; at the same level ≈ 0.86, as does the quiet end of a note. This roughly halves the needle wobble in a noisy room and at the end of a decay without slowing down clean notes.
 4. **Note hysteresis.** The shown note only changes once the reading is more than 65 cents (50 + 15) from it, so the displayed cents can reach ±65.
 
 Frames without a pitch call `noReading()`. Up to 4 missed frames (~85 ms) keep the last reading; after that it is cleared. `MedianFilter` and `ExponentialSmoother` are reusable building blocks. Everything is allocation-free.
+
+### Edge cases (measured, `EdgeCaseTest`)
+What the user sees after the whole chain (frame assembly → gate → YIN → smoother) on synthetic signals:
+- **Very noisy room, white noise:** always the right note; worst shown error 0.8 cents at 10 dB SNR, 1.7 at 6 dB, 2.5 at 3 dB, ≈ 10 at 0 dB (low notes; high notes stay under 2).
+- **Mains hum (50 or 60 Hz) 10 dB below the string:** right note within 3 cents. Hum alone, however loud, shows nothing. *Known limit:* hum within ~6 dB of the string can make YIN lock onto a period the two share (e.g. G3 read as C2), or show nothing for the low strings. A hum notch filter would be the fix if real rooms ever need it.
+- **High strings with strong 2nd/3rd harmonics** (B3 to C6): within 1 cent, clean or at 20 dB SNR, no octave flips while a pluck decays.
+- **Sustain decay:** a 0.8 s-decay pluck in a quiet room (−70 dBFS) stays within 1 cent until the gate closes after ≈ 4 s, the gate closes once and the reading clears within 5 frames. Over −60 dBFS room noise the last frames wobble up to 6 cents, never another note. When room noise is above the gate's closing level (the S26 measured −52…−56 dBFS), the gate stays open and YIN stops reporting once the note sinks into the noise; shown readings stay on the note.
+- **Bluetooth-like audio:** band-limited to 300–3400 Hz (narrowband, so low E has lost its fundamental and 2nd harmonic) or 100–7000 Hz at 48 kHz: within 0.2 cents. Native 8 and 16 kHz: within 1 cent, still ~47 readings a second.
 
 ### Note math
 ```
@@ -129,14 +149,16 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 2. Otherwise use `VOICE_RECOGNITION`. It is required to have AGC and noise suppression turned off.
 3. Never use `MIC` or `VOICE_COMMUNICATION`. Their AGC and noise suppression distort pitch and level.
 
+**Bluetooth headsets.** Android records from a headset's mic only over SCO/HFP or LE Audio, a call-quality link: 8 or 16 kHz, band-limited to ~3.4 or ~7 kHz, often with the headset's own noise suppression. InTune never asks for that route (no `startBluetoothSco()` or `setCommunicationDevice()`), so normally the phone's mic records while the headset plays. In case another app or the system has opened SCO, `InputDeviceSelector` pins the built-in mic with `AudioRecord.setPreferredDevice` whenever a Bluetooth input (`TYPE_BLUETOOTH_SCO`, `TYPE_BLE_HEADSET`) is present. Wired headsets and USB audio interfaces keep Android's normal routing, so a plugged-in mic or interface still works. If no built-in mic is listed, routing is left to Android; band-limited or low-rate audio is still handled (see Other sample rates and Edge cases). *Not yet verified with a real headset.*
+
 `AudioSourceSelector.candidates()` returns the inputs to try in that order (`AudioInput` lists only these two). `AndroidAudioRecorder` opens the first one whose `AudioRecord` initializes, so a device that claims `UNPROCESSED` support but fails to open it still falls back to `VOICE_RECOGNITION`.
 
 ### Audio capture
-`AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads 1024-sample chunks with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
+`AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads one-hop chunks (1024 samples at 48 kHz) with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
 
-`PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame.
+`PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and the pitch detector (both sized by `AnalysisSettings.forSampleRate` for the recorder's rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame.
 
-`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. The mode switch and the saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4, locked string, notation), rebuilt only when one of them changes and read on every frame. Listening waits until the settings have loaded, so it never starts with the wrong tuning. Switching modes or changing a setting takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history. A new A4 is the exception: it restarts the smoother, because the smoothed notes were measured against the old A4.
+`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading and its confidence to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. The mode switch and the saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4, locked string, notation), rebuilt only when one of them changes and read on every frame. Listening waits until the settings have loaded, so it never starts with the wrong tuning. Switching modes or changing a setting takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history. A new A4 is the exception: it restarts the smoother, because the smoothed notes were measured against the old A4.
 - **Chromatic:** the smoother's note (with its ±15-cent hysteresis) and cents.
 - **Auto:** the closest string (`nearestStringIndex`) and `centsFromString`, not wrapped. The target string is sticky: it only changes once another string is closer by more than 15 cents, so a note half-way between two strings doesn't flicker.
 - **Auto, string locked:** tapping a string in the string row locks the target to it (`TunerViewModel.toggleString`, `TunerOptions.lockedString`); tapping it again goes back to automatic. The cents are the full distance to that string, so a string tuned far off, or one closer to its neighbour, can still be brought up to pitch. The lock is kept in memory only, survives switching to chromatic and back, and is released when the tuning changes (an index means a different string in another tuning). A lock on a string that doesn't exist is ignored.
@@ -157,7 +179,7 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
 - DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
-- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.7 M multiply-adds per frame (3153 × 851 lags), using four independent accumulators so the additions overlap. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine) measured a median of **1.1 ms per frame** on the JVM, against a 2 ms budget. Phones are slower, so check again on the device in Phase 5. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
+- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.6 M multiply-adds per frame (3179 × 825 lags), using four independent accumulators so the additions overlap. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine) measured a median of **1.1 ms per frame** on the JVM, against a 2 ms budget (the whole gate + detect + smoother chain ≈ 1.2 ms; 8 kHz input upsampled to 32 kHz ≈ 0.5 ms). Phones are slower, so check again on the device in Phase 5. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
 - UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` (a spring, damping 0.8) so it moves smoothly between estimates. `NeedleGauge` reads the animated angle only inside its `Canvas` draw block, so the ~47 updates a second redraw the gauge without recomposing it.
 
 ## 5. Lifecycle & permissions
@@ -237,17 +259,19 @@ sealed interface TunerUiState {
 
 ```
 core/dsp/src/main/kotlin/com/intune/core/dsp/
-    pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, LowPassFilter, SignalGate
+    pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
+                AnalysisSettings, LowPassFilter, SignalGate
     music/      Note, NoteMapper, Tuning, Tunings (presets), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     buffer/     FrameAssembler (ring buffer)
 
 core/dsp/src/testFixtures/kotlin/com/intune/core/dsp/
-    testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise)
+    testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise, hum,
+                 mix, band-limit)
 
 core/audio/src/main/kotlin/com/intune/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
-    AudioSourceSelector (+ AudioInput), SampleRateSelector
+    AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector
 
 core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
@@ -274,8 +298,8 @@ app/src/main/kotlin/com/intune/app/
 ## 8. Testing strategy
 | Layer | How |
 |---|---|
-| `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
-| `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
+| `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise or mains hum, band-limited (Bluetooth-like) audio at any rate, and decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`: frame assembly, gate, detector, smoother) and checks what would be shown (see §3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. |
+| `:core:audio` | JVM tests for the pure parts (source, sample-rate and Bluetooth input selection, chunk sizes). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
 | `:core:settings` | JVM tests of `DataStoreSettingsRepository` on a real DataStore file in a temporary folder: defaults, saving, surviving a restart, clamping, and falling back on unknown or unreadable values. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`. Compose UI tests (`SettingsContentTest`, device needed) for each control. |

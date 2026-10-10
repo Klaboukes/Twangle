@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.flowOn
 /**
  * [AudioRecorder] backed by `android.media.AudioRecord`: mono, `ENCODING_PCM_FLOAT`, at the
  * device's native rate ([SampleRateSelector]), inputs from [AudioSourceSelector] (unprocessed
- * first, voice recognition as the fallback).
+ * first, voice recognition as the fallback). While a Bluetooth headset is connected it asks for
+ * the built-in mic ([InputDeviceSelector]). Chunks last about 21 ms at any rate unless [chunkSize]
+ * is given.
  *
  * The blocking `read()` runs on a dedicated single thread so it never starves other coroutines.
  * Chunks come from a pool of [POOL_SIZE] arrays allocated once per collection, so recording
@@ -26,18 +28,17 @@ import kotlinx.coroutines.flow.flowOn
  */
 class AndroidAudioRecorder(
     context: Context,
-    chunkSize: Int = AudioConfig.DEFAULT_CHUNK_SIZE,
+    chunkSize: Int? = null,
 ) : AudioRecorder {
 
     private val appContext: Context = context.applicationContext
     private val audioManager: AudioManager = appContext.getSystemService(AudioManager::class.java)
 
-    override val config: AudioConfig = AudioConfig(
-        sampleRate = SampleRateSelector.select(SampleRateSelector.nativeRateProperty(audioManager)) { rate ->
-            AudioRecord.getMinBufferSize(rate, CHANNEL_MASK, ENCODING) > 0
-        },
-        chunkSize = chunkSize,
-    )
+    override val config: AudioConfig = SampleRateSelector.select(SampleRateSelector.nativeRateProperty(audioManager)) { rate ->
+        AudioRecord.getMinBufferSize(rate, CHANNEL_MASK, ENCODING) > 0
+    }.let { rate ->
+        if (chunkSize == null) AudioConfig.forSampleRate(rate) else AudioConfig(rate, chunkSize)
+    }
 
     private val inputs: List<AudioInput> =
         AudioSourceSelector.candidates(AudioSourceSelector.supportsUnprocessed(audioManager))
@@ -102,7 +103,11 @@ class AndroidAudioRecorder(
                 lastFailure = e
                 continue
             }
-            if (record.state == AudioRecord.STATE_INITIALIZED) return record to input
+            if (record.state == AudioRecord.STATE_INITIALIZED) {
+                // Keep a Bluetooth headset's call-quality mic out of the way (null = Android decides).
+                InputDeviceSelector.preferredInput(audioManager)?.let { record.setPreferredDevice(it) }
+                return record to input
+            }
             record.release()
         }
         throw AudioRecorderException.InitializationFailed(

@@ -17,6 +17,14 @@ class ExponentialSmootherTest {
     }
 
     @Test
+    fun `a weight below 1 takes a smaller step`() {
+        val ema = ExponentialSmoother(alpha = 0.5f)
+        ema.update(0f)
+        assertEquals(1f, ema.update(4f, weight = 0.5f))
+        assertEquals(2.5f, ema.update(4f))
+    }
+
+    @Test
     fun `converges on a constant input`() {
         val ema = ExponentialSmoother(alpha = 0.3f)
         ema.update(0f)

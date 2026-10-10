@@ -7,12 +7,12 @@ class SampleRateSelectorTest {
 
     @Test
     fun `native 48 kHz comes first without duplicates`() {
-        assertEquals(listOf(48_000, 44_100), SampleRateSelector.candidates("48000"))
+        assertEquals(listOf(48_000, 44_100, 32_000, 16_000, 8_000), SampleRateSelector.candidates("48000"))
     }
 
     @Test
     fun `native 44_1 kHz is tried before the fallbacks`() {
-        assertEquals(listOf(44_100, 48_000), SampleRateSelector.candidates("44100"))
+        assertEquals(listOf(44_100, 48_000, 32_000, 16_000, 8_000), SampleRateSelector.candidates("44100"))
     }
 
     @Test
@@ -31,6 +31,12 @@ class SampleRateSelectorTest {
     fun `select picks the first supported candidate`() {
         assertEquals(44_100, SampleRateSelector.select("48000") { it == 44_100 })
         assertEquals(48_000, SampleRateSelector.select("44100") { it == 48_000 })
+    }
+
+    @Test
+    fun `select falls back to low rates such as 16 or 8 kHz`() {
+        assertEquals(16_000, SampleRateSelector.select("48000") { it <= 16_000 })
+        assertEquals(8_000, SampleRateSelector.select(null) { it == 8_000 })
     }
 
     @Test

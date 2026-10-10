@@ -32,6 +32,16 @@ class YinBenchmark {
     }
 
     @Test
+    fun `8 kHz headset audio, upsampled to 32 kHz, takes under 2 ms per frame`() {
+        val settings = AnalysisSettings.forSampleRate(8_000)
+        val detector = settings.newPitchDetector()
+        val narrowband = listOf(82.41f, 110f, 329.6f, 987.8f).map { TestSignals.pluck(it, settings.windowSize, 8_000) }
+        val stats = time { i -> detector.detect(narrowband[i % narrowband.size]).isPitched }
+        report("8 kHz upsampled detect", stats)
+        assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
+    }
+
+    @Test
     fun `whole per-frame chain takes under 2 ms per frame`() {
         val yin = YinPitchDetector()
         val gate = SignalGate()
@@ -42,7 +52,7 @@ class YinBenchmark {
             frames[i % frames.size].copyInto(window)
             if (gate.process(window)) {
                 val result = yin.detect(window)
-                if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz)) else smoother.noReading()
+                if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz), result.confidence) else smoother.noReading()
             } else {
                 smoother.noReading()
             }

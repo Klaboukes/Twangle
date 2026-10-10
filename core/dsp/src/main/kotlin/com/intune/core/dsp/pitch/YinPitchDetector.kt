@@ -17,6 +17,14 @@ import kotlin.math.sqrt
  * 3. cumulative mean normalized difference `d'(τ) = d(τ) / ((1/τ) Σ_{k=1..τ} d(k))`, `d'(0) = 1`
  * 4. absolute threshold: the first τ whose `d'(τ)` dips below [threshold], followed down to its
  *    local minimum. Taking the *first* dip, not the deepest, is what avoids octave-too-low errors.
+ *    A dip that is still falling at the longest lag lies outside the range and is ignored (e.g.
+ *    60 Hz mains hum just below [minFrequencyHz]). Two checks then guard against the remaining
+ *    whole-number period errors (see [checkShorterPeriods] and [checkLongerPeriods]):
+ *    - in heavy noise the dip at the true period can miss the threshold, because `d'` is inflated
+ *      at short lags, so the first accepted dip is at 2 or 3 periods. If `d` at τ/k is about as low
+ *      as at τ, τ/k is the period.
+ *    - a high note with a strong 2nd harmonic and weak odd harmonics dips below the threshold at
+ *      half its period. If `d` at 2τ or 3τ is far lower than at τ, that is the period.
  * 5. sub-sample period from the raw `d(τ)` around that minimum (the paper notes `d` gives an
  *    unbiased abscissa where `d'` does not). This is a least-squares fit over the lags `τ ± k`
  *    whose `d` stays within [FIT_LEVEL] of the way from the dip to the mean of `d`. A sharp dip
@@ -82,8 +90,9 @@ class YinPitchDetector(
         lowPass.process(frame, filtered, windowSize)
         computeDifference(filtered, settle)
         computeCumulativeMeanNormalized()
-        val tau = findFirstDip()
-        if (tau < 0) return PitchResult.NONE
+        val firstDip = findFirstDip()
+        if (firstDip < 0) return PitchResult.NONE
+        val tau = checkLongerPeriods(checkShorterPeriods(firstDip))
         val period = tau + refineOffset(tau)
         val confidence = (1.0 - normalized[tau]).coerceIn(0.0, 1.0)
         return PitchResult.of((sampleRate / period).toFloat(), confidence.toFloat())
@@ -132,17 +141,56 @@ class YinPitchDetector(
         }
     }
 
-    // Step 4. Returns the lag of the first dip below the threshold, or −1 if there is none.
+    // Step 4. Returns the lag of the first dip below the threshold, or −1 if there is none in range.
     private fun findFirstDip(): Int {
         var tau = tauMin
         while (tau <= tauMax) {
             if (normalized[tau] < threshold) {
                 while (tau < tauMax && normalized[tau + 1] < normalized[tau]) tau++
-                return tau
+                // Still falling at the range edge: the real minimum is below minFrequencyHz.
+                return if (tau == tauMax && normalized[tau + 1] < normalized[tau]) -1 else tau
             }
             tau++
         }
         return -1
+    }
+
+    // Heavy noise: the first accepted dip may be a multiple of the period. Returns the shortest
+    // lag τ/k whose d is within SHORTER_PERIOD_TOLERANCE of d(τ), or τ itself. For a stationary
+    // tone plus noise, d at every multiple of the period has the same expected value (the noise
+    // energy), while at τ/k of a true period τ the out-of-phase harmonics add a large residue.
+    private fun checkShorterPeriods(tau: Int): Int {
+        val limit = SHORTER_PERIOD_TOLERANCE * difference[tau]
+        for (k in tau / tauMin downTo 2) {
+            val candidate = localMinimum((tau + k / 2) / k)
+            if (candidate in tauMin until tau && difference[candidate] <= limit && normalized[candidate] < MAX_SHORTER_PERIOD_DIP) {
+                return candidate
+            }
+        }
+        return tau
+    }
+
+    // Strong 2nd (or 3rd) harmonic with weak neighbours: the first accepted dip may be a fraction
+    // of the period. If d at 2τ or 3τ is below LONGER_PERIOD_RATIO of d(τ), the tone only *nearly*
+    // repeats at τ and truly repeats there. Clean tones (d'(τ) below LONGER_PERIOD_MIN_DIP) are left
+    // alone: their tiny d(τ) only reflects where the period falls between two lags.
+    private fun checkLongerPeriods(tau: Int): Int {
+        if (normalized[tau] < LONGER_PERIOD_MIN_DIP) return tau
+        val limit = LONGER_PERIOD_RATIO * difference[tau]
+        for (m in 2..3) {
+            if (m * tau > tauMax) break
+            val candidate = localMinimum(m * tau)
+            if (candidate in tauMin..tauMax && difference[candidate] < limit) return candidate
+        }
+        return tau
+    }
+
+    // Follows d downhill from [start] to the nearest local minimum, staying inside 1 until lastLag.
+    private fun localMinimum(start: Int): Int {
+        var tau = start.coerceIn(1, lastLag - 1)
+        while (tau > 1 && difference[tau - 1] < difference[tau]) tau--
+        while (tau < lastLag - 1 && difference[tau + 1] < difference[tau]) tau++
+        return tau
     }
 
     // Step 5. Sub-sample offset of the true minimum of d around lag [tau].
@@ -207,7 +255,11 @@ class YinPitchDetector(
     companion object {
         const val DEFAULT_SAMPLE_RATE = 48_000
         const val DEFAULT_WINDOW_SIZE = 4096
-        const val DEFAULT_MIN_FREQUENCY_HZ = 60f
+        /**
+         * Just above 60 Hz mains hum, so a humming amplifier or fridge alone reads nothing; still
+         * below drop C (C2, 65.4 Hz), the lowest guitar tuning.
+         */
+        const val DEFAULT_MIN_FREQUENCY_HZ = 62f
         const val DEFAULT_MAX_FREQUENCY_HZ = 1500f
 
         /** The paper suggests 0.1–0.15. 0.15 keeps slightly noisy notes without admitting octave errors. */
@@ -223,5 +275,15 @@ class YinPitchDetector(
         // …but never more than ±1/16 of the period, where a parabola still matches a cosine dip
         // to within about 0.5 %.
         private const val FIT_MAX_FRACTION = 1.0 / 16
+
+        // τ/k counts as the same period as τ if its d is at most 15 % higher (noise makes the
+        // sums at different lags differ by a few per cent), and it is still a fairly clear dip.
+        private const val SHORTER_PERIOD_TOLERANCE = 1.15
+        private const val MAX_SHORTER_PERIOD_DIP = 0.5
+
+        // 2τ or 3τ replaces τ if its d is under a quarter of d(τ), and only when d'(τ) is not
+        // already near zero.
+        private const val LONGER_PERIOD_RATIO = 0.25
+        private const val LONGER_PERIOD_MIN_DIP = 0.05
     }
 }

@@ -8,11 +8,18 @@ import android.media.AudioManager
  */
 object SampleRateSelector {
 
-    /** The DSP is tuned for windows of ~85 ms (4096 samples), so only rates near 48 kHz are used. */
+    /**
+     * Native rates used as they are. The DSP adapts to any rate from 8 to 96 kHz, but a higher
+     * native rate (96 kHz) would only cost CPU, so a native rate is only taken near 48 kHz.
+     */
     val SUPPORTED_RATES = 44_100..48_000
 
-    /** Rates tried when the native one is unknown or unsupported, best first. */
-    val FALLBACK_RATES = listOf(AudioConfig.DEFAULT_SAMPLE_RATE, 44_100)
+    /**
+     * Rates tried when the native one is unknown or unsupported, best first. The low ones are a
+     * last resort for a device or route that refuses the usual rates; the DSP upsamples them
+     * internally (ARCHITECTURE §3, Key numbers).
+     */
+    val FALLBACK_RATES = listOf(AudioConfig.DEFAULT_SAMPLE_RATE, 44_100, 32_000, 16_000, 8_000)
 
     /**
      * Rates to try in order: the native rate reported by `AudioManager` (the raw property string,

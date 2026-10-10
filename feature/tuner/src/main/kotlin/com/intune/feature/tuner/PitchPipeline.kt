@@ -1,7 +1,9 @@
 package com.intune.feature.tuner
 
 import com.intune.core.audio.AudioRecorder
+import com.intune.core.audio.AudioRecorderException
 import com.intune.core.dsp.buffer.FrameAssembler
+import com.intune.core.dsp.pitch.AnalysisSettings
 import com.intune.core.dsp.pitch.PitchResult
 import com.intune.core.dsp.pitch.SignalGate
 import com.intune.core.dsp.pitch.YinPitchDetector
@@ -29,6 +31,11 @@ data class PitchReading(
  * Microphone → [FrameAssembler] → [SignalGate] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second). See ARCHITECTURE §3.
  *
+ * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
+ * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
+ * [AnalysisSettings.MIN_SAMPLE_RATE]..[AnalysisSettings.MAX_SAMPLE_RATE] ends the flow with
+ * [AudioRecorderException.InitializationFailed].
+ *
  * The DSP objects and the frame buffer are created once per collection, so the per-frame loop
  * doesn't allocate; only the small immutable reading handed to the UI is new each frame. Chunks
  * are copied into the assembler inside `collect`, as [AudioRecorder.chunks] requires. DSP runs on
@@ -39,13 +46,20 @@ class PitchPipeline(
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
 
+    private val sampleRate: Int get() = recorder.config.sampleRate
+
     /** Time between two readings: one hop at the recorder's sample rate (~21 ms). */
-    val frameSeconds: Float get() = FrameAssembler.DEFAULT_HOP_SIZE.toFloat() / recorder.config.sampleRate
+    val frameSeconds: Float get() = AnalysisSettings.forSampleRate(sampleRate.coerceIn(SUPPORTED_RATES)).hopSeconds
 
     fun readings(): Flow<PitchReading> = flow {
-        val assembler = FrameAssembler()
+        val rate = sampleRate
+        if (rate !in SUPPORTED_RATES) {
+            throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
+        }
+        val settings = AnalysisSettings.forSampleRate(rate)
+        val assembler = settings.newFrameAssembler()
         val gate = SignalGate()
-        val detector = YinPitchDetector(sampleRate = recorder.config.sampleRate, windowSize = assembler.windowSize)
+        val detector = settings.newPitchDetector()
         val frame = FloatArray(assembler.windowSize)
 
         recorder.chunks().collect { chunk ->
@@ -61,4 +75,8 @@ class PitchPipeline(
             }
         }
     }.flowOn(dspDispatcher)
+
+    private companion object {
+        val SUPPORTED_RATES = AnalysisSettings.MIN_SAMPLE_RATE..AnalysisSettings.MAX_SAMPLE_RATE
+    }
 }
