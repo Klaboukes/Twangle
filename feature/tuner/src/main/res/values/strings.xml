@@ -20,6 +20,16 @@
     <string name="tuner_mode_chromatic">Chromatic</string>
     <string name="tuner_a4">A4 = %1$d Hz</string>
     <string name="tuner_open_settings">Settings</string>
+
+    <!-- Tuning presets, see Tunings in :core:dsp. -->
+    <string name="tuning_standard">Standard</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Half step down</string>
+    <string name="tuning_full_step_down">Full step down</string>
+    <string name="tuning_dadgad">DADGAD</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
     <string name="tuner_frequency">%1$.1f Hz</string>

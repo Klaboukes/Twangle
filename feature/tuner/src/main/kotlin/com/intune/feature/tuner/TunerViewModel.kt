@@ -3,6 +3,7 @@ package com.intune.feature.tuner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.intune.core.audio.AudioRecorder
+import com.intune.core.dsp.music.Tuning
 import com.intune.core.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * Owns the tuner's audio pipeline and exposes everything the screen shows as one [state].
@@ -36,7 +38,7 @@ import kotlinx.coroutines.flow.stateIn
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
     recorder: AudioRecorder,
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
@@ -67,6 +69,11 @@ class TunerViewModel(
 
     fun setMode(mode: TunerMode) {
         _mode.value = mode
+    }
+
+    /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */
+    fun setTuning(tuning: Tuning) {
+        viewModelScope.launch { settingsRepository.setTuning(tuning) }
     }
 
     /** Opens the microphone again after an error. */

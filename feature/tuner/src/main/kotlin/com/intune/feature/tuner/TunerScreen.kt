@@ -35,6 +35,7 @@ import com.intune.feature.tuner.components.NoteDisplay
 import com.intune.feature.tuner.components.NoteReadout
 import com.intune.feature.tuner.components.PermissionPrompt
 import com.intune.feature.tuner.components.StringSelector
+import com.intune.feature.tuner.components.TuningPicker
 import kotlin.math.roundToInt
 
 /**
@@ -64,7 +65,13 @@ fun TunerScreen(
             contentAlignment = Alignment.Center,
         ) {
             if (granted) {
-                TunerContent(state = state, mode = mode, onModeChange = viewModel::setMode, onRetry = viewModel::retry)
+                TunerContent(
+                    state = state,
+                    mode = mode,
+                    onModeChange = viewModel::setMode,
+                    onTuningChange = viewModel::setTuning,
+                    onRetry = viewModel::retry,
+                )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
@@ -84,6 +91,7 @@ fun TunerContent(
     state: TunerUiState,
     mode: TunerMode,
     onModeChange: (TunerMode) -> Unit,
+    onTuningChange: (Tuning) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -106,35 +114,49 @@ fun TunerContent(
                     readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                     hint = "",
                 )
-                StringRowSlot(mode, state.tuning, state.targetString, state.inTune)
+                GuitarSlot(mode, state.tuning, onTuningChange, state.targetString, state.inTune)
             }
             is TunerUiState.Listening -> {
                 NeedleGauge(cents = null)
                 NoteDisplay(readout = null, hint = stringResource(listeningHint(mode)))
-                StringRowSlot(mode, state.tuning, targetString = null)
+                GuitarSlot(mode, state.tuning, onTuningChange, targetString = null)
             }
             // Only for a moment, until the ViewModel hears that the permission is granted.
             TunerUiState.PermissionRequired -> {
                 NeedleGauge(cents = null)
                 NoteDisplay(readout = null, hint = "")
-                StringRowSlot(TunerMode.CHROMATIC, tuning = null, targetString = null)
+                GuitarSlot(TunerMode.CHROMATIC, tuning = null, onTuningChange, targetString = null)
             }
         }
     }
 }
 
 /**
- * The string row in guitar mode, empty space of the same height otherwise, so switching modes
- * doesn't shift the layout (and the mode switch under the user's finger).
+ * In guitar mode the tuning picker and the string row; empty space of the same height otherwise,
+ * so switching modes doesn't shift the layout (and the mode switch under the user's finger).
  */
 @Composable
-private fun StringRowSlot(mode: TunerMode, tuning: Tuning?, targetString: Int?, inTune: Boolean = false) {
-    Box(modifier = Modifier.height(STRING_ROW_HEIGHT), contentAlignment = Alignment.Center) {
-        if (mode == TunerMode.AUTO && tuning != null) StringSelector(tuning, targetString, inTune = inTune)
+private fun GuitarSlot(
+    mode: TunerMode,
+    tuning: Tuning?,
+    onTuningChange: (Tuning) -> Unit,
+    targetString: Int?,
+    inTune: Boolean = false,
+) {
+    Column(
+        modifier = Modifier.height(GUITAR_SLOT_HEIGHT),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
+    ) {
+        if (mode == TunerMode.AUTO && tuning != null) {
+            TuningPicker(selected = tuning, onSelect = onTuningChange)
+            StringSelector(tuning, targetString, inTune = inTune)
+        }
     }
 }
 
-private val STRING_ROW_HEIGHT = 48.dp
+/** Tuning picker (a 48 dp touch target) + 8 dp + string row (48 dp). */
+private val GUITAR_SLOT_HEIGHT = 104.dp
 
 /** "A4 = 440 Hz", the reference the readings use. Blank (same height) before listening starts. */
 @Composable
@@ -190,6 +212,7 @@ private fun TunerContentDetectedPreview() {
             ),
             mode = TunerMode.AUTO,
             onModeChange = {},
+            onTuningChange = {},
             onRetry = {},
         )
     }
@@ -202,6 +225,7 @@ private fun TunerContentListeningPreview() {
             state = TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD),
             mode = TunerMode.CHROMATIC,
             onModeChange = {},
+            onTuningChange = {},
             onRetry = {},
         ) }
 }

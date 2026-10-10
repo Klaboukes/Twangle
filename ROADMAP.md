@@ -59,7 +59,7 @@ Goal: a usable guitar tuner.
 ## Phase 4 — Settings & tunings → **v0.2**
 - ☑ DataStore-backed settings repository (`:core:settings`: A4, tuning, notation, theme, dynamic color, keep screen on; falls back to defaults on unknown or damaged data)
 - ☑ A4 calibration (415–466 Hz, 1 Hz steps): new settings screen behind a gear button (slider, ±1 Hz buttons, reset); "A4 = 442 Hz" shown on the tuner; S26: saved across restarts
-- ☐ Tuning picker (presets)
+- ☑ Tuning picker (presets): "Standard ▾" above the string row in guitar mode, menu shows each preset's notes; saved (S26: Open G kept after restart)
 - ☐ Manual string selection (lock target string instead of auto-detect)
 - ☐ Notation: sharps ♯ / flats ♭ / solfège (Do-Re-Mi)
 - ☐ Theme: system / light / dark, and dynamic color on Android 12+

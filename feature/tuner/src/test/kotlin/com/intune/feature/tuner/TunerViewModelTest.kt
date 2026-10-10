@@ -197,4 +197,24 @@ class TunerViewModelTest {
         assertEquals(-7.85f, state.cents, 1f)
         assertEquals(1, recorder.startCount)
     }
+
+    @Test
+    fun `choosing a tuning saves it and retargets the strings`() = runTest(dispatcher) {
+        // D2 (73.42 Hz): the 6th string in Drop D, but 2 semitones flat of E2 in standard.
+        val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(73.416f, length = 48_000), loop = true))
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertEquals("E", vm.detected().noteName)
+
+        vm.setTuning(Tunings.DROP_D)
+        advanceTimeBy(500)
+
+        assertEquals(Tunings.DROP_D, settings.current.tuning)
+        val state = vm.detected()
+        assertEquals(Tunings.DROP_D, state.tuning)
+        assertEquals(0, state.targetString)
+        assertEquals("D", state.noteName)
+        assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
+    }
 }

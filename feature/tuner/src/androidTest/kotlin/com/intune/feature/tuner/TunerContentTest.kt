@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -24,11 +25,18 @@ class TunerContentTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private var retries = 0
     private val modeChanges = mutableListOf<TunerMode>()
+    private val tuningChanges = mutableListOf<Tuning>()
 
     private fun show(state: TunerUiState, mode: TunerMode = TunerMode.AUTO) {
         compose.setContent {
             MaterialTheme {
-                TunerContent(state, mode, onModeChange = { modeChanges += it }, onRetry = { retries++ })
+                TunerContent(
+                    state,
+                    mode,
+                    onModeChange = { modeChanges += it },
+                    onTuningChange = { tuningChanges += it },
+                    onRetry = { retries++ },
+                )
             }
         }
     }
@@ -103,5 +111,28 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performClick()
         assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
+    }
+
+    @Test
+    fun tuningPickerListsThePresetsAndReportsTheChoice() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
+        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performClick()
+        assertEquals(listOf(Tunings.DROP_D), tuningChanges)
+    }
+
+    @Test
+    fun stringRowFollowsTheTuning() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertIsDisplayed()
+        stringChip("D2").assertIsDisplayed()
+        stringChip("E2").assertDoesNotExist()
+    }
+
+    @Test
+    fun chromaticModeHidesTheTuningPicker() {
+        show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
     }
 }
