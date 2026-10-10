@@ -16,14 +16,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +46,8 @@ import kotlin.math.exp
  * loop ([WaveDemo]): flat, in tune, sharp, in tune. The [selected] card has a ring; tapping a card
  * calls [onSelect]. The cards form one selectable group for TalkBack, which reads each card's name.
  *
- * Each frame only redraws the cards' previews: nothing is recomposed.
+ * The loop only runs while some of the cards are on screen, and each frame only redraws the cards'
+ * previews: nothing is recomposed.
  */
 @Composable
 fun WaveLookPicker(
@@ -53,7 +58,9 @@ fun WaveLookPicker(
     label: @Composable (WaveLook) -> String,
 ) {
     val demo = remember { WaveDemo() }
-    LaunchedEffect(demo) {
+    var onScreen by remember { mutableStateOf(false) }
+    LaunchedEffect(onScreen) {
+        if (!onScreen) return@LaunchedEffect
         // An "infinite" animation, like the tuner's wave view: UI tests skip these.
         var last = withInfiniteAnimationFrameNanos { it }
         while (true) {
@@ -66,7 +73,12 @@ fun WaveLookPicker(
     }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
-        Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier
+                .selectableGroup()
+                .onVisibilityChanged(minFractionVisible = MIN_VISIBLE) { onScreen = it },
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             WaveLook.entries.chunked(PER_ROW).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { look ->
@@ -174,6 +186,9 @@ private const val TUNE_RATE = 3f
 
 /** A long pause (e.g. coming back to the app) counts as one short step. */
 private const val MAX_STEP_SECONDS = 0.1f
+
+/** The previews move once this much of the grid is on screen (a sliver is enough). */
+private const val MIN_VISIBLE = 0.01f
 
 private const val PER_ROW = 3
 private val PREVIEW_HEIGHT = 32.dp
