@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -33,9 +35,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.intune.core.designsystem.styleTokens
 import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
+import com.intune.core.settings.VisualStyle
 import com.intune.feature.tuner.R
 import com.intune.feature.tuner.spokenNoteName
 
@@ -113,10 +117,11 @@ private fun StringChip(
     )
     val octaveStyle = MaterialTheme.typography.labelSmall.toSpanStyle().copy(baselineShift = BaselineShift.Subscript)
     val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
+    val shape = chipShape(MaterialTheme.styleTokens.style)
     Box(
         modifier = Modifier
             .size(48.dp)
-            .clip(CircleShape)
+            .clip(shape)
             .then(
                 if (onClick != null) {
                     Modifier.clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
@@ -125,10 +130,11 @@ private fun StringChip(
                 },
             )
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
-            .border(2.dp, ring, CircleShape)
+            .border(2.dp, ring, shape)
             .padding(4.dp)
-            .background(background, CircleShape)
-            .border(1.dp, if (highlighted) accent else colors.outlineVariant, CircleShape)
+            .background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape)
+            .background(background, shape)
+            .border(1.dp, if (highlighted) accent else colors.outlineVariant, shape)
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted
@@ -153,6 +159,16 @@ private fun StringChip(
             )
         }
     }
+}
+
+/**
+ * The string chip's outline in [style]: an octagon for the Middle Ages, a chamfered HUD tile for
+ * Futuristic, and a circle for the rest.
+ */
+private fun chipShape(style: VisualStyle): Shape = when (style) {
+    VisualStyle.MIDDLE_AGES -> CutCornerShape(30)
+    VisualStyle.FUTURISTIC -> CutCornerShape(topStartPercent = 35, topEndPercent = 0, bottomEndPercent = 35, bottomStartPercent = 0)
+    else -> CircleShape
 }
 
 /** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */

@@ -20,6 +20,8 @@
     <string name="tuner_mode_chromatic">Chromatic</string>
     <string name="tuner_a4">A4 = %1$d Hz</string>
     <string name="tuner_open_settings">Settings</string>
+    <string name="tuner_change_style">Change style</string>
+    <string name="tuner_style_title">Style</string>
 
     <!-- Tuning presets, see Tunings in :core:dsp. -->
     <string name="tuning_standard">Standard</string>

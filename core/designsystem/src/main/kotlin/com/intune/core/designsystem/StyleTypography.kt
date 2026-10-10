@@ -49,6 +49,8 @@ internal data class StyleFaces(
     val title: FontFamily,
     val body: FontFamily,
     val label: FontFamily = body,
+    /** Readouts made of numbers, like "12 cents flat": the title face, unless its digits are hard to read. */
+    val numbers: FontFamily = title,
     /** Weight of the display and headline styles; null keeps Material's. */
     val displayWeight: FontWeight? = null,
     /** Extra letter spacing for titles, e.g. wide HUD lettering. */
@@ -56,7 +58,8 @@ internal data class StyleFaces(
 )
 
 internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
-    VisualStyle.PREHISTORIC -> StyleFaces(StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif)
+    // Caesar Dressing's 0 looks like a diamond, so numbers are set plainly.
+    VisualStyle.PREHISTORIC -> StyleFaces(StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif, numbers = FontFamily.SansSerif)
     VisualStyle.MIDDLE_AGES -> StyleFaces(StyleFonts.Manuscript, StyleFonts.Manuscript, FontFamily.Serif)
     VisualStyle.CLASSIC -> StyleFaces(StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif, displayWeight = FontWeight.Normal)
     VisualStyle.RETRO -> StyleFaces(StyleFonts.Groovy, StyleFonts.Groovy, FontFamily.SansSerif)
@@ -67,6 +70,9 @@ internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
     )
     VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = 0.02.em)
 }
+
+/** The face for number readouts in [style] (see [StyleFaces.numbers]). */
+fun numberFontFor(style: VisualStyle): FontFamily = facesFor(style).numbers
 
 /** Material 3's type scale set in the faces of [style]. */
 fun typographyFor(style: VisualStyle): Typography {

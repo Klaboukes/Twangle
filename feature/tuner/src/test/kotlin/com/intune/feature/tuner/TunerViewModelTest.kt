@@ -7,6 +7,7 @@ import com.intune.core.dsp.music.Tunings
 import com.intune.core.dsp.testsignals.TestSignals
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
+import com.intune.core.settings.VisualStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -217,6 +218,14 @@ class TunerViewModelTest {
         assertEquals(0, state.targetString)
         assertEquals("D", state.noteName)
         assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
+    }
+
+    @Test
+    fun `choosing a style on the tuner saves it`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder(TestSignals.sine(110f, length = 4_800)))
+        vm.setStyle(VisualStyle.SPACE_AGE)
+        runCurrent()
+        assertEquals(VisualStyle.SPACE_AGE, settings.current.style)
     }
 
     @Test

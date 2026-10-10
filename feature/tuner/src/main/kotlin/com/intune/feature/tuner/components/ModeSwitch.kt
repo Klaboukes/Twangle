@@ -24,6 +24,10 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
                 selected = option == mode,
                 onClick = { onModeChange(option) },
                 shape = SegmentedButtonDefaults.itemShape(index, modes.size),
+                // The unselected segment gets a backing, so it reads on any style's background.
+                colors = SegmentedButtonDefaults.colors(
+                    inactiveContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                ),
                 modifier = Modifier.testTag(TunerTestTags.mode(option)),
             ) {
                 Text(stringResource(label(option)))

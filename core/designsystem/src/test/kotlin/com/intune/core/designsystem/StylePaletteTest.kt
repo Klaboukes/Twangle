@@ -83,6 +83,12 @@ class StylePaletteTest {
         assertEquals("display faces", display.size, display.values.toSet().size)
     }
 
+    @Test
+    fun `prehistoric numbers are set in a plain face`() {
+        assertNotEquals(facesFor(VisualStyle.PREHISTORIC).title, numberFontFor(VisualStyle.PREHISTORIC))
+        assertEquals(facesFor(VisualStyle.FUTURISTIC).title, numberFontFor(VisualStyle.FUTURISTIC))
+    }
+
     private val failures = mutableListOf<String>()
 
     /** Runs [check] on every palette and reports all weak pairs together. */

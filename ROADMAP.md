@@ -74,9 +74,9 @@ Goal: a usable guitar tuner.
 - ☑ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay (synthetic, whole chain: right note at 0–10 dB white noise, ≤ 1 cent at 10 dB; hum 10 dB below the string ≤ 3 cents, hum alone shows nothing; strong-2nd-harmonic high strings no longer read an octave up; long decays stay on the note and the gate closes once; any rate 8–96 kHz within 1 cent (low rates upsampled); built-in mic pinned while a Bluetooth headset is connected)
   - ☐ Owner check with a real Bluetooth headset connected: the tuner still listens through the phone's mic and reads a string correctly (can't be tested without a headset)
 - ☑ Localization scaffolding (English, Dutch): every text in Dutch, follows the phone or the Android 13+ per-app language; `LocalizationTest` guards missing translations and hard-coded text
-- ◐ Visual redesign with seven styles the user picks from: Prehistoric, Middle Ages, Classic, Retro, Contemporary, Futuristic, Space Age
+- ☑ Visual redesign with seven styles the user picks from: Prehistoric, Middle Ages, Classic, Retro, Contemporary, Futuristic, Space Age
   - ☑ Style system (`:core:designsystem`): each style has a light and a dark palette (WCAG-checked), its own lettering (six bundled OFL fonts), shapes, a background and a hand-drawn dial; style cards at the top of settings; a change fades in (S26: all seven checked in light and dark)
-  - ☐ Tuner screen redesign: clearer hierarchy, styled note and string chips, an in-tune moment, a quick style switch on the tuner
+  - ☑ Tuner screen redesign: note in the style's lettering (shrinks to fit), cents in a pill that fills when in tune, glow and pop on reaching pitch, style-shaped string chips with a backing, palette button opening the style cards on the tuner (S26: all seven styles with a live note from short laptop test tones; landscape, tablet and 2× font via the UI tests)
 
 ## Phase 6 — Release → **v1.0**
 - ☐ App icon, adaptive icon, splash screen
