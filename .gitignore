@@ -21,3 +21,6 @@ keystore.properties
 # Android
 *.apk
 *.aab
+
+# Claude Code per-user settings (shared skills in .claude/skills ARE committed)
+.claude/settings.local.json

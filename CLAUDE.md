@@ -65,20 +65,22 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow
+- **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. It runs one increment per session: announce in plain language → branch → build → verify → land.
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
-- Before calling a task done, run `./gradlew test` (and `assembleDebug` for UI/app changes).
+- Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the S26.
 - When a design decision changes, update ARCHITECTURE.md in the same change.
+- The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
 
 ## Git & GitHub
-Remote: `https://github.com/Klaboukes/InTune` (private). Default branch: `main`.
+Remote: `https://github.com/Klaboukes/InTune` (private, free plan). Default branch: `main`.
 
-**Every roadmap increment goes through its own branch and pull request. Never commit directly to `main`.**
+**Every change goes through its own branch and pull request. Never commit directly to `main`.**
 1. `git switch main && git pull`
-2. `git switch -c phase-<N>/<short-kebab-topic>`, e.g. `phase-0/app-shell` or `phase-1/yin-detector`
+2. Branch: `phase-<N>/<short-kebab-topic>` for roadmap work (e.g. `phase-1/yin-detector`), `fix/<topic>` for repairs, `chore/<topic>` for tooling and docs.
 3. Commit in small, focused commits (imperative subject line, ≤ 72 chars).
 4. Tick the finished items in ROADMAP.md (☐ → ☑) in the same branch.
-5. Build and test locally (see Workflow above). Don't open a PR on a red build.
-6. `git push -u origin <branch>`, then `gh pr create --base main --fill` (title = increment name, body = what changed + how it was verified).
-7. Once CI is green, `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Never merge on a red or still-pending CI.
+5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
+6. `git push -u origin <branch>`, then `gh pr create --base main` (title = increment name, body = what changed + how it was verified).
+7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI still runs on `main`, and the next iteration checks the last `main` run first and fixes any failure before anything else.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.
