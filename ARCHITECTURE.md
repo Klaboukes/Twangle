@@ -131,7 +131,12 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 ### Audio capture
 `AudioRecorder.chunks()` is a cold `Flow<FloatArray>`. The mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` builds an `AudioRecord` (mono, `ENCODING_PCM_FLOAT`, buffer ≥ 4 chunks) and reads 1024-sample chunks with `READ_BLOCKING` on its own single-thread dispatcher. To avoid ~47 new arrays a second it fills a **pool of 4 arrays** in turn, behind a channel of capacity 2. The collector holds one chunk, the channel up to two and the reader fills the fourth, so a chunk is never overwritten while it's in use. The catch: **a chunk is only valid until the collector takes the next one.** Downstream code copies samples out (into `FrameAssembler`) inside `collect` and must not `buffer()` the chunks themselves.
 
-`PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame. Phase 3 adds `PitchSmoother` and the tuning logic on top.
+`PitchPipeline` (in `:feature:tuner`, because it joins `:core:audio` and `:core:dsp`) wires the stages above: it collects the chunks, pushes them into a `FrameAssembler`, then runs `SignalGate` and `YinPitchDetector` (built with the recorder's sample rate) on `Dispatchers.Default`, emitting one raw `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen)` per hop. The DSP objects and frame buffer are created once per collection. Only the small immutable reading for the UI is new each frame.
+
+`TunerViewModel` builds on it. For each listening session it creates a `TunerInterpreter` that feeds every reading to `PitchSmoother` (`noReading()` when there's no pitch) and turns the smoothed MIDI value into a `TunerUiState`. That runs on `Dispatchers.Default`, in the same coroutine as the detector. Mode and tuning are read on every frame, so switching modes takes effect on the next frame (~21 ms) without reopening the mic or losing the smoothing history.
+- **Chromatic:** the smoother's note (with its ±15-cent hysteresis) and cents.
+- **Auto:** the closest string (`nearestStringIndex`) and `centsFromString`, not wrapped. The target string is sticky: it only changes once another string is closer by more than 15 cents, so a note half-way between two strings doesn't flicker.
+- The frequency shown is the smoothed one (`NoteMapper.frequencyOf(smoother.midi)`), not the raw reading.
 
 Failures end the flow with a typed `AudioRecorderException`, which the ViewModel maps to a recoverable error state:
 - `PermissionMissing`: `RECORD_AUDIO` isn't granted (checked before opening, and on `SecurityException`).
@@ -164,6 +169,8 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 ## 6. UI state model
 
 ```kotlin
+enum class TunerMode { AUTO, CHROMATIC }
+
 sealed interface TunerUiState {
     data object PermissionRequired : TunerUiState
     data class  Error(val reason: TunerError) : TunerUiState
@@ -171,15 +178,16 @@ sealed interface TunerUiState {
     data class  Detected(
         val mode: TunerMode,
         val tuning: Tuning,
-        val noteName: String,          // e.g. "E"
+        val noteName: String,          // target note, e.g. "E"
         val octave: Int,               // e.g. 2
-        val frequencyHz: Float,
-        val cents: Float,              // smoothed, −50..+50
+        val frequencyHz: Float,        // smoothed
+        val cents: Float,              // smoothed; Auto: unwrapped distance to the string, Chromatic: about ±65
         val targetString: Int?,        // index into tuning, Auto mode only
-        val inTune: Boolean,
     ) : TunerUiState
 }
 ```
+
+`TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. The tuning is fixed to `Tunings.DEFAULT` until Phase 4 adds settings.
 
 ## 7. Package layout (per module)
 
@@ -201,7 +209,7 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
-    TunerViewModel, TunerUiState, TunerScreen, PitchPipeline (+ PitchReading), TunerError
+    TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
     debug/       DebugViewModel, DebugPitchScreen (temporary, Phase 2)
     components/  NeedleGauge, NoteDisplay, StringSelector, PermissionPrompt

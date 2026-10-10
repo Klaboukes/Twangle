@@ -47,7 +47,7 @@ Goal: live microphone frames reach the DSP pipeline.
 ## Phase 3 — Tuner MVP (`:feature:tuner`) → **v0.1 (internal)**
 Goal: a usable guitar tuner.
 
-- ☐ `TunerViewModel` + `TunerUiState` (PermissionRequired / Listening / Detected / Error)
+- ☑ `TunerViewModel` + `TunerUiState` (PermissionRequired / Listening / Detected / Error; smoothing via `TunerInterpreter`, sticky target string in Auto mode)
 - ☐ Needle gauge (−50…+50 cents) drawn on a Compose `Canvas`, with animated needle
 - ☐ Big note name + octave, frequency, cents readout
 - ☐ String row for the selected tuning; detected string highlighted
