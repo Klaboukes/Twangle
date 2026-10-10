@@ -83,7 +83,7 @@ Rules:
 - **Detection range**: 60 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min).
 - **YIN threshold**: 0.15 (tunable; the paper suggests 0.10–0.15). The first CMNDF dip below it is accepted as the period.
 - **Accuracy target**: ±1 cent on synthetic test signals and ±3 cents on recorded guitar fixtures.
-- **"In tune"**: |cents| ≤ 5 held for at least 300 ms. Then show a green state and trigger one haptic tick.
+- **"In tune"**: |cents| ≤ 5 held for at least 300 ms (counted in frames: 15 hops at 48 kHz). It then stays in tune until the reading drifts past 7 cents, so a note hovering at 5 cents doesn't flicker. Show a green state (and, in Phase 5, one haptic tick).
 
 ### Frame assembly
 `FrameAssembler` keeps a 4096-sample ring buffer. Callers `push()` audio chunks of any size. Each call consumes samples until a frame is ready, then stops so no frame is skipped. `readFrame(out)` copies the window oldest-first into a caller-owned array. The first frame arrives after one full window, then one every hop (1024). The ring and the output window are allocated once.
@@ -137,6 +137,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 - **Chromatic:** the smoother's note (with its ±15-cent hysteresis) and cents.
 - **Auto:** the closest string (`nearestStringIndex`) and `centsFromString`, not wrapped. The target string is sticky: it only changes once another string is closer by more than 15 cents, so a note half-way between two strings doesn't flicker.
 - The frequency shown is the smoothed one (`NoteMapper.frequencyOf(smoother.midi)`), not the raw reading.
+- `InTuneDetector` sets `Detected.inTune` from the smoothed cents and the frame duration (`PitchPipeline.frameSeconds` = hop / sample rate). It restarts when the note stops or the target note changes, so a new string always has to earn "in tune".
 
 Failures end the flow with a typed `AudioRecorderException`, which the ViewModel maps to a recoverable error state:
 - `PermissionMissing`: `RECORD_AUDIO` isn't granted (checked before opening, and on `SecurityException`).
@@ -183,13 +184,14 @@ sealed interface TunerUiState {
         val frequencyHz: Float,        // smoothed
         val cents: Float,              // smoothed; Auto: unwrapped distance to the string, Chromatic: about ±65
         val targetString: Int?,        // index into tuning, Auto mode only
+        val inTune: Boolean,           // ≤ 5 cents for ≥ 300 ms, released past 7 cents
     ) : TunerUiState
 }
 ```
 
 `TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. The tuning is fixed to `Tunings.DEFAULT` until Phase 4 adds settings.
 
-`TunerScreen` wires the ViewModel; `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄) under the readout, with `targetString` highlighted and marked `selected` for accessibility. In chromatic mode its slot stays empty but keeps its height, so switching modes doesn't move the layout under the user's finger.
+`TunerScreen` wires the ViewModel; `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄) under the readout, with `targetString` highlighted and marked `selected` for accessibility. In chromatic mode its slot stays empty but keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to a theme-aware green (`InTuneColor.kt`; Material 3 has no success role). A shape cue for colour-blind users follows in Phase 5.
 
 ## 7. Package layout (per module)
 
@@ -211,9 +213,9 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
-    TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, TunerScreen, PitchPipeline (+ PitchReading), TunerError
+    TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, InTuneDetector, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
-    components/  NeedleGauge, NoteDisplay, StringSelector, PermissionPrompt
+    components/  NeedleGauge, NoteDisplay, StringSelector, ModeSwitch, InTuneColor, PermissionPrompt
 
 app/src/main/kotlin/com/intune/app/
     InTuneApplication, AppContainer, MainActivity, ui/theme/

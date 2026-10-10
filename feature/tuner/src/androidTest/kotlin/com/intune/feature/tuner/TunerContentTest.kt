@@ -41,6 +41,7 @@ class TunerContentTest {
         frequencyHz = 81.84f,
         cents = cents,
         targetString = targetString,
+        inTune = false,
     )
 
     /** String chips read e.g. "A2": note name plus subscript octave. */

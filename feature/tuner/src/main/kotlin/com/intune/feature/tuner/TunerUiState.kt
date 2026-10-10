@@ -41,5 +41,7 @@ sealed interface TunerUiState {
         val cents: Float,
         /** Index into [Tuning.strings] of the target string in [TunerMode.AUTO], otherwise null. */
         val targetString: Int?,
+        /** Within 5 cents of the target for at least 300 ms (see [InTuneDetector]). */
+        val inTune: Boolean,
     ) : TunerUiState
 }

@@ -84,12 +84,12 @@ fun TunerContent(
         when (state) {
             is TunerUiState.Error -> TunerErrorMessage(state.reason, onRetry)
             is TunerUiState.Detected -> {
-                NeedleGauge(cents = state.cents)
+                NeedleGauge(cents = state.cents, inTune = state.inTune)
                 NoteDisplay(
-                    readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents),
+                    readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                     hint = "",
                 )
-                StringRowSlot(mode, state.tuning, state.targetString)
+                StringRowSlot(mode, state.tuning, state.targetString, state.inTune)
             }
             is TunerUiState.Listening -> {
                 NeedleGauge(cents = null)
@@ -111,9 +111,9 @@ fun TunerContent(
  * doesn't shift the layout (and the mode switch under the user's finger).
  */
 @Composable
-private fun StringRowSlot(mode: TunerMode, tuning: Tuning?, targetString: Int?) {
+private fun StringRowSlot(mode: TunerMode, tuning: Tuning?, targetString: Int?, inTune: Boolean = false) {
     Box(modifier = Modifier.height(STRING_ROW_HEIGHT), contentAlignment = Alignment.Center) {
-        if (mode == TunerMode.AUTO && tuning != null) StringSelector(tuning, targetString)
+        if (mode == TunerMode.AUTO && tuning != null) StringSelector(tuning, targetString, inTune = inTune)
     }
 }
 
@@ -154,6 +154,7 @@ private fun TunerContentDetectedPreview() {
                 frequencyHz = 81.84f,
                 cents = -12f,
                 targetString = 0,
+                inTune = false,
             ),
             mode = TunerMode.AUTO,
             onModeChange = {},

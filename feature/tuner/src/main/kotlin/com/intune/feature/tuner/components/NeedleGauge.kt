@@ -30,13 +30,14 @@ import kotlin.math.sin
 /**
  * Half-circle gauge from −[GAUGE_RANGE_CENTS] (left, flat) to +[GAUGE_RANGE_CENTS] (right, sharp)
  * with a needle that springs to each new reading. Readings beyond the range pin the needle to the
- * edge. With [cents] = null (no note) the needle rests at the centre, faded.
+ * edge. With [cents] = null (no note) the needle rests at the centre, faded. While [inTune] the
+ * needle and the centre tick turn green.
  *
  * The animated values are only read while drawing, so a new reading redraws the gauge without
  * recomposing it.
  */
 @Composable
-fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier) {
+fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier, inTune: Boolean = false) {
     val needle = animateFloatAsState(
         targetValue = needleCents(cents),
         animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow),
@@ -47,8 +48,8 @@ fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val arcColor = colors.outlineVariant
     val tickColor = colors.onSurfaceVariant
-    val centreColor = colors.primary
-    val needleColor = colors.onSurface
+    val centreColor = animateInTuneColor(inTune, colors.primary, "centreTick")
+    val needleColor = animateInTuneColor(inTune, colors.onSurface, "needleColor")
 
     Column(modifier = modifier.fillMaxWidth()) {
         Canvas(modifier = Modifier.fillMaxWidth().aspectRatio(2f)) {
@@ -56,8 +57,8 @@ fun NeedleGauge(cents: Float?, modifier: Modifier = Modifier) {
             val pivotInset = 10.dp.toPx()
             val radius = min(size.width / 2f, size.height - pivotInset) * 0.95f
             val centre = Offset(size.width / 2f, size.height - pivotInset)
-            drawScale(centre, radius, arcColor, tickColor, centreColor)
-            drawNeedle(centre, radius, needle.value, needleColor.copy(alpha = needleAlpha.value))
+            drawScale(centre, radius, arcColor, tickColor, centreColor.value)
+            drawNeedle(centre, radius, needle.value, needleColor.value.copy(alpha = needleAlpha.value))
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(

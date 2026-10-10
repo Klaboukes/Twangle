@@ -28,10 +28,11 @@ import com.intune.core.dsp.music.Tunings
 
 /**
  * The open strings of [tuning], lowest on the left, with the [targetString] (if any) highlighted.
- * Each string shows its note name with the octave as a small subscript, e.g. E₂.
+ * Each string shows its note name with the octave as a small subscript, e.g. E₂. The highlight
+ * turns green while [inTune].
  */
 @Composable
-fun StringSelector(tuning: Tuning, targetString: Int?, modifier: Modifier = Modifier) {
+fun StringSelector(tuning: Tuning, targetString: Int?, modifier: Modifier = Modifier, inTune: Boolean = false) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -41,22 +42,31 @@ fun StringSelector(tuning: Tuning, targetString: Int?, modifier: Modifier = Modi
                 name = note.pitchClass.symbol,
                 octave = note.octave,
                 highlighted = index == targetString,
+                inTune = inTune,
             )
         }
     }
 }
 
 @Composable
-private fun StringChip(name: String, octave: Int, highlighted: Boolean) {
+private fun StringChip(name: String, octave: Int, highlighted: Boolean, inTune: Boolean) {
     val colors = MaterialTheme.colorScheme
-    val background by animateColorAsState(if (highlighted) colors.primary else Color.Transparent, label = "chip")
-    val content by animateColorAsState(if (highlighted) colors.onPrimary else colors.onSurfaceVariant, label = "chipText")
+    val accent by animateInTuneColor(inTune, colors.primary, "chipAccent")
+    val background by animateColorAsState(if (highlighted) accent else Color.Transparent, label = "chip")
+    val content by animateColorAsState(
+        targetValue = when {
+            !highlighted -> colors.onSurfaceVariant
+            inTune -> onInTuneColor()
+            else -> colors.onPrimary
+        },
+        label = "chipText",
+    )
     val octaveStyle = MaterialTheme.typography.labelSmall.toSpanStyle().copy(baselineShift = BaselineShift.Subscript)
     Box(
         modifier = Modifier
             .size(48.dp)
             .background(background, CircleShape)
-            .border(1.dp, if (highlighted) colors.primary else colors.outlineVariant, CircleShape)
+            .border(1.dp, if (highlighted) accent else colors.outlineVariant, CircleShape)
             .semantics(mergeDescendants = true) { selected = highlighted },
         contentAlignment = Alignment.Center,
     ) {

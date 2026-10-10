@@ -52,7 +52,7 @@ Goal: a usable guitar tuner.
 - ☑ Big note name + octave, frequency, cents readout (S26: 194 Hz test tone shown as G3, 16 cents flat, 194.1 Hz); debug screen removed
 - ☑ String row for the selected tuning; detected string highlighted (S26: 111 Hz tone lit A₂, 16 cents sharp)
 - ☑ Auto (guitar) mode vs Chromatic mode toggle (segmented "Guitar / Chromatic"; switching keeps the mic open and the layout still)
-- ☐ "In tune" state: |cents| ≤ 5 for ≥ 300 ms → color change
+- ☑ "In tune" state: |cents| ≤ 5 for ≥ 300 ms → color change (green needle, note, text and string; released past 7 cents; S26: 110 Hz tone turns green, 111 Hz doesn't)
 - ☐ Mic is released whenever the screen is not visible
 - ☐ Tested on at least 2 physical devices with a real guitar
 

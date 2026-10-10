@@ -66,7 +66,7 @@ class TunerViewModel(
     }
 
     private fun listen(): Flow<TunerUiState> = flow {
-        val interpreter = TunerInterpreter()
+        val interpreter = TunerInterpreter(pipeline.frameSeconds)
         emit(TunerUiState.Listening(_mode.value, tuning))
         emitAll(pipeline.readings().map { interpreter.interpret(it, _mode.value, tuning) })
     }

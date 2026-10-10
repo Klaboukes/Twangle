@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -24,14 +25,18 @@ data class NoteReadout(
     val octave: Int,
     val frequencyHz: Float,
     val cents: Float,
+    val inTune: Boolean = false,
 )
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") and the frequency.
- * Without a [readout] it shows a dash and [hint], e.g. "Play a string".
+ * The note and cents turn green while the readout is in tune. Without a [readout] it shows a dash
+ * and [hint], e.g. "Play a string".
  */
 @Composable
 fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifier) {
+    val inTune = readout?.inTune == true
+    val noteColor by animateInTuneColor(inTune, MaterialTheme.colorScheme.onSurface, "noteColor")
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -42,6 +47,7 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
                 text = readout?.noteName ?: stringResource(R.string.tuner_placeholder_note),
                 style = MaterialTheme.typography.displayLarge.copy(fontSize = 112.sp, lineHeight = 120.sp),
                 fontWeight = FontWeight.Medium,
+                color = noteColor,
                 modifier = Modifier.alignByBaseline(),
             )
             if (readout != null) {
@@ -56,6 +62,7 @@ fun NoteDisplay(readout: NoteReadout?, hint: String, modifier: Modifier = Modifi
         Text(
             text = if (readout != null) centsText(readout.cents) else hint,
             style = MaterialTheme.typography.titleLarge,
+            color = noteColor,
         )
         Text(
             text = if (readout != null) stringResource(R.string.tuner_frequency, readout.frequencyHz) else "",

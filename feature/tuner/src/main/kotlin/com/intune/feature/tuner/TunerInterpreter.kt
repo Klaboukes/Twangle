@@ -11,16 +11,22 @@ import kotlin.math.abs
  * [PitchSmoother], then picks the target, either the nearest note ([TunerMode.CHROMATIC]) or the
  * closest string of the tuning ([TunerMode.AUTO]).
  *
+ * It also tracks whether the note is in tune ([InTuneDetector]), restarting whenever the target
+ * changes. [frameSeconds] is the time between readings (hop / sample rate).
+ *
  * Mode and tuning are passed with every reading, so switching them takes effect on the next frame
  * without losing the smoothing history. Create one per listening session; it keeps state and is
  * not thread-safe. Apart from the returned state nothing is allocated per frame.
  */
 class TunerInterpreter(
+    private val frameSeconds: Float,
     private val noteMapper: NoteMapper = NoteMapper(),
     private val smoother: PitchSmoother = PitchSmoother(),
+    private val inTuneDetector: InTuneDetector = InTuneDetector(),
 ) {
     private var stringIndex = NO_STRING
     private var stringTuning: Tuning? = null
+    private var targetMidi = NO_TARGET
 
     fun interpret(reading: PitchReading, mode: TunerMode, tuning: Tuning): TunerUiState {
         if (reading.isPitched) {
@@ -30,6 +36,8 @@ class TunerInterpreter(
         }
         if (!smoother.hasReading) {
             stringIndex = NO_STRING
+            targetMidi = NO_TARGET
+            inTuneDetector.reset()
             return TunerUiState.Listening(mode, tuning)
         }
 
@@ -69,20 +77,29 @@ class TunerInterpreter(
         frequencyHz: Float,
         cents: Float,
         targetString: Int?,
-    ) = TunerUiState.Detected(
-        mode = mode,
-        tuning = tuning,
-        noteName = target.pitchClass.symbol,
-        octave = target.octave,
-        frequencyHz = frequencyHz,
-        cents = cents,
-        targetString = targetString,
-    )
+    ): TunerUiState.Detected {
+        // A new target has to earn "in tune" on its own, even if it starts right on pitch.
+        if (target.midi != targetMidi) {
+            targetMidi = target.midi
+            inTuneDetector.reset()
+        }
+        return TunerUiState.Detected(
+            mode = mode,
+            tuning = tuning,
+            noteName = target.pitchClass.symbol,
+            octave = target.octave,
+            frequencyHz = frequencyHz,
+            cents = cents,
+            targetString = targetString,
+            inTune = inTuneDetector.update(cents, frameSeconds),
+        )
+    }
 
     companion object {
         /** 15 cents, matching [PitchSmoother.DEFAULT_HYSTERESIS_CENTS]. */
         const val STRING_HYSTERESIS_SEMITONES = 0.15f
 
         private const val NO_STRING = -1
+        private const val NO_TARGET = Int.MIN_VALUE
     }
 }

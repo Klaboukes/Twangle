@@ -3,6 +3,7 @@ package com.intune.feature.tuner
 import com.intune.core.dsp.music.NoteMapper
 import com.intune.core.dsp.music.Tunings
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -10,7 +11,8 @@ import kotlin.math.abs
 
 class TunerInterpreterTest {
 
-    private val interpreter = TunerInterpreter()
+    private val frameSeconds = 1024f / 48_000f
+    private val interpreter = TunerInterpreter(frameSeconds)
     private val mapper = NoteMapper()
     private val standard = Tunings.STANDARD
 
@@ -115,5 +117,34 @@ class TunerInterpreterTest {
         play(pitched(hz(45f)))
         assertTrue(play(silent, frames = 4) is TunerUiState.Detected)
         assertTrue(play(silent, frames = 1) is TunerUiState.Listening)
+    }
+
+    @Test
+    fun `a steady note close to the string becomes in tune after 300 ms`() {
+        val reading = pitched(hz(40.03f)) // E2, 3 cents sharp
+        // The smoother snaps on the first frame, so the 300 ms count starts right away.
+        assertFalse(play(reading, frames = 14).detected().inTune) // 14 × 21.3 ms ≈ 299 ms
+        assertTrue(play(reading, frames = 1).detected().inTune)
+    }
+
+    @Test
+    fun `a note 10 cents off is never in tune`() {
+        assertFalse(play(pitched(hz(40.1f)), frames = 100).detected().inTune)
+    }
+
+    @Test
+    fun `a new string has to earn in tune again`() {
+        play(pitched(hz(40f)))
+        // 3 frames: the median of 5 switches over to the new string.
+        val state = play(pitched(hz(45f)), frames = 3).detected()
+        assertEquals(1, state.targetString)
+        assertFalse(state.inTune)
+    }
+
+    @Test
+    fun `silence ends in tune`() {
+        play(pitched(hz(45f)))
+        play(silent, frames = 5)
+        assertFalse(interpreter.interpret(pitched(hz(45f)), TunerMode.AUTO, standard).detected().inTune)
     }
 }

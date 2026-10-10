@@ -39,6 +39,9 @@ class PitchPipeline(
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
 
+    /** Time between two readings: one hop at the recorder's sample rate (~21 ms). */
+    val frameSeconds: Float get() = FrameAssembler.DEFAULT_HOP_SIZE.toFloat() / recorder.config.sampleRate
+
     fun readings(): Flow<PitchReading> = flow {
         val assembler = FrameAssembler()
         val gate = SignalGate()
