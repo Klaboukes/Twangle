@@ -1,10 +1,10 @@
 <resources>
     <string name="tuner_placeholder_note" translatable="false">—</string>
 
-    <string name="mic_permission_title">InTune needs your microphone</string>
-    <string name="mic_permission_intro">To tune, InTune listens to your instrument. Sound is analysed on your phone and never recorded or sent anywhere.</string>
-    <string name="mic_permission_rationale">Without the microphone InTune can\'t hear your strings, so it can\'t tell whether they\'re in tune. Sound never leaves your phone.</string>
-    <string name="mic_permission_settings_hint">Microphone access is turned off for InTune. Open Settings, tap Permissions, then Microphone, and choose Allow.</string>
+    <string name="mic_permission_title">Twangle needs your microphone</string>
+    <string name="mic_permission_intro">To tune, Twangle listens to your instrument. Sound is analysed on your phone and never recorded or sent anywhere.</string>
+    <string name="mic_permission_rationale">Without the microphone Twangle can\'t hear your strings, so it can\'t tell whether they\'re in tune. Sound never leaves your phone.</string>
+    <string name="mic_permission_settings_hint">Microphone access is turned off for Twangle. Open Settings, tap Permissions, then Microphone, and choose Allow.</string>
     <string name="mic_permission_allow">Allow microphone</string>
     <string name="mic_permission_open_settings">Open settings</string>
 

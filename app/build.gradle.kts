@@ -9,7 +9,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.intune.app"
+        applicationId = "io.github.klaboukes.twangle"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

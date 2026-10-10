@@ -5,7 +5,7 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
 
 /** The app under test (`:app`). */
-const val TARGET_PACKAGE = "com.intune.app"
+const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 
 // Test tags from `TunerTestTags` in :feature:tuner. UI Automator sees them as resource ids, which
 // stay the same in every app language.

@@ -1,8 +1,8 @@
 <resources>
-    <string name="mic_permission_title">InTune heeft je microfoon nodig</string>
-    <string name="mic_permission_intro">Om te stemmen luistert InTune naar je instrument. Het geluid wordt op je telefoon geanalyseerd en nooit opgenomen of verstuurd.</string>
-    <string name="mic_permission_rationale">Zonder microfoon kan InTune je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je telefoon nooit.</string>
-    <string name="mic_permission_settings_hint">De microfoon staat uit voor InTune. Open Instellingen, tik op Machtigingen en dan op Microfoon, en kies Toestaan.</string>
+    <string name="mic_permission_title">Twangle heeft je microfoon nodig</string>
+    <string name="mic_permission_intro">Om te stemmen luistert Twangle naar je instrument. Het geluid wordt op je telefoon geanalyseerd en nooit opgenomen of verstuurd.</string>
+    <string name="mic_permission_rationale">Zonder microfoon kan Twangle je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je telefoon nooit.</string>
+    <string name="mic_permission_settings_hint">De microfoon staat uit voor Twangle. Open Instellingen, tik op Machtigingen en dan op Microfoon, en kies Toestaan.</string>
     <string name="mic_permission_allow">Microfoon toestaan</string>
     <string name="mic_permission_open_settings">Instellingen openen</string>
 

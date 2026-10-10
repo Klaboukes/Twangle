@@ -1,6 +1,6 @@
-# InTune — Architecture
+# Twangle — Architecture
 
-InTune is a chromatic and guitar-string tuner for Android. It listens to the microphone, finds the fundamental frequency of the note being played, and shows how far that note is from the target pitch, in cents.
+Twangle is a chromatic and guitar-string tuner for Android. It listens to the microphone, finds the fundamental frequency of the note being played, and shows how far that note is from the target pitch, in cents.
 
 ## 1. Tech stack
 
@@ -18,6 +18,11 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 | Testing | JUnit 4 (JVM), kotlinx-coroutines-test, Compose UI test | DSP is checked with synthesized signals. UI is tested with Compose test rules. |
 | CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug on every PR. The debug APK is uploaded as an artifact. |
 | Min / target SDK | **minSdk 26** (Android 8.0) / targetSdk 37 | `ENCODING_PCM_FLOAT` and the `UNPROCESSED` audio source work reliably from API 24+. 26 covers about 97% of active devices. minSdk 26 also means adaptive icons need no PNG fallbacks. |
+
+### Name, app ID and icon
+- **Name:** Twangle (until October 2026: InTune, which clashed with Microsoft Intune). Names that advertise "free" were dropped: Google Play's metadata policy bans price words in titles.
+- **App ID:** `io.github.klaboukes.twangle`, the usual reverse-domain ID for an open-source app hosted on GitHub. It was changed before the first store release, while that was still free. The Kotlin `namespace` and packages stay `com.intune.*`, because renaming them changes no behaviour.
+- **Launcher icon:** a dark-brown string on gold that comes in at an angle, makes one round loop and leaves straight: tangled, then in tune. Where the straight part crosses, the string passes under it. It's an adaptive icon (`res/drawable/ic_launcher_foreground.xml` + `ic_launcher_background` colour), and the same foreground is the monochrome layer for themed icons.
 
 ### Rejected alternatives
 - **Flutter / React Native**: microphone DSP would go through platform channels, which adds latency and complexity for a single-platform app.
@@ -155,7 +160,7 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 2. Otherwise use `VOICE_RECOGNITION`. It is required to have AGC and noise suppression turned off.
 3. Never use `MIC` or `VOICE_COMMUNICATION`. Their AGC and noise suppression distort pitch and level.
 
-**Bluetooth headsets.** Android records from a headset's mic only over SCO/HFP or LE Audio, a call-quality link: 8 or 16 kHz, band-limited to ~3.4 or ~7 kHz, often with the headset's own noise suppression. InTune never asks for that route (no `startBluetoothSco()` or `setCommunicationDevice()`), so normally the phone's mic records while the headset plays. In case another app or the system has opened SCO, `InputDeviceSelector` pins the built-in mic with `AudioRecord.setPreferredDevice` whenever a Bluetooth input (`TYPE_BLUETOOTH_SCO`, `TYPE_BLE_HEADSET`) is present. Wired headsets and USB audio interfaces keep Android's normal routing, so a plugged-in mic or interface still works. If no built-in mic is listed, routing is left to Android; band-limited or low-rate audio is still handled (see Other sample rates and Edge cases). *Not yet verified with a real headset.*
+**Bluetooth headsets.** Android records from a headset's mic only over SCO/HFP or LE Audio, a call-quality link: 8 or 16 kHz, band-limited to ~3.4 or ~7 kHz, often with the headset's own noise suppression. Twangle never asks for that route (no `startBluetoothSco()` or `setCommunicationDevice()`), so normally the phone's mic records while the headset plays. In case another app or the system has opened SCO, `InputDeviceSelector` pins the built-in mic with `AudioRecord.setPreferredDevice` whenever a Bluetooth input (`TYPE_BLUETOOTH_SCO`, `TYPE_BLE_HEADSET`) is present. Wired headsets and USB audio interfaces keep Android's normal routing, so a plugged-in mic or interface still works. If no built-in mic is listed, routing is left to Android; band-limited or low-rate audio is still handled (see Other sample rates and Edge cases). *Not yet verified with a real headset.*
 
 `AudioSourceSelector.candidates()` returns the inputs to try in that order (`AudioInput` lists only these two). `AndroidAudioRecorder` opens the first one whose `AudioRecord` initializes, so a device that claims `UNPROCESSED` support but fails to open it still falls back to `VOICE_RECOGNITION`.
 
@@ -306,7 +311,7 @@ The user picks one of seven styles: Prehistoric, Middle Ages, Classic, Retro, Co
 
 ### Languages
 - **English (default) and Dutch.** Each module keeps its texts in `res/values/strings.xml` with a Dutch copy in `res/values-nl/strings.xml`; the app follows the phone's language. Brand and symbols (`app_name`, `DADGAD`, ♯/♭, the dash) are `translatable="false"`.
-- **Per-app language (Android 13+):** `:app` sets `androidResources.generateLocaleConfig = true` with `res/resources.properties` (`unqualifiedResLocale=en`), so the system *App languages* page offers InTune in English or Dutch. `localeFilters` keeps only `en` and `nl`, so library texts (Material menus) never appear in a third language.
+- **Per-app language (Android 13+):** `:app` sets `androidResources.generateLocaleConfig = true` with `res/resources.properties` (`unqualifiedResLocale=en`), so the system *App languages* page offers Twangle in English or Dutch. `localeFilters` keeps only `en` and `nl`, so library texts (Material menus) never appear in a third language.
 - **Formatting:** counts use plurals (`tuner_cents_flat/sharp`) and numbers go through placeholders (`%1$.1f Hz`), which Android formats in the resource locale, so Dutch shows "440,0 Hz" and "12 cent te laag". Note names are not translated: they follow the notation setting (C♯ / D♭ / Do♯) in every language. TalkBack's spoken accidentals are resources ("C sharp", Dutch "C kruis" / "D mol").
 - **Guard:** `LocalizationTest` (JVM, in `:app`) fails when a module's English string has no Dutch copy or a different set of placeholders, and when Kotlin code passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar. Lint's `MissingTranslation` and `StringFormat*` checks back it up.
 

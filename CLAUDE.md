@@ -3,7 +3,9 @@
 Guidance for Claude Code (and humans) working in this repository.
 
 ## Project
-**InTune** is an Android guitar tuner (chromatic + guitar-string modes). It captures microphone audio, finds pitch with the YIN algorithm, and shows the deviation in cents on a Compose needle gauge.
+**Twangle** is an Android guitar tuner (chromatic + guitar-string modes). It captures microphone audio, finds pitch with the YIN algorithm, and shows the deviation in cents on a Compose needle gauge.
+
+The app was called InTune until October 2026. The app ID is now `io.github.klaboukes.twangle`. Code packages (`com.intune.*`), some class names (`InTuneTheme`, `InTuneApplication`), the repo and the local folder still use the old name. Don't confuse those with the `InTune*` classes that mean "in tune" (`InTuneDetector`, `InTuneColor`, `InTuneHaptic`, `InTuneTickRule`).
 
 - Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md). Read it before making structural changes.
 - Plan and progress: [ROADMAP.md](ROADMAP.md). Tick items (☐ → ☑) as you finish them.
@@ -49,7 +51,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - **Physical test device: Samsung Galaxy S26.** Samsung's *Auto Blocker* (Settings → Security and privacy → Auto Blocker) must be OFF, or USB debugging stays greyed out and adb can't connect. If `adb devices` shows nothing or `unauthorized`, check Auto Blocker first, then the USB-debugging prompt on the phone.
 
 ### CI
-`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main`, and uploads the debug APK as the `intune-debug-apk` artifact.
+`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main`, and uploads the debug APK as the `twangle-debug-apk` artifact.
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.

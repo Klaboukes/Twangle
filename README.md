@@ -1,10 +1,10 @@
-# InTune
+# Twangle
 
-InTune is a guitar tuner for Android. Play a string, and InTune shows which note you played and how far it is from being in tune, on a needle gauge measured in cents.
+Twangle is a guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a needle gauge measured in cents.
 
 ## Free forever
 
-InTune is and will always be **free**:
+Twangle is and will always be **free**:
 
 - **No ads.** Not now, not later.
 - **No account.** No sign-up, no login, no email address.
@@ -31,7 +31,7 @@ Early development. The tuner works, with its settings (Phases 0–4 of the [road
 
 ## How it works
 
-InTune listens to the microphone, finds the pitch of the note with the [YIN algorithm](http://audition.ens.fr/adc/pdf/2002_JASA_YIN.pdf) (de Cheveigné & Kawahara, 2002), and compares it with the target note. It's written in Kotlin with Jetpack Compose and needs Android 8.0 or newer.
+Twangle listens to the microphone, finds the pitch of the note with the [YIN algorithm](http://audition.ens.fr/adc/pdf/2002_JASA_YIN.pdf) (de Cheveigné & Kawahara, 2002), and compares it with the target note. It's written in Kotlin with Jetpack Compose and needs Android 8.0 or newer.
 
 | Module | What it does |
 |---|---|
@@ -55,7 +55,7 @@ You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundl
 ./gradlew test            # run the unit tests
 ```
 
-Every push to `main` is built by GitHub Actions, and the debug APK is attached to each run as `intune-debug-apk`.
+Every push to `main` is built by GitHub Actions, and the debug APK is attached to each run as `twangle-debug-apk`.
 
 ## Contributing
 

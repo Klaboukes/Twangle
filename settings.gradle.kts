@@ -25,7 +25,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "InTune"
+rootProject.name = "Twangle"
 
 include(":app")
 include(":feature:tuner")
