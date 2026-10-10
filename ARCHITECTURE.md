@@ -84,6 +84,9 @@ Rules:
 - **Accuracy target**: ±1 cent on synthetic test signals and ±3 cents on recorded guitar fixtures.
 - **"In tune"**: |cents| ≤ 5 held for at least 300 ms. Then show a green state and trigger one haptic tick.
 
+### Frame assembly
+`FrameAssembler` keeps a 4096-sample ring buffer. Callers `push()` audio chunks of any size. Each call consumes samples until a frame is ready, then stops so no frame is skipped. `readFrame(out)` copies the window oldest-first into a caller-owned array. The first frame arrives after one full window, then one every hop (1024). The ring and the output window are allocated once.
+
 ### Note math
 ```
 midi  = 69 + 12 · log2(f / A4)        (A4 default 440 Hz, configurable 415–466)
