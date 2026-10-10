@@ -33,6 +33,7 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>, permission helpers
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, note math, tunings, smoothing
+:baselineprofile   Android test module (com.android.test): Baseline Profile generator, startup benchmark
 ```
 
 Dependencies ("→" = depends on):
@@ -44,6 +45,7 @@ Dependencies ("→" = depends on):
 :core:settings     → :core:dsp
 :core:audio        → no other module
 :core:dsp          → no other module
+:baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
 ```
 
 Rules:
@@ -52,6 +54,7 @@ Rules:
 - `:core:settings` knows how settings are saved, and nothing about audio or UI. It uses `Tuning` and `Notation` from `:core:dsp`.
 - `:feature:*` modules never depend on each other.
 - Only `:app` wires concrete implementations together (`AppContainer`) and switches between screens (`MainActivity`).
+- `:baselineprofile` only runs on demand with a phone connected (see §4, Baseline Profile). CI never runs it.
 
 ## 3. Signal pipeline
 
@@ -102,7 +105,7 @@ Below 32 kHz a period spans too few samples for the ±1 cent target (≈ 5 cents
 `SignalGate.process(frame)` removes the DC offset in place (it subtracts the mean), then measures the RMS level in dBFS as `20 · log10(rms)`, so a full-scale square wave reads 0 dBFS and a full-scale sine about −3 dBFS. Silence is floored at −120 dBFS. The gate opens at **−50 dBFS** and closes only below **−56 dBFS** (6 dB hysteresis), so a decaying note doesn't flicker on and off. Frames are only sent to the pitch detector while the gate is open.
 
 ### Pitch detection (YIN)
-`YinPitchDetector` follows de Cheveigné & Kawahara (2002), steps 2–5, with two additions. Both were added because measurements on synthetic signals missed the ±1 cent target without them.
+`YinPitchDetector` follows de Cheveigné & Kawahara (2002), steps 2–5, with two additions. The difference function `d(τ)` is computed with the FFT (`FftDifference`, see §4). Both were added because measurements on synthetic signals missed the ±1 cent target without them.
 1. **Low-pass pre-filter.** A 4th-order Butterworth at 4 kHz (two RBJ-cookbook biquads) runs into a scratch buffer, and its ~92-sample start-up transient is skipped. Without it, very bright tones (full-band sawtooth/square near 1.4 kHz) give a V-shaped dip that 3-point parabolic interpolation misjudges by ~2.5 cents. The filter also removes hiss above 4 kHz.
 2. **Adaptive least-squares refinement.** Instead of a fixed 3-point parabola, a cubic is fitted to the raw difference function over the lags `τ ± k` that lie within 5% of the way from the dip to the mean (`k` ≤ τ/16). Sharp dips use k = 1, which is the classic parabola. Broad dips (pure low notes) average over dozens of lags. With white noise at 20 dB SNR this cut the worst low-E error from ~23 cents to under 1. The cubic term removes a ~0.3-cent bias that a wide parabola picks up from the fixed integration window.
 
@@ -179,8 +182,30 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - `AudioRecord.read()` blocks, so it runs on a dedicated single-thread dispatcher (`Dispatchers.IO.limitedParallelism(1)`). That keeps it from starving other coroutines.
 - DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
-- The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.6 M multiply-adds per frame (3179 × 825 lags), using four independent accumulators so the additions overlap. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine) measured a median of **1.1 ms per frame** on the JVM, against a 2 ms budget (the whole gate + detect + smoother chain ≈ 1.2 ms; 8 kHz input upsampled to 32 kHz ≈ 0.5 ms). Phones are slower, so check again on the device in Phase 5. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
+- **YIN difference function via FFT.** It started as the direct O(W·τ_max) sum, about 2.6 M multiply-adds per frame (3179 × 825 lags): **1.1 ms per frame** on the JVM, but on the S26 simpleperf showed it taking 69 % of the app's CPU cycles and about 7 ms of CPU per frame, a third of a core whenever a note sounds. `FftDifference` now computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): the energies `e` as a running sum, the cross-correlation `r` from one complex FFT carrying both real inputs plus one inverse FFT (N = 4096 at 48 kHz, radix-2 `Fft` with precomputed tables, all in doubles, no allocation). `FftDifferenceTest` checks it against the direct sum (within 1e-10 of `d`); all accuracy and edge-case tests are unchanged. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine): YIN detect **1.05 → 0.48 ms** per frame on the JVM, gate + detect + smoother 1.06 → 0.49 ms, 8 kHz upsampled ≈ 0.5 ms (dominated by the upsampler). Budget: 2 ms. The `PitchDetector` interface is unchanged.
+- **Silent frames stay off the main thread.** While nothing is heard every frame gives an equal `Listening` state. `TunerViewModel` drops repeats with `distinctUntilChanged()` on the DSP dispatcher, before `stateIn`, so they no longer wake the main thread ~47 times a second.
 - UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` (a spring, damping 0.8) so it moves smoothly between estimates. `NeedleGauge` reads the animated angle only inside its `Canvas` draw block, so the ~47 updates a second redraw the gauge without recomposing it.
+
+### Measured on the Galaxy S26 (Phase 5)
+Minified `benchmarkRelease` build, Android 16, tuner listening in portrait, 48 kHz `VOICE_RECOGNITION`. CPU from `/proc/<pid>/task/*/stat` (percent of one core), frames from `dumpsys gfxinfo`, hotspots from `simpleperf record --app`. The "note" rows used 10 s bursts of a 440 Hz tone from a laptop speaker.
+
+| | Before (direct YIN, JIT only) | After (FFT YIN + Baseline Profile) |
+|---|---|---|
+| Silence: whole app | 7.8 % (main thread 2.3 %) | 5.6 % (main thread ≈ 0) |
+| Note sounding: whole app | ≈ 45 % | ≈ 20 % |
+| Note sounding: DSP thread | ≈ 34 % (≈ 7 ms/frame) | ≈ 9 % |
+| Note sounding: main thread | ≈ 9–10 % | ≈ 11 % |
+
+- **Frames:** nothing is drawn in silence (0 frames in 30 s). With a steady note only the frames whose readout changes are drawn, 4–8 a second; median frame 5–7 ms, 90th percentile 5–10 ms.
+- **Battery:** `batterystats` puts the app's CPU cost at ≈ 0.02 mAh per 90 s of listening (≈ 0.8 mAh an hour of a 4300 mAh battery). The screen, which the tuner keeps on, costs far more than the app's own work.
+- **Main thread:** with a note sounding the tuner recomposes on every frame (~47 a second), because the smoothed cents and Hz change slightly each time, although only a few frames a second look different. That is now the largest single cost; see the open ROADMAP sub-item.
+
+### Baseline Profile
+A Baseline Profile lists the classes and methods used at startup and on the tuner screen, so Android compiles them ahead of time on install instead of interpreting them first.
+- `:baselineprofile` (plugin `androidx.baselineprofile`, versions in `libs.versions.toml`) has `BaselineProfileGenerator` (cold start, then listening, switching modes, opening settings and coming back) and `StartupBenchmark`. UI Automator finds the controls by test tag (`TunerTestTags`), which `MainActivity` exposes as resource ids with `testTagsAsResourceId`; tags don't change with the app's language.
+- Generate with the phone connected: `./gradlew :app:generateBaselineProfile` (~5 min). It writes `app/src/release/generated/baselineProfiles/` (`baseline-prof.txt` and the startup profile `startup-prof.txt`), which is committed and packed into release builds. `profileinstaller` in `:app` installs it for APKs that don't come from the Play Store.
+- Startup: `./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest`. On the S26, cold start to first frame was 88.6 ms median without any compilation and 90.4 ms with the profile, i.e. no measurable difference on this fast phone. The profile stays because it is free, makes the DSP and Compose code compiled from the first frame instead of after JIT warm-up, and matters more on slower phones.
+- Neither task runs in CI (both need a device).
 
 ## 5. Lifecycle & permissions
 - `RECORD_AUDIO` is requested at runtime from the tuner screen. `rememberMicPermissionState()` tracks a `MicPermissionStatus` (rules in the pure, unit-tested `MicPermissionRules`) and `PermissionPrompt` shows one action per state:
@@ -260,7 +285,7 @@ sealed interface TunerUiState {
 ```
 core/dsp/src/main/kotlin/com/intune/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
-                AnalysisSettings, LowPassFilter, SignalGate
+                AnalysisSettings, LowPassFilter, SignalGate, FftDifference, Fft
     music/      Note, NoteMapper, Tuning, Tunings (presets), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     buffer/     FrameAssembler (ring buffer)
@@ -293,6 +318,9 @@ feature/settings/src/main/kotlin/com/intune/feature/settings/
 
 app/src/main/kotlin/com/intune/app/
     InTuneApplication, AppContainer, MainActivity, ui/theme/
+
+baselineprofile/src/main/kotlin/com/intune/baselineprofile/
+    BaselineProfileGenerator, StartupBenchmark, TunerJourney (shared UI Automator steps)
 ```
 
 ## 8. Testing strategy
@@ -304,6 +332,7 @@ app/src/main/kotlin/com/intune/app/
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`. Compose UI tests (`SettingsContentTest`, device needed) for each control. |
 | `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |
+| `:baselineprofile` | On demand, device needed: `BaselineProfileGenerator` regenerates the committed profile, `StartupBenchmark` compares cold start with and without it (§4). |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 
 ## 9. Privacy

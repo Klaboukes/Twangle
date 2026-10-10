@@ -13,7 +13,7 @@ import kotlin.math.sqrt
  * 1. pre-filter: 4th-order Butterworth low-pass at [lowPassHz] into a scratch buffer (the caller's
  *    frame is not modified). This keeps the dip of `d(τ)` smooth at the sample scale even for very
  *    bright tones, so sub-sample interpolation stays accurate. It also removes hiss above the cutoff.
- * 2. difference function `d(τ) = Σ_{j<W} (x_j − x_{j+τ})²`
+ * 2. difference function `d(τ) = Σ_{j<W} (x_j − x_{j+τ})²`, computed with the FFT ([FftDifference])
  * 3. cumulative mean normalized difference `d'(τ) = d(τ) / ((1/τ) Σ_{k=1..τ} d(k))`, `d'(0) = 1`
  * 4. absolute threshold: the first τ whose `d'(τ)` dips below [threshold], followed down to its
  *    local minimum. Taking the *first* dip, not the deepest, is what avoids octave-too-low errors.
@@ -38,8 +38,9 @@ import kotlin.math.sqrt
  * the chosen dip. All scratch arrays are allocated once, so [detect] does not allocate. Instances
  * are not thread-safe.
  *
- * The difference function is the direct O(W·τmax) form. An FFT version could replace it behind
- * [PitchDetector] if profiling ever asks for it.
+ * The difference function used to be the direct O(W·τmax) sum. On the Galaxy S26 that took about
+ * 7 ms of CPU per frame (a third of a core while a note sounds), so it now goes through the FFT,
+ * O(N log N); see ARCHITECTURE §4. `FftDifferenceTest` checks it against the direct sum.
  */
 class YinPitchDetector(
     override val sampleRate: Int = DEFAULT_SAMPLE_RATE,
@@ -83,12 +84,13 @@ class YinPitchDetector(
 
     // d(τ) and d'(τ) for τ in 0..lastLag.
     private val difference = DoubleArray(lastLag + 1)
+    private val differenceFunction = FftDifference(integrationLength, lastLag)
     private val normalized = DoubleArray(lastLag + 1)
 
     override fun detect(frame: FloatArray): PitchResult {
         require(frame.size >= windowSize) { "Frame must hold $windowSize samples, was ${frame.size}" }
         lowPass.process(frame, filtered, windowSize)
-        computeDifference(filtered, settle)
+        differenceFunction.compute(filtered, settle, difference)
         computeCumulativeMeanNormalized()
         val firstDip = findFirstDip()
         if (firstDip < 0) return PitchResult.NONE
@@ -96,39 +98,6 @@ class YinPitchDetector(
         val period = tau + refineOffset(tau)
         val confidence = (1.0 - normalized[tau]).coerceIn(0.0, 1.0)
         return PitchResult.of((sampleRate / period).toFloat(), confidence.toFloat())
-    }
-
-    // Step 2, over x[start until start + W + τ]. Four independent accumulators let the CPU overlap
-    // the additions (a single running sum is limited by add latency); it is the same sum, just
-    // added in a different order.
-    private fun computeDifference(x: FloatArray, start: Int) {
-        val end = start + integrationLength
-        val endUnrolled = end - integrationLength % 4
-        difference[0] = 0.0
-        for (tau in 1..lastLag) {
-            var s0 = 0.0
-            var s1 = 0.0
-            var s2 = 0.0
-            var s3 = 0.0
-            var j = start
-            while (j < endUnrolled) {
-                val d0 = (x[j] - x[j + tau]).toDouble()
-                val d1 = (x[j + 1] - x[j + 1 + tau]).toDouble()
-                val d2 = (x[j + 2] - x[j + 2 + tau]).toDouble()
-                val d3 = (x[j + 3] - x[j + 3 + tau]).toDouble()
-                s0 += d0 * d0
-                s1 += d1 * d1
-                s2 += d2 * d2
-                s3 += d3 * d3
-                j += 4
-            }
-            while (j < end) {
-                val d = (x[j] - x[j + tau]).toDouble()
-                s0 += d * d
-                j++
-            }
-            difference[tau] = (s0 + s1) + (s2 + s3)
-        }
     }
 
     // Step 3.

@@ -15,6 +15,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.intune.app.ui.theme.InTuneTheme
 import com.intune.app.ui.theme.useDarkTheme
@@ -62,6 +65,8 @@ class MainActivity : ComponentActivity() {
                         audioRecorder = container.audioRecorder,
                         settingsRepository = container.settingsRepository,
                         onOpenSettings = { screen = Screen.SETTINGS },
+                        // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
+                        modifier = Modifier.semantics { testTagsAsResourceId = true },
                     )
                     Screen.SETTINGS -> {
                         BackHandler { screen = Screen.TUNER }

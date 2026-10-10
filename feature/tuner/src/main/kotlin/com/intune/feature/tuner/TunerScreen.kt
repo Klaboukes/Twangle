@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -102,11 +103,23 @@ fun TunerScreen(
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
-            IconButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.TopEnd)) {
+            IconButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.TopEnd).testTag(TunerTestTags.SETTINGS)) {
                 Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
             }
         }
     }
+}
+
+/**
+ * Test tags for UI tests and the Baseline Profile generator (`:baselineprofile`), which finds them as
+ * resource ids because `MainActivity` turns on `testTagsAsResourceId`. Tags don't change with the
+ * app's language, unlike the visible text.
+ */
+object TunerTestTags {
+    const val SETTINGS = "tuner_settings"
+
+    /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
+    fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
 
 /**
