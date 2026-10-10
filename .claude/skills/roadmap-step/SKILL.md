@@ -13,7 +13,7 @@ Run [ROADMAP.md](../../../ROADMAP.md) work from start to finish: pick an increme
 | How it's called | What to do |
 |---|---|
 | `/roadmap-step` (no argument) | **One increment**: the next ☐ item, then stop. |
-| `/roadmap-step <number>`, e.g. `/roadmap-step 2` | **Phase mode**: the number is always a **phase**, never an item. Finish *every* remaining ☐ item of that phase in this session (see "Phase mode" below). |
+| `/roadmap-step <number>`, e.g. `/roadmap-step 2` | **Phase mode**: the number is always a **phase**, never an item. Finish *every* remaining ☐ item of that phase, one increment per context: after each landed increment, pause for `/compact` (see "Phase mode" below). |
 | `/roadmap-step <text>`, e.g. `/roadmap-step tuning presets` | **One increment**: the named item, then stop. |
 
 The project owner does not write code. Every message to them must be plain language: what changed for the app and what they need to do (if anything). Keep code details in the PR, not in chat.
@@ -49,10 +49,16 @@ When called with a phase number N:
 
 1. **Check earlier phases first.** If any phase before N still has ☐ items, tell the user which ones in plain language and ask whether to (a) finish those first or (b) start phase N anyway. Wait for the answer. CLAUDE.md says phases go in order.
 2. **Announce the whole phase once** before starting: a plain-language list of the remaining items, grouped into the increments you plan, plus anything the user will need to do along the way (e.g. "keep the phone connected for the last two").
-3. **Loop steps 1–7 for each increment, one after another.** Each increment still gets its own branch, its own local verification and its own squash-merged PR. Never put a whole phase in one PR. Start each new branch from the freshly pulled `main`.
-4. Between increments, post a one-line progress note (e.g. "3 of 6 done: tunings and string lookup are in"). No full report until the end.
+3. **Run steps 1–7 for one increment.** Each increment gets its own branch, its own local verification and its own squash-merged PR. Never put a whole phase in one PR. Start each new branch from the freshly pulled `main`.
+4. **Pause for compaction after every landed increment** (pushed and merged to `main`, local `main` pulled), unless it was the phase's last ☐ item. `/compact` is a built-in command only the user can type, so neither you nor this skill can run it. Stop and post exactly this shape, then end the turn:
+   > **N of M done:** <one line on what's now in the app> — [PR link]
+   > **Next:** <plain-language name of the next increment>
+   > **Carry-over:** <only facts the next increment needs that aren't in the repo, e.g. "phone's touch vibration is off", "reading drop-outs seen with background sound, handle in edge cases"; or "none">
+   > To keep the session small, type `/compact`, then `/roadmap-step N` to continue.
+
+   Put anything worth keeping in the PR, ROADMAP.md or ARCHITECTURE.md *before* pausing, because compaction drops detail. After `/compact`, the next `/roadmap-step N` starts at pre-flight (step 0) again, which picks up the next ☐ item and checks the last CI run. Skip the re-announcement of the whole phase (phase-mode point 2) when a ◐/☑ item of that phase was finished earlier in this session; just announce the next increment (step 2).
 5. **Stop early only when blocked**: something needs the user (a decision, a real guitar, a device that isn't connected), or a failure you can't fix. Land what's finished, then explain plainly what's left and what you need.
-6. When no ☐ items remain in phase N, do a single step-8 report for the whole phase.
+6. When no ☐ items remain in phase N, do a single step-8 report for the whole phase (list every PR of the phase from ROADMAP.md and `gh pr list --state merged`, since earlier ones may have been compacted away).
 
 ## 2. Announce it in simple terms (before touching any code)
 
