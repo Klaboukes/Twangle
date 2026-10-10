@@ -8,6 +8,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -19,8 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.intune.app.ui.theme.InTuneTheme
-import com.intune.app.ui.theme.useDarkTheme
+import com.intune.core.designsystem.InTuneTheme
+import com.intune.core.designsystem.StyleBackdrop
+import com.intune.core.designsystem.useDarkTheme
 import com.intune.core.settings.AppSettings
 import com.intune.feature.settings.SettingsScreen
 import com.intune.feature.tuner.TunerScreen
@@ -41,7 +44,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app in the user's theme, showing the tuner or the settings screen. */
+    /** The app in the user's style and theme, showing the tuner or the settings screen over the style's background. */
     @Composable
     private fun InTuneApp(container: AppContainer, settings: AppSettings) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
@@ -55,25 +58,28 @@ class MainActivity : ComponentActivity() {
             onDispose {}
         }
 
-        InTuneTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
-            var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
-            // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
-            val saveableState = rememberSaveableStateHolder()
-            saveableState.SaveableStateProvider(screen.name) {
-                when (screen) {
-                    Screen.TUNER -> TunerScreen(
-                        audioRecorder = container.audioRecorder,
-                        settingsRepository = container.settingsRepository,
-                        onOpenSettings = { screen = Screen.SETTINGS },
-                        // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
-                        modifier = Modifier.semantics { testTagsAsResourceId = true },
-                    )
-                    Screen.SETTINGS -> {
-                        BackHandler { screen = Screen.TUNER }
-                        SettingsScreen(
+        InTuneTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
+            Box(Modifier.fillMaxSize()) {
+                StyleBackdrop(Modifier.fillMaxSize())
+                var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
+                val saveableState = rememberSaveableStateHolder()
+                saveableState.SaveableStateProvider(screen.name) {
+                    when (screen) {
+                        Screen.TUNER -> TunerScreen(
+                            audioRecorder = container.audioRecorder,
                             settingsRepository = container.settingsRepository,
-                            onBack = { screen = Screen.TUNER },
+                            onOpenSettings = { screen = Screen.SETTINGS },
+                            // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
+                            modifier = Modifier.semantics { testTagsAsResourceId = true },
                         )
+                        Screen.SETTINGS -> {
+                            BackHandler { screen = Screen.TUNER }
+                            SettingsScreen(
+                                settingsRepository = container.settingsRepository,
+                                onBack = { screen = Screen.TUNER },
+                            )
+                        }
                     }
                 }
             }

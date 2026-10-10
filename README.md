@@ -40,6 +40,7 @@ InTune listens to the microphone, finds the pitch of the note with the [YIN algo
 | `:feature:settings` | The settings screen |
 | `:core:audio` | Microphone capture |
 | `:core:settings` | Saved settings |
+| `:core:designsystem` | The seven visual styles: colours, fonts, backgrounds and dials |
 | `:core:dsp` | Pitch detection, note math, tunings (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -59,3 +60,7 @@ Every push to `main` is built by GitHub Actions, and the debug APK is attached t
 ## Contributing
 
 Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
+
+## Fonts
+
+The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), MedievalSharp (Wojciech Kalinowski), Playfair Display (Claus Eggers Sørensen), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams).

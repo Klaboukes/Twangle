@@ -52,6 +52,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[THEME] = theme.name }
     }
 
+    override suspend fun setStyle(style: VisualStyle) {
+        dataStore.edit { it[STYLE] = style.name }
+    }
+
     override suspend fun setDynamicColor(enabled: Boolean) {
         dataStore.edit { it[DYNAMIC_COLOR] = enabled }
     }
@@ -71,6 +75,7 @@ class DataStoreSettingsRepository internal constructor(
             tuning = prefs[TUNING_ID]?.let(Tunings::byId) ?: defaults.tuning,
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
+            style = enumOrNull<VisualStyle>(prefs[STYLE]) ?: defaults.style,
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
@@ -85,6 +90,7 @@ class DataStoreSettingsRepository internal constructor(
         private val TUNING_ID = stringPreferencesKey("tuning_id")
         private val NOTATION = stringPreferencesKey("notation")
         private val THEME = stringPreferencesKey("theme")
+        private val STYLE = stringPreferencesKey("visual_style")
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")

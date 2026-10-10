@@ -27,11 +27,12 @@ InTune is a chromatic and guitar-string tuner for Android. It listens to the mic
 ## 2. Module structure
 
 ```
-:app               Android application: Activity, Application, AppContainer (DI), theme, navigation
+:app               Android application: Activity, Application, AppContainer (DI), navigation
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, gauge components
 :feature:settings  Settings screen: A4 calibration and the other preferences, SettingsViewModel
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>, permission helpers
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
+:core:designsystem Visual styles: InTuneTheme, palettes, fonts, backgrounds, the hand-drawn dials, StylePicker
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, note math, tunings, smoothing
 :baselineprofile   Android test module (com.android.test): Baseline Profile generator, startup benchmark
 ```
@@ -40,8 +41,9 @@ Dependencies ("→" = depends on):
 
 ```
 :app               → every module below (it wires them together)
-:feature:tuner     → :core:audio, :core:settings, :core:dsp
-:feature:settings  → :core:settings (and through it :core:dsp)
+:feature:tuner     → :core:audio, :core:settings, :core:designsystem, :core:dsp
+:feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
+:core:designsystem → :core:settings (for VisualStyle and ThemeMode)
 :core:settings     → :core:dsp
 :core:audio        → no other module
 :core:dsp          → no other module
@@ -52,6 +54,7 @@ Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module. It must never import `android.*`. This keeps the most important code fast to test and reusable.
 - `:core:audio` knows about Android audio but knows nothing about notes or UI.
 - `:core:settings` knows how settings are saved, and nothing about audio or UI. It uses `Tuning` and `Notation` from `:core:dsp`.
+- `:core:designsystem` holds everything both screens draw with, and nothing about audio or notes.
 - `:feature:*` modules never depend on each other.
 - Only `:app` wires concrete implementations together (`AppContainer`) and switches between screens (`MainActivity`).
 - `:baselineprofile` only runs on demand with a phone connected (see §4, Baseline Profile). CI never runs it.
@@ -233,12 +236,13 @@ A Baseline Profile lists the classes and methods used at startup and on the tune
 ### Settings
 The gear button in the tuner's top corner opens the settings screen (`:feature:settings`). `MainActivity` switches between the two screens with one saved `Screen` value, so the app needs no navigation library. A `SaveableStateHolder` keeps each screen's saved state while the other one is shown, and the back button returns from settings. While settings are open the tuner isn't visible, so the mic is released after the usual 5 s. `SettingsViewModel` shows the saved settings and saves every change straight away; there is no "save" button.
 - **Note names:** radio buttons for sharps, flats or Do Re Mi (`RadioGroupSetting`, a reusable titled radio group). The interpreter writes `noteName` in the chosen notation, and the string row, tuning menu and "Play the La2 string" hint follow it. Long names such as "Sol♯" use a smaller font to fit the string circles.
-- **Theme:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+. `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `InTuneTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
+- **Style:** a sideways row of style cards at the top (`StylePicker`, see §6, Visual styles); tapping one restyles the app at once.
+- **Light or dark:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+ and only in the contemporary style (the others have their own colours). `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `InTuneTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
 - **Keep screen on** (default on): while the tuner is shown and the mic permission is granted, `TunerScreen` sets `View.keepScreenOn` (`FLAG_KEEP_SCREEN_ON` on the window). Leaving the tuner (settings, home, lock) clears it, so the screen times out normally. It is a window flag, not a wake lock, so no extra permission is needed. `TunerViewModel.keepScreenOn` exposes the setting.
 - **Vibrate when in tune** (default on): `InTuneHaptic` clicks the vibration motor once (`VibrationEffect.EFFECT_CLICK`, a 20 ms one-shot before Android 10) when `Detected.inTune` turns true. It uses `Vibrator` directly, not Compose/View touch haptics, because those obey the phone-wide touch-feedback setting, which many people (including the S26 we test on) switch off; this switch is the tuner's own. That needs the `VIBRATE` permission (normal, granted at install, declared by `:feature:tuner`). `InTuneTickRule` (JVM-tested) skips a second tick when the *same* note becomes in tune again less than 1.5 s after it last was: a short drop-out of the reading resets "in tune", and that shouldn't buzz twice. Whether the note was in tune is saved with the screen state, so rotating or coming back from settings doesn't tick. `TunerViewModel.vibrateInTune` exposes the setting.
 - **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
 
-`SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true), `keepScreenOn` (true) and `vibrateInTune` (true).
+`SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `style` (`VisualStyle`, default `CONTEMPORARY`), `dynamicColor` (true), `keepScreenOn` (true) and `vibrateInTune` (true).
 - `DataStoreSettingsRepository` stores them with DataStore Preferences in `files/datastore/settings.preferences_pb`. `AppContainer` creates the only instance, because DataStore allows one per file. The tuning is saved by its `id` and enums by their `name`, so those must never be renamed.
 - Reading is forgiving. A missing, unknown or out-of-range value falls back to its default: a tuning id that no longer exists becomes Standard, and A4 is clamped to 415–466 Hz and rounded to whole Hz (`AppSettings.normalizeA4`, which the setter applies too). An unreadable file gives all defaults, and a corrupt one is replaced with defaults so saving works again.
 - `FakeSettingsRepository` (in the `:core:settings` `testFixtures`) keeps settings in memory for ViewModel tests.
@@ -270,7 +274,17 @@ sealed interface TunerUiState {
 
 `TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)`, `setTuning(tuning)`, `toggleString(index)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. Tuning, A4 and notation come from `SettingsRepository`.
 
-`TunerScreen` wires the ViewModel and shows the settings gear (also on the permission prompt); `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `TuningPicker` shows the selected tuning's name ("Standard ▾") under the readout. Tapping it opens a menu of every preset with its open strings, the current one ticked, and the choice is saved through `TunerViewModel.setTuning` (user-facing names are string resources keyed by `Tuning.id`). Below it `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄), with `targetString` highlighted and marked `selected` for accessibility. Each string is a button (`onClickLabel` "Lock to this string" / "Pick strings automatically"). The locked string gets an extra outer ring and the state description "Locked", stays highlighted while listening, and the hint becomes "Play the A2 string". In chromatic mode the picker and string row are hidden, but their slot keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to a theme-aware green (`InTuneColor.kt`; Material 3 has no success role). A check-mark icon also appears beside the cents text, so "in tune" doesn't depend on seeing green.
+`TunerScreen` wires the ViewModel and shows the settings gear (also on the permission prompt); `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic). Above the gauge, `ModeSwitch` (Material 3 segmented buttons "Guitar" / "Chromatic") reads `TunerViewModel.mode`. In guitar mode `TuningPicker` shows the selected tuning's name ("Standard ▾") under the readout. Tapping it opens a menu of every preset with its open strings, the current one ticked, and the choice is saved through `TunerViewModel.setTuning` (user-facing names are string resources keyed by `Tuning.id`). Below it `StringSelector` shows the tuning's open strings (E₂ A₂ D₃ G₃ B₃ E₄), with `targetString` highlighted and marked `selected` for accessibility. Each string is a button (`onClickLabel` "Lock to this string" / "Pick strings automatically"). The locked string gets an extra outer ring and the state description "Locked", stays highlighted while listening, and the hint becomes "Play the A2 string". In chromatic mode the picker and string row are hidden, but their slot keeps its height, so switching modes doesn't move the layout under the user's finger. While `inTune`, the needle, centre tick, note, cents text and highlighted string fade to the style's "in tune" colour (`StyleTokens.inTune`, read through `InTuneColor.kt`; Material 3 has no success role). A check-mark icon also appears beside the cents text, so "in tune" doesn't depend on seeing green.
+
+### Visual styles
+The user picks one of seven styles: Prehistoric, Middle Ages, Classic, Retro, Contemporary (the default, and the only one that can follow the wallpaper), Futuristic and Space Age. A style is more than colours; each one sets:
+- **Palette** (`StylePalettes.kt`): a light and a dark `Palette` per style, turned into a Material 3 `ColorScheme` (containers are mixes of their colour and the surface). Light or dark still comes from the theme setting. `StylePaletteTest` holds every palette to WCAG 2.2 contrast: 7:1 for body text on backgrounds and surfaces, 4.5:1 for secondary text, accents and text on filled controls, 3:1 for the "in tune" colour, outlines, needle and ticks.
+- **Lettering** (`StyleTypography.kt`): a display face for the note, headlines and titles; reading text stays in a plain face. The faces are bundled in `core/designsystem/src/main/res/font`, all under the SIL Open Font License (licence texts in `assets/licenses`): Caesar Dressing (Prehistoric), MedievalSharp (Middle Ages), Playfair Display (Classic), Righteous (Retro), Orbitron (Futuristic) and Michroma (Space Age). Contemporary uses the phone's font. About 0.7 MB in all, nothing is downloaded at run time.
+- **Shapes**: cut corners for the Middle Ages and the HUD, soft pebbles, fine Classic corners, fat 70s curves and 60s capsules.
+- **Background** (`StyleBackdrop`): drawn by `MainActivity` once behind both screens, which are see-through (`Scaffold(containerColor = Transparent)`, with `contentColor = onBackground`, because a transparent container gives no content colour). Cave wall with hand stencils, parchment in a gold-ruled border, an ivory concert hall, 70s walnut with a sunburst and stripes, a calm wash, a neon perspective grid with HUD brackets, and a starfield with a ringed planet (or atomic orbits and starbursts by day). It sits in its own `graphicsLayer`, so tuner readings never redraw it, and seeded random points make it the same every time. Frames keep inside the safe-drawing insets.
+- **Dial** (`dial/Dial.kt`): `drawDialScale` and `drawDialNeedle` draw each style's dial in the shared geometry (pivot `DialPivotInset` above the bottom centre of a 2:1 box, ±50 cents over a half circle): an ochre arc with a flint-tipped spear, a gold-ruled manuscript scale with a sword, an ivory clock face with a watch hand, a backlit 70s VU meter with red zones and an "in tune" lamp, the clean contemporary track, a segmented neon HUD, and an orbit with a satellite around a ringed planet. `DialColors` gives each needle and centre mark an out-of-tune and an in-tune colour (the VU meter's face is lit in both brightnesses, so its needle stays dark). `NeedleGauge` still only turns the needle's layer per reading.
+
+`InTuneTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, dial colours and the unfaded scheme). The tokens are remembered per style and brightness, so recomposing for another setting changes nothing. A change of style or brightness fades every scheme colour over 450 ms (one `Animatable`, colours mixed with `lerp`) and cross-fades the background. Style cards in `StylePicker` are small live previews: each wraps its own `InTuneTheme`, so it shows that style's background, dial and lettering whatever the app's current style.
 
 ### Landscape and wide screens
 `TunerContent` picks its arrangement from the space it gets, not from the device type: `tunerLayoutFor(width, height)` (JVM-tested) returns `TWO_PANE` when the window is at least 600 dp wide (the Material 3 "medium" width class) *and* wider than tall, else `SINGLE_COLUMN`. So a phone held upright, a tablet in portrait, split screen and near-square foldables keep the single column (max 480 dp wide), while a phone on its side or a tablet in landscape gets two panes:
@@ -313,10 +327,15 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
     FakeAudioRecorder
 
 core/settings/src/main/kotlin/com/intune/core/settings/
-    AppSettings (+ ThemeMode), SettingsRepository (interface), DataStoreSettingsRepository
+    AppSettings (+ ThemeMode, VisualStyle), SettingsRepository (interface), DataStoreSettingsRepository
 
 core/settings/src/testFixtures/kotlin/com/intune/core/settings/
     FakeSettingsRepository
+
+core/designsystem/src/main/kotlin/com/intune/core/designsystem/
+    InTuneTheme (+ StyleTokens, useDarkTheme, shapes), StylePalettes (Palette, DialColors),
+    StyleTypography, StyleBackdrop, StylePicker (+ StaticDial)
+    dial/        Dial (drawDialScale, drawDialNeedle, geometry)
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState (+ TunerMode), TunerOptions, TunerInterpreter, InTuneDetector, InTuneTickRule, SpokenReadingThrottle (+ spokenNoteName), TunerScreen, PitchPipeline (+ PitchReading), TunerError
@@ -328,7 +347,7 @@ feature/settings/src/main/kotlin/com/intune/feature/settings/
     components/  A4Calibration, RadioGroupSetting, SwitchSetting
 
 app/src/main/kotlin/com/intune/app/
-    InTuneApplication, AppContainer, MainActivity, ui/theme/
+    InTuneApplication, AppContainer, MainActivity
 
 baselineprofile/src/main/kotlin/com/intune/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, TunerJourney (shared UI Automator steps)
@@ -340,6 +359,7 @@ baselineprofile/src/main/kotlin/com/intune/baselineprofile/
 | `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise or mains hum, band-limited (Bluetooth-like) audio at any rate, and decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`: frame assembly, gate, detector, smoother) and checks what would be shown (see §3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. |
 | `:core:audio` | JVM tests for the pure parts (source, sample-rate and Bluetooth input selection, chunk sizes). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
 | `:core:settings` | JVM tests of `DataStoreSettingsRepository` on a real DataStore file in a temporary folder: defaults, saving, surviving a restart, clamping, and falling back on unknown or unreadable values. |
+| `:core:designsystem` | JVM tests: WCAG contrast of every palette in both brightnesses, dark versions dark and light ones light, every style distinct with its own lettering; `ThemeMode.useDarkTheme`. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`. Compose UI tests (`SettingsContentTest`, device needed) for each control. |
 | `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |

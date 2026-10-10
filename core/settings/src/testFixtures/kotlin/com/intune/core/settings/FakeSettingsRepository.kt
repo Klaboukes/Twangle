@@ -31,6 +31,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setTheme(theme: ThemeMode) = state.update { it.copy(theme = theme) }
 
+    override suspend fun setStyle(style: VisualStyle) = state.update { it.copy(style = style) }
+
     override suspend fun setDynamicColor(enabled: Boolean) = state.update { it.copy(dynamicColor = enabled) }
 
     override suspend fun setKeepScreenOn(enabled: Boolean) = state.update { it.copy(keepScreenOn = enabled) }

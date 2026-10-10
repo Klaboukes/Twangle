@@ -5,28 +5,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import com.intune.core.designsystem.styleTokens
 
-// Material 3 has no "success" role, so the tuner brings its own green: lighter on dark
-// backgrounds, darker on light ones, both readable as text on the screen background.
-private val InTuneGreenOnDark = Color(0xFF6DD58C)
-private val InTuneGreenOnLight = Color(0xFF1B7F3B)
+// Material 3 has no "success" role, so each style brings its own "in tune" colour (StyleTokens),
+// readable as large text on the style's background.
 
-// Text drawn on top of the green (e.g. the highlighted string).
-private val OnInTuneGreenOnDark = Color(0xFF00391A)
-private val OnInTuneGreenOnLight = Color.White
-
-/** The "in tune" green for the current theme. */
+/** The "in tune" colour of the current style. */
 @Composable
-fun inTuneColor(): Color =
-    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) InTuneGreenOnDark else InTuneGreenOnLight
+fun inTuneColor(): Color = MaterialTheme.styleTokens.inTune
 
 /** Text colour for content drawn on [inTuneColor]. */
 @Composable
-fun onInTuneColor(): Color =
-    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) OnInTuneGreenOnDark else OnInTuneGreenOnLight
+fun onInTuneColor(): Color = MaterialTheme.styleTokens.onInTune
 
-/** [normal], fading to the in-tune green while [inTune]. */
+/** [normal], fading to [inTune] (by default the style's "in tune" colour) while [isInTune]. */
 @Composable
-fun animateInTuneColor(inTune: Boolean, normal: Color, label: String): State<Color> =
-    animateColorAsState(if (inTune) inTuneColor() else normal, label = label)
+fun animateInTuneColor(isInTune: Boolean, normal: Color, label: String, inTune: Color = inTuneColor()): State<Color> =
+    animateColorAsState(if (isInTune) inTune else normal, label = label)

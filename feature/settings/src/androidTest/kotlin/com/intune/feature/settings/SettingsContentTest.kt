@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.intune.core.designsystem.styleCardTag
 import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.ThemeMode
+import com.intune.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -43,6 +45,7 @@ class SettingsContentTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val a4Changes = mutableListOf<Float>()
     private val notationChanges = mutableListOf<Notation>()
+    private val styleChanges = mutableListOf<VisualStyle>()
     private val themeChanges = mutableListOf<ThemeMode>()
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
@@ -59,6 +62,7 @@ class SettingsContentTest {
                         onBack = { backs++ },
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
+                        onStyleChange = { styleChanges += it },
                         onThemeChange = { themeChanges += it },
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
@@ -148,6 +152,20 @@ class SettingsContentTest {
     fun wallpaperColoursAreHiddenWithoutDynamicColor() {
         show(AppSettings(), dynamicColorAvailable = false)
         compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun wallpaperColoursOnlyApplyToTheContemporaryStyle() {
+        show(AppSettings(style = VisualStyle.RETRO))
+        compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun styleCardsShowTheChoiceAndReportANewOne() {
+        show(AppSettings(style = VisualStyle.CLASSIC))
+        compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).assertIsSelected()
+        compose.onNodeWithTag(styleCardTag(VisualStyle.MIDDLE_AGES)).assertIsNotSelected().performClick()
+        assertEquals(listOf(VisualStyle.MIDDLE_AGES), styleChanges)
     }
 
     @Test

@@ -1,6 +1,5 @@
-package com.intune.app
+package com.intune.core.designsystem
 
-import com.intune.app.ui.theme.useDarkTheme
 import com.intune.core.settings.ThemeMode
 import org.junit.Assert.assertEquals
 import org.junit.Test

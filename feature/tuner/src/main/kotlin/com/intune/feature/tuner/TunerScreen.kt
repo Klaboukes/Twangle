@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -91,7 +92,14 @@ fun TunerScreen(
     )
 
     // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
-    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
+    // See-through, so the style's background (drawn behind every screen) shows.
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        // A see-through container gives no content colour of its own.
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        contentWindowInsets = WindowInsets.safeDrawing,
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()

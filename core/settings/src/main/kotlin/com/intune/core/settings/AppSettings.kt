@@ -14,6 +14,26 @@ enum class ThemeMode {
     DARK,
 }
 
+/**
+ * The look of the whole app: colours, lettering, background and the tuning dial. Each style has a
+ * light and a dark version ([ThemeMode] picks which). Saved in settings by [name], so don't rename
+ * the entries.
+ */
+enum class VisualStyle {
+    PREHISTORIC,
+    MIDDLE_AGES,
+    CLASSIC,
+    RETRO,
+    CONTEMPORARY,
+    FUTURISTIC,
+    SPACE_AGE,
+    ;
+
+    companion object {
+        val DEFAULT = CONTEMPORARY
+    }
+}
+
 /** Everything the user can change, with the defaults a fresh install starts from. */
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
@@ -21,7 +41,8 @@ data class AppSettings(
     val tuning: Tuning = Tunings.DEFAULT,
     val notation: Notation = Notation.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
-    /** Colours from the wallpaper (Android 12+). Ignored on older phones. */
+    val style: VisualStyle = VisualStyle.DEFAULT,
+    /** Colours from the wallpaper (Android 12+), in the contemporary [style] only. Ignored on older phones. */
     val dynamicColor: Boolean = true,
     /** Stop the screen from dimming while the tuner is open. */
     val keepScreenOn: Boolean = true,

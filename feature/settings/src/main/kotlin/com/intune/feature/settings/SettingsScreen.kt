@@ -22,10 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,9 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.intune.core.dsp.music.Notation
+import com.intune.core.designsystem.StylePicker
+import com.intune.core.designsystem.styleTokens
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.ThemeMode
+import com.intune.core.settings.VisualStyle
 import com.intune.feature.settings.components.A4Calibration
 import com.intune.feature.settings.components.RadioGroupSetting
 import com.intune.feature.settings.components.SwitchSetting
@@ -50,6 +55,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onBack = onBack,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
+        onStyleChange = viewModel::setStyle,
         onThemeChange = viewModel::setTheme,
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
@@ -60,7 +66,9 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The wallpaper-colours switch only shows when [dynamicColorAvailable] (Android 12+).
+ * load. It opens with the style cards; the wallpaper-colours switch only shows in the contemporary
+ * style when [dynamicColorAvailable] (Android 12+). The screen is see-through, so the style's
+ * background shows behind it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +77,7 @@ fun SettingsContent(
     onBack: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
+    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
@@ -78,12 +87,16 @@ fun SettingsContent(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        // A see-through container gives no content colour of its own.
+        contentColor = MaterialTheme.colorScheme.onBackground,
         // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
@@ -102,6 +115,11 @@ fun SettingsContent(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                StyleSection(
+                    selected = settings.style,
+                    onSelect = onStyleChange,
+                    modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth().padding(top = 8.dp),
+                )
                 SettingsList(
                     settings = settings,
                     onA4Change = onA4Change,
@@ -121,7 +139,23 @@ fun SettingsContent(
     }
 }
 
-/** Every setting, top to bottom. */
+/**
+ * "Style" and the row of style cards. The cards run to the column's edges, so the row visibly
+ * continues off-screen.
+ */
+@Composable
+private fun StyleSection(selected: VisualStyle, onSelect: (VisualStyle) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = stringResource(R.string.settings_style_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        StylePicker(selected = selected, onSelect = onSelect, darkTheme = MaterialTheme.styleTokens.dark)
+    }
+}
+
+/** Every setting under the styles, top to bottom. */
 @Composable
 private fun SettingsList(
     settings: AppSettings,
@@ -153,7 +187,7 @@ private fun SettingsList(
             selected = settings.theme,
             onSelect = onThemeChange,
         ) { stringResource(themeLabel(it)) }
-        if (dynamicColorAvailable) {
+        if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
             SwitchSetting(
                 title = stringResource(R.string.settings_dynamic_color_title),
                 summary = stringResource(R.string.settings_dynamic_color_summary),
@@ -201,6 +235,7 @@ private fun SettingsContentPreview() {
             onBack = {},
             onA4Change = {},
             onNotationChange = {},
+            onStyleChange = {},
             onThemeChange = {},
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},

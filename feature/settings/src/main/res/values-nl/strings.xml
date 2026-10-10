@@ -17,7 +17,8 @@
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
 
     <!-- Appearance. -->
-    <string name="settings_theme_title">Thema</string>
+    <string name="settings_style_title">Stijl</string>
+    <string name="settings_theme_title">Licht of donker</string>
     <string name="settings_theme_system">Systeemstandaard</string>
     <string name="settings_theme_light">Licht</string>
     <string name="settings_theme_dark">Donker</string>

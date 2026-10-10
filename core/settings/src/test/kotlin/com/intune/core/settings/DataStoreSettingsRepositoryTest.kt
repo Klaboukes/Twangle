@@ -66,6 +66,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Tunings.STANDARD, settings.tuning)
         assertEquals(Notation.SHARPS, settings.notation)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
+        assertEquals(VisualStyle.CONTEMPORARY, settings.style)
         assertEquals(true, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
@@ -78,6 +79,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setTuning(Tunings.DADGAD)
         repo.setNotation(Notation.SOLFEGE)
         repo.setTheme(ThemeMode.DARK)
+        repo.setStyle(VisualStyle.SPACE_AGE)
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
@@ -87,6 +89,7 @@ class DataStoreSettingsRepositoryTest {
             tuning = Tunings.DADGAD,
             notation = Notation.SOLFEGE,
             theme = ThemeMode.DARK,
+            style = VisualStyle.SPACE_AGE,
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
@@ -100,6 +103,7 @@ class DataStoreSettingsRepositoryTest {
             setA4(442f)
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
+            setStyle(VisualStyle.MIDDLE_AGES)
         }
         close()
 
@@ -107,6 +111,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(442f, settings.a4Hz)
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notation)
+        assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
     }
 
     @Test
@@ -128,6 +133,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
             it[stringPreferencesKey("notation")] = "GERMAN"
             it[stringPreferencesKey("theme")] = "SEPIA"
+            it[stringPreferencesKey("visual_style")] = "BAROQUE"
             it[floatPreferencesKey("a4_hz")] = 1000f
         }
 
@@ -135,6 +141,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Tunings.DEFAULT, settings.tuning)
         assertEquals(Notation.DEFAULT, settings.notation)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
+        assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(466f, settings.a4Hz)
     }
 

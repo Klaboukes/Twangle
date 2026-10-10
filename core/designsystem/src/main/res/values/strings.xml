@@ -1,0 +1,21 @@
+<resources>
+    <!-- Visual styles: name and a one-line description on the style cards. -->
+    <string name="style_prehistoric">Prehistoric</string>
+    <string name="style_prehistoric_tagline">Firelight on the cave wall</string>
+    <string name="style_middle_ages">Middle Ages</string>
+    <string name="style_middle_ages_tagline">Ink, gold leaf and parchment</string>
+    <string name="style_classic">Classic</string>
+    <string name="style_classic_tagline">Ivory, ebony and brass</string>
+    <string name="style_retro">Retro</string>
+    <string name="style_retro_tagline">A warm 70s hi-fi meter</string>
+    <string name="style_contemporary">Contemporary</string>
+    <string name="style_contemporary_tagline">Clean and calm</string>
+    <string name="style_futuristic">Futuristic</string>
+    <string name="style_futuristic_tagline">Neon on a heads-up display</string>
+    <string name="style_space_age">Space Age</string>
+    <string name="style_space_age_tagline">Orbits, stars and rocket orange</string>
+    <!-- TalkBack on a style card, e.g. "Retro. A warm 70s hi-fi meter". -->
+    <string name="style_card_description">%1$s. %2$s</string>
+    <!-- The note on the style previews; a note name, the same in every language. -->
+    <string name="style_preview_note" translatable="false">A</string>
+</resources>

@@ -17,11 +17,12 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ settings), `InTuneApplication`, `AppContainer` (DI), theme |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ settings, draws the style's background), `InTuneApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings screen UI, `SettingsViewModel` |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
-| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, theme, keep screen on |
+| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
+| `:core:designsystem` | Android library | `InTuneTheme` and the seven visual styles: palettes, bundled fonts, backgrounds, hand-drawn dials, `StylePicker` |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 

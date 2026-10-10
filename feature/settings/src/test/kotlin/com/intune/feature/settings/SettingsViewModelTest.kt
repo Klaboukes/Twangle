@@ -4,6 +4,7 @@ import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.FakeSettingsRepository
 import com.intune.core.settings.ThemeMode
+import com.intune.core.settings.VisualStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -59,6 +60,14 @@ class SettingsViewModelTest {
         vm.setNotation(Notation.SOLFEGE)
         runCurrent()
         assertEquals(Notation.SOLFEGE, repository.current.notation)
+    }
+
+    @Test
+    fun `saves the style`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setStyle(VisualStyle.RETRO)
+        runCurrent()
+        assertEquals(VisualStyle.RETRO, repository.current.style)
     }
 
     @Test

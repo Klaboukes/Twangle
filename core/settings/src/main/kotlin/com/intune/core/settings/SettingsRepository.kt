@@ -20,6 +20,8 @@ interface SettingsRepository {
 
     suspend fun setTheme(theme: ThemeMode)
 
+    suspend fun setStyle(style: VisualStyle)
+
     suspend fun setDynamicColor(enabled: Boolean)
 
     suspend fun setKeepScreenOn(enabled: Boolean)

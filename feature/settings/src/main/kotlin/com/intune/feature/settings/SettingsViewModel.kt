@@ -6,6 +6,7 @@ import com.intune.core.dsp.music.Notation
 import com.intune.core.settings.AppSettings
 import com.intune.core.settings.SettingsRepository
 import com.intune.core.settings.ThemeMode
+import com.intune.core.settings.VisualStyle
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -24,6 +25,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setNotation(notation: Notation) {
         viewModelScope.launch { repository.setNotation(notation) }
+    }
+
+    fun setStyle(style: VisualStyle) {
+        viewModelScope.launch { repository.setStyle(style) }
     }
 
     fun setTheme(theme: ThemeMode) {
