@@ -71,7 +71,7 @@ Goal: a usable guitar tuner.
 - ☑ Landscape and tablet layouts (two panes once the window is ≥ 600 dp wide and wider than tall: gauge + note beside the controls, gauge shrinks to fit a phone on its side; settings in a centred column ≤ 600 dp; S26: landscape, 2× font and a simulated 800×1280 dp tablet in both orientations, locked string and mic survive rotation)
 - ☐ Performance: profile CPU and battery; switch YIN to FFT-based difference if needed; Baseline Profile
 - ☐ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay
-- ☐ Localization scaffolding (English, Dutch)
+- ☑ Localization scaffolding (English, Dutch): every text in Dutch, follows the phone or the Android 13+ per-app language; `LocalizationTest` guards missing translations and hard-coded text
 
 ## Phase 6 — Release → **v1.0**
 - ☐ App icon, adaptive icon, splash screen

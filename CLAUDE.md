@@ -65,7 +65,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - UI state: one immutable `TunerUiState` sealed interface exposed as `StateFlow` from the ViewModel. Composables are stateless and take state plus lambdas.
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
-- Strings shown to users go in `res/values/strings.xml`, never hard-coded in Composables.
+- Strings shown to users go in `res/values/strings.xml` with a Dutch translation in `res/values-nl/strings.xml`, never hard-coded in Composables (`LocalizationTest` checks both).
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow

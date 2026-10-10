@@ -26,7 +26,7 @@
     <string name="tuning_drop_d">Drop D</string>
     <string name="tuning_half_step_down">Half step down</string>
     <string name="tuning_full_step_down">Full step down</string>
-    <string name="tuning_dadgad">DADGAD</string>
+    <string name="tuning_dadgad" translatable="false">DADGAD</string>
     <string name="tuning_open_g">Open G</string>
     <string name="tuning_open_d">Open D</string>
     <string name="tuning_open_e">Open E</string>

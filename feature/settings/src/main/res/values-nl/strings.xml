@@ -1,0 +1,32 @@
+<resources>
+    <string name="settings_title">Instellingen</string>
+    <string name="settings_back">Terug</string>
+
+    <!-- A4 calibration. -->
+    <string name="settings_a4_title">Stemtoon (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">De meeste muziek gebruikt 440 Hz. Orkesten stemmen vaak op 442 Hz, barokensembles op 415 Hz.</string>
+    <string name="settings_a4_lower">A4 1 Hz lager</string>
+    <string name="settings_a4_raise">A4 1 Hz hoger</string>
+    <string name="settings_a4_reset">Terug naar %1$d Hz</string>
+
+    <!-- Notation. -->
+    <string name="settings_notation_title">Nootnamen</string>
+    <string name="settings_notation_sharps">Kruisen: C, C♯, D …</string>
+    <string name="settings_notation_flats">Mollen: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <!-- Appearance. -->
+    <string name="settings_theme_title">Thema</string>
+    <string name="settings_theme_system">Systeemstandaard</string>
+    <string name="settings_theme_light">Licht</string>
+    <string name="settings_theme_dark">Donker</string>
+    <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
+    <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
+
+    <!-- While tuning. -->
+    <string name="settings_keep_screen_on_title">Scherm aan laten</string>
+    <string name="settings_keep_screen_on_summary">Het scherm blijft aan zolang de stemmer open is</string>
+    <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
+    <string name="settings_vibrate_in_tune_summary">Een korte tril zodra de noot op toonhoogte is</string>
+</resources>

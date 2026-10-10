@@ -1,0 +1,58 @@
+<resources>
+    <string name="mic_permission_title">InTune heeft je microfoon nodig</string>
+    <string name="mic_permission_intro">Om te stemmen luistert InTune naar je instrument. Het geluid wordt op je telefoon geanalyseerd en nooit opgenomen of verstuurd.</string>
+    <string name="mic_permission_rationale">Zonder microfoon kan InTune je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je telefoon nooit.</string>
+    <string name="mic_permission_settings_hint">De microfoon staat uit voor InTune. Open Instellingen, tik op Machtigingen en dan op Microfoon, en kies Toestaan.</string>
+    <string name="mic_permission_allow">Microfoon toestaan</string>
+    <string name="mic_permission_open_settings">Instellingen openen</string>
+
+    <!-- Errors when the microphone can't be used. -->
+    <string name="error_mic_permission">De microfoon is uitgezet. Sta hem weer toe om verder te stemmen.</string>
+    <string name="error_mic_busy">Een andere app gebruikt de microfoon. Sluit die app en probeer het opnieuw.</string>
+    <string name="error_mic_unavailable">De microfoon kon op deze telefoon niet worden geopend.</string>
+    <string name="error_mic_stopped">De microfoon is onverwacht gestopt.</string>
+    <string name="error_retry">Opnieuw proberen</string>
+
+    <!-- Tuner screen. -->
+    <string name="tuner_mode_guitar">Gitaar</string>
+    <string name="tuner_mode_chromatic">Chromatisch</string>
+    <string name="tuner_a4">A4 = %1$d Hz</string>
+    <string name="tuner_open_settings">Instellingen</string>
+
+    <!-- Tuning presets, see Tunings in :core:dsp. -->
+    <string name="tuning_standard">Standaard</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Halve toon lager</string>
+    <string name="tuning_full_step_down">Hele toon lager</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuner_hint_play_string">Speel een snaar</string>
+    <string name="tuner_hint_play_note">Speel een noot</string>
+    <!-- %1$s is a string's note and octave, e.g. "A2". -->
+    <string name="tuner_hint_play_locked_string">Speel de %1$s-snaar</string>
+    <string name="tuner_string_lock">Vastzetten op deze snaar</string>
+    <string name="tuner_string_unlock">Snaren automatisch kiezen</string>
+    <string name="tuner_string_locked">Vastgezet</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <!-- In Dutch the unit stays singular after a number: "12 cent". -->
+    <string name="tuner_cents_zero">0 cent</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="one">%1$d cent te laag</item>
+        <item quantity="other">%1$d cent te laag</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="one">%1$d cent te hoog</item>
+        <item quantity="other">%1$d cent te hoog</item>
+    </plurals>
+    <string name="tuner_in_tune">zuiver</string>
+
+    <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cent te laag" or "zuiver". -->
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <!-- A note name with a sharp or flat, read aloud. %1$s is the letter or syllable, e.g. "C", "Sol". -->
+    <string name="tuner_spoken_sharp">%1$s kruis</string>
+    <string name="tuner_spoken_flat">%1$s mol</string>
+    <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_change_tuning">Stemming wijzigen</string>
+</resources>

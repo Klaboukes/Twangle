@@ -227,6 +227,12 @@ sealed interface TunerUiState {
 - **Labels:** each string reads "A 2" plus "selected"/"Locked" and the lock/unlock action; the tuning picker says "double-tap to change tuning"; the A4 slider reads "442 Hz" instead of a percentage. Settings rows are whole-row radio buttons and switches (§5).
 - **Large fonts:** the tuner body scrolls when it is taller than the screen (in two-pane mode each pane scrolls separately). The 112-unit note name is sized in dp, so it doesn't grow further with the system font. The string labels follow the font scale up to 1.3× (they sit in fixed 48 dp circles), and the guitar slot grows past its 104 dp minimum when the tuning picker does. A UI test checks that every control is reachable at 2× font.
 
+### Languages
+- **English (default) and Dutch.** Each module keeps its texts in `res/values/strings.xml` with a Dutch copy in `res/values-nl/strings.xml`; the app follows the phone's language. Brand and symbols (`app_name`, `DADGAD`, ♯/♭, the dash) are `translatable="false"`.
+- **Per-app language (Android 13+):** `:app` sets `androidResources.generateLocaleConfig = true` with `res/resources.properties` (`unqualifiedResLocale=en`), so the system *App languages* page offers InTune in English or Dutch. `localeFilters` keeps only `en` and `nl`, so library texts (Material menus) never appear in a third language.
+- **Formatting:** counts use plurals (`tuner_cents_flat/sharp`) and numbers go through placeholders (`%1$.1f Hz`), which Android formats in the resource locale, so Dutch shows "440,0 Hz" and "12 cent te laag". Note names are not translated: they follow the notation setting (C♯ / D♭ / Do♯) in every language. TalkBack's spoken accidentals are resources ("C sharp", Dutch "C kruis" / "D mol").
+- **Guard:** `LocalizationTest` (JVM, in `:app`) fails when a module's English string has no Dutch copy or a different set of placeholders, and when Kotlin code passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar. Lint's `MissingTranslation` and `StringFormat*` checks back it up.
+
 ## 7. Package layout (per module)
 
 ```

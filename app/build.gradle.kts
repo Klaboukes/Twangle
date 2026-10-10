@@ -27,6 +27,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    androidResources {
+        // English (default, see res/resources.properties) and Dutch. Library translations for other
+        // languages are dropped, so the UI never mixes languages.
+        localeFilters += listOf("en", "nl")
+        // Writes the locale config Android 13+ uses for the per-app language setting.
+        generateLocaleConfig = true
+    }
 }
 
 kotlin {
