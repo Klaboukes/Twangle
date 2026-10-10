@@ -1,0 +1,14 @@
+# Normalize line endings: LF in the repo and working tree (matches .editorconfig).
+* text=auto eol=lf
+
+# Windows scripts need CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.jar binary
+*.png binary
+*.webp binary
+*.wav binary
+*.keystore binary
+*.jks binary

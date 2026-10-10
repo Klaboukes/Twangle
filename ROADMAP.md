@@ -12,6 +12,7 @@ Goal: an empty multi-module project that builds and launches a blank Compose scr
 - ☑ Docs: `CLAUDE.md`, `ARCHITECTURE.md`, `ROADMAP.md`
 - ☑ Folder structure and Gradle module skeletons (`:app`, `:feature:tuner`, `:core:audio`, `:core:dsp`)
 - ☑ Version catalog `gradle/libs.versions.toml`
+- ☑ GitHub repo connected; branch → PR → squash-merge workflow (see CLAUDE.md); `.gitattributes` for line endings
 - ☐ Install Android Studio (bundled JDK 21) and the Android SDK (API 35). Open the project and let it generate the Gradle wrapper (`gradlew`, `gradle-wrapper.jar`)
 - ☐ Bump dependency versions in the catalog to the latest stable
 - ☐ `MainActivity` + `InTuneApplication` + theme showing a placeholder screen
