@@ -153,7 +153,7 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** The ring buffer, YIN scratch arrays and the window buffer are allocated once and reused. Per-frame garbage at ~47 Hz causes GC jank.
 - The YIN difference function starts as the direct O(N·τ_max) form, roughly 2.7 M multiply-adds per frame (3153 × 851 lags), using four independent accumulators so the additions overlap. `./gradlew :core:dsp:benchmark` (the `*Benchmark` tests, kept out of `test` and CI because timings depend on the machine) measured a median of **1.1 ms per frame** on the JVM, against a 2 ms budget. Phones are slower, so check again on the device in Phase 5. If profiling shows a hotspot, switch to the FFT-based autocorrelation form, which is O(N log N). The `PitchDetector` interface stays the same.
-- UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` so it moves smoothly between estimates.
+- UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` (a spring, damping 0.8) so it moves smoothly between estimates. `NeedleGauge` reads the animated angle only inside its `Canvas` draw block, so the ~47 updates a second redraw the gauge without recomposing it.
 
 ## 5. Lifecycle & permissions
 - `RECORD_AUDIO` is requested at runtime from the tuner screen. `rememberMicPermissionState()` tracks a `MicPermissionStatus` (rules in the pure, unit-tested `MicPermissionRules`) and `PermissionPrompt` shows one action per state:
@@ -189,6 +189,8 @@ sealed interface TunerUiState {
 
 `TunerViewModel` exposes it as `state: StateFlow<TunerUiState>`, plus `mode: StateFlow<TunerMode>` so the mode switch reacts instantly. Its inputs are `onPermissionChanged(granted)`, `setMode(mode)` and `retry()`. The permission status itself lives in the UI (`rememberMicPermissionState`), which decides between the permission prompt and the tuner and passes "granted" on to the ViewModel. Until then the state is `PermissionRequired` and the pipeline isn't started, so the mic stays closed even while the screen is visible. The tuning is fixed to `Tunings.DEFAULT` until Phase 4 adds settings.
 
+`TunerScreen` wires the ViewModel; `TunerContent(state, onRetry)` is the stateless screen body used by previews and UI tests. It shows `NeedleGauge` (half circle, −50…+50 cents, a tick every 10; readings beyond ±50, such as a string tuned far off in Auto mode, pin the needle to the edge) above `NoteDisplay` (big note name with its octave, "12 cents flat" rounded to whole cents, and the smoothed frequency). While `Listening`, the needle rests faded in the centre and the text asks to play a string (Auto) or a note (Chromatic).
+
 ## 7. Package layout (per module)
 
 ```
@@ -211,7 +213,6 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState (+ TunerMode), TunerInterpreter, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
-    debug/       DebugViewModel, DebugPitchScreen (temporary, Phase 2)
     components/  NeedleGauge, NoteDisplay, StringSelector, PermissionPrompt
 
 app/src/main/kotlin/com/intune/app/

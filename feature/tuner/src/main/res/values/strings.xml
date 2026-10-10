@@ -15,13 +15,19 @@
     <string name="error_mic_stopped">The microphone stopped unexpectedly.</string>
     <string name="error_retry">Try again</string>
 
-    <!-- Temporary Phase 2 debug screen. -->
-    <string name="debug_starting">Starting microphone…</string>
-    <string name="debug_listening">Listening… (too quiet)</string>
-    <string name="debug_no_pitch">No clear pitch</string>
-    <string name="debug_cents">%1$+.1f cents</string>
-    <string name="debug_frequency">%1$.2f Hz</string>
-    <string name="debug_confidence">Confidence %1$.0f%%</string>
-    <string name="debug_level">Level %1$.1f dBFS</string>
-    <string name="debug_source">Debug view · %1$d Hz · %2$s</string>
+    <!-- Tuner screen. -->
+    <string name="tuner_hint_play_string">Play a string</string>
+    <string name="tuner_hint_play_note">Play a note</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_cents_zero">0 cents</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="one">%1$d cent flat</item>
+        <item quantity="other">%1$d cents flat</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="one">%1$d cent sharp</item>
+        <item quantity="other">%1$d cents sharp</item>
+    </plurals>
+    <string name="tuner_flat_symbol" translatable="false">♭</string>
+    <string name="tuner_sharp_symbol" translatable="false">♯</string>
 </resources>
