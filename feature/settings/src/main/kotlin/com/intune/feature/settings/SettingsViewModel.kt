@@ -37,4 +37,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun setKeepScreenOn(enabled: Boolean) {
         viewModelScope.launch { repository.setKeepScreenOn(enabled) }
     }
+
+    fun setVibrateInTune(enabled: Boolean) {
+        viewModelScope.launch { repository.setVibrateInTune(enabled) }
+    }
 }

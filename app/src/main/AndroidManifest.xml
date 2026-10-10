@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Only permission the app needs. No INTERNET: audio never leaves the device. -->
+    <!-- The only runtime permission. No INTERNET: audio never leaves the device.
+         :feature:tuner adds VIBRATE (normal, no prompt) for the in-tune tick. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-feature

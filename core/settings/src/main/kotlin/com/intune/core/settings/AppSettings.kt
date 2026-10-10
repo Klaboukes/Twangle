@@ -25,6 +25,8 @@ data class AppSettings(
     val dynamicColor: Boolean = true,
     /** Stop the screen from dimming while the tuner is open. */
     val keepScreenOn: Boolean = true,
+    /** One short vibration when the played note becomes in tune. */
+    val vibrateInTune: Boolean = true,
 ) {
     companion object {
         /** Rounds [hz] to whole Hz and keeps it in the range [NoteMapper] accepts. NaN gives the default. */

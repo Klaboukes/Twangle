@@ -24,7 +24,9 @@
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
 
-    <!-- Screen. -->
+    <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Keep screen on</string>
     <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
+    <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>
+    <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
 </resources>

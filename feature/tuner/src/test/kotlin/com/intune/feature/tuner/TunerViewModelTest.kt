@@ -282,4 +282,16 @@ class TunerViewModelTest {
         runCurrent()
         assertFalse(vm.keepScreenOn.value)
     }
+
+    @Test
+    fun `vibrateInTune follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.vibrateInTune.collect {} }
+        runCurrent()
+        assertTrue("on by default", vm.vibrateInTune.value)
+
+        settings.setVibrateInTune(false)
+        runCurrent()
+        assertFalse(vm.vibrateInTune.value)
+    }
 }

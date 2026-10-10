@@ -45,6 +45,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onThemeChange = viewModel::setTheme,
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
+        onVibrateInTuneChange = viewModel::setVibrateInTune,
         modifier = modifier,
     )
 }
@@ -63,6 +64,7 @@ fun SettingsContent(
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
+    onVibrateInTuneChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
@@ -118,6 +120,12 @@ fun SettingsContent(
                     checked = settings.keepScreenOn,
                     onCheckedChange = onKeepScreenOnChange,
                 )
+                SwitchSetting(
+                    title = stringResource(R.string.settings_vibrate_in_tune_title),
+                    summary = stringResource(R.string.settings_vibrate_in_tune_summary),
+                    checked = settings.vibrateInTune,
+                    onCheckedChange = onVibrateInTuneChange,
+                )
             }
         }
     }
@@ -147,6 +155,7 @@ private fun SettingsContentPreview() {
             onThemeChange = {},
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},
+            onVibrateInTuneChange = {},
         )
     }
 }

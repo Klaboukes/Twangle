@@ -35,6 +35,7 @@ class SettingsContentTest {
     private val themeChanges = mutableListOf<ThemeMode>()
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
+    private val vibrateChanges = mutableListOf<Boolean>()
     private var backs = 0
 
     private fun show(settings: AppSettings, dynamicColorAvailable: Boolean = true) {
@@ -48,6 +49,7 @@ class SettingsContentTest {
                     onThemeChange = { themeChanges += it },
                     onDynamicColorChange = { dynamicColorChanges += it },
                     onKeepScreenOnChange = { keepScreenOnChanges += it },
+                    onVibrateInTuneChange = { vibrateChanges += it },
                     dynamicColorAvailable = dynamicColorAvailable,
                 )
             }
@@ -114,13 +116,16 @@ class SettingsContentTest {
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
         keepOn.performScrollTo().assertIsOff().performClick()
+        val vibrate = compose.onNodeWithText(context.getString(R.string.settings_vibrate_in_tune_title))
+        vibrate.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), dynamicColorChanges)
         assertEquals(listOf(true), keepScreenOnChanges)
+        assertEquals(listOf(false), vibrateChanges)
     }
 
     @Test

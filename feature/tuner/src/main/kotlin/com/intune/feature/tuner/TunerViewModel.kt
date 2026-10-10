@@ -56,6 +56,11 @@ class TunerViewModel(
         .map { it.keepScreenOn }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    /** Whether reaching "in tune" gives a haptic tick (a saved setting). */
+    val vibrateInTune: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.vibrateInTune }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
 

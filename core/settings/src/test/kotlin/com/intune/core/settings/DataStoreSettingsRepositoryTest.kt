@@ -68,6 +68,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(true, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
+        assertEquals(true, settings.vibrateInTune)
     }
 
     @Test
@@ -79,6 +80,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setTheme(ThemeMode.DARK)
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
+        repo.setVibrateInTune(false)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -87,6 +89,7 @@ class DataStoreSettingsRepositoryTest {
             theme = ThemeMode.DARK,
             dynamicColor = false,
             keepScreenOn = false,
+            vibrateInTune = false,
         )
         assertEquals(expected, repo.settings.first())
     }

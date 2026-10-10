@@ -62,15 +62,17 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves theme, wallpaper colours and keep screen on`() = runTest(dispatcher) {
+    fun `saves theme, wallpaper colours, keep screen on and vibration`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
         vm.setKeepScreenOn(false)
+        vm.setVibrateInTune(false)
         runCurrent()
 
         assertEquals(ThemeMode.LIGHT, repository.current.theme)
         assertEquals(false, repository.current.dynamicColor)
         assertEquals(false, repository.current.keepScreenOn)
+        assertEquals(false, repository.current.vibrateInTune)
     }
 }

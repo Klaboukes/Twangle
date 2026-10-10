@@ -32,6 +32,7 @@ import com.intune.core.dsp.music.Notation
 import com.intune.core.dsp.music.Tuning
 import com.intune.core.dsp.music.Tunings
 import com.intune.core.settings.SettingsRepository
+import com.intune.feature.tuner.components.InTuneHaptic
 import com.intune.feature.tuner.components.ModeSwitch
 import com.intune.feature.tuner.components.NeedleGauge
 import com.intune.feature.tuner.components.NoteDisplay
@@ -58,9 +59,16 @@ fun TunerScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
+    val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     if (granted && keepScreenOn) KeepScreenOn()
+    val detected = state as? TunerUiState.Detected
+    InTuneHaptic(
+        inTune = detected?.inTune == true,
+        target = detected?.let { it.noteName + it.octave },
+        enabled = vibrateInTune,
+    )
 
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Box(

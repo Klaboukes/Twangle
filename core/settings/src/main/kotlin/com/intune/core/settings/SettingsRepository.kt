@@ -23,4 +23,6 @@ interface SettingsRepository {
     suspend fun setDynamicColor(enabled: Boolean)
 
     suspend fun setKeepScreenOn(enabled: Boolean)
+
+    suspend fun setVibrateInTune(enabled: Boolean)
 }

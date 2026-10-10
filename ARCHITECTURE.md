@@ -85,7 +85,7 @@ Rules:
 - **Detection range**: 60 Hz to 1500 Hz for the default guitar profile. This sets YIN's τ range (τ_max = sampleRate / f_min).
 - **YIN threshold**: 0.15 (tunable; the paper suggests 0.10–0.15). The first CMNDF dip below it is accepted as the period.
 - **Accuracy target**: ±1 cent on synthetic test signals and ±3 cents on recorded guitar fixtures.
-- **"In tune"**: |cents| ≤ 5 held for at least 300 ms (counted in frames: 15 hops at 48 kHz). It then stays in tune until the reading drifts past 7 cents, so a note hovering at 5 cents doesn't flicker. Show a green state (and, in Phase 5, one haptic tick).
+- **"In tune"**: |cents| ≤ 5 held for at least 300 ms (counted in frames: 15 hops at 48 kHz). It then stays in tune until the reading drifts past 7 cents, so a note hovering at 5 cents doesn't flicker. Show a green state and give one haptic tick (see §5, Settings).
 
 ### Frame assembly
 `FrameAssembler` keeps a 4096-sample ring buffer. Callers `push()` audio chunks of any size. Each call consumes samples until a frame is ready, then stops so no frame is skipped. `readFrame(out)` copies the window oldest-first into a caller-owned array. The first frame arrives after one full window, then one every hop (1024). The ring and the output window are allocated once.
@@ -177,9 +177,10 @@ The gear button in the tuner's top corner opens the settings screen (`:feature:s
 - **Note names:** radio buttons for sharps, flats or Do Re Mi (`RadioGroupSetting`, a reusable titled radio group). The interpreter writes `noteName` in the chosen notation, and the string row, tuning menu and "Play the La2 string" hint follow it. Long names such as "Sol♯" use a smaller font to fit the string circles.
 - **Theme:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+. `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `InTuneTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
 - **Keep screen on** (default on): while the tuner is shown and the mic permission is granted, `TunerScreen` sets `View.keepScreenOn` (`FLAG_KEEP_SCREEN_ON` on the window). Leaving the tuner (settings, home, lock) clears it, so the screen times out normally. It is a window flag, not a wake lock, so no extra permission is needed. `TunerViewModel.keepScreenOn` exposes the setting.
+- **Vibrate when in tune** (default on): `InTuneHaptic` clicks the vibration motor once (`VibrationEffect.EFFECT_CLICK`, a 20 ms one-shot before Android 10) when `Detected.inTune` turns true. It uses `Vibrator` directly, not Compose/View touch haptics, because those obey the phone-wide touch-feedback setting, which many people (including the S26 we test on) switch off; this switch is the tuner's own. That needs the `VIBRATE` permission (normal, granted at install, declared by `:feature:tuner`). `InTuneTickRule` (JVM-tested) skips a second tick when the *same* note becomes in tune again less than 1.5 s after it last was: a short drop-out of the reading resets "in tune", and that shouldn't buzz twice. Whether the note was in tune is saved with the screen state, so rotating or coming back from settings doesn't tick. `TunerViewModel.vibrateInTune` exposes the setting.
 - **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
 
-`SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true) and `keepScreenOn` (true).
+`SettingsRepository` (`:core:settings`) exposes `settings: Flow<AppSettings>` plus one suspend setter per value. `AppSettings` holds `a4Hz` (default 440), `tuning` (default Standard), `notation` (`Notation.SHARPS` / `FLATS` / `SOLFEGE`), `theme` (`ThemeMode.SYSTEM` / `LIGHT` / `DARK`), `dynamicColor` (true), `keepScreenOn` (true) and `vibrateInTune` (true).
 - `DataStoreSettingsRepository` stores them with DataStore Preferences in `files/datastore/settings.preferences_pb`. `AppContainer` creates the only instance, because DataStore allows one per file. The tuning is saved by its `id` and enums by their `name`, so those must never be renamed.
 - Reading is forgiving. A missing, unknown or out-of-range value falls back to its default: a tuning id that no longer exists becomes Standard, and A4 is clamped to 415–466 Hz and rounded to whole Hz (`AppSettings.normalizeA4`, which the setter applies too). An unreadable file gives all defaults, and a corrupt one is replaced with defaults so saving works again.
 - `FakeSettingsRepository` (in the `:core:settings` `testFixtures`) keeps settings in memory for ViewModel tests.
@@ -239,9 +240,9 @@ core/settings/src/testFixtures/kotlin/com/intune/core/settings/
     FakeSettingsRepository
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
-    TunerViewModel, TunerUiState (+ TunerMode), TunerOptions, TunerInterpreter, InTuneDetector, TunerScreen, PitchPipeline (+ PitchReading), TunerError
+    TunerViewModel, TunerUiState (+ TunerMode), TunerOptions, TunerInterpreter, InTuneDetector, InTuneTickRule, TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
-    components/  NeedleGauge, NoteDisplay, StringSelector, TuningPicker, ModeSwitch, InTuneColor, PermissionPrompt
+    components/  NeedleGauge, NoteDisplay, StringSelector, TuningPicker, ModeSwitch, InTuneColor, InTuneHaptic, PermissionPrompt
 
 feature/settings/src/main/kotlin/com/intune/feature/settings/
     SettingsScreen (+ SettingsContent), SettingsViewModel
