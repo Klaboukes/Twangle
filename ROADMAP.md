@@ -15,7 +15,7 @@ Goal: an empty multi-module project that builds and launches a blank Compose scr
 - ☑ GitHub repo connected; branch → PR → squash-merge workflow (see CLAUDE.md); `.gitattributes` for line endings
 - ☑ Install Android Studio (bundled JDK) and the Android SDK (API 37); generate the Gradle wrapper (9.8.1, checksum-pinned)
 - ☑ Bump dependency versions to latest stable (AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00)
-- ☑ `MainActivity` + `InTuneApplication` + `AppContainer` + Material 3 theme (dynamic color) + placeholder tuner screen + adaptive launcher icon
+- ☑ `MainActivity` + `TwangleApplication` + `AppContainer` + Material 3 theme (dynamic color) + placeholder tuner screen + adaptive launcher icon
 - ☑ `./gradlew assembleDebug test lint` passes
 - ☑ CI: GitHub Actions workflow running `test`, `lint` and `assembleDebug` on every PR
 - ☑ App verified on a device: Samsung Galaxy S26 (Android 16), launches cleanly in dark mode

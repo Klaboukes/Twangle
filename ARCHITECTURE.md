@@ -21,7 +21,7 @@ Twangle is a chromatic and guitar-string tuner for Android. It listens to the mi
 
 ### Name, app ID and icon
 - **Name:** Twangle (until October 2026: InTune, which clashed with Microsoft Intune). Names that advertise "free" were dropped: Google Play's metadata policy bans price words in titles.
-- **App ID:** `io.github.klaboukes.twangle`, the usual reverse-domain ID for an open-source app hosted on GitHub. It was changed before the first store release, while that was still free. The Kotlin `namespace` and packages stay `com.intune.*`, because renaming them changes no behaviour.
+- **App ID:** `io.github.klaboukes.twangle`, the usual reverse-domain ID for an open-source app hosted on GitHub. It was changed before the first store release, while that was still free. Kotlin packages and module namespaces live under it (`io.github.klaboukes.twangle.<module path>`).
 - **Launcher icon:** a dark-brown string on gold that comes in at an angle, makes one round loop and leaves straight: tangled, then in tune. Where the straight part crosses, the string passes under it. It's an adaptive icon (`res/drawable/ic_launcher_foreground.xml` + `ic_launcher_background` colour), and the same foreground is the monochrome layer for themed icons.
 
 ### Rejected alternatives
@@ -37,7 +37,7 @@ Twangle is a chromatic and guitar-string tuner for Android. It listens to the mi
 :feature:settings  Settings screen: A4 calibration and the other preferences, SettingsViewModel
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>, permission helpers
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
-:core:designsystem Visual styles: InTuneTheme, palettes, fonts, backgrounds, the hand-drawn dials, StylePicker
+:core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, the hand-drawn dials, StylePicker
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, note math, tunings, smoothing
 :baselineprofile   Android test module (com.android.test): Baseline Profile generator, startup benchmark
 ```
@@ -242,7 +242,7 @@ A Baseline Profile lists the classes and methods used at startup and on the tune
 The gear button in the tuner's top corner opens the settings screen (`:feature:settings`). `MainActivity` switches between the two screens with one saved `Screen` value, so the app needs no navigation library. A `SaveableStateHolder` keeps each screen's saved state while the other one is shown, and the back button returns from settings. While settings are open the tuner isn't visible, so the mic is released after the usual 5 s. `SettingsViewModel` shows the saved settings and saves every change straight away; there is no "save" button.
 - **Note names:** radio buttons for sharps, flats or Do Re Mi (`RadioGroupSetting`, a reusable titled radio group). The interpreter writes `noteName` in the chosen notation, and the string row, tuning menu and "Play the La2 string" hint follow it. Long names such as "Sol♯" use a smaller font to fit the string circles.
 - **Style:** a sideways row of style cards at the top (`StylePicker`, see §6, Visual styles); tapping one restyles the app at once.
-- **Light or dark:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+ and only in the contemporary style (the others have their own colours). `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `InTuneTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
+- **Light or dark:** radio buttons for system default, light or dark, plus a "Wallpaper colours" switch (dynamic color), shown only on Android 12+ and only in the contemporary style (the others have their own colours). `MainActivity` reads the settings before drawing anything, so the app never flashes the wrong theme, and applies them through `TwangleTheme` (`ThemeMode.useDarkTheme(systemDark)`). It also calls `enableEdgeToEdge` again whenever dark/light changes, so the status-bar icons follow the app's theme rather than the phone's.
 - **Keep screen on** (default on): while the tuner is shown and the mic permission is granted, `TunerScreen` sets `View.keepScreenOn` (`FLAG_KEEP_SCREEN_ON` on the window). Leaving the tuner (settings, home, lock) clears it, so the screen times out normally. It is a window flag, not a wake lock, so no extra permission is needed. `TunerViewModel.keepScreenOn` exposes the setting.
 - **Vibrate when in tune** (default on): `InTuneHaptic` clicks the vibration motor once (`VibrationEffect.EFFECT_CLICK`, a 20 ms one-shot before Android 10) when `Detected.inTune` turns true. It uses `Vibrator` directly, not Compose/View touch haptics, because those obey the phone-wide touch-feedback setting, which many people (including the S26 we test on) switch off; this switch is the tuner's own. That needs the `VIBRATE` permission (normal, granted at install, declared by `:feature:tuner`). `InTuneTickRule` (JVM-tested) skips a second tick when the *same* note becomes in tune again less than 1.5 s after it last was: a short drop-out of the reading resets "in tune", and that shouldn't buzz twice. Whether the note was in tune is saved with the screen state, so rotating or coming back from settings doesn't tick. `TunerViewModel.vibrateInTune` exposes the setting.
 - **A4 calibration:** a slider over 415–466 Hz with one stop per Hz, − and + buttons for single steps, and "Reset to 440 Hz". A drag is saved once the finger lifts. The tuner shows the reference in use as "A4 = 442 Hz" under the mode switch.
@@ -294,7 +294,7 @@ The user picks one of seven styles: Prehistoric, Middle Ages, Classic, Retro, Co
 - **Dial** (`dial/Dial.kt`): `drawDialScale` and `drawDialNeedle` draw each style's dial in the shared geometry (pivot `DialPivotInset` above the bottom centre of a 2:1 box, ±50 cents over a half circle): an ochre arc with a flint-tipped spear, a gold-ruled manuscript scale with a sword, an ivory clock face with a watch hand, a backlit 70s VU meter with red zones and an "in tune" lamp, the clean contemporary track, a segmented neon HUD, and an orbit with a satellite around a ringed planet. `DialColors` gives each needle and centre mark an out-of-tune and an in-tune colour (the VU meter's face is lit in both brightnesses, so its needle stays dark). `NeedleGauge` still only turns the needle's layer per reading.
 - **Sound ribbon** (`dial/SoundRibbon.kt`): `drawStyleRibbon` draws the wave view's ribbon in each style's own marks, without a frame: dabs of paint, slanted quill hatching, an engraved outline with a hairline, a glowing phosphor band, rounded voice-memo bars, thin neon bars and pairs of stars tracing its edges. `ribbonAt` (JVM-tested) gives its shape: a lens that narrows to nothing at both ends, pinched into drifting pulses.
 
-`InTuneTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, dial colours and the unfaded scheme). The tokens are remembered per style and brightness, so recomposing for another setting changes nothing. A change of style or brightness fades every scheme colour over 450 ms (one `Animatable`, colours mixed with `lerp`) and cross-fades the background. Style cards in `StylePicker` are small live previews: each wraps its own `InTuneTheme`, so it shows that style's background, dial and lettering whatever the app's current style.
+`TwangleTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, dial colours and the unfaded scheme). The tokens are remembered per style and brightness, so recomposing for another setting changes nothing. A change of style or brightness fades every scheme colour over 450 ms (one `Animatable`, colours mixed with `lerp`) and cross-fades the background. Style cards in `StylePicker` are small live previews: each wraps its own `TwangleTheme`, so it shows that style's background, dial and lettering whatever the app's current style.
 
 ### Landscape and wide screens
 `TunerContent` picks its arrangement from the space it gets, not from the device type: `tunerLayoutFor(width, height)` (JVM-tested) returns `TWO_PANE` when the window is at least 600 dp wide (the Material 3 "medium" width class) *and* wider than tall, else `SINGLE_COLUMN`. So a phone held upright, a tablet in portrait, split screen and near-square foldables keep the single column (max 480 dp wide), while a phone on its side or a tablet in landscape gets two panes:
@@ -318,48 +318,48 @@ The user picks one of seven styles: Prehistoric, Middle Ages, Classic, Retro, Co
 ## 7. Package layout (per module)
 
 ```
-core/dsp/src/main/kotlin/com/intune/core/dsp/
+core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
                 AnalysisSettings, LowPassFilter, SignalGate, FftDifference, Fft
     music/      Note, NoteMapper, Tuning, Tunings (presets), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     buffer/     FrameAssembler (ring buffer)
 
-core/dsp/src/testFixtures/kotlin/com/intune/core/dsp/
+core/dsp/src/testFixtures/kotlin/io/github/klaboukes/twangle/core/dsp/
     testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise, hum,
                  mix, band-limit)
 
-core/audio/src/main/kotlin/com/intune/core/audio/
+core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
     AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector
 
-core/audio/src/testFixtures/kotlin/com/intune/core/audio/
+core/audio/src/testFixtures/kotlin/io/github/klaboukes/twangle/core/audio/
     FakeAudioRecorder
 
-core/settings/src/main/kotlin/com/intune/core/settings/
+core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ ThemeMode, VisualStyle), SettingsRepository (interface), DataStoreSettingsRepository
 
-core/settings/src/testFixtures/kotlin/com/intune/core/settings/
+core/settings/src/testFixtures/kotlin/io/github/klaboukes/twangle/core/settings/
     FakeSettingsRepository
 
-core/designsystem/src/main/kotlin/com/intune/core/designsystem/
-    InTuneTheme (+ StyleTokens, useDarkTheme, shapes), StylePalettes (Palette, DialColors),
+core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
+    TwangleTheme (+ StyleTokens, useDarkTheme, shapes), StylePalettes (Palette, DialColors),
     StyleTypography, StyleBackdrop, StylePicker (+ StaticDial)
     dial/        Dial (drawDialScale, drawDialNeedle, geometry), SoundRibbon (drawStyleRibbon, ribbonAt), WaveLooks (drawWave, loopAt, rippleAt), WaveMotion
 
-feature/tuner/src/main/kotlin/com/intune/feature/tuner/
+feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     TunerViewModel, TunerUiState (+ TunerMode), TunerOptions, TunerInterpreter, InTuneDetector, InTuneTickRule, SpokenReadingThrottle (+ spokenNoteName), TunerScreen, PitchPipeline (+ PitchReading), TunerError
     MicPermission (status, rules, rememberMicPermissionState)
     components/  NeedleGauge, NoteDisplay, WaveView, StringSelector, TuningPicker, ModeSwitch, InTuneColor, InTuneHaptic, PermissionPrompt
 
-feature/settings/src/main/kotlin/com/intune/feature/settings/
+feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), SettingsViewModel
     components/  A4Calibration, RadioGroupSetting, SwitchSetting
 
-app/src/main/kotlin/com/intune/app/
-    InTuneApplication, AppContainer, MainActivity
+app/src/main/kotlin/io/github/klaboukes/twangle/app/
+    TwangleApplication, AppContainer, MainActivity
 
-baselineprofile/src/main/kotlin/com/intune/baselineprofile/
+baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, TunerJourney (shared UI Automator steps)
 ```
 

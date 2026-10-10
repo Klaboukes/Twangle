@@ -59,7 +59,7 @@ When called with a phase number N:
 
    **Sub-agent prompt template** (fill in the angle brackets):
    ```
-   You are doing ONE increment of the Twangle roadmap, end to end, in C:\source\InTune.
+   You are doing ONE increment of the Twangle roadmap, end to end, in C:\source\Twangle.
    Increment: phase <N>, "<roadmap item text>" (<plain-language goal, as announced to the owner>).
    First read CLAUDE.md and .claude/skills/roadmap-step/SKILL.md, then follow the skill's steps 3–7
    for this increment only: branch phase-<N>/<topic> from freshly pulled main, build, verify locally
@@ -116,7 +116,7 @@ All three must pass with no new lint warnings. Fix and re-run until they do.
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 "$ADB" devices                                   # expect the SM-S942B as "device"
 ./gradlew installDebug
-"$ADB" shell am start -W -n io.github.klaboukes.twangle/com.intune.app.MainActivity
+"$ADB" shell am start -W -n io.github.klaboukes.twangle/io.github.klaboukes.twangle.app.MainActivity
 "$ADB" exec-out screencap -p > <scratchpad>/shot.png   # then look at it
 "$ADB" logcat -d -b crash                         # must be empty for our app
 ```

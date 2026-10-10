@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.intune.baselineprofile"
+    namespace = "io.github.klaboukes.twangle.baselineprofile"
     compileSdk = 37
 
     defaultConfig {

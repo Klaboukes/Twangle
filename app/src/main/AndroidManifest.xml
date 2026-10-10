@@ -10,7 +10,7 @@
         android:required="true" />
 
     <application
-        android:name=".InTuneApplication"
+        android:name=".TwangleApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"

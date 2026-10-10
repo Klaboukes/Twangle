@@ -5,7 +5,7 @@ Guidance for Claude Code (and humans) working in this repository.
 ## Project
 **Twangle** is an Android guitar tuner (chromatic + guitar-string modes). It captures microphone audio, finds pitch with the YIN algorithm, and shows the deviation in cents on a Compose needle gauge.
 
-The app was called InTune until October 2026. The app ID is now `io.github.klaboukes.twangle`. Code packages (`com.intune.*`), some class names (`InTuneTheme`, `InTuneApplication`), the repo and the local folder still use the old name. Don't confuse those with the `InTune*` classes that mean "in tune" (`InTuneDetector`, `InTuneColor`, `InTuneHaptic`, `InTuneTickRule`).
+The app was called InTune until October 2026. The app ID is `io.github.klaboukes.twangle`, and code packages live under it. Classes named `InTune*` (`InTuneDetector`, `InTuneColor`, `InTuneHaptic`, `InTuneTickRule`) are about being *in tune*, not the old name. Keep them.
 
 - Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md). Read it before making structural changes.
 - Plan and progress: [ROADMAP.md](ROADMAP.md). Tick items (☐ → ☑) as you finish them.
@@ -19,12 +19,12 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ settings, draws the style's background), `InTuneApplication`, `AppContainer` (DI) |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ settings, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings screen UI, `SettingsViewModel` |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
-| `:core:designsystem` | Android library | `InTuneTheme` and the seven visual styles: palettes, bundled fonts, backgrounds, hand-drawn dials, `StylePicker` |
+| `:core:designsystem` | Android library | `TwangleTheme` and the seven visual styles: palettes, bundled fonts, backgrounds, hand-drawn dials, `StylePicker` |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
@@ -66,7 +66,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 
 ## Conventions
 - Kotlin official code style (`kotlin.code.style=official`), 4-space indent, see `.editorconfig`.
-- Packages: `com.intune.<module path>`, e.g. `com.intune.core.dsp.pitch`. Source sets use `src/main/kotlin`.
+- Packages: `io.github.klaboukes.twangle.<module path>`, e.g. `io.github.klaboukes.twangle.core.dsp.pitch`. Source sets use `src/main/kotlin`.
 - UI state: one immutable `TunerUiState` sealed interface exposed as `StateFlow` from the ViewModel. Composables are stateless and take state plus lambdas.
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
@@ -81,7 +81,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
 
 ## Git & GitHub
-Remote: `https://github.com/Klaboukes/InTune` (private, free plan). Default branch: `main`.
+Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
 
 **Every change goes through its own branch and pull request. Never commit directly to `main`.**
 1. `git switch main && git pull`

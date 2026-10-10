@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.intune.feature.tuner"
+    namespace = "io.github.klaboukes.twangle.feature.tuner"
     compileSdk = 37
 
     defaultConfig {

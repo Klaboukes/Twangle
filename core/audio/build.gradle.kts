@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.intune.core.audio"
+    namespace = "io.github.klaboukes.twangle.core.audio"
     compileSdk = 37
 
     defaultConfig {

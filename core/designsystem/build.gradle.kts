@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.intune.core.designsystem"
+    namespace = "io.github.klaboukes.twangle.core.designsystem"
     compileSdk = 37
 
     defaultConfig {
