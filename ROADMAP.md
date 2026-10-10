@@ -30,7 +30,7 @@ Goal: reliable pitch detection, proven by unit tests, with no device involved.
 - ☑ `SignalGate`: RMS / dBFS level and DC removal (opens at −50 dBFS, 6 dB hysteresis)
 - ☐ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence
 - ☐ `PitchSmoother`: median filter, octave-jump rejection, EMA on cents, note-change hysteresis
-- ☐ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck)
+- ☑ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck): band-limited, seeded; `testFixtures` so `:core:audio` can reuse it
 - ☐ Tests: ±1 cent for 60–1500 Hz synthetic signals; no octave errors on the weak-fundamental case
 - ☐ Microbenchmark: under 2 ms per 4096-sample frame on the JVM
 

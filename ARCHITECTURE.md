@@ -151,6 +151,9 @@ core/dsp/src/main/kotlin/com/intune/core/dsp/
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     buffer/     FrameAssembler (ring buffer)
 
+core/dsp/src/testFixtures/kotlin/com/intune/core/dsp/
+    testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise)
+
 core/audio/src/main/kotlin/com/intune/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioSourceSelector
 
@@ -165,7 +168,7 @@ app/src/main/kotlin/com/intune/app/
 ## 8. Testing strategy
 | Layer | How |
 |---|---|
-| `:core:dsp` | JVM unit tests with signals synthesized in tests: pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
+| `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
 | `:core:audio` | A `FakeAudioRecorder` emits fixture or synthetic frames, so everything downstream can be tested without a device. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
