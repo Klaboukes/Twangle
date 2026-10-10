@@ -41,7 +41,7 @@ Goal: live microphone frames reach the DSP pipeline.
 - ☑ Audio source selection: `UNPROCESSED`, then `VOICE_RECOGNITION` as fallback (also falls back if `UNPROCESSED` fails to open)
 - ☑ Native sample-rate detection, plus handling for errors and a busy mic (`SampleRateSelector`; typed `AudioRecorderException`: permission missing, init failed, mic busy, read failed)
 - ☐ `RECORD_AUDIO` permission flow: rationale, denied, permanently denied → settings
-- ☐ `FakeAudioRecorder` for tests
+- ☑ `FakeAudioRecorder` for tests (`testFixtures`; plays synthetic signals at mic pace, can loop or fail, tracks whether the mic is open)
 - ☐ Temporary debug screen showing raw Hz, confidence and dBFS
 
 ## Phase 3 — Tuner MVP (`:feature:tuner`) → **v0.1 (internal)**

@@ -183,7 +183,11 @@ core/dsp/src/testFixtures/kotlin/com/intune/core/dsp/
     testsignals/ TestSignals (synthetic sine, saw, square, weak fundamental, pluck, noise)
 
 core/audio/src/main/kotlin/com/intune/core/audio/
-    AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioSourceSelector (+ AudioInput)
+    AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
+    AudioSourceSelector (+ AudioInput), SampleRateSelector
+
+core/audio/src/testFixtures/kotlin/com/intune/core/audio/
+    FakeAudioRecorder
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState, TunerScreen
@@ -197,7 +201,7 @@ app/src/main/kotlin/com/intune/app/
 | Layer | How |
 |---|---|
 | `:core:dsp` | JVM unit tests with signals from `TestSignals` (in the `testFixtures` source set, so other modules' tests can use them via `testImplementation(testFixtures(project(":core:dsp")))`): pure sines, sawtooth/square waves (rich harmonics), a weak fundamental with strong 2nd harmonic, added white noise, and decaying plucks. Assert ±1 cent. Recorded WAV fixtures go in `src/test/resources/`. |
-| `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. A `FakeAudioRecorder` emits fixture or synthetic frames, so everything downstream can be tested without a device. |
+| `:core:audio` | JVM tests for the pure parts (source selection). Instrumented tests (`./gradlew :core:audio:connectedDebugAndroidTest`, device needed) record from the real mic: full chunks, pooled arrays, mic released after collection. `FakeAudioRecorder` (in `:core:audio`'s `testFixtures`, used via `testImplementation(testFixtures(project(":core:audio")))`) plays a `FloatArray`, typically from `TestSignals`, as chunks paced like a real mic (instant under `runTest` virtual time). It can loop, end with an `AudioRecorderException`, and reports `isRecording` / `startCount`, so everything downstream, including mic lifetime, can be tested without a device. Like the real recorder it reuses its chunk array. |
 | `:feature:tuner` | ViewModel tests with `kotlinx-coroutines-test` and the fake recorder. Compose UI tests for each `TunerUiState`. |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 
