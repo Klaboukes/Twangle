@@ -87,9 +87,10 @@ Rules:
 ### Note math
 ```
 midi  = 69 + 12 · log2(f / A4)        (A4 default 440 Hz, configurable 415–466)
-note  = round(midi)
+note  = ceil(midi − 0.5)               (round half down, so exactly half-way reads +50)
 cents = 100 · (midi − note)            range (−50, +50]
 ```
+Octaves use scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI number, so passing notes through the pipeline doesn't allocate.
 In **Auto (guitar) mode** the target is the closest string of the selected tuning, measured in cents, not Hz. In **Chromatic mode** the target is the nearest equal-tempered note.
 
 ### Audio source selection
