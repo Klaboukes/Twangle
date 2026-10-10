@@ -93,6 +93,11 @@ cents = 100 · (midi − note)            range (−50, +50]
 Octaves use scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI number, so passing notes through the pipeline doesn't allocate.
 In **Auto (guitar) mode** the target is the closest string of the selected tuning, measured in cents, not Hz. In **Chromatic mode** the target is the nearest equal-tempered note.
 
+### Tunings
+`Tuning(id, strings)` lists open-string `Note`s from lowest to highest (index 0 = string 6 on a guitar). `id` is the stable key saved in settings. User-facing names live in the app's string resources, so `:core:dsp` stays free of UI text. `Tunings` holds the presets (Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E), with `Tunings.DEFAULT` = Standard and `byId()` for restoring a saved choice.
+- `nearestStringIndex(midi)` takes the fractional MIDI from `NoteMapper.midiOf`, so it follows A4 calibration. It picks the string with the smallest |Δ| in semitones (equivalently cents), and ties go to the lower string. No allocation: it loops over a precomputed `IntArray`.
+- `centsFromString(midi, index)` = 100 · (midi − string midi). It is **not** wrapped to ±50, so a string tuned far off still shows the full distance to go.
+
 ### Audio source selection
 1. Use `MediaRecorder.AudioSource.UNPROCESSED` if `AudioManager.getProperty(PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED)` is `"true"`.
 2. Otherwise use `VOICE_RECOGNITION`. It is required to have AGC and noise suppression turned off.

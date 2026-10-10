@@ -24,8 +24,8 @@ Goal: an empty multi-module project that builds and launches a blank Compose scr
 Goal: reliable pitch detection, proven by unit tests, with no device involved.
 
 - ☑ `NoteMapper`: Hz ↔ MIDI ↔ note name/octave/cents, with configurable A4 (415–466 Hz); round-trips 60–1500 Hz within 0.01 cent
-- ☐ `Tuning` model + presets: Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E
-- ☐ Nearest-string lookup for Auto mode (compared in cents)
+- ☑ `Tuning` model + presets: Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E
+- ☑ Nearest-string lookup for Auto mode (compared in cents; allocation-free; ties go to the lower string)
 - ☐ `FrameAssembler` ring buffer (window 4096, hop 1024, no allocations per frame)
 - ☐ `SignalGate`: RMS / dBFS level and DC removal
 - ☐ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence
