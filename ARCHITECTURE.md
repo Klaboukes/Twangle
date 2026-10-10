@@ -145,7 +145,12 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
 - UI updates go through one `StateFlow<TunerUiState>`. Compose only recomposes what changed. The needle animates with `animateFloatAsState` so it moves smoothly between estimates.
 
 ## 5. Lifecycle & permissions
-- `RECORD_AUDIO` is requested at runtime from the tuner screen. Three states are handled: not yet asked, denied (show rationale, ask again), and permanently denied (deep-link to app settings).
+- `RECORD_AUDIO` is requested at runtime from the tuner screen. `rememberMicPermissionState()` tracks a `MicPermissionStatus` (rules in the pure, unit-tested `MicPermissionRules`) and `PermissionPrompt` shows one action per state:
+  - `NOT_REQUESTED`: asked automatically once when the screen first appears. The prompt explains why and offers "Allow microphone".
+  - `DENIED` (refused, `shouldShowRequestPermissionRationale` is true): rationale text, ask again.
+  - `PERMANENTLY_DENIED` (refused and no rationale, so Android won't show the dialog again): "Open settings" deep-links to the app's page (`ACTION_APPLICATION_DETAILS_SETTINGS`). Dismissing the very first dialog by tapping outside looks identical to Android, so it lands here too. Settings still fixes it.
+  - `GRANTED`: the tuner. The status is checked again on every `ON_RESUME`, so a grant made in Settings is picked up on return. Revoking in Settings kills the process, so the app starts fresh.
+  - The status survives rotation (`rememberSaveable`). It isn't persisted: on a fresh start, an earlier permanent denial shows as `NOT_REQUESTED` until the automatic request comes back denied without a dialog.
 - The microphone is open **only while the tuner screen is visible**. The ViewModel shares the pipeline with `SharingStarted.WhileSubscribed(5_000)`. The UI collects with `collectAsStateWithLifecycle()`, which stops in the background, so `AudioRecord` is released and the privacy indicator turns off.
 - There is no foreground service. Background microphone capture is neither needed nor allowed for this use case.
 - If another app holds the mic, or `AudioRecord` fails to initialize, the UI shows a recoverable error state.
@@ -191,6 +196,7 @@ core/audio/src/testFixtures/kotlin/com/intune/core/audio/
 
 feature/tuner/src/main/kotlin/com/intune/feature/tuner/
     TunerViewModel, TunerUiState, TunerScreen
+    MicPermission (status, rules, rememberMicPermissionState)
     components/  NeedleGauge, NoteDisplay, StringSelector, PermissionPrompt
 
 app/src/main/kotlin/com/intune/app/

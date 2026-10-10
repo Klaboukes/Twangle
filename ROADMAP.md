@@ -40,7 +40,7 @@ Goal: live microphone frames reach the DSP pipeline.
 - ☑ `AudioRecorder` interface + `AndroidAudioRecorder` (48 kHz, mono, PCM float, `Flow<FloatArray>`; pool of 4 reused chunk arrays, checked on the S26 by instrumented tests)
 - ☑ Audio source selection: `UNPROCESSED`, then `VOICE_RECOGNITION` as fallback (also falls back if `UNPROCESSED` fails to open)
 - ☑ Native sample-rate detection, plus handling for errors and a busy mic (`SampleRateSelector`; typed `AudioRecorderException`: permission missing, init failed, mic busy, read failed)
-- ☐ `RECORD_AUDIO` permission flow: rationale, denied, permanently denied → settings
+- ☑ `RECORD_AUDIO` permission flow: rationale, denied, permanently denied → settings (all paths checked on the S26)
 - ☑ `FakeAudioRecorder` for tests (`testFixtures`; plays synthetic signals at mic pace, can loop or fail, tracks whether the mic is open)
 - ☐ Temporary debug screen showing raw Hz, confidence and dBFS
 
