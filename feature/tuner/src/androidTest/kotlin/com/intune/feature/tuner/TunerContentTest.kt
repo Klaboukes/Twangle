@@ -282,19 +282,13 @@ class TunerContentTest {
     }
 
     @Test
-    fun waveViewSaysHowFarOffInWords() {
+    fun waveViewShowsNoNumbersOrWordsWhileOff() {
         show(detected(-12.3f), showWaves = true)
         compose.onNodeWithText("E").assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_little_low)).assertIsDisplayed()
-        // No cents and no frequency: the waves and the words replace them.
+        // No cents, no frequency and no "In tune": the dial and the ribbon show how far off it is.
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()
-    }
-
-    @Test
-    fun waveViewGivesTheDirection() {
-        show(detected(35f), showWaves = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_high)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).assertDoesNotExist()
     }
 
     @Test
@@ -310,24 +304,25 @@ class TunerContentTest {
     }
 
     @Test
-    fun talkBackHearsTheWaveViewsAdvice() {
+    fun talkBackStillHearsTheCentsInTheWaveView() {
         show(detected(-12.3f), showWaves = true)
-        compose.onNode(hasContentDescription("E 2, " + context.getString(R.string.tuner_wave_little_low))).assertExists()
+        val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+        compose.onNode(hasContentDescription("E 2, $cents")).assertExists()
     }
 
     @Test
     fun phoneOnItsSideFitsTheWaveView() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, showWaves = true)
+        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, showWaves = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val advice = compose.onNodeWithText(context.getString(R.string.tuner_wave_little_low)).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("advice ends at ${advice.bottom}, window at ${window.bottom}", advice.bottom <= window.bottom)
+        val pill = compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("pill ends at ${pill.bottom}, window at ${window.bottom}", pill.bottom <= window.bottom)
         stringChip("E4").assertIsDisplayed()
     }
 
     @Test
     fun withTheLargestFontTheWaveViewCanStillBeReached() {
-        show(detected(-12.3f), fontScale = 2f, showWaves = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_wave_little_low)).performScrollTo().assertIsDisplayed()
+        show(detected(-0.4f, inTune = true), fontScale = 2f, showWaves = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_wave_in_tune)).performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
     }
 

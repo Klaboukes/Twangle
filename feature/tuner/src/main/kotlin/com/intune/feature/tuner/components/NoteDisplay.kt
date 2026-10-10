@@ -65,8 +65,8 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. With [showWaves] the wave view ([WaveView]) shows how far off it is instead, the pill
- * says it in words ("A little low – tune up") and the frequency is left out. [compact] makes the
+ * frequency. With [showWaves] the wave view ([WaveView]) replaces both: the dial already shows how
+ * far off the note is, so the pill stays empty until the note is in tune. [compact] makes the
  * note and the wave view smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and the pill fills with that colour and
@@ -102,13 +102,14 @@ fun NoteDisplay(
         when {
             readout == null -> Color.Transparent
             inTune -> tuneColor
+            showWaves -> Color.Transparent
             else -> colors.surfaceContainerHigh.copy(alpha = 0.85f)
         },
         label = "pill",
     )
     val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
     val spoken = rememberSpokenReading(
-        text = if (readout != null) spokenReading(readout, showWaves) else hint,
+        text = if (readout != null) spokenReading(readout) else hint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
     )
     val density = LocalDensity.current
@@ -198,7 +199,8 @@ fun NoteDisplay(
             Text(
                 text = when {
                     readout == null -> hint
-                    showWaves -> adviceText(waveAdvice(readout.cents, readout.inTune))
+                    // Empty but still there, so the screen doesn't jump when "In tune" appears.
+                    showWaves -> if (inTune) stringResource(R.string.tuner_wave_in_tune) else ""
                     else -> centsText(readout.cents)
                 },
                 style = when {
@@ -259,33 +261,16 @@ private fun centsText(cents: Float): String {
     }
 }
 
-/** What the wave view says under the ribbon, e.g. "A little low – tune up". */
-@Composable
-private fun adviceText(advice: WaveAdvice): String = stringResource(
-    when (advice) {
-        WaveAdvice.IN_TUNE -> R.string.tuner_wave_in_tune
-        WaveAdvice.ALMOST -> R.string.tuner_wave_almost
-        WaveAdvice.LITTLE_LOW -> R.string.tuner_wave_little_low
-        WaveAdvice.LOW -> R.string.tuner_wave_low
-        WaveAdvice.LITTLE_HIGH -> R.string.tuner_wave_little_high
-        WaveAdvice.HIGH -> R.string.tuner_wave_high
-    },
-)
-
 /**
- * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it. With
- * [showWaves] it says the advice instead of the cents, e.g. "E 2, a little low – tune up".
+ * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
+ * wave view, since TalkBack can't see the dial or the ribbon.
  */
 @Composable
-private fun spokenReading(readout: NoteReadout, showWaves: Boolean): String {
+private fun spokenReading(readout: NoteReadout): String {
     val sharp = stringResource(R.string.tuner_spoken_sharp)
     val flat = stringResource(R.string.tuner_spoken_flat)
     val note = spokenNoteName(readout.noteName, { sharp.format(it) }, { flat.format(it) })
-    val state = when {
-        readout.inTune -> stringResource(R.string.tuner_in_tune)
-        showWaves -> adviceText(waveAdvice(readout.cents, inTune = false))
-        else -> centsText(readout.cents)
-    }
+    val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
     return stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
 }
 

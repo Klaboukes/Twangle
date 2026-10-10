@@ -27,7 +27,7 @@
 
     <!-- While tuning. -->
     <string name="settings_show_waves_title">Wave view</string>
-    <string name="settings_show_waves_summary">Show a moving sound wave and a tip in words, instead of a number of cents</string>
+    <string name="settings_show_waves_summary">Show a moving sound wave instead of a number of cents</string>
     <string name="settings_keep_screen_on_title">Keep screen on</string>
     <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>

@@ -82,20 +82,3 @@ internal class WaveMotion {
         private const val MAX_STEP_SECONDS = 0.1f
     }
 }
-
-/** What the wave view says under the ribbon, from how far off the note is. */
-internal enum class WaveAdvice { IN_TUNE, ALMOST, LITTLE_LOW, LOW, LITTLE_HIGH, HIGH }
-
-/** Within [ALMOST_CENTS] it is nearly there, within [LITTLE_CENTS] a little off. */
-internal fun waveAdvice(cents: Float, inTune: Boolean): WaveAdvice {
-    val off = abs(cents)
-    return when {
-        inTune -> WaveAdvice.IN_TUNE
-        off < ALMOST_CENTS -> WaveAdvice.ALMOST
-        cents < 0f -> if (off < LITTLE_CENTS) WaveAdvice.LITTLE_LOW else WaveAdvice.LOW
-        else -> if (off < LITTLE_CENTS) WaveAdvice.LITTLE_HIGH else WaveAdvice.HIGH
-    }
-}
-
-private const val ALMOST_CENTS = 5f
-private const val LITTLE_CENTS = 20f

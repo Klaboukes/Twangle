@@ -86,16 +86,4 @@ class WaveMotionTest {
         assertEquals(step.depth, paused.depth, 0.0001f)
         assertEquals(step.phase, paused.phase, 0.0001f)
     }
-
-    @Test
-    fun `advice in words`() {
-        assertEquals(WaveAdvice.IN_TUNE, waveAdvice(4f, inTune = true))
-        assertEquals(WaveAdvice.ALMOST, waveAdvice(-4.9f, inTune = false))
-        assertEquals(WaveAdvice.ALMOST, waveAdvice(3f, inTune = false))
-        assertEquals(WaveAdvice.LITTLE_LOW, waveAdvice(-12f, inTune = false))
-        assertEquals(WaveAdvice.LOW, waveAdvice(-20f, inTune = false))
-        assertEquals(WaveAdvice.LOW, waveAdvice(-300f, inTune = false))
-        assertEquals(WaveAdvice.LITTLE_HIGH, waveAdvice(5f, inTune = false))
-        assertEquals(WaveAdvice.HIGH, waveAdvice(48f, inTune = false))
-    }
 }

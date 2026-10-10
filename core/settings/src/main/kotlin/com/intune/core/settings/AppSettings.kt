@@ -48,7 +48,7 @@ data class AppSettings(
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
-    /** Show how far off a note is as a moving sound ribbon and a tip in words, instead of in cents. */
+    /** Show how far off a note is as a moving sound ribbon instead of in cents. */
     val showWaves: Boolean = true,
 ) {
     companion object {

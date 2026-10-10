@@ -27,7 +27,7 @@
 
     <!-- While tuning. -->
     <string name="settings_show_waves_title">Golfweergave</string>
-    <string name="settings_show_waves_summary">Toon een bewegende geluidsgolf en een tip in woorden, in plaats van een aantal cents</string>
+    <string name="settings_show_waves_summary">Toon een bewegende geluidsgolf in plaats van een aantal cents</string>
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>
     <string name="settings_keep_screen_on_summary">Het scherm blijft aan zolang de stemmer open is</string>
     <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
