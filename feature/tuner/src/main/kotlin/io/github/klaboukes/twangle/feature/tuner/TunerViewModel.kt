@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
  * The microphone opens only when the permission is granted ([onPermissionChanged]) *and* the UI
  * collects [state]. It stays open 5 s after the UI stops collecting, so a rotation doesn't reopen
  * it (CLAUDE.md, hard rule 4). Switching [mode] takes effect on the next frame without reopening
- * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation) are
+ * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one.
@@ -105,6 +105,7 @@ class TunerViewModel(
                 a4Hz = settings.a4Hz,
                 lockedString = locked,
                 notation = settings.notation,
+                inTunePrecision = settings.inTunePrecision,
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

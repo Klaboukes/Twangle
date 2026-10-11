@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -26,6 +27,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setNotation(notation: Notation) {
         viewModelScope.launch { repository.setNotation(notation) }
+    }
+
+    fun setInTunePrecision(precision: InTunePrecision) {
+        viewModelScope.launch { repository.setInTunePrecision(precision) }
     }
 
     fun setStyle(style: VisualStyle) {

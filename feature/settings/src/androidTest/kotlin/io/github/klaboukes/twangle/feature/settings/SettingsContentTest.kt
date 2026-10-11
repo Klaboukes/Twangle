@@ -27,6 +27,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.styleCardTag
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -46,6 +47,7 @@ class SettingsContentTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val a4Changes = mutableListOf<Float>()
     private val notationChanges = mutableListOf<Notation>()
+    private val precisionChanges = mutableListOf<InTunePrecision>()
     private val styleChanges = mutableListOf<VisualStyle>()
     private val themeChanges = mutableListOf<ThemeMode>()
     private val dynamicColorChanges = mutableListOf<Boolean>()
@@ -66,6 +68,7 @@ class SettingsContentTest {
                         onBack = { backs++ },
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
+                        onInTunePrecisionChange = { precisionChanges += it },
                         onStyleChange = { styleChanges += it },
                         onThemeChange = { themeChanges += it },
                         onDynamicColorChange = { dynamicColorChanges += it },
@@ -131,6 +134,15 @@ class SettingsContentTest {
         compose.onNodeWithText(context.getString(R.string.settings_notation_sharps)).assertIsNotSelected()
         compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performClick()
         assertEquals(listOf(Notation.SOLFEGE), notationChanges)
+    }
+
+    @Test
+    fun inTunePrecisionShowsTheChoiceAndReportsANewOne() {
+        show(AppSettings())
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_relaxed)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performScrollTo().assertIsNotSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_precision_precise)).performClick()
+        assertEquals(listOf(InTunePrecision.PRECISE), precisionChanges)
     }
 
     @Test

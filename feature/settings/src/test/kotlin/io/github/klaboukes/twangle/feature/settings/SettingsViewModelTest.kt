@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.settings
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -61,6 +62,14 @@ class SettingsViewModelTest {
         vm.setNotation(Notation.SOLFEGE)
         runCurrent()
         assertEquals(Notation.SOLFEGE, repository.current.notation)
+    }
+
+    @Test
+    fun `saves the in-tune precision`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setInTunePrecision(InTunePrecision.PRECISE)
+        runCurrent()
+        assertEquals(InTunePrecision.PRECISE, repository.current.inTunePrecision)
     }
 
     @Test

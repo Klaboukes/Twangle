@@ -31,6 +31,9 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setNotation(notation: Notation) = state.update { it.copy(notation = notation) }
 
+    override suspend fun setInTunePrecision(precision: InTunePrecision) =
+        state.update { it.copy(inTunePrecision = precision) }
+
     override suspend fun setTheme(theme: ThemeMode) = state.update { it.copy(theme = theme) }
 
     override suspend fun setStyle(style: VisualStyle) = state.update { it.copy(style = style) }

@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 
 /**
@@ -20,4 +21,6 @@ data class TunerOptions(
     val lockedString: Int? = null,
     /** How note names are written. */
     val notation: Notation = Notation.DEFAULT,
+    /** How close a note has to be to count as "in tune". */
+    val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
 )

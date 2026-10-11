@@ -17,6 +17,23 @@ enum class TunerMode {
     CHROMATIC,
 }
 
+/**
+ * How close a note has to be to count as "in tune". Saved in settings by [name], so don't rename
+ * the entries.
+ */
+enum class InTunePrecision {
+    /** Within 5 cents: easy to reach, fine for strumming chords. */
+    RELAXED,
+
+    /** Within 2 cents: for players who want it spot on. */
+    PRECISE,
+    ;
+
+    companion object {
+        val DEFAULT = RELAXED
+    }
+}
+
 /** Light or dark colours. Saved in settings by [name], so don't rename the entries. */
 enum class ThemeMode {
     /** Follow the phone's dark-theme setting. */
@@ -82,6 +99,8 @@ data class AppSettings(
     val mode: TunerMode = TunerMode.AUTO,
     val tuning: Tuning = Tunings.DEFAULT,
     val notation: Notation = Notation.DEFAULT,
+    /** How close a note has to be to count as "in tune". */
+    val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val style: VisualStyle = VisualStyle.DEFAULT,
     /** Colours from the wallpaper (Android 12+), in the contemporary [style] only. Ignored on older phones. */

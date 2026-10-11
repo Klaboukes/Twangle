@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -318,6 +319,27 @@ class TunerViewModelTest {
 
         assertEquals("La", vm.detected().noteName)
         assertEquals(Notation.SOLFEGE, vm.detected().notation)
+    }
+
+    @Test
+    fun `the in-tune precision applies while listening, and the hint follows it`() = runTest(dispatcher) {
+        // 110 Hz is 3.9 cents flat of A2 once A4 is 441 Hz: in tune when relaxed, not when precise.
+        settings.setA4(441f)
+        val recorder = a2Recorder()
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+        assertEquals(-3.9f, vm.detected().cents, 0.5f)
+        assertTrue(vm.detected().inTune)
+        assertNull(tuneDirectionFor(vm.detected().cents, vm.detected().inTune))
+
+        settings.setInTunePrecision(InTunePrecision.PRECISE)
+        advanceTimeBy(1_000)
+
+        assertFalse(vm.detected().inTune)
+        assertEquals(TuneDirection.UP, tuneDirectionFor(vm.detected().cents, vm.detected().inTune))
+        assertEquals(1, recorder.startCount)
     }
 
     @Test

@@ -66,6 +66,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Tunings.STANDARD, settings.tuning)
         assertEquals(Notation.SHARPS, settings.notation)
+        assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.CONTEMPORARY, settings.style)
         assertEquals(true, settings.dynamicColor)
@@ -83,6 +84,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setMode(TunerMode.CHROMATIC)
         repo.setTuning(Tunings.DADGAD)
         repo.setNotation(Notation.SOLFEGE)
+        repo.setInTunePrecision(InTunePrecision.PRECISE)
         repo.setTheme(ThemeMode.DARK)
         repo.setStyle(VisualStyle.SPACE_AGE)
         repo.setDynamicColor(false)
@@ -97,6 +99,7 @@ class DataStoreSettingsRepositoryTest {
             mode = TunerMode.CHROMATIC,
             tuning = Tunings.DADGAD,
             notation = Notation.SOLFEGE,
+            inTunePrecision = InTunePrecision.PRECISE,
             theme = ThemeMode.DARK,
             style = VisualStyle.SPACE_AGE,
             dynamicColor = false,
@@ -117,6 +120,7 @@ class DataStoreSettingsRepositoryTest {
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
             setStyle(VisualStyle.MIDDLE_AGES)
+            setInTunePrecision(InTunePrecision.PRECISE)
         }
         close()
 
@@ -126,6 +130,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notation)
         assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
+        assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
     }
 
     @Test
@@ -147,6 +152,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("tuner_mode")] = "BASS"
             it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
             it[stringPreferencesKey("notation")] = "GERMAN"
+            it[stringPreferencesKey("in_tune_precision")] = "PERFECT"
             it[stringPreferencesKey("theme")] = "SEPIA"
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
             it[stringPreferencesKey("wave_look")] = "LAVA_LAMP"
@@ -157,6 +163,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Tunings.DEFAULT, settings.tuning)
         assertEquals(Notation.DEFAULT, settings.notation)
+        assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(WaveLook.DEFAULT, settings.waveLook)

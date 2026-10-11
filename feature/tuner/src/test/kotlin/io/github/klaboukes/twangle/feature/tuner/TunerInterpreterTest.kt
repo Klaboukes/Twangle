@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -141,6 +142,44 @@ class TunerInterpreterTest {
         val state = play(pitched(hz(45f)), frames = 3).detected()
         assertEquals(1, state.targetString)
         assertFalse(state.inTune)
+    }
+
+    /** Feeds [frames] readings of [hz] with [precision] and returns the last state. */
+    private fun playWith(precision: InTunePrecision, hz: Float, frames: Int = 40): TunerUiState.Detected {
+        val options = TunerOptions(TunerMode.AUTO, standard, inTunePrecision = precision)
+        var state: TunerUiState? = null
+        repeat(frames) { state = interpreter.interpret(pitched(hz), options) }
+        return state!!.detected()
+    }
+
+    @Test
+    fun `relaxed counts 4 cents sharp as in tune, with no hint`() {
+        val state = playWith(InTunePrecision.RELAXED, hz(45.04f))
+        assertEquals(4f, state.cents, 0.3f)
+        assertTrue(state.inTune)
+        assertNull(tuneDirectionFor(state.cents, state.inTune))
+    }
+
+    @Test
+    fun `precise keeps 4 cents sharp out of tune, and the hint says tune down`() {
+        val state = playWith(InTunePrecision.PRECISE, hz(45.04f))
+        assertFalse(state.inTune)
+        assertEquals(TuneDirection.DOWN, tuneDirectionFor(state.cents, state.inTune))
+    }
+
+    @Test
+    fun `precise counts 1 cent flat as in tune, with no hint`() {
+        val state = playWith(InTunePrecision.PRECISE, hz(44.99f))
+        assertTrue(state.inTune)
+        assertNull(tuneDirectionFor(state.cents, state.inTune))
+    }
+
+    @Test
+    fun `switching to precise while a note plays applies the new window`() {
+        assertTrue(playWith(InTunePrecision.RELAXED, hz(45.04f)).inTune)
+        assertFalse(playWith(InTunePrecision.PRECISE, hz(45.04f)).inTune)
+        // Back to relaxed, the note earns "in tune" again.
+        assertTrue(playWith(InTunePrecision.RELAXED, hz(45.04f)).inTune)
     }
 
     @Test

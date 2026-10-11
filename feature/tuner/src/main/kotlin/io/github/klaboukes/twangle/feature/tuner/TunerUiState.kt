@@ -53,7 +53,10 @@ sealed interface TunerUiState {
         val lockedString: Int? = null,
         /** How note names (strings, hint) are written; [noteName] already uses it. */
         val notation: Notation = Notation.DEFAULT,
-        /** Within 5 cents of the target for at least 300 ms (see [InTuneDetector]). */
+        /**
+         * Within 5 cents of the target (2 in the Precise setting) for at least 300 ms, see
+         * [InTuneDetector].
+         */
         val inTune: Boolean,
     ) : TunerUiState
 }

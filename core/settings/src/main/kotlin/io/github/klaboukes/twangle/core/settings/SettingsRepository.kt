@@ -20,6 +20,8 @@ interface SettingsRepository {
 
     suspend fun setNotation(notation: Notation)
 
+    suspend fun setInTunePrecision(precision: InTunePrecision)
+
     suspend fun setTheme(theme: ThemeMode)
 
     suspend fun setStyle(style: VisualStyle)

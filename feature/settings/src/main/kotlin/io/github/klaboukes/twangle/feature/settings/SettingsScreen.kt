@@ -38,6 +38,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.designsystem.StylePicker
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -57,6 +58,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onBack = onBack,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
+        onInTunePrecisionChange = viewModel::setInTunePrecision,
         onStyleChange = viewModel::setStyle,
         onThemeChange = viewModel::setTheme,
         onDynamicColorChange = viewModel::setDynamicColor,
@@ -82,6 +84,7 @@ fun SettingsContent(
     onBack: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
+    onInTunePrecisionChange: (InTunePrecision) -> Unit,
     onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
@@ -132,6 +135,7 @@ fun SettingsContent(
                     settings = settings,
                     onA4Change = onA4Change,
                     onNotationChange = onNotationChange,
+                    onInTunePrecisionChange = onInTunePrecisionChange,
                     onThemeChange = onThemeChange,
                     onDynamicColorChange = onDynamicColorChange,
                     onKeepScreenOnChange = onKeepScreenOnChange,
@@ -172,6 +176,7 @@ private fun SettingsList(
     settings: AppSettings,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
+    onInTunePrecisionChange: (InTunePrecision) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
@@ -194,6 +199,13 @@ private fun SettingsList(
             selected = settings.notation,
             onSelect = onNotationChange,
         ) { stringResource(notationLabel(it)) }
+        HorizontalDivider()
+        RadioGroupSetting(
+            title = stringResource(R.string.settings_in_tune_precision_title),
+            options = InTunePrecision.entries,
+            selected = settings.inTunePrecision,
+            onSelect = onInTunePrecisionChange,
+        ) { stringResource(inTunePrecisionLabel(it)) }
         HorizontalDivider()
         RadioGroupSetting(
             title = stringResource(R.string.settings_theme_title),
@@ -253,6 +265,11 @@ private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SOLFEGE -> R.string.settings_notation_solfege
 }
 
+private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precision) {
+    InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed
+    InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
+}
+
 private fun waveLookLabel(look: WaveLook): Int = when (look) {
     WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
     WaveLook.STRIPES -> R.string.settings_wave_look_stripes
@@ -277,6 +294,7 @@ private fun SettingsContentPreview() {
             onBack = {},
             onA4Change = {},
             onNotationChange = {},
+            onInTunePrecisionChange = {},
             onStyleChange = {},
             onThemeChange = {},
             onDynamicColorChange = {},

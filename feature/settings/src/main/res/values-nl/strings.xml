@@ -16,6 +16,11 @@
     <string name="settings_notation_flats">Mollen: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
 
+    <!-- In-tune precision: how close a note has to be to count as in tune. -->
+    <string name="settings_in_tune_precision_title">Nauwkeurigheid van zuiver</string>
+    <string name="settings_in_tune_precision_relaxed">Ruim: binnen 5 cent</string>
+    <string name="settings_in_tune_precision_precise">Precies: binnen 2 cent</string>
+
     <!-- Appearance. -->
     <string name="settings_style_title">Stijl</string>
     <string name="settings_theme_title">Licht of donker</string>

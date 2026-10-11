@@ -52,6 +52,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[NOTATION] = notation.name }
     }
 
+    override suspend fun setInTunePrecision(precision: InTunePrecision) {
+        dataStore.edit { it[IN_TUNE_PRECISION] = precision.name }
+    }
+
     override suspend fun setTheme(theme: ThemeMode) {
         dataStore.edit { it[THEME] = theme.name }
     }
@@ -91,6 +95,7 @@ class DataStoreSettingsRepository internal constructor(
             mode = enumOrNull<TunerMode>(prefs[MODE]) ?: defaults.mode,
             tuning = prefs[TUNING_ID]?.let(Tunings::byId) ?: defaults.tuning,
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
+            inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
             style = enumOrNull<VisualStyle>(prefs[STYLE]) ?: defaults.style,
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
@@ -110,6 +115,7 @@ class DataStoreSettingsRepository internal constructor(
         private val MODE = stringPreferencesKey("tuner_mode")
         private val TUNING_ID = stringPreferencesKey("tuning_id")
         private val NOTATION = stringPreferencesKey("notation")
+        private val IN_TUNE_PRECISION = stringPreferencesKey("in_tune_precision")
         private val THEME = stringPreferencesKey("theme")
         private val STYLE = stringPreferencesKey("visual_style")
         private val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")

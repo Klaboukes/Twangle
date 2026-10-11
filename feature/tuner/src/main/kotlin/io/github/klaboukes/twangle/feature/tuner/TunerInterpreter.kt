@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlin.math.abs
 
@@ -12,20 +13,23 @@ import kotlin.math.abs
  * [PitchSmoother], then picks the target, either the nearest note ([TunerMode.CHROMATIC]) or the
  * closest string of the tuning ([TunerMode.AUTO]), or the string the user locked.
  *
- * It also tracks whether the note is in tune ([InTuneDetector]), restarting whenever the target
- * changes. [frameSeconds] is the time between readings (hop / sample rate).
+ * It also tracks whether the note is in tune ([InTuneDetector], with the window of
+ * [TunerOptions.inTunePrecision]), restarting whenever the target changes. [frameSeconds] is the
+ * time between readings (hop / sample rate).
  *
  * The [TunerOptions] are passed with every reading, so switching mode or tuning takes effect on the
  * next frame without losing the smoothing history. A new A4 restarts the smoothing, because the
- * smoothed notes were measured against the old one. Create one per listening session; it keeps
- * state and is not thread-safe. Apart from the returned state nothing is allocated per frame.
+ * smoothed notes were measured against the old one. A new precision starts "in tune" over. Create
+ * one per listening session; it keeps state and is not thread-safe. Apart from the returned state
+ * nothing is allocated per frame.
  */
 class TunerInterpreter(
     private val frameSeconds: Float,
     private val smoother: PitchSmoother = PitchSmoother(),
-    private val inTuneDetector: InTuneDetector = InTuneDetector(),
 ) {
     private var noteMapper = NoteMapper()
+    private var inTunePrecision = InTunePrecision.DEFAULT
+    private var inTuneDetector = InTuneDetector.forPrecision(inTunePrecision)
     private var stringIndex = NO_STRING
     private var stringTuning: Tuning? = null
     private var targetMidi = NO_TARGET
@@ -36,6 +40,10 @@ class TunerInterpreter(
         if (options.a4Hz != noteMapper.a4Hz) {
             noteMapper = NoteMapper(options.a4Hz)
             smoother.reset()
+        }
+        if (options.inTunePrecision != inTunePrecision) {
+            inTunePrecision = options.inTunePrecision
+            inTuneDetector = InTuneDetector.forPrecision(inTunePrecision)
         }
         if (reading.isPitched) {
             smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence)

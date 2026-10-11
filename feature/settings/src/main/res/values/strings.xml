@@ -16,6 +16,11 @@
     <string name="settings_notation_flats">Flats: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
 
+    <!-- In-tune precision: how close a note has to be to count as in tune. -->
+    <string name="settings_in_tune_precision_title">In-tune precision</string>
+    <string name="settings_in_tune_precision_relaxed">Relaxed: within 5 cents</string>
+    <string name="settings_in_tune_precision_precise">Precise: within 2 cents</string>
+
     <!-- Appearance. -->
     <string name="settings_style_title">Style</string>
     <string name="settings_theme_title">Light or dark</string>
