@@ -23,11 +23,11 @@ Twangle is and will always be **free**:
 - **Accurate:** within ±1 cent on test signals, from low E up to the highest frets.
 - The microphone is only on while the tuner is on screen.
 
-Coming later: accessibility support. See the [roadmap](ROADMAP.md) for progress.
+Coming later: see the [roadmap](ROADMAP.md).
 
 ## Status
 
-Early development. The tuner works, with its settings (Phases 0–4 of the [roadmap](ROADMAP.md)); polish and accessibility come next. The app is not on the Play Store yet.
+Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)); the Play Store release comes next. The app is not on the Play Store yet.
 
 ## How it works
 

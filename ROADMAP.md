@@ -4,83 +4,17 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
+Phases 0–5 (scaffolding, DSP core, audio capture, tuner MVP, settings and tunings, polish → v0.9 beta) are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
+
 ---
 
-## Phase 0 — Scaffolding
-Goal: an empty multi-module project that builds and launches a blank Compose screen.
+## Owner checks (live tests)
+Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
 
-- ☑ Docs: `CLAUDE.md`, `ARCHITECTURE.md`, `ROADMAP.md`
-- ☑ Folder structure and Gradle module skeletons (`:app`, `:feature:tuner`, `:core:audio`, `:core:dsp`)
-- ☑ Version catalog `gradle/libs.versions.toml`
-- ☑ GitHub repo connected; branch → PR → squash-merge workflow (see CLAUDE.md); `.gitattributes` for line endings
-- ☑ Install Android Studio (bundled JDK) and the Android SDK (API 37); generate the Gradle wrapper (9.8.1, checksum-pinned)
-- ☑ Bump dependency versions to latest stable (AGP 9.4.1, Kotlin 2.4.21, Compose BOM 2026.09.00)
-- ☑ `MainActivity` + `TwangleApplication` + `AppContainer` + Material 3 theme (dynamic color) + placeholder tuner screen + adaptive launcher icon
-- ☑ `./gradlew assembleDebug test lint` passes
-- ☑ CI: GitHub Actions workflow running `test`, `lint` and `assembleDebug` on every PR
-- ☑ App verified on a device: Samsung Galaxy S26 (Android 16), launches cleanly in dark mode
+- ☐ Phase 3: tested on at least 2 physical devices with a real guitar
+- ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly
 
-## Phase 1 — DSP core (`:core:dsp`, pure JVM)
-Goal: reliable pitch detection, proven by unit tests, with no device involved.
-
-- ☑ `NoteMapper`: Hz ↔ MIDI ↔ note name/octave/cents, with configurable A4 (415–466 Hz); round-trips 60–1500 Hz within 0.01 cent
-- ☑ `Tuning` model + presets: Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E
-- ☑ Nearest-string lookup for Auto mode (compared in cents; allocation-free; ties go to the lower string)
-- ☑ `FrameAssembler` ring buffer (window 4096, hop 1024, no allocations per frame; accepts chunks of any size)
-- ☑ `SignalGate`: RMS / dBFS level and DC removal (opens at −50 dBFS, 6 dB hysteresis)
-- ☑ `YinPitchDetector`: difference function, CMNDF, absolute threshold, parabolic interpolation, confidence (plus 4 kHz low-pass and adaptive least-squares refinement, see ARCHITECTURE §3)
-- ☑ `PitchSmoother`: median filter, octave-jump rejection, EMA on cents, note-change hysteresis (median 5, α 0.3, snap > 50 c, ±15 c hysteresis, octave confirm 3 frames)
-- ☑ Test-signal generator (sine, saw, square, weak fundamental, noise, decaying pluck): band-limited, seeded; `testFixtures` so `:core:audio` can reuse it
-- ☑ Tests: ±1 cent for 60–1500 Hz synthetic signals; no octave errors on the weak-fundamental case (measured worst: 0.1 c sine, 0.5 c harmonic-rich, < 1 c at 20 dB SNR)
-- ☑ Microbenchmark: under 2 ms per 4096-sample frame on the JVM (`./gradlew :core:dsp:benchmark`: median 1.1 ms for YIN and for gate + YIN + smoother, JDK 17, dev laptop)
-
-## Phase 2 — Audio capture (`:core:audio`)
-Goal: live microphone frames reach the DSP pipeline.
-
-- ☑ `AudioRecorder` interface + `AndroidAudioRecorder` (48 kHz, mono, PCM float, `Flow<FloatArray>`; pool of 4 reused chunk arrays, checked on the S26 by instrumented tests)
-- ☑ Audio source selection: `UNPROCESSED`, then `VOICE_RECOGNITION` as fallback (also falls back if `UNPROCESSED` fails to open)
-- ☑ Native sample-rate detection, plus handling for errors and a busy mic (`SampleRateSelector`; typed `AudioRecorderException`: permission missing, init failed, mic busy, read failed)
-- ☑ `RECORD_AUDIO` permission flow: rationale, denied, permanently denied → settings (all paths checked on the S26)
-- ☑ `FakeAudioRecorder` for tests (`testFixtures`; plays synthetic signals at mic pace, can loop or fail, tracks whether the mic is open)
-- ☑ Temporary debug screen showing raw Hz, confidence and dBFS (S26: 440 Hz tone read as 439.98 Hz; mic released in the background)
-
-## Phase 3 — Tuner MVP (`:feature:tuner`) → **v0.1 (internal)**
-Goal: a usable guitar tuner.
-
-- ☑ `TunerViewModel` + `TunerUiState` (PermissionRequired / Listening / Detected / Error; smoothing via `TunerInterpreter`, sticky target string in Auto mode)
-- ☑ Needle gauge (−50…+50 cents) drawn on a Compose `Canvas`, with animated needle (spring; pinned at the edges beyond ±50)
-- ☑ Big note name + octave, frequency, cents readout (S26: 194 Hz test tone shown as G3, 16 cents flat, 194.1 Hz); debug screen removed
-- ☑ String row for the selected tuning; detected string highlighted (S26: 111 Hz tone lit A₂, 16 cents sharp)
-- ☑ Auto (guitar) mode vs Chromatic mode toggle (segmented "Guitar / Chromatic"; switching keeps the mic open and the layout still)
-- ☑ "In tune" state: |cents| ≤ 5 for ≥ 300 ms → color change (green needle, note, text and string; released past 7 cents; S26: 110 Hz tone turns green, 111 Hz doesn't)
-- ☑ Mic is released whenever the screen is not visible (`MicLifecycleTest` on the S26: released ~5 s after leaving, reopened on return)
-- ☐ Tested on at least 2 physical devices with a real guitar
-
-## Phase 4 — Settings & tunings → **v0.2**
-- ☑ DataStore-backed settings repository (`:core:settings`: A4, tuning, notation, theme, dynamic color, keep screen on; falls back to defaults on unknown or damaged data)
-- ☑ A4 calibration (415–466 Hz, 1 Hz steps): new settings screen behind a gear button (slider, ±1 Hz buttons, reset); "A4 = 442 Hz" shown on the tuner; S26: saved across restarts
-- ☑ Tuning picker (presets): "Standard ▾" above the string row in guitar mode, menu shows each preset's notes; saved (S26: Open G kept after restart)
-- ☑ Manual string selection (lock target string instead of auto-detect): tap a string to lock it (outer ring, "Play the A2 string"), tap again for auto; released on tuning change
-- ☑ Notation: sharps ♯ / flats ♭ / solfège (Do-Re-Mi): fixed-do with Si; note, strings, tuning menu and hint follow it (S26: "Sol♯₂" fits the string circle)
-- ☑ Theme: system / light / dark, and dynamic color on Android 12+ (applied instantly; status-bar icons follow the app theme)
-- ☑ Keep screen on while tuning (toggle, default on; S26: `FLAG_KEEP_SCREEN_ON` set only while the tuner is shown)
-
-## Phase 5 — Polish → **v0.9 (beta)**
-- ☑ Haptic tick on reaching in-tune (one click from the vibration motor, switch in settings, default on; the same note doesn't tick again within 1.5 s; S26: plays even with the phone's touch vibration off)
-- ☑ Accessibility: TalkBack live region ("E, 3 cents flat"), content descriptions, large-font layout, color-blind-safe in-tune indicator (shape as well as color) (throttled: new note after 400 ms, cents at most every 2 s; check mark beside the cents; everything reachable at 2× font; S26 accessibility tree reads "A 2, in tune")
-- ☑ Landscape and tablet layouts (two panes once the window is ≥ 600 dp wide and wider than tall: gauge + note beside the controls, gauge shrinks to fit a phone on its side; settings in a centred column ≤ 600 dp; S26: landscape, 2× font and a simulated 800×1280 dp tablet in both orientations, locked string and mic survive rotation)
-- ☑ Performance: profile CPU and battery; switch YIN to FFT-based difference if needed; Baseline Profile (S26: direct YIN took ~7 ms CPU/frame, 69 % of the app's cycles, so it now uses an FFT difference: JVM 1.05 → 0.48 ms/frame, app CPU with a note sounding ~45 % → ~20 % of one core, silence 7.8 % → 5.6 %; silent frames no longer wake the main thread; Baseline Profile generated on the S26 and committed, cold start ~89 ms with or without it; battery ≈ 0.8 mAh per hour of listening, CPU only)
-  - ☑ Main thread recomposes the tuner on every frame while a note sounds (~11 % of one core on the S26, although only 4–8 frames a second change on screen): try rounding the readout to what is shown, or reading the fast-changing values only in layout/draw (readings that look the same are dropped before the main thread, the screen recomposes only when its text changes, the needle turns its own layer; S26 main thread with identical synthetic input: guitar mode 11.6 % → 5.1 %, chromatic 15.8 % → 12.2 % while drawing ~110 instead of ~75 frames/s, ≈ 2.1 → 1.1 ms per frame)
-- ☑ Edge cases: Bluetooth headset mic, very noisy room, harmonics on high strings, sustain decay (synthetic, whole chain: right note at 0–10 dB white noise, ≤ 1 cent at 10 dB; hum 10 dB below the string ≤ 3 cents, hum alone shows nothing; strong-2nd-harmonic high strings no longer read an octave up; long decays stay on the note and the gate closes once; any rate 8–96 kHz within 1 cent (low rates upsampled); built-in mic pinned while a Bluetooth headset is connected)
-  - ☐ Owner check with a real Bluetooth headset connected: the tuner still listens through the phone's mic and reads a string correctly (can't be tested without a headset)
-- ☑ Localization scaffolding (English, Dutch): every text in Dutch, follows the phone or the Android 13+ per-app language; `LocalizationTest` guards missing translations and hard-coded text
-- ☑ Visual redesign with seven styles the user picks from: Prehistoric, Middle Ages, Classic, Retro, Contemporary, Futuristic, Space Age
-  - ☑ Style system (`:core:designsystem`): each style has a light and a dark palette (WCAG-checked), its own lettering (six bundled OFL fonts), shapes, a background and a hand-drawn dial; style cards at the top of settings; a change fades in (S26: all seven checked in light and dark)
-  - ☑ Tuner screen redesign: note in the style's lettering (shrinks to fit), cents in a pill that fills when in tune, glow and pop on reaching pitch, style-shaped string chips with a backing, palette button opening the style cards on the tuner (S26: all seven styles with a live note from short laptop test tones; landscape, tablet and 2× font via the UI tests)
-  - ☑ Wave view: the string's wave against the target's, drawn in each style, with the advice in words ("A little low – tune up"); a Settings switch goes back to cents (S26: every style rendered off-pitch and in tune, light and dark; UI tests for words, TalkBack, landscape and 2× font)
-  - ☑ Calmer wave view: a low, frameless sound ribbon that pulses when off and settles into one smooth glowing band in tune, in each style's own marks (S26: every style rendered off, nearly there and in tune, light and dark)
-  - ☑ Wave view without the tips in words: the dial already shows how far off, so the pill stays empty, also in tune (TalkBack still hears the cents)
-  - ☑ Wave looks: pick the ribbon, stripes, dots, fireflies, a loop or ripples in Settings, with a preview card for each (S26: every look live, off pitch and in tune)
+---
 
 ## Phase 6 — Release → **v1.0**
 - ☐ App icon, adaptive icon, splash screen
@@ -88,14 +22,72 @@ Goal: a usable guitar tuner.
 - ☐ Privacy policy (no audio stored or transmitted) + Play data-safety form
 - ☐ Play Store listing: screenshots, description; internal → closed → production tracks
 
----
+## Phase 7 — Strobe tuner display
+Goal: a strobe view as a third display next to the needle and the wave, for very fine tuning.
+- ☐ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame)
+- ☐ Display picker in Settings: needle, wave or strobe (replaces the wave-view switch; old setting carried over)
+- ☐ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame
+- ☐ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style
 
-## Backlog / future ideas
-- Strobe tuner display mode
-- More instruments: bass (4/5-string, needs an 8192 window), 7/8-string guitar, ukulele, violin family, mandolin
-- Custom user-defined tunings
-- Reference tone generator (play the target note)
-- Polyphonic "strum all strings" check
-- Metronome
-- Wear OS companion / home-screen widget
-- Native (NDK/Oboe) detector if Kotlin performance is ever insufficient
+## Phase 8 — More instruments
+Goal: tune more than a six-string guitar.
+- ☐ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
+- ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the S26
+- ☐ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings
+- ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font
+- ☐ S26 check for each instrument with short test tones
+
+## Phase 9 — Custom tunings
+Goal: players can make, name and keep their own tunings.
+- ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
+- ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
+- ☐ Custom tunings in the tuning menu below the presets, with edit and delete
+- ☐ English and Dutch texts, TalkBack and 2× font for the editor; S26 check
+
+## Phase 10 — Reference tone
+Goal: the app can play the target note so players can tune by ear.
+- ☐ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds
+- ☐ Long-press a string (or a play button) to hear it; tap again to stop
+- ☐ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound
+- ☐ Volume follows the phone's media volume; TalkBack labels; S26 check by ear
+
+## Phase 11 — Strum all strings
+Goal: strum once and see which strings are out of tune.
+- ☐ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable
+- ☐ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string)
+- ☐ "Strum check" view: every string shows flat, in tune or sharp at once, in each style
+- ☐ S26 check with recorded strums from short test tones; owner check with a real guitar
+
+## Phase 12 — Metronome
+Goal: a simple, steady metronome in the same app.
+- ☐ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8
+- ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
+- ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
+- ☐ Timing drift measured over 10 minutes; English and Dutch texts; S26 check
+
+## Phase 13 — Wear OS companion and home-screen widget
+Goal: Twangle on the watch and one tap from the home screen.
+- ☐ Home-screen widget: shows the chosen tuning and opens the tuner with one tap (the widget never holds the microphone)
+- ☐ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp`
+- ☐ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off
+- ☐ Check on a Wear OS emulator; real watch test by the owner
+
+## Phase 14 — Compact landscape mode
+Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
+- ☐ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden
+- ☐ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls
+- ☐ Settings switch to keep the full two-pane landscape layout instead
+- ☐ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check
+
+## Phase 15 — Volume and background-noise meters
+Goal: two small meters show how well the guitar comes through and how much noise the tuner has to filter out.
+- ☐ Noise-floor estimate in `:core:dsp`: tracks the room's background level between notes, plus a signal-to-noise figure while a note sounds (synthetic tests, no allocations per frame)
+- ☐ Clarity figure: how clean the pitch is (from YIN's confidence), so the meter shows how hard the tuner has to work
+- ☐ Two small meters on the tuner screen in each style: input volume (too soft / good / too loud) and background noise (quiet / some / loud), with a hint when it is too soft or too noisy
+- ☐ English and Dutch texts, TalkBack, landscape (also compact mode) and 2× font; a Settings switch to hide them; S26 check in a quiet and a noisy room
+
+## Phase 16 — Native pitch detector (only if needed)
+Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
+- ☐ Decide with measurements from Phases 8, 11 and 13 whether it is needed; if not, close this phase
+- ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
+- ☐ CPU and battery compared with the Kotlin detector on the S26

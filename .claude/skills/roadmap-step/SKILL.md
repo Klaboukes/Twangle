@@ -39,6 +39,7 @@ gh run list --branch main --limit 1   # did CI pass on the last merge?
 - Phase mode: take the first ☐ item of the requested phase.
 - If the user named an item, work on that item.
 - Otherwise take the **first ☐ item in the earliest phase that still has ☐ items**.
+- Skip the **Owner checks** section at the top of ROADMAP.md: those are live tests the owner does by hand, not increments. Finished phases live in [ROADMAP-ARCHIVE.md](../../../ROADMAP-ARCHIVE.md) and are never picked.
 - One increment = one roadmap item. You may bundle 2–3 *small, tightly linked* items from the same phase when one isn't meaningful alone (e.g. a model class plus its presets). Never span two phases.
 - Read the ARCHITECTURE.md sections that cover the item before designing anything.
 - If the item can't be done without the user (a decision, a real guitar, a second device, a Play Store account), say so plainly, propose what you *can* do instead, and wait for their answer.
@@ -47,7 +48,7 @@ gh run list --branch main --limit 1   # did CI pass on the last merge?
 
 When called with a phase number N:
 
-1. **Check earlier phases first.** If any phase before N still has ☐ items, tell the user which ones in plain language and ask whether to (a) finish those first or (b) start phase N anyway. Wait for the answer. CLAUDE.md says phases go in order.
+1. **Check earlier phases first.** If any phase before N still has ☐ items (Owner checks don't count), tell the user which ones in plain language and ask whether to (a) finish those first or (b) start phase N anyway. Wait for the answer. CLAUDE.md says phases go in order.
 2. **Announce the whole phase once** before starting: a plain-language list of the remaining items, grouped into the increments you plan, plus anything the user will need to do along the way (e.g. "keep the phone connected for the last two").
 3. **Run each increment in its own sub-agent, one after another.** This session (the "orchestrator") only does pre-flight, the phase announcement, the step-2 announcement of each increment, progress notes and the final report. The heavy work (reading code, building, device checks, PR) happens in a fresh sub-agent per increment, so its file dumps and build logs never enter this session and nothing has to be compacted. For each increment:
    - Post the step-2 announcement to the user.
