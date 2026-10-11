@@ -29,7 +29,21 @@ Goal: a strobe view as a third display next to the needle and the wave, for very
 - ☐ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame
 - ☐ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style
 
-## Phase 8 — More instruments
+## Phase 8 — Compact landscape mode
+Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
+- ☐ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden
+- ☐ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls
+- ☐ Settings switch to keep the full two-pane landscape layout instead
+- ☐ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check
+
+## Phase 9 — Volume and background-noise meters
+Goal: two small meters show how well the guitar comes through and how much noise the tuner has to filter out.
+- ☐ Noise-floor estimate in `:core:dsp`: tracks the room's background level between notes, plus a signal-to-noise figure while a note sounds (synthetic tests, no allocations per frame)
+- ☐ Clarity figure: how clean the pitch is (from YIN's confidence), so the meter shows how hard the tuner has to work
+- ☐ Two small meters on the tuner screen in each style: input volume (too soft / good / too loud) and background noise (quiet / some / loud), with a hint when it is too soft or too noisy
+- ☐ English and Dutch texts, TalkBack, landscape (also compact mode) and 2× font; a Settings switch to hide them; S26 check in a quiet and a noisy room
+
+## Phase 10 — More instruments
 Goal: tune more than a six-string guitar.
 - ☐ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
 - ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the S26
@@ -37,57 +51,43 @@ Goal: tune more than a six-string guitar.
 - ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font
 - ☐ S26 check for each instrument with short test tones
 
-## Phase 9 — Custom tunings
+## Phase 11 — Custom tunings
 Goal: players can make, name and keep their own tunings.
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
 - ☐ Custom tunings in the tuning menu below the presets, with edit and delete
 - ☐ English and Dutch texts, TalkBack and 2× font for the editor; S26 check
 
-## Phase 10 — Reference tone
+## Phase 12 — Reference tone
 Goal: the app can play the target note so players can tune by ear.
 - ☐ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds
 - ☐ Long-press a string (or a play button) to hear it; tap again to stop
 - ☐ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound
 - ☐ Volume follows the phone's media volume; TalkBack labels; S26 check by ear
 
-## Phase 11 — Strum all strings
+## Phase 13 — Strum all strings
 Goal: strum once and see which strings are out of tune.
 - ☐ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable
 - ☐ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string)
 - ☐ "Strum check" view: every string shows flat, in tune or sharp at once, in each style
 - ☐ S26 check with recorded strums from short test tones; owner check with a real guitar
 
-## Phase 12 — Metronome
+## Phase 14 — Metronome
 Goal: a simple, steady metronome in the same app.
 - ☐ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8
 - ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
 - ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
 - ☐ Timing drift measured over 10 minutes; English and Dutch texts; S26 check
 
-## Phase 13 — Wear OS companion and home-screen widget
+## Phase 15 — Wear OS companion and home-screen widget
 Goal: Twangle on the watch and one tap from the home screen.
 - ☐ Home-screen widget: shows the chosen tuning and opens the tuner with one tap (the widget never holds the microphone)
 - ☐ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp`
 - ☐ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off
 - ☐ Check on a Wear OS emulator; real watch test by the owner
 
-## Phase 14 — Compact landscape mode
-Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
-- ☐ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden
-- ☐ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls
-- ☐ Settings switch to keep the full two-pane landscape layout instead
-- ☐ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check
-
-## Phase 15 — Volume and background-noise meters
-Goal: two small meters show how well the guitar comes through and how much noise the tuner has to filter out.
-- ☐ Noise-floor estimate in `:core:dsp`: tracks the room's background level between notes, plus a signal-to-noise figure while a note sounds (synthetic tests, no allocations per frame)
-- ☐ Clarity figure: how clean the pitch is (from YIN's confidence), so the meter shows how hard the tuner has to work
-- ☐ Two small meters on the tuner screen in each style: input volume (too soft / good / too loud) and background noise (quiet / some / loud), with a hint when it is too soft or too noisy
-- ☐ English and Dutch texts, TalkBack, landscape (also compact mode) and 2× font; a Settings switch to hide them; S26 check in a quiet and a noisy room
-
 ## Phase 16 — Native pitch detector (only if needed)
 Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
-- ☐ Decide with measurements from Phases 8, 11 and 13 whether it is needed; if not, close this phase
+- ☐ Decide with measurements from Phases 10, 13 and 15 whether it is needed; if not, close this phase
 - ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
 - ☐ CPU and battery compared with the Kotlin detector on the S26
