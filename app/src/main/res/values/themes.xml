@@ -2,4 +2,14 @@
 <resources>
     <!-- Window theme only; the real UI theme is Compose Material 3 (ui/theme). -->
     <style name="Theme.Twangle" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Launch theme: the opening screen (androidx core-splashscreen, so it looks the same on Android 8
+         to 11 as on 12+). The icon's string on a gold tile (the launcher's icon shape), centred on splash_background.
+         MainActivity.installSplashScreen() switches to Theme.Twangle afterwards. -->
+    <style name="Theme.Twangle.Starting" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Twangle</item>
+    </style>
 </resources>

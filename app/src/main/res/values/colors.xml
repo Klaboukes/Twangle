@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#FAC775</color>
+    <!-- Opening screen: the launcher icon's gold, so the icon's circle melts into the screen.
+         values-night swaps in a dark warm brown. -->
+    <color name="splash_background">#FAC775</color>
 </resources>

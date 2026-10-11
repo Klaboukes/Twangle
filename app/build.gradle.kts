@@ -51,6 +51,8 @@ dependencies {
     implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.core.ktx)
+    // The opening screen: Twangle's icon on its own background, the same on every Android version.
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(platform(libs.androidx.compose.bom))

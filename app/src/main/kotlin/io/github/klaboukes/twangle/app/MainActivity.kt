@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
@@ -32,15 +34,23 @@ import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 private enum class Screen { TUNER, SETTINGS }
 
 class MainActivity : ComponentActivity() {
+    /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
+    private var ready = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The opening screen (Theme.Twangle.Starting): the icon on gold, or on dark brown in dark mode.
+        installSplashScreen().setKeepOnScreenCondition { !ready }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
-            // never flashes the wrong theme.
+            // never flashes the wrong theme. The opening screen covers that gap.
             val settings by container.settingsRepository.settings.collectAsStateWithLifecycle(initialValue = null)
-            settings?.let { TwangleApp(container, it) }
+            settings?.let {
+                SideEffect { ready = true }
+                TwangleApp(container, it)
+            }
         }
     }
 
