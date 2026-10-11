@@ -65,4 +65,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun setWaveLook(look: WaveLook) {
         viewModelScope.launch { repository.setWaveLook(look) }
     }
+
+    fun setKeepTwoPaneLandscape(enabled: Boolean) {
+        viewModelScope.launch { repository.setKeepTwoPaneLandscape(enabled) }
+    }
 }

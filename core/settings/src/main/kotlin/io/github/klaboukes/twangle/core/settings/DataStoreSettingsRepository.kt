@@ -92,6 +92,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[WAVE_LOOK] = look.name }
     }
 
+    override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) {
+        dataStore.edit { it[KEEP_TWO_PANE_LANDSCAPE] = enabled }
+    }
+
     override suspend fun setStringLockTipSeen(seen: Boolean) {
         dataStore.edit { it[STRING_LOCK_TIP_SEEN] = seen }
     }
@@ -112,6 +116,7 @@ class DataStoreSettingsRepository internal constructor(
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
             display = enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display,
             waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
+            keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
         )
     }
@@ -137,6 +142,7 @@ class DataStoreSettingsRepository internal constructor(
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
+        private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
 
         /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
         fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(

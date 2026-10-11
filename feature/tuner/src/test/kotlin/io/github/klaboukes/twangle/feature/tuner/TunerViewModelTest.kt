@@ -344,6 +344,28 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `keepTwoPaneLandscape starts from the saved value and follows the setting`() = runTest(dispatcher) {
+        settings.current = AppSettings(keepTwoPaneLandscape = true)
+        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), savedKeepTwoPaneLandscape = true)
+        assertTrue("before the settings arrive", vm.keepTwoPaneLandscape.value)
+        backgroundScope.launch { vm.keepTwoPaneLandscape.collect {} }
+        runCurrent()
+        assertTrue(vm.keepTwoPaneLandscape.value)
+
+        settings.setKeepTwoPaneLandscape(false)
+        runCurrent()
+        assertFalse("back to compact", vm.keepTwoPaneLandscape.value)
+    }
+
+    @Test
+    fun `keepTwoPaneLandscape is off by default`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.keepTwoPaneLandscape.collect {} }
+        runCurrent()
+        assertFalse(vm.keepTwoPaneLandscape.value)
+    }
+
+    @Test
     fun `keepScreenOn follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.keepScreenOn.collect {} }

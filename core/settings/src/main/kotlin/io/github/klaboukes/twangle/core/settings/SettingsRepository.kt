@@ -39,6 +39,9 @@ interface SettingsRepository {
 
     suspend fun setWaveLook(look: WaveLook)
 
+    /** True keeps the two-pane layout on its side; false (the default) uses the compact one. */
+    suspend fun setKeepTwoPaneLandscape(enabled: Boolean)
+
     /** Remembers that the string-lock tip was dismissed (or brings it back with false). */
     suspend fun setStringLockTipSeen(seen: Boolean)
 }

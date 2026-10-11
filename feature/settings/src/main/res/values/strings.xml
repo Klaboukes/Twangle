@@ -47,6 +47,8 @@
     <string name="settings_wave_look_fireflies">Fireflies</string>
     <string name="settings_wave_look_loop">Loop</string>
     <string name="settings_wave_look_ripples">Ripples</string>
+    <string name="settings_keep_two_pane_landscape_title">Full layout on its side</string>
+    <string name="settings_keep_two_pane_landscape_summary">With the phone turned, show the controls beside the tuner instead of one big meter</string>
 
     <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Keep screen on</string>

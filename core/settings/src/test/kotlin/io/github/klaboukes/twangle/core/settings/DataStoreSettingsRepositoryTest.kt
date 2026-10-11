@@ -77,6 +77,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
         assertEquals(false, settings.stringLockTipSeen)
+        assertEquals(false, settings.keepTwoPaneLandscape)
     }
 
     @Test
@@ -96,6 +97,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDisplay(TunerDisplay.STROBE)
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setStringLockTipSeen(true)
+        repo.setKeepTwoPaneLandscape(true)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -112,6 +114,7 @@ class DataStoreSettingsRepositoryTest {
             display = TunerDisplay.STROBE,
             waveLook = WaveLook.FIREFLIES,
             stringLockTipSeen = true,
+            keepTwoPaneLandscape = true,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -126,6 +129,7 @@ class DataStoreSettingsRepositoryTest {
             setStyle(VisualStyle.MIDDLE_AGES)
             setInTunePrecision(InTunePrecision.PRECISE)
             setStringLockTipSeen(true)
+            setKeepTwoPaneLandscape(true)
         }
         close()
 
@@ -137,6 +141,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
+        assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
     }
 
     @Test

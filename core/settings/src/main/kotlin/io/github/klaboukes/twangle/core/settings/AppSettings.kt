@@ -135,6 +135,11 @@ data class AppSettings(
     val display: TunerDisplay = TunerDisplay.DEFAULT,
     /** What the wave view looks like. */
     val waveLook: WaveLook = WaveLook.DEFAULT,
+    /**
+     * On its side, show the full two-pane layout (tuner beside its controls) instead of the compact
+     * one where the meter fills the screen.
+     */
+    val keepTwoPaneLandscape: Boolean = false,
     /** The one-time tip "Tap a string to tune only that one" was dismissed, so it doesn't come back. */
     val stringLockTipSeen: Boolean = false,
 ) {

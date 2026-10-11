@@ -28,7 +28,7 @@ Goal: a strobe view as a third display next to the needle and the wave, for very
 Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
 - ☑ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden. On by default (`TunerContent(compactLandscape)`); the gauge is ~450 dp wide on the S26, over twice the two-pane size; palette and settings buttons stay in the corners
 - ☑ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls. A small string row under the note; a tap (or TalkBack's "Show controls") shows the two-pane layout for 5 s, longer while touched or while the tuning menu is open
-- ☐ Settings switch to keep the full two-pane landscape layout instead
+- ☑ Settings switch to keep the full two-pane landscape layout instead. "Full layout on its side" at the end of the Look group, off by default; saved in DataStore and followed live by the tuner
 - ☐ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check
 
 ## Phase 11 — Volume and background-noise meters

@@ -102,7 +102,9 @@ import kotlin.math.roundToInt
  * calls [onOpenSettings], also while the permission prompt is shown; the palette button in the
  * other corner opens the style cards. [savedMode] is the mode in the settings already read, so the
  * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
- * likewise keeps a dismissed string-lock tip from flashing up at the start.
+ * likewise keeps a dismissed string-lock tip from flashing up at the start, and
+ * [savedKeepTwoPaneLandscape] a turned phone from switching layout. The compact layout on its side is
+ * used unless the "full layout on its side" setting is on.
  */
 @Composable
 fun TunerScreen(
@@ -112,10 +114,17 @@ fun TunerScreen(
     modifier: Modifier = Modifier,
     savedMode: TunerMode = TunerMode.AUTO,
     savedStringLockTipSeen: Boolean = false,
+    savedKeepTwoPaneLandscape: Boolean = false,
 ) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel {
-        TunerViewModel(audioRecorder, settingsRepository, savedMode = savedMode, savedStringLockTipSeen = savedStringLockTipSeen)
+        TunerViewModel(
+            audioRecorder,
+            settingsRepository,
+            savedMode = savedMode,
+            savedStringLockTipSeen = savedStringLockTipSeen,
+            savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
+        )
     }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
@@ -129,6 +138,7 @@ fun TunerScreen(
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
+    val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -169,6 +179,7 @@ fun TunerScreen(
                     showTuneHint = showTuneHint,
                     showStringLockTip = showStringLockTip,
                     onStringLockTipDismiss = viewModel::dismissStringLockTip,
+                    compactLandscape = !keepTwoPaneLandscape,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)

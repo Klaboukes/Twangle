@@ -86,6 +86,7 @@ class SettingsContentTest {
     private val tuneHintChanges = mutableListOf<Boolean>()
     private val displayChanges = mutableListOf<TunerDisplay>()
     private val waveLookChanges = mutableListOf<WaveLook>()
+    private val twoPaneChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
 
@@ -123,6 +124,7 @@ class SettingsContentTest {
                         onShowTuneHintChange = { tuneHintChanges += it },
                         onDisplayChange = { displayChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
+                        onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                     )
@@ -258,6 +260,22 @@ class SettingsContentTest {
         val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
         tuneHint.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), tuneHintChanges)
+    }
+
+    @Test
+    fun twoPaneLandscapeSwitchIsOffByDefaultAndToggles() {
+        show(AppSettings())
+        val twoPane = compose.onNodeWithText(context.getString(R.string.settings_keep_two_pane_landscape_title))
+        twoPane.performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), twoPaneChanges)
+    }
+
+    @Test
+    fun twoPaneLandscapeSwitchShowsItIsOn() {
+        show(AppSettings(keepTwoPaneLandscape = true))
+        val twoPane = compose.onNodeWithText(context.getString(R.string.settings_keep_two_pane_landscape_title))
+        twoPane.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), twoPaneChanges)
     }
 
     @Test

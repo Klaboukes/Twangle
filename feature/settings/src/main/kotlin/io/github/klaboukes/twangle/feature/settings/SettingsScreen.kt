@@ -83,6 +83,7 @@ fun SettingsScreen(
         onShowTuneHintChange = viewModel::setShowTuneHint,
         onDisplayChange = viewModel::setDisplay,
         onWaveLookChange = viewModel::setWaveLook,
+        onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
         modifier = modifier,
     )
 }
@@ -110,6 +111,7 @@ fun SettingsContent(
     onShowTuneHintChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
+    onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
@@ -130,6 +132,7 @@ fun SettingsContent(
                 onShowTuneHintChange = onShowTuneHintChange,
                 onDisplayChange = onDisplayChange,
                 onWaveLookChange = onWaveLookChange,
+                onKeepTwoPaneLandscapeChange = onKeepTwoPaneLandscapeChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -191,7 +194,7 @@ internal fun SettingsPage(
 
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (how the app looks and how far off a note is shown) and While tuning (what the tuner does while it listens),
+ * (how the app looks, how far off a note is shown and the layout on its side) and While tuning (what the tuner does while it listens),
  * followed by one row that opens the About page (version, promise, privacy and licences), so those
  * long texts don't crowd the settings.
  * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
@@ -213,6 +216,7 @@ private fun SettingsGroups(
     onShowTuneHintChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
+    onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -273,6 +277,13 @@ private fun SettingsGroups(
                         onSelect = onWaveLookChange,
                     ) { stringResource(waveLookLabel(it)) }
                 }
+                HorizontalDivider()
+                SwitchSetting(
+                    title = stringResource(R.string.settings_keep_two_pane_landscape_title),
+                    summary = stringResource(R.string.settings_keep_two_pane_landscape_summary),
+                    checked = settings.keepTwoPaneLandscape,
+                    onCheckedChange = onKeepTwoPaneLandscapeChange,
+                )
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
@@ -398,6 +409,7 @@ private fun SettingsContentPreview() {
             onShowTuneHintChange = {},
             onDisplayChange = {},
             onWaveLookChange = {},
+            onKeepTwoPaneLandscapeChange = {},
         )
     }
 }

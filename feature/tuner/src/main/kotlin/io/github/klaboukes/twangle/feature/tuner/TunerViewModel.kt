@@ -42,7 +42,8 @@ import kotlinx.coroutines.launch
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedStringLockTipSeen] does the same for the one-time string-lock tip.
+ * [savedStringLockTipSeen] does the same for the one-time string-lock tip, and
+ * [savedKeepTwoPaneLandscape] for the layout on its side.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -51,6 +52,7 @@ class TunerViewModel(
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     savedMode: TunerMode = AppSettings().mode,
     savedStringLockTipSeen: Boolean = AppSettings().stringLockTipSeen,
+    savedKeepTwoPaneLandscape: Boolean = AppSettings().keepTwoPaneLandscape,
 ) : ViewModel() {
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
@@ -92,6 +94,14 @@ class TunerViewModel(
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
+
+    /**
+     * Whether a phone on its side keeps the two-pane layout instead of the compact one (a saved
+     * setting). Starts from the saved value, so a turned phone doesn't switch layout a moment after opening.
+     */
+    val keepTwoPaneLandscape: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.keepTwoPaneLandscape }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), savedKeepTwoPaneLandscape)
 
     /** True once the string-lock tip is dismissed here; hides it at once instead of after the save. */
     private val stringLockTipDismissed = MutableStateFlow(savedStringLockTipSeen)
