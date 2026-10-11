@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
                             BackHandler { screen = Screen.TUNER }
                             SettingsScreen(
                                 settingsRepository = container.settingsRepository,
+                                appVersion = BuildConfig.VERSION_NAME,
                                 onBack = { screen = Screen.TUNER },
                             )
                         }

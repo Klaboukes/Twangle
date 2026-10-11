@@ -24,7 +24,7 @@ Goal: sharps, flats and tunings look and read the way musicians write them, and 
 - ☑ Waiting screen: the note placeholder no longer looks like a grey loading bar (the dash renders as a block in some faces) — now a faint ♪
 - ☑ Style clashes fixed: Classic's frame line no longer runs through the mode switch; Futuristic's corner brackets no longer cover settings text when scrolled; the mode switch uses each style's main accent (Futuristic shows purple beside its cyan); screenshot check of every style, light and dark (the check also pulled the Middle Ages border in and gave the settings list 24 dp at the bottom, clear of every frame and Retro's stripes)
 - ☑ Settings in three groups with headings: Tuning (A4, note names, in-tune precision), Look (style, light or dark, wallpaper colours, wave view and wave look), While tuning (keep screen on, vibrate, tune up/down hint)
-- ☐ About section at the bottom of Settings: app version, the "free forever" promise, the privacy statement (Phase 6), font and open-source licences; the version number brought in line with the beta (it still says 0.0.1)
+- ☑ About section at the bottom of Settings: app version, the "free forever" promise, the privacy statement (Phase 6), font and open-source licences; the version number brought in line with the beta (it still says 0.0.1) (now 0.9.0-beta, versionCode 900; each font and library opens its licence text from inside the app; 7 new UI tests incl. 2× font and a phone on its side; S26: all seven styles with the About group and a licence open)
 - ☐ Dutch TalkBack says note names the Dutch way: cis, des, es … instead of "C kruis", "D mol"
 - ☐ English and Dutch texts; UI tests at 2× font and in landscape for the new settings rows and the About section; S26 check in every style
 

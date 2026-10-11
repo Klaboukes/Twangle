@@ -47,17 +47,27 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
+import io.github.klaboukes.twangle.feature.settings.components.AboutSection
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
-/** Settings entry point. Every change is saved straight away; [onBack] returns to the tuner. */
+/**
+ * Settings entry point. Every change is saved straight away; [onBack] returns to the tuner.
+ * [appVersion] is the app's version name, shown in the About group.
+ */
 @Composable
-fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    settingsRepository: SettingsRepository,
+    appVersion: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     SettingsContent(
         settings = settings,
+        appVersion = appVersion,
         onBack = onBack,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
@@ -76,7 +86,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in three headed groups (see [SettingsGroups]); the wallpaper-colours
+ * load. The settings come in three headed groups, then About (see [SettingsGroups]); the wallpaper-colours
  * switch only shows in the contemporary style when [dynamicColorAvailable] (Android 12+), and the
  * wave looks only while the wave view is on. The screen is see-through, so the style's background
  * shows behind it.
@@ -85,6 +95,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
 @Composable
 fun SettingsContent(
     settings: AppSettings?,
+    appVersion: String,
     onBack: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
@@ -132,6 +143,7 @@ fun SettingsContent(
             ) {
                 SettingsGroups(
                     settings = settings,
+                    appVersion = appVersion,
                     onA4Change = onA4Change,
                     onNotationChange = onNotationChange,
                     onInTunePrecisionChange = onInTunePrecisionChange,
@@ -157,13 +169,15 @@ fun SettingsContent(
 
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (how the app and the wave view look) and While tuning (what the tuner does while it listens).
+ * (how the app and the wave view look) and While tuning (what the tuner does while it listens),
+ * followed by About (version, promise, privacy and licences).
  * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
  * visibly continues off-screen.
  */
 @Composable
 private fun SettingsGroups(
     settings: AppSettings,
+    appVersion: String,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
@@ -259,6 +273,9 @@ private fun SettingsGroups(
                 )
             }
         }
+        SettingsGroup(title = stringResource(R.string.settings_group_about)) {
+            Rows { AboutSection(appVersion = appVersion) }
+        }
     }
 }
 
@@ -332,6 +349,7 @@ private fun SettingsContentPreview() {
     MaterialTheme {
         SettingsContent(
             AppSettings(a4Hz = 442f),
+            appVersion = "0.9.0-beta",
             onBack = {},
             onA4Change = {},
             onNotationChange = {},

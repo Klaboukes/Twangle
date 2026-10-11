@@ -24,8 +24,10 @@ android {
         applicationId = "io.github.klaboukes.twangle"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.0.1"
+        // Beta 0.9 (Phase 5 onwards). versionCode = major * 10000 + minor * 100 + patch, so 1.0.0 is 10000.
+        // Every build that leaves this PC (Play Store or sideloaded) needs a higher versionCode than the last.
+        versionCode = 900
+        versionName = "0.9.0-beta"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -52,6 +54,8 @@ android {
 
     buildFeatures {
         compose = true
+        // BuildConfig.VERSION_NAME is shown in the About group of settings.
+        buildConfig = true
     }
 
     androidResources {
