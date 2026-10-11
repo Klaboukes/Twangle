@@ -210,6 +210,17 @@ class TunerContentTest {
     }
 
     @Test
+    fun tuningMenuStaysOpenWhenANoteStartsOrStops() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
+        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        shownState.value = detected(cents = -12f)
+        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
+        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+    }
+
+    @Test
     fun stringRowFollowsTheTuning() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertIsDisplayed()

@@ -419,32 +419,44 @@ private fun GuitarSlotFor(
     } else {
         null
     }
-    when (state) {
-        is TunerUiState.Detected -> ModeSlot(
-            mode,
-            guitar = {
-                // Above the picker the tip would cover the numbers or the hint under the note, so
-                // there it steps aside while a note sounds.
-                GuitarControls(
-                    state.tuning, state.notation, onTuningChange, onStringClick,
-                    state.targetString, state.lockedString, tip.copy(shown = tip.shown && tip.pointer == TipPointer.UP), state.inTune,
-                )
-            },
-            chromatic = chromatic,
+    val controls = when (state) {
+        // Above the picker the tip would cover the numbers or the hint under the note, so there it
+        // steps aside while a note sounds.
+        is TunerUiState.Detected -> GuitarControlsState(
+            state.tuning, state.notation, state.targetString, state.lockedString,
+            tip.copy(shown = tip.shown && tip.pointer == TipPointer.UP), state.inTune,
         )
         // A locked string is the target before anything is played, so it stays highlighted.
-        is TunerUiState.Listening -> ModeSlot(
-            mode,
-            guitar = {
-                GuitarControls(state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString, tip)
-            },
-            chromatic = chromatic,
-        )
+        is TunerUiState.Listening ->
+            GuitarControlsState(state.tuning, state.notation, state.lockedString, state.lockedString, tip, inTune = false)
         // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
         // permission is granted): empty space of the same height.
-        else -> ModeSlot(mode, guitar = null, chromatic = null)
+        else -> null
     }
+    // One call site for both Detected and Listening, so the controls stay in the composition when a
+    // note starts or stops and an open tuning menu stays open.
+    val guitar: (@Composable () -> Unit)? = if (controls != null) {
+        {
+            GuitarControls(
+                controls.tuning, controls.notation, onTuningChange, onStringClick,
+                controls.targetString, controls.lockedString, controls.tip, controls.inTune,
+            )
+        }
+    } else {
+        null
+    }
+    ModeSlot(mode, guitar = guitar, chromatic = chromatic)
 }
+
+/** What [GuitarControls] shows for the current [TunerUiState]. */
+private data class GuitarControlsState(
+    val tuning: Tuning,
+    val notation: Notation,
+    val targetString: Int?,
+    val lockedString: Int?,
+    val tip: StringLockTipState,
+    val inTune: Boolean,
+)
 
 /** Whether the one-time string-lock tip is [shown], what tapping it does, and where it [pointer]s from. */
 private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit, val pointer: TipPointer)
