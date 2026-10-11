@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlin.math.abs
 
 /**

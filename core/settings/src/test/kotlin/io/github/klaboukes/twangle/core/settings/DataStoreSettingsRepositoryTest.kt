@@ -63,6 +63,7 @@ class DataStoreSettingsRepositoryTest {
 
         assertEquals(AppSettings(), settings)
         assertEquals(440f, settings.a4Hz)
+        assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Tunings.STANDARD, settings.tuning)
         assertEquals(Notation.SHARPS, settings.notation)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
@@ -79,6 +80,7 @@ class DataStoreSettingsRepositoryTest {
     fun `every setting is saved`() = runTest {
         val repo = repository()
         repo.setA4(432f)
+        repo.setMode(TunerMode.CHROMATIC)
         repo.setTuning(Tunings.DADGAD)
         repo.setNotation(Notation.SOLFEGE)
         repo.setTheme(ThemeMode.DARK)
@@ -92,6 +94,7 @@ class DataStoreSettingsRepositoryTest {
 
         val expected = AppSettings(
             a4Hz = 432f,
+            mode = TunerMode.CHROMATIC,
             tuning = Tunings.DADGAD,
             notation = Notation.SOLFEGE,
             theme = ThemeMode.DARK,
@@ -110,6 +113,7 @@ class DataStoreSettingsRepositoryTest {
     fun `settings survive an app restart`() = runTest {
         repository().apply {
             setA4(442f)
+            setMode(TunerMode.CHROMATIC)
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
             setStyle(VisualStyle.MIDDLE_AGES)
@@ -118,6 +122,7 @@ class DataStoreSettingsRepositoryTest {
 
         val settings = repository().settings.first()
         assertEquals(442f, settings.a4Hz)
+        assertEquals(TunerMode.CHROMATIC, settings.mode)
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notation)
         assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
@@ -139,6 +144,7 @@ class DataStoreSettingsRepositoryTest {
     fun `unknown or out-of-range saved values fall back to the defaults`() = runTest {
         val store = dataStore()
         store.edit {
+            it[stringPreferencesKey("tuner_mode")] = "BASS"
             it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
             it[stringPreferencesKey("notation")] = "GERMAN"
             it[stringPreferencesKey("theme")] = "SEPIA"
@@ -148,6 +154,7 @@ class DataStoreSettingsRepositoryTest {
         }
 
         val settings = repository(store).settings.first()
+        assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Tunings.DEFAULT, settings.tuning)
         assertEquals(Notation.DEFAULT, settings.notation)
         assertEquals(ThemeMode.SYSTEM, settings.theme)

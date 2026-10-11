@@ -3,18 +3,10 @@ package io.github.klaboukes.twangle.feature.tuner
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.components.needleCents
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
-/** What the tuner compares a note against. */
-enum class TunerMode {
-    /** Guitar mode: the target is the closest string of the selected tuning. */
-    AUTO,
-
-    /** Any note: the target is the nearest equal-tempered note. */
-    CHROMATIC,
-}
 
 /** Everything the tuner screen shows, as one immutable value. See ARCHITECTURE §6. */
 sealed interface TunerUiState {

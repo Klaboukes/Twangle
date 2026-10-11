@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.TunerMode
 
 /**
  * The user's choices that decide what a reading is compared with. Built by [TunerViewModel] from

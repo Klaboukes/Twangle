@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
                             audioRecorder = container.audioRecorder,
                             settingsRepository = container.settingsRepository,
                             onOpenSettings = { screen = Screen.SETTINGS },
+                            savedMode = settings.mode,
                             // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
                             modifier = Modifier.semantics { testTagsAsResourceId = true },
                         )

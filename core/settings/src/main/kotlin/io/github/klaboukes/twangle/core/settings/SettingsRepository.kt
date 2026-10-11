@@ -14,6 +14,8 @@ interface SettingsRepository {
     /** Rounded to whole Hz and clamped to 415–466 Hz (see [AppSettings.normalizeA4]). */
     suspend fun setA4(hz: Float)
 
+    suspend fun setMode(mode: TunerMode)
+
     suspend fun setTuning(tuning: Tuning)
 
     suspend fun setNotation(notation: Notation)

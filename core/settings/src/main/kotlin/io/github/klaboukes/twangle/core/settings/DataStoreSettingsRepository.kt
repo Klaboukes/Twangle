@@ -40,6 +40,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[A4_HZ] = AppSettings.normalizeA4(hz) }
     }
 
+    override suspend fun setMode(mode: TunerMode) {
+        dataStore.edit { it[MODE] = mode.name }
+    }
+
     override suspend fun setTuning(tuning: Tuning) {
         dataStore.edit { it[TUNING_ID] = tuning.id }
     }
@@ -84,6 +88,7 @@ class DataStoreSettingsRepository internal constructor(
         val defaults = AppSettings()
         return AppSettings(
             a4Hz = prefs[A4_HZ]?.let(AppSettings::normalizeA4) ?: defaults.a4Hz,
+            mode = enumOrNull<TunerMode>(prefs[MODE]) ?: defaults.mode,
             tuning = prefs[TUNING_ID]?.let(Tunings::byId) ?: defaults.tuning,
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
@@ -102,6 +107,7 @@ class DataStoreSettingsRepository internal constructor(
 
         // Saved keys. Never rename them, or users lose their settings on update.
         private val A4_HZ = floatPreferencesKey("a4_hz")
+        private val MODE = stringPreferencesKey("tuner_mode")
         private val TUNING_ID = stringPreferencesKey("tuning_id")
         private val NOTATION = stringPreferencesKey("notation")
         private val THEME = stringPreferencesKey("theme")

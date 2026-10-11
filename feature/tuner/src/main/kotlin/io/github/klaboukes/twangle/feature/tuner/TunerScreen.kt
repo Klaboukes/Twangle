@@ -55,6 +55,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
@@ -73,7 +74,8 @@ import kotlin.math.roundToInt
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
  * with the lifecycle releases the mic when the screen isn't visible. The gear button in the corner
  * calls [onOpenSettings], also while the permission prompt is shown; the palette button in the
- * other corner opens the style cards.
+ * other corner opens the style cards. [savedMode] is the mode in the settings already read, so the
+ * first frame shows the right mode instead of switching a moment later.
  */
 @Composable
 fun TunerScreen(
@@ -81,9 +83,10 @@ fun TunerScreen(
     settingsRepository: SettingsRepository,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    savedMode: TunerMode = TunerMode.AUTO,
 ) {
     val mic = rememberMicPermissionState()
-    val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository) }
+    val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository, savedMode = savedMode) }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the

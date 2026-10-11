@@ -20,7 +20,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 7 — Clearer tuning
 Goal: beginners know which way to turn the peg, and experienced players get the precision and numbers they expect. From the UX review of 11 October 2026.
 - ☑ Direction hint: "Tune up ↑" or "Tune down ↓" under the note while it is off pitch (in the empty pill, with the needle and with the wave view), nothing extra once in tune; TalkBack says it too ("E 2, 12 cents flat, tune up"); English and Dutch; a Settings switch "Show tune up/down hint" (default on) turns off both the visible hint and the spoken "tune up/down" (S26: "Tune up ↑" shown in the wave view for a short flat test tone; UI tests for both views, in tune, switched off and TalkBack)
-- ☐ Remember the mode: Guitar or Chromatic is saved in settings and comes back at the next start (an unknown saved value falls back to Guitar)
+- ☑ Remember the mode: Guitar or Chromatic is saved in settings and comes back at the next start (an unknown saved value falls back to Guitar) (S26: switched to Chromatic, force-stopped, reopened in Chromatic from the first frame; repository and ViewModel tests)
 - ☐ Chromatic readout: cents and frequency stay visible in chromatic mode, also with the wave view on, in the space the string row uses in guitar mode (switching modes still doesn't move anything)
 - ☐ In-tune precision setting: Relaxed (±5 cents, today's behaviour and the default) or Precise (±2 cents, released past 3); `InTuneDetector` tests for both
 - ☐ String lock is easy to discover: a one-time tip above the string row ("Tap a string to tune only that one"), gone after tapping it or locking a string, and remembered so it doesn't come back; TalkBack reads it

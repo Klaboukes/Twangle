@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
@@ -99,6 +100,44 @@ class TunerViewModelTest {
         assertNull(state.targetString)
         assertEquals("A", state.noteName)
         assertEquals(1, recorder.startCount)
+    }
+
+    @Test
+    fun `switching modes saves the mode`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+
+        vm.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, settings.current.mode)
+
+        vm.setMode(TunerMode.AUTO)
+        runCurrent()
+        assertEquals(TunerMode.AUTO, settings.current.mode)
+    }
+
+    @Test
+    fun `shows the mode the screen already read before the settings arrive`() = runTest(dispatcher) {
+        settings.current = AppSettings(mode = TunerMode.CHROMATIC)
+        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), TunerMode.CHROMATIC)
+
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        runCurrent()
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+    }
+
+    @Test
+    fun `starts in the saved mode`() = runTest(dispatcher) {
+        settings.current = AppSettings(mode = TunerMode.CHROMATIC)
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        runCurrent()
+
+        assertEquals(TunerMode.CHROMATIC, vm.mode.value)
+        assertEquals(TunerMode.CHROMATIC, (vm.state.value as TunerUiState.Listening).mode)
+        advanceTimeBy(500)
+        assertEquals(TunerMode.CHROMATIC, vm.detected().mode)
+        assertNull(vm.detected().targetString)
     }
 
     @Test

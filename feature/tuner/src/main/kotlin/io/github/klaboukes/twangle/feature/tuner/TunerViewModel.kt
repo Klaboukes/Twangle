@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,22 +37,33 @@ import kotlinx.coroutines.launch
  * The microphone opens only when the permission is granted ([onPermissionChanged]) *and* the UI
  * collects [state]. It stays open 5 s after the UI stops collecting, so a rotation doesn't reopen
  * it (CLAUDE.md, hard rule 4). Switching [mode] takes effect on the next frame without reopening
- * the mic. Saved settings (tuning, A4, notation) are followed live, also while listening.
- * Smoothing runs on [dspDispatcher] together with the pitch detection.
+ * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation) are
+ * followed live, also while listening.
+ * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
+ * shown until the saved settings arrive, so a screen that already read them starts in the right one.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
     recorder: AudioRecorder,
     private val settingsRepository: SettingsRepository,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    savedMode: TunerMode = AppSettings().mode,
 ) : ViewModel() {
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
     private val permissionGranted = MutableStateFlow(false)
     private val attempt = MutableStateFlow(0)
-    private val _mode = MutableStateFlow(TunerMode.AUTO)
 
-    val mode: StateFlow<TunerMode> = _mode.asStateFlow()
+    /**
+     * The mode just picked on the switch, or null until one is. It wins over the saved mode, so
+     * the switch and the readings follow a tap at once instead of after the save.
+     */
+    private val pickedMode = MutableStateFlow<TunerMode?>(null)
+
+    /** Guitar or chromatic: the one last picked, which starts as the saved one. */
+    val mode: StateFlow<TunerMode> =
+        combine(settingsRepository.settings, pickedMode) { settings, picked -> picked ?: settings.mode }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, savedMode)
 
     /** Whether the screen should stay on while the tuner is shown (a saved setting). */
     val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings
@@ -87,9 +98,9 @@ class TunerViewModel(
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, _mode, lockedString) { settings, mode, locked ->
+        combine(settingsRepository.settings, pickedMode, lockedString) { settings, picked, locked ->
             TunerOptions(
-                mode = mode,
+                mode = picked ?: settings.mode,
                 tuning = settings.tuning,
                 a4Hz = settings.a4Hz,
                 lockedString = locked,
@@ -115,8 +126,10 @@ class TunerViewModel(
         permissionGranted.value = granted
     }
 
+    /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
     fun setMode(mode: TunerMode) {
-        _mode.value = mode
+        pickedMode.value = mode
+        viewModelScope.launch { settingsRepository.setMode(mode) }
     }
 
     /**

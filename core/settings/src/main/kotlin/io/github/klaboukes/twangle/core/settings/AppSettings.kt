@@ -6,6 +6,17 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlin.math.roundToInt
 
+/**
+ * What the tuner compares a note against. Saved in settings by [name], so don't rename the entries.
+ */
+enum class TunerMode {
+    /** Guitar mode: the target is the closest string of the selected tuning. */
+    AUTO,
+
+    /** Any note: the target is the nearest equal-tempered note. */
+    CHROMATIC,
+}
+
 /** Light or dark colours. Saved in settings by [name], so don't rename the entries. */
 enum class ThemeMode {
     /** Follow the phone's dark-theme setting. */
@@ -67,6 +78,8 @@ enum class WaveLook {
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
     val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
+    /** Guitar or chromatic, as last picked on the tuner, so the app reopens in it. */
+    val mode: TunerMode = TunerMode.AUTO,
     val tuning: Tuning = Tunings.DEFAULT,
     val notation: Notation = Notation.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,

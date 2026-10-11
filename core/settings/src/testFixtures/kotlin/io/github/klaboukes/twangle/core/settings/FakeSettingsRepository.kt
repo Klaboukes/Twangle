@@ -25,6 +25,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setA4(hz: Float) = state.update { it.copy(a4Hz = AppSettings.normalizeA4(hz)) }
 
+    override suspend fun setMode(mode: TunerMode) = state.update { it.copy(mode = mode) }
+
     override suspend fun setTuning(tuning: Tuning) = state.update { it.copy(tuning = tuning) }
 
     override suspend fun setNotation(notation: Notation) = state.update { it.copy(notation = notation) }

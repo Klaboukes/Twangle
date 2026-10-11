@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.R
-import io.github.klaboukes.twangle.feature.tuner.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 
 /** Two-button switch between guitar ([TunerMode.AUTO]) and chromatic mode. */
