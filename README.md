@@ -27,7 +27,7 @@ Coming later: see the [roadmap](ROADMAP.md).
 
 ## Status
 
-Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)); the Play Store release comes next. The app is not on the Play Store yet.
+Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)); release preparation comes next. The app goes on the Play Store at the end of the roadmap.
 
 ## How it works
 

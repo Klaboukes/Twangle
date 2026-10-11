@@ -16,11 +16,11 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ---
 
-## Phase 6 — Release → **v1.0**
+## Phase 6 — Release preparation
+Goal: a signed, shrunk release build that is ready for the store, without publishing it yet.
 - ☐ App icon, adaptive icon, splash screen
 - ☐ R8 minify + resource shrinking; release signing config (keystore kept out of the repo)
-- ☐ Privacy policy (no audio stored or transmitted) + Play data-safety form
-- ☐ Play Store listing: screenshots, description; internal → closed → production tracks
+- ☐ Privacy policy (no audio stored or transmitted)
 
 ## Phase 7 — Strobe tuner display
 Goal: a strobe view as a third display next to the needle and the wave, for very fine tuning.
@@ -91,3 +91,9 @@ Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is
 - ☐ Decide with measurements from Phases 10, 13 and 15 whether it is needed; if not, close this phase
 - ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
 - ☐ CPU and battery compared with the Kotlin detector on the S26
+
+## Phase 17 — Go live on the Play Store → **v1.0**
+Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
+- ☐ Play data-safety form (no data collected or shared)
+- ☐ Play Store listing: screenshots, description (English and Dutch)
+- ☐ Internal → closed → production tracks
