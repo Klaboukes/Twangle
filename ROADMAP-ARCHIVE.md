@@ -83,3 +83,9 @@ Goal: a usable guitar tuner.
   - ☑ Calmer wave view: a low, frameless sound ribbon that pulses when off and settles into one smooth glowing band in tune, in each style's own marks (S26: every style rendered off, nearly there and in tune, light and dark)
   - ☑ Wave view without the tips in words: the dial already shows how far off, so the pill stays empty, also in tune (TalkBack still hears the cents)
   - ☑ Wave looks: pick the ribbon, stripes, dots, fireflies, a loop or ripples in Settings, with a preview card for each (S26: every look live, off pitch and in tune)
+
+## Phase 6 — Release preparation
+Goal: a signed, shrunk release build that is ready for the store, without publishing it yet.
+- ☑ App icon, adaptive icon, splash screen (icon checked inside the safe zone with its monochrome layer; opening screen with the icon on gold, or on dark brown in dark mode)
+- ☑ R8 minify + resource shrinking; release signing config (keystore kept out of the repo) (release APK 9.3 MB → 1.8 MB; signed with the upload key kept in `~/.twangle-keys/`; checked on the S26)
+- ☑ Privacy policy (no audio stored or transmitted) (`PRIVACY.md` in English and `PRIVACY.nl.md` in Dutch, linked from the README; checked against the merged manifest: only microphone and vibrate permissions, no internet)

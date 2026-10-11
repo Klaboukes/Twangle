@@ -11,6 +11,8 @@ Twangle is and will always be **free**:
 - **No tracking.** The app has no internet permission, so it can't send anything anywhere.
 - **Your audio stays on your phone.** Sound from the microphone is analysed live and never recorded, saved or uploaded.
 
+The full [privacy policy](PRIVACY.md) ([Nederlands](PRIVACY.nl.md)) explains it in plain language.
+
 ## Features
 
 - **Guitar mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
@@ -27,7 +29,7 @@ Coming later: see the [roadmap](ROADMAP.md).
 
 ## Status
 
-Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)); release preparation comes next. The app goes on the Play Store at the end of the roadmap.
+Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)), and so is release preparation (Phase 6: icon, signed and shrunk release build, privacy policy). The app goes on the Play Store at the end of the roadmap.
 
 ## How it works
 

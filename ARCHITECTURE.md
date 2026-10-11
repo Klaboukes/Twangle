@@ -384,4 +384,6 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 
 ## 9. Privacy
-Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and the app requests no `INTERNET` permission. The Play Store data-safety form and privacy policy will say so.
+Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and the app requests no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+
+The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. It also covers the saved settings: they stay in DataStore on the device, and because `android:allowBackup="true"` (no extraction rules) Android's own backup and device-to-device transfer may include them. If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About section (Phase 8) shows it in the app; the Play Store listing will link to a public copy (Phase 20), and the data-safety form will say no data is collected or shared.

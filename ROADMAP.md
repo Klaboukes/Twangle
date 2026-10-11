@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–5 (scaffolding, DSP core, audio capture, tuner MVP, settings and tunings, polish → v0.9 beta) are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
+Phases 0–6 (scaffolding, DSP core, audio capture, tuner MVP, settings and tunings, polish → v0.9 beta, release preparation) are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
 
 ---
 
@@ -16,12 +16,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 19: native speakers look over the new translations where possible
 
 ---
-
-## Phase 6 — Release preparation
-Goal: a signed, shrunk release build that is ready for the store, without publishing it yet.
-- ☑ App icon, adaptive icon, splash screen (icon checked inside the safe zone with its monochrome layer; opening screen with the icon on gold, or on dark brown in dark mode)
-- ☑ R8 minify + resource shrinking; release signing config (keystore kept out of the repo) (release APK 9.3 MB → 1.8 MB; signed with the upload key kept in `~/.twangle-keys/`; checked on the S26)
-- ☐ Privacy policy (no audio stored or transmitted)
 
 ## Phase 7 — Clearer tuning
 Goal: beginners know which way to turn the peg, and experienced players get the precision and numbers they expect. From the UX review of 11 October 2026.
@@ -126,5 +120,6 @@ Goal: Twangle speaks the world's major languages before it goes public.
 ## Phase 20 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
 - ☐ Play data-safety form (no data collected or shared)
+- ☐ Privacy policy published at a public URL (the repo is private), and that URL plus a contact email entered in the Play Console
 - ☐ Play Store listing: screenshots, description in every supported language
 - ☐ Internal → closed → production tracks
