@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import io.github.klaboukes.twangle.core.designsystem.dial.stripeOffset
+import io.github.klaboukes.twangle.core.designsystem.dial.stripePeriod
+import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -30,5 +32,14 @@ class StrobeTest {
         assertEquals(stripeOffset(0.35f, period), stripeOffset(-0.65f, period), 1e-4f)
         // Wrapping from just under 1 to 0 jumps a whole period, which lands on the next stripe.
         assertEquals(stripeOffset(0f, period), stripeOffset(0.99999f, period) - period, 1e-2f)
+    }
+
+    @Test
+    fun `every style fits plenty of stripes into the smallest strobe view`() {
+        VisualStyle.entries.forEach { style ->
+            val period = stripePeriod(style).value
+            // The view is about 170 dp wide or more: nine stripes or more, each wide enough to see.
+            assertTrue("$style period $period dp", period in 6f..18f)
+        }
     }
 }

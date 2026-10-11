@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.layout.Spacer
@@ -21,18 +22,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.dial.drawStrobe
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
- * The strobe view: rows of stripes (`drawStrobe`) that drift right when the note is sharp and left
- * when it is flat, faster the further off, and stand still within half a cent ([StrobeMotion]). It
- * takes the wave view's place under the note. Its colour follows [inTune] like the wave's; its
- * motion follows only [cents], so it keeps showing the last cent inside the "in tune" window.
- * Without a reading ([cents] null) the stripes stop where they are, in a faint colour.
+ * The strobe view: rows of stripes in the current style's marks (`drawStrobe`) that drift right
+ * when the note is sharp and left when it is flat, faster the further off, and stand still within
+ * half a cent ([StrobeMotion]). It takes the wave view's place under the note. Its colour follows
+ * [inTune] like the wave's, with a soft halo in tune; its motion follows only [cents], so it keeps
+ * showing the last cent inside the "in tune" window. Without a reading ([cents] null) the stripes
+ * stop where they are, in a faint colour.
  *
- * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
- * is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
+ * It moves only while there is a reading. The frame clock and the phase are read only while
+ * drawing, so each frame redraws this view's own layer and nothing is recomposed. TalkBack skips
+ * it; `NoteDisplay` says the same in words.
  */
 @Composable
 fun StrobeView(
@@ -57,6 +61,7 @@ fun StrobeView(
             }
         }
     }
+    val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(COLOR_MS), label = "strobeGlow")
     val scheme = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val color = animateColorAsState(
@@ -68,6 +73,7 @@ fun StrobeView(
         tween(COLOR_MS),
         label = "strobeColor",
     )
+    val style = MaterialTheme.styleTokens.style
     Spacer(
         modifier = modifier
             .clearAndSetSemantics {}
@@ -75,12 +81,12 @@ fun StrobeView(
             .graphicsLayer()
             .drawBehind {
                 frame.longValue // Redraw on every animation frame.
-                drawStrobe(phase = motion.phase, color = color.value)
+                drawStrobe(style = style, phase = motion.phase, color = color.value, glow = glow.value)
             },
     )
 }
 
-/** The colour fades over this. */
+/** The colour and the "in tune" halo fade over this. */
 private const val COLOR_MS = 600
 
 /** Off pitch the stripes are a quiet tint of the style's colour, at rest fainter still. */
