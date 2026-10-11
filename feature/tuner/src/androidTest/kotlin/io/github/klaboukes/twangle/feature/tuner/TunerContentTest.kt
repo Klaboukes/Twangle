@@ -241,6 +241,17 @@ class TunerContentTest {
     }
 
     @Test
+    fun halfStepDownIsSpelledWithFlatsInStringsHintAndMenu() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, lockedString = 0, notation = Notation.SHARPS))
+        stringChip("E♭2").assertIsSelected()
+        stringChip("G♭3").assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "E♭2")).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuning_half_step_down)).performClick()
+        compose.onNodeWithText("E♭ A♭ D♭ G♭ B♭ E♭").assertIsDisplayed()
+        compose.onNodeWithText("D A D F♯ A D").assertIsDisplayed()
+    }
+
+    @Test
     fun talkBackHearsTheReadingAsOneSentence() {
         show(detected(-12.3f))
         compose.onNode(hasContentDescription("E 2, 12 cents flat")).assertExists()

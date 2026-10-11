@@ -91,7 +91,7 @@ fun tuningLabel(tuning: Tuning): String = tuningNameRes(tuning.id)?.let { string
 
 /** Open-string note names, low to high, e.g. "D A D G B E", with raised signs ("E♭ A♭ …"). */
 private fun openStrings(tuning: Tuning, notation: Notation): AnnotatedString =
-    musicText(tuning.strings.joinToString(" ") { notation.nameOf(it.pitchClass) })
+    musicText(tuning.strings.joinToString(" ") { notation.nameIn(tuning, it.pitchClass) })
 
 @StringRes
 private fun tuningNameRes(id: String): Int? = when (id) {

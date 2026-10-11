@@ -273,4 +273,21 @@ class TunerInterpreterTest {
         assertEquals("D♭", nameOf(Notation.FLATS))
         assertEquals("Do♯", nameOf(Notation.SOLFEGE))
     }
+
+    @Test
+    fun `guitar mode spells the string the way the tuning does, chromatic follows the setting`() {
+        val halfStepDown = Tunings.HALF_STEP_DOWN
+        fun nameOf(mode: TunerMode, notation: Notation): String {
+            val tuner = TunerInterpreter(frameSeconds)
+            var state: TunerUiState? = null
+            // 63 = E♭4 / D♯4, the top string of Half step down.
+            repeat(40) { state = tuner.interpret(pitched(hz(63f)), TunerOptions(mode, halfStepDown, notation = notation)) }
+            return state!!.detected().noteName
+        }
+        assertEquals("E♭", nameOf(TunerMode.AUTO, Notation.SHARPS))
+        assertEquals("Mi♭", nameOf(TunerMode.AUTO, Notation.SOLFEGE))
+        assertEquals("D♯", nameOf(TunerMode.CHROMATIC, Notation.SHARPS))
+        assertEquals("Re♯", nameOf(TunerMode.CHROMATIC, Notation.SOLFEGE))
+        assertEquals("E♭", nameOf(TunerMode.CHROMATIC, Notation.FLATS))
+    }
 }

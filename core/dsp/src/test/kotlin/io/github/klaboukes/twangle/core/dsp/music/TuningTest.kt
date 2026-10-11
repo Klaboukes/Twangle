@@ -31,6 +31,23 @@ class TuningTest {
     }
 
     @Test
+    fun `presets know how players spell them`() {
+        assertEquals(Accidental.FLAT, Tunings.HALF_STEP_DOWN.spelling)
+        assertEquals(Accidental.SHARP, Tunings.OPEN_D.spelling)
+        assertEquals(Accidental.SHARP, Tunings.OPEN_E.spelling)
+        for (tuning in listOf(Tunings.STANDARD, Tunings.DROP_D, Tunings.FULL_STEP_DOWN, Tunings.DADGAD, Tunings.OPEN_G)) {
+            assertNull(tuning.id, tuning.spelling)
+        }
+    }
+
+    @Test
+    fun `half step down is a semitone below standard on every string`() {
+        Tunings.HALF_STEP_DOWN.strings.forEachIndexed { i, note ->
+            assertEquals("string index $i", Tunings.STANDARD.strings[i].midi - 1, note.midi)
+        }
+    }
+
+    @Test
     fun `standard tuning strings match reference frequencies`() {
         val hz = listOf(82.4069f, 110.0000f, 146.8324f, 195.9977f, 246.9417f, 329.6276f)
         Tunings.STANDARD.strings.forEachIndexed { i, note ->

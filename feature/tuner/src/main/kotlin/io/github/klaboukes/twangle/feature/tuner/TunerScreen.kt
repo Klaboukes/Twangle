@@ -602,7 +602,7 @@ private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening): Strin
     val locked = state.lockedString
     return when {
         mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
-        locked != null -> stringResource(R.string.tuner_hint_play_locked_string, state.notation.nameOf(state.tuning.strings[locked]))
+        locked != null -> stringResource(R.string.tuner_hint_play_locked_string, state.notation.nameIn(state.tuning, state.tuning.strings[locked]))
         else -> stringResource(R.string.tuner_hint_play_string)
     }
 }

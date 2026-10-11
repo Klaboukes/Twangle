@@ -46,10 +46,81 @@ class NotationTest {
     }
 
     @Test
+    fun `solfege with flats lowers the next note`() {
+        val names = PitchClass.entries.joinToString(" ") { Notation.SOLFEGE.nameOf(it, Accidental.FLAT) }
+        assertEquals("Do Re♭ Re Mi♭ Mi Fa Sol♭ Sol La♭ La Si♭ Si", names)
+    }
+
+    @Test
+    fun `each notation spells with its own sign`() {
+        assertEquals(Accidental.SHARP, Notation.SHARPS.spelling)
+        assertEquals(Accidental.FLAT, Notation.FLATS.spelling)
+        assertEquals(Accidental.SHARP, Notation.SOLFEGE.spelling)
+    }
+
+    private fun strings(tuning: Tuning, notation: Notation) =
+        tuning.strings.joinToString(" ") { notation.nameIn(tuning, it.pitchClass) }
+
+    @Test
+    fun `half step down is spelled with flats whatever the setting`() {
+        val tuning = Tunings.HALF_STEP_DOWN
+        assertEquals("E♭ A♭ D♭ G♭ B♭ E♭", strings(tuning, Notation.SHARPS))
+        assertEquals("E♭ A♭ D♭ G♭ B♭ E♭", strings(tuning, Notation.FLATS))
+        assertEquals("Mi♭ La♭ Re♭ Sol♭ Si♭ Mi♭", strings(tuning, Notation.SOLFEGE))
+    }
+
+    @Test
+    fun `open D and open E keep their sharps with the flats setting`() {
+        assertEquals("D A D F♯ A D", strings(Tunings.OPEN_D, Notation.FLATS))
+        assertEquals("E B E G♯ B E", strings(Tunings.OPEN_E, Notation.FLATS))
+        assertEquals("Mi Si Mi Sol♯ Si Mi", strings(Tunings.OPEN_E, Notation.SOLFEGE))
+    }
+
+    @Test
+    fun `every preset is spelled the way players write it`() {
+        val expected = mapOf(
+            Tunings.STANDARD to "E A D G B E",
+            Tunings.DROP_D to "D A D G B E",
+            Tunings.HALF_STEP_DOWN to "E♭ A♭ D♭ G♭ B♭ E♭",
+            Tunings.FULL_STEP_DOWN to "D G C F A D",
+            Tunings.DADGAD to "D A D G A D",
+            Tunings.OPEN_G to "D G D G B D",
+            Tunings.OPEN_D to "D A D F♯ A D",
+            Tunings.OPEN_E to "E B E G♯ B E",
+        )
+        assertEquals(Tunings.all.toSet(), expected.keys)
+        for (notation in listOf(Notation.SHARPS, Notation.FLATS)) {
+            for ((tuning, names) in expected) assertEquals("${tuning.id}, $notation", names, strings(tuning, notation))
+        }
+    }
+
+    @Test
+    fun `a tuning without a spelling follows the notation`() {
+        val tuning = Tuning("custom", listOf(Note.of(PitchClass.C_SHARP, 3)))
+        assertEquals("C♯", strings(tuning, Notation.SHARPS))
+        assertEquals("D♭", strings(tuning, Notation.FLATS))
+        assertEquals("Do♯", strings(tuning, Notation.SOLFEGE))
+    }
+
+    @Test
+    fun `tuning names get their octave`() {
+        assertEquals("E♭2", Notation.SHARPS.nameIn(Tunings.HALF_STEP_DOWN, Tunings.HALF_STEP_DOWN.strings[0]))
+        assertEquals("Sol♭3", Notation.SOLFEGE.nameIn(Tunings.HALF_STEP_DOWN, Tunings.HALF_STEP_DOWN.strings[3]))
+        assertEquals("F♯3", Notation.FLATS.nameIn(Tunings.OPEN_D, Tunings.OPEN_D.strings[3]))
+    }
+
+    @Test
     fun `names are always the same instances, so nothing is allocated per frame`() {
         for (notation in Notation.entries) {
             for (pitchClass in PitchClass.entries) {
                 assertSame(notation.nameOf(pitchClass), notation.nameOf(pitchClass))
+                for (spelling in Accidental.entries) {
+                    assertSame(notation.nameOf(pitchClass, spelling), notation.nameOf(pitchClass, spelling))
+                }
+                assertSame(
+                    notation.nameIn(Tunings.HALF_STEP_DOWN, pitchClass),
+                    notation.nameIn(Tunings.HALF_STEP_DOWN, pitchClass),
+                )
             }
         }
     }

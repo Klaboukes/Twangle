@@ -74,7 +74,7 @@ fun StringSelector(
     ) {
         tuning.strings.forEachIndexed { index, note ->
             val locked = index == lockedString
-            val name = notation.nameOf(note.pitchClass)
+            val name = notation.nameIn(tuning, note.pitchClass)
             StringChip(
                 name = name,
                 spokenName = spokenString.format(

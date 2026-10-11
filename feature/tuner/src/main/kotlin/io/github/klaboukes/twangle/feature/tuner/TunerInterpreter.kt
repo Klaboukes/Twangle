@@ -122,7 +122,12 @@ class TunerInterpreter(
             mode = options.mode,
             tuning = options.tuning,
             a4Hz = options.a4Hz,
-            noteName = options.notation.nameOf(target.pitchClass),
+            // A string keeps its tuning's spelling (E♭ in Half step down); chromatic follows the setting.
+            noteName = if (targetString != null) {
+                options.notation.nameIn(options.tuning, target.pitchClass)
+            } else {
+                options.notation.nameOf(target.pitchClass)
+            },
             octave = target.octave,
             frequencyHz = frequencyHz,
             cents = cents,

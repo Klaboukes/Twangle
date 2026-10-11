@@ -9,10 +9,14 @@ import kotlin.math.abs
  * guitar string 6 in standard tuning. [id] is a stable key for saved settings; the name shown to
  * users comes from the app's string resources, not from here.
  *
+ * [spelling] is how players write the tuning's black-key strings, e.g. [Accidental.FLAT] for
+ * Half step down (E♭ A♭ D♭ G♭ B♭ E♭). It wins over the notation setting's sharps or flats
+ * (see [Notation.nameIn]); null means the tuning has no preference.
+ *
  * Positions are compared as fractional MIDI note numbers (see [NoteMapper.midiOf]), so they
  * follow the user's A4 calibration and lookups are allocation-free.
  */
-data class Tuning(val id: String, val strings: List<Note>) {
+data class Tuning(val id: String, val strings: List<Note>, val spelling: Accidental? = null) {
 
     init {
         require(id.isNotBlank()) { "Tuning id must not be blank" }
@@ -58,7 +62,7 @@ data class Tuning(val id: String, val strings: List<Note>) {
 object Tunings {
     val STANDARD = guitar("standard", "E2 A2 D3 G3 B3 E4")
     val DROP_D = guitar("drop_d", "D2 A2 D3 G3 B3 E4")
-    val HALF_STEP_DOWN = guitar("half_step_down", "D#2 G#2 C#3 F#3 A#3 D#4")
+    val HALF_STEP_DOWN = guitar("half_step_down", "Eb2 Ab2 Db3 Gb3 Bb3 Eb4")
     val FULL_STEP_DOWN = guitar("full_step_down", "D2 G2 C3 F3 A3 D4")
     val DADGAD = guitar("dadgad", "D2 A2 D3 G3 A3 D4")
     val OPEN_G = guitar("open_g", "D2 G2 D3 G3 B3 D4")
@@ -75,13 +79,26 @@ object Tunings {
     /** The preset with this [id], or null if none matches (e.g. a stale saved setting). */
     fun byId(id: String): Tuning? = all.firstOrNull { it.id == id }
 
-    private fun guitar(id: String, notes: String): Tuning =
-        Tuning(id, notes.split(' ').map(::parseNote))
+    // The tuning is spelled the way it is written here: "Eb2" gives flats, "F#3" sharps.
+    private fun guitar(id: String, notes: String): Tuning {
+        val spelling = when {
+            notes.contains('#') -> Accidental.SHARP
+            notes.contains('b') -> Accidental.FLAT
+            else -> null
+        }
+        require(!(notes.contains('#') && notes.contains('b'))) { "Tuning '$id' mixes sharps and flats" }
+        return Tuning(id, notes.split(' ').map(::parseNote), spelling)
+    }
 
-    // Parses scientific pitch notation with sharps only, e.g. "E2", "F#3".
+    // Parses scientific pitch notation, e.g. "E2", "F#3" or "Eb2" (a flat is the next key down).
     private fun parseNote(text: String): Note {
         val symbol = text.takeWhile { !it.isDigit() && it != '-' }
+        val octave = text.substring(symbol.length).toInt()
+        if (symbol.length == 2 && symbol[1] == 'b') {
+            val natural = PitchClass.entries.first { it.symbol == symbol.substring(0, 1) }
+            return Note(Note.of(natural, octave).midi - 1)
+        }
         val pitchClass = PitchClass.entries.first { it.symbol == symbol }
-        return Note.of(pitchClass, text.substring(symbol.length).toInt())
+        return Note.of(pitchClass, octave)
     }
 }
