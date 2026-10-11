@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
@@ -89,17 +90,17 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves theme, wallpaper colours, wave view, keep screen on, vibration and tune hint`() = runTest(dispatcher) {
+    fun `saves theme, wallpaper colours, display, keep screen on, vibration and tune hint`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
-        vm.setShowWaves(false)
+        vm.setDisplay(TunerDisplay.STROBE)
         vm.setKeepScreenOn(false)
         vm.setVibrateInTune(false)
         vm.setShowTuneHint(false)
         runCurrent()
 
-        assertEquals(false, repository.current.showWaves)
+        assertEquals(TunerDisplay.STROBE, repository.current.display)
 
         assertEquals(ThemeMode.LIGHT, repository.current.theme)
         assertEquals(false, repository.current.dynamicColor)

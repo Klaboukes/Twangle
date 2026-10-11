@@ -44,6 +44,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
@@ -80,7 +81,7 @@ fun SettingsScreen(
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onShowTuneHintChange = viewModel::setShowTuneHint,
-        onShowWavesChange = viewModel::setShowWaves,
+        onDisplayChange = viewModel::setDisplay,
         onWaveLookChange = viewModel::setWaveLook,
         modifier = modifier,
     )
@@ -90,7 +91,7 @@ fun SettingsScreen(
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
- * (Android 12+), and the wave looks only while the wave view is on.
+ * (Android 12+), and the wave looks only while the wave is the display.
  */
 @Composable
 fun SettingsContent(
@@ -107,7 +108,7 @@ fun SettingsContent(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
-    onShowWavesChange: (Boolean) -> Unit,
+    onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
@@ -127,7 +128,7 @@ fun SettingsContent(
                 onKeepScreenOnChange = onKeepScreenOnChange,
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onShowTuneHintChange = onShowTuneHintChange,
-                onShowWavesChange = onShowWavesChange,
+                onDisplayChange = onDisplayChange,
                 onWaveLookChange = onWaveLookChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
@@ -190,7 +191,7 @@ internal fun SettingsPage(
 
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (how the app and the wave view look) and While tuning (what the tuner does while it listens),
+ * (how the app looks and how far off a note is shown) and While tuning (what the tuner does while it listens),
  * followed by one row that opens the About page (version, promise, privacy and licences), so those
  * long texts don't crowd the settings.
  * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
@@ -210,7 +211,7 @@ private fun SettingsGroups(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
-    onShowWavesChange: (Boolean) -> Unit,
+    onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
@@ -259,13 +260,13 @@ private fun SettingsGroups(
                     )
                 }
                 HorizontalDivider()
-                SwitchSetting(
-                    title = stringResource(R.string.settings_show_waves_title),
-                    summary = stringResource(R.string.settings_show_waves_summary),
-                    checked = settings.showWaves,
-                    onCheckedChange = onShowWavesChange,
-                )
-                if (settings.showWaves) {
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_display_title),
+                    options = TunerDisplay.entries,
+                    selected = settings.display,
+                    onSelect = onDisplayChange,
+                ) { stringResource(displayLabel(it)) }
+                if (settings.display == TunerDisplay.WAVE) {
                     WaveLookPicker(
                         title = stringResource(R.string.settings_wave_look_title),
                         selected = settings.waveLook,
@@ -356,6 +357,12 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
     InTunePrecision.PRECISE -> R.string.settings_in_tune_precision_precise
 }
 
+private fun displayLabel(display: TunerDisplay): Int = when (display) {
+    TunerDisplay.NEEDLE -> R.string.settings_display_needle
+    TunerDisplay.WAVE -> R.string.settings_display_wave
+    TunerDisplay.STROBE -> R.string.settings_display_strobe
+}
+
 private fun waveLookLabel(look: WaveLook): Int = when (look) {
     WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
     WaveLook.STRIPES -> R.string.settings_wave_look_stripes
@@ -389,7 +396,7 @@ private fun SettingsContentPreview() {
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
             onShowTuneHintChange = {},
-            onShowWavesChange = {},
+            onDisplayChange = {},
             onWaveLookChange = {},
         )
     }

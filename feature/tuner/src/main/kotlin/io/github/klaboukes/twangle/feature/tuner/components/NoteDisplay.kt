@@ -49,6 +49,7 @@ import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -70,18 +71,18 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. With [showWaves] the wave view ([WaveView], in [waveLook]) replaces both: the dial already shows how
- * far off the note is, so the pill only shows [hint] and stays empty during a note. [compact] makes the
- * note and the wave view smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
+ * frequency. With the [display] set to the wave ([WaveView], in [waveLook]) or the strobe ([StrobeView]),
+ * that picture replaces both: the dial already shows how far off the note is, so the pill only shows
+ * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
- * colour, a soft glow lights up behind it with a small pop, and (without [showWaves]) the pill fills
+ * colour, a soft glow lights up behind it with a small pop, and (with the needle's cents) the pill fills
  * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
- * view the wave settling into its calm shape does that. Without a [readout] it shows a
+ * view the wave settling into its calm shape does that, in the strobe view the stripes standing still. Without a [readout] it shows a
  * faint ♪ and [hint], e.g. "Play a string". A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
- * "Tune down ↓", see [tuneDirectionFor]); in tune it says nothing extra. In the wave view the hint
+ * "Tune down ↓", see [tuneDirectionFor]); in tune it says nothing extra. With a picture the hint
  * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
  * height while empty so nothing jumps when the note comes in tune.
  *
@@ -97,18 +98,20 @@ fun NoteDisplay(
     hint: String,
     modifier: Modifier = Modifier,
     spokenHint: String = hint,
-    showWaves: Boolean = false,
+    display: TunerDisplay = TunerDisplay.NEEDLE,
     compact: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
 ) {
     val inTune = readout?.inTune == true
+    // The wave and the strobe both show how far off the note is in a picture instead of in cents.
+    val pictured = display != TunerDisplay.NEEDLE
     val direction = if (showTuneHint && readout != null) tuneDirectionFor(readout.cents, readout.inTune) else null
     val directionText = direction?.let { stringResource(it.label) }.orEmpty()
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
-    val checkShown by animateFloatAsState(if (inTune && !showWaves) 1f else 0f, label = "check")
+    val checkShown by animateFloatAsState(if (inTune && !pictured) 1f else 0f, label = "check")
     val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(GLOW_MS), label = "glow")
     val pop = remember { Animatable(1f) }
     LaunchedEffect(inTune) {
@@ -119,7 +122,7 @@ fun NoteDisplay(
     }
     val pillColor = animateColorAsState(
         when {
-            readout == null || showWaves -> Color.Transparent
+            readout == null || pictured -> Color.Transparent
             inTune -> tuneColor
             else -> colors.surfaceContainerHigh.copy(alpha = 0.85f)
         },
@@ -192,13 +195,11 @@ fun NoteDisplay(
                 )
             }
         }
-        if (showWaves) {
-            WaveView(
-                cents = readout?.cents,
-                inTune = inTune,
-                modifier = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT),
-                look = waveLook,
-            )
+        val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
+        when (display) {
+            TunerDisplay.WAVE -> WaveView(cents = readout?.cents, inTune = inTune, modifier = pictureSize, look = waveLook)
+            TunerDisplay.STROBE -> StrobeView(cents = readout?.cents, inTune = inTune, modifier = pictureSize)
+            TunerDisplay.NEEDLE -> Unit
         }
         Row(
             modifier = Modifier
@@ -226,17 +227,17 @@ fun NoteDisplay(
                     // The hint can name a note: "Play the C♯ string".
                     readout == null -> musicText(hint)
                     // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
-                    showWaves -> AnnotatedString(directionText)
+                    pictured -> AnnotatedString(directionText)
                     else -> AnnotatedString(centsText(readout.cents))
                 },
                 style = when {
-                    showWaves -> MaterialTheme.typography.titleMedium
+                    pictured -> MaterialTheme.typography.titleMedium
                     readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
                     else -> MaterialTheme.typography.titleLarge
                 },
                 color = when {
                     readout == null -> colors.onSurface
-                    showWaves -> colors.primary
+                    pictured -> colors.primary
                     else -> pillText
                 },
                 textAlign = TextAlign.Center,
@@ -244,7 +245,7 @@ fun NoteDisplay(
             )
             Box(Modifier.size(CHECK_SIZE))
         }
-        if (!showWaves && showTuneHint) {
+        if (!pictured && showTuneHint) {
             // Always there (empty without a hint), so the frequency below doesn't move.
             Text(
                 text = directionText,
@@ -253,7 +254,7 @@ fun NoteDisplay(
                 modifier = Modifier.hiddenFromTalkBack(),
             )
         }
-        if (!showWaves) {
+        if (!pictured) {
             Text(
                 text = if (readout != null) stringResource(R.string.tuner_frequency, readout.frequencyHz) else "",
                 style = MaterialTheme.typography.bodyLarge,
@@ -273,7 +274,7 @@ private const val BIG_NOTE_LINE_RATIO = 120f / 112f
 private val COMPACT_NOTE_SIZE = 80.dp
 private val CHECK_SIZE = 24.dp
 
-/** The wave view: narrower than the note's pill can grow, and low, so it stays in the background. */
+/** The wave or strobe view: narrower than the note's pill can grow, and low, so it stays in the background. */
 private val WAVE_WIDTH = 240.dp
 private val WAVE_HEIGHT = 40.dp
 private val COMPACT_WAVE_HEIGHT = 30.dp

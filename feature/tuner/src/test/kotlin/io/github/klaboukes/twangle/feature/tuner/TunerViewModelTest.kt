@@ -8,6 +8,7 @@ import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -355,15 +356,15 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `showWaves follows the setting`() = runTest(dispatcher) {
+    fun `display follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.showWaves.collect {} }
+        backgroundScope.launch { vm.display.collect {} }
         runCurrent()
-        assertTrue("on by default", vm.showWaves.value)
+        assertEquals("the wave by default", TunerDisplay.WAVE, vm.display.value)
 
-        settings.setShowWaves(false)
+        settings.setDisplay(TunerDisplay.STROBE)
         runCurrent()
-        assertFalse(vm.showWaves.value)
+        assertEquals(TunerDisplay.STROBE, vm.display.value)
     }
 
     @Test

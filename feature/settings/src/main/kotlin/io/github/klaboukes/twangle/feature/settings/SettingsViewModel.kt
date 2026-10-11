@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,8 +58,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setShowTuneHint(enabled) }
     }
 
-    fun setShowWaves(enabled: Boolean) {
-        viewModelScope.launch { repository.setShowWaves(enabled) }
+    fun setDisplay(display: TunerDisplay) {
+        viewModelScope.launch { repository.setDisplay(display) }
     }
 
     fun setWaveLook(look: WaveLook) {

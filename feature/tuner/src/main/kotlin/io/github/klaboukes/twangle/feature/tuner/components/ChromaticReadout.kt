@@ -21,8 +21,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 
 /**
- * The numbers for chromatic mode with the wave view: how far off the note is ("12 cents flat") and
- * its frequency ("81.8 Hz"), in the space the string row uses in guitar mode. The wave view leaves
+ * The numbers for chromatic mode with the wave or strobe view: how far off the note is ("12 cents flat") and
+ * its frequency ("81.8 Hz"), in the space the string row uses in guitar mode. Those views leave
  * them out under the note, but in chromatic mode there is no string to aim for, and experienced
  * players expect the numbers. The cents fade to the style's "in tune" colour while [readout] is in
  * tune. Without a [readout] both lines are empty.

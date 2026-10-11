@@ -34,7 +34,8 @@ interface SettingsRepository {
 
     suspend fun setShowTuneHint(enabled: Boolean)
 
-    suspend fun setShowWaves(enabled: Boolean)
+    /** Needle, wave or strobe. Replaces the old wave-view switch, which counts only until this is first saved. */
+    suspend fun setDisplay(display: TunerDisplay)
 
     suspend fun setWaveLook(look: WaveLook)
 

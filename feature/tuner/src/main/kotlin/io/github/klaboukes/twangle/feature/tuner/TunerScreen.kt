@@ -61,6 +61,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -109,7 +110,7 @@ fun TunerScreen(
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
-    val showWaves by viewModel.showWaves.collectAsStateWithLifecycle()
+    val display by viewModel.display.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
@@ -148,7 +149,7 @@ fun TunerScreen(
                     onTuningChange = viewModel::setTuning,
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
-                    showWaves = showWaves,
+                    display = display,
                     waveLook = waveLook,
                     showTuneHint = showTuneHint,
                     showStringLockTip = showStringLockTip,
@@ -226,8 +227,9 @@ private fun KeepScreenOn() {
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
- * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
- * far off a note is with the wave view, in [waveLook], instead of in cents, and [showTuneHint] adds
+ * exact cents there and a [state] rounded to what the text shows ([asShown]). [display] picks how
+ * far off a note is shown under it: in cents (the needle), with the wave view in [waveLook], or with
+ * the strobe view, and [showTuneHint] adds
  * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss].
@@ -246,12 +248,14 @@ fun TunerContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
-    showWaves: Boolean = false,
+    display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
 ) {
+    // The wave and the strobe both take the cents' place, which changes the layout the same way.
+    val pictured = display != TunerDisplay.NEEDLE
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ModeSwitch(mode = mode, onModeChange = onModeChange)
@@ -260,7 +264,7 @@ fun TunerContent(
     }
     val guitarSlot = @Composable { tipPointer: TipPointer ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
-        GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick, tip)
+        GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip)
     }
     val gauge = @Composable {
         NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
@@ -270,7 +274,7 @@ fun TunerContent(
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
                 hint = "",
-                showWaves = showWaves,
+                display = display,
                 compact = compact,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
@@ -281,7 +285,7 @@ fun TunerContent(
                     readout = null,
                     hint = listeningHint(mode, state),
                     spokenHint = listeningHint(mode, state, rememberNoteNameSpeech()),
-                    showWaves = showWaves,
+                    display = display,
                     compact = compact,
                     waveLook = waveLook,
                     showTuneHint = showTuneHint,
@@ -289,7 +293,7 @@ fun TunerContent(
             else -> NoteDisplay(
                 readout = null,
                 hint = "",
-                showWaves = showWaves,
+                display = display,
                 compact = compact,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
@@ -334,9 +338,9 @@ fun TunerContent(
                         if (error != null) {
                             TunerErrorMessage(error, onRetry)
                         } else {
-                            // The wave view, and the tune hint's line, make the readout taller; on a
+                            // The wave or strobe view, and the tune hint's line, make the readout taller; on a
                             // phone on its side it only fits with a smaller note.
-                            val compact = (showWaves || showTuneHint) && paneHeight < COMPACT_PANE_HEIGHT
+                            val compact = (pictured || showTuneHint) && paneHeight < COMPACT_PANE_HEIGHT
                             GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
                         }
                     }
@@ -397,19 +401,19 @@ private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -
 
 /**
  * The [ModeSlot] for each [TunerUiState]: the tuning picker and string row for guitar mode and, with
- * [showWaves], the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
+ * [pictured] (the wave or the strobe instead of cents), the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
  * already under the note, so chromatic mode leaves the slot empty.
  */
 @Composable
 private fun GuitarSlotFor(
     state: TunerUiState,
     mode: TunerMode,
-    showWaves: Boolean,
+    pictured: Boolean,
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
     tip: StringLockTipState,
 ) {
-    val chromatic:(@Composable () -> Unit)? = if (showWaves) {
+    val chromatic:(@Composable () -> Unit)? = if (pictured) {
         when (state) {
             is TunerUiState.Detected -> {
                 { ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune)) }
@@ -582,7 +586,7 @@ private val READOUT_PANE_MAX_WIDTH = 560.dp
 /** A phone on its side shrinks the gauge to fit, but not below this. */
 private val GAUGE_MIN_WIDTH = 160.dp
 
-/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
+/** Readout panes shorter than this (a phone on its side) get the compact note with the wave or strobe view or the hint. */
 private val COMPACT_PANE_HEIGHT = 420.dp
 
 /** Between gauge and note in the two-pane layout, where height is scarce. */

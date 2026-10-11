@@ -35,9 +35,11 @@
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
-    <!-- Wave view (in the Look group). -->
-    <string name="settings_show_waves_title">Golfweergave</string>
-    <string name="settings_show_waves_summary">Toon een bewegende geluidsgolf in plaats van een aantal cents</string>
+    <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
+    <string name="settings_display_title">Weergave</string>
+    <string name="settings_display_needle">Naald: het aantal cents</string>
+    <string name="settings_display_wave">Golf: een bewegende geluidsgolf</string>
+    <string name="settings_display_strobe">Stroboscoop: strepen die stilstaan als de toon zuiver is</string>
     <string name="settings_wave_look_title">Vorm van de golf</string>
     <string name="settings_wave_look_ribbon">Lint</string>
     <string name="settings_wave_look_stripes">Strepen</string>

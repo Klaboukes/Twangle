@@ -80,8 +80,12 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[SHOW_TUNE_HINT] = enabled }
     }
 
-    override suspend fun setShowWaves(enabled: Boolean) {
-        dataStore.edit { it[SHOW_WAVES] = enabled }
+    override suspend fun setDisplay(display: TunerDisplay) {
+        dataStore.edit {
+            it[DISPLAY] = display.name
+            // The old wave-view switch has done its job once a display is saved.
+            it.remove(SHOW_WAVES)
+        }
     }
 
     override suspend fun setWaveLook(look: WaveLook) {
@@ -106,7 +110,7 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
-            showWaves = prefs[SHOW_WAVES] ?: defaults.showWaves,
+            display = enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display,
             waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
         )
@@ -127,6 +131,9 @@ class DataStoreSettingsRepository internal constructor(
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
+        private val DISPLAY = stringPreferencesKey("tuner_display")
+
+        /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
@@ -138,6 +145,13 @@ class DataStoreSettingsRepository internal constructor(
                 corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
             ) { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
         )
+
+        /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */
+        private fun displayFromWaveSwitch(showWaves: Boolean?): TunerDisplay? = when (showWaves) {
+            true -> TunerDisplay.WAVE
+            false -> TunerDisplay.NEEDLE
+            null -> null
+        }
 
         private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? =
             enumValues<E>().firstOrNull { it.name == name }

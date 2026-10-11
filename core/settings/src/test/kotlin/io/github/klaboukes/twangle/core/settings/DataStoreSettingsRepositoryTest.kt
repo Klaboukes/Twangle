@@ -5,6 +5,7 @@ import androidx.datastore.core.okio.OkioStorage
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.PreferencesSerializer
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -73,7 +74,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals(true, settings.showTuneHint)
-        assertEquals(true, settings.showWaves)
+        assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
         assertEquals(false, settings.stringLockTipSeen)
     }
@@ -92,7 +93,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setShowTuneHint(false)
-        repo.setShowWaves(false)
+        repo.setDisplay(TunerDisplay.STROBE)
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setStringLockTipSeen(true)
 
@@ -108,7 +109,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             showTuneHint = false,
-            showWaves = false,
+            display = TunerDisplay.STROBE,
             waveLook = WaveLook.FIREFLIES,
             stringLockTipSeen = true,
         )
@@ -161,6 +162,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("theme")] = "SEPIA"
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
             it[stringPreferencesKey("wave_look")] = "LAVA_LAMP"
+            it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
         }
 
@@ -172,7 +174,30 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(WaveLook.DEFAULT, settings.waveLook)
+        assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
+    }
+
+    @Test
+    fun `the old wave view switch carries over to the display`() = runTest {
+        val store = dataStore()
+        store.edit { it[booleanPreferencesKey("show_waves")] = false }
+        assertEquals("wave view off: the needle with cents", TunerDisplay.NEEDLE, repository(store).settings.first().display)
+
+        store.edit { it[booleanPreferencesKey("show_waves")] = true }
+        assertEquals("wave view on: the wave", TunerDisplay.WAVE, repository(store).settings.first().display)
+    }
+
+    @Test
+    fun `a picked display wins over the old wave view switch and survives a restart`() = runTest {
+        dataStore().edit { it[booleanPreferencesKey("show_waves")] = false }
+        close()
+        repository().setDisplay(TunerDisplay.STROBE)
+        close()
+
+        val store = dataStore()
+        assertEquals(TunerDisplay.STROBE, repository(store).settings.first().display)
+        assertEquals("the old switch is cleared", null, store.data.first()[booleanPreferencesKey("show_waves")])
     }
 
     @Test

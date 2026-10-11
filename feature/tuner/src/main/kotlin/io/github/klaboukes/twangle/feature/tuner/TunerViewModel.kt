@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -77,10 +78,10 @@ class TunerViewModel(
         .map { it.vibrateInTune }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    /** Whether how far off a note is shows as waves instead of cents (a saved setting). */
-    val showWaves: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.showWaves }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showWaves)
+    /** What shows how far off a note is under it: cents, the wave or the strobe (a saved setting). */
+    val display: StateFlow<TunerDisplay> = settingsRepository.settings
+        .map { it.display }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().display)
 
     /** Whether "Tune up ↑" / "Tune down ↓" shows under an off-pitch note and TalkBack says it (a saved setting). */
     val showTuneHint: StateFlow<Boolean> = settingsRepository.settings

@@ -47,6 +47,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.ThemeMode
+import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
@@ -83,7 +84,7 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tuneHintChanges = mutableListOf<Boolean>()
-    private val showWavesChanges = mutableListOf<Boolean>()
+    private val displayChanges = mutableListOf<TunerDisplay>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private var backs = 0
     private var aboutOpened = 0
@@ -120,7 +121,7 @@ class SettingsContentTest {
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onShowTuneHintChange = { tuneHintChanges += it },
-                        onShowWavesChange = { showWavesChanges += it },
+                        onDisplayChange = { displayChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
@@ -244,7 +245,7 @@ class SettingsContentTest {
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showTuneHint = true, showWaves = true))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showTuneHint = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
@@ -257,14 +258,21 @@ class SettingsContentTest {
         val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
         tuneHint.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), tuneHintChanges)
-        val waves = compose.onNodeWithText(context.getString(R.string.settings_show_waves_title))
-        waves.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), showWavesChanges)
+    }
+
+    @Test
+    fun displayPickerShowsTheChoiceAndReportsANewOne() {
+        show(AppSettings(display = TunerDisplay.WAVE))
+        compose.onNodeWithText(context.getString(R.string.settings_display_wave)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).assertIsNotSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_display_strobe)).performScrollTo().assertIsNotSelected().performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).performScrollTo().performClick()
+        assertEquals(listOf(TunerDisplay.STROBE, TunerDisplay.NEEDLE), displayChanges)
     }
 
     @Test
     fun waveLooksShowTheChoiceAndReportANewOne() {
-        show(AppSettings(showWaves = true, waveLook = WaveLook.LOOP))
+        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.LOOP))
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_loop)).performScrollTo().assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected()
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_fireflies)).performScrollTo().performClick()
@@ -272,10 +280,17 @@ class SettingsContentTest {
     }
 
     @Test
-    fun waveLooksAreHiddenWhileTheWaveViewIsOff() {
-        show(AppSettings(showWaves = false))
+    fun waveLooksAreHiddenWithTheNeedle() {
+        show(AppSettings(display = TunerDisplay.NEEDLE))
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertDoesNotExist()
+    }
+
+    @Test
+    fun waveLooksAreHiddenWithTheStrobe() {
+        show(AppSettings(display = TunerDisplay.STROBE))
+        compose.onNodeWithText(context.getString(R.string.settings_display_strobe)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
     }
 
     @Test
@@ -302,7 +317,7 @@ class SettingsContentTest {
 
     @Test
     fun settingsComeInThreeHeadedGroupsThenTheAboutLink() {
-        show(AppSettings(showWaves = true))
+        show(AppSettings(display = TunerDisplay.WAVE))
         val headings = listOf(
             R.string.settings_group_tuning,
             R.string.settings_group_look,
@@ -322,7 +337,7 @@ class SettingsContentTest {
             compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_dynamic_color_title)),
-            top(context.getString(R.string.settings_show_waves_title)),
+            top(context.getString(R.string.settings_display_title)),
             top(context.getString(R.string.settings_wave_look_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
             top(context.getString(R.string.settings_keep_screen_on_title)),
