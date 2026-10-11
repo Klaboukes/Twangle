@@ -13,6 +13,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 - ☐ Phase 3: tested on at least 2 physical devices with a real guitar
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly
+- ☐ Phase 17: native speakers look over the new translations where possible
 
 ---
 
@@ -92,8 +93,18 @@ Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is
 - ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
 - ☐ CPU and battery compared with the Kotlin detector on the S26
 
-## Phase 17 — Go live on the Play Store → **v1.0**
+## Phase 17 — More languages
+Goal: Twangle speaks the world's major languages before it goes public.
+- ☐ `LocalizationTest` checks every supported language, not only Dutch; the in-app language list (Android 13+) shows them all
+- ☐ Western European: German, French, Spanish, Italian, Portuguese (Brazil)
+- ☐ Asian: Chinese (Simplified), Japanese, Korean, Hindi, Indonesian
+- ☐ Russian, Turkish and Polish
+- ☐ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL)
+- ☐ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose)
+- ☐ Long words and other scripts fit at 2× font in every style (UI tests); S26 check in a few languages
+
+## Phase 18 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
 - ☐ Play data-safety form (no data collected or shared)
-- ☐ Play Store listing: screenshots, description (English and Dutch)
+- ☐ Play Store listing: screenshots, description in every supported language
 - ☐ Internal → closed → production tracks
