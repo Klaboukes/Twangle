@@ -3,17 +3,23 @@ package io.github.klaboukes.twangle.feature.tuner
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -45,6 +51,9 @@ class TunerContentTest {
     private val tuningChanges = mutableListOf<Tuning>()
     private val stringClicks = mutableListOf<Int>()
 
+    /** The mode [show] passes on; set it to switch modes while the tuner is shown. */
+    private val shownMode = mutableStateOf(TunerMode.AUTO)
+
     /**
      * Shows [state] in the test window, optionally with a [fontScale] or as if the window were [size]
      * (e.g. a phone on its side); [DeviceConfigurationOverride.ForcedSize] scales it down to fit.
@@ -61,12 +70,13 @@ class TunerContentTest {
             fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
             size?.let { DeviceConfigurationOverride.ForcedSize(it) },
         )
+        shownMode.value = mode
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
                     TunerContent(
                         state,
-                        mode,
+                        shownMode.value,
                         onModeChange = { modeChanges += it },
                         onTuningChange = { tuningChanges += it },
                         onStringClick = { stringClicks += it },
@@ -370,6 +380,94 @@ class TunerContentTest {
         show(detected(-0.4f, inTune = true), fontScale = 2f, showWaves = true)
         compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
+    }
+
+    private fun chromatic(cents: Float, inTune: Boolean = false) =
+        detected(cents, targetString = null, inTune = inTune).copy(mode = TunerMode.CHROMATIC)
+
+    private val twelveCentsFlat get() = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+    private val frequency get() = context.getString(R.string.tuner_frequency, 81.84f)
+
+    @Test
+    fun chromaticWaveViewShowsCentsAndFrequencyWhereTheStringsWere() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true)
+        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
+        val cents = compose.onNodeWithText(twelveCentsFlat).assertIsDisplayed().getBoundsInRoot()
+        val hz = compose.onNodeWithText(frequency).assertIsDisplayed().getBoundsInRoot()
+        assertTrue(cents.top >= note.bottom)
+        assertTrue(hz.top >= cents.bottom)
+        stringChip("E2").assertDoesNotExist()
+    }
+
+    @Test
+    fun chromaticWaveViewNumbersSitWhereTheStringRowIsInGuitarMode() {
+        show(detected(-12.3f), showWaves = true)
+        val strings = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
+        shownMode.value = TunerMode.CHROMATIC
+        val hz = compose.onNodeWithText(frequency).assertIsDisplayed().getBoundsInRoot()
+        // The readout ends at the bottom of the slot, like the string row.
+        assertEquals(strings.bottom.value, hz.bottom.value, 1f)
+    }
+
+    @Test
+    fun chromaticWaveViewNumbersDontClashWithTheTuneHint() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true, showTuneHint = true)
+        val hint = compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed().getBoundsInRoot()
+        val cents = compose.onNodeWithText(twelveCentsFlat).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("hint ends at ${hint.bottom}, cents start at ${cents.top}", cents.top >= hint.bottom)
+    }
+
+    @Test
+    fun chromaticWaveViewIsEmptyWhileListening() {
+        show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC, showWaves = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
+        stringChip("E2").assertDoesNotExist()
+    }
+
+    @Test
+    fun chromaticNeedleViewShowsTheNumbersOnce() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC)
+        compose.onAllNodesWithText(twelveCentsFlat).assertCountEquals(1)
+        compose.onAllNodesWithText(frequency).assertCountEquals(1)
+    }
+
+    @Test
+    fun guitarWaveViewHidesTheChromaticNumbers() {
+        show(detected(-12.3f), showWaves = true)
+        compose.onNodeWithText(twelveCentsFlat).assertDoesNotExist()
+        compose.onNodeWithText(frequency).assertDoesNotExist()
+    }
+
+    @Test
+    fun talkBackDoesntHearTheChromaticNumbersTwice() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true)
+        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat")).assertExists()
+        compose.onNodeWithText(twelveCentsFlat).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
+    }
+
+    @Test
+    fun switchingModesMovesNothingWithTheNeedle() = assertSwitchingModesMovesNothing(showWaves = false, fontScale = 1f)
+
+    @Test
+    fun switchingModesMovesNothingWithTheWaveView() = assertSwitchingModesMovesNothing(showWaves = true, fontScale = 1f)
+
+    @Test
+    fun switchingModesMovesNothingWithTheLargestFont() = assertSwitchingModesMovesNothing(showWaves = false, fontScale = 2f)
+
+    @Test
+    fun switchingModesMovesNothingWithTheWaveViewAndTheLargestFont() =
+        assertSwitchingModesMovesNothing(showWaves = true, fontScale = 2f)
+
+    /** The mode switch and the note stay where they are when going from guitar to chromatic mode. */
+    private fun assertSwitchingModesMovesNothing(showWaves: Boolean, fontScale: Float) {
+        show(detected(-12.3f), showWaves = showWaves, fontScale = fontScale)
+        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
+        val note = compose.onNodeWithText("E")
+        val switchBefore = switch.getBoundsInRoot()
+        val noteBefore = note.getBoundsInRoot()
+        shownMode.value = TunerMode.CHROMATIC
+        assertEquals(switchBefore, switch.getBoundsInRoot())
+        assertEquals(noteBefore, note.getBoundsInRoot())
     }
 
     private companion object {

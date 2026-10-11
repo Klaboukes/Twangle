@@ -278,7 +278,7 @@ private const val POP_SCALE = 1.08f
 
 /** "12 cents flat", "1 cent sharp" or "0 cents", rounded to whole cents. */
 @Composable
-private fun centsText(cents: Float): String {
+internal fun centsText(cents: Float): String {
     val rounded = cents.roundToInt()
     val amount = abs(rounded)
     return when {

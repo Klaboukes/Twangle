@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
@@ -58,6 +59,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.NeedleGauge
@@ -237,7 +239,7 @@ fun TunerContent(
             A4Label(state)
         }
     }
-    val guitarSlot = @Composable { GuitarSlotFor(state, mode, onTuningChange, onStringClick) }
+    val guitarSlot = @Composable { GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick) }
     val gauge = @Composable {
         NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
     }
@@ -359,39 +361,61 @@ private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -
     }
 }
 
-/** The [GuitarSlot] for each [TunerUiState]. */
+/**
+ * The [ModeSlot] for each [TunerUiState]: the tuning picker and string row for guitar mode and, with
+ * [showWaves], the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
+ * already under the note, so chromatic mode leaves the slot empty.
+ */
 @Composable
 private fun GuitarSlotFor(
     state: TunerUiState,
     mode: TunerMode,
+    showWaves: Boolean,
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
 ) {
+    val chromatic: (@Composable () -> Unit)? = if (showWaves) {
+        when (state) {
+            is TunerUiState.Detected -> {
+                { ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune)) }
+            }
+            is TunerUiState.Listening -> {
+                { ChromaticReadout(readout = null) }
+            }
+            else -> null
+        }
+    } else {
+        null
+    }
     when (state) {
-        is TunerUiState.Detected -> GuitarSlot(
-            mode, state.tuning, state.notation, onTuningChange, onStringClick,
-            state.targetString, state.lockedString, state.inTune,
+        is TunerUiState.Detected -> ModeSlot(
+            mode,
+            guitar = {
+                GuitarControls(
+                    state.tuning, state.notation, onTuningChange, onStringClick,
+                    state.targetString, state.lockedString, state.inTune,
+                )
+            },
+            chromatic = chromatic,
         )
         // A locked string is the target before anything is played, so it stays highlighted.
-        is TunerUiState.Listening ->
-            GuitarSlot(mode, state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
+        is TunerUiState.Listening -> ModeSlot(
+            mode,
+            guitar = {
+                GuitarControls(state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
+            },
+            chromatic = chromatic,
+        )
         // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
         // permission is granted): empty space of the same height.
-        else -> GuitarSlot(
-            TunerMode.CHROMATIC, tuning = null, Notation.DEFAULT, onTuningChange, onStringClick,
-            targetString = null, lockedString = null,
-        )
+        else -> ModeSlot(mode, guitar = null, chromatic = null)
     }
 }
 
-/**
- * In guitar mode the tuning picker and the string row; empty space of the same height otherwise,
- * so switching modes doesn't shift the layout (and the mode switch under the user's finger).
- */
+/** The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. */
 @Composable
-private fun GuitarSlot(
-    mode: TunerMode,
-    tuning: Tuning?,
+private fun GuitarControls(
+    tuning: Tuning,
     notation: Notation,
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
@@ -400,24 +424,59 @@ private fun GuitarSlot(
     inTune: Boolean = false,
 ) {
     Column(
-        // At least this tall, so switching modes doesn't move anything; taller only with a large
-        // system font, where the tuning picker grows.
-        modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (mode == TunerMode.AUTO && tuning != null) {
-            TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange)
-            StringSelector(
-                tuning,
-                targetString,
-                notation = notation,
-                inTune = inTune,
-                lockedString = lockedString,
-                onStringClick = onStringClick,
-            )
+        TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange)
+        StringSelector(
+            tuning,
+            targetString,
+            notation = notation,
+            inTune = inTune,
+            lockedString = lockedString,
+            onStringClick = onStringClick,
+        )
+    }
+}
+
+/**
+ * The space under the readout that changes with the mode: [guitar] in guitar mode, [chromatic] (or
+ * nothing) in chromatic mode, at the bottom of the slot. Both are measured all the time and the slot
+ * takes the taller one's height (at least [GUITAR_SLOT_HEIGHT]), so switching modes never moves
+ * anything, also with a large system font, where the tuning picker grows. The other mode's content
+ * isn't placed, so it is neither drawn nor tappable, and its semantics are cleared, so TalkBack and
+ * UI tests don't find it either.
+ */
+@Composable
+private fun ModeSlot(
+    mode: TunerMode,
+    guitar: (@Composable () -> Unit)?,
+    chromatic: (@Composable () -> Unit)?,
+) {
+    val guitarShown = mode == TunerMode.AUTO
+    val guitarPart = @Composable { if (guitar != null) SlotPart(shown = guitarShown, content = guitar) }
+    val chromaticPart = @Composable { if (chromatic != null) SlotPart(shown = !guitarShown, content = chromatic) }
+    Layout(
+        contents = listOf(guitarPart, chromaticPart),
+        modifier = Modifier.heightIn(min = GUITAR_SLOT_HEIGHT),
+    ) { (guitarMeasurables, chromaticMeasurables), constraints ->
+        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+        val guitarPlaceable = guitarMeasurables.firstOrNull()?.measure(partConstraints)
+        val chromaticPlaceable = chromaticMeasurables.firstOrNull()?.measure(partConstraints)
+        val parts = listOfNotNull(guitarPlaceable, chromaticPlaceable)
+        val width = (parts.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = (parts.maxOfOrNull { it.height } ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            val shown = if (guitarShown) guitarPlaceable else chromaticPlaceable
+            shown?.placeRelative((width - shown.width) / 2, height - shown.height)
         }
     }
+}
+
+/** One mode's content in the [ModeSlot]; while not [shown] TalkBack and UI tests don't see it. */
+@Composable
+private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
+    Box(if (shown) Modifier else Modifier.clearAndSetSemantics {}) { content() }
 }
 
 private val SECTION_SPACING = 24.dp
