@@ -189,10 +189,11 @@ private fun DrawScope.manuscript(tokens: StyleTokens, frame: Rect, unit: Float) 
         drawLine(fibre, start, Offset(start.x + cos(angle) * length, start.y + sin(angle) * length), strokeWidth = 0.8f * unit)
     }
     vignette(if (tokens.dark) Color.Black.copy(alpha = 0.55f) else Color(0xFF6B3E12).copy(alpha = 0.30f))
-    // A ruled border in gold leaf, with lozenges at the corners.
+    // A ruled border in gold leaf, with lozenges at the corners. Its inner rule stays 6 dp clear of
+    // the 16 dp margin the screens keep free of text (at 15 dp it touched the settings rows).
     val gold = tokens.dial.accent
-    val outer = frame.deflate(10f * unit)
-    val inner = frame.deflate(15f * unit)
+    val outer = frame.deflate(6f * unit)
+    val inner = frame.deflate(10f * unit)
     drawRect(gold.copy(alpha = 0.85f), outer.topLeft, outer.size, style = Stroke(1.6f * unit))
     drawRect(gold.copy(alpha = 0.55f), inner.topLeft, inner.size, style = Stroke(0.8f * unit))
     val rubric = c.primary.copy(alpha = 0.9f)
@@ -244,13 +245,15 @@ private fun DrawScope.concertHall(tokens: StyleTokens, frame: Rect, unit: Float)
         x += step * 1.4f
     }
     vignette(if (tokens.dark) Color.Black.copy(alpha = 0.5f) else Color(0xFF3A2A10).copy(alpha = 0.10f))
-    // A brass hairline frame with a small diamond at the top.
+    // A brass hairline frame with a small diamond at the top. It hugs the screen's edge (inner line
+    // 8 dp in), because the tuner's column nearly fills a phone's height in this face:
+    // further in, the line ran through the mode switch and the string row.
     val brass = tokens.dial.rim
-    val outer = frame.deflate(12f * unit)
-    drawRoundRect(brass.copy(alpha = 0.7f), outer.topLeft, outer.size, CornerRadius(6f * unit), style = Stroke(1.2f * unit))
-    val inner = outer.deflate(4f * unit)
-    drawRoundRect(brass.copy(alpha = 0.35f), inner.topLeft, inner.size, CornerRadius(4f * unit), style = Stroke(0.6f * unit))
-    lozenge(Offset(outer.center.x, outer.top), 4.5f * unit, brass)
+    val outer = frame.deflate(5f * unit)
+    drawRoundRect(brass.copy(alpha = 0.7f), outer.topLeft, outer.size, CornerRadius(5f * unit), style = Stroke(1.2f * unit))
+    val inner = outer.deflate(3f * unit)
+    drawRoundRect(brass.copy(alpha = 0.35f), inner.topLeft, inner.size, CornerRadius(3f * unit), style = Stroke(0.6f * unit))
+    lozenge(Offset(outer.center.x, outer.top), 4f * unit, brass)
 }
 
 // ---- Retro -------------------------------------------------------------------------------------
@@ -349,9 +352,10 @@ private fun DrawScope.hud(tokens: StyleTokens, frame: Rect, unit: Float) {
             y += 3f * unit
         }
     }
-    // Corner brackets of the heads-up display.
-    val box = frame.deflate(10f * unit)
-    val arm = 22f * unit
+    // Corner brackets of the heads-up display. They stay within 16 dp of the edges, the margin the
+    // screens keep free of text (bigger, they covered settings rows scrolling past the corners).
+    val box = frame.deflate(4f * unit)
+    val arm = 11f * unit
     val bracket = c.primary.copy(alpha = 0.6f)
     val stroke = 1.6f * unit
     fun corner(p: Offset, dx: Float, dy: Float) {

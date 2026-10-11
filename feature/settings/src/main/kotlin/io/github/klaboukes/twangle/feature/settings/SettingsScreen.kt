@@ -147,7 +147,8 @@ fun SettingsContent(
                     modifier = Modifier
                         .widthIn(max = CONTENT_MAX_WIDTH)
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        // 24 dp at the bottom, so the last row ends above the frames some styles draw.
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                 )
             }
         }
