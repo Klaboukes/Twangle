@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–8 (scaffolding, DSP core, audio capture, tuner MVP, settings and tunings, polish → v0.9 beta, release preparation, clearer tuning, note names and visual polish) are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
+Phases 0–10 (scaffolding, DSP core, audio capture, tuner MVP, settings and tunings, polish → v0.9 beta, release preparation, clearer tuning, note names and visual polish, strobe display, compact landscape mode) are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
 
 ---
 
@@ -16,20 +16,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 19: native speakers look over the new translations where possible
 
 ---
-
-## Phase 9 — Strobe tuner display
-Goal: a strobe view as a third display next to the needle and the wave, for very fine tuning.
-- ☑ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame). Still within ±0.5 cent, 0.4 stripes/s per cent beyond, at most 4 stripes/s (`StrobeMotion`)
-- ☑ Display picker in Settings: needle, wave or strobe (replaces the wave-view switch; old setting carried over). Wave on → wave, off → needle; the strobe shows plain stripes in every style for now
-- ☑ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame (UI test steps frames and counts recompositions: none)
-- ☑ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style. TalkBack skips the stripes and hears the reading in words, unchanged while they move
-
-## Phase 10 — Compact landscape mode
-Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
-- ☑ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden. On by default (`TunerContent(compactLandscape)`); the gauge is ~450 dp wide on the S26, over twice the two-pane size; palette and settings buttons stay in the corners
-- ☑ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls. A small string row under the note; a tap (or TalkBack's "Show controls") shows the two-pane layout for 5 s, longer while touched or while the tuning menu is open
-- ☑ Settings switch to keep the full two-pane landscape layout instead. "Full layout on its side" at the end of the Look group, off by default; saved in DataStore and followed live by the tuner
-- ☐ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check
 
 ## Phase 11 — Volume and background-noise meters
 Goal: two small meters show how well the guitar comes through and how much noise the tuner has to filter out.

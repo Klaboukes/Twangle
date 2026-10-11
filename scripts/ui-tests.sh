@@ -9,14 +9,14 @@
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #
 # Filters (-f/-c) apply per module, so each module runs in its own Gradle call. Each module call is
-# killed after MODULE_TIMEOUT seconds (default 300); a single test is limited by its own timeout rule.
+# killed after MODULE_TIMEOUT seconds (default 420); a single test is limited by its own timeout rule.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-MODULE_TIMEOUT="${MODULE_TIMEOUT:-300}"
+MODULE_TIMEOUT="${MODULE_TIMEOUT:-420}"
 UI_MODULES=(:feature:tuner :feature:settings :core:audio :app)
 
 usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }

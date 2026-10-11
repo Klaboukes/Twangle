@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) on 2026-10-11 so the roadmap stays short. The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -109,3 +109,17 @@ Goal: sharps, flats and tunings look and read the way musicians write them, and 
 - ☑ About section at the bottom of Settings: app version, the "free forever" promise, the privacy statement (Phase 6), font and open-source licences; the version number brought in line with the beta (it still says 0.0.1) (now 0.9.0-beta, versionCode 900; each font and library opens its licence text from inside the app; 7 new UI tests incl. 2× font and a phone on its side; S26: all seven styles with the About group and a licence open)
 - ☑ Dutch TalkBack says note names the Dutch way: cis, des, es … instead of "C kruis", "D mol" (one helper for every spoken note name: readout, string chips, locked-string hint, tuning menu and the notation setting; English now also says the signs as words in the menu, hint and setting; Do Re Mi keeps "kruis"/"mol"; octave said as the number on screen, "cis 4"; unit tests for every spelling, UI tests in Dutch; S26: uiautomator dump with the app in Dutch)
 - ☑ English and Dutch texts; UI tests at 2× font and in landscape for the new settings rows and the About section; S26 check in every style (three Dutch wordings made more natural: "Marge voor zuiver", "Kort trillen zodra de noot zuiver is", "Tik op een naam …"; 5 new UI tests check every heading, note-name choice, About row and credit is reachable and not cut off at 2× font, on its side and in Dutch, and the licence dialog at 2× font; S26: tuner, About and a licence in all seven styles, light and dark, plus Dutch and on its side; nothing else needed fixing)
+
+## Phase 9 — Strobe tuner display
+Goal: a strobe view as a third display next to the needle and the wave, for very fine tuning.
+- ☑ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame). Still within ±0.5 cent, 0.4 stripes/s per cent beyond, at most 4 stripes/s (`StrobeMotion`)
+- ☑ Display picker in Settings: needle, wave or strobe (replaces the wave-view switch; old setting carried over). Wave on → wave, off → needle; the strobe shows plain stripes in every style for now
+- ☑ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame (UI test steps frames and counts recompositions: none)
+- ☑ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style. TalkBack skips the stripes and hears the reading in words, unchanged while they move
+
+## Phase 10 — Compact landscape mode
+Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
+- ☑ Compact layout in landscape: the meter fills the screen, with the note name, the cents and the in-tune signal; tuning picker, mode switch and buttons hidden. On by default (`TunerContent(compactLandscape)`); the gauge is ~450 dp wide on the S26, over twice the two-pane size; palette and settings buttons stay in the corners
+- ☑ The target string still shows (small) in guitar mode; tapping the screen briefly brings back the controls. A small string row under the note; a tap (or TalkBack's "Show controls") shows the two-pane layout for 5 s, longer while touched or while the tuning menu is open
+- ☑ Settings switch to keep the full two-pane landscape layout instead. "Full layout on its side" at the end of the Look group, off by default; saved in DataStore and followed live by the tuner
+- ☑ In each style, light and dark, on phone and tablet, with TalkBack and 2× font (UI tests); S26 check (`CompactLandscapeStylesTest`, 28 tests: in all seven styles, on a phone and a tablet on their side, the needle, wave and strobe in guitar and chromatic mode fit beside a meter at least half the width, nothing overlaps or sits under the corner buttons; 2× font reachable; the meter drawn in light and dark; a tap and TalkBack's "Show controls" bring back the controls. No layout problems found. S26 on its side: Contemporary and Retro dark, Retro, Futuristic and Prehistoric light, the controls on a tap and gone after 5 s, a short test tone in Prehistoric)
