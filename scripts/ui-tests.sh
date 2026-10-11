@@ -142,4 +142,14 @@ for module in "${modules[@]}"; do
     fi
     [ $code != 0 ] && status=1
 done
+
+# Gradle uninstalls the app after :app's tests, which leaves the owner's phone without Twangle.
+if [[ " ${modules[*]} " == *" :app "* ]]; then
+    if timeout "$MODULE_TIMEOUT" ./gradlew installDebug --console=plain -q > "$ROOT/build/ui-tests-reinstall.log" 2>&1; then
+        echo "Twangle reinstalled on the phone."
+    else
+        echo "Could not reinstall Twangle (log: $ROOT/build/ui-tests-reinstall.log)"
+        status=1
+    fi
+fi
 exit $status

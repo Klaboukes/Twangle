@@ -53,6 +53,7 @@ Every module call costs about 12–28 s of Gradle and install overhead, even for
 ## Reading results
 
 - Output is one line per module: `:feature:tuner 48s  21 tests, 0 failed, 32s on the phone`, followed by `FAIL Class#method: message` lines. Exit code 0 means all passed, 1 a failure or timeout, 3 no phone.
+- Gradle uninstalls the app after `:app`'s tests; the script then reinstalls the debug build, so the owner's phone always ends with Twangle on it ("Twangle reinstalled on the phone.").
 - The full Gradle log is in `build/ui-tests-<module>.log`. Read it only when a test fails or there are "no results", and grep it rather than reading all of it.
 - Exit code 3 (no phone): ask the owner to connect the S26 and check that Samsung Auto Blocker is off (see CLAUDE.md). Don't land a change the owner can see or hear without a run, unless they say to skip it, and say so in the PR.
 
