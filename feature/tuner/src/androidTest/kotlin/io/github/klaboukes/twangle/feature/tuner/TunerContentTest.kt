@@ -949,8 +949,8 @@ class TunerContentTest {
     private companion object {
         const val WINDOW = "window"
 
-        /** Each test takes a few seconds at most; a minute means it hangs. */
-        const val TEST_TIMEOUT_SECONDS = 60L
+        /** The slowest test takes about 2 s on the S26; 10 s means it hangs. */
+        const val TEST_TIMEOUT_SECONDS = 10L
 
         /** The height of the tip balloon's pointer. */
         val POINTER = 8.dp

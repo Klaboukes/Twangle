@@ -112,6 +112,8 @@ export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
 ```
 All three must pass with no new lint warnings. Fix and re-run until they do.
 
+**UI tests** for any change under `feature/`, `app/` or `core/` other than `:core:dsp`-only work: follow [the ui-test skill](../ui-test/SKILL.md). While building, run only the tests you're writing or changing (`scripts/ui-tests.sh <module> -f '<area>'`); run `scripts/ui-tests.sh` (affected modules in full) once, after `test lint assembleDebug` pass. Put its summary lines in the PR.
+
 **On-device check** for any change the user can see or hear (UI, audio, permissions, app startup):
 ```bash
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"

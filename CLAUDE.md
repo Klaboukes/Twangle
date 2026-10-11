@@ -37,7 +37,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:test                # DSP tests only (fast, no Android)
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
-./gradlew connectedDebugAndroidTest     # instrumented tests (device required)
+scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
 ```
 ### Dev machine environment (Windows)
@@ -77,6 +77,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 - **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment; each increment runs in its own sub-agent so the session stays small.
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the S26.
+- **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - When a design decision changes, update ARCHITECTURE.md in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
 
