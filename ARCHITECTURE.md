@@ -158,6 +158,9 @@ In **Auto (guitar) mode** the target is the closest string of the selected tunin
 - `nearestStringIndex(midi)` takes the fractional MIDI from `NoteMapper.midiOf`, so it follows A4 calibration. It picks the string with the smallest |Δ| in semitones (equivalently cents), and ties go to the lower string. No allocation: it loops over a precomputed `IntArray`.
 - `centsFromString(midi, index)` = 100 · (midi − string midi). It is **not** wrapped to ±50, so a string tuned far off still shows the full distance to go.
 
+### Strobe model
+`StrobeMotion` (`strobe/`) moves the strobe view's striped pattern, one animation frame at a time, the way `WaveMotion` moves the wave view's ribbon. A mechanical strobe tuner's stripes drift at the beat rate between the string and its disc, in Hz, so high strings move faster than low ones at the same cents; here the drift comes from the cents deviation instead, so every string looks the same. `driftSpeed(cents)`, in stripe periods per second: **0 within ±0.5 cent** (finer than the detector's ±1 cent target, so a string that is in tune stands perfectly still rather than creeping with the reading's jitter), then **0.4 stripes/s for every cent beyond that** (1 cent ≈ one stripe in 5 s), up to **4 stripes/s** from 10.5 cents. Positive (rightwards) when sharp, negative (leftwards) when flat. It does not use the "in tune" flag: that window is 2 or 5 cents wide, and the strobe exists to show the last cent. `advance(seconds, cents)` eases the shown deviation towards the reading (rate 20/s, about 0.1 s, so a note starting doesn't jolt the pattern), then moves `phase` (0..1, wrapping) on by `speed · seconds`; a step is capped at 0.1 s. Without a reading the view stops calling it (the pattern freezes) or passes 0 (it coasts to a stop). The drawing reads `phase` (and `speed` or `shownCents` for extra cues) in the draw phase only; rows at whole multiples of the speed, as on a real strobe, can use `phase · n`, wrapped. Nothing is allocated per frame. Tests step it directly and feed synthetic sines 0, ±1, ±3, ±5 and ±30 cents off every open string through the app's chain (`TunerChain`): in tune it stays exactly still, off pitch it drifts the right way within 0.1 stripes/s of `driftSpeed`.
+
 ### Audio source selection
 1. Use `MediaRecorder.AudioSource.UNPROCESSED` if `AudioManager.getProperty(PROPERTY_SUPPORT_AUDIO_SOURCE_UNPROCESSED)` is `"true"`.
 2. Otherwise use `VOICE_RECOGNITION`. It is required to have AGC and noise suppression turned off.
@@ -339,6 +342,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
                 AnalysisSettings, LowPassFilter, SignalGate, FftDifference, Fft
     music/      Note, NoteMapper, Tuning, Tunings (presets), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
+    strobe/     StrobeMotion (drift of the strobe view's pattern from the cents)
     buffer/     FrameAssembler (ring buffer)
 
 core/dsp/src/testFixtures/kotlin/io/github/klaboukes/twangle/core/dsp/

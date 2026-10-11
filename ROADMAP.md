@@ -19,7 +19,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 9 — Strobe tuner display
 Goal: a strobe view as a third display next to the needle and the wave, for very fine tuning.
-- ☐ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame)
+- ☑ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame). Still within ±0.5 cent, 0.4 stripes/s per cent beyond, at most 4 stripes/s (`StrobeMotion`)
 - ☐ Display picker in Settings: needle, wave or strobe (replaces the wave-view switch; old setting carried over)
 - ☐ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame
 - ☐ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style
