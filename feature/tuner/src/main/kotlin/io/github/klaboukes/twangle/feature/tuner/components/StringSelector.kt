@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -51,6 +52,10 @@ import io.github.klaboukes.twangle.feature.tuner.R
  *
  * With [onStringClick] the strings are buttons: tapping one locks the tuner to it, tapping the
  * [lockedString] again unlocks it. The locked string gets an extra outer ring.
+ *
+ * [small] draws a narrow row of small chips, for the compact landscape layout: it only shows which
+ * string is the target. It takes no more width than it needs and is hidden from TalkBack, since the
+ * note's reading already names the string.
  */
 @Composable
 fun StringSelector(
@@ -61,6 +66,7 @@ fun StringSelector(
     inTune: Boolean = false,
     lockedString: Int? = null,
     onStringClick: ((Int) -> Unit)? = null,
+    small: Boolean = false,
 ) {
     val lockLabel = stringResource(R.string.tuner_string_lock)
     val unlockLabel = stringResource(R.string.tuner_string_unlock)
@@ -68,8 +74,8 @@ fun StringSelector(
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = if (small) modifier else modifier.fillMaxWidth(),
+        horizontalArrangement = if (small) Arrangement.spacedBy(SMALL_CHIP_SPACING) else Arrangement.SpaceEvenly,
     ) {
         tuning.strings.forEachIndexed { index, note ->
             val locked = index == lockedString
@@ -87,6 +93,7 @@ fun StringSelector(
                 onClick = onStringClick?.let { click -> { click(index) } },
                 clickLabel = if (locked) unlockLabel else lockLabel,
                 lockedState = lockedState,
+                small = small,
             )
         }
     }
@@ -103,6 +110,7 @@ private fun StringChip(
     onClick: (() -> Unit)?,
     clickLabel: String,
     lockedState: String,
+    small: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
     val accent by animateInTuneColor(inTune, colors.primary, "chipAccent")
@@ -120,7 +128,7 @@ private fun StringChip(
     val shape = chipShape(MaterialTheme.styleTokens.style)
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(if (small) SMALL_CHIP_SIZE else CHIP_SIZE)
             .clip(shape)
             .then(
                 if (onClick != null) {
@@ -131,7 +139,7 @@ private fun StringChip(
             )
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
-            .padding(4.dp)
+            .padding(if (small) 2.dp else 4.dp)
             .background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape)
             .background(background, shape)
             .border(1.dp, if (highlighted) accent else colors.outlineVariant, shape)
@@ -139,13 +147,17 @@ private fun StringChip(
                 contentDescription = spokenName
                 selected = highlighted
                 if (locked) stateDescription = lockedState
+                if (small) hideFromAccessibility()
             },
         contentAlignment = Alignment.Center,
     ) {
         // The circle has a fixed size, so its label grows with the system font only up to a point.
         val density = LocalDensity.current
         CompositionLocalProvider(
-            LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(MAX_CHIP_FONT_SCALE)),
+            LocalDensity provides Density(
+                density.density,
+                density.fontScale.coerceAtMost(if (small) MAX_SMALL_CHIP_FONT_SCALE else MAX_CHIP_FONT_SCALE),
+            ),
         ) {
             Text(
                 text = buildAnnotatedString {
@@ -153,7 +165,12 @@ private fun StringChip(
                     withStyle(octaveStyle) { append(octave.toString()) }
                 },
                 // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.
-                style = if (name.length <= 2) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelMedium,
+                style = when {
+                    small && name.length <= 2 -> MaterialTheme.typography.labelMedium
+                    small -> MaterialTheme.typography.labelSmall
+                    name.length <= 2 -> MaterialTheme.typography.titleMedium
+                    else -> MaterialTheme.typography.labelMedium
+                },
                 color = content,
                 maxLines = 1,
             )
@@ -173,6 +190,13 @@ private fun chipShape(style: VisualStyle): Shape = when (style) {
 
 /** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */
 private const val MAX_CHIP_FONT_SCALE = 1.3f
+
+/** The small chips' labels don't grow with the system font: their circles are only 32 dp. */
+private const val MAX_SMALL_CHIP_FONT_SCALE = 1f
+
+private val CHIP_SIZE = 48.dp
+private val SMALL_CHIP_SIZE = 32.dp
+private val SMALL_CHIP_SPACING = 4.dp
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable

@@ -1,8 +1,12 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,20 +35,30 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
@@ -77,6 +91,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
+import kotlinx.coroutines.delay
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -209,6 +224,12 @@ object TunerTestTags {
     /** The strobe view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
     const val STROBE = "tuner_strobe"
 
+    /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
+    const val GAUGE = "tuner_gauge"
+
+    /** The compact landscape layout, which shows the controls when tapped. */
+    const val COMPACT = "tuner_compact"
+
     /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
     fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
@@ -238,8 +259,9 @@ private fun KeepScreenOn() {
  * [onStringLockTipDismiss].
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
- * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
- * in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
+ * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
+ * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
+ * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
  */
 @Composable
 fun TunerContent(
@@ -256,6 +278,7 @@ fun TunerContent(
     showTuneHint: Boolean = false,
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
+    compactLandscape: Boolean = true,
 ) {
     // The wave and the strobe both take the cents' place, which changes the layout the same way.
     val pictured = display != TunerDisplay.NEEDLE
@@ -265,12 +288,16 @@ fun TunerContent(
             A4Label(state)
         }
     }
-    val guitarSlot = @Composable { tipPointer: TipPointer ->
+    val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
-        GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip)
+        GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
-        NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
+        NeedleGauge(
+            cents = needleCents,
+            inTune = (state as? TunerUiState.Detected)?.inTune == true,
+            modifier = Modifier.testTag(TunerTestTags.GAUGE),
+        )
     }
     val note = @Composable { compact: Boolean ->
         when (state) {
@@ -306,7 +333,18 @@ fun TunerContent(
     val error = (state as? TunerUiState.Error)?.reason
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
-        when (tunerLayoutFor(maxWidth.value, maxHeight.value)) {
+        val twoPane = @Composable { onMenuOpenChange: (Boolean) -> Unit ->
+            TwoPaneLayout(
+                error = error,
+                onRetry = onRetry,
+                header = header,
+                guitarSlot = { guitarSlot(TipPointer.UP, onMenuOpenChange) },
+                gauge = gauge,
+                note = note,
+                compactNote = pictured || showTuneHint,
+            )
+        }
+        when (tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)) {
             TunerLayout.SINGLE_COLUMN -> Column(
                 modifier = Modifier
                     // With a very large system font it can be taller than the screen; then it scrolls.
@@ -323,49 +361,220 @@ fun TunerContent(
                     gauge()
                     note(false)
                     // Under the strings there's no room on an upright phone; above the picker there is.
-                    guitarSlot(TipPointer.DOWN)
+                    guitarSlot(TipPointer.DOWN) {}
                 }
             }
-            TunerLayout.TWO_PANE -> Row(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING),
-            ) {
-                // Readout side. The gauge shrinks to fit the height, so the note stays in view.
-                BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                    val paneHeight = maxHeight
-                    Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState()).widthIn(max = READOUT_PANE_MAX_WIDTH),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
-                    ) {
-                        if (error != null) {
-                            TunerErrorMessage(error, onRetry)
-                        } else {
-                            // The wave or strobe view, and the tune hint's line, make the readout taller; on a
-                            // phone on its side it only fits with a smaller note.
-                            val compact = (pictured || showTuneHint) && paneHeight < COMPACT_PANE_HEIGHT
-                            GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
-                        }
+            TunerLayout.TWO_PANE -> twoPane {}
+            TunerLayout.COMPACT -> {
+                var controlsShown by remember { mutableStateOf(false) }
+                // Every touch while the controls show, and an open tuning menu, keep them a while longer.
+                var touches by remember { mutableIntStateOf(0) }
+                var menuOpen by remember { mutableStateOf(false) }
+                val accessibility = LocalAccessibilityManager.current
+                val shownMillis = remember(accessibility) {
+                    // Longer when the user asked Android for more time to act ("Time to take action").
+                    accessibility?.calculateRecommendedTimeoutMillis(
+                        COMPACT_CONTROLS_SHOWN_MS,
+                        containsIcons = true,
+                        containsText = true,
+                        containsControls = true,
+                    ) ?: COMPACT_CONTROLS_SHOWN_MS
+                }
+                LaunchedEffect(controlsShown, touches, menuOpen) {
+                    if (controlsShown && !menuOpen) {
+                        delay(shownMillis)
+                        controlsShown = false
                     }
                 }
-                // Controls side, at the end where the settings gear sits. The vertical padding keeps
-                // them clear of the gear when they scroll.
-                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .widthIn(max = COLUMN_MAX_WIDTH)
-                            .padding(vertical = GEAR_CLEARANCE),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
-                    ) {
-                        header()
-                        // The bottom padding (clear of the gear) leaves room for the tip under the strings.
-                        guitarSlot(TipPointer.UP)
+                Crossfade(targetState = controlsShown, label = "compactControls") { shown ->
+                    if (shown) {
+                        Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
+                            twoPane { menuOpen = it }
+                        }
+                    } else {
+                        CompactLayout(
+                            error = error,
+                            onRetry = onRetry,
+                            gauge = gauge,
+                            note = { note(false) },
+                            below = { CompactExtraFor(state, mode, pictured) },
+                            onShowControls = { controlsShown = true },
+                        )
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Readout pane beside the controls pane: landscape and wide screens, and the [TunerLayout.COMPACT]
+ * layout while its controls show. [compactNote] (the wave or strobe view, or the tune hint's line)
+ * makes the readout taller; on a phone on its side it only fits with a smaller note.
+ */
+@Composable
+private fun TwoPaneLayout(
+    error: TunerError?,
+    onRetry: () -> Unit,
+    header: @Composable () -> Unit,
+    guitarSlot: @Composable () -> Unit,
+    gauge: @Composable () -> Unit,
+    note: @Composable (compact: Boolean) -> Unit,
+    compactNote: Boolean,
+) {
+    Row(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+    ) {
+        // Readout side. The gauge shrinks to fit the height, so the note stays in view.
+        BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+            val paneHeight = maxHeight
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()).widthIn(max = READOUT_PANE_MAX_WIDTH),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+            ) {
+                if (error != null) {
+                    TunerErrorMessage(error, onRetry)
+                } else {
+                    val compact = compactNote && paneHeight < COMPACT_PANE_HEIGHT
+                    GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
+                }
+            }
+        }
+        // Controls side, at the end where the settings gear sits. The vertical padding keeps
+        // them clear of the gear when they scroll.
+        Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    .padding(vertical = GEAR_CLEARANCE),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+            ) {
+                header()
+                // The bottom padding (clear of the gear) leaves room for the tip under the strings.
+                guitarSlot()
+            }
+        }
+    }
+}
+
+/**
+ * The compact landscape layout: the [gauge] as big as the space allows, beside the [note] with
+ * [below] under it (the small string row or the chromatic numbers). No mode switch, A4 label,
+ * tuning picker or string buttons. A tap anywhere, or TalkBack's double tap on the screen's
+ * "Show controls" button, calls [onShowControls]. An [error] shows its message and retry instead.
+ */
+@Composable
+private fun CompactLayout(
+    error: TunerError?,
+    onRetry: () -> Unit,
+    gauge: @Composable () -> Unit,
+    note: @Composable () -> Unit,
+    below: @Composable () -> Unit,
+    onShowControls: () -> Unit,
+) {
+    val showControls = stringResource(R.string.tuner_show_controls)
+    val currentOnShowControls by rememberUpdatedState(onShowControls)
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TunerTestTags.COMPACT)
+            .pointerInput(Unit) { detectTapGestures { currentOnShowControls() } }
+            .semantics {
+                contentDescription = showControls
+                role = Role.Button
+                onClick(label = showControls) {
+                    currentOnShowControls()
+                    true
+                }
+            }
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterHorizontally),
+    ) {
+        if (error != null) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
+                TunerErrorMessage(error, onRetry)
+            }
+        } else {
+            // The note column is measured first; the meter takes all the room that is left.
+            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
+            }
+            Column(
+                // With a very large system font the note column can be taller than the screen; then it scrolls.
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
+            ) {
+                note()
+                below()
+            }
+        }
+    }
+}
+
+/**
+ * Under the note in the compact layout: in guitar mode a small string row with the target (or
+ * locked) string highlighted; in chromatic mode with the wave or strobe view the cents and
+ * frequency ([ChromaticReadout]), which those views leave out under the note.
+ */
+@Composable
+private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, pictured: Boolean) {
+    when {
+        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Detected ->
+            ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune))
+        mode == TunerMode.CHROMATIC && pictured && state is TunerUiState.Listening -> ChromaticReadout(readout = null)
+        mode == TunerMode.CHROMATIC -> Unit
+        state is TunerUiState.Detected -> StringSelector(
+            state.tuning,
+            state.targetString,
+            notation = state.notation,
+            inTune = state.inTune,
+            lockedString = state.lockedString,
+            small = true,
+        )
+        // A locked string is the target before anything is played, so it stays highlighted.
+        state is TunerUiState.Listening -> StringSelector(
+            state.tuning,
+            state.lockedString,
+            notation = state.notation,
+            lockedString = state.lockedString,
+            small = true,
+        )
+    }
+}
+
+/**
+ * The gauge as wide as the space allows (at most [maxWidth]), shrinking (keeping its shape, down to
+ * [GAUGE_MIN_WIDTH]) when it would be taller than the space.
+ */
+@Composable
+private fun FitGauge(gauge: @Composable () -> Unit, maxWidth: Dp) {
+    Layout(content = gauge) { measurables, constraints ->
+        val measurable = measurables.single()
+        val width = min(constraints.maxWidth, maxWidth.roundToPx())
+        val fullHeight = measurable.minIntrinsicHeight(width)
+        val gaugeWidth = if (!constraints.hasBoundedHeight || fullHeight <= constraints.maxHeight) {
+            width
+        } else {
+            // The dial is twice as wide as it is tall; the flat/sharp labels under it keep their height.
+            val labels = fullHeight - width / 2
+            ((constraints.maxHeight - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), width), width)
+        }
+        val placeable = measurable.measure(Constraints.fixedWidth(gaugeWidth))
+        layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+    }
+}
+
+/** Calls [onTouch] whenever a finger goes down here, before (and without taking) the touch from what's under it. */
+private fun Modifier.onEveryTouch(onTouch: () -> Unit): Modifier = pointerInput(Unit) {
+    awaitEachGesture {
+        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+        onTouch()
     }
 }
 
@@ -415,6 +624,7 @@ private fun GuitarSlotFor(
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
     tip: StringLockTipState,
+    onMenuOpenChange: (Boolean) -> Unit,
 ) {
     val chromatic:(@Composable () -> Unit)? = if (pictured) {
         when (state) {
@@ -449,7 +659,7 @@ private fun GuitarSlotFor(
         {
             GuitarControls(
                 controls.tuning, controls.notation, onTuningChange, onStringClick,
-                controls.targetString, controls.lockedString, controls.tip, controls.inTune,
+                controls.targetString, controls.lockedString, controls.tip, controls.inTune, onMenuOpenChange,
             )
         }
     } else {
@@ -487,8 +697,11 @@ private fun GuitarControls(
     lockedString: Int?,
     tip: StringLockTipState,
     inTune: Boolean = false,
+    onMenuOpenChange: (Boolean) -> Unit = {},
 ) {
-    val picker = @Composable { TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange) }
+    val picker = @Composable {
+        TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange, onExpandedChange = onMenuOpenChange)
+    }
     val strings = @Composable {
         StringSelector(
             tuning,
@@ -591,6 +804,12 @@ private val GAUGE_MIN_WIDTH = 160.dp
 
 /** Readout panes shorter than this (a phone on its side) get the compact note with the wave or strobe view or the hint. */
 private val COMPACT_PANE_HEIGHT = 420.dp
+
+/** In the compact layout the meter grows with the screen, up to this. */
+private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
+
+/** Between the note and what's under it in the compact layout. */
+private val COMPACT_NOTE_SPACING = 12.dp
 
 /** Between gauge and note in the two-pane layout, where height is scarce. */
 private val GAUGE_NOTE_SPACING = 8.dp

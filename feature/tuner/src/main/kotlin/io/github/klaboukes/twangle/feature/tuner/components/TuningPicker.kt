@@ -10,8 +10,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,6 +37,7 @@ import io.github.klaboukes.twangle.feature.tuner.R
 /**
  * The selected tuning's name with a drop-down arrow. Tapping it lists every preset with its open
  * strings (low to high); the current one is ticked. Choosing one calls [onSelect].
+ * [onExpandedChange] hears when the menu opens and closes (closed also when the picker goes away).
  */
 @Composable
 fun TuningPicker(
@@ -41,8 +45,12 @@ fun TuningPicker(
     onSelect: (Tuning) -> Unit,
     modifier: Modifier = Modifier,
     notation: Notation = Notation.DEFAULT,
+    onExpandedChange: (Boolean) -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
+    val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
+    LaunchedEffect(expanded) { currentOnExpandedChange(expanded) }
+    DisposableEffect(Unit) { onDispose { currentOnExpandedChange(false) } }
     Box(modifier = modifier) {
         val changeTuning = stringResource(R.string.tuner_change_tuning)
         // TalkBack: "Standard, button, double-tap to change tuning".
