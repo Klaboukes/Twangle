@@ -1,5 +1,5 @@
 <resources>
-    <string name="tuner_placeholder_note" translatable="false">—</string>
+    <string name="tuner_placeholder_note" translatable="false">♪</string>
 
     <string name="mic_permission_title">Twangle needs your microphone</string>
     <string name="mic_permission_intro">To tune, Twangle listens to your instrument. Sound is analysed on your phone and never recorded or sent anywhere.</string>

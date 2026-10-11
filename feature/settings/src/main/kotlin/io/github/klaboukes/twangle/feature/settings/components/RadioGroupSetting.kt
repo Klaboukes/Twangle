@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.musicText
 
 /**
  * A titled setting with one choice out of [options], shown as radio buttons. Each whole row is the
@@ -43,7 +44,8 @@ fun <T> RadioGroupSetting(
                 ) {
                     // The row handles the click, so the button itself doesn't.
                     RadioButton(selected = option == selected, onClick = null)
-                    Text(text = label(option), style = MaterialTheme.typography.bodyLarge)
+                    // Labels such as "Sharps: C, C♯, D …" set their signs like the rest of the app.
+                    Text(text = musicText(label(option)), style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

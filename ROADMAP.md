@@ -19,9 +19,9 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 8 — Note names and visual polish
 Goal: sharps, flats and tunings look and read the way musicians write them, and no style has small layout clashes. From the UX review of 11 October 2026.
-- ☐ ♯ and ♭ look the same everywhere: smaller and raised like in sheet music, in a face that has the signs, in the big note, string chips, tuning menu, settings and dial labels, in all seven styles (today Classic draws a ♯ as big as the letter, and the menu and settings show tiny, sunken ones)
+- ☑ ♯ and ♭ look the same everywhere: smaller and raised like in sheet music, in a face that has the signs, in the big note, string chips, tuning menu, settings and dial labels, in all seven styles (today Classic draws a ♯ as big as the letter, and the menu and settings show tiny, sunken ones)
 - ☐ Each preset tuning uses the spelling players know, e.g. Half step down = E♭ A♭ D♭ G♭ B♭ E♭ instead of D♯ G♯ C♯ F♯ A♯ D♯, in the menu, string row and readout (Do Re Mi follows: Mi♭ …); the notation setting still decides chromatic mode; tests in `:core:dsp`
-- ☐ Waiting screen: the note placeholder no longer looks like a grey loading bar (the dash renders as a block in some faces)
+- ☑ Waiting screen: the note placeholder no longer looks like a grey loading bar (the dash renders as a block in some faces) — now a faint ♪
 - ☐ Style clashes fixed: Classic's frame line no longer runs through the mode switch; Futuristic's corner brackets no longer cover settings text when scrolled; the mode switch uses each style's main accent (Futuristic shows purple beside its cyan); screenshot check of every style, light and dark
 - ☐ Settings in three groups with headings: Tuning (A4, note names, in-tune precision), Look (style, light or dark, wallpaper colours, wave view and wave look), While tuning (keep screen on, vibrate, tune up/down hint)
 - ☐ About section at the bottom of Settings: app version, the "free forever" promise, the privacy statement (Phase 6), font and open-source licences; the version number brought in line with the beta (it still says 0.0.1)

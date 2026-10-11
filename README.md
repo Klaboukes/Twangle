@@ -67,4 +67,4 @@ Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
 ## Fonts
 
-The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), MedievalSharp (Wojciech Kalinowski), Playfair Display (Claus Eggers Sørensen), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams).
+The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), MedievalSharp (Wojciech Kalinowski), Playfair Display (Claus Eggers Sørensen), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google).

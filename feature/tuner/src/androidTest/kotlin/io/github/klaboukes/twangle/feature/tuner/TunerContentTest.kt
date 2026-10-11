@@ -678,6 +678,14 @@ class TunerContentTest {
         assertNewReadingMovesNothing(detected(-12.3f), TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
 
     @Test
+    fun sharpNoteMovesNothingWithTheHint() =
+        assertNewReadingMovesNothing(detected(-12.3f), detected(-12.3f, noteName = "F♯"))
+
+    @Test
+    fun flatNoteMovesNothingWithTheHint() =
+        assertNewReadingMovesNothing(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), detected(-12.3f, noteName = "B♭"))
+
+    @Test
     fun noteStartingMovesNothingWithTheHintAndTheLargestFont() =
         assertNewReadingMovesNothing(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), detected(-12.3f), fontScale = 2f)
 

@@ -40,10 +40,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -75,7 +77,8 @@ data class NoteReadout(
  * colour, a soft glow lights up behind it with a small pop, and (without [showWaves]) the pill fills
  * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
  * view the wave settling into its calm shape does that. Without a [readout] it shows a
- * faint dash and [hint], e.g. "Play a string".
+ * faint ♪ and [hint], e.g. "Play a string". A ♯ or ♭ is set smaller and raised, like in sheet
+ * music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
  * "Tune down ↓", see [tuneDirectionFor]); in tune it says nothing extra. In the wave view the hint
@@ -127,6 +130,12 @@ fun NoteDisplay(
     )
     val density = LocalDensity.current
     val noteSize = if (compact) COMPACT_NOTE_SIZE else BIG_NOTE_SIZE
+    val placeholder = stringResource(R.string.tuner_placeholder_note)
+    val noteText = remember(readout?.noteName, placeholder) {
+        // Spaces in the style's face around the ♪ give its line the height of a note's line, so
+        // nothing moves when a note comes in or goes.
+        musicText(readout?.noteName ?: " $placeholder ")
+    }
     Column(
         // The texts below are hidden from TalkBack; this block speaks for them.
         modifier = modifier.semantics {
@@ -153,7 +162,7 @@ fun NoteDisplay(
                 },
         ) {
             Text(
-                text = readout?.noteName ?: stringResource(R.string.tuner_placeholder_note),
+                text = noteText,
                 // Already huge, so it doesn't grow further with the system font size; that would
                 // push the rest of the tuner off the screen.
                 style = MaterialTheme.typography.displayLarge.copy(
@@ -212,10 +221,11 @@ fun NoteDisplay(
             )
             Text(
                 text = when {
-                    readout == null -> hint
+                    // The hint can name a note: "Play the C♯ string".
+                    readout == null -> musicText(hint)
                     // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
-                    showWaves -> directionText
-                    else -> centsText(readout.cents)
+                    showWaves -> AnnotatedString(directionText)
+                    else -> AnnotatedString(centsText(readout.cents))
                 },
                 style = when {
                     showWaves -> MaterialTheme.typography.titleMedium

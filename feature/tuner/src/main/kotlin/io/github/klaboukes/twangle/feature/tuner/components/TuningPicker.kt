@@ -20,7 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -87,9 +89,9 @@ fun TuningPicker(
 @Composable
 fun tuningLabel(tuning: Tuning): String = tuningNameRes(tuning.id)?.let { stringResource(it) } ?: tuning.id
 
-/** Open-string note names, low to high, e.g. "D A D G B E". */
-private fun openStrings(tuning: Tuning, notation: Notation): String =
-    tuning.strings.joinToString(" ") { notation.nameOf(it.pitchClass) }
+/** Open-string note names, low to high, e.g. "D A D G B E", with raised signs ("E♭ A♭ …"). */
+private fun openStrings(tuning: Tuning, notation: Notation): AnnotatedString =
+    musicText(tuning.strings.joinToString(" ") { notation.nameOf(it.pitchClass) })
 
 @StringRes
 private fun tuningNameRes(id: String): Int? = when (id) {

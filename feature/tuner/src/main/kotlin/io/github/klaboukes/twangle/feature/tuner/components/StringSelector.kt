@@ -35,6 +35,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -149,7 +150,7 @@ private fun StringChip(
         ) {
             Text(
                 text = buildAnnotatedString {
-                    append(name)
+                    append(musicText(name))
                     withStyle(octaveStyle) { append(octave.toString()) }
                 },
                 // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.

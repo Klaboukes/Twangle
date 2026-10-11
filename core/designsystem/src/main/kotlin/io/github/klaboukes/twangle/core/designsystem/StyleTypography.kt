@@ -12,8 +12,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * The lettering of each style. The display faces are bundled (res/font, SIL Open Font License, see
- * assets/licenses) so they work offline; reading text stays in a plain face. Glyphs a face lacks,
- * such as ♯ and ♭, fall back to the phone's font.
+ * assets/licenses) so they work offline; reading text stays in a plain face. None of them has ♯
+ * and ♭; [musicText] sets those in [MusicSignsFont] in every style.
  */
 internal object StyleFonts {
     /** Prehistoric: rough, hewn capitals. Caesar Dressing by Open Window. */

@@ -33,6 +33,7 @@ import io.github.klaboukes.twangle.core.designsystem.dial.DialPivotInset
 import io.github.klaboukes.twangle.core.designsystem.dial.dialAngle
 import io.github.klaboukes.twangle.core.designsystem.dial.drawDialNeedle
 import io.github.klaboukes.twangle.core.designsystem.dial.drawDialScale
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.R
 import kotlinx.coroutines.launch
@@ -92,12 +93,12 @@ fun NeedleGauge(cents: () -> Float?, modifier: Modifier = Modifier, inTune: Bool
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                text = stringResource(R.string.tuner_flat_symbol),
+                text = musicText(stringResource(R.string.tuner_flat_symbol)),
                 style = MaterialTheme.typography.titleLarge,
                 color = labelColor,
             )
             Text(
-                text = stringResource(R.string.tuner_sharp_symbol),
+                text = musicText(stringResource(R.string.tuner_sharp_symbol)),
                 style = MaterialTheme.typography.titleLarge,
                 color = labelColor,
             )
