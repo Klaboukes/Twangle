@@ -17,12 +17,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -56,11 +59,18 @@ fun TuningPicker(
             Icon(painterResource(R.drawable.ic_arrow_drop_down), contentDescription = null)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            val speech = rememberNoteNameSpeech()
             Tunings.all.forEach { tuning ->
                 val isSelected = tuning == selected
+                // TalkBack: "Half step down, E flat, A flat …" (in Dutch "es, as …"), not the signs.
+                val spoken = stringResource(
+                    R.string.tuner_spoken_tuning,
+                    tuningLabel(tuning),
+                    spokenOpenStrings(tuning, notation, speech),
+                )
                 DropdownMenuItem(
                     text = {
-                        Column {
+                        Column(modifier = Modifier.semantics { contentDescription = spoken }) {
                             Text(tuningLabel(tuning), style = MaterialTheme.typography.bodyLarge)
                             Text(
                                 text = openStrings(tuning, notation),
@@ -92,6 +102,10 @@ fun tuningLabel(tuning: Tuning): String = tuningNameRes(tuning.id)?.let { string
 /** Open-string note names, low to high, e.g. "D A D G B E", with raised signs ("E♭ A♭ …"). */
 private fun openStrings(tuning: Tuning, notation: Notation): AnnotatedString =
     musicText(tuning.strings.joinToString(" ") { notation.nameIn(tuning, it.pitchClass) })
+
+/** Open strings as TalkBack says them, low to high, e.g. "E flat, A flat, D flat …". */
+private fun spokenOpenStrings(tuning: Tuning, notation: Notation, speech: NoteNameSpeech): String =
+    tuning.strings.joinToString(", ") { speech.name(notation.nameIn(tuning, it.pitchClass)) }
 
 @StringRes
 private fun tuningNameRes(id: String): Int? = when (id) {

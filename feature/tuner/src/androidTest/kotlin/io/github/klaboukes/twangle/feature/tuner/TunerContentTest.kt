@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -34,7 +35,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -51,6 +54,7 @@ import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
@@ -84,8 +88,9 @@ class TunerContentTest {
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.PermissionRequired)
 
     /**
-     * Shows [state] in the test window, optionally with a [fontScale] or as if the window were [size]
-     * (e.g. a phone on its side); [DeviceConfigurationOverride.ForcedSize] scales it down to fit.
+     * Shows [state] in the test window, optionally with a [fontScale], as if the window were [size]
+     * (e.g. a phone on its side; [DeviceConfigurationOverride.ForcedSize] scales it down to fit) or in
+     * another language ([locale], e.g. "nl").
      */
     private fun show(
         state: TunerUiState,
@@ -95,10 +100,12 @@ class TunerContentTest {
         showWaves: Boolean = false,
         showTuneHint: Boolean = false,
         showStringLockTip: Boolean = false,
+        locale: String? = null,
     ) {
         val overrides = listOfNotNull(
             fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
             size?.let { DeviceConfigurationOverride.ForcedSize(it) },
+            locale?.let { DeviceConfigurationOverride.Locales(LocaleList(it)) },
         )
         shownMode.value = mode
         shownTip.value = showStringLockTip
@@ -284,6 +291,66 @@ class TunerContentTest {
     fun stringsAreSpokenWithTheirOctave() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
         compose.onNode(hasContentDescription("A 2")).assertExists()
+    }
+
+    /** The app's texts in Dutch, for the expected TalkBack sentences. */
+    private val dutch by lazy {
+        val configuration = Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag("nl")) }
+        context.createConfigurationContext(configuration)
+    }
+
+    @Test
+    fun dutchTalkBackSaysNoteNamesTheDutchWay() {
+        show(detected(2f, inTune = true, noteName = "F♯"), locale = "nl")
+        compose.onNode(hasContentDescription("fis 2, ${dutch.getString(R.string.tuner_in_tune)}")).assertExists()
+    }
+
+    @Test
+    fun dutchTalkBackSaysFlatsAsEsAndCents() {
+        show(detected(-12.3f, noteName = "E♭"), locale = "nl")
+        val cents = dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+        compose.onNode(hasContentDescription("es 2, $cents")).assertExists()
+    }
+
+    @Test
+    fun dutchTalkBackSaysNaturalsAsPlainLetters() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl")
+        listOf("e 2", "a 2", "d 3", "g 3", "b 3", "e 4").forEach { compose.onNode(hasContentDescription(it)).assertExists() }
+    }
+
+    /**
+     * The menu isn't checked here: it opens in a popup, which takes the phone's own language, not the
+     * test's [DeviceConfigurationOverride.Locales]. The English test below covers the menu, and the
+     * Dutch menu was checked on the phone with the app set to Dutch.
+     */
+    @Test
+    fun dutchTalkBackSaysStringsAndHintTheDutchWay() {
+        show(
+            TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, lockedString = 0, notation = Notation.SHARPS),
+            locale = "nl",
+        )
+        listOf("es 2", "as 2", "des 3", "ges 3", "bes 3", "es 4").forEach { compose.onNode(hasContentDescription(it)).assertExists() }
+        compose.onNode(hasContentDescription(dutch.getString(R.string.tuner_hint_play_locked_string, "es 2"))).assertExists()
+        // What's on screen doesn't change.
+        stringChip("E♭2").assertIsDisplayed()
+        stringChip("B♭3").assertIsDisplayed()
+    }
+
+    @Test
+    fun dutchTalkBackKeepsSolfegeSignsAsWords() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, notation = Notation.SOLFEGE), locale = "nl")
+        compose.onNode(hasContentDescription("Mi mol 2")).assertExists()
+        compose.onNode(hasContentDescription("La mol 2")).assertExists()
+    }
+
+    @Test
+    fun englishTalkBackSaysSignsInStringsHintAndMenuAsWords() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, lockedString = 0, notation = Notation.SHARPS))
+        compose.onNode(hasContentDescription("E flat 2")).assertExists()
+        compose.onNode(hasContentDescription("Play the E flat 2 string")).assertExists()
+        compose.onNodeWithText(context.getString(R.string.tuning_half_step_down)).performClick()
+        compose.onNode(hasContentDescription("Half step down, E flat, A flat, D flat, G flat, B flat, E flat")).assertExists()
+        compose.onNode(hasContentDescription("${context.getString(R.string.tuning_standard)}, E, A, D, G, B, E")).assertExists()
     }
 
     @Test

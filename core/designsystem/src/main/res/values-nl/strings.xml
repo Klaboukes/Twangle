@@ -14,4 +14,8 @@
     <string name="style_space_age">Ruimtetijdperk</string>
     <string name="style_space_age_tagline">Banen, sterren en raketoranje</string>
     <string name="style_card_description">%1$s. %2$s</string>
+
+    <!-- Alleen voor Do Re Mi: letternamen zegt TalkBack als cis, des, es (zie bools.xml). -->
+    <string name="spoken_sharp">%1$s kruis</string>
+    <string name="spoken_flat">%1$s mol</string>
 </resources>

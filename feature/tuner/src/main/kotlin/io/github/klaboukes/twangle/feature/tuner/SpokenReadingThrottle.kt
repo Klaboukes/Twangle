@@ -57,13 +57,3 @@ class SpokenReadingThrottle(
         private val NO_KEY = Any()
     }
 }
-
-/**
- * [name] as a screen reader should say it: a trailing ♯ or ♭ becomes a word, e.g. "C♯" →
- * [sharp]("C") = "C sharp". TalkBack would otherwise read the symbols as "sharp sign" or skip them.
- */
-fun spokenNoteName(name: String, sharp: (String) -> String, flat: (String) -> String): String = when {
-    name.endsWith('♯') -> sharp(name.dropLast(1))
-    name.endsWith('♭') -> flat(name.dropLast(1))
-    else -> name
-}

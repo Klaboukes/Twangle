@@ -59,10 +59,8 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">hoger stemmen</string>
     <string name="tuner_spoken_tune_down">lager stemmen</string>
-    <!-- A note name with a sharp or flat, read aloud. %1$s is the letter or syllable, e.g. "C", "Sol". -->
-    <string name="tuner_spoken_sharp">%1$s kruis</string>
-    <string name="tuner_spoken_flat">%1$s mol</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_change_tuning">Stemming wijzigen</string>
 </resources>

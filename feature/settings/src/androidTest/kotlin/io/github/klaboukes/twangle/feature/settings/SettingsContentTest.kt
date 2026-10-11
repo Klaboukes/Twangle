@@ -8,6 +8,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.Locales
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.SemanticsMatcher
@@ -29,6 +31,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -72,10 +75,17 @@ class SettingsContentTest {
     private var backs = 0
 
     /**
-     * Shows [settings], or as if the window were [size] ([ForcedSize] scales it down to fit) and the
-     * phone's font were [fontScale] times its normal size.
+     * Shows [settings], or as if the window were [size] ([ForcedSize] scales it down to fit), the
+     * phone's font were [fontScale] times its normal size, or the app were in another language
+     * ([locale], e.g. "nl").
      */
-    private fun show(settings: AppSettings, dynamicColorAvailable: Boolean = true, size: DpSize? = null, fontScale: Float? = null) {
+    private fun show(
+        settings: AppSettings,
+        dynamicColorAvailable: Boolean = true,
+        size: DpSize? = null,
+        fontScale: Float? = null,
+        locale: String? = null,
+    ) {
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
@@ -102,6 +112,7 @@ class SettingsContentTest {
             val overrides = listOfNotNull(
                 size?.let { DeviceConfigurationOverride.ForcedSize(it) },
                 fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
+                locale?.let { DeviceConfigurationOverride.Locales(LocaleList(it)) },
             ).reduceOrNull { a, b -> a then b }
             if (overrides != null) DeviceConfigurationOverride(overrides) { content() } else content()
         }
@@ -146,6 +157,24 @@ class SettingsContentTest {
         show(AppSettings())
         compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
         assertEquals(1, backs)
+    }
+
+    @Test
+    fun talkBackSaysTheNotationChoicesSignsAsWords() {
+        show(AppSettings())
+        compose.onNode(hasContentDescription("Sharps: C, C sharp, D …")).assertExists()
+        compose.onNode(hasContentDescription("Flats: C, D flat, D …")).assertExists()
+        compose.onNode(hasContentDescription("Do Re Mi: Do, Do sharp, Re …")).assertExists()
+    }
+
+    @Test
+    fun dutchTalkBackSaysTheNotationChoicesTheDutchWay() {
+        show(AppSettings(notation = Notation.FLATS), locale = "nl")
+        compose.onNode(hasContentDescription("Kruisen: c, cis, d …")).assertExists()
+        compose.onNode(hasContentDescription("Mollen: c, des, d …")).assertExists().assertIsSelected()
+        compose.onNode(hasContentDescription("Do Re Mi: Do, Do kruis, Re …")).assertExists()
+        // What's on screen doesn't change.
+        compose.onNodeWithText("Kruisen: C, C♯, D …").assertIsDisplayed()
     }
 
     @Test

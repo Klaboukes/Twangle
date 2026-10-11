@@ -53,7 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.StylePicker
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -278,6 +280,7 @@ fun TunerContent(
                 NoteDisplay(
                     readout = null,
                     hint = listeningHint(mode, state),
+                    spokenHint = listeningHint(mode, state, rememberNoteNameSpeech()),
                     showWaves = showWaves,
                     compact = compact,
                     waveLook = waveLook,
@@ -609,12 +612,22 @@ private fun A4Label(state: TunerUiState) {
     )
 }
 
+/** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */
 @Composable
-private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening): String {
+private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening, speech: NoteNameSpeech? = null): String {
     val locked = state.lockedString
     return when {
         mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
-        locked != null -> stringResource(R.string.tuner_hint_play_locked_string, state.notation.nameIn(state.tuning, state.tuning.strings[locked]))
+        locked != null -> {
+            val string = state.tuning.strings[locked]
+            val name = if (speech == null) {
+                state.notation.nameIn(state.tuning, string)
+            } else {
+                val spokenName = speech.name(state.notation.nameIn(state.tuning, string.pitchClass))
+                stringResource(R.string.tuner_spoken_string, spokenName, string.octave)
+            }
+            stringResource(R.string.tuner_hint_play_locked_string, name)
+        }
         else -> stringResource(R.string.tuner_hint_play_string)
     }
 }

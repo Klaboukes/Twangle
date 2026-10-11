@@ -33,4 +33,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    // NoteNameSpeechTest checks every note name the app can show.
+    testImplementation(project(":core:dsp"))
 }

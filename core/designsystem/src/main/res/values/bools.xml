@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Whether TalkBack says letter names in one word the Dutch way (cis, des, es …) instead of
+         "C sharp", "D flat". See NoteNameSpeech. -->
+    <bool name="spoken_dutch_letter_names">false</bool>
+</resources>

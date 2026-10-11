@@ -36,13 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
-import io.github.klaboukes.twangle.feature.tuner.spokenNoteName
 
 /**
  * The open strings of [tuning], lowest on the left, with the [targetString] (if any) highlighted.
@@ -65,8 +65,7 @@ fun StringSelector(
     val lockLabel = stringResource(R.string.tuner_string_lock)
     val unlockLabel = stringResource(R.string.tuner_string_unlock)
     val lockedState = stringResource(R.string.tuner_string_locked)
-    val spokenSharp = stringResource(R.string.tuner_spoken_sharp)
-    val spokenFlat = stringResource(R.string.tuner_spoken_flat)
+    val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -78,7 +77,7 @@ fun StringSelector(
             StringChip(
                 name = name,
                 spokenName = spokenString.format(
-                    spokenNoteName(name, { spokenSharp.format(it) }, { spokenFlat.format(it) }),
+                    speech.name(name),
                     note.octave,
                 ),
                 octave = note.octave,

@@ -47,13 +47,13 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
 import io.github.klaboukes.twangle.feature.tuner.TuneDirection
-import io.github.klaboukes.twangle.feature.tuner.spokenNoteName
 import io.github.klaboukes.twangle.feature.tuner.tuneDirectionFor
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -88,13 +88,15 @@ data class NoteReadout(
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
  * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), throttled by
- * [SpokenReadingThrottle] so it doesn't talk over itself.
+ * [SpokenReadingThrottle] so it doesn't talk over itself. Note names are spoken through
+ * [rememberNoteNameSpeech] ("C sharp 4", in Dutch "cis 4"); without a readout it says [spokenHint].
  */
 @Composable
 fun NoteDisplay(
     readout: NoteReadout?,
     hint: String,
     modifier: Modifier = Modifier,
+    spokenHint: String = hint,
     showWaves: Boolean = false,
     compact: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
@@ -125,7 +127,7 @@ fun NoteDisplay(
     )
     val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
     val spoken = rememberSpokenReading(
-        text = if (readout != null) spokenReading(readout, direction) else hint,
+        text = if (readout != null) spokenReading(readout, direction) else spokenHint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
     )
     val density = LocalDensity.current
@@ -319,9 +321,7 @@ private val TuneDirection.spokenLabel: Int
  */
 @Composable
 private fun spokenReading(readout: NoteReadout, direction: TuneDirection?): String {
-    val sharp = stringResource(R.string.tuner_spoken_sharp)
-    val flat = stringResource(R.string.tuner_spoken_flat)
-    val note = spokenNoteName(readout.noteName, { sharp.format(it) }, { flat.format(it) })
+    val note = rememberNoteNameSpeech().name(readout.noteName)
     val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
     return if (direction == null) {
         stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)

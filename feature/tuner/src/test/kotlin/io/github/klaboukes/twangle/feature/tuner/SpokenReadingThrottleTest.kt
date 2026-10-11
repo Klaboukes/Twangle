@@ -53,14 +53,4 @@ class SpokenReadingThrottleTest {
         // The note comes back before that: back to the same situation, nothing new to say.
         assertNull(throttle.delayFor("E 2, in tune", "E2/true", 3_200))
     }
-
-    @Test
-    fun `sharps and flats are spoken as words`() {
-        val sharp = { base: String -> "$base sharp" }
-        val flat = { base: String -> "$base flat" }
-        assertEquals("C sharp", spokenNoteName("C♯", sharp, flat))
-        assertEquals("D flat", spokenNoteName("D♭", sharp, flat))
-        assertEquals("Sol sharp", spokenNoteName("Sol♯", sharp, flat))
-        assertEquals("E", spokenNoteName("E", sharp, flat))
-    }
 }

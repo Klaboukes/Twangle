@@ -18,4 +18,10 @@
     <string name="style_card_description">%1$s. %2$s</string>
     <!-- The note on the style previews; a note name, the same in every language. -->
     <string name="style_preview_note" translatable="false">A</string>
+
+    <!-- A note name with a sharp or flat, read aloud by TalkBack. %1$s is the letter or syllable,
+         e.g. "C", "Sol". Languages that say letter names in one word (see bools.xml) use these
+         only for Do Re Mi. -->
+    <string name="spoken_sharp">%1$s sharp</string>
+    <string name="spoken_flat">%1$s flat</string>
 </resources>
