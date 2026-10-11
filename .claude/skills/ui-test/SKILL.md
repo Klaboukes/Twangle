@@ -6,7 +6,7 @@ argument-hint: "[optional: test-name regex, a :module, or --all]"
 
 # UI tests on the phone
 
-The on-device suite takes about 4½ minutes, so never run all of it by habit. Run the smallest set that proves the change, and the affected modules in full **once** before landing.
+The on-device suite takes about 4 minutes, so never run all of it by habit. Run the smallest set that proves the change, and the affected modules in full **once** before landing.
 
 Always go through `scripts/ui-tests.sh`. It works out which modules a change touches, runs each one with a time limit, and prints one line per module plus the failing tests. Don't call `./gradlew connectedDebugAndroidTest` directly: it runs every module, prints hundreds of log lines into the session, and `-Pandroid.testInstrumentationRunnerArguments.class=` would apply to every module in the call, failing the modules that don't have that class.
 
@@ -18,9 +18,9 @@ Always go through `scripts/ui-tests.sh`. It works out which modules a change tou
    `scripts/ui-tests.sh :feature:tuner -c TunerContentTest#someTest`
 2. **Iterating on one area**, e.g. the tip or the hint (30–60 s, Bash `timeout: 180000`):
    `scripts/ui-tests.sh :feature:tuner -f 'Tip|Hint'`
-3. **Once before landing**: the affected modules in full (up to ~4½ min, Bash `timeout: 480000`):
+3. **Once before landing**: the affected modules in full (up to ~4 min, Bash `timeout: 480000`):
    `scripts/ui-tests.sh`
-4. **Build files or the version catalog changed, or the owner asks for everything** (~4½ min, Bash `timeout: 480000`):
+4. **Build files or the version catalog changed, or the owner asks for everything** (~4 min, Bash `timeout: 480000`):
    `scripts/ui-tests.sh --all`
 
 - `-f` is a regex matched against `Class#method`, so `-f 'Tip'` runs every test with "Tip" in its name, in any class of that module. Name tests so an area is one word away (they already do: `…Tip…`, `…Hint…`, `…Readout…`, `…OnItsSide…`, `…LargestFont…`).
@@ -37,7 +37,7 @@ Always go through `scripts/ui-tests.sh`. It works out which modules a change tou
 
 | Module | Tests | Wall time (incl. build + install) | On the phone |
 |---|---|---|---|
-| `:feature:tuner` | 101 | 190 s | 145 s |
+| `:feature:tuner` | 79 | 167 s | 104 s |
 | `:feature:settings` | 16 | 39 s | 19 s |
 | `:core:audio` | 5 | 12 s | 1 s |
 | `:app` | 1 | 18 s | 7 s |
@@ -47,7 +47,7 @@ Every module call costs about 12–28 s of Gradle and install overhead, even for
 ## Timeouts
 
 - **Per test: 10 s.** `TunerContentTest` wraps every test in a JUnit `Timeout` rule (`TEST_TIMEOUT_SECONDS`), so a hang fails in 10 s instead of leaving a frozen window on the phone. A new UI test class that could hang (anything that scrolls, waits, or animates) gets the same rule, outermost around the compose rule. If a test legitimately needs longer, raise the constant for a reason you can name, not "to be safe".
-- **Per module: 300 s.** The script kills a module's Gradle call after `MODULE_TIMEOUT` seconds (env var, default 300) and reports TIMED OUT. The tuner module takes ~190 s, so it fails fast if something stalls outside a test (install, a stuck device).
+- **Per module: 300 s.** The script kills a module's Gradle call after `MODULE_TIMEOUT` seconds (env var, default 300) and reports TIMED OUT. The tuner module takes ~170 s, so it fails fast if something stalls outside a test (install, a stuck device).
 - **Bash tool:** use the timeouts in the scope ladder above, never the 10-minute maximum. If a run times out, look at the log before running it again.
 
 ## Reading results

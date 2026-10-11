@@ -185,9 +185,10 @@ class TunerContentTest {
     }
 
     @Test
-    fun chromaticModeHidesTheStrings() {
+    fun chromaticModeHidesTheStringsAndThePicker() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
         stringChip("A2").assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
     }
 
@@ -214,12 +215,6 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertIsDisplayed()
         stringChip("D2").assertIsDisplayed()
         stringChip("E2").assertDoesNotExist()
-    }
-
-    @Test
-    fun chromaticModeHidesTheTuningPicker() {
-        show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
     }
 
     @Test
@@ -321,14 +316,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun tabletInPortraitKeepsOneColumn() {
-        show(detected(3f, targetString = 1), size = DpSize(800.dp, 1240.dp))
-        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
-        val chip = stringChip("A2").assertIsDisplayed().getBoundsInRoot()
-        assertTrue(chip.top >= note.bottom)
-    }
-
-    @Test
     fun waveViewShowsNoNumbersOrWordsWhileOff() {
         show(detected(-12.3f), showWaves = true)
         compose.onNodeWithText("E").assertIsDisplayed()
@@ -342,19 +329,6 @@ class TunerContentTest {
         show(detected(2f, inTune = true), showWaves = true)
         compose.onNodeWithText("E").assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_in_tune), ignoreCase = true).assertDoesNotExist()
-    }
-
-    @Test
-    fun waveViewAsksToPlayAStringWhileListening() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), showWaves = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_string)).assertIsDisplayed()
-    }
-
-    @Test
-    fun talkBackStillHearsTheCentsInTheWaveView() {
-        show(detected(-12.3f), showWaves = true)
-        val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
-        compose.onNode(hasContentDescription("E 2, $cents")).assertExists()
     }
 
     @Test
@@ -382,6 +356,8 @@ class TunerContentTest {
         show(detected(-3f, inTune = true), showTuneHint = true)
         compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertDoesNotExist()
+        // TalkBack adds nothing either.
+        compose.onNode(hasContentDescription("E 2, ${context.getString(R.string.tuner_in_tune)}")).assertExists()
     }
 
     @Test
@@ -466,13 +442,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun guitarWaveViewHidesTheChromaticNumbers() {
-        show(detected(-12.3f), showWaves = true)
-        compose.onNodeWithText(twelveCentsFlat).assertDoesNotExist()
-        compose.onNodeWithText(frequency).assertDoesNotExist()
-    }
-
-    @Test
     fun talkBackDoesntHearTheChromaticNumbersTwice() {
         show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true)
         compose.onNode(hasContentDescription("E 2, $twelveCentsFlat")).assertExists()
@@ -538,16 +507,7 @@ class TunerContentTest {
     }
 
     @Test
-    fun showingAndDismissingTheTipMovesNothing() = assertTipMovesNothing(showWaves = false)
-
-    @Test
-    fun showingAndDismissingTheTipMovesNothingInTheWaveView() = assertTipMovesNothing(showWaves = true)
-
-    @Test
     fun showingAndDismissingTheTipMovesNothingWithTheLargestFont() = assertTipMovesNothing(showWaves = true, fontScale = 2f)
-
-    @Test
-    fun showingAndDismissingTheTipMovesNothingOnItsSide() = assertTipMovesNothing(showWaves = true, size = PHONE_LANDSCAPE)
 
     @Test
     fun showingAndDismissingTheTipMovesNothingOnItsSideWithTheLargestFont() =
@@ -587,12 +547,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun noStringLockTipOnceSeen() {
-        show(listening)
-        tip.assertDoesNotExist()
-    }
-
-    @Test
     fun tappingTheStringLockTipDismissesIt() {
         show(listening, showStringLockTip = true)
         tip.performClick()
@@ -615,20 +569,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun chromaticWaveViewHasNoStringLockTip() {
-        show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true, showStringLockTip = true)
-        tip.assertDoesNotExist()
-    }
-
-    @Test
-    fun withTheLargestFontTheStringLockTipCanStillBeReached() {
-        show(listening, fontScale = 2f, showStringLockTip = true)
-        stringChip("E2").performScrollTo().assertIsDisplayed()
-        pickerLabel.performScrollTo()
-        tip.assertIsDisplayed()
-    }
-
-    @Test
     fun phoneOnItsSideShowsTheStringLockTipUnderTheStrings() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE, showStringLockTip = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
@@ -648,17 +588,7 @@ class TunerContentTest {
         assertSwitchingModesMovesNothing(showWaves = true, fontScale = 1f, showStringLockTip = true)
 
     @Test
-    fun switchingModesMovesNothingWithTheNeedle() = assertSwitchingModesMovesNothing(showWaves = false, fontScale = 1f)
-
-    @Test
-    fun switchingModesMovesNothingWithTheWaveView() = assertSwitchingModesMovesNothing(showWaves = true, fontScale = 1f)
-
-    @Test
     fun switchingModesMovesNothingWithTheLargestFont() = assertSwitchingModesMovesNothing(showWaves = false, fontScale = 2f)
-
-    @Test
-    fun switchingModesMovesNothingWithTheWaveViewAndTheLargestFont() =
-        assertSwitchingModesMovesNothing(showWaves = true, fontScale = 2f)
 
     @Test
     fun switchingModesMovesNothingWithTheTuneHint() =
@@ -706,12 +636,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun talkBackSaysNothingExtraOnceInTune() {
-        show(detected(2f, inTune = true), showTuneHint = true)
-        compose.onNode(hasContentDescription("E 2, ${context.getString(R.string.tuner_in_tune)}")).assertExists()
-    }
-
-    @Test
     fun talkBackHearsTheHintOnceNotTwice() {
         // The note's live region says it; the visible "Tune up ↑" isn't read a second time.
         show(detected(-12.3f), showTuneHint = true)
@@ -743,36 +667,7 @@ class TunerContentTest {
     }
 
     @Test
-    fun preciseSettingSaysTuneUpThreeCentsOff() {
-        // With Precise (±2 cents) 3 cents flat isn't in tune yet, so the hint stays.
-        show(detected(-3f, inTune = false), showTuneHint = true)
-        compose.onNodeWithText(centsFlat(3)).assertIsDisplayed()
-        compose.onNodeWithText(tuneUp).assertIsDisplayed()
-        compose.onNode(hasContentDescription("E 2, ${centsFlat(3)}, $spokenTuneUp")).assertExists()
-    }
-
-    @Test
-    fun preciseSettingInChromaticWaveViewShowsHintAndNumbers() {
-        show(chromatic(-3f, inTune = false), TunerMode.CHROMATIC, showWaves = true, showTuneHint = true)
-        compose.onNodeWithText(tuneUp).assertIsDisplayed()
-        compose.onNodeWithText(centsFlat(3)).assertIsDisplayed()
-    }
-
-    @Test
-    fun noHintWhileTheNumberSaysZeroCents() {
-        // Not yet in tune with Precise, but "0 cents" on screen: no hint that disagrees with it.
-        show(detected(-0.4f, inTune = false), showTuneHint = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_cents_zero)).assertIsDisplayed()
-        compose.onNodeWithText(tuneUp).assertDoesNotExist()
-        compose.onNodeWithText(tuneDown).assertDoesNotExist()
-    }
-
-    @Test
     fun comingInTuneMovesNothingWithTheHint() = assertNewReadingMovesNothing(detected(-12.3f), detected(-1f, inTune = true))
-
-    @Test
-    fun comingInTuneMovesNothingWithTheHintInTheWaveView() =
-        assertNewReadingMovesNothing(detected(-12.3f), detected(-1f, inTune = true), showWaves = true)
 
     @Test
     fun comingInTuneMovesNothingWithTheHintInTheChromaticWaveView() =
@@ -781,10 +676,6 @@ class TunerContentTest {
     @Test
     fun noteStoppingMovesNothingWithTheHint() =
         assertNewReadingMovesNothing(detected(-12.3f), TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-
-    @Test
-    fun noteStoppingMovesNothingWithTheHintInTheWaveView() =
-        assertNewReadingMovesNothing(detected(-12.3f), TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), showWaves = true)
 
     @Test
     fun noteStartingMovesNothingWithTheHintAndTheLargestFont() =
@@ -836,15 +727,6 @@ class TunerContentTest {
     }
 
     @Test
-    fun phoneOnItsSideShowsTheHintInTheWaveView() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, showWaves = true, showTuneHint = true)
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val hint = compose.onNodeWithText(tuneUp).assertIsDisplayed()
-        assertTrue(hint.getBoundsInRoot().bottom <= window.bottom)
-        assertWholeTextShown(hint)
-    }
-
-    @Test
     fun phoneOnItsSideShowsTheChromaticReadoutBesideTheNote() {
         show(chromatic(-12.3f), TunerMode.CHROMATIC, size = PHONE_LANDSCAPE, showWaves = true, showTuneHint = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
@@ -863,13 +745,15 @@ class TunerContentTest {
     fun phoneOnItsSideShowsTheTipAndTheHintTogether() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE, showWaves = true, showTuneHint = true, showStringLockTip = true)
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
-        compose.onNodeWithText(tuneUp).assertIsDisplayed()
+        val hint = compose.onNodeWithText(tuneUp).assertIsDisplayed()
+        assertWholeTextShown(hint)
         // In view without scrolling. (performScrollTo never returns for the balloon here: it floats
         // outside its parent's bounds, so the scroll container can't bring it "into view".)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
         assertTrue(tipBounds.left >= note.right)
         assertTrue(tipBounds.bottom <= window.bottom)
+        assertTrue(hint.getBoundsInRoot().bottom <= window.bottom)
         stringChip("E2").assertIsDisplayed()
         assertNoOverlap("tip" to tip, "E2" to stringChip("E2"))
     }

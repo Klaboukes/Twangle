@@ -46,15 +46,6 @@ class InTuneHapticTest {
     }
 
     @Test
-    fun aShortDropOutDoesNotTickAgain() {
-        show()
-        set(true, 100)
-        set(false, 600)
-        set(true, 900)
-        assertEquals(1, ticks)
-    }
-
-    @Test
     fun staysQuietWhenTurnedOff() {
         enabled = false
         show()

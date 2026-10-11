@@ -383,7 +383,7 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`. Compose UI tests (`SettingsContentTest`, device needed) for each control. |
 | `:app` | Instrumented `MicLifecycleTest`: the mic follows the screen's visibility (§5). |
 | `:baselineprofile` | On demand, device needed: `BaselineProfileGenerator` regenerates the committed profile, `StartupBenchmark` compares cold start with and without it (§4). |
-| Running UI tests | `scripts/ui-tests.sh` runs the instrumented tests on the phone, only for the modules a branch touches (or a name filter while iterating), with a 300 s limit per module and a one-line summary each; see `.claude/skills/ui-test/SKILL.md`. All of them take about 4½ minutes on the S26, the tuner module most of that. |
+| Running UI tests | `scripts/ui-tests.sh` runs the instrumented tests on the phone, only for the modules a branch touches (or a name filter while iterating), with a 300 s limit per module and a one-line summary each; see `.claude/skills/ui-test/SKILL.md`. All of them take about 4 minutes on the S26, the tuner module most of that. |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset connected, permission denial paths. |
 
 ## 9. Privacy

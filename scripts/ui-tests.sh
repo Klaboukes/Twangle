@@ -6,7 +6,7 @@
 #   scripts/ui-tests.sh --all                    every module with UI tests
 #   scripts/ui-tests.sh :feature:tuner           whole module(s)
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
-#   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheNeedle
+#   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #
 # Filters (-f/-c) apply per module, so each module runs in its own Gradle call. Each module call is
 # killed after MODULE_TIMEOUT seconds (default 300); a single test is limited by its own timeout rule.
