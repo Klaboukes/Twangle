@@ -1,8 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.baselineprofile)
 }
+
+// Release signing. The upload key and its password live outside the repo, by default in
+// ~/.twangle-keys/keystore.properties (storeFile, storePassword, keyAlias, keyPassword); the Gradle
+// property twangle.keystoreProperties (absolute path, e.g. in ~/.gradle/gradle.properties) points
+// elsewhere. Without the file (CI, other machines) the release build is left unsigned.
+val keystoreProperties: Properties? = providers.gradleProperty("twangle.keystoreProperties")
+    .orElse(providers.systemProperty("user.home").map { "$it/.twangle-keys/keystore.properties" })
+    .flatMap { path -> providers.fileContents(rootProject.layout.projectDirectory.file(path)).asText }
+    .map { text -> Properties().apply { load(text.reader()) } }
+    .orNull
 
 android {
     namespace = "io.github.klaboukes.twangle.app"
@@ -17,8 +29,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("upload") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("upload")
+            // R8 removes unused code and resources (about 9.3 MB -> 1.8 MB); keep rules in proguard-rules.pro.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

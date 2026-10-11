@@ -20,7 +20,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 6 — Release preparation
 Goal: a signed, shrunk release build that is ready for the store, without publishing it yet.
 - ☑ App icon, adaptive icon, splash screen (icon checked inside the safe zone with its monochrome layer; opening screen with the icon on gold, or on dark brown in dark mode)
-- ☐ R8 minify + resource shrinking; release signing config (keystore kept out of the repo)
+- ☑ R8 minify + resource shrinking; release signing config (keystore kept out of the repo) (release APK 9.3 MB → 1.8 MB; signed with the upload key kept in `~/.twangle-keys/`; checked on the S26)
 - ☐ Privacy policy (no audio stored or transmitted)
 
 ## Phase 7 — Clearer tuning
