@@ -94,6 +94,7 @@ fun TunerScreen(
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val showWaves by viewModel.showWaves.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
+    val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -131,6 +132,7 @@ fun TunerScreen(
                     onRetry = viewModel::retry,
                     showWaves = showWaves,
                     waveLook = waveLook,
+                    showTuneHint = showTuneHint,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -205,7 +207,8 @@ private fun KeepScreenOn() {
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
- * far off a note is with the wave view, in [waveLook], instead of in cents (saved settings).
+ * far off a note is with the wave view, in [waveLook], instead of in cents, and [showTuneHint] adds
+ * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -223,6 +226,7 @@ fun TunerContent(
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
     showWaves: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
+    showTuneHint: Boolean = false,
 ) {
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -242,6 +246,7 @@ fun TunerContent(
                 showWaves = showWaves,
                 compact = compact,
                 waveLook = waveLook,
+                showTuneHint = showTuneHint,
             )
             is TunerUiState.Listening ->
                 NoteDisplay(

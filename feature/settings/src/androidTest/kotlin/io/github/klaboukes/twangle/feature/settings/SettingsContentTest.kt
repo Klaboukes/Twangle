@@ -51,6 +51,7 @@ class SettingsContentTest {
     private val dynamicColorChanges = mutableListOf<Boolean>()
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
+    private val tuneHintChanges = mutableListOf<Boolean>()
     private val showWavesChanges = mutableListOf<Boolean>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private var backs = 0
@@ -70,6 +71,7 @@ class SettingsContentTest {
                         onDynamicColorChange = { dynamicColorChanges += it },
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
+                        onShowTuneHintChange = { tuneHintChanges += it },
                         onShowWavesChange = { showWavesChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         modifier = Modifier.testTag(WINDOW),
@@ -141,7 +143,7 @@ class SettingsContentTest {
 
     @Test
     fun switchesShowTheirStateAndToggle() {
-        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showWaves = true))
+        show(AppSettings(dynamicColor = true, keepScreenOn = false, vibrateInTune = true, showTuneHint = true, showWaves = true))
         val dynamic = compose.onNodeWithText(context.getString(R.string.settings_dynamic_color_title))
         dynamic.performScrollTo().assertIsOn().performClick()
         val keepOn = compose.onNodeWithText(context.getString(R.string.settings_keep_screen_on_title))
@@ -151,6 +153,9 @@ class SettingsContentTest {
         assertEquals(listOf(false), dynamicColorChanges)
         assertEquals(listOf(true), keepScreenOnChanges)
         assertEquals(listOf(false), vibrateChanges)
+        val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
+        tuneHint.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), tuneHintChanges)
         val waves = compose.onNodeWithText(context.getString(R.string.settings_show_waves_title))
         waves.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), showWavesChanges)

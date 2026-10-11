@@ -77,6 +77,8 @@ data class AppSettings(
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,
+    /** "Tune up ↑" / "Tune down ↓" under the note while it is off pitch, also said by TalkBack. */
+    val showTuneHint: Boolean = true,
     /** Show how far off a note is as a moving sound ribbon instead of in cents. */
     val showWaves: Boolean = true,
     /** What the wave view looks like. */

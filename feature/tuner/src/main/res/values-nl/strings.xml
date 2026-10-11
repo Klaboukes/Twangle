@@ -48,9 +48,14 @@
         <item quantity="other">%1$d cent te hoog</item>
     </plurals>
     <string name="tuner_in_tune">zuiver</string>
+    <string name="tuner_tune_up">Hoger stemmen ↑</string>
+    <string name="tuner_tune_down">Lager stemmen ↓</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cent te laag" or "zuiver". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_tune_up">hoger stemmen</string>
+    <string name="tuner_spoken_tune_down">lager stemmen</string>
     <!-- A note name with a sharp or flat, read aloud. %1$s is the letter or syllable, e.g. "C", "Sol". -->
     <string name="tuner_spoken_sharp">%1$s kruis</string>
     <string name="tuner_spoken_flat">%1$s mol</string>

@@ -39,4 +39,6 @@
     <string name="settings_keep_screen_on_summary">Het scherm blijft aan zolang de stemmer open is</string>
     <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
     <string name="settings_vibrate_in_tune_summary">Een korte tril zodra de noot op toonhoogte is</string>
+    <string name="settings_show_tune_hint_title">Hint hoger/lager stemmen tonen</string>
+    <string name="settings_show_tune_hint_summary">Zegt welke kant je de stemknop op draait zolang een noot niet zuiver is</string>
 </resources>

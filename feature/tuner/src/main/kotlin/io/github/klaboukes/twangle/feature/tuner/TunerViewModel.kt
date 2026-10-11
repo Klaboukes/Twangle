@@ -69,6 +69,11 @@ class TunerViewModel(
         .map { it.showWaves }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showWaves)
 
+    /** Whether "Tune up ↑" / "Tune down ↓" shows under an off-pitch note and TalkBack says it (a saved setting). */
+    val showTuneHint: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.showTuneHint }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showTuneHint)
+
     /** What the wave view looks like (a saved setting). */
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }

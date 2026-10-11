@@ -80,13 +80,14 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves theme, wallpaper colours, wave view, keep screen on and vibration`() = runTest(dispatcher) {
+    fun `saves theme, wallpaper colours, wave view, keep screen on, vibration and tune hint`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
         vm.setShowWaves(false)
         vm.setKeepScreenOn(false)
         vm.setVibrateInTune(false)
+        vm.setShowTuneHint(false)
         runCurrent()
 
         assertEquals(false, repository.current.showWaves)
@@ -95,5 +96,6 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.dynamicColor)
         assertEquals(false, repository.current.keepScreenOn)
         assertEquals(false, repository.current.vibrateInTune)
+        assertEquals(false, repository.current.showTuneHint)
     }
 }

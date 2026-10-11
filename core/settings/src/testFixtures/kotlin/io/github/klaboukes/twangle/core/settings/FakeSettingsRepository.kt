@@ -39,6 +39,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setVibrateInTune(enabled: Boolean) = state.update { it.copy(vibrateInTune = enabled) }
 
+    override suspend fun setShowTuneHint(enabled: Boolean) = state.update { it.copy(showTuneHint = enabled) }
+
     override suspend fun setShowWaves(enabled: Boolean) = state.update { it.copy(showWaves = enabled) }
 
     override suspend fun setWaveLook(look: WaveLook) = state.update { it.copy(waveLook = look) }

@@ -28,6 +28,8 @@ interface SettingsRepository {
 
     suspend fun setVibrateInTune(enabled: Boolean)
 
+    suspend fun setShowTuneHint(enabled: Boolean)
+
     suspend fun setShowWaves(enabled: Boolean)
 
     suspend fun setWaveLook(look: WaveLook)

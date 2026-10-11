@@ -48,6 +48,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setVibrateInTune(enabled) }
     }
 
+    fun setShowTuneHint(enabled: Boolean) {
+        viewModelScope.launch { repository.setShowTuneHint(enabled) }
+    }
+
     fun setShowWaves(enabled: Boolean) {
         viewModelScope.launch { repository.setShowWaves(enabled) }
     }

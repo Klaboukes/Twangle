@@ -50,7 +50,9 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
+import io.github.klaboukes.twangle.feature.tuner.TuneDirection
 import io.github.klaboukes.twangle.feature.tuner.spokenNoteName
+import io.github.klaboukes.twangle.feature.tuner.tuneDirectionFor
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -75,9 +77,15 @@ data class NoteReadout(
  * view the wave settling into its calm shape does that. Without a [readout] it shows a
  * faint dash and [hint], e.g. "Play a string".
  *
+ * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
+ * "Tune down ↓", see [tuneDirectionFor]); in tune it says nothing extra. In the wave view the hint
+ * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
+ * height while empty so nothing jumps when the note comes in tune.
+ *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
- * "E 2, in tune", throttled by [SpokenReadingThrottle] so it doesn't talk over itself.
+ * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), throttled by
+ * [SpokenReadingThrottle] so it doesn't talk over itself.
  */
 @Composable
 fun NoteDisplay(
@@ -87,8 +95,11 @@ fun NoteDisplay(
     showWaves: Boolean = false,
     compact: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
+    showTuneHint: Boolean = false,
 ) {
     val inTune = readout?.inTune == true
+    val direction = if (showTuneHint && readout != null) tuneDirectionFor(readout.cents, readout.inTune) else null
+    val directionText = direction?.let { stringResource(it.label) }.orEmpty()
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
@@ -111,7 +122,7 @@ fun NoteDisplay(
     )
     val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
     val spoken = rememberSpokenReading(
-        text = if (readout != null) spokenReading(readout) else hint,
+        text = if (readout != null) spokenReading(readout, direction) else hint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
     )
     val density = LocalDensity.current
@@ -202,8 +213,8 @@ fun NoteDisplay(
             Text(
                 text = when {
                     readout == null -> hint
-                    // Empty but still there, so the screen doesn't jump when a note starts or stops.
-                    showWaves -> ""
+                    // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
+                    showWaves -> directionText
                     else -> centsText(readout.cents)
                 },
                 style = when {
@@ -211,11 +222,24 @@ fun NoteDisplay(
                     readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
                     else -> MaterialTheme.typography.titleLarge
                 },
-                color = if (readout != null) pillText else colors.onSurface,
+                color = when {
+                    readout == null -> colors.onSurface
+                    showWaves -> colors.primary
+                    else -> pillText
+                },
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f, fill = false).hiddenFromTalkBack(),
             )
             Box(Modifier.size(CHECK_SIZE))
+        }
+        if (!showWaves && showTuneHint) {
+            // Always there (empty without a hint), so the frequency below doesn't move.
+            Text(
+                text = directionText,
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.primary,
+                modifier = Modifier.hiddenFromTalkBack(),
+            )
         }
         if (!showWaves) {
             Text(
@@ -264,17 +288,36 @@ private fun centsText(cents: Float): String {
     }
 }
 
+/** The visible hint, e.g. "Tune up ↑". */
+private val TuneDirection.label: Int
+    get() = when (this) {
+        TuneDirection.UP -> R.string.tuner_tune_up
+        TuneDirection.DOWN -> R.string.tuner_tune_down
+    }
+
+/** The hint as TalkBack says it, without the arrow, e.g. "tune up". */
+private val TuneDirection.spokenLabel: Int
+    get() = when (this) {
+        TuneDirection.UP -> R.string.tuner_spoken_tune_up
+        TuneDirection.DOWN -> R.string.tuner_spoken_tune_down
+    }
+
 /**
  * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
- * wave view, since TalkBack can't see the dial or the ribbon.
+ * wave view, since TalkBack can't see the dial or the ribbon. A [direction] is added in words:
+ * "E 2, 12 cents flat, tune up".
  */
 @Composable
-private fun spokenReading(readout: NoteReadout): String {
+private fun spokenReading(readout: NoteReadout, direction: TuneDirection?): String {
     val sharp = stringResource(R.string.tuner_spoken_sharp)
     val flat = stringResource(R.string.tuner_spoken_flat)
     val note = spokenNoteName(readout.noteName, { sharp.format(it) }, { flat.format(it) })
     val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
-    return stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
+    return if (direction == null) {
+        stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
+    } else {
+        stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, stringResource(direction.spokenLabel))
+    }
 }
 
 /** [text], passed on to TalkBack no faster than [SpokenReadingThrottle] allows. */

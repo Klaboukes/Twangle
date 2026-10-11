@@ -54,6 +54,7 @@ class TunerContentTest {
         fontScale: Float? = null,
         size: DpSize? = null,
         showWaves: Boolean = false,
+        showTuneHint: Boolean = false,
     ) {
         val overrides = listOfNotNull(
             fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
@@ -71,6 +72,7 @@ class TunerContentTest {
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showWaves = showWaves,
+                        showTuneHint = showTuneHint,
                     )
                 }
             }
@@ -308,6 +310,49 @@ class TunerContentTest {
         show(detected(-12.3f), showWaves = true)
         val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
         compose.onNode(hasContentDescription("E 2, $cents")).assertExists()
+    }
+
+    @Test
+    fun flatNoteSaysTuneUpUnderTheCents() {
+        show(detected(-12.3f), showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertIsDisplayed()
+    }
+
+    @Test
+    fun flatNoteSaysTuneUpInTheWaveView() {
+        show(detected(-12.3f), showWaves = true, showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed()
+    }
+
+    @Test
+    fun sharpNoteSaysTuneDown() {
+        show(detected(8f), showWaves = true, showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertIsDisplayed()
+    }
+
+    @Test
+    fun noHintOnceInTune() {
+        show(detected(-3f, inTune = true), showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertDoesNotExist()
+    }
+
+    @Test
+    fun noHintWhenSwitchedOff() {
+        show(detected(-12.3f), showWaves = true, showTuneHint = false)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertDoesNotExist()
+        val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+        compose.onNode(hasContentDescription("E 2, $cents")).assertExists()
+    }
+
+    @Test
+    fun talkBackHearsTheHint() {
+        show(detected(-12.3f), showWaves = true, showTuneHint = true)
+        val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+        val hint = context.getString(R.string.tuner_spoken_tune_up)
+        compose.onNode(hasContentDescription("E 2, $cents, $hint")).assertExists()
     }
 
     @Test

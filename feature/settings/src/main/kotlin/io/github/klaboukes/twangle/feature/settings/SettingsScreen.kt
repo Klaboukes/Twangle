@@ -62,6 +62,7 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
         onDynamicColorChange = viewModel::setDynamicColor,
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
+        onShowTuneHintChange = viewModel::setShowTuneHint,
         onShowWavesChange = viewModel::setShowWaves,
         onWaveLookChange = viewModel::setWaveLook,
         modifier = modifier,
@@ -86,6 +87,7 @@ fun SettingsContent(
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
+    onShowTuneHintChange: (Boolean) -> Unit,
     onShowWavesChange: (Boolean) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     modifier: Modifier = Modifier,
@@ -134,6 +136,7 @@ fun SettingsContent(
                     onDynamicColorChange = onDynamicColorChange,
                     onKeepScreenOnChange = onKeepScreenOnChange,
                     onVibrateInTuneChange = onVibrateInTuneChange,
+                    onShowTuneHintChange = onShowTuneHintChange,
                     onShowWavesChange = onShowWavesChange,
                     onWaveLookChange = onWaveLookChange,
                     dynamicColorAvailable = dynamicColorAvailable,
@@ -173,6 +176,7 @@ private fun SettingsList(
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
+    onShowTuneHintChange: (Boolean) -> Unit,
     onShowWavesChange: (Boolean) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     dynamicColorAvailable: Boolean,
@@ -231,6 +235,12 @@ private fun SettingsList(
             checked = settings.vibrateInTune,
             onCheckedChange = onVibrateInTuneChange,
         )
+        SwitchSetting(
+            title = stringResource(R.string.settings_show_tune_hint_title),
+            summary = stringResource(R.string.settings_show_tune_hint_summary),
+            checked = settings.showTuneHint,
+            onCheckedChange = onShowTuneHintChange,
+        )
     }
 }
 
@@ -272,6 +282,7 @@ private fun SettingsContentPreview() {
             onDynamicColorChange = {},
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
+            onShowTuneHintChange = {},
             onShowWavesChange = {},
             onWaveLookChange = {},
         )

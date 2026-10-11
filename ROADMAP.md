@@ -19,7 +19,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 7 — Clearer tuning
 Goal: beginners know which way to turn the peg, and experienced players get the precision and numbers they expect. From the UX review of 11 October 2026.
-- ☐ Direction hint: "Tune up ↑" or "Tune down ↓" under the note while it is off pitch (in the empty pill, with the needle and with the wave view), nothing extra once in tune; TalkBack says it too ("E 2, 12 cents flat, tune up"); English and Dutch
+- ☑ Direction hint: "Tune up ↑" or "Tune down ↓" under the note while it is off pitch (in the empty pill, with the needle and with the wave view), nothing extra once in tune; TalkBack says it too ("E 2, 12 cents flat, tune up"); English and Dutch; a Settings switch "Show tune up/down hint" (default on) turns off both the visible hint and the spoken "tune up/down" (S26: "Tune up ↑" shown in the wave view for a short flat test tone; UI tests for both views, in tune, switched off and TalkBack)
 - ☐ Remember the mode: Guitar or Chromatic is saved in settings and comes back at the next start (an unknown saved value falls back to Guitar)
 - ☐ Chromatic readout: cents and frequency stay visible in chromatic mode, also with the wave view on, in the space the string row uses in guitar mode (switching modes still doesn't move anything)
 - ☐ In-tune precision setting: Relaxed (±5 cents, today's behaviour and the default) or Precise (±2 cents, released past 3); `InTuneDetector` tests for both
@@ -32,7 +32,7 @@ Goal: sharps, flats and tunings look and read the way musicians write them, and 
 - ☐ Each preset tuning uses the spelling players know, e.g. Half step down = E♭ A♭ D♭ G♭ B♭ E♭ instead of D♯ G♯ C♯ F♯ A♯ D♯, in the menu, string row and readout (Do Re Mi follows: Mi♭ …); the notation setting still decides chromatic mode; tests in `:core:dsp`
 - ☐ Waiting screen: the note placeholder no longer looks like a grey loading bar (the dash renders as a block in some faces)
 - ☐ Style clashes fixed: Classic's frame line no longer runs through the mode switch; Futuristic's corner brackets no longer cover settings text when scrolled; the mode switch uses each style's main accent (Futuristic shows purple beside its cyan); screenshot check of every style, light and dark
-- ☐ Settings in three groups with headings: Tuning (A4, note names, in-tune precision), Look (style, light or dark, wallpaper colours, wave view and wave look), While tuning (keep screen on, vibrate)
+- ☐ Settings in three groups with headings: Tuning (A4, note names, in-tune precision), Look (style, light or dark, wallpaper colours, wave view and wave look), While tuning (keep screen on, vibrate, tune up/down hint)
 - ☐ About section at the bottom of Settings: app version, the "free forever" promise, the privacy statement (Phase 6), font and open-source licences; the version number brought in line with the beta (it still says 0.0.1)
 - ☐ Dutch TalkBack says note names the Dutch way: cis, des, es … instead of "C kruis", "D mol"
 - ☐ English and Dutch texts; UI tests at 2× font and in landscape for the new settings rows and the About section; S26 check in every style

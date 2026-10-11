@@ -318,6 +318,18 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `showTuneHint follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.showTuneHint.collect {} }
+        runCurrent()
+        assertTrue("on by default", vm.showTuneHint.value)
+
+        settings.setShowTuneHint(false)
+        runCurrent()
+        assertFalse(vm.showTuneHint.value)
+    }
+
+    @Test
     fun `vibrateInTune follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.vibrateInTune.collect {} }

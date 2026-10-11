@@ -70,6 +70,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.dynamicColor)
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
+        assertEquals(true, settings.showTuneHint)
         assertEquals(true, settings.showWaves)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
     }
@@ -85,6 +86,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDynamicColor(false)
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
+        repo.setShowTuneHint(false)
         repo.setShowWaves(false)
         repo.setWaveLook(WaveLook.FIREFLIES)
 
@@ -97,6 +99,7 @@ class DataStoreSettingsRepositoryTest {
             dynamicColor = false,
             keepScreenOn = false,
             vibrateInTune = false,
+            showTuneHint = false,
             showWaves = false,
             waveLook = WaveLook.FIREFLIES,
         )
