@@ -19,9 +19,9 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ settings, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ settings ↔ About, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
-| `:feature:settings` | Android library | Settings screen UI, `SettingsViewModel` |
+| `:feature:settings` | Android library | Settings and About screen UI, `SettingsViewModel` |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
 | `:core:designsystem` | Android library | `TwangleTheme` and the seven visual styles: palettes, bundled fonts, backgrounds, hand-drawn dials, `StylePicker` |

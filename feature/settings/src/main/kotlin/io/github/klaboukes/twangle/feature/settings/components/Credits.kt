@@ -3,7 +3,7 @@ package io.github.klaboukes.twangle.feature.settings.components
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 
 /**
- * Something Twangle is built with, credited in the About section: its [name], who made it
+ * Something Twangle is built with, credited on the About page: its [name], who made it
  * ([author]), its licence's name and the licence text bundled in assets ([licenceAsset]). The app has
  * no internet permission, so every licence text ships inside the app. Names are proper names, the
  * same in every language.

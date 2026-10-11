@@ -27,11 +27,15 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 
-/** The two screens. Navigation is just this one value; the back button leads from settings to the tuner. */
-private enum class Screen { TUNER, SETTINGS }
+/**
+ * The three screens. Navigation is just this one value; the back button leads from About to settings
+ * and from settings to the tuner.
+ */
+private enum class Screen { TUNER, SETTINGS, ABOUT }
 
 class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
@@ -54,7 +58,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app in the user's style and theme, showing the tuner or the settings screen over the style's background. */
+    /** The app in the user's style and theme, showing the tuner, settings or About over the style's background. */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
@@ -91,7 +95,12 @@ class MainActivity : ComponentActivity() {
                                 settingsRepository = container.settingsRepository,
                                 appVersion = BuildConfig.VERSION_NAME,
                                 onBack = { screen = Screen.TUNER },
+                                onOpenAbout = { screen = Screen.ABOUT },
                             )
+                        }
+                        Screen.ABOUT -> {
+                            BackHandler { screen = Screen.SETTINGS }
+                            AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
                         }
                     }
                 }

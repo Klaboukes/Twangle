@@ -55,7 +55,8 @@
     <string name="settings_show_tune_hint_summary">Zegt welke kant je de stemknop op draait zolang een noot niet zuiver is</string>
 
     <!-- About (the last group). -->
-    <string name="settings_group_about">Over de app</string>
+    <string name="about_title">Over Twangle</string>
+    <string name="settings_about_link_summary">Versie %1$s, privacy en licenties</string>
     <string name="settings_about_version">Versie %1$s</string>
     <string name="settings_about_free_title">Voor altijd gratis</string>
     <string name="settings_about_free_summary">Geen advertenties, geen account, geen aankopen in de app en geen tracking. Nu niet en later ook niet.</string>

@@ -86,11 +86,12 @@ class SettingsContentTest {
     private val showWavesChanges = mutableListOf<Boolean>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private var backs = 0
+    private var aboutOpened = 0
 
     /**
-     * Shows [settings], or as if the window were [size] ([ForcedSize] scales it down to fit), the
-     * phone's font were [fontScale] times its normal size, or the app were in another language
-     * ([locale], e.g. "nl").
+     * Shows [settings] (or, with [about], the About page), as if the window were [size] ([ForcedSize]
+     * scales it down to fit), the phone's font were [fontScale] times its normal size, or the app were
+     * in another language ([locale], e.g. "nl").
      */
     private fun show(
         settings: AppSettings,
@@ -98,14 +99,18 @@ class SettingsContentTest {
         size: DpSize? = null,
         fontScale: Float? = null,
         locale: String? = null,
+        about: Boolean = false,
     ) {
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
-                    SettingsContent(
+                    if (about) {
+                        AboutScreen(appVersion = VERSION, onBack = { backs++ }, modifier = Modifier.testTag(WINDOW))
+                    } else SettingsContent(
                         settings,
                         appVersion = VERSION,
                         onBack = { backs++ },
+                        onOpenAbout = { aboutOpened++ },
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
                         onInTunePrecisionChange = { precisionChanges += it },
@@ -168,6 +173,27 @@ class SettingsContentTest {
     @Test
     fun backArrowGoesBack() {
         show(AppSettings())
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
+        assertEquals(1, backs)
+    }
+
+    @Test
+    fun theLastRowOpensAboutAndShowsTheVersion() {
+        show(AppSettings())
+        compose.onNodeWithText(context.getString(R.string.settings_about_link_summary, VERSION)).performScrollTo().assertIsDisplayed()
+        // The long About texts live on their own page, not in settings.
+        compose.onNodeWithText(context.getString(R.string.settings_about_privacy_summary)).assertDoesNotExist()
+        compose.onNode(hasText(context.getString(R.string.about_title)) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button), useUnmergedTree = false)
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, aboutOpened)
+    }
+
+    @Test
+    fun aboutBackArrowGoesBack() {
+        show(AppSettings(), about = true)
+        compose.onNodeWithText(context.getString(R.string.about_title)).assertIsDisplayed()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
         assertEquals(1, backs)
     }
@@ -275,13 +301,12 @@ class SettingsContentTest {
     }
 
     @Test
-    fun settingsComeInThreeHeadedGroupsThenAbout() {
+    fun settingsComeInThreeHeadedGroupsThenTheAboutLink() {
         show(AppSettings(showWaves = true))
         val headings = listOf(
             R.string.settings_group_tuning,
             R.string.settings_group_look,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_about,
         )
         headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
 
@@ -303,11 +328,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_show_tune_hint_title)),
-            top(context.getString(R.string.settings_group_about)),
-            top(context.getString(R.string.settings_about_version, VERSION)),
-            top(context.getString(R.string.settings_about_free_title)),
-            top(context.getString(R.string.settings_about_privacy_title)),
-            top(context.getString(R.string.settings_about_credits_title)),
+            top(context.getString(R.string.about_title)),
         )
         assertEquals("tops $order", order.sorted(), order)
     }
@@ -327,7 +348,7 @@ class SettingsContentTest {
 
     @Test
     fun aboutShowsTheVersionThePromiseAndThePrivacyStatement() {
-        show(AppSettings())
+        show(AppSettings(), about = true)
         listOf(
             context.getString(R.string.settings_about_version, VERSION),
             context.getString(R.string.settings_about_free_title),
@@ -339,7 +360,7 @@ class SettingsContentTest {
 
     @Test
     fun everyFontAndLibraryIsCredited() {
-        show(AppSettings())
+        show(AppSettings(), about = true)
         assertEquals(bundledFontCredits.size + 2, credits.size)
         bundledFontCredits.forEach { font ->
             compose.onNodeWithTag(creditTag(font.name)).performScrollTo().assertIsDisplayed()
@@ -353,7 +374,7 @@ class SettingsContentTest {
 
     @Test
     fun creditsAreButtonsThatSayWhatTheyDo() {
-        show(AppSettings())
+        show(AppSettings(), about = true)
         compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo()
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .assert(
@@ -365,7 +386,7 @@ class SettingsContentTest {
 
     @Test
     fun tappingAFontShowsItsLicenceFromTheApp() {
-        show(AppSettings())
+        show(AppSettings(), about = true)
         compose.onNodeWithTag(creditTag("Orbitron")).performScrollTo().performClick()
         // The licence is read from the app's own files, so it is there without internet.
         compose.waitUntil(5_000) { compose.onAllNodesWithText("Orbitron Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
@@ -376,7 +397,7 @@ class SettingsContentTest {
 
     @Test
     fun tappingALibraryShowsTheApacheLicence() {
-        show(AppSettings())
+        show(AppSettings(), about = true)
         compose.onNodeWithTag(creditTag("Kotlin & kotlinx.coroutines")).performScrollTo().performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithText("TERMS AND CONDITIONS FOR USE", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // Reflowed: a paragraph's lines are joined, so it wraps to the screen.
@@ -387,9 +408,9 @@ class SettingsContentTest {
 
     @Test
     fun aboutIsReachableAtTwiceTheFontSizeOnAPhoneOnItsSide() {
-        show(AppSettings(), size = PHONE_ON_ITS_SIDE, fontScale = 2f)
+        show(AppSettings(), size = PHONE_ON_ITS_SIDE, fontScale = 2f, about = true)
+        compose.onNodeWithText(context.getString(R.string.about_title)).assertIsDisplayed()
         listOf(
-            context.getString(R.string.settings_group_about),
             context.getString(R.string.settings_about_version, VERSION),
             context.getString(R.string.settings_about_free_summary),
             context.getString(R.string.settings_about_privacy_summary),
@@ -404,7 +425,7 @@ class SettingsContentTest {
 
     @Test
     fun theLicenceCanBeClosedAtTwiceTheFontSize() {
-        show(AppSettings(), fontScale = 2f)
+        show(AppSettings(), fontScale = 2f, about = true)
         compose.onNodeWithTag(creditTag("Michroma")).performScrollTo().performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithText("Michroma Project Authors", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // A long licence scrolls inside the dialog; the button stays on screen.
@@ -427,8 +448,21 @@ class SettingsContentTest {
         assertNewRowsFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
 
     @Test
+    fun aboutFitsAtTwiceTheFontSize() = assertAboutFits(fontScale = 2f)
+
+    @Test
+    fun aboutFitsOnAPhoneOnItsSide() = assertAboutFits(size = PHONE_ON_ITS_SIDE)
+
+    @Test
+    fun aboutFitsAtTwiceTheFontSizeOnAPhoneOnItsSide() = assertAboutFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
+
+    @Test
+    fun aboutFitsInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
+        assertAboutFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
+
+    @Test
     fun theLicenceShowsItsNameAndCloseButtonAtTwiceTheFontSize() {
-        show(AppSettings(), fontScale = 2f)
+        show(AppSettings(), fontScale = 2f, about = true)
         compose.onNodeWithTag(creditTag("Jetpack Compose & AndroidX")).performScrollTo().performClick()
         compose.waitUntil(5_000) { compose.onAllNodesWithText("TERMS AND CONDITIONS FOR USE", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // The dialog is a window of its own: its name, the licence's name and the button are all
@@ -438,20 +472,22 @@ class SettingsContentTest {
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
     }
 
+    /** Resources in [locale], or the test's own when it is null. */
+    private fun resourcesIn(locale: String?): android.content.res.Resources {
+        if (locale == null) return context.resources
+        val config = android.content.res.Configuration(context.resources.configuration)
+        config.setLocale(java.util.Locale.forLanguageTag(locale))
+        return context.createConfigurationContext(config).resources
+    }
+
     /**
-     * The rows phase 8 added: the four group headings, the note-name choices, the About titles and
-     * every credit. Each can be scrolled to and is then wholly on screen, inside the window, and its
+     * The rows phase 8 added to settings: the three group headings, the note-name choices and the
+     * About link. Each can be scrolled to and is then wholly on screen, inside the window, and its
      * text isn't cut short.
      */
     private fun assertNewRowsFit(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
         show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
-        val res = if (locale == null) {
-            context.resources
-        } else {
-            val config = android.content.res.Configuration(context.resources.configuration)
-            config.setLocale(java.util.Locale.forLanguageTag(locale))
-            context.createConfigurationContext(config).resources
-        }
+        val res = resourcesIn(locale)
         val texts = listOf(
             R.string.settings_group_tuning,
             R.string.settings_notation_title,
@@ -460,7 +496,21 @@ class SettingsContentTest {
             R.string.settings_notation_solfege,
             R.string.settings_group_look,
             R.string.settings_group_while_tuning,
-            R.string.settings_group_about,
+            R.string.about_title,
+        ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)
+        texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
+    }
+
+    /**
+     * The About page: its titles, the version and every credit can be scrolled to and are then wholly
+     * on screen; the long texts wrap inside the window; every credit is a big enough touch target.
+     */
+    private fun assertAboutFits(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
+        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, about = true)
+        val res = resourcesIn(locale)
+        // The page title sits in the top bar, which doesn't scroll.
+        assertWhollyShown(compose.onNodeWithText(res.getString(R.string.about_title), useUnmergedTree = true), "title", scroll = false)
+        val texts = listOf(
             R.string.settings_about_free_title,
             R.string.settings_about_privacy_title,
             R.string.settings_about_credits_title,

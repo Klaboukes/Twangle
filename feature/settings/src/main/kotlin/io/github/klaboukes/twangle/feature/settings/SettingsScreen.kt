@@ -47,20 +47,21 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
-import io.github.klaboukes.twangle.feature.settings.components.AboutSection
+import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
 /**
- * Settings entry point. Every change is saved straight away; [onBack] returns to the tuner.
- * [appVersion] is the app's version name, shown in the About group.
+ * Settings entry point. Every change is saved straight away; [onBack] returns to the tuner and
+ * [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
  */
 @Composable
 fun SettingsScreen(
     settingsRepository: SettingsRepository,
     appVersion: String,
     onBack: () -> Unit,
+    onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
@@ -69,6 +70,7 @@ fun SettingsScreen(
         settings = settings,
         appVersion = appVersion,
         onBack = onBack,
+        onOpenAbout = onOpenAbout,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
         onInTunePrecisionChange = viewModel::setInTunePrecision,
@@ -86,17 +88,16 @@ fun SettingsScreen(
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in three headed groups, then About (see [SettingsGroups]); the wallpaper-colours
- * switch only shows in the contemporary style when [dynamicColorAvailable] (Android 12+), and the
- * wave looks only while the wave view is on. The screen is see-through, so the style's background
- * shows behind it.
+ * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
+ * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
+ * (Android 12+), and the wave looks only while the wave view is on.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsContent(
     settings: AppSettings?,
     appVersion: String,
     onBack: () -> Unit,
+    onOpenAbout: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
@@ -111,6 +112,41 @@ fun SettingsContent(
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
+    SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
+        if (settings != null) {
+            SettingsGroups(
+                settings = settings,
+                appVersion = appVersion,
+                onOpenAbout = onOpenAbout,
+                onA4Change = onA4Change,
+                onNotationChange = onNotationChange,
+                onInTunePrecisionChange = onInTunePrecisionChange,
+                onStyleChange = onStyleChange,
+                onThemeChange = onThemeChange,
+                onDynamicColorChange = onDynamicColorChange,
+                onKeepScreenOnChange = onKeepScreenOnChange,
+                onVibrateInTuneChange = onVibrateInTuneChange,
+                onShowTuneHintChange = onShowTuneHintChange,
+                onShowWavesChange = onShowWavesChange,
+                onWaveLookChange = onWaveLookChange,
+                dynamicColorAvailable = dynamicColorAvailable,
+            )
+        }
+    }
+}
+
+/**
+ * A page of the settings: a top bar with [title] and a back arrow ([onBack]), then [content] in a
+ * scrolling column. The page is see-through, so the style's background shows behind it.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun SettingsPage(
+    title: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Color.Transparent,
@@ -120,7 +156,7 @@ fun SettingsContent(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
+                title = { Text(title) },
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
@@ -131,38 +167,23 @@ fun SettingsContent(
             )
         },
     ) { innerPadding ->
-        if (settings != null) {
-            // The whole width scrolls, but the settings stay in a centred column no wider than
-            // CONTENT_MAX_WIDTH, so rows don't stretch across a tablet or a phone on its side.
+        // The whole width scrolls, but the content stays in a centred column no wider than
+        // CONTENT_MAX_WIDTH, so rows don't stretch across a tablet or a phone on its side.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                SettingsGroups(
-                    settings = settings,
-                    appVersion = appVersion,
-                    onA4Change = onA4Change,
-                    onNotationChange = onNotationChange,
-                    onInTunePrecisionChange = onInTunePrecisionChange,
-                    onStyleChange = onStyleChange,
-                    onThemeChange = onThemeChange,
-                    onDynamicColorChange = onDynamicColorChange,
-                    onKeepScreenOnChange = onKeepScreenOnChange,
-                    onVibrateInTuneChange = onVibrateInTuneChange,
-                    onShowTuneHintChange = onShowTuneHintChange,
-                    onShowWavesChange = onShowWavesChange,
-                    onWaveLookChange = onWaveLookChange,
-                    dynamicColorAvailable = dynamicColorAvailable,
-                    modifier = Modifier
-                        .widthIn(max = CONTENT_MAX_WIDTH)
-                        .fillMaxWidth()
-                        // 24 dp at the bottom, so the last row ends above the frames some styles draw.
-                        .padding(top = 8.dp, bottom = 24.dp),
-                )
-            }
+                    .widthIn(max = CONTENT_MAX_WIDTH)
+                    .fillMaxWidth()
+                    // 24 dp at the bottom, so the last row ends above the frames some styles draw.
+                    .padding(top = 8.dp, bottom = 24.dp),
+                content = content,
+            )
         }
     }
 }
@@ -170,7 +191,8 @@ fun SettingsContent(
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
  * (how the app and the wave view look) and While tuning (what the tuner does while it listens),
- * followed by About (version, promise, privacy and licences).
+ * followed by one row that opens the About page (version, promise, privacy and licences), so those
+ * long texts don't crowd the settings.
  * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
  * visibly continues off-screen.
  */
@@ -178,6 +200,7 @@ fun SettingsContent(
 private fun SettingsGroups(
     settings: AppSettings,
     appVersion: String,
+    onOpenAbout: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
@@ -273,8 +296,13 @@ private fun SettingsGroups(
                 )
             }
         }
-        SettingsGroup(title = stringResource(R.string.settings_group_about)) {
-            Rows { AboutSection(appVersion = appVersion) }
+        Rows {
+            HorizontalDivider()
+            LinkSetting(
+                title = stringResource(R.string.about_title),
+                summary = stringResource(R.string.settings_about_link_summary, appVersion),
+                onClick = onOpenAbout,
+            )
         }
     }
 }
@@ -351,6 +379,7 @@ private fun SettingsContentPreview() {
             AppSettings(a4Hz = 442f),
             appVersion = "0.9.0-beta",
             onBack = {},
+            onOpenAbout = {},
             onA4Change = {},
             onNotationChange = {},
             onInTunePrecisionChange = {},

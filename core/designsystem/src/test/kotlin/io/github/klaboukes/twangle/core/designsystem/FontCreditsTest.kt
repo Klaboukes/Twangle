@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
-/** The About section credits every bundled font, and each credit's licence text is bundled too. */
+/** The About page credits every bundled font, and each credit's licence text is bundled too. */
 class FontCreditsTest {
 
     // Gradle runs unit tests in the module folder.
