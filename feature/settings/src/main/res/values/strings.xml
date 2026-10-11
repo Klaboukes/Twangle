@@ -2,6 +2,11 @@
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
 
+    <!-- Group headings. -->
+    <string name="settings_group_tuning">Tuning</string>
+    <string name="settings_group_look">Look</string>
+    <string name="settings_group_while_tuning">While tuning</string>
+
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Reference pitch (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -21,7 +26,7 @@
     <string name="settings_in_tune_precision_relaxed">Relaxed: within 5 cents</string>
     <string name="settings_in_tune_precision_precise">Precise: within 2 cents</string>
 
-    <!-- Appearance. -->
+    <!-- Look. -->
     <string name="settings_style_title">Style</string>
     <string name="settings_theme_title">Light or dark</string>
     <string name="settings_theme_system">System default</string>
@@ -30,7 +35,7 @@
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
 
-    <!-- While tuning. -->
+    <!-- Wave view (in the Look group). -->
     <string name="settings_show_waves_title">Wave view</string>
     <string name="settings_show_waves_summary">Show a moving sound wave instead of a number of cents</string>
     <string name="settings_wave_look_title">Wave look</string>
@@ -40,6 +45,8 @@
     <string name="settings_wave_look_fireflies">Fireflies</string>
     <string name="settings_wave_look_loop">Loop</string>
     <string name="settings_wave_look_ripples">Ripples</string>
+
+    <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Keep screen on</string>
     <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>

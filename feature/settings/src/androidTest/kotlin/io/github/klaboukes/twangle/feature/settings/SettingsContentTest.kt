@@ -4,8 +4,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -204,9 +207,39 @@ class SettingsContentTest {
     @Test
     fun styleCardsShowTheChoiceAndReportANewOne() {
         show(AppSettings(style = VisualStyle.CLASSIC))
+        // The cards sit in the Look group, below the fold: bring the row on screen first.
+        compose.onNodeWithText(context.getString(R.string.settings_theme_title)).performScrollTo()
         compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).assertIsSelected()
         compose.onNodeWithTag(styleCardTag(VisualStyle.MIDDLE_AGES)).assertIsNotSelected().performClick()
         assertEquals(listOf(VisualStyle.MIDDLE_AGES), styleChanges)
+    }
+
+    @Test
+    fun settingsComeInThreeHeadedGroups() {
+        show(AppSettings(showWaves = true))
+        val headings = listOf(R.string.settings_group_tuning, R.string.settings_group_look, R.string.settings_group_while_tuning)
+        headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
+
+        // Top to bottom: each heading, then the settings of its group.
+        // Unclipped positions: most of these rows are below the fold.
+        fun top(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
+        val order = listOf(
+            top(context.getString(R.string.settings_group_tuning)),
+            top(context.getString(R.string.settings_a4_title)),
+            top(context.getString(R.string.settings_notation_title)),
+            top(context.getString(R.string.settings_in_tune_precision_title)),
+            top(context.getString(R.string.settings_group_look)),
+            compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
+            top(context.getString(R.string.settings_theme_title)),
+            top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_show_waves_title)),
+            top(context.getString(R.string.settings_wave_look_title)),
+            top(context.getString(R.string.settings_group_while_tuning)),
+            top(context.getString(R.string.settings_keep_screen_on_title)),
+            top(context.getString(R.string.settings_vibrate_in_tune_title)),
+            top(context.getString(R.string.settings_show_tune_hint_title)),
+        )
+        assertEquals("tops $order", order.sorted(), order)
     }
 
     @Test

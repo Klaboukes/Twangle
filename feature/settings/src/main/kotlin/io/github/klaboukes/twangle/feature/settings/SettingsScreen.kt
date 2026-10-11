@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.settings
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,9 +76,10 @@ fun SettingsScreen(settingsRepository: SettingsRepository, onBack: () -> Unit, m
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. It opens with the style cards; the wallpaper-colours switch only shows in the contemporary
- * style when [dynamicColorAvailable] (Android 12+), and the wave looks only while the wave view is on. The screen is see-through, so the style's
- * background shows behind it.
+ * load. The settings come in three headed groups (see [SettingsGroups]); the wallpaper-colours
+ * switch only shows in the contemporary style when [dynamicColorAvailable] (Android 12+), and the
+ * wave looks only while the wave view is on. The screen is see-through, so the style's background
+ * shows behind it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,16 +130,12 @@ fun SettingsContent(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                StyleSection(
-                    selected = settings.style,
-                    onSelect = onStyleChange,
-                    modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth().padding(top = 8.dp),
-                )
-                SettingsList(
+                SettingsGroups(
                     settings = settings,
                     onA4Change = onA4Change,
                     onNotationChange = onNotationChange,
                     onInTunePrecisionChange = onInTunePrecisionChange,
+                    onStyleChange = onStyleChange,
                     onThemeChange = onThemeChange,
                     onDynamicColorChange = onDynamicColorChange,
                     onKeepScreenOnChange = onKeepScreenOnChange,
@@ -148,7 +148,7 @@ fun SettingsContent(
                         .widthIn(max = CONTENT_MAX_WIDTH)
                         .fillMaxWidth()
                         // 24 dp at the bottom, so the last row ends above the frames some styles draw.
-                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                        .padding(top = 8.dp, bottom = 24.dp),
                 )
             }
         }
@@ -156,28 +156,18 @@ fun SettingsContent(
 }
 
 /**
- * "Style" and the row of style cards. The cards run to the column's edges, so the row visibly
- * continues off-screen.
+ * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
+ * (how the app and the wave view look) and While tuning (what the tuner does while it listens).
+ * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
+ * visibly continues off-screen.
  */
 @Composable
-private fun StyleSection(selected: VisualStyle, onSelect: (VisualStyle) -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = stringResource(R.string.settings_style_title),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
-        StylePicker(selected = selected, onSelect = onSelect, darkTheme = MaterialTheme.styleTokens.dark)
-    }
-}
-
-/** Every setting under the styles, top to bottom. */
-@Composable
-private fun SettingsList(
+private fun SettingsGroups(
     settings: AppSettings,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
+    onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onKeepScreenOnChange: (Boolean) -> Unit,
@@ -188,74 +178,124 @@ private fun SettingsList(
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
-        HorizontalDivider()
-        RadioGroupSetting(
-            title = stringResource(R.string.settings_notation_title),
-            options = Notation.entries,
-            selected = settings.notation,
-            onSelect = onNotationChange,
-        ) { stringResource(notationLabel(it)) }
-        HorizontalDivider()
-        RadioGroupSetting(
-            title = stringResource(R.string.settings_in_tune_precision_title),
-            options = InTunePrecision.entries,
-            selected = settings.inTunePrecision,
-            onSelect = onInTunePrecisionChange,
-        ) { stringResource(inTunePrecisionLabel(it)) }
-        HorizontalDivider()
-        RadioGroupSetting(
-            title = stringResource(R.string.settings_theme_title),
-            options = ThemeMode.entries,
-            selected = settings.theme,
-            onSelect = onThemeChange,
-        ) { stringResource(themeLabel(it)) }
-        if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
-            SwitchSetting(
-                title = stringResource(R.string.settings_dynamic_color_title),
-                summary = stringResource(R.string.settings_dynamic_color_summary),
-                checked = settings.dynamicColor,
-                onCheckedChange = onDynamicColorChange,
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
+        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
+            Rows {
+                A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
+                HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_notation_title),
+                    options = Notation.entries,
+                    selected = settings.notation,
+                    onSelect = onNotationChange,
+                ) { stringResource(notationLabel(it)) }
+                HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_in_tune_precision_title),
+                    options = InTunePrecision.entries,
+                    selected = settings.inTunePrecision,
+                    onSelect = onInTunePrecisionChange,
+                ) { stringResource(inTunePrecisionLabel(it)) }
+            }
+        }
+        SettingsGroup(title = stringResource(R.string.settings_group_look)) {
+            Text(
+                text = stringResource(R.string.settings_style_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = ROW_INSET),
             )
+            StylePicker(selected = settings.style, onSelect = onStyleChange, darkTheme = MaterialTheme.styleTokens.dark)
+            Rows {
+                HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    onSelect = onThemeChange,
+                ) { stringResource(themeLabel(it)) }
+                if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
+                    SwitchSetting(
+                        title = stringResource(R.string.settings_dynamic_color_title),
+                        summary = stringResource(R.string.settings_dynamic_color_summary),
+                        checked = settings.dynamicColor,
+                        onCheckedChange = onDynamicColorChange,
+                    )
+                }
+                HorizontalDivider()
+                SwitchSetting(
+                    title = stringResource(R.string.settings_show_waves_title),
+                    summary = stringResource(R.string.settings_show_waves_summary),
+                    checked = settings.showWaves,
+                    onCheckedChange = onShowWavesChange,
+                )
+                if (settings.showWaves) {
+                    WaveLookPicker(
+                        title = stringResource(R.string.settings_wave_look_title),
+                        selected = settings.waveLook,
+                        onSelect = onWaveLookChange,
+                    ) { stringResource(waveLookLabel(it)) }
+                }
+            }
         }
-        HorizontalDivider()
-        SwitchSetting(
-            title = stringResource(R.string.settings_show_waves_title),
-            summary = stringResource(R.string.settings_show_waves_summary),
-            checked = settings.showWaves,
-            onCheckedChange = onShowWavesChange,
-        )
-        if (settings.showWaves) {
-            WaveLookPicker(
-                title = stringResource(R.string.settings_wave_look_title),
-                selected = settings.waveLook,
-                onSelect = onWaveLookChange,
-            ) { stringResource(waveLookLabel(it)) }
+        SettingsGroup(title = stringResource(R.string.settings_group_while_tuning)) {
+            Rows {
+                SwitchSetting(
+                    title = stringResource(R.string.settings_keep_screen_on_title),
+                    summary = stringResource(R.string.settings_keep_screen_on_summary),
+                    checked = settings.keepScreenOn,
+                    onCheckedChange = onKeepScreenOnChange,
+                )
+                SwitchSetting(
+                    title = stringResource(R.string.settings_vibrate_in_tune_title),
+                    summary = stringResource(R.string.settings_vibrate_in_tune_summary),
+                    checked = settings.vibrateInTune,
+                    onCheckedChange = onVibrateInTuneChange,
+                )
+                SwitchSetting(
+                    title = stringResource(R.string.settings_show_tune_hint_title),
+                    summary = stringResource(R.string.settings_show_tune_hint_summary),
+                    checked = settings.showTuneHint,
+                    onCheckedChange = onShowTuneHintChange,
+                )
+            }
         }
-        SwitchSetting(
-            title = stringResource(R.string.settings_keep_screen_on_title),
-            summary = stringResource(R.string.settings_keep_screen_on_summary),
-            checked = settings.keepScreenOn,
-            onCheckedChange = onKeepScreenOnChange,
-        )
-        SwitchSetting(
-            title = stringResource(R.string.settings_vibrate_in_tune_title),
-            summary = stringResource(R.string.settings_vibrate_in_tune_summary),
-            checked = settings.vibrateInTune,
-            onCheckedChange = onVibrateInTuneChange,
-        )
-        SwitchSetting(
-            title = stringResource(R.string.settings_show_tune_hint_title),
-            summary = stringResource(R.string.settings_show_tune_hint_summary),
-            checked = settings.showTuneHint,
-            onCheckedChange = onShowTuneHintChange,
-        )
     }
 }
+
+/**
+ * One group: its heading in the style's title face and main accent colour, marked as a heading so
+ * TalkBack users can jump from group to group, then [content].
+ */
+@Composable
+private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(horizontal = ROW_INSET)
+                .semantics { heading() },
+        )
+        content()
+    }
+}
+
+/** Setting rows, 16 dp apart and 16 dp in from the column's edges. */
+@Composable
+private fun Rows(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = ROW_INSET),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        content = content,
+    )
+}
+
+/** Space between two groups, so each heading clearly starts a new one. */
+private val GROUP_GAP = 32.dp
+
+/** Rows and headings keep this far from the column's edges. */
+private val ROW_INSET = 16.dp
 
 /** Wide enough for comfortable rows; on wider screens the settings stay centred at this width. */
 private val CONTENT_MAX_WIDTH = 600.dp

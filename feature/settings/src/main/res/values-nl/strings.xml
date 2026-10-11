@@ -2,6 +2,11 @@
     <string name="settings_title">Instellingen</string>
     <string name="settings_back">Terug</string>
 
+    <!-- Group headings. -->
+    <string name="settings_group_tuning">Stemmen</string>
+    <string name="settings_group_look">Uiterlijk</string>
+    <string name="settings_group_while_tuning">Tijdens het stemmen</string>
+
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Stemtoon (A4)</string>
     <string name="settings_a4_value">%1$d Hz</string>
@@ -21,7 +26,7 @@
     <string name="settings_in_tune_precision_relaxed">Ruim: binnen 5 cent</string>
     <string name="settings_in_tune_precision_precise">Precies: binnen 2 cent</string>
 
-    <!-- Appearance. -->
+    <!-- Look. -->
     <string name="settings_style_title">Stijl</string>
     <string name="settings_theme_title">Licht of donker</string>
     <string name="settings_theme_system">Systeemstandaard</string>
@@ -30,7 +35,7 @@
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
-    <!-- While tuning. -->
+    <!-- Wave view (in the Look group). -->
     <string name="settings_show_waves_title">Golfweergave</string>
     <string name="settings_show_waves_summary">Toon een bewegende geluidsgolf in plaats van een aantal cents</string>
     <string name="settings_wave_look_title">Vorm van de golf</string>
@@ -40,6 +45,8 @@
     <string name="settings_wave_look_fireflies">Vuurvliegjes</string>
     <string name="settings_wave_look_loop">Lus</string>
     <string name="settings_wave_look_ripples">Rimpels</string>
+
+    <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>
     <string name="settings_keep_screen_on_summary">Het scherm blijft aan zolang de stemmer open is</string>
     <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
