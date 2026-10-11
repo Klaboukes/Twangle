@@ -1,5 +1,8 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -68,6 +71,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
+import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
+import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
 import kotlin.math.max
 import kotlin.math.min
@@ -222,7 +227,8 @@ private fun KeepScreenOn() {
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
  * far off a note is with the wave view, in [waveLook], instead of in cents, and [showTuneHint] adds
  * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
- * one-time tip above the string row in guitar mode; tapping it calls [onStringLockTipDismiss].
+ * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
+ * [onStringLockTipDismiss].
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -250,8 +256,10 @@ fun TunerContent(
             A4Label(state)
         }
     }
-    val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss)
-    val guitarSlot = @Composable { GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick, tip) }
+    val guitarSlot = @Composable { tipPointer: TipPointer ->
+        val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
+        GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick, tip)
+    }
     val gauge = @Composable {
         NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
     }
@@ -265,6 +273,7 @@ fun TunerContent(
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
             )
+            // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
                 NoteDisplay(
                     readout = null,
@@ -272,8 +281,16 @@ fun TunerContent(
                     showWaves = showWaves,
                     compact = compact,
                     waveLook = waveLook,
+                    showTuneHint = showTuneHint,
                 )
-            else -> NoteDisplay(readout = null, hint = "", showWaves = showWaves, compact = compact, waveLook = waveLook)
+            else -> NoteDisplay(
+                readout = null,
+                hint = "",
+                showWaves = showWaves,
+                compact = compact,
+                waveLook = waveLook,
+                showTuneHint = showTuneHint,
+            )
         }
     }
     val error = (state as? TunerUiState.Error)?.reason
@@ -295,7 +312,8 @@ fun TunerContent(
                 } else {
                     gauge()
                     note(false)
-                    guitarSlot()
+                    // Under the strings there's no room on an upright phone; above the picker there is.
+                    guitarSlot(TipPointer.DOWN)
                 }
             }
             TunerLayout.TWO_PANE -> Row(
@@ -313,9 +331,9 @@ fun TunerContent(
                         if (error != null) {
                             TunerErrorMessage(error, onRetry)
                         } else {
-                            // The wave view makes the readout taller; on a phone on its side it
-                            // only fits with a smaller note.
-                            val compact = showWaves && paneHeight < COMPACT_PANE_HEIGHT
+                            // The wave view, and the tune hint's line, make the readout taller; on a
+                            // phone on its side it only fits with a smaller note.
+                            val compact = (showWaves || showTuneHint) && paneHeight < COMPACT_PANE_HEIGHT
                             GaugeAboveNote(gauge = gauge, note = { note(compact) }, targetHeight = paneHeight)
                         }
                     }
@@ -332,7 +350,8 @@ fun TunerContent(
                         verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
                     ) {
                         header()
-                        guitarSlot()
+                        // The bottom padding (clear of the gear) leaves room for the tip under the strings.
+                        guitarSlot(TipPointer.UP)
                     }
                 }
             }
@@ -404,9 +423,11 @@ private fun GuitarSlotFor(
         is TunerUiState.Detected -> ModeSlot(
             mode,
             guitar = {
+                // Above the picker the tip would cover the numbers or the hint under the note, so
+                // there it steps aside while a note sounds.
                 GuitarControls(
                     state.tuning, state.notation, onTuningChange, onStringClick,
-                    state.targetString, state.lockedString, tip, state.inTune,
+                    state.targetString, state.lockedString, tip.copy(shown = tip.shown && tip.pointer == TipPointer.UP), state.inTune,
                 )
             },
             chromatic = chromatic,
@@ -425,10 +446,15 @@ private fun GuitarSlotFor(
     }
 }
 
-/** Whether the one-time string-lock tip is [shown], and what tapping it does. */
-private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit)
+/** Whether the one-time string-lock tip is [shown], what tapping it does, and where it [pointer]s from. */
+private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit, val pointer: TipPointer)
 
-/** The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. */
+/**
+ * The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. While [tip] is
+ * shown, the string-lock tip floats as a speech balloon over the gap above the picker (pointer down,
+ * beside the picker, at the strings) or under the strings (pointer up). It takes no room of its
+ * own, so nothing moves when it comes or goes, and it leaves the picker and the strings uncovered.
+ */
 @Composable
 private fun GuitarControls(
     tuning: Tuning,
@@ -440,11 +466,8 @@ private fun GuitarControls(
     tip: StringLockTipState,
     inTune: Boolean = false,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        PickerOrTip(tip) { TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange) }
+    val picker = @Composable { TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange) }
+    val strings = @Composable {
         StringSelector(
             tuning,
             targetString,
@@ -454,29 +477,32 @@ private fun GuitarControls(
             onStringClick = onStringClick,
         )
     }
-}
-
-/**
- * The row right above the strings: the one-time string-lock tip while [tip] is shown, the [picker]
- * once it's gone. The tip takes the picker's place rather than a row of its own, because a phone
- * held upright has no height to spare: an extra row would push the strings it points at off the
- * screen. The picker is measured all the time and the row takes the taller one's height, so the
- * layout doesn't move when the tip goes. While the tip shows, the picker isn't placed and its
- * semantics are cleared, so it can't be tapped or found by TalkBack under the tip.
- */
-@Composable
-private fun PickerOrTip(tip: StringLockTipState, picker: @Composable () -> Unit) {
-    val pickerPart = @Composable { SlotPart(shown = !tip.shown, content = picker) }
-    val tipPart = @Composable { if (tip.shown) StringLockTip(onDismiss = tip.onDismiss) }
-    Layout(contents = listOf(pickerPart, tipPart)) { (pickerMeasurables, tipMeasurables), constraints ->
+    val balloon = @Composable {
+        AnimatedVisibility(visible = tip.shown, enter = fadeIn(), exit = fadeOut()) {
+            StringLockTip(onDismiss = tip.onDismiss, pointer = tip.pointer)
+        }
+    }
+    Layout(contents = listOf(picker, strings, balloon)) { (pickerMeasurables, stringMeasurables, tipMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val pickerPlaceable = pickerMeasurables.single().measure(partConstraints)
-        val tipPlaceable = tipMeasurables.firstOrNull()?.measure(partConstraints)
-        val width = max(pickerPlaceable.width, tipPlaceable?.width ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = max(pickerPlaceable.height, tipPlaceable?.height ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
+        val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
+        val gap = PICKER_STRINGS_GAP.roundToPx()
+        val width = max(pickerPlaceable.width, stringsPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = (pickerPlaceable.height + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+        // The balloon is no wider than the row it points at, and not counted in the height.
+        val tipPlaceable = tipMeasurables.firstOrNull()?.measure(Constraints(maxWidth = width))
         layout(width, height) {
-            val shown = tipPlaceable ?: pickerPlaceable
-            shown.placeRelative((width - shown.width) / 2, (height - shown.height) / 2)
+            pickerPlaceable.placeRelative((width - pickerPlaceable.width) / 2, 0)
+            stringsPlaceable.placeRelative((width - stringsPlaceable.width) / 2, pickerPlaceable.height + gap)
+            if (tipPlaceable != null) {
+                val x = (width - tipPlaceable.width) / 2
+                val y = when (tip.pointer) {
+                    // The body ends where the picker's button starts; the pointer reaches past it.
+                    TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
+                    TipPointer.UP -> height + TIP_STRINGS_GAP.roundToPx()
+                }
+                tipPlaceable.placeRelative(x, y, zIndex = 1f)
+            }
         }
     }
 }
@@ -523,6 +549,15 @@ private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
 
 private val SECTION_SPACING = 24.dp
 
+/** Between the tuning picker and the string row. */
+private val PICKER_STRINGS_GAP = 8.dp
+
+/** The tuning picker's button sits this far inside its 48 dp touch target. */
+private val PICKER_TOUCH_INSET = 4.dp
+
+/** Between the string row and a tip under it. */
+private val TIP_STRINGS_GAP = 4.dp
+
 /** The single column, and the controls pane, never get wider than this. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
@@ -532,7 +567,7 @@ private val READOUT_PANE_MAX_WIDTH = 560.dp
 /** A phone on its side shrinks the gauge to fit, but not below this. */
 private val GAUGE_MIN_WIDTH = 160.dp
 
-/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view. */
+/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
 private val COMPACT_PANE_HEIGHT = 420.dp
 
 /** Between gauge and note in the two-pane layout, where height is scarce. */
