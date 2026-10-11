@@ -379,6 +379,55 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `string lock tip shows until it is dismissed, and that is saved`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        assertTrue("a fresh install shows the tip", vm.showStringLockTip.value)
+
+        vm.dismissStringLockTip()
+        runCurrent()
+        assertTrue(settings.current.stringLockTipSeen)
+        assertFalse(vm.showStringLockTip.value)
+    }
+
+    @Test
+    fun `tapping a string dismisses the string lock tip`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+
+        vm.toggleString(2)
+        runCurrent()
+        assertFalse(vm.showStringLockTip.value)
+        assertTrue(settings.current.stringLockTipSeen)
+    }
+
+    @Test
+    fun `a string lock tip seen before never shows`() = runTest(dispatcher) {
+        settings.current = AppSettings(stringLockTipSeen = true)
+        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), savedStringLockTipSeen = true)
+        assertFalse("not even before the settings arrive", vm.showStringLockTip.value)
+        runCurrent()
+        assertFalse(vm.showStringLockTip.value)
+
+        // Tapping strings later doesn't save it again and again.
+        settings.current = settings.current.copy(stringLockTipSeen = false)
+        vm.toggleString(1)
+        runCurrent()
+        assertFalse("nothing written", settings.current.stringLockTipSeen)
+    }
+
+    @Test
+    fun `string lock tip follows the saved setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        assertTrue(vm.showStringLockTip.value)
+
+        settings.setStringLockTipSeen(true)
+        runCurrent()
+        assertFalse(vm.showStringLockTip.value)
+    }
+
+    @Test
     fun `showTuneHint follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.showTuneHint.collect {} }

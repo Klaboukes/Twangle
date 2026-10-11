@@ -37,4 +37,7 @@ interface SettingsRepository {
     suspend fun setShowWaves(enabled: Boolean)
 
     suspend fun setWaveLook(look: WaveLook)
+
+    /** Remembers that the string-lock tip was dismissed (or brings it back with false). */
+    suspend fun setStringLockTipSeen(seen: Boolean)
 }

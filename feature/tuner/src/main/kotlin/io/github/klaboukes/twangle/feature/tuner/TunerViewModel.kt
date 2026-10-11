@@ -40,7 +40,8 @@ import kotlinx.coroutines.launch
  * the mic, and is saved so the app reopens in it. Saved settings (tuning, A4, notation, in-tune precision) are
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
- * shown until the saved settings arrive, so a screen that already read them starts in the right one.
+ * shown until the saved settings arrive, so a screen that already read them starts in the right one;
+ * [savedStringLockTipSeen] does the same for the one-time string-lock tip.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -48,6 +49,7 @@ class TunerViewModel(
     private val settingsRepository: SettingsRepository,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     savedMode: TunerMode = AppSettings().mode,
+    savedStringLockTipSeen: Boolean = AppSettings().stringLockTipSeen,
 ) : ViewModel() {
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
@@ -89,6 +91,18 @@ class TunerViewModel(
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
+
+    /** True once the string-lock tip is dismissed here; hides it at once instead of after the save. */
+    private val stringLockTipDismissed = MutableStateFlow(savedStringLockTipSeen)
+
+    /**
+     * Whether guitar mode shows the one-time tip "Tap a string to tune only that one". It goes for
+     * good once dismissed ([dismissStringLockTip]) or once a string is tapped ([toggleString]).
+     */
+    val showStringLockTip: StateFlow<Boolean> =
+        combine(settingsRepository.settings, stringLockTipDismissed) { settings, dismissed ->
+            !settings.stringLockTipSeen && !dismissed
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, !savedStringLockTipSeen)
 
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
@@ -135,10 +149,19 @@ class TunerViewModel(
 
     /**
      * Locks guitar mode to string [index] (lowest = 0), or back to automatic if it was already
-     * locked. Kept while switching to chromatic and back.
+     * locked. Kept while switching to chromatic and back. Also dismisses the string-lock tip: the
+     * user has found out what tapping a string does.
      */
     fun toggleString(index: Int) {
         lockedString.value = if (lockedString.value == index) null else index
+        dismissStringLockTip()
+    }
+
+    /** Hides the string-lock tip and saves that, so it doesn't come back at the next start. */
+    fun dismissStringLockTip() {
+        if (stringLockTipDismissed.value) return
+        stringLockTipDismissed.value = true
+        viewModelScope.launch { settingsRepository.setStringLockTipSeen(true) }
     }
 
     /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */

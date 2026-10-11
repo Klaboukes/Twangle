@@ -9,6 +9,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -50,9 +53,13 @@ class TunerContentTest {
     private val modeChanges = mutableListOf<TunerMode>()
     private val tuningChanges = mutableListOf<Tuning>()
     private val stringClicks = mutableListOf<Int>()
+    private var tipDismissals = 0
 
     /** The mode [show] passes on; set it to switch modes while the tuner is shown. */
     private val shownMode = mutableStateOf(TunerMode.AUTO)
+
+    /** Whether [show] shows the string-lock tip; set it to dismiss the tip while the tuner is shown. */
+    private val shownTip = mutableStateOf(false)
 
     /**
      * Shows [state] in the test window, optionally with a [fontScale] or as if the window were [size]
@@ -65,12 +72,14 @@ class TunerContentTest {
         size: DpSize? = null,
         showWaves: Boolean = false,
         showTuneHint: Boolean = false,
+        showStringLockTip: Boolean = false,
     ) {
         val overrides = listOfNotNull(
             fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
             size?.let { DeviceConfigurationOverride.ForcedSize(it) },
         )
         shownMode.value = mode
+        shownTip.value = showStringLockTip
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
@@ -84,6 +93,8 @@ class TunerContentTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showWaves = showWaves,
                         showTuneHint = showTuneHint,
+                        showStringLockTip = shownTip.value,
+                        onStringLockTipDismiss = { tipDismissals++ },
                     )
                 }
             }
@@ -445,6 +456,91 @@ class TunerContentTest {
         compose.onNodeWithText(twelveCentsFlat).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
     }
 
+    private val tip get() = compose.onNodeWithText(context.getString(R.string.tuner_string_lock_tip))
+
+    @Test
+    fun stringLockTipSitsRightAboveTheStringRowInThePickersPlace() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), showStringLockTip = true)
+        val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
+        val strings = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
+        assertTrue("tip ends at ${tipBounds.bottom}, strings start at ${strings.top}", tipBounds.bottom <= strings.top)
+        // The tuning picker is under the tip: not tappable and not found by TalkBack.
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
+    }
+
+    @Test
+    fun dismissingTheStringLockTipBringsThePickerBackAndMovesNothing() {
+        show(detected(-12.3f), showWaves = true, showStringLockTip = true)
+        val noteBefore = compose.onNodeWithText("E").getBoundsInRoot()
+        val stringsBefore = stringChip("E2").getBoundsInRoot()
+        shownTip.value = false
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertIsDisplayed()
+        tip.assertDoesNotExist()
+        assertEquals(noteBefore, compose.onNodeWithText("E").getBoundsInRoot())
+        assertEquals(stringsBefore, stringChip("E2").getBoundsInRoot())
+    }
+
+    @Test
+    fun noStringLockTipOnceSeen() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        tip.assertDoesNotExist()
+    }
+
+    @Test
+    fun tappingTheStringLockTipDismissesIt() {
+        show(detected(-12.3f), showStringLockTip = true)
+        tip.performClick()
+        assertEquals(1, tipDismissals)
+    }
+
+    @Test
+    fun talkBackReadsTheStringLockTipAndHowToDismissIt() {
+        show(detected(-12.3f), showStringLockTip = true)
+        val dismiss = context.getString(R.string.tuner_string_lock_tip_dismiss)
+        tip.assert(SemanticsMatcher("click label is \"$dismiss\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == dismiss })
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+    }
+
+    @Test
+    fun chromaticModeHasNoStringLockTip() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, showStringLockTip = true)
+        tip.assertDoesNotExist()
+    }
+
+    @Test
+    fun chromaticWaveViewHasNoStringLockTip() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, showWaves = true, showStringLockTip = true)
+        tip.assertDoesNotExist()
+    }
+
+    @Test
+    fun stringLockTipDoesntClashWithTheTuneHint() {
+        show(detected(-12.3f), showTuneHint = true, showStringLockTip = true)
+        val hint = compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed().getBoundsInRoot()
+        val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
+        assertTrue("hint ends at ${hint.bottom}, tip starts at ${tipBounds.top}", tipBounds.top >= hint.bottom)
+    }
+
+    @Test
+    fun withTheLargestFontTheStringLockTipCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f, showStringLockTip = true)
+        tip.performScrollTo().assertIsDisplayed()
+        stringChip("E2").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun phoneOnItsSideShowsTheStringLockTipWithTheStrings() {
+        show(detected(-12.3f), size = PHONE_LANDSCAPE, showStringLockTip = true)
+        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
+        val tipBounds = tip.performScrollTo().assertIsDisplayed().getBoundsInRoot()
+        assertTrue(tipBounds.left >= note.right)
+        stringChip("E2").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun switchingModesMovesNothingWithTheStringLockTip() =
+        assertSwitchingModesMovesNothing(showWaves = true, fontScale = 1f, showStringLockTip = true)
+
     @Test
     fun switchingModesMovesNothingWithTheNeedle() = assertSwitchingModesMovesNothing(showWaves = false, fontScale = 1f)
 
@@ -459,8 +555,8 @@ class TunerContentTest {
         assertSwitchingModesMovesNothing(showWaves = true, fontScale = 2f)
 
     /** The mode switch and the note stay where they are when going from guitar to chromatic mode. */
-    private fun assertSwitchingModesMovesNothing(showWaves: Boolean, fontScale: Float) {
-        show(detected(-12.3f), showWaves = showWaves, fontScale = fontScale)
+    private fun assertSwitchingModesMovesNothing(showWaves: Boolean, fontScale: Float, showStringLockTip: Boolean = false) {
+        show(detected(-12.3f), showWaves = showWaves, fontScale = fontScale, showStringLockTip = showStringLockTip)
         val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC))
         val note = compose.onNodeWithText("E")
         val switchBefore = switch.getBoundsInRoot()

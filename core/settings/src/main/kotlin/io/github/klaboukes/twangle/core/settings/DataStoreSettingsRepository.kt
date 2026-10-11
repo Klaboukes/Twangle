@@ -88,6 +88,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[WAVE_LOOK] = look.name }
     }
 
+    override suspend fun setStringLockTipSeen(seen: Boolean) {
+        dataStore.edit { it[STRING_LOCK_TIP_SEEN] = seen }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         return AppSettings(
@@ -104,6 +108,7 @@ class DataStoreSettingsRepository internal constructor(
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
             showWaves = prefs[SHOW_WAVES] ?: defaults.showWaves,
             waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
+            stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
         )
     }
 
@@ -124,6 +129,7 @@ class DataStoreSettingsRepository internal constructor(
         private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
+        private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
 
         /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
         fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(

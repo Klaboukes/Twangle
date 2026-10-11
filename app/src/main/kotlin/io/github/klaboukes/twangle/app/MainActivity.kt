@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
                             settingsRepository = container.settingsRepository,
                             onOpenSettings = { screen = Screen.SETTINGS },
                             savedMode = settings.mode,
+                            savedStringLockTipSeen = settings.stringLockTipSeen,
                             // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
                             modifier = Modifier.semantics { testTagsAsResourceId = true },
                         )

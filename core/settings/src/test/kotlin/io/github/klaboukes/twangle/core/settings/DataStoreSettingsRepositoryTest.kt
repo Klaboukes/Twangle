@@ -75,6 +75,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.showTuneHint)
         assertEquals(true, settings.showWaves)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
+        assertEquals(false, settings.stringLockTipSeen)
     }
 
     @Test
@@ -93,6 +94,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowTuneHint(false)
         repo.setShowWaves(false)
         repo.setWaveLook(WaveLook.FIREFLIES)
+        repo.setStringLockTipSeen(true)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -108,6 +110,7 @@ class DataStoreSettingsRepositoryTest {
             showTuneHint = false,
             showWaves = false,
             waveLook = WaveLook.FIREFLIES,
+            stringLockTipSeen = true,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -121,6 +124,7 @@ class DataStoreSettingsRepositoryTest {
             setNotation(Notation.FLATS)
             setStyle(VisualStyle.MIDDLE_AGES)
             setInTunePrecision(InTunePrecision.PRECISE)
+            setStringLockTipSeen(true)
         }
         close()
 
@@ -131,6 +135,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.FLATS, settings.notation)
         assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
+        assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
     }
 
     @Test

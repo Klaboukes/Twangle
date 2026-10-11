@@ -66,6 +66,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.NeedleGauge
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
+import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
 import kotlin.math.max
@@ -77,7 +78,8 @@ import kotlin.math.roundToInt
  * with the lifecycle releases the mic when the screen isn't visible. The gear button in the corner
  * calls [onOpenSettings], also while the permission prompt is shown; the palette button in the
  * other corner opens the style cards. [savedMode] is the mode in the settings already read, so the
- * first frame shows the right mode instead of switching a moment later.
+ * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
+ * likewise keeps a dismissed string-lock tip from flashing up at the start.
  */
 @Composable
 fun TunerScreen(
@@ -86,9 +88,12 @@ fun TunerScreen(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     savedMode: TunerMode = TunerMode.AUTO,
+    savedStringLockTipSeen: Boolean = false,
 ) {
     val mic = rememberMicPermissionState()
-    val viewModel: TunerViewModel = viewModel { TunerViewModel(audioRecorder, settingsRepository, savedMode = savedMode) }
+    val viewModel: TunerViewModel = viewModel {
+        TunerViewModel(audioRecorder, settingsRepository, savedMode = savedMode, savedStringLockTipSeen = savedStringLockTipSeen)
+    }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the
@@ -100,6 +105,7 @@ fun TunerScreen(
     val showWaves by viewModel.showWaves.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
+    val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -138,6 +144,8 @@ fun TunerScreen(
                     showWaves = showWaves,
                     waveLook = waveLook,
                     showTuneHint = showTuneHint,
+                    showStringLockTip = showStringLockTip,
+                    onStringLockTipDismiss = viewModel::dismissStringLockTip,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -213,7 +221,8 @@ private fun KeepScreenOn() {
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [showWaves] shows how
  * far off a note is with the wave view, in [waveLook], instead of in cents, and [showTuneHint] adds
- * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings).
+ * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
+ * one-time tip above the string row in guitar mode; tapping it calls [onStringLockTipDismiss].
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright, or two panes side by side on a phone turned sideways and on wide screens. All state lives
@@ -232,6 +241,8 @@ fun TunerContent(
     showWaves: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
+    showStringLockTip: Boolean = false,
+    onStringLockTipDismiss: () -> Unit = {},
 ) {
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -239,7 +250,8 @@ fun TunerContent(
             A4Label(state)
         }
     }
-    val guitarSlot = @Composable { GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick) }
+    val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss)
+    val guitarSlot = @Composable { GuitarSlotFor(state, mode, showWaves, onTuningChange, onStringClick, tip) }
     val gauge = @Composable {
         NeedleGauge(cents = needleCents, inTune = (state as? TunerUiState.Detected)?.inTune == true)
     }
@@ -373,8 +385,9 @@ private fun GuitarSlotFor(
     showWaves: Boolean,
     onTuningChange: (Tuning) -> Unit,
     onStringClick: (Int) -> Unit,
+    tip: StringLockTipState,
 ) {
-    val chromatic: (@Composable () -> Unit)? = if (showWaves) {
+    val chromatic:(@Composable () -> Unit)? = if (showWaves) {
         when (state) {
             is TunerUiState.Detected -> {
                 { ChromaticReadout(NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune)) }
@@ -393,7 +406,7 @@ private fun GuitarSlotFor(
             guitar = {
                 GuitarControls(
                     state.tuning, state.notation, onTuningChange, onStringClick,
-                    state.targetString, state.lockedString, state.inTune,
+                    state.targetString, state.lockedString, tip, state.inTune,
                 )
             },
             chromatic = chromatic,
@@ -402,7 +415,7 @@ private fun GuitarSlotFor(
         is TunerUiState.Listening -> ModeSlot(
             mode,
             guitar = {
-                GuitarControls(state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString)
+                GuitarControls(state.tuning, state.notation, onTuningChange, onStringClick, state.lockedString, state.lockedString, tip)
             },
             chromatic = chromatic,
         )
@@ -411,6 +424,9 @@ private fun GuitarSlotFor(
         else -> ModeSlot(mode, guitar = null, chromatic = null)
     }
 }
+
+/** Whether the one-time string-lock tip is [shown], and what tapping it does. */
+private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit)
 
 /** The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. */
 @Composable
@@ -421,13 +437,14 @@ private fun GuitarControls(
     onStringClick: (Int) -> Unit,
     targetString: Int?,
     lockedString: Int?,
+    tip: StringLockTipState,
     inTune: Boolean = false,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange)
+        PickerOrTip(tip) { TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange) }
         StringSelector(
             tuning,
             targetString,
@@ -436,6 +453,31 @@ private fun GuitarControls(
             lockedString = lockedString,
             onStringClick = onStringClick,
         )
+    }
+}
+
+/**
+ * The row right above the strings: the one-time string-lock tip while [tip] is shown, the [picker]
+ * once it's gone. The tip takes the picker's place rather than a row of its own, because a phone
+ * held upright has no height to spare: an extra row would push the strings it points at off the
+ * screen. The picker is measured all the time and the row takes the taller one's height, so the
+ * layout doesn't move when the tip goes. While the tip shows, the picker isn't placed and its
+ * semantics are cleared, so it can't be tapped or found by TalkBack under the tip.
+ */
+@Composable
+private fun PickerOrTip(tip: StringLockTipState, picker: @Composable () -> Unit) {
+    val pickerPart = @Composable { SlotPart(shown = !tip.shown, content = picker) }
+    val tipPart = @Composable { if (tip.shown) StringLockTip(onDismiss = tip.onDismiss) }
+    Layout(contents = listOf(pickerPart, tipPart)) { (pickerMeasurables, tipMeasurables), constraints ->
+        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+        val pickerPlaceable = pickerMeasurables.single().measure(partConstraints)
+        val tipPlaceable = tipMeasurables.firstOrNull()?.measure(partConstraints)
+        val width = max(pickerPlaceable.width, tipPlaceable?.width ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = max(pickerPlaceable.height, tipPlaceable?.height ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            val shown = tipPlaceable ?: pickerPlaceable
+            shown.placeRelative((width - shown.width) / 2, (height - shown.height) / 2)
+        }
     }
 }
 

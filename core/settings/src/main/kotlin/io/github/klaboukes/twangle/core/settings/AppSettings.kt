@@ -115,6 +115,8 @@ data class AppSettings(
     val showWaves: Boolean = true,
     /** What the wave view looks like. */
     val waveLook: WaveLook = WaveLook.DEFAULT,
+    /** The one-time tip "Tap a string to tune only that one" was dismissed, so it doesn't come back. */
+    val stringLockTipSeen: Boolean = false,
 ) {
     companion object {
         /** Rounds [hz] to whole Hz and keeps it in the range [NoteMapper] accepts. NaN gives the default. */

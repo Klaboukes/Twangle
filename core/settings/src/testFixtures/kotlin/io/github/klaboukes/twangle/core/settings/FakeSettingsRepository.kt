@@ -49,4 +49,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setShowWaves(enabled: Boolean) = state.update { it.copy(showWaves = enabled) }
 
     override suspend fun setWaveLook(look: WaveLook) = state.update { it.copy(waveLook = look) }
+
+    override suspend fun setStringLockTipSeen(seen: Boolean) = state.update { it.copy(stringLockTipSeen = seen) }
 }
