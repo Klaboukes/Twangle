@@ -22,7 +22,7 @@
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
 
     <!-- In-tune precision: how close a note has to be to count as in tune. -->
-    <string name="settings_in_tune_precision_title">Nauwkeurigheid van zuiver</string>
+    <string name="settings_in_tune_precision_title">Marge voor zuiver</string>
     <string name="settings_in_tune_precision_relaxed">Ruim: binnen 5 cent</string>
     <string name="settings_in_tune_precision_precise">Precies: binnen 2 cent</string>
 
@@ -50,7 +50,7 @@
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>
     <string name="settings_keep_screen_on_summary">Het scherm blijft aan zolang de stemmer open is</string>
     <string name="settings_vibrate_in_tune_title">Trillen bij zuivere toon</string>
-    <string name="settings_vibrate_in_tune_summary">Een korte tril zodra de noot op toonhoogte is</string>
+    <string name="settings_vibrate_in_tune_summary">Kort trillen zodra de noot zuiver is</string>
     <string name="settings_show_tune_hint_title">Hint hoger/lager stemmen tonen</string>
     <string name="settings_show_tune_hint_summary">Zegt welke kant je de stemknop op draait zolang een noot niet zuiver is</string>
 
@@ -62,7 +62,7 @@
     <string name="settings_about_privacy_title">Privacy</string>
     <string name="settings_about_privacy_summary">Twangle verzamelt geen gegevens over jou. De microfoon staat alleen aan zolang het stemscherm open is. Het geluid wordt live geanalyseerd en nooit opgenomen, bewaard of verstuurd. Twangle heeft geen internettoestemming en kan dus niets versturen. Je instellingen staan alleen op je telefoon.</string>
     <string name="settings_about_credits_title">Lettertypen en opensourcesoftware</string>
-    <string name="settings_about_credits_summary">Twangle is hiermee gemaakt. Tik erop om de licentie te lezen.</string>
+    <string name="settings_about_credits_summary">Twangle is hiermee gemaakt. Tik op een naam om de licentie te lezen.</string>
     <string name="settings_about_licence_open">Licentie lezen</string>
     <string name="settings_about_licence_close">Sluiten</string>
 </resources>
