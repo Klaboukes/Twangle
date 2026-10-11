@@ -206,6 +206,9 @@ object TunerTestTags {
     const val SETTINGS = "tuner_settings"
     const val STYLE = "tuner_style"
 
+    /** The strobe view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
+    const val STROBE = "tuner_strobe"
+
     /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
     fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }

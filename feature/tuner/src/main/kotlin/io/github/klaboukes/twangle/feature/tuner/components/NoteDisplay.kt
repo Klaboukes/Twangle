@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +56,7 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
 import io.github.klaboukes.twangle.feature.tuner.TuneDirection
+import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tuneDirectionFor
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -198,7 +200,7 @@ fun NoteDisplay(
         val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
         when (display) {
             TunerDisplay.WAVE -> WaveView(cents = readout?.cents, inTune = inTune, modifier = pictureSize, look = waveLook)
-            TunerDisplay.STROBE -> StrobeView(cents = readout?.cents, inTune = inTune, modifier = pictureSize)
+            TunerDisplay.STROBE -> StrobeView(cents = readout?.cents, inTune = inTune, modifier = pictureSize.testTag(TunerTestTags.STROBE))
             TunerDisplay.NEEDLE -> Unit
         }
         Row(

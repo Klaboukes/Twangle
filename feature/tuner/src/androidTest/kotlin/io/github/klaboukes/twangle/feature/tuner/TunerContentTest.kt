@@ -4,8 +4,11 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.PixelMap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
@@ -19,6 +22,7 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
@@ -38,8 +42,12 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.test.Locales
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -49,6 +57,7 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -399,7 +408,7 @@ class TunerContentTest {
 
     @Test
     fun tabletInLandscapeShowsEverythingSideBySide() {
-        show(detected(3f, targetString = 1), size = DpSize(1280.dp, 760.dp))
+        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE)
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         val chip = stringChip("A2").assertIsDisplayed().getBoundsInRoot()
         assertTrue(chip.left >= note.right)
@@ -498,8 +507,137 @@ class TunerContentTest {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         assertTrue("note ends at ${note.bottom}, window at ${window.bottom}", note.bottom <= window.bottom)
-        stringChip("E4").assertIsDisplayed()
+        // The stripes too, whole and in view without scrolling, and the strings beside them.
+        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
+        assertTrue("stripes end at ${stripes.bottom}, window at ${window.bottom}", stripes.bottom <= window.bottom)
+        assertStrobeSize(stripes, PHONE_LANDSCAPE, COMPACT_STROBE_HEIGHT)
+        assertTrue(stringChip("E4").assertIsDisplayed().getBoundsInRoot().left >= stripes.right)
     }
+
+    @Test
+    fun withTheLargestFontTheStrobeViewCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f, display = TunerDisplay.STROBE, showTuneHint = true)
+        compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
+        val stripes = strobe.performScrollTo().assertIsDisplayed()
+        // The texts grow with the font, the stripes keep their size, and nothing overlaps them.
+        assertStrobeSize(stripes.getBoundsInRoot())
+        val hint = compose.onNodeWithText(tuneUp).performScrollTo().assertIsDisplayed()
+        assertNoOverlap("stripes" to stripes, "hint" to hint)
+        assertWholeTextShown(hint)
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
+        stringChip("E4").performScrollTo().assertIsDisplayed()
+        stringChip("E2").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun phoneOnItsSideWithTheLargestFontTheStrobeViewCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
+        compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
+        val stripes = strobe.performScrollTo().assertIsDisplayed()
+        val hint = compose.onNodeWithText(tuneUp).performScrollTo().assertIsDisplayed()
+        assertNoOverlap("stripes" to stripes, "hint" to hint)
+        assertWholeTextShown(hint)
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
+        stringChip("E4").performScrollTo().assertIsDisplayed()
+        stringChip("E2").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun phoneOnItsSideWithTheLargestFontTheChromaticStrobeReadoutCanStillBeReached() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
+        strobe.performScrollTo().assertIsDisplayed()
+        for (text in listOf(tuneUp, twelveCentsFlat, frequency)) {
+            assertWholeTextShown(compose.onNodeWithText(text).performScrollTo().assertIsDisplayed())
+        }
+    }
+
+    @Test
+    fun tabletInLandscapeShowsTheStrobeBesideTheControls() {
+        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
+        // Full size (not the compact one of a phone on its side), and everything in view.
+        assertStrobeSize(stripes, TABLET_LANDSCAPE)
+        assertTrue(stripes.bottom <= window.bottom)
+        assertTrue(stringChip("A2").assertIsDisplayed().getBoundsInRoot().left >= stripes.right)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertIsDisplayed()
+    }
+
+    @Test
+    fun uprightTabletShowsTheStrobeWithoutScrolling() {
+        show(detected(3f, targetString = 1), size = TABLET_PORTRAIT, display = TunerDisplay.STROBE, showTuneHint = true)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
+        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
+        assertStrobeSize(stripes, TABLET_PORTRAIT)
+        assertTrue("stripes under the note", stripes.top >= note.bottom)
+        for (label in listOf("E2", "E4")) {
+            assertTrue(stringChip(label).assertIsDisplayed().getBoundsInRoot().bottom <= window.bottom)
+        }
+    }
+
+    /**
+     * TalkBack skips the stripes (it can't see them) and hears the reading in words instead, once:
+     * the same sentence as with the needle and the wave.
+     */
+    @Test
+    fun talkBackSkipsTheStripesAndHearsTheReadingInWords() {
+        show(detected(-12.3f), display = TunerDisplay.STROBE, showTuneHint = true)
+        val stripes = strobe.assertIsDisplayed().fetchSemanticsNode()
+        assertNull(stripes.config.getOrNull(SemanticsProperties.ContentDescription))
+        assertNull(stripes.config.getOrNull(SemanticsProperties.Text))
+        assertTrue("nothing inside the stripes for TalkBack", stripes.children.isEmpty())
+        val spoken = "E 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
+        compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
+    }
+
+    @Test
+    fun dutchTalkBackHearsTheStrobeReadingInDutch() {
+        show(detected(2f, inTune = true, noteName = "F♯"), display = TunerDisplay.STROBE, locale = "nl")
+        compose.onAllNodes(hasContentDescription("fis 2, ${dutch.getString(R.string.tuner_in_tune)}")).assertCountEquals(1)
+    }
+
+    /**
+     * The stripes move on every frame, but TalkBack only hears about a new reading: while they move
+     * nothing on the screen recomposes, so the spoken sentence (a live region) stays exactly the same.
+     */
+    @Test
+    fun talkBackIsntToldAboutEveryFrameOfTheStrobe() {
+        // With the clock on manual the strobe's frame loop runs (see StrobeViewTest).
+        compose.mainClock.autoAdvance = false
+        show(detected(-12.3f), display = TunerDisplay.STROBE)
+        // Long enough for every fade, the note's pop and the spoken sentence to settle.
+        compose.mainClock.advanceTimeBy(SETTLE_MS)
+        val spoken = compose.onNode(hasContentDescription("E 2, $twelveCentsFlat"))
+        val before = spoken.assertExists().fetchSemanticsNode().config[SemanticsProperties.ContentDescription]
+        val stripesBefore = strobe.captureToImage().toPixelMap()
+        val changes = changeCount()
+        repeat(STROBE_FRAMES) { compose.mainClock.advanceTimeByFrame() }
+        assertTrue("the stripes moved", stripesBefore.differsFrom(strobe.captureToImage().toPixelMap()))
+        assertEquals("recompositions while the stripes moved", changes, changeCount())
+        assertEquals(before, spoken.assertExists().fetchSemanticsNode().config[SemanticsProperties.ContentDescription])
+    }
+
+    private fun PixelMap.differsFrom(other: PixelMap): Boolean =
+        (0 until width).any { x -> (0 until height).any { y -> this[x, y] != other[x, y] } }
+
+    /** How often the Recomposers applied changes to a composition, all together. */
+    private fun changeCount(): Long = compose.runOnIdle {
+        Recomposer.runningRecomposers.value.sumOf { it.changeCount }
+    }
+
+    /**
+     * The [stripes] have the strobe's own size ([height] high), whatever the font. In a window of
+     * [size], [DeviceConfigurationOverride.ForcedSize] scales everything down by the same amount.
+     */
+    private fun assertStrobeSize(stripes: DpRect, size: DpSize? = null, height: Dp = STROBE_HEIGHT) {
+        val scale = if (size == null) 1f else compose.onNodeWithTag(WINDOW).getBoundsInRoot().width / size.width
+        assertEquals("strobe width", STROBE_WIDTH.value * scale, stripes.width.value, 1f)
+        assertEquals("strobe height", height.value * scale, stripes.height.value, 1f)
+    }
+
+    /** The strobe view's stripes (in the unmerged tree: they have nothing to merge for TalkBack). */
+    private val strobe get() = compose.onNodeWithTag(TunerTestTags.STROBE, useUnmergedTree = true)
 
     @Test
     fun withTheLargestFontTheWaveViewCanStillBeReached() {
@@ -965,5 +1103,20 @@ class TunerContentTest {
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+
+        /** A tablet on its side and upright. */
+        val TABLET_LANDSCAPE = DpSize(1280.dp, 760.dp)
+        val TABLET_PORTRAIT = DpSize(800.dp, 1240.dp)
+
+        /** The strobe view's size, as NoteDisplay gives it. */
+        val STROBE_WIDTH = 240.dp
+        val STROBE_HEIGHT = 40.dp
+        val COMPACT_STROBE_HEIGHT = 30.dp
+
+        /** Long enough for every fade and the note's pop to finish. */
+        const val SETTLE_MS = 2_000L
+
+        /** One second of strobe frames at 60 frames a second. */
+        const val STROBE_FRAMES = 60
     }
 }

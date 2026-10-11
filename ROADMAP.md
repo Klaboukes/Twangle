@@ -22,7 +22,7 @@ Goal: a strobe view as a third display next to the needle and the wave, for very
 - ☑ Strobe model in `:core:dsp`: the pattern's drift speed and direction from the cents deviation, standing still when in tune (tests on synthetic signals, no allocations per frame). Still within ±0.5 cent, 0.4 stripes/s per cent beyond, at most 4 stripes/s (`StrobeMotion`)
 - ☑ Display picker in Settings: needle, wave or strobe (replaces the wave-view switch; old setting carried over). Wave on → wave, off → needle; the strobe shows plain stripes in every style for now
 - ☑ Strobe drawn in each of the seven styles, light and dark; the pattern moves in the draw phase only, so the screen doesn't recompose every frame (UI test steps frames and counts recompositions: none)
-- ☐ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style
+- ☑ TalkBack, landscape, tablet and 2× font for the strobe view (UI tests); S26 check in every style. TalkBack skips the stripes and hears the reading in words, unchanged while they move
 
 ## Phase 10 — Compact landscape mode
 Goal: on its side, the phone shows only the meter and what is essential, big and easy to read from a distance.
