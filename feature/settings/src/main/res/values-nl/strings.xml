@@ -60,6 +60,8 @@
     <string name="settings_vibrate_in_tune_summary">Kort trillen zodra de noot zuiver is</string>
     <string name="settings_show_tune_hint_title">Hint hoger/lager stemmen tonen</string>
     <string name="settings_show_tune_hint_summary">Zegt welke kant je de stemknop op draait zolang een noot niet zuiver is</string>
+    <string name="settings_show_signal_bars_title">Signaalstreepjes tonen</string>
+    <string name="settings_show_signal_bars_summary">Voor wie het wil weten: streepjes bij de noot tonen hoe goed de stemmer je hoort. Tik erop voor de cijfers</string>
 
     <!-- About (the last group). -->
     <string name="about_title">Over Twangle</string>

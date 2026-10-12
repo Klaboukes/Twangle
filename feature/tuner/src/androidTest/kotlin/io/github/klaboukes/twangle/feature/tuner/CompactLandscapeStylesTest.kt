@@ -88,6 +88,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                         modifier = Modifier.fillMaxSize().background(BACKGROUND).testTag(WINDOW),
                         display = shownDisplay.value,
                         showTuneHint = true,
+                        showSignalBars = true,
                         compactLandscape = true,
                     )
                 }
@@ -112,6 +113,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     private val frequency get() = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f))
     private val tuneUp get() = compose.onNodeWithText(context.getString(R.string.tuner_tune_up))
     private val targetString get() = compose.onNodeWithText("A2")
+    private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS)
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar))
 
     /**
@@ -130,6 +132,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                 val parts = buildList {
                     add("note" to note)
                     add("tune hint" to tuneUp)
+                    add("signal bars" to signalBars)
                     add("string" to targetString)
                     // With the wave, those take the cents' place and the frequency is left out.
                     if (display == TunerDisplay.NEEDLE) {
@@ -144,7 +147,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             shownDisplay.value = TunerDisplay.WAVE
             compose.waitForIdle()
             targetString.assertDoesNotExist()
-            val parts = listOf("note" to note, "tune hint" to tuneUp, "cents" to cents, "frequency" to frequency)
+            val parts = listOf("note" to note, "tune hint" to tuneUp, "signal bars" to signalBars, "cents" to cents, "frequency" to frequency)
             assertBigMeterBeside(parts, "$case chromatic wave")
         }
     }
@@ -201,11 +204,18 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                 gauge.assertIsDisplayed()
                 note.performScrollTo().assertIsDisplayed()
                 tuneUp.performScrollTo().assertIsDisplayed()
+                signalBars.performScrollTo().assertIsDisplayed()
                 targetString.performScrollTo().assertIsDisplayed()
                 if (display == TunerDisplay.NEEDLE) {
                     cents.performScrollTo().assertIsDisplayed()
                     frequency.performScrollTo().assertIsDisplayed()
                 }
+                // The longest tip keeps to one line in its place, beside the meter.
+                shownState.value = detected().copy(tip = ReceptionTip.TOO_LOUD)
+                compose.waitForIdle()
+                val tip = compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).performScrollTo().assertIsDisplayed()
+                assertTrue("tip right of the meter", tip.getBoundsInRoot().left >= gauge.getBoundsInRoot().right)
+                shownState.value = detected()
             }
         }
     }
@@ -251,6 +261,29 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             val face = marked.groupingBy { it.copy(alpha = 1f) }.eachCount().maxBy { it.value }.key
             val detailShare = marked.count { !it.near(face) } / sampled.size.toFloat()
             assertTrue("$case meter details ${(detailShare * 100).toInt()} %", detailShare > 0.01f)
+        }
+    }
+
+    /** The signal bars stand out from what is behind them in the style's colours, light and dark. */
+    @Test
+    fun theSignalBarsAreDrawn() {
+        show()
+        forEachLook(bothThemes = true) { case ->
+            for (display in TunerDisplay.entries) {
+                shownDisplay.value = display
+                compose.waitForIdle()
+                val pixels = signalBars.captureToImage().toPixelMap()
+                // The top-left corner is above the shortest bar: what is behind them.
+                val behind = pixels[0, 0]
+                var drawn = 0
+                for (x in 0 until pixels.width) for (y in 0 until pixels.height) {
+                    val p = pixels[x, y]
+                    val distance = maxOf(abs(p.red - behind.red), abs(p.green - behind.green), abs(p.blue - behind.blue))
+                    if (distance > 0.3f) drawn++
+                }
+                val share = drawn / (pixels.width * pixels.height).toFloat()
+                assertTrue("$case $display: bars cover ${(share * 100).toInt()} % clearly", share > 0.1f)
+            }
         }
     }
 

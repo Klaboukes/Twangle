@@ -58,6 +58,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setShowTuneHint(enabled) }
     }
 
+    fun setShowSignalBars(enabled: Boolean) {
+        viewModelScope.launch { repository.setShowSignalBars(enabled) }
+    }
+
     fun setDisplay(display: TunerDisplay) {
         viewModelScope.launch { repository.setDisplay(display) }
     }

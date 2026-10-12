@@ -81,6 +81,7 @@ fun SettingsScreen(
         onKeepScreenOnChange = viewModel::setKeepScreenOn,
         onVibrateInTuneChange = viewModel::setVibrateInTune,
         onShowTuneHintChange = viewModel::setShowTuneHint,
+        onShowSignalBarsChange = viewModel::setShowSignalBars,
         onDisplayChange = viewModel::setDisplay,
         onWaveLookChange = viewModel::setWaveLook,
         onWaveBreathesInTuneChange = viewModel::setWaveBreathesInTune,
@@ -110,6 +111,7 @@ fun SettingsContent(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
+    onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
@@ -132,6 +134,7 @@ fun SettingsContent(
                 onKeepScreenOnChange = onKeepScreenOnChange,
                 onVibrateInTuneChange = onVibrateInTuneChange,
                 onShowTuneHintChange = onShowTuneHintChange,
+                onShowSignalBarsChange = onShowSignalBarsChange,
                 onDisplayChange = onDisplayChange,
                 onWaveLookChange = onWaveLookChange,
                 onWaveBreathesInTuneChange = onWaveBreathesInTuneChange,
@@ -217,6 +220,7 @@ private fun SettingsGroups(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onVibrateInTuneChange: (Boolean) -> Unit,
     onShowTuneHintChange: (Boolean) -> Unit,
+    onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
@@ -320,6 +324,12 @@ private fun SettingsGroups(
                     checked = settings.showTuneHint,
                     onCheckedChange = onShowTuneHintChange,
                 )
+                SwitchSetting(
+                    title = stringResource(R.string.settings_show_signal_bars_title),
+                    summary = stringResource(R.string.settings_show_signal_bars_summary),
+                    checked = settings.showSignalBars,
+                    onCheckedChange = onShowSignalBarsChange,
+                )
             }
         }
         Rows {
@@ -420,6 +430,7 @@ private fun SettingsContentPreview() {
             onKeepScreenOnChange = {},
             onVibrateInTuneChange = {},
             onShowTuneHintChange = {},
+            onShowSignalBarsChange = {},
             onDisplayChange = {},
             onWaveLookChange = {},
             onWaveBreathesInTuneChange = {},

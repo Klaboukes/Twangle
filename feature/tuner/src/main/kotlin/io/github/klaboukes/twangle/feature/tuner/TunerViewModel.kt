@@ -90,6 +90,19 @@ class TunerViewModel(
         .map { it.showTuneHint }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showTuneHint)
 
+    /** Whether small signal bars by the note show how well the tuner hears (a saved setting, off by default). */
+    val showSignalBars: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.showSignalBars }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showSignalBars)
+
+    private val signal = MutableStateFlow<SignalFigures?>(null)
+
+    /**
+     * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]
+     * times a second while listening and [showSignalBars] is on, else left as it is (null until then).
+     */
+    val signalFigures: StateFlow<SignalFigures?> = signal
+
     /** What the wave view looks like (a saved setting). */
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }
@@ -195,11 +208,31 @@ class TunerViewModel(
         attempt.value++
     }
 
+    private companion object {
+        /** The signal bars' figures change this often: often enough to follow, slow enough to read. */
+        const val SIGNAL_UPDATES_PER_SECOND = 4f
+    }
+
     private fun listen(): Flow<TunerUiState> = flow {
         val interpreter = TunerInterpreter(pipeline.frameSeconds)
         val initial = options.filterNotNull().first()
         emit(interpreter.listening(initial))
-        emitAll(pipeline.readings().map { interpreter.interpret(it, options.value ?: initial) })
+        val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
+        var frame = 0
+        emitAll(
+            pipeline.readings().map { reading ->
+                val state = interpreter.interpret(reading, options.value ?: initial)
+                if (showSignalBars.value && frame++ % framesPerFigure == 0) {
+                    val reception = interpreter.reception
+                    signal.value = SignalFigures(
+                        levelDbfs = if (reception.hasNote) reception.levelDbfs else reading.levelDbfs,
+                        noiseFloorDbfs = reading.noiseFloorDbfs,
+                        clarity = if (reception.hasNote) reception.clarity else Float.NaN,
+                    )
+                }
+                state
+            },
+        )
     }
         // Most frames look the same on screen as the last state sent: an equal Listening state in
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping

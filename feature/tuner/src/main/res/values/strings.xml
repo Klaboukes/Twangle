@@ -62,6 +62,18 @@
     <string name="tuner_tip_too_soft">Play a bit louder</string>
     <string name="tuner_tip_too_noisy">Too noisy here</string>
     <string name="tuner_tip_too_loud">Too loud, move the phone back</string>
+    <!-- The optional signal bars by the note: %1$d bars lit of %2$d (TalkBack). -->
+    <string name="tuner_signal_bars">Signal bars: %1$d of %2$d</string>
+    <string name="tuner_signal_no_note">Signal: no note yet</string>
+    <string name="tuner_signal_show_figures">show the figures</string>
+    <!-- The panel a tap on the signal bars opens. -->
+    <string name="tuner_signal_title">How well Twangle hears you</string>
+    <string name="tuner_signal_volume">Volume</string>
+    <string name="tuner_signal_background">Background</string>
+    <string name="tuner_signal_clarity">Clarity</string>
+    <string name="tuner_signal_db" translatable="false">%1$d dB</string>
+    <string name="tuner_signal_percent" translatable="false">%1$d%%</string>
+    <string name="tuner_signal_unknown" translatable="false">–</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cents flat" or "in tune". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>

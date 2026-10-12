@@ -67,6 +67,9 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.util.Locale
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
@@ -101,6 +104,7 @@ class TunerContentTest {
 
     /** The wave look [show] passes on; set it to switch looks while the tuner is shown. */
     private val shownLook = mutableStateOf(WaveLook.DEFAULT)
+    private val shownSignalBars = mutableStateOf(false)
 
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.PermissionRequired)
@@ -122,6 +126,8 @@ class TunerContentTest {
         showStringLockTip: Boolean = false,
         locale: String? = null,
         compactLandscape: Boolean = false,
+        signalBars: Boolean = false,
+        signalFigures: Flow<SignalFigures?> = emptyFlow(),
     ) {
         val overrides = listOfNotNull(
             fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
@@ -133,6 +139,7 @@ class TunerContentTest {
         shownState.value = state
         shownCompact.value = compactLandscape
         shownLook.value = waveLook
+        shownSignalBars.value = signalBars
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
@@ -150,6 +157,8 @@ class TunerContentTest {
                         showStringLockTip = shownTip.value,
                         onStringLockTipDismiss = { tipDismissals++ },
                         compactLandscape = shownCompact.value,
+                        showSignalBars = shownSignalBars.value,
+                        signalFigures = signalFigures,
                     )
                 }
             }
@@ -530,6 +539,84 @@ class TunerContentTest {
         val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
         val tip = context.getString(R.string.tuner_tip_too_soft)
         compose.onNode(hasContentDescription("E 2, $cents, $tip")).assertExists()
+    }
+
+    @Test
+    fun signalBarsAreHiddenByDefault() {
+        show(detected(-12.3f))
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertDoesNotExist()
+    }
+
+    @Test
+    fun signalBarsShowHowWellTheNoteIsHeard() {
+        show(detected(-12.3f).copy(reception = 0.7f), signalBars = true)
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS)
+            .assertIsDisplayed()
+            .assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 3, 4)))
+        shownState.value = detected(-12.3f).copy(reception = 1f)
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 4, 4)))
+        // Between notes the last count stays (dimmed).
+        shownState.value = listening
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 4, 4)))
+    }
+
+    @Test
+    fun signalBarsBeforeAnyNoteSayNoNoteYet() {
+        show(listening, signalBars = true)
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_no_note)))
+    }
+
+    @Test
+    fun tappingTheSignalBarsShowsTheFigures() {
+        show(detected(-12.3f), signalBars = true, signalFigures = flowOf(SignalFigures(-31.6f, -55.2f, 0.92f)))
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_signal_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -32)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -55)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_signal_percent, 92)).assertIsDisplayed()
+    }
+
+    @Test
+    fun theFiguresStayOpenWhenTheNoteStops() {
+        show(detected(-12.3f), signalBars = true, signalFigures = flowOf(SignalFigures(-31.6f, -55.2f, 0.92f)))
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
+        shownState.value = listening
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertIsDisplayed()
+    }
+
+    @Test
+    fun withoutANoteTheFiguresLeaveClarityOpen() {
+        show(listening, signalBars = true, signalFigures = flowOf(SignalFigures(-60f, Float.NaN, Float.NaN)))
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performClick()
+        compose.onNodeWithText(context.getString(R.string.tuner_signal_db, -60)).assertIsDisplayed()
+        compose.onAllNodesWithText(context.getString(R.string.tuner_signal_unknown)).assertCountEquals(2)
+    }
+
+    @Test
+    fun signalBarsMoveNothingUnderTheNeedle() = assertSignalBarsMoveNothing(TunerDisplay.NEEDLE)
+
+    @Test
+    fun signalBarsMoveNothingInTheWaveView() = assertSignalBarsMoveNothing(TunerDisplay.WAVE)
+
+    private fun assertSignalBarsMoveNothing(display: TunerDisplay) {
+        show(detected(-12.3f), display = display, showTuneHint = true)
+        val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
+        val hint = compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot()
+        shownSignalBars.value = true
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertIsDisplayed()
+        assertEquals(noteTop, compose.onNodeWithText("E").getBoundsInRoot().top)
+        assertEquals(hint, compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot())
+    }
+
+    @Test
+    fun signalBarsCanBeReachedOnAPhoneOnItsSideWithTheLargestFont() {
+        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true, signalBars = true)
+        compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).performScrollTo().assertIsDisplayed()
     }
 
     @Test

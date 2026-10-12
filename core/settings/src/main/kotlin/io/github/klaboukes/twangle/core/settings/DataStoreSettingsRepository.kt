@@ -80,6 +80,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[SHOW_TUNE_HINT] = enabled }
     }
 
+    override suspend fun setShowSignalBars(enabled: Boolean) {
+        dataStore.edit { it[SHOW_SIGNAL_BARS] = enabled }
+    }
+
     override suspend fun setDisplay(display: TunerDisplay) {
         dataStore.edit {
             // An old strobe display was showing as the wave's strobe look: keep that look for the wave.
@@ -126,6 +130,7 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
+            showSignalBars = prefs[SHOW_SIGNAL_BARS] ?: defaults.showSignalBars,
             display = if (oldStrobe) {
                 TunerDisplay.WAVE
             } else {
@@ -153,6 +158,7 @@ class DataStoreSettingsRepository internal constructor(
         private val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
         private val VIBRATE_IN_TUNE = booleanPreferencesKey("vibrate_in_tune")
         private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
+        private val SHOW_SIGNAL_BARS = booleanPreferencesKey("show_signal_bars")
         private val DISPLAY = stringPreferencesKey("tuner_display")
 
         /** The strobe display of versions before it became a wave look ([WaveLook.STROBE]). */

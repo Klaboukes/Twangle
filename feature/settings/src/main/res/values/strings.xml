@@ -60,6 +60,8 @@
     <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
     <string name="settings_show_tune_hint_title">Show tune up/down hint</string>
     <string name="settings_show_tune_hint_summary">Says which way to turn the peg while a note is off pitch</string>
+    <string name="settings_show_signal_bars_title">Show signal bars</string>
+    <string name="settings_show_signal_bars_summary">For the curious: small bars by the note show how well the tuner hears you. Tap them for the figures</string>
 
     <!-- About (the last group). -->
     <string name="about_title">About Twangle</string>

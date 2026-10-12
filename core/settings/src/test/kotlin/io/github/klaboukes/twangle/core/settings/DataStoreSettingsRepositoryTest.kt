@@ -74,6 +74,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.keepScreenOn)
         assertEquals(true, settings.vibrateInTune)
         assertEquals(true, settings.showTuneHint)
+        assertEquals(false, settings.showSignalBars)
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
         assertEquals(true, settings.waveBreathesInTune)
@@ -95,6 +96,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setShowTuneHint(false)
+        repo.setShowSignalBars(true)
         repo.setDisplay(TunerDisplay.NEEDLE)
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setWaveBreathesInTune(false)
@@ -113,6 +115,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             showTuneHint = false,
+            showSignalBars = true,
             display = TunerDisplay.NEEDLE,
             waveLook = WaveLook.FIREFLIES,
             waveBreathesInTune = false,

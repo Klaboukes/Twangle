@@ -46,6 +46,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setShowTuneHint(enabled: Boolean) = state.update { it.copy(showTuneHint = enabled) }
 
+    override suspend fun setShowSignalBars(enabled: Boolean) = state.update { it.copy(showSignalBars = enabled) }
+
     override suspend fun setDisplay(display: TunerDisplay) = state.update { it.copy(display = display) }
 
     override suspend fun setWaveLook(look: WaveLook) = state.update { it.copy(waveLook = look) }

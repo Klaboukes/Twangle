@@ -130,6 +130,8 @@ data class AppSettings(
     val vibrateInTune: Boolean = true,
     /** "Tune up ↑" / "Tune down ↓" under the note while it is off pitch, also said by TalkBack. */
     val showTuneHint: Boolean = true,
+    /** For the curious: small signal bars by the note show how well the tuner hears; a tap shows the figures. */
+    val showSignalBars: Boolean = false,
     /** What shows how far off a note is under it: cents or the wave view. */
     val display: TunerDisplay = TunerDisplay.DEFAULT,
     /** What the wave view looks like. */

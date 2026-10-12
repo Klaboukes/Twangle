@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -86,12 +87,15 @@ import io.github.klaboukes.twangle.feature.tuner.components.NeedleGauge
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
+import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -138,6 +142,7 @@ fun TunerScreen(
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val waveBreathesInTune by viewModel.waveBreathesInTune.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
+    val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
     var showStyles by rememberSaveable { mutableStateOf(false) }
@@ -180,6 +185,8 @@ fun TunerScreen(
                     waveLook = waveLook,
                     waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
+                    showSignalBars = showSignalBars,
+                    signalFigures = viewModel.signalFigures,
                     showStringLockTip = showStringLockTip,
                     onStringLockTipDismiss = viewModel::dismissStringLockTip,
                     compactLandscape = !keepTwoPaneLandscape,
@@ -241,6 +248,10 @@ object TunerTestTags {
     /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
     const val GAUGE = "tuner_gauge"
 
+    /** The optional signal bars by the note, and the figures panel a tap on them opens. */
+    const val SIGNAL_BARS = "tuner_signal_bars"
+    const val SIGNAL_FIGURES = "tuner_signal_figures"
+
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
@@ -269,7 +280,8 @@ private fun KeepScreenOn() {
  * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
  * on the note or, without [waveBreathesInTune], holding still there), and
- * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
+ * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
+ * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss].
  *
@@ -293,12 +305,28 @@ fun TunerContent(
     waveLook: WaveLook = WaveLook.DEFAULT,
     waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
+    showSignalBars: Boolean = false,
+    signalFigures: Flow<SignalFigures?> = emptyFlow(),
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
     compactLandscape: Boolean = true,
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
+    // Movable, so the bars keep their count (and an open figures panel stays open) when a note
+    // starts or stops, or the layout changes, and the note's display is built afresh around them.
+    val currentReception by rememberUpdatedState(reception)
+    val currentFigures by rememberUpdatedState(signalFigures)
+    val movableSignalBars = remember {
+        movableContentOf { tint: Color ->
+            SignalBarsButton({ currentReception() }, currentFigures, tint, Modifier.fillMaxSize())
+        }
+    }
+    val signalBars: (@Composable (Color) -> Unit)? = if (showSignalBars) {
+        { tint -> movableSignalBars(tint) }
+    } else {
+        null
+    }
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ModeSwitch(mode = mode, onModeChange = onModeChange)
@@ -329,6 +357,7 @@ fun TunerContent(
                 showTuneHint = showTuneHint,
                 reception = reception,
                 tip = state.tip,
+                signalBars = signalBars,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
@@ -342,6 +371,7 @@ fun TunerContent(
                     waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     tip = state.tip,
+                signalBars = signalBars,
                 )
             else -> NoteDisplay(
                 readout = null,
@@ -351,6 +381,7 @@ fun TunerContent(
                 waveLook = waveLook,
                 waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
+                signalBars = signalBars,
             )
         }
     }

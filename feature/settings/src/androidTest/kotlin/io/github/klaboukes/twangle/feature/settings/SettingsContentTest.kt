@@ -85,6 +85,7 @@ class SettingsContentTest {
     private val keepScreenOnChanges = mutableListOf<Boolean>()
     private val vibrateChanges = mutableListOf<Boolean>()
     private val tuneHintChanges = mutableListOf<Boolean>()
+    private val signalBarsChanges = mutableListOf<Boolean>()
     private val displayChanges = mutableListOf<TunerDisplay>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private val breatheChanges = mutableListOf<Boolean>()
@@ -125,6 +126,7 @@ class SettingsContentTest {
                         onKeepScreenOnChange = { keepScreenOnChanges += it },
                         onVibrateInTuneChange = { vibrateChanges += it },
                         onShowTuneHintChange = { tuneHintChanges += it },
+                        onShowSignalBarsChange = { signalBarsChanges += it },
                         onDisplayChange = { displayChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         onWaveBreathesInTuneChange = { breatheChanges += it },
@@ -264,6 +266,14 @@ class SettingsContentTest {
         val tuneHint = compose.onNodeWithText(context.getString(R.string.settings_show_tune_hint_title))
         tuneHint.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), tuneHintChanges)
+    }
+
+    @Test
+    fun signalBarsSwitchIsOffByDefaultAndToggles() {
+        show(AppSettings())
+        val bars = compose.onNodeWithText(context.getString(R.string.settings_show_signal_bars_title))
+        bars.performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), signalBarsChanges)
     }
 
     @Test
@@ -449,6 +459,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_keep_screen_on_title)),
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_show_tune_hint_title)),
+            top(context.getString(R.string.settings_show_signal_bars_title)),
             top(context.getString(R.string.about_title)),
         )
         assertEquals("tops $order", order.sorted(), order)

@@ -103,6 +103,9 @@ data class NoteReadout(
  * TalkBack says it instead of the direction. A tip keeps to one line, set smaller when it doesn't
  * fit, so a long one ("Te hard, leg de telefoon verder weg") never pushes the note up.
  *
+ * [signalBars] (the optional "Show signal bars" setting) go in the free slot at the pill's right end,
+ * which mirrors the check mark's, so they add nothing and move nothing.
+ *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
  * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), throttled by
@@ -122,6 +125,7 @@ fun NoteDisplay(
     showTuneHint: Boolean = false,
     reception: () -> Float? = { null },
     tip: ReceptionTip? = null,
+    signalBars: (@Composable (tint: Color) -> Unit)? = null,
 ) {
     val inTune = readout?.inTune == true
     // The wave shows how far off the note is in a picture instead of in cents.
@@ -274,7 +278,9 @@ fun NoteDisplay(
                 autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
                 modifier = Modifier.weight(1f, fill = false).hiddenFromTalkBack(),
             )
-            Box(Modifier.size(CHECK_SIZE))
+            Box(Modifier.size(CHECK_SIZE)) {
+                signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
+            }
         }
         if (!pictured && showTuneHint) {
             // Always there (empty without a hint), so the frequency below doesn't move.
