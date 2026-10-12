@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.tuner.components
+package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxScope
@@ -15,8 +15,10 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.MeterLook
 
 /*
- * The meter looks, each drawn inside the shared MeterFrame. A look fills the frame's 2:1 box and
- * reads the frame's MeterReading in its layer and draw phases only: a part that only turns or slides
+ * The meter looks. The tuner draws them inside its MeterFrame (`:feature:tuner`) and the meter
+ * picker in settings draws them in its cards, so a look's art is written once, here, and shows in
+ * both. A look fills its 2:1 box (METER_ASPECT_RATIO) and reads the MeterReading it is handed in
+ * its layer and draw phases only: a part that only turns or slides
  * goes in its own graphicsLayer (like the classic needle), and a part that changes shape is redrawn
  * from the reading in its Canvas, with paths, brushes and strokes made once, not per frame. Every
  * moving layer calls MeterReading.applyMarkerLook for the shared resting and reception fade.
@@ -24,7 +26,7 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 
 /** Draws [look] in the frame's box from [reading]. */
 @Composable
-internal fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading) {
+fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading) {
     when (look) {
         MeterLook.CLASSIC -> ClassicMeter(reading)
         // Until their own art is built (Phase 13), the other looks show today's dial.

@@ -30,8 +30,11 @@ import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
-import io.github.klaboukes.twangle.core.designsystem.dial.DIAL_RANGE_CENTS
-import io.github.klaboukes.twangle.core.designsystem.dial.dialAngle
+import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
+import io.github.klaboukes.twangle.core.designsystem.meter.METER_RANGE_CENTS
+import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
+import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
+import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.MeterLook
@@ -40,13 +43,15 @@ import kotlinx.coroutines.launch
 
 /**
  * The meter above the note, in the [look] picked in settings. Every look sits in this one frame, so
- * picking another moves nothing else on the screen:
+ * picking another moves nothing else on the screen. The looks themselves are drawn in
+ * `core.designsystem.meter` ([MeterLookArt]), so the meter picker in settings shows the same art.
+ * The frame gives:
  *
  * - the same 2:1 box over the ♭ and ♯ labels, from −[METER_RANGE_CENTS] (left, flat) to
  *   +[METER_RANGE_CENTS] (right, sharp), in tune in the centre;
- * - one reading for every look ([MeterReading]): the marker springs to each new reading, readings
- *   beyond the range are pinned at the edge, and without a note ([cents] gives null) it rests in the
- *   centre, faded;
+ * - one reading for every look ([MeterReading], here [TunerMeterReading]): the marker springs to
+ *   each new reading, readings beyond the range are pinned at the edge, and without a note ([cents]
+ *   gives null) it rests in the centre, faded;
  * - while [inTune] the centre mark and the marker fade to the style's "in tune" colours (the note's
  *   check mark in [NoteDisplay] says it without colour);
  * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
@@ -83,7 +88,7 @@ fun MeterFrame(
     val markerColor = animateInTuneColor(inTune, dial.needle, "meterMarker", dial.needleInTune)
     val currentReception = rememberUpdatedState(reception)
     val blurs = rememberReceptionBlurs()
-    val reading = remember(blurs) { MeterReading(marker, restFade, centre, markerColor, currentReception, blurs) }
+    val reading = remember(blurs) { TunerMeterReading(marker, restFade, centre, markerColor, currentReception, blurs) }
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
@@ -106,41 +111,29 @@ fun MeterFrame(
 }
 
 /**
- * What every meter look reads while drawing, the same for all six. Read it only in layer and draw
- * phases (graphicsLayer blocks, Canvas), never while composing, so the meter moves without
- * recomposing. Nothing here allocates.
+ * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" colours and
+ * the reception's fade and blur. Nothing here allocates.
  */
 @Stable
-internal class MeterReading(
+private class TunerMeterReading(
     private val marker: Animatable<Float, AnimationVector1D>,
     private val restFade: State<Float>,
     private val centre: State<Color>,
     private val markerColor: State<Color>,
     private val reception: State<() -> Float?>,
     private val blurs: Array<RenderEffect?>,
-) {
+) : MeterReading {
     private val heldReception = HeldReception()
 
-    /**
-     * Where the marker is, in cents: it springs to each new reading, is pinned to
-     * ±[METER_RANGE_CENTS] beyond the range and rests at 0 without a note.
-     */
-    val cents: Float get() = marker.value
+    override val cents: Float get() = marker.value
 
-    /** How far the meter is from its resting look: 0 without a note, 1 with one (eased in and out). */
-    val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
+    override val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
 
-    /** The centre mark's colour, faded to the style's "in tune" colour while the note is in tune. */
-    val centreColor: Color get() = centre.value
+    override val centreColor: Color get() = centre.value
 
-    /** The marker's colour (needle, bar, bubble or light), faded to "in tune" like [centreColor]. */
-    val color: Color get() = markerColor.value
+    override val color: Color get() = markerColor.value
 
-    /**
-     * Gives a look's moving [layer] the resting fade and the reception's fade and blur. Call it in
-     * that layer's graphicsLayer block, once per layer, so every look fades the same way.
-     */
-    fun applyMarkerLook(layer: GraphicsLayerScope) {
+    override fun applyMarkerLook(layer: GraphicsLayerScope) {
         val presence = presence
         val heard = heldReception.of(reception.value())
         layer.alpha = restFade.value * ReceptionLook.alphaFor(heard, presence)
@@ -148,28 +141,10 @@ internal class MeterReading(
     }
 }
 
-/** The meter's box: twice as wide as it is high, for every look. */
-const val METER_ASPECT_RATIO = 2f
-
-/** Range shown on each side of the meter, the same for every look. */
-const val METER_RANGE_CENTS = DIAL_RANGE_CENTS
-
 /** The marker's opacity without a note: resting, faded in the centre. */
 private const val REST_ALPHA = 0.3f
 
 private val MARKER_SPRING = spring<Float>(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
-
-/** Where the marker points for [cents]: pinned to the meter's edge beyond it, centre when there is no reading. */
-internal fun meterCents(cents: Float?): Float = cents?.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS) ?: 0f
-
-/**
- * Angle of [cents] in radians on the half circle, measured clockwise from straight up: −π/2 (far
- * left) at −[METER_RANGE_CENTS], 0 in tune, +π/2 (far right) at +[METER_RANGE_CENTS].
- */
-internal fun meterAngle(cents: Float): Float = dialAngle(cents)
-
-/** The rotation in degrees of a needle drawn pointing up, clockwise from straight up (see [meterAngle]). */
-internal fun needleDegrees(cents: Float): Float = meterAngle(cents) * (180f / Math.PI.toFloat())
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable

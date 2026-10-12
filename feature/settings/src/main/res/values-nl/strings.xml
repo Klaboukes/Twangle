@@ -35,6 +35,14 @@
     <string name="settings_dynamic_color_title">Achtergrondkleuren</string>
     <string name="settings_dynamic_color_summary">Gebruik de kleuren van je achtergrond</string>
 
+    <string name="settings_meter_look_title">Meter</string>
+    <string name="settings_meter_look_classic">Klassiek</string>
+    <string name="settings_meter_look_light_arc">Lichtboog</string>
+    <string name="settings_meter_look_spirit_level">Waterpas</string>
+    <string name="settings_meter_look_rolling_scale">Rolschaal</string>
+    <string name="settings_meter_look_comet">Komeet</string>
+    <string name="settings_meter_look_studio_meter">Studiometer</string>
+
     <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
     <string name="settings_display_title">Weergave</string>
     <string name="settings_display_needle">Naald: het aantal cents</string>

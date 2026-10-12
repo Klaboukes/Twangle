@@ -11,6 +11,7 @@ import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.FontScale
@@ -47,12 +48,14 @@ import io.github.klaboukes.twangle.core.designsystem.styleCardTag
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
+import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -87,6 +90,7 @@ class SettingsContentTest {
     private val tuneHintChanges = mutableListOf<Boolean>()
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val displayChanges = mutableListOf<TunerDisplay>()
+    private val meterLookChanges = mutableListOf<MeterLook>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private val breatheChanges = mutableListOf<Boolean>()
     private val twoPaneChanges = mutableListOf<Boolean>()
@@ -128,6 +132,7 @@ class SettingsContentTest {
                         onShowTuneHintChange = { tuneHintChanges += it },
                         onShowSignalBarsChange = { signalBarsChanges += it },
                         onDisplayChange = { displayChanges += it },
+                        onMeterLookChange = { meterLookChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         onWaveBreathesInTuneChange = { breatheChanges += it },
                         onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
@@ -300,6 +305,114 @@ class SettingsContentTest {
         assertEquals(listOf(TunerDisplay.NEEDLE), displayChanges)
     }
 
+    /** Six meter cards, in the owner's order, with the needle display as well as the wave. */
+    @Test
+    fun theMeterPickerShowsSixCardsWithTheNeedle() = assertSixMeterCards(TunerDisplay.NEEDLE)
+
+    @Test
+    fun theMeterPickerShowsSixCardsWithTheWave() = assertSixMeterCards(TunerDisplay.WAVE)
+
+    private fun assertSixMeterCards(display: TunerDisplay) {
+        show(AppSettings(display = display))
+        compose.onNodeWithText(context.getString(R.string.settings_meter_look_title)).performScrollTo().assertIsDisplayed()
+        val cards = SemanticsMatcher("a meter look card") {
+            it.config.getOrElseNullable(SemanticsProperties.TestTag) { null }?.startsWith("meter_look_card_") == true
+        }
+        compose.onAllNodes(cards).assertCountEquals(6)
+        val places = MeterLook.entries.map { compose.onNodeWithTag(meterLookCardTag(it)).fetchSemanticsNode().positionInRoot }
+        // Read in rows: each card is beside the one before it, to the right, or in the row below.
+        places.zipWithNext().forEach { (a, b) -> assertTrue("$a then $b", b.y > a.y || (b.y == a.y && b.x > a.x)) }
+    }
+
+    @Test
+    fun meterLooksShowTheChoiceAndReportEachOne() {
+        show(AppSettings(meterLook = MeterLook.SPIRIT_LEVEL))
+        compose.onNodeWithTag(meterLookCardTag(MeterLook.SPIRIT_LEVEL)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(meterLookCardTag(MeterLook.CLASSIC)).assertIsNotSelected()
+        for (look in MeterLook.entries) compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo().performClick()
+        assertEquals(MeterLook.entries, meterLookChanges)
+    }
+
+    /**
+     * TalkBack hears every meter card as a radio button with its name, and which one is picked:
+     * one group, exactly one card selected. In English and in Dutch.
+     */
+    @Test
+    fun talkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = null)
+
+    @Test
+    fun dutchTalkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = "nl")
+
+    private fun assertMeterLooksSpoken(locale: String?) {
+        show(AppSettings(meterLook = MeterLook.COMET), locale = locale)
+        val res = resourcesIn(locale)
+        for ((look, id) in meterLookNames) {
+            val name = res.getString(id)
+            val card = compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo()
+            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (look == MeterLook.COMET) card.assertIsSelected() else card.assertIsNotSelected()
+            // Its name, said once: the moving meter inside says nothing.
+            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
+            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+    }
+
+    /**
+     * At 2× font every meter look's name still fits its card on one line (two cards to a row then,
+     * and the name gets smaller when needed), in English and Dutch ("Studiometer"), on a phone and
+     * on a phone on its side.
+     */
+    @Test
+    fun meterLookNamesFitAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f)
+
+    @Test
+    fun meterLookNamesFitInDutchAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f, locale = "nl")
+
+    /** Classic sets its names in a wide serif face. */
+    @Test
+    fun meterLookNamesFitAtTwiceTheFontSizeInTheClassicStyle() =
+        assertMeterLookNamesFit(fontScale = 2f, style = VisualStyle.CLASSIC)
+
+    @Test
+    fun meterLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
+        assertMeterLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
+
+    @Test
+    fun meterLookNamesFitAtTwiceTheFontSizeOnAPhoneOnItsSide() =
+        assertMeterLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
+
+    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
+    @Test
+    fun meterLookNamesFitInALargerFontSizeInTheClassicStyle() =
+        assertMeterLookNamesFit(fontScale = 1.29f, style = VisualStyle.CLASSIC)
+
+    private fun assertMeterLookNamesFit(
+        size: DpSize? = null,
+        fontScale: Float? = null,
+        locale: String? = null,
+        style: VisualStyle? = null,
+    ) {
+        show(AppSettings(), size = size, fontScale = fontScale, locale = locale, style = style)
+        val res = resourcesIn(locale)
+        for ((look, id) in meterLookNames) {
+            val name = res.getString(id)
+            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(meterLookCardTag(look))), useUnmergedTree = true)
+            assertWhollyShown(label, name)
+            val layouts = mutableListOf<TextLayoutResult>()
+            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
+        }
+    }
+
+    private val meterLookNames = mapOf(
+        MeterLook.CLASSIC to R.string.settings_meter_look_classic,
+        MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
+        MeterLook.SPIRIT_LEVEL to R.string.settings_meter_look_spirit_level,
+        MeterLook.ROLLING_SCALE to R.string.settings_meter_look_rolling_scale,
+        MeterLook.COMET to R.string.settings_meter_look_comet,
+        MeterLook.STUDIO_METER to R.string.settings_meter_look_studio_meter,
+    )
+
     @Test
     fun waveLooksShowTheChoiceAndReportANewOne() {
         show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.LOOP))
@@ -453,6 +566,7 @@ class SettingsContentTest {
             compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_meter_look_title)),
             top(context.getString(R.string.settings_display_title)),
             top(context.getString(R.string.settings_wave_look_title)),
             top(context.getString(R.string.settings_group_while_tuning)),

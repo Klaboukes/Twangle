@@ -35,6 +35,15 @@
     <string name="settings_dynamic_color_title">Wallpaper colours</string>
     <string name="settings_dynamic_color_summary">Use colours from your wallpaper</string>
 
+    <!-- Meter: the look of the meter above the note (in the Look group). -->
+    <string name="settings_meter_look_title">Meter</string>
+    <string name="settings_meter_look_classic">Classic</string>
+    <string name="settings_meter_look_light_arc">Light arc</string>
+    <string name="settings_meter_look_spirit_level">Spirit level</string>
+    <string name="settings_meter_look_rolling_scale">Rolling scale</string>
+    <string name="settings_meter_look_comet">Comet</string>
+    <string name="settings_meter_look_studio_meter">Studio meter</string>
+
     <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
     <string name="settings_display_title">Display</string>
     <string name="settings_display_needle">Needle: the number of cents</string>

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
@@ -64,6 +65,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
 
     fun setDisplay(display: TunerDisplay) {
         viewModelScope.launch { repository.setDisplay(display) }
+    }
+
+    fun setMeterLook(look: MeterLook) {
+        viewModelScope.launch { repository.setMeterLook(look) }
     }
 
     fun setWaveLook(look: WaveLook) {

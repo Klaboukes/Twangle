@@ -1,9 +1,9 @@
-package io.github.klaboukes.twangle.feature.tuner.components
+package io.github.klaboukes.twangle.core.designsystem.meter
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class MeterFrameTest {
+class MeterReadingTest {
 
     private val halfPi = (Math.PI / 2).toFloat()
 

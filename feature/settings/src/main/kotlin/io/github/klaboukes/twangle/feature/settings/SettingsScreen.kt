@@ -42,6 +42,7 @@ import io.github.klaboukes.twangle.core.designsystem.StylePicker
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
@@ -49,6 +50,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
+import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
@@ -83,6 +85,7 @@ fun SettingsScreen(
         onShowTuneHintChange = viewModel::setShowTuneHint,
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onDisplayChange = viewModel::setDisplay,
+        onMeterLookChange = viewModel::setMeterLook,
         onWaveLookChange = viewModel::setWaveLook,
         onWaveBreathesInTuneChange = viewModel::setWaveBreathesInTune,
         onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
@@ -94,7 +97,8 @@ fun SettingsScreen(
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
- * (Android 12+), and the wave looks (and whether the wave breathes in tune) only while the wave is the display.
+ * (Android 12+); the meter looks always show, and the wave looks (and whether the wave breathes in
+ * tune) only while the wave is the display.
  */
 @Composable
 fun SettingsContent(
@@ -113,6 +117,7 @@ fun SettingsContent(
     onShowTuneHintChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
+    onMeterLookChange: (MeterLook) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
@@ -136,6 +141,7 @@ fun SettingsContent(
                 onShowTuneHintChange = onShowTuneHintChange,
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onDisplayChange = onDisplayChange,
+                onMeterLookChange = onMeterLookChange,
                 onWaveLookChange = onWaveLookChange,
                 onWaveBreathesInTuneChange = onWaveBreathesInTuneChange,
                 onKeepTwoPaneLandscapeChange = onKeepTwoPaneLandscapeChange,
@@ -200,7 +206,7 @@ internal fun SettingsPage(
 
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (how the app looks, how far off a note is shown and the layout on its side) and While tuning (what the tuner does while it listens),
+ * (how the app looks, the meter's look, how far off a note is shown and the layout on its side) and While tuning (what the tuner does while it listens),
  * followed by one row that opens the About page (version, promise, privacy and licences), so those
  * long texts don't crowd the settings.
  * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
@@ -222,6 +228,7 @@ private fun SettingsGroups(
     onShowTuneHintChange: (Boolean) -> Unit,
     onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
+    onMeterLookChange: (MeterLook) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
@@ -271,6 +278,13 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
+                HorizontalDivider()
+                // The meter sits above the note with both displays, so its looks come first.
+                MeterLookPicker(
+                    title = stringResource(R.string.settings_meter_look_title),
+                    selected = settings.meterLook,
+                    onSelect = onMeterLookChange,
+                ) { stringResource(meterLookLabel(it)) }
                 HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_display_title),
@@ -397,6 +411,15 @@ private fun displayLabel(display: TunerDisplay): Int = when (display) {
     TunerDisplay.WAVE -> R.string.settings_display_wave
 }
 
+private fun meterLookLabel(look: MeterLook): Int = when (look) {
+    MeterLook.CLASSIC -> R.string.settings_meter_look_classic
+    MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
+    MeterLook.SPIRIT_LEVEL -> R.string.settings_meter_look_spirit_level
+    MeterLook.ROLLING_SCALE -> R.string.settings_meter_look_rolling_scale
+    MeterLook.COMET -> R.string.settings_meter_look_comet
+    MeterLook.STUDIO_METER -> R.string.settings_meter_look_studio_meter
+}
+
 private fun waveLookLabel(look: WaveLook): Int = when (look) {
     WaveLook.STROBE -> R.string.settings_wave_look_strobe
     WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
@@ -432,6 +455,7 @@ private fun SettingsContentPreview() {
             onShowTuneHintChange = {},
             onShowSignalBarsChange = {},
             onDisplayChange = {},
+            onMeterLookChange = {},
             onWaveLookChange = {},
             onWaveBreathesInTuneChange = {},
             onKeepTwoPaneLandscapeChange = {},
