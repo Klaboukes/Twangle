@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,11 +30,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.onVisibilityChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.dial.WaveMotion
 import io.github.klaboukes.twangle.core.designsystem.dial.drawWave
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -43,11 +46,13 @@ import kotlin.math.abs
 import kotlin.math.exp
 
 /**
- * A titled grid of cards, three to a row, to pick the wave view's look from. Each card shows its
- * look moving, drawn in the current style, with its [label] under it. All cards play the same short
- * loop ([WaveDemo]): flat, in tune, sharp, in tune. The [selected] card has a ring; tapping a card
- * calls [onSelect]. On the note they breathe, or hold still without [breathesInTune], as the tuner's
- * wave does. The cards form one selectable group for TalkBack, which reads each card's name.
+ * A titled grid of cards, three to a row (two from 1.3× system font), to pick the wave view's look
+ * from. Each card shows its look moving, drawn in the current style, with its [label] under it. All
+ * cards play the same short loop ([WaveDemo]): flat, in tune, sharp, in tune. The [selected] card
+ * has a ring; tapping a card calls [onSelect]. A name too long for its card gets smaller rather
+ * than breaking in the middle of a word (Dutch "Vuurvliegjes" at 2× font). On the note they
+ * breathe, or hold still without [breathesInTune], as the tuner's wave does. The cards form one
+ * selectable group for TalkBack, which reads each card's name and whether it is selected.
  *
  * The loop only runs while some of the cards are on screen, and each frame only redraws the cards'
  * previews: nothing is recomposed.
@@ -76,6 +81,7 @@ fun WaveLookPicker(
             }
         }
     }
+    val perRow = if (LocalDensity.current.fontScale >= LARGE_FONT_SCALE) PER_ROW_LARGE_FONT else PER_ROW
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
         Column(
@@ -84,7 +90,7 @@ fun WaveLookPicker(
                 .onVisibilityChanged(minFractionVisible = MIN_VISIBLE) { onScreen = it },
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            WaveLook.entries.chunked(PER_ROW).forEach { row ->
+            WaveLook.entries.chunked(perRow).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { look ->
                         WaveLookCard(
@@ -97,7 +103,7 @@ fun WaveLookPicker(
                         )
                     }
                     // Keeps the cards of a shorter last row as wide as the others.
-                    repeat(PER_ROW - row.size) { Column(Modifier.weight(1f)) {} }
+                    repeat(perRow - row.size) { Column(Modifier.weight(1f)) {} }
                 }
             }
         }
@@ -157,6 +163,13 @@ private fun WaveLookCard(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = if (selected) colors.onSurface else colors.onSurfaceVariant,
+            // One line, shrinking to fit: a long name never breaks in the middle of a word.
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = LABEL_MIN_SIZE,
+                maxFontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                stepSize = 1.sp,
+            ),
         )
     }
 }
@@ -214,6 +227,13 @@ private const val MAX_STEP_SECONDS = 0.1f
 private const val MIN_VISIBLE = 0.01f
 
 private const val PER_ROW = 3
+
+/** From this system font size on, two cards to a row, so their names stay big enough to read. */
+private const val LARGE_FONT_SCALE = 1.3f
+private const val PER_ROW_LARGE_FONT = 2
+
+/** The smallest a card's name gets to fit its card. */
+private val LABEL_MIN_SIZE = 8.sp
 private val PREVIEW_HEIGHT = 32.dp
 
 @Preview(showBackground = true, widthDp = 360)

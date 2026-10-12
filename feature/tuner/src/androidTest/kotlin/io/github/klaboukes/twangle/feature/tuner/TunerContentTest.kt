@@ -99,6 +99,9 @@ class TunerContentTest {
     /** Whether [show] asks for the compact landscape layout; set it to switch layouts while the tuner is shown. */
     private val shownCompact = mutableStateOf(false)
 
+    /** The wave look [show] passes on; set it to switch looks while the tuner is shown. */
+    private val shownLook = mutableStateOf(WaveLook.DEFAULT)
+
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.PermissionRequired)
 
@@ -129,6 +132,7 @@ class TunerContentTest {
         shownTip.value = showStringLockTip
         shownState.value = state
         shownCompact.value = compactLandscape
+        shownLook.value = waveLook
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
@@ -141,7 +145,7 @@ class TunerContentTest {
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         display = display,
-                        waveLook = waveLook,
+                        waveLook = shownLook.value,
                         showTuneHint = showTuneHint,
                         showStringLockTip = shownTip.value,
                         onStringLockTipDismiss = { tipDismissals++ },
@@ -564,18 +568,21 @@ class TunerContentTest {
     }
 
     /**
-     * TalkBack skips the wave (it can't see it) and hears the reading in words instead, once:
-     * the same sentence as with the needle.
+     * TalkBack skips the wave (it can't see it) in every look and hears the reading in words
+     * instead, once: the same sentence as with the needle.
      */
     @Test
     fun talkBackSkipsTheWaveAndHearsTheReadingInWords() {
         show(detected(-12.3f), display = TunerDisplay.WAVE, showTuneHint = true)
-        val shown = wave.assertIsDisplayed().fetchSemanticsNode()
-        assertNull(shown.config.getOrNull(SemanticsProperties.ContentDescription))
-        assertNull(shown.config.getOrNull(SemanticsProperties.Text))
-        assertTrue("nothing inside the wave for TalkBack", shown.children.isEmpty())
         val spoken = "E 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
-        compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
+        for (look in WaveLook.entries) {
+            shownLook.value = look
+            val shown = wave.assertIsDisplayed().fetchSemanticsNode()
+            assertNull("$look", shown.config.getOrNull(SemanticsProperties.ContentDescription))
+            assertNull("$look", shown.config.getOrNull(SemanticsProperties.Text))
+            assertTrue("nothing inside the $look wave for TalkBack", shown.children.isEmpty())
+            compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
+        }
     }
 
     @Test

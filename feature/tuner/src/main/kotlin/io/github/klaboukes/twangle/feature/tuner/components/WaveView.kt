@@ -114,8 +114,8 @@ private const val LEVEL_MS = 350
 /** The colour and the "in tune" halo fade over this. */
 private const val GLOW_MS = 600
 
-/** Off pitch the ribbon is a quiet tint of the style's colour, at rest fainter still. */
-private const val OFF_ALPHA = 0.6f
+/** Off pitch the wave is a tint of the style's colour (clear enough on dark backgrounds too), at rest fainter still. */
+private const val OFF_ALPHA = 0.8f
 private const val REST_ALPHA = 0.3f
 
 @Preview(showBackground = true)

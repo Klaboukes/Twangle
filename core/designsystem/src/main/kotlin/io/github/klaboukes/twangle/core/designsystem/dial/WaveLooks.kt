@@ -228,7 +228,7 @@ private fun DrawScope.fireflies(ribbon: Ribbon) {
     val mid = size.height / 2f
     val reach = mid - 3.dp.toPx()
     val spread = unrest(ribbon.depth)
-    val small = 1.dp.toPx()
+    val small = 1.2.dp.toPx()
     val halo = 0.25f + ribbon.halo(0f)
     val span = ceil(ribbon.beats / 2f).toInt() + 1
     for (j in -span..span) {
@@ -243,7 +243,8 @@ private fun DrawScope.fireflies(ribbon: Ribbon) {
             val twinkle = STEADY + (sparkle - STEADY) * ribbon.stir
             // Faded in near the ends, so they don't pop in and out there.
             val edge = (sin(PI.toFloat() * u) * 3f).coerceAtMost(1f)
-            val alpha = (0.35f + 0.65f * twinkle) * (0.4f + h).coerceAtMost(1f) * edge
+            // Bright enough to stand out off pitch too, where they are a quiet tint on busy backgrounds.
+            val alpha = (0.5f + 0.5f * twinkle) * (0.6f + h).coerceAtMost(1f) * edge
             val r = small * (1f + 1.4f * h)
             val centre = Offset(u * size.width, y)
             drawCircle(ribbon.faded(alpha * halo), r * 2.4f, centre)

@@ -1,10 +1,13 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
@@ -182,6 +185,71 @@ class WaveViewTest {
         }
     }
 
+    /**
+     * Every look, in every style, light and dark, is clearly drawn and stays inside its own box (a
+     * little glow aside), so none of them spills over the note above it or the hint and strings
+     * below, far off pitch (the ripples swell, the fireflies scatter) or in tune (with the halo).
+     */
+    @Test
+    fun everyLookStaysInItsBoxInEveryStyle() {
+        compose.mainClock.autoAdvance = false
+        val shownStyle = mutableStateOf(VisualStyle.entries.first())
+        compose.setContent {
+            TwangleTheme(style = shownStyle.value, darkTheme = false, animate = false) {
+                Column {
+                    for (look in WaveLook.entries) {
+                        Row {
+                            for (onNote in listOf(false, true)) {
+                                TwangleTheme(style = shownStyle.value, darkTheme = onNote, animate = false) {
+                                    Box(Modifier.testTag(lookTag(look, onNote)).background(BACKGROUND).padding(MARGIN)) {
+                                        WaveView(
+                                            cents = if (onNote) 0.2f else -30f,
+                                            inTune = onNote,
+                                            look = look,
+                                            modifier = Modifier.size(150.dp, 40.dp),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (style in VisualStyle.entries) {
+            shownStyle.value = style
+            compose.mainClock.advanceTimeBy(STYLE_SETTLE_MS)
+            for (look in WaveLook.entries) {
+                for (onNote in listOf(false, true)) {
+                    val pixels = capture(look, onNote)
+                    // The margin around the wave's box, less the little a glow may reach into it.
+                    val edge = with(compose.density) { (MARGIN - GLOW_ROOM).toPx() }.toInt()
+                    var outside = 0
+                    var firstOut = ""
+                    var inside = 0
+                    var total = 0
+                    for (x in 0 until pixels.width step 3) {
+                        for (y in 0 until pixels.height step 3) {
+                            val inBox = x >= edge && y >= edge && x < pixels.width - edge && y < pixels.height - edge
+                            // A little looser than near(): the screen's colours can be off by a step or two.
+                            val marked = !pixels[x, y].near(BACKGROUND, BOX_TOLERANCE)
+                            if (inBox) {
+                                total++
+                                if (marked) inside++
+                            } else if (marked) {
+                                if (outside == 0) firstOut = "(first at $x, $y px)"
+                                outside++
+                            }
+                        }
+                    }
+                    val what = "$style $look ${if (onNote) "in tune, dark" else "off pitch, light"}"
+                    assertEquals("$what: pixels drawn outside its box $firstOut", 0, outside)
+                    assertTrue("$what: drawn on ${inside * 100 / total} % of its box", inside > total / 50)
+                }
+            }
+        }
+    }
+
     private fun capture(look: WaveLook, onNote: Boolean): PixelMap =
         compose.onNodeWithTag(lookTag(look, onNote)).captureToImage().toPixelMap()
 
@@ -198,14 +266,19 @@ class WaveViewTest {
         return different / total.toFloat()
     }
 
-    private fun Color.near(other: Color): Boolean =
-        abs(red - other.red) < 0.02f && abs(green - other.green) < 0.02f && abs(blue - other.blue) < 0.02f
+    private fun Color.near(other: Color, tolerance: Float = 0.02f): Boolean =
+        abs(red - other.red) < tolerance && abs(green - other.green) < tolerance && abs(blue - other.blue) < tolerance
 
     private fun tag(style: VisualStyle, dark: Boolean) = "wave_${style.name}_$dark"
 
     private fun lookTag(look: WaveLook, onNote: Boolean) = "look_${look.name}_$onNote"
 
     private companion object {
+        /** Room around the wave in [everyLookStaysInItsBoxInEveryStyle], and how far into it a glow may reach. */
+        val MARGIN = 12.dp
+        val GLOW_ROOM = 4.dp
+        const val BOX_TOLERANCE = 0.06f
+
         /** Behind the wave, a colour none of the styles uses. */
         val BACKGROUND = Color(0xFF7F00FF)
 
@@ -214,6 +287,9 @@ class WaveViewTest {
 
         /** Long enough for the breathing to fade out on the note (about a second) and the colours to settle. */
         const val SETTLE_MS = 2500L
+
+        /** Long enough for the colours, the halo and the shape to settle after a change of style. */
+        const val STYLE_SETTLE_MS = 800L
 
         const val STROBE_TAG = "strobe"
 

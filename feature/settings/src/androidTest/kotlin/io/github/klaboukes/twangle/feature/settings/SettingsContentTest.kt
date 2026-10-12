@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.designsystem.styleCardTag
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -103,10 +104,11 @@ class SettingsContentTest {
         fontScale: Float? = null,
         locale: String? = null,
         about: Boolean = false,
+        style: VisualStyle? = null,
     ) {
         compose.setContent {
             val content = @Composable {
-                MaterialTheme {
+                Themed(style) {
                     if (about) {
                         AboutScreen(appVersion = VERSION, onBack = { backs++ }, modifier = Modifier.testTag(WINDOW))
                     } else SettingsContent(
@@ -296,6 +298,81 @@ class SettingsContentTest {
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_fireflies)).performScrollTo().performClick()
         assertEquals(listOf(WaveLook.FIREFLIES), waveLookChanges)
     }
+
+    /**
+     * TalkBack hears every look card as a radio button with its name, and which one is picked:
+     * one group, exactly one card selected. In English and in Dutch.
+     */
+    @Test
+    fun talkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = null)
+
+    @Test
+    fun dutchTalkBackReadsEveryWaveLookAsARadioButton() = assertWaveLooksSpoken(locale = "nl")
+
+    private fun assertWaveLooksSpoken(locale: String?) {
+        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.DOTS), locale = locale)
+        val res = resourcesIn(locale)
+        val names = waveLookNames.mapValues { res.getString(it.value) }
+        for ((look, name) in names) {
+            val card = compose.onNodeWithText(name).performScrollTo()
+            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (look == WaveLook.DOTS) card.assertIsSelected() else card.assertIsNotSelected()
+            // Its name, said once: nothing else inside the card for TalkBack to read.
+            assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
+            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+    }
+
+    /**
+     * At 2× font every look's name still fits its card on one line (two cards to a row then, and
+     * the name gets smaller when needed) instead of breaking in the middle of a word, in English
+     * and Dutch ("Vuurvliegjes"), on a phone and on a phone on its side.
+     */
+    @Test
+    fun waveLookNamesFitAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f)
+
+    @Test
+    fun waveLookNamesFitInDutchAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f, locale = "nl")
+
+    /** Classic sets its names in a wide serif face. */
+    @Test
+    fun waveLookNamesFitInDutchAtTwiceTheFontSizeInTheClassicStyle() =
+        assertWaveLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
+
+    @Test
+    fun waveLookNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
+        assertWaveLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
+
+    @Test
+    fun waveLookNamesFitInDutchAtALargerFontSize() =
+        assertWaveLookNamesFit(fontScale = 1.3f, locale = "nl", style = VisualStyle.CLASSIC)
+
+    private fun assertWaveLookNamesFit(
+        size: DpSize? = null,
+        fontScale: Float? = null,
+        locale: String? = null,
+        style: VisualStyle? = null,
+    ) {
+        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = fontScale, locale = locale, style = style)
+        val res = resourcesIn(locale)
+        for (id in waveLookNames.values) {
+            val name = res.getString(id)
+            val label = compose.onNodeWithText(name, useUnmergedTree = true)
+            assertWhollyShown(label, name)
+            val layouts = mutableListOf<TextLayoutResult>()
+            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
+        }
+    }
+
+    private val waveLookNames = mapOf(
+        WaveLook.STROBE to R.string.settings_wave_look_strobe,
+        WaveLook.RIBBON to R.string.settings_wave_look_ribbon,
+        WaveLook.DOTS to R.string.settings_wave_look_dots,
+        WaveLook.FIREFLIES to R.string.settings_wave_look_fireflies,
+        WaveLook.LOOP to R.string.settings_wave_look_loop,
+        WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
+    )
 
     @Test
     fun waveInTuneShowsTheChoiceAndReportsANewOne() {
@@ -517,6 +594,12 @@ class SettingsContentTest {
     }
 
     /** Resources in [locale], or the test's own when it is null. */
+    /** [MaterialTheme], or with a [style] that style's lettering and colours (light). */
+    @Composable
+    private fun Themed(style: VisualStyle?, content: @Composable () -> Unit) {
+        if (style == null) MaterialTheme { content() } else TwangleTheme(style = style, darkTheme = false, animate = false) { content() }
+    }
+
     private fun resourcesIn(locale: String?): android.content.res.Resources {
         if (locale == null) return context.resources
         val config = android.content.res.Configuration(context.resources.configuration)
