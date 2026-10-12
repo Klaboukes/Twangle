@@ -1,11 +1,13 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 
 /**
- * The per-frame DSP chain as the app runs it (frame assembly → gate → YIN → smoother), for tests
- * that feed whole recordings through it. Mirrors `PitchPipeline` plus `TunerInterpreter`.
+ * The per-frame DSP chain as the app runs it (frame assembly → gate → YIN → smoother, plus the
+ * noise floor and clarity), for tests that feed whole recordings through it. Mirrors
+ * `PitchPipeline` plus `TunerInterpreter`.
  */
 internal class TunerChain(
     val settings: AnalysisSettings = AnalysisSettings.forSampleRate(YinPitchDetector.DEFAULT_SAMPLE_RATE),
@@ -22,6 +24,12 @@ internal class TunerChain(
         val confidence: Float,
         /** Smoothed reading in Hz, or 0 when nothing is shown. */
         val shownHz: Float,
+        /** Background level from the [NoiseFloorTracker], NaN until known. */
+        val floorDbfs: Float,
+        /** How far the note rises above the background, NaN without a note. */
+        val snrDb: Float,
+        /** [Clarity.of] the detector's confidence. */
+        val clarity: Float,
     ) {
         val isShown: Boolean get() = shownHz > 0f
     }
@@ -32,6 +40,7 @@ internal class TunerChain(
         val gate = SignalGate()
         val detector = settings.newPitchDetector()
         val smoother = PitchSmoother()
+        val noise = settings.newNoiseFloorTracker()
         val window = FloatArray(settings.windowSize)
         val frames = ArrayList<Frame>()
         var position = 0
@@ -49,7 +58,11 @@ internal class TunerChain(
                 val pitch = if (open) detector.detect(window) else PitchResult.NONE
                 if (pitch.isPitched) smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence) else smoother.noReading()
                 val shown = if (smoother.hasReading) mapper.frequencyOf(smoother.midi) else 0f
-                frames += Frame(position, open, gate.levelDbfs, pitch.frequencyHz, pitch.confidence, shown)
+                noise.update(gate.levelDbfs, pitch.isPitched)
+                frames += Frame(
+                    position, open, gate.levelDbfs, pitch.frequencyHz, pitch.confidence, shown,
+                    noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence),
+                )
             }
             start = end
         }

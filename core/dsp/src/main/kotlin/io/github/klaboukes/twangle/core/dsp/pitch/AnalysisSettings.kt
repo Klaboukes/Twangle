@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.buffer.FrameAssembler
+import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -36,6 +37,9 @@ data class AnalysisSettings(
 
     /** A [FrameAssembler] that cuts audio into frames of these sizes. */
     fun newFrameAssembler(): FrameAssembler = FrameAssembler(windowSize, hopSize)
+
+    /** A [NoiseFloorTracker] for frames this far apart ([hopSeconds]). */
+    fun newNoiseFloorTracker(): NoiseFloorTracker = NoiseFloorTracker(hopSeconds)
 
     /** A pitch detector for frames of [windowSize] samples at [sampleRate]: YIN, upsampled if needed. */
     fun newPitchDetector(): PitchDetector {

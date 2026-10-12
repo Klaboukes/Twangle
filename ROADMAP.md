@@ -28,8 +28,8 @@ Goal: the wave view gives the same "getting closer" cue as the strobe instead of
 
 ## Phase 12 — Volume and background-noise meters
 Goal: two small meters show how well the guitar comes through and how much noise the tuner has to filter out.
-- ☐ Noise-floor estimate in `:core:dsp`: tracks the room's background level between notes, plus a signal-to-noise figure while a note sounds (synthetic tests, no allocations per frame)
-- ☐ Clarity figure: how clean the pitch is (from YIN's confidence), so the meter shows how hard the tuner has to work
+- ☑ Noise-floor estimate in `:core:dsp`: tracks the room's background level between notes, plus a signal-to-noise figure while a note sounds (synthetic tests, no allocations per frame) — `NoiseFloorTracker`: minimum of note-free frames over 2 s; floor within 0.5 dB, SNR within 1 dB from 0 to 40 dB
+- ☑ Clarity figure: how clean the pitch is (from YIN's confidence), so the meter shows how hard the tuner has to work — `Clarity.of`: 1 at 20 dB SNR or cleaner, ≈ 0.5 at 6 dB, ≈ 0 at 0 dB, the same for every pitch and timbre
 - ☐ Two small meters on the tuner screen in each style: input volume (too soft / good / too loud) and background noise (quiet / some / loud), with a hint when it is too soft or too noisy
 - ☐ English and Dutch texts, TalkBack, landscape (also compact mode) and 2× font; a Settings switch to hide them; S26 check in a quiet and a noisy room
 

@@ -3,7 +3,9 @@ package io.github.klaboukes.twangle.feature.tuner
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.dsp.buffer.FrameAssembler
+import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
+import io.github.klaboukes.twangle.core.dsp.pitch.Clarity
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
@@ -23,13 +25,20 @@ data class PitchReading(
     val levelDbfs: Float,
     /** Whether the frame was loud enough to analyse (see [SignalGate]). */
     val gateOpen: Boolean,
+    /** The room's background level in dBFS ([NoiseFloorTracker]), NaN until a note-free frame was heard. */
+    val noiseFloorDbfs: Float = Float.NaN,
+    /** How far the note rises above [noiseFloorDbfs], in dB; NaN when there is no pitch or no floor yet. */
+    val snrDb: Float = Float.NaN,
+    /** 0..1, how clean the pitch is ([Clarity.of] the confidence); 0 when there is no pitch. */
+    val clarity: Float = 0f,
 ) {
     val isPitched: Boolean get() = frequencyHz > 0f
 }
 
 /**
  * Microphone → [FrameAssembler] → [SignalGate] → [YinPitchDetector], one [PitchReading] per hop
- * (~47 per second). See ARCHITECTURE §3.
+ * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
+ * clarity ([Clarity]). See ARCHITECTURE §3.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
@@ -60,6 +69,7 @@ class PitchPipeline(
         val assembler = settings.newFrameAssembler()
         val gate = SignalGate()
         val detector = settings.newPitchDetector()
+        val noise = settings.newNoiseFloorTracker()
         val frame = FloatArray(assembler.windowSize)
 
         recorder.chunks().collect { chunk ->
@@ -70,7 +80,13 @@ class PitchPipeline(
                     assembler.readFrame(frame)
                     val open = gate.process(frame)
                     val pitch = if (open) detector.detect(frame) else PitchResult.NONE
-                    emit(PitchReading(pitch.frequencyHz, pitch.confidence, gate.levelDbfs, open))
+                    noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
+                    emit(
+                        PitchReading(
+                            pitch.frequencyHz, pitch.confidence, gate.levelDbfs, open,
+                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence),
+                        ),
+                    )
                 }
             }
         }

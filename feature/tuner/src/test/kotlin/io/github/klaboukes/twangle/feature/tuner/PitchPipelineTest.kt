@@ -14,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
 import kotlin.math.log2
+import kotlin.math.pow
 
 class PitchPipelineTest {
 
@@ -30,6 +31,27 @@ class PitchPipelineTest {
             assertTrue(r.gateOpen)
             assertTrue("off by ${cents(r.frequencyHz, 110f)} c", abs(cents(r.frequencyHz, 110f)) < 1f)
             assertTrue(r.confidence > 0.8f)
+        }
+    }
+
+    @Test
+    fun `readings carry the room's noise floor, the note's SNR and its clarity`() = runTest {
+        // 1 s of room noise at −50 dBFS, then a note 20 dB above it for 1 s.
+        val room = TestSignals.noise(96_000, rms = 10f.pow(-50f / 20f), seed = 3)
+        val note = TestSignals.sawtooth(110f, length = 48_000)
+        val scale = (10.0.pow(-30.0 / 20.0) / TestSignals.rms(note)).toFloat()
+        for (i in note.indices) room[48_000 + i] += scale * note[i]
+        val readings = PitchPipeline(FakeAudioRecorder(room), StandardTestDispatcher(testScheduler)).readings().toList()
+
+        val before = readings.subList(5, 40)
+        assertTrue(before.all { !it.isPitched && it.snrDb.isNaN() && it.clarity == 0f })
+        assertTrue(before.all { abs(it.noiseFloorDbfs + 50f) < 0.5f })
+        val during = readings.subList(52, 85)
+        for (r in during) {
+            assertTrue(r.isPitched)
+            assertEquals(-50f, r.noiseFloorDbfs, 0.5f)
+            assertEquals(20f, r.snrDb, 1f)
+            assertTrue("clarity ${r.clarity}", r.clarity > 0.95f)
         }
     }
 
