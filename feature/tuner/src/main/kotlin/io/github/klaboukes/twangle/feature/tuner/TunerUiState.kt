@@ -55,9 +55,14 @@ sealed interface TunerUiState {
         val notation: Notation = Notation.DEFAULT,
         /**
          * Within 5 cents of the target (2 in the Precise setting) for at least 300 ms, see
-         * [InTuneDetector].
+         * [InTuneDetector]; the same as [hint] being [TunerHint.IN_TUNE].
          */
         val inTune: Boolean,
+        /**
+         * The hint line's message: in tune, "Tune up" or "Tune down", held steady by [SteadyHint]
+         * ([TunerInterpreter] sets it). null before the first direction of a note is clear.
+         */
+        val hint: TunerHint? = tunerHintFor(cents, inTune),
     ) : TunerUiState
 }
 
@@ -91,6 +96,7 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         lockedString == other.lockedString &&
         notation == other.notation &&
         inTune == other.inTune &&
+        hint == other.hint &&
         shownCents(cents) == shownCents(other.cents) &&
         shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
         abs(needleCents(cents) - needleCents(other.cents)) < NEEDLE_STEP_CENTS

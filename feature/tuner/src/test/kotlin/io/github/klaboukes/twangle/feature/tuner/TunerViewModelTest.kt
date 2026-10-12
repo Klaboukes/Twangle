@@ -333,13 +333,13 @@ class TunerViewModelTest {
         advanceTimeBy(1_000)
         assertEquals(-3.9f, vm.detected().cents, 0.5f)
         assertTrue(vm.detected().inTune)
-        assertNull(tuneDirectionFor(vm.detected().cents, vm.detected().inTune))
+        assertEquals(TunerHint.IN_TUNE, vm.detected().hint)
 
         settings.setInTunePrecision(InTunePrecision.PRECISE)
         advanceTimeBy(1_000)
 
         assertFalse(vm.detected().inTune)
-        assertEquals(TuneDirection.UP, tuneDirectionFor(vm.detected().cents, vm.detected().inTune))
+        assertEquals(TunerHint.TUNE_UP, vm.detected().hint)
         assertEquals(1, recorder.startCount)
     }
 

@@ -55,9 +55,10 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
-import io.github.klaboukes.twangle.feature.tuner.TuneDirection
+import io.github.klaboukes.twangle.feature.tuner.SteadyHint
+import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.tuneDirectionFor
+import io.github.klaboukes.twangle.feature.tuner.tunerHintFor
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -69,6 +70,8 @@ data class NoteReadout(
     val frequencyHz: Float,
     val cents: Float,
     val inTune: Boolean = false,
+    /** The hint line's message, held steady by the tuner; by default the plain one for [cents]. */
+    val hint: TunerHint? = tunerHintFor(cents, inTune),
 )
 
 /**
@@ -84,7 +87,8 @@ data class NoteReadout(
  * music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
- * "Tune down ↓", see [tuneDirectionFor]); in tune it says nothing extra. With a picture the hint
+ * "Tune down ↓", the readout's [NoteReadout.hint], held steady by [SteadyHint] so it doesn't flicker
+ * near the note); in tune it says nothing extra. With a picture the hint
  * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
  * height while empty so nothing jumps when the note comes in tune.
  *
@@ -109,7 +113,7 @@ fun NoteDisplay(
     val inTune = readout?.inTune == true
     // The wave shows how far off the note is in a picture instead of in cents.
     val pictured = display != TunerDisplay.NEEDLE
-    val direction = if (showTuneHint && readout != null) tuneDirectionFor(readout.cents, readout.inTune) else null
+    val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
     val directionText = direction?.let { stringResource(it.label) }.orEmpty()
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
@@ -309,18 +313,20 @@ internal fun centsText(cents: Float): String {
     }
 }
 
-/** The visible hint, e.g. "Tune up ↑". */
-private val TuneDirection.label: Int
+/** The visible direction hint, e.g. "Tune up ↑" (only for [TunerHint.isDirection]). */
+private val TunerHint.label: Int
     get() = when (this) {
-        TuneDirection.UP -> R.string.tuner_tune_up
-        TuneDirection.DOWN -> R.string.tuner_tune_down
+        TunerHint.TUNE_UP -> R.string.tuner_tune_up
+        TunerHint.TUNE_DOWN -> R.string.tuner_tune_down
+        TunerHint.IN_TUNE -> error("in tune has no direction hint")
     }
 
-/** The hint as TalkBack says it, without the arrow, e.g. "tune up". */
-private val TuneDirection.spokenLabel: Int
+/** The direction hint as TalkBack says it, without the arrow, e.g. "tune up". */
+private val TunerHint.spokenLabel: Int
     get() = when (this) {
-        TuneDirection.UP -> R.string.tuner_spoken_tune_up
-        TuneDirection.DOWN -> R.string.tuner_spoken_tune_down
+        TunerHint.TUNE_UP -> R.string.tuner_spoken_tune_up
+        TunerHint.TUNE_DOWN -> R.string.tuner_spoken_tune_down
+        TunerHint.IN_TUNE -> error("in tune has no direction hint")
     }
 
 /**
@@ -329,7 +335,7 @@ private val TuneDirection.spokenLabel: Int
  * "E 2, 12 cents flat, tune up".
  */
 @Composable
-private fun spokenReading(readout: NoteReadout, direction: TuneDirection?): String {
+private fun spokenReading(readout: NoteReadout, direction: TunerHint?): String {
     val note = rememberNoteNameSpeech().name(readout.noteName)
     val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
     return if (direction == null) {

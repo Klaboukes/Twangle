@@ -66,6 +66,7 @@ class TunerUiStateShownTest {
     fun `a reading with any other visible change does not look like the last one`() {
         val base = detected(3f)
         assertFalse(base.looksLike(base.copy(inTune = true)))
+        assertFalse(base.looksLike(base.copy(hint = TunerHint.TUNE_UP)))
         assertFalse(base.looksLike(base.copy(noteName = "F")))
         assertFalse(base.looksLike(base.copy(octave = 3)))
         assertFalse(base.looksLike(base.copy(targetString = 1)))
@@ -83,6 +84,6 @@ class TunerUiStateShownTest {
     fun `looksLike compares every field of Detected`() {
         // looksLike lists the fields one by one so it allocates nothing. A new field needs a line
         // there and in the test above; then update this count.
-        assertEquals(12, TunerUiState.Detected::class.java.declaredFields.size)
+        assertEquals(13, TunerUiState.Detected::class.java.declaredFields.size)
     }
 }

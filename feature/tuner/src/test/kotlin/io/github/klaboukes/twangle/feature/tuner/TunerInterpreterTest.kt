@@ -131,6 +131,24 @@ class TunerInterpreterTest {
     }
 
     @Test
+    fun `a note wobbling around the string changes the hint at most once, and in tune agrees`() {
+        val options = TunerOptions(TunerMode.AUTO, standard)
+        val hints = mutableListOf<TunerHint?>()
+        // 1 s at 12 cents flat of A2, then 3 s wobbling ±3 cents around it, 4 times a second.
+        for (i in 0 until 188) {
+            val t = i * frameSeconds
+            val midi = if (i < 47) 44.88f else 45f + 0.03f * kotlin.math.sin(2 * Math.PI * 4 * t).toFloat()
+            val state = interpreter.interpret(pitched(hz(midi)), options).detected()
+            assertEquals(state.hint == TunerHint.IN_TUNE, state.inTune)
+            hints += state.hint
+        }
+        assertEquals(TunerHint.TUNE_UP, hints[46])
+        val changes = hints.drop(46).zipWithNext().count { (a, b) -> a != b }
+        assertTrue("changed $changes times", changes <= 1)
+        assertEquals(TunerHint.IN_TUNE, hints.last())
+    }
+
+    @Test
     fun `a note 10 cents off is never in tune`() {
         assertFalse(play(pitched(hz(40.1f)), frames = 100).detected().inTune)
     }
@@ -157,21 +175,21 @@ class TunerInterpreterTest {
         val state = playWith(InTunePrecision.RELAXED, hz(45.04f))
         assertEquals(4f, state.cents, 0.3f)
         assertTrue(state.inTune)
-        assertNull(tuneDirectionFor(state.cents, state.inTune))
+        assertEquals(TunerHint.IN_TUNE, state.hint)
     }
 
     @Test
     fun `precise keeps 4 cents sharp out of tune, and the hint says tune down`() {
         val state = playWith(InTunePrecision.PRECISE, hz(45.04f))
         assertFalse(state.inTune)
-        assertEquals(TuneDirection.DOWN, tuneDirectionFor(state.cents, state.inTune))
+        assertEquals(TunerHint.TUNE_DOWN, state.hint)
     }
 
     @Test
     fun `precise counts 1 cent flat as in tune, with no hint`() {
         val state = playWith(InTunePrecision.PRECISE, hz(44.99f))
         assertTrue(state.inTune)
-        assertNull(tuneDirectionFor(state.cents, state.inTune))
+        assertEquals(TunerHint.IN_TUNE, state.hint)
     }
 
     @Test

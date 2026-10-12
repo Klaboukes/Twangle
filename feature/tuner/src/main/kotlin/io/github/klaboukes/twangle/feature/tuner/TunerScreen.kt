@@ -316,7 +316,7 @@ fun TunerContent(
     val note = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.Detected -> NoteDisplay(
-                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune),
+                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
                 hint = "",
                 display = display,
                 compact = compact,

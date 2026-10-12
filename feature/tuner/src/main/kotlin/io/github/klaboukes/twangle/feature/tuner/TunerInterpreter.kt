@@ -13,9 +13,11 @@ import kotlin.math.abs
  * [PitchSmoother], then picks the target, either the nearest note ([TunerMode.CHROMATIC]) or the
  * closest string of the tuning ([TunerMode.AUTO]), or the string the user locked.
  *
- * It also tracks whether the note is in tune ([InTuneDetector], with the window of
- * [TunerOptions.inTunePrecision]), restarting whenever the target changes. [frameSeconds] is the
- * time between readings (hop / sample rate).
+ * It also picks the hint line's tuning cue ([TuningCue]: "in tune" from an [InTuneDetector] with the
+ * window of [TunerOptions.inTunePrecision], otherwise "Tune up" / "Tune down") and passes it through
+ * a [SteadyHint], so the hint doesn't flicker. The shown hint also decides [TunerUiState.Detected.inTune],
+ * so the in-tune colour and the hint agree. Both restart whenever the target changes. [frameSeconds]
+ * is the time between readings (hop / sample rate).
  *
  * The [TunerOptions] are passed with every reading, so switching mode or tuning takes effect on the
  * next frame without losing the smoothing history. A new A4 restarts the smoothing, because the
@@ -29,7 +31,8 @@ class TunerInterpreter(
 ) {
     private var noteMapper = NoteMapper()
     private var inTunePrecision = InTunePrecision.DEFAULT
-    private var inTuneDetector = InTuneDetector.forPrecision(inTunePrecision)
+    private var tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
+    private val hintLine = SteadyHint<TunerHint>()
     private var stringIndex = NO_STRING
     private var stringTuning: Tuning? = null
     private var targetMidi = NO_TARGET
@@ -43,7 +46,7 @@ class TunerInterpreter(
         }
         if (options.inTunePrecision != inTunePrecision) {
             inTunePrecision = options.inTunePrecision
-            inTuneDetector = InTuneDetector.forPrecision(inTunePrecision)
+            tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
         }
         if (reading.isPitched) {
             smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence)
@@ -53,7 +56,7 @@ class TunerInterpreter(
         if (!smoother.hasReading) {
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
-            inTuneDetector.reset()
+            restartHint()
             return listening(options)
         }
 
@@ -116,8 +119,9 @@ class TunerInterpreter(
         // A new target has to earn "in tune" on its own, even if it starts right on pitch.
         if (target.midi != targetMidi) {
             targetMidi = target.midi
-            inTuneDetector.reset()
+            restartHint()
         }
+        val hint = hintLine.update(tuningCue.update(cents, frameSeconds), frameSeconds)
         return TunerUiState.Detected(
             mode = options.mode,
             tuning = options.tuning,
@@ -134,8 +138,14 @@ class TunerInterpreter(
             targetString = targetString,
             lockedString = lockedString(options),
             notation = options.notation,
-            inTune = inTuneDetector.update(cents, frameSeconds),
+            inTune = hint == TunerHint.IN_TUNE,
+            hint = hint,
         )
+    }
+
+    private fun restartHint() {
+        tuningCue.reset()
+        hintLine.reset()
     }
 
     companion object {

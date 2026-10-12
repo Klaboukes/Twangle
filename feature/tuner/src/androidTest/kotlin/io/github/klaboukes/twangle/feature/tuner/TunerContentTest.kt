@@ -468,6 +468,15 @@ class TunerContentTest {
     }
 
     @Test
+    fun steadyHintIsShownEvenWhenTheCentsWobbleAcross() {
+        // The tuner keeps "Tune up" while the reading wobbles to 2 cents sharp inside the in-tune
+        // window; the screen shows the state's steady hint, not one worked out from the cents.
+        show(detected(2f).copy(hint = TunerHint.TUNE_UP), showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertDoesNotExist()
+    }
+
+    @Test
     fun noHintOnceInTune() {
         show(detected(-3f, inTune = true), showTuneHint = true)
         compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertDoesNotExist()
