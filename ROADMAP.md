@@ -13,7 +13,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 - ☐ Phase 3: tested on at least 2 physical devices with a real guitar
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly
-- ☐ Phase 21: native speakers look over the new translations where possible
+- ☐ Phase 22: native speakers look over the new translations where possible
 - ☐ Phase 12: with a real guitar, check the tips feel right: none while playing normally near the phone, "Play a bit louder" when playing very softly from across the room, "Too loud, move the phone back" when strumming hard right next to it
 - ☐ Phase 11: on the S26, compare the wave breathing in tune with it holding still, using the temporary switch, and pick one; Claude then removes the other and the switch
 
@@ -38,27 +38,37 @@ Goal: show how well the guitar comes through without adding clutter. The display
 - ☑ Checked in landscape (also compact mode), at 2× font, in every style light and dark (UI tests); S26 check in a quiet and a noisy room with short test tones — compact-landscape tests in all seven styles, light and dark: the bars sit beside the meter, stay reachable at 2× font and are clearly drawn; the longest tip fits one line at 2× font. On the S26 hiss brought "Too noisy here" in place of "Play a string" and cleared after it; a laptop note (−46 dB at the phone) brought "Play a bit louder", one bar, and the figures panel updating live. The laptop can't make the mic clip, so "Too loud" is checked by JVM tests only (owner check above)
 
 ## Phase 13 — A meter with a wow factor
-Goal: the meter above the note (the half-circle dial and its needle, shown with both displays) is the first thing anyone sees and the app's main selling point, so it should look stunning. Players pick one of six meter looks, the way they pick a wave look, and each look is drawn in every style's own way (colours, marks and fonts), light and dark. Every look must still read at a glance from arm's length (left = flat, right = sharp, centre = in tune), move smoothly at the screen's full frame rate, and give a satisfying moment when the string reaches the note.
+Goal: the meter above the note (the half-circle dial and its needle, shown with both displays) is the first thing anyone sees and the app's main selling point, so it should look stunning. Players pick one of six meter looks, the way they pick a wave look. Every look must still read at a glance from arm's length (left = flat, right = sharp, centre = in tune), move smoothly at the screen's full frame rate, and give a calm, satisfying moment when the string reaches the note.
 
-Proposed six looks (the owner can swap any in the first step):
-1. **Classic**: today's hand-drawn dial of each style, polished with depth, a glass shine, a needle shadow and a little mechanical overshoot when a new string is plucked
-2. **Light arc**: a curve of glowing segments that light up from the centre out to the reading with a soft halo and a fading trail; in tune the centre burns bright and a pulse of light runs along the arc
-3. **Spirit level**: a bubble in a curved glass tube that floats to the side the note is off and wobbles as it settles; in tune it rests between the two marks
-4. **Rolling scale**: the scale is printed on a turning drum seen through a window and rolls past a fixed centre mark, like a ship's compass; in tune the mark lights up
-5. **Lock-on**: rings and a crosshair; the marker closes in on the centre as the note gets closer, and in tune it locks on and a ring bursts outward
-6. **Pendulum**: a weighted pendulum that swings with a real feel of weight, leaning to the side the note is off, and hangs straight and still when in tune
+**Owner decided (2026-10-12):** after two rounds of moving mock-ups (Lock-on, Pendulum, Eclipse, Sunrise and Balance scale dropped), the six looks in this order, with Classic as the default for new installs:
+1. **Classic**: today's dial, polished with depth, a glass shine, a needle shadow and a little mechanical overshoot when a new string is plucked
+2. **Light arc**: a curve of glowing segments that light up from the centre out to the reading with a soft halo and a fading trail
+3. **Spirit level**: a bubble in a curved glass tube that floats to the side the note is off and settles; in tune it rests between the two marks
+4. **Rolling scale**: the scale is printed on a turning drum seen through a window and rolls past a fixed centre mark, like a ship's compass
+5. **Comet**: a bright comet runs along the arc with a glittering tail that settles and softens on the note
+6. **Studio meter**: a backlit meter like a recording desk's, with a real needle and a small lamp that softly lights on the note
 
-- ☐ Preview for the owner before anything is built: moving mock-ups of the six proposed looks in three styles (for example Prehistoric, Contemporary and Space Age), light and dark, as a page the owner can open on the phone. **Owner decides** the final six and their order; this list is updated to match
-- ☐ Meter look setting: `MeterLook` with the six looks, saved in settings (key `meter_look`; an unknown saved value gives the default), JVM tests. One shared frame for every look so nothing else on the screen moves: the same 2:1 box and ±50 cents, readings beyond ±50 pinned at the edge, the "in tune" colour and check mark, the reception fade and blur from Phase 12, hidden from TalkBack. Motion lives in the layer and draw phases only, with no allocations per frame (paths and brushes made once), like the needle today
+Also decided: the in-tune moment must be smooth and not gimmicky (a soft glow that eases in, holds gently and fades, no bursts, sparks or flashes), and all six looks share **one art style, as if made by the same artist** (the same lines, numbers, glass, light and glow). The looks take only colours (and at most the font) from the current style; each style's own finishing touches for the meter wait for the theme redesign in Phase 14.
+
+- ☑ Preview for the owner before anything is built: moving mock-ups in three styles (Prehistoric, Contemporary, Space Age), light and dark, as a page the owner opened on the phone; the owner chose the six above
+- ☐ Meter look setting: `MeterLook` with the six looks, saved in settings (key `meter_look`; an unknown saved value gives Classic), JVM tests. One shared frame for every look so nothing else on the screen moves: the same 2:1 box and ±50 cents, readings beyond ±50 pinned at the edge, the "in tune" colour and check mark, the reception fade and blur from Phase 12, hidden from TalkBack. Motion lives in the layer and draw phases only, with no allocations per frame (paths and brushes made once), like the needle today. The shared art language (line weights, numbers, glass, light, colour roles) written down in ARCHITECTURE.md
 - ☐ Meter picker in Settings ("Meter", in the Look group next to the wave looks): a 3×2 grid of cards with moving previews, radio buttons for TalkBack, English and Dutch names that fit on one line at 2× font
-- ☐ Looks 1 and 2 (Classic polished, Light arc) in all seven styles, light and dark
-- ☐ Looks 3 and 4 (Spirit level, Rolling scale) in all seven styles, light and dark
-- ☐ Looks 5 and 6 (Lock-on, Pendulum) in all seven styles, light and dark
-- ☐ The in-tune moment: each look's lock-on, burst or glow plays once when the note is reached, together with the existing vibration tick; it never repeats while the note holds and never flickers near the edge (it follows the steady hint's in-tune decision). JVM tests for when it fires
+- ☐ Looks 1 and 2 (Classic polished, Light arc) in the shared art style, coloured by all seven styles, light and dark
+- ☐ Looks 3 and 4 (Spirit level, Rolling scale) in the shared art style, coloured by all seven styles, light and dark
+- ☐ Looks 5 and 6 (Comet, Studio meter) in the shared art style, coloured by all seven styles, light and dark
+- ☐ The in-tune moment: each look's soft glow eases in when the note is reached, together with the existing vibration tick, holds gently while the note rings and fades when it leaves; it never restarts while the note holds and never flickers near the edge (it follows the steady hint's in-tune decision). JVM tests for when it starts and ends
 - ☐ Smooth on the phone: frame times measured on the S26 for every look in chromatic mode (meter moving all the time), no dropped frames at 120 Hz and main-thread work no higher than the needle's today (see the table in ARCHITECTURE.md)
-- ☐ Every look checked in each style, light and dark, with TalkBack, on a phone and tablet on its side (also compact mode, where the meter is biggest) and at 2× font (UI tests: inside its box, clearly drawn, skipped by TalkBack); screenshots of all six looks in all seven styles for the owner; ARCHITECTURE.md updated; S26 check with short test tones. **Owner decides** which look new installs start with
+- ☐ Every look checked in each style, light and dark, with TalkBack, on a phone and tablet on its side (also compact mode, where the meter is biggest) and at 2× font (UI tests: inside its box, clearly drawn, skipped by TalkBack); screenshots of all six looks in all seven styles for the owner; ARCHITECTURE.md updated; S26 check with short test tones
 
-## Phase 14 — More instruments
+## Phase 14 — New theme styles
+Goal: a fresh set of visual styles for the whole app, designed together so every screen, the wave looks and the six meter looks feel like one product. The current Prehistoric → Space Age line may stay, change or be replaced; the owner decides. **Owner decided (2026-10-12):** this phase comes straight after the meter looks.
+- ☐ Preview for the owner before anything is built: moving mock-ups of a few theme directions (the tuner screen with a meter look and a wave look, plus Settings), light and dark, as a page the owner can open on the phone. **Owner decides** the set of styles, their names and their order; this phase's list is updated to match
+- ☐ Style setting moves to the new set: every old saved style opens as its closest new one (JVM tests for every old saved value); the style picker shows the new set with English and Dutch names
+- ☐ Each new style's palette, fonts and background, light and dark, with readable contrast for every text and mark
+- ☐ Each style's own finishing touches for the six meter looks and the wave looks, still in the shared art style from Phase 13
+- ☐ Every screen checked in each new style, light and dark, with TalkBack, in landscape (also compact mode) and at 2× font (UI tests); screenshots of every style for the owner; ARCHITECTURE.md updated; S26 check
+
+## Phase 15 — More instruments
 Goal: tune more than a six-string guitar.
 - ☐ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
 - ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the S26
@@ -66,48 +76,48 @@ Goal: tune more than a six-string guitar.
 - ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font
 - ☐ S26 check for each instrument with short test tones
 
-## Phase 15 — Custom tunings
+## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
 - ☐ Custom tunings in the tuning menu below the presets, with edit and delete
 - ☐ English and Dutch texts, TalkBack and 2× font for the editor; S26 check
 
-## Phase 16 — Reference tone
+## Phase 17 — Reference tone
 Goal: the app can play the target note so players can tune by ear.
 - ☐ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds
 - ☐ Long-press a string (or a play button) to hear it; tap again to stop
 - ☐ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound
 - ☐ Volume follows the phone's media volume; TalkBack labels; S26 check by ear
 
-## Phase 17 — Strum all strings
+## Phase 18 — Strum all strings
 Goal: strum once and see which strings are out of tune.
 - ☐ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable
 - ☐ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string)
 - ☐ "Strum check" view: every string shows flat, in tune or sharp at once, in each style
 - ☐ S26 check with recorded strums from short test tones; owner check with a real guitar
 
-## Phase 18 — Metronome
+## Phase 19 — Metronome
 Goal: a simple, steady metronome in the same app.
 - ☐ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8
 - ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
 - ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
 - ☐ Timing drift measured over 10 minutes; English and Dutch texts; S26 check
 
-## Phase 19 — Wear OS companion and home-screen widget
+## Phase 20 — Wear OS companion and home-screen widget
 Goal: Twangle on the watch and one tap from the home screen.
 - ☐ Home-screen widget: shows the chosen tuning and opens the tuner with one tap (the widget never holds the microphone)
 - ☐ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp`
 - ☐ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off
 - ☐ Check on a Wear OS emulator; real watch test by the owner
 
-## Phase 20 — Native pitch detector (only if needed)
+## Phase 21 — Native pitch detector (only if needed)
 Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
-- ☐ Decide with measurements from Phases 14, 17 and 19 whether it is needed; if not, close this phase
+- ☐ Decide with measurements from Phases 15, 18 and 20 whether it is needed; if not, close this phase
 - ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
 - ☐ CPU and battery compared with the Kotlin detector on the S26
 
-## Phase 21 — More languages
+## Phase 22 — More languages
 Goal: Twangle speaks the world's major languages before it goes public.
 - ☐ `LocalizationTest` checks every supported language, not only Dutch; the in-app language list (Android 13+) shows them all
 - ☐ Western European: German, French, Spanish, Italian, Portuguese (Brazil)
@@ -117,7 +127,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☐ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose)
 - ☐ Long words and other scripts fit at 2× font in every style (UI tests); S26 check in a few languages
 
-## Phase 22 — Go live on the Play Store → **v1.0**
+## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
 - ☐ Play data-safety form (no data collected or shared)
 - ☐ Privacy policy published at a public URL (the repo is private), and that URL plus a contact email entered in the Play Console
