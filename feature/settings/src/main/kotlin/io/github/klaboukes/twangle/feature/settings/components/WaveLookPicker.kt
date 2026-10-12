@@ -222,7 +222,7 @@ private fun WaveLookPickerPreview() {
     MaterialTheme {
         WaveLookPicker(
             title = stringResource(R.string.settings_wave_look_title),
-            selected = WaveLook.STRIPES,
+            selected = WaveLook.STROBE,
             onSelect = {},
             modifier = Modifier.padding(16.dp),
         ) { it.name.lowercase() }

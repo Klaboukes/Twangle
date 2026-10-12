@@ -38,11 +38,10 @@
     <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
     <string name="settings_display_title">Display</string>
     <string name="settings_display_needle">Needle: the number of cents</string>
-    <string name="settings_display_wave">Wave: a moving sound wave</string>
-    <string name="settings_display_strobe">Strobe: stripes that stand still when in tune</string>
+    <string name="settings_display_wave">Wave: a moving picture, in the look you pick</string>
     <string name="settings_wave_look_title">Wave look</string>
+    <string name="settings_wave_look_strobe">Strobe</string>
     <string name="settings_wave_look_ribbon">Ribbon</string>
-    <string name="settings_wave_look_stripes">Stripes</string>
     <string name="settings_wave_look_dots">Dots</string>
     <string name="settings_wave_look_fireflies">Fireflies</string>
     <string name="settings_wave_look_loop">Loop</string>

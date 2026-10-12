@@ -385,12 +385,11 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
 private fun displayLabel(display: TunerDisplay): Int = when (display) {
     TunerDisplay.NEEDLE -> R.string.settings_display_needle
     TunerDisplay.WAVE -> R.string.settings_display_wave
-    TunerDisplay.STROBE -> R.string.settings_display_strobe
 }
 
 private fun waveLookLabel(look: WaveLook): Int = when (look) {
+    WaveLook.STROBE -> R.string.settings_wave_look_strobe
     WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
-    WaveLook.STRIPES -> R.string.settings_wave_look_stripes
     WaveLook.DOTS -> R.string.settings_wave_look_dots
     WaveLook.FIREFLIES -> R.string.settings_wave_look_fireflies
     WaveLook.LOOP -> R.string.settings_wave_look_loop

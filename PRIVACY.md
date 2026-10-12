@@ -15,7 +15,7 @@ Twangle is a guitar tuner for Android, made by the developer Klaboukes. In short
 - Twangle does not share data with anyone, because it has none to share.
 
 ## Settings stay on your phone
-Twangle remembers your choices: the A4 reference pitch, the tuning, how note names are written, the visual style, light or dark mode, wallpaper colours, the display (needle, wave or strobe), keep screen on and vibrate when in tune. These are stored only on your phone.
+Twangle remembers your choices: the A4 reference pitch, the tuning, how note names are written, the visual style, light or dark mode, wallpaper colours, the display (needle or wave) and the wave's look, keep screen on and vibrate when in tune. These are stored only on your phone.
 
 If you have turned on Android's own backup (for example Google backup), Android may include these settings in your phone's backup or copy them to a new phone, so they come back after a reinstall. That backup is run by Android and your backup provider, not by Twangle, and you control it in the phone's settings. It never contains sound.
 

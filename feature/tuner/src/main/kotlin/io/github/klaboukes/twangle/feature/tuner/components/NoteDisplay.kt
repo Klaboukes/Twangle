@@ -73,13 +73,13 @@ data class NoteReadout(
 
 /**
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
- * frequency. With the [display] set to the wave ([WaveView], in [waveLook]) or the strobe ([StrobeView]),
+ * frequency. With the [display] set to the wave ([WaveView], in [waveLook], e.g. the strobe),
  * that picture replaces both: the dial already shows how far off the note is, so the pill only shows
  * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and (with the needle's cents) the pill fills
  * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
- * view the wave settling into its calm shape does that, in the strobe view the stripes standing still. Without a [readout] it shows a
+ * view the wave settling into its calm shape and standing still does that. Without a [readout] it shows a
  * faint ♪ and [hint], e.g. "Play a string". A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
  *
@@ -107,7 +107,7 @@ fun NoteDisplay(
     showTuneHint: Boolean = false,
 ) {
     val inTune = readout?.inTune == true
-    // The wave and the strobe both show how far off the note is in a picture instead of in cents.
+    // The wave shows how far off the note is in a picture instead of in cents.
     val pictured = display != TunerDisplay.NEEDLE
     val direction = if (showTuneHint && readout != null) tuneDirectionFor(readout.cents, readout.inTune) else null
     val directionText = direction?.let { stringResource(it.label) }.orEmpty()
@@ -203,11 +203,10 @@ fun NoteDisplay(
             TunerDisplay.WAVE -> WaveView(
                 cents = readout?.cents,
                 inTune = inTune,
-                modifier = pictureSize,
+                modifier = pictureSize.testTag(TunerTestTags.WAVE),
                 look = waveLook,
                 breathesInTune = waveBreathesInTune,
             )
-            TunerDisplay.STROBE -> StrobeView(cents = readout?.cents, inTune = inTune, modifier = pictureSize.testTag(TunerTestTags.STROBE))
             TunerDisplay.NEEDLE -> Unit
         }
         Row(
@@ -283,7 +282,7 @@ private const val BIG_NOTE_LINE_RATIO = 120f / 112f
 private val COMPACT_NOTE_SIZE = 80.dp
 private val CHECK_SIZE = 24.dp
 
-/** The wave or strobe view: narrower than the note's pill can grow, and low, so it stays in the background. */
+/** The wave view: narrower than the note's pill can grow, and low, so it stays in the background. */
 private val WAVE_WIDTH = 240.dp
 private val WAVE_HEIGHT = 40.dp
 private val COMPACT_WAVE_HEIGHT = 30.dp

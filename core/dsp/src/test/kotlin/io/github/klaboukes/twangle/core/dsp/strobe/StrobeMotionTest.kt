@@ -115,15 +115,6 @@ class StrobeMotionTest {
     }
 
     @Test
-    fun `reset puts it back still at the start`() {
-        run(seconds = 1f, cents = 10f)
-        motion.reset()
-        assertEquals(0f, motion.phase, 0f)
-        assertEquals(0f, motion.shownCents, 0f)
-        assertTrue(motion.isStill)
-    }
-
-    @Test
     fun `advancing allocates nothing`() {
         run(seconds = 1f, cents = 5f) // Warm up.
         val bytes = allocatedBytes { repeat(10_000) { motion.advance(FRAME, if (it % 2 == 0) 5f else -12f) } }

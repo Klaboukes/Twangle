@@ -115,8 +115,8 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar))
 
     /**
-     * Guitar mode with the needle, the wave and the strobe, then chromatic mode with the wave and the
-     * strobe (the cents and frequency under the note): all of it in view, nothing overlapping.
+     * Guitar mode with the needle and the wave, then chromatic mode with the wave (the cents and
+     * frequency under the note): all of it in view, nothing overlapping.
      */
     @Test
     fun onItsSideEveryDisplayFits() {
@@ -131,7 +131,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                     add("note" to note)
                     add("tune hint" to tuneUp)
                     add("string" to targetString)
-                    // With the wave and the strobe, those take the cents' place and the frequency is left out.
+                    // With the wave, those take the cents' place and the frequency is left out.
                     if (display == TunerDisplay.NEEDLE) {
                         add("cents" to cents)
                         add("frequency" to frequency)
@@ -141,13 +141,11 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             }
             shownState.value = detected(TunerMode.CHROMATIC)
             shownMode.value = TunerMode.CHROMATIC
-            for (display in listOf(TunerDisplay.WAVE, TunerDisplay.STROBE)) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                targetString.assertDoesNotExist()
-                val parts = listOf("note" to note, "tune hint" to tuneUp, "cents" to cents, "frequency" to frequency)
-                assertBigMeterBeside(parts, "$case chromatic $display")
-            }
+            shownDisplay.value = TunerDisplay.WAVE
+            compose.waitForIdle()
+            targetString.assertDoesNotExist()
+            val parts = listOf("note" to note, "tune hint" to tuneUp, "cents" to cents, "frequency" to frequency)
+            assertBigMeterBeside(parts, "$case chromatic wave")
         }
     }
 

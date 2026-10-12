@@ -102,14 +102,14 @@ class SettingsViewModelTest {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)
         vm.setDynamicColor(false)
-        vm.setDisplay(TunerDisplay.STROBE)
+        vm.setDisplay(TunerDisplay.NEEDLE)
         vm.setKeepScreenOn(false)
         vm.setVibrateInTune(false)
         vm.setShowTuneHint(false)
         vm.setKeepTwoPaneLandscape(true)
         runCurrent()
 
-        assertEquals(TunerDisplay.STROBE, repository.current.display)
+        assertEquals(TunerDisplay.NEEDLE, repository.current.display)
 
         assertEquals(ThemeMode.LIGHT, repository.current.theme)
         assertEquals(false, repository.current.dynamicColor)

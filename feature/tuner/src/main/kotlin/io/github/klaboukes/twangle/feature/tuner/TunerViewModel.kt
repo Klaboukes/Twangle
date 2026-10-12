@@ -80,7 +80,7 @@ class TunerViewModel(
         .map { it.vibrateInTune }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
-    /** What shows how far off a note is under it: cents, the wave or the strobe (a saved setting). */
+    /** What shows how far off a note is under it: cents or the wave (a saved setting). */
     val display: StateFlow<TunerDisplay> = settingsRepository.settings
         .map { it.display }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().display)

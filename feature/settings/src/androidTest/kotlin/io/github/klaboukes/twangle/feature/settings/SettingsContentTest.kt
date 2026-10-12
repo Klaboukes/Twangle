@@ -284,10 +284,8 @@ class SettingsContentTest {
     fun displayPickerShowsTheChoiceAndReportsANewOne() {
         show(AppSettings(display = TunerDisplay.WAVE))
         compose.onNodeWithText(context.getString(R.string.settings_display_wave)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).assertIsNotSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_display_strobe)).performScrollTo().assertIsNotSelected().performClick()
-        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).performScrollTo().performClick()
-        assertEquals(listOf(TunerDisplay.STROBE, TunerDisplay.NEEDLE), displayChanges)
+        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).assertIsNotSelected().performClick()
+        assertEquals(listOf(TunerDisplay.NEEDLE), displayChanges)
     }
 
     @Test
@@ -317,10 +315,11 @@ class SettingsContentTest {
     }
 
     @Test
-    fun waveLooksAreHiddenWithTheStrobe() {
-        show(AppSettings(display = TunerDisplay.STROBE))
-        compose.onNodeWithText(context.getString(R.string.settings_display_strobe)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
+    fun theStrobeIsOneOfTheWaveLooks() {
+        show(AppSettings(display = TunerDisplay.WAVE, waveLook = WaveLook.STROBE))
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_strobe)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertIsNotSelected().performClick()
+        assertEquals(listOf(WaveLook.RIBBON), waveLookChanges)
     }
 
     @Test

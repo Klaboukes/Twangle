@@ -56,6 +56,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.WaveLook
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -113,6 +114,7 @@ class TunerContentTest {
         fontScale: Float? = null,
         size: DpSize? = null,
         display: TunerDisplay = TunerDisplay.NEEDLE,
+        waveLook: WaveLook = WaveLook.DEFAULT,
         showTuneHint: Boolean = false,
         showStringLockTip: Boolean = false,
         locale: String? = null,
@@ -139,6 +141,7 @@ class TunerContentTest {
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         display = display,
+                        waveLook = waveLook,
                         showTuneHint = showTuneHint,
                         showStringLockTip = shownTip.value,
                         onStringLockTipDismiss = { tipDismissals++ },
@@ -429,6 +432,8 @@ class TunerContentTest {
         // No cents and no frequency: the dial and the ribbon show how far off it is.
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()
+        // TalkBack still hears the cents.
+        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat")).assertExists()
     }
 
     @Test
@@ -485,52 +490,26 @@ class TunerContentTest {
 
     @Test
     fun phoneOnItsSideFitsTheWaveView() {
-        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE)
+        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         assertTrue("note ends at ${note.bottom}, window at ${window.bottom}", note.bottom <= window.bottom)
-        stringChip("E4").assertIsDisplayed()
+        // The wave too, whole and in view without scrolling, and the strings beside it.
+        val shown = wave.assertIsDisplayed().getBoundsInRoot()
+        assertTrue("wave ends at ${shown.bottom}, window at ${window.bottom}", shown.bottom <= window.bottom)
+        assertWaveSize(shown, PHONE_LANDSCAPE, COMPACT_WAVE_HEIGHT)
+        assertTrue(stringChip("E4").assertIsDisplayed().getBoundsInRoot().left >= shown.right)
     }
 
     @Test
-    fun strobeViewShowsNoNumbersOrWordsWhileOff() {
-        show(detected(-12.3f), display = TunerDisplay.STROBE)
-        compose.onNodeWithText("E").assertIsDisplayed()
-        // Like the wave: the dial and the stripes show how far off it is; TalkBack still hears the cents.
-        compose.onNodeWithText(twelveCentsFlat).assertDoesNotExist()
-        compose.onNodeWithText(frequency).assertDoesNotExist()
-        compose.onNode(hasContentDescription("E 2, $twelveCentsFlat")).assertExists()
-    }
-
-    @Test
-    fun chromaticStrobeViewShowsCentsAndFrequencyWhereTheStringsWere() {
-        show(chromatic(-12.3f), TunerMode.CHROMATIC, display = TunerDisplay.STROBE)
-        compose.onNodeWithText(twelveCentsFlat).assertIsDisplayed()
-        compose.onNodeWithText(frequency).assertIsDisplayed()
-    }
-
-    @Test
-    fun phoneOnItsSideFitsTheStrobeView() {
-        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
-        assertTrue("note ends at ${note.bottom}, window at ${window.bottom}", note.bottom <= window.bottom)
-        // The stripes too, whole and in view without scrolling, and the strings beside them.
-        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
-        assertTrue("stripes end at ${stripes.bottom}, window at ${window.bottom}", stripes.bottom <= window.bottom)
-        assertStrobeSize(stripes, PHONE_LANDSCAPE, COMPACT_STROBE_HEIGHT)
-        assertTrue(stringChip("E4").assertIsDisplayed().getBoundsInRoot().left >= stripes.right)
-    }
-
-    @Test
-    fun withTheLargestFontTheStrobeViewCanStillBeReached() {
-        show(detected(-12.3f), fontScale = 2f, display = TunerDisplay.STROBE, showTuneHint = true)
+    fun withTheLargestFontTheWaveKeepsItsSizeAndCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f, display = TunerDisplay.WAVE, showTuneHint = true)
         compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
-        val stripes = strobe.performScrollTo().assertIsDisplayed()
-        // The texts grow with the font, the stripes keep their size, and nothing overlaps them.
-        assertStrobeSize(stripes.getBoundsInRoot())
+        val shown = wave.performScrollTo().assertIsDisplayed()
+        // The texts grow with the font, the wave keeps its size, and nothing overlaps it.
+        assertWaveSize(shown.getBoundsInRoot())
         val hint = compose.onNodeWithText(tuneUp).performScrollTo().assertIsDisplayed()
-        assertNoOverlap("stripes" to stripes, "hint" to hint)
+        assertNoOverlap("wave" to shown, "hint" to hint)
         assertWholeTextShown(hint)
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
@@ -538,12 +517,12 @@ class TunerContentTest {
     }
 
     @Test
-    fun phoneOnItsSideWithTheLargestFontTheStrobeViewCanStillBeReached() {
-        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
+    fun phoneOnItsSideWithTheLargestFontTheWaveViewCanStillBeReached() {
+        show(detected(-12.3f), fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true)
         compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
-        val stripes = strobe.performScrollTo().assertIsDisplayed()
+        val shown = wave.performScrollTo().assertIsDisplayed()
         val hint = compose.onNodeWithText(tuneUp).performScrollTo().assertIsDisplayed()
-        assertNoOverlap("stripes" to stripes, "hint" to hint)
+        assertNoOverlap("wave" to shown, "hint" to hint)
         assertWholeTextShown(hint)
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
@@ -551,77 +530,78 @@ class TunerContentTest {
     }
 
     @Test
-    fun phoneOnItsSideWithTheLargestFontTheChromaticStrobeReadoutCanStillBeReached() {
-        show(chromatic(-12.3f), TunerMode.CHROMATIC, fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
-        strobe.performScrollTo().assertIsDisplayed()
+    fun phoneOnItsSideWithTheLargestFontTheChromaticWaveReadoutCanStillBeReached() {
+        show(chromatic(-12.3f), TunerMode.CHROMATIC, fontScale = 2f, size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true)
+        wave.performScrollTo().assertIsDisplayed()
         for (text in listOf(tuneUp, twelveCentsFlat, frequency)) {
             assertWholeTextShown(compose.onNodeWithText(text).performScrollTo().assertIsDisplayed())
         }
     }
 
     @Test
-    fun tabletInLandscapeShowsTheStrobeBesideTheControls() {
-        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true)
+    fun tabletInLandscapeShowsTheWaveBesideTheControls() {
+        show(detected(3f, targetString = 1), size = TABLET_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
+        val shown = wave.assertIsDisplayed().getBoundsInRoot()
         // Full size (not the compact one of a phone on its side), and everything in view.
-        assertStrobeSize(stripes, TABLET_LANDSCAPE)
-        assertTrue(stripes.bottom <= window.bottom)
-        assertTrue(stringChip("A2").assertIsDisplayed().getBoundsInRoot().left >= stripes.right)
+        assertWaveSize(shown, TABLET_LANDSCAPE)
+        assertTrue(shown.bottom <= window.bottom)
+        assertTrue(stringChip("A2").assertIsDisplayed().getBoundsInRoot().left >= shown.right)
         compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertIsDisplayed()
     }
 
     @Test
-    fun uprightTabletShowsTheStrobeWithoutScrolling() {
-        show(detected(3f, targetString = 1), size = TABLET_PORTRAIT, display = TunerDisplay.STROBE, showTuneHint = true)
+    fun uprightTabletShowsTheWaveWithoutScrolling() {
+        show(detected(3f, targetString = 1), size = TABLET_PORTRAIT, display = TunerDisplay.WAVE, showTuneHint = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
-        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
-        assertStrobeSize(stripes, TABLET_PORTRAIT)
-        assertTrue("stripes under the note", stripes.top >= note.bottom)
+        val shown = wave.assertIsDisplayed().getBoundsInRoot()
+        assertWaveSize(shown, TABLET_PORTRAIT)
+        assertTrue("wave under the note", shown.top >= note.bottom)
         for (label in listOf("E2", "E4")) {
             assertTrue(stringChip(label).assertIsDisplayed().getBoundsInRoot().bottom <= window.bottom)
         }
     }
 
     /**
-     * TalkBack skips the stripes (it can't see them) and hears the reading in words instead, once:
-     * the same sentence as with the needle and the wave.
+     * TalkBack skips the wave (it can't see it) and hears the reading in words instead, once:
+     * the same sentence as with the needle.
      */
     @Test
-    fun talkBackSkipsTheStripesAndHearsTheReadingInWords() {
-        show(detected(-12.3f), display = TunerDisplay.STROBE, showTuneHint = true)
-        val stripes = strobe.assertIsDisplayed().fetchSemanticsNode()
-        assertNull(stripes.config.getOrNull(SemanticsProperties.ContentDescription))
-        assertNull(stripes.config.getOrNull(SemanticsProperties.Text))
-        assertTrue("nothing inside the stripes for TalkBack", stripes.children.isEmpty())
+    fun talkBackSkipsTheWaveAndHearsTheReadingInWords() {
+        show(detected(-12.3f), display = TunerDisplay.WAVE, showTuneHint = true)
+        val shown = wave.assertIsDisplayed().fetchSemanticsNode()
+        assertNull(shown.config.getOrNull(SemanticsProperties.ContentDescription))
+        assertNull(shown.config.getOrNull(SemanticsProperties.Text))
+        assertTrue("nothing inside the wave for TalkBack", shown.children.isEmpty())
         val spoken = "E 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
         compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
     }
 
     @Test
-    fun dutchTalkBackHearsTheStrobeReadingInDutch() {
-        show(detected(2f, inTune = true, noteName = "F♯"), display = TunerDisplay.STROBE, locale = "nl")
+    fun dutchTalkBackHearsTheWaveReadingInDutch() {
+        show(detected(2f, inTune = true, noteName = "F♯"), display = TunerDisplay.WAVE, locale = "nl")
         compose.onAllNodes(hasContentDescription("fis 2, ${dutch.getString(R.string.tuner_in_tune)}")).assertCountEquals(1)
     }
 
     /**
-     * The stripes move on every frame, but TalkBack only hears about a new reading: while they move
-     * nothing on the screen recomposes, so the spoken sentence (a live region) stays exactly the same.
+     * The wave (here the strobe look's stripes) moves on every frame, but TalkBack only hears about a
+     * new reading: while it moves nothing on the screen recomposes, so the spoken sentence (a live
+     * region) stays exactly the same.
      */
     @Test
-    fun talkBackIsntToldAboutEveryFrameOfTheStrobe() {
-        // With the clock on manual the strobe's frame loop runs (see StrobeViewTest).
+    fun talkBackIsntToldAboutEveryFrameOfTheWave() {
+        // With the clock on manual the wave's frame loop runs (see WaveViewTest).
         compose.mainClock.autoAdvance = false
-        show(detected(-12.3f), display = TunerDisplay.STROBE)
+        show(detected(-12.3f), display = TunerDisplay.WAVE, waveLook = WaveLook.STROBE)
         // Long enough for every fade, the note's pop and the spoken sentence to settle.
         compose.mainClock.advanceTimeBy(SETTLE_MS)
         val spoken = compose.onNode(hasContentDescription("E 2, $twelveCentsFlat"))
         val before = spoken.assertExists().fetchSemanticsNode().config[SemanticsProperties.ContentDescription]
-        val stripesBefore = strobe.captureToImage().toPixelMap()
+        val waveBefore = wave.captureToImage().toPixelMap()
         val changes = changeCount()
-        repeat(STROBE_FRAMES) { compose.mainClock.advanceTimeByFrame() }
-        assertTrue("the stripes moved", stripesBefore.differsFrom(strobe.captureToImage().toPixelMap()))
+        repeat(WAVE_FRAMES) { compose.mainClock.advanceTimeByFrame() }
+        assertTrue("the stripes moved", waveBefore.differsFrom(wave.captureToImage().toPixelMap()))
         assertEquals("recompositions while the stripes moved", changes, changeCount())
         assertEquals(before, spoken.assertExists().fetchSemanticsNode().config[SemanticsProperties.ContentDescription])
     }
@@ -635,17 +615,17 @@ class TunerContentTest {
     }
 
     /**
-     * The [stripes] have the strobe's own size ([height] high), whatever the font. In a window of
+     * The [shown] wave has its own size ([height] high), whatever the font. In a window of
      * [size], [DeviceConfigurationOverride.ForcedSize] scales everything down by the same amount.
      */
-    private fun assertStrobeSize(stripes: DpRect, size: DpSize? = null, height: Dp = STROBE_HEIGHT) {
+    private fun assertWaveSize(shown: DpRect, size: DpSize? = null, height: Dp = WAVE_HEIGHT) {
         val scale = if (size == null) 1f else compose.onNodeWithTag(WINDOW).getBoundsInRoot().width / size.width
-        assertEquals("strobe width", STROBE_WIDTH.value * scale, stripes.width.value, 1f)
-        assertEquals("strobe height", height.value * scale, stripes.height.value, 1f)
+        assertEquals("wave width", WAVE_WIDTH.value * scale, shown.width.value, 1f)
+        assertEquals("wave height", height.value * scale, shown.height.value, 1f)
     }
 
-    /** The strobe view's stripes (in the unmerged tree: they have nothing to merge for TalkBack). */
-    private val strobe get() = compose.onNodeWithTag(TunerTestTags.STROBE, useUnmergedTree = true)
+    /** The wave view (in the unmerged tree: it has nothing to merge for TalkBack). */
+    private val wave get() = compose.onNodeWithTag(TunerTestTags.WAVE, useUnmergedTree = true)
 
     @Test
     fun withTheLargestFontTheWaveViewCanStillBeReached() {
@@ -1171,14 +1151,14 @@ class TunerContentTest {
     }
 
     @Test
-    fun compactFitsTheStrobeViewAndTheStrings() {
-        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.STROBE, showTuneHint = true, compactLandscape = true)
+    fun compactFitsTheWaveViewAndTheStrings() {
+        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true, compactLandscape = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val stripes = strobe.assertIsDisplayed().getBoundsInRoot()
-        assertStrobeSize(stripes, PHONE_LANDSCAPE)
+        val shown = wave.assertIsDisplayed().getBoundsInRoot()
+        assertWaveSize(shown, PHONE_LANDSCAPE)
         val chip = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
         assertTrue("chips end at ${chip.bottom}, window at ${window.bottom}", chip.bottom <= window.bottom)
-        assertTrue(chip.top >= stripes.bottom)
+        assertTrue(chip.top >= shown.bottom)
     }
 
     @Test
@@ -1296,10 +1276,10 @@ class TunerContentTest {
         val TABLET_LANDSCAPE = DpSize(1280.dp, 760.dp)
         val TABLET_PORTRAIT = DpSize(800.dp, 1240.dp)
 
-        /** The strobe view's size, as NoteDisplay gives it. */
-        val STROBE_WIDTH = 240.dp
-        val STROBE_HEIGHT = 40.dp
-        val COMPACT_STROBE_HEIGHT = 30.dp
+        /** The wave view's size, as NoteDisplay gives it. */
+        val WAVE_WIDTH = 240.dp
+        val WAVE_HEIGHT = 40.dp
+        val COMPACT_WAVE_HEIGHT = 30.dp
 
         /** Long enough for every fade and the note's pop to finish. */
         const val SETTLE_MS = 2_000L
@@ -1307,7 +1287,7 @@ class TunerContentTest {
         /** Long enough for the compact layout's cross-fade to finish. */
         const val FADE_MS = 1_000L
 
-        /** One second of strobe frames at 60 frames a second. */
-        const val STROBE_FRAMES = 60
+        /** One second of wave frames at 60 frames a second. */
+        const val WAVE_FRAMES = 60
     }
 }

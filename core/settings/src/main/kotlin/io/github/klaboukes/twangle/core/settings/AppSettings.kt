@@ -64,17 +64,16 @@ enum class VisualStyle {
 
 /**
  * How the tuner shows how far off a note is, under the note. The needle dial is always there;
- * this picks what goes with it. Saved in settings by [name], so don't rename the entries.
+ * this picks what goes with it. Saved in settings by [name], so don't rename the entries. (A
+ * third display, the strobe, became [WaveLook.STROBE]; a saved "STROBE" is read as [WAVE] with
+ * that look.)
  */
 enum class TunerDisplay {
     /** The number of cents in a pill, and the frequency. */
     NEEDLE,
 
-    /** A moving sound wave (in the [WaveLook] picked) instead of a number of cents. */
+    /** A moving picture (in the [WaveLook] picked) instead of a number of cents. */
     WAVE,
-
-    /** Stripes that drift the way the note is off and stand still when it is in tune. */
-    STROBE,
     ;
 
     companion object {
@@ -84,14 +83,14 @@ enum class TunerDisplay {
 
 /**
  * How the wave view draws how far off a note is. Saved in settings by [name], so don't rename the
- * entries.
+ * entries. (The stripes look, saved as "STRIPES", made way for [STROBE] and is read as it.)
  */
 enum class WaveLook {
+    /** Rows of stripes in the style's own marks that drift and stand still in tune, like a strobe tuner. */
+    STROBE,
+
     /** A soft ribbon in the style's own marks. */
     RIBBON,
-
-    /** Stripes that lean the way the note is off. */
-    STRIPES,
 
     /** A grid of little lights. */
     DOTS,
@@ -131,7 +130,7 @@ data class AppSettings(
     val vibrateInTune: Boolean = true,
     /** "Tune up ↑" / "Tune down ↓" under the note while it is off pitch, also said by TalkBack. */
     val showTuneHint: Boolean = true,
-    /** What shows how far off a note is under it: cents, the wave view or the strobe view. */
+    /** What shows how far off a note is under it: cents or the wave view. */
     val display: TunerDisplay = TunerDisplay.DEFAULT,
     /** What the wave view looks like. */
     val waveLook: WaveLook = WaveLook.DEFAULT,

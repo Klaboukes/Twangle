@@ -9,14 +9,14 @@ import kotlin.math.floor
 import kotlin.math.sqrt
 
 /**
- * How the wave view moves, one animation frame at a time, for every wave look. It borrows the
- * beats you hear when two notes are close but not the same, and gives the same "getting closer"
- * cue as the strobe:
+ * How the wave view moves, one animation frame at a time, for every wave look, the strobe look
+ * included. It borrows the beats you hear when two notes are close but not the same, and gives the
+ * strobe's "getting closer" cue:
  *
  * - **Drift** ([phase]) follows the strobe's speed rule exactly ([StrobeMotion.driftSpeed], in
  *   pulses per second): dead still within half a cent, then faster with every cent off, right when
- *   sharp and left when flat. It runs on a [StrobeMotion] of its own, so it moves exactly as the
- *   strobe would. It comes from the exact cents, not the "in tune" flag (2 or 5 cents wide), so
+ *   sharp and left when flat. It runs on a [StrobeMotion] of its own, so it moves exactly as a
+ *   strobe tuner's disc would (the strobe look draws its stripes at [phase]). It comes from the exact cents, not the "in tune" flag (2 or 5 cents wide), so
  *   the last few cents still show.
  * - **Shape** shows how far off from a distance, up to [WAVE_RANGE_CENTS]: the pulses get deeper
  *   ([depth]) and more of them fit across ([beats]) the further off. Close to the note they smooth
@@ -24,7 +24,7 @@ import kotlin.math.sqrt
  *   shape follows the reading more slowly than the drift, so it changes smoothly.
  * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle. With
  *   [breathesInTune] off, it eases to a stop while the drift stands still ([stir] falls to 0), so
- *   on the note the wave holds perfectly still in its calm shape, like the strobe. (Temporary
+ *   on the note the wave holds perfectly still in its calm shape, like a strobe. (Temporary
  *   choice: the owner compares both on the phone and the other one goes.)
  *
  * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and

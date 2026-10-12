@@ -95,7 +95,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setKeepScreenOn(false)
         repo.setVibrateInTune(false)
         repo.setShowTuneHint(false)
-        repo.setDisplay(TunerDisplay.STROBE)
+        repo.setDisplay(TunerDisplay.NEEDLE)
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
@@ -113,7 +113,7 @@ class DataStoreSettingsRepositoryTest {
             keepScreenOn = false,
             vibrateInTune = false,
             showTuneHint = false,
-            display = TunerDisplay.STROBE,
+            display = TunerDisplay.NEEDLE,
             waveLook = WaveLook.FIREFLIES,
             waveBreathesInTune = false,
             stringLockTipSeen = true,
@@ -202,12 +202,80 @@ class DataStoreSettingsRepositoryTest {
     fun `a picked display wins over the old wave view switch and survives a restart`() = runTest {
         dataStore().edit { it[booleanPreferencesKey("show_waves")] = false }
         close()
-        repository().setDisplay(TunerDisplay.STROBE)
+        repository().setDisplay(TunerDisplay.WAVE)
         close()
 
         val store = dataStore()
-        assertEquals(TunerDisplay.STROBE, repository(store).settings.first().display)
+        assertEquals(TunerDisplay.WAVE, repository(store).settings.first().display)
         assertEquals("the old switch is cleared", null, store.data.first()[booleanPreferencesKey("show_waves")])
+    }
+
+    @Test
+    fun `an old strobe display opens as the wave with the strobe look`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("tuner_display")] = "STROBE"
+            it[stringPreferencesKey("wave_look")] = "FIREFLIES"
+        }
+
+        val settings = repository(store).settings.first()
+        assertEquals(TunerDisplay.WAVE, settings.display)
+        assertEquals("the strobe it showed, not the look picked for the wave back then", WaveLook.STROBE, settings.waveLook)
+    }
+
+    @Test
+    fun `the old stripes look opens as the strobe look`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("tuner_display")] = "WAVE"
+            it[stringPreferencesKey("wave_look")] = "STRIPES"
+        }
+
+        val settings = repository(store).settings.first()
+        assertEquals(TunerDisplay.WAVE, settings.display)
+        assertEquals(WaveLook.STROBE, settings.waveLook)
+    }
+
+    @Test
+    fun `a look picked after an old strobe display shows and survives a restart`() = runTest {
+        dataStore().edit { it[stringPreferencesKey("tuner_display")] = "STROBE" }
+        close()
+        repository().setWaveLook(WaveLook.LOOP)
+        close()
+
+        val store = dataStore()
+        val settings = repository(store).settings.first()
+        assertEquals(TunerDisplay.WAVE, settings.display)
+        assertEquals(WaveLook.LOOP, settings.waveLook)
+        assertEquals("the old display is rewritten", "WAVE", store.data.first()[stringPreferencesKey("tuner_display")])
+    }
+
+    @Test
+    fun `switching away from an old strobe display and back keeps the strobe look`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("tuner_display")] = "STROBE"
+            it[stringPreferencesKey("wave_look")] = "RIBBON"
+        }
+        val repo = repository(store)
+
+        repo.setDisplay(TunerDisplay.NEEDLE)
+        assertEquals(TunerDisplay.NEEDLE, repo.settings.first().display)
+        repo.setDisplay(TunerDisplay.WAVE)
+        assertEquals(WaveLook.STROBE, repo.settings.first().waveLook)
+    }
+
+    @Test
+    fun `the old wave view switch still carries over next to an old stripes look`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[booleanPreferencesKey("show_waves")] = true
+            it[stringPreferencesKey("wave_look")] = "STRIPES"
+        }
+
+        val settings = repository(store).settings.first()
+        assertEquals(TunerDisplay.WAVE, settings.display)
+        assertEquals(WaveLook.STROBE, settings.waveLook)
     }
 
     @Test

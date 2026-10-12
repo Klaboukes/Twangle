@@ -15,24 +15,26 @@ import kotlin.math.floor
 import kotlin.math.min
 
 /*
- * The strobe view: rows of stripes that drift the way the note is off and stand still when it is
- * in tune, like the striped disc of a mechanical strobe tuner. The tuner moves them with
- * StrobeMotion (in :core:dsp) and passes its phase here; this file only draws, in each style's
- * own marks, the way SoundRibbon.kt draws the wave view's ribbon.
+ * The strobe look of the wave view (WaveLook.STROBE): rows of stripes that drift the way the note
+ * is off and stand still when it is in tune, like the striped disc of a mechanical strobe tuner.
+ * WaveMotion moves them at the strobe's speed (StrobeMotion.driftSpeed) and drawWave passes its
+ * phase here; this file only draws, in each style's own marks, the way SoundRibbon.kt draws the
+ * ribbon.
  *
  * Every stripe of a row looks the same, so a pattern a whole period on looks exactly like the one
  * before: that is what lets the phase wrap from 1 back to 0 without a jump. Anything that sets a
- * row apart (a rule, a hairline) stays put while the stripes move. Nothing here allocates, as it
- * runs on every animation frame.
+ * row apart (a rule, a hairline) stays put while the stripes move, and how faded a mark is near the
+ * ends depends only on where it is. Nothing here allocates, as it runs on every animation frame.
  */
 
 /**
- * The strobe view in [style]'s marks, filling the draw area in [color]: [STROBE_ROWS] rows of even
+ * The strobe look in [style]'s marks, filling the draw area in [color]: [STROBE_ROWS] rows of even
  * stripes. [phase] (0..1, wrapping) is where the stripes are, in stripe periods; the top row sits
  * at [phase] and each row below moves twice as fast as the one above (`phase · 2`, `phase · 4`),
  * as the rings of a real strobe disc do. A growing [phase] moves them right (sharp), a shrinking
  * one left (flat), and one that stays put holds them still. [glow] (0..1) adds a soft halo while
- * the note is in tune.
+ * the note is in tune. The marks fade out towards both ends ([strobeFade]), so they glide in and out
+ * rather than being cut off.
  */
 fun DrawScope.drawStrobe(style: VisualStyle, phase: Float, color: Color, glow: Float = 0f) {
     val gap = ROW_GAP.toPx()
@@ -77,7 +79,7 @@ fun stripeOffset(phase: Float, period: Float): Float {
     return (turn - 1f) * period
 }
 
-/** How many rows of stripes the strobe view has. */
+/** How many rows of stripes the strobe look has. */
 const val STROBE_ROWS = 2
 
 /** From one stripe to the next in [style]: finer marks sit closer together. */
@@ -100,20 +102,42 @@ private fun Color.faded(share: Float): Color = copy(alpha = alpha * share)
 /** How strong a halo is: always [base], stronger in tune ([glow] 1). The wave's [HALO] in tune. */
 private fun halo(base: Float, glow: Float): Float = base + (HALO - base * 0.5f) * glow
 
+/** How visible a mark centred [x] px from the left is: faded out near both ends ([strobeFade]). */
+private fun DrawScope.fadeAt(x: Float): Float = strobeFade(x / size.width)
+
+/**
+ * How visible a strobe mark at [u] across the view (0..1) is: fully over the middle, fading
+ * smoothly to nothing over the outer [STROBE_EDGE] at each end, like stripes on a lit drum turning
+ * out of sight, so marks glide in and out rather than being cut off.
+ */
+fun strobeFade(u: Float): Float = smooth(u / STROBE_EDGE) * smooth((1f - u) / STROBE_EDGE)
+
+/** The share of the view at each end over which the strobe's marks fade out. */
+private const val STROBE_EDGE = 0.2f
+
+/** 0 below 0, 1 above 1, an S-curve between (Hermite smoothstep). */
+private fun smooth(x: Float): Float {
+    val t = x.coerceIn(0f, 1f)
+    return t * t * (3f - 2f * t)
+}
+
 // Each row below is drawn from [start] (left of the view) to past its right edge, one mark per
 // [period]; a mark's centre sits a quarter period in, where a plain half-filled stripe's would.
+// Marks that have faded out completely at the ends are skipped.
 
 private fun DrawScope.dabs(row: Int, top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
     val mid = top + height / 2f
     val r = min(height * 0.42f, period * 0.3f) * if (row == 0) 1f else 0.85f
     val halo = halo(0f, glow)
-    val smudge = color.faded(0.35f)
     var x = start + period * 0.25f
     while (x < size.width + period) {
-        if (halo > 0f) drawCircle(color.faded(halo), r * 1.35f, Offset(x, mid))
-        // A second, smudged dab beside each one, as in the wave view's ribbon.
-        drawCircle(smudge, r * 1.08f, Offset(x + r * 0.18f, mid + r * 0.14f))
-        drawCircle(color, r, Offset(x, mid))
+        val fade = fadeAt(x)
+        if (fade > 0f) {
+            if (halo > 0f) drawCircle(color.faded(halo * fade), r * 1.35f, Offset(x, mid))
+            // A second, smudged dab beside each one, as in the wave view's ribbon.
+            drawCircle(color.faded(0.35f * fade), r * 1.08f, Offset(x + r * 0.18f, mid + r * 0.14f))
+            drawCircle(color.faded(fade), r, Offset(x, mid))
+        }
         x += period
     }
 }
@@ -131,10 +155,13 @@ private fun DrawScope.hatching(top: Float, height: Float, period: Float, start: 
     drawLine(color.faded(0.55f), Offset(0f, top + height - rule / 2f), Offset(size.width, top + height - rule / 2f), rule)
     var x = start + period * 0.25f
     while (x < size.width + period) {
-        val upper = Offset(x + slant, mid - reach)
-        val lower = Offset(x - slant, mid + reach)
-        if (halo > 0f) drawLine(color.faded(halo), upper, lower, width * 2f, StrokeCap.Round)
-        drawLine(color, upper, lower, width, StrokeCap.Butt)
+        val fade = fadeAt(x)
+        if (fade > 0f) {
+            val upper = Offset(x + slant, mid - reach)
+            val lower = Offset(x - slant, mid + reach)
+            if (halo > 0f) drawLine(color.faded(halo * fade), upper, lower, width * 2f, StrokeCap.Round)
+            drawLine(color.faded(fade), upper, lower, width, StrokeCap.Butt)
+        }
         x += period
     }
 }
@@ -151,8 +178,11 @@ private fun DrawScope.engraved(top: Float, height: Float, period: Float, start: 
     val width = period * 0.5f
     var x = start
     while (x < size.width + period) {
-        if (halo > 0f) drawRect(color.faded(halo), Offset(x - spread, barTop), Size(width + spread * 2f, barHeight))
-        drawRect(color, Offset(x, barTop), Size(width, barHeight))
+        val fade = fadeAt(x + width / 2f)
+        if (fade > 0f) {
+            if (halo > 0f) drawRect(color.faded(halo * fade), Offset(x - spread, barTop), Size(width + spread * 2f, barHeight))
+            drawRect(color.faded(fade), Offset(x, barTop), Size(width, barHeight))
+        }
         x += period
     }
 }
@@ -166,13 +196,16 @@ private fun DrawScope.backlit(top: Float, height: Float, period: Float, start: F
     val halo = halo(0.14f, glow)
     var x = start + period * 0.25f - width / 2f
     while (x < size.width + period) {
-        drawRoundRect(
-            color.faded(halo),
-            Offset(x - spread, top + inset - spread),
-            Size(width + spread * 2f, height - inset * 2f + spread * 2f),
-            haloCorner,
-        )
-        drawRoundRect(color, Offset(x, top + inset), Size(width, height - inset * 2f), corner)
+        val fade = fadeAt(x + width / 2f)
+        if (fade > 0f) {
+            drawRoundRect(
+                color.faded(halo * fade),
+                Offset(x - spread, top + inset - spread),
+                Size(width + spread * 2f, height - inset * 2f + spread * 2f),
+                haloCorner,
+            )
+            drawRoundRect(color.faded(fade), Offset(x, top + inset), Size(width, height - inset * 2f), corner)
+        }
         x += period
     }
 }
@@ -183,10 +216,13 @@ private fun DrawScope.pills(top: Float, height: Float, period: Float, start: Flo
     val halo = halo(0f, glow)
     var x = start + period * 0.25f
     while (x < size.width + period) {
-        val upper = Offset(x, top + inset + width / 2f)
-        val lower = Offset(x, top + height - inset - width / 2f)
-        if (halo > 0f) drawLine(color.faded(halo), upper, lower, width * 1.8f, StrokeCap.Round)
-        drawLine(color, upper, lower, width, StrokeCap.Round)
+        val fade = fadeAt(x)
+        if (fade > 0f) {
+            val upper = Offset(x, top + inset + width / 2f)
+            val lower = Offset(x, top + height - inset - width / 2f)
+            if (halo > 0f) drawLine(color.faded(halo * fade), upper, lower, width * 1.8f, StrokeCap.Round)
+            drawLine(color.faded(fade), upper, lower, width, StrokeCap.Round)
+        }
         x += period
     }
 }
@@ -201,8 +237,11 @@ private fun DrawScope.neon(top: Float, height: Float, period: Float, start: Floa
     val barBottom = top + height - line - inset
     var x = start + period * 0.25f
     while (x < size.width + period) {
-        drawLine(color.faded(halo), Offset(x, barTop), Offset(x, barBottom), width + period * 0.4f, StrokeCap.Square)
-        drawLine(color, Offset(x, barTop), Offset(x, barBottom), width, StrokeCap.Square)
+        val fade = fadeAt(x)
+        if (fade > 0f) {
+            drawLine(color.faded(halo * fade), Offset(x, barTop), Offset(x, barBottom), width + period * 0.4f, StrokeCap.Square)
+            drawLine(color.faded(fade), Offset(x, barTop), Offset(x, barBottom), width, StrokeCap.Square)
+        }
         x += period
     }
 }
@@ -214,15 +253,21 @@ private fun DrawScope.stars(row: Int, top: Float, height: Float, period: Float, 
     if (row == 0) {
         val r = min(height * 0.45f, period * 0.34f)
         while (x < size.width + period) {
-            drawCircle(color.faded(halo), r * 0.7f, Offset(x, mid))
-            starburst(Offset(x, mid), r, color, density * 1.2f)
+            val fade = fadeAt(x)
+            if (fade > 0f) {
+                drawCircle(color.faded(halo * fade), r * 0.7f, Offset(x, mid))
+                starburst(Offset(x, mid), r, color.faded(fade), density * 1.2f)
+            }
             x += period
         }
     } else {
         val r = min(height * 0.2f, 2.2.dp.toPx())
         while (x < size.width + period) {
-            drawCircle(color.faded(halo), r * 2.6f, Offset(x, mid))
-            drawCircle(color, r, Offset(x, mid))
+            val fade = fadeAt(x)
+            if (fade > 0f) {
+                drawCircle(color.faded(halo * fade), r * 2.6f, Offset(x, mid))
+                drawCircle(color.faded(fade), r, Offset(x, mid))
+            }
             x += period
         }
     }

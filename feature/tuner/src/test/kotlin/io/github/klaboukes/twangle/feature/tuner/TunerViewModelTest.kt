@@ -384,9 +384,9 @@ class TunerViewModelTest {
         runCurrent()
         assertEquals("the wave by default", TunerDisplay.WAVE, vm.display.value)
 
-        settings.setDisplay(TunerDisplay.STROBE)
+        settings.setDisplay(TunerDisplay.NEEDLE)
         runCurrent()
-        assertEquals(TunerDisplay.STROBE, vm.display.value)
+        assertEquals(TunerDisplay.NEEDLE, vm.display.value)
     }
 
     @Test

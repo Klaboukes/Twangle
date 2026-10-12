@@ -31,7 +31,8 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 
 /**
  * The wave view in the [look] the user picked (`drawWave`): by default a soft ribbon of sound in the
- * current style's marks, with no frame so it stays quiet next to the dial. Off pitch it pinches
+ * current style's marks, with no frame so it stays quiet next to the dial (the strobe look draws
+ * that style's rows of stripes instead, which drift the same way). Off pitch it pinches
  * into pulses that drift right (sharp) or left (flat) at the strobe's speed, from the exact [cents];
  * close to the note they smooth out, and within half a cent they stand still as one calm shape,
  * which keeps breathing gently, or with [breathesInTune] off holds perfectly still.

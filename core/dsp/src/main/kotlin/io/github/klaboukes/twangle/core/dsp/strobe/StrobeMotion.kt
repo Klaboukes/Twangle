@@ -6,7 +6,8 @@ import kotlin.math.floor
 import kotlin.math.sign
 
 /**
- * How the strobe view's striped pattern moves, one animation frame at a time.
+ * How a strobe's striped pattern moves, one animation frame at a time: the drift that every wave
+ * look follows (WaveMotion in :core:designsystem runs one), the strobe look's stripes among them.
  *
  * A mechanical strobe tuner spins a striped disc lit by the string's own vibration: the stripes
  * seem to stand still when the note matches the disc and drift when it doesn't, at the beat rate
@@ -54,12 +55,6 @@ class StrobeMotion {
         val goal = if (cents.isNaN()) 0f else cents.coerceIn(-MAX_CENTS, MAX_CENTS)
         shownCents += (goal - shownCents) * (1f - exp(-dt * FOLLOW_RATE))
         phase = wrap(phase + speed * dt)
-    }
-
-    /** Back to a still pattern in its starting place, e.g. when the strobe view is shown again. */
-    fun reset() {
-        shownCents = 0f
-        phase = 0f
     }
 
     private fun wrap(value: Float): Float = value - floor(value)

@@ -34,9 +34,13 @@ interface SettingsRepository {
 
     suspend fun setShowTuneHint(enabled: Boolean)
 
-    /** Needle, wave or strobe. Replaces the old wave-view switch, which counts only until this is first saved. */
+    /**
+     * Needle or wave. Replaces the old wave-view switch, which counts only until this is first
+     * saved, and carries an old saved strobe display over to the wave's strobe look.
+     */
     suspend fun setDisplay(display: TunerDisplay)
 
+    /** Also turns an old saved strobe display into the wave, so the picked look shows. */
     suspend fun setWaveLook(look: WaveLook)
 
     /** True lets the wave breathe on the note; false makes it hold still there (temporary, see [AppSettings.waveBreathesInTune]). */

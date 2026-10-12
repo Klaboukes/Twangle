@@ -234,8 +234,8 @@ object TunerTestTags {
     const val SETTINGS = "tuner_settings"
     const val STYLE = "tuner_style"
 
-    /** The strobe view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
-    const val STROBE = "tuner_strobe"
+    /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
+    const val WAVE = "tuner_wave"
 
     /** The needle gauge. TalkBack skips it; the tag lets UI tests find where it sits. */
     const val GAUGE = "tuner_gauge"
@@ -265,8 +265,8 @@ private fun KeepScreenOn() {
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [display] picks how
- * far off a note is shown under it: in cents (the needle), with the wave view in [waveLook] (breathing
- * on the note or, without [waveBreathesInTune], holding still there), or with the strobe view, and
+ * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
+ * on the note or, without [waveBreathesInTune], holding still there), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss].
@@ -294,7 +294,7 @@ fun TunerContent(
     onStringLockTipDismiss: () -> Unit = {},
     compactLandscape: Boolean = true,
 ) {
-    // The wave and the strobe both take the cents' place, which changes the layout the same way.
+    // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
     val header = @Composable {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -426,7 +426,7 @@ fun TunerContent(
 
 /**
  * Readout pane beside the controls pane: landscape and wide screens, and the [TunerLayout.COMPACT]
- * layout while its controls show. [compactNote] (the wave or strobe view, or the tune hint's line)
+ * layout while its controls show. [compactNote] (the wave view, or the tune hint's line)
  * makes the readout taller; on a phone on its side it only fits with a smaller note.
  */
 @Composable
@@ -536,7 +536,7 @@ private fun CompactLayout(
 
 /**
  * Under the note in the compact layout: in guitar mode a small string row with the target (or
- * locked) string highlighted; in chromatic mode with the wave or strobe view the cents and
+ * locked) string highlighted; in chromatic mode with the wave view the cents and
  * frequency ([ChromaticReadout]), which those views leave out under the note.
  */
 @Composable
@@ -630,7 +630,7 @@ private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -
 
 /**
  * The [ModeSlot] for each [TunerUiState]: the tuning picker and string row for guitar mode and, with
- * [pictured] (the wave or the strobe instead of cents), the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
+ * [pictured] (the wave instead of cents), the [ChromaticReadout] for chromatic mode. With the needle the cents and frequency are
  * already under the note, so chromatic mode leaves the slot empty.
  */
 @Composable
@@ -819,7 +819,7 @@ private val READOUT_PANE_MAX_WIDTH = 560.dp
 /** A phone on its side shrinks the gauge to fit, but not below this. */
 private val GAUGE_MIN_WIDTH = 160.dp
 
-/** Readout panes shorter than this (a phone on its side) get the compact note with the wave or strobe view or the hint. */
+/** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
 private val COMPACT_PANE_HEIGHT = 420.dp
 
 /** In the compact layout the meter grows with the screen, up to this. */

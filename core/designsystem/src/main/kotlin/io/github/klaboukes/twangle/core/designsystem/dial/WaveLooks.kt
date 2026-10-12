@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -18,7 +19,6 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -30,22 +30,22 @@ import kotlin.math.sqrt
  * still. How unsettled a look is (unrest) shows how far off from a distance and fades to nothing on
  * the note, so every look settles into one calm shape there:
  *
+ * - strobe: the style's own rows of stripes (Strobe.kt), drifting like a strobe tuner's disc.
  * - ribbon: the style's own sound ribbon (SoundRibbon.kt); its pulses drift and smooth out.
- * - stripes: stripes that drift and lean (the strobe look replaces them in a later step).
  * - dots: a dot-matrix strip that scrolls, lit as far as the ribbon reaches.
  * - fireflies: specks that swarm and drift with the pulses and glide into an even line on the note.
  * - loop: a hoop spinning like a coin at the beat rate, its near side sweeping right (sharp) or
  *   left (flat), that settles face-on into a still ring.
  * - ripples: rings that spread out (sharp) or draw in (flat), uneven off pitch, smooth on the note.
  *
- * Only the ribbon is drawn in each style's own marks; the others are the same in every style, in
- * the style's colours. Drawing allocates nothing per frame: one Ribbon and the caller's Path are
+ * The strobe and the ribbon are drawn in each style's own marks; the others are the same in every
+ * style, in the style's colours. Drawing allocates nothing per frame: one Ribbon and the caller's Path are
  * reused, and strokes come from roundStroke.
  */
 
 /**
- * The wave view in [look], filling the draw area in [color]. [WaveLook.RIBBON] is [style]'s own
- * sound ribbon.
+ * The wave view in [look], filling the draw area in [color]. [WaveLook.STROBE] and
+ * [WaveLook.RIBBON] are drawn in [style]'s own marks.
  *
  * - [beats], [phase] and [depth] (0..1) shape the pulses (see [ribbonAt]); [phase] also moves the
  *   other looks, one step per strobe period.
@@ -83,8 +83,8 @@ fun DrawScope.drawWave(
     ribbon.breath = breath
     ribbon.stir = stir
     when (look) {
+        WaveLook.STROBE -> strobe(style, ribbon)
         WaveLook.RIBBON -> drawStyleRibbon(style, ribbon, path)
-        WaveLook.STRIPES -> stripes(ribbon)
         WaveLook.DOTS -> lights(ribbon)
         WaveLook.FIREFLIES -> fireflies(ribbon)
         WaveLook.LOOP -> loop(ribbon, path)
@@ -138,36 +138,22 @@ private val ROUND_STROKES = arrayOfNulls<Stroke>(STROKE_STEPS_PER_PX.toInt() * M
 private val BUTT_STROKES = arrayOfNulls<Stroke>(STROKE_STEPS_PER_PX.toInt() * MAX_STROKE_PX + 1)
 
 /**
- * Full-height stripes that drift with the pulses and thicken on them. They lean right when the note
- * is sharp and left when it is flat, and stand straight up in tune.
+ * The strobe: [style]'s own rows of stripes ([drawStrobe]), the lower row twice as fast, as on the
+ * disc of a strobe tuner. They drift one stripe per strobe period, so right when sharp and left when
+ * flat, and stand perfectly still on the note. Without a note ([Ribbon.level] 0) the rows shrink to
+ * [STROBE_REST] of their height in the faint resting colour, and they grow back when a note starts;
+ * breathing in tune swells them gently, without any drift.
  */
-private fun DrawScope.stripes(ribbon: Ribbon) {
-    val gap = 8.dp.toPx()
-    val inset = 3.dp.toPx()
-    val thin = 0.8.dp.toPx()
-    val thick = 4.dp.toPx()
-    // A square root, so a little off already leans visibly.
-    val tilt = sign(ribbon.lean) * sqrt(abs(ribbon.lean)) * size.height * STRIPE_TILT
-    val halo = ribbon.halo(0f)
-    var x = ribbon.phase * gap - 2 * gap
-    while (x < size.width + 2 * gap) {
-        val u = x / size.width
-        val lens = max(0f, sin(PI.toFloat() * u.coerceIn(0f, 1f)))
-        if (lens > 0f) {
-            val pulse = pulseAt(u, ribbon.beats, ribbon.phase, ribbon.depth)
-            val width = thin + (thick - thin) * pulse * ribbon.level
-            val top = Offset(x + tilt, inset)
-            val bottom = Offset(x - tilt, size.height - inset)
-            val alpha = lens.pow(0.7f) * (0.35f + 0.65f * pulse)
-            if (halo > 0f) drawLine(ribbon.faded(halo * alpha), top, bottom, width + gap * 0.5f, StrokeCap.Round)
-            drawLine(ribbon.faded(alpha), top, bottom, width, StrokeCap.Round)
-        }
-        x += gap
+private fun DrawScope.strobe(style: VisualStyle, ribbon: Ribbon) {
+    val high = STROBE_REST + (1f - STROBE_REST) * ribbon.level.coerceIn(0f, 1f)
+    val trim = size.height * (1f - high) / 2f
+    inset(left = 0f, top = trim, right = 0f, bottom = trim) {
+        drawStrobe(style, ribbon.phase, ribbon.color, ribbon.glow)
     }
 }
 
-/** How far the stripes lean at the edge of the range, as a share of their height. */
-private const val STRIPE_TILT = 0.35f
+/** How tall the strobe's rows are without a note, as a share of their full height. */
+private const val STROBE_REST = 0.5f
 
 /**
  * Where column [index] of the dots is, in gaps from the first column, with the strip scrolled by

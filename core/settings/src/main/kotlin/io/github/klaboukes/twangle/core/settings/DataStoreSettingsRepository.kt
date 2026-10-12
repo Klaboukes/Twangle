@@ -82,6 +82,8 @@ class DataStoreSettingsRepository internal constructor(
 
     override suspend fun setDisplay(display: TunerDisplay) {
         dataStore.edit {
+            // An old strobe display was showing as the wave's strobe look: keep that look for the wave.
+            if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[WAVE_LOOK] = WaveLook.STROBE.name
             it[DISPLAY] = display.name
             // The old wave-view switch has done its job once a display is saved.
             it.remove(SHOW_WAVES)
@@ -89,7 +91,11 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setWaveLook(look: WaveLook) {
-        dataStore.edit { it[WAVE_LOOK] = look.name }
+        dataStore.edit {
+            // An old strobe display would otherwise keep overriding the look picked here.
+            if (it[DISPLAY] == OLD_STROBE_DISPLAY) it[DISPLAY] = TunerDisplay.WAVE.name
+            it[WAVE_LOOK] = look.name
+        }
     }
 
     override suspend fun setWaveBreathesInTune(enabled: Boolean) {
@@ -106,6 +112,8 @@ class DataStoreSettingsRepository internal constructor(
 
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
+        // The strobe used to be a display of its own; now it is the wave's strobe look.
+        val oldStrobe = prefs[DISPLAY] == OLD_STROBE_DISPLAY
         return AppSettings(
             a4Hz = prefs[A4_HZ]?.let(AppSettings::normalizeA4) ?: defaults.a4Hz,
             mode = enumOrNull<TunerMode>(prefs[MODE]) ?: defaults.mode,
@@ -118,8 +126,12 @@ class DataStoreSettingsRepository internal constructor(
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
-            display = enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display,
-            waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
+            display = if (oldStrobe) {
+                TunerDisplay.WAVE
+            } else {
+                enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display
+            },
+            waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
             waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
@@ -143,6 +155,12 @@ class DataStoreSettingsRepository internal constructor(
         private val SHOW_TUNE_HINT = booleanPreferencesKey("show_tune_hint")
         private val DISPLAY = stringPreferencesKey("tuner_display")
 
+        /** The strobe display of versions before it became a wave look ([WaveLook.STROBE]). */
+        private const val OLD_STROBE_DISPLAY = "STROBE"
+
+        /** The stripes look of versions before the strobe look took its place. */
+        private const val OLD_STRIPES_LOOK = "STRIPES"
+
         /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
@@ -164,6 +182,10 @@ class DataStoreSettingsRepository internal constructor(
             false -> TunerDisplay.NEEDLE
             null -> null
         }
+
+        /** The saved look, with the old stripes look read as the strobe look that replaced it. */
+        private fun waveLookOrNull(name: String?): WaveLook? =
+            if (name == OLD_STRIPES_LOOK) WaveLook.STROBE else enumOrNull<WaveLook>(name)
 
         private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? =
             enumValues<E>().firstOrNull { it.name == name }

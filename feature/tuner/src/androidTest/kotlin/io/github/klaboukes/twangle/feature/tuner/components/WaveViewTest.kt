@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
@@ -64,6 +65,83 @@ class WaveViewTest {
                 assertTrue("$style dark=$dark marked $marked pixels", marked > 60)
             }
         }
+    }
+
+    @Test
+    fun everyStyleDrawsItsStrobe() {
+        compose.setContent {
+            // Light and dark side by side, small enough that all fit on the screen at once.
+            Column {
+                for (style in VisualStyle.entries) {
+                    Row {
+                        for (dark in listOf(false, true)) {
+                            TwangleTheme(style = style, darkTheme = dark, animate = false) {
+                                WaveView(
+                                    cents = -3f,
+                                    inTune = false,
+                                    look = WaveLook.STROBE,
+                                    modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(tag(style, dark)),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (style in VisualStyle.entries) {
+            for (dark in listOf(false, true)) {
+                val marked = markedShare(compose.onNodeWithTag(tag(style, dark)).captureToImage().toPixelMap())
+                // Clearly drawn, and clearly not a solid block.
+                assertTrue("$style dark=$dark marked ${(marked * 100).toInt()} %", marked > 0.15f && marked < 0.85f)
+            }
+        }
+    }
+
+    /**
+     * The wave moves on every frame without recomposing anything: the frame clock and the motion
+     * are read only while drawing. The test drives the frames itself (with the clock on manual, the
+     * wave's "infinite" animation runs) and counts how often the Recomposer applied changes.
+     */
+    @Test
+    fun theStrobeMovesWithoutRecomposing() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = false, animate = false) {
+                WaveView(
+                    cents = -3f,
+                    inTune = false,
+                    look = WaveLook.STROBE,
+                    modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(STROBE_TAG),
+                )
+            }
+        }
+        // Let the first frames through: the frame loop starts and the stripes grow to full height.
+        compose.mainClock.advanceTimeBy(STROBE_SETTLE_MS)
+        val before = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        val changes = changeCount()
+        // A quarter of a second at 3 cents flat moves the stripes about a quarter of a period.
+        repeat(FRAMES) { compose.mainClock.advanceTimeByFrame() }
+        val after = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        assertEquals("recompositions while the stripes moved", changes, changeCount())
+        assertTrue("the stripes moved", differentShare(before, after) > 0.05f)
+    }
+
+    /** How often the Recomposers applied changes to a composition, all together. */
+    private fun changeCount(): Long = compose.runOnIdle {
+        Recomposer.runningRecomposers.value.sumOf { it.changeCount }
+    }
+
+    /** Share of [pixels] (every other one) that isn't [BACKGROUND]. */
+    private fun markedShare(pixels: PixelMap): Float {
+        var marked = 0
+        var total = 0
+        for (x in 0 until pixels.width step 2) {
+            for (y in 0 until pixels.height step 2) {
+                total++
+                if (!pixels[x, y].near(BACKGROUND)) marked++
+            }
+        }
+        return marked / total.toFloat()
     }
 
     /**
@@ -136,6 +214,11 @@ class WaveViewTest {
 
         /** Long enough for the breathing to fade out on the note (about a second) and the colours to settle. */
         const val SETTLE_MS = 2500L
+
+        const val STROBE_TAG = "strobe"
+
+        /** Long enough for the strobe to grow to full height and catch up with the reading. */
+        const val STROBE_SETTLE_MS = 500L
 
         /** A quarter of a second at 60 frames a second. */
         const val FRAMES = 15
