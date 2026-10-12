@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -63,6 +64,11 @@ sealed interface TunerUiState {
          * ([TunerInterpreter] sets it). null before the first direction of a note is clear.
          */
         val hint: TunerHint? = tunerHintFor(cents, inTune),
+        /**
+         * How well the note is heard, 0..1 ([ReceptionTracker.reception]: volume, noise and clarity,
+         * smoothed): 1 draws the needle and the wave crisp and solid, towards 0 faint and soft.
+         */
+        val reception: Float = 1f,
     ) : TunerUiState
 }
 
@@ -70,17 +76,19 @@ sealed interface TunerUiState {
  * This state as the screen's text shows it: in [TunerUiState.Detected] the cents rounded to whole
  * cents and the frequency to 0.1 Hz, the precision `NoteDisplay` writes them with. Two readings whose
  * text looks the same then compare equal, so the screen recomposes only when the text changes. The
- * needle needs the exact cents and reads them from the unrounded state. Other states are returned as
- * they are.
+ * needle needs the exact cents and reads them from the unrounded state, and the [TunerUiState.Detected.reception]
+ * isn't text at all: it is set to 1 here, and the needle and the wave read it from the unrounded state
+ * while drawing. Other states are returned as they are.
  */
 fun TunerUiState.asShown(): TunerUiState = when (this) {
-    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = shownHz(frequencyHz))
+    is TunerUiState.Detected -> copy(cents = shownCents(cents), frequencyHz = shownHz(frequencyHz), reception = 1f)
     else -> this
 }
 
 /**
- * Whether [other] would look exactly like this state on screen: the same text ([asShown]) and the
- * needle less than [NEEDLE_STEP_CENTS] away (or pinned to the same edge of the gauge). The
+ * Whether [other] would look exactly like this state on screen: the same text ([asShown]), the
+ * needle less than [NEEDLE_STEP_CENTS] away (or pinned to the same edge of the gauge) and the
+ * reception less than [RECEPTION_STEP] away. The
  * ViewModel drops readings that look like the last one it sent, so they don't wake the main thread.
  * Allocates nothing, because it runs on every DSP frame.
  */
@@ -99,7 +107,8 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         hint == other.hint &&
         shownCents(cents) == shownCents(other.cents) &&
         shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
-        abs(needleCents(cents) - needleCents(other.cents)) < NEEDLE_STEP_CENTS
+        abs(needleCents(cents) - needleCents(other.cents)) < NEEDLE_STEP_CENTS &&
+        abs(reception - other.reception) < RECEPTION_STEP
 }
 
 /**
@@ -108,6 +117,12 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
  * between the readings that are sent.
  */
 internal const val NEEDLE_STEP_CENTS = 0.03f
+
+/**
+ * Reception changes smaller than this aren't sent to the screen: at most 0.8 % opacity and 0.04 dp
+ * of blur on the needle and the wave (see `ReceptionLook`), too little to see.
+ */
+internal const val RECEPTION_STEP = 0.02f
 
 private fun shownCents(cents: Float): Float = cents.roundToInt().toFloat()
 

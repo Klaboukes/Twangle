@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -250,6 +252,100 @@ class WaveViewTest {
         }
     }
 
+    /**
+     * Poor reception draws every look fainter and softer, in every style, light and dark, on the
+     * style's own background, yet still plainly visible: at the worst reception it keeps at least
+     * 40 % of its ink (colour difference from the background, summed) and still marks its box.
+     */
+    @Test
+    fun everyLookIsFaintButClearWithPoorReception() {
+        compose.mainClock.autoAdvance = false
+        val shownStyle = mutableStateOf(VisualStyle.entries.first())
+        val shownDark = mutableStateOf(false)
+        compose.setContent {
+            TwangleTheme(style = shownStyle.value, darkTheme = shownDark.value, animate = false) {
+                Column(Modifier.testTag(RECEPTION_TAG)) {
+                    for (look in WaveLook.entries) {
+                        Row {
+                            for (heard in listOf(1f, 0f)) {
+                                Box(Modifier.background(MaterialTheme.colorScheme.background).padding(MARGIN)) {
+                                    WaveView(cents = -8f, inTune = false, look = look, modifier = Modifier.size(150.dp, 40.dp), reception = { heard })
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (style in VisualStyle.entries) {
+            for (dark in listOf(false, true)) {
+                shownStyle.value = style
+                shownDark.value = dark
+                compose.mainClock.advanceTimeBy(STYLE_SETTLE_MS)
+                // One capture of the whole grid; each cell is a look at full (left) and worst (right) reception.
+                val grid = compose.onNodeWithTag(RECEPTION_TAG).captureToImage().toPixelMap()
+                val cellWidth = grid.width / 2
+                val cellHeight = grid.height / WaveLook.entries.size
+                for ((row, look) in WaveLook.entries.withIndex()) {
+                    val what = "$style $look dark=$dark"
+                    val crisp = ink(grid, 0, row * cellHeight, cellWidth, cellHeight)
+                    val faint = ink(grid, cellWidth, row * cellHeight, cellWidth, cellHeight)
+                    assertTrue("$what: fainter with poor reception ($faint vs $crisp)", faint.total < crisp.total * 0.95f)
+                    assertTrue("$what: still clear with poor reception ($faint vs $crisp)", faint.total > crisp.total * 0.4f)
+                    assertTrue("$what: marks ${faint.markedShare} of its box", faint.markedShare > 0.02f)
+                }
+            }
+        }
+    }
+
+    /** A new reception changes the picture while drawing only, without recomposing. */
+    @Test
+    fun receptionChangesWithoutRecomposing() {
+        compose.mainClock.autoAdvance = false
+        val heard = mutableFloatStateOf(1f)
+        compose.setContent {
+            TwangleTheme(style = VisualStyle.CONTEMPORARY, darkTheme = true, animate = false) {
+                WaveView(
+                    cents = 0f,
+                    inTune = false,
+                    breathesInTune = false,
+                    modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(STROBE_TAG),
+                    reception = { heard.floatValue },
+                )
+            }
+        }
+        compose.mainClock.advanceTimeBy(SETTLE_MS)
+        val before = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        val changes = changeCount()
+        heard.floatValue = 0f
+        compose.mainClock.advanceTimeByFrame()
+        val after = compose.onNodeWithTag(STROBE_TAG).captureToImage().toPixelMap()
+        assertEquals("recompositions for a new reception", changes, changeCount())
+        assertTrue("the wave turned faint", differentShare(before, after) > 0.05f)
+    }
+
+    /** Colour difference from the background (the top-left pixel), summed, and the share of pixels clearly marked. */
+    private class Ink(val total: Float, val markedShare: Float) {
+        override fun toString() = "ink $total, marked $markedShare"
+    }
+
+    private fun ink(pixels: PixelMap, left: Int, top: Int, width: Int, height: Int): Ink {
+        val background = pixels[left, top]
+        var total = 0f
+        var marked = 0
+        var count = 0
+        for (x in left until left + width step 2) {
+            for (y in top until top + height step 2) {
+                val c = pixels[x, y]
+                val difference = abs(c.red - background.red) + abs(c.green - background.green) + abs(c.blue - background.blue)
+                total += difference
+                count++
+                if (difference > 0.15f) marked++
+            }
+        }
+        return Ink(total, marked / count.toFloat())
+    }
+
     private fun capture(look: WaveLook, onNote: Boolean): PixelMap =
         compose.onNodeWithTag(lookTag(look, onNote)).captureToImage().toPixelMap()
 
@@ -292,6 +388,7 @@ class WaveViewTest {
         const val STYLE_SETTLE_MS = 800L
 
         const val STROBE_TAG = "strobe"
+        const val RECEPTION_TAG = "reception"
 
         /** Long enough for the strobe to grow to full height and catch up with the reading. */
         const val STROBE_SETTLE_MS = 500L

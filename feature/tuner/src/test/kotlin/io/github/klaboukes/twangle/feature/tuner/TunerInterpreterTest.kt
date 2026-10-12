@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.level.ReceptionLimit
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -44,6 +45,28 @@ class TunerInterpreterTest {
     @Test
     fun `silence is listening`() {
         assertEquals(TunerUiState.Listening(TunerMode.AUTO, standard), play(silent))
+    }
+
+    @Test
+    fun `a loud clean note is heard well, a quiet or noisy one less so`() {
+        val clean = PitchReading(hz(40f), 0.99f, levelDbfs = -25f, gateOpen = true, noiseFloorDbfs = -70f, snrDb = 45f, clarity = 1f)
+        assertEquals(1f, play(clean).detected().reception, 1e-4f)
+        play(silent)
+        val quiet = clean.copy(levelDbfs = -45f, snrDb = 25f)
+        assertEquals(1f / 3f, play(quiet, frames = 200).detected().reception, 0.01f)
+        play(silent)
+        val noisy = clean.copy(snrDb = 4f, clarity = 0.35f)
+        assertEquals(0.2f, play(noisy, frames = 200).detected().reception, 0.01f)
+        assertEquals(ReceptionLimit.NOISE, interpreter.reception.limit)
+    }
+
+    @Test
+    fun `reception starts afresh with each note`() {
+        val noisy = PitchReading(hz(40f), 0.9f, levelDbfs = -30f, gateOpen = true, snrDb = 2f, clarity = 0.1f)
+        play(noisy, frames = 200)
+        assertTrue(play(silent) is TunerUiState.Listening)
+        val clean = noisy.copy(snrDb = 40f, clarity = 1f)
+        assertEquals("not eased from the noisy note", 1f, play(clean, frames = 1).detected().reception, 1e-4f)
     }
 
     @Test

@@ -43,15 +43,25 @@ import kotlinx.coroutines.launch
  * with a needle that springs to each new reading, drawn in the current style (a spear, a sword,
  * a VU meter …, see `core.designsystem.dial`). Readings beyond the range pin the needle to the edge.
  * When [cents] gives null (no note) the needle rests at the centre, faded. While [inTune] the needle
- * and the centre mark fade to the style's "in tune" colours.
+ * and the centre mark fade to the style's "in tune" colours. How well the note is heard ([reception],
+ * 0..1, null without a note) draws the needle crisp and solid or faint and soft ([ReceptionLook]);
+ * the scale stays as it is.
  *
  * [cents] is never read while composing: the needle's animation follows it, and the animated value
  * only sets the rotation of the needle's own layer. Readings move the needle without recomposing
- * or redrawing the gauge or the screen around it.
+ * or redrawing the gauge or the screen around it. [reception] is read the same way, by the needle's layer only.
  * TalkBack skips the gauge: [NoteDisplay] speaks the same reading in words.
  */
 @Composable
-fun NeedleGauge(cents: () -> Float?, modifier: Modifier = Modifier, inTune: Boolean = false) {
+fun NeedleGauge(
+    cents: () -> Float?,
+    modifier: Modifier = Modifier,
+    inTune: Boolean = false,
+    reception: () -> Float? = { null },
+) {
+    val currentReception by rememberUpdatedState(reception)
+    val heldReception = remember { HeldReception() }
+    val blurs = rememberReceptionBlurs()
     val currentCents by rememberUpdatedState(cents)
     val needle = remember { Animatable(Snapshot.withoutReadObservation { needleCents(cents()) }) }
     LaunchedEffect(needle) {
@@ -63,7 +73,7 @@ fun NeedleGauge(cents: () -> Float?, modifier: Modifier = Modifier, inTune: Bool
     }
     // Recomposes only when a note appears or goes away, not on every reading.
     val hasReading by remember { derivedStateOf { currentCents() != null } }
-    val needleAlpha = animateFloatAsState(targetValue = if (hasReading) 1f else 0.3f, label = "needleAlpha")
+    val needleAlpha = animateFloatAsState(targetValue = if (hasReading) 1f else REST_ALPHA, label = "needleAlpha")
 
     val tokens = MaterialTheme.styleTokens
     val dial = tokens.dial
@@ -85,7 +95,11 @@ fun NeedleGauge(cents: () -> Float?, modifier: Modifier = Modifier, inTune: Bool
                         transformOrigin = TransformOrigin(0.5f, (size.height - DialPivotInset.toPx()) / size.height)
                     }
                     rotationZ = needleDegrees(needle.value)
-                    alpha = needleAlpha.value
+                    // How far the needle is from its resting look; the reception's look fades with it.
+                    val presence = (needleAlpha.value - REST_ALPHA) / (1f - REST_ALPHA)
+                    val heard = heldReception.of(currentReception())
+                    alpha = needleAlpha.value * ReceptionLook.alphaFor(heard, presence)
+                    renderEffect = blurs[ReceptionLook.blurStepFor(heard, presence)]
                 },
             ) {
                 drawDialNeedle(tokens.style, dial, needleColor.value, if (dial.face == Color.Transparent) background else dial.face)
@@ -105,6 +119,9 @@ fun NeedleGauge(cents: () -> Float?, modifier: Modifier = Modifier, inTune: Bool
         }
     }
 }
+
+/** The needle's opacity without a note: resting, faded in the centre. */
+private const val REST_ALPHA = 0.3f
 
 private val NEEDLE_SPRING = spring<Float>(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
 

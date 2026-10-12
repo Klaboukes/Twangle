@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -19,6 +20,10 @@ import kotlin.math.abs
  * so the in-tune colour and the hint agree. Both restart whenever the target changes. [frameSeconds]
  * is the time between readings (hop / sample rate).
  *
+ * How well the note is heard ([TunerUiState.Detected.reception]) comes from a [ReceptionTracker] fed
+ * with every pitched frame's level, SNR and clarity; it starts afresh with each note. [reception]
+ * gives the tracker itself, e.g. for which factor holds the figure down.
+ *
  * The [TunerOptions] are passed with every reading, so switching mode or tuning takes effect on the
  * next frame without losing the smoothing history. A new A4 restarts the smoothing, because the
  * smoothed notes were measured against the old one. A new precision starts "in tune" over. Create
@@ -33,6 +38,9 @@ class TunerInterpreter(
     private var inTunePrecision = InTunePrecision.DEFAULT
     private var tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
     private val hintLine = SteadyHint<TunerHint>()
+
+    /** How well the current note is heard: volume, noise and clarity, smoothed. */
+    val reception = ReceptionTracker(frameSeconds)
     private var stringIndex = NO_STRING
     private var stringTuning: Tuning? = null
     private var targetMidi = NO_TARGET
@@ -50,6 +58,7 @@ class TunerInterpreter(
         }
         if (reading.isPitched) {
             smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence)
+            reception.update(reading.levelDbfs, reading.snrDb, reading.clarity)
         } else {
             smoother.noReading()
         }
@@ -57,6 +66,7 @@ class TunerInterpreter(
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
             restartHint()
+            reception.reset()
             return listening(options)
         }
 
@@ -140,6 +150,7 @@ class TunerInterpreter(
             notation = options.notation,
             inTune = hint == TunerHint.IN_TUNE,
             hint = hint,
+            reception = reception.reception,
         )
     }
 

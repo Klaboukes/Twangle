@@ -75,15 +75,25 @@ class TunerUiStateShownTest {
         assertFalse(base.looksLike(base.copy(tuning = Tunings.DROP_D)))
         assertFalse(base.looksLike(base.copy(a4Hz = 442f)))
         assertFalse(base.looksLike(base.copy(notation = Notation.SOLFEGE)))
+        assertFalse(base.looksLike(base.copy(reception = 0.9f)))
         assertFalse(base.looksLike(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)))
         val listening = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
         assertTrue(listening.looksLike(listening.copy()))
     }
 
     @Test
+    fun `reception is drawn, not written - small changes look the same and the text ignores it`() {
+        val base = detected(3f).copy(reception = 0.5f)
+        assertTrue(base.looksLike(base.copy(reception = 0.51f)))
+        assertFalse(base.looksLike(base.copy(reception = 0.53f)))
+        assertEquals(1f, (base.asShown() as TunerUiState.Detected).reception)
+        assertEquals(base.asShown(), base.copy(reception = 0.2f).asShown())
+    }
+
+    @Test
     fun `looksLike compares every field of Detected`() {
         // looksLike lists the fields one by one so it allocates nothing. A new field needs a line
         // there and in the test above; then update this count.
-        assertEquals(13, TunerUiState.Detected::class.java.declaredFields.size)
+        assertEquals(14, TunerUiState.Detected::class.java.declaredFields.size)
     }
 }

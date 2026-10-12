@@ -83,7 +83,8 @@ data class NoteReadout(
  * colour, a soft glow lights up behind it with a small pop, and (with the needle's cents) the pill fills
  * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
  * view the wave settling into its calm shape and standing still does that. Without a [readout] it shows a
- * faint ♪ and [hint], e.g. "Play a string". A ♯ or ♭ is set smaller and raised, like in sheet
+ * faint ♪ and [hint], e.g. "Play a string". [reception] (read while drawing) makes the wave crisp or
+ * faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
  *
  * With [showTuneHint], an off-pitch note also says which way to turn the peg ("Tune up ↑" /
@@ -109,6 +110,7 @@ fun NoteDisplay(
     waveLook: WaveLook = WaveLook.DEFAULT,
     waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
+    reception: () -> Float? = { null },
 ) {
     val inTune = readout?.inTune == true
     // The wave shows how far off the note is in a picture instead of in cents.
@@ -210,6 +212,7 @@ fun NoteDisplay(
                 modifier = pictureSize.testTag(TunerTestTags.WAVE),
                 look = waveLook,
                 breathesInTune = waveBreathesInTune,
+                reception = reception,
             )
             TunerDisplay.NEEDLE -> Unit
         }

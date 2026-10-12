@@ -170,6 +170,7 @@ fun TunerScreen(
                 TunerContent(
                     state = state,
                     needleCents = { (readings.value as? TunerUiState.Detected)?.cents },
+                    reception = { (readings.value as? TunerUiState.Detected)?.reception },
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
@@ -264,7 +265,8 @@ private fun KeepScreenOn() {
  * The tuner itself, for every [TunerUiState]. Stateless, so previews and UI tests can drive it.
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
- * exact cents there and a [state] rounded to what the text shows ([asShown]). [display] picks how
+ * exact cents there and a [state] rounded to what the text shows ([asShown]). [reception] likewise
+ * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
  * on the note or, without [waveBreathesInTune], holding still there), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
@@ -286,6 +288,7 @@ fun TunerContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
+    reception: () -> Float? = { (state as? TunerUiState.Detected)?.reception },
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
     waveBreathesInTune: Boolean = true,
@@ -311,6 +314,7 @@ fun TunerContent(
             cents = needleCents,
             inTune = (state as? TunerUiState.Detected)?.inTune == true,
             modifier = Modifier.testTag(TunerTestTags.GAUGE),
+            reception = reception,
         )
     }
     val note = @Composable { compact: Boolean ->
@@ -323,6 +327,7 @@ fun TunerContent(
                 waveLook = waveLook,
                 waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
+                reception = reception,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->

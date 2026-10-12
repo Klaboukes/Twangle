@@ -37,7 +37,8 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
  * close to the note they smooth out, and within half a cent they stand still as one calm shape,
  * which keeps breathing gently, or with [breathesInTune] off holds perfectly still.
  * [inTune] only sets the colour and halo. See [WaveMotion] for how it moves. Without a reading
- * ([cents] null) it rests as a faint line.
+ * ([cents] null) it rests as a faint line. How well the note is heard ([reception], 0..1, null
+ * without a note) draws it crisp and solid or faint and soft ([ReceptionLook]), read while drawing.
  *
  * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
  * is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
@@ -49,8 +50,12 @@ fun WaveView(
     modifier: Modifier = Modifier,
     look: WaveLook = WaveLook.DEFAULT,
     breathesInTune: Boolean = true,
+    reception: () -> Float? = { null },
 ) {
     val reading by rememberUpdatedState(cents)
+    val currentReception by rememberUpdatedState(reception)
+    val heldReception = remember { HeldReception() }
+    val blurs = rememberReceptionBlurs()
     val motion = remember { WaveMotion() }
     SideEffect { motion.breathesInTune = breathesInTune }
     val frame = remember { mutableLongStateOf(0L) }
@@ -86,14 +91,18 @@ fun WaveView(
     Spacer(
         modifier = modifier
             .clearAndSetSemantics {}
-            // Its own layer, so a new frame redraws only the wave.
-            .graphicsLayer()
+            // Its own layer, so a new frame redraws only the wave. The ribbon's level is how far it is
+            // from its resting line, so the reception's look fades with it.
+            .graphicsLayer {
+                renderEffect = blurs[ReceptionLook.blurStepFor(heldReception.of(currentReception()), level.value)]
+            }
             .drawBehind {
                 frame.longValue // Redraw on every animation frame.
+                val faded = color.value.alpha * ReceptionLook.alphaFor(heldReception.of(currentReception()), level.value)
                 drawWave(
                     look = look,
                     style = style,
-                    color = color.value,
+                    color = color.value.copy(alpha = faded),
                     beats = motion.beats,
                     phase = motion.phase,
                     depth = motion.depth,
