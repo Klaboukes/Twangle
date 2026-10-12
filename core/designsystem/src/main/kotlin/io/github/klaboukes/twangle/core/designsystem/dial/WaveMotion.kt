@@ -85,9 +85,9 @@ class WaveMotion {
         // Each part of the shape eases on its own scale, so a jump in the reading (a new string)
         // never makes the pulses snap, however steeply they deepen in the first cents.
         val follow = 1f - exp(-dt * SHAPE_RATE)
-        shownCents += (goal - shownCents) * follow
-        depth += (depthFor(goal) - depth) * follow
-        beats += (beatsFor(goal) - beats) * follow
+        shownCents = ease(shownCents, goal, follow)
+        depth = ease(depth, depthFor(goal), follow)
+        beats = ease(beats, beatsFor(goal), follow)
         val calm = !breathesInTune && drift.isStill
         stir += ((if (calm) 0f else 1f) - stir) * (1f - exp(-dt * SETTLE_RATE))
         // Snapped to its end, so "holding still" is exact rather than an ever slower creep.
@@ -96,6 +96,15 @@ class WaveMotion {
     }
 
     private fun wrap(value: Float): Float = value - floor(value)
+
+    /**
+     * [value] moved [follow] of the way to [goal], and snapped onto it once it is too close to see,
+     * so a held reading leaves the shape exactly still rather than creeping ever more slowly.
+     */
+    private fun ease(value: Float, goal: Float, follow: Float): Float {
+        val next = value + (goal - value) * follow
+        return if (abs(goal - next) < SHAPE_SETTLED) goal else next
+    }
 
     companion object {
         /** Deviations beyond this look the same. */
@@ -137,6 +146,9 @@ class WaveMotion {
 
         /** How quickly the breathing fades out on the note, or back in off it (per second): about half a second. */
         private const val SETTLE_RATE = 6f
+
+        /** Closer than this to its goal, a part of the shape counts as there (far below a pixel). */
+        private const val SHAPE_SETTLED = 0.0002f
 
         /** Closer than this to 0 or 1, [stir] counts as there. */
         private const val SETTLED = 0.002f

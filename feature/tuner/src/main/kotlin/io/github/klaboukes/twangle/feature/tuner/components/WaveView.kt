@@ -100,6 +100,7 @@ fun WaveView(
                     glow = glow.value,
                     lean = motion.lean,
                     breath = motion.breath,
+                    stir = motion.stir,
                     path = path,
                 )
             },

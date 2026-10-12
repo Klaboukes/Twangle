@@ -149,7 +149,9 @@ class WaveMotionTest {
         run(motion, 2f, 0.3f)
         assertEquals(phase, motion.phase, 0f)
         assertEquals(breath, motion.breath, 0f)
-        assertEquals(depth, motion.depth, 0.00001f) // The shape has long settled.
+        assertEquals(depth, motion.depth, 0f) // The shape has settled exactly.
+        assertEquals(0f, motion.depth, 0f)
+        assertEquals(WaveMotion.MIN_BEATS, motion.beats, 0f)
         assertEquals(1f, motion.swell, 0f)
     }
 

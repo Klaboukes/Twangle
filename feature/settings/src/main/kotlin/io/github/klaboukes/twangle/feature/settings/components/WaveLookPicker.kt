@@ -148,6 +148,7 @@ private fun WaveLookCard(
                 glow = demo.tuned,
                 lean = motion.lean,
                 breath = motion.breath,
+                stir = motion.stir,
                 path = path,
             )
         }

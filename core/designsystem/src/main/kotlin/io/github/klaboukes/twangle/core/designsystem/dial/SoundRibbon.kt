@@ -4,9 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -58,17 +56,22 @@ internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path:
     }
 }
 
-/** What every look needs, gathered so the skins stay short. See [drawWave] for what each means. */
-internal class Ribbon(
-    val color: Color,
-    val beats: Float,
-    val phase: Float,
-    val depth: Float,
-    val level: Float,
-    val glow: Float,
-    val lean: Float,
-    val breath: Float,
-) {
+/**
+ * What every look needs, gathered so the skins stay short. See [drawWave] for what each means.
+ * One instance is filled in and reused for every frame (drawing runs on the main thread, one view
+ * after another), so drawing allocates nothing.
+ */
+internal class Ribbon {
+    var color: Color = Color.Unspecified
+    var beats = 0f
+    var phase = 0f
+    var depth = 0f
+    var level = 0f
+    var glow = 0f
+    var lean = 0f
+    var breath = 0f
+    var stir = 1f
+
     /** The ribbon's height at [u] as a share of its full height (0..1). */
     fun at(u: Float): Float = level * ribbonAt(u, beats, phase, depth)
 
@@ -136,7 +139,8 @@ private fun DrawScope.stars(ribbon: Ribbon) {
     for (i in 0 until count) {
         val x = left + i * gap
         val h = ribbon.at(x / size.width) * reach
-        for (y in floatArrayOf(mid - h, mid + h)) {
+        for (side in -1..1 step 2) {
+            val y = mid + side * h
             drawCircle(ribbon.faded(halo), r * 2.6f, Offset(x, y))
             drawCircle(ribbon.color, r, Offset(x, y))
         }
@@ -166,10 +170,10 @@ private fun DrawScope.band(
     }
     path.close()
     val halo = ribbon.halo(haloBase)
-    if (halo > 0f) drawPath(path, ribbon.faded(halo), style = Stroke(outline.toPx() * 4f, join = StrokeJoin.Round))
+    if (halo > 0f) drawPath(path, ribbon.faded(halo), style = roundStroke(outline.toPx() * 4f))
     drawPath(path, ribbon.faded(fill))
     if (centreLine) {
         drawLine(ribbon.faded(0.45f), Offset(0f, mid), Offset(size.width, mid), 0.8.dp.toPx())
     }
-    drawPath(path, ribbon.color, style = Stroke(outline.toPx(), join = StrokeJoin.Round))
+    drawPath(path, ribbon.color, style = roundStroke(outline.toPx()))
 }
