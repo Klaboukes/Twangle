@@ -35,6 +35,26 @@ class SignalGateTest {
     }
 
     @Test
+    fun `peak follows the largest sample, so a full-scale or clipped input is 0 dBFS`() {
+        assertEquals(-6.02f, SignalGate.peakDbfs(sine(amplitude = 0.5f)), 0.01f)
+        assertEquals(-20f, SignalGate.peakDbfs(sine(amplitude = 0.1f)), 0.01f)
+        val clipped = FloatArray(N) { (2f * sin(2 * PI * 480 * it / 48_000)).toFloat().coerceIn(-1f, 1f) }
+        assertEquals(0f, SignalGate.peakDbfs(clipped), 0.001f)
+        assertEquals(SignalGate.SILENCE_DBFS, SignalGate.peakDbfs(FloatArray(N)))
+        assertEquals(SignalGate.SILENCE_DBFS, SignalGate.peakDbfs(FloatArray(0)))
+    }
+
+    @Test
+    fun `process measures the peak before removing the DC offset`() {
+        val gate = SignalGate()
+        gate.process(FloatArray(N) { 0.5f + 0.4f * sin(2 * PI * 480 * it / 48_000).toFloat() })
+        // 0.5 + 0.4 = 0.9 as the mic delivered it, although the AC part alone peaks at 0.4.
+        assertEquals(-0.92f, gate.peakDbfs, 0.01f)
+        gate.reset()
+        assertEquals(SignalGate.SILENCE_DBFS, gate.peakDbfs)
+    }
+
+    @Test
     fun `DC removal leaves a zero-mean signal with the AC part intact`() {
         val original = sine(amplitude = 0.3f)
         val shifted = FloatArray(N) { original[it] + 0.25f }

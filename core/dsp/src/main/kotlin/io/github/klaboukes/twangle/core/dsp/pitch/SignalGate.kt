@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -10,7 +11,8 @@ import kotlin.math.sqrt
  * Levels are RMS in dBFS: `20 · log10(rms)`, where a full-scale square wave is 0 dBFS and a
  * full-scale sine is about −3 dBFS. The gate opens at [thresholdDbfs] and only closes again once
  * the level drops [hysteresisDb] below it, so a slowly decaying note doesn't flicker on and off
- * around the threshold. Nothing allocates.
+ * around the threshold. It also measures the frame's [peakDbfs] (before DC removal, as the mic
+ * delivered it), which shows when the input clips. Nothing allocates.
  */
 class SignalGate(
     val thresholdDbfs: Float = DEFAULT_THRESHOLD_DBFS,
@@ -26,6 +28,13 @@ class SignalGate(
     var levelDbfs: Float = SILENCE_DBFS
         private set
 
+    /**
+     * Peak of the most recent frame passed to [process], in dBFS: `20 · log10(max |sample|)`, measured
+     * before DC removal. 0 dBFS means the input reached full scale, so it is probably clipping.
+     */
+    var peakDbfs: Float = SILENCE_DBFS
+        private set
+
     /** Whether the most recent frame was loud enough to analyse. */
     var isOpen: Boolean = false
         private set
@@ -37,6 +46,7 @@ class SignalGate(
      * @return true if the frame should be analysed.
      */
     fun process(frame: FloatArray, length: Int = frame.size): Boolean {
+        peakDbfs = peakDbfs(frame, length)
         removeDc(frame, length)
         levelDbfs = rmsDbfs(frame, length)
         val closeBelow = if (isOpen) thresholdDbfs - hysteresisDb else thresholdDbfs
@@ -47,6 +57,7 @@ class SignalGate(
     /** Closes the gate and forgets the last level, e.g. when the microphone restarts. */
     fun reset() {
         levelDbfs = SILENCE_DBFS
+        peakDbfs = SILENCE_DBFS
         isOpen = false
     }
 
@@ -80,6 +91,15 @@ class SignalGate(
             val rms = sqrt(sumSquares / length)
             if (rms == 0.0) return SILENCE_DBFS
             return max(SILENCE_DBFS, (20.0 * log10(rms)).toFloat())
+        }
+
+        /** Peak level (largest absolute sample) of the first [length] samples in dBFS, floored at [SILENCE_DBFS]. */
+        fun peakDbfs(frame: FloatArray, length: Int = frame.size): Float {
+            requireLength(frame, length)
+            var peak = 0f
+            for (i in 0 until length) peak = max(peak, abs(frame[i]))
+            if (peak == 0f) return SILENCE_DBFS
+            return max(SILENCE_DBFS, (20.0 * log10(peak.toDouble())).toFloat())
         }
 
         private fun requireLength(frame: FloatArray, length: Int) {

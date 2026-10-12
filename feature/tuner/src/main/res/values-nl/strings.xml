@@ -54,6 +54,9 @@
     <string name="tuner_in_tune">zuiver</string>
     <string name="tuner_tune_up">Hoger stemmen ↑</string>
     <string name="tuner_tune_down">Lager stemmen ↓</string>
+    <string name="tuner_tip_too_soft">Speel wat harder</string>
+    <string name="tuner_tip_too_noisy">Te veel lawaai hier</string>
+    <string name="tuner_tip_too_loud">Te hard, leg de telefoon verder weg</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cent te laag" or "zuiver". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>

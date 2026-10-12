@@ -44,7 +44,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
@@ -55,6 +57,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
+import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
 import io.github.klaboukes.twangle.feature.tuner.SteadyHint
 import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -93,6 +96,13 @@ data class NoteReadout(
  * fills the otherwise empty pill; with cents it gets its own line under the pill, which keeps its
  * height while empty so nothing jumps when the note comes in tune.
  *
+ * A [tip] about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone back")
+ * takes the place of something less needed at that moment, so nothing is added to the screen and
+ * nothing moves: without a note it replaces [hint]; with the wave it fills the pill instead of the
+ * direction; with the needle it replaces the frequency, so "Tune up" / "Tune down" stays in view.
+ * TalkBack says it instead of the direction. A tip keeps to one line, set smaller when it doesn't
+ * fit, so a long one ("Te hard, leg de telefoon verder weg") never pushes the note up.
+ *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
  * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), throttled by
@@ -111,12 +121,14 @@ fun NoteDisplay(
     waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     reception: () -> Float? = { null },
+    tip: ReceptionTip? = null,
 ) {
     val inTune = readout?.inTune == true
     // The wave shows how far off the note is in a picture instead of in cents.
     val pictured = display != TunerDisplay.NEEDLE
     val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
     val directionText = direction?.let { stringResource(it.label) }.orEmpty()
+    val tipText = tip?.let { stringResource(it.label) }
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
@@ -139,7 +151,7 @@ fun NoteDisplay(
     )
     val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
     val spoken = rememberSpokenReading(
-        text = if (readout != null) spokenReading(readout, direction) else spokenHint,
+        text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
     )
     val density = LocalDensity.current
@@ -237,25 +249,29 @@ fun NoteDisplay(
                         scaleY = 0.5f + 0.5f * checkShown
                     },
             )
+            val pillStyle = when {
+                pictured -> MaterialTheme.typography.titleMedium
+                readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
+                else -> MaterialTheme.typography.titleLarge
+            }
+            val tipInPill = tipText != null && (readout == null || pictured)
             Text(
                 text = when {
                     // The hint can name a note: "Play the C♯ string".
-                    readout == null -> musicText(hint)
+                    readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
                     // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
-                    pictured -> AnnotatedString(directionText)
+                    pictured -> AnnotatedString(tipText ?: directionText)
                     else -> AnnotatedString(centsText(readout.cents))
                 },
-                style = when {
-                    pictured -> MaterialTheme.typography.titleMedium
-                    readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
-                    else -> MaterialTheme.typography.titleLarge
-                },
+                style = pillStyle,
                 color = when {
                     readout == null -> colors.onSurface
                     pictured -> colors.primary
                     else -> pillText
                 },
                 textAlign = TextAlign.Center,
+                maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
+                autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
                 modifier = Modifier.weight(1f, fill = false).hiddenFromTalkBack(),
             )
             Box(Modifier.size(CHECK_SIZE))
@@ -271,9 +287,16 @@ fun NoteDisplay(
         }
         if (!pictured) {
             Text(
-                text = if (readout != null) stringResource(R.string.tuner_frequency, readout.frequencyHz) else "",
+                text = when {
+                    readout == null -> ""
+                    tipText != null -> tipText
+                    else -> stringResource(R.string.tuner_frequency, readout.frequencyHz)
+                },
                 style = MaterialTheme.typography.bodyLarge,
-                color = colors.onSurfaceVariant,
+                color = if (tipText != null && readout != null) colors.primary else colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                autoSize = if (tipText != null && readout != null) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
                 modifier = Modifier.hiddenFromTalkBack(),
             )
         }
@@ -296,6 +319,12 @@ private val COMPACT_WAVE_HEIGHT = 30.dp
 
 /** The note shrinks rather than grow wider than this, e.g. "Sol♯" in the wide Space Age face. */
 private val BIG_NOTE_MAX_WIDTH = 260.dp
+
+/** A tip set no larger than [maxSize], and smaller (down to [TIP_MIN_SIZE]) when it doesn't fit one line. */
+private fun tipAutoSize(maxSize: TextUnit): TextAutoSize =
+    TextAutoSize.StepBased(minFontSize = TIP_MIN_SIZE, maxFontSize = maxSize, stepSize = 1.sp)
+
+private val TIP_MIN_SIZE = 11.sp
 
 /** The "in tune" glow fades in and out over this. */
 private const val GLOW_MS = 600
@@ -324,6 +353,14 @@ private val TunerHint.label: Int
         TunerHint.IN_TUNE -> error("in tune has no direction hint")
     }
 
+/** A tip as it is shown and said. */
+private val ReceptionTip.label: Int
+    get() = when (this) {
+        ReceptionTip.TOO_SOFT -> R.string.tuner_tip_too_soft
+        ReceptionTip.TOO_NOISY -> R.string.tuner_tip_too_noisy
+        ReceptionTip.TOO_LOUD -> R.string.tuner_tip_too_loud
+    }
+
 /** The direction hint as TalkBack says it, without the arrow, e.g. "tune up". */
 private val TunerHint.spokenLabel: Int
     get() = when (this) {
@@ -335,16 +372,17 @@ private val TunerHint.spokenLabel: Int
 /**
  * "E 2, 12 cents flat", "C sharp 4, in tune": the readout as a screen reader says it, also in the
  * wave view, since TalkBack can't see the dial or the ribbon. A [direction] is added in words:
- * "E 2, 12 cents flat, tune up".
+ * "E 2, 12 cents flat, tune up". A [tip] is said in its place: "E 2, 12 cents flat, Play a bit louder".
  */
 @Composable
-private fun spokenReading(readout: NoteReadout, direction: TunerHint?): String {
+private fun spokenReading(readout: NoteReadout, direction: TunerHint?, tip: String?): String {
     val note = rememberNoteNameSpeech().name(readout.noteName)
     val state = if (readout.inTune) stringResource(R.string.tuner_in_tune) else centsText(readout.cents)
-    return if (direction == null) {
+    val extra = tip ?: direction?.let { stringResource(it.spokenLabel) }
+    return if (extra == null) {
         stringResource(R.string.tuner_spoken_reading, note, readout.octave, state)
     } else {
-        stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, stringResource(direction.spokenLabel))
+        stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, extra)
     }
 }
 

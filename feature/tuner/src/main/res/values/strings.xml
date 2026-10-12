@@ -58,6 +58,10 @@
     <!-- Which way to turn the peg while a note is off pitch. -->
     <string name="tuner_tune_up">Tune up ↑</string>
     <string name="tuner_tune_down">Tune down ↓</string>
+    <!-- Tips shown only when the player can fix how the tuner hears them (also read out by TalkBack). -->
+    <string name="tuner_tip_too_soft">Play a bit louder</string>
+    <string name="tuner_tip_too_noisy">Too noisy here</string>
+    <string name="tuner_tip_too_loud">Too loud, move the phone back</string>
 
     <!-- What TalkBack says. %1$s is the note, %2$d its octave, %3$s "12 cents flat" or "in tune". -->
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>

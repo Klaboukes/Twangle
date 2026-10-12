@@ -328,6 +328,7 @@ fun TunerContent(
                 waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
                 reception = reception,
+                tip = state.tip,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
@@ -340,6 +341,7 @@ fun TunerContent(
                     waveLook = waveLook,
                     waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
+                    tip = state.tip,
                 )
             else -> NoteDisplay(
                 readout = null,

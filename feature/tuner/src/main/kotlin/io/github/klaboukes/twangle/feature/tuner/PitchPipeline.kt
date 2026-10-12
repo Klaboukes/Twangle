@@ -31,6 +31,8 @@ data class PitchReading(
     val snrDb: Float = Float.NaN,
     /** 0..1, how clean the pitch is ([Clarity.of] the confidence); 0 when there is no pitch. */
     val clarity: Float = 0f,
+    /** Peak of the frame before DC removal, in dBFS ([SignalGate.peakDbfs]); near 0 the input clips. */
+    val peakDbfs: Float = SignalGate.SILENCE_DBFS,
 ) {
     val isPitched: Boolean get() = frequencyHz > 0f
 }
@@ -84,7 +86,7 @@ class PitchPipeline(
                     emit(
                         PitchReading(
                             pitch.frequencyHz, pitch.confidence, gate.levelDbfs, open,
-                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence),
+                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence), gate.peakDbfs,
                         ),
                     )
                 }

@@ -502,6 +502,52 @@ class TunerContentTest {
     }
 
     @Test
+    fun aTipTakesTheFrequencysPlaceUnderTheNeedleAndKeepsTheDirection() {
+        show(detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT), showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_soft)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertDoesNotExist()
+    }
+
+    @Test
+    fun aTipFillsTheWaveViewsPill() {
+        show(detected(-12.3f).copy(tip = ReceptionTip.TOO_LOUD), display = TunerDisplay.WAVE, showTuneHint = true)
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).assertDoesNotExist()
+    }
+
+    @Test
+    fun aTipReplacesPlayAStringWithoutANote() {
+        show(listening.copy(tip = ReceptionTip.TOO_NOISY))
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_noisy)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_string)).assertDoesNotExist()
+        compose.onNode(hasContentDescription(context.getString(R.string.tuner_tip_too_noisy))).assertExists()
+    }
+
+    @Test
+    fun talkBackHearsTheTipInsteadOfTheDirection() {
+        show(detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT), display = TunerDisplay.WAVE, showTuneHint = true)
+        val cents = context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
+        val tip = context.getString(R.string.tuner_tip_too_soft)
+        compose.onNode(hasContentDescription("E 2, $cents, $tip")).assertExists()
+    }
+
+    @Test
+    fun aTipMovesNothingUnderTheNeedle() = assertTipMovesNothing(TunerDisplay.NEEDLE)
+
+    @Test
+    fun aTipMovesNothingInTheWaveView() = assertTipMovesNothing(TunerDisplay.WAVE)
+
+    private fun assertTipMovesNothing(display: TunerDisplay) {
+        show(detected(-12.3f), display = display, showTuneHint = true)
+        val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
+        shownState.value = detected(-12.3f).copy(tip = ReceptionTip.TOO_LOUD)
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).assertIsDisplayed()
+        assertEquals(noteTop, compose.onNodeWithText("E").getBoundsInRoot().top)
+    }
+
+    @Test
     fun phoneOnItsSideFitsTheWaveView() {
         show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()

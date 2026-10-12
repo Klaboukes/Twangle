@@ -24,6 +24,10 @@ import kotlin.math.abs
  * with every pitched frame's level, SNR and clarity; it starts afresh with each note. [reception]
  * gives the tracker itself, e.g. for which factor holds the figure down.
  *
+ * Tips about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone back") come
+ * from a [TipCue] fed with every frame, through their own [SteadyHint] that is *not* restarted per
+ * note: a tip stays through the gap between two plucks instead of going and coming back with each.
+ *
  * The [TunerOptions] are passed with every reading, so switching mode or tuning takes effect on the
  * next frame without losing the smoothing history. A new A4 restarts the smoothing, because the
  * smoothed notes were measured against the old one. A new precision starts "in tune" over. Create
@@ -38,6 +42,8 @@ class TunerInterpreter(
     private var inTunePrecision = InTunePrecision.DEFAULT
     private var tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
     private val hintLine = SteadyHint<TunerHint>()
+    private val tipCue = TipCue()
+    private val tipLine = SteadyHint<ReceptionTip>(TIP_GAP_SECONDS)
 
     /** How well the current note is heard: volume, noise and clarity, smoothed. */
     val reception = ReceptionTracker(frameSeconds)
@@ -62,18 +68,19 @@ class TunerInterpreter(
         } else {
             smoother.noReading()
         }
+        val tip = tipLine.update(tipCue.update(reading, smoother.hasReading, frameSeconds), frameSeconds)
         if (!smoother.hasReading) {
             stringIndex = NO_STRING
             targetMidi = NO_TARGET
             restartHint()
             reception.reset()
-            return listening(options)
+            return listening(options, tip)
         }
 
         val midi = smoother.midi
         val frequencyHz = noteMapper.frequencyOf(midi)
         return when (mode) {
-            TunerMode.CHROMATIC -> detected(options, smoother.note, frequencyHz, smoother.cents, null)
+            TunerMode.CHROMATIC -> detected(options, smoother.note, frequencyHz, smoother.cents, null, tip)
             TunerMode.AUTO -> {
                 val locked = lockedString(options)
                 val string = if (locked != null) {
@@ -83,18 +90,19 @@ class TunerInterpreter(
                 } else {
                     trackString(midi, tuning)
                 }
-                detected(options, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string)
+                detected(options, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string, tip)
             }
         }
     }
 
-    /** The state while nothing usable is heard. */
-    fun listening(options: TunerOptions): TunerUiState.Listening = TunerUiState.Listening(
+    /** The state while nothing usable is heard, with the sound's [tip] if there is one. */
+    fun listening(options: TunerOptions, tip: ReceptionTip? = null): TunerUiState.Listening = TunerUiState.Listening(
         mode = options.mode,
         tuning = options.tuning,
         a4Hz = options.a4Hz,
         lockedString = lockedString(options),
         notation = options.notation,
+        tip = tip,
     )
 
     /** The locked string in guitar mode, if it exists in the tuning; null means automatic. */
@@ -125,6 +133,7 @@ class TunerInterpreter(
         frequencyHz: Float,
         cents: Float,
         targetString: Int?,
+        tip: ReceptionTip?,
     ): TunerUiState.Detected {
         // A new target has to earn "in tune" on its own, even if it starts right on pitch.
         if (target.midi != targetMidi) {
@@ -151,6 +160,7 @@ class TunerInterpreter(
             inTune = hint == TunerHint.IN_TUNE,
             hint = hint,
             reception = reception.reception,
+            tip = tip,
         )
     }
 

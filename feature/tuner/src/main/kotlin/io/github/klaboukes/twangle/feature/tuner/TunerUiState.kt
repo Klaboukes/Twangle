@@ -28,6 +28,8 @@ sealed interface TunerUiState {
         val lockedString: Int? = null,
         /** How note names (strings, hint) are written. */
         val notation: Notation = Notation.DEFAULT,
+        /** A tip about the sound, e.g. "Too noisy here", shown instead of "Play a string"; null for none. */
+        val tip: ReceptionTip? = null,
     ) : TunerUiState
 
     /** A steady note is being played. */
@@ -69,6 +71,11 @@ sealed interface TunerUiState {
          * smoothed): 1 draws the needle and the wave crisp and solid, towards 0 faint and soft.
          */
         val reception: Float = 1f,
+        /**
+         * A tip about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone
+         * back"), held steady by [SteadyHint]; null for none. [TunerInterpreter] sets it.
+         */
+        val tip: ReceptionTip? = null,
     ) : TunerUiState
 }
 
@@ -105,6 +112,7 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         notation == other.notation &&
         inTune == other.inTune &&
         hint == other.hint &&
+        tip == other.tip &&
         shownCents(cents) == shownCents(other.cents) &&
         shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
         abs(needleCents(cents) - needleCents(other.cents)) < NEEDLE_STEP_CENTS &&
