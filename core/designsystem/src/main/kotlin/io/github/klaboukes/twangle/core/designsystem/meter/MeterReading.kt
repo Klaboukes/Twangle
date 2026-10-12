@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import io.github.klaboukes.twangle.core.designsystem.dial.DIAL_RANGE_CENTS
 import io.github.klaboukes.twangle.core.designsystem.dial.dialAngle
@@ -25,11 +24,12 @@ interface MeterReading {
     /** How far the meter is from its resting look: 0 without a note, 1 with one (eased in and out). */
     val presence: Float
 
-    /** The centre mark's colour, faded to the style's "in tune" colour while the note is in tune. */
-    val centreColor: Color
-
-    /** The marker's colour (needle, bar, bubble or light), faded to "in tune" like [centreColor]. */
-    val color: Color
+    /**
+     * How far the meter has faded to the style's "in tune" colour: 0 off the note, 1 on it, eased
+     * (smoothstep, [METER_IN_TUNE_IN_MS] in and [METER_IN_TUNE_OUT_MS] out). The centre mark and the
+     * marker blend to "in tune" by this much.
+     */
+    val tuned: Float
 
     /**
      * Gives a look's moving [layer] the resting fade (and, in the tuner, the reception's fade and

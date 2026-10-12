@@ -1,0 +1,49 @@
+package io.github.klaboukes.twangle.core.designsystem.meter
+
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.Immutable
+import io.github.klaboukes.twangle.core.settings.MeterLook
+import kotlin.math.PI
+
+/**
+ * How a look's marker follows the reading: a spring that swings [frequencyHz] times a second with a
+ * damping ratio of [dampingRatio] (0.5 or more, so it settles naturally and never jitters; below 1
+ * it swings a little past a new reading before it settles, like a real needle).
+ */
+@Immutable
+data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
+    /** Stiffness for a unit mass: ω² with ω = 2π · [frequencyHz] (a damped harmonic oscillator). */
+    val stiffness: Float get() = (2f * PI.toFloat() * frequencyHz).let { it * it }
+
+    /** The spring the meter's marker follows each new reading with. */
+    fun spring(): SpringSpec<Float> = spring(dampingRatio = dampingRatio, stiffness = stiffness)
+}
+
+/**
+ * Each look's spring, as on the approved mock-up page (`docs/design/meter-looks-preview.html`,
+ * `FEEL`): Classic swings a little past a new string, like a mechanical needle; Light arc follows
+ * almost without swinging; the bubble of the spirit level floats slowly.
+ */
+fun meterFeel(look: MeterLook): MeterFeel = when (look) {
+    MeterLook.CLASSIC -> MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
+    MeterLook.LIGHT_ARC -> MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
+    MeterLook.SPIRIT_LEVEL -> MeterFeel(frequencyHz = 1.0f, dampingRatio = 0.5f)
+    MeterLook.ROLLING_SCALE -> MeterFeel(frequencyHz = 1.3f, dampingRatio = 0.75f)
+    MeterLook.COMET -> MeterFeel(frequencyHz = 1.7f, dampingRatio = 0.7f)
+    MeterLook.STUDIO_METER -> MeterFeel(frequencyHz = 1.9f, dampingRatio = 0.62f)
+}
+
+/** Smoothstep: starts and ends gently. */
+val MeterSmoothstep = Easing { t -> t * t * (3f - 2f * t) }
+
+/** How long the meter takes to fade to the "in tune" colours, and back. */
+const val METER_IN_TUNE_IN_MS = 400
+const val METER_IN_TUNE_OUT_MS = 600
+
+/** How [MeterReading.tuned] moves towards 1 when the note is [inTune], and back to 0 when it leaves. */
+fun meterTunedSpec(inTune: Boolean): AnimationSpec<Float> =
+    tween(durationMillis = if (inTune) METER_IN_TUNE_IN_MS else METER_IN_TUNE_OUT_MS, easing = MeterSmoothstep)

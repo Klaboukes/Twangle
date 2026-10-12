@@ -2,9 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +22,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.res.stringResource
@@ -35,8 +32,9 @@ import io.github.klaboukes.twangle.core.designsystem.meter.METER_RANGE_CENTS
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
+import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
+import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import kotlinx.coroutines.launch
@@ -50,10 +48,11 @@ import kotlinx.coroutines.launch
  * - the same 2:1 box over the ♭ and ♯ labels, from −[METER_RANGE_CENTS] (left, flat) to
  *   +[METER_RANGE_CENTS] (right, sharp), in tune in the centre;
  * - one reading for every look ([MeterReading], here [TunerMeterReading]): the marker springs to
- *   each new reading, readings beyond the range are pinned at the edge, and without a note ([cents]
- *   gives null) it rests in the centre, faded;
- * - while [inTune] the centre mark and the marker fade to the style's "in tune" colours (the note's
- *   check mark in [NoteDisplay] says it without colour);
+ *   each new reading with the look's own feel ([meterFeel]), readings beyond the range are pinned at
+ *   the edge, and without a note ([cents] gives null) it rests in the centre, faded;
+ * - while [inTune] the centre mark and the marker fade to the style's "in tune" colour
+ *   ([MeterReading.tuned], eased in over 0.4 s and out over 0.6 s; the note's check mark in
+ *   [NoteDisplay] says it without colour);
  * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
  *   solid or faint and soft ([ReceptionLook], applied with [MeterReading.applyMarkerLook]); the scale
  *   stays as it is;
@@ -71,24 +70,24 @@ fun MeterFrame(
     reception: () -> Float? = { null },
 ) {
     val currentCents by rememberUpdatedState(cents)
+    // Each look has its own spring (meterFeel): Classic swings a little past a new string.
+    val spring by rememberUpdatedState(remember(look) { meterFeel(look).spring() })
     val marker = remember { Animatable(Snapshot.withoutReadObservation { meterCents(cents()) }) }
     LaunchedEffect(marker) {
         // What animateFloatAsState does: each new target starts the spring from where the marker is,
         // keeping its speed (animateTo reads the velocity before it interrupts the running spring).
         snapshotFlow { meterCents(currentCents()) }.collect { target ->
-            launch { if (target != marker.targetValue) marker.animateTo(target, MARKER_SPRING) }
+            launch { if (target != marker.targetValue) marker.animateTo(target, spring) }
         }
     }
     // Recomposes only when a note appears or goes away, not on every reading.
     val hasReading by remember { derivedStateOf { currentCents() != null } }
     val restFade = animateFloatAsState(targetValue = if (hasReading) 1f else REST_ALPHA, label = "meterRestFade")
 
-    val dial = MaterialTheme.styleTokens.dial
-    val centre = animateInTuneColor(inTune, dial.centre, "meterCentre", dial.centreInTune)
-    val markerColor = animateInTuneColor(inTune, dial.needle, "meterMarker", dial.needleInTune)
+    val tuned = animateFloatAsState(targetValue = if (inTune) 1f else 0f, animationSpec = meterTunedSpec(inTune), label = "meterTuned")
     val currentReception = rememberUpdatedState(reception)
     val blurs = rememberReceptionBlurs()
-    val reading = remember(blurs) { TunerMeterReading(marker, restFade, centre, markerColor, currentReception, blurs) }
+    val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, currentReception, blurs) }
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
@@ -111,15 +110,14 @@ fun MeterFrame(
 }
 
 /**
- * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" colours and
+ * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount and
  * the reception's fade and blur. Nothing here allocates.
  */
 @Stable
 private class TunerMeterReading(
     private val marker: Animatable<Float, AnimationVector1D>,
     private val restFade: State<Float>,
-    private val centre: State<Color>,
-    private val markerColor: State<Color>,
+    private val tunedAmount: State<Float>,
     private val reception: State<() -> Float?>,
     private val blurs: Array<RenderEffect?>,
 ) : MeterReading {
@@ -129,9 +127,7 @@ private class TunerMeterReading(
 
     override val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
 
-    override val centreColor: Color get() = centre.value
-
-    override val color: Color get() = markerColor.value
+    override val tuned: Float get() = tunedAmount.value
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         val presence = presence
@@ -143,8 +139,6 @@ private class TunerMeterReading(
 
 /** The marker's opacity without a note: resting, faded in the centre. */
 private const val REST_ALPHA = 0.3f
-
-private val MARKER_SPRING = spring<Float>(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable

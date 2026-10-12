@@ -7,22 +7,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.DialColors
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.settings.R
 import kotlin.math.abs
@@ -47,8 +41,7 @@ fun MeterLookPicker(
     label: @Composable (MeterLook) -> String,
 ) {
     val demo = remember { MeterDemo() }
-    val dial = rememberUpdatedState(MaterialTheme.styleTokens.dial)
-    val reading = remember(demo) { DemoReading(demo, dial) }
+    val reading = remember(demo) { DemoReading(demo) }
     LookCardGrid(
         title = title,
         looks = MeterLook.entries,
@@ -69,15 +62,14 @@ fun MeterLookPicker(
 fun meterLookCardTag(look: MeterLook): String = "meter_look_card_" + look.name.lowercase()
 
 /**
- * The previews' reading: the demo's cents, always "with a note", and the dial's colours fading to
- * "in tune" with the demo. Reading it allocates nothing.
+ * The previews' reading: the demo's cents, always "with a note", fading to "in tune" with the demo.
+ * Reading it allocates nothing.
  */
 @Stable
-private class DemoReading(private val demo: MeterDemo, private val dial: State<DialColors>) : MeterReading {
+private class DemoReading(private val demo: MeterDemo) : MeterReading {
     override val cents: Float get() = demo.cents.floatValue
     override val presence: Float get() = 1f
-    override val centreColor: Color get() = lerp(dial.value.centre, dial.value.centreInTune, demo.tuned.floatValue)
-    override val color: Color get() = lerp(dial.value.needle, dial.value.needleInTune, demo.tuned.floatValue)
+    override val tuned: Float get() = demo.tuned.floatValue
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         layer.alpha = 1f
