@@ -848,10 +848,21 @@ class TunerContentTest {
     private val listening get() = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
 
     @Test
-    fun stringLockTipFloatsAboveThePickerAndLeavesItVisible() = assertTipCoversNothing(display = TunerDisplay.WAVE)
+    fun stringLockTipSitsInTheCornerBesideThePicker() = assertTipInTheCorner(listening, display = TunerDisplay.WAVE)
 
     @Test
-    fun stringLockTipCoversNothingWithTheNeedle() = assertTipCoversNothing(display = TunerDisplay.NEEDLE)
+    fun stringLockTipSitsInTheCornerWithTheNeedle() = assertTipInTheCorner(listening, display = TunerDisplay.NEEDLE)
+
+    @Test
+    fun stringLockTipSitsInTheCornerInDutch() = assertTipInTheCorner(listening, display = TunerDisplay.WAVE, locale = "nl")
+
+    @Test
+    fun stringLockTipInTheCornerCoversNothingWhileANoteSounds() =
+        assertTipInTheCorner(detected(-12.3f), display = TunerDisplay.NEEDLE, showTuneHint = true)
+
+    @Test
+    fun stringLockTipInTheCornerCoversNothingWhileANoteSoundsWithTheWave() =
+        assertTipInTheCorner(detected(-12.3f), display = TunerDisplay.WAVE, showTuneHint = true)
 
     @Test
     fun stringLockTipCoversNothingWithTheLargestFont() = assertTipCoversNothing(display = TunerDisplay.WAVE, fontScale = 2f)
@@ -860,8 +871,42 @@ class TunerContentTest {
     fun stringLockTipCoversNothingWithTheNeedleAndTheLargestFont() = assertTipCoversNothing(display = TunerDisplay.NEEDLE, fontScale = 2f)
 
     /**
-     * On an upright phone the tip's balloon sits in the gap above the tuning picker: its body ends
-     * where the picker's label starts, and it overlaps neither the "Play a string" line nor the strings.
+     * On an upright phone the tip's balloon sits in the corner left of the tuning picker, above the
+     * strings, and covers nothing: not the picker, the strings, the readout under the note or (with
+     * a note) the tune hint. It stays while a note sounds.
+     */
+    private fun assertTipInTheCorner(state: TunerUiState, display: TunerDisplay, showTuneHint: Boolean = false, locale: String? = null) {
+        show(state, display = display, showTuneHint = showTuneHint, showStringLockTip = true, locale = locale)
+        val resources = if (locale != null) dutch.resources else context.resources
+        val tip = compose.onNodeWithText(resources.getString(R.string.tuner_string_lock_tip))
+        val pickerLabel = compose.onNodeWithText(resources.getString(R.string.tuning_standard), useUnmergedTree = true)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val label = pickerLabel.assertIsDisplayed().getBoundsInRoot()
+        val e2 = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
+        val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
+        assertTrue("tip ends at ${tipBounds.right}, picker starts at ${label.left}", tipBounds.right <= label.left)
+        assertTrue("tip ends at ${tipBounds.bottom}, strings start at ${e2.top}", tipBounds.bottom <= e2.top)
+        assertTrue("tip starts at ${tipBounds.left}, window at ${window.left}", tipBounds.left >= window.left)
+        // The pointer, near the balloon's start, lands on the first string.
+        assertTrue("tip starts at ${tipBounds.left}, E2 at ${e2.left}..${e2.right}", tipBounds.left + POINTER_FROM_START in e2.left..e2.right)
+        // The texts themselves, not the note's whole live region they are merged into.
+        fun text(id: Int) = compose.onNodeWithText(resources.getString(id), useUnmergedTree = true)
+        val readout = when (state) {
+            // The wave view leaves the frequency out under the note.
+            is TunerUiState.Detected -> listOfNotNull(
+                if (display == TunerDisplay.NEEDLE) "frequency" to compose.onNodeWithText(frequency, useUnmergedTree = true) else null,
+                if (showTuneHint) "hint" to text(R.string.tuner_tune_up) else null,
+            )
+            else -> listOf("play a string" to text(R.string.tuner_hint_play_string))
+        }
+        assertNoOverlap("tip" to tip, "picker" to pickerLabel, "E2" to stringChip("E2"), *readout.toTypedArray())
+        assertWholeTextShown(tip)
+    }
+
+    /**
+     * With the largest font there's no room in the corner, so the tip's balloon sits in the gap above
+     * the tuning picker: its body ends where the picker's label starts, and it overlaps neither the
+     * "Play a string" line nor the strings.
      */
     private fun assertTipCoversNothing(display: TunerDisplay, fontScale: Float? = null) {
         show(listening, fontScale = fontScale, display = display, showStringLockTip = true)
@@ -924,16 +969,38 @@ class TunerContentTest {
     }
 
     @Test
-    fun tipStepsAsideWhileANoteSoundsOnAnUprightPhone() {
-        // Above the picker it would cover the frequency or the hint, so it waits until the note stops.
+    fun tipInTheCornerStaysWhileNotesComeAndGo() {
+        // It doesn't blink each time a note starts or stops.
         show(listening, showTuneHint = true, showStringLockTip = true)
-        tip.assertIsDisplayed()
+        val before = tip.assertIsDisplayed().getBoundsInRoot()
         shownState.value = detected(-12.3f)
-        tip.assertDoesNotExist()
+        assertEquals(before, tip.assertIsDisplayed().getBoundsInRoot())
         compose.onNodeWithText(tuneUp).assertIsDisplayed()
-        compose.onNodeWithText(frequency).assertIsDisplayed()
         shownState.value = listening
-        tip.assertIsDisplayed()
+        assertEquals(before, tip.assertIsDisplayed().getBoundsInRoot())
+        assertEquals(0, tipDismissals)
+    }
+
+    @Test
+    fun tipAboveThePickerStepsAsideUntilItIsQuiet() {
+        // With the largest font it sits above the picker, where it would cover the frequency or the
+        // hint: it goes while a note sounds, and comes back only after a quiet while, not between plucks.
+        show(listening, fontScale = 2f, showTuneHint = true, showStringLockTip = true)
+        compose.mainClock.autoAdvance = false
+        tip.assertExists()
+        shownState.value = detected(-12.3f)
+        compose.mainClock.advanceTimeBy(100)
+        tip.assertDoesNotExist()
+        shownState.value = listening
+        compose.mainClock.advanceTimeBy(1_000)
+        tip.assertDoesNotExist()
+        shownState.value = detected(-12.3f)
+        compose.mainClock.advanceTimeBy(1_000)
+        shownState.value = listening
+        compose.mainClock.advanceTimeBy(2_000)
+        tip.assertDoesNotExist()
+        compose.mainClock.advanceTimeBy(1_500)
+        tip.assertExists()
         assertEquals(0, tipDismissals)
     }
 
@@ -1417,6 +1484,9 @@ class TunerContentTest {
 
         /** The height of the tip balloon's pointer. */
         val POINTER = 8.dp
+
+        /** Where a downward pointer sits along the balloon, from its start. */
+        val POINTER_FROM_START = 32.dp
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)

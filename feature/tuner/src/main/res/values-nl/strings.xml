@@ -38,7 +38,7 @@
     <string name="tuner_string_unlock">Snaren automatisch kiezen</string>
     <string name="tuner_string_locked">Vastgezet</string>
     <!-- One-time tip above the string row; tapping it (or a string) makes it go away for good. -->
-    <string name="tuner_string_lock_tip">Tik op een snaar om alleen die te stemmen</string>
+    <string name="tuner_string_lock_tip">Kies een snaar om die vast te zetten</string>
     <string name="tuner_string_lock_tip_dismiss">Tip sluiten</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- In Dutch the unit stays singular after a number: "12 cent". -->

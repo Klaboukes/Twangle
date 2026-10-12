@@ -88,6 +88,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
+import io.github.klaboukes.twangle.feature.tuner.components.DOWN_POINTER_FROM_START
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
@@ -405,7 +406,7 @@ fun TunerContent(
                     // With a very large system font it can be taller than the screen; then it scrolls.
                     .verticalScroll(rememberScrollState())
                     .widthIn(max = COLUMN_MAX_WIDTH)
-                    .padding(horizontal = 24.dp),
+                    .padding(horizontal = COLUMN_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
             ) {
@@ -415,7 +416,7 @@ fun TunerContent(
                 } else {
                     gauge()
                     note(false)
-                    // Under the strings there's no room on an upright phone; above the picker there is.
+                    // Under the strings there's no room on an upright phone; in the corner beside the picker there is.
                     guitarSlot(TipPointer.DOWN) {}
                 }
             }
@@ -695,15 +696,12 @@ private fun GuitarSlotFor(
         null
     }
     val controls = when (state) {
-        // Above the picker the tip would cover the numbers or the hint under the note, so there it
-        // steps aside while a note sounds.
         is TunerUiState.Detected -> GuitarControlsState(
-            state.tuning, state.notation, state.targetString, state.lockedString,
-            tip.copy(shown = tip.shown && tip.pointer == TipPointer.UP), state.inTune,
+            state.tuning, state.notation, state.targetString, state.lockedString, tip, state.inTune, noteSounding = true,
         )
         // A locked string is the target before anything is played, so it stays highlighted.
         is TunerUiState.Listening ->
-            GuitarControlsState(state.tuning, state.notation, state.lockedString, state.lockedString, tip, inTune = false)
+            GuitarControlsState(state.tuning, state.notation, state.lockedString, state.lockedString, tip, inTune = false, noteSounding = false)
         // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
         // permission is granted): empty space of the same height.
         else -> null
@@ -714,7 +712,7 @@ private fun GuitarSlotFor(
         {
             GuitarControls(
                 controls.tuning, controls.notation, onTuningChange, onStringClick,
-                controls.targetString, controls.lockedString, controls.tip, controls.inTune, onMenuOpenChange,
+                controls.targetString, controls.lockedString, controls.tip, controls.inTune, controls.noteSounding, onMenuOpenChange,
             )
         }
     } else {
@@ -731,6 +729,7 @@ private data class GuitarControlsState(
     val lockedString: Int?,
     val tip: StringLockTipState,
     val inTune: Boolean,
+    val noteSounding: Boolean,
 )
 
 /** Whether the one-time string-lock tip is [shown], what tapping it does, and where it [pointer]s from. */
@@ -738,9 +737,13 @@ private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> U
 
 /**
  * The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. While [tip] is
- * shown, the string-lock tip floats as a speech balloon over the gap above the picker (pointer down,
- * beside the picker, at the strings) or under the strings (pointer up). It takes no room of its
- * own, so nothing moves when it comes or goes, and it leaves the picker and the strings uncovered.
+ * shown, the string-lock tip floats as a speech balloon. Pointer up: under the strings. Pointer
+ * down: in the corner left of the picker, its pointer on the first string, wrapped onto a few lines
+ * and staying while a note sounds. Where a very large font leaves no room there, it goes in the gap
+ * above the picker instead; there it would cover the numbers or the hint under the note, so it steps
+ * aside while [noteSounding] and comes back only after [TIP_QUIET_MS] without a note, so it doesn't
+ * blink between plucks. It takes no room of its own, so nothing moves when it comes or goes, and it
+ * leaves the picker and the strings uncovered.
  */
 @Composable
 private fun GuitarControls(
@@ -752,8 +755,20 @@ private fun GuitarControls(
     lockedString: Int?,
     tip: StringLockTipState,
     inTune: Boolean = false,
+    noteSounding: Boolean = false,
     onMenuOpenChange: (Boolean) -> Unit = {},
 ) {
+    var quiet by remember { mutableStateOf(!noteSounding) }
+    // Whether the tip went above the picker for want of room in the corner; set while measuring.
+    var abovePicker by remember { mutableStateOf(false) }
+    LaunchedEffect(noteSounding) {
+        if (noteSounding) {
+            quiet = false
+        } else {
+            delay(TIP_QUIET_MS)
+            quiet = true
+        }
+    }
     val picker = @Composable {
         TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange, onExpandedChange = onMenuOpenChange)
     }
@@ -769,7 +784,12 @@ private fun GuitarControls(
     }
     val balloon = @Composable {
         AnimatedVisibility(visible = tip.shown, enter = fadeIn(), exit = fadeOut()) {
-            StringLockTip(onDismiss = tip.onDismiss, pointer = tip.pointer)
+            // While it steps aside above the picker it isn't placed; TalkBack and UI tests mustn't find it either.
+            StringLockTip(
+                onDismiss = tip.onDismiss,
+                pointer = tip.pointer,
+                modifier = if (abovePicker && !quiet) Modifier.clearAndSetSemantics {} else Modifier,
+            )
         }
     }
     Layout(contents = listOf(picker, strings, balloon)) { (pickerMeasurables, stringMeasurables, tipMeasurables), constraints ->
@@ -779,17 +799,36 @@ private fun GuitarControls(
         val gap = PICKER_STRINGS_GAP.roundToPx()
         val width = max(pickerPlaceable.width, stringsPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
         val height = (pickerPlaceable.height + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        // The balloon is no wider than the row it points at, and not counted in the height.
-        val tipPlaceable = tipMeasurables.firstOrNull()?.measure(Constraints(maxWidth = width))
+        val pickerX = (width - pickerPlaceable.width) / 2
+        val stringsX = (width - stringsPlaceable.width) / 2
+        val stringsY = pickerPlaceable.height + gap
+        val tipMeasurable = tipMeasurables.firstOrNull()
+        // The corner left of the picker: from the column's edge (it is centred in the column, inside
+        // the column's padding) to the picker, reaching up into the gap above the slot but not to the
+        // hint. It starts by the edge, unless its pointer would then miss the first string.
+        val cornerX = max(
+            stringsX + POINTER_INTO_FIRST_STRING.roundToPx() - DOWN_POINTER_FROM_START.roundToPx(),
+            -((constraints.maxWidth - width) / 2 + COLUMN_PADDING.roundToPx()) + CORNER_TIP_EDGE.roundToPx(),
+        )
+        val cornerWidth = pickerX - CORNER_TIP_PICKER_GAP.roundToPx() - cornerX
+        val cornerBottom = stringsY - CORNER_TIP_STRINGS_GAP.roundToPx()
+        val inCorner = tip.pointer == TipPointer.DOWN && tipMeasurable != null &&
+            cornerWidth >= CORNER_TIP_MIN_WIDTH.roundToPx() &&
+            tipMeasurable.minIntrinsicHeight(cornerWidth) <= cornerBottom + CORNER_TIP_ROOM_ABOVE.roundToPx()
+        abovePicker = tip.pointer == TipPointer.DOWN && !inCorner
+        // Elsewhere the balloon is no wider than the row it points at. It isn't counted in the height.
+        val tipPlaceable = tipMeasurable?.measure(Constraints(maxWidth = if (inCorner) cornerWidth else width))
         layout(width, height) {
-            pickerPlaceable.placeRelative((width - pickerPlaceable.width) / 2, 0)
-            stringsPlaceable.placeRelative((width - stringsPlaceable.width) / 2, pickerPlaceable.height + gap)
-            if (tipPlaceable != null) {
-                val x = (width - tipPlaceable.width) / 2
-                val y = when (tip.pointer) {
+            pickerPlaceable.placeRelative(pickerX, 0)
+            stringsPlaceable.placeRelative(stringsX, stringsY)
+            // Above the picker it waits for a quiet moment (see above).
+            if (tipPlaceable != null && (!abovePicker || quiet)) {
+                val x = if (inCorner) cornerX else (width - tipPlaceable.width) / 2
+                val y = when {
+                    inCorner -> cornerBottom - tipPlaceable.height
                     // The body ends where the picker's button starts; the pointer reaches past it.
-                    TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
-                    TipPointer.UP -> height + TIP_STRINGS_GAP.roundToPx()
+                    tip.pointer == TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
+                    else -> height + TIP_STRINGS_GAP.roundToPx()
                 }
                 tipPlaceable.placeRelative(x, y, zIndex = 1f)
             }
@@ -847,6 +886,26 @@ private val PICKER_TOUCH_INSET = 4.dp
 
 /** Between the string row and a tip under it. */
 private val TIP_STRINGS_GAP = 4.dp
+
+/** The single column's padding at each side: room the tip in the corner may use. */
+private val COLUMN_PADDING = 24.dp
+
+/** The tip in the corner keeps this far from the screen's edge, from the picker, and (with its pointer's tip) from the strings. */
+private val CORNER_TIP_EDGE = 8.dp
+private val CORNER_TIP_PICKER_GAP = 4.dp
+private val CORNER_TIP_STRINGS_GAP = 2.dp
+
+/** How far the tip in the corner may reach above the guitar controls: across the gap above the slot, to just under the text above it (four lines in Dutch). */
+private val CORNER_TIP_ROOM_ABOVE = SECTION_SPACING + 8.dp
+
+/** Narrower than this the tip in the corner would be a column of single words; it goes above the picker instead. */
+private val CORNER_TIP_MIN_WIDTH = 88.dp
+
+/** The tip in the corner's pointer lands at least this far into the first string. */
+private val POINTER_INTO_FIRST_STRING = 12.dp
+
+/** After a note, the tip above the picker comes back only after this long without one. */
+private const val TIP_QUIET_MS = 3_000L
 
 /** The single column, and the controls pane, never get wider than this. */
 private val COLUMN_MAX_WIDTH = 480.dp

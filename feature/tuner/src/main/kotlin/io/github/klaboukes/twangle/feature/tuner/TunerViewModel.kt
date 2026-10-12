@@ -125,7 +125,7 @@ class TunerViewModel(
     private val stringLockTipDismissed = MutableStateFlow(savedStringLockTipSeen)
 
     /**
-     * Whether guitar mode shows the one-time tip "Tap a string to tune only that one". It goes for
+     * Whether guitar mode shows the one-time tip "Tap a string to lock it". It goes for
      * good once dismissed ([dismissStringLockTip]) or once a string is tapped ([toggleString]).
      */
     val showStringLockTip: StateFlow<Boolean> =

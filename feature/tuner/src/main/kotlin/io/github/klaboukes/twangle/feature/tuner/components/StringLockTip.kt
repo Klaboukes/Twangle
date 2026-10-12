@@ -39,7 +39,7 @@ import kotlin.math.min
 
 /** Which way the [StringLockTip]'s pointer points: at the string row below it, or above it. */
 enum class TipPointer {
-    /** The balloon sits above the tuning picker; the pointer reaches down beside the picker, at the strings. */
+    /** The balloon sits above the strings, beside the tuning picker; the pointer, near its start, reaches down at the strings. */
     DOWN,
 
     /** The balloon sits under the string row; the pointer is in the middle, under the strings. */
@@ -47,19 +47,22 @@ enum class TipPointer {
 }
 
 /**
- * The one-time tip "Tap a string to tune only that one ×", as a speech balloon with a small
+ * The one-time tip "Tap a string to lock it", as a speech balloon with a small
  * [pointer] at the string row. It floats over the screen (the tuner places it without giving it
  * room of its own, see `GuitarControls`), so it never moves anything or hides the tuning picker.
  * The balloon has the style's own corner shape (`shapes.medium`) and accent container colours, in
  * light and dark. The whole balloon is one button that dismisses it, so TalkBack reads the tip and
- * offers "Dismiss tip". Its text grows with the system font up to [MAX_TIP_FONT_SCALE], so the
- * balloon stays small enough to float in the gap without covering the readout.
+ * offers "Dismiss tip". Pointing up it shows a close icon; pointing down it sits in a small corner
+ * beside the tuning picker, where the text needs all the width (tapping it, or a string, still
+ * closes it). Its text grows with the system font up to [MAX_TIP_FONT_SCALE], so the balloon stays
+ * small enough to float beside the controls without covering the readout.
  */
 @Composable
 fun StringLockTip(onDismiss: () -> Unit, pointer: TipPointer, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val shape = BalloonShape(MaterialTheme.shapes.medium, pointer, POINTER_WIDTH, POINTER_HEIGHT)
     val density = LocalDensity.current
+    val closeIcon = pointer == TipPointer.UP
     Row(
         modifier = modifier
             .clip(shape)
@@ -67,7 +70,7 @@ fun StringLockTip(onDismiss: () -> Unit, pointer: TipPointer, modifier: Modifier
             .background(colors.primaryContainer, shape)
             .border(1.dp, colors.primary, shape)
             .padding(
-                start = 14.dp,
+                start = if (closeIcon) 14.dp else 10.dp,
                 end = 10.dp,
                 top = BODY_PADDING + if (pointer == TipPointer.UP) POINTER_HEIGHT else 0.dp,
                 bottom = BODY_PADDING + if (pointer == TipPointer.DOWN) POINTER_HEIGHT else 0.dp,
@@ -85,20 +88,22 @@ fun StringLockTip(onDismiss: () -> Unit, pointer: TipPointer, modifier: Modifier
             )
         }
         // The click label already says what tapping does, so TalkBack doesn't need the icon.
-        Icon(
-            painter = painterResource(R.drawable.ic_close),
-            contentDescription = null,
-            tint = colors.onPrimaryContainer,
-            modifier = Modifier.size(16.dp),
-        )
+        if (closeIcon) {
+            Icon(
+                painter = painterResource(R.drawable.ic_close),
+                contentDescription = null,
+                tint = colors.onPrimaryContainer,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 
 /**
  * A speech balloon: [body] (the style's corner shape) with a small triangular pointer of
  * [pointerWidth] × [pointerHeight] on the side [pointer] says. A pointer down sits near the start
- * ([DOWN_POINTER_AT] of the width), so it passes beside the centred tuning picker; a pointer up
- * sits in the middle.
+ * ([DOWN_POINTER_FROM_START]), so it passes beside the centred tuning picker; a pointer up sits in
+ * the middle.
  */
 private data class BalloonShape(
     private val body: Shape,
@@ -115,9 +120,9 @@ private data class BalloonShape(
             addOutline(body.createOutline(Size(size.width, size.height - pointerH), layoutDirection, density))
             translate(Offset(0f, bodyTop))
         }
-        val fraction = if (pointer == TipPointer.DOWN) DOWN_POINTER_AT else 0.5f
         val corner = halfPointer * 2f
-        val fromStart = (size.width * fraction).coerceIn(corner, (size.width - corner).coerceAtLeast(corner))
+        val wanted = if (pointer == TipPointer.DOWN) with(density) { DOWN_POINTER_FROM_START.toPx() } else size.width / 2f
+        val fromStart = wanted.coerceIn(corner, (size.width - corner).coerceAtLeast(corner))
         val x = if (layoutDirection == LayoutDirection.Ltr) fromStart else size.width - fromStart
         val pointerPath = Path().apply {
             if (pointer == TipPointer.DOWN) {
@@ -138,8 +143,8 @@ private data class BalloonShape(
 /** How far the tip's text grows with the system font: enough to read, small enough to float in the gap. */
 private const val MAX_TIP_FONT_SCALE = 1.3f
 
-/** Where along the balloon a downward pointer sits, from the start: beside the centred picker. */
-private const val DOWN_POINTER_AT = 0.14f
+/** Where along the balloon a downward pointer sits, from the start: beside the centred picker, so the tuner can aim it at a string. */
+internal val DOWN_POINTER_FROM_START = 32.dp
 
 private val POINTER_WIDTH = 14.dp
 

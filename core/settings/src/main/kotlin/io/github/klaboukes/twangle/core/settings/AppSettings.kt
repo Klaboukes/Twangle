@@ -146,7 +146,7 @@ data class AppSettings(
      * one where the meter fills the screen.
      */
     val keepTwoPaneLandscape: Boolean = false,
-    /** The one-time tip "Tap a string to tune only that one" was dismissed, so it doesn't come back. */
+    /** The one-time tip "Tap a string to lock it" was dismissed, so it doesn't come back. */
     val stringLockTipSeen: Boolean = false,
 ) {
     companion object {

@@ -42,7 +42,7 @@
     <string name="tuner_string_unlock">Pick strings automatically</string>
     <string name="tuner_string_locked">Locked</string>
     <!-- One-time tip above the string row; tapping it (or a string) makes it go away for good. -->
-    <string name="tuner_string_lock_tip">Tap a string to tune only that one</string>
+    <string name="tuner_string_lock_tip">Tap a string to lock it</string>
     <string name="tuner_string_lock_tip_dismiss">Dismiss tip</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <string name="tuner_cents_zero">0 cents</string>
