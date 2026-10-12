@@ -35,9 +35,10 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The meter looks with their own art (Classic and Light arc so far) in each of the seven styles,
- * light and dark: clearly drawn, inside their 2:1 box (nothing spills onto the flat and sharp labels
- * or around the frame), skipped by TalkBack, and moved by a new reading without recomposing.
+ * The meter looks with their own art (Classic, Light arc, Spirit level and Rolling scale so far) in
+ * each of the seven styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
+ * the flat and sharp labels or around the frame), skipped by TalkBack, and moved by a new reading
+ * without recomposing.
  */
 @RunWith(Parameterized::class)
 class MeterLooksTest(private val style: VisualStyle) {
@@ -156,7 +157,7 @@ class MeterLooksTest(private val style: VisualStyle) {
         fun styles(): List<VisualStyle> = VisualStyle.entries
 
         /** The looks with their own art so far. */
-        val LOOKS = listOf(MeterLook.CLASSIC, MeterLook.LIGHT_ARC)
+        val LOOKS = listOf(MeterLook.CLASSIC, MeterLook.LIGHT_ARC, MeterLook.SPIRIT_LEVEL, MeterLook.ROLLING_SCALE)
 
         /** Nothing in the styles is this colour. */
         val BACKGROUND = Color(0xFF7F00FF)

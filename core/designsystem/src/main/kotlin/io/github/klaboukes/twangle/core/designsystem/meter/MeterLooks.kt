@@ -55,9 +55,9 @@ fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading) {
         when (look) {
             MeterLook.CLASSIC -> ClassicMeter(reading)
             MeterLook.LIGHT_ARC -> LightArcMeter(reading)
+            MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading)
+            MeterLook.ROLLING_SCALE -> RollingScaleMeter(reading)
             // Until their own art is built (Phase 13), the other looks show the Classic dial.
-            MeterLook.SPIRIT_LEVEL,
-            MeterLook.ROLLING_SCALE,
             MeterLook.COMET,
             MeterLook.STUDIO_METER,
             -> ClassicMeter(reading)

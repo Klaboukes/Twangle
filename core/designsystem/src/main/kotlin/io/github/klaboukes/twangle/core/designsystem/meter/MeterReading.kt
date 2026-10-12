@@ -21,6 +21,12 @@ interface MeterReading {
      */
     val cents: Float
 
+    /**
+     * How fast the marker moves, in cents per second (0 when it is still, and in readings that don't
+     * follow a spring). The spirit level's bubble stretches a little while it moves.
+     */
+    val velocity: Float get() = 0f
+
     /** How far the meter is from its resting look: 0 without a note, 1 with one (eased in and out). */
     val presence: Float
 

@@ -182,6 +182,7 @@ internal class PlateArt(size: Size, private val u: Float, roles: MeterRoles) {
  * look's art ([drawUnder]) the face sunk toward the stage with a soft inner shadow under its top
  * edge (7u blur, 2.5u down); over the art ([drawOver]) one sheen from the top (white at 28 % in
  * light, 7 % in dark, gone by 45 % of the way from [top] to [bottom]) and a 1u rim in ink at 14 %.
+ * The face is [fill]: the roles' glass face, or a tint of it (the spirit level's tube).
  */
 internal class GlassArt(
     private val face: Path,
@@ -190,6 +191,7 @@ internal class GlassArt(
     bottom: Float,
     private val u: Float,
     private val roles: MeterRoles,
+    private val fill: Color = roles.face,
 ) {
     private val width = size.width
 
@@ -212,7 +214,7 @@ internal class GlassArt(
     private val rim = roles.ink.copy(alpha = 0.14f)
 
     fun drawUnder(scope: DrawScope) = with(scope) {
-        drawPath(face, roles.face)
+        drawPath(face, fill)
         clipPath(face) {
             drawIntoCanvas { it.nativeCanvas.drawPath(surround.asAndroidPath(), innerShadow) }
         }

@@ -125,6 +125,9 @@ private class TunerMeterReading(
 
     override val cents: Float get() = marker.value
 
+    // The vector, not Animatable.velocity, which boxes a new Float on every read.
+    override val velocity: Float get() = marker.velocityVector.value
+
     override val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
 
     override val tuned: Float get() = tunedAmount.value
