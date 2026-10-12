@@ -66,6 +66,10 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setWaveLook(look) }
     }
 
+    fun setWaveBreathesInTune(enabled: Boolean) {
+        viewModelScope.launch { repository.setWaveBreathesInTune(enabled) }
+    }
+
     fun setKeepTwoPaneLandscape(enabled: Boolean) {
         viewModelScope.launch { repository.setKeepTwoPaneLandscape(enabled) }
     }

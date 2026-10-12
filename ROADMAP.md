@@ -21,9 +21,9 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 11 — A wave that helps you tune
 Goal: the wave view gives the same "getting closer" cue as the strobe instead of being eye candy. Standing still means in tune; the drift speeds up the further off the note is; the shape still shows how far off from a distance.
 - ☑ One motion for every wave look: the drift follows the strobe's speed rule (`StrobeMotion.driftSpeed`: still within ½ cent, faster per cent off) from the exact cents, not the in-tune flag, so the last few cents still show. The shape keeps showing distance up to 50 cents (deeper, more pulses further off) and smooths out close to the note. JVM tests for the drift at 0, ±1, ±3, ±5 and ±30 cents
-- ☐ Temporary Settings switch "In tune: breathe / hold still", so the owner can compare both on the phone (English and Dutch, saved in settings); the losing option and the switch go after the owner check above
+- ☑ Temporary Settings switch "In tune: breathe / hold still", so the owner can compare both on the phone (English and Dutch, saved in settings); the losing option and the switch go after the owner check above (Settings → "When in tune", under the wave looks)
 - ☐ Each look carries the cue in its own way, still in tune and drifting at strobe speed off pitch: stripes drift (not only lean), ripples spread out (sharp) or draw in (flat), fireflies drift and line up, dots scroll, the loop tumbles at the beat rate and settles into a ring. The Settings previews move the same way
-- ☐ The strobe becomes one of the wave looks, so "Display" is just Needle or Wave; a saved Strobe display opens as Wave with the strobe look. **Owner decides before this step:** 6 looks in the 3×2 grid (the strobe replaces the loop) or 9 looks in a 3×3 grid (the strobe plus two new looks)
+- ☐ The strobe becomes one of the wave looks, so "Display" is just Needle or Wave; a saved Strobe display opens as Wave with the strobe look. **Owner decided:** 6 looks in the 3×2 grid, the strobe replacing the stripes look (final six: strobe, ribbon, dots, fireflies, loop, ripples)
 - ☐ Every look checked in each style, light and dark, with TalkBack, on a phone and tablet on its side (also compact mode) and at 2× font; ARCHITECTURE.md updated; S26 check with short test tones
 
 ## Phase 12 — Volume and background-noise meters

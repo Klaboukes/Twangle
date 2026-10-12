@@ -22,7 +22,10 @@ import kotlin.math.sqrt
  *   ([depth]) and more of them fit across ([beats]) the further off. Close to the note they smooth
  *   out, and within half a cent, where the drift stands still, the band is perfectly even. The
  *   shape follows the reading more slowly than the drift, so it changes smoothly.
- * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle.
+ * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle. With
+ *   [breathesInTune] off, it eases to a stop while the drift stands still ([stir] falls to 0), so
+ *   on the note the wave holds perfectly still in its calm shape, like the strobe. (Temporary
+ *   choice: the owner compares both on the phone and the other one goes.)
  *
  * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and
  * the previews in Settings both use it.
@@ -45,6 +48,20 @@ class WaveMotion {
     var breath = 0f
         private set
 
+    /**
+     * Whether the wave keeps breathing while it stands still on the note (the default). False makes
+     * it hold perfectly still there: no drift, no breathing, no twinkle.
+     */
+    var breathesInTune = true
+
+    /**
+     * How much the wave breathes now (0..1): 1 while it drifts or [breathesInTune] is on. With
+     * [breathesInTune] off it eases to exactly 0 while the drift stands still, which slows the
+     * [breath] clock to a stop and lets the [swell] settle at full height.
+     */
+    var stir = 1f
+        private set
+
     /** How deeply the ribbon is pinched into pulses: 0 within half a cent, up to [MAX_DEPTH] (see [depthFor]). */
     var depth = 0f
         private set
@@ -57,7 +74,7 @@ class WaveMotion {
     val lean: Float get() = shownCents / WAVE_RANGE_CENTS
 
     /** The ribbon's slow breathing, as a share of its full height (1 − [BREATH_DEPTH]..1). */
-    val swell: Float get() = 1f - BREATH_DEPTH * (0.5f - 0.5f * cos(2f * PI.toFloat() * breath))
+    val swell: Float get() = 1f - BREATH_DEPTH * stir * (0.5f - 0.5f * cos(2f * PI.toFloat() * breath))
 
     /** Moves the wave on by [seconds] for a reading of [cents] (positive is sharp; NaN counts as 0). */
     fun advance(seconds: Float, cents: Float) {
@@ -71,7 +88,11 @@ class WaveMotion {
         shownCents += (goal - shownCents) * follow
         depth += (depthFor(goal) - depth) * follow
         beats += (beatsFor(goal) - beats) * follow
-        breath = wrap(breath + dt * BREATHS_PER_SECOND)
+        val calm = !breathesInTune && drift.isStill
+        stir += ((if (calm) 0f else 1f) - stir) * (1f - exp(-dt * SETTLE_RATE))
+        // Snapped to its end, so "holding still" is exact rather than an ever slower creep.
+        if (stir < SETTLED) stir = 0f else if (stir > 1f - SETTLED) stir = 1f
+        breath = wrap(breath + dt * BREATHS_PER_SECOND * stir)
     }
 
     private fun wrap(value: Float): Float = value - floor(value)
@@ -113,6 +134,12 @@ class WaveMotion {
 
         /** How quickly the shape follows the reading (per second): smoothly, in about a fifth of a second. */
         private const val SHAPE_RATE = 5f
+
+        /** How quickly the breathing fades out on the note, or back in off it (per second): about half a second. */
+        private const val SETTLE_RATE = 6f
+
+        /** Closer than this to 0 or 1, [stir] counts as there. */
+        private const val SETTLED = 0.002f
 
         /** One slow breath every two and a half seconds. */
         private const val BREATHS_PER_SECOND = 0.4f

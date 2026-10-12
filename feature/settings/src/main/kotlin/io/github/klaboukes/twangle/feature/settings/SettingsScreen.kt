@@ -83,6 +83,7 @@ fun SettingsScreen(
         onShowTuneHintChange = viewModel::setShowTuneHint,
         onDisplayChange = viewModel::setDisplay,
         onWaveLookChange = viewModel::setWaveLook,
+        onWaveBreathesInTuneChange = viewModel::setWaveBreathesInTune,
         onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
         modifier = modifier,
     )
@@ -92,7 +93,7 @@ fun SettingsScreen(
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
  * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
- * (Android 12+), and the wave looks only while the wave is the display.
+ * (Android 12+), and the wave looks (and whether the wave breathes in tune) only while the wave is the display.
  */
 @Composable
 fun SettingsContent(
@@ -111,6 +112,7 @@ fun SettingsContent(
     onShowTuneHintChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
+    onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
@@ -132,6 +134,7 @@ fun SettingsContent(
                 onShowTuneHintChange = onShowTuneHintChange,
                 onDisplayChange = onDisplayChange,
                 onWaveLookChange = onWaveLookChange,
+                onWaveBreathesInTuneChange = onWaveBreathesInTuneChange,
                 onKeepTwoPaneLandscapeChange = onKeepTwoPaneLandscapeChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
@@ -216,6 +219,7 @@ private fun SettingsGroups(
     onShowTuneHintChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
+    onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
@@ -275,7 +279,17 @@ private fun SettingsGroups(
                         title = stringResource(R.string.settings_wave_look_title),
                         selected = settings.waveLook,
                         onSelect = onWaveLookChange,
+                        breathesInTune = settings.waveBreathesInTune,
                     ) { stringResource(waveLookLabel(it)) }
+                    // Temporary, to compare both on the phone: the one not picked goes, with this choice.
+                    RadioGroupSetting(
+                        title = stringResource(R.string.settings_wave_in_tune_title),
+                        options = listOf(true, false),
+                        selected = settings.waveBreathesInTune,
+                        onSelect = onWaveBreathesInTuneChange,
+                    ) { breathes ->
+                        stringResource(if (breathes) R.string.settings_wave_in_tune_breathe else R.string.settings_wave_in_tune_hold_still)
+                    }
                 }
                 HorizontalDivider()
                 SwitchSetting(
@@ -409,6 +423,7 @@ private fun SettingsContentPreview() {
             onShowTuneHintChange = {},
             onDisplayChange = {},
             onWaveLookChange = {},
+            onWaveBreathesInTuneChange = {},
             onKeepTwoPaneLandscapeChange = {},
         )
     }

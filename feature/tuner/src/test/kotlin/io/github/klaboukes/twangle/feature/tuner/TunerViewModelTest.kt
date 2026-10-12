@@ -402,6 +402,18 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `waveBreathesInTune follows the setting`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.waveBreathesInTune.collect {} }
+        runCurrent()
+        assertEquals(true, vm.waveBreathesInTune.value)
+
+        settings.setWaveBreathesInTune(false)
+        runCurrent()
+        assertEquals(false, vm.waveBreathesInTune.value)
+    }
+
+    @Test
     fun `string lock tip shows until it is dismissed, and that is saved`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         runCurrent()

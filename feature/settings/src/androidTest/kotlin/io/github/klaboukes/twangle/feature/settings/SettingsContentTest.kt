@@ -86,6 +86,7 @@ class SettingsContentTest {
     private val tuneHintChanges = mutableListOf<Boolean>()
     private val displayChanges = mutableListOf<TunerDisplay>()
     private val waveLookChanges = mutableListOf<WaveLook>()
+    private val breatheChanges = mutableListOf<Boolean>()
     private val twoPaneChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
@@ -124,6 +125,7 @@ class SettingsContentTest {
                         onShowTuneHintChange = { tuneHintChanges += it },
                         onDisplayChange = { displayChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
+                        onWaveBreathesInTuneChange = { breatheChanges += it },
                         onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
@@ -298,9 +300,19 @@ class SettingsContentTest {
     }
 
     @Test
+    fun waveInTuneShowsTheChoiceAndReportsANewOne() {
+        show(AppSettings(display = TunerDisplay.WAVE, waveBreathesInTune = true))
+        compose.onNodeWithText(context.getString(R.string.settings_wave_in_tune_title)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_in_tune_breathe)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_in_tune_hold_still)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(false), breatheChanges)
+    }
+
+    @Test
     fun waveLooksAreHiddenWithTheNeedle() {
         show(AppSettings(display = TunerDisplay.NEEDLE))
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_title)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.settings_wave_in_tune_title)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.settings_wave_look_ribbon)).assertDoesNotExist()
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +46,8 @@ import kotlin.math.exp
  * A titled grid of cards, three to a row, to pick the wave view's look from. Each card shows its
  * look moving, drawn in the current style, with its [label] under it. All cards play the same short
  * loop ([WaveDemo]): flat, in tune, sharp, in tune. The [selected] card has a ring; tapping a card
- * calls [onSelect]. The cards form one selectable group for TalkBack, which reads each card's name.
+ * calls [onSelect]. On the note they breathe, or hold still without [breathesInTune], as the tuner's
+ * wave does. The cards form one selectable group for TalkBack, which reads each card's name.
  *
  * The loop only runs while some of the cards are on screen, and each frame only redraws the cards'
  * previews: nothing is recomposed.
@@ -56,9 +58,11 @@ fun WaveLookPicker(
     selected: WaveLook,
     onSelect: (WaveLook) -> Unit,
     modifier: Modifier = Modifier,
+    breathesInTune: Boolean = true,
     label: @Composable (WaveLook) -> String,
 ) {
     val demo = remember { WaveDemo() }
+    SideEffect { demo.motion.breathesInTune = breathesInTune }
     var onScreen by remember { mutableStateOf(false) }
     LaunchedEffect(onScreen) {
         if (!onScreen) return@LaunchedEffect

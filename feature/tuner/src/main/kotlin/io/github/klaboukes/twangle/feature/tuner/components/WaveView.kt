@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +33,8 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
  * The wave view in the [look] the user picked (`drawWave`): by default a soft ribbon of sound in the
  * current style's marks, with no frame so it stays quiet next to the dial. Off pitch it pinches
  * into pulses that drift right (sharp) or left (flat) at the strobe's speed, from the exact [cents];
- * close to the note they smooth out, and within half a cent they stand still as one calm shape.
+ * close to the note they smooth out, and within half a cent they stand still as one calm shape,
+ * which keeps breathing gently, or with [breathesInTune] off holds perfectly still.
  * [inTune] only sets the colour and halo. See [WaveMotion] for how it moves. Without a reading
  * ([cents] null) it rests as a faint line.
  *
@@ -45,9 +47,11 @@ fun WaveView(
     inTune: Boolean,
     modifier: Modifier = Modifier,
     look: WaveLook = WaveLook.DEFAULT,
+    breathesInTune: Boolean = true,
 ) {
     val reading by rememberUpdatedState(cents)
     val motion = remember { WaveMotion() }
+    SideEffect { motion.breathesInTune = breathesInTune }
     val frame = remember { mutableLongStateOf(0L) }
     val hasReading = cents != null
     LaunchedEffect(hasReading) {

@@ -128,6 +128,55 @@ class WaveMotionTest {
     }
 
     @Test
+    fun `by default it keeps breathing on the note`() {
+        val motion = WaveMotion().also { run(it, 2f, 0f) }
+        val before = motion.breath
+        run(motion, 1f, 0f)
+        assertTrue(motion.breath != before)
+        assertEquals(1f, motion.stir, 0f)
+    }
+
+    @Test
+    fun `holding still, it freezes completely on the note`() {
+        val motion = WaveMotion().apply { breathesInTune = false }
+        run(motion, 1f, 12f)
+        run(motion, 3f, 0.3f)
+        assertEquals(0f, motion.stir, 0f)
+        assertEquals(1f, motion.swell, 0.0001f)
+        val phase = motion.phase
+        val breath = motion.breath
+        val depth = motion.depth
+        run(motion, 2f, 0.3f)
+        assertEquals(phase, motion.phase, 0f)
+        assertEquals(breath, motion.breath, 0f)
+        assertEquals(depth, motion.depth, 0.00001f) // The shape has long settled.
+        assertEquals(1f, motion.swell, 0f)
+    }
+
+    @Test
+    fun `holding still, it still breathes while off the note`() {
+        val motion = WaveMotion().apply { breathesInTune = false }
+        run(motion, 3f, 0f)
+        run(motion, 2f, 4f)
+        assertEquals(1f, motion.stir, 0f)
+        val before = motion.breath
+        run(motion, 0.5f, 4f)
+        assertTrue(motion.breath != before)
+    }
+
+    @Test
+    fun `holding still settles and wakes smoothly`() {
+        val motion = WaveMotion().apply { breathesInTune = false }
+        run(motion, 1.3f, 0f) // Mid-breath, so the swell has somewhere to settle from.
+        var last = motion.swell
+        repeat(180) {
+            motion.advance(1f / 60f, if (it < 90) 0f else 10f)
+            assertTrue("jump ${motion.swell - last}", kotlin.math.abs(motion.swell - last) < 0.01f)
+            last = motion.swell
+        }
+    }
+
+    @Test
     fun `far off looks like the edge of the range`() {
         val far = WaveMotion().also { run(it, 3f, 300f) }
         val edge = WaveMotion().also { run(it, 3f, WaveMotion.WAVE_RANGE_CENTS) }

@@ -103,6 +103,7 @@ fun NoteDisplay(
     display: TunerDisplay = TunerDisplay.NEEDLE,
     compact: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
+    waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
 ) {
     val inTune = readout?.inTune == true
@@ -199,7 +200,13 @@ fun NoteDisplay(
         }
         val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
         when (display) {
-            TunerDisplay.WAVE -> WaveView(cents = readout?.cents, inTune = inTune, modifier = pictureSize, look = waveLook)
+            TunerDisplay.WAVE -> WaveView(
+                cents = readout?.cents,
+                inTune = inTune,
+                modifier = pictureSize,
+                look = waveLook,
+                breathesInTune = waveBreathesInTune,
+            )
             TunerDisplay.STROBE -> StrobeView(cents = readout?.cents, inTune = inTune, modifier = pictureSize.testTag(TunerTestTags.STROBE))
             TunerDisplay.NEEDLE -> Unit
         }

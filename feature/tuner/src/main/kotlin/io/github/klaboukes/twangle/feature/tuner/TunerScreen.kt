@@ -136,6 +136,7 @@ fun TunerScreen(
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val display by viewModel.display.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
+    val waveBreathesInTune by viewModel.waveBreathesInTune.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
@@ -176,6 +177,7 @@ fun TunerScreen(
                     onRetry = viewModel::retry,
                     display = display,
                     waveLook = waveLook,
+                    waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     showStringLockTip = showStringLockTip,
                     onStringLockTipDismiss = viewModel::dismissStringLockTip,
@@ -263,9 +265,9 @@ private fun KeepScreenOn() {
  * [mode] comes straight from the ViewModel, so the switch reacts before the next reading arrives.
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [display] picks how
- * far off a note is shown under it: in cents (the needle), with the wave view in [waveLook], or with
- * the strobe view, and [showTuneHint] adds
- * "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
+ * far off a note is shown under it: in cents (the needle), with the wave view in [waveLook] (breathing
+ * on the note or, without [waveBreathesInTune], holding still there), or with the strobe view, and
+ * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss].
  *
@@ -286,6 +288,7 @@ fun TunerContent(
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
+    waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
@@ -318,6 +321,7 @@ fun TunerContent(
                 display = display,
                 compact = compact,
                 waveLook = waveLook,
+                waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
@@ -329,6 +333,7 @@ fun TunerContent(
                     display = display,
                     compact = compact,
                     waveLook = waveLook,
+                    waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                 )
             else -> NoteDisplay(
@@ -337,6 +342,7 @@ fun TunerContent(
                 display = display,
                 compact = compact,
                 waveLook = waveLook,
+                waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
             )
         }

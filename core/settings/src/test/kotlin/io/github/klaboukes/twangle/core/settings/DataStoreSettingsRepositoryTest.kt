@@ -76,6 +76,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.showTuneHint)
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
+        assertEquals(true, settings.waveBreathesInTune)
         assertEquals(false, settings.stringLockTipSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
     }
@@ -96,6 +97,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowTuneHint(false)
         repo.setDisplay(TunerDisplay.STROBE)
         repo.setWaveLook(WaveLook.FIREFLIES)
+        repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
         repo.setKeepTwoPaneLandscape(true)
 
@@ -113,6 +115,7 @@ class DataStoreSettingsRepositoryTest {
             showTuneHint = false,
             display = TunerDisplay.STROBE,
             waveLook = WaveLook.FIREFLIES,
+            waveBreathesInTune = false,
             stringLockTipSeen = true,
             keepTwoPaneLandscape = true,
         )
@@ -130,6 +133,7 @@ class DataStoreSettingsRepositoryTest {
             setInTunePrecision(InTunePrecision.PRECISE)
             setStringLockTipSeen(true)
             setKeepTwoPaneLandscape(true)
+            setWaveBreathesInTune(false)
         }
         close()
 
@@ -142,6 +146,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
+        assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
     }
 
     @Test

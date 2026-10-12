@@ -92,6 +92,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[WAVE_LOOK] = look.name }
     }
 
+    override suspend fun setWaveBreathesInTune(enabled: Boolean) {
+        dataStore.edit { it[WAVE_BREATHES_IN_TUNE] = enabled }
+    }
+
     override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) {
         dataStore.edit { it[KEEP_TWO_PANE_LANDSCAPE] = enabled }
     }
@@ -116,6 +120,7 @@ class DataStoreSettingsRepository internal constructor(
             showTuneHint = prefs[SHOW_TUNE_HINT] ?: defaults.showTuneHint,
             display = enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display,
             waveLook = enumOrNull<WaveLook>(prefs[WAVE_LOOK]) ?: defaults.waveLook,
+            waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
         )
@@ -141,6 +146,7 @@ class DataStoreSettingsRepository internal constructor(
         /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
+        private val WAVE_BREATHES_IN_TUNE = booleanPreferencesKey("wave_breathes_in_tune")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
 

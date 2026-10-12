@@ -136,6 +136,11 @@ data class AppSettings(
     /** What the wave view looks like. */
     val waveLook: WaveLook = WaveLook.DEFAULT,
     /**
+     * On the note, the wave keeps breathing gently (true) or holds perfectly still like the strobe
+     * (false). Temporary: the owner compares both on the phone, then one goes, with this setting.
+     */
+    val waveBreathesInTune: Boolean = true,
+    /**
      * On its side, show the full two-pane layout (tuner beside its controls) instead of the compact
      * one where the meter fills the screen.
      */

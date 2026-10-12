@@ -46,6 +46,10 @@
     <string name="settings_wave_look_dots">Stippen</string>
     <string name="settings_wave_look_fireflies">Vuurvliegjes</string>
     <string name="settings_wave_look_loop">Lus</string>
+    <!-- Temporary: the owner compares both on the phone, then the switch goes. -->
+    <string name="settings_wave_in_tune_title">Als de toon zuiver is</string>
+    <string name="settings_wave_in_tune_breathe">Zacht ademen</string>
+    <string name="settings_wave_in_tune_hold_still">Helemaal stilstaan</string>
     <string name="settings_wave_look_ripples">Rimpels</string>
     <string name="settings_keep_two_pane_landscape_title">Volledige indeling liggend</string>
     <string name="settings_keep_two_pane_landscape_summary">Met de telefoon gedraaid staan de knoppen naast de stemmer, in plaats van één grote meter</string>

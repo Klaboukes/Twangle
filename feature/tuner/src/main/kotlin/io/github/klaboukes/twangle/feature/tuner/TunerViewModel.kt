@@ -95,6 +95,11 @@ class TunerViewModel(
         .map { it.waveLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
 
+    /** Whether the wave keeps breathing on the note or holds still there (a saved, temporary setting). */
+    val waveBreathesInTune: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.waveBreathesInTune }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().waveBreathesInTune)
+
     /**
      * Whether a phone on its side keeps the two-pane layout instead of the compact one (a saved
      * setting). Starts from the saved value, so a turned phone doesn't switch layout a moment after opening.
