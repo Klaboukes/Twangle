@@ -77,6 +77,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(false, settings.showSignalBars)
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
+        assertEquals(MeterLook.CLASSIC, settings.meterLook)
         assertEquals(true, settings.waveBreathesInTune)
         assertEquals(false, settings.stringLockTipSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
@@ -99,6 +100,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowSignalBars(true)
         repo.setDisplay(TunerDisplay.NEEDLE)
         repo.setWaveLook(WaveLook.FIREFLIES)
+        repo.setMeterLook(MeterLook.COMET)
         repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
         repo.setKeepTwoPaneLandscape(true)
@@ -118,6 +120,7 @@ class DataStoreSettingsRepositoryTest {
             showSignalBars = true,
             display = TunerDisplay.NEEDLE,
             waveLook = WaveLook.FIREFLIES,
+            meterLook = MeterLook.COMET,
             waveBreathesInTune = false,
             stringLockTipSeen = true,
             keepTwoPaneLandscape = true,
@@ -137,6 +140,7 @@ class DataStoreSettingsRepositoryTest {
             setStringLockTipSeen(true)
             setKeepTwoPaneLandscape(true)
             setWaveBreathesInTune(false)
+            setMeterLook(MeterLook.SPIRIT_LEVEL)
         }
         close()
 
@@ -150,6 +154,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
         assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
+        assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
     }
 
     @Test
@@ -175,6 +180,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("theme")] = "SEPIA"
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
             it[stringPreferencesKey("wave_look")] = "LAVA_LAMP"
+            it[stringPreferencesKey("meter_look")] = "SUNDIAL"
             it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
         }
@@ -187,6 +193,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(WaveLook.DEFAULT, settings.waveLook)
+        assertEquals("an unknown meter look gives Classic", MeterLook.CLASSIC, settings.meterLook)
         assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
     }
@@ -286,5 +293,32 @@ class DataStoreSettingsRepositoryTest {
         file.writeText("this is not a preferences file")
 
         assertEquals(AppSettings(), repository().settings.first())
+    }
+
+    @Test
+    fun `every meter look is saved under meter_look by its name`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (look in MeterLook.entries) {
+            repo.setMeterLook(look)
+            assertEquals(look, repo.settings.first().meterLook)
+            assertEquals(look.name, store.data.first()[stringPreferencesKey("meter_look")])
+        }
+    }
+
+    @Test
+    fun `the six meter looks come in the owner's order, Classic first and the default`() {
+        assertEquals(
+            listOf(
+                MeterLook.CLASSIC,
+                MeterLook.LIGHT_ARC,
+                MeterLook.SPIRIT_LEVEL,
+                MeterLook.ROLLING_SCALE,
+                MeterLook.COMET,
+                MeterLook.STUDIO_METER,
+            ),
+            MeterLook.entries,
+        )
+        assertEquals(MeterLook.CLASSIC, MeterLook.DEFAULT)
     }
 }

@@ -110,6 +110,36 @@ enum class WaveLook {
     }
 }
 
+/**
+ * How the meter above the note draws how far off a note is. Every look sits in the same frame (a
+ * 2:1 box, ±50 cents, left flat and right sharp), so picking one moves nothing else on the screen.
+ * Saved in settings by [name], so don't rename the entries.
+ */
+enum class MeterLook {
+    /** The half-circle dial with a needle, polished with depth and a glass shine. */
+    CLASSIC,
+
+    /** A curve of glowing segments that light up from the centre out to the reading. */
+    LIGHT_ARC,
+
+    /** A bubble in a curved glass tube that floats to the side the note is off. */
+    SPIRIT_LEVEL,
+
+    /** A scale on a turning drum that rolls past a fixed centre mark, like a ship's compass. */
+    ROLLING_SCALE,
+
+    /** A bright comet that runs along the arc with a glittering tail. */
+    COMET,
+
+    /** A backlit meter like a recording desk's, with a needle and a small lamp. */
+    STUDIO_METER,
+    ;
+
+    companion object {
+        val DEFAULT = CLASSIC
+    }
+}
+
 /** Everything the user can change, with the defaults a fresh install starts from. */
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
@@ -136,6 +166,8 @@ data class AppSettings(
     val display: TunerDisplay = TunerDisplay.DEFAULT,
     /** What the wave view looks like. */
     val waveLook: WaveLook = WaveLook.DEFAULT,
+    /** What the meter above the note looks like. */
+    val meterLook: MeterLook = MeterLook.DEFAULT,
     /**
      * On the note, the wave keeps breathing gently (true) or holds perfectly still like the strobe
      * (false). Temporary: the owner compares both on the phone, then one goes, with this setting.

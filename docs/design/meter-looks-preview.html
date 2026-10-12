@@ -1,0 +1,702 @@
+<title>Twangle Meter Looks</title>
+<!--
+TWANGLE METER ART LANGUAGE: six looks, one artist. The app build follows this.
+Box      2:1, ±50 cents, left = flat, right = sharp, centre = in tune. u = box width / 340 (about 1 dp).
+Colours  Roles only, taken from the current style: bg (stage), plate (surface), ink (onSurface), muted
+         (onSurfaceVariant), track (outlineVariant), accent (primary), inTune. No other colours, no ornaments.
+Font     Only the style's number face (Prehistoric and Contemporary: Roboto; Space Age: Michroma).
+Plate    Every meter sits on the same plate: 6u inset, 14u corners, lit from above (top 50 % lighter in
+         light, 5 % in dark), 1u hairline in ink 10 %, soft drop shadow (14u blur, 5u down).
+Glass    Each look's window (dial face, tube, drum window, meter face) is recessed: the face is the plate
+         sunk toward bg, a 1u rim in ink 14 %, a soft inner shadow under the top edge (7u blur) and one
+         sheen from the top (white 28 % light / 7 % dark, fading out by 45 % of its height). Inner corners 10u.
+Scale    Ticks every 5 cents, none at 0. Major (every 10): 9u long, 1.5u wide, ink. Minor: 5u, 1u, ink 45 %.
+         Round caps. Numbers 10 to 50 without sign, 9.5u (wide faces such as Michroma 82 % of that), ink 62 %,
+         centred 20u from the tick's base. ♭ and ♯ at the ends in muted, 13u.
+Centre   One 3u rounded bar in accent.
+Marker   Needle, bar, bubble or light: round ends, a small soft shadow (3u blur, 1.5u right, 2.5u down).
+         Needles taper from 2u to 0.6u, with a 6.5u ink hub and an accent dot.
+Light    One glow only: a radial glow in inTune (32 % dark / 16 % light at its middle, fading to 0).
+In tune  One eased amount e (smoothstep; 0.4 s in, 0.6 s out) blends the centre reference and the marker
+         to inTune and raises the glow. It holds steady while the note holds. Nothing flashes, bursts,
+         flies or repeats.
+Motion   Springs with damping of 0.5 or more, so the settle is natural and never jittery.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caesar+Dressing&family=Michroma&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+/* Layout: one phone column of the owner's six meter looks under a sticky control bar (two columns from 760px).
+   The page wears the chosen Twangle style's colours and display face; the meters take only colour roles. */
+:root {
+  --bg: #F6F9F9; --surface: #FFFFFF; --fg: #111616; --muted: #4A5757; --accent: #00696B; --on-accent: #FFFFFF;
+  --line: #C9D3D3; --intune: #1B7F3B; --glow-a: rgba(0,105,107,.10); --glow-b: rgba(122,89,0,.07);
+  --display: Roboto, system-ui, sans-serif; --display-weight: 300; --display-track: -0.01em;
+  --body: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+:root[data-style="cave"] {
+  --bg: #E6D3B3; --surface: #EEDFC4; --fg: #2B1D12; --muted: #5A4330; --accent: #8E4310; --on-accent: #FFF3E2;
+  --line: #C2A983; --intune: #365F17; --glow-a: rgba(142,67,16,.16); --glow-b: rgba(138,46,25,.06);
+  --display: "Caesar Dressing", Georgia, serif; --display-weight: 400; --display-track: 0.01em;
+}
+:root[data-style="space"] {
+  --bg: #F4F0E6; --surface: #FBF8F2; --fg: #1D2230; --muted: #4A5266; --accent: #B8400C; --on-accent: #FFFFFF;
+  --line: #D3CEC2; --intune: #28733A; --glow-a: rgba(26,108,114,.10); --glow-b: rgba(214,164,25,.12);
+  --display: Michroma, "Arial Black", sans-serif; --display-weight: 400; --display-track: 0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1112; --surface: #141A1B; --fg: #E4EBEB; --muted: #A6B4B4; --accent: #4CDADC; --on-accent: #003738;
+    --line: #2E393A; --intune: #6DD58C; --glow-a: rgba(76,218,220,.10); --glow-b: rgba(248,189,42,.06); color-scheme: dark;
+  }
+  :root[data-style="cave"]:not([data-theme="light"]) {
+    --bg: #1C1510; --surface: #261C15; --fg: #EEDFC8; --muted: #C2AB8C; --accent: #E59149; --on-accent: #2A1406;
+    --line: #4A3A2C; --intune: #A6D374; --glow-a: rgba(229,145,73,.20); --glow-b: rgba(217,105,74,.07);
+  }
+  :root[data-style="space"]:not([data-theme="light"]) {
+    --bg: #0A0D1E; --surface: #12162B; --fg: #F1EDE3; --muted: #ABB0CC; --accent: #FF7A3D; --on-accent: #3A0F00;
+    --line: #262C4D; --intune: #7EE08A; --glow-a: rgba(95,211,217,.12); --glow-b: rgba(255,122,61,.10);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1112; --surface: #141A1B; --fg: #E4EBEB; --muted: #A6B4B4; --accent: #4CDADC; --on-accent: #003738;
+  --line: #2E393A; --intune: #6DD58C; --glow-a: rgba(76,218,220,.10); --glow-b: rgba(248,189,42,.06); color-scheme: dark;
+}
+:root[data-theme="dark"][data-style="cave"] {
+  --bg: #1C1510; --surface: #261C15; --fg: #EEDFC8; --muted: #C2AB8C; --accent: #E59149; --on-accent: #2A1406;
+  --line: #4A3A2C; --intune: #A6D374; --glow-a: rgba(229,145,73,.20); --glow-b: rgba(217,105,74,.07);
+}
+:root[data-theme="dark"][data-style="space"] {
+  --bg: #0A0D1E; --surface: #12162B; --fg: #F1EDE3; --muted: #ABB0CC; --accent: #FF7A3D; --on-accent: #3A0F00;
+  --line: #262C4D; --intune: #7EE08A; --glow-a: rgba(95,211,217,.12); --glow-b: rgba(255,122,61,.10);
+}
+
+html { background: var(--bg); }
+body {
+  background:
+    radial-gradient(90% 50% at 12% 0%, var(--glow-a), transparent 70%),
+    radial-gradient(90% 50% at 95% 100%, var(--glow-b), transparent 70%),
+    var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--body);
+  padding-inline: 16px;
+  padding-block: 0 48px;
+  min-height: 100%;
+  transition: background-color .45s ease, color .45s ease;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+
+header.intro { display: grid; gap: 10px; padding-block: 28px 4px; }
+.eyebrow { font: 500 12px/1.2 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 {
+  font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track);
+  font-size: clamp(28px, 7.4vw, 44px); line-height: 1.12; margin: 0; text-wrap: balance;
+}
+.lede { margin: 0; color: var(--muted); max-width: 62ch; font-size: 16px; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 10px 16px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; gap: 8px 10px;
+}
+.bar fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.bar legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.bar .style-pick { flex: 1 1 100%; }
+.bar .theme-pick { flex: 1 1 140px; }
+.bar .speed-pick { flex: 1.4 1 190px; }
+.seg { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.seg label {
+  flex: 1; text-align: center; padding: 8px 6px; border-radius: 999px; cursor: pointer;
+  font: 500 13px/1.1 var(--body); color: var(--muted); white-space: nowrap;
+  transition: background-color .2s ease, color .2s ease;
+}
+.seg input:checked + label { background: var(--accent); color: var(--on-accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.looks { display: grid; grid-template-columns: minmax(0, 1fr); gap: 44px 32px; padding-top: 6px; }
+@media (min-width: 760px) { .looks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.look { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.look-head { display: flex; align-items: center; gap: 12px; }
+.num {
+  flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  border: 1.5px solid var(--accent); color: var(--accent);
+  font: 500 14px/1 var(--body); font-variant-numeric: tabular-nums;
+}
+.look h2 {
+  margin: 0; font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track);
+  font-size: 22px; line-height: 1.2;
+}
+.tag { font: 500 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; }
+.desc { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.45; max-width: 60ch; }
+.stage {
+  position: relative; aspect-ratio: 2 / 1; width: 100%; max-width: 100%;
+  border-radius: 18px; overflow: hidden; background: var(--bg);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.readout {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; padding-inline: 4px;
+}
+.readout .note { font-family: var(--display); font-size: 18px; color: var(--fg); letter-spacing: var(--display-track); }
+.readout .note sub { font-family: var(--body); font-size: 11px; color: var(--muted); }
+.readout .state { transition: color .5s ease; }
+.readout .state.ok { color: var(--intune); font-weight: 500; }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+
+.ask {
+  margin-top: 12px; padding: 20px 22px; border-radius: 18px;
+  background: var(--surface); border: 1.5px solid var(--accent);
+  display: grid; gap: 6px; max-width: 70ch;
+}
+.ask p { margin: 0; }
+.ask .big { font-size: 18px; line-height: 1.4; font-weight: 500; color: var(--fg); text-wrap: balance; }
+.ask .small { font-size: 14px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) { body, .seg label, .readout .state { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Twangle meter looks</p>
+    <h1>Phase 13 preview — your six looks</h1>
+    <p class="lede">Your six picks, in your order, now drawn as one family: the same plate, glass, scale, needle finish and light. They take only the colours of the chosen style. <strong>Left is flat, right is sharp, the centre is in tune.</strong> On the note, each one softly takes the in-tune colour and holds it while the note lasts.</p>
+  </header>
+
+  <form class="bar" id="controls" onsubmit="return false">
+    <fieldset class="style-pick">
+      <legend>Style</legend>
+      <div class="seg">
+        <input type="radio" name="style" id="style-cave" value="cave"><label for="style-cave">Prehistoric</label>
+        <input type="radio" name="style" id="style-modern" value="modern"><label for="style-modern">Contemporary</label>
+        <input type="radio" name="style" id="style-space" value="space"><label for="style-space">Space Age</label>
+      </div>
+    </fieldset>
+    <fieldset class="theme-pick">
+      <legend>Light or dark</legend>
+      <div class="seg">
+        <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
+        <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
+      </div>
+    </fieldset>
+    <fieldset class="speed-pick">
+      <legend>Motion</legend>
+      <div class="seg">
+        <input type="radio" name="speed" id="speed-normal" value="normal"><label for="speed-normal">Normal</label>
+        <input type="radio" name="speed" id="speed-slow" value="slow"><label for="speed-slow">Slow</label>
+        <input type="radio" name="speed" id="speed-pause" value="pause"><label for="speed-pause">Pause</label>
+      </div>
+    </fieldset>
+  </form>
+
+  <p class="hint">Tap any meter to pluck a new string.</p>
+
+  <main class="looks">
+    <section class="look" data-look="classic">
+      <div class="look-head"><span class="num">1</span><h2>Classic</h2><span class="tag">Default</span></div>
+      <p class="desc">A half-circle dial with a fine scale and a slim needle under glass. In tune, the centre mark and the needle take the in-tune colour and a soft glow rises behind them.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Classic meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+
+    <section class="look" data-look="arc">
+      <div class="look-head"><span class="num">2</span><h2>Light arc</h2></div>
+      <p class="desc">A row of light bars fills from the centre out to the reading and fades gently behind it. In tune, the centre bars glow in the in-tune colour.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Light arc meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+
+    <section class="look" data-look="level">
+      <div class="look-head"><span class="num">3</span><h2>Spirit level</h2></div>
+      <p class="desc">A bubble in a curved glass tube floats to the side the note is off. In tune, it settles between the two marks and both softly take the in-tune colour.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Spirit level meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+
+    <section class="look" data-look="drum">
+      <div class="look-head"><span class="num">4</span><h2>Rolling scale</h2></div>
+      <p class="desc">The scale turns on a drum behind glass, like a ship's compass. The zero bar sits on the side the note is off. In tune, it meets the centre line and both softly glow.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Rolling scale meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+
+    <section class="look" data-look="comet">
+      <div class="look-head"><span class="num">5</span><h2>Comet</h2></div>
+      <p class="desc">A small light glides along the arc with a soft tail. In tune, it comes to rest at the top, the tail fades away and the light takes the in-tune colour.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Comet meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+
+    <section class="look" data-look="studio">
+      <div class="look-head"><span class="num">6</span><h2>Studio meter</h2></div>
+      <p class="desc">A backlit meter like the ones on a recording desk, with a long needle and a small lamp. In tune, the centre band and the lamp softly light up.</p>
+      <div class="stage" tabindex="0" role="button" aria-label="Studio meter, tap to pluck"><canvas></canvas></div>
+      <div class="readout"><span class="note">E<sub>2</sub></span><span class="state">38 ¢ flat</span></div>
+    </section>
+  </main>
+
+  <aside class="ask">
+    <p class="big">Tell Claude if these feel right, or what to change.</p>
+    <p class="small">These are browser sketches. Use the switches above to see each look take on a style's colours in light and dark; the shapes stay the same, so they'll still fit when the styles are redesigned later. This page remembers your switches on this phone.</p>
+  </aside>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+  const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+
+  // ---- Colour roles from the current style (core/designsystem StylePalettes.kt) -------------------
+  const RAW = {
+    cave:   { light: { bg:'#E6D3B3', surface:'#EEDFC4', on:'#2B1D12', onVar:'#5A4330', primary:'#8E4310', outVar:'#C2A983', inTune:'#365F17' },
+              dark:  { bg:'#1C1510', surface:'#261C15', on:'#EEDFC8', onVar:'#C2AB8C', primary:'#E59149', outVar:'#4A3A2C', inTune:'#A6D374' } },
+    modern: { light: { bg:'#F6F9F9', surface:'#FFFFFF', on:'#111616', onVar:'#4A5757', primary:'#00696B', outVar:'#C9D3D3', inTune:'#1B7F3B' },
+              dark:  { bg:'#0D1112', surface:'#141A1B', on:'#E4EBEB', onVar:'#A6B4B4', primary:'#4CDADC', outVar:'#2E393A', inTune:'#6DD58C' } },
+    space:  { light: { bg:'#F4F0E6', surface:'#FBF8F2', on:'#1D2230', onVar:'#4A5266', primary:'#B8400C', outVar:'#D3CEC2', inTune:'#28733A' },
+              dark:  { bg:'#0A0D1E', surface:'#12162B', on:'#F1EDE3', onVar:'#ABB0CC', primary:'#FF7A3D', outVar:'#262C4D', inTune:'#7EE08A' } },
+  };
+  /** The number face of each style, as in the app (Caesar Dressing's 0 is hard to read, so Prehistoric uses a plain face). */
+  const NUMFONT = { cave: 'Roboto, system-ui, sans-serif', modern: 'Roboto, system-ui, sans-serif', space: 'Michroma, "Arial Black", sans-serif' };
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${clamp(a, 0, 1)})`;
+  const TAU = Math.PI * 2;
+  const SIGNS = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Music", "Apple Symbols", serif';
+  function roles(S, dark) {
+    const p = {}; for (const k in RAW[S][dark ? 'dark' : 'light']) p[k] = hex(RAW[S][dark ? 'dark' : 'light'][k]);
+    return { bg: p.bg, plate: p.surface, ink: p.on, muted: p.onVar, track: p.outVar, accent: p.primary, inTune: p.inTune,
+      face: dark ? mix(p.bg, BLACK, 0.3) : mix(p.surface, p.bg, 0.7), dark, num: NUMFONT[S], numScale: S === 'space' ? 0.82 : 1 };
+  }
+
+  // ---- The shared art language, as drawing helpers ------------------------------------------------
+  const ang = (c) => c / 50 * Math.PI / 2;
+  const pt = (cx, cy, d, c) => { const a = ang(c); return [cx + d * Math.sin(a), cy - d * Math.cos(a)]; };
+  function line(ctx, x1, y1, x2, y2, stroke, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = stroke; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function circle(ctx, x, y, r, fill) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+  /** Adds a rounded rectangle to the current path. */
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function glow(ctx, x, y, rad, c, a) {
+    if (a <= 0.004 || rad <= 0) return;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(0.45, rgba(c, a * 0.4)); gr.addColorStop(1, rgba(c, 0));
+    ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+  /** The one in-tune glow. */
+  const tuneGlow = (ctx, c, x, y, rad, e) => glow(ctx, x, y, rad, c.inTune, e * (c.dark ? 0.32 : 0.16));
+  /** Plate: the same base under every meter. */
+  function plate(ctx, g, c) {
+    const { W, H, u } = g; const x = 6 * u, y = 6 * u, w = W - 12 * u, h = H - 12 * u, r = 14 * u;
+    ctx.save(); ctx.beginPath(); rrAdd(ctx, x, y, w, h, r); ctx.shadowColor = rgba(BLACK, c.dark ? 0.5 : 0.16); ctx.shadowBlur = 14 * u; ctx.shadowOffsetY = 5 * u; ctx.fillStyle = rgba(c.plate); ctx.fill(); ctx.restore();
+    const gr = ctx.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, rgba(mix(c.plate, WHITE, c.dark ? 0.05 : 0.5))); gr.addColorStop(0.5, rgba(c.plate)); gr.addColorStop(1, rgba(mix(c.plate, BLACK, c.dark ? 0.15 : 0.03)));
+    ctx.beginPath(); rrAdd(ctx, x, y, w, h, r); ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = rgba(c.ink, 0.1); ctx.lineWidth = u; ctx.stroke();
+    line(ctx, x + r, y + 1.2 * u, x + w - r, y + 1.2 * u, rgba(WHITE, c.dark ? 0.07 : 0.7), u, 'butt');
+  }
+  /** Glass, bottom half: a recessed face with a soft inner shadow and a rim. */
+  function glassUnder(ctx, g, c, add, fill) {
+    const { W, H, u } = g;
+    ctx.beginPath(); add(); ctx.fillStyle = rgba(fill || c.face); ctx.fill();
+    ctx.save(); ctx.beginPath(); add(); ctx.clip();
+    ctx.beginPath(); ctx.rect(-W, -H, W * 3, H * 3); add();
+    ctx.shadowColor = rgba(BLACK, c.dark ? 0.6 : 0.2); ctx.shadowBlur = 7 * u; ctx.shadowOffsetY = 2.5 * u; ctx.fillStyle = '#000'; ctx.fill('evenodd');
+    ctx.restore();
+  }
+  /** Glass, top half: one sheen from the top and the rim. */
+  function glassOver(ctx, g, c, add, top, bottom) {
+    const { u } = g;
+    ctx.save(); ctx.beginPath(); add(); ctx.clip();
+    const gr = ctx.createLinearGradient(0, top, 0, lerp(top, bottom, 0.45)); gr.addColorStop(0, rgba(WHITE, c.dark ? 0.07 : 0.28)); gr.addColorStop(1, rgba(WHITE, 0));
+    ctx.fillStyle = gr; ctx.fillRect(-g.W, top, g.W * 3, bottom - top); ctx.restore();
+    ctx.beginPath(); add(); ctx.strokeStyle = rgba(c.ink, 0.14); ctx.lineWidth = u; ctx.stroke();
+  }
+  /** Scale marks: place(cents) gives the tick's base point and the unit direction it runs in. */
+  function marks(ctx, g, c, place) {
+    const { u } = g; ctx.font = `${9.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let v = -50; v <= 50; v += 5) {
+      if (v === 0) continue; const major = v % 10 === 0; const [x, y, dx, dy] = place(v); const len = (major ? 9 : 5) * u;
+      line(ctx, x, y, x + dx * len, y + dy * len, rgba(c.ink, major ? 1 : 0.45), (major ? 1.5 : 1) * u);
+      if (major) { ctx.fillStyle = rgba(c.ink, 0.62); ctx.fillText(String(Math.abs(v)), x + dx * 20 * u, y + dy * 20 * u); }
+    }
+  }
+  function signs(ctx, g, c, xl, xr, y) {
+    ctx.font = `${13 * g.u}px ${SIGNS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = rgba(c.muted, 0.85);
+    ctx.fillText('♭', xl, y); ctx.fillText('♯', xr, y);
+  }
+  const centreColour = (c, e) => mix(c.accent, c.inTune, e);
+  const markerColour = (c, e) => mix(c.ink, c.inTune, e * 0.9);
+  function softShadow(ctx, g, c) { ctx.shadowColor = rgba(BLACK, c.dark ? 0.45 : 0.22); ctx.shadowBlur = 3 * g.u; ctx.shadowOffsetX = 1.5 * g.u; ctx.shadowOffsetY = 2.5 * g.u; }
+  /** The shared needle, turning by a around (px, py). */
+  function needle(ctx, g, c, px, py, a, len, e) {
+    const { u } = g;
+    ctx.save(); softShadow(ctx, g, c); ctx.translate(px, py); ctx.rotate(a);
+    ctx.beginPath(); ctx.moveTo(-2 * u, 0); ctx.lineTo(-0.6 * u, -len); ctx.quadraticCurveTo(0, -len - 1.2 * u, 0.6 * u, -len); ctx.lineTo(2 * u, 0); ctx.closePath();
+    ctx.fillStyle = rgba(markerColour(c, e)); ctx.fill(); ctx.restore();
+  }
+  function hub(ctx, g, c, x, y, e) {
+    ctx.save(); softShadow(ctx, g, c); circle(ctx, x, y, 6.5 * g.u, rgba(c.ink)); ctx.restore();
+    circle(ctx, x, y, 2.2 * g.u, rgba(centreColour(c, e)));
+  }
+
+  // ---- Dial geometry shared by Classic, Light arc and Comet ---------------------------------------
+  const dial = (g) => { const cy = g.H - 24 * g.u, r = 124 * g.u; return { cy, r, R: r + 8 * g.u }; };
+  const dialFace = (ctx, g) => { const { cy, R } = dial(g); return () => { ctx.moveTo(g.cx - R, cy); ctx.arc(g.cx, cy, R, Math.PI, TAU); ctx.closePath(); }; };
+  function dialUnder(ctx, g, c) {
+    const { u, cx } = g; const { cy, r } = dial(g);
+    plate(ctx, g, c); glassUnder(ctx, g, c, dialFace(ctx, g));
+    ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI, 0); ctx.strokeStyle = rgba(c.track); ctx.lineWidth = 1.5 * u; ctx.stroke();
+    marks(ctx, g, c, (v) => { const [x, y] = pt(cx, cy, r - 3 * u, v); const a = ang(v); return [x, y, -Math.sin(a), Math.cos(a)]; });
+    signs(ctx, g, c, cx - r + 2 * u, cx + r - 2 * u, cy + 11 * u);
+  }
+  function dialOver(ctx, g, c) { const { cy, R } = dial(g); glassOver(ctx, g, c, dialFace(ctx, g), cy - R, cy); }
+  function dialCentre(ctx, g, c, e) {
+    const { cx, u } = g; const { cy, r } = dial(g);
+    tuneGlow(ctx, c, cx, cy - r + 14 * u, 80 * u, e);
+    line(ctx, cx, cy - r + 13 * u, cx, cy - r - u, rgba(centreColour(c, e)), 3 * u);
+  }
+
+  // ---- 1. Classic ---------------------------------------------------------------------------------
+  const CLASSIC = {
+    under: (ctx, g, c, S) => dialUnder(ctx, g, c, S),
+    over: (ctx, g, c) => dialOver(ctx, g, c),
+    draw(ctx, g, c, L, e) {
+      const { cx } = g; const { cy, r } = dial(g);
+      dialCentre(ctx, g, c, e);
+      needle(ctx, g, c, cx, cy, ang(clamp(L.x, -53, 53)), r - 6 * g.u, e);
+      hub(ctx, g, c, cx, cy, e);
+    },
+  };
+
+  // ---- 2. Light arc -------------------------------------------------------------------------------
+  const BAR_IN = 50, BAR_OUT = 34;
+  const ARC = {
+    under(ctx, g, c, S) {
+      dialUnder(ctx, g, c, S); const { cx, u } = g; const { cy, r } = dial(g);
+      for (let i = 0; i < 41; i++) { const v = -50 + i * 2.5; const [x1, y1] = pt(cx, cy, r - BAR_IN * u, v), [x2, y2] = pt(cx, cy, r - BAR_OUT * u, v); line(ctx, x1, y1, x2, y2, rgba(c.track, c.dark ? 1 : 0.85), 3.5 * u); }
+    },
+    over: (ctx, g, c) => dialOver(ctx, g, c),
+    draw(ctx, g, c, L, e) {
+      const { cx, u } = g; const { cy, r } = dial(g);
+      dialCentre(ctx, g, c, e);
+      const s = clamp(L.x, -50, 50); const [hx, hy] = pt(cx, cy, r - 42 * u, s);
+      glow(ctx, hx, hy, 30 * u, c.accent, (c.dark ? 0.22 : 0.12) * (1 - e));
+      for (let i = 0; i < 41; i++) {
+        const v = -50 + i * 2.5; const near = Math.abs(v) <= 5;
+        const h = near ? Math.max(L.heat[i], e) : L.heat[i]; if (h < 0.02) continue;
+        const col = near ? mix(c.accent, c.inTune, e) : c.accent;
+        const [x1, y1] = pt(cx, cy, r - BAR_IN * u, v), [x2, y2] = pt(cx, cy, r - BAR_OUT * u, v);
+        line(ctx, x1, y1, x2, y2, rgba(c.dark ? mix(col, WHITE, 0.15 * h) : col, 0.15 + 0.85 * h), 3.5 * u);
+      }
+      circle(ctx, cx, cy, 3 * u, rgba(centreColour(c, e)));
+    },
+  };
+
+  // ---- 3. Spirit level ----------------------------------------------------------------------------
+  function levelGeo(g) {
+    const { W, H, u, cx } = g; const y0 = H * 0.38, R = W * 1.6, xs = W * 0.38, phiMax = Math.asin(xs / R), T = H * 0.22;
+    const onArc = (phi, rad) => [cx + rad * Math.sin(phi), y0 + R - rad * Math.cos(phi)];
+    const phiOf = (v) => v / 50 * phiMax * 0.82;
+    return { y0, R, xs, phiMax, T, onArc, phiOf, ccy: y0 + R, u };
+  }
+  /** The tube's outline: outer edge, right cap, inner edge, left cap. */
+  function tubeAdd(ctx, g) {
+    const { R, T, phiMax, onArc } = levelGeo(g); const pts = [], h = T / 2;
+    const cap = (p, sgn) => {
+      const [x, y] = onArc(p, R), n = [Math.sin(p), -Math.cos(p)], t = [Math.cos(p), Math.sin(p)];
+      for (let k = 1; k < 16; k++) { const th = k / 16 * Math.PI, a = sgn * Math.cos(th) * h, b = sgn * Math.sin(th) * h; pts.push([x + n[0] * a + t[0] * b, y + n[1] * a + t[1] * b]); }
+    };
+    for (let k = 0; k <= 24; k++) pts.push(onArc(lerp(-phiMax, phiMax, k / 24), R + h));
+    cap(phiMax, 1);
+    for (let k = 24; k >= 0; k--) pts.push(onArc(lerp(-phiMax, phiMax, k / 24), R - h));
+    cap(-phiMax, -1);
+    return () => { ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); };
+  }
+  const LEVEL = {
+    under(ctx, g, c) {
+      const L = levelGeo(g); const { u, cx } = g;
+      plate(ctx, g, c); glassUnder(ctx, g, c, tubeAdd(ctx, g), mix(c.face, c.accent, c.dark ? 0.2 : 0.13));
+      marks(ctx, g, c, (v) => { const phi = L.phiOf(v); const [x, y] = L.onArc(phi, L.R - L.T / 2 - 6 * u); return [x, y, -Math.sin(phi), Math.cos(phi)]; });
+      const [sx, sy] = L.onArc(L.phiMax, L.R - L.T / 2 - 16 * u); signs(ctx, g, c, 2 * cx - sx, sx, sy);
+    },
+    over(ctx, g, c) {
+      const L = levelGeo(g); const add = tubeAdd(ctx, g);
+      ctx.save(); ctx.beginPath(); add(); ctx.clip();
+      ctx.beginPath(); ctx.arc(g.cx, L.ccy, L.R + L.T * 0.3, -Math.PI / 2 - L.phiMax, -Math.PI / 2 + L.phiMax); ctx.strokeStyle = rgba(WHITE, c.dark ? 0.1 : 0.55); ctx.lineWidth = L.T * 0.1; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.restore();
+      glassOver(ctx, g, c, add, L.y0 - L.T / 2, L.y0 + L.T / 2 + 20 * g.u);
+    },
+    draw(ctx, g, c, Lk, e) {
+      const L = levelGeo(g); const { u } = g;
+      const phi = L.phiOf(clamp(Lk.x, -52, 52)); const [bx, by] = L.onArc(phi, L.R + L.T * 0.06);
+      tuneGlow(ctx, c, bx, by, 70 * u, e);
+      for (const v of [-12, 12]) { const p = L.phiOf(v); const [x1, y1] = L.onArc(p, L.R - L.T / 2 + 3 * u), [x2, y2] = L.onArc(p, L.R + L.T / 2 - 3 * u); line(ctx, x1, y1, x2, y2, rgba(mix(c.ink, c.inTune, e), 0.6 + 0.4 * e), 1.5 * u); }
+      const hl = L.R * L.phiMax * 0.82 / 50 * 7, hh = L.T * 0.34;
+      const sx = 1 + Math.min(0.25, Math.abs(Lk.v) * 0.0025), sy = 1 / Math.sqrt(sx);
+      ctx.save(); ctx.translate(bx, by); ctx.rotate(phi);
+      const body = mix(c.dark ? mix(c.face, WHITE, 0.25) : mix(c.plate, WHITE, 0.6), c.inTune, 0.3 * e);
+      ctx.beginPath(); ctx.ellipse(0, 0, hl * sx, hh * sy, 0, 0, TAU); ctx.fillStyle = rgba(body, 0.95); ctx.fill(); ctx.strokeStyle = rgba(mix(c.ink, c.inTune, e), 0.3); ctx.lineWidth = u; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(-hl * 0.35 * sx, -hh * 0.36 * sy, hl * 0.3, hh * 0.18, 0, 0, TAU); ctx.fillStyle = rgba(WHITE, c.dark ? 0.5 : 0.85); ctx.fill();
+      ctx.restore();
+    },
+  };
+
+  // ---- 4. Rolling scale ---------------------------------------------------------------------------
+  const drumGeo = (g) => { const { W, H, u } = g; const x0 = 22 * u, x1 = W - 22 * u, y0 = H * 0.24, y1 = H * 0.72; return { x0, x1, y0, y1, wh: y1 - y0, hw: (x1 - x0) / 2, add: (ctx) => () => rrAdd(ctx, x0, y0, x1 - x0, y1 - y0, 10 * u) }; };
+  const DRUM = {
+    under(ctx, g, c) { const d = drumGeo(g); plate(ctx, g, c); glassUnder(ctx, g, c, d.add(ctx)); signs(ctx, g, c, d.x0 + 6 * g.u, d.x1 - 6 * g.u, d.y1 + 14 * g.u); },
+    over(ctx, g, c) {
+      const d = drumGeo(g); const add = d.add(ctx);
+      ctx.save(); ctx.beginPath(); add(); ctx.clip();
+      const sg = ctx.createLinearGradient(d.x0, 0, d.x1, 0); const a = c.dark ? 0.55 : 0.16;
+      sg.addColorStop(0, rgba(BLACK, a)); sg.addColorStop(0.22, rgba(BLACK, 0)); sg.addColorStop(0.78, rgba(BLACK, 0)); sg.addColorStop(1, rgba(BLACK, a));
+      ctx.fillStyle = sg; ctx.fillRect(d.x0, d.y0, d.x1 - d.x0, d.wh); ctx.restore();
+      glassOver(ctx, g, c, add, d.y0, d.y1);
+    },
+    draw(ctx, g, c, L, e) {
+      const d = drumGeo(g); const { u, cx } = g; const thMax = 80 * Math.PI / 180, k = thMax / 50, Rd = d.hw / Math.sin(thMax);
+      const s = clamp(L.x, -52, 52);
+      ctx.save(); ctx.beginPath(); d.add(ctx)(); ctx.clip();
+      tuneGlow(ctx, c, cx, (d.y0 + d.y1) / 2, 90 * u, e);
+      ctx.font = `${9.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (let v = -60; v <= 60; v += 5) {
+        const th = -(v - s) * k; if (Math.abs(th) > thMax + 0.05) continue;
+        const x = cx + Rd * Math.sin(th), sq = Math.max(0.05, Math.cos(th)), fade = 0.35 + 0.65 * sq;
+        if (v === 0) {
+          ctx.save(); softShadow(ctx, g, c); line(ctx, x, d.y0 + 8 * u, x, d.y1 - 8 * u, rgba(centreColour(c, e)), 3 * u * (0.5 + 0.5 * sq)); ctx.restore();
+          continue;
+        }
+        const major = v % 10 === 0, len = (major ? 9 : 5) * u, w = (major ? 1.5 : 1) * u * (0.6 + 0.4 * sq);
+        line(ctx, x, d.y0 + 5 * u, x, d.y0 + 5 * u + len, rgba(c.ink, (major ? 1 : 0.45) * fade), w);
+        line(ctx, x, d.y1 - 5 * u, x, d.y1 - 5 * u - len * 0.6, rgba(c.ink, (major ? 0.6 : 0.3) * fade), w);
+        if (major) { ctx.save(); ctx.translate(x, (d.y0 + d.y1) / 2 + 2 * u); ctx.scale(sq, 1); ctx.fillStyle = rgba(c.ink, 0.62 * fade); ctx.fillText(String(Math.abs(v)), 0, 0); ctx.restore(); }
+      }
+      ctx.restore();
+      const lc = rgba(mix(c.ink, c.inTune, e));
+      line(ctx, cx, d.y0 + 2 * u, cx, d.y1 - 2 * u, lc, 1.5 * u, 'butt');
+      for (const [y, dir] of [[d.y0 - 2 * u, 1], [d.y1 + 2 * u, -1]]) { ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 4.5 * u, y - dir * 7 * u); ctx.lineTo(cx + 4.5 * u, y - dir * 7 * u); ctx.closePath(); ctx.fillStyle = lc; ctx.fill(); }
+    },
+  };
+
+  // ---- 5. Comet -----------------------------------------------------------------------------------
+  const PATH = 40;
+  const COMET = {
+    under(ctx, g, c, S) {
+      dialUnder(ctx, g, c, S); const { cx, u } = g; const { cy, r } = dial(g);
+      ctx.beginPath(); ctx.arc(cx, cy, r - PATH * u, -Math.PI, 0); ctx.setLineDash([1 * u, 5 * u]); ctx.strokeStyle = rgba(c.ink, 0.35); ctx.lineWidth = 1.2 * u; ctx.lineCap = 'round'; ctx.stroke(); ctx.setLineDash([]);
+    },
+    over: (ctx, g, c) => dialOver(ctx, g, c),
+    draw(ctx, g, c, L, e) {
+      const { cx, u } = g; const { cy, r } = dial(g); const rp = r - PATH * u;
+      dialCentre(ctx, g, c, e);
+      const s = clamp(L.x, -52, 52);
+      if (L.dt > 0 || !L.trail.length) { for (const p of L.trail) p[1] += L.dt; L.trail.push([s, 0]); L.trail = L.trail.filter((p) => p[1] < 0.55); }
+      const col = mix(c.accent, c.inTune, e);
+      for (let i = 1; i < L.trail.length; i++) {
+        const f = 1 - L.trail[i][1] / 0.55; if (f <= 0) continue;
+        const [x1, y1] = pt(cx, cy, rp, L.trail[i - 1][0]), [x2, y2] = pt(cx, cy, rp, L.trail[i][0]);
+        line(ctx, x1, y1, x2, y2, rgba(col, Math.pow(f, 1.4) * 0.7), lerp(0.8, 5, f) * u);
+      }
+      const [hx, hy] = pt(cx, cy, rp, s);
+      tuneGlow(ctx, c, hx, hy, 60 * u, e);
+      glow(ctx, hx, hy, 16 * u, col, c.dark ? 0.35 : 0.2);
+      ctx.save(); softShadow(ctx, g, c); circle(ctx, hx, hy, 4.5 * u, rgba(col)); ctx.restore();
+      circle(ctx, hx - 1.3 * u, hy - 1.3 * u, 1.3 * u, rgba(WHITE, 0.7));
+    },
+  };
+
+  // ---- 6. Studio meter ----------------------------------------------------------------------------
+  function studioGeo(g) {
+    const { W, H, u, cx } = g; const fx0 = 18 * u, fy0 = 18 * u, fx1 = W - 18 * u, fy1 = H - 18 * u, fw = fx1 - fx0, fh = fy1 - fy0;
+    const pY = fy1 + fh * 0.42, Rv = pY - (fy0 + 20 * u), A = 0.78;
+    const P = (rad, v) => [cx + rad * Math.sin(v / 50 * A), pY - rad * Math.cos(v / 50 * A)];
+    return { fx0, fy0, fx1, fy1, fw, fh, pY, Rv, A, P, lamp: [fx1 - 15 * u, fy0 + 15 * u], add: (ctx) => () => rrAdd(ctx, fx0, fy0, fw, fh, 10 * u) };
+  }
+  const STUDIO = {
+    under(ctx, g, c) {
+      const s = studioGeo(g); const { u, cx } = g; const add = s.add(ctx);
+      plate(ctx, g, c); glassUnder(ctx, g, c, add);
+      ctx.save(); ctx.beginPath(); add(); ctx.clip();
+      const bl = ctx.createRadialGradient(cx, s.fy1 + s.fh * 0.3, 0, cx, s.fy1 + s.fh * 0.3, s.fw * 0.75);
+      bl.addColorStop(0, rgba(c.accent, c.dark ? 0.22 : 0.11)); bl.addColorStop(1, rgba(c.accent, 0)); ctx.fillStyle = bl; ctx.fillRect(s.fx0, s.fy0, s.fw, s.fh);
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(cx, s.pY, s.Rv, -Math.PI / 2 - s.A, -Math.PI / 2 + s.A); ctx.strokeStyle = rgba(c.track); ctx.lineWidth = 1.5 * u; ctx.stroke();
+      marks(ctx, g, c, (v) => { const [x, y] = s.P(s.Rv - 3 * u, v); const a = v / 50 * s.A; return [x, y, -Math.sin(a), Math.cos(a)]; });
+      ctx.font = `${7.5 * u}px ${c.num}`; ctx.fillStyle = rgba(c.muted, 0.9); ctx.textAlign = 'center'; ctx.fillText('C E N T S', cx, s.fy1 - 42 * u);
+      const [lx, ly] = s.P(s.Rv - 46 * u, -42); signs(ctx, g, c, lx, 2 * cx - lx, ly);
+      const [jx, jy] = s.lamp; circle(ctx, jx, jy, 5.5 * u, rgba(mix(c.face, c.ink, 0.08))); ctx.beginPath(); ctx.arc(jx, jy, 5.5 * u, 0, TAU); ctx.strokeStyle = rgba(c.ink, 0.25); ctx.lineWidth = u; ctx.stroke();
+    },
+    over(ctx, g, c) {
+      const s = studioGeo(g); const { u, cx } = g; const shR = 30 * u;
+      ctx.save(); ctx.beginPath(); s.add(ctx)(); ctx.clip();
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, s.fy1, shR, Math.PI, TAU); ctx.closePath(); ctx.shadowColor = rgba(BLACK, c.dark ? 0.5 : 0.18); ctx.shadowBlur = 8 * u; ctx.shadowOffsetY = -1 * u;
+      const pg = ctx.createLinearGradient(0, s.fy1 - shR, 0, s.fy1); pg.addColorStop(0, rgba(mix(c.plate, WHITE, c.dark ? 0.05 : 0.3))); pg.addColorStop(1, rgba(mix(c.plate, c.ink, c.dark ? 0.04 : 0.1)));
+      ctx.fillStyle = pg; ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.arc(cx, s.fy1, shR, Math.PI, TAU); ctx.strokeStyle = rgba(c.ink, 0.12); ctx.lineWidth = u; ctx.stroke();
+      ctx.restore();
+      glassOver(ctx, g, c, s.add(ctx), s.fy0, s.fy1);
+    },
+    draw(ctx, g, c, L, e) {
+      const s = studioGeo(g); const { u, cx } = g;
+      tuneGlow(ctx, c, cx, s.fy0 + 26 * u, 80 * u, e);
+      ctx.beginPath(); ctx.arc(cx, s.pY, s.Rv - 0.5 * u, -Math.PI / 2 - 5 / 50 * s.A, -Math.PI / 2 + 5 / 50 * s.A); ctx.strokeStyle = rgba(centreColour(c, e)); ctx.lineWidth = 3 * u; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.save(); ctx.beginPath(); s.add(ctx)(); ctx.clip();
+      needle(ctx, g, c, cx, s.pY, clamp(L.x, -55, 55) / 50 * s.A, s.Rv + 3 * u, e);
+      ctx.restore();
+      const [jx, jy] = s.lamp;
+      glow(ctx, jx, jy, 22 * u, c.inTune, e * (c.dark ? 0.55 : 0.35));
+      circle(ctx, jx, jy, 3.8 * u, rgba(mix(mix(c.face, c.ink, 0.2), c.inTune, e)));
+      circle(ctx, jx - 1.1 * u, jy - 1.1 * u, 1.1 * u, rgba(WHITE, 0.25 + 0.45 * e));
+    },
+  };
+
+  const LOOKS = { classic: CLASSIC, arc: ARC, level: LEVEL, drum: DRUM, comet: COMET, studio: STUDIO };
+  // Spring per look: natural frequency (Hz) and damping (0.5 or more: a natural settle, never jittery).
+  const FEEL = { classic: [1.6, 0.6], arc: [2.2, 0.9], level: [1.0, 0.5], drum: [1.3, 0.75], comet: [1.7, 0.7], studio: [1.9, 0.62] };
+
+  // ---- The simulated reading ---------------------------------------------------------------------
+  const NOTES = [['E', 2], ['A', 2], ['D', 3], ['G', 3], ['B', 3], ['E', 4]];
+  let seed = 9;
+  const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const sim = { t: 0, start: 0, A: -38, per: 1.6, tau: 0.85, ph: 0, note: NOTES[0], reading: -38, inTune: false, inSince: -1, heldSince: -1, idx: 0, tune: 0 };
+  function pluck(first) {
+    const sign = first ? -1 : (rnd() < 0.5 ? -1 : 1);
+    sim.A = first ? -38 : sign * (22 + rnd() * 30);
+    sim.per = 1.4 + rnd() * 0.5; sim.tau = 0.75 + rnd() * 0.25; sim.ph = rnd() * 10;
+    sim.note = first ? NOTES[0] : NOTES[(sim.idx + Math.floor(rnd() * 5) + 1) % 6];
+    sim.start = sim.t; sim.inTune = false; sim.inSince = -1; sim.heldSince = -1; sim.idx++; sim.reading = sim.A;
+  }
+  const smooth = (x) => x * x * (3 - 2 * x);
+  function stepSim(dt) {
+    sim.t += dt; const e = sim.t - sim.start;
+    sim.reading = sim.A * Math.exp(-e / sim.tau) * Math.cos(TAU * e / sim.per) + 0.6 * Math.sin(e * 6.1 + sim.ph) * Math.exp(-e / 1.2) + 0.25 * Math.sin(e * 1.9 + sim.ph * 3);
+    // In tune: within 5 cents for 0.3 s, released past 7 (the app's rule).
+    const a = Math.abs(sim.reading);
+    if (!sim.inTune) {
+      if (a <= 5) { if (sim.inSince < 0) sim.inSince = sim.t; if (sim.t - sim.inSince >= 0.3) { sim.inTune = true; if (sim.heldSince < 0) sim.heldSince = sim.t; } }
+      else sim.inSince = -1;
+    } else if (a > 7) { sim.inTune = false; sim.inSince = -1; }
+    // The in-tune amount eases in over 0.4 s and out over 0.6 s.
+    sim.tune = clamp(sim.tune + (sim.inTune ? dt / 0.4 : -dt / 0.6), 0, 1);
+    if (sim.heldSince >= 0 && sim.t - sim.heldSince > 3.2) pluck(false);
+  }
+
+  // ---- Looks, canvases, loop --------------------------------------------------------------------
+  let styleKey = store.get('twangle.meterlooks.style'); if (!RAW[styleKey]) styleKey = 'cave';
+  let themePick = store.get('twangle.meterlooks.theme'); if (themePick !== 'light' && themePick !== 'dark') themePick = null;
+  let speedPick = store.get('twangle.meterlooks.speed'); if (!['normal', 'slow', 'pause'].includes(speedPick)) speedPick = reduceMotion ? 'slow' : 'normal';
+  const SPEED = { normal: 1, slow: 0.3, pause: 0 };
+  const isDark = () => themePick ? themePick === 'dark' : mqDark.matches;
+
+  const looks = [...document.querySelectorAll('.look')].map((el) => {
+    const key = el.dataset.look; const canvas = el.querySelector('canvas'); const f = FEEL[key];
+    const L = { key, canvas, ctx: canvas.getContext('2d'), stage: el.querySelector('.stage'), note: el.querySelector('.note'), state: el.querySelector('.state'),
+      w0: TAU * f[0], z: f[1], x: sim.reading, v: 0, dt: 0, heat: new Float32Array(41), trail: [], under: null, over: null, visible: true, dirty: true, lastText: '' };
+    L.stage.addEventListener('click', () => pluck(false));
+    L.stage.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pluck(false); } });
+    return L;
+  });
+
+  // Resolution: at most 2×, lowered by itself if drawing gets slow, so the page stays smooth on a phone.
+  let dprCap = Math.min(window.devicePixelRatio || 1, 2), renderMs = 0, lastDrop = 0;
+  function sizeCanvas(L) {
+    const w = Math.round(L.stage.clientWidth * dprCap);
+    if (w > 0 && w !== L.canvas.width) { L.canvas.width = w; L.canvas.height = Math.round(w / 2); L.under = null; L.dirty = true; L.trail = []; }
+  }
+  if ('ResizeObserver' in window) { const ro = new ResizeObserver(() => looks.forEach(sizeCanvas)); looks.forEach((L) => ro.observe(L.stage)); }
+  else window.addEventListener('resize', () => looks.forEach(sizeCanvas));
+  looks.forEach(sizeCanvas);
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => { const L = looks.find((k) => k.stage === en.target); if (L) { L.visible = en.isIntersecting; L.dirty = true; } }), { rootMargin: '120px 0px' });
+    looks.forEach((L) => io.observe(L.stage));
+  }
+
+  function stepLook(L, dt) {
+    L.dt = dt; if (dt <= 0) return;
+    const tgt = clamp(sim.reading, -50, 50); const n = Math.max(1, Math.ceil(dt * 240)), h = dt / n;
+    for (let i = 0; i < n; i++) { const acc = -L.w0 * L.w0 * (L.x - tgt) - 2 * L.z * L.w0 * L.v; L.v += acc * h; L.x += L.v * h; }
+    if (L.key === 'arc') {
+      const s = clamp(L.x, -50, 50), as = Math.abs(s);
+      for (let i = 0; i < 41; i++) {
+        const v = -50 + i * 2.5; const inside = s >= 0 ? (v >= -1.25 && v <= s + 1.25) : (v <= 1.25 && v >= s - 1.25);
+        const on = inside ? 0.35 + 0.65 * Math.min(1, Math.abs(v) / Math.max(as, 2.5)) : 0;
+        L.heat[i] = on > L.heat[i] ? lerp(L.heat[i], on, Math.min(1, dt * 18)) : Math.max(on, L.heat[i] - dt * 1.2);
+      }
+    }
+  }
+  function render(L) {
+    const ctx = L.ctx, W = L.canvas.width, H = L.canvas.height; if (!W) return;
+    const dark = isDark(), c = roles(styleKey, dark); const g = { W, H, u: W / 340, cx: W / 2, dark };
+    const look = LOOKS[L.key];
+    if (!L.under) {
+      L.under = document.createElement('canvas'); L.under.width = W; L.under.height = H; L.over = document.createElement('canvas'); L.over.width = W; L.over.height = H;
+      const uc = L.under.getContext('2d'); uc.fillStyle = rgba(c.bg); uc.fillRect(0, 0, W, H); look.under(uc, g, c, styleKey); look.over(L.over.getContext('2d'), g, c, styleKey);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+    ctx.drawImage(L.under, 0, 0);
+    look.draw(ctx, g, c, L, smooth(sim.tune));
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.shadowColor = 'transparent';
+    ctx.drawImage(L.over, 0, 0);
+  }
+  function readoutText() {
+    const c = Math.round(sim.reading);
+    if (sim.inTune) return ['✓ In tune', true];
+    if (c === 0) return ['0 ¢', false];
+    return [`${Math.abs(c)} ¢ ${c < 0 ? 'flat' : 'sharp'}`, false];
+  }
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const sdt = dt * SPEED[speedPick];
+    if (sdt > 0) stepSim(sdt);
+    const [txt, ok] = readoutText(); const noteHtml = `${sim.note[0]}<sub>${sim.note[1]}</sub>`;
+    const t0 = performance.now();
+    for (const L of looks) {
+      stepLook(L, sdt);
+      if (L.visible && (sdt > 0 || L.dirty)) { try { render(L); } catch (err) { if (!L.err) { L.err = true; console.error(L.key, err); } } L.dirty = false; }
+      if (L.lastText !== txt + noteHtml) { L.state.textContent = txt; L.state.classList.toggle('ok', ok); L.note.innerHTML = noteHtml; L.lastText = txt + noteHtml; }
+    }
+    if (sdt > 0) {
+      renderMs = renderMs * 0.95 + (performance.now() - t0) * 0.05;
+      if (renderMs > 12 && dprCap > 1.25 && now - lastDrop > 2500) { dprCap = Math.max(1.25, dprCap - 0.375); lastDrop = now; renderMs = 6; looks.forEach(sizeCanvas); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Controls ----------------------------------------------------------------------------------
+  const redrawAll = () => looks.forEach((L) => { L.under = null; L.dirty = true; });
+  function applyStyle() { root.dataset.style = styleKey; document.getElementById('style-' + styleKey).checked = true; redrawAll(); }
+  function applyTheme() {
+    if (themePick) root.dataset.theme = themePick; else delete root.dataset.theme;
+    document.getElementById('theme-' + (isDark() ? 'dark' : 'light')).checked = true; redrawAll();
+  }
+  function applySpeed() { document.getElementById('speed-' + speedPick).checked = true; looks.forEach((L) => { L.dirty = true; }); }
+  document.getElementById('controls').addEventListener('change', (ev) => {
+    const el = ev.target; if (!el || el.type !== 'radio') return;
+    if (el.name === 'style') { styleKey = el.value; store.set('twangle.meterlooks.style', styleKey); applyStyle(); }
+    if (el.name === 'theme') { themePick = el.value; store.set('twangle.meterlooks.theme', themePick); applyTheme(); }
+    if (el.name === 'speed') { speedPick = el.value; store.set('twangle.meterlooks.speed', speedPick); applySpeed(); }
+  });
+  const onSystemTheme = () => { if (!themePick) applyTheme(); };
+  if (mqDark.addEventListener) mqDark.addEventListener('change', onSystemTheme); else if (mqDark.addListener) mqDark.addListener(onSystemTheme);
+  applyStyle(); applyTheme(); applySpeed();
+  pluck(true);
+  if (document.fonts && document.fonts.load) {
+    Promise.all([document.fonts.load('16px "Caesar Dressing"'), document.fonts.load('16px Michroma'), document.fonts.load('16px Roboto')]).then(redrawAll, redrawAll);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>

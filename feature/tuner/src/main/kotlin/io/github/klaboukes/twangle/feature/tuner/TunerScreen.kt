@@ -75,6 +75,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -83,7 +84,7 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
-import io.github.klaboukes.twangle.feature.tuner.components.NeedleGauge
+import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
@@ -134,13 +135,14 @@ fun TunerScreen(
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the
-    // needle follows the exact cents without recomposing (see NeedleGauge).
+    // needle follows the exact cents without recomposing (see MeterFrame).
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val display by viewModel.display.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
+    val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
     val waveBreathesInTune by viewModel.waveBreathesInTune.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
@@ -184,6 +186,7 @@ fun TunerScreen(
                     onRetry = viewModel::retry,
                     display = display,
                     waveLook = waveLook,
+                    meterLook = meterLook,
                     waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     showSignalBars = showSignalBars,
@@ -280,7 +283,8 @@ private fun KeepScreenOn() {
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [reception] likewise
  * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
- * on the note or, without [waveBreathesInTune], holding still there), and
+ * on the note or, without [waveBreathesInTune], holding still there); the meter above the note is drawn in
+ * [meterLook], and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
@@ -304,6 +308,7 @@ fun TunerContent(
     reception: () -> Float? = { (state as? TunerUiState.Detected)?.reception },
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
+    meterLook: MeterLook = MeterLook.DEFAULT,
     waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     showSignalBars: Boolean = false,
@@ -339,7 +344,8 @@ fun TunerContent(
         GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
-        NeedleGauge(
+        MeterFrame(
+            look = meterLook,
             cents = needleCents,
             inTune = (state as? TunerUiState.Detected)?.inTune == true,
             modifier = Modifier.testTag(TunerTestTags.GAUGE),

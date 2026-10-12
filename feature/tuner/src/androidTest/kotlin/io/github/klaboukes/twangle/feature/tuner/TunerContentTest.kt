@@ -54,6 +54,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -104,6 +105,9 @@ class TunerContentTest {
 
     /** The wave look [show] passes on; set it to switch looks while the tuner is shown. */
     private val shownLook = mutableStateOf(WaveLook.DEFAULT)
+
+    /** The meter look the tuner shows; set it to switch looks while the tuner is shown. */
+    private val shownMeterLook = mutableStateOf(MeterLook.DEFAULT)
     private val shownSignalBars = mutableStateOf(false)
 
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
@@ -139,6 +143,7 @@ class TunerContentTest {
         shownState.value = state
         shownCompact.value = compactLandscape
         shownLook.value = waveLook
+        shownMeterLook.value = MeterLook.DEFAULT
         shownSignalBars.value = signalBars
         compose.setContent {
             val content = @Composable {
@@ -153,6 +158,7 @@ class TunerContentTest {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         display = display,
                         waveLook = shownLook.value,
+                        meterLook = shownMeterLook.value,
                         showTuneHint = showTuneHint,
                         showStringLockTip = shownTip.value,
                         onStringLockTipDismiss = { tipDismissals++ },
@@ -753,6 +759,29 @@ class TunerContentTest {
         assertTrue("the stripes moved", waveBefore.differsFrom(wave.captureToImage().toPixelMap()))
         assertEquals("recompositions while the stripes moved", changes, changeCount())
         assertEquals(before, spoken.assertExists().fetchSemanticsNode().config[SemanticsProperties.ContentDescription])
+    }
+
+    /**
+     * Every meter look sits in the same frame: switching looks moves nothing on the screen, and
+     * TalkBack skips the meter in every look (the note says the reading in words, once).
+     */
+    @Test
+    fun everyMeterLookSitsInTheSameFrameAndTalkBackSkipsIt() {
+        show(detected(-12.3f), showTuneHint = true)
+        val spoken = "E 2, $twelveCentsFlat, ${context.getString(R.string.tuner_spoken_tune_up)}"
+        val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE)
+        val frame = gauge.assertIsDisplayed().getBoundsInRoot()
+        val note = compose.onNodeWithText("E").getBoundsInRoot()
+        for (look in MeterLook.entries) {
+            shownMeterLook.value = look
+            assertEquals("$look frame", frame, gauge.assertIsDisplayed().getBoundsInRoot())
+            assertEquals("$look: the note stays put", note, compose.onNodeWithText("E").getBoundsInRoot())
+            val node = gauge.fetchSemanticsNode()
+            assertNull("$look", node.config.getOrNull(SemanticsProperties.ContentDescription))
+            assertNull("$look", node.config.getOrNull(SemanticsProperties.Text))
+            assertTrue("nothing inside the $look meter for TalkBack", node.children.isEmpty())
+            compose.onAllNodes(hasContentDescription(spoken)).assertCountEquals(1)
+        }
     }
 
     private fun PixelMap.differsFrom(other: PixelMap): Boolean =

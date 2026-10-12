@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -107,6 +108,11 @@ class TunerViewModel(
     val waveLook: StateFlow<WaveLook> = settingsRepository.settings
         .map { it.waveLook }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WaveLook.DEFAULT)
+
+    /** What the meter above the note looks like (a saved setting). */
+    val meterLook: StateFlow<MeterLook> = settingsRepository.settings
+        .map { it.meterLook }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MeterLook.DEFAULT)
 
     /** Whether the wave keeps breathing on the note or holds still there (a saved, temporary setting). */
     val waveBreathesInTune: StateFlow<Boolean> = settingsRepository.settings

@@ -5,7 +5,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.feature.tuner.components.needleCents
+import io.github.klaboukes.twangle.feature.tuner.components.meterCents
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -115,7 +115,7 @@ internal fun TunerUiState.looksLike(other: TunerUiState): Boolean {
         tip == other.tip &&
         shownCents(cents) == shownCents(other.cents) &&
         shownHz(frequencyHz) == shownHz(other.frequencyHz) &&
-        abs(needleCents(cents) - needleCents(other.cents)) < NEEDLE_STEP_CENTS &&
+        abs(meterCents(cents) - meterCents(other.cents)) < NEEDLE_STEP_CENTS &&
         abs(reception - other.reception) < RECEPTION_STEP
 }
 

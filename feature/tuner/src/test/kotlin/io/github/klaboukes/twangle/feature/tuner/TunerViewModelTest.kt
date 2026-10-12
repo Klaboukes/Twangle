@@ -8,6 +8,7 @@ import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -399,6 +400,18 @@ class TunerViewModelTest {
         settings.setWaveLook(WaveLook.LOOP)
         runCurrent()
         assertEquals(WaveLook.LOOP, vm.waveLook.value)
+    }
+
+    @Test
+    fun `meterLook follows the setting, Classic by default`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.meterLook.collect {} }
+        runCurrent()
+        assertEquals(MeterLook.CLASSIC, vm.meterLook.value)
+
+        settings.setMeterLook(MeterLook.STUDIO_METER)
+        runCurrent()
+        assertEquals(MeterLook.STUDIO_METER, vm.meterLook.value)
     }
 
     @Test

@@ -102,6 +102,10 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
+    override suspend fun setMeterLook(look: MeterLook) {
+        dataStore.edit { it[METER_LOOK] = look.name }
+    }
+
     override suspend fun setWaveBreathesInTune(enabled: Boolean) {
         dataStore.edit { it[WAVE_BREATHES_IN_TUNE] = enabled }
     }
@@ -137,6 +141,7 @@ class DataStoreSettingsRepository internal constructor(
                 enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display
             },
             waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
+            meterLook = enumOrNull<MeterLook>(prefs[METER_LOOK]) ?: defaults.meterLook,
             waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
@@ -171,6 +176,7 @@ class DataStoreSettingsRepository internal constructor(
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
         private val WAVE_BREATHES_IN_TUNE = booleanPreferencesKey("wave_breathes_in_tune")
+        private val METER_LOOK = stringPreferencesKey("meter_look")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
 

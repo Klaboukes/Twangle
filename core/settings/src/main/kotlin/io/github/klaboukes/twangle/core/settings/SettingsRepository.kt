@@ -45,6 +45,8 @@ interface SettingsRepository {
     /** Also turns an old saved strobe display into the wave, so the picked look shows. */
     suspend fun setWaveLook(look: WaveLook)
 
+    suspend fun setMeterLook(look: MeterLook)
+
     /** True lets the wave breathe on the note; false makes it hold still there (temporary, see [AppSettings.waveBreathesInTune]). */
     suspend fun setWaveBreathesInTune(enabled: Boolean)
 
