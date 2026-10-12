@@ -23,6 +23,8 @@ kotlin {
 dependencies {
     // The styles are chosen by VisualStyle and ThemeMode, which are saved settings.
     api(project(":core:settings"))
+    // WaveMotion drifts by the strobe's speed rule (StrobeMotion).
+    implementation(project(":core:dsp"))
 
     implementation(libs.androidx.core.ktx)
     api(platform(libs.androidx.compose.bom))
@@ -33,6 +35,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
-    // NoteNameSpeechTest checks every note name the app can show.
-    testImplementation(project(":core:dsp"))
 }

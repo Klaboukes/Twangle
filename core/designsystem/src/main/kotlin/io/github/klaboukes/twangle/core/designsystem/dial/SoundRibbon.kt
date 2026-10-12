@@ -19,9 +19,9 @@ import kotlin.math.sin
 /*
  * The wave view of every style: a soft ribbon of sound under the note, drawn in the style's own
  * marks and without a frame, so it stays in the background. Off pitch it swells into pulses that
- * drift along, like the beats you hear when two notes are close but not the same; in tune it
- * settles into one smooth, even band. It is eye candy, not a measurement: WaveMotion
- * decides how the pulses move. The other looks the user can pick are in WaveLooks.kt.
+ * drift along, like the beats you hear when two notes are close but not the same, at the strobe's
+ * speed; on the note it settles into one smooth, even band that stands still. WaveMotion decides
+ * how the pulses move. The other looks the user can pick are in WaveLooks.kt.
  */
 
 /**

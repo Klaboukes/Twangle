@@ -23,8 +23,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
- * The looks the user can pick for the wave view (WaveLook). They all share the same motion: off
- * pitch, pulses drift right (sharp) or left (flat); in tune, everything settles into one calm shape.
+ * The looks the user can pick for the wave view (WaveLook). They all share the same motion
+ * (WaveMotion): off pitch, pulses drift right (sharp) or left (flat) at the strobe's speed; within
+ * half a cent of the note, everything settles into one calm shape that stands still.
  * The ribbon is drawn in each style's own marks (SoundRibbon.kt); the other looks are the same in
  * every style, in the style's colours.
  */

@@ -1,42 +1,57 @@
 package io.github.klaboukes.twangle.core.designsystem.dial
 
+import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.floor
+import kotlin.math.sqrt
 
 /**
- * How the wave view's sound ribbon moves, one animation frame at a time. It borrows the idea of
- * the beats you hear when two notes are close but not the same, and exaggerates it:
+ * How the wave view moves, one animation frame at a time, for every wave look. It borrows the
+ * beats you hear when two notes are close but not the same, and gives the same "getting closer"
+ * cue as the strobe:
  *
- * - Off pitch the ribbon pinches into pulses: deeper ([depth]) and more of them ([beats]) the
- *   further off the note is, full depth from [FULL_DEPTH_CENTS] off.
- * - The pulses drift right when sharp and left when flat, faster the further off.
- * - In tune they smooth out into one even band that slowly breathes ([swell]).
+ * - **Drift** ([phase]) follows the strobe's speed rule exactly ([StrobeMotion.driftSpeed], in
+ *   pulses per second): dead still within half a cent, then faster with every cent off, right when
+ *   sharp and left when flat. It runs on a [StrobeMotion] of its own, so it moves exactly as the
+ *   strobe would. It comes from the exact cents, not the "in tune" flag (2 or 5 cents wide), so
+ *   the last few cents still show.
+ * - **Shape** shows how far off from a distance, up to [WAVE_RANGE_CENTS]: the pulses get deeper
+ *   ([depth]) and more of them fit across ([beats]) the further off. Close to the note they smooth
+ *   out, and within half a cent, where the drift stands still, the band is perfectly even. The
+ *   shape follows the reading more slowly than the drift, so it changes smoothly.
+ * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle.
  *
  * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and
  * the previews in Settings both use it.
  */
 class WaveMotion {
 
-    /** The eased deviation the ribbon shows, in cents, within ±[WAVE_RANGE_CENTS]. */
+    private val drift = StrobeMotion()
+
+    /** The eased deviation the shape shows, in cents, within ±[WAVE_RANGE_CENTS]. */
     var shownCents = 0f
         private set
 
-    /** How far the pulses have drifted, in pulses (0..1). */
-    var phase = 0f
-        private set
+    /** How far the pulses have drifted, in pulses (0..1, wrapping): grows when sharp, shrinks when flat. */
+    val phase: Float get() = drift.phase
+
+    /** How fast the pulses drift now, in pulses per second ([StrobeMotion.driftSpeed]); 0 within half a cent. */
+    val speed: Float get() = drift.speed
 
     /** A slow clock (0..1, wrapping) for the breathing and the fireflies' twinkle. */
     var breath = 0f
         private set
 
-    /** How deeply the ribbon is pinched into pulses: 0 in tune, up to [MAX_DEPTH]. */
-    val depth: Float get() = (abs(shownCents) / FULL_DEPTH_CENTS).coerceAtMost(1f) * MAX_DEPTH
+    /** How deeply the ribbon is pinched into pulses: 0 within half a cent, up to [MAX_DEPTH] (see [depthFor]). */
+    var depth = 0f
+        private set
 
-    /** How many pulses fit across the ribbon: [MIN_BEATS] just off, [MAX_BEATS] at the range's edge. */
-    val beats: Float get() = MIN_BEATS + abs(shownCents) / WAVE_RANGE_CENTS * (MAX_BEATS - MIN_BEATS)
+    /** How many pulses fit across the ribbon: [MIN_BEATS] close to the note, [MAX_BEATS] at the range's edge (see [beatsFor]). */
+    var beats = MIN_BEATS
+        private set
 
     /** How far off the shown note is and which way: −1 at the flat edge of the range, 1 at the sharp edge. */
     val lean: Float get() = shownCents / WAVE_RANGE_CENTS
@@ -44,13 +59,18 @@ class WaveMotion {
     /** The ribbon's slow breathing, as a share of its full height (1 − [BREATH_DEPTH]..1). */
     val swell: Float get() = 1f - BREATH_DEPTH * (0.5f - 0.5f * cos(2f * PI.toFloat() * breath))
 
-    /** Moves the ribbon on by [seconds] for a reading of [cents] (positive is sharp). */
-    fun advance(seconds: Float, cents: Float, inTune: Boolean) {
+    /** Moves the wave on by [seconds] for a reading of [cents] (positive is sharp; NaN counts as 0). */
+    fun advance(seconds: Float, cents: Float) {
+        val reading = if (cents.isNaN()) 0f else cents
+        drift.advance(seconds, reading)
         val dt = seconds.coerceIn(0f, MAX_STEP_SECONDS)
-        val goal = if (inTune) 0f else cents.coerceIn(-WAVE_RANGE_CENTS, WAVE_RANGE_CENTS)
-        shownCents += (goal - shownCents) * (1f - exp(-dt * SHAPE_RATE))
-        val speed = (shownCents * DRIFT_PER_CENT).coerceIn(-MAX_DRIFT, MAX_DRIFT)
-        phase = wrap(phase + speed * dt)
+        val goal = reading.coerceIn(-WAVE_RANGE_CENTS, WAVE_RANGE_CENTS)
+        // Each part of the shape eases on its own scale, so a jump in the reading (a new string)
+        // never makes the pulses snap, however steeply they deepen in the first cents.
+        val follow = 1f - exp(-dt * SHAPE_RATE)
+        shownCents += (goal - shownCents) * follow
+        depth += (depthFor(goal) - depth) * follow
+        beats += (beatsFor(goal) - beats) * follow
         breath = wrap(breath + dt * BREATHS_PER_SECOND)
     }
 
@@ -60,10 +80,7 @@ class WaveMotion {
         /** Deviations beyond this look the same. */
         const val WAVE_RANGE_CENTS = 50f
 
-        /** From this far off the pulses are as deep as they get. */
-        const val FULL_DEPTH_CENTS = 12f
-
-        /** The deepest pinch: the ribbon never closes completely. */
+        /** The deepest pinch, at the range's edge: the ribbon never closes completely. */
         const val MAX_DEPTH = 0.8f
 
         const val MIN_BEATS = 1.5f
@@ -72,13 +89,29 @@ class WaveMotion {
         /** How much the in-tune ribbon breathes. */
         const val BREATH_DEPTH = 0.1f
 
-        /** How fast the pulses drift per cent sharp, in pulses per second. */
-        private const val DRIFT_PER_CENT = 0.035f
+        /**
+         * How deeply a deviation of [cents] pinches the ribbon: 0 within [StrobeMotion.STILL_CENTS]
+         * (the band is even where the drift stands still), then rising quickly so that a cent or
+         * two already shows pulses that can be seen drifting (about 0.15 at 1 cent, 0.3 at 3), and
+         * levelling out at [MAX_DEPTH] at the range's edge: `1 − (1 − √x)²` for the share x of the
+         * range beyond the still band, which starts steep and lands flat.
+         */
+        fun depthFor(cents: Float): Float {
+            val root = sqrt(reach(cents))
+            return MAX_DEPTH * root * (2f - root)
+        }
 
-        /** Above about 30 cents off the pulses drift no faster. */
-        private const val MAX_DRIFT = 1.1f
+        /** How many pulses fit across the ribbon for a deviation of [cents]: more the further off, quickest in the first cents. */
+        fun beatsFor(cents: Float): Float = MIN_BEATS + sqrt(reach(cents)) * (MAX_BEATS - MIN_BEATS)
 
-        /** How quickly the ribbon follows the reading (per second). */
+        /** The share (0..1) of the range beyond the still band that [cents] covers. */
+        private fun reach(cents: Float): Float {
+            val beyond = abs(cents) - StrobeMotion.STILL_CENTS
+            if (!(beyond > 0f)) return 0f // Also NaN.
+            return (beyond / (WAVE_RANGE_CENTS - StrobeMotion.STILL_CENTS)).coerceAtMost(1f)
+        }
+
+        /** How quickly the shape follows the reading (per second): smoothly, in about a fifth of a second. */
         private const val SHAPE_RATE = 5f
 
         /** One slow breath every two and a half seconds. */

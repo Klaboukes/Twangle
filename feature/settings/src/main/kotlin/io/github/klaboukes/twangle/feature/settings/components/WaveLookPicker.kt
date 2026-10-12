@@ -38,6 +38,7 @@ import io.github.klaboukes.twangle.core.designsystem.dial.drawWave
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.R
+import kotlin.math.abs
 import kotlin.math.exp
 
 /**
@@ -156,9 +157,10 @@ private fun WaveLookCard(
 }
 
 /**
- * The short loop the previews play, the same for every card: [DEMO_FLAT_CENTS] off, in tune,
- * [DEMO_SHARP_CENTS] off, in tune again, over [DEMO_SECONDS]. [tuned] eases between 0 and 1 for the
- * "in tune" colour and halo.
+ * The short loop the previews play, the same for every card, over [DEMO_SECONDS]: [DEMO_FLAT_CENTS]
+ * off, then tuned up to the note (slowing down over the last few cents, as when turning a peg), in
+ * tune, [DEMO_SHARP_CENTS] off, tuned down to the note, in tune again. [tuned] eases between 0 and
+ * 1 for the "in tune" colour and halo.
  */
 private class WaveDemo {
     val motion = WaveMotion()
@@ -170,16 +172,32 @@ private class WaveDemo {
     fun advance(seconds: Float) {
         val dt = seconds.coerceIn(0f, MAX_STEP_SECONDS)
         clock = (clock + dt) % DEMO_SECONDS
-        val inTune = clock in 3f..5f || clock >= 8f
-        val cents = if (clock < 5f) DEMO_FLAT_CENTS else DEMO_SHARP_CENTS
-        motion.advance(dt, cents, inTune)
+        val cents = when {
+            clock < 2f -> DEMO_FLAT_CENTS
+            clock < 3f -> DEMO_FLAT_CENTS * pegTurn(clock - 2f)
+            clock < 5f -> 0f
+            clock < 7f -> DEMO_SHARP_CENTS
+            clock < 8f -> DEMO_SHARP_CENTS * pegTurn(clock - 7f)
+            else -> 0f
+        }
+        motion.advance(dt, cents)
+        val inTune = abs(cents) < DEMO_IN_TUNE_CENTS
         tuned += ((if (inTune) 1f else 0f) - tuned) * (1f - exp(-dt * TUNE_RATE))
+    }
+
+    /** How much of the way off is left [t] (0..1) into turning the peg: fast at first, slow near the note. */
+    private fun pegTurn(t: Float): Float {
+        val left = 1f - t
+        return left * left * left
     }
 }
 
 private const val DEMO_SECONDS = 10f
 private const val DEMO_FLAT_CENTS = -18f
 private const val DEMO_SHARP_CENTS = 14f
+
+/** The previews turn the "in tune" colour this close to the note, as the tuner does when set to precise. */
+private const val DEMO_IN_TUNE_CENTS = 2f
 
 /** How quickly the colour turns to "in tune" and back (per second). */
 private const val TUNE_RATE = 3f

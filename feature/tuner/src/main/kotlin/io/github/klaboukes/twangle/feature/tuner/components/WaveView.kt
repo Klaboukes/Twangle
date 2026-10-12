@@ -31,9 +31,10 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 /**
  * The wave view in the [look] the user picked (`drawWave`): by default a soft ribbon of sound in the
  * current style's marks, with no frame so it stays quiet next to the dial. Off pitch it pinches
- * into pulses that drift right (sharp) or left (flat); in tune it settles into one calm shape that
- * breathes, in the "in tune" colour. See [WaveMotion] for how it moves. Without a reading ([cents]
- * null) it rests as a faint line.
+ * into pulses that drift right (sharp) or left (flat) at the strobe's speed, from the exact [cents];
+ * close to the note they smooth out, and within half a cent they stand still as one calm shape.
+ * [inTune] only sets the colour and halo. See [WaveMotion] for how it moves. Without a reading
+ * ([cents] null) it rests as a faint line.
  *
  * It moves only while there is a reading. Each frame only redraws this view's own layer: nothing
  * is recomposed. TalkBack skips it; `NoteDisplay` says the same in words.
@@ -46,7 +47,6 @@ fun WaveView(
     look: WaveLook = WaveLook.DEFAULT,
 ) {
     val reading by rememberUpdatedState(cents)
-    val tuned by rememberUpdatedState(inTune)
     val motion = remember { WaveMotion() }
     val frame = remember { mutableLongStateOf(0L) }
     val hasReading = cents != null
@@ -57,7 +57,7 @@ fun WaveView(
         var last = withInfiniteAnimationFrameNanos { it }
         while (true) {
             withInfiniteAnimationFrameNanos { now ->
-                motion.advance((now - last) / 1_000_000_000f, reading ?: 0f, tuned)
+                motion.advance((now - last) / 1_000_000_000f, reading ?: 0f)
                 last = now
                 frame.longValue = now
             }
