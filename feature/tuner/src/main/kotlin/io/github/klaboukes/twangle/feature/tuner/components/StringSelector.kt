@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,10 +33,13 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipShape
+import io.github.klaboukes.twangle.core.designsystem.stringChipSize
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -90,6 +94,7 @@ fun StringSelector(
                 onClick = onStringClick?.let { click -> { click(index) } },
                 clickLabel = if (locked) unlockLabel else lockLabel,
                 lockedState = lockedState,
+                index = index,
                 small = small,
             )
         }
@@ -107,6 +112,7 @@ private fun StringChip(
     onClick: (() -> Unit)?,
     clickLabel: String,
     lockedState: String,
+    index: Int,
     small: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
@@ -122,10 +128,16 @@ private fun StringChip(
     )
     val octaveStyle = MaterialTheme.typography.labelSmall.toSpanStyle().copy(baselineShift = BaselineShift.Subscript)
     val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
-    val shape = stringChipShape(MaterialTheme.styleTokens.style)
+    val style = MaterialTheme.styleTokens.style
+    // The style's own button (pebble, ivory key, capsule...), with room round it for the lock ring.
+    val shape = stringChipShape(style, index)
+    val ringGap = if (small) 2.dp else 4.dp
+    val button = if (small) stringChipSize(style).fitInside(SMALL_CHIP_SIZE - ringGap * 2) else stringChipSize(style)
     Box(
         modifier = Modifier
-            .size(if (small) SMALL_CHIP_SIZE else CHIP_SIZE)
+            // Big buttons are at least 48 dp to touch each way, however narrow or short they look.
+            .then(if (small) Modifier else Modifier.minimumInteractiveComponentSize())
+            .size(button.width + ringGap * 2, button.height + ringGap * 2)
             .clip(shape)
             .then(
                 if (onClick != null) {
@@ -136,7 +148,7 @@ private fun StringChip(
             )
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
-            .padding(if (small) 2.dp else 4.dp)
+            .padding(ringGap)
             .background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape)
             .background(background, shape)
             .border(1.dp, if (highlighted) accent else colors.outlineVariant, shape)
@@ -148,7 +160,7 @@ private fun StringChip(
             },
         contentAlignment = Alignment.Center,
     ) {
-        // The circle has a fixed size, so its label grows with the system font only up to a point.
+        // The button has a fixed size, so its label grows with the system font only up to a point.
         val density = LocalDensity.current
         CompositionLocalProvider(
             LocalDensity provides Density(
@@ -161,7 +173,7 @@ private fun StringChip(
                     append(musicText(name))
                     withStyle(octaveStyle) { append(octave.toString()) }
                 },
-                // Solfège names like "Sol♯" need a smaller size to fit the 40 dp circle.
+                // Solfège names like "Sol♯" need a smaller size to fit the button.
                 style = when {
                     small && name.length <= 2 -> MaterialTheme.typography.labelMedium
                     small -> MaterialTheme.typography.labelSmall
@@ -175,13 +187,18 @@ private fun StringChip(
     }
 }
 
+/** This size shrunk to fit a [side] square, keeping its proportions. */
+private fun DpSize.fitInside(side: Dp): DpSize {
+    val scale = minOf(side / width, side / height)
+    return DpSize(width * scale, height * scale)
+}
+
 /** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */
 private const val MAX_CHIP_FONT_SCALE = 1.3f
 
-/** The small chips' labels don't grow with the system font: their circles are only 32 dp. */
+/** The small chips' labels don't grow with the system font: they are only 32 dp. */
 private const val MAX_SMALL_CHIP_FONT_SCALE = 1f
 
-private val CHIP_SIZE = 48.dp
 private val SMALL_CHIP_SIZE = 32.dp
 private val SMALL_CHIP_SPACING = 4.dp
 

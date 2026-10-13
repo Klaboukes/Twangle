@@ -15,7 +15,9 @@ data class FontCredit(
 /** Every typeface the app bundles, all under the SIL Open Font License 1.1 (see [StyleFonts] and [MusicSignsFont]). */
 val bundledFontCredits: List<FontCredit> = listOf(
     FontCredit("Caesar Dressing", "Open Window", "caesar_dressing.ttf", "licenses/OFL-caesardressing.txt"),
+    FontCredit("Alegreya Sans", "Juan Pablo del Peral, Huerta Tipográfica", "alegreya_sans_medium.ttf", "licenses/OFL-alegreyasans.txt"),
     FontCredit("Playfair Display", "Claus Eggers Sørensen", "playfair_display.ttf", "licenses/OFL-playfairdisplay.txt"),
+    FontCredit("Bodoni Moda", "Owen Earl, indestructible type*", "bodoni_moda.ttf", "licenses/OFL-bodonimoda.txt"),
     FontCredit("Righteous", "Astigmatic", "righteous.ttf", "licenses/OFL-righteous.txt"),
     FontCredit("Orbitron", "Matt McInerney", "orbitron.ttf", "licenses/OFL-orbitron.txt"),
     FontCredit("Michroma", "Vernon Adams", "michroma.ttf", "licenses/OFL-michroma.txt"),

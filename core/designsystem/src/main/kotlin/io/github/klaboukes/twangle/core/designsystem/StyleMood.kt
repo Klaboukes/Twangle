@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
@@ -43,15 +40,6 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 /** The style's name for users, e.g. "Space Age". */
 @Composable
 fun styleName(style: VisualStyle): String = stringResource(styleNameRes(style))
-
-/**
- * The outline of a string button in [style]: a chamfered HUD tile for Futuristic, a circle for the
- * rest. The tuner's string row and the style cards share it.
- */
-fun stringChipShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStartPercent = 35, topEndPercent = 0, bottomEndPercent = 35, bottomStartPercent = 0)
-    else -> CircleShape
-}
 
 /**
  * A small mood picture of [style] for its card in Settings (4:5), drawn in that style's own colours,
@@ -82,7 +70,7 @@ fun StyleMood(
             // Everything is sized by the card's width, so the picture looks the same at any font size.
             val unit = maxWidth / MOOD_UNITS
             val colors = MaterialTheme.colorScheme
-            StyleBackdropPreview(Modifier.fillMaxSize(), scale = BACKDROP_SCALE)
+            StyleBackdropPreview(Modifier.fillMaxSize())
             Text(
                 text = stringResource(R.string.style_card_note),
                 style = moodText(MaterialTheme.typography.displayMedium, unit * NOTE_SIZE),
@@ -118,25 +106,31 @@ fun StyleMood(
             }
             Row(
                 modifier = Modifier.align(Alignment.BottomCenter).offset(y = -maxHeight * STRINGS_BOTTOM),
-                horizontalArrangement = Arrangement.spacedBy(unit * STRING_GAP),
+                horizontalArrangement = Arrangement.spacedBy(unit * if (style == VisualStyle.CLASSIC) KEY_GAP else STRING_GAP),
+                verticalAlignment = Alignment.Bottom,
             ) {
-                MoodString(stringResource(R.string.style_card_low_string), picked = false, unit = unit)
-                MoodString(stringResource(R.string.style_card_note), picked = true, unit = unit)
+                MoodString(stringResource(R.string.style_card_low_string), index = 0, picked = false, unit = unit)
+                MoodString(stringResource(R.string.style_card_note), index = 1, picked = true, unit = unit)
             }
         }
     }
 }
 
-/** One string button of a mood picture, in the style's shape; a [picked] one has an accent ring. */
+/**
+ * One string button of a mood picture, the [index]th of the row, in the style's shape and the
+ * mock-up's card size for it; a [picked] one has an accent ring.
+ */
 @Composable
-private fun MoodString(label: String, picked: Boolean, unit: Dp) {
+private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
     val colors = MaterialTheme.colorScheme
-    val shape = stringChipShape(MaterialTheme.styleTokens.style)
+    val style = MaterialTheme.styleTokens.style
+    val shape = stringChipShape(style, index)
+    val (width, height) = moodStringSize(style)
     val ring = if (picked) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.6f)
     val fill = if (picked) lerp(colors.surface, colors.primary, 0.28f) else colors.surface.copy(alpha = 0.7f)
     Box(
         modifier = Modifier
-            .size(unit * STRING_SIZE)
+            .size(unit * width, unit * height)
             .background(fill, shape)
             .border(unit * if (picked) 1.5f else 1f, ring, shape),
         contentAlignment = Alignment.Center,
@@ -157,6 +151,14 @@ private fun moodText(base: TextStyle, size: Dp): TextStyle {
     return base.copy(fontSize = sp, lineHeight = sp * 1.05f, color = Color.Unspecified)
 }
 
+/** A mood picture's string button, in card units (width to height): the mock-up's card sizes. */
+private fun moodStringSize(style: VisualStyle): Pair<Float, Float> = when (style) {
+    VisualStyle.CLASSIC -> 17f to 28f
+    VisualStyle.CONTEMPORARY -> 20f to 20f
+    VisualStyle.SPACE_AGE -> 17f to 26f
+    else -> 22f to 20f
+}
+
 @StringRes
 private fun styleNameRes(style: VisualStyle): Int = when (style) {
     VisualStyle.ANCIENT -> R.string.style_ancient
@@ -172,14 +174,13 @@ private fun styleNameRes(style: VisualStyle): Int = when (style) {
 private const val MOOD_ASPECT_RATIO = 4f / 5f
 private const val MOOD_UNITS = 100f
 private val MOOD_CORNER = 6.dp
-private const val BACKDROP_SCALE = 0.45f
 private const val NOTE_SIZE = 40f
 private const val NOTE_TOP = 0.07f
 private const val STRIP_WIDTH = 0.8f
 private const val STRIP_HEIGHT = 0.16f
 private const val STRIP_MIDDLE = 0.575f
 private const val STRIP_ALPHA = 0.9f
-private const val STRING_SIZE = 22f
 private const val STRING_TEXT = 10f
 private const val STRING_GAP = 5f
+private const val KEY_GAP = 2f
 private const val STRINGS_BOTTOM = 0.08f

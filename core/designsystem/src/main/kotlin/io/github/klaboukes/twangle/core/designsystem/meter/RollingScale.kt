@@ -239,7 +239,7 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
                 val length = (if (major) 9f else 5f) * u
                 val width = (if (major) 1.5f else 1f) * u * (0.6f + 0.4f * squash)
                 drawLine(
-                    ink.copy(alpha = (if (major) 1f else 0.45f) * fade),
+                    ink.copy(alpha = (if (major) 1f else MINOR_TICK_INK) * fade),
                     Offset(x, drum.top + 5f * u), Offset(x, drum.top + 5f * u + length), width, StrokeCap.Round,
                 )
                 drawLine(
@@ -251,7 +251,7 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
                     scale(squash, 1f, Offset(x, numberY)) {
                         drawText(
                             text,
-                            color = ink.copy(alpha = 0.62f * fade),
+                            color = ink.copy(alpha = SCALE_NUMBER_INK * fade),
                             topLeft = Offset(x - text.size.width / 2f, numberY - text.size.height / 2f),
                         )
                     }

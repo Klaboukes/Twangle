@@ -32,7 +32,7 @@ fun ThemeMode.useDarkTheme(systemDark: Boolean): Boolean = when (this) {
 }
 
 /**
- * What the current style adds to Material 3: which style it is, the "in tune" pair and the dial.
+ * What the current style adds to Material 3: which style it is and the "in tune" pair.
  * [scheme] is the style's colour scheme as it ends up, not faded, for drawings that cross-fade
  * as a whole (the background).
  */
@@ -42,7 +42,6 @@ data class StyleTokens(
     val dark: Boolean,
     val inTune: Color,
     val onInTune: Color,
-    val dial: DialColors,
     val scheme: ColorScheme,
 )
 
@@ -55,7 +54,7 @@ val MaterialTheme.styleTokens: StyleTokens
 
 fun tokensFor(style: VisualStyle, dark: Boolean): StyleTokens {
     val palette = paletteFor(style, dark)
-    return StyleTokens(style, dark, palette.inTune, palette.onInTune, palette.dial, palette.toColorScheme(dark))
+    return StyleTokens(style, dark, palette.inTune, palette.onInTune, palette.toColorScheme(dark))
 }
 
 /**
@@ -79,11 +78,7 @@ fun TwangleTheme(
         if (useDynamic) {
             val scheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             val palette = paletteFor(style, darkTheme)
-            StyleTokens(
-                style, darkTheme, palette.inTune, palette.onInTune,
-                contemporaryDial(scheme.outlineVariant, scheme.onSurfaceVariant, scheme.onSurface, scheme.primary, palette.inTune),
-                scheme,
-            )
+            StyleTokens(style, darkTheme, palette.inTune, palette.onInTune, scheme)
         } else {
             tokensFor(style, darkTheme)
         }
@@ -162,44 +157,49 @@ internal fun lerp(a: ColorScheme, b: ColorScheme, t: Float): ColorScheme = a.cop
 )
 
 /**
- * Corner shapes per style: soft pebbles for Ancient, fine corners for Classic, fat 70s curves,
- * chiselled cuts for the HUD and 60s capsules.
+ * Corner shapes per style, from the approved mock-up: `small` is the cents pill, `medium` the look
+ * cards and tips. Ancient's are uneven like pebbles, Classic's fine and square, Retro's fat and soft,
+ * Contemporary's round, Futuristic's cut on every corner like a HUD panel, Space Age's capsules.
+ * The string buttons have their own shapes ([stringChipShape]).
  */
 internal fun shapesFor(style: VisualStyle): Shapes = when (style) {
     VisualStyle.ANCIENT -> Shapes(
         extraSmall = RoundedCornerShape(6.dp),
-        small = RoundedCornerShape(10.dp),
-        medium = RoundedCornerShape(topStart = 18.dp, topEnd = 12.dp, bottomEnd = 20.dp, bottomStart = 10.dp),
+        small = RoundedCornerShape(topStart = 18.dp, topEnd = 14.dp, bottomEnd = 20.dp, bottomStart = 12.dp),
+        medium = RoundedCornerShape(topStart = 16.dp, topEnd = 12.dp, bottomEnd = 18.dp, bottomStart = 10.dp),
         large = RoundedCornerShape(topStart = 26.dp, topEnd = 16.dp, bottomEnd = 28.dp, bottomStart = 14.dp),
         extraLarge = RoundedCornerShape(32.dp),
     )
     VisualStyle.CLASSIC -> Shapes(
         extraSmall = RoundedCornerShape(2.dp),
-        small = RoundedCornerShape(3.dp),
+        small = RoundedCornerShape(4.dp),
         medium = RoundedCornerShape(4.dp),
         large = RoundedCornerShape(6.dp),
         extraLarge = RoundedCornerShape(8.dp),
     )
     VisualStyle.RETRO -> Shapes(
         extraSmall = RoundedCornerShape(8.dp),
-        small = RoundedCornerShape(14.dp),
-        medium = RoundedCornerShape(20.dp),
+        small = RoundedCornerShape(22.dp),
+        medium = RoundedCornerShape(18.dp),
         large = RoundedCornerShape(28.dp),
         extraLarge = RoundedCornerShape(36.dp),
     )
-    VisualStyle.CONTEMPORARY -> Shapes()
+    VisualStyle.CONTEMPORARY -> Shapes(
+        small = RoundedCornerShape(18.dp),
+        medium = RoundedCornerShape(12.dp),
+    )
     VisualStyle.FUTURISTIC -> Shapes(
         extraSmall = CutCornerShape(2.dp),
-        small = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
-        medium = CutCornerShape(topStart = 12.dp, bottomEnd = 12.dp),
-        large = CutCornerShape(topStart = 16.dp, bottomEnd = 16.dp),
-        extraLarge = CutCornerShape(topStart = 24.dp, bottomEnd = 24.dp),
+        small = CutCornerShape(10.dp),
+        medium = CutCornerShape(8.dp),
+        large = CutCornerShape(12.dp),
+        extraLarge = CutCornerShape(16.dp),
     )
     VisualStyle.SPACE_AGE -> Shapes(
         extraSmall = RoundedCornerShape(50),
         small = RoundedCornerShape(50),
-        medium = RoundedCornerShape(24.dp),
-        large = RoundedCornerShape(32.dp),
+        medium = RoundedCornerShape(20.dp),
+        large = RoundedCornerShape(28.dp),
         extraLarge = RoundedCornerShape(40.dp),
     )
 }

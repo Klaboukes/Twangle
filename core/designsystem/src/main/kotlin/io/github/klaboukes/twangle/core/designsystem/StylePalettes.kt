@@ -7,58 +7,41 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import kotlin.math.max
+import kotlin.math.min
 
 /**
- * Colours of the tuning dial for one style. The dial is drawn by hand ([io.github.klaboukes.twangle.core.designsystem.dial]),
- * so it brings its own roles: some styles draw on a [face] of their own (a backlit meter, an ivory
- * clock face) whose colours differ from the screen around it.
- */
-@Immutable
-data class DialColors(
-    /** Fill behind the scale; [Color.Transparent] when the dial sits straight on the background. */
-    val face: Color,
-    /** Bezel, frame or hub around the scale. */
-    val rim: Color,
-    /** The scale's arc. */
-    val track: Color,
-    /** Tick marks. */
-    val tick: Color,
-    /** The needle while out of tune. */
-    val needle: Color,
-    /** The needle while in tune; readable on [face] (or the background). */
-    val needleInTune: Color,
-    /** The centre mark while out of tune. */
-    val centre: Color,
-    /** The centre mark while in tune. */
-    val centreInTune: Color,
-    /** Decoration: gold leaf, red-zone paint, starbursts. */
-    val accent: Color,
-)
-
-/**
- * Every colour of one style in one brightness. [toColorScheme] turns it into a Material 3 scheme,
- * [inTune] and [onInTune] are the tuner's own "in tune" pair (Material 3 has no success role).
+ * Every colour of one style in one brightness, as roles (the approved mock-up's,
+ * docs/design/theme-styles-preview.html): the stage ([background]) and [surface], [ink] and [muted]
+ * text, the scale's [track], the style's own [accent] hue with [onAccent] text, the "in tune" pair
+ * ([inTune], [onInTune]; Material 3 has no success role) and two colours for the background art only
+ * ([second], [third]), which never carry text. [toColorScheme] turns it into a Material 3 scheme.
+ *
+ * Readable by rule (checked in StylePaletteTest): ink, muted, accent and inTune at least 4.5:1 on the
+ * background, the surface and the surface container; onAccent and onInTune 4.5:1 on their fills; ink
+ * 4.5:1 on the selected container.
  */
 @Immutable
 data class Palette(
     val background: Color,
     val surface: Color,
-    val surfaceContainer: Color,
-    val onSurface: Color,
-    val onSurfaceVariant: Color,
-    val primary: Color,
-    val onPrimary: Color,
-    val secondary: Color,
-    val onSecondary: Color,
-    val tertiary: Color,
-    val onTertiary: Color,
-    val outline: Color,
-    val outlineVariant: Color,
+    val ink: Color,
+    val muted: Color,
+    val track: Color,
+    val accent: Color,
+    val onAccent: Color,
     val inTune: Color,
     val onInTune: Color,
-    val dial: DialColors,
-)
+    val second: Color,
+    val third: Color,
+) {
+    /** The tint under lists, menus and unselected chips: ink at 6 % over the surface. */
+    val surfaceContainer: Color get() = ink.copy(alpha = SURFACE_CONTAINER_INK).compositeOver(surface)
+}
+
+private const val SURFACE_CONTAINER_INK = 0.06f
 
 /** The palette of [style], light or [dark]. */
 fun paletteFor(style: VisualStyle, dark: Boolean): Palette = when (style) {
@@ -70,39 +53,45 @@ fun paletteFor(style: VisualStyle, dark: Boolean): Palette = when (style) {
     VisualStyle.SPACE_AGE -> if (dark) SpaceAgeDark else SpaceAgeLight
 }
 
+/** A selected container: the surface mixed with [color], 22 % in light and 32 % in dark (the mock-up's). */
+internal fun Palette.container(color: Color, dark: Boolean): Color = lerp(surface, color, if (dark) 0.32f else 0.22f)
+
 /**
- * The Material 3 scheme for this palette. Containers are tinted mixes of their colour and the
- * surface, so selected segments, chips and menus stay in the style's family.
+ * The Material 3 scheme for this palette. Primary is the accent; selected segments, chips and the
+ * slider's track use the accent container, as in the mock-up. Secondary and tertiary are the
+ * background-only [Palette.second] and [Palette.third] (the background art reads them from here, so
+ * Contemporary's wallpaper colours reach it too); their "on" colours are whichever of ink, surface,
+ * black or white reads best, in case a component ever writes on them.
  */
 fun Palette.toColorScheme(dark: Boolean): ColorScheme {
     val base = if (dark) darkColorScheme() else lightColorScheme()
-    fun container(c: Color) = lerp(surface, c, if (dark) 0.32f else 0.22f)
-    fun surfaceStep(amount: Float) = onSurface.copy(alpha = amount).compositeOver(surface)
+    fun surfaceStep(amount: Float) = ink.copy(alpha = amount).compositeOver(surface)
+    val accentContainer = container(accent, dark)
     return base.copy(
-        primary = primary,
-        onPrimary = onPrimary,
-        primaryContainer = container(primary),
-        onPrimaryContainer = onSurface,
-        inversePrimary = lerp(primary, if (dark) Color.Black else Color.White, 0.4f),
-        secondary = secondary,
-        onSecondary = onSecondary,
-        secondaryContainer = container(secondary),
-        onSecondaryContainer = onSurface,
-        tertiary = tertiary,
-        onTertiary = onTertiary,
-        tertiaryContainer = container(tertiary),
-        onTertiaryContainer = onSurface,
+        primary = accent,
+        onPrimary = onAccent,
+        primaryContainer = accentContainer,
+        onPrimaryContainer = ink,
+        inversePrimary = lerp(accent, if (dark) Color.Black else Color.White, 0.4f),
+        secondary = second,
+        onSecondary = readableOn(second),
+        secondaryContainer = accentContainer,
+        onSecondaryContainer = ink,
+        tertiary = third,
+        onTertiary = readableOn(third),
+        tertiaryContainer = container(third, dark),
+        onTertiaryContainer = ink,
         background = background,
-        onBackground = onSurface,
+        onBackground = ink,
         surface = surface,
-        onSurface = onSurface,
+        onSurface = ink,
         surfaceVariant = surfaceContainer,
-        onSurfaceVariant = onSurfaceVariant,
-        surfaceTint = primary,
-        inverseSurface = onSurface,
+        onSurfaceVariant = muted,
+        surfaceTint = accent,
+        inverseSurface = ink,
         inverseOnSurface = surface,
-        outline = outline,
-        outlineVariant = outlineVariant,
+        outline = muted,
+        outlineVariant = track,
         surfaceBright = surfaceStep(if (dark) 0.10f else 0.0f),
         surfaceDim = surfaceStep(if (dark) 0.0f else 0.08f),
         surfaceContainerLowest = surfaceStep(0.0f),
@@ -113,363 +102,193 @@ fun Palette.toColorScheme(dark: Boolean): ColorScheme {
     )
 }
 
-// Ancient: firelight on a cave wall. Charcoal, bone, ochre and red ochre; lichen green for "in tune".
-// (The old Prehistoric palette, until Ancient gets its own terracotta-on-stone palette.)
+/** Of the palette's ink and surface, the one that reads best on [fill]; black or white if neither reaches 4.5:1. */
+internal fun Palette.readableOn(fill: Color): Color {
+    val own = listOf(ink, surface).maxBy { contrast(it, fill) }
+    if (contrast(own, fill) >= AA_TEXT) return own
+    return listOf(Color.Black, Color.White).maxBy { contrast(it, fill) }
+}
+
+/** WCAG 2.2's contrast ratio of two opaque colours. */
+internal fun contrast(a: Color, b: Color): Float {
+    val la = a.luminance()
+    val lb = b.luminance()
+    return (max(la, lb) + 0.05f) / (min(la, lb) + 0.05f)
+}
+
+/** WCAG AA for body text. */
+internal const val AA_TEXT = 4.5f
+
+// Ancient: Terracotta and charcoal on stone: the first marks people made.
 private val AncientLight = Palette(
-    background = Color(0xFFE6D3B3),
-    surface = Color(0xFFEEDFC4),
-    surfaceContainer = Color(0xFFDEC7A2),
-    onSurface = Color(0xFF2B1D12),
-    onSurfaceVariant = Color(0xFF5A4330),
-    primary = Color(0xFF8E4310),
-    onPrimary = Color(0xFFFFF3E2),
-    secondary = Color(0xFF8A2E19),
-    onSecondary = Color(0xFFFFF3E2),
-    tertiary = Color(0xFF5F4B1C),
-    onTertiary = Color(0xFFFFF3E2),
-    outline = Color(0xFF85705A),
-    outlineVariant = Color(0xFFC2A983),
-    inTune = Color(0xFF365F17),
-    onInTune = Color(0xFFF4FBEA),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF5A4330),
-        track = Color(0xFF9A4A12),
-        tick = Color(0xFF3A2716),
-        needle = Color(0xFF2B1D12),
-        needleInTune = Color(0xFF365F17),
-        centre = Color(0xFF8A2E19),
-        centreInTune = Color(0xFF365F17),
-        accent = Color(0xFF8A2E19),
-    ),
+    background = Color(0xFFECE4DC),
+    surface = Color(0xFFF5EFE9),
+    ink = Color(0xFF2A1E1A),
+    muted = Color(0xFF5E4A42),
+    track = Color(0xFFCFC1B6),
+    accent = Color(0xFFA8431F),
+    onAccent = Color(0xFFFFF4EE),
+    inTune = Color(0xFF2F6A2A),
+    onInTune = Color(0xFFF3FAEF),
+    second = Color(0xFF3A2E2A),
+    third = Color(0xFF9A6A3A),
 )
 
 private val AncientDark = Palette(
-    background = Color(0xFF1C1510),
-    surface = Color(0xFF261C15),
-    surfaceContainer = Color(0xFF33261C),
-    onSurface = Color(0xFFEEDFC8),
-    onSurfaceVariant = Color(0xFFC2AB8C),
-    primary = Color(0xFFE59149),
-    onPrimary = Color(0xFF2A1406),
-    secondary = Color(0xFFD9694A),
-    onSecondary = Color(0xFF2A0D04),
-    tertiary = Color(0xFFD9B26F),
-    onTertiary = Color(0xFF2A1E05),
-    outline = Color(0xFF8A735C),
-    outlineVariant = Color(0xFF4A3A2C),
-    inTune = Color(0xFFA6D374),
-    onInTune = Color(0xFF16260A),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF6B5541),
-        track = Color(0xFFCF7F3A),
-        tick = Color(0xFFE6D3B3),
-        needle = Color(0xFFEEDFC8),
-        needleInTune = Color(0xFFA6D374),
-        centre = Color(0xFFD9694A),
-        centreInTune = Color(0xFFA6D374),
-        accent = Color(0xFFC2502E),
-    ),
+    background = Color(0xFF1B1715),
+    surface = Color(0xFF25201D),
+    ink = Color(0xFFEFE4DD),
+    muted = Color(0xFFC2ADA3),
+    track = Color(0xFF4A3D37),
+    accent = Color(0xFFF0957A),
+    onAccent = Color(0xFF3A1206),
+    inTune = Color(0xFF9DD47F),
+    onInTune = Color(0xFF13260A),
+    second = Color(0xFF8C7A72),
+    third = Color(0xFFD19A6A),
 )
 
-// Classic: a concert hall. Ivory, ebony, brass and burgundy velvet.
+// Classic: Burgundy velvet, ivory and gold in a concert hall.
 private val ClassicLight = Palette(
-    background = Color(0xFFF6F1E6),
-    surface = Color(0xFFFBF8F1),
-    surfaceContainer = Color(0xFFEBE3D2),
-    onSurface = Color(0xFF1A1714),
-    onSurfaceVariant = Color(0xFF574E45),
-    primary = Color(0xFF6E1F2E),
-    onPrimary = Color(0xFFFFFFFF),
-    secondary = Color(0xFF7A5C22),
-    onSecondary = Color(0xFFFFFFFF),
-    tertiary = Color(0xFF2F4A3A),
-    onTertiary = Color(0xFFFFFFFF),
-    outline = Color(0xFF8C8273),
-    outlineVariant = Color(0xFFD5CCBB),
-    inTune = Color(0xFF256B38),
-    onInTune = Color(0xFFFFFFFF),
-    dial = DialColors(
-        face = Color(0xFFFFFCF4),
-        rim = Color(0xFFB08D45),
-        track = Color(0xFF1A1714),
-        tick = Color(0xFF1A1714),
-        needle = Color(0xFF1A1714),
-        needleInTune = Color(0xFF256B38),
-        centre = Color(0xFF6E1F2E),
-        centreInTune = Color(0xFF256B38),
-        accent = Color(0xFFB08D45),
-    ),
+    background = Color(0xFFF7F2E8),
+    surface = Color(0xFFFCF9F2),
+    ink = Color(0xFF1C1518),
+    muted = Color(0xFF5A4A50),
+    track = Color(0xFFDCCFC4),
+    accent = Color(0xFF7A1F45),
+    onAccent = Color(0xFFFFF6F9),
+    inTune = Color(0xFF22663A),
+    onInTune = Color(0xFFF2FAF4),
+    second = Color(0xFF7A1F45),
+    third = Color(0xFFA8863C),
 )
 
 private val ClassicDark = Palette(
-    background = Color(0xFF110F0E),
-    surface = Color(0xFF1B1817),
-    surfaceContainer = Color(0xFF26221F),
-    onSurface = Color(0xFFEFE8DA),
-    onSurfaceVariant = Color(0xFFB9AE9C),
-    primary = Color(0xFFDDBA70),
-    onPrimary = Color(0xFF2A1F05),
-    secondary = Color(0xFFD3949E),
-    onSecondary = Color(0xFF3A0D16),
-    tertiary = Color(0xFF9FC3AA),
-    onTertiary = Color(0xFF0D2416),
-    outline = Color(0xFF7A7064),
-    outlineVariant = Color(0xFF3A3430),
-    inTune = Color(0xFF8AD4A0),
+    background = Color(0xFF170C11),
+    surface = Color(0xFF22131A),
+    ink = Color(0xFFF2E6EA),
+    muted = Color(0xFFC4AAB5),
+    track = Color(0xFF45303A),
+    accent = Color(0xFFEBA3C0),
+    onAccent = Color(0xFF3A0B1F),
+    inTune = Color(0xFF86D3A0),
     onInTune = Color(0xFF062A12),
-    dial = DialColors(
-        face = Color(0xFF1E1A18),
-        rim = Color(0xFFC9A55C),
-        track = Color(0xFFDDBA70),
-        tick = Color(0xFFEFE8DA),
-        needle = Color(0xFFEFE8DA),
-        needleInTune = Color(0xFF8AD4A0),
-        centre = Color(0xFFD3949E),
-        centreInTune = Color(0xFF8AD4A0),
-        accent = Color(0xFFC9A55C),
-    ),
+    second = Color(0xFF8C2A52),
+    third = Color(0xFFD4AF5C),
 )
 
-// Retro: a 1970s hi-fi. Cream and walnut, a backlit meter, mustard, orange and rust stripes.
-// The meter face is lit in both brightnesses, so the needle stays dark on it.
+// Retro: Avocado, mustard and orange: a 70s living room.
 private val RetroLight = Palette(
-    background = Color(0xFFF2E4C8),
-    surface = Color(0xFFF8EDD6),
-    surfaceContainer = Color(0xFFE9D4AA),
-    onSurface = Color(0xFF3A2214),
-    onSurfaceVariant = Color(0xFF654630),
-    primary = Color(0xFFA3400B),
-    onPrimary = Color(0xFFFFF6EC),
-    secondary = Color(0xFF7E5A06),
-    onSecondary = Color(0xFFFFF6EC),
-    tertiary = Color(0xFF22605C),
-    onTertiary = Color(0xFFF0FFFD),
-    outline = Color(0xFF977656),
-    outlineVariant = Color(0xFFD8BC8F),
-    inTune = Color(0xFF3A7027),
-    onInTune = Color(0xFFF4FBEA),
-    dial = DialColors(
-        face = Color(0xFFFFF0CC),
-        rim = Color(0xFF5A3A22),
-        track = Color(0xFF2B1A0E),
-        tick = Color(0xFF2B1A0E),
-        needle = Color(0xFF1E140C),
-        needleInTune = Color(0xFF1F5A1A),
-        centre = Color(0xFF2B1A0E),
-        centreInTune = Color(0xFF2E8A22),
-        accent = Color(0xFFC8361E),
-    ),
+    background = Color(0xFFF1EDD8),
+    surface = Color(0xFFF8F5E6),
+    ink = Color(0xFF24260F),
+    muted = Color(0xFF55573A),
+    track = Color(0xFFD5D2AE),
+    accent = Color(0xFF5F6E0E),
+    onAccent = Color(0xFFFBFDEB),
+    inTune = Color(0xFF1C6E4A),
+    onInTune = Color(0xFFF0FAF4),
+    second = Color(0xFFC9961A),
+    third = Color(0xFFC8561A),
 )
 
 private val RetroDark = Palette(
-    background = Color(0xFF1A110B),
-    surface = Color(0xFF251912),
-    surfaceContainer = Color(0xFF33231A),
-    onSurface = Color(0xFFF6E3C0),
-    onSurfaceVariant = Color(0xFFCCAC82),
-    primary = Color(0xFFFF9D3C),
-    onPrimary = Color(0xFF3A1800),
-    secondary = Color(0xFFF2C14E),
-    onSecondary = Color(0xFF2E2000),
-    tertiary = Color(0xFF6CC3BB),
-    onTertiary = Color(0xFF00201D),
-    outline = Color(0xFF8E6E50),
-    outlineVariant = Color(0xFF4A3424),
-    inTune = Color(0xFFA9DA6E),
-    onInTune = Color(0xFF1B2A05),
-    dial = DialColors(
-        face = Color(0xFFF6CB7E),
-        rim = Color(0xFF3A2416),
-        track = Color(0xFF2B1A0E),
-        tick = Color(0xFF2B1A0E),
-        needle = Color(0xFF1E140C),
-        needleInTune = Color(0xFF1F5A1A),
-        centre = Color(0xFF2B1A0E),
-        centreInTune = Color(0xFF2E8A22),
-        accent = Color(0xFFC8361E),
-    ),
+    background = Color(0xFF15160B),
+    surface = Color(0xFF1F2113),
+    ink = Color(0xFFEEF0D2),
+    muted = Color(0xFFB9BC92),
+    track = Color(0xFF3E412A),
+    accent = Color(0xFFC5D45A),
+    onAccent = Color(0xFF252B00),
+    inTune = Color(0xFF6FD6A4),
+    onInTune = Color(0xFF002A16),
+    second = Color(0xFFE3B23C),
+    third = Color(0xFFE8783A),
 )
 
-// Contemporary: calm and clean, the app's original teal. With "wallpaper colours" it follows the phone.
+// Contemporary: Calm and clean, like the phone itself.
 private val ContemporaryLight = Palette(
-    background = Color(0xFFF6F9F9),
+    background = Color(0xFFF5F7FC),
     surface = Color(0xFFFFFFFF),
-    surfaceContainer = Color(0xFFEBF1F1),
-    onSurface = Color(0xFF111616),
-    onSurfaceVariant = Color(0xFF4A5757),
-    primary = Color(0xFF00696B),
-    onPrimary = Color(0xFFFFFFFF),
-    secondary = Color(0xFF4A6364),
-    onSecondary = Color(0xFFFFFFFF),
-    tertiary = Color(0xFF7A5900),
-    onTertiary = Color(0xFFFFFFFF),
-    outline = Color(0xFF768383),
-    outlineVariant = Color(0xFFC9D3D3),
-    inTune = Color(0xFF1B7F3B),
+    ink = Color(0xFF10141F),
+    muted = Color(0xFF4A5268),
+    track = Color(0xFFCDD3E3),
+    accent = Color(0xFF3A4FD6),
+    onAccent = Color(0xFFFFFFFF),
+    inTune = Color(0xFF1B7A3E),
     onInTune = Color(0xFFFFFFFF),
-    dial = contemporaryDial(
-        track = Color(0xFFC9D3D3),
-        tick = Color(0xFF4A5757),
-        needle = Color(0xFF111616),
-        primary = Color(0xFF00696B),
-        inTune = Color(0xFF1B7F3B),
-    ),
+    second = Color(0xFF8FA0F0),
+    third = Color(0xFFB9C4EA),
 )
 
 private val ContemporaryDark = Palette(
-    background = Color(0xFF0D1112),
-    surface = Color(0xFF141A1B),
-    surfaceContainer = Color(0xFF1C2425),
-    onSurface = Color(0xFFE4EBEB),
-    onSurfaceVariant = Color(0xFFA6B4B4),
-    primary = Color(0xFF4CDADC),
-    onPrimary = Color(0xFF003738),
-    secondary = Color(0xFFB0CCCC),
-    onSecondary = Color(0xFF1B3435),
-    tertiary = Color(0xFFF8BD2A),
-    onTertiary = Color(0xFF402D00),
-    outline = Color(0xFF6F7C7C),
-    outlineVariant = Color(0xFF2E393A),
+    background = Color(0xFF0E1220),
+    surface = Color(0xFF151A2B),
+    ink = Color(0xFFE6E9F4),
+    muted = Color(0xFFA6AECB),
+    track = Color(0xFF2B3350),
+    accent = Color(0xFFA6ADFF),
+    onAccent = Color(0xFF121A5A),
     inTune = Color(0xFF6DD58C),
     onInTune = Color(0xFF00391A),
-    dial = contemporaryDial(
-        track = Color(0xFF2E393A),
-        tick = Color(0xFFA6B4B4),
-        needle = Color(0xFFE4EBEB),
-        primary = Color(0xFF4CDADC),
-        inTune = Color(0xFF6DD58C),
-    ),
+    second = Color(0xFF3C4FB8),
+    third = Color(0xFF2A3160),
 )
 
-/** The contemporary dial, also built from the wallpaper scheme when dynamic colour is on. */
-internal fun contemporaryDial(track: Color, tick: Color, needle: Color, primary: Color, inTune: Color) = DialColors(
-    face = Color.Transparent,
-    rim = tick,
-    track = track,
-    tick = tick,
-    needle = needle,
-    needleInTune = inTune,
-    centre = primary,
-    centreInTune = inTune,
-    accent = primary,
-)
-
-// Futuristic: a heads-up display. Neon cyan and magenta on deep navy; a clean lab white by day.
+// Futuristic: Neon cyan and magenta on a heads-up display.
 private val FuturisticLight = Palette(
-    background = Color(0xFFEDF2F7),
-    surface = Color(0xFFF8FBFE),
-    surfaceContainer = Color(0xFFDFE8F1),
-    onSurface = Color(0xFF0A1626),
-    onSurfaceVariant = Color(0xFF3D526D),
-    primary = Color(0xFF00719F),
-    onPrimary = Color(0xFFFFFFFF),
-    secondary = Color(0xFFA8127A),
-    onSecondary = Color(0xFFFFFFFF),
-    tertiary = Color(0xFF5543CC),
-    onTertiary = Color(0xFFFFFFFF),
-    outline = Color(0xFF6F84A0),
-    outlineVariant = Color(0xFFC0CEDD),
+    background = Color(0xFFEDF3F6),
+    surface = Color(0xFFF8FCFE),
+    ink = Color(0xFF061822),
+    muted = Color(0xFF3A5463),
+    track = Color(0xFFBFD2DC),
+    accent = Color(0xFF007482),
+    onAccent = Color(0xFFFFFFFF),
     inTune = Color(0xFF007A46),
     onInTune = Color(0xFFFFFFFF),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF7A8FA9),
-        track = Color(0xFFC0CEDD),
-        tick = Color(0xFF00719F),
-        needle = Color(0xFF00719F),
-        needleInTune = Color(0xFF007A46),
-        centre = Color(0xFFA8127A),
-        centreInTune = Color(0xFF00A35E),
-        accent = Color(0xFFA8127A),
-    ),
+    second = Color(0xFFC2187F),
+    third = Color(0xFF4FD2EA),
 )
 
 private val FuturisticDark = Palette(
-    background = Color(0xFF04060C),
-    surface = Color(0xFF0A0F1E),
-    surfaceContainer = Color(0xFF111833),
-    onSurface = Color(0xFFDDF6FF),
-    onSurfaceVariant = Color(0xFF86AFC6),
-    primary = Color(0xFF22E5FF),
-    onPrimary = Color(0xFF00252B),
-    secondary = Color(0xFFFF4FD0),
-    onSecondary = Color(0xFF3A0030),
-    tertiary = Color(0xFF9A8CFF),
-    onTertiary = Color(0xFF14005A),
-    outline = Color(0xFF34658A),
-    outlineVariant = Color(0xFF18304A),
+    background = Color(0xFF03070A),
+    surface = Color(0xFF08121A),
+    ink = Color(0xFFDDF8FF),
+    muted = Color(0xFF84B3C4),
+    track = Color(0xFF143040),
+    accent = Color(0xFF22E5FF),
+    onAccent = Color(0xFF00252B),
     inTune = Color(0xFF39FF9A),
     onInTune = Color(0xFF00261A),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF34658A),
-        track = Color(0xFF18304A),
-        tick = Color(0xFF22E5FF),
-        needle = Color(0xFF22E5FF),
-        needleInTune = Color(0xFF39FF9A),
-        centre = Color(0xFFFF4FD0),
-        centreInTune = Color(0xFF39FF9A),
-        accent = Color(0xFFFF4FD0),
-    ),
+    second = Color(0xFFFF4FD0),
+    third = Color(0xFF22E5FF),
 )
 
-// Space Age: the 1960s jet age. Moon white, rocket orange, atomic teal and gold; deep space at night.
+// Space Age: Violet night, rocket orange and silver: the future as the 60s saw it.
 private val SpaceAgeLight = Palette(
-    background = Color(0xFFF4F0E6),
-    surface = Color(0xFFFBF8F2),
-    surfaceContainer = Color(0xFFE9E2D3),
-    onSurface = Color(0xFF1D2230),
-    onSurfaceVariant = Color(0xFF4A5266),
-    primary = Color(0xFFB8400C),
-    onPrimary = Color(0xFFFFFFFF),
-    secondary = Color(0xFF1A6C72),
-    onSecondary = Color(0xFFFFFFFF),
-    tertiary = Color(0xFF7D5F00),
-    onTertiary = Color(0xFFFFFFFF),
-    outline = Color(0xFF7D8191),
-    outlineVariant = Color(0xFFD3CEC2),
-    inTune = Color(0xFF28733A),
+    background = Color(0xFFF3F0F8),
+    surface = Color(0xFFFBF9FE),
+    ink = Color(0xFF1A1530),
+    muted = Color(0xFF4E4766),
+    track = Color(0xFFD6D0E4),
+    accent = Color(0xFF8A35B8),
+    onAccent = Color(0xFFFFFFFF),
+    inTune = Color(0xFF26703A),
     onInTune = Color(0xFFFFFFFF),
-    dial = DialColors(
-        face = Color(0xFFE0D8C6),
-        rim = Color(0xFF1A6C72),
-        track = Color(0xFF1A6C72),
-        tick = Color(0xFF1D2230),
-        needle = Color(0xFFB8400C),
-        needleInTune = Color(0xFF28733A),
-        centre = Color(0xFFB8400C),
-        centreInTune = Color(0xFF28733A),
-        accent = Color(0xFFD6A419),
-    ),
+    second = Color(0xFFD9561E),
+    third = Color(0xFF8E94AC),
 )
 
 private val SpaceAgeDark = Palette(
-    background = Color(0xFF0A0D1E),
-    surface = Color(0xFF12162B),
-    surfaceContainer = Color(0xFF1A1F3A),
-    onSurface = Color(0xFFF1EDE3),
-    onSurfaceVariant = Color(0xFFABB0CC),
-    primary = Color(0xFFFF7A3D),
-    onPrimary = Color(0xFF3A0F00),
-    secondary = Color(0xFF5FD3D9),
-    onSecondary = Color(0xFF00282B),
-    tertiary = Color(0xFFFFD25A),
-    onTertiary = Color(0xFF2E2200),
-    outline = Color(0xFF5A6188),
-    outlineVariant = Color(0xFF262C4D),
+    background = Color(0xFF120C26),
+    surface = Color(0xFF1C1536),
+    ink = Color(0xFFF1EDFA),
+    muted = Color(0xFFB3A9D2),
+    track = Color(0xFF352C5A),
+    accent = Color(0xFFD9A0FF),
+    onAccent = Color(0xFF2E0B4A),
     inTune = Color(0xFF7EE08A),
     onInTune = Color(0xFF05290B),
-    dial = DialColors(
-        face = Color(0xFF2A3160),
-        rim = Color(0xFF5FD3D9),
-        track = Color(0xFF5FD3D9),
-        tick = Color(0xFFF1EDE3),
-        needle = Color(0xFFFF7A3D),
-        needleInTune = Color(0xFF7EE08A),
-        centre = Color(0xFFFFD25A),
-        centreInTune = Color(0xFF7EE08A),
-        accent = Color(0xFFFFD25A),
-    ),
+    second = Color(0xFFFF8A4C),
+    third = Color(0xFFC9CEDF),
 )

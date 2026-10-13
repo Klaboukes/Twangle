@@ -3,58 +3,67 @@ package io.github.klaboukes.twangle.core.designsystem
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
+import io.github.klaboukes.twangle.core.designsystem.meter.MINOR_TICK_INK
+import io.github.klaboukes.twangle.core.designsystem.meter.SCALE_NUMBER_INK
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
- * Every style must stay readable in both brightnesses. The limits are WCAG 2.2's: 4.5:1 for body
- * text, 3:1 for large text (the note, the cents) and for controls and graphics (needle, ticks).
+ * Every style, light and dark, must stay readable: WCAG 2.2 AA, 4.5:1 for any text against what it
+ * sits on, 3:1 for marks (ticks, needle, outlines of controls). The rules are the approved mock-up's
+ * (docs/design/theme-styles-preview.html, "Roles").
  */
 class StylePaletteTest {
 
     private val all = VisualStyle.entries.flatMap { style -> listOf(false, true).map { dark -> Triple(style, dark, paletteFor(style, dark)) } }
 
     @Test
-    fun `text is readable on the background and surfaces`() = forEach { name, p ->
-        for ((what, bg) in listOf("background" to p.background, "surface" to p.surface, "container" to p.surfaceContainer)) {
-            assertContrast("$name onSurface on $what", p.onSurface, bg, 7.0)
-            assertContrast("$name onSurfaceVariant on $what", p.onSurfaceVariant, bg, 4.5)
+    fun `text is readable on the background, the surface and its container`() = forEach { name, p, _ ->
+        for ((what, under) in listOf("background" to p.background, "surface" to p.surface, "container" to p.surfaceContainer)) {
+            for ((role, text) in listOf("ink" to p.ink, "muted" to p.muted, "accent" to p.accent, "inTune" to p.inTune)) {
+                assertContrast("$name $role on $what", text, under, AA_TEXT)
+            }
         }
     }
 
     @Test
-    fun `accent colours work as text and controls`() = forEach { name, p ->
-        assertContrast("$name primary on background", p.primary, p.background, 4.5)
-        assertContrast("$name onPrimary on primary", p.onPrimary, p.primary, 4.5)
-        assertContrast("$name onSecondary on secondary", p.onSecondary, p.secondary, 4.5)
-        assertContrast("$name onTertiary on tertiary", p.onTertiary, p.tertiary, 4.5)
-        assertContrast("$name outline on background", p.outline, p.background, 3.0)
+    fun `text on filled buttons and selected containers is readable`() = forEach { name, p, dark ->
+        val scheme = p.toColorScheme(dark)
+        assertContrast("$name onAccent on accent", p.onAccent, p.accent, AA_TEXT)
+        assertContrast("$name onInTune on inTune", p.onInTune, p.inTune, AA_TEXT)
+        assertContrast("$name onPrimaryContainer", scheme.onPrimaryContainer, scheme.primaryContainer, AA_TEXT)
+        assertContrast("$name onSecondaryContainer", scheme.onSecondaryContainer, scheme.secondaryContainer, AA_TEXT)
+        assertContrast("$name onTertiaryContainer", scheme.onTertiaryContainer, scheme.tertiaryContainer, AA_TEXT)
+        assertContrast("$name onSecondary", scheme.onSecondary, scheme.secondary, AA_TEXT)
+        assertContrast("$name onTertiary", scheme.onTertiary, scheme.tertiary, AA_TEXT)
+        assertContrast("$name inverse", scheme.inverseOnSurface, scheme.inverseSurface, AA_TEXT)
     }
 
     @Test
-    fun `the in-tune colour is readable as large text and holds its own text`() = forEach { name, p ->
-        assertContrast("$name inTune on background", p.inTune, p.background, 3.0)
-        assertContrast("$name onInTune on inTune", p.onInTune, p.inTune, 4.5)
+    fun `the meter's numbers and marks stand out from the background`() = forEach { name, p, _ ->
+        assertContrast("$name scale numbers", p.ink.copy(alpha = SCALE_NUMBER_INK), p.background, AA_TEXT)
+        assertContrast("$name minor ticks", p.ink.copy(alpha = MINOR_TICK_INK), p.background, AA_MARKS)
+        assertContrast("$name centre mark", p.accent, p.background, AA_MARKS)
+        assertContrast("$name outline", p.muted, p.background, AA_MARKS)
     }
 
     @Test
-    fun `selected segments and chips keep their text readable`() = forEach { name, p ->
-        val scheme = p.toColorScheme(dark = p.background.luminance() < 0.5f)
-        assertContrast("$name onSecondaryContainer", scheme.onSecondaryContainer, scheme.secondaryContainer, 4.5)
-        assertContrast("$name onPrimaryContainer", scheme.onPrimaryContainer, scheme.primaryContainer, 4.5)
-    }
-
-    @Test
-    fun `the needle stands out from what the dial is drawn on`() = forEach { name, p ->
-        val under = if (p.dial.face == Color.Transparent) p.background else p.dial.face
-        assertContrast("$name needle", p.dial.needle, under, 3.0)
-        assertContrast("$name needle in tune", p.dial.needleInTune, under, 3.0)
-        assertContrast("$name ticks", p.dial.tick, under, 3.0)
+    fun `the palettes are the approved mock-up's`() {
+        // Spot checks, one per style; the rest were copied from the same data block.
+        assertEquals(Color(0xFFA8431F), paletteFor(VisualStyle.ANCIENT, dark = false).accent)
+        assertEquals(Color(0xFF170C11), paletteFor(VisualStyle.CLASSIC, dark = true).background)
+        assertEquals(Color(0xFF5F6E0E), paletteFor(VisualStyle.RETRO, dark = false).accent)
+        assertEquals(Color(0xFFA6ADFF), paletteFor(VisualStyle.CONTEMPORARY, dark = true).accent)
+        assertEquals(Color(0xFF22E5FF), paletteFor(VisualStyle.FUTURISTIC, dark = true).accent)
+        assertEquals(Color(0xFF8A35B8), paletteFor(VisualStyle.SPACE_AGE, dark = false).accent)
     }
 
     @Test
@@ -65,10 +74,17 @@ class StylePaletteTest {
     }
 
     @Test
-    fun `every style looks different`() {
+    fun `each style owns its hue, at least 30 degrees from the others and never in the in-tune greens`() {
         for (dark in listOf(false, true)) {
-            val primaries = VisualStyle.entries.map { paletteFor(it, dark).primary }
-            assertEquals("primaries, dark=$dark", primaries.size, primaries.toSet().size)
+            val hues = VisualStyle.entries.associateWith { hue(paletteFor(it, dark).accent) }
+            for ((style, h) in hues) {
+                assertTrue("$style dark=$dark accent hue $h is green", h !in 100f..160f)
+                for ((other, o) in hues) {
+                    if (other == style) continue
+                    val apart = min(abs(h - o), 360f - abs(h - o))
+                    assertTrue("$style and $other accents only $apart° apart (dark=$dark)", apart >= 30f)
+                }
+            }
             val backgrounds = VisualStyle.entries.map { paletteFor(it, dark).background }
             assertEquals("backgrounds, dark=$dark", backgrounds.size, backgrounds.toSet().size)
         }
@@ -84,28 +100,35 @@ class StylePaletteTest {
     }
 
     @Test
-    fun `ancient numbers are set in a plain face`() {
-        assertNotEquals(facesFor(VisualStyle.ANCIENT).title, numberFontFor(VisualStyle.ANCIENT))
-        assertEquals(facesFor(VisualStyle.FUTURISTIC).title, numberFontFor(VisualStyle.FUTURISTIC))
+    fun `ancient and classic set their numbers in a face that reads easily`() {
+        assertEquals(StyleFonts.Humanist, numberFontFor(VisualStyle.ANCIENT))
+        assertEquals(StyleFonts.Bodoni, numberFontFor(VisualStyle.CLASSIC))
+        assertEquals(StyleFonts.Groovy, numberFontFor(VisualStyle.RETRO))
     }
 
     private val failures = mutableListOf<String>()
 
     /** Runs [check] on every palette and reports all weak pairs together. */
-    private fun forEach(check: (String, Palette) -> Unit) {
-        for ((style, dark, palette) in all) check("$style ${if (dark) "dark" else "light"}", palette)
+    private fun forEach(check: (String, Palette, Boolean) -> Unit) {
+        for ((style, dark, palette) in all) check("$style ${if (dark) "dark" else "light"}", palette, dark)
         assertTrue(failures.joinToString(separator = "\n"), failures.isEmpty())
     }
 
-    private fun assertContrast(what: String, fg: Color, bg: Color, minimum: Double) {
+    private fun assertContrast(what: String, fg: Color, bg: Color, minimum: Float) {
         val ratio = contrast(fg.compositeOver(bg), bg)
         if (ratio < minimum) failures += "$what: contrast %.2f < %.1f".format(ratio, minimum)
     }
 
-    /** WCAG contrast ratio. */
-    private fun contrast(a: Color, b: Color): Double {
-        val la = a.luminance().toDouble()
-        val lb = b.luminance().toDouble()
-        return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+    /** The hue of [c] in degrees (0..360), from its sRGB channels. */
+    private fun hue(c: Color): Float {
+        val a = c.red - (c.green + c.blue) / 2f
+        val b = sqrt(3f) / 2f * (c.green - c.blue)
+        val deg = Math.toDegrees(atan2(b, a).toDouble()).toFloat()
+        return if (deg < 0f) deg + 360f else deg
+    }
+
+    private companion object {
+        /** WCAG AA for marks and controls. */
+        const val AA_MARKS = 3f
     }
 }

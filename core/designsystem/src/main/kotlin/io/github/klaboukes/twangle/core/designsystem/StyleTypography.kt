@@ -19,11 +19,30 @@ internal object StyleFonts {
     /** Ancient: rough, hewn capitals. Caesar Dressing by Open Window. */
     val Hewn = FontFamily(Font(R.font.caesar_dressing))
 
+    /**
+     * Ancient's numbers: a calm humanist sans whose 0 reads as a 0, at its medium weight (the only cut
+     * bundled, so every weight asks for it). Alegreya Sans by Juan Pablo del Peral, Huerta Tipográfica.
+     */
+    val Humanist = FontFamily(
+        Font(R.font.alegreya_sans_medium, FontWeight.Normal),
+        Font(R.font.alegreya_sans_medium, FontWeight.Medium),
+    )
+
     /** Classic: a high-contrast Didone serif. Playfair Display by Claus Eggers Sørensen (variable). */
     val Didone = FontFamily(
         Font(R.font.playfair_display, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
         Font(R.font.playfair_display, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
         Font(R.font.playfair_display, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700))),
+    )
+
+    /**
+     * Classic's numbers: a Bodoni whose digits stand full height, at weight 500 and a text optical size.
+     * Bodoni Moda by Owen Earl, indestructible type* (variable).
+     */
+    val Bodoni = FontFamily(
+        Font(R.font.bodoni_moda, FontWeight.Normal, variationSettings = bodoniAt(500)),
+        Font(R.font.bodoni_moda, FontWeight.Medium, variationSettings = bodoniAt(500)),
+        Font(R.font.bodoni_moda, FontWeight.Bold, variationSettings = bodoniAt(700)),
     )
 
     /** Retro: round 1970s display letters. Righteous by Astigmatic. */
@@ -32,12 +51,24 @@ internal object StyleFonts {
     /** Futuristic: geometric sci-fi capitals. Orbitron by Matt McInerney (variable). */
     val Hud = FontFamily(
         Font(R.font.orbitron, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
-        Font(R.font.orbitron, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(600))),
+        Font(R.font.orbitron, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
+        Font(R.font.orbitron, FontWeight.SemiBold, variationSettings = FontVariation.Settings(FontVariation.weight(600))),
         Font(R.font.orbitron, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(800))),
+    )
+
+    /** Futuristic's numbers: Orbitron at weight 500 whatever weight the text asks for, as in the mock-up. */
+    val HudNumbers = FontFamily(
+        Font(R.font.orbitron, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
+        Font(R.font.orbitron, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700))),
     )
 
     /** Space Age: wide 1960s "Microgramma" letters. Michroma by Vernon Adams. */
     val JetAge = FontFamily(Font(R.font.michroma))
+
+    private fun bodoniAt(weight: Int) = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("opsz", BODONI_OPTICAL_SIZE))
+
+    /** Bodoni Moda's optical size for the readouts (its axis runs 6 to 96): sturdy hairlines at 12 to 20 sp. */
+    private const val BODONI_OPTICAL_SIZE = 14f
 }
 
 /** The faces one style uses for display text, titles and reading text. */
@@ -54,15 +85,26 @@ internal data class StyleFaces(
     val titleSpacing: TextUnit = TextUnit.Unspecified,
 )
 
+/**
+ * The faces of each style, from the approved mock-up: Caesar Dressing with Alegreya Sans numbers
+ * (Caesar Dressing's 0 looks like a diamond), Playfair Display with Bodoni Moda numbers and serif
+ * reading text, Righteous, the phone's own font in light, Orbitron and Michroma (wide faces, numbers
+ * at 82 %, see `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise.
+ */
 internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
-    // Caesar Dressing's 0 looks like a diamond, so numbers are set plainly.
-    VisualStyle.ANCIENT -> StyleFaces(StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif, numbers = FontFamily.SansSerif)
-    VisualStyle.CLASSIC -> StyleFaces(StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif, displayWeight = FontWeight.Normal)
+    VisualStyle.ANCIENT -> StyleFaces(
+        StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif,
+        numbers = StyleFonts.Humanist, titleSpacing = 0.01.em,
+    )
+    VisualStyle.CLASSIC -> StyleFaces(
+        StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif,
+        numbers = StyleFonts.Bodoni, displayWeight = FontWeight.Normal,
+    )
     VisualStyle.RETRO -> StyleFaces(StyleFonts.Groovy, StyleFonts.Groovy, FontFamily.SansSerif)
     VisualStyle.CONTEMPORARY -> StyleFaces(FontFamily.Default, FontFamily.Default, FontFamily.Default, displayWeight = FontWeight.Light)
     VisualStyle.FUTURISTIC -> StyleFaces(
         StyleFonts.Hud, StyleFonts.Hud, FontFamily.SansSerif,
-        label = FontFamily.Monospace, displayWeight = FontWeight.Medium, titleSpacing = 0.06.em,
+        numbers = StyleFonts.HudNumbers, displayWeight = FontWeight.Medium, titleSpacing = 0.06.em,
     )
     VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = 0.02.em)
 }

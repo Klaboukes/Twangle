@@ -74,8 +74,9 @@ class MainActivity : ComponentActivity() {
 
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             Box(Modifier.fillMaxSize()) {
-                StyleBackdrop(Modifier.fillMaxSize())
                 var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                // Settings and About get the quiet version of the style's background.
+                StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
                 val saveableState = rememberSaveableStateHolder()
                 saveableState.SaveableStateProvider(screen.name) {

@@ -310,6 +310,13 @@ internal class GlassArt(
     }
 }
 
+/**
+ * How strong the scale's minor ticks and numbers are, as ink over the background: the mock-up's 50 %
+ * and 80 %, so the numbers read at 4.5:1 and the minor ticks at 3:1 in every style (StylePaletteTest).
+ */
+internal const val MINOR_TICK_INK = 0.5f
+internal const val SCALE_NUMBER_INK = 0.8f
+
 /** Where a look's scale mark for some cents starts: the base point (x, y) and the unit direction (dx, dy) it runs in. */
 internal fun interface MarkPlace {
     /** Writes x, y, dx and dy for [cents] into [out]. */
@@ -318,8 +325,8 @@ internal fun interface MarkPlace {
 
 /**
  * The scale every look shares: a tick every 5 cents, none at 0. Major ticks (every 10) are 9u long,
- * 1.5u wide, in ink; minor ones 5u, 1u, ink at 45 %; round caps. Numbers 10 to 50 without a sign,
- * 9.5u (times [MeterRoles.numberScale]) in the style's number face, ink at 62 %, centred 20u from the
+ * 1.5u wide, in ink; minor ones 5u, 1u, ink at 50 %; round caps. Numbers 10 to 50 without a sign,
+ * 9.5u (times [MeterRoles.numberScale]) in the style's number face, ink at 80 %, centred 20u from the
  * tick's base. [place] puts each tick on the look's own scale. Where a look's numbers sit close (the
  * spirit level's flat scale in a wide face) they are set a little smaller, so neighbours keep apart
  * ([numberFit]).
@@ -330,8 +337,8 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
     private val majorStroke = Stroke(1.5f * u, cap = StrokeCap.Round)
     private val minorStroke = Stroke(u, cap = StrokeCap.Round)
     private val ink = roles.ink
-    private val minorInk = roles.ink.copy(alpha = 0.45f)
-    private val numberInk = roles.ink.copy(alpha = 0.62f)
+    private val minorInk = roles.ink.copy(alpha = MINOR_TICK_INK)
+    private val numberInk = roles.ink.copy(alpha = SCALE_NUMBER_INK)
     private val numbers = arrayOfNulls<TextLayoutResult>(MARK_COUNT)
     private val numberAt = FloatArray(MARK_COUNT * 2)
 
