@@ -439,7 +439,10 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
         private const val WINDOW = "window"
 
-        /** Each test takes a second or two on the S26; 10 s means it hangs. */
+        /**
+         * Each test takes up to about 3 s on the Xiaomi 12X; the first of a run, which also opens the
+         * window, about 4.5 s. 10 s means it hangs, or the phone's screen is off.
+         */
         private const val TEST_TIMEOUT_SECONDS = 10L
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar, and a tablet on its side. */

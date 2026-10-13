@@ -191,16 +191,59 @@ if ! timeout "$BUILD_TIMEOUT" ./gradlew "${tasks[@]}" --console=plain > "$ROOT/b
 fi
 printf '%-18s %3ds\n' "build" $((SECONDS - start))
 
+# One run at a time on the phone. Two runs (say, from two Claude sessions) break each other: an
+# install stops the other run's tests ("Process crashed"), and their windows push each other into the
+# background. The lock is a folder on the phone, made in one step; a lock older than LOCK_MAX_AGE
+# seconds is left over from a run that was cut off, and is taken over.
+LOCK=/data/local/tmp/twangle-ui-tests.lock
+LOCK_MAX_AGE=3600
+take_lock() {
+    local age
+    adb shell "mkdir $LOCK" > /dev/null 2>&1 && return 0
+    age="$(adb shell "echo \$((\$(date +%s) - \$(stat -c %Y $LOCK)))" 2>/dev/null | tr -d '\r')"
+    if [[ "$age" =~ ^[0-9]+$ ]] && [ "$age" -lt $LOCK_MAX_AGE ]; then
+        echo "Another UI test run is using the phone (for ${age}s now), maybe from another session. Wait for it to finish and run again." >&2
+        exit 5
+    fi
+    adb shell "rm -rf $LOCK && mkdir $LOCK" > /dev/null 2>&1
+}
+take_lock
+trap 'adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
+# Ctrl+C or `timeout` stop the script through its EXIT trap too, so the lock and the loop below go.
+trap 'exit 130' INT TERM
+
 # MIUI (the Xiaomi test phone) refuses to let a test open the app's screen ("MIUILOG- Permission
 # Denied Activity", "Abort background activity starts") unless the package has Xiaomi's own
 # "start in background" app-op, MIUIOP 10021. Every install resets it, so a loop on the phone keeps
 # setting it during the whole run. Needs "USB debugging (Security settings)" on (see CLAUDE.md).
-miui_guard=""
+# The loop runs only while the lock is there, and at most LOCK_MAX_AGE seconds: one left running
+# after its run costs the phone about a third of a core, and they used to pile up, one a run, until
+# the tests ran out of time (the first test of a --thorough run, an Ancient one, first).
 if [ -n "$(adb shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" ]; then
-    adb shell 'while true; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done' > /dev/null 2>&1 &
-    miui_guard=$!
-    trap '[ -n "$miui_guard" ] && kill $miui_guard 2>/dev/null' EXIT
+    guard='end=$(($(date +%s) + MAX)); while [ -d LOCK ] && [ $(date +%s) -lt $end ]; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done'
+    guard="${guard//LOCK/$LOCK}"
+    adb shell "${guard//MAX/$LOCK_MAX_AGE}" > /dev/null 2>&1 &
 fi
+
+# Tests can only draw while the phone's screen is on and unlocked. With the screen off (its power
+# button) or the lock screen up, the test window is stopped: the first test of the run, the only one
+# that opens it, waits for it until its time is up ("test timed out" in waitForComposeRoots) and the
+# rest find "No compose hierarchies". In a --thorough run that first test is always an Ancient one
+# (the first style), so it looks as if Ancient were slow. So wake the screen before each module, stop
+# if the phone is locked, and say so if the screen went off during a run.
+wake_phone() {
+    adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
+    sleep 0.5
+    if adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -q 'isKeyguardShowing=true'; then
+        echo "The phone is locked: unlock the Xiaomi 12X, leave its screen on, and run again." >&2
+        exit 4
+    fi
+}
+
+# Milliseconds since the phone's screen last went off, by its power button or a time-out.
+ms_since_screen_off() {
+    adb shell dumpsys power 2>/dev/null | tr -d '\r' | sed -n 's/.*mLastSleepTime=[0-9-]* (\([0-9]*\) ms ago).*/\1/p' | head -1
+}
 
 # Installs an APK (relative path); prints why not on failure.
 install_apk() {
@@ -227,6 +270,7 @@ for module in "${modules[@]}"; do
         install_apk "$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)" || { status=1; continue; }
     fi
     install_apk "$apk" || { status=1; continue; }
+    wake_phone
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 
     # Extra files a test writes (MeterLookScreenshots' pictures) go where Gradle's own run would
@@ -261,6 +305,11 @@ for module in "${modules[@]}"; do
             fi
             tail -5 "$log"
         fi
+    fi
+    off="$(ms_since_screen_off)"
+    if [ -n "$off" ] && [ "$off" -lt $(((SECONDS - start) * 1000)) ]; then
+        echo "  The phone's screen went off during this run, so its failures say nothing: leave the screen on and run again."
+        status=1
     fi
     if [ -n "$(adb shell ls "$outdir" 2>/dev/null | tr -d '\r')" ]; then
         pulled="$dir/build/outputs/connected_android_test_additional_output"

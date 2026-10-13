@@ -31,11 +31,14 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 
 ## Reading results
 
-- Each module prints a line like `:feature:tuner 60s  147 tests, 0 failed, 56s on the phone`, then `FAIL Class#method: message` or `CRASH in …` lines. Exit code 0 means everything passed, 1 means something failed or timed out, and 3 means no phone is connected.
+- Each module prints a line like `:feature:tuner 60s  147 tests, 0 failed, 56s on the phone`, then `FAIL Class#method: message` or `CRASH in …` lines. Exit code 0 means everything passed, 1 means something failed or timed out, 3 means no phone is connected, 4 means the phone is locked, and 5 means another run is using the phone.
 - Stack traces are in `build/ui-tests-<module>.log` and the Gradle output is in `build/ui-tests-build.log`. Grep them only when something failed.
 - **Exit 3:** ask the owner to connect the Xiaomi 12X and accept the USB-debugging prompt. Don't land a visible or audible change without a run unless the owner says so, and if they do, note it in the PR.
 - **`INSTALL_FAILED_USER_RESTRICTED` / `INSTALL_GRANT_RUNTIME_PERMISSIONS`:** MIUI's *USB debugging (Security settings)* or *Install via USB* is off (see CLAUDE.md), or the phone's own "Install via USB?" prompt timed out (it picks Deny after 10 s).
-- **"test timed out" in `waitForNextChoreographerFrame`, then "Already interrogating!" or "No compose hierarchies found":** the phone's screen turned off. Re-run.
+- **"test timed out" in `waitForNextChoreographerFrame` or `waitForComposeRoots`, then "Already interrogating!" or "No compose hierarchies found":** the phone's screen was off (its power button) or locked. The first test of the run takes the time-out, and in a `--thorough` run that is always an Ancient one, so it looks like Ancient is slow; it isn't. The script wakes the screen before each module, stops with exit 4 if the phone is locked, and prints "The phone's screen went off during this run" when it did. Re-run with the screen on.
+- **Exit 4:** ask the owner to unlock the phone and leave its screen on.
+- **Exit 5:** another run, often another Claude session's, holds the phone (a lock on it, taken over after an hour). Two runs at once break each other: an install stops the other run ("Process crashed") and their windows push each other into the background. Wait a minute or two and run again; never work around the lock.
+- **Everything slower than usual, first test timing out:** look for leftover `while true; do for p in $(pm list packages …` loops (`adb shell ps -A -o PID,STIME,ARGS | grep "while true"`). Scripts from before the fix left one running after every run, each costing the phone about a third of a core; kill the ones no running script needs (`adb shell kill <pid>`). The script's own loop now ends with its run.
 - **A hang with `MIUILOG- Permission Denied Activity` in logcat:** the script's MIUI app-op loop wasn't running. Never run tests around the script.
 - **The laptop side died mid-run:** the tests carry on on the phone. Stop them with `adb shell am force-stop <package>.test` before the next run.
 - After a deliberate restyle, a failing pixel or layout check usually means the check hasn't caught up with the new look. Name the check, explain why, and adjust the check rather than the design.
