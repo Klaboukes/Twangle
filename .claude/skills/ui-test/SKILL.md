@@ -20,9 +20,11 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 | Iterating on one area | `scripts/ui-tests.sh :feature:tuner -f 'Tip\|Hint'` | ~30 s | 180000 |
 | **Once before landing** | `scripts/ui-tests.sh` (the modules this branch touches) | 1–2 min | 300000 |
 | Build files or version catalog changed | `scripts/ui-tests.sh --all` | ~2 min | 300000 |
-| Owner asks for every check, or ROADMAP "The look is final" | `scripts/ui-tests.sh --all --thorough` | ~4½ min | 480000 |
+| Owner asks for every check, or ROADMAP "The look is final" | `scripts/ui-tests.sh <module> --thorough`, one module at a time with ≥ 5 min cool-down between | tuner ~9 min, settings ~6 min | 600000, in the background |
+| A style's look, fonts or shapes changed | `scripts/ui-tests.sh <module> --thorough -c <the style classes>` | 2–3 min | 300000 |
 
 - `-f` is a regex matched against `Class#method`. `-c` takes a class, `Class#method`, or a comma-separated list. `-a key=value` passes an instrumentation argument.
+- **The phone heats up.** About 15 minutes of thorough tests, or long screenshot and tone sessions, took the Xiaomi to 45 °C (`adb shell dumpsys battery | grep temp`, in tenths of a degree); then the pixel tests run past their 10 s limits and the owner notices the heat. Split long runs into chunks with at least 5 minutes off between them (screen off: `adb shell input keyevent KEYCODE_SLEEP`), check the temperature first (below ~38 °C), and never re-run a whole sweep that a smaller run already covers.
 - A normal run leaves out the double checks, so the style tests run in the default style only and `@Thorough` tests are skipped. Naming a `@Thorough` test with `-c` runs nothing unless you add `--thorough`.
 - With no module given, the script picks the affected modules itself. If only docs, scripts or unit tests changed, it says so and exits 0.
 - After the full run, a fix needs only the failed tests plus its area (`-f`). Run the full set again only if the fix touched shared layout code (`TunerContent`, `GuitarControls`, `ModeSlot`, the theme).

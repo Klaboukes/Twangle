@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–13 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
+Phases 0–14 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
 ---
 
@@ -15,18 +15,10 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly
 - ☐ Phase 11: on the test phone, compare the wave breathing in tune with it holding still, using the temporary switch, and pick one; Claude then removes the other and the switch
 - ☐ Phase 12: with a real guitar, check the tips feel right: none while playing normally near the phone, "Play a bit louder" when playing very softly from across the room, "Too loud, move the phone back" when strumming hard right next to it
+- ☐ Phase 14: try each of the six styles on the phone, light and dark, upright and on its side, and say if any colour, letter or background picture feels wrong
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
-
-## Phase 14 — New theme styles
-Goal: a fresh set of visual styles for the whole app, designed together so every screen, the wave looks and the six meter looks feel like one product. The current Prehistoric → Space Age line may stay, change or be replaced; the owner decides. **Owner decided (2026-10-12):** this phase comes straight after the meter looks.
-- ☑ Preview for the owner before anything is built: moving mock-ups of the tuner screen (with a meter look and a wave look) and Settings, light and dark, in [docs/design/theme-styles-preview.html](docs/design/theme-styles-preview.html). Its top comment is the art language the build follows. **Owner decided (2026-10-13):** six styles, in this order: **Ancient** (Prehistoric and Middle Ages merged), **Classic**, **Retro**, **Contemporary**, **Futuristic** (the favourite, polished), **Space Age**. Contemporary stays the default for new installs. Each style has its own hue family around the colour wheel. The style is picked in Settings like the meter look and wave look; the tuner's palette icon and the style preview cards go. The meter is bigger, with no plate or frame, drawn straight on the background; its in-tune glow is never cut off at the meter's edges. No "A4 = 440 Hz" line on the tuner, and no fixed borders at the screen edges
-- ☑ Style setting moves to the new set: every old saved style opens as its closest new one (Prehistoric and Middle Ages → Ancient; JVM tests for every old saved value); the style is picked in Settings as a card grid of mood cards (background, big letter, wave strip, string buttons), like the meter and wave looks, with English and Dutch names; the tuner's palette icon and the old style preview cards are removed. Until its own look arrives, Ancient wears the old Prehistoric palette, fonts and cave background; the Middle Ages font, background and marks are gone
-- ☑ Tuner layout for every style: the meter larger and frameless on the screen background, the in-tune glow in an unclipped layer behind it, no "A4 = 440 Hz" line, no fixed borders at the screen edges, number faces with lining figures. Upright the meter spans the screen less 8 dp (dial radius 124u → 146u), mode switch at the top, strings at the bottom; one calm field under every look; tube, drum window and studio face keep their glass with a contact shadow; Classic's frame, the HUD brackets and Retro's bottom stripes went; every text style asks for "lnum". The mock-up's larger scale marks (13u majors, 12.5u numbers 27u out) and ♭ ♯ inside the box wait for the per-look finishing touches
-- ☑ Each new style's palette, fonts and background, light and dark, with readable contrast for every text and mark: the mock-up's palettes copied exactly (each style its own accent hue), Ancient's real stone-wall look, Alegreya Sans (Ancient) and Bodoni Moda (Classic) number faces bundled, the mock-up's backgrounds drawn in code (quiet version behind Settings) in a cached layer, the mock-up's corners and string-button shapes (pebbles, ivory keys, hi-fi buttons, circles, neon tiles, capsules); every palette, light and dark, passes AA (4.5:1 text, 3:1 marks; scale numbers now ink 80 %, minor ticks 50 %). The buttons' inset shading and neon glow wait for the finishing touches
-- ☑ Each style's own finishing touches for the six meter looks and the wave looks, still in the shared art style from Phase 13: the mock-up's needle, hub, arc and tick caps per style (Ancient's ticks drawn by hand), the larger scale (13u majors, 12.5u numbers 27u out), ♭ ♯ inside the meter (the row under it went), the mock-up's strobe and ribbon marks and periods per style, Classic's and Retro's shaded string buttons and Futuristic's neon outlines and glow. The spirit level keeps its Phase 13 tube (the mock-up's wider one touched the box's sides); its numbers are set up to 30 % smaller instead
-- ☐ Every screen checked in each new style, light and dark, with TalkBack, in landscape (also compact mode) and at 2× font (UI tests); screenshots of every style for the owner; ARCHITECTURE.md updated; phone check
 
 ## Phase 15 — More instruments
 Goal: tune more than a six-string guitar.

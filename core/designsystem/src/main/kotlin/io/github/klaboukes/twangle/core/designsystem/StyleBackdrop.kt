@@ -27,6 +27,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -136,7 +137,10 @@ private class Art(
 
     fun ancient() = with(scope) {
         stone()
-        if (!mini && !quiet) handStencil(Offset(w * 0.84f, h * 0.66f), 54f * u, 22f, accent.copy(alpha = if (dark) 0.16f else 0.13f))
+        // Upright (the mock-up) beside the wave; on its side that spot is the note column's, so the hand
+        // moves to the empty corner above the meter's left end.
+        val hand = if (w > h) Offset(w * 0.05f, h * 0.3f) else Offset(w * 0.84f, h * 0.66f)
+        if (!mini && !quiet) handStencil(hand, 54f * u, 22f, accent.copy(alpha = if (dark) 0.16f else 0.13f))
         // Rows of tally marks, the first written numbers: four strokes and one across, three times.
         val tally = ink.copy(alpha = if (dark) 0.12f else 0.11f)
         val rows = if (mini) MINI_TALLY_ROWS else TALLY_ROWS
@@ -312,9 +316,9 @@ private class Art(
             sparkle(Offset(x, y), (5f + r() * 5f) * u, ink.copy(alpha = 0.75f), u)
         }
         if (!mini && !quiet) {
-            // A ringed planet rising in the lower corner.
+            // A ringed planet rising in the lower corner, as big on its side as upright.
             val centre = Offset(0f, h * 1.05f)
-            val radius = w * 0.3f
+            val radius = min(w, h) * 0.3f
             drawCircle(
                 Brush.radialGradient(
                     listOf(second.copy(alpha = 0.55f), lerp(second, bg, 0.6f).copy(alpha = 0.45f)),
@@ -359,8 +363,16 @@ private class Art(
 
     // ---- Shared ----------------------------------------------------------------------------------
 
-    /** An x in the outer fifth on either side, so motifs keep clear of the note and pill. */
-    private fun sideX(t: Float): Float = if (t < 0.5f) w * (0.05f + t * 0.34f) else w * (0.78f + (t - 0.5f) * 0.34f)
+    /**
+     * An x in the outer fifth on either side, so motifs keep clear of the note and pill. On its side
+     * the right part is the note column's and the meter starts a tenth in, so motifs keep to the
+     * strip left of the meter.
+     */
+    private fun sideX(t: Float): Float = when {
+        w > h -> w * (0.02f + t * 0.06f)
+        t < 0.5f -> w * (0.05f + t * 0.34f)
+        else -> w * (0.78f + (t - 0.5f) * 0.34f)
+    }
 
     /** A soft round light of [color] at [alpha] in its middle, gone at [radius]. */
     fun radial(x: Float, y: Float, radius: Float, color: Color, alpha: Float) {
