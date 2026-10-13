@@ -3,17 +3,21 @@ package io.github.klaboukes.twangle.feature.tuner.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -23,12 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
@@ -37,6 +42,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonGlow
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -78,32 +85,57 @@ fun StringSelector(
     val lockedState = stringResource(R.string.tuner_string_locked)
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
-    Row(
-        modifier = if (small) modifier else modifier.fillMaxWidth(),
-        horizontalArrangement = if (small) Arrangement.spacedBy(SMALL_CHIP_SPACING) else Arrangement.SpaceEvenly,
-    ) {
-        tuning.strings.forEachIndexed { index, note ->
-            val locked = index == lockedString
-            val name = notation.nameIn(tuning, note.pitchClass)
-            StringChip(
-                name = name,
-                spokenName = spokenString.format(
-                    speech.name(name),
-                    note.octave,
-                ),
-                octave = note.octave,
-                highlighted = index == targetString,
-                inTune = inTune,
-                locked = locked,
-                onClick = onStringClick?.let { click -> { click(index) } },
-                clickLabel = if (locked) unlockLabel else lockLabel,
-                lockedState = lockedState,
-                index = index,
-                small = small,
-            )
+    val style = MaterialTheme.styleTokens.style
+    BoxWithConstraints(if (small) modifier else modifier.fillMaxWidth()) {
+        // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
+        val width = if (constraints.hasBoundedWidth) maxWidth else Dp.Infinity
+        val fit = stringRowFitFor(style, width, tuning.strings.size, small)
+        Row(
+            modifier = if (small && !fit.squeezed) Modifier else Modifier.fillMaxWidth(),
+            horizontalArrangement = when {
+                fit.squeezed -> Arrangement.Start
+                small -> Arrangement.spacedBy(SMALL_CHIP_SPACING)
+                else -> Arrangement.SpaceEvenly
+            },
+        ) {
+            tuning.strings.forEachIndexed { index, note ->
+                val locked = index == lockedString
+                val name = notation.nameIn(tuning, note.pitchClass)
+                StringChip(
+                    name = name,
+                    spokenName = spokenString.format(
+                        speech.name(name),
+                        note.octave,
+                    ),
+                    octave = note.octave,
+                    highlighted = index == targetString,
+                    inTune = inTune,
+                    locked = locked,
+                    onClick = onStringClick?.let { click -> { click(index) } },
+                    clickLabel = if (locked) unlockLabel else lockLabel,
+                    lockedState = lockedState,
+                    index = index,
+                    fit = fit,
+                    small = small,
+                    modifier = if (fit.squeezed) Modifier.weight(1f) else Modifier,
+                )
+            }
         }
     }
 }
+
+/** How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size buttons). */
+internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean): StringRowFit {
+    val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value
+    return if (small) {
+        stringRowFit(available, count, smallChipSize(style).width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
+    } else {
+        stringRowFit(available, count, stringChipSize(style).width.value, RING_GAP.value, minSlotDp = MIN_TOUCH.value)
+    }
+}
+
+/** The compact layout's chip in [style]: the style's button shrunk into the small square, lock ring included. */
+private fun smallChipSize(style: VisualStyle): DpSize = stringChipSize(style).fitInside(SMALL_CHIP_SIZE - SMALL_RING_GAP * 2)
 
 @Composable
 private fun StringChip(
@@ -117,7 +149,9 @@ private fun StringChip(
     clickLabel: String,
     lockedState: String,
     index: Int,
-    small: Boolean = false,
+    fit: StringRowFit,
+    small: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
     val accent by animateInTuneColor(inTune, colors.primary, "chipAccent")
@@ -130,21 +164,29 @@ private fun StringChip(
         },
         label = "chipText",
     )
-    val octaveStyle = MaterialTheme.typography.labelSmall.toSpanStyle().copy(baselineShift = BaselineShift.Subscript)
     val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
     val style = MaterialTheme.styleTokens.style
     // The style's own button (pebble, ivory key, capsule...), with room round it for the lock ring.
     val shape = stringChipShape(style, index)
-    val ringGap = if (small) 2.dp else 4.dp
-    val button = if (small) stringChipSize(style).fitInside(SMALL_CHIP_SIZE - ringGap * 2) else stringChipSize(style)
+    val ringGap = fit.ringGapDp.dp
+    val natural = if (small) smallChipSize(style) else stringChipSize(style)
+    val button = DpSize(natural.width * fit.buttonScale, natural.height * fit.buttonScale)
     // Futuristic's tiles are neon outlines: no fill until picked, then a soft glow round them.
     val neon = style == VisualStyle.FUTURISTIC
     val keyLabel = style == VisualStyle.CLASSIC && !small
     val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
     Box(
-        modifier = Modifier
-            // Big buttons are at least 48 dp to touch each way, however narrow or short they look.
-            .then(if (small) Modifier else Modifier.minimumInteractiveComponentSize())
+        modifier = modifier
+            .then(
+                when {
+                    small -> Modifier
+                    // A squeezed button takes its share of the row and is 48 dp tall to touch; a touch
+                    // just beside it still reaches the nearest button (Compose widens small touch targets).
+                    fit.squeezed -> Modifier.heightIn(min = MIN_TOUCH).wrapContentSize()
+                    // Big buttons are at least 48 dp to touch each way, however narrow or short they look.
+                    else -> Modifier.minimumInteractiveComponentSize()
+                },
+            )
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
             .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             .clip(shape)
@@ -188,21 +230,36 @@ private fun StringChip(
                 density.fontScale.coerceAtMost(if (small) MAX_SMALL_CHIP_FONT_SCALE else MAX_CHIP_FONT_SCALE),
             ),
         ) {
+            // Solfège names like "Sol♯" need a smaller size to fit the button.
+            val named = when {
+                small && name.length <= 2 -> MaterialTheme.typography.labelMedium
+                small -> MaterialTheme.typography.labelSmall
+                name.length <= 2 -> MaterialTheme.typography.titleMedium
+                else -> MaterialTheme.typography.labelMedium
+            }
+            // The line height relative to the size, so a name that shrinks to fit gets shorter lines too.
+            val textStyle = if (named.lineHeight.isSp && named.fontSize.isSp) {
+                named.copy(lineHeight = (named.lineHeight.value / named.fontSize.value).em)
+            } else {
+                named
+            }
+            // The octave a subscript at labelSmall's size, relative to the name so it shrinks with it.
+            val octaveStyle = SpanStyle(
+                fontSize = (MaterialTheme.typography.labelSmall.fontSize.value / textStyle.fontSize.value).em,
+                baselineShift = BaselineShift.Subscript,
+            )
             Text(
                 text = buildAnnotatedString {
                     append(musicText(name))
                     withStyle(octaveStyle) { append(octave.toString()) }
                 },
-                // Solfège names like "Sol♯" need a smaller size to fit the button.
-                style = when {
-                    small && name.length <= 2 -> MaterialTheme.typography.labelMedium
-                    small -> MaterialTheme.typography.labelSmall
-                    name.length <= 2 -> MaterialTheme.typography.titleMedium
-                    else -> MaterialTheme.typography.labelMedium
-                },
+                style = textStyle,
                 color = content,
                 maxLines = 1,
-                modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING) else Modifier,
+                // The name keeps its size where it fits; in a squeezed button, or in a wide face
+                // (Space Age's "Mi" at 2× text), it shrinks as far as it must to fit.
+                autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
+                modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )
         }
     }
@@ -221,6 +278,16 @@ private const val MAX_CHIP_FONT_SCALE = 1.3f
 private const val MAX_SMALL_CHIP_FONT_SCALE = 1f
 
 private val SMALL_CHIP_SIZE = 32.dp
+
+/** Room round a button for the lock ring: full-size buttons and the small chips. */
+private val RING_GAP = 4.dp
+private val SMALL_RING_GAP = 2.dp
+
+/** The smallest touch target a full-size string button gets each way. */
+private val MIN_TOUCH = 48.dp
+
+/** A string's name shrinks to fit its button, but no further than this. */
+private val MIN_LABEL = 8.sp
 
 /** How far above a Classic key's bottom edge its name sits. */
 private val KEY_LABEL_PADDING = 6.dp

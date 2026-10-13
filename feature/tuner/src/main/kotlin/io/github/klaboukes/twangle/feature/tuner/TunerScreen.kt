@@ -69,6 +69,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -91,6 +92,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.DOWN_POINTER_FROM_START
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
+import io.github.klaboukes.twangle.feature.tuner.components.stringRowFitFor
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
@@ -820,6 +822,7 @@ private fun GuitarControls(
             quiet = true
         }
     }
+    val style = MaterialTheme.styleTokens.style
     val picker = @Composable {
         TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange, onExpandedChange = onMenuOpenChange)
     }
@@ -857,8 +860,11 @@ private fun GuitarControls(
         // The corner left of the picker: from the column's edge (it is centred in the column, inside
         // the column's padding) to the picker, reaching up into the gap above the slot but not to the
         // hint. It starts by the edge, unless its pointer would then miss the first string.
+        // Where the first string's button starts: a bass's four strings spread wider than a guitar's six.
+        val firstString = stringsX + stringRowFitFor(style, stringsPlaceable.width.toDp(), tuning.strings.size, small = false)
+            .firstSlotStartDp.dp.roundToPx()
         val cornerX = max(
-            stringsX + POINTER_INTO_FIRST_STRING.roundToPx() - DOWN_POINTER_FROM_START.roundToPx(),
+            firstString + POINTER_INTO_FIRST_STRING.roundToPx() - DOWN_POINTER_FROM_START.roundToPx(),
             -((constraints.maxWidth - width) / 2 + COLUMN_PADDING.roundToPx()) + CORNER_TIP_EDGE.roundToPx(),
         )
         val cornerWidth = pickerX - CORNER_TIP_PICKER_GAP.roundToPx() - cornerX
