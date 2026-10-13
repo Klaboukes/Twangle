@@ -62,6 +62,25 @@ class InTuneGlowRuleTest {
     }
 
     @Test
+    fun `the same note back but asking to be tuned puts it out at once`() {
+        rule.update(true, "A2", 0)
+        rule.update(false, null, 1_000)
+        // Back sharp: still held while the hint has no direction yet, out once it says "Tune down".
+        assertTrue(rule.update(false, "A2", 1_100))
+        assertFalse(rule.update(false, "A2", 1_300, retuning = true))
+        assertEquals(Long.MAX_VALUE, rule.holdEndsAtMillis)
+        // And it stays out until the note is in tune again.
+        assertFalse(rule.update(false, "A2", 1_400))
+        assertTrue(rule.update(true, "A2", 2_000))
+    }
+
+    @Test
+    fun `asking to be tuned during a lost reading changes nothing`() {
+        rule.update(true, "A2", 0)
+        assertTrue(rule.update(false, null, 1_000, retuning = true))
+    }
+
+    @Test
     fun `another note during a dropout puts it out`() {
         rule.update(true, "A2", 0)
         rule.update(false, null, 1_000)

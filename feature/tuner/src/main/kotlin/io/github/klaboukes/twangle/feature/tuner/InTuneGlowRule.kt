@@ -10,8 +10,10 @@ package io.github.klaboukes.twangle.feature.tuner
  * (no note at all, [update] with a null target) the glow stays lit for [holdMillis], also while that
  * same note comes back and earns "in tune" again; if it does within that time the glow never went
  * out, so it doesn't restart. A different note, or the same note heard but drifting out of tune
- * without a dropout, puts it out at once. [holdMillis] is shorter than the tick's quiet time, so a
- * dropout the glow bridges never ticks twice.
+ * without a dropout, puts it out at once. So does the same note coming back clearly off, once the
+ * hint asks to tune it up or down ([update]'s `retuning`; a pluck often starts sharp): the glow
+ * never lights the meter while the hint says "Tune down". [holdMillis] is shorter than the tick's
+ * quiet time, so a dropout the glow bridges never ticks twice.
  *
  * Starts from [initiallyInTune], so appearing while already in tune shows the glow without a new
  * ease-in. Time comes from the caller; pure and not thread-safe.
@@ -38,8 +40,11 @@ class InTuneGlowRule(
     val holdEndsAtMillis: Long
         get() = if (lit && lostAtMillis != NOT_LOST) lostAtMillis + holdMillis else Long.MAX_VALUE
 
-    /** Feeds the current [inTune] for [target] (null without a note) at [nowMillis]; returns [lit]. */
-    fun update(inTune: Boolean, target: Any?, nowMillis: Long): Boolean {
+    /**
+     * Feeds the current [inTune] for [target] (null without a note) at [nowMillis]; returns [lit].
+     * [retuning] is true while the hint asks to tune up or down ([TunerHint.isDirection]).
+     */
+    fun update(inTune: Boolean, target: Any?, nowMillis: Long, retuning: Boolean = false): Boolean {
         wasInTune = inTune
         when {
             inTune -> {
@@ -47,13 +52,13 @@ class InTuneGlowRule(
                 litTarget = target
                 lostAtMillis = NOT_LOST
             }
-            // The note is gone for a moment, or back but still earning "in tune": hold the glow,
-            // counted from when the note went.
-            lit && (target == null || (lostAtMillis != NOT_LOST && target == litTarget)) -> {
+            // The note is gone for a moment, or back but still earning "in tune" (no hint to tune it
+            // yet): hold the glow, counted from when the note went.
+            lit && (target == null || (lostAtMillis != NOT_LOST && target == litTarget && !retuning)) -> {
                 if (lostAtMillis == NOT_LOST) lostAtMillis = nowMillis
                 if (nowMillis - lostAtMillis >= holdMillis) goOut()
             }
-            // Out of tune, or another note: out at once.
+            // Out of tune, another note, or back but asking to be tuned: out at once.
             else -> goOut()
         }
         return lit

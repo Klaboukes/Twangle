@@ -172,6 +172,35 @@ class TunerInterpreterTest {
     }
 
     @Test
+    fun `a note re-plucked sharp after a dropout never shows a tune hint with the in-tune look`() {
+        val options = TunerOptions(TunerMode.AUTO, standard)
+        val glow = InTuneGlowRule()
+        val oldGlow = InTuneGlowRule() // without the hint: what the meter did before
+        var tuneDownShown = false
+        var oldOverlap = false
+        // 1 s in tune on E2, a 107 ms dropout (long enough to lose the note), then the string is
+        // plucked again and rings 15 cents sharp, as a fresh pluck often does.
+        val readings = List(47) { pitched(hz(40f)) } + List(5) { silent } + List(47) { pitched(hz(40.15f)) }
+        readings.forEachIndexed { i, reading ->
+            val state = interpreter.interpret(reading, options)
+            val detected = state as? TunerUiState.Detected
+            val target = detected?.let { it.noteName + it.octave }
+            val retuning = detected?.hint?.isDirection == true
+            val now = (i * frameSeconds * 1_000).toLong()
+            val lit = glow.update(detected?.inTune == true, target, now, retuning)
+            val oldLit = oldGlow.update(detected?.inTune == true, target, now)
+            if (retuning) {
+                assertFalse("frame $i: in tune with ${detected?.hint}", detected!!.inTune)
+                assertFalse("frame $i: glow lit with ${detected.hint}", lit)
+                tuneDownShown = tuneDownShown || detected.hint == TunerHint.TUNE_DOWN
+                oldOverlap = oldOverlap || oldLit
+            }
+        }
+        assertTrue(tuneDownShown)
+        assertTrue("the case the fix is for", oldOverlap)
+    }
+
+    @Test
     fun `a note 10 cents off is never in tune`() {
         assertFalse(play(pitched(hz(40.1f)), frames = 100).detected().inTune)
     }

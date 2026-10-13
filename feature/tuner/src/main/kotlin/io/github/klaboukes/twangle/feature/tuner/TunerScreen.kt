@@ -157,8 +157,13 @@ fun TunerScreen(
         target = inTuneTarget,
         enabled = vibrateInTune,
     )
-    // The meter's in-tune glow lights with the tick and outlasts a brief dropout of the same note.
-    val glowing = rememberInTuneGlow(inTune = detected?.inTune == true, target = inTuneTarget)
+    // The meter's in-tune glow lights with the tick and outlasts a brief dropout of the same note,
+    // but never while the hint asks to tune it.
+    val glowing = rememberInTuneGlow(
+        inTune = detected?.inTune == true,
+        target = inTuneTarget,
+        retuning = detected?.hint?.isDirection == true,
+    )
     val animationsOff = rememberAnimationsOff()
 
     // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
