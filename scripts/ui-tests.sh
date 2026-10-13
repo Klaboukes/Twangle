@@ -7,19 +7,21 @@
 #   scripts/ui-tests.sh :feature:tuner           whole module(s)
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
+#   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
+#                                                another instrumentation argument (-a key=value, repeatable)
 #
 # Filters (-f/-c) apply per module, so each module runs in its own Gradle call. Each module call is
-# killed after MODULE_TIMEOUT seconds (default 600); a single test is limited by its own timeout rule.
+# killed after MODULE_TIMEOUT seconds (default 720); a single test is limited by its own timeout rule.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
-MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
+MODULE_TIMEOUT="${MODULE_TIMEOUT:-720}"
 UI_MODULES=(:feature:tuner :feature:settings :core:audio :app)
 
-usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Maps changed paths to the UI test modules that can see the change (a module's own sources, or
 # anything it depends on). Docs, CI files and JVM unit tests need no device run.
@@ -51,12 +53,13 @@ affected_modules() {
     [ $app = 1 ] && echo :app
 }
 
-modules=() filter="" class=""
+modules=() filter="" class="" extra=()
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
+        -a | --arg) extra+=("-Pandroid.testInstrumentationRunnerArguments.$2"); shift ;;
         -h | --help) usage ;;
         :*) modules+=("$1") ;;
         *) echo "Unknown argument: $1" >&2; usage ;;
@@ -121,7 +124,7 @@ EOF
 
 status=0
 for module in "${modules[@]}"; do
-    args=()
+    args=("${extra[@]}")
     [ -n "$filter" ] && args+=("-Pandroid.testInstrumentationRunnerArguments.tests_regex=.*($filter).*")
     [ -n "$class" ] && args+=("-Pandroid.testInstrumentationRunnerArguments.class=$(qualify "$module" "$class")")
     log="$ROOT/build/ui-tests${module//:/-}.log"

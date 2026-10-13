@@ -6,7 +6,7 @@ argument-hint: "[optional: test-name regex, a :module, or --all]"
 
 # UI tests on the phone
 
-The on-device suite takes about 10 minutes, so never run all of it by habit. Run the smallest set that proves the change, and the affected modules in full **once** before landing.
+The on-device suite takes about 13 minutes, so never run all of it by habit. Run the smallest set that proves the change, and the affected modules in full **once** before landing.
 
 Always go through `scripts/ui-tests.sh`. It works out which modules a change touches, runs each one with a time limit, and prints one line per module plus the failing tests. Don't call `./gradlew connectedDebugAndroidTest` directly: it runs every module, prints hundreds of log lines into the session, and `-Pandroid.testInstrumentationRunnerArguments.class=` would apply to every module in the call, failing the modules that don't have that class.
 
@@ -18,9 +18,9 @@ Always go through `scripts/ui-tests.sh`. It works out which modules a change tou
    `scripts/ui-tests.sh :feature:tuner -c TunerContentTest#someTest`
 2. **Iterating on one area**, e.g. the tip or the hint (30–60 s, Bash `timeout: 180000`):
    `scripts/ui-tests.sh :feature:tuner -f 'Tip|Hint'`
-3. **Once before landing**: the affected modules in full (up to ~11 min: run it with `run_in_background` and wait for it, as it is longer than the Bash tool's 10-minute limit):
+3. **Once before landing**: the affected modules in full (up to ~13 min: run it with `run_in_background` and wait for it, as it is longer than the Bash tool's 10-minute limit):
    `scripts/ui-tests.sh`
-4. **Build files or the version catalog changed, or the owner asks for everything** (~11 min, `run_in_background` as above):
+4. **Build files or the version catalog changed, or the owner asks for everything** (~13 min, `run_in_background` as above):
    `scripts/ui-tests.sh --all`
 
 - `-f` is a regex matched against `Class#method`, so `-f 'Tip'` runs every test with "Tip" in its name, in any class of that module. Name tests so an area is one word away (they already do: `…Tip…`, `…Hint…`, `…Readout…`, `…OnItsSide…`, `…LargestFont…`).
@@ -37,17 +37,17 @@ Always go through `scripts/ui-tests.sh`. It works out which modules a change tou
 
 | Module | Tests | Wall time (incl. build + install) | On the phone |
 |---|---|---|---|
-| `:feature:tuner` | 227 | 453 s | 369 s |
-| `:feature:settings` | 16 | 39 s | 19 s |
+| `:feature:tuner` | 248 | 592 s | 500 s |
+| `:feature:settings` | 67 | 149 s | 104 s |
 | `:core:audio` | 5 | 12 s | 1 s |
-| `:app` | 1 | 18 s | 7 s |
+| `:app` | 1 | 25 s | 7 s |
 
-Every module call costs about 12–28 s of Gradle and install overhead, even for one test. The slowest single test takes about 3 s (`CompactLandscapeStylesTest`, which checks many layouts per test; its 28 tests take ~55 s together).
+Every module call costs about 12–28 s of Gradle and install overhead, even for one test. The slowest single tests take 4–7 s (`MeterLooksTest`'s Bold-against-Calm check and `CompactLandscapeStylesTest`'s every-look checks, which capture the window a dozen times each; that class's 42 tests take ~110 s together). `MeterLookScreenshots` has no cases unless `-a meterScreenshots=true` is passed (`scripts/meter-look-screens.sh` does), so it costs the normal run nothing.
 
 ## Timeouts
 
 - **Per test: 10 s.** `TunerContentTest` wraps every test in a JUnit `Timeout` rule (`TEST_TIMEOUT_SECONDS`), so a hang fails in 10 s instead of leaving a frozen window on the phone. A new UI test class that could hang (anything that scrolls, waits, or animates) gets the same rule, outermost around the compose rule. If a test legitimately needs longer, raise the constant for a reason you can name, not "to be safe".
-- **Per module: 600 s.** The script kills a module's Gradle call after `MODULE_TIMEOUT` seconds (env var, default 600) and reports TIMED OUT. The tuner module takes ~450 s (October 2026, after the meter looks; it outgrew the old 420 s), so it still fails if something stalls outside a test (install, a stuck device).
+- **Per module: 720 s.** The script kills a module's Gradle call after `MODULE_TIMEOUT` seconds (env var, default 720) and reports TIMED OUT. The tuner module takes ~590 s (October 2026, after every meter look was checked in compact landscape; it outgrew the old 600 s), so it still fails if something stalls outside a test (install, a stuck device).
 - **Bash tool:** use the timeouts in the scope ladder above, never the 10-minute maximum. If a run times out, look at the log before running it again.
 
 ## Reading results

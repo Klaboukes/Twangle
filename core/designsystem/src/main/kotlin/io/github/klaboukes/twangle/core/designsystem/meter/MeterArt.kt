@@ -43,6 +43,8 @@ import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import kotlin.math.hypot
+import kotlin.math.min
 
 /*
  * The shared art of the meter looks, "as if by the same artist" (ARCHITECTURE.md, Meter art
@@ -297,7 +299,9 @@ internal fun interface MarkPlace {
  * The scale every look shares: a tick every 5 cents, none at 0. Major ticks (every 10) are 9u long,
  * 1.5u wide, in ink; minor ones 5u, 1u, ink at 45 %; round caps. Numbers 10 to 50 without a sign,
  * 9.5u (times [MeterRoles.numberScale]) in the style's number face, ink at 62 %, centred 20u from the
- * tick's base. [place] puts each tick on the look's own scale.
+ * tick's base. [place] puts each tick on the look's own scale. Where a look's numbers sit close (the
+ * spirit level's flat scale in a wide face) they are set a little smaller, so neighbours keep apart
+ * ([numberFit]).
  */
 internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, density: Density, place: MarkPlace) {
     private val major = Path()
@@ -311,9 +315,9 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
     private val numberAt = FloatArray(MARK_COUNT * 2)
 
     init {
-        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { (9.5f * roles.numberScale * u).toSp() })
-        val texts = (1..5).map { measurer.measure((it * 10).toString(), style) }
         val at = FloatArray(4)
+        // Each number's centre, 20u out from its major tick.
+        val centres = FloatArray(MARK_COUNT * 2)
         var k = 0
         var cents = -METER_RANGE_CENTS
         while (cents <= METER_RANGE_CENTS) {
@@ -326,15 +330,35 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
                 path.moveTo(at[0], at[1])
                 path.lineTo(at[0] + at[2] * length, at[1] + at[3] * length)
                 if (isMajor) {
-                    val text = texts[kotlin.math.abs(whole) / 10 - 1]
-                    numbers[k] = text
-                    numberAt[k * 2] = at[0] + at[2] * 20f * u - text.size.width / 2f
-                    numberAt[k * 2 + 1] = at[1] + at[3] * 20f * u - text.size.height / 2f
+                    centres[k * 2] = at[0] + at[2] * 20f * u
+                    centres[k * 2 + 1] = at[1] + at[3] * 20f * u
                     k++
                 }
             }
             cents += 5f
         }
+        // The nearest two neighbours on one side (10 to 50 and back; the two tens across 0 sit far apart).
+        var nearest = Float.MAX_VALUE
+        for (i in 0 until MARK_COUNT - 1) {
+            if (i == MARK_COUNT / 2 - 1) continue
+            nearest = min(nearest, hypot(centres[i * 2 + 2] - centres[i * 2], centres[i * 2 + 3] - centres[i * 2 + 1]))
+        }
+        val size = 9.5f * roles.numberScale * u
+        var texts = measureNumbers(measurer, roles, density, size)
+        val fit = numberFit(nearest, texts.maxOf { it.size.width }.toFloat(), u)
+        if (fit < 1f) texts = measureNumbers(measurer, roles, density, size * fit)
+        for (i in 0 until MARK_COUNT) {
+            val tens = if (i < MARK_COUNT / 2) MARK_COUNT / 2 - i else i - MARK_COUNT / 2 + 1
+            val text = texts[tens - 1]
+            numbers[i] = text
+            numberAt[i * 2] = centres[i * 2] - text.size.width / 2f
+            numberAt[i * 2 + 1] = centres[i * 2 + 1] - text.size.height / 2f
+        }
+    }
+
+    private fun measureNumbers(measurer: TextMeasurer, roles: MeterRoles, density: Density, size: Float): List<TextLayoutResult> {
+        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { size.toSp() })
+        return (1..5).map { measurer.measure((it * 10).toString(), style) }
     }
 
     fun draw(scope: DrawScope) = with(scope) {
@@ -351,6 +375,27 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
         const val MARK_COUNT = 10
     }
 }
+
+/**
+ * How much smaller than usual a scale's numbers are set (1 = not at all) so that the [widest] number
+ * leaves at least [MIN_NUMBER_GAP_UNITS] of [u] free between two neighbours whose centres are
+ * [nearest] apart, but never below [MIN_NUMBER_FIT]: only the spirit level's close, flat scale in the
+ * wide faces (Michroma, Orbitron) needs it.
+ */
+internal fun numberFit(nearest: Float, widest: Float, u: Float): Float {
+    if (widest <= 0f) return 1f
+    val room = nearest - MIN_NUMBER_GAP_UNITS * u
+    return (room / widest).coerceIn(MIN_NUMBER_FIT, 1f)
+}
+
+/**
+ * Neighbouring numbers keep at least this many units apart: a little less than the spirit level's
+ * numbers have in the narrower faces (about 10u), so only the wide faces are set smaller there.
+ */
+internal const val MIN_NUMBER_GAP_UNITS = 8f
+
+/** Numbers are set at least this share of their usual size. */
+internal const val MIN_NUMBER_FIT = 0.85f
 
 /**
  * The paint of every marker's small soft shadow (3u blur): drawn under the marker, 1.5u right and
