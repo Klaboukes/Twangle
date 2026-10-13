@@ -1,6 +1,6 @@
 # Twangle
 
-Twangle is a guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a needle gauge measured in cents.
+Twangle is a guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents.
 
 ## Free forever
 
@@ -19,7 +19,8 @@ The full [privacy policy](PRIVACY.md) ([Nederlands](PRIVACY.nl.md)) explains it 
 - **Chromatic mode:** tunes any note, for any instrument.
 - **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
 - **Note names:** sharps (C♯), flats (D♭) or Do Re Mi.
-- **Your look:** light, dark or follow the phone, with colours from your wallpaper on Android 12+.
+- **Your look:** seven visual styles, six meter looks and six wave looks (a strobe among them); light, dark or follow the phone, with colours from your wallpaper on Android 12+.
+- **Helpful hints:** "Tune up" or "Tune down", and a tip when it's too quiet, too noisy or too loud to hear you well.
 - **Keeps the screen on** while you tune (can be turned off).
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
 - **Accurate:** within ±1 cent on test signals, from low E up to the highest frets.
@@ -29,7 +30,7 @@ Coming later: see the [roadmap](ROADMAP.md).
 
 ## Status
 
-Beta. The tuner, its settings and the polish phase are done (Phases 0–5, see the [roadmap archive](ROADMAP-ARCHIVE.md)), and so is release preparation (Phase 6: icon, signed and shrunk release build, privacy policy). The app goes on the Play Store at the end of the roadmap.
+Beta (0.9). Phases 0–13 are done (see the [roadmap archive](ROADMAP-ARCHIVE.md)): the tuner, its settings, a signed release build, the wave and strobe views, the compact landscape mode, reception tips and the six meter looks. The app goes on the Play Store at the end of the roadmap.
 
 ## How it works
 

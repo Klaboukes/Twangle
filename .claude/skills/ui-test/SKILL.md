@@ -32,7 +32,7 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 - Each module prints a line like `:feature:tuner 60s  147 tests, 0 failed, 56s on the phone`, then `FAIL Class#method: message` or `CRASH in …` lines. Exit code 0 means everything passed, 1 means something failed or timed out, and 3 means no phone is connected.
 - Stack traces are in `build/ui-tests-<module>.log` and the Gradle output is in `build/ui-tests-build.log`. Grep them only when something failed.
 - **Exit 3:** ask the owner to connect the Xiaomi 12X and accept the USB-debugging prompt. Don't land a visible or audible change without a run unless the owner says so, and if they do, note it in the PR.
-- **`INSTALL_FAILED_USER_RESTRICTED` / `INSTALL_GRANT_RUNTIME_PERMISSIONS`:** MIUI's *USB debugging (Security settings)* or *Install via USB* is off (see CLAUDE.md).
+- **`INSTALL_FAILED_USER_RESTRICTED` / `INSTALL_GRANT_RUNTIME_PERMISSIONS`:** MIUI's *USB debugging (Security settings)* or *Install via USB* is off (see CLAUDE.md), or the phone's own "Install via USB?" prompt timed out (it picks Deny after 10 s).
 - **"test timed out" in `waitForNextChoreographerFrame`, then "Already interrogating!" or "No compose hierarchies found":** the phone's screen turned off. Re-run.
 - **A hang with `MIUILOG- Permission Denied Activity` in logcat:** the script's MIUI app-op loop wasn't running. Never run tests around the script.
 - **The laptop side died mid-run:** the tests carry on on the phone. Stop them with `adb shell am force-stop <package>.test` before the next run.

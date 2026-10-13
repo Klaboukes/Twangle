@@ -7,7 +7,7 @@ Guidance for Claude Code (and humans) working in this repository.
 
 The app was called InTune until October 2026. The app ID is `io.github.klaboukes.twangle`, and code packages live under it. Classes named `InTune*` (`InTuneDetector`, `InTuneColor`, `InTuneHaptic`, `InTuneTickRule`) are about being *in tune*, not the old name. Keep them.
 
-- Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md). Read it before making structural changes.
+- Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md). Before a structural change, read its Contents and the sections the change touches.
 - Plan and progress: [ROADMAP.md](ROADMAP.md). Tick items (☐ → ☑) as you finish them. Finished phases move to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md); the owner's hand-run live tests are listed under *Owner checks*.
 
 ## Tech stack
@@ -50,7 +50,10 @@ scripts/meter-frames.sh                 # frame times of every meter look on the
 - Android SDK: `%LOCALAPPDATA%\Android\Sdk`. `adb` is at `<sdk>/platform-tools/adb.exe` and is not on PATH.
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
-- **Physical test device: Xiaomi 12X** (model 2112123AG, adb serial `f813c98c`, Android 13 / MIUI 14, 1080 × 2400 at 440 dpi ≈ 393 × 873 dp, up to 120 Hz). Since October 2026; the measurements in ARCHITECTURE.md and the archive were taken on the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so. MIUI needs *Developer options → Install via USB* on for `installDebug`, and *USB debugging (Security settings)* on for the UI tests (their APKs install with granted permissions, `-g`) and for `adb shell input` taps and key presses. Without the latter, test installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` and installs can end in `INSTALL_FAILED_USER_RESTRICTED` (the phone's own "Install via USB?" prompt, which picks Deny after 10 s; the owner ticked "Remember my choice"). *Turn on system optimisation* (MIUI optimization) is off. MIUI also blocks a test from opening an activity unless the package has Xiaomi's background-start app-op (MIUIOP 10021), which every install resets; `scripts/ui-tests.sh` keeps setting it on the phone during a run. A test that hangs with `MIUILOG- Permission Denied Activity` in logcat means that guard wasn't running. If `adb devices` shows nothing or `unauthorized`, check the USB-debugging prompt on the phone and that the USB mode is *File transfer*.
+- **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in ARCHITECTURE.md and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
+  - MIUI needs *Developer options → Install via USB* for `installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
+  - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
+  - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
 `.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main`, and uploads the debug APK as the `twangle-debug-apk` artifact.
