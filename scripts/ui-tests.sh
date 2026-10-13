@@ -132,6 +132,8 @@ quote() { printf "'%s'" "${1//\'/\'\\\'\'}"; }
 summarize() {
     python - "$1" <<'EOF'
 import re, sys
+# Test names can hold note names (F♯); Windows would print them in its own code page and fail.
+sys.stdout.reconfigure(encoding='utf-8')
 text = open(sys.argv[1], encoding='utf-8', errors='replace').read().replace('\r', '')
 tests = fails = skipped = 0
 failed, status, key, running = [], {}, None, None
