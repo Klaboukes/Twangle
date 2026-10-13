@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The meter looks with their own art (Classic, Light arc, Spirit level and Rolling scale so far) in
+ * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
  * each of the seven styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
  * the flat and sharp labels or around the frame), skipped by TalkBack, and moved by a new reading
  * without recomposing.
@@ -53,11 +54,15 @@ class MeterLooksTest(private val style: VisualStyle) {
 
     private val cents = mutableFloatStateOf(-20f)
 
+    /** Which [PAGES] entry is on screen. */
+    private val page = mutableIntStateOf(0)
+
     private fun show() {
         compose.setContent {
-            // Every case side by side, small enough that all fit on the screen at once.
+            // A page of looks, light and dark side by side, small enough to fit on the screen at once
+            // whichever way the phone is turned (a case must be on screen to be captured).
             Column {
-                for (look in LOOKS) {
+                for (look in PAGES[page.intValue]) {
                     Row {
                         for (dark in listOf(false, true)) {
                             TwangleTheme(style = style, darkTheme = dark, animate = false) {
@@ -77,10 +82,19 @@ class MeterLooksTest(private val style: VisualStyle) {
         compose.waitForIdle()
     }
 
-    @Test
-    fun everyLookIsClearlyDrawnInsideItsBox() {
+    /** Shows each page of looks in turn and runs [check] on its looks. */
+    private fun eachPage(check: (List<MeterLook>) -> Unit) {
         show()
-        for (look in LOOKS) {
+        for (i in PAGES.indices) {
+            page.intValue = i
+            compose.waitForIdle()
+            check(PAGES[i])
+        }
+    }
+
+    @Test
+    fun everyLookIsClearlyDrawnInsideItsBox() = eachPage { looks ->
+        for (look in looks) {
             for (dark in listOf(false, true)) {
                 val case = "$style $look ${if (dark) "dark" else "light"}"
                 val pixels = compose.onNodeWithTag(caseTag(look, dark)).captureToImage().toPixelMap()
@@ -114,9 +128,8 @@ class MeterLooksTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun talkBackSkipsEveryLook() {
-        show()
-        for (look in LOOKS) {
+    fun talkBackSkipsEveryLook() = eachPage { looks ->
+        for (look in looks) {
             for (dark in listOf(false, true)) {
                 val node = compose.onNodeWithTag(frameTag(look, dark)).fetchSemanticsNode()
                 assertNull("$look", node.config.getOrNull(SemanticsProperties.ContentDescription))
@@ -127,14 +140,15 @@ class MeterLooksTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun aNewReadingMovesTheMarkerWithoutRecomposing() {
-        show()
-        val before = LOOKS.map { compose.onNodeWithTag(caseTag(it, false)).captureToImage().toPixelMap() }
+    fun aNewReadingMovesTheMarkerWithoutRecomposing() = eachPage { looks ->
+        cents.floatValue = -20f
+        compose.waitForIdle()
+        val before = looks.map { compose.onNodeWithTag(caseTag(it, false)).captureToImage().toPixelMap() }
         val changes = changeCount()
         cents.floatValue = 25f
-        // The spring and the light arc's trail settle, then everything is idle again.
+        // The spring and the light arc's and the comet's trails settle, then everything is idle again.
         compose.waitForIdle()
-        LOOKS.forEachIndexed { i, look ->
+        looks.forEachIndexed { i, look ->
             val after = compose.onNodeWithTag(caseTag(look, false)).captureToImage().toPixelMap()
             assertTrue("$style $look moved", after.differsFrom(before[i]))
         }
@@ -156,14 +170,14 @@ class MeterLooksTest(private val style: VisualStyle) {
         @Parameterized.Parameters(name = "{0}")
         fun styles(): List<VisualStyle> = VisualStyle.entries
 
-        /** The looks with their own art so far. */
-        val LOOKS = listOf(MeterLook.CLASSIC, MeterLook.LIGHT_ARC, MeterLook.SPIRIT_LEVEL, MeterLook.ROLLING_SCALE)
+        /** Every look, two to a page. */
+        val PAGES = MeterLook.entries.chunked(2)
 
         /** Nothing in the styles is this colour. */
         val BACKGROUND = Color(0xFF7F00FF)
 
         const val PADDING = 8
-        const val FRAME_WIDTH = 170
+        const val FRAME_WIDTH = 130
 
         /** Each test takes a few seconds at most; 20 s means it hangs. */
         const val TEST_TIMEOUT_SECONDS = 20L

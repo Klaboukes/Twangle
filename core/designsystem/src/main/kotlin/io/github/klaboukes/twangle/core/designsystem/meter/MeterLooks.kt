@@ -57,10 +57,8 @@ fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading) {
             MeterLook.LIGHT_ARC -> LightArcMeter(reading)
             MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading)
             MeterLook.ROLLING_SCALE -> RollingScaleMeter(reading)
-            // Until their own art is built (Phase 13), the other looks show the Classic dial.
-            MeterLook.COMET,
-            MeterLook.STUDIO_METER,
-            -> ClassicMeter(reading)
+            MeterLook.COMET -> CometMeter(reading)
+            MeterLook.STUDIO_METER -> StudioMeter(reading)
         }
     }
 }
@@ -75,7 +73,7 @@ internal class DialGeometry(size: Size) {
     val u = meterUnit(size.width)
     val cx = size.width / 2f
     val cy = size.height - DIAL_PIVOT_UNITS * u
-    val r = 124f * u
+    val r = DIAL_RADIUS_UNITS * u
     val faceRadius = r + 8f * u
 
     /** The x of the point [distance] from the pivot towards [cents]. */
@@ -91,6 +89,9 @@ internal class DialGeometry(size: Size) {
         close()
     }
 }
+
+/** The dial's arc has a radius of this many units. */
+internal const val DIAL_RADIUS_UNITS = 124f
 
 /** The dial's pivot sits this many units above the bottom of the box. */
 private const val DIAL_PIVOT_UNITS = 24f
@@ -138,7 +139,7 @@ internal fun dialGlass(size: Size, roles: MeterRoles): GlassArt {
 
 /** The dial under the marker, drawn once per size and colours. */
 @Composable
-private fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra: ((Size) -> (DrawScope.() -> Unit))? = null) {
+internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra: ((Size) -> (DrawScope.() -> Unit))? = null) {
     StaticArt {
         val dial = DialUnderArt(size, roles, measurer, this)
         val more = extra?.invoke(size)
@@ -152,7 +153,7 @@ private fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra:
 
 /** The dial's glass over the marker. */
 @Composable
-private fun BoxScope.DialOver(roles: MeterRoles) {
+internal fun BoxScope.DialOver(roles: MeterRoles) {
     StaticArt {
         val glass = dialGlass(size, roles)
         val draw: DrawScope.() -> Unit = { glass.drawOver(this) }
@@ -165,7 +166,7 @@ private fun BoxScope.DialOver(roles: MeterRoles) {
  * "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else.
  */
 @Composable
-private fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
+internal fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = DialGeometry(size)
@@ -289,10 +290,10 @@ private suspend fun runLightArc(heat: LightArcHeat, reading: MeterReading, frame
     }
 }
 
-private const val NANOS_PER_SECOND = 1_000_000_000f
+internal const val NANOS_PER_SECOND = 1_000_000_000f
 
 /** A long pause (coming back to the app) counts as one short step. */
-private const val MAX_STEP_SECONDS = 0.1f
+internal const val MAX_STEP_SECONDS = 0.1f
 
 /**
  * The light arc's segments: 3.5u wide, round-ended, from 50u to 34u inside the dial's arc. Unlit
