@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–14 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
+Phases 0–15 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
 ---
 
@@ -20,14 +20,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
-
-## Phase 15 — More instruments
-Goal: tune more than a six-string guitar.
-- ☑ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
-- ☑ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the test phone — tunings whose lowest string a semitone flat is under 62 Hz (7/8-string, basses, cello) read 28–1500 Hz; synthetic 30 Hz up within 0.52 cents (0.83 at 10 dB SNR); Xiaomi 12X: 0.74 ms CPU per frame (3.5 % of a core; 5.1 ms on a little core) vs 0.33 ms for guitar, after a cache-friendlier FFT
-- ☑ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings — "Standard ▾ Guitar ▾" on one line (names set up to 30 % smaller in wide faces, a line each at 2× text), English and Dutch names for every instrument and tuning; the mode switch now reads "Strings / Chromatic"
-- ☑ String row that fits 4 to 8 strings in portrait, landscape and at 2× font — full-size buttons spread out while they fit; otherwise equal shares, shrunk alike (8 strings on a 360 dp phone: 41 dp each); names shrink to fit their buttons (also fixed Space Age's solfège at 2× text)
-- ☑ phone check for each instrument with short test tones — Xiaomi 12X, 4 s laptop tones, all 10 instruments (and ukulele low G): every string the laptop can play showed the right string, note and cents (e.g. 20 cents flat read as 20 flat, 10 sharp as 10 sharp, in tune green), from C3 (130.8 Hz) up to E5; a note between strings or an octave off read honestly against the nearest string (G3 on bass: "G2, 1180 cents sharp"). The laptop speakers can't make notes under about 130 Hz loud enough at the phone (E2 and A2 failed on the plain guitar too), so B0 to A2 stayed at "Play a string" — a speaker limit, the ±1 cent DSP tests cover them; a real bass is an owner check. No false note: silence and room noise with 5-string bass, bass, 8-string and cello (also chromatic), and short 50 and 60 Hz hum bursts, all stayed at "Play a string"
 
 ## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
