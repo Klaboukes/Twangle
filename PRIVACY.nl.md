@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 11 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 13 oktober 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -15,7 +15,11 @@ Twangle is een gitaarstemmer voor Android, gemaakt door de ontwikkelaar Klabouke
 - Twangle deelt geen gegevens met wie dan ook, want het heeft er geen.
 
 ## Instellingen blijven op je telefoon
-Twangle onthoudt je keuzes: de A4-stemtoon, de stemming, hoe nootnamen worden geschreven, de stijl, licht of donker, kleuren van je achtergrond, de golfweergave, scherm aan houden en trillen bij gestemd. Die staan alleen op je telefoon.
+Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:
+- **Stemmen:** gitaar- of chromatische modus, de stemming, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
+- **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf en hoe die zich gedraagt als je gestemd bent, de indeling als je telefoon op zijn kant ligt, en of de signaalstreepjes te zien zijn.
+- **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
+- Of je de tip over het vastzetten van een snaar al hebt gezien, zodat die niet opnieuw verschijnt.
 
 Heb je de back-up van Android zelf aangezet (bijvoorbeeld Google-back-up), dan kan Android deze instellingen meenemen in de back-up van je telefoon of overzetten naar een nieuwe telefoon, zodat ze na een herinstallatie terugkomen. Die back-up wordt geregeld door Android en je back-updienst, niet door Twangle, en je beheert hem in de instellingen van je telefoon. Er zit nooit geluid in.
 
