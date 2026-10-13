@@ -87,15 +87,53 @@ class FrameAssemblerTest {
     }
 
     @Test
+    fun `a larger capacity keeps a longer window at the same moments`() {
+        val assembler = FrameAssembler(windowSize = 4, hopSize = 2, capacity = 8)
+        val short = FloatArray(4)
+        val long = FloatArray(8)
+        assertEquals(4, assembler.push(ramp(0, 10)))
+        assertTrue(assembler.isFrameReady)
+        assertEquals(4, assembler.available)
+        // Before the long window has filled, its older part reads as silence.
+        assembler.readFrame(long, 8)
+        assertArrayEquals(floatArrayOf(0f, 0f, 0f, 0f) + ramp(0, 4), long, 0f)
+
+        assertEquals(2, assembler.push(ramp(4, 2)))
+        assembler.skipFrame()
+        assertFalse(assembler.isFrameReady)
+        assertEquals(2, assembler.push(ramp(6, 6)))
+        assertEquals(8, assembler.available)
+        assembler.readFrame(short)
+        assertArrayEquals(ramp(4, 4), short, 0f)
+
+        // Wrapping round the ring: frames end at 10, 12, …; switch lengths freely.
+        assertEquals(2, assembler.push(ramp(8, 2)))
+        assembler.readFrame(long, 8)
+        assertArrayEquals(ramp(2, 8), long, 0f)
+        assertEquals(2, assembler.push(ramp(10, 2)))
+        assembler.readFrame(short)
+        assertArrayEquals(ramp(8, 4), short, 0f)
+        assertEquals(2, assembler.push(ramp(12, 2)))
+        assembler.readFrame(long, 8)
+        assertArrayEquals(ramp(6, 8), long, 0f)
+
+        assembler.reset()
+        assertEquals(0, assembler.available)
+    }
+
+    @Test
     fun `invalid use is rejected`() {
         assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 0) }
         assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 4, hopSize = 5) }
         assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 4, hopSize = 0) }
+        assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 4, hopSize = 2, capacity = 3) }
         val assembler = FrameAssembler(windowSize = 4, hopSize = 2)
         assertThrows(IllegalStateException::class.java) { assembler.readFrame(FloatArray(4)) }
+        assertThrows(IllegalStateException::class.java) { assembler.skipFrame() }
         assertThrows(IllegalArgumentException::class.java) { assembler.push(FloatArray(4), offset = 2, length = 3) }
         assembler.push(ramp(0, 4))
         assertThrows(IllegalArgumentException::class.java) { assembler.readFrame(FloatArray(3)) }
+        assertThrows(IllegalArgumentException::class.java) { assembler.readFrame(FloatArray(8), 5) }
     }
 
     @Test

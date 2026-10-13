@@ -7,8 +7,8 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## Contents
 1. [Tech stack](#1-tech-stack): name, app ID and icon · rejected alternatives
 2. [Module structure](#2-module-structure)
-3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture
-4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · meter looks · Baseline Profile · release build
+3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture
+4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings
 6. [UI](#6-ui): UI state model · tuner screen · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
 7. [Package layout](#7-package-layout-per-module)
@@ -87,7 +87,8 @@ Rules:
     ▼
  AudioRecorder ──Flow<FloatArray>(chunk = one hop ≈ 21 ms, 1024 samples at 48 kHz)──►
     ▼
- FrameAssembler        ring buffer → overlapping analysis window (≈ 85 ms, 4096 samples at 48 kHz)
+ FrameAssembler        ring buffer → overlapping analysis window (≈ 85 ms, 4096 samples at 48 kHz;
+                       ≈ 171 ms, 8192 samples, when the tuning goes below the guitar: see Low notes)
     ▼
  SignalGate            RMS level check (< ~-50 dBFS → "no signal"), DC offset removal
     ▼
@@ -114,9 +115,9 @@ Rules:
 
 ### Key numbers
 - **Sample rate:** 48 000 Hz, the native rate on most phones. `SampleRateSelector` uses `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` if it is 44 100–48 000 Hz (higher only costs CPU), then tries 48 000, 44 100, 32 000, 16 000 and 8 000; the first rate `AudioRecord.getMinBufferSize` accepts wins. Any rate from 8 to 96 kHz works end to end (see *Other sample rates*).
-- **Analysis window:** 4096 samples (≈ 85 ms), about 7 periods of low E (82.41 Hz); YIN needs at least 2. Bass and 7-string (down to ~30 Hz) will need 8192.
+- **Analysis window:** 4096 samples (≈ 85 ms), about 7 periods of low E (82.41 Hz); YIN needs at least 2. Tunings that go lower (7- and 8-string guitar, bass, cello) use **8192** (≈ 171 ms, see *Low notes*).
 - **Hop:** 1024 samples (≈ 21 ms), ~47 estimates per second.
-- **Detection range:** 62–1500 Hz for guitar (τ_max = sampleRate / f_min). The floor sits above 60 Hz mains hum and below drop C (65.4 Hz).
+- **Detection range:** 62–1500 Hz for guitar (τ_max = sampleRate / f_min). The floor sits above 60 Hz mains hum and below drop C (65.4 Hz). With the low-note window: **28–1500 Hz**, so B0 (30.9 Hz) reads even a semitone flat.
 - **YIN threshold:** 0.15 (the paper suggests 0.10–0.15).
 - **Accuracy target:** ±1 cent on synthetic signals, ±3 cents on recorded guitar.
 - **"In tune":** |cents| ≤ 5 held for 300 ms (15 hops at 48 kHz), released past 7 cents, so a note hovering at 5 doesn't flicker. That is **Relaxed**, the default; **Precise** is ≤ 2, released past 3 (§5, Settings). The shown "in tune" goes through the steady hint line (see *Audio capture*), so it also lasts at least 0.5 s.
@@ -127,7 +128,18 @@ Rules:
 Below 32 kHz a period spans too few samples for ±1 cent, so `UpsamplingPitchDetector` first interpolates by an integer factor to ≥ 32 kHz (polyphase windowed-sinc FIR: Kaiser β = 8, 32 taps per phase, cut-off 0.45 × input rate), and YIN's low-pass drops to 0.4 × the input rate so no images get through. Measured: every rate from 8 to 96 kHz within 1 cent on sines, saws, plucks and weak fundamentals; 8 kHz costs 0.5 ms per frame on the JVM.
 
 ### Frame assembly
-`FrameAssembler` keeps a 4096-sample ring buffer. `push()` takes chunks of any size and stops as soon as a frame is ready, so none is skipped; `readFrame(out)` copies the window oldest-first into a caller-owned array. First frame after one full window, then one per hop. Allocated once.
+`FrameAssembler` keeps a ring buffer of `capacity` samples (4096 by default). `push()` takes chunks of any size and stops as soon as a frame is ready, so none is skipped; `readFrame(out, length)` copies the latest `length` samples (by default the 4096-sample window) oldest-first into a caller-owned array, and `skipFrame()` passes on a frame. First frame after one full window, then one per hop. `PitchPipeline` gives it a capacity of the low-note window (8192 at 48 kHz) so either window can be read at every hop; `available` says how much audio it holds since the mic opened. Allocated once.
+
+### Low notes
+Phase 15. `PitchRange` (`:core:dsp`) says how low the detector listens:
+- **`STANDARD`:** 62–1500 Hz, 4096 samples. Every guitar tuning, ukulele, violin, viola, mandolin.
+- **`LOW`:** 28–1500 Hz, **8192 samples** (`AnalysisSettings.forSampleRate(rate, PitchRange.LOW)`; ≈ 171 ms at any rate). 28 Hz is below B0 at −50 cents (30.0 Hz); τ_max = 1715 lags at 48 kHz, which with the filter's start-up and the fit's margin needs ≈ 8000 samples (W = 6276, ≈ 3.7 periods of the lowest note, like the standard window's 4). The hop stays 1024, so readings still come ~47 times a second and the smoother's frame counts keep their meaning.
+
+`PitchRange.forLowestNote(hz)` picks `LOW` when the tuning's lowest string, **a semitone flat**, is below 62 Hz, at the current A4. So 7- and 8-string guitars, both basses and the cello (C2, 65.4 Hz: a semitone flat is 61.7 Hz) get `LOW`; no guitar preset does, even at A4 = 415 Hz (drop D's D2 at 69 Hz). `TunerOptions.pitchRange` works it out once per tuning or A4 change; `TunerViewModel` passes `{ options.pitchRange }` to `PitchPipeline.readings(range)`, which reads it every frame. The pipeline keeps a frame buffer and a detector for each range (made once per listening session, ≈ 200 KB for the low one) and one assembler holding the long window, so switching the tuning changes the window on the next hop without reopening the mic or losing audio. After the mic opens, low-range readings start once a whole long window has arrived (171 ms instead of 85). Chromatic mode follows the tuning too, so a bass player's chromatic mode also reads low.
+
+The cost: twice the window, about 2.3× the CPU per frame (bigger FFT), and a reading that reflects audio ≈ 43 ms further back on average. Measured in §4 (*Low-note window on the Xiaomi 12X*).
+
+**Measured (`LowPitchRangeTest`, 48 kHz):** sines 30–1500 Hz within 0.09 cents; sawtooth, square, pluck and weak fundamental within 0.52; every string of every low instrument within 1 cent from a semitone flat to 50 cents sharp, the right note even with a weak fundamental; 20 dB SNR within 0.33, 10 dB within 0.83; nothing below 28 Hz; 8, 16 and 44.1 kHz also within 1 cent; no allocation. *Known limit:* 50 and 60 Hz mains hum are inside the low range, so hum alone shows as a note (G1 / B♭1) and hum 10 dB below a B0 string pulls it up to 8 cents (≈ 2–3 cents from E1 up). A notch filter would fix it if real rooms need it.
 
 ### Signal gate
 `SignalGate.process(frame)` first measures the **peak** as the mic delivered it (`peakDbfs`, to detect clipping), then removes the DC offset in place and measures the RMS level as `20 · log10(rms)` dBFS (full-scale square 0 dBFS, sine ≈ −3; silence floored at −120). It opens at **−50 dBFS** and closes below **−56 dBFS** (6 dB hysteresis), so a decaying note doesn't flicker. Only frames with the gate open reach the detector.
@@ -174,7 +186,7 @@ Behind "Show signal bars" (off by default). Four bars in the free slot at the ri
 - *Too long (noise):* heavy noise inflates `d′` at short lags, so the first accepted dip can be 2–3 periods. If `d` at a local minimum near τ/k is at most 15 % above `d(τ)` (and `d′` < 0.5), τ/k is taken.
 - *Too short (harmonics):* a high note with a strong 2nd and weak odd harmonics nearly repeats every half period. If `d′(τ) ≥ 0.05` and `d` at 2τ or 3τ is below a quarter of `d(τ)`, that lag is the period.
 
-Search range τ = 32…775 (1500…62 Hz) plus 50 lags for the fit; integration window `W = 4096 − 92 − 825 = 3179`. Confidence = 1 − d′(τ). `PitchResult` is a value class packing two floats into a `Long`, with `PitchResult.NONE` instead of null, so it never boxes. Measured: ≈ 0.1 cent for sines, ≈ 0.5 for saw/square/pluck/weak fundamental, < 1 at 20 dB SNR, < 5 at 10 dB; no octave errors. `detect()` is allocation-free (byte-counting test).
+Search range τ = 32…775 (1500…62 Hz) plus 50 lags for the fit; integration window `W = 4096 − 92 − 825 = 3179`. In the low-note range τ = 32…1715 (1500…28 Hz) plus 109 lags, `W = 8192 − 92 − 1824 = 6276`, FFT size 8192. Confidence = 1 − d′(τ). `PitchResult` is a value class packing two floats into a `Long`, with `PitchResult.NONE` instead of null, so it never boxes. Measured: ≈ 0.1 cent for sines, ≈ 0.5 for saw/square/pluck/weak fundamental, < 1 at 20 dB SNR, < 5 at 10 dB; no octave errors. `detect()` is allocation-free (byte-counting test).
 
 ### Smoothing
 `PitchSmoother` works in fractional MIDI, so cents are ×100 and A4 is already applied:
@@ -227,7 +239,7 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 | Cello (`cello`) | 4 | C2 G2 D3 A3 | C2–A3 |
 | Mandolin (`mandolin`) | 4 courses | G3 D4 A4 E5 | G3–E5 |
 
-`lowestNote` / `highestNote` span all of an instrument's presets; the detector's 62–1500 Hz range does not yet reach B1, F♯1, E1 or B0 (next increment: the low-note window). Until the instrument picker lands, the app uses only the guitar.
+`lowestNote` / `highestNote` span all of an instrument's presets. Tunings whose lowest string goes below the guitar's range (B1, F♯1, E1, B0, and the cello's C2) switch the detector to the low-note window (§3, *Low notes*). Until the instrument picker lands, the app uses only the guitar.
 
 ### Strobe model
 `StrobeMotion` (`strobe/`) is the drift of a strobe pattern, one animation frame at a time; every wave look runs one (via `WaveMotion`). A mechanical strobe drifts at the beat rate in Hz, so high strings move faster; here the drift comes from cents, so every string looks the same. `driftSpeed(cents)` in stripe periods per second: **0 within ±0.5 cent** (finer than the ±1 cent target, so an in-tune string stands perfectly still), then **0.4/s per cent beyond**, up to **4/s** from 10.5 cents; positive when sharp. It ignores the in-tune flag (2–5 cents wide) because the strobe exists to show the last cent. `advance(seconds, cents)` eases the shown cents towards the reading (rate 20/s) and moves `phase` (0..1, wrapping); a step is capped at 0.1 s. Without a reading the view stops calling it and the pattern freezes. Tests feed sines 0, ±1, ±3, ±5 and ±30 cents off every string through `TunerChain`.
@@ -244,7 +256,7 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 ### Audio capture
 `AudioRecorder.chunks()` is a cold `Flow<FloatArray>`: the mic opens when collection starts and is released when it stops. `AndroidAudioRecorder` reads one-hop chunks with `READ_BLOCKING` on its own single-thread dispatcher (buffer ≥ 4 chunks). To avoid ~47 arrays a second it fills a **pool of 4 arrays** behind a channel of capacity 2, so **a chunk is only valid until the collector takes the next one**: downstream code copies samples out inside `collect` and must not `buffer()` the chunks.
 
-`PitchPipeline` (`:feature:tuner`, since it joins audio and DSP) collects the chunks into a `FrameAssembler` and runs gate, detector, `NoiseFloorTracker` and `Clarity` on `Dispatchers.Default`, emitting one `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen, noiseFloorDbfs, snrDb, clarity)` (plus peak) per hop. DSP objects are created once per collection; only the small reading is new each frame.
+`PitchPipeline` (`:feature:tuner`, since it joins audio and DSP) collects the chunks into a `FrameAssembler` and runs gate, detector, `NoiseFloorTracker` and `Clarity` on `Dispatchers.Default`, emitting one `PitchReading(frequencyHz, confidence, levelDbfs, gateOpen, noiseFloorDbfs, snrDb, clarity)` (plus peak) per hop. The window follows the tuning (`readings(range)`, see *Low notes*). DSP objects are created once per collection; only the small reading is new each frame.
 
 `TunerViewModel` creates a `TunerInterpreter` per listening session, which feeds `PitchSmoother` and turns the smoothed MIDI into a `TunerUiState`, on the same coroutine as the detector. Mode and saved settings are combined into one immutable `TunerOptions` (mode, tuning, A4, locked string, notation, precision), rebuilt only on change. Listening waits until settings have loaded. Changes take effect on the next frame without reopening the mic; only a new A4 restarts the smoother.
 - **Chromatic:** the smoother's note and cents.
@@ -268,7 +280,8 @@ Failures end the flow with a typed `AudioRecorderException`, mapped by `toTunerE
 ## 4. Threading & performance
 - `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`.
 - **No allocations in the per-frame loop.** Buffers are allocated once; per-frame garbage at ~47 Hz causes GC jank.
-- **YIN difference function via FFT.** The direct O(W·τ_max) sum (~2.6 M multiply-adds per frame) took 69 % of the app's CPU cycles on the S26 (~7 ms per frame). `FftDifference` computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): energies as a running sum, the cross-correlation from one complex FFT carrying both real inputs plus one inverse (N = 4096, radix-2 `Fft`, doubles, no allocation). `FftDifferenceTest` checks it within 1e-10 of the direct sum. `./gradlew :core:dsp:benchmark` (kept out of CI): YIN **1.05 → 0.48 ms** per frame on the JVM. Budget: 2 ms.
+- **YIN difference function via FFT.** The direct O(W·τ_max) sum (~2.6 M multiply-adds per frame) took 69 % of the app's CPU cycles on the S26 (~7 ms per frame). `FftDifference` computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): energies as a running sum, the cross-correlation from one complex FFT carrying both real inputs plus one inverse (N = 4096, or 8192 for low notes; radix-2 `Fft`, doubles, no allocation). `FftDifferenceTest` checks it within 1e-10 of the direct sum. `./gradlew :core:dsp:benchmark` (kept out of CI): YIN **1.05 → 0.48 ms** per frame on the JVM. Budget: 2 ms.
+- **FFT passes block by block** (Phase 15). `Fft` used to run each pass twiddle by twiddle, sweeping the whole arrays once per twiddle; at N = 8192 (128 KB of doubles) they no longer stay in the CPU's cache, and the low-note window cost 4× the standard one on the JVM. Walking each pass block by block, in memory order, gives identical results and: JVM 0.48 → **0.18 ms** (4096), 2.0 → **0.49 ms** (8192).
 - **Only visible changes reach the main thread:**
   - **Silence:** equal `Listening` states are dropped with `distinctUntilChanged()` on the DSP dispatcher.
   - **ViewModel:** `distinctUntilChanged { old, new -> old.looksLike(new) }` drops readings that would look the same as the last one *sent*: same text (whole cents, 0.1 Hz) and the needle within `NEEDLE_STEP_CENTS` = 0.03 cents (below a pixel) or pinned at the same edge, reception within `RECEPTION_STEP` (0.02). `looksLike` allocates nothing; `TunerUiStateShownTest` fails if `Detected` gains a field it doesn't compare.
@@ -286,6 +299,17 @@ Minified `benchmarkRelease` build, portrait, CPU per thread from `/proc/<pid>/ta
 | Note sounding: DSP thread | ≈ 34 % (≈ 7 ms/frame) | ≈ 9 % |
 
 Main thread with identical synthetic input, before and after the recomposition work above: guitar mode 11.6 % → 5.1 %; chromatic 15.8 % at ~75 frames/s → 12.2 % at ~110 frames/s (≈ 2.1 → 1.1 ms per frame). Nothing is drawn in silence. Battery: ≈ 0.8 mAh per hour of listening for the app's CPU; the screen costs far more.
+
+### Low-note window on the Xiaomi 12X (Phase 15)
+`scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` and runs `DspPhoneBenchmark` with `dalvikvm` on the phone (ART with JIT, not a debuggable build; no app, no sound, ~20 s). 48 kHz, 2,000 warm-up and 1,000 timed frames of bass, guitar and noise test signals; CPU from `/proc/thread-self/schedstat`.
+
+| Per frame (hop = 21.3 ms) | Standard, 4096 | Low notes, 8192 | Low notes, before the FFT change |
+|---|---|---|---|
+| Detector, wherever the scheduler puts it | 0.31 ms | 0.69 ms | 0.98 ms |
+| Gate + detector + smoother | 0.33 ms (1.5 % of a core) | **0.74 ms (3.5 %)** | 1.03 ms |
+| Gate + detector + smoother, little cores only (`TASKSET=0f`) | 2.2 ms (10 %) | **5.1 ms (24 %)** | |
+
+So the low-note window costs about 2.3× the standard one and stays far inside the hop even on a little core. Guitar tunings keep the standard window and its cost.
 
 ### Meter looks (Phase 13)
 Measured on the S26 (Android 16, portrait) with `scripts/meter-frames.sh`, which runs `MeterFramesBenchmark` against the minified `benchmarkRelease` build (~4 min, phone unlocked and upright; `scripts/meter-frames.sh COMET:STUDIO_METER` for some looks, `CURRENT` for whatever the app shows).
@@ -541,7 +565,7 @@ Six styles, in the owner's order (Phase 14, October 2026): Ancient, Classic, Ret
 ```
 core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
-                AnalysisSettings, LowPassFilter, SignalGate, FftDifference, Fft, Clarity
+                AnalysisSettings, PitchRange, LowPassFilter, SignalGate, FftDifference, Fft, Clarity
     level/      NoiseFloorTracker, ReceptionTracker
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother

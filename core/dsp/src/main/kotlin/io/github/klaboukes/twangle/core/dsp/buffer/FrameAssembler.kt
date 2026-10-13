@@ -3,10 +3,12 @@ package io.github.klaboukes.twangle.core.dsp.buffer
 /**
  * Turns a stream of audio chunks of any size into overlapping analysis windows.
  *
- * Samples are written into a ring buffer of [windowSize]. The first frame is ready once
- * [windowSize] samples have arrived; after that, a new frame is ready every [hopSize] samples,
- * so consecutive frames overlap by `windowSize − hopSize` samples. Nothing allocates after
- * construction.
+ * Samples are written into a ring buffer of [capacity] (by default [windowSize]). The first frame
+ * is ready once [windowSize] samples have arrived; after that, a new frame is ready every [hopSize]
+ * samples, so consecutive frames overlap by `windowSize − hopSize` samples. A larger [capacity]
+ * lets the caller read a longer window at the same moments (`readFrame(out, length)`, once
+ * [available] reaches that length), e.g. the low-note window, and switch between the two without
+ * losing audio. Nothing allocates after construction.
  *
  * Typical loop for one incoming chunk:
  * ```
@@ -23,17 +25,24 @@ package io.github.klaboukes.twangle.core.dsp.buffer
 class FrameAssembler(
     val windowSize: Int = DEFAULT_WINDOW_SIZE,
     val hopSize: Int = DEFAULT_HOP_SIZE,
+    /** How many of the latest samples are kept: at least [windowSize]. */
+    val capacity: Int = windowSize,
 ) {
 
     init {
         require(windowSize > 0) { "windowSize must be positive, was $windowSize" }
         require(hopSize in 1..windowSize) { "hopSize must be in 1..$windowSize, was $hopSize" }
+        require(capacity >= windowSize) { "capacity must be at least windowSize $windowSize, was $capacity" }
     }
 
-    private val ring = FloatArray(windowSize)
+    private val ring = FloatArray(capacity)
 
     // Next write position in [ring]. Once the ring is full it also points at the oldest sample.
     private var writePos = 0
+
+    /** Samples received since the start or [reset], up to [capacity]: the longest window [readFrame] can fill. */
+    var available: Int = 0
+        private set
 
     // Samples still needed before the next frame is ready: a full window at first, then one hop.
     private var samplesUntilFrame = windowSize
@@ -57,11 +66,12 @@ class FrameAssembler(
         val count = minOf(length, samplesUntilFrame)
         var copied = 0
         while (copied < count) {
-            val chunk = minOf(count - copied, windowSize - writePos)
+            val chunk = minOf(count - copied, capacity - writePos)
             System.arraycopy(samples, offset + copied, ring, writePos, chunk)
-            writePos = (writePos + chunk) % windowSize
+            writePos = (writePos + chunk) % capacity
             copied += chunk
         }
+        available = minOf(capacity, available + count)
 
         samplesUntilFrame -= count
         if (samplesUntilFrame == 0) {
@@ -72,16 +82,25 @@ class FrameAssembler(
     }
 
     /**
-     * Copies the ready frame into [out] (oldest sample first) and clears [isFrameReady].
-     * [out] must hold at least [windowSize] samples.
+     * Copies the latest [length] samples (by default [windowSize], at most [capacity]) of the ready
+     * frame into [out], oldest first, and clears [isFrameReady]. [out] must hold at least [length]
+     * samples. Samples older than [available] read as silence.
      */
-    fun readFrame(out: FloatArray) {
+    fun readFrame(out: FloatArray, length: Int = windowSize) {
         check(isFrameReady) { "No frame is ready" }
-        require(out.size >= windowSize) { "Output must hold $windowSize samples, was ${out.size}" }
-        // The ring is full here, so writePos is the oldest sample: copy writePos..end, then 0 until writePos.
-        val tail = windowSize - writePos
-        System.arraycopy(ring, writePos, out, 0, tail)
-        System.arraycopy(ring, 0, out, tail, writePos)
+        require(length in 1..capacity) { "length must be in 1..$capacity, was $length" }
+        require(out.size >= length) { "Output must hold $length samples, was ${out.size}" }
+        // The newest sample sits just before writePos: copy start..end of the ring, then the rest from 0.
+        val start = (writePos - length + capacity) % capacity
+        val first = minOf(length, capacity - start)
+        System.arraycopy(ring, start, out, 0, first)
+        System.arraycopy(ring, 0, out, first, length - first)
+        isFrameReady = false
+    }
+
+    /** Passes on the ready frame without reading it, e.g. while a longer window is still filling. */
+    fun skipFrame() {
+        check(isFrameReady) { "No frame is ready" }
         isFrameReady = false
     }
 
@@ -89,6 +108,7 @@ class FrameAssembler(
     fun reset() {
         ring.fill(0f)
         writePos = 0
+        available = 0
         samplesUntilFrame = windowSize
         isFrameReady = false
     }

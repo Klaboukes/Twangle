@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
@@ -84,6 +85,27 @@ class TunerViewModelTest {
         assertEquals(2, state.octave)
         assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
         assertEquals(110f, state.frequencyHz, 0.1f)
+    }
+
+    @Test
+    fun `a bass tuning makes the tuner hear its low E without reopening the mic`() = runTest(dispatcher) {
+        // One second of E1 (41.2 Hz), the bass's lowest string, below the guitar's range.
+        val recorder = FakeAudioRecorder(TestSignals.sawtooth(41.2034f, length = 48_000), loop = true)
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(400)
+        val guitar = vm.state.value
+        assertFalse("guitar range heard $guitar", guitar is TunerUiState.Detected && guitar.octave == 1)
+
+        vm.setTuning(Instruments.BASS_4.defaultTuning)
+        advanceTimeBy(400)
+        val state = vm.detected()
+        assertEquals(0, state.targetString)
+        assertEquals("E", state.noteName)
+        assertEquals(1, state.octave)
+        assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
+        assertEquals(1, recorder.startCount)
     }
 
     @Test

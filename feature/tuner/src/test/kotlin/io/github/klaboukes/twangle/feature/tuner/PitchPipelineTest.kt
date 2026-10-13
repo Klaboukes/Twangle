@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner
 import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.toList
@@ -32,6 +33,37 @@ class PitchPipelineTest {
             assertTrue("off by ${cents(r.frequencyHz, 110f)} c", abs(cents(r.frequencyHz, 110f)) < 1f)
             assertTrue(r.confidence > 0.8f)
         }
+    }
+
+    @Test
+    fun `the low range reads B0 after one long window, the standard range does not`() = runTest {
+        val b0 = 30.87f
+        val signal = TestSignals.weakFundamental(b0, length = 24 * 1024)
+        val low = PitchPipeline(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler))
+            .readings { PitchRange.LOW }.toList()
+
+        // First frame after 8192 samples, then one per 1024: (24 · 1024 − 8192) / 1024 + 1.
+        assertEquals(17, low.size)
+        for (r in low) assertTrue("off by ${cents(r.frequencyHz, b0)} c", abs(cents(r.frequencyHz, b0)) < 1f)
+
+        val standard = PitchPipeline(FakeAudioRecorder(TestSignals.sine(b0, length = 24 * 1024)), StandardTestDispatcher(testScheduler))
+            .readings().toList()
+        assertEquals(21, standard.size)
+        assertTrue(standard.none { it.isPitched })
+    }
+
+    @Test
+    fun `switching range mid-note takes effect on the next hop without a gap`() = runTest {
+        val e1 = 41.2f
+        val signal = TestSignals.sine(e1, length = 24 * 1024)
+        var frames = 0
+        val readings = PitchPipeline(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler))
+            .readings { if (frames++ < 8) PitchRange.STANDARD else PitchRange.LOW }.toList()
+
+        // Same pace as the standard range throughout: the long window had already filled.
+        assertEquals(21, readings.size)
+        assertTrue(readings.take(8).none { it.isPitched })
+        for (r in readings.drop(8)) assertTrue("off by ${cents(r.frequencyHz, e1)} c", abs(cents(r.frequencyHz, e1)) < 1f)
     }
 
     @Test

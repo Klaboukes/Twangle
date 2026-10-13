@@ -226,7 +226,8 @@ class TunerViewModel(
         val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
         var frame = 0
         emitAll(
-            pipeline.readings().map { reading ->
+            // The window follows the tuning's lowest string (bass notes need the longer one).
+            pipeline.readings { (options.value ?: initial).pitchRange }.map { reading ->
                 val state = interpreter.interpret(reading, options.value ?: initial)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception

@@ -48,14 +48,18 @@ internal class Fft(val size: Int) {
             }
         }
         // Butterflies: combine pairs of half-length transforms, doubling the length each pass.
+        // Block by block, so each pass walks the arrays once in order. (Twiddle by twiddle instead
+        // swept the whole arrays `half` times per pass; at N = 8192 they no longer fit the CPU's
+        // cache and that took twice as long.)
         var half = 1
         while (half < size) {
             val step = size / (2 * half)
-            for (j in 0 until half) {
-                val wr = cosTable[j * step]
-                val wi = sign * sinTable[j * step]
-                var a = j
-                while (a < size) {
+            var block = 0
+            while (block < size) {
+                for (j in 0 until half) {
+                    val wr = cosTable[j * step]
+                    val wi = sign * sinTable[j * step]
+                    val a = block + j
                     val b = a + half
                     val tr = wr * re[b] - wi * im[b]
                     val ti = wr * im[b] + wi * re[b]
@@ -63,8 +67,8 @@ internal class Fft(val size: Int) {
                     im[b] = im[a] - ti
                     re[a] += tr
                     im[a] += ti
-                    a += 2 * half
                 }
+                block += 2 * half
             }
             half *= 2
         }

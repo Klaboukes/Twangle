@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 
@@ -23,4 +24,11 @@ data class TunerOptions(
     val notation: Notation = Notation.DEFAULT,
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
-)
+) {
+    /**
+     * How low the detector listens: [PitchRange.LOW] (the longer window) when the tuning's lowest
+     * string goes below what the standard window reads. Every guitar tuning stays standard. Worked
+     * out once here, so the DSP loop only reads it.
+     */
+    val pitchRange: PitchRange = PitchRange.forLowestNote(NoteMapper(a4Hz).frequencyOf(tuning.lowestNote))
+}

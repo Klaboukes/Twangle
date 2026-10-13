@@ -18,6 +18,9 @@ import kotlin.math.roundToInt
  * There the low-pass also drops to 0.4 × the input rate, below the input's Nyquist frequency.
  * At 8 kHz, e.g. a Bluetooth headset's narrowband mic, that is a 683-sample window, a 171-sample
  * hop, ×4 upsampling to 32 kHz and a 3.2 kHz low-pass.
+ *
+ * [range] picks how low it listens: [PitchRange.LOW] doubles the window (8192 samples at 48 kHz)
+ * and lowers the floor to 28 Hz for bass notes, with the same hop.
  */
 data class AnalysisSettings(
     val sampleRate: Int,
@@ -27,6 +30,7 @@ data class AnalysisSettings(
     val minFrequencyHz: Float,
     val maxFrequencyHz: Float,
     val lowPassHz: Float,
+    val range: PitchRange = PitchRange.STANDARD,
 ) {
 
     /** Rate YIN runs at: [sampleRate] × [upsampleFactor]. */
@@ -74,8 +78,11 @@ data class AnalysisSettings(
         // At 8 kHz that is 3.2 kHz, still more than twice the 1500 Hz top note.
         private const val LOW_PASS_FRACTION_OF_RATE = 0.4f
 
-        /** Settings for [sampleRate] Hz, which must be in [MIN_SAMPLE_RATE]..[MAX_SAMPLE_RATE]. */
-        fun forSampleRate(sampleRate: Int): AnalysisSettings {
+        /**
+         * Settings for [sampleRate] Hz, which must be in [MIN_SAMPLE_RATE]..[MAX_SAMPLE_RATE], listening
+         * as low as [range] says.
+         */
+        fun forSampleRate(sampleRate: Int, range: PitchRange = PitchRange.STANDARD): AnalysisSettings {
             require(sampleRate in MIN_SAMPLE_RATE..MAX_SAMPLE_RATE) {
                 "sampleRate must be in $MIN_SAMPLE_RATE..$MAX_SAMPLE_RATE, was $sampleRate"
             }
@@ -83,12 +90,13 @@ data class AnalysisSettings(
             val factor = if (sampleRate >= UPSAMPLE_BELOW_RATE) 1 else ceil(UPSAMPLE_BELOW_RATE.toDouble() / sampleRate).toInt()
             return AnalysisSettings(
                 sampleRate = sampleRate,
-                windowSize = (FrameAssembler.DEFAULT_WINDOW_SIZE * scale).roundToInt(),
+                windowSize = (FrameAssembler.DEFAULT_WINDOW_SIZE * range.windowMultiple * scale).roundToInt(),
                 hopSize = (FrameAssembler.DEFAULT_HOP_SIZE * scale).roundToInt(),
                 upsampleFactor = factor,
-                minFrequencyHz = YinPitchDetector.DEFAULT_MIN_FREQUENCY_HZ,
+                minFrequencyHz = range.minFrequencyHz,
                 maxFrequencyHz = YinPitchDetector.DEFAULT_MAX_FREQUENCY_HZ,
                 lowPassHz = minOf(YinPitchDetector.DEFAULT_LOW_PASS_HZ, sampleRate * LOW_PASS_FRACTION_OF_RATE),
+                range = range,
             )
         }
     }

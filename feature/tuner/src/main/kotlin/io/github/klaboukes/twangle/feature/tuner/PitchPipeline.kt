@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.dsp.buffer.FrameAssembler
 import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.Clarity
+import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
@@ -62,24 +63,32 @@ class PitchPipeline(
     /** Time between two readings: one hop at the recorder's sample rate (~21 ms). */
     val frameSeconds: Float get() = AnalysisSettings.forSampleRate(sampleRate.coerceIn(SUPPORTED_RATES)).hopSeconds
 
-    fun readings(): Flow<PitchReading> = flow {
+    /** One reading per hop; [range] is asked every frame how low to listen (it must not allocate). */
+    fun readings(range: () -> PitchRange = { PitchRange.STANDARD }): Flow<PitchReading> = flow {
         val rate = sampleRate
         if (rate !in SUPPORTED_RATES) {
             throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
         }
-        val settings = AnalysisSettings.forSampleRate(rate)
-        val assembler = settings.newFrameAssembler()
+        val standard = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.STANDARD))
+        val low = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.LOW))
+        val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
         val gate = SignalGate()
-        val detector = settings.newPitchDetector()
-        val noise = settings.newNoiseFloorTracker()
-        val frame = FloatArray(assembler.windowSize)
+        val noise = standard.settings.newNoiseFloorTracker()
 
         recorder.chunks().collect { chunk ->
             var pos = 0
             while (pos < chunk.size) {
                 pos += assembler.push(chunk, pos, chunk.size - pos)
                 if (assembler.isFrameReady) {
-                    assembler.readFrame(frame)
+                    val analysis = if (range() == PitchRange.LOW) low else standard
+                    if (assembler.available < analysis.windowSize) {
+                        // The mic opened less than one long window ago: wait for the next hop.
+                        assembler.skipFrame()
+                        continue
+                    }
+                    val frame = analysis.frame
+                    val detector = analysis.detector
+                    assembler.readFrame(frame, analysis.windowSize)
                     val open = gate.process(frame)
                     val pitch = if (open) detector.detect(frame) else PitchResult.NONE
                     noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
@@ -93,6 +102,13 @@ class PitchPipeline(
             }
         }
     }.flowOn(dspDispatcher)
+
+    // The frame buffer and detector for one range, made once per collection.
+    private class Analysis(val settings: AnalysisSettings) {
+        val windowSize: Int = settings.windowSize
+        val frame = FloatArray(windowSize)
+        val detector = settings.newPitchDetector()
+    }
 
     private companion object {
         val SUPPORTED_RATES = AnalysisSettings.MIN_SAMPLE_RATE..AnalysisSettings.MAX_SAMPLE_RATE

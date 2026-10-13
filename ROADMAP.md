@@ -23,7 +23,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 15 — More instruments
 Goal: tune more than a six-string guitar.
 - ☑ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
-- ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the test phone
+- ☑ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the test phone — tunings whose lowest string a semitone flat is under 62 Hz (7/8-string, basses, cello) read 28–1500 Hz; synthetic 30 Hz up within 0.52 cents (0.83 at 10 dB SNR); Xiaomi 12X: 0.74 ms CPU per frame (3.5 % of a core; 5.1 ms on a little core) vs 0.33 ms for guitar, after a cache-friendlier FFT
 - ☐ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings
 - ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font
 - ☐ phone check for each instrument with short test tones

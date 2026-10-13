@@ -7,7 +7,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Timing check for the per-frame DSP work: under 2 ms per 4096-sample frame on the JVM.
+ * Timing check for the per-frame DSP work: under 2 ms per frame on the JVM (4096 samples, or 8192
+ * in the low-note range).
  *
  * Not part of `test` (timings depend on the machine). Run with `./gradlew :core:dsp:benchmark`.
  * Each case is warmed up first so the JIT has compiled the hot loop, then timed frame by frame.
@@ -28,6 +29,23 @@ class YinBenchmark {
         val yin = YinPitchDetector()
         val stats = time { i -> yin.detect(frames[i % frames.size]).isPitched }
         report("YinPitchDetector.detect", stats)
+        assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
+    }
+
+    @Test
+    fun `low-note range (8192 samples) takes under 2 ms per frame`() {
+        val settings = AnalysisSettings.forSampleRate(48_000, PitchRange.LOW)
+        val detector = settings.newPitchDetector()
+        val n = settings.windowSize
+        val low = listOf(
+            TestSignals.weakFundamental(30.87f, n),
+            TestSignals.pluck(41.2f, n),
+            TestSignals.withNoise(TestSignals.sawtooth(61.74f, n), snrDb = 20f),
+            TestSignals.sine(329.6f, n),
+            TestSignals.noise(n, rms = 0.1f),
+        )
+        val stats = time { i -> detector.detect(low[i % low.size]).isPitched }
+        report("low range detect (8192)", stats)
         assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
     }
 
