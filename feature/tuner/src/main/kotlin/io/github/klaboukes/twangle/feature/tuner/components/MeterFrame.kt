@@ -5,11 +5,9 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -24,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.preferredFrameRate
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.RenderEffect
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
@@ -36,10 +32,8 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
-import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.feature.tuner.R
 import kotlinx.coroutines.launch
 
 /**
@@ -48,8 +42,8 @@ import kotlinx.coroutines.launch
  * `core.designsystem.meter` ([MeterLookArt]), so the meter picker in settings shows the same art.
  * The frame gives:
  *
- * - the same 2:1 box over the ♭ and ♯ labels, from −[METER_RANGE_CENTS] (left, flat) to
- *   +[METER_RANGE_CENTS] (right, sharp), in tune in the centre;
+ * - the same 2:1 box, from −[METER_RANGE_CENTS] (left, flat, ♭) to +[METER_RANGE_CENTS] (right,
+ *   sharp, ♯), in tune in the centre; each look draws its ♭ and ♯ inside the box, at its scale's ends;
  * - one reading for every look ([MeterReading], here [TunerMeterReading]): the marker springs to
  *   each new reading with the look's own feel ([meterFeel]), readings beyond the range are pinned at
  *   the edge, and without a note ([cents] gives null) it rests in the centre, faded;
@@ -108,53 +102,20 @@ fun MeterFrame(
     val currentReception = rememberUpdatedState(reception)
     val blurs = rememberReceptionBlurs()
     val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, glowAmount, currentReception, blurs) }
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
-        // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation
-        // only asks for the "normal" rate (60 Hz on the S26). The moving meter asks for 120 Hz; the
-        // request only counts while it draws, so a still meter (no note) lets the screen slow down.
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO).preferredFrameRate(METER_FRAME_RATE)) {
-            MeterLookArt(look, reading, effect)
-        }
-        SignsUnderScaleEnds {
-            Text(
-                text = musicText(stringResource(R.string.tuner_flat_symbol)),
-                style = MaterialTheme.typography.titleLarge,
-                color = labelColor,
-            )
-            Text(
-                text = musicText(stringResource(R.string.tuner_sharp_symbol)),
-                style = MaterialTheme.typography.titleLarge,
-                color = labelColor,
-            )
-        }
+    // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation
+    // only asks for the "normal" rate (60 Hz on the S26). The moving meter asks for 120 Hz; the
+    // request only counts while it draws, so a still meter (no note) lets the screen slow down.
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(METER_ASPECT_RATIO)
+            .preferredFrameRate(METER_FRAME_RATE)
+            .clearAndSetSemantics {},
+    ) {
+        MeterLookArt(look, reading, effect)
     }
 }
-
-/**
- * The ♭ and ♯ under the box, each centred under an end of the scale ([SIGN_INSET_UNITS] in from the
- * box's sides, where the open dial's arc ends), so they belong to the meter rather than to the
- * screen's edges; never past the box's sides.
- */
-@Composable
-private fun SignsUnderScaleEnds(content: @Composable () -> Unit) {
-    Layout(content, Modifier.fillMaxWidth()) { measurables, constraints ->
-        val (flat, sharp) = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
-        val width = constraints.maxWidth
-        val inset = width * SIGN_INSET_UNITS / METER_UNITS
-        val flatX = (inset - flat.width / 2f).toInt().coerceIn(0, (width - flat.width).coerceAtLeast(0))
-        val sharpX = (width - inset - sharp.width / 2f).toInt().coerceIn(0, (width - sharp.width).coerceAtLeast(0))
-        layout(width, maxOf(flat.height, sharp.height)) {
-            flat.placeRelative(flatX, 0)
-            sharp.placeRelative(sharpX, 0)
-        }
-    }
-}
-
-/** The box is this many units wide; the signs sit under the scale's ends, this many units in. */
-private const val METER_UNITS = 340f
-private const val SIGN_INSET_UNITS = 24f
 
 /**
  * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount, the

@@ -39,10 +39,10 @@ fun pulseAt(u: Float, beats: Float, phase: Float, depth: Float): Float {
 /** [style]'s own sound ribbon: the [WaveLook.RIBBON] look. */
 internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path: Path) {
     when (style) {
-        // Dabs of paint that swell and shrink.
+        // Fingertip dabs of terracotta that swell and shrink.
         VisualStyle.ANCIENT -> dots(ribbon)
-        // An engraved outline with a hairline through it.
-        VisualStyle.CLASSIC -> band(ribbon, path, fill = 0.14f, outline = 1.3.dp, haloBase = 0f, centreLine = true)
+        // An engraved band with a hairline through it.
+        VisualStyle.CLASSIC -> band(ribbon, path, fill = 0.32f, outline = 1.7.dp, haloBase = 0f, centreLine = true)
         // A phosphor trace that always glows a little.
         VisualStyle.RETRO -> band(ribbon, path, fill = 0.4f, outline = 1.6.dp, haloBase = 0.14f, centreLine = false)
         // Rounded bars, like a voice memo's waveform.
@@ -109,7 +109,7 @@ private fun DrawScope.bars(
 }
 
 private fun DrawScope.dots(ribbon: Ribbon) {
-    val gap = 15.dp.toPx()
+    val gap = 13.dp.toPx()
     val count = (size.width / gap).toInt()
     val left = (size.width - (count - 1) * gap) / 2f
     val mid = size.height / 2f

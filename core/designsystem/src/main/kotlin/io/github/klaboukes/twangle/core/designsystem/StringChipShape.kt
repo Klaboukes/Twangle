@@ -1,14 +1,28 @@
 package io.github.klaboukes.twangle.core.designsystem
 
+import android.graphics.BlurMaskFilter
+import android.os.Build
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -106,3 +120,72 @@ private object CapsuleShape : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline =
         Outline.Rounded(RoundRect(0f, 0f, size.width, size.height, CornerRadius(min(size.width, size.height) / 2f)))
 }
+
+/**
+ * A string button's own shading over its fill, from the approved mock-up: Classic's ivory keys have a
+ * shaded band along the bottom ([ink] at 8 %, 4 dp, like a key's front edge), Retro's hi-fi push
+ * buttons are lit from above (white at 35 %, fading out over 5 dp) and shaded below (black at 12 %,
+ * over 7 dp); the other styles have none. Drawn once per size and colour, inside [shape].
+ */
+fun Modifier.stringChipShading(style: VisualStyle, shape: Shape, ink: Color): Modifier = when (style) {
+    VisualStyle.CLASSIC, VisualStyle.RETRO -> drawWithCache {
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val height = size.height.coerceAtLeast(1f)
+        val brush = if (style == VisualStyle.CLASSIC) {
+            val edge = (1f - KEY_EDGE.toPx() / height).coerceIn(0f, 1f)
+            val shade = ink.copy(alpha = KEY_EDGE_ALPHA)
+            Brush.verticalGradient(0f to Color.Transparent, edge to Color.Transparent, edge to shade, 1f to shade)
+        } else {
+            val lit = (SOFT_LIGHT.toPx() / height).coerceIn(0f, 0.5f)
+            val shaded = (1f - SOFT_SHADE.toPx() / height).coerceIn(0.5f, 1f)
+            Brush.verticalGradient(
+                0f to Color.White.copy(alpha = SOFT_LIGHT_ALPHA),
+                lit to Color.Transparent,
+                shaded to Color.Transparent,
+                1f to Color.Black.copy(alpha = SOFT_SHADE_ALPHA),
+            )
+        }
+        onDrawBehind { drawOutline(outline, brush) }
+    }
+    else -> this
+}
+
+/**
+ * Futuristic's neon glow round a string button: [color] blurred 8 dp round [shape], drawn behind a
+ * box that has [inset] of room round the button, at [alpha] (0..1). [color] and [alpha] are read
+ * while drawing, so easing them in and out redraws only this and allocates nothing. Hardware blur
+ * needs Android 9; before it there is no glow.
+ */
+fun Modifier.neonGlow(shape: Shape, inset: Dp, color: () -> Color, alpha: () -> Float): Modifier =
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        this
+    } else {
+        drawWithCache {
+            val gap = inset.toPx()
+            val inner = Size((size.width - gap * 2f).coerceAtLeast(0f), (size.height - gap * 2f).coerceAtLeast(0f))
+            val path = Path().apply {
+                addOutline(shape.createOutline(inner, layoutDirection, this@drawWithCache))
+                translate(Offset(gap, gap))
+            }.asAndroidPath()
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                maskFilter = BlurMaskFilter(NEON_GLOW.toPx(), BlurMaskFilter.Blur.NORMAL)
+            }
+            onDrawBehind {
+                val amount = alpha().coerceIn(0f, 1f)
+                if (amount > MIN_GLOW) {
+                    val c = color()
+                    paint.color = c.copy(alpha = c.alpha * amount).toArgb()
+                    drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
+                }
+            }
+        }
+    }
+
+private val KEY_EDGE = 4.dp
+private const val KEY_EDGE_ALPHA = 0.08f
+private val SOFT_LIGHT = 5.dp
+private val SOFT_SHADE = 7.dp
+private const val SOFT_LIGHT_ALPHA = 0.35f
+private const val SOFT_SHADE_ALPHA = 0.12f
+private val NEON_GLOW = 8.dp
+private const val MIN_GLOW = 0.01f

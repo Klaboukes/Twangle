@@ -119,8 +119,9 @@ internal fun studioLampGlint(tuned: Float): Float = 0.25f + 0.45f * tuned.coerce
 private val StudioFaceShape = GenericShape { size, _ -> addRoundRect(StudioGeometry(size.width, size.height).faceRect()) }
 
 /**
- * Studio meter: the calm field and the backlit face (with a soft contact shadow) with its scale, the "CENTS" label and the lamp's
- * housing (static); the centre mark (fading to "in tune"); the shared needle and its shadow, each
+ * Studio meter: the calm field and the backlit face (with a soft contact shadow) with the style's arc
+ * ([TrackArt]), its scale, the ♭ and ♯, the "CENTS" label and the lamp's housing (static); the centre
+ * mark (fading to "in tune"); the style's needle and its shadow, each
  * drawn once pointing up and only turned about the pivot by their layers, clipped to the face; the
  * lamp; and over them the pivot's cover and the glass's sheen and rim.
  */
@@ -145,18 +146,21 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
         )
         val faceTopLeft = Offset(studio.left, studio.top)
         val faceSize = Size(studio.right - studio.left, studio.bottom - studio.top)
-        val track = roles.track
-        val trackStroke = Stroke(1.5f * u)
-        val sweepDegrees = StudioGeometry.SWEEP * DEGREES_PER_RADIAN
-        val arcTopLeft = Offset(studio.cx - studio.radius, studio.pivotY - studio.radius)
-        val arcSize = Size(studio.radius * 2f, studio.radius * 2f)
+        val track = TrackArt(studio.cx, studio.pivotY, studio.radius, u, roles) { studio.angle(it) }
         val marks = ScaleMarks(u, roles, measurer, this) { cents, out ->
             val angle = studio.angle(cents)
-            out[0] = studio.x(studio.radius - 3f * u, cents)
-            out[1] = studio.y(studio.radius - 3f * u, cents)
+            out[0] = studio.x(studio.radius - 4f * u, cents)
+            out[1] = studio.y(studio.radius - 4f * u, cents)
             out[2] = -sin(angle)
             out[3] = cos(angle)
         }
+        // The ♭ and ♯ in the face's lower corners, either side of the pivot's cover.
+        val signs = SignsArt(
+            measurer, this, u, roles,
+            flatX = studio.left + STUDIO_SIGN_INSET * u,
+            sharpX = studio.right - STUDIO_SIGN_INSET * u,
+            y = studio.bottom - STUDIO_SIGN_INSET * u,
+        )
         val label = measurer.measure(
             unit,
             TextStyle(fontFamily = roles.numbers, fontSize = (7.5f * u).toSp(), letterSpacing = 0.3.em, fontFeatureSettings = LINING_FIGURES),
@@ -172,8 +176,9 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
             contact.draw(this)
             glass.drawUnder(this)
             clipPath(face) { drawRect(backlight, faceTopLeft, faceSize) }
-            drawArc(track, -90f - sweepDegrees, 2f * sweepDegrees, false, arcTopLeft, arcSize, style = trackStroke)
+            track.draw(this)
             marks.draw(this)
+            signs.draw(this)
             drawText(label, color = labelColor, topLeft = labelAt)
             drawCircle(housing, 5.5f * u, lamp)
             drawCircle(housingRim, 5.5f * u, lamp, style = housingStroke)
@@ -185,7 +190,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
         val studio = StudioGeometry(size.width, size.height)
         Offset(studio.cx, studio.top + 26f * studio.u)
     })
-    // The centre mark: a 3u bar along the arc from −5 to +5 cents, in a layer of its own so its
+    // The centre mark: a 3.5u bar along the arc from −5 to +5 cents, in a layer of its own so its
     // in-tune fade redraws nothing else.
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
@@ -194,7 +199,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
             val half = studio.angle(STUDIO_CENTRE_CENTS) * DEGREES_PER_RADIAN
             val topLeft = Offset(studio.cx - radius, studio.pivotY - radius)
             val arcSize = Size(radius * 2f, radius * 2f)
-            val stroke = Stroke(3f * studio.u, cap = StrokeCap.Round)
+            val stroke = Stroke(3.5f * studio.u, cap = StrokeCap.Round)
             onDrawBehind {
                 drawArc(roles.centre(reading.tuned), -90f - half, 2f * half, false, topLeft, arcSize, style = stroke)
             }
@@ -249,7 +254,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
 private fun studioGlass(studio: StudioGeometry, size: Size, roles: MeterRoles): GlassArt =
     GlassArt(studio.face(), size, studio.top, studio.bottom, studio.u, roles)
 
-/** The studio needle: the shared needle from the pivot to 3u past the scale's arc (its hub lies below the face, out of sight). */
+/** The studio needle: the style's needle from the pivot to 3u past the scale's arc (its pivot lies below the face, out of sight). */
 private fun studioNeedle(size: Size, roles: MeterRoles): NeedleArt {
     val studio = StudioGeometry(size.width, size.height)
     return NeedleArt(studio.cx, studio.pivotY, studio.radius + StudioGeometry.NEEDLE_OVERHANG * studio.u, studio.u, roles)
@@ -318,6 +323,9 @@ private class PivotCoverArt(studio: StudioGeometry, roles: MeterRoles) {
 
 /** The centre mark spans this many cents each side of the note. */
 private const val STUDIO_CENTRE_CENTS = 5f
+
+/** The ♭ and ♯ sit this many units in from the face's sides and bottom. */
+private const val STUDIO_SIGN_INSET = 20f
 
 /** The studio meter's in-tune glow reaches this many units from its middle. */
 private const val STUDIO_GLOW_UNITS = 80f

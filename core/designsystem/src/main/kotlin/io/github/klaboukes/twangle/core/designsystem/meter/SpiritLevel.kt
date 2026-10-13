@@ -37,7 +37,9 @@ import kotlin.math.sqrt
 /**
  * The spirit level's tube in a box [width] × [height]: a band [thickness] thick along an arc of
  * [radius] (1.6 box widths) whose top, [top], is 38 % of the way down the box, around a centre far
- * below the box ([centreY]). The tube spans ±[maxAngle], 38 % of the width each side of the middle.
+ * below the box ([centreY]). The tube spans ±[maxAngle], 38 % of the width each side of the middle,
+ * so it and its contact shadow keep clear of the box's sides (the open-face mock-up's wider tube
+ * would touch them).
  * Angles are measured clockwise from straight up, so a positive angle is to the right (sharp).
  */
 internal class LevelGeometry(width: Float, height: Float) {
@@ -137,9 +139,8 @@ private const val STRETCH_PER_CENT_PER_SECOND = 0.0025f
 /**
  * Spirit level: the calm field, the tube lying on the screen with a soft contact shadow, under
  * recessed glass (its face tinted 13 % towards the accent in light, 20 % in dark) with the scale's
- * marks under it, numbers below; the in-tune glow around the
- * bubble; the two marks at ±12 cents
- * (fading to "in tune"); the bubble; and over it a highlight streak inside the tube and the glass's
+ * marks under it, numbers below, and the ♭ and ♯ under its ends; the in-tune glow around the
+ * bubble; the two marks at ±12 cents (in the style's tick caps, fading to "in tune"); the bubble; and over it a highlight streak inside the tube and the glass's
  * sheen and rim. The bubble is drawn once, at rest, in a layer of its own: a reading only moves,
  * turns and stretches that layer along the tube, so nothing is redrawn while it floats.
  */
@@ -161,11 +162,20 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
             out[2] = -sin(angle)
             out[3] = cos(angle)
         }
+        // The ♭ and ♯ under the tube's ends, inside the box.
+        val signDistance = level.radius - level.thickness / 2f - 18f * u
+        val signs = SignsArt(
+            measurer, this, u, roles,
+            flatX = level.x(-level.maxAngle, signDistance),
+            sharpX = level.x(level.maxAngle, signDistance),
+            y = level.y(level.maxAngle, signDistance),
+        )
         val draw: DrawScope.() -> Unit = {
             field.draw(this)
             contact.draw(this)
             glass.drawUnder(this)
             marks.draw(this)
+            signs.draw(this)
         }
         draw
     }
@@ -192,12 +202,13 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
                 ends[i * 4 + 2] = level.x(angle, level.radius + level.thickness / 2f - 3f * level.u)
                 ends[i * 4 + 3] = level.y(angle, level.radius + level.thickness / 2f - 3f * level.u)
             }
-            val width = 1.5f * level.u
+            val width = 1.8f * level.u
+            val cap = roles.finish.caps
             onDrawBehind {
                 val tuned = reading.tuned
                 val color = mix(roles.ink, roles.inTune, tuned).copy(alpha = 0.6f + 0.4f * tuned)
                 for (i in 0..1) {
-                    drawLine(color, Offset(ends[i * 4], ends[i * 4 + 1]), Offset(ends[i * 4 + 2], ends[i * 4 + 3]), width, StrokeCap.Round)
+                    drawLine(color, Offset(ends[i * 4], ends[i * 4 + 1]), Offset(ends[i * 4 + 2], ends[i * 4 + 3]), width, cap)
                 }
             }
         },

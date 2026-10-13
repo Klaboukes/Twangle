@@ -27,7 +27,7 @@ fun isMusicSign(c: Char): Boolean = MUSIC_SIGNS.indexOf(c) >= 0
 /**
  * [text] with its music signs set in [MusicSignsFont]. A ♯, ♭ or ♮ right after a letter is set
  * like in sheet music and chord symbols: smaller than the letter and raised, so "C♯" reads as one
- * name in every style. A sign on its own (the ♭ and ♯ under the dial, the waiting ♪) keeps the
+ * name in every style. A sign on its own (the waiting ♪) keeps the
  * size of the text around it. Everything else is unchanged, so a text without signs comes back as
  * it was.
  */

@@ -99,31 +99,36 @@ internal fun dialPivotFraction(size: Size): Float =
     if (size.height > 0f) (size.height - DIAL_PIVOT_UNITS * meterUnit(size.width)) / size.height else 1f
 
 /**
- * The dial under the marker, open faced (no plate, no glass): the calm field ([meterField]), the scale's arc (1.5u, in the track colour) and the marks along its inside, numbers
- * inwards.
+ * The dial under the marker, open faced (no plate, no glass): the calm field ([meterField]), the
+ * scale's arc in the style's finish ([TrackArt]), the marks along its inside (from 4u inside the arc,
+ * numbers inwards), and the ♭ and ♯ inside the box, under the arc's ends and level with the pivot.
  */
 internal class DialUnderArt(size: Size, roles: MeterRoles, measurer: TextMeasurer, density: Density) {
     private val dial = DialGeometry(size)
     private val u = dial.u
     private val field = meterField(size, roles)
-    private val track = roles.track
-    private val trackStroke = Stroke(1.5f * u)
+    private val track = TrackArt(dial.cx, dial.cy, dial.r, u, roles) { meterAngle(it) }
     private val marks = ScaleMarks(u, roles, measurer, density) { cents, out ->
         val angle = meterAngle(cents)
-        out[0] = dial.x(dial.r - 3f * u, cents)
-        out[1] = dial.y(dial.r - 3f * u, cents)
+        out[0] = dial.x(dial.r - 4f * u, cents)
+        out[1] = dial.y(dial.r - 4f * u, cents)
         out[2] = -sin(angle)
         out[3] = cos(angle)
     }
+    // Under the end ticks (2.5u clear of them) and 1u clear of the box's bottom.
+    private val signs = SignsArt(
+        measurer, density, u, roles,
+        flatX = dial.cx - dial.r + 4f * u,
+        sharpX = dial.cx + dial.r - 4f * u,
+        y = (dial.cy + 2.5f * u + size.height - u) / 2f,
+        maxHeight = size.height - u - (dial.cy + 2.5f * u),
+    )
 
     fun draw(scope: DrawScope) = with(scope) {
         field.draw(this)
-        drawArc(
-            track, startAngle = 180f, sweepAngle = 180f, useCenter = false,
-            topLeft = Offset(dial.cx - dial.r, dial.cy - dial.r), size = Size(dial.r * 2f, dial.r * 2f),
-            style = trackStroke,
-        )
+        track.draw(this)
         marks.draw(this)
+        signs.draw(this)
     }
 }
 
@@ -142,7 +147,7 @@ internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra
 }
 
 /**
- * The dial's centre mark: one 3u rounded bar in the accent, across the top of the arc, fading to
+ * The dial's centre mark: one 3.5u rounded bar in the accent, across the top of the arc, fading to
  * "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else. Under
  * it the in-tune glow ([TuneGlow], 80u) is centred 14u below the top of the arc.
  */
@@ -155,9 +160,9 @@ internal fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = DialGeometry(size)
-            val top = Offset(dial.cx, dial.cy - dial.r - dial.u)
-            val bottom = Offset(dial.cx, dial.cy - dial.r + 13f * dial.u)
-            val width = 3f * dial.u
+            val top = Offset(dial.cx, dial.cy - dial.r - 2f * dial.u)
+            val bottom = Offset(dial.cx, dial.cy - dial.r + 16f * dial.u)
+            val width = 3.5f * dial.u
             onDrawBehind { drawLine(roles.centre(reading.tuned), bottom, top, width, StrokeCap.Round) }
         },
     )
@@ -169,11 +174,12 @@ private const val DIAL_GLOW_UNITS = 80f
 // ---- 1. Classic ----------------------------------------------------------------------------------
 
 /**
- * Classic: the dial with the shared needle, which turns about the pivot on a slightly underdamped
- * spring ([meterFeel]), so it swings a little past a new string before it settles. The needle and
- * its shadow are each drawn once, pointing up, in a layer of their own; a reading only turns the
- * layers. The shadow's layer is shifted down and right after turning, so the shadow always falls the
- * same way.
+ * Classic: the dial with the style's needle ([NeedleArt]), which turns about the pivot on a slightly
+ * underdamped spring ([meterFeel]), so it swings a little past a new string before it settles. The
+ * needle and its shadow are each drawn once, pointing up, in a layer of their own; a reading only
+ * turns the layers. The shadow's layer is shifted down and right after turning, so the shadow always
+ * falls the same way. The style's hub ([HubArt]) sits over the pivot in a layer of its own, which
+ * doesn't turn, and redraws only while its centre colour fades to "in tune".
  */
 @Composable
 private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
@@ -205,12 +211,19 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
             }
         },
     )
+    Spacer(
+        modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
+            val dial = DialGeometry(size)
+            val hub = HubArt(dial.cx, dial.cy, dial.u, roles)
+            onDrawBehind { hub.draw(this, reading.tuned) }
+        },
+    )
 }
 
-/** Classic's needle: from the pivot to 6u short of the arc. */
+/** Classic's needle: from the pivot to 8u short of the arc, over the ticks' outer ends. */
 private fun classicNeedle(size: Size, roles: MeterRoles): NeedleArt {
     val dial = DialGeometry(size)
-    return NeedleArt(dial.cx, dial.cy, dial.r - 6f * dial.u, dial.u, roles)
+    return NeedleArt(dial.cx, dial.cy, dial.r - 8f * dial.u, dial.u, roles)
 }
 
 /** Turns a layer drawn pointing up about the dial's pivot to [cents]. */
@@ -282,7 +295,8 @@ internal const val NANOS_PER_SECOND = 1_000_000_000f
 internal const val MAX_STEP_SECONDS = 0.1f
 
 /**
- * The light arc's segments: 3.5u wide, round-ended, from 50u to 34u inside the dial's arc. Unlit
+ * The light arc's segments: 3.5u wide, round-ended, from 62u to 46u inside the dial's arc (inside
+ * the scale's numbers). Unlit
  * they are the track colour; lit they glow in the accent (a little whiter in dark), from 15 % to
  * full with their [LightArcHeat.heat].
  */
@@ -300,10 +314,10 @@ private class LightArcSegments(size: Size, private val roles: MeterRoles) {
     init {
         for (i in 0 until LIGHT_ARC_SEGMENTS) {
             val cents = lightArcSegmentCents(i)
-            ends[i * 4] = dial.x(dial.r - 50f * u, cents)
-            ends[i * 4 + 1] = dial.y(dial.r - 50f * u, cents)
-            ends[i * 4 + 2] = dial.x(dial.r - 34f * u, cents)
-            ends[i * 4 + 3] = dial.y(dial.r - 34f * u, cents)
+            ends[i * 4] = dial.x(dial.r - SEGMENT_INNER * u, cents)
+            ends[i * 4 + 1] = dial.y(dial.r - SEGMENT_INNER * u, cents)
+            ends[i * 4 + 2] = dial.x(dial.r - SEGMENT_OUTER * u, cents)
+            ends[i * 4 + 3] = dial.y(dial.r - SEGMENT_OUTER * u, cents)
             unlit.moveTo(ends[i * 4], ends[i * 4 + 1])
             unlit.lineTo(ends[i * 4 + 2], ends[i * 4 + 3])
         }
@@ -313,7 +327,8 @@ private class LightArcSegments(size: Size, private val roles: MeterRoles) {
 
     fun drawLit(scope: DrawScope, heat: FloatArray, cents: Float, tuned: Float) = with(scope) {
         val reading = cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS)
-        halo.draw(this, dial.x(dial.r - 42f * u, reading), dial.y(dial.r - 42f * u, reading), haloAlpha * (1f - tuned))
+        val halfway = dial.r - (SEGMENT_INNER + SEGMENT_OUTER) / 2f * u
+        halo.draw(this, dial.x(halfway, reading), dial.y(halfway, reading), haloAlpha * (1f - tuned))
         for (i in 0 until LIGHT_ARC_SEGMENTS) {
             val near = abs(lightArcSegmentCents(i)) <= LIGHT_ARC_CENTRE_CENTS
             val glow = if (near) max(heat[i], tuned) else heat[i]
@@ -337,5 +352,11 @@ private class LightArcSegments(size: Size, private val roles: MeterRoles) {
 
         /** Dimmer than this, a segment is left unlit. */
         const val MIN_LIT = 0.02f
+
+        /** The segments run from this many units inside the dial's arc … */
+        const val SEGMENT_INNER = 62f
+
+        /** … out to this many. */
+        const val SEGMENT_OUTER = 46f
     }
 }

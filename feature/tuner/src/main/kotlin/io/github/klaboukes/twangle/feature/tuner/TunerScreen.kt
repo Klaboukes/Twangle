@@ -663,7 +663,7 @@ private fun FitGauge(gauge: @Composable () -> Unit, maxWidth: Dp) {
         val gaugeWidth = if (!constraints.hasBoundedHeight || fullHeight <= constraints.maxHeight) {
             width
         } else {
-            // The dial is twice as wide as it is tall; the flat/sharp labels under it keep their height.
+            // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
             val labels = fullHeight - width / 2
             ((constraints.maxHeight - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), width), width)
         }
@@ -699,7 +699,7 @@ private fun GaugeAboveNote(gauge: @Composable () -> Unit, note: @Composable () -
         val gaugeWidth = if (fullHeight <= available) {
             maxWidth
         } else {
-            // The dial is twice as wide as it is tall; the flat/sharp labels under it keep their height.
+            // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
             val labels = fullHeight - maxWidth / 2
             ((available - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), maxWidth), maxWidth)
         }

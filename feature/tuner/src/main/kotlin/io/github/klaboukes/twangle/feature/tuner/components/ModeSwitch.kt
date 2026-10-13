@@ -7,10 +7,13 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 
@@ -18,6 +21,9 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 @Composable
 fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Modifier = Modifier) {
     val modes = TunerMode.entries
+    val scheme = MaterialTheme.colorScheme
+    // Futuristic's buttons are neon outlines in the accent, with nothing behind the unpicked one.
+    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         modes.forEachIndexed { index, option ->
             SegmentedButton(
@@ -28,9 +34,11 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
                 // secondary colour, e.g. purple beside Futuristic's cyan). The unselected one gets a
                 // backing, so it reads on any style's background.
                 colors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    inactiveContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                    activeContainerColor = scheme.primaryContainer,
+                    activeContentColor = scheme.onPrimaryContainer,
+                    inactiveContainerColor = if (neon) Color.Transparent else scheme.surface.copy(alpha = 0.6f),
+                    activeBorderColor = if (neon) scheme.primary else scheme.outline,
+                    inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
                 ),
                 modifier = Modifier.testTag(TunerTestTags.mode(option)),
             ) {
@@ -39,6 +47,9 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
         }
     }
 }
+
+/** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
+private const val NEON_OUTLINE_ALPHA = 0.55f
 
 private fun label(mode: TunerMode): Int = when (mode) {
     TunerMode.AUTO -> R.string.tuner_mode_guitar

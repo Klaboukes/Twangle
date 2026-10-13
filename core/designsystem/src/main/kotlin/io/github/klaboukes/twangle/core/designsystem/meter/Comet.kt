@@ -31,19 +31,19 @@ import kotlin.math.sin
 
 /*
  * 5. Comet, as on the approved mock-up page (docs/design/meter-looks-preview.html, COMET): the dial
- * of Classic and Light arc with a dotted path 40u inside its arc, along which a bright comet runs to
+ * of Classic and Light arc with a dotted path 50u inside its arc (inside the scale's numbers), along which a bright comet runs to
  * the reading, its softly shimmering tail fading behind it (CometTrail). As the comet slows down on
  * the note the tail shortens and dims until only the head is left; in tune head and tail take the
  * "in tune" colour with the centre mark.
  */
 
 /** The comet's path lies this many units inside the dial's arc. */
-private const val COMET_PATH_UNITS = 40f
+private const val COMET_PATH_UNITS = 50f
 
 /** The comet may run a little past the ends of the scale with the spring. */
 internal const val COMET_LIMIT_CENTS = 52f
 
-/** The radius of the comet's path in a box [width] wide: 40u inside the dial's 146u arc. */
+/** The radius of the comet's path in a box [width] wide: 50u inside the dial's 146u arc. */
 internal fun cometPathRadius(width: Float): Float = (DIAL_RADIUS_UNITS - COMET_PATH_UNITS) * meterUnit(width)
 
 /** Where the comet's head is for [cents]: readings beyond ±[COMET_LIMIT_CENTS] are pinned there. */
@@ -113,7 +113,7 @@ private suspend fun runComet(trail: CometTrail, reading: MeterReading, frames: M
     }
 }
 
-/** The comet's path: a dotted arc (1u dots every 6u, 1.2u wide, ink at 35 %) 40u inside the dial's arc. */
+/** The comet's path: a dotted arc (1u dots every 6u, 1.2u wide, ink at 35 %) 50u inside the dial's arc. */
 private fun cometPath(size: Size, roles: MeterRoles): DrawScope.() -> Unit {
     val dial = DialGeometry(size)
     val u = dial.u

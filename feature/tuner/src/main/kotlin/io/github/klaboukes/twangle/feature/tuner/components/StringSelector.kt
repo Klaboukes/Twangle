@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
@@ -37,13 +38,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.neonGlow
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.stringChipShading
 import io.github.klaboukes.twangle.core.designsystem.stringChipShape
 import io.github.klaboukes.twangle.core.designsystem.stringChipSize
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 
 /**
@@ -133,11 +137,16 @@ private fun StringChip(
     val shape = stringChipShape(style, index)
     val ringGap = if (small) 2.dp else 4.dp
     val button = if (small) stringChipSize(style).fitInside(SMALL_CHIP_SIZE - ringGap * 2) else stringChipSize(style)
+    // Futuristic's tiles are neon outlines: no fill until picked, then a soft glow round them.
+    val neon = style == VisualStyle.FUTURISTIC
+    val keyLabel = style == VisualStyle.CLASSIC && !small
+    val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
     Box(
         modifier = Modifier
             // Big buttons are at least 48 dp to touch each way, however narrow or short they look.
             .then(if (small) Modifier else Modifier.minimumInteractiveComponentSize())
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
+            .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             .clip(shape)
             .then(
                 if (onClick != null) {
@@ -149,16 +158,27 @@ private fun StringChip(
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
             .padding(ringGap)
-            .background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape)
+            .then(if (neon) Modifier else Modifier.background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape))
             .background(background, shape)
-            .border(1.dp, if (highlighted) accent else colors.outlineVariant, shape)
+            // Classic's keys and Retro's push buttons get their shading over the fill.
+            .stringChipShading(style, shape, colors.onSurface)
+            .border(
+                1.dp,
+                when {
+                    highlighted -> accent
+                    neon -> colors.primary.copy(alpha = NEON_OUTLINE_ALPHA)
+                    else -> colors.outlineVariant
+                },
+                shape,
+            )
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted
                 if (locked) stateDescription = lockedState
                 if (small) hideFromAccessibility()
             },
-        contentAlignment = Alignment.Center,
+        // Classic's ivory keys carry their name low, above the shaded front edge.
+        contentAlignment = if (keyLabel) Alignment.BottomCenter else Alignment.Center,
     ) {
         // The button has a fixed size, so its label grows with the system font only up to a point.
         val density = LocalDensity.current
@@ -182,6 +202,7 @@ private fun StringChip(
                 },
                 color = content,
                 maxLines = 1,
+                modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING) else Modifier,
             )
         }
     }
@@ -200,6 +221,13 @@ private const val MAX_CHIP_FONT_SCALE = 1.3f
 private const val MAX_SMALL_CHIP_FONT_SCALE = 1f
 
 private val SMALL_CHIP_SIZE = 32.dp
+
+/** How far above a Classic key's bottom edge its name sits. */
+private val KEY_LABEL_PADDING = 6.dp
+
+/** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
+private const val NEON_OUTLINE_ALPHA = 0.55f
+private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
 
 @Preview(showBackground = true, widthDp = 360)

@@ -385,7 +385,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                 val pa = a[rowA + x]
                 val pb = b[rowB + x]
                 if (pa != pb && channelDistance(pa, pb) > PIXEL_STEP) {
-                    throw AssertionError("$case drew outside its box, or moved something, at $x, $y")
+                    throw AssertionError("$case drew outside its box ($left..$right x $top..$bottom), or moved something, at $x, $y")
                 }
             }
         }

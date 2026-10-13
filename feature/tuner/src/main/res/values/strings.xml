@@ -84,6 +84,4 @@
          "Half step down, E flat, A flat, D flat, G flat, B flat, E flat". -->
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_change_tuning">Change tuning</string>
-    <string name="tuner_flat_symbol" translatable="false">♭</string>
-    <string name="tuner_sharp_symbol" translatable="false">♯</string>
 </resources>

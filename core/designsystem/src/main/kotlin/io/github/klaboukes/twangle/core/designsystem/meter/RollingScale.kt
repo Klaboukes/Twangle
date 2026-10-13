@@ -54,6 +54,10 @@ internal const val DRUM_MAX_ANGLE = (80.0 * PI / 180.0).toFloat()
 /** The drum turns this far for each cent: 50 cents are 80°. */
 private const val DRUM_RADIANS_PER_CENT = DRUM_MAX_ANGLE / METER_RANGE_CENTS
 
+/** The ♭ and ♯ sit this many units in from the window's sides and below its bottom. */
+private const val SIGN_INSET_UNITS = 14f
+private const val SIGN_BELOW_UNITS = 22f
+
 /** The rolling scale's in-tune glow reaches this many units from the window's middle. */
 private const val DRUM_GLOW_UNITS = 90f
 
@@ -123,10 +127,18 @@ internal fun BoxScope.RollingScaleMeter(reading: MeterReading, effect: InTuneEff
         val field = meterField(size, roles)
         val contact = ContactShadowArt(drum.window(), drum.u, roles)
         val glass = drumGlass(drum, roles, this)
+        // The ♭ and ♯ under the window's ends, inside the box: the zero bar rolls to the side the note is off.
+        val signs = SignsArt(
+            measurer, this, drum.u, roles,
+            flatX = drum.left + SIGN_INSET_UNITS * drum.u,
+            sharpX = drum.right - SIGN_INSET_UNITS * drum.u,
+            y = drum.bottom + SIGN_BELOW_UNITS * drum.u,
+        )
         val draw: DrawScope.() -> Unit = {
             field.draw(this)
             contact.draw(this)
             glass.drawUnder(this)
+            signs.draw(this)
         }
         draw
     }
@@ -196,10 +208,11 @@ private fun drumGlass(drum: DrumGeometry, roles: MeterRoles, scope: CacheDrawSco
     GlassArt(drum.window(), scope.size, drum.top, drum.bottom, drum.u, roles)
 
 /**
- * The drum's print, drawn for a reading: at each mark a tick down from the window's top (9u major,
- * 5u minor, as the shared scale) and a shorter, fainter one up from its bottom, and the numbers 10 to
- * 60 in the middle; the zero mark is a 3u bar in the centre colour with the shared marker shadow.
- * Every mark is narrowed by [drumSquash] and faded by [drumFade]. Nothing here allocates per frame.
+ * The drum's print, drawn for a reading: at each mark a tick down from the window's top (as long and
+ * wide as the shared scale's, with the style's caps, drawn by hand in Ancient) and a shorter, fainter
+ * one up from its bottom, and the numbers 10 to 60 in the middle; the zero mark is a 3u bar in the
+ * centre colour with the shared marker shadow. Every mark is narrowed by [drumSquash] and faded by
+ * [drumFade]. Nothing here allocates per frame.
  */
 private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRoles, measurer: TextMeasurer, density: Density) {
     private val u = drum.u
@@ -211,11 +224,23 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
     }
     private val ink = roles.ink
     private val numberY = drum.middle + 2f * u
+    private val cap = roles.finish.caps
+
+    /** Each mark's length and width as the shared scale's, a little off by hand in Ancient. */
+    private val lengths = FloatArray(DRUM_MARKS)
+    private val widths = FloatArray(DRUM_MARKS)
 
     init {
+        for (i in 0 until DRUM_MARKS) {
+            val mark = drumMarkCents(i)
+            val major = mark.toInt() % 10 == 0
+            val jitter = if (roles.finish.jitter) handJitter(mark) else 0f
+            lengths[i] = (if (major) MAJOR_TICK_UNITS else MINOR_TICK_UNITS) * u * (1f + JITTER_LENGTH * jitter)
+            widths[i] = (if (major) MAJOR_TICK_WIDTH else MINOR_TICK_WIDTH) * u * (1f + JITTER_WIDTH * jitter)
+        }
         val style = TextStyle(
             fontFamily = roles.numbers,
-            fontSize = with(density) { (9.5f * roles.numberScale * u).toSp() },
+            fontSize = with(density) { (NUMBER_SIZE_UNITS * roles.numberScale * u).toSp() },
             fontFeatureSettings = LINING_FIGURES,
         )
         numbers = Array(DRUM_NUMBERS) { measurer.measure(((it + 1) * 10).toString(), style) }
@@ -236,15 +261,15 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
                     continue
                 }
                 val major = whole % 10 == 0
-                val length = (if (major) 9f else 5f) * u
-                val width = (if (major) 1.5f else 1f) * u * (0.6f + 0.4f * squash)
+                val length = lengths[i]
+                val width = widths[i] * (0.6f + 0.4f * squash)
                 drawLine(
                     ink.copy(alpha = (if (major) 1f else MINOR_TICK_INK) * fade),
-                    Offset(x, drum.top + 5f * u), Offset(x, drum.top + 5f * u + length), width, StrokeCap.Round,
+                    Offset(x, drum.top + 5f * u), Offset(x, drum.top + 5f * u + length), width, cap,
                 )
                 drawLine(
                     ink.copy(alpha = (if (major) 0.6f else 0.3f) * fade),
-                    Offset(x, drum.bottom - 5f * u), Offset(x, drum.bottom - 5f * u - length * 0.6f), width, StrokeCap.Round,
+                    Offset(x, drum.bottom - 5f * u), Offset(x, drum.bottom - 5f * u - length * 0.6f), width, cap,
                 )
                 if (major) {
                     val text = numbers[abs(whole) / 10 - 1]

@@ -9,9 +9,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.starburst
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.min
 
 /*
@@ -48,17 +48,17 @@ fun DrawScope.drawStrobe(style: VisualStyle, phase: Float, color: Color, glow: F
             // One period further left as well, so marks that lean or glow still cover the left edge.
             val start = stripeOffset(phase * multiple, period) - period
             when (style) {
-                // Dabs of ochre pressed on with a fingertip.
-                VisualStyle.ANCIENT -> dabs(row, top, height, period, start, color, glow)
-                // A polished disc ring: crisp bars between engraved hairlines.
+                // Fingertip dabs of terracotta, each with a smudge.
+                VisualStyle.ANCIENT -> dabs(top, height, period, start, color, glow)
+                // An engraved band: crisp bars between two hairlines.
                 VisualStyle.CLASSIC -> engraved(top, height, period, start, color, glow)
-                // A backlit drum: rounded bars that always glow a little.
+                // A backlit drum: rounded bars that always glow a little, like phosphor.
                 VisualStyle.RETRO -> backlit(top, height, period, start, color, glow)
-                // Rounded pills, clean and even.
-                VisualStyle.CONTEMPORARY -> pills(top, height, period, start, color, glow)
-                // Thin neon segments over a hairline.
+                // Rounded bars, like a voice memo's.
+                VisualStyle.CONTEMPORARY -> bars(top, height, period, start, color, glow)
+                // Thin neon bars, always glowing softly.
                 VisualStyle.FUTURISTIC -> neon(top, height, period, start, color, glow)
-                // A row of little stars over a row of glowing dots.
+                // A row of twinkling stars over a row of glowing dots.
                 VisualStyle.SPACE_AGE -> stars(row, top, height, period, start, color, glow)
             }
             multiple *= 2f
@@ -80,14 +80,14 @@ fun stripeOffset(phase: Float, period: Float): Float {
 /** How many rows of stripes the strobe look has. */
 const val STROBE_ROWS = 2
 
-/** From one stripe to the next in [style]: finer marks sit closer together. */
+/** From one stripe to the next in [style] (the approved mock-up's "period"): finer marks sit closer together. */
 fun stripePeriod(style: VisualStyle): Dp = when (style) {
-    VisualStyle.ANCIENT -> 18.dp
+    VisualStyle.ANCIENT -> 13.dp
     VisualStyle.CLASSIC -> 12.dp
-    VisualStyle.RETRO -> 16.dp
-    VisualStyle.CONTEMPORARY -> 14.dp
+    VisualStyle.RETRO -> 12.dp
+    VisualStyle.CONTEMPORARY -> 9.dp
     VisualStyle.FUTURISTIC -> 8.dp
-    VisualStyle.SPACE_AGE -> 14.dp
+    VisualStyle.SPACE_AGE -> 12.dp
 }
 
 /** Between two rows. */
@@ -120,17 +120,18 @@ private fun smooth(x: Float): Float {
 
 // Each row below is drawn from [start] (left of the view) to past its right edge, one mark per
 // [period]; a mark's centre sits a quarter period in, where a plain half-filled stripe's would.
-// Marks that have faded out completely at the ends are skipped.
+// Marks that have faded out completely at the ends are skipped. The marks follow the approved
+// mock-up (docs/design/theme-styles-preview.html, drawStrobe).
 
-private fun DrawScope.dabs(row: Int, top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
+private fun DrawScope.dabs(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
     val mid = top + height / 2f
-    val r = min(height * 0.42f, period * 0.3f) * if (row == 0) 1f else 0.85f
+    val r = min(period * 0.3f, height * 0.45f)
     val halo = halo(0f, glow)
     var x = start + period * 0.25f
     while (x < size.width + period) {
         val fade = fadeAt(x)
         if (fade > 0f) {
-            if (halo > 0f) drawCircle(color.faded(halo * fade), r * 1.35f, Offset(x, mid))
+            if (halo > 0f) drawCircle(color.faded(halo * fade), r * 1.5f, Offset(x, mid))
             // A second, smudged dab beside each one, as in the wave view's ribbon.
             drawCircle(color.faded(0.35f * fade), r * 1.08f, Offset(x + r * 0.18f, mid + r * 0.14f))
             drawCircle(color.faded(fade), r, Offset(x, mid))
@@ -140,21 +141,22 @@ private fun DrawScope.dabs(row: Int, top: Float, height: Float, period: Float, s
 }
 
 private fun DrawScope.engraved(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
-    val line = 0.8.dp.toPx()
-    val inset = 2.5.dp.toPx()
-    val spread = 1.2.dp.toPx()
+    val line = 0.7.dp.toPx()
+    val inset = 2.dp.toPx()
     val halo = halo(0f, glow)
-    drawLine(color.faded(0.7f), Offset(0f, top + line / 2f), Offset(size.width, top + line / 2f), line)
-    drawLine(color.faded(0.7f), Offset(0f, top + height - line / 2f), Offset(size.width, top + height - line / 2f), line)
+    drawLine(color.faded(0.4f), Offset(0f, top + line / 2f), Offset(size.width, top + line / 2f), line)
+    drawLine(color.faded(0.4f), Offset(0f, top + height - line / 2f), Offset(size.width, top + height - line / 2f), line)
     val barTop = top + inset
-    val barHeight = height - inset * 2f
-    val width = period * 0.5f
-    var x = start
+    val barHeight = (height - inset * 2f).coerceAtLeast(0f)
+    val haloTop = top + inset * 0.75f
+    val haloHeight = (height - inset * 1.5f).coerceAtLeast(0f)
+    val width = period * 0.42f
+    var x = start + period * 0.25f
     while (x < size.width + period) {
-        val fade = fadeAt(x + width / 2f)
+        val fade = fadeAt(x)
         if (fade > 0f) {
-            if (halo > 0f) drawRect(color.faded(halo * fade), Offset(x - spread, barTop), Size(width + spread * 2f, barHeight))
-            drawRect(color.faded(fade), Offset(x, barTop), Size(width, barHeight))
+            if (halo > 0f) drawRect(color.faded(halo * fade), Offset(x - width, haloTop), Size(width * 2f, haloHeight))
+            drawRect(color.faded(0.9f * fade), Offset(x - width / 2f, barTop), Size(width, barHeight))
         }
         x += period
     }
@@ -183,17 +185,16 @@ private fun DrawScope.backlit(top: Float, height: Float, period: Float, start: F
     }
 }
 
-private fun DrawScope.pills(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
-    val inset = 2.dp.toPx()
-    val width = period * 0.45f
+private fun DrawScope.bars(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
+    val width = max(3.dp.toPx(), period * 0.32f)
     val halo = halo(0f, glow)
     var x = start + period * 0.25f
     while (x < size.width + period) {
         val fade = fadeAt(x)
         if (fade > 0f) {
-            val upper = Offset(x, top + inset + width / 2f)
-            val lower = Offset(x, top + height - inset - width / 2f)
-            if (halo > 0f) drawLine(color.faded(halo * fade), upper, lower, width * 1.8f, StrokeCap.Round)
+            val upper = Offset(x, top + width / 2f)
+            val lower = Offset(x, top + height - width / 2f)
+            if (halo > 0f) drawLine(color.faded(halo * fade), upper, lower, width * 2.2f, StrokeCap.Round)
             drawLine(color.faded(fade), upper, lower, width, StrokeCap.Round)
         }
         x += period
@@ -201,18 +202,15 @@ private fun DrawScope.pills(top: Float, height: Float, period: Float, start: Flo
 }
 
 private fun DrawScope.neon(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
-    val line = 0.8.dp.toPx()
-    val width = 2.dp.toPx()
-    val inset = 1.5.dp.toPx()
+    val width = max(1.5.dp.toPx(), period * 0.32f)
     val halo = halo(0.16f, glow)
-    drawLine(color.faded(0.5f), Offset(0f, top + height - line / 2f), Offset(size.width, top + height - line / 2f), line)
-    val barTop = top + inset
-    val barBottom = top + height - line - inset
+    val barTop = top + width / 2f
+    val barBottom = top + height - width / 2f
     var x = start + period * 0.25f
     while (x < size.width + period) {
         val fade = fadeAt(x)
         if (fade > 0f) {
-            drawLine(color.faded(halo * fade), Offset(x, barTop), Offset(x, barBottom), width + period * 0.4f, StrokeCap.Square)
+            drawLine(color.faded(halo * fade), Offset(x, barTop), Offset(x, barBottom), width * 2.2f, StrokeCap.Round)
             drawLine(color.faded(fade), Offset(x, barTop), Offset(x, barBottom), width, StrokeCap.Square)
         }
         x += period
@@ -221,20 +219,27 @@ private fun DrawScope.neon(top: Float, height: Float, period: Float, start: Floa
 
 private fun DrawScope.stars(row: Int, top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
     val mid = top + height / 2f
-    val halo = halo(0.14f, glow)
     var x = start + period * 0.25f
     if (row == 0) {
-        val r = min(height * 0.45f, period * 0.34f)
+        // Four-pointed twinkles, lit softly round their middle in tune.
+        val r = min(period * 0.32f, height * 0.45f)
+        val halo = halo(0f, glow)
+        val line = 1.1.dp.toPx()
+        val dot = 1.3.dp.toPx()
         while (x < size.width + period) {
             val fade = fadeAt(x)
             if (fade > 0f) {
-                drawCircle(color.faded(halo * fade), r * 0.7f, Offset(x, mid))
-                starburst(Offset(x, mid), r, color.faded(fade), density * 1.2f)
+                val c = color.faded(fade)
+                if (halo > 0f) drawCircle(color.faded(halo * fade), r * 1.2f, Offset(x, mid))
+                drawLine(c, Offset(x - r, mid), Offset(x + r, mid), line, StrokeCap.Round)
+                drawLine(c, Offset(x, mid - r), Offset(x, mid + r), line, StrokeCap.Round)
+                drawCircle(c, dot, Offset(x, mid))
             }
             x += period
         }
     } else {
-        val r = min(height * 0.2f, 2.2.dp.toPx())
+        val r = min(1.9.dp.toPx(), height * 0.3f)
+        val halo = halo(0.14f, glow)
         while (x < size.width + period) {
             val fade = fadeAt(x)
             if (fade > 0f) {

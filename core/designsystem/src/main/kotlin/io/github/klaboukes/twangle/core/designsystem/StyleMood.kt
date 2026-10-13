@@ -117,8 +117,9 @@ fun StyleMood(
 }
 
 /**
- * One string button of a mood picture, the [index]th of the row, in the style's shape and the
- * mock-up's card size for it; a [picked] one has an accent ring.
+ * One string button of a mood picture, the [index]th of the row, in the style's shape, shading
+ * ([stringChipShading]) and the mock-up's card size for it; a [picked] one has an accent ring.
+ * Futuristic's are neon outlines: see-through, the picked one tinted and glowing ([neonGlow]).
  */
 @Composable
 private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
@@ -126,12 +127,24 @@ private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
     val style = MaterialTheme.styleTokens.style
     val shape = stringChipShape(style, index)
     val (width, height) = moodStringSize(style)
-    val ring = if (picked) colors.primary else colors.onSurfaceVariant.copy(alpha = 0.6f)
-    val fill = if (picked) lerp(colors.surface, colors.primary, 0.28f) else colors.surface.copy(alpha = 0.7f)
+    val neon = style == VisualStyle.FUTURISTIC
+    val ring = when {
+        picked -> colors.primary
+        neon -> colors.primary.copy(alpha = 0.6f)
+        else -> colors.onSurfaceVariant.copy(alpha = 0.6f)
+    }
+    val fill = when {
+        neon -> if (picked) colors.primary.copy(alpha = 0.14f) else Color.Transparent
+        picked -> lerp(colors.surface, colors.primary, 0.28f)
+        else -> colors.surface.copy(alpha = 0.7f)
+    }
+    val glow = colors.primary.copy(alpha = 0.45f)
     Box(
         modifier = Modifier
             .size(unit * width, unit * height)
+            .then(if (neon && picked) Modifier.neonGlow(shape, 0.dp, color = { glow }, alpha = { 1f }) else Modifier)
             .background(fill, shape)
+            .stringChipShading(style, shape, colors.onSurface)
             .border(unit * if (picked) 1.5f else 1f, ring, shape),
         contentAlignment = Alignment.Center,
     ) {
