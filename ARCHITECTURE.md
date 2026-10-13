@@ -247,6 +247,7 @@ Failures end the flow with a typed `AudioRecorderException`, which the ViewModel
   - **ViewModel:** `distinctUntilChanged { old, new -> old.looksLike(new) }` on the DSP dispatcher drops every reading that would look the same as the last one sent: same text (cents in whole cents, frequency to 0.1 Hz, as `NoteDisplay` writes them) and the needle less than `NEEDLE_STEP_CENTS` = 0.03 cents away (≈ 0.2 dp at the needle tip of the widest gauge, below a pixel), or pinned to the same edge. `looksLike` compares field by field so it allocates nothing; `TunerUiStateShownTest` fails if `Detected` gains a field it doesn't compare. The comparison is against the last state *sent*, so slow drift still gets through once it adds up.
   - **Composition:** `TunerScreen` composes from `state.asShown()` (the same rounding) through `derivedStateOf`, so the screen recomposes only when the text changes. The exact cents reach the gauge as a lambda (`TunerContent(needleCents = …)`) that is never read while composing.
   - **Needle:** `MeterFrame` follows the lambda with `snapshotFlow` into an `Animatable` (the same spring, damping 0.8, that `animateFloatAsState` used; each new target is started with `launch` so the spring keeps its speed). The needle is drawn pointing up in its own `graphicsLayer`, and the animated value only sets that layer's `rotationZ`, so a moving needle neither recomposes nor re-records any drawing; the dial is a separate, static `Canvas`.
+  - **Frame rate:** Android 15+ sets the screen's rate from what apps ask for, and a plain Compose animation only asks for the "normal" category, which the S26 (Android 16) maps to 60 Hz. The meter's box asks for 120 Hz with `Modifier.preferredFrameRate(120f)`. The request only counts while the meter draws, so with no note (nothing moves, nothing is drawn) the screen can slow down again, and Samsung's "Motion smoothness: Standard" still caps it at 60.
 
 ### Measured on the Galaxy S26 (Phase 5)
 Minified `benchmarkRelease` build, Android 16, tuner listening in portrait, 48 kHz `VOICE_RECOGNITION`. CPU from `/proc/<pid>/task/*/stat` (percent of one core), frames from `dumpsys gfxinfo`, hotspots from `simpleperf record --app`. The "note" rows used 10 s bursts of a 440 Hz tone from a laptop speaker.
@@ -269,6 +270,26 @@ Minified `benchmarkRelease` build, Android 16, tuner listening in portrait, 48 k
   | Main-thread CPU per drawn frame (chromatic) | ≈ 2.1 ms | ≈ 1.1 ms |
 
   Laptop-speaker bursts (the earlier method) were tried too, but how well the phone picked them up changed during the session (frame counts varied fivefold between runs), so the synthetic input is the comparison of record. In chromatic mode the needle now gets a frame whenever it moves (up to the display's 120 Hz) instead of waiting behind recompositions, so it is at least as smooth; that costs RenderThread time, but the main thread still does less.
+
+### Meter looks (Phase 13)
+Measured on the S26 (Android 16, Motion smoothness "Adaptive", portrait) with `scripts/meter-frames.sh`, which runs `MeterFramesBenchmark` in `:baselineprofile` against the minified `benchmarkRelease` build and then puts the debug build back (about 4 minutes; the phone must be unlocked and upright).
+- **Input:** the `benchmarkRelease` build hears `SyntheticAudioRecorder` (`:app`) instead of the mic, chosen by `BuildConfig.SYNTHETIC_AUDIO`, which is a constant `false` in every other build, so R8 removes it from release (the release `mapping.txt` doesn't list it). It plays A4 sweeping 30·sin³ over 8 s plus a 2-cent wobble every 1.3 s (`SweepTone`, JVM tests in `SweepToneTest`). The marker swings out to about ±30 cents and never stands still. Twice per sweep the note stays within ±5 cents for about a second, so the in-tune glow and the haptic tick come and go. Noise is 20 dB below the tone.
+- **Method:** per look, the benchmark picks the look in settings, sets the cents display (so only the meter moves) and chromatic mode, then measures 3 windows of 7 s each. Frames, janky frames ("Frame deadline missed") and percentiles come from `dumpsys gfxinfo`. CPU comes from `/proc/<pid>/stat` and the main thread's and RenderThread's `task/<tid>/stat`. No tracing runs. `scripts/meter-frames.sh COMET:STUDIO_METER` measures some looks only, and `CURRENT` measures whatever the app shows (e.g. an older build).
+- **Old needle for comparison:** the same benchmark and input on commit 4826b6e (before the meter looks), with the same `preferredFrameRate(120f)` on its gauge. This sweep changes the cents text far more often than Phase 5's ±3-cent drift, so the Phase 5 figures (12.2 %, 1.1 ms) are not comparable; this row is.
+
+| Chromatic, meter moving | Frames/s | Late frames (of ~2,500) | p50 / p90 / p95 / p99 | Main thread | Main per frame | RenderThread |
+|---|---|---|---|---|---|---|
+| Old needle (same build and input) | 120 | 1 | 5 / 8 / 9 / 11 ms | 22.0 % | 1.83 ms | 19.0 % |
+| Classic | 120 | 3 | 8 / 10 / 11 / 12 ms | 19.3 % | 1.60 ms | 27.0 % |
+| Light arc | 119 | 0 | 8 / 10 / 10 / 12 ms | 19.8 % | 1.66 ms | 28.5 % |
+| Spirit level | 120 | 3 | 13 / 17 / 17 / 18 ms | 17.1 % | 1.43 ms | 28.2 % |
+| Rolling scale | 119 | 12, repeat run 5 | 12 / 12 / 13 / 14 ms | 19.9 % (22.5 %) | 1.67 ms (1.89 ms) | 30.3 % |
+| Comet | 119 | 6, repeat run 0 | 8 / 10 / 10 / 12 ms | 18.6 % (19.7 %) | 1.56 ms (1.65 ms) | 32.7 % |
+| Studio meter | 120 | 10, repeat run 0 | 9 / 10 / 11 / 12 ms | 17.1 % (20.0 %) | 1.43 ms (1.67 ms) | 30.1 % |
+
+- **Smoothness:** every look draws at the full 120 Hz. Late frames are rare and scattered, at most 0.5 % and none in most repeat runs. Rolling scale's few are "slow issue draw commands" on the RenderThread, about 1 in 500: its drum re-places, narrows and fades all its marks every frame, as its design asks. The percentiles are latency from vsync to the finished frame. At 120 Hz the pipeline is allowed more than one vsync, so a p50 above 8.3 ms is not a dropped frame (gfxinfo counts those as late).
+- **Main thread:** every look uses less than the old needle, both per frame and in total. The figures vary by about ±2 points between runs (bracketed: repeat runs). The looks do more RenderThread work than the plain needle (glass, glow, trail, drum), and the whole app uses 61–66 % of one core against 54 % for the needle.
+- **Before the frame-rate request** the same benchmark ran at 67–73 frames/s (60 Hz) for every look and for the old needle alike.
 
 ### Baseline Profile
 A Baseline Profile lists the classes and methods used at startup and on the tuner screen, so Android compiles them ahead of time on install instead of interpreting them first.

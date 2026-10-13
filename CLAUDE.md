@@ -38,6 +38,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
+scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
 ```
 ### Dev machine environment (Windows)

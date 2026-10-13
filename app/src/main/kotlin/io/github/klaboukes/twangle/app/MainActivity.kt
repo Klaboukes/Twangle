@@ -97,6 +97,8 @@ class MainActivity : ComponentActivity() {
                                 appVersion = BuildConfig.VERSION_NAME,
                                 onBack = { screen = Screen.TUNER },
                                 onOpenAbout = { screen = Screen.ABOUT },
+                                // Lets UI Automator (the meter frame-time benchmark) find the meter cards.
+                                modifier = Modifier.semantics { testTagsAsResourceId = true },
                             )
                         }
                         Screen.ABOUT -> {

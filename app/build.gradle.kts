@@ -1,3 +1,4 @@
+import com.android.build.api.variant.BuildConfigField
 import java.util.Properties
 
 plugins {
@@ -69,6 +70,18 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+// The benchmarkRelease build (made by the Baseline Profile plugin, used by scripts/meter-frames.sh)
+// hears a synthetic tone instead of the mic, so frame-time runs get identical input. Every other
+// build, release included, gets false, so R8 removes the synthetic recorder there.
+androidComponents {
+    onVariants { variant ->
+        variant.buildConfigFields?.put(
+            "SYNTHETIC_AUDIO",
+            BuildConfigField("boolean", (variant.buildType == "benchmarkRelease").toString(), "Synthetic tone instead of the mic"),
+        )
+    }
 }
 
 dependencies {

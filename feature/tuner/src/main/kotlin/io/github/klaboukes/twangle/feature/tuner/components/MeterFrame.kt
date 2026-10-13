@@ -23,6 +23,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.preferredFrameRate
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.res.stringResource
@@ -111,7 +112,10 @@ fun MeterFrame(
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO)) {
+        // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation
+        // only asks for the "normal" rate (60 Hz on the S26). The moving meter asks for 120 Hz; the
+        // request only counts while it draws, so a still meter (no note) lets the screen slow down.
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO).preferredFrameRate(METER_FRAME_RATE)) {
             MeterLookArt(look, reading, effect)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -162,6 +166,9 @@ private class TunerMeterReading(
         layer.renderEffect = blurs[ReceptionLook.blurStepFor(heard, presence)]
     }
 }
+
+/** The frame rate the moving meter asks for: the S26's full rate. Phones without it pick the nearest they have. */
+private const val METER_FRAME_RATE = 120f
 
 /** The marker's opacity without a note: resting, faded in the centre. */
 private const val REST_ALPHA = 0.3f
