@@ -140,6 +140,24 @@ enum class MeterLook {
     }
 }
 
+/**
+ * How strong the meter's glow is when the note is reached. Both ease in, hold and fade the same
+ * way, without bursts or flashes; Bold is only brighter and larger. Saved in settings by [name], so
+ * don't rename the entries.
+ */
+enum class InTuneEffect {
+    /** The soft glow. */
+    CALM,
+
+    /** A stronger, larger glow, still smooth. */
+    BOLD,
+    ;
+
+    companion object {
+        val DEFAULT = CALM
+    }
+}
+
 /** Everything the user can change, with the defaults a fresh install starts from. */
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
@@ -168,6 +186,8 @@ data class AppSettings(
     val waveLook: WaveLook = WaveLook.DEFAULT,
     /** What the meter above the note looks like. */
     val meterLook: MeterLook = MeterLook.DEFAULT,
+    /** How strong the meter's glow is when the note is reached. */
+    val inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     /**
      * On the note, the wave keeps breathing gently (true) or holds perfectly still like the strobe
      * (false). Temporary: the owner compares both on the phone, then one goes, with this setting.

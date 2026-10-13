@@ -11,6 +11,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.rememberTextMeasurer
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlinx.coroutines.flow.first
 import kotlin.math.cos
 import kotlin.math.sin
@@ -55,8 +57,8 @@ internal fun cometCents(cents: Float): Float = cents.coerceIn(-COMET_LIMIT_CENTS
  * dial's glass over them.
  */
 @Composable
-internal fun BoxScope.CometMeter(reading: MeterReading) {
-    val roles = meterRoles()
+internal fun BoxScope.CometMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     val trail = remember(reading) { CometTrail(cometCents(Snapshot.withoutReadObservation { reading.cents })) }
     val frames = remember(trail) { mutableIntStateOf(0) }
@@ -76,7 +78,8 @@ internal fun BoxScope.CometMeter(reading: MeterReading) {
         },
     )
     Spacer(
-        modifier = Modifier.matchParentSize().graphicsLayer {
+        // The head's glow stays on the plate.
+        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {
             // Carried from tune's place along the path, without making anything per frame.
             val path = cometPathRadius(size.width)
             val angle = meterAngle(cometCents(reading.cents))
@@ -159,8 +162,8 @@ private class CometTailArt(private val dial: DialGeometry, private val roles: Me
 }
 
 /**
- * The comet's head, in tune's place (the top of its path): the in-tune moment's glow (60u, at the
- * shared [MeterRoles.tuneGlowAlpha] by [MeterReading.glow]), a soft glow of its colour (16u, 35 % at
+ * The comet's head, in tune's place (the top of its path): the in-tune moment's glow (60u times
+ * [MeterRoles.tuneGlowSize], at the shared [MeterRoles.tuneGlowAlpha] by [MeterReading.glow]), a soft glow of its colour (16u, 35 % at
  * its middle in dark, 20 % in light), a 4.5u dot in the centre colour with the shared marker shadow,
  * and a small white glint towards its upper left. Its layer carries it along the path.
  */
@@ -171,7 +174,7 @@ private class CometHeadArt(dial: DialGeometry, private val roles: MeterRoles) {
     private val glowAlpha = if (roles.dark) 0.35f else 0.2f
     private val accentGlow = GlowArt(16f * u, roles.accent)
     private val inTuneGlow = GlowArt(16f * u, roles.inTune)
-    private val tuneGlow = GlowArt(COMET_GLOW_UNITS * u, roles.inTune)
+    private val tuneGlow = GlowArt(COMET_GLOW_UNITS * roles.tuneGlowSize * u, roles.inTune)
     private val shadow = markerShadowPaint(u, roles)
     private val glint = Color.White.copy(alpha = 0.7f)
     private val glintAt = Offset(x - 1.3f * u, y - 1.3f * u)

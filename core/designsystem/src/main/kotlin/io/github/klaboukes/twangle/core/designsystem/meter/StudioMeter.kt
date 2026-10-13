@@ -33,6 +33,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.em
 import io.github.klaboukes.twangle.core.designsystem.R
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -123,8 +124,8 @@ private val StudioFaceShape = GenericShape { size, _ -> addRoundRect(StudioGeome
  * lamp; and over them the pivot's cover and the glass's sheen and rim.
  */
 @Composable
-internal fun BoxScope.StudioMeter(reading: MeterReading) {
-    val roles = meterRoles()
+internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     val unit = stringResource(R.string.meter_studio_unit)
     StaticArt {
@@ -224,7 +225,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading) {
     }
     // The lamp, in a layer of its own: it lights only with the "in tune" amount.
     Spacer(
-        modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
+        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {}.drawWithCache {
             val lamp = StudioLampArt(StudioGeometry(size.width, size.height), roles)
             onDrawBehind { lamp.draw(this, reading.tuned, reading.glow) }
         },
@@ -260,16 +261,16 @@ private fun GraphicsLayerScope.turnAboutStudioPivot(cents: Float) {
 /**
  * The lamp's lens: a 3.8u dot, the face a little toward ink when off and lit in the "in tune" colour
  * with [MeterReading.tuned], with a small white glint towards its upper left that brightens with it.
- * Around it the in-tune moment lights a 22u halo in the "in tune" colour ([MeterReading.glow], 55 % at
- * its middle in dark, 35 % in light).
+ * Around it the in-tune moment lights a 22u halo (times [MeterRoles.tuneGlowSize]) in the "in tune"
+ * colour ([MeterReading.glow], at [MeterRoles.lampHaloAlpha] in its middle).
  */
 private class StudioLampArt(private val studio: StudioGeometry, private val roles: MeterRoles) {
     private val u = studio.u
     private val centre = Offset(studio.lampX, studio.lampY)
     private val glintAt = Offset(studio.lampX - 1.1f * u, studio.lampY - 1.1f * u)
     private val unlit = mix(roles.face, roles.ink, 0.2f)
-    private val halo = GlowArt(LAMP_HALO_UNITS * u, roles.inTune)
-    private val haloAlpha = if (roles.dark) 0.55f else 0.35f
+    private val halo = GlowArt(LAMP_HALO_UNITS * roles.tuneGlowSize * u, roles.inTune)
+    private val haloAlpha = roles.lampHaloAlpha
 
     fun draw(scope: DrawScope, tuned: Float, glow: Float) = with(scope) {
         halo.draw(this, studio.lampX, studio.lampY, haloAlpha * glow)

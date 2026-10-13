@@ -54,6 +54,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMeterLook(look: MeterLook) = state.update { it.copy(meterLook = look) }
 
+    override suspend fun setInTuneEffect(effect: InTuneEffect) = state.update { it.copy(inTuneEffect = effect) }
+
     override suspend fun setWaveBreathesInTune(enabled: Boolean) =
         state.update { it.copy(waveBreathesInTune = enabled) }
 

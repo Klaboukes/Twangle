@@ -5,6 +5,7 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -52,8 +53,41 @@ class TuneGlowTest {
         assertEquals(0.16f, roles(dark = false).tuneGlowAlpha, 1e-6f)
     }
 
-    private fun roles(dark: Boolean) = MeterRoles(
+    @Test
+    fun `calm is the default, at the mock-up's size, with the lamp's halo at 55 % dark and 35 % light`() {
+        assertEquals(InTuneEffect.CALM, roles(dark = true).effect)
+        assertEquals(1f, roles(dark = true).tuneGlowSize, 1e-6f)
+        assertEquals(0.55f, roles(dark = true).lampHaloAlpha, 1e-6f)
+        assertEquals(0.35f, roles(dark = false).lampHaloAlpha, 1e-6f)
+    }
+
+    @Test
+    fun `bold is clearly stronger and larger`() {
+        for (dark in listOf(false, true)) {
+            val calm = roles(dark, InTuneEffect.CALM)
+            val bold = roles(dark, InTuneEffect.BOLD)
+            assertTrue("dark=$dark: ${bold.tuneGlowAlpha} vs ${calm.tuneGlowAlpha}", bold.tuneGlowAlpha >= calm.tuneGlowAlpha * 1.6f)
+            assertTrue("dark=$dark lamp", bold.lampHaloAlpha >= calm.lampHaloAlpha * 1.5f)
+            assertEquals(1.35f, bold.tuneGlowSize, 1e-6f)
+        }
+        // 1.7 times the calm glow, capped at 52 % in dark; the lamp's halo capped at 85 %.
+        assertEquals(0.52f, roles(dark = true, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
+        assertEquals(0.272f, roles(dark = false, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
+        assertEquals(0.85f, roles(dark = true, InTuneEffect.BOLD).lampHaloAlpha, 1e-6f)
+        assertEquals(0.595f, roles(dark = false, InTuneEffect.BOLD).lampHaloAlpha, 1e-6f)
+    }
+
+    @Test
+    fun `bold never covers the readings, in light or dark`() {
+        for (dark in listOf(false, true)) {
+            assertTrue(tuneGlowAlpha(dark, InTuneEffect.BOLD) <= BOLD_GLOW_MAX_ALPHA)
+            assertTrue(lampHaloAlpha(dark, InTuneEffect.BOLD) <= BOLD_LAMP_HALO_MAX_ALPHA)
+        }
+    }
+
+    private fun roles(dark: Boolean, effect: InTuneEffect = InTuneEffect.DEFAULT) = MeterRoles(
         background = Color.Black, plate = Color.DarkGray, ink = Color.White, muted = Color.Gray, track = Color.Gray,
         accent = Color.Blue, inTune = Color.Green, dark = dark, numbers = FontFamily.Default, numberScale = 1f,
+        effect = effect,
     )
 }

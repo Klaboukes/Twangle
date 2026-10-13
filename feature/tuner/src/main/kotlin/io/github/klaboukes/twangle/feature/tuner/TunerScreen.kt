@@ -75,6 +75,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
@@ -145,6 +146,7 @@ fun TunerScreen(
     val display by viewModel.display.collectAsStateWithLifecycle()
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
+    val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
     val waveBreathesInTune by viewModel.waveBreathesInTune.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
@@ -193,6 +195,7 @@ fun TunerScreen(
                     display = display,
                     waveLook = waveLook,
                     meterLook = meterLook,
+                    inTuneEffect = inTuneEffect,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
                     waveBreathesInTune = waveBreathesInTune,
@@ -293,7 +296,7 @@ private fun KeepScreenOn() {
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
  * on the note or, without [waveBreathesInTune], holding still there); the meter above the note is drawn in
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
- * tune; with [animationsOff] its in-tune colour and glow switch without easing), and
+ * tune; as strong as [inTuneEffect]; with [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
@@ -318,6 +321,7 @@ fun TunerContent(
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
     meterLook: MeterLook = MeterLook.DEFAULT,
+    inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
     waveBreathesInTune: Boolean = true,
@@ -357,6 +361,7 @@ fun TunerContent(
     val gauge = @Composable {
         MeterFrame(
             look = meterLook,
+            effect = inTuneEffect,
             cents = needleCents,
             inTune = (state as? TunerUiState.Detected)?.inTune == true,
             glow = meterGlow,

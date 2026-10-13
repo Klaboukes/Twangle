@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.settings.R
 import kotlin.math.abs
@@ -28,6 +29,7 @@ import kotlin.math.exp
  * ([MeterLookArt] in `core.designsystem.meter`), in the current style, moving through one short
  * loop ([MeterDemo]): flat, tuned up to the note, in tune, sharp, tuned down, in tune. The cards
  * form one selectable group for TalkBack, which reads each card as a radio button with its name.
+ * The cards glow on the note as strongly as [effect] (Calm or Bold), so they preview that choice too.
  *
  * The loop only runs while some of the cards are on screen, and each frame only moves the cards'
  * markers in their layers: nothing is recomposed.
@@ -38,6 +40,7 @@ fun MeterLookPicker(
     selected: MeterLook,
     onSelect: (MeterLook) -> Unit,
     modifier: Modifier = Modifier,
+    effect: InTuneEffect = InTuneEffect.DEFAULT,
     label: @Composable (MeterLook) -> String,
 ) {
     val demo = remember { MeterDemo() }
@@ -53,7 +56,7 @@ fun MeterLookPicker(
         modifier = modifier,
     ) { look, _ ->
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO)) {
-            MeterLookArt(look, reading)
+            MeterLookArt(look, reading, effect)
         }
     }
 }

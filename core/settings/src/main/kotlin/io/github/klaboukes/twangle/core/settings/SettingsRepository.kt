@@ -47,6 +47,9 @@ interface SettingsRepository {
 
     suspend fun setMeterLook(look: MeterLook)
 
+    /** Calm (the soft glow) or Bold (a stronger, larger one) when the note is reached. */
+    suspend fun setInTuneEffect(effect: InTuneEffect)
+
     /** True lets the wave breathe on the note; false makes it hold still there (temporary, see [AppSettings.waveBreathesInTune]). */
     suspend fun setWaveBreathesInTune(enabled: Boolean)
 

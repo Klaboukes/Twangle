@@ -37,6 +37,7 @@ import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.tuner.R
 import kotlinx.coroutines.launch
@@ -56,7 +57,8 @@ import kotlinx.coroutines.launch
  *   ([MeterReading.tuned], eased in over 0.4 s and out over 0.6 s; the note's check mark in
  *   [NoteDisplay] says it without colour);
  * - while [glow] (from [rememberInTuneGlow]: lit with the haptic tick, held through a brief dropout)
- *   the look's soft in-tune glow eases in over 0.4 s and fades over 0.6 s ([MeterReading.glow]);
+ *   the look's soft in-tune glow eases in over 0.4 s and fades over 0.6 s ([MeterReading.glow]),
+ *   as strong as [effect] (Bold: brighter and larger, eased the same way);
  * - with [animationsOff] (Android's "Remove animations", [rememberAnimationsOff]) the colour and the
  *   glow switch at once, without easing;
  * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
@@ -74,6 +76,7 @@ fun MeterFrame(
     modifier: Modifier = Modifier,
     inTune: Boolean = false,
     glow: Boolean = inTune,
+    effect: InTuneEffect = InTuneEffect.DEFAULT,
     animationsOff: Boolean = false,
     reception: () -> Float? = { null },
 ) {
@@ -109,7 +112,7 @@ fun MeterFrame(
 
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO)) {
-            MeterLookArt(look, reading)
+            MeterLookArt(look, reading, effect)
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(

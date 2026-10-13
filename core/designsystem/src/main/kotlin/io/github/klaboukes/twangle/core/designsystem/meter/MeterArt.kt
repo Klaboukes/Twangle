@@ -3,15 +3,18 @@ package io.github.klaboukes.twangle.core.designsystem.meter
 import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -37,6 +41,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.FontFamily
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /*
@@ -74,6 +79,8 @@ internal data class MeterRoles(
     val numbers: FontFamily,
     /** How big the numbers are set: smaller for wide faces. */
     val numberScale: Float,
+    /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize], [lampHaloAlpha]). */
+    val effect: InTuneEffect = InTuneEffect.DEFAULT,
 ) {
     /** The glass window's face: the plate sunk toward the stage. */
     val face: Color = if (dark) mix(background, Color.Black, 0.3f) else mix(plate, background, 0.7f)
@@ -84,16 +91,58 @@ internal data class MeterRoles(
     /** The marker's colour, [tuned] (0..1) of the way to "in tune". */
     fun marker(tuned: Float): Color = mix(ink, inTune, tuned * 0.9f)
 
-    /** The in-tune glow's opacity at its middle when fully lit: 32 % in dark, 16 % in light. */
-    val tuneGlowAlpha: Float = if (dark) TUNE_GLOW_DARK_ALPHA else TUNE_GLOW_LIGHT_ALPHA
+    /** The in-tune glow's opacity at its middle when fully lit (see [tuneGlowAlpha]). */
+    val tuneGlowAlpha: Float = tuneGlowAlpha(dark, effect)
+
+    /** How much larger than its look's own radius the in-tune glow is (see [tuneGlowSize]). */
+    val tuneGlowSize: Float = tuneGlowSize(effect)
+
+    /** The studio lamp's halo's opacity at its middle when fully lit (see [lampHaloAlpha]). */
+    val lampHaloAlpha: Float = lampHaloAlpha(dark, effect)
 }
 
+/*
+ * The in-tune moment's strength. Calm is the approved mock-up's soft glow: 32 % at its middle in
+ * dark, 16 % in light. Bold is the same glow, eased the same way, only brighter (1.7 times, but at
+ * most 52 % so the scale's numbers and the marker over it stay clearly readable in every style) and
+ * 1.35 times larger. The studio lamp's halo (55 % dark, 35 % light) grows the same way, to at most 85 %.
+ */
 private const val TUNE_GLOW_DARK_ALPHA = 0.32f
 private const val TUNE_GLOW_LIGHT_ALPHA = 0.16f
+private const val LAMP_HALO_DARK_ALPHA = 0.55f
+private const val LAMP_HALO_LIGHT_ALPHA = 0.35f
+internal const val BOLD_GLOW_STRENGTH = 1.7f
+internal const val BOLD_GLOW_SIZE = 1.35f
+internal const val BOLD_GLOW_MAX_ALPHA = 0.52f
+internal const val BOLD_LAMP_HALO_MAX_ALPHA = 0.85f
 
-/** The current style's [MeterRoles]. */
+/** The in-tune glow's opacity at its middle when fully lit, in [dark] or light, for [effect]. */
+internal fun tuneGlowAlpha(dark: Boolean, effect: InTuneEffect): Float {
+    val calm = if (dark) TUNE_GLOW_DARK_ALPHA else TUNE_GLOW_LIGHT_ALPHA
+    return when (effect) {
+        InTuneEffect.CALM -> calm
+        InTuneEffect.BOLD -> (calm * BOLD_GLOW_STRENGTH).coerceAtMost(BOLD_GLOW_MAX_ALPHA)
+    }
+}
+
+/** How much larger than its look's own radius the in-tune glow is for [effect]. */
+internal fun tuneGlowSize(effect: InTuneEffect): Float = when (effect) {
+    InTuneEffect.CALM -> 1f
+    InTuneEffect.BOLD -> BOLD_GLOW_SIZE
+}
+
+/** The studio lamp's halo's opacity at its middle when fully lit, in [dark] or light, for [effect]. */
+internal fun lampHaloAlpha(dark: Boolean, effect: InTuneEffect): Float {
+    val calm = if (dark) LAMP_HALO_DARK_ALPHA else LAMP_HALO_LIGHT_ALPHA
+    return when (effect) {
+        InTuneEffect.CALM -> calm
+        InTuneEffect.BOLD -> (calm * BOLD_GLOW_STRENGTH).coerceAtMost(BOLD_LAMP_HALO_MAX_ALPHA)
+    }
+}
+
+/** The current style's [MeterRoles], with the in-tune glow as strong as [effect] says. */
 @Composable
-internal fun meterRoles(): MeterRoles {
+internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     return MeterRoles(
@@ -107,6 +156,7 @@ internal fun meterRoles(): MeterRoles {
         dark = tokens.dark,
         numbers = numberFontFor(tokens.style),
         numberScale = numberScaleFor(tokens.style),
+        effect = effect,
     )
 }
 
@@ -156,8 +206,8 @@ internal fun BoxScope.StaticArt(build: CacheDrawScope.() -> (DrawScope.() -> Uni
  * shadow (14u blur, 5u down).
  */
 internal class PlateArt(size: Size, private val u: Float, roles: MeterRoles) {
-    private val rect = Rect(6f * u, 6f * u, size.width - 6f * u, size.height - 6f * u)
-    private val corner = CornerRadius(14f * u)
+    private val rect = plateRect(size, u)
+    private val corner = CornerRadius(PLATE_CORNER_UNITS * u)
     private val shadow = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
         color = roles.plate.toArgb()
         setShadowLayer(blurRadius(14f * u), 0f, 5f * u, Color.Black.copy(alpha = if (roles.dark) 0.5f else 0.16f).toArgb())
@@ -348,6 +398,23 @@ internal class NeedleArt(private val pivotX: Float, private val pivotY: Float, l
     }
 }
 
+/** The plate's rectangle in a box of [size]: 6u in from every side. */
+private fun plateRect(size: Size, u: Float) =
+    Rect(PLATE_INSET_UNITS * u, PLATE_INSET_UNITS * u, size.width - PLATE_INSET_UNITS * u, size.height - PLATE_INSET_UNITS * u)
+
+private const val PLATE_INSET_UNITS = 6f
+private const val PLATE_CORNER_UNITS = 14f
+
+/**
+ * The plate's outline, for clipping the in-tune glows to it: a glow never tints the stage in the
+ * box's margin around the plate, so its edge never shows as a line at the top of the box. Made only
+ * when the box's size changes.
+ */
+internal val MeterPlateShape: Shape = GenericShape { size, _ ->
+    val u = meterUnit(size.width)
+    addRoundRect(RoundRect(plateRect(size, u), CornerRadius(PLATE_CORNER_UNITS * u)))
+}
+
 /**
  * A soft radial glow of [color] and [radius]: full at its middle, 40 % by 45 % of the way out, gone
  * at the edge. Made once and moved by translating, so drawing it anywhere allocates nothing.
@@ -375,7 +442,8 @@ internal class GlowArt(private val radius: Float, color: Color) {
 
 /**
  * The in-tune moment's glow, the same in every look (the mock-up's `tuneGlow`): a [GlowArt] of
- * [radiusUnits] in the style's "in tune" colour around [centre], at [MeterRoles.tuneGlowAlpha] when
+ * [radiusUnits] (times [MeterRoles.tuneGlowSize], larger in Bold) in the style's "in tune" colour
+ * around [centre], at [MeterRoles.tuneGlowAlpha] when
  * fully lit, optionally clipped to [clip] (a look's window). It is drawn once, in a layer of its own
  * under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move], if given,
  * carries it with a moving marker), so easing it in and out redraws nothing and allocates nothing.
@@ -390,13 +458,14 @@ internal fun BoxScope.TuneGlow(
     move: (GraphicsLayerScope.() -> Unit)? = null,
 ) {
     Spacer(
-        modifier = Modifier.matchParentSize().graphicsLayer {
+        // Clipped to the plate outside the moving layer, so the clip stays put while the glow moves.
+        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {
             alpha = reading.glow.coerceIn(0f, 1f)
             // One soft circle: fading it needs no offscreen buffer.
             compositingStrategy = CompositingStrategy.ModulateAlpha
             move?.invoke(this)
         }.drawWithCache {
-            val glow = GlowArt(radiusUnits * meterUnit(size.width), roles.inTune)
+            val glow = GlowArt(radiusUnits * roles.tuneGlowSize * meterUnit(size.width), roles.inTune)
             val at = centre(size)
             val window = clip?.invoke(size)
             val peak = roles.tuneGlowAlpha

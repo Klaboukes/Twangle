@@ -41,6 +41,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.designsystem.StylePicker
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
@@ -86,6 +87,7 @@ fun SettingsScreen(
         onShowSignalBarsChange = viewModel::setShowSignalBars,
         onDisplayChange = viewModel::setDisplay,
         onMeterLookChange = viewModel::setMeterLook,
+        onInTuneEffectChange = viewModel::setInTuneEffect,
         onWaveLookChange = viewModel::setWaveLook,
         onWaveBreathesInTuneChange = viewModel::setWaveBreathesInTune,
         onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
@@ -118,6 +120,7 @@ fun SettingsContent(
     onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onMeterLookChange: (MeterLook) -> Unit,
+    onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
@@ -142,6 +145,7 @@ fun SettingsContent(
                 onShowSignalBarsChange = onShowSignalBarsChange,
                 onDisplayChange = onDisplayChange,
                 onMeterLookChange = onMeterLookChange,
+                onInTuneEffectChange = onInTuneEffectChange,
                 onWaveLookChange = onWaveLookChange,
                 onWaveBreathesInTuneChange = onWaveBreathesInTuneChange,
                 onKeepTwoPaneLandscapeChange = onKeepTwoPaneLandscapeChange,
@@ -229,6 +233,7 @@ private fun SettingsGroups(
     onShowSignalBarsChange: (Boolean) -> Unit,
     onDisplayChange: (TunerDisplay) -> Unit,
     onMeterLookChange: (MeterLook) -> Unit,
+    onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onWaveBreathesInTuneChange: (Boolean) -> Unit,
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
@@ -284,7 +289,14 @@ private fun SettingsGroups(
                     title = stringResource(R.string.settings_meter_look_title),
                     selected = settings.meterLook,
                     onSelect = onMeterLookChange,
+                    effect = settings.inTuneEffect,
                 ) { stringResource(meterLookLabel(it)) }
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_in_tune_effect_title),
+                    options = InTuneEffect.entries,
+                    selected = settings.inTuneEffect,
+                    onSelect = onInTuneEffectChange,
+                ) { stringResource(inTuneEffectLabel(it)) }
                 HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_display_title),
@@ -420,6 +432,11 @@ private fun meterLookLabel(look: MeterLook): Int = when (look) {
     MeterLook.STUDIO_METER -> R.string.settings_meter_look_studio_meter
 }
 
+private fun inTuneEffectLabel(effect: InTuneEffect): Int = when (effect) {
+    InTuneEffect.CALM -> R.string.settings_in_tune_effect_calm
+    InTuneEffect.BOLD -> R.string.settings_in_tune_effect_bold
+}
+
 private fun waveLookLabel(look: WaveLook): Int = when (look) {
     WaveLook.STROBE -> R.string.settings_wave_look_strobe
     WaveLook.RIBBON -> R.string.settings_wave_look_ribbon
@@ -456,6 +473,7 @@ private fun SettingsContentPreview() {
             onShowSignalBarsChange = {},
             onDisplayChange = {},
             onMeterLookChange = {},
+            onInTuneEffectChange = {},
             onWaveLookChange = {},
             onWaveBreathesInTuneChange = {},
             onKeepTwoPaneLandscapeChange = {},

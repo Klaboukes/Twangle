@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.rememberTextMeasurer
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.asin
@@ -142,8 +143,8 @@ private const val STRETCH_PER_CENT_PER_SECOND = 0.0025f
  * turns and stretches that layer along the tube, so nothing is redrawn while it floats.
  */
 @Composable
-internal fun BoxScope.SpiritLevelMeter(reading: MeterReading) {
-    val roles = meterRoles()
+internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     val layout = remember { LevelLayout() }
     StaticArt {

@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.settings
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -88,6 +89,17 @@ class SettingsViewModelTest {
         vm.setMeterLook(MeterLook.SPIRIT_LEVEL)
         runCurrent()
         assertEquals(MeterLook.SPIRIT_LEVEL, repository.current.meterLook)
+    }
+
+    @Test
+    fun `saves the in-tune effect`() = runTest(dispatcher) {
+        val vm = SettingsViewModel(repository)
+        vm.setInTuneEffect(InTuneEffect.BOLD)
+        runCurrent()
+        assertEquals(InTuneEffect.BOLD, repository.current.inTuneEffect)
+        vm.setInTuneEffect(InTuneEffect.CALM)
+        runCurrent()
+        assertEquals(InTuneEffect.CALM, repository.current.inTuneEffect)
     }
 
     @Test

@@ -78,6 +78,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.RIBBON, settings.waveLook)
         assertEquals(MeterLook.CLASSIC, settings.meterLook)
+        assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals(true, settings.waveBreathesInTune)
         assertEquals(false, settings.stringLockTipSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
@@ -101,6 +102,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDisplay(TunerDisplay.NEEDLE)
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setMeterLook(MeterLook.COMET)
+        repo.setInTuneEffect(InTuneEffect.BOLD)
         repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
         repo.setKeepTwoPaneLandscape(true)
@@ -121,6 +123,7 @@ class DataStoreSettingsRepositoryTest {
             display = TunerDisplay.NEEDLE,
             waveLook = WaveLook.FIREFLIES,
             meterLook = MeterLook.COMET,
+            inTuneEffect = InTuneEffect.BOLD,
             waveBreathesInTune = false,
             stringLockTipSeen = true,
             keepTwoPaneLandscape = true,
@@ -141,6 +144,7 @@ class DataStoreSettingsRepositoryTest {
             setKeepTwoPaneLandscape(true)
             setWaveBreathesInTune(false)
             setMeterLook(MeterLook.SPIRIT_LEVEL)
+            setInTuneEffect(InTuneEffect.BOLD)
         }
         close()
 
@@ -155,6 +159,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
         assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
         assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
+        assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
     }
 
     @Test
@@ -181,6 +186,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
             it[stringPreferencesKey("wave_look")] = "LAVA_LAMP"
             it[stringPreferencesKey("meter_look")] = "SUNDIAL"
+            it[stringPreferencesKey("in_tune_effect")] = "FIREWORKS"
             it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
         }
@@ -194,6 +200,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(VisualStyle.DEFAULT, settings.style)
         assertEquals(WaveLook.DEFAULT, settings.waveLook)
         assertEquals("an unknown meter look gives Classic", MeterLook.CLASSIC, settings.meterLook)
+        assertEquals("an unknown in-tune effect gives Calm", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
     }

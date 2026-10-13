@@ -25,6 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -112,8 +113,8 @@ internal class DrumGeometry(width: Float, height: Float) {
  * the glass's sheen and rim.
  */
 @Composable
-internal fun BoxScope.RollingScaleMeter(reading: MeterReading) {
-    val roles = meterRoles()
+internal fun BoxScope.RollingScaleMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     StaticArt {
         val drum = DrumGeometry(size.width, size.height)

@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import kotlinx.coroutines.flow.first
 import kotlin.math.abs
@@ -48,17 +49,21 @@ import kotlin.math.sin
  * the shared resting and reception fade.
  */
 
-/** Draws [look] in the frame's box from [reading]. */
+/**
+ * Draws [look] in the frame's box from [reading], with the in-tune glow as strong as [effect] says
+ * (Bold: brighter and larger, eased the same way). The effect is part of the look's colour roles,
+ * so changing it rebuilds the cached art once; it is never read per frame.
+ */
 @Composable
-fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading) {
+fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTuneEffect = InTuneEffect.DEFAULT) {
     Box(modifier = Modifier.matchParentSize().clipToBounds()) {
         when (look) {
-            MeterLook.CLASSIC -> ClassicMeter(reading)
-            MeterLook.LIGHT_ARC -> LightArcMeter(reading)
-            MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading)
-            MeterLook.ROLLING_SCALE -> RollingScaleMeter(reading)
-            MeterLook.COMET -> CometMeter(reading)
-            MeterLook.STUDIO_METER -> StudioMeter(reading)
+            MeterLook.CLASSIC -> ClassicMeter(reading, effect)
+            MeterLook.LIGHT_ARC -> LightArcMeter(reading, effect)
+            MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading, effect)
+            MeterLook.ROLLING_SCALE -> RollingScaleMeter(reading, effect)
+            MeterLook.COMET -> CometMeter(reading, effect)
+            MeterLook.STUDIO_METER -> StudioMeter(reading, effect)
         }
     }
 }
@@ -196,8 +201,8 @@ private const val DIAL_GLOW_UNITS = 80f
  * same way.
  */
 @Composable
-private fun BoxScope.ClassicMeter(reading: MeterReading) {
-    val roles = meterRoles()
+private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     DialUnder(roles, measurer)
     DialCentre(roles, reading)
@@ -253,8 +258,8 @@ private const val NEEDLE_LIMIT_CENTS = 53f
  * fading, so a steady reading moves nothing.
  */
 @Composable
-private fun BoxScope.LightArcMeter(reading: MeterReading) {
-    val roles = meterRoles()
+private fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) {
+    val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
     val heat = remember(reading) { LightArcHeat(Snapshot.withoutReadObservation { reading.cents }) }
     val frames = remember(heat) { mutableIntStateOf(0) }

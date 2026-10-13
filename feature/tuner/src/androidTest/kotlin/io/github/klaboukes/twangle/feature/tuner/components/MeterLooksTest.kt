@@ -24,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
@@ -42,8 +43,8 @@ import kotlin.math.abs
  * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
  * each of the seven styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
  * the flat and sharp labels or around the frame), skipped by TalkBack, moved by a new reading
- * without recomposing, and lit by the soft in-tune glow (inside the box; at once with "Remove
- * animations").
+ * without recomposing, and lit by the soft in-tune glow (inside the box, Calm and the stronger
+ * Bold; at once with "Remove animations").
  */
 @RunWith(Parameterized::class)
 class MeterLooksTest(private val style: VisualStyle) {
@@ -63,6 +64,7 @@ class MeterLooksTest(private val style: VisualStyle) {
 
     private val inTune = mutableStateOf(false)
     private val glow = mutableStateOf(false)
+    private val effect = mutableStateOf(InTuneEffect.CALM)
     private val animationsOff = mutableStateOf(false)
 
     /** The style's "in tune" colour, light (false) and dark (true). */
@@ -84,6 +86,7 @@ class MeterLooksTest(private val style: VisualStyle) {
                                         cents = { cents.floatValue },
                                         inTune = inTune.value,
                                         glow = glow.value,
+                                        effect = effect.value,
                                         animationsOff = animationsOff.value,
                                         modifier = Modifier.width(FRAME_WIDTH.dp).testTag(frameTag(look, dark)),
                                     )
@@ -159,39 +162,78 @@ class MeterLooksTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun everyLookGlowsInTuneInsideItsBox() = eachPage { looks ->
+    fun everyLookGlowsInTuneInsideItsBox() = eachPage { looks -> assertGlows(looks, InTuneEffect.CALM) }
+
+    @Test
+    fun everyLookGlowsInTuneInsideItsBoxInBold() = eachPage { looks -> assertGlows(looks, InTuneEffect.BOLD) }
+
+    /** Bold lights more of each look, and more strongly, than Calm: the same glow, only stronger and larger. */
+    @Test
+    fun boldGlowsClearlyMoreThanCalm() = eachPage { looks ->
+        val calm = looks.associateWith { look -> glowOf(look, InTuneEffect.CALM) }
+        val bold = looks.associateWith { look -> glowOf(look, InTuneEffect.BOLD) }
+        for (look in looks) {
+            for (dark in listOf(false, true)) {
+                val case = "$style $look ${if (dark) "dark" else "light"}"
+                val c = calm.getValue(look)[if (dark) 1 else 0]
+                val b = bold.getValue(look)[if (dark) 1 else 0]
+                assertTrue("$case: bold lights ${b.lit} pixels, calm ${c.lit}", b.lit > c.lit)
+                assertTrue("$case: bold glows ${b.strength}, calm ${c.strength}", b.strength > c.strength * BOLD_MIN_GAIN)
+            }
+        }
+    }
+
+    /** How much of a case the glow lights, and how strongly (the summed move towards "in tune"). */
+    private data class Glow(val lit: Int, val stray: Int, val all: Int, val strength: Float)
+
+    /** The glow of [look] in [effect], light and dark, measured against the same look unlit. */
+    private fun glowOf(look: MeterLook, effect: InTuneEffect): List<Glow> {
+        this.effect.value = effect
         cents.floatValue = 0f
         inTune.value = true
         glow.value = false
         compose.waitForIdle()
-        val before = looks.associateWith { look -> listOf(capture(look, false), capture(look, true)) }
+        val unlit = listOf(capture(look, false), capture(look, true))
         glow.value = true
         compose.waitForIdle()
-        for (look in looks) {
-            for (dark in listOf(false, true)) {
-                val case = "$style $look ${if (dark) "dark" else "light"}"
-                val after = capture(look, dark)
-                assertNothingOutsideTheBox(case, after)
-                // A soft patch of the box moves towards the "in tune" colour; nothing moves away from it.
-                val target = inTuneColours.getValue(dark)
-                val unlit = before.getValue(look)[if (dark) 1 else 0]
-                var warmer = 0
-                var colder = 0
-                var all = 0
-                for (x in 0 until after.width step 2) {
-                    for (y in 0 until after.height step 2) {
-                        val change = unlit[x, y].distanceTo(target) - after[x, y].distanceTo(target)
-                        if (change > GLOW_STEP) warmer++
-                        if (change < -GLOW_STEP) colder++
-                        all++
+        val result = listOf(false, true).map { dark ->
+            val after = capture(look, dark)
+            assertNothingOutsideTheBox("$style $look ${if (dark) "dark" else "light"} $effect", after)
+            val target = inTuneColours.getValue(dark)
+            val before = unlit[if (dark) 1 else 0]
+            var lit = 0
+            var stray = 0
+            var all = 0
+            var strength = 0f
+            for (x in 0 until after.width step 2) {
+                for (y in 0 until after.height step 2) {
+                    val change = before[x, y].distanceTo(target) - after[x, y].distanceTo(target)
+                    if (change > GLOW_STEP) {
+                        lit++
+                        strength += change
                     }
+                    if (change < -GLOW_STEP) stray++
+                    all++
                 }
-                assertTrue("$case glows on ${warmer * 100 / all} % of its box", warmer > all * GLOW_MIN_SHARE)
-                assertTrue("$case: $colder pixels moved away from the in-tune colour", colder <= all * GLOW_STRAY_SHARE)
             }
+            Glow(lit, stray, all, strength)
         }
         inTune.value = false
         glow.value = false
+        this.effect.value = InTuneEffect.CALM
+        compose.waitForIdle()
+        return result
+    }
+
+    /** Every look in [looks] glows in [effect]: a soft patch moves towards "in tune", inside the box, and nothing moves away. */
+    private fun assertGlows(looks: List<MeterLook>, effect: InTuneEffect) {
+        for (look in looks) {
+            glowOf(look, effect).forEachIndexed { i, glow ->
+                val case = "$style $look ${if (i == 1) "dark" else "light"} $effect"
+                assertTrue("$case glows on ${glow.lit * 100 / glow.all} % of its box", glow.lit > glow.all * GLOW_MIN_SHARE)
+                assertTrue("$case: ${glow.stray} pixels moved away from the in-tune colour", glow.stray <= glow.all * GLOW_STRAY_SHARE)
+            }
+        }
     }
 
     @Test
@@ -280,6 +322,9 @@ class MeterLooksTest(private val style: VisualStyle) {
 
         /** Antialiased edges may shift a hair; nothing more moves away from "in tune". */
         const val GLOW_STRAY_SHARE = 0.002f
+
+        /** Bold's glow is at least this many times Calm's, summed over the case. */
+        const val BOLD_MIN_GAIN = 1.4f
 
         /** "At once": within this many frames of the note being in tune. */
         const val AT_ONCE_FRAMES = 3

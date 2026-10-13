@@ -47,6 +47,7 @@ import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
 import io.github.klaboukes.twangle.core.designsystem.styleCardTag
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -91,6 +92,7 @@ class SettingsContentTest {
     private val signalBarsChanges = mutableListOf<Boolean>()
     private val displayChanges = mutableListOf<TunerDisplay>()
     private val meterLookChanges = mutableListOf<MeterLook>()
+    private val effectChanges = mutableListOf<InTuneEffect>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private val breatheChanges = mutableListOf<Boolean>()
     private val twoPaneChanges = mutableListOf<Boolean>()
@@ -133,6 +135,7 @@ class SettingsContentTest {
                         onShowSignalBarsChange = { signalBarsChanges += it },
                         onDisplayChange = { displayChanges += it },
                         onMeterLookChange = { meterLookChanges += it },
+                        onInTuneEffectChange = { effectChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         onWaveBreathesInTuneChange = { breatheChanges += it },
                         onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
@@ -331,6 +334,67 @@ class SettingsContentTest {
         compose.onNodeWithTag(meterLookCardTag(MeterLook.CLASSIC)).assertIsNotSelected()
         for (look in MeterLook.entries) compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo().performClick()
         assertEquals(MeterLook.entries, meterLookChanges)
+    }
+
+    /** The in-tune effect shows Calm picked on a fresh install, and reports Bold (and back) when tapped. */
+    @Test
+    fun inTuneEffectShowsTheChoiceAndReportsANewOne() {
+        show(AppSettings())
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_title)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(InTuneEffect.BOLD), effectChanges)
+    }
+
+    @Test
+    fun inTuneEffectShowsBoldWhenPicked() {
+        show(AppSettings(inTuneEffect = InTuneEffect.BOLD, display = TunerDisplay.NEEDLE))
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_bold)).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.settings_in_tune_effect_calm)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(InTuneEffect.CALM), effectChanges)
+    }
+
+    /**
+     * TalkBack hears Calm and Bold as two radio buttons in one group, by name, with the picked one
+     * selected. In English and in Dutch ("Rustig", "Krachtig").
+     */
+    @Test
+    fun talkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = null)
+
+    @Test
+    fun dutchTalkBackReadsTheInTuneEffectsAsRadioButtons() = assertInTuneEffectsSpoken(locale = "nl")
+
+    private fun assertInTuneEffectsSpoken(locale: String?) {
+        show(AppSettings(inTuneEffect = InTuneEffect.BOLD), locale = locale)
+        val res = resourcesIn(locale)
+        for ((effect, id) in listOf(InTuneEffect.CALM to R.string.settings_in_tune_effect_calm, InTuneEffect.BOLD to R.string.settings_in_tune_effect_bold)) {
+            val name = res.getString(id)
+            val row = compose.onNodeWithText(name).performScrollTo()
+            row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (effect == InTuneEffect.BOLD) row.assertIsSelected() else row.assertIsNotSelected()
+            assertEquals("$effect", listOf(name), row.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
+            row.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+    }
+
+    /** At 2× font the in-tune effect's title and both choices are wholly shown, in English and Dutch, also on a phone on its side. */
+    @Test
+    fun inTuneEffectFitsAtTwiceTheFontSize() = assertInTuneEffectFits(fontScale = 2f)
+
+    @Test
+    fun inTuneEffectFitsInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
+        assertInTuneEffectFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
+
+    private fun assertInTuneEffectFits(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
+        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
+        val res = resourcesIn(locale)
+        listOf(R.string.settings_in_tune_effect_title, R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold)
+            .map { res.getString(it) }
+            .forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
+        listOf(R.string.settings_in_tune_effect_calm, R.string.settings_in_tune_effect_bold).forEach {
+            val row = compose.onNodeWithText(res.getString(it)).performScrollTo().getBoundsInRoot()
+            assertTrue("${res.getString(it)} row is ${row.bottom - row.top} high", row.bottom - row.top >= 47.5.dp)
+        }
     }
 
     /**
@@ -567,6 +631,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_dynamic_color_title)),
             top(context.getString(R.string.settings_meter_look_title)),
+            top(context.getString(R.string.settings_in_tune_effect_title)),
             top(context.getString(R.string.settings_display_title)),
             top(context.getString(R.string.settings_wave_look_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
