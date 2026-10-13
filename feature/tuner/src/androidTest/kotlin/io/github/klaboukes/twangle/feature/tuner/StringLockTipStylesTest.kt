@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -11,10 +10,10 @@ import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,6 +21,7 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeFalse
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(Parameterized::class)
 class StringLockTipStylesTest(private val style: VisualStyle) {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule

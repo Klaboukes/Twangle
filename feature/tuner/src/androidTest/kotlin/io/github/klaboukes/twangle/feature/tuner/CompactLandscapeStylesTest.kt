@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
@@ -19,7 +20,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -37,6 +37,7 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -62,7 +63,7 @@ import kotlin.math.abs
 @RunWith(Parameterized::class)
 class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
@@ -304,31 +305,29 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             assertNull("$lookCase: TalkBack reads the meter", node.config.getOrNull(SemanticsProperties.Text))
             assertTrue("$lookCase: something inside the meter for TalkBack", node.children.isEmpty())
             val pixels = if (look == MeterLook.CLASSIC) classic else compose.onNodeWithTag(WINDOW).captureToImage().toPixelMap()
+            if (look != MeterLook.CLASSIC) {
+                assertSameOutsideTheBox(lookCase, pixels, classic, boxLeft, boxTop, boxRight, boxBottom)
+            }
+            // In the box (every other pixel): the plate covers most of it (all of it that is on screen),
+            // with clear marks on it. Colours as ARGB ints, as a million pixels a look add up.
+            val background = BACKGROUND.toArgb()
             var inBox = 0
             var drawn = 0
             val counts = HashMap<Int, Int>()
-            for (y in 0 until pixels.height) {
-                for (x in 0 until pixels.width) {
-                    val inside = x in boxLeft..boxRight && y in boxTop..boxBottom
-                    if (!inside) {
-                        if (look != MeterLook.CLASSIC && !pixels.sameAt(classic, x, y)) {
-                            throw AssertionError("$lookCase drew outside its box, or moved something, at $x, $y")
-                        }
-                    } else if (x % 2 == 0 && y % 2 == 0) {
-                        val argb = pixels.argbAt(x, y)
-                        inBox++
-                        if (!pixels[x, y].near(BACKGROUND)) drawn++
-                        counts[argb] = (counts[argb] ?: 0) + 1
-                    }
+            for (y in evenFrom(boxTop)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
+                for (x in evenFrom(boxLeft)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
+                    val argb = pixels.argbAt(x, y)
+                    inBox++
+                    if (channelDistance(argb, background) >= 0.02f * 255) drawn++
+                    counts[argb] = (counts[argb] ?: 0) + 1
                 }
             }
-            // In the box: the plate covers most of it (all of it that is on screen), with clear marks on it.
             assertTrue("$lookCase covers ${drawn * 100 / inBox} % of its box", drawn > inBox * 0.75f)
-            val face = Color(counts.maxBy { it.value }.key)
+            val face = counts.maxBy { it.value }.key
             var details = 0
             for (y in boxTop.coerceAtLeast(0)..boxBottom.coerceAtMost(pixels.height - 1) step 2) {
                 for (x in boxLeft.coerceAtLeast(0)..boxRight.coerceAtMost(pixels.width - 1) step 2) {
-                    if (pixels[x, y].distanceTo(face) > 0.25f) details++
+                    if (channelDistance(pixels.argbAt(x, y), face) > 0.25f * 255) details++
                 }
             }
             assertTrue("$lookCase details ${details * 100 / inBox} %", details > inBox * 0.01f)
@@ -349,19 +348,45 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
     private fun PixelMap.argbAt(x: Int, y: Int): Int = buffer[bufferOffset + y * stride + x]
 
-    /** The same colour, give or take a rounding step, in both captures. */
-    private fun PixelMap.sameAt(other: PixelMap, x: Int, y: Int): Boolean {
-        val a = argbAt(x, y)
-        val b = other.argbAt(x, y)
-        if (a == b) return true
-        for (shift in intArrayOf(0, 8, 16)) {
-            if (abs(((a shr shift) and 0xFF) - ((b shr shift) and 0xFF)) > PIXEL_STEP) return false
-        }
-        return true
-    }
+    /** The first even number from [from] on, and at least 0. */
+    private fun evenFrom(from: Int): Int = from.coerceAtLeast(0).let { it + it % 2 }
 
-    private fun Color.distanceTo(other: Color): Float =
-        maxOf(abs(red - other.red), abs(green - other.green), abs(blue - other.blue))
+    /** How far apart two ARGB colours are in their most different channel, 0..255. */
+    private fun channelDistance(a: Int, b: Int): Int = maxOf(
+        abs(((a shr 16) and 0xFF) - ((b shr 16) and 0xFF)),
+        abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF)),
+        abs((a and 0xFF) - (b and 0xFF)),
+    )
+
+    /**
+     * Outside the box [left]..[right] x [top]..[bottom], [pixels] is the same as [reference], give or
+     * take a rounding step: nothing was drawn there and nothing moved.
+     */
+    private fun assertSameOutsideTheBox(
+        case: String,
+        pixels: PixelMap,
+        reference: PixelMap,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) {
+        val a = pixels.buffer
+        val b = reference.buffer
+        for (y in 0 until pixels.height) {
+            val rowA = pixels.bufferOffset + y * pixels.stride
+            val rowB = reference.bufferOffset + y * reference.stride
+            val boxRow = y in top..bottom
+            for (x in 0 until pixels.width) {
+                if (boxRow && x in left..right) continue
+                val pa = a[rowA + x]
+                val pb = b[rowB + x]
+                if (pa != pb && channelDistance(pa, pb) > PIXEL_STEP) {
+                    throw AssertionError("$case drew outside its box, or moved something, at $x, $y")
+                }
+            }
+        }
+    }
 
     /** The signal bars stand out from what is behind them in the style's colours, light and dark. */
     @Test
@@ -385,9 +410,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             }
         }
     }
-
-    private fun Color.near(other: Color): Boolean =
-        abs(red - other.red) < 0.02f && abs(green - other.green) < 0.02f && abs(blue - other.blue) < 0.02f
 
     private fun assertInside(window: DpRect, name: String, rect: DpRect, case: String) {
         // Half a dp of slack for rounding.

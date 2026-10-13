@@ -9,7 +9,8 @@ android {
 
     defaultConfig {
         minSdk = 26
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Leaves the UI tests' shared activity open between tests (see :core:testing).
+        testInstrumentationRunner = "io.github.klaboukes.twangle.core.testing.SharedActivityTestRunner"
     }
 
     buildFeatures {
@@ -44,6 +45,7 @@ dependencies {
     testImplementation(testFixtures(project(":core:audio")))
     testImplementation(testFixtures(project(":core:dsp")))
     testImplementation(testFixtures(project(":core:settings")))
+    androidTestImplementation(project(":core:testing"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(testFixtures(project(":core:audio")))

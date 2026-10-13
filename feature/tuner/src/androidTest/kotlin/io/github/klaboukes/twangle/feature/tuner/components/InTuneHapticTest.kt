@@ -4,8 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 class InTuneHapticTest {
 
     @get:Rule
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     private var ticks = 0
     private var now = 0L

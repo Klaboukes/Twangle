@@ -10,37 +10,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.swipeUp
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.then
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
@@ -58,6 +57,10 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -69,15 +72,12 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.util.Locale
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class TunerContentTest {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /**
      * No test may hang: one that does would leave its window frozen on the phone. The timeout wraps

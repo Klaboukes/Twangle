@@ -19,17 +19,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -38,6 +40,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
@@ -49,7 +52,7 @@ import kotlin.math.abs
 @RunWith(Parameterized::class)
 class MeterLooksTest(private val style: VisualStyle) {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
@@ -112,24 +115,21 @@ class MeterLooksTest(private val style: VisualStyle) {
 
     @Test
     fun everyLookIsClearlyDrawnInsideItsBox() = eachPage { looks ->
-        for (look in looks) {
-            for (dark in listOf(false, true)) {
-                val case = "$style $look ${if (dark) "dark" else "light"}"
-                val pixels = compose.onNodeWithTag(caseTag(look, dark)).captureToImage().toPixelMap()
-                val pad = pixels.width * PADDING / (FRAME_WIDTH + 2 * PADDING)
-                val boxRight = pixels.width - pad
-                val boxBottom = pad + (boxRight - pad) / 2
-                assertNothingOutsideTheBox(case, pixels)
-                // In the box: the plate covers most of it, with clearly drawn marks on it.
-                val inBox = buildList {
-                    for (x in pad until boxRight step 2) for (y in pad until boxBottom step 2) add(pixels[x, y])
-                }
-                val drawn = inBox.count { !it.near(BACKGROUND) } / inBox.size.toFloat()
-                assertTrue("$case covers ${(drawn * 100).toInt()} % of its box", drawn > 0.75f)
-                val face = inBox.groupingBy { it }.eachCount().maxBy { it.value }.key
-                val details = inBox.count { it.distanceTo(face) > 0.25f } / inBox.size.toFloat()
-                assertTrue("$case details ${(details * 100).toInt()} %", details > 0.01f)
+        for ((case, pixels) in captureCases(looks)) {
+            val name = "$style $case"
+            val pad = pixels.width * PADDING / (FRAME_WIDTH + 2 * PADDING)
+            val boxRight = pixels.width - pad
+            val boxBottom = pad + (boxRight - pad) / 2
+            assertNothingOutsideTheBox(name, pixels)
+            // In the box: the plate covers most of it, with clearly drawn marks on it.
+            val inBox = buildList {
+                for (x in pad until boxRight step 2) for (y in pad until boxBottom step 2) add(pixels[x, y])
             }
+            val drawn = inBox.count { !it.near(BACKGROUND) } / inBox.size.toFloat()
+            assertTrue("$name covers ${(drawn * 100).toInt()} % of its box", drawn > 0.75f)
+            val face = inBox.groupingBy { it }.eachCount().maxBy { it.value }.key
+            val details = inBox.count { it.distanceTo(face) > 0.25f } / inBox.size.toFloat()
+            assertTrue("$name details ${(details * 100).toInt()} %", details > 0.01f)
         }
     }
 
@@ -149,58 +149,55 @@ class MeterLooksTest(private val style: VisualStyle) {
     fun aNewReadingMovesTheMarkerWithoutRecomposing() = eachPage { looks ->
         cents.floatValue = -20f
         compose.waitForIdle()
-        val before = looks.map { compose.onNodeWithTag(caseTag(it, false)).captureToImage().toPixelMap() }
+        val before = captureCases(looks)
         val changes = changeCount()
         cents.floatValue = 25f
         // The spring and the light arc's and the comet's trails settle, then everything is idle again.
         compose.waitForIdle()
-        looks.forEachIndexed { i, look ->
-            val after = compose.onNodeWithTag(caseTag(look, false)).captureToImage().toPixelMap()
-            assertTrue("$style $look moved", after.differsFrom(before[i]))
+        val after = captureCases(looks)
+        for (look in looks) {
+            val light = Case(look, dark = false)
+            assertTrue("$style $look moved", after.getValue(light).differsFrom(before.getValue(light)))
         }
         assertEquals("recompositions while the markers moved", changes, changeCount())
     }
 
+    /**
+     * Every look glows in tune in Calm and in Bold, and Bold lights more of each look, and more
+     * strongly, than Calm: the same glow, only stronger and larger. One test, so each glow is
+     * measured once.
+     */
     @Test
-    fun everyLookGlowsInTuneInsideItsBox() = eachPage { looks -> assertGlows(looks, InTuneEffect.CALM) }
-
-    @Test
-    fun everyLookGlowsInTuneInsideItsBoxInBold() = eachPage { looks -> assertGlows(looks, InTuneEffect.BOLD) }
-
-    /** Bold lights more of each look, and more strongly, than Calm: the same glow, only stronger and larger. */
-    @Test
-    fun boldGlowsClearlyMoreThanCalm() = eachPage { looks ->
-        val calm = looks.associateWith { look -> glowOf(look, InTuneEffect.CALM) }
-        val bold = looks.associateWith { look -> glowOf(look, InTuneEffect.BOLD) }
-        for (look in looks) {
-            for (dark in listOf(false, true)) {
-                val case = "$style $look ${if (dark) "dark" else "light"}"
-                val c = calm.getValue(look)[if (dark) 1 else 0]
-                val b = bold.getValue(look)[if (dark) 1 else 0]
-                assertTrue("$case: bold lights ${b.lit} pixels, calm ${c.lit}", b.lit > c.lit)
-                assertTrue("$case: bold glows ${b.strength}, calm ${c.strength}", b.strength > c.strength * BOLD_MIN_GAIN)
-            }
+    fun everyLookGlowsInTuneAndBoldGlowsClearlyMoreThanCalm() = eachPage { looks ->
+        val calm = glowsOf(looks, InTuneEffect.CALM)
+        val bold = glowsOf(looks, InTuneEffect.BOLD)
+        for (case in calm.keys) {
+            val c = calm.getValue(case)
+            val b = bold.getValue(case)
+            assertGlows("$style $case ${InTuneEffect.CALM}", c)
+            assertGlows("$style $case ${InTuneEffect.BOLD}", b)
+            assertTrue("$style $case: bold lights ${b.lit} pixels, calm ${c.lit}", b.lit > c.lit)
+            assertTrue("$style $case: bold glows ${b.strength}, calm ${c.strength}", b.strength > c.strength * BOLD_MIN_GAIN)
         }
     }
 
     /** How much of a case the glow lights, and how strongly (the summed move towards "in tune"). */
     private data class Glow(val lit: Int, val stray: Int, val all: Int, val strength: Float)
 
-    /** The glow of [look] in [effect], light and dark, measured against the same look unlit. */
-    private fun glowOf(look: MeterLook, effect: InTuneEffect): List<Glow> {
+    /** The glow of every case of [looks] in [effect], measured against the same case unlit. */
+    private fun glowsOf(looks: List<MeterLook>, effect: InTuneEffect): Map<Case, Glow> {
         this.effect.value = effect
         cents.floatValue = 0f
         inTune.value = true
         glow.value = false
         compose.waitForIdle()
-        val unlit = listOf(capture(look, false), capture(look, true))
+        val unlit = captureCases(looks)
         glow.value = true
         compose.waitForIdle()
-        val result = listOf(false, true).map { dark ->
-            val after = capture(look, dark)
-            assertNothingOutsideTheBox("$style $look ${if (dark) "dark" else "light"} $effect", after)
-            val target = inTuneColours.getValue(dark)
-            val before = unlit[if (dark) 1 else 0]
+        val result = captureCases(looks).mapValues { (case, after) ->
+            assertNothingOutsideTheBox("$style $case $effect", after)
+            val target = inTuneColours.getValue(case.dark)
+            val before = unlit.getValue(case)
             var lit = 0
             var stray = 0
             var all = 0
@@ -225,15 +222,10 @@ class MeterLooksTest(private val style: VisualStyle) {
         return result
     }
 
-    /** Every look in [looks] glows in [effect]: a soft patch moves towards "in tune", inside the box, and nothing moves away. */
-    private fun assertGlows(looks: List<MeterLook>, effect: InTuneEffect) {
-        for (look in looks) {
-            glowOf(look, effect).forEachIndexed { i, glow ->
-                val case = "$style $look ${if (i == 1) "dark" else "light"} $effect"
-                assertTrue("$case glows on ${glow.lit * 100 / glow.all} % of its box", glow.lit > glow.all * GLOW_MIN_SHARE)
-                assertTrue("$case: ${glow.stray} pixels moved away from the in-tune colour", glow.stray <= glow.all * GLOW_STRAY_SHARE)
-            }
-        }
+    /** [case] glows: a soft patch moves towards "in tune", inside the box, and nothing moves away. */
+    private fun assertGlows(case: String, glow: Glow) {
+        assertTrue("$case glows on ${glow.lit * 100 / glow.all} % of its box", glow.lit > glow.all * GLOW_MIN_SHARE)
+        assertTrue("$case: ${glow.stray} pixels moved away from the in-tune colour", glow.stray <= glow.all * GLOW_STRAY_SHARE)
     }
 
     @Test
@@ -248,13 +240,15 @@ class MeterLooksTest(private val style: VisualStyle) {
             inTune.value = true
             glow.value = true
             repeat(AT_ONCE_FRAMES) { compose.mainClock.advanceTimeByFrame() }
-            val first = looks.map { capture(it, false) to capture(it, true) }
+            val first = captureCases(looks)
             compose.mainClock.autoAdvance = true
             compose.waitForIdle()
-            looks.forEachIndexed { i, look ->
-                val (light, dark) = first[i]
-                val same = !light.differsFrom(capture(look, false), AT_ONCE_STEP) &&
-                    !dark.differsFrom(capture(look, true), AT_ONCE_STEP)
+            val settled = captureCases(looks)
+            for (look in looks) {
+                val same = listOf(false, true).none { dark ->
+                    val case = Case(look, dark)
+                    first.getValue(case).differsFrom(settled.getValue(case), AT_ONCE_STEP)
+                }
                 // With animations the colour and the glow are still easing in; without, they are there.
                 if (off) {
                     assertTrue("$style $look shows the in-tune look at once", same)
@@ -268,25 +262,49 @@ class MeterLooksTest(private val style: VisualStyle) {
         glow.value = false
     }
 
-    private fun capture(look: MeterLook, dark: Boolean): PixelMap =
-        compose.onNodeWithTag(caseTag(look, dark)).captureToImage().toPixelMap()
+    /** One look in the light or the dark theme: one box on the page. */
+    private data class Case(val look: MeterLook, val dark: Boolean) {
+        override fun toString() = "$look ${if (dark) "dark" else "light"}"
+    }
+
+    /**
+     * Every case of [looks] as it is on screen now. One capture of the window, cut up per case: a
+     * capture costs a frame however much it covers, and these are the pixels each case's own
+     * `captureToImage()` would give (its bounds rounded the same way).
+     */
+    private fun captureCases(looks: List<MeterLook>): Map<Case, PixelMap> {
+        val window = compose.onRoot().captureToImage().toPixelMap()
+        return looks.flatMap { look -> listOf(Case(look, false), Case(look, true)) }.associateWith { case ->
+            val bounds = compose.onNodeWithTag(caseTag(case.look, case.dark)).fetchSemanticsNode().boundsInRoot
+            val left = bounds.left.roundToInt()
+            val top = bounds.top.roundToInt()
+            PixelMap(
+                buffer = window.buffer,
+                width = bounds.right.roundToInt() - left,
+                height = bounds.bottom.roundToInt() - top,
+                bufferOffset = window.bufferOffset + top * window.stride + left,
+                stride = window.stride,
+            )
+        }
+    }
 
     /** Asserts nothing of [case] was drawn around its frame or between the flat and sharp labels. */
     private fun assertNothingOutsideTheBox(case: String, pixels: PixelMap) {
         val pad = pixels.width * PADDING / (FRAME_WIDTH + 2 * PADDING)
         val boxRight = pixels.width - pad
         val boxBottom = pad + (boxRight - pad) / 2
-        // Around the frame: untouched.
+        // Around the frame: untouched. (The messages are built only on a failure: per pixel they cost
+        // more than the check.)
         for (x in 0 until pixels.width) {
             for (y in 0 until pixels.height) {
                 val around = x < pad - 1 || x > boxRight || y < pad - 1 || y > pixels.height - pad
-                if (around) assertTrue("$case drew outside the frame at $x, $y", pixels[x, y].near(BACKGROUND))
+                if (around && !pixels[x, y].near(BACKGROUND)) fail("$case drew outside the frame at $x, $y")
             }
         }
         // Between the flat and sharp labels, under the box: untouched too.
         for (x in pixels.width / 4 until pixels.width * 3 / 4) {
             for (y in boxBottom + 2 until pixels.height - pad) {
-                assertTrue("$case drew under its box at $x, $y", pixels[x, y].near(BACKGROUND))
+                if (!pixels[x, y].near(BACKGROUND)) fail("$case drew under its box at $x, $y")
             }
         }
     }

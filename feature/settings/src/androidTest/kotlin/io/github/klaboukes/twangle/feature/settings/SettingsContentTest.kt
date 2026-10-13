@@ -8,21 +8,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.Locales
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasContentDescription
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.then
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -31,12 +23,19 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.then
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -54,10 +53,11 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
-import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
+import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -71,7 +71,7 @@ import kotlin.math.abs
 @RunWith(AndroidJUnit4::class)
 class SettingsContentTest {
 
-    private val compose = createComposeRule()
+    private val compose = createSharedActivityComposeRule()
 
     // Outermost, so a test that hangs (scrolling, waiting for a licence) fails in seconds.
     @get:Rule

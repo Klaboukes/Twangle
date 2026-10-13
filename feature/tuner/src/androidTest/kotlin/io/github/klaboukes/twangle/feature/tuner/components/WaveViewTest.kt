@@ -16,13 +16,13 @@ import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -36,7 +36,7 @@ import kotlin.math.abs
 @RunWith(AndroidJUnit4::class)
 class WaveViewTest {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /** One test runs the wave's frame loop by hand, so a mistake could spin: fail in 10 s. */
     @get:Rule

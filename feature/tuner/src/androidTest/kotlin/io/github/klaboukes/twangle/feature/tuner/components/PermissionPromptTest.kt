@@ -2,11 +2,11 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.MicPermissionStatus
 import io.github.klaboukes.twangle.feature.tuner.R
 import org.junit.Assert.assertEquals
@@ -18,7 +18,7 @@ import org.junit.runner.RunWith
 class PermissionPromptTest {
 
     @get:Rule
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private fun text(id: Int) = context.getString(id)

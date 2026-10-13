@@ -4,7 +4,6 @@ import android.Manifest
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.DpSize
@@ -16,6 +15,7 @@ import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class TunerScreenTest {
 
-    private val compose = createComposeRule()
+    private val compose = createSharedActivityComposeRule()
 
     // Outermost, so a test that hangs fails in seconds; the permission is granted before the screen shows.
     @get:Rule

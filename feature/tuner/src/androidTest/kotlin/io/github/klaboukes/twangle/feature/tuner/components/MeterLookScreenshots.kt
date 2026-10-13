@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -21,6 +20,7 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
@@ -38,13 +38,13 @@ import java.util.concurrent.TimeUnit
  *
  * Opt-in, as it only makes files: without the instrumentation argument `meterScreenshots=true` it
  * has no cases at all, so the normal suite pays nothing for it. `scripts/meter-look-screens.sh` sets it, collects the PNGs that
- * Gradle pulls into `feature/tuner/build/outputs/connected_android_test_additional_output/` and
+ * `scripts/ui-tests.sh` pulls into `feature/tuner/build/outputs/connected_android_test_additional_output/` and
  * builds the contact sheet in `build/owner-screens/meter-looks/`.
  */
 @RunWith(Parameterized::class)
 class MeterLookScreenshots(private val style: VisualStyle) {
 
-    val compose = createComposeRule()
+    val compose = createSharedActivityComposeRule()
 
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
@@ -123,7 +123,7 @@ class MeterLookScreenshots(private val style: VisualStyle) {
         /** The instrumentation argument that turns these pictures on. */
         const val ARGUMENT = "meterScreenshots"
 
-        /** Where Gradle's connected tests collect extra files from (AGP's additional test output). */
+        /** Where `scripts/ui-tests.sh` (and Gradle's connected tests) collect extra files from. */
         const val OUTPUT_DIR_ARGUMENT = "additionalTestOutputDir"
 
         /** Set A's reading: clearly flat, so each look's marker stands away from the centre. */

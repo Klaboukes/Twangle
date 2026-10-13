@@ -9,7 +9,8 @@ android {
 
     defaultConfig {
         minSdk = 26
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Leaves the UI tests' shared activity open between tests (see :core:testing).
+        testInstrumentationRunner = "io.github.klaboukes.twangle.core.testing.SharedActivityTestRunner"
     }
 
     buildFeatures {
@@ -40,6 +41,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(testFixtures(project(":core:settings")))
+    androidTestImplementation(project(":core:testing"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
