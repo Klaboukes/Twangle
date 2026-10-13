@@ -22,7 +22,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 15 — More instruments
 Goal: tune more than a six-string guitar.
-- ☐ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
+- ☑ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
 - ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the test phone
 - ☐ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings
 - ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font

@@ -41,6 +41,15 @@ class TuningTest {
     }
 
     @Test
+    fun `lowest and highest notes ignore string order`() {
+        assertEquals("E2", Tunings.STANDARD.lowestNote.toString())
+        assertEquals("E4", Tunings.STANDARD.highestNote.toString())
+        val reentrant = Tuning("reentrant", listOf(Note(67), Note(60), Note(64), Note(69)))
+        assertEquals("C4", reentrant.lowestNote.toString())
+        assertEquals("A4", reentrant.highestNote.toString())
+    }
+
+    @Test
     fun `half step down is a semitone below standard on every string`() {
         Tunings.HALF_STEP_DOWN.strings.forEachIndexed { i, note ->
             assertEquals("string index $i", Tunings.STANDARD.strings[i].midi - 1, note.midi)

@@ -7,7 +7,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## Contents
 1. [Tech stack](#1-tech-stack): name, app ID and icon · rejected alternatives
 2. [Module structure](#2-module-structure)
-3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · strobe model · audio source selection · audio capture
+3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings
 6. [UI](#6-ui): UI state model · tuner screen · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
@@ -209,6 +209,25 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 `Tuning(id, strings)` lists open-string `Note`s lowest first; `id` is the saved key (never rename). Names live in string resources, so `:core:dsp` has no UI text. `Tunings` holds the presets (Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E), `DEFAULT` = Standard, `byId()` to restore.
 - `nearestStringIndex(midi)` follows A4 calibration; smallest |Δ| in semitones, ties to the lower string, no allocation.
 - `centsFromString(midi, index)` is **not** wrapped to ±50, so a string far off shows the full distance.
+- Strings are in instrument order, thickest first. That is lowest pitch first except on re-entrant tunings (standard ukulele G4 C4 E4 A4), so `lowestNote` / `highestNote` scan all strings.
+
+### Instruments
+`Instrument(id, stringCount, tunings)` (Phase 15) is a stringed instrument with its presets, the first being its standard tuning (`defaultTuning`); every preset must have `stringCount` strings. `Instruments` holds them in picker order, `DEFAULT` = six-string guitar, whose presets are exactly `Tunings.all` with their original ids, so saved settings keep working. Tuning ids are unique across instruments (`<instrument>_standard`, `ukulele_low_g`), so `Instruments.tuningById()` / `ofTuning()` restore a saved tuning and its instrument. A mandolin counts its four pairs as four courses.
+
+| Instrument (`id`) | Strings | Presets | Range |
+|---|---|---|---|
+| Guitar (`guitar`) | 6 | the eight `Tunings` | D2–E4 |
+| 7-string guitar (`guitar_7`) | 7 | B1 E2 A2 D3 G3 B3 E4 | B1–E4 |
+| 8-string guitar (`guitar_8`) | 8 | F♯1 B1 E2 A2 D3 G3 B3 E4 | F♯1–E4 |
+| Bass (`bass_4`) | 4 | E1 A1 D2 G2 | E1–G2 |
+| 5-string bass (`bass_5`) | 5 | B0 E1 A1 D2 G2 | B0 (30.9 Hz)–G2 |
+| Ukulele (`ukulele`) | 4 | G4 C4 E4 A4 (re-entrant), low G: G3 C4 E4 A4 | G3–A4 |
+| Violin (`violin`) | 4 | G3 D4 A4 E5 | G3–E5 (659 Hz) |
+| Viola (`viola`) | 4 | C3 G3 D4 A4 | C3–A4 |
+| Cello (`cello`) | 4 | C2 G2 D3 A3 | C2–A3 |
+| Mandolin (`mandolin`) | 4 courses | G3 D4 A4 E5 | G3–E5 |
+
+`lowestNote` / `highestNote` span all of an instrument's presets; the detector's 62–1500 Hz range does not yet reach B1, F♯1, E1 or B0 (next increment: the low-note window). Until the instrument picker lands, the app uses only the guitar.
 
 ### Strobe model
 `StrobeMotion` (`strobe/`) is the drift of a strobe pattern, one animation frame at a time; every wave look runs one (via `WaveMotion`). A mechanical strobe drifts at the beat rate in Hz, so high strings move faster; here the drift comes from cents, so every string looks the same. `driftSpeed(cents)` in stripe periods per second: **0 within ±0.5 cent** (finer than the ±1 cent target, so an in-tune string stands perfectly still), then **0.4/s per cent beyond**, up to **4/s** from 10.5 cents; positive when sharp. It ignores the in-tune flag (2–5 cents wide) because the strobe exists to show the last cent. `advance(seconds, cents)` eases the shown cents towards the reading (rate 20/s) and moves `phase` (0..1, wrapping); a step is capped at 0.1 s. Without a reading the view stops calling it and the pattern freezes. Tests feed sines 0, ±1, ±3, ±5 and ±30 cents off every string through `TunerChain`.
@@ -524,7 +543,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
                 AnalysisSettings, LowPassFilter, SignalGate, FftDifference, Fft, Clarity
     level/      NoiseFloorTracker, ReceptionTracker
-    music/      Note, NoteMapper, Tuning (+ Tunings presets), Notation
+    music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     strobe/     StrobeMotion
     buffer/     FrameAssembler
