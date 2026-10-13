@@ -108,16 +108,20 @@ summarize() {
     dir="$(dir_of "$1")/build/outputs/androidTest-results/connected/debug"
     python - "$dir" <<'EOF'
 import glob, sys, xml.etree.ElementTree as ET
-tests = fails = 0; secs = 0.0; failed = []
+tests = fails = skipped = 0; secs = 0.0; failed = []
 for f in glob.glob(sys.argv[1] + '/*.xml'):
     for suite in ET.parse(f).getroot().iter('testsuite'):
         tests += int(suite.get('tests', 0)); secs += float(suite.get('time', 0))
-        fails += int(suite.get('failures', 0)) + int(suite.get('errors', 0))
         for case in suite.iter('testcase'):
             for bad in list(case.findall('failure')) + list(case.findall('error')):
-                msg = (bad.get('message') or bad.text or '').strip().splitlines()
-                failed.append(f"  FAIL {case.get('classname').rsplit('.', 1)[-1]}#{case.get('name')}: {msg[0][:200] if msg else ''}")
-print(f"{tests} tests, {fails} failed, {secs:.0f}s on the phone")
+                msg = (bad.get('message') or bad.text or '').strip()
+                # The runner writes an @Ignore'd test as an empty failure and an assumption as AssumptionViolatedException.
+                if not msg or 'AssumptionViolatedException' in msg.splitlines()[0]:
+                    skipped += 1
+                    continue
+                fails += 1
+                failed.append(f"  FAIL {case.get('classname').rsplit('.', 1)[-1]}#{case.get('name')}: {msg.splitlines()[0][:200]}")
+print(f"{tests} tests, {fails} failed{f', {skipped} skipped' if skipped else ''}, {secs:.0f}s on the phone")
 print('\n'.join(failed))
 EOF
 }

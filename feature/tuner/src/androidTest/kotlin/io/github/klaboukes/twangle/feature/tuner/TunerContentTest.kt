@@ -62,6 +62,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -114,7 +115,8 @@ class TunerContentTest {
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.PermissionRequired)
 
     /**
-     * Shows [state] in the test window, optionally with a [fontScale], as if the window were [size]
+     * Shows [state] in the test window with a [fontScale] (1 unless given, whatever the phone's own
+     * text size, so tests behave the same on every phone), as if the window were [size]
      * (e.g. a phone on its side; [DeviceConfigurationOverride.ForcedSize] scales it down to fit) or in
      * another language ([locale], e.g. "nl"). Landscape shows the two-pane layout unless
      * [compactLandscape] asks for the compact one.
@@ -134,7 +136,7 @@ class TunerContentTest {
         signalFigures: Flow<SignalFigures?> = emptyFlow(),
     ) {
         val overrides = listOfNotNull(
-            fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
+            DeviceConfigurationOverride.FontScale(fontScale ?: 1f),
             size?.let { DeviceConfigurationOverride.ForcedSize(it) },
             locale?.let { DeviceConfigurationOverride.Locales(LocaleList(it)) },
         )
@@ -626,13 +628,23 @@ class TunerContentTest {
     }
 
     @Test
-    fun aTipMovesNothingUnderTheNeedle() = assertTipMovesNothing(TunerDisplay.NEEDLE)
+    fun aTipMovesNothingUnderTheNeedle() = assertReceptionTipMovesNothing(TunerDisplay.NEEDLE)
 
     @Test
-    fun aTipMovesNothingInTheWaveView() = assertTipMovesNothing(TunerDisplay.WAVE)
+    fun aTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE)
 
-    private fun assertTipMovesNothing(display: TunerDisplay) {
-        show(detected(-12.3f), display = display, showTuneHint = true)
+    // With a larger font the long tip is set smaller to fit its line, and that line comes out a pixel
+    // or two taller than the frequency's or the hint's, so the note moves up by that much.
+    @Ignore("Known: the note moves 1-2 px; fixed in the ROADMAP phase 'Show me around'")
+    @Test
+    fun aShrunkTipMovesNothingUnderTheNeedle() = assertReceptionTipMovesNothing(TunerDisplay.NEEDLE, fontScale = 1.25f)
+
+    @Ignore("Known: the note moves 1-2 px; fixed in the ROADMAP phase 'Show me around'")
+    @Test
+    fun aShrunkTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE, fontScale = 1.25f)
+
+    private fun assertReceptionTipMovesNothing(display: TunerDisplay, fontScale: Float? = null) {
+        show(detected(-12.3f), fontScale = fontScale, display = display, showTuneHint = true)
         val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
         shownState.value = detected(-12.3f).copy(tip = ReceptionTip.TOO_LOUD)
         compose.waitForIdle()
@@ -886,6 +898,10 @@ class TunerContentTest {
     fun stringLockTipSitsInTheCornerInDutch() = assertTipInTheCorner(listening, display = TunerDisplay.WAVE, locale = "nl")
 
     @Test
+    fun stringLockTipSitsInTheCornerWithASlightlyLargerFont() =
+        assertTipInTheCorner(listening, display = TunerDisplay.NEEDLE, fontScale = 1.25f)
+
+    @Test
     fun stringLockTipInTheCornerCoversNothingWhileANoteSounds() =
         assertTipInTheCorner(detected(-12.3f), display = TunerDisplay.NEEDLE, showTuneHint = true)
 
@@ -904,8 +920,14 @@ class TunerContentTest {
      * strings, and covers nothing: not the picker, the strings, the readout under the note or (with
      * a note) the tune hint. It stays while a note sounds.
      */
-    private fun assertTipInTheCorner(state: TunerUiState, display: TunerDisplay, showTuneHint: Boolean = false, locale: String? = null) {
-        show(state, display = display, showTuneHint = showTuneHint, showStringLockTip = true, locale = locale)
+    private fun assertTipInTheCorner(
+        state: TunerUiState,
+        display: TunerDisplay,
+        showTuneHint: Boolean = false,
+        locale: String? = null,
+        fontScale: Float? = null,
+    ) {
+        show(state, fontScale = fontScale, size = PHONE_UPRIGHT, display = display, showTuneHint = showTuneHint, showStringLockTip = true, locale = locale)
         val resources = if (locale != null) dutch.resources else context.resources
         val tip = compose.onNodeWithText(resources.getString(R.string.tuner_string_lock_tip))
         val pickerLabel = compose.onNodeWithText(resources.getString(R.string.tuning_standard), useUnmergedTree = true)
@@ -933,12 +955,12 @@ class TunerContentTest {
     }
 
     /**
-     * With the largest font there's no room in the corner, so the tip's balloon sits in the gap above
-     * the tuning picker: its body ends where the picker's label starts, and it overlaps neither the
-     * "Play a string" line nor the strings.
+     * With the largest font on a narrow phone there's no room in the corner, so the tip's balloon
+     * sits in the gap above the tuning picker: its body ends where the picker's label starts, and it
+     * overlaps neither the "Play a string" line nor the strings.
      */
     private fun assertTipCoversNothing(display: TunerDisplay, fontScale: Float? = null) {
-        show(listening, fontScale = fontScale, display = display, showStringLockTip = true)
+        show(listening, fontScale = fontScale, size = PHONE_UPRIGHT, display = display, showStringLockTip = true)
         // Scrolled to the picker, not the balloon: performScrollTo never returns for the floating
         // balloon, which sits outside its parent's bounds.
         val label = pickerLabel.performScrollTo().assertIsDisplayed().getBoundsInRoot()
@@ -1012,9 +1034,10 @@ class TunerContentTest {
 
     @Test
     fun tipAboveThePickerStepsAsideUntilItIsQuiet() {
-        // With the largest font it sits above the picker, where it would cover the frequency or the
-        // hint: it goes while a note sounds, and comes back only after a quiet while, not between plucks.
-        show(listening, fontScale = 2f, showTuneHint = true, showStringLockTip = true)
+        // With the largest font on a narrow phone it sits above the picker, where it would cover the
+        // frequency or the hint: it goes while a note sounds, and comes back only after a quiet while,
+        // not between plucks.
+        show(listening, fontScale = 2f, size = PHONE_UPRIGHT, showTuneHint = true, showStringLockTip = true)
         compose.mainClock.autoAdvance = false
         tip.assertExists()
         shownState.value = detected(-12.3f)
@@ -1519,6 +1542,12 @@ class TunerContentTest {
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+
+        /**
+         * A narrow phone held upright (a Galaxy S26, without the status and navigation bars), for
+         * tests where the room beside the tuning picker matters; wider phones have more.
+         */
+        val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)
 
         /** A tablet on its side and upright. */
         val TABLET_LANDSCAPE = DpSize(1280.dp, 760.dp)

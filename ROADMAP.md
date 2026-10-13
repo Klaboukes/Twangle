@@ -128,6 +128,10 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☐ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose)
 - ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages
 
+## Phase 24 — Show me around
+Goal: a short tour on first start that points out the main parts of the tuner with text balloons like the string-lock tip. **Owner to fill in** the rest of this phase and decide where it goes in the order (probably before going live).
+- ☐ Balloons and tips that fit and move nothing at every text size and screen width: the string-lock tip reaches its corner beside the tuning picker in every style and language (Space Age in Dutch now just misses it on the Xiaomi 12X and goes above the picker; its check in `StringLockTipStylesTest` is skipped until then), and on wider phones; a reception tip that is set smaller to fit ("Too loud, move the phone back" at 1.25× text) no longer moves the note by 1–2 px (`TunerContentTest.aShrunkTipMovesNothing…`, now `@Ignore`d); both checks switched back on
+
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
 - ☐ Play data-safety form (no data collected or shared)
