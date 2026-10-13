@@ -27,6 +27,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -48,6 +49,8 @@ import kotlin.math.roundToInt
  * the flat and sharp labels or around the frame), skipped by TalkBack, moved by a new reading
  * without recomposing, and lit by the soft in-tune glow (inside the box, Calm and the stronger
  * Bold; at once with "Remove animations").
+ *
+ * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
 class MeterLooksTest(private val style: VisualStyle) {
@@ -322,7 +325,7 @@ class MeterLooksTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = VisualStyle.entries
+        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
         /** Every look, two to a page. */
         val PAGES = MeterLook.entries.chunked(2)

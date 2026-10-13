@@ -57,6 +57,7 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -608,6 +609,7 @@ class TunerContentTest {
     fun signalBarsMoveNothingUnderTheNeedle() = assertSignalBarsMoveNothing(TunerDisplay.NEEDLE)
 
     @Test
+    @Thorough
     fun signalBarsMoveNothingInTheWaveView() = assertSignalBarsMoveNothing(TunerDisplay.WAVE)
 
     private fun assertSignalBarsMoveNothing(display: TunerDisplay) {
@@ -631,6 +633,7 @@ class TunerContentTest {
     fun aTipMovesNothingUnderTheNeedle() = assertReceptionTipMovesNothing(TunerDisplay.NEEDLE)
 
     @Test
+    @Thorough
     fun aTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE)
 
     // With a larger font the long tip is set smaller to fit its line, and that line comes out a pixel
@@ -641,6 +644,7 @@ class TunerContentTest {
 
     @Ignore("Known: the note moves 1-2 px; fixed in the ROADMAP phase 'Show me around'")
     @Test
+    @Thorough
     fun aShrunkTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE, fontScale = 1.25f)
 
     private fun assertReceptionTipMovesNothing(display: TunerDisplay, fontScale: Float? = null) {
@@ -892,12 +896,15 @@ class TunerContentTest {
     fun stringLockTipSitsInTheCornerBesideThePicker() = assertTipInTheCorner(listening, display = TunerDisplay.WAVE)
 
     @Test
+    @Thorough
     fun stringLockTipSitsInTheCornerWithTheNeedle() = assertTipInTheCorner(listening, display = TunerDisplay.NEEDLE)
 
     @Test
+    @Thorough
     fun stringLockTipSitsInTheCornerInDutch() = assertTipInTheCorner(listening, display = TunerDisplay.WAVE, locale = "nl")
 
     @Test
+    @Thorough
     fun stringLockTipSitsInTheCornerWithASlightlyLargerFont() =
         assertTipInTheCorner(listening, display = TunerDisplay.NEEDLE, fontScale = 1.25f)
 
@@ -906,6 +913,7 @@ class TunerContentTest {
         assertTipInTheCorner(detected(-12.3f), display = TunerDisplay.NEEDLE, showTuneHint = true)
 
     @Test
+    @Thorough
     fun stringLockTipInTheCornerCoversNothingWhileANoteSoundsWithTheWave() =
         assertTipInTheCorner(detected(-12.3f), display = TunerDisplay.WAVE, showTuneHint = true)
 
@@ -913,6 +921,7 @@ class TunerContentTest {
     fun stringLockTipCoversNothingWithTheLargestFont() = assertTipCoversNothing(display = TunerDisplay.WAVE, fontScale = 2f)
 
     @Test
+    @Thorough
     fun stringLockTipCoversNothingWithTheNeedleAndTheLargestFont() = assertTipCoversNothing(display = TunerDisplay.NEEDLE, fontScale = 2f)
 
     /**
@@ -994,6 +1003,7 @@ class TunerContentTest {
     }
 
     @Test
+    @Thorough
     fun showingAndDismissingTheTipMovesNothingWithTheLargestFont() = assertTipMovesNothing(display = TunerDisplay.WAVE, fontScale = 2f)
 
     @Test
@@ -1180,6 +1190,7 @@ class TunerContentTest {
     fun comingInTuneMovesNothingWithTheHint() = assertNewReadingMovesNothing(detected(-12.3f), detected(-1f, inTune = true))
 
     @Test
+    @Thorough
     fun comingInTuneMovesNothingWithTheHintInTheChromaticWaveView() =
         assertNewReadingMovesNothing(chromatic(-12.3f), chromatic(-1f, inTune = true), display = TunerDisplay.WAVE, mode = TunerMode.CHROMATIC)
 
@@ -1188,6 +1199,7 @@ class TunerContentTest {
         assertNewReadingMovesNothing(detected(-12.3f), TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
 
     @Test
+    @Thorough
     fun sharpNoteMovesNothingWithTheHint() =
         assertNewReadingMovesNothing(detected(-12.3f), detected(-12.3f, noteName = "F♯"))
 
@@ -1200,6 +1212,7 @@ class TunerContentTest {
         assertNewReadingMovesNothing(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), detected(-12.3f), fontScale = 2f)
 
     @Test
+    @Thorough
     fun noteStoppingMovesNothingWithTheHintInTheChromaticWaveView() = assertNewReadingMovesNothing(
         chromatic(-12.3f),
         TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD),

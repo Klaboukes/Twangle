@@ -134,6 +134,7 @@ Goal: a short tour on first start that points out the main parts of the tuner wi
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
+- ☐ The look is final: run `scripts/ui-tests.sh --all --thorough`, fix what it finds, and make those double checks part of every run again (every style, and the `@Thorough` tests; until then a normal run leaves them out so restyling stays quick)
 - ☐ Play data-safety form (no data collected or shared)
 - ☐ Privacy policy published at a public URL (the repo is private), and that URL plus a contact email entered in the Play Console
 - ☐ Play Store listing: screenshots, description in every supported language

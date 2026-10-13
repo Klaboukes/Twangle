@@ -22,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -191,6 +192,7 @@ class WaveViewTest {
      * Every look, in every style, light and dark, is clearly drawn and stays inside its own box (a
      * little glow aside), so none of them spills over the note above it or the hint and strings
      * below, far off pitch (the ripples swell, the fireflies scatter) or in tune (with the halo).
+     * Only the default style unless the run is thorough.
      */
     @Test
     fun everyLookStaysInItsBoxInEveryStyle() {
@@ -218,7 +220,7 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in VisualStyle.entries) {
+        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
             shownStyle.value = style
             compose.mainClock.advanceTimeBy(STYLE_SETTLE_MS)
             for (look in WaveLook.entries) {
@@ -256,6 +258,7 @@ class WaveViewTest {
      * Poor reception draws every look fainter and softer, in every style, light and dark, on the
      * style's own background, yet still plainly visible: at the worst reception it keeps at least
      * 40 % of its ink (colour difference from the background, summed) and still marks its box.
+     * Only the default style unless the run is thorough.
      */
     @Test
     fun everyLookIsFaintButClearWithPoorReception() {
@@ -277,7 +280,7 @@ class WaveViewTest {
                 }
             }
         }
-        for (style in VisualStyle.entries) {
+        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
             for (dark in listOf(false, true)) {
                 shownStyle.value = style
                 shownDark.value = dark

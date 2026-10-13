@@ -21,6 +21,7 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -39,6 +40,8 @@ import java.util.concurrent.TimeUnit
  * style brings its own fonts, so the tip's text and the tuning picker differ in size. The tip sits in
  * the corner left of the picker, above the strings, and covers nothing. [TunerContentTest] covers
  * the tip itself in one style.
+ *
+ * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
 class StringLockTipStylesTest(private val style: VisualStyle) {
@@ -115,7 +118,7 @@ class StringLockTipStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles() = VisualStyle.entries
+        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
         private const val WINDOW = "window"
 

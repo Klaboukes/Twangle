@@ -37,6 +37,7 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -59,6 +60,8 @@ import kotlin.math.abs
  * meter look, at its biggest here, is clearly drawn inside its box in the style's colours, light and
  * dark, skipped by TalkBack, and moves nothing else on the screen, also at 2× font.
  * [TunerContentTest] covers the layout itself in one style.
+ *
+ * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
 @RunWith(Parameterized::class)
 class CompactLandscapeStylesTest(private val style: VisualStyle) {
@@ -432,7 +435,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun styles(): List<VisualStyle> = VisualStyle.entries
+        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
         private const val WINDOW = "window"
 

@@ -53,6 +53,7 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
@@ -379,6 +380,7 @@ class SettingsContentTest {
 
     /** At 2× font the in-tune effect's title and both choices are wholly shown, in English and Dutch, also on a phone on its side. */
     @Test
+    @Thorough
     fun inTuneEffectFitsAtTwiceTheFontSize() = assertInTuneEffectFits(fontScale = 2f)
 
     @Test
@@ -427,13 +429,16 @@ class SettingsContentTest {
      * on a phone on its side.
      */
     @Test
+    @Thorough
     fun meterLookNamesFitAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f)
 
     @Test
+    @Thorough
     fun meterLookNamesFitInDutchAtTwiceTheFontSize() = assertMeterLookNamesFit(fontScale = 2f, locale = "nl")
 
     /** Classic sets its names in a wide serif face. */
     @Test
+    @Thorough
     fun meterLookNamesFitAtTwiceTheFontSizeInTheClassicStyle() =
         assertMeterLookNamesFit(fontScale = 2f, style = VisualStyle.CLASSIC)
 
@@ -442,6 +447,7 @@ class SettingsContentTest {
         assertMeterLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
 
     @Test
+    @Thorough
     fun meterLookNamesFitAtTwiceTheFontSizeOnAPhoneOnItsSide() =
         assertMeterLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
 
@@ -516,9 +522,11 @@ class SettingsContentTest {
      * and Dutch ("Vuurvliegjes"), on a phone and on a phone on its side.
      */
     @Test
+    @Thorough
     fun waveLookNamesFitAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f)
 
     @Test
+    @Thorough
     fun waveLookNamesFitInDutchAtTwiceTheFontSize() = assertWaveLookNamesFit(fontScale = 2f, locale = "nl")
 
     /** Classic sets its names in a wide serif face. */
@@ -527,6 +535,7 @@ class SettingsContentTest {
         assertWaveLookNamesFit(fontScale = 2f, locale = "nl", style = VisualStyle.CLASSIC)
 
     @Test
+    @Thorough
     fun waveLookNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
         assertWaveLookNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
 
@@ -718,6 +727,7 @@ class SettingsContentTest {
     }
 
     @Test
+    @Thorough
     fun aboutIsReachableAtTwiceTheFontSizeOnAPhoneOnItsSide() {
         show(AppSettings(), size = PHONE_ON_ITS_SIDE, fontScale = 2f, about = true)
         compose.onNodeWithText(context.getString(R.string.about_title)).assertIsDisplayed()
@@ -749,9 +759,11 @@ class SettingsContentTest {
     fun newRowsFitAtTwiceTheFontSize() = assertNewRowsFit(fontScale = 2f)
 
     @Test
+    @Thorough
     fun newRowsFitOnAPhoneOnItsSide() = assertNewRowsFit(size = PHONE_ON_ITS_SIDE)
 
     @Test
+    @Thorough
     fun newRowsFitAtTwiceTheFontSizeOnAPhoneOnItsSide() = assertNewRowsFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
 
     @Test
@@ -762,9 +774,11 @@ class SettingsContentTest {
     fun aboutFitsAtTwiceTheFontSize() = assertAboutFits(fontScale = 2f)
 
     @Test
+    @Thorough
     fun aboutFitsOnAPhoneOnItsSide() = assertAboutFits(size = PHONE_ON_ITS_SIDE)
 
     @Test
+    @Thorough
     fun aboutFitsAtTwiceTheFontSizeOnAPhoneOnItsSide() = assertAboutFits(size = PHONE_ON_ITS_SIDE, fontScale = 2f)
 
     @Test

@@ -9,6 +9,11 @@
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
+#   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
+#                                                tests (other font sizes, languages, orientations)
+#
+# While the look of the app is still changing, a normal run leaves out the double checks: the style
+# tests run in the default style only, and tests marked @Thorough (:core:testing) are skipped.
 #
 # One Gradle call builds every test APK (and the app, for :app). Each module's tests are then
 # installed and run straight on the phone with `am instrument`: Gradle's own test task costs 15-25 s
@@ -24,7 +29,7 @@ MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:feature:tuner :feature:settings :core:audio :app)
 
-usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -61,10 +66,11 @@ affected_modules() {
     [ $app = 1 ] && echo :app
 }
 
-modules=() filter="" class="" extra=()
+modules=() filter="" class="" extra=() thorough=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
+        --thorough) thorough=1 ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
         -a | --arg) extra+=("$2"); shift ;;
@@ -230,6 +236,11 @@ for module in "${modules[@]}"; do
     args=(-e additionalTestOutputDir "$outdir")
     [ -n "$filter" ] && args+=(-e tests_regex "$(quote ".*($filter).*")")
     [ -n "$class" ] && args+=(-e class "$(qualify "$module" "$class")")
+    if [ $thorough = 1 ]; then
+        args+=(-e thorough true)
+    elif grep -q '":core:testing"' "$dir/build.gradle.kts"; then
+        args+=(-e notAnnotation io.github.klaboukes.twangle.core.testing.Thorough)
+    fi
     for pair in "${extra[@]}"; do args+=(-e "${pair%%=*}" "$(quote "${pair#*=}")"); done
 
     timeout "$MODULE_TIMEOUT" env MSYS_NO_PATHCONV=1 "$ADB_EXE" shell am instrument -w -r "${args[@]}" "$runner" > "$log" 2>&1
@@ -245,6 +256,9 @@ for module in "${modules[@]}"; do
             echo "$summary"
         else
             echo "no results (log: $log)"
+            if [ $thorough = 0 ] && [ -n "$filter$class" ]; then
+                echo "  (a test marked @Thorough only runs with --thorough)"
+            fi
             tail -5 "$log"
         fi
     fi

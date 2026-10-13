@@ -26,7 +26,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
 | `:core:designsystem` | Android library | `TwangleTheme` and the seven visual styles: palettes, bundled fonts, backgrounds, hand-drawn dials, `StylePicker` |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |
-| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster) |
+| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks left out of normal runs until the look is final) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
