@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
+import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.settings.MeterLook
@@ -53,6 +55,10 @@ import kotlinx.coroutines.launch
  * - while [inTune] the centre mark and the marker fade to the style's "in tune" colour
  *   ([MeterReading.tuned], eased in over 0.4 s and out over 0.6 s; the note's check mark in
  *   [NoteDisplay] says it without colour);
+ * - while [glow] (from [rememberInTuneGlow]: lit with the haptic tick, held through a brief dropout)
+ *   the look's soft in-tune glow eases in over 0.4 s and fades over 0.6 s ([MeterReading.glow]);
+ * - with [animationsOff] (Android's "Remove animations", [rememberAnimationsOff]) the colour and the
+ *   glow switch at once, without easing;
  * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
  *   solid or faint and soft ([ReceptionLook], applied with [MeterReading.applyMarkerLook]); the scale
  *   stays as it is;
@@ -67,6 +73,8 @@ fun MeterFrame(
     cents: () -> Float?,
     modifier: Modifier = Modifier,
     inTune: Boolean = false,
+    glow: Boolean = inTune,
+    animationsOff: Boolean = false,
     reception: () -> Float? = { null },
 ) {
     val currentCents by rememberUpdatedState(cents)
@@ -84,10 +92,19 @@ fun MeterFrame(
     val hasReading by remember { derivedStateOf { currentCents() != null } }
     val restFade = animateFloatAsState(targetValue = if (hasReading) 1f else REST_ALPHA, label = "meterRestFade")
 
-    val tuned = animateFloatAsState(targetValue = if (inTune) 1f else 0f, animationSpec = meterTunedSpec(inTune), label = "meterTuned")
+    val tuned = animateFloatAsState(
+        targetValue = if (inTune) 1f else 0f,
+        animationSpec = if (animationsOff) snap() else meterTunedSpec(inTune),
+        label = "meterTuned",
+    )
+    val glowAmount = animateFloatAsState(
+        targetValue = if (glow) 1f else 0f,
+        animationSpec = if (animationsOff) snap() else meterGlowSpec(glow),
+        label = "meterGlow",
+    )
     val currentReception = rememberUpdatedState(reception)
     val blurs = rememberReceptionBlurs()
-    val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, currentReception, blurs) }
+    val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, glowAmount, currentReception, blurs) }
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics {}) {
@@ -110,14 +127,15 @@ fun MeterFrame(
 }
 
 /**
- * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount and
- * the reception's fade and blur. Nothing here allocates.
+ * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount, the
+ * in-tune glow and the reception's fade and blur. Nothing here allocates.
  */
 @Stable
 private class TunerMeterReading(
     private val marker: Animatable<Float, AnimationVector1D>,
     private val restFade: State<Float>,
     private val tunedAmount: State<Float>,
+    private val glowAmount: State<Float>,
     private val reception: State<() -> Float?>,
     private val blurs: Array<RenderEffect?>,
 ) : MeterReading {
@@ -131,6 +149,8 @@ private class TunerMeterReading(
     override val presence: Float get() = ((restFade.value - REST_ALPHA) / (1f - REST_ALPHA)).coerceIn(0f, 1f)
 
     override val tuned: Float get() = tunedAmount.value
+
+    override val glow: Float get() = glowAmount.value
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         val presence = presence

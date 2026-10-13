@@ -85,7 +85,7 @@ internal fun BoxScope.CometMeter(reading: MeterReading) {
             reading.applyMarkerLook(this)
         }.drawWithCache {
             val head = CometHeadArt(DialGeometry(size), roles)
-            onDrawBehind { head.draw(this, reading.tuned) }
+            onDrawBehind { head.draw(this, reading.tuned, reading.glow) }
         },
     )
     DialOver(roles)
@@ -159,7 +159,8 @@ private class CometTailArt(private val dial: DialGeometry, private val roles: Me
 }
 
 /**
- * The comet's head, in tune's place (the top of its path): a soft glow of its colour (16u, 35 % at
+ * The comet's head, in tune's place (the top of its path): the in-tune moment's glow (60u, at the
+ * shared [MeterRoles.tuneGlowAlpha] by [MeterReading.glow]), a soft glow of its colour (16u, 35 % at
  * its middle in dark, 20 % in light), a 4.5u dot in the centre colour with the shared marker shadow,
  * and a small white glint towards its upper left. Its layer carries it along the path.
  */
@@ -170,11 +171,13 @@ private class CometHeadArt(dial: DialGeometry, private val roles: MeterRoles) {
     private val glowAlpha = if (roles.dark) 0.35f else 0.2f
     private val accentGlow = GlowArt(16f * u, roles.accent)
     private val inTuneGlow = GlowArt(16f * u, roles.inTune)
+    private val tuneGlow = GlowArt(COMET_GLOW_UNITS * u, roles.inTune)
     private val shadow = markerShadowPaint(u, roles)
     private val glint = Color.White.copy(alpha = 0.7f)
     private val glintAt = Offset(x - 1.3f * u, y - 1.3f * u)
 
-    fun draw(scope: DrawScope, tuned: Float) = with(scope) {
+    fun draw(scope: DrawScope, tuned: Float, glow: Float) = with(scope) {
+        tuneGlow.draw(this, x, y, roles.tuneGlowAlpha * glow)
         // The glow's colour blends to "in tune" with the head's.
         accentGlow.draw(this, x, y, glowAlpha * (1f - tuned))
         inTuneGlow.draw(this, x, y, glowAlpha * tuned)
@@ -185,5 +188,8 @@ private class CometHeadArt(dial: DialGeometry, private val roles: MeterRoles) {
 
     private companion object {
         const val HEAD_RADIUS = 4.5f
+
+        /** The in-tune glow around the head reaches this many units from it. */
+        const val COMET_GLOW_UNITS = 60f
     }
 }

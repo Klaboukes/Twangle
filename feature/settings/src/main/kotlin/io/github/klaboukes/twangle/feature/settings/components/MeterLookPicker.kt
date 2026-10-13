@@ -62,7 +62,8 @@ fun MeterLookPicker(
 fun meterLookCardTag(look: MeterLook): String = "meter_look_card_" + look.name.lowercase()
 
 /**
- * The previews' reading: the demo's cents, always "with a note", fading to "in tune" with the demo.
+ * The previews' reading: the demo's cents, always "with a note", fading to "in tune" (and glowing)
+ * with the demo.
  * Reading it allocates nothing.
  */
 @Stable
@@ -70,6 +71,9 @@ private class DemoReading(private val demo: MeterDemo) : MeterReading {
     override val cents: Float get() = demo.cents.floatValue
     override val presence: Float get() = 1f
     override val tuned: Float get() = demo.tuned.floatValue
+
+    // The cards glow gently with their colour as the loop reaches the note.
+    override val glow: Float get() = demo.tuned.floatValue
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         layer.alpha = 1f

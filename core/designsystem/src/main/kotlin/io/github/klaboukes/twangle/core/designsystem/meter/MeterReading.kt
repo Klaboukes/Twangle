@@ -38,6 +38,15 @@ interface MeterReading {
     val tuned: Float
 
     /**
+     * How strongly the in-tune moment's soft glow shows: 0 off, 1 fully lit, eased (smoothstep,
+     * [METER_GLOW_IN_MS] in and [METER_GLOW_OUT_MS] out). In the tuner it lights together with the
+     * haptic tick, holds while the note rings (also through a brief dropout of the same note) and
+     * fades when it leaves; with Android's "Remove animations" it switches at once. Each look draws
+     * its glow ([TuneGlow]) at this strength, under its marker.
+     */
+    val glow: Float
+
+    /**
      * Gives a look's moving [layer] the resting fade (and, in the tuner, the reception's fade and
      * blur). Call it in that layer's graphicsLayer block, once per layer, so every look fades the
      * same way.

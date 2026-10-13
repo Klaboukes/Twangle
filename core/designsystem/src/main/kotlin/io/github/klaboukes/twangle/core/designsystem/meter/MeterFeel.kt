@@ -47,3 +47,11 @@ const val METER_IN_TUNE_OUT_MS = 600
 /** How [MeterReading.tuned] moves towards 1 when the note is [inTune], and back to 0 when it leaves. */
 fun meterTunedSpec(inTune: Boolean): AnimationSpec<Float> =
     tween(durationMillis = if (inTune) METER_IN_TUNE_IN_MS else METER_IN_TUNE_OUT_MS, easing = MeterSmoothstep)
+
+/** How long the in-tune glow takes to ease in when the note is reached, and to fade when it leaves. */
+const val METER_GLOW_IN_MS = 400
+const val METER_GLOW_OUT_MS = 600
+
+/** How [MeterReading.glow] moves towards 1 while the glow is [lit], and back to 0 when it goes out. */
+fun meterGlowSpec(lit: Boolean): AnimationSpec<Float> =
+    tween(durationMillis = if (lit) METER_GLOW_IN_MS else METER_GLOW_OUT_MS, easing = MeterSmoothstep)

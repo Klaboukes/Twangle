@@ -15,6 +15,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeCap
@@ -24,6 +26,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextLayoutResult
@@ -80,7 +83,13 @@ internal data class MeterRoles(
 
     /** The marker's colour, [tuned] (0..1) of the way to "in tune". */
     fun marker(tuned: Float): Color = mix(ink, inTune, tuned * 0.9f)
+
+    /** The in-tune glow's opacity at its middle when fully lit: 32 % in dark, 16 % in light. */
+    val tuneGlowAlpha: Float = if (dark) TUNE_GLOW_DARK_ALPHA else TUNE_GLOW_LIGHT_ALPHA
 }
+
+private const val TUNE_GLOW_DARK_ALPHA = 0.32f
+private const val TUNE_GLOW_LIGHT_ALPHA = 0.16f
 
 /** The current style's [MeterRoles]. */
 @Composable
@@ -362,4 +371,42 @@ internal class GlowArt(private val radius: Float, color: Color) {
         /** Fainter than this, a glow can't be seen. */
         const val MIN_GLOW_ALPHA = 0.004f
     }
+}
+
+/**
+ * The in-tune moment's glow, the same in every look (the mock-up's `tuneGlow`): a [GlowArt] of
+ * [radiusUnits] in the style's "in tune" colour around [centre], at [MeterRoles.tuneGlowAlpha] when
+ * fully lit, optionally clipped to [clip] (a look's window). It is drawn once, in a layer of its own
+ * under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move], if given,
+ * carries it with a moving marker), so easing it in and out redraws nothing and allocates nothing.
+ */
+@Composable
+internal fun BoxScope.TuneGlow(
+    roles: MeterRoles,
+    reading: MeterReading,
+    radiusUnits: Float,
+    centre: (Size) -> Offset,
+    clip: ((Size) -> Path)? = null,
+    move: (GraphicsLayerScope.() -> Unit)? = null,
+) {
+    Spacer(
+        modifier = Modifier.matchParentSize().graphicsLayer {
+            alpha = reading.glow.coerceIn(0f, 1f)
+            // One soft circle: fading it needs no offscreen buffer.
+            compositingStrategy = CompositingStrategy.ModulateAlpha
+            move?.invoke(this)
+        }.drawWithCache {
+            val glow = GlowArt(radiusUnits * meterUnit(size.width), roles.inTune)
+            val at = centre(size)
+            val window = clip?.invoke(size)
+            val peak = roles.tuneGlowAlpha
+            onDrawBehind {
+                if (window != null) {
+                    clipPath(window) { glow.draw(this, at.x, at.y, peak) }
+                } else {
+                    glow.draw(this, at.x, at.y, peak)
+                }
+            }
+        },
+    )
 }

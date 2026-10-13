@@ -52,6 +52,9 @@ internal const val DRUM_MAX_ANGLE = (80.0 * PI / 180.0).toFloat()
 /** The drum turns this far for each cent: 50 cents are 80°. */
 private const val DRUM_RADIANS_PER_CENT = DRUM_MAX_ANGLE / METER_RANGE_CENTS
 
+/** The rolling scale's in-tune glow reaches this many units from the window's middle. */
+private const val DRUM_GLOW_UNITS = 90f
+
 /** The drum may roll a little past the ends of the scale with the spring. */
 internal const val DRUM_LIMIT_CENTS = 52f
 
@@ -104,7 +107,7 @@ internal class DrumGeometry(width: Float, height: Float) {
 /**
  * Rolling scale: the plate and the recessed window; the drum's marks and numbers, redrawn from the
  * reading in their own layer (each mark placed, narrowed and faded by how far round the drum it is,
- * the numbers measured once and only moved and narrowed); the fixed centre line with a pointer above
+ * the numbers measured once and only moved and narrowed) over the in-tune glow; the fixed centre line with a pointer above
  * and below the window (fading to "in tune"); and over them the drum's shading towards its sides and
  * the glass's sheen and rim.
  */
@@ -122,6 +125,15 @@ internal fun BoxScope.RollingScaleMeter(reading: MeterReading) {
         }
         draw
     }
+    // The in-tune glow, in the middle of the window and inside it, under the drum's print.
+    TuneGlow(
+        roles, reading, DRUM_GLOW_UNITS,
+        centre = { size ->
+            val drum = DrumGeometry(size.width, size.height)
+            Offset(drum.cx, drum.middle)
+        },
+        clip = { size -> DrumGeometry(size.width, size.height).window() },
+    )
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
             reading.applyMarkerLook(this)

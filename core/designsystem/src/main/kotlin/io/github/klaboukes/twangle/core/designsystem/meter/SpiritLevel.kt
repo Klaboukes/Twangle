@@ -135,7 +135,8 @@ private const val STRETCH_PER_CENT_PER_SECOND = 0.0025f
 
 /**
  * Spirit level: the plate, the tube under recessed glass (its face tinted 13 % towards the accent in
- * light, 20 % in dark) with the scale's marks under it, numbers below; the two marks at ±12 cents
+ * light, 20 % in dark) with the scale's marks under it, numbers below; the in-tune glow around the
+ * bubble; the two marks at ±12 cents
  * (fading to "in tune"); the bubble; and over it a highlight streak inside the tube and the glass's
  * sheen and rim. The bubble is drawn once, at rest, in a layer of its own: a reading only moves,
  * turns and stretches that layer along the tube, so nothing is redrawn while it floats.
@@ -164,6 +165,17 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading) {
         }
         draw
     }
+    // The in-tune glow (70u) around the bubble, drawn at rest and carried with it by its layer.
+    TuneGlow(
+        roles, reading, LEVEL_GLOW_UNITS,
+        centre = { size -> Offset(size.width / 2f, LevelGeometry(size.width, size.height).bubbleRestY) },
+        move = {
+            val level = layout.at(size.width, size.height)
+            val angle = level.angle(reading.cents)
+            translationX = level.x(angle, level.bubbleDistance) - level.cx
+            translationY = level.y(angle, level.bubbleDistance) - level.bubbleRestY
+        },
+    )
     // The two marks across the tube, in a layer of their own so their in-tune fade redraws nothing else.
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
@@ -287,5 +299,8 @@ private class LevelLayout {
         return geometry
     }
 }
+
+/** The spirit level's in-tune glow reaches this many units from the bubble. */
+private const val LEVEL_GLOW_UNITS = 70f
 
 private const val DEGREES_PER_RADIAN = (180.0 / PI).toFloat()

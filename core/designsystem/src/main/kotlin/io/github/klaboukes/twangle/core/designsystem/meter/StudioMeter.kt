@@ -176,6 +176,11 @@ internal fun BoxScope.StudioMeter(reading: MeterReading) {
         }
         draw
     }
+    // The in-tune glow, under the centre mark, 26u below the face's top.
+    TuneGlow(roles, reading, STUDIO_GLOW_UNITS, centre = { size ->
+        val studio = StudioGeometry(size.width, size.height)
+        Offset(studio.cx, studio.top + 26f * studio.u)
+    })
     // The centre mark: a 3u bar along the arc from −5 to +5 cents, in a layer of its own so its
     // in-tune fade redraws nothing else.
     Spacer(
@@ -221,7 +226,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading) {
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val lamp = StudioLampArt(StudioGeometry(size.width, size.height), roles)
-            onDrawBehind { lamp.draw(this, reading.tuned) }
+            onDrawBehind { lamp.draw(this, reading.tuned, reading.glow) }
         },
     )
     StaticArt {
@@ -255,15 +260,19 @@ private fun GraphicsLayerScope.turnAboutStudioPivot(cents: Float) {
 /**
  * The lamp's lens: a 3.8u dot, the face a little toward ink when off and lit in the "in tune" colour
  * with [MeterReading.tuned], with a small white glint towards its upper left that brightens with it.
- * The in-tune moment's glow will be drawn around ([StudioGeometry.lampX], [StudioGeometry.lampY]).
+ * Around it the in-tune moment lights a 22u halo in the "in tune" colour ([MeterReading.glow], 55 % at
+ * its middle in dark, 35 % in light).
  */
-private class StudioLampArt(studio: StudioGeometry, private val roles: MeterRoles) {
+private class StudioLampArt(private val studio: StudioGeometry, private val roles: MeterRoles) {
     private val u = studio.u
     private val centre = Offset(studio.lampX, studio.lampY)
     private val glintAt = Offset(studio.lampX - 1.1f * u, studio.lampY - 1.1f * u)
     private val unlit = mix(roles.face, roles.ink, 0.2f)
+    private val halo = GlowArt(LAMP_HALO_UNITS * u, roles.inTune)
+    private val haloAlpha = if (roles.dark) 0.55f else 0.35f
 
-    fun draw(scope: DrawScope, tuned: Float) = with(scope) {
+    fun draw(scope: DrawScope, tuned: Float, glow: Float) = with(scope) {
+        halo.draw(this, studio.lampX, studio.lampY, haloAlpha * glow)
         drawCircle(studioLampColor(unlit, roles.inTune, tuned), 3.8f * u, centre)
         drawCircle(Color.White.copy(alpha = studioLampGlint(tuned)), 1.1f * u, glintAt)
     }
@@ -305,5 +314,11 @@ private class PivotCoverArt(studio: StudioGeometry, roles: MeterRoles) {
 
 /** The centre mark spans this many cents each side of the note. */
 private const val STUDIO_CENTRE_CENTS = 5f
+
+/** The studio meter's in-tune glow reaches this many units from its middle. */
+private const val STUDIO_GLOW_UNITS = 80f
+
+/** The lamp's halo reaches this many units from it. */
+private const val LAMP_HALO_UNITS = 22f
 
 private const val DEGREES_PER_RADIAN = (180.0 / PI).toFloat()

@@ -85,6 +85,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
+import io.github.klaboukes.twangle.feature.tuner.components.rememberAnimationsOff
+import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
@@ -153,11 +155,15 @@ fun TunerScreen(
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     if (granted && keepScreenOn) KeepScreenOn()
     val detected = state as? TunerUiState.Detected
+    val inTuneTarget = detected?.let { it.noteName + it.octave }
     InTuneHaptic(
         inTune = detected?.inTune == true,
-        target = detected?.let { it.noteName + it.octave },
+        target = inTuneTarget,
         enabled = vibrateInTune,
     )
+    // The meter's in-tune glow lights with the tick and outlasts a brief dropout of the same note.
+    val glowing = rememberInTuneGlow(inTune = detected?.inTune == true, target = inTuneTarget)
+    val animationsOff = rememberAnimationsOff()
 
     // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
     // See-through, so the style's background (drawn behind every screen) shows.
@@ -187,6 +193,8 @@ fun TunerScreen(
                     display = display,
                     waveLook = waveLook,
                     meterLook = meterLook,
+                    meterGlow = glowing,
+                    animationsOff = animationsOff,
                     waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     showSignalBars = showSignalBars,
@@ -284,7 +292,8 @@ private fun KeepScreenOn() {
  * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
  * on the note or, without [waveBreathesInTune], holding still there); the meter above the note is drawn in
- * [meterLook], and
+ * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
+ * tune; with [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
@@ -309,6 +318,8 @@ fun TunerContent(
     display: TunerDisplay = TunerDisplay.NEEDLE,
     waveLook: WaveLook = WaveLook.DEFAULT,
     meterLook: MeterLook = MeterLook.DEFAULT,
+    meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
+    animationsOff: Boolean = false,
     waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     showSignalBars: Boolean = false,
@@ -348,6 +359,8 @@ fun TunerContent(
             look = meterLook,
             cents = needleCents,
             inTune = (state as? TunerUiState.Detected)?.inTune == true,
+            glow = meterGlow,
+            animationsOff = animationsOff,
             modifier = Modifier.testTag(TunerTestTags.GAUGE),
             reception = reception,
         )

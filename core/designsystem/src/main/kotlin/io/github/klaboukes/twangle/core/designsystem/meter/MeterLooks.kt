@@ -163,10 +163,15 @@ internal fun BoxScope.DialOver(roles: MeterRoles) {
 
 /**
  * The dial's centre mark: one 3u rounded bar in the accent, across the top of the arc, fading to
- * "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else.
+ * "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else. Under
+ * it the in-tune glow ([TuneGlow], 80u) is centred 14u below the top of the arc.
  */
 @Composable
 internal fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
+    TuneGlow(roles, reading, DIAL_GLOW_UNITS, centre = { size ->
+        val dial = DialGeometry(size)
+        Offset(dial.cx, dial.cy - dial.r + 14f * dial.u)
+    })
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = DialGeometry(size)
@@ -177,6 +182,9 @@ internal fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
         },
     )
 }
+
+/** The dial's in-tune glow reaches this many units from its middle. */
+private const val DIAL_GLOW_UNITS = 80f
 
 // ---- 1. Classic ----------------------------------------------------------------------------------
 
