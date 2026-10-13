@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,11 +22,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +37,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
@@ -69,9 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.StylePicker
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -80,7 +74,6 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
@@ -108,8 +101,8 @@ import kotlin.math.roundToInt
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
  * with the lifecycle releases the mic when the screen isn't visible. The gear button in the corner
- * calls [onOpenSettings], also while the permission prompt is shown; the palette button in the
- * other corner opens the style cards. [savedMode] is the mode in the settings already read, so the
+ * calls [onOpenSettings], also while the permission prompt is shown (the style is picked there).
+ * [savedMode] is the mode in the settings already read, so the
  * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
  * likewise keeps a dismissed string-lock tip from flashing up at the start, and
  * [savedKeepTwoPaneLandscape] a turned phone from switching layout. The compact layout on its side is
@@ -152,7 +145,6 @@ fun TunerScreen(
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
-    var showStyles by rememberSaveable { mutableStateOf(false) }
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     if (granted && keepScreenOn) KeepScreenOn()
@@ -209,41 +201,9 @@ fun TunerScreen(
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
-            IconButton(onClick = { showStyles = true }, modifier = Modifier.align(Alignment.TopStart).padding(CORNER_BUTTON_INSET).testTag(TunerTestTags.STYLE)) {
-                Icon(painterResource(R.drawable.ic_palette), contentDescription = stringResource(R.string.tuner_change_style))
-            }
             IconButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.TopEnd).padding(CORNER_BUTTON_INSET).testTag(TunerTestTags.SETTINGS)) {
                 Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
             }
-        }
-    }
-    if (showStyles) StyleSheet(onSelect = viewModel::setStyle, onDismiss = { showStyles = false })
-}
-
-/**
- * A bottom sheet with the style cards, so the look can be changed without leaving the tuner. The
- * app restyles behind it as soon as a card is tapped; the sheet stays open to try another.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun StyleSheet(onSelect: (VisualStyle) -> Unit, onDismiss: () -> Unit) {
-    val tokens = MaterialTheme.styleTokens
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier.padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.tuner_style_title),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-            StylePicker(
-                selected = tokens.style,
-                onSelect = onSelect,
-                darkTheme = tokens.dark,
-                contentPadding = PaddingValues(horizontal = 24.dp),
-            )
         }
     }
 }
@@ -255,7 +215,6 @@ private fun StyleSheet(onSelect: (VisualStyle) -> Unit, onDismiss: () -> Unit) {
  */
 object TunerTestTags {
     const val SETTINGS = "tuner_settings"
-    const val STYLE = "tuner_style"
 
     /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
     const val WAVE = "tuner_wave"

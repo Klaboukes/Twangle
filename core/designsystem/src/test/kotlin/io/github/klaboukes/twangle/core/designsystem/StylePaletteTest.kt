@@ -84,8 +84,8 @@ class StylePaletteTest {
     }
 
     @Test
-    fun `prehistoric numbers are set in a plain face`() {
-        assertNotEquals(facesFor(VisualStyle.PREHISTORIC).title, numberFontFor(VisualStyle.PREHISTORIC))
+    fun `ancient numbers are set in a plain face`() {
+        assertNotEquals(facesFor(VisualStyle.ANCIENT).title, numberFontFor(VisualStyle.ANCIENT))
         assertEquals(facesFor(VisualStyle.FUTURISTIC).title, numberFontFor(VisualStyle.FUTURISTIC))
     }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Takes pictures of all six meter looks in all seven styles, light and dark, on the phone
+# Takes pictures of all six meter looks in all six styles, light and dark, on the phone
 # (MeterLookScreenshots), and builds a contact sheet for the owner:
 #   build/owner-screens/meter-looks/index.html   (git-ignored; the PNGs sit next to it)
 # Set A: the marker 20 cents flat. Set B: in tune with the Bold glow fully lit.
@@ -21,7 +21,7 @@ find "$PULLED" -name '*.png' -exec cp {} "$SHEET/" \;
 python - "$SHEET" <<'EOF'
 import html, os, sys
 sheet = sys.argv[1]
-styles = [("prehistoric", "Prehistoric"), ("middle-ages", "Middle Ages"), ("classic", "Classic"), ("retro", "Retro"),
+styles = [("ancient", "Ancient"), ("classic", "Classic"), ("retro", "Retro"),
           ("contemporary", "Contemporary"), ("futuristic", "Futuristic"), ("space-age", "Space Age")]
 looks = [("classic", "Classic"), ("light-arc", "Light arc"), ("spirit-level", "Spirit level"),
          ("rolling-scale", "Rolling scale"), ("comet", "Comet"), ("studio-meter", "Studio meter")]
@@ -65,7 +65,7 @@ td img {{ display: block; width: 170px; height: auto; margin-bottom: 4px; border
 .missing {{ width: 170px; height: 60px; color: var(--muted); font-size: 12px; }}
 </style></head><body>
 <h1>Twangle meter looks</h1>
-<p>Six looks in seven styles, light above dark. Tap a picture to see it full size. {count} pictures.</p>
+<p>Six looks in six styles, light above dark. Tap a picture to see it full size. {count} pictures.</p>
 {''.join(parts)}
 </body></html>
 """

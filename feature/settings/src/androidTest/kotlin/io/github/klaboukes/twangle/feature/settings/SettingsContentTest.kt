@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.bundledFontCredits
-import io.github.klaboukes.twangle.core.designsystem.styleCardTag
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -59,6 +59,7 @@ import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
+import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -610,12 +611,98 @@ class SettingsContentTest {
     @Test
     fun styleCardsShowTheChoiceAndReportANewOne() {
         show(AppSettings(style = VisualStyle.CLASSIC))
-        // The cards sit in the Look group, below the fold: bring the row on screen first.
-        compose.onNodeWithText(context.getString(R.string.settings_theme_title)).performScrollTo()
-        compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).assertIsSelected()
-        compose.onNodeWithTag(styleCardTag(VisualStyle.MIDDLE_AGES)).assertIsNotSelected().performClick()
-        assertEquals(listOf(VisualStyle.MIDDLE_AGES), styleChanges)
+        compose.onNodeWithTag(styleCardTag(VisualStyle.CLASSIC)).performScrollTo().assertIsSelected()
+        compose.onNodeWithTag(styleCardTag(VisualStyle.ANCIENT)).performScrollTo().assertIsNotSelected().performClick()
+        assertEquals(listOf(VisualStyle.ANCIENT), styleChanges)
     }
+
+    /** The six styles, in the owner's order, three to a row: Ancient, Classic, Retro, then Contemporary, Futuristic, Space Age. */
+    @Test
+    fun styleCardsComeInTheOwnersOrderThreeToARow() {
+        show(AppSettings())
+        val bounds = VisualStyle.entries.map { compose.onNodeWithTag(styleCardTag(it)).fetchSemanticsNode().boundsInRoot }
+        assertEquals(
+            listOf(
+                VisualStyle.ANCIENT,
+                VisualStyle.CLASSIC,
+                VisualStyle.RETRO,
+                VisualStyle.CONTEMPORARY,
+                VisualStyle.FUTURISTIC,
+                VisualStyle.SPACE_AGE,
+            ),
+            VisualStyle.entries,
+        )
+        for (row in bounds.chunked(3)) {
+            row.zipWithNext { a, b ->
+                assertEquals("same row", a.top, b.top, 0.5f)
+                assertTrue("left to right", a.right <= b.left)
+            }
+        }
+        assertTrue("second row below the first", bounds[3].top >= bounds[0].bottom)
+    }
+
+    /**
+     * TalkBack hears every style card as a radio button with the style's name, and which one is
+     * picked; the mood picture inside (its big letter and string buttons) says nothing. In English
+     * and in Dutch.
+     */
+    @Test
+    fun talkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = null)
+
+    @Test
+    fun dutchTalkBackReadsEveryStyleAsARadioButton() = assertStylesSpoken(locale = "nl")
+
+    private fun assertStylesSpoken(locale: String?) {
+        show(AppSettings(style = VisualStyle.FUTURISTIC), locale = locale)
+        val res = resourcesIn(locale)
+        for ((style, id) in styleNames) {
+            val name = res.getString(id)
+            val card = compose.onNodeWithTag(styleCardTag(style)).performScrollTo()
+            card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (style == VisualStyle.FUTURISTIC) card.assertIsSelected() else card.assertIsNotSelected()
+            assertEquals("$style", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
+            card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+    }
+
+    /** At 2× font every style's name still fits its card on one line, also Dutch "Ruimtetijdperk". */
+    @Test
+    fun styleNamesFitInDutchAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f, locale = "nl")
+
+    @Test
+    @Thorough
+    fun styleNamesFitAtTwiceTheFontSize() = assertStyleNamesFit(fontScale = 2f)
+
+    /** Just under the size where the grid goes to two cards a row: three a row, the tightest fit. */
+    @Test
+    fun styleNamesFitInDutchInALargerFontSize() = assertStyleNamesFit(fontScale = 1.29f, locale = "nl")
+
+    @Test
+    @Thorough
+    fun styleNamesFitInDutchAtTwiceTheFontSizeOnAPhoneOnItsSide() =
+        assertStyleNamesFit(size = PHONE_ON_ITS_SIDE, fontScale = 2f, locale = "nl")
+
+    private fun assertStyleNamesFit(size: DpSize? = null, fontScale: Float? = null, locale: String? = null) {
+        show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
+        val res = resourcesIn(locale)
+        for ((style, id) in styleNames) {
+            val name = res.getString(id)
+            val label = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(styleCardTag(style))), useUnmergedTree = true)
+            assertWhollyShown(label, name)
+            val layouts = mutableListOf<TextLayoutResult>()
+            label.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+            assertEquals("\"$name\" lines", 1, layouts.single().lineCount)
+        }
+    }
+
+    private val styleNames = mapOf(
+        VisualStyle.ANCIENT to DesignR.string.style_ancient,
+        VisualStyle.CLASSIC to DesignR.string.style_classic,
+        VisualStyle.RETRO to DesignR.string.style_retro,
+        VisualStyle.CONTEMPORARY to DesignR.string.style_contemporary,
+        VisualStyle.FUTURISTIC to DesignR.string.style_futuristic,
+        VisualStyle.SPACE_AGE to DesignR.string.style_space_age,
+    )
 
     @Test
     fun settingsComeInThreeHeadedGroupsThenTheAboutLink() {

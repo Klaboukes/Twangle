@@ -1,19 +1,10 @@
 <resources>
-    <string name="style_prehistoric">Prehistorisch</string>
-    <string name="style_prehistoric_tagline">Vuurgloed op de grotwand</string>
-    <string name="style_middle_ages">Middeleeuwen</string>
-    <string name="style_middle_ages_tagline">Inkt, bladgoud en perkament</string>
+    <string name="style_ancient">Oudheid</string>
     <string name="style_classic">Klassiek</string>
-    <string name="style_classic_tagline">Ivoor, ebbenhout en messing</string>
     <string name="style_retro">Retro</string>
-    <string name="style_retro_tagline">Een warme jaren-70-hifimeter</string>
     <string name="style_contemporary">Hedendaags</string>
-    <string name="style_contemporary_tagline">Strak en rustig</string>
     <string name="style_futuristic">Futuristisch</string>
-    <string name="style_futuristic_tagline">Neon op een head-up display</string>
     <string name="style_space_age">Ruimtetijdperk</string>
-    <string name="style_space_age_tagline">Banen, sterren en raketoranje</string>
-    <string name="style_card_description">%1$s. %2$s</string>
 
     <!-- Alleen voor Do Re Mi: letternamen zegt TalkBack als cis, des, es (zie bools.xml). -->
     <string name="spoken_sharp">%1$s kruis</string>

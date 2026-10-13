@@ -19,7 +19,7 @@ The full [privacy policy](PRIVACY.md) ([Nederlands](PRIVACY.nl.md)) explains it 
 - **Chromatic mode:** tunes any note, for any instrument.
 - **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
 - **Note names:** sharps (C♯), flats (D♭) or Do Re Mi.
-- **Your look:** seven visual styles, six meter looks and six wave looks (a strobe among them); light, dark or follow the phone, with colours from your wallpaper on Android 12+.
+- **Your look:** six visual styles, six meter looks and six wave looks (a strobe among them); light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Helpful hints:** "Tune up" or "Tune down", and a tip when it's too quiet, too noisy or too loud to hear you well.
 - **Keeps the screen on** while you tune (can be turned off).
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.
@@ -43,7 +43,7 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:feature:settings` | The settings screen |
 | `:core:audio` | Microphone capture |
 | `:core:settings` | Saved settings |
-| `:core:designsystem` | The seven visual styles: colours, fonts, backgrounds and dials |
+| `:core:designsystem` | The six visual styles: colours, fonts, backgrounds and style cards |
 | `:core:dsp` | Pitch detection, note math, tunings (pure Kotlin, no Android) |
 
 The full design is in [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -68,4 +68,4 @@ Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
 ## Fonts
 
-The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), MedievalSharp (Wojciech Kalinowski), Playfair Display (Claus Eggers Sørensen), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google).
+The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), Playfair Display (Claus Eggers Sørensen), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google).

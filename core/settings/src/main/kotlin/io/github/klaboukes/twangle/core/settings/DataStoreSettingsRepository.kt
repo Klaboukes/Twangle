@@ -133,7 +133,7 @@ class DataStoreSettingsRepository internal constructor(
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
-            style = enumOrNull<VisualStyle>(prefs[STYLE]) ?: defaults.style,
+            style = styleOrNull(prefs[STYLE]) ?: defaults.style,
             dynamicColor = prefs[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
             vibrateInTune = prefs[VIBRATE_IN_TUNE] ?: defaults.vibrateInTune,
@@ -177,6 +177,9 @@ class DataStoreSettingsRepository internal constructor(
         /** The stripes look of versions before the strobe look took its place. */
         private const val OLD_STRIPES_LOOK = "STRIPES"
 
+        /** The styles of versions before the six styles of October 2026, both merged into [VisualStyle.ANCIENT]. */
+        private val OLD_ANCIENT_STYLES = setOf("PREHISTORIC", "MIDDLE_AGES")
+
         /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
@@ -204,6 +207,10 @@ class DataStoreSettingsRepository internal constructor(
         /** The saved look, with the old stripes look read as the strobe look that replaced it. */
         private fun waveLookOrNull(name: String?): WaveLook? =
             if (name == OLD_STRIPES_LOOK) WaveLook.STROBE else enumOrNull<WaveLook>(name)
+
+        /** The saved style, with the old Prehistoric and Middle Ages read as Ancient, which replaced both. */
+        private fun styleOrNull(name: String?): VisualStyle? =
+            if (name in OLD_ANCIENT_STYLES) VisualStyle.ANCIENT else enumOrNull<VisualStyle>(name)
 
         private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? =
             enumValues<E>().firstOrNull { it.name == name }

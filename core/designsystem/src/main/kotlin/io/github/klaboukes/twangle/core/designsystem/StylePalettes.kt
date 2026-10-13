@@ -62,8 +62,7 @@ data class Palette(
 
 /** The palette of [style], light or [dark]. */
 fun paletteFor(style: VisualStyle, dark: Boolean): Palette = when (style) {
-    VisualStyle.PREHISTORIC -> if (dark) PrehistoricDark else PrehistoricLight
-    VisualStyle.MIDDLE_AGES -> if (dark) MiddleAgesDark else MiddleAgesLight
+    VisualStyle.ANCIENT -> if (dark) AncientDark else AncientLight
     VisualStyle.CLASSIC -> if (dark) ClassicDark else ClassicLight
     VisualStyle.RETRO -> if (dark) RetroDark else RetroLight
     VisualStyle.CONTEMPORARY -> if (dark) ContemporaryDark else ContemporaryLight
@@ -114,8 +113,9 @@ fun Palette.toColorScheme(dark: Boolean): ColorScheme {
     )
 }
 
-// Prehistoric: firelight on a cave wall. Charcoal, bone, ochre and red ochre; lichen green for "in tune".
-private val PrehistoricLight = Palette(
+// Ancient: firelight on a cave wall. Charcoal, bone, ochre and red ochre; lichen green for "in tune".
+// (The old Prehistoric palette, until Ancient gets its own terracotta-on-stone palette.)
+private val AncientLight = Palette(
     background = Color(0xFFE6D3B3),
     surface = Color(0xFFEEDFC4),
     surfaceContainer = Color(0xFFDEC7A2),
@@ -144,7 +144,7 @@ private val PrehistoricLight = Palette(
     ),
 )
 
-private val PrehistoricDark = Palette(
+private val AncientDark = Palette(
     background = Color(0xFF1C1510),
     surface = Color(0xFF261C15),
     surfaceContainer = Color(0xFF33261C),
@@ -170,65 +170,6 @@ private val PrehistoricDark = Palette(
         centre = Color(0xFFD9694A),
         centreInTune = Color(0xFFA6D374),
         accent = Color(0xFFC2502E),
-    ),
-)
-
-// Middle Ages: an illuminated manuscript. Parchment, iron-gall ink, vermilion, lapis and gold leaf.
-private val MiddleAgesLight = Palette(
-    background = Color(0xFFF0E2C0),
-    surface = Color(0xFFF6EBD0),
-    surfaceContainer = Color(0xFFE6D1A5),
-    onSurface = Color(0xFF2A1E14),
-    onSurfaceVariant = Color(0xFF5A4530),
-    primary = Color(0xFF962020),
-    onPrimary = Color(0xFFFFF4E0),
-    secondary = Color(0xFF1F3F7A),
-    onSecondary = Color(0xFFF2F5FF),
-    tertiary = Color(0xFF7A5C0E),
-    onTertiary = Color(0xFFFFF4E0),
-    outline = Color(0xFF8A7150),
-    outlineVariant = Color(0xFFCCB386),
-    inTune = Color(0xFF2C632C),
-    onInTune = Color(0xFFF2FAEE),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF6B4A2A),
-        track = Color(0xFFB08A2A),
-        tick = Color(0xFF2A1E14),
-        needle = Color(0xFF3B3F46),
-        needleInTune = Color(0xFF2C632C),
-        centre = Color(0xFF962020),
-        centreInTune = Color(0xFF2C632C),
-        accent = Color(0xFFB08A2A),
-    ),
-)
-
-private val MiddleAgesDark = Palette(
-    background = Color(0xFF16120D),
-    surface = Color(0xFF211A12),
-    surfaceContainer = Color(0xFF2E2519),
-    onSurface = Color(0xFFEADCB8),
-    onSurfaceVariant = Color(0xFFBDA97F),
-    primary = Color(0xFFE2B44E),
-    onPrimary = Color(0xFF2A1C00),
-    secondary = Color(0xFFE0675E),
-    onSecondary = Color(0xFF2E0705),
-    tertiary = Color(0xFF8FB0EA),
-    onTertiary = Color(0xFF0A1A38),
-    outline = Color(0xFF85724F),
-    outlineVariant = Color(0xFF43382A),
-    inTune = Color(0xFF93CF7E),
-    onInTune = Color(0xFF0F2A0A),
-    dial = DialColors(
-        face = Color.Transparent,
-        rim = Color(0xFF8C6A3A),
-        track = Color(0xFFE2B44E),
-        tick = Color(0xFFEADCB8),
-        needle = Color(0xFFCFD4DC),
-        needleInTune = Color(0xFF93CF7E),
-        centre = Color(0xFFE0675E),
-        centreInTune = Color(0xFF93CF7E),
-        accent = Color(0xFFE2B44E),
     ),
 )
 

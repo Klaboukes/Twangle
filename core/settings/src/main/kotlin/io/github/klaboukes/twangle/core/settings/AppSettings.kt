@@ -45,11 +45,11 @@ enum class ThemeMode {
 /**
  * The look of the whole app: colours, lettering, background and the tuning dial. Each style has a
  * light and a dark version ([ThemeMode] picks which). Saved in settings by [name], so don't rename
- * the entries.
+ * the entries. Listed in the order the style picker shows them. (Versions before October 2026 had
+ * Prehistoric and Middle Ages; a saved one of those is read as [ANCIENT].)
  */
 enum class VisualStyle {
-    PREHISTORIC,
-    MIDDLE_AGES,
+    ANCIENT,
     CLASSIC,
     RETRO,
     CONTEMPORARY,

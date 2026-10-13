@@ -16,11 +16,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * and ♭; [musicText] sets those in [MusicSignsFont] in every style.
  */
 internal object StyleFonts {
-    /** Prehistoric: rough, hewn capitals. Caesar Dressing by Open Window. */
+    /** Ancient: rough, hewn capitals. Caesar Dressing by Open Window. */
     val Hewn = FontFamily(Font(R.font.caesar_dressing))
-
-    /** Middle Ages: a calligraphic book hand. MedievalSharp by Wojciech Kalinowski. */
-    val Manuscript = FontFamily(Font(R.font.medievalsharp))
 
     /** Classic: a high-contrast Didone serif. Playfair Display by Claus Eggers Sørensen (variable). */
     val Didone = FontFamily(
@@ -59,8 +56,7 @@ internal data class StyleFaces(
 
 internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
     // Caesar Dressing's 0 looks like a diamond, so numbers are set plainly.
-    VisualStyle.PREHISTORIC -> StyleFaces(StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif, numbers = FontFamily.SansSerif)
-    VisualStyle.MIDDLE_AGES -> StyleFaces(StyleFonts.Manuscript, StyleFonts.Manuscript, FontFamily.Serif)
+    VisualStyle.ANCIENT -> StyleFaces(StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif, numbers = FontFamily.SansSerif)
     VisualStyle.CLASSIC -> StyleFaces(StyleFonts.Didone, StyleFonts.Didone, FontFamily.Serif, displayWeight = FontWeight.Normal)
     VisualStyle.RETRO -> StyleFaces(StyleFonts.Groovy, StyleFonts.Groovy, FontFamily.SansSerif)
     VisualStyle.CONTEMPORARY -> StyleFaces(FontFamily.Default, FontFamily.Default, FontFamily.Default, displayWeight = FontWeight.Light)

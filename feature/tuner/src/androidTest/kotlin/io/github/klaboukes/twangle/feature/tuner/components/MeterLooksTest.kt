@@ -45,7 +45,7 @@ import kotlin.math.roundToInt
 
 /**
  * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
- * each of the seven styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
+ * each of the six styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
  * the flat and sharp labels or around the frame), skipped by TalkBack, moved by a new reading
  * without recomposing, and lit by the soft in-tune glow (inside the box, Calm and the stronger
  * Bold; at once with "Remove animations").

@@ -49,9 +49,7 @@ fun DrawScope.drawStrobe(style: VisualStyle, phase: Float, color: Color, glow: F
             val start = stripeOffset(phase * multiple, period) - period
             when (style) {
                 // Dabs of ochre pressed on with a fingertip.
-                VisualStyle.PREHISTORIC -> dabs(row, top, height, period, start, color, glow)
-                // Slanted quill strokes between two ruled lines.
-                VisualStyle.MIDDLE_AGES -> hatching(top, height, period, start, color, glow)
+                VisualStyle.ANCIENT -> dabs(row, top, height, period, start, color, glow)
                 // A polished disc ring: crisp bars between engraved hairlines.
                 VisualStyle.CLASSIC -> engraved(top, height, period, start, color, glow)
                 // A backlit drum: rounded bars that always glow a little.
@@ -84,8 +82,7 @@ const val STROBE_ROWS = 2
 
 /** From one stripe to the next in [style]: finer marks sit closer together. */
 fun stripePeriod(style: VisualStyle): Dp = when (style) {
-    VisualStyle.PREHISTORIC -> 18.dp
-    VisualStyle.MIDDLE_AGES -> 10.dp
+    VisualStyle.ANCIENT -> 18.dp
     VisualStyle.CLASSIC -> 12.dp
     VisualStyle.RETRO -> 16.dp
     VisualStyle.CONTEMPORARY -> 14.dp
@@ -137,30 +134,6 @@ private fun DrawScope.dabs(row: Int, top: Float, height: Float, period: Float, s
             // A second, smudged dab beside each one, as in the wave view's ribbon.
             drawCircle(color.faded(0.35f * fade), r * 1.08f, Offset(x + r * 0.18f, mid + r * 0.14f))
             drawCircle(color.faded(fade), r, Offset(x, mid))
-        }
-        x += period
-    }
-}
-
-private fun DrawScope.hatching(top: Float, height: Float, period: Float, start: Float, color: Color, glow: Float) {
-    val rule = 0.9.dp.toPx()
-    val inset = 2.5.dp.toPx()
-    val reach = (height - inset * 2f) / 2f
-    val slant = 0.3f * reach
-    val mid = top + height / 2f
-    val width = period * 0.36f
-    val halo = halo(0f, glow)
-    // Ruled lines in faded ink, which don't move.
-    drawLine(color.faded(0.55f), Offset(0f, top + rule / 2f), Offset(size.width, top + rule / 2f), rule)
-    drawLine(color.faded(0.55f), Offset(0f, top + height - rule / 2f), Offset(size.width, top + height - rule / 2f), rule)
-    var x = start + period * 0.25f
-    while (x < size.width + period) {
-        val fade = fadeAt(x)
-        if (fade > 0f) {
-            val upper = Offset(x + slant, mid - reach)
-            val lower = Offset(x - slant, mid + reach)
-            if (halo > 0f) drawLine(color.faded(halo * fade), upper, lower, width * 2f, StrokeCap.Round)
-            drawLine(color.faded(fade), upper, lower, width, StrokeCap.Butt)
         }
         x += period
     }

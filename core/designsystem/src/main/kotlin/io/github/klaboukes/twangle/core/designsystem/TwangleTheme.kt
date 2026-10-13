@@ -162,23 +162,16 @@ internal fun lerp(a: ColorScheme, b: ColorScheme, t: Float): ColorScheme = a.cop
 )
 
 /**
- * Corner shapes per style: chiselled cuts for the Middle Ages and the HUD, soft pebbles for the
- * Stone Age, fine corners for Classic, fat 70s curves and 60s capsules.
+ * Corner shapes per style: soft pebbles for Ancient, fine corners for Classic, fat 70s curves,
+ * chiselled cuts for the HUD and 60s capsules.
  */
 internal fun shapesFor(style: VisualStyle): Shapes = when (style) {
-    VisualStyle.PREHISTORIC -> Shapes(
+    VisualStyle.ANCIENT -> Shapes(
         extraSmall = RoundedCornerShape(6.dp),
         small = RoundedCornerShape(10.dp),
         medium = RoundedCornerShape(topStart = 18.dp, topEnd = 12.dp, bottomEnd = 20.dp, bottomStart = 10.dp),
         large = RoundedCornerShape(topStart = 26.dp, topEnd = 16.dp, bottomEnd = 28.dp, bottomStart = 14.dp),
         extraLarge = RoundedCornerShape(32.dp),
-    )
-    VisualStyle.MIDDLE_AGES -> Shapes(
-        extraSmall = CutCornerShape(3.dp),
-        small = CutCornerShape(5.dp),
-        medium = CutCornerShape(8.dp),
-        large = CutCornerShape(12.dp),
-        extraLarge = CutCornerShape(16.dp),
     )
     VisualStyle.CLASSIC -> Shapes(
         extraSmall = RoundedCornerShape(2.dp),

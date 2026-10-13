@@ -51,7 +51,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 :feature:settings  Settings and About screens, SettingsViewModel
 :core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
-:core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, dials, meter and wave looks, StylePicker
+:core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing
 :core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough
 :baselineprofile   Android test module: Baseline Profile generator, startup and meter-frame benchmarks
@@ -311,16 +311,16 @@ Lists the classes and methods used at startup and on the tuner screen so Android
 ### Settings
 The gear button opens settings (`:feature:settings`). `MainActivity` switches between tuner, settings and About with one saved `Screen` value (no navigation library) and a `SaveableStateHolder`; back returns About → settings → tuner. `SettingsViewModel` saves every change at once; there is no save button.
 
-Three groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), then About. Groups are 32 dp apart; rows keep 16 dp from the edges, only the style cards run to the edge.
+Three groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), then About. Groups are 32 dp apart; rows, including the card grids, keep 16 dp from the edges.
 - **Tuning:** A4 calibration, note names, in-tune precision.
-- **Look:** style cards, light or dark, wallpaper colours, meter look, in-tune effect, display, wave look, the temporary "When in tune" choice, full layout on its side, signal bars.
+- **Look:** style, light or dark, wallpaper colours, meter look, in-tune effect, display, wave look, the temporary "When in tune" choice, full layout on its side, signal bars.
 - **While tuning:** keep screen on, vibrate when in tune, tune up/down hint.
 
 What each does:
 - **A4 calibration:** slider 415–466 Hz in 1 Hz stops, − and + buttons, "Reset to 440 Hz"; saved when the finger lifts. The tuner shows "A4 = 442 Hz" under the mode switch.
 - **Note names:** sharps, flats or Do Re Mi (`RadioGroupSetting`). A preset's own spelling wins in guitar mode (§3, Tuning spelling).
 - **In-tune precision:** Relaxed (≤ 5 cents, default) or Precise (≤ 2). `TunerInterpreter` swaps in `InTuneDetector.forPrecision` on the next frame; everything that follows `inTune` follows it.
-- **Style:** the `StylePicker` cards (§6, Visual styles); also reachable from the tuner's palette button.
+- **Style:** `StylePicker` (`:feature:settings`), a `LookCardGrid` like the meter and wave looks: six mood cards in the owner's order, three to a row (two from 1.3× font), the style's name under each (§6, Visual styles). It is the only place to pick a style; the tuner's palette button went in Phase 14.
 - **Light or dark:** system, light or dark, plus "Wallpaper colours" (dynamic color, Android 12+, Contemporary only). `MainActivity` reads settings before drawing, so the theme never flashes, and calls `enableEdgeToEdge` again on a change so status-bar icons follow the app.
 - **Keep screen on** (default on): `View.keepScreenOn` while the tuner is shown with the mic granted; a window flag, not a wake lock.
 - **Vibrate when in tune** (default on): `InTuneHaptic` clicks once (`EFFECT_CLICK`, 20 ms one-shot before Android 10) when `inTune` turns true. It uses `Vibrator` directly because Compose/View haptics obey the phone-wide touch-feedback setting, which many people switch off; this needs the normal `VIBRATE` permission. `InTuneTickRule` skips a second tick for the same note within 1.5 s; the state is saved, so rotating doesn't tick.
@@ -339,7 +339,7 @@ What each does:
 | `notation` | `SHARPS` | `FLATS`, `SOLFEGE` |
 | `inTunePrecision` | `RELAXED` | `PRECISE`; key `in_tune_precision` |
 | `theme` | `SYSTEM` | `LIGHT`, `DARK` |
-| `style` | `CONTEMPORARY` | `VisualStyle` |
+| `style` | `CONTEMPORARY` | `VisualStyle`: `ANCIENT`, `CLASSIC`, `RETRO`, `CONTEMPORARY`, `FUTURISTIC`, `SPACE_AGE`; key `visual_style` |
 | `dynamicColor`, `keepScreenOn`, `vibrateInTune`, `showTuneHint` | true | |
 | `showSignalBars` | false | |
 | `display` | `WAVE` | `TunerDisplay.NEEDLE` / `WAVE`; key `tuner_display` (see migrations) |
@@ -351,7 +351,7 @@ What each does:
 | `stringLockTipSeen` | false | Set once the string-lock tip is dismissed; no switch |
 
 - **Forgiving reads:** a missing, unknown or out-of-range value gives its default; an unreadable file gives all defaults, and a corrupt one is replaced so saving works again.
-- **Migrations** (in `DataStoreSettingsRepository`, not as enum constants, so no code can pick the old names again; JVM tests cover each case): while no `tuner_display` is saved, the old switch `show_waves` gives `WAVE` (on) or `NEEDLE` (off), and saving a display removes it. A saved display `"STROBE"` reads as `WAVE` with look `STROBE`, rewritten by the first `setDisplay` or `setWaveLook`. A saved look `"STRIPES"` reads as `STROBE`.
+- **Migrations** (in `DataStoreSettingsRepository`, not as enum constants, so no code can pick the old names again; JVM tests cover each case): while no `tuner_display` is saved, the old switch `show_waves` gives `WAVE` (on) or `NEEDLE` (off), and saving a display removes it. A saved display `"STROBE"` reads as `WAVE` with look `STROBE`, rewritten by the first `setDisplay` or `setWaveLook`. A saved look `"STRIPES"` reads as `STROBE`. A saved style `"PREHISTORIC"` or `"MIDDLE_AGES"` (the seven styles before October 2026) reads as `ANCIENT`, rewritten by the next `setStyle`; any other unknown style gives the default.
 
 ## 6. UI
 
@@ -390,10 +390,10 @@ sealed interface TunerUiState {
 
 ### Tuner screen
 `TunerScreen` wires the ViewModel; `TunerContent` is the stateless body used by previews and UI tests. From top to bottom:
-- **Corner buttons:** settings gear and, opposite, a palette button that opens a bottom sheet with the style cards (the app restyles behind it). Both show on the permission prompt too, inset 8 dp to clear style frames.
+- **Corner button:** the settings gear in the top end corner, also on the permission prompt, inset 8 dp. The opposite corner stays empty (the palette button that opened a style sheet went in Phase 14; styles are picked in Settings).
 - **Mode switch:** `ModeSwitch`, Material 3 segmented buttons "Guitar" / "Chromatic", the selected segment in `primaryContainer` (Material's secondary put Futuristic's purple beside its cyan). "A4 = … Hz" below it.
 - **Meter:** `MeterFrame` in the picked look (see *Meter*).
-- **Note:** `NoteDisplay`: the big note name and octave in the style's display face (shrinking to fit wide faces and solfège), then the cents in a pill ("12 cents flat", whole cents) and the smoothed frequency, or the wave (see *Display*). Pill numbers use `numberFontFor(style)` (the title face, except Prehistoric, whose 0 looks like a diamond). While listening the meter rests faded and the text asks for a string (Auto) or a note (Chromatic); the waiting note is a faint ♪.
+- **Note:** `NoteDisplay`: the big note name and octave in the style's display face (shrinking to fit wide faces and solfège), then the cents in a pill ("12 cents flat", whole cents) and the smoothed frequency, or the wave (see *Display*). Pill numbers use `numberFontFor(style)` (the title face, except Ancient, whose Caesar Dressing 0 looks like a diamond). While listening the meter rests faded and the text asks for a string (Auto) or a note (Chromatic); the waiting note is a faint ♪.
 - **Guitar controls** (`GuitarControls`): `TuningPicker` ("Standard ▾", a menu of presets with their strings, the current one ticked) and `StringSelector` (E₂ A₂ D₃ G₃ B₃ E₄, target highlighted and `selected`; each string a button, "Lock to this string" / "Pick strings automatically"; a locked string gets an outer ring, "Locked", and the hint "Play the A2 string"). Chips take the style's outline shape and a see-through backing.
 - **Mode slot** (`ModeSlot`): measures both modes' content all the time, takes the taller height (at least 104 dp) and places only the current mode's, so a mode switch moves nothing, also at 2× font. In chromatic mode with the wave it shows `ChromaticReadout` (cents and frequency, hidden from TalkBack since the note's live region says them); with the needle the slot stays empty.
 - **In tune:** meter marker, centre mark, note, cents text and highlighted string fade to the style's "in tune" colour (`StyleTokens.inTune`, read through `InTuneColor.kt`; Material 3 has no success role). A check mark appears beside the cents, so it doesn't depend on seeing green; the pill fills, a soft glow lights behind the note and the note pops (grows 8 % and springs back). Each runs once per change, read in the draw phase.
@@ -466,16 +466,16 @@ Setting "Wave look", shown while the display is the wave: six looks (`WaveLook`:
 - **Tests:** `WaveViewTest` (every look in every style drawn inside its box, at most a 4 dp glow outside; motion without recomposing), `TunerContentTest` (TalkBack skips the wave and hears the reading once), `SettingsContentTest` (radio buttons, names on one line at 1.3× and 2× font). The wave's size is the same for every look, so the layout tests cover all six.
 
 ### Visual styles
-Seven styles: Prehistoric, Middle Ages, Classic, Retro, Contemporary (the default, and the only one that can follow the wallpaper), Futuristic and Space Age. Each sets:
+Six styles, in the owner's order (Phase 14, October 2026): Ancient, Classic, Retro, Contemporary (the default, and the only one that can follow the wallpaper), Futuristic and Space Age. Versions before October 2026 had seven; a saved Prehistoric or Middle Ages opens as Ancient (see *Saved settings*). Until Phase 14 gives Ancient its own look, it wears the old Prehistoric palette, faces, shapes, cave background and marks. Each style sets:
 - **Palette** (`StylePalettes.kt`): a light and a dark `Palette`, turned into a Material 3 `ColorScheme`. `StylePaletteTest` holds every palette to WCAG 2.2: 7:1 body text, 4.5:1 secondary text, accents and text on filled controls, 3:1 the "in tune" colour, outlines and marks.
-- **Lettering** (`StyleTypography.kt`): a display face for the note, headlines and titles; reading text stays plain. Bundled under the SIL OFL (`core/designsystem/src/main/res/font`, licences in `assets/licenses`): Caesar Dressing, MedievalSharp, Playfair Display, Righteous, Orbitron, Michroma; Contemporary uses the phone's font. ~0.7 MB, nothing downloaded.
+- **Lettering** (`StyleTypography.kt`): a display face for the note, headlines and titles; reading text stays plain. Bundled under the SIL OFL (`core/designsystem/src/main/res/font`, licences in `assets/licenses`): Caesar Dressing, Playfair Display, Righteous, Orbitron, Michroma; Contemporary uses the phone's font (MedievalSharp went with the Middle Ages style). ~0.5 MB, nothing downloaded.
 - **Music signs** (`MusicSigns.kt`): none of those faces has ♯ or ♭, and the fallback drew them at a different size in each, so every ♯ ♭ ♮ ♩ ♪ comes from `music_signs.ttf` (Noto Sans Symbols cut to those glyphs, 2.6 KB, `scripts/subset-font.py`). `musicText()` sets a sign after a letter like a chord symbol (0.7 em and raised; ♭ 0.8 em). The text itself is unchanged, so UI tests see "C♯"; TalkBack hears words via `NoteNameSpeech`.
-- **Shapes:** cut corners for the Middle Ages and the HUD, soft pebbles, fine Classic corners, fat 70s curves, 60s capsules.
-- **Background** (`StyleBackdrop`): drawn once by `MainActivity` behind both see-through screens (`Scaffold(containerColor = Transparent, contentColor = onBackground)`), in its own `graphicsLayer` so readings never redraw it, from seeded random points. Cave wall with hand stencils, parchment in a gold-ruled border, an ivory concert hall, 70s walnut with a sunburst, a calm wash, a neon grid with HUD brackets, a starfield with a ringed planet. Frames stay inside the safe-drawing insets and within the 16 dp margin screens keep free of text (frames further in crossed the mode switch or covered settings rows); the settings list ends 24 dp above the bottom inset.
-- **Dial** (`dial/Dial.kt`): `drawDialScale` / `drawDialNeedle` draw each style's own dial in the shared 2:1 geometry (an ochre arc with a spear, a manuscript scale with a sword, a clock face, a 70s VU meter, the contemporary track, a neon HUD, an orbit). Used by the style cards; `DialColors` gives each needle an out-of-tune and an in-tune colour.
-- **Sound ribbon** (`dial/SoundRibbon.kt`) and **strobe** (`dial/Strobe.kt`): the ribbon and strobe looks in each style's own marks (paint dabs, quill strokes, engraving, phosphor, voice-memo bars, neon, stars), each with its own `stripePeriod` (8–18 dp). Every stripe of a row looks the same, so the pattern wraps without a jump.
+- **Shapes:** soft pebbles for Ancient, fine Classic corners, fat 70s curves, cut corners for the HUD, 60s capsules. String buttons (`stringChipShape`, shared by the tuner and the style cards) are circles, chamfered tiles for Futuristic.
+- **Background** (`StyleBackdrop`): drawn once by `MainActivity` behind both see-through screens (`Scaffold(containerColor = Transparent, contentColor = onBackground)`), in its own `graphicsLayer` so readings never redraw it, from seeded random points. Cave wall with hand stencils, an ivory concert hall, 70s walnut with a sunburst, a calm wash, a neon grid with HUD brackets, a starfield with a ringed planet. Frames stay inside the safe-drawing insets and within the 16 dp margin screens keep free of text (frames further in crossed the mode switch or covered settings rows); the settings list ends 24 dp above the bottom inset.
+- **Mood card** (`StyleMood.kt`): the style's picture on its card in Settings (4:5, from the approved mock-up `docs/design/theme-styles-preview.html`): its background (`StyleBackdropPreview`, decoration at 0.45), a big "A" in its display face, a strip of its ribbon marks in its accent colour (never "in tune", so each card keeps its own colour) drifting gently 3 cents sharp, and two string buttons (E, A picked) in its shape. Sized by the card's width, so it looks the same at any font size; hidden from TalkBack (the card says the name). The per-style hand-drawn dials of the old style cards went with them; `dial/DialGeometry.kt` keeps only the shared ±50-cent angle.
+- **Sound ribbon** (`dial/SoundRibbon.kt`) and **strobe** (`dial/Strobe.kt`): the ribbon and strobe looks in each style's own marks (paint dabs, engraving, phosphor, voice-memo bars, neon, stars), each with its own `stripePeriod` (8–18 dp). Every stripe of a row looks the same, so the pattern wraps without a jump.
 
-`TwangleTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, dial colours, the unfaded scheme), remembered per style and brightness. A style or brightness change fades every colour over 450 ms (one `Animatable`) and cross-fades the background. Each `StylePicker` card wraps its own `TwangleTheme`, so it previews that style whatever the current one is.
+`TwangleTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, dial colours, the unfaded scheme), remembered per style and brightness. A style or brightness change fades every colour over 450 ms (one `Animatable`) and cross-fades the background. Each mood card wraps its own `TwangleTheme`, so it previews that style whatever the current one is.
 
 ### Landscape and wide screens
 `tunerLayoutFor(width, height, compactLandscape)` (`TunerLayout.kt`, JVM-tested) picks the arrangement from the space, not the device: `SINGLE_COLUMN` (max 480 dp wide) unless the window is at least 600 dp wide *and* wider than tall. Then `COMPACT` by default, or `TWO_PANE` with the setting "Full layout on its side" (`keepTwoPaneLandscape`). `TunerScreenTest` checks both layouts and a live change on a phone on its side.
@@ -528,9 +528,9 @@ core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
 core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
-    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StylePicker,
+    TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StyleMood,
     MusicSigns, NoteNameSpeech, FontCredits
-    dial/       Dial, SoundRibbon, Strobe, WaveLooks, WaveMotion
+    dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
     meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, LightArcHeat, SpiritLevel,
                 RollingScale, Comet, CometTrail, StudioMeter
 
@@ -549,7 +549,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel
     components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
-                LookCardGrid (+ LookDemo), MeterLookPicker (+ MeterDemo), WaveLookPicker
+                LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
     TwangleApplication, AppContainer, MainActivity, SyntheticAudioRecorder (benchmark build only)

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -38,11 +35,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.stringChipShape
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 
 /**
@@ -125,7 +122,7 @@ private fun StringChip(
     )
     val octaveStyle = MaterialTheme.typography.labelSmall.toSpanStyle().copy(baselineShift = BaselineShift.Subscript)
     val ring by animateColorAsState(if (locked) colors.onSurface else Color.Transparent, label = "lockRing")
-    val shape = chipShape(MaterialTheme.styleTokens.style)
+    val shape = stringChipShape(MaterialTheme.styleTokens.style)
     Box(
         modifier = Modifier
             .size(if (small) SMALL_CHIP_SIZE else CHIP_SIZE)
@@ -176,16 +173,6 @@ private fun StringChip(
             )
         }
     }
-}
-
-/**
- * The string chip's outline in [style]: an octagon for the Middle Ages, a chamfered HUD tile for
- * Futuristic, and a circle for the rest.
- */
-private fun chipShape(style: VisualStyle): Shape = when (style) {
-    VisualStyle.MIDDLE_AGES -> CutCornerShape(30)
-    VisualStyle.FUTURISTIC -> CutCornerShape(topStartPercent = 35, topEndPercent = 0, bottomEndPercent = 35, bottomStartPercent = 0)
-    else -> CircleShape
 }
 
 /** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */

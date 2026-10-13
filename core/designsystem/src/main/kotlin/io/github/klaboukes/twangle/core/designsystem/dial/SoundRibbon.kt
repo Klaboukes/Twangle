@@ -40,9 +40,7 @@ fun pulseAt(u: Float, beats: Float, phase: Float, depth: Float): Float {
 internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path: Path) {
     when (style) {
         // Dabs of paint that swell and shrink.
-        VisualStyle.PREHISTORIC -> dots(ribbon)
-        // Quill hatching, slanted like a broad nib.
-        VisualStyle.MIDDLE_AGES -> bars(ribbon, spacing = 4.dp, width = 1.6.dp, cap = StrokeCap.Butt, slant = 0.22f)
+        VisualStyle.ANCIENT -> dots(ribbon)
         // An engraved outline with a hairline through it.
         VisualStyle.CLASSIC -> band(ribbon, path, fill = 0.14f, outline = 1.3.dp, haloBase = 0f, centreLine = true)
         // A phosphor trace that always glows a little.

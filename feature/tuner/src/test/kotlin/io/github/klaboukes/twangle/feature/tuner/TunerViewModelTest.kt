@@ -12,7 +12,6 @@ import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -262,14 +261,6 @@ class TunerViewModelTest {
         assertEquals(0, state.targetString)
         assertEquals("D", state.noteName)
         assertTrue("off by ${state.cents} c", abs(state.cents) < 1f)
-    }
-
-    @Test
-    fun `choosing a style on the tuner saves it`() = runTest(dispatcher) {
-        val vm = viewModel(FakeAudioRecorder(TestSignals.sine(110f, length = 4_800)))
-        vm.setStyle(VisualStyle.SPACE_AGE)
-        runCurrent()
-        assertEquals(VisualStyle.SPACE_AGE, settings.current.style)
     }
 
     @Test

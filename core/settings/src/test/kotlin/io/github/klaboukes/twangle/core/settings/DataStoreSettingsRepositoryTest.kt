@@ -138,7 +138,7 @@ class DataStoreSettingsRepositoryTest {
             setMode(TunerMode.CHROMATIC)
             setTuning(Tunings.DROP_D)
             setNotation(Notation.FLATS)
-            setStyle(VisualStyle.MIDDLE_AGES)
+            setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
             setStringLockTipSeen(true)
             setKeepTwoPaneLandscape(true)
@@ -153,7 +153,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerMode.CHROMATIC, settings.mode)
         assertEquals(Tunings.DROP_D, settings.tuning)
         assertEquals(Notation.FLATS, settings.notation)
-        assertEquals(VisualStyle.MIDDLE_AGES, settings.style)
+        assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
@@ -293,6 +293,75 @@ class DataStoreSettingsRepositoryTest {
         val settings = repository(store).settings.first()
         assertEquals(TunerDisplay.WAVE, settings.display)
         assertEquals(WaveLook.STROBE, settings.waveLook)
+    }
+
+    @Test
+    fun `every style saved by an older version opens as its closest new style`() = runTest {
+        // The seven styles before October 2026, and the style each one opens as now.
+        val expected = mapOf(
+            "PREHISTORIC" to VisualStyle.ANCIENT,
+            "MIDDLE_AGES" to VisualStyle.ANCIENT,
+            "CLASSIC" to VisualStyle.CLASSIC,
+            "RETRO" to VisualStyle.RETRO,
+            "CONTEMPORARY" to VisualStyle.CONTEMPORARY,
+            "FUTURISTIC" to VisualStyle.FUTURISTIC,
+            "SPACE_AGE" to VisualStyle.SPACE_AGE,
+        )
+        val store = dataStore()
+        val repo = repository(store)
+        for ((saved, style) in expected) {
+            store.edit { it[stringPreferencesKey("visual_style")] = saved }
+            assertEquals(saved, style, repo.settings.first().style)
+        }
+    }
+
+    @Test
+    fun `an old style survives a restart and picking a style rewrites it`() = runTest {
+        dataStore().edit { it[stringPreferencesKey("visual_style")] = "MIDDLE_AGES" }
+        close()
+        assertEquals(VisualStyle.ANCIENT, repository().settings.first().style)
+        close()
+
+        val store = dataStore()
+        repository(store).setStyle(VisualStyle.ANCIENT)
+        assertEquals("ANCIENT", store.data.first()[stringPreferencesKey("visual_style")])
+    }
+
+    @Test
+    fun `an unknown or damaged saved style opens as the default`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (saved in listOf("", "prehistoric", "Middle Ages", "STONE_AGE", "ANCIENT ")) {
+            store.edit { it[stringPreferencesKey("visual_style")] = saved }
+            assertEquals(saved, VisualStyle.CONTEMPORARY, repo.settings.first().style)
+        }
+    }
+
+    @Test
+    fun `every style is saved by its name`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (style in VisualStyle.entries) {
+            repo.setStyle(style)
+            assertEquals(style, repo.settings.first().style)
+            assertEquals(style.name, store.data.first()[stringPreferencesKey("visual_style")])
+        }
+    }
+
+    @Test
+    fun `the six styles come in the owner's order, Contemporary the default`() {
+        assertEquals(
+            listOf(
+                VisualStyle.ANCIENT,
+                VisualStyle.CLASSIC,
+                VisualStyle.RETRO,
+                VisualStyle.CONTEMPORARY,
+                VisualStyle.FUTURISTIC,
+                VisualStyle.SPACE_AGE,
+            ),
+            VisualStyle.entries,
+        )
+        assertEquals(VisualStyle.CONTEMPORARY, VisualStyle.DEFAULT)
     }
 
     @Test

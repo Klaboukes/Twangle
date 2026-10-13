@@ -53,9 +53,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The compact landscape layout in each of the seven styles: each style brings its own fonts and
+ * The compact landscape layout in each of the six styles: each style brings its own fonts and
  * dial, so the note column and the meter differ in size. On a phone and a tablet on their side
- * everything fits beside a big meter, clear of the palette and settings buttons in the corners; with
+ * everything fits beside a big meter, clear of the top corners (the settings button sits in one); with
  * 2× font it can still be reached; a tap (light) or TalkBack (dark) brings back the controls. Every
  * meter look, at its biggest here, is clearly drawn inside its box in the style's colours, light and
  * dark, skipped by TalkBack, and moves nothing else on the screen, also at 2× font.
@@ -189,8 +189,8 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
     /**
      * The meter takes at least half the width, every one of [parts] sits beside it and in the window
-     * (no scrolling), none overlap, and none reach into the corners where the palette and settings
-     * buttons sit.
+     * (no scrolling), none overlap, and none reach into the top corners, where the settings button
+     * sits (the other corner is kept just as clear).
      */
     private fun assertBigMeterBeside(parts: List<Pair<String, SemanticsNodeInteraction>>, case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
@@ -423,7 +423,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         )
     }
 
-    /** Where `TunerScreen` puts the palette and settings buttons: 48 dp, 8 dp in from the top corners. */
+    /** The top corners where `TunerScreen` puts its corner buttons: 48 dp, 8 dp in from the edges. */
     private fun corners(window: DpRect) = listOf(
         DpRect(window.left, window.top, window.left + CORNER, window.top + CORNER),
         DpRect(window.right - CORNER, window.top, window.right, window.top + CORNER),

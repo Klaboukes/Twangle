@@ -38,8 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.dsp.music.Notation
-import io.github.klaboukes.twangle.core.designsystem.StylePicker
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -53,6 +51,7 @@ import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
+import io.github.klaboukes.twangle.feature.settings.components.StylePicker
 import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
@@ -210,11 +209,10 @@ internal fun SettingsPage(
 
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (how the app looks, the meter's look, how far off a note is shown and the layout on its side) and While tuning (what the tuner does while it listens),
- * followed by one row that opens the About page (version, promise, privacy and licences), so those
- * long texts don't crowd the settings.
- * Rows keep 16 dp from the column's edges; only the style cards run to the edges, so their row
- * visibly continues off-screen.
+ * (the style, light or dark, the meter's look, how far off a note is shown and the layout on its
+ * side) and While tuning (what the tuner does while it listens), followed by one row that opens the
+ * About page (version, promise, privacy and licences), so those long texts don't crowd the
+ * settings. Rows, including the card grids, keep 16 dp from the column's edges.
  */
 @Composable
 private fun SettingsGroups(
@@ -261,13 +259,12 @@ private fun SettingsGroups(
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_look)) {
-            Text(
-                text = stringResource(R.string.settings_style_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = ROW_INSET),
-            )
-            StylePicker(selected = settings.style, onSelect = onStyleChange, darkTheme = MaterialTheme.styleTokens.dark)
             Rows {
+                StylePicker(
+                    title = stringResource(R.string.settings_style_title),
+                    selected = settings.style,
+                    onSelect = onStyleChange,
+                )
                 HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_theme_title),

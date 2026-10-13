@@ -10,7 +10,6 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -208,11 +207,6 @@ class TunerViewModel(
     /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */
     fun setTuning(tuning: Tuning) {
         viewModelScope.launch { settingsRepository.setTuning(tuning) }
-    }
-
-    /** Saves [style] as the app's look, chosen from the tuner's style sheet. */
-    fun setStyle(style: VisualStyle) {
-        viewModelScope.launch { settingsRepository.setStyle(style) }
     }
 
     /** Opens the microphone again after an error. */

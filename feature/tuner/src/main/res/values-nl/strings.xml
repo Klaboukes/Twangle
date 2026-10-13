@@ -17,8 +17,6 @@
     <string name="tuner_mode_guitar">Gitaar</string>
     <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_a4">A4 = %1$d Hz</string>
-    <string name="tuner_change_style">Stijl kiezen</string>
-    <string name="tuner_style_title">Stijl</string>
     <string name="tuner_open_settings">Instellingen</string>
     <string name="tuner_show_controls">Bediening tonen</string>
 

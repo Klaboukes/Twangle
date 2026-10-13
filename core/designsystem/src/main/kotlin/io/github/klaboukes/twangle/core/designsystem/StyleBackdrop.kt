@@ -33,9 +33,9 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * The style's background, filling the whole window behind the screens: a cave wall, parchment,
- * a concert hall, 70s walnut, a calm wash, a neon grid or a starfield. Frames and corner marks keep
- * inside [frameInsets] so the status and navigation bars don't cut them.
+ * The style's background, filling the whole window behind the screens: a cave wall, a concert
+ * hall, 70s walnut, a calm wash, a neon grid or a starfield. Frames and corner marks keep inside
+ * [frameInsets] so the status and navigation bars don't cut them.
  *
  * It is drawn once into its own layer, so readings that redraw the tuner never redraw it. A change of
  * style cross-fades to the new background.
@@ -61,11 +61,14 @@ fun StyleBackdrop(modifier: Modifier = Modifier, frameInsets: WindowInsets = Win
     }
 }
 
-/** The same background in a small preview, e.g. a style card. Frames sit at the card's edges. */
+/**
+ * The same background in a small preview, e.g. a style card, with its decoration shrunk to [scale].
+ * Frames sit at the preview's edges.
+ */
 @Composable
-fun StyleBackdropPreview(modifier: Modifier = Modifier) {
+fun StyleBackdropPreview(modifier: Modifier = Modifier, scale: Float = 0.6f) {
     val tokens = MaterialTheme.styleTokens
-    Box(modifier.graphicsLayer().drawBehind { drawBackdrop(tokens, FrameInset.None, scale = 0.6f) })
+    Box(modifier.graphicsLayer().drawBehind { drawBackdrop(tokens, FrameInset.None, scale) })
 }
 
 /** Space the bars take at each edge, in pixels. */
@@ -82,8 +85,7 @@ internal fun DrawScope.drawBackdrop(tokens: StyleTokens, inset: FrameInset, scal
     val frame = Rect(inset.left, inset.top, size.width - inset.right, size.height - inset.bottom)
     val unit = density * scale
     when (tokens.style) {
-        VisualStyle.PREHISTORIC -> cave(tokens, unit)
-        VisualStyle.MIDDLE_AGES -> manuscript(tokens, frame, unit)
+        VisualStyle.ANCIENT -> cave(tokens, unit)
         VisualStyle.CLASSIC -> concertHall(tokens, frame, unit)
         VisualStyle.RETRO -> hiFi(tokens, frame, unit)
         VisualStyle.CONTEMPORARY -> calmWash(tokens)
@@ -92,7 +94,7 @@ internal fun DrawScope.drawBackdrop(tokens: StyleTokens, inset: FrameInset, scal
     }
 }
 
-// ---- Prehistoric -------------------------------------------------------------------------------
+// ---- Ancient ----------------------------------------------------------------------------------
 
 private fun DrawScope.cave(tokens: StyleTokens, unit: Float) {
     val c = tokens.scheme
@@ -163,47 +165,6 @@ private fun DrawScope.handStencil(centre: Offset, size: Float, degrees: Float, c
 
 private val FINGER_X = floatArrayOf(-0.235f, -0.08f, 0.075f, 0.225f)
 private val FINGER_LENGTH = floatArrayOf(0.40f, 0.50f, 0.48f, 0.38f)
-
-// ---- Middle Ages -------------------------------------------------------------------------------
-
-private fun DrawScope.manuscript(tokens: StyleTokens, frame: Rect, unit: Float) {
-    val c = tokens.scheme
-    val w = size.width
-    val h = size.height
-    // Mottled parchment, then fibres.
-    val stain = if (tokens.dark) c.primary else Color(0xFF8A5A1A)
-    for (i in 0 until PATCHES.count) {
-        val centre = Offset(PATCHES.x[i] * w, PATCHES.y[i] * h)
-        val radius = PATCHES.r[i] * w * 1.4f
-        drawCircle(
-            Brush.radialGradient(listOf(stain.copy(alpha = 0.06f), Color.Transparent), centre, radius),
-            radius = radius,
-            center = centre,
-        )
-    }
-    val fibre = c.onSurface.copy(alpha = if (tokens.dark) 0.05f else 0.045f)
-    for (i in 0 until FIBRES.count) {
-        val start = Offset(FIBRES.x[i] * w, FIBRES.y[i] * h)
-        val length = (6f + FIBRES.r[i] * 18f) * unit
-        val angle = FIBRES.a[i] * 0.6f - 0.3f
-        drawLine(fibre, start, Offset(start.x + cos(angle) * length, start.y + sin(angle) * length), strokeWidth = 0.8f * unit)
-    }
-    vignette(if (tokens.dark) Color.Black.copy(alpha = 0.55f) else Color(0xFF6B3E12).copy(alpha = 0.30f))
-    // A ruled border in gold leaf, with lozenges at the corners. Its inner rule stays 6 dp clear of
-    // the 16 dp margin the screens keep free of text (at 15 dp it touched the settings rows).
-    val gold = tokens.dial.accent
-    val outer = frame.deflate(6f * unit)
-    val inner = frame.deflate(10f * unit)
-    drawRect(gold.copy(alpha = 0.85f), outer.topLeft, outer.size, style = Stroke(1.6f * unit))
-    drawRect(gold.copy(alpha = 0.55f), inner.topLeft, inner.size, style = Stroke(0.8f * unit))
-    val rubric = c.primary.copy(alpha = 0.9f)
-    for (corner in listOf(outer.topLeft, outer.topRight, outer.bottomLeft, outer.bottomRight)) {
-        lozenge(corner, 7f * unit, gold)
-        lozenge(corner, 3.2f * unit, rubric)
-    }
-    lozenge(Offset(outer.center.x, outer.top), 5f * unit, gold)
-    lozenge(Offset(outer.center.x, outer.bottom), 5f * unit, gold)
-}
 
 /** A diamond of half-height [r] around [centre]. */
 internal fun DrawScope.lozenge(centre: Offset, r: Float, color: Color) {

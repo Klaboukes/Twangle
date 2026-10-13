@@ -36,7 +36,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * The string-lock tip on an upright S26-sized phone at the normal text size in each of the seven styles, in English and Dutch: each
+ * The string-lock tip on an upright S26-sized phone at the normal text size in each of the six styles, in English and Dutch: each
  * style brings its own fonts, so the tip's text and the tuning picker differ in size. The tip sits in
  * the corner left of the picker, above the strings, and covers nothing. [TunerContentTest] covers
  * the tip itself in one style.
