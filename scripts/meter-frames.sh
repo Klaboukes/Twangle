@@ -21,11 +21,11 @@ PKG=io.github.klaboukes.twangle
 CLASS=io.github.klaboukes.twangle.baselineprofile.MeterFramesBenchmark
 
 if ! "$ADB" devices 2>/dev/null | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect the S26; check Auto Blocker is off." >&2
+    echo "No phone connected (adb devices shows none). Connect the Xiaomi 12X and accept the USB-debugging prompt." >&2
     exit 3
 fi
 
-echo "Display: $("$ADB" shell dumpsys display | grep -m1 -o 'mActiveRenderFrameRate=[0-9.]*'), refresh_rate_mode=$("$ADB" shell settings get secure refresh_rate_mode | tr -d '\r') (Samsung: 1 = Adaptive, up to 120 Hz)"
+echo "Display: $("$ADB" shell dumpsys SurfaceFlinger | grep -m1 -o 'refresh-rate *: [0-9.]* Hz' | tr -s ' '), peak_refresh_rate=$("$ADB" shell settings get system peak_refresh_rate | tr -d '\r') Hz"
 
 # The run needs the tuner on screen: a locked phone (PIN, pattern) can't be unlocked from here.
 "$ADB" shell input keyevent KEYCODE_WAKEUP

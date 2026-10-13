@@ -78,7 +78,7 @@ fi
 
 # Gradle needs a device; say so plainly instead of failing after the build.
 if ! "$ADB" devices 2>/dev/null | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect the S26; check Auto Blocker is off." >&2
+    echo "No phone connected (adb devices shows none). Connect the Xiaomi 12X and accept the USB-debugging prompt." >&2
     exit 3
 fi
 
@@ -121,6 +121,18 @@ print(f"{tests} tests, {fails} failed, {secs:.0f}s on the phone")
 print('\n'.join(failed))
 EOF
 }
+
+# MIUI (the Xiaomi test phone) refuses to let a test open the app's screen ("MIUILOG- Permission
+# Denied Activity", "Abort background activity starts") unless the package has Xiaomi's own
+# "start in background" app-op, MIUIOP 10021. Every install resets it, and Gradle installs right
+# before the tests start (~2 s), so a loop on the phone keeps setting it during the whole run.
+# Needs "USB debugging (Security settings)" on (see CLAUDE.md).
+miui_guard=""
+if [ -n "$("$ADB" shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" ]; then
+    "$ADB" shell 'while true; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done' > /dev/null 2>&1 &
+    miui_guard=$!
+    trap '[ -n "$miui_guard" ] && kill $miui_guard 2>/dev/null' EXIT
+fi
 
 status=0
 for module in "${modules[@]}"; do

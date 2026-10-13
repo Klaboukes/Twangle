@@ -1,6 +1,6 @@
 ---
 name: ui-test
-description: Run Twangle's on-device UI tests (connectedDebugAndroidTest) on the Galaxy S26, scoped to what changed, with tight timeouts and a short summary. Use whenever UI or instrumented tests need to run, while iterating on a UI change, before landing a change the user can see or hear, or when the user says "run the UI tests", "/ui-test", or "/ui-test <filter>".
+description: Run Twangle's on-device UI tests (connectedDebugAndroidTest) on the test phone (Xiaomi 12X), scoped to what changed, with tight timeouts and a short summary. Use whenever UI or instrumented tests need to run, while iterating on a UI change, before landing a change the user can see or hear, or when the user says "run the UI tests", "/ui-test", or "/ui-test <filter>".
 argument-hint: "[optional: test-name regex, a :module, or --all]"
 ---
 
@@ -33,7 +33,16 @@ Always go through `scripts/ui-tests.sh`. It works out which modules a change tou
   - docs, `.github`, `.claude`, `scripts`, JVM unit tests → nothing (it says so and exits 0)
 - After the full run, a fix doesn't need another full run. Re-run the tests that failed plus the tests for the area the fix touched (`-f`). Run the affected modules in full again only if the fix changed shared layout code (`TunerContent`, `GuitarControls`, `ModeSlot`, the theme).
 
-## Measured on the S26 (October 2026)
+## Measured on the Xiaomi 12X (13 October 2026)
+
+| Module | Tests | Wall time (incl. build + install) | On the phone |
+|---|---|---|---|
+| `:feature:tuner` | 248 | — (run cut short on the laptop side) | ≈ 540 s |
+| `:feature:settings` | 67 | 130 s | 70 s |
+| `:core:audio` | 5 | 17 s | 2 s |
+| `:app` | 1 | 43 s | 8 s |
+
+## Measured on the earlier test phone, the S26 (October 2026)
 
 | Module | Tests | Wall time (incl. build + install) | On the phone |
 |---|---|---|---|
@@ -55,9 +64,12 @@ Every module call costs about 12–28 s of Gradle and install overhead, even for
 - Output is one line per module: `:feature:tuner 48s  21 tests, 0 failed, 32s on the phone`, followed by `FAIL Class#method: message` lines. Exit code 0 means all passed, 1 a failure or timeout, 3 no phone.
 - Gradle uninstalls the app after `:app`'s tests; the script then reinstalls the debug build, so the owner's phone always ends with Twangle on it ("Twangle reinstalled on the phone.").
 - The full Gradle log is in `build/ui-tests-<module>.log`. Read it only when a test fails or there are "no results", and grep it rather than reading all of it.
-- Exit code 3 (no phone): ask the owner to connect the S26 and check that Samsung Auto Blocker is off (see CLAUDE.md). Don't land a change the owner can see or hear without a run, unless they say to skip it, and say so in the PR.
+- Exit code 3 (no phone): ask the owner to connect the Xiaomi 12X and accept the USB-debugging prompt (see CLAUDE.md). Don't land a change the owner can see or hear without a run, unless they say to skip it, and say so in the PR.
 
 ## Known traps
+
+- Xiaomi (MIUI) blocks test activities from starting unless the test package has app-op MIUIOP 10021, which every install resets. `scripts/ui-tests.sh` runs a loop on the phone that keeps setting it; never bypass the script. A hang with `MIUILOG- Permission Denied Activity` in logcat means the loop wasn't running.
+- If the laptop side dies mid-run, the tests carry on on the phone. Wait for the test process (`ps -A | grep twangle`) to end before the next run, and read results from logcat (`TestRunner: failed`, `run finished`).
 
 - Keep the phone's screen on during a run. If it turns off (power button), the next test waits for a frame that never comes and fails with "test timed out after 10 seconds" in `waitForNextChoreographerFrame`, and the tests after it fail with "Already interrogating!" or "No compose hierarchies found". Re-run; it isn't a bug in the test.
 - Don't call `performScrollTo` on the string-lock balloon. It lies outside its parent's bounds and Compose's scroll-into-view never returns. Scroll to the picker or the strings instead.

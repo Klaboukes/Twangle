@@ -15,7 +15,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly
 - ☐ Phase 22: native speakers look over the new translations where possible
 - ☐ Phase 12: with a real guitar, check the tips feel right: none while playing normally near the phone, "Play a bit louder" when playing very softly from across the room, "Too loud, move the phone back" when strumming hard right next to it
-- ☐ Phase 11: on the S26, compare the wave breathing in tune with it holding still, using the temporary switch, and pick one; Claude then removes the other and the switch
+- ☐ Phase 11: on the test phone, compare the wave breathing in tune with it holding still, using the temporary switch, and pick one; Claude then removes the other and the switch
 
 ---
 
@@ -67,43 +67,43 @@ Goal: a fresh set of visual styles for the whole app, designed together so every
 - ☐ Style setting moves to the new set: every old saved style opens as its closest new one (JVM tests for every old saved value); the style picker shows the new set with English and Dutch names
 - ☐ Each new style's palette, fonts and background, light and dark, with readable contrast for every text and mark
 - ☐ Each style's own finishing touches for the six meter looks and the wave looks, still in the shared art style from Phase 13
-- ☐ Every screen checked in each new style, light and dark, with TalkBack, in landscape (also compact mode) and at 2× font (UI tests); screenshots of every style for the owner; ARCHITECTURE.md updated; S26 check
+- ☐ Every screen checked in each new style, light and dark, with TalkBack, in landscape (also compact mode) and at 2× font (UI tests); screenshots of every style for the owner; ARCHITECTURE.md updated; phone check
 
 ## Phase 15 — More instruments
 Goal: tune more than a six-string guitar.
 - ☐ `Instrument` model in `:core:dsp` with string counts and preset tunings: 7- and 8-string guitar, 4- and 5-string bass, ukulele (standard and low G), violin, viola, cello, mandolin
-- ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the S26
+- ☐ Low notes: an 8192-sample window when the instrument goes below low E (down to B0 ≈ 30.9 Hz); ±1 cent tests from 30 Hz; CPU per frame measured on the test phone
 - ☐ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings
 - ☐ String row that fits 4 to 8 strings in portrait, landscape and at 2× font
-- ☐ S26 check for each instrument with short test tones
+- ☐ phone check for each instrument with short test tones
 
 ## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
 - ☐ Custom tunings in the tuning menu below the presets, with edit and delete
-- ☐ English and Dutch texts, TalkBack and 2× font for the editor; S26 check
+- ☐ English and Dutch texts, TalkBack and 2× font for the editor; phone check
 
 ## Phase 17 — Reference tone
 Goal: the app can play the target note so players can tune by ear.
 - ☐ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds
 - ☐ Long-press a string (or a play button) to hear it; tap again to stop
 - ☐ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound
-- ☐ Volume follows the phone's media volume; TalkBack labels; S26 check by ear
+- ☐ Volume follows the phone's media volume; TalkBack labels; phone check by ear
 
 ## Phase 18 — Strum all strings
 Goal: strum once and see which strings are out of tune.
 - ☐ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable
 - ☐ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string)
 - ☐ "Strum check" view: every string shows flat, in tune or sharp at once, in each style
-- ☐ S26 check with recorded strums from short test tones; owner check with a real guitar
+- ☐ phone check with recorded strums from short test tones; owner check with a real guitar
 
 ## Phase 19 — Metronome
 Goal: a simple, steady metronome in the same app.
 - ☐ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8
 - ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
 - ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
-- ☐ Timing drift measured over 10 minutes; English and Dutch texts; S26 check
+- ☐ Timing drift measured over 10 minutes; English and Dutch texts; phone check
 
 ## Phase 20 — Wear OS companion and home-screen widget
 Goal: Twangle on the watch and one tap from the home screen.
@@ -116,7 +116,7 @@ Goal: Twangle on the watch and one tap from the home screen.
 Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
 - ☐ Decide with measurements from Phases 15, 18 and 20 whether it is needed; if not, close this phase
 - ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
-- ☐ CPU and battery compared with the Kotlin detector on the S26
+- ☐ CPU and battery compared with the Kotlin detector on the test phone
 
 ## Phase 22 — More languages
 Goal: Twangle speaks the world's major languages before it goes public.
@@ -126,7 +126,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☐ Russian, Turkish and Polish
 - ☐ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL)
 - ☐ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose)
-- ☐ Long words and other scripts fit at 2× font in every style (UI tests); S26 check in a few languages
+- ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.

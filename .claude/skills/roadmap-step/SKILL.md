@@ -18,7 +18,7 @@ Run [ROADMAP.md](../../../ROADMAP.md) work from start to finish: pick an increme
 
 The project owner does not write code. Every message to them must be plain language: what changed for the app and what they need to do (if anything). Keep code details in the PR, not in chat.
 
-Read [CLAUDE.md](../../../CLAUDE.md) first. Its hard rules, environment notes (JAVA_HOME, adb path, Galaxy S26) and Git workflow all apply here.
+Read [CLAUDE.md](../../../CLAUDE.md) first. Its hard rules, environment notes (JAVA_HOME, adb path, the Xiaomi 12X test phone) and Git workflow all apply here.
 
 ## 0. Pre-flight (fix the ground before building on it)
 
@@ -53,7 +53,7 @@ When called with a phase number N:
 3. **Run each increment in its own sub-agent, one after another.** This session (the "orchestrator") only does pre-flight, the phase announcement, the step-2 announcement of each increment, progress notes and the final report. The heavy work (reading code, building, device checks, PR) happens in a fresh sub-agent per increment, so its file dumps and build logs never enter this session and nothing has to be compacted. For each increment:
    - Post the step-2 announcement to the user.
    - Launch one `general-purpose` sub-agent in the **foreground** (`run_in_background: false`; the next increment depends on it). Never run two increments in parallel: they share `main`, the phone and the Gradle daemon.
-   - Use the prompt template below. The sub-agent does steps 3–7 for that one increment: its own branch, local verification (and S26 check when user-facing), ROADMAP tick, squash-merged PR, `main` pulled.
+   - Use the prompt template below. The sub-agent does steps 3–7 for that one increment: its own branch, local verification (and phone check when user-facing), ROADMAP tick, squash-merged PR, `main` pulled.
    - Read its report. If it says **BLOCKED**, ask the user here (sub-agents can't ask the user), then send the answer back to the same agent with `SendMessage`, or handle it in the next launch.
    - Pass the report's carry-over into the next sub-agent's prompt.
 4. **Between increments**, post a one-line progress note (e.g. "3 of 6 done: tunings and string lookup are in — PR link"). No full report and no question to the user until the end, unless something is blocked.
@@ -64,7 +64,7 @@ When called with a phase number N:
    Increment: phase <N>, "<roadmap item text>" (<plain-language goal, as announced to the owner>).
    First read CLAUDE.md and .claude/skills/roadmap-step/SKILL.md, then follow the skill's steps 3–7
    for this increment only: branch phase-<N>/<topic> from freshly pulled main, build, verify locally
-   (./gradlew test lint assembleDebug; on-device check on the S26 if the owner can see or hear it),
+   (./gradlew test lint assembleDebug; on-device check on the test phone if the owner can see or hear it),
    update ARCHITECTURE.md if the design changes, tick the item in ROADMAP.md, push, open the PR, squash-merge,
    switch to main and pull. Skip the skill's announcement and report steps; I talk to the owner.
    Carry-over from earlier increments: <facts not in the repo, or "none">.
@@ -117,13 +117,13 @@ All three must pass with no new lint warnings. Fix and re-run until they do.
 **On-device check** for any change the user can see or hear (UI, audio, permissions, app startup):
 ```bash
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
-"$ADB" devices                                   # expect the SM-S942B as "device"
+"$ADB" devices                                   # expect f813c98c (the Xiaomi 12X) as "device"
 ./gradlew installDebug
 "$ADB" shell am start -W -n io.github.klaboukes.twangle/io.github.klaboukes.twangle.app.MainActivity
 "$ADB" exec-out screencap -p > <scratchpad>/shot.png   # then look at it
 "$ADB" logcat -d -b crash                         # must be empty for our app
 ```
-- If the phone isn't listed, ask the user to connect it (and check Samsung **Auto Blocker** is off, see CLAUDE.md). Don't land device-facing changes without this check, unless the user explicitly says to skip it. Note any skipped check in the PR.
+- If the phone isn't listed, ask the user to connect it (and accept the USB-debugging prompt on it, see CLAUDE.md). Don't land device-facing changes without this check, unless the user explicitly says to skip it. Note any skipped check in the PR.
 - Pure `:core:dsp` work needs no device check.
 
 ## 6. Update the roadmap
@@ -150,7 +150,7 @@ Merging right after the PR opens is intentional (the user chose "merge after loc
 
 > **Done: <title>** — [PR link]
 > - What the app can do now that it couldn't before (or "groundwork, no visible change").
-> - How it was checked (e.g. "42 automated tests pass" / "runs on your S26").
+> - How it was checked (e.g. "42 automated tests pass" / "runs on your Xiaomi").
 > - Anything the user should try or do.
 >
 > **Next up:** one sentence naming the next roadmap item.
