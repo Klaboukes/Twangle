@@ -3,18 +3,14 @@ package io.github.klaboukes.twangle.core.designsystem.meter
 import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -22,13 +18,13 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
@@ -39,6 +35,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.FontFamily
+import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -48,11 +45,16 @@ import kotlin.math.min
 
 /*
  * The shared art of the meter looks, "as if by the same artist" (ARCHITECTURE.md, Meter art
- * language; the approved mock-up page docs/design/meter-looks-preview.html is the reference, and the
- * names here match its helpers). Every look is built from these pieces: the same plate (PlateArt),
- * the same recessed glass over its window (GlassArt), the same marks and numbers (ScaleMarks), the
- * same soft marker shadow (markerShadowPaint) and the same glow (GlowArt), in the same colour roles
- * (MeterRoles). All lengths are in u = box width / 340 (about 1 dp on a phone).
+ * language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
+ * docs/design/theme-styles-preview.html are the reference, and the names here match their helpers).
+ * The meter has no plate or frame: it sits straight on the screen's background, with a calm field
+ * (FieldArt) under its scale. Every look is built from these pieces: the same recessed glass over a
+ * window that is an object lying on the screen (GlassArt, with its ContactShadowArt), the same marks
+ * and numbers (ScaleMarks), the same soft marker shadow (markerShadowPaint) and the same glow
+ * (GlowArt), in the same colour roles (MeterRoles). All lengths are in u = box width / 340 (about
+ * 1 dp on a phone). The field and the glow reach past the box and fade out there: the art is never
+ * clipped to its box, so whatever holds the meter leaves room around it (the tuner draws it behind
+ * its other controls).
  *
  * Each piece is made once, in a drawWithCache block (so again only when the size or the colours
  * change), and drawing it allocates nothing. Shadows use the platform's shadow layer and blur, which
@@ -64,7 +66,7 @@ import kotlin.math.min
 internal data class MeterRoles(
     /** The stage behind the meter. */
     val background: Color,
-    /** The plate the meter sits on. */
+    /** The surface colour: what the bubble and the studio meter's pivot cover are made of. */
     val plate: Color,
     /** Lines, numbers, needles. */
     val ink: Color,
@@ -84,7 +86,7 @@ internal data class MeterRoles(
     /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize], [lampHaloAlpha]). */
     val effect: InTuneEffect = InTuneEffect.DEFAULT,
 ) {
-    /** The glass window's face: the plate sunk toward the stage. */
+    /** A glass window's face: the surface sunk toward the stage. */
     val face: Color = if (dark) mix(background, Color.Black, 0.3f) else mix(plate, background, 0.7f)
 
     /** The centre mark's colour, [tuned] (0..1) of the way to "in tune". */
@@ -203,38 +205,57 @@ internal fun BoxScope.StaticArt(build: CacheDrawScope.() -> (DrawScope.() -> Uni
 }
 
 /**
- * The plate every meter sits on: inset 6u with 14u corners, lit from above (the top 50 % lighter in
- * light, 5 % in dark), a 1u hairline in ink at 10 %, a highlight along the top edge and a soft drop
- * shadow (14u blur, 5u down).
+ * The calm field under a look's scale, in place of a plate: a soft oval wash of the background
+ * colour around ([x], [y]), [rx] wide and [ry] high each way, at 75 % in its middle, 56 % at 62 % of
+ * the way out and gone at its edge, with no edge line, so a style's background goes quiet where the
+ * numbers are. It reaches past the meter's box and fades out there.
  */
-internal class PlateArt(size: Size, private val u: Float, roles: MeterRoles) {
-    private val rect = plateRect(size, u)
-    private val corner = CornerRadius(PLATE_CORNER_UNITS * u)
-    private val shadow = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
-        color = roles.plate.toArgb()
-        setShadowLayer(blurRadius(14f * u), 0f, 5f * u, Color.Black.copy(alpha = if (roles.dark) 0.5f else 0.16f).toArgb())
-    }
-    private val lit = Brush.verticalGradient(
-        0f to mix(roles.plate, Color.White, if (roles.dark) 0.05f else 0.5f),
-        0.5f to roles.plate,
-        1f to mix(roles.plate, Color.Black, if (roles.dark) 0.15f else 0.03f),
-        startY = rect.top,
-        endY = rect.bottom,
+internal class FieldArt(private val x: Float, private val y: Float, private val rx: Float, ry: Float, roles: MeterRoles) {
+    private val squash = if (rx > 0f) ry / rx else 1f
+    private val centre = Offset(x, y)
+    private val brush = Brush.radialGradient(
+        0f to roles.background.copy(alpha = FIELD_ALPHA),
+        0.62f to roles.background.copy(alpha = FIELD_ALPHA * 0.75f),
+        1f to roles.background.copy(alpha = 0f),
+        center = centre,
+        radius = rx.coerceAtLeast(0.01f),
     )
-    private val hairline = roles.ink.copy(alpha = 0.1f)
-    private val highlight = Color.White.copy(alpha = if (roles.dark) 0.07f else 0.7f)
 
     fun draw(scope: DrawScope) = with(scope) {
-        drawIntoCanvas { it.nativeCanvas.drawRoundRect(rect.left, rect.top, rect.right, rect.bottom, corner.x, corner.y, shadow) }
-        drawRoundRect(lit, rect.topLeft, rect.size, corner)
-        drawRoundRect(hairline, rect.topLeft, rect.size, corner, style = Stroke(u))
-        drawLine(
-            highlight,
-            Offset(rect.left + corner.x, rect.top + 1.2f * u),
-            Offset(rect.right - corner.x, rect.top + 1.2f * u),
-            strokeWidth = u,
-            cap = StrokeCap.Butt,
-        )
+        scale(1f, squash, centre) { drawCircle(brush, rx, centre) }
+    }
+}
+
+/** The calm field's opacity in its middle. */
+private const val FIELD_ALPHA = 0.75f
+
+/**
+ * The meter's calm field, the same under every look (the mock-up's dial field): 190u wide and 150u
+ * high each way, round a point 47u above the box's bottom middle (30u above the dial's pivot). Being
+ * the same, it changes nothing round the box when another look is picked.
+ */
+internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
+    val u = meterUnit(size.width)
+    return FieldArt(size.width / 2f, size.height - FIELD_CENTRE_UNITS * u, 190f * u, 150f * u, roles)
+}
+
+private const val FIELD_CENTRE_UNITS = 47f
+
+/**
+ * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube,
+ * the rolling scale's drum window, the studio meter's face): [outline] filled in [fill] with a shadow
+ * 10u blurred and 4u down (black at 50 % in dark, 16 % in light). Drawn first; the glass covers the
+ * fill.
+ */
+internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill: Color = roles.face) {
+    private val path = outline.asAndroidPath()
+    private val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = fill.toArgb()
+        setShadowLayer(blurRadius(10f * u), 0f, 4f * u, Color.Black.copy(alpha = if (roles.dark) 0.5f else 0.16f).toArgb())
+    }
+
+    fun draw(scope: DrawScope) = with(scope) {
+        drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
     }
 }
 
@@ -357,7 +378,7 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
     }
 
     private fun measureNumbers(measurer: TextMeasurer, roles: MeterRoles, density: Density, size: Float): List<TextLayoutResult> {
-        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { size.toSp() })
+        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { size.toSp() }, fontFeatureSettings = LINING_FIGURES)
         return (1..5).map { measurer.measure((it * 10).toString(), style) }
     }
 
@@ -443,23 +464,6 @@ internal class NeedleArt(private val pivotX: Float, private val pivotY: Float, l
     }
 }
 
-/** The plate's rectangle in a box of [size]: 6u in from every side. */
-private fun plateRect(size: Size, u: Float) =
-    Rect(PLATE_INSET_UNITS * u, PLATE_INSET_UNITS * u, size.width - PLATE_INSET_UNITS * u, size.height - PLATE_INSET_UNITS * u)
-
-private const val PLATE_INSET_UNITS = 6f
-private const val PLATE_CORNER_UNITS = 14f
-
-/**
- * The plate's outline, for clipping the in-tune glows to it: a glow never tints the stage in the
- * box's margin around the plate, so its edge never shows as a line at the top of the box. Made only
- * when the box's size changes.
- */
-internal val MeterPlateShape: Shape = GenericShape { size, _ ->
-    val u = meterUnit(size.width)
-    addRoundRect(RoundRect(plateRect(size, u), CornerRadius(PLATE_CORNER_UNITS * u)))
-}
-
 /**
  * A soft radial glow of [color] and [radius]: full at its middle, 40 % by 45 % of the way out, gone
  * at the edge. Made once and moved by translating, so drawing it anywhere allocates nothing.
@@ -488,10 +492,11 @@ internal class GlowArt(private val radius: Float, color: Color) {
 /**
  * The in-tune moment's glow, the same in every look (the mock-up's `tuneGlow`): a [GlowArt] of
  * [radiusUnits] (times [MeterRoles.tuneGlowSize], larger in Bold) in the style's "in tune" colour
- * around [centre], at [MeterRoles.tuneGlowAlpha] when
- * fully lit, optionally clipped to [clip] (a look's window). It is drawn once, in a layer of its own
- * under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move], if given,
- * carries it with a moving marker), so easing it in and out redraws nothing and allocates nothing.
+ * around [centre], at [MeterRoles.tuneGlowAlpha] when fully lit. It is never clipped: it fades out
+ * past the meter's box (the tuner leaves room around the meter for it). It is drawn once, in a layer
+ * of its own under the look's marker; [MeterReading.glow] only sets that layer's opacity (and [move],
+ * if given, carries it with a moving marker), so easing it in and out redraws nothing and allocates
+ * nothing.
  */
 @Composable
 internal fun BoxScope.TuneGlow(
@@ -499,28 +504,19 @@ internal fun BoxScope.TuneGlow(
     reading: MeterReading,
     radiusUnits: Float,
     centre: (Size) -> Offset,
-    clip: ((Size) -> Path)? = null,
     move: (GraphicsLayerScope.() -> Unit)? = null,
 ) {
     Spacer(
-        // Clipped to the plate outside the moving layer, so the clip stays put while the glow moves.
-        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {
+        modifier = Modifier.matchParentSize().graphicsLayer {
             alpha = reading.glow.coerceIn(0f, 1f)
-            // One soft circle: fading it needs no offscreen buffer.
+            // One soft circle: fading it needs no offscreen buffer, so it may reach past the layer's bounds.
             compositingStrategy = CompositingStrategy.ModulateAlpha
             move?.invoke(this)
         }.drawWithCache {
             val glow = GlowArt(radiusUnits * roles.tuneGlowSize * meterUnit(size.width), roles.inTune)
             val at = centre(size)
-            val window = clip?.invoke(size)
             val peak = roles.tuneGlowAlpha
-            onDrawBehind {
-                if (window != null) {
-                    clipPath(window) { glow.draw(this, at.x, at.y, peak) }
-                } else {
-                    glow.draw(this, at.x, at.y, peak)
-                }
-            }
+            onDrawBehind { glow.draw(this, at.x, at.y, peak) }
         },
     )
 }

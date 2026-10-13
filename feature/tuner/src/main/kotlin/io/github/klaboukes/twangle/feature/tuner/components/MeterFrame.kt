@@ -4,10 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.preferredFrameRate
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -118,7 +117,7 @@ fun MeterFrame(
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO).preferredFrameRate(METER_FRAME_RATE)) {
             MeterLookArt(look, reading, effect)
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        SignsUnderScaleEnds {
             Text(
                 text = musicText(stringResource(R.string.tuner_flat_symbol)),
                 style = MaterialTheme.typography.titleLarge,
@@ -132,6 +131,30 @@ fun MeterFrame(
         }
     }
 }
+
+/**
+ * The ♭ and ♯ under the box, each centred under an end of the scale ([SIGN_INSET_UNITS] in from the
+ * box's sides, where the open dial's arc ends), so they belong to the meter rather than to the
+ * screen's edges; never past the box's sides.
+ */
+@Composable
+private fun SignsUnderScaleEnds(content: @Composable () -> Unit) {
+    Layout(content, Modifier.fillMaxWidth()) { measurables, constraints ->
+        val (flat, sharp) = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+        val width = constraints.maxWidth
+        val inset = width * SIGN_INSET_UNITS / METER_UNITS
+        val flatX = (inset - flat.width / 2f).toInt().coerceIn(0, (width - flat.width).coerceAtLeast(0))
+        val sharpX = (width - inset - sharp.width / 2f).toInt().coerceIn(0, (width - sharp.width).coerceAtLeast(0))
+        layout(width, maxOf(flat.height, sharp.height)) {
+            flat.placeRelative(flatX, 0)
+            sharp.placeRelative(sharpX, 0)
+        }
+    }
+}
+
+/** The box is this many units wide; the signs sit under the scale's ends, this many units in. */
+private const val METER_UNITS = 340f
+private const val SIGN_INSET_UNITS = 24f
 
 /**
  * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount, the

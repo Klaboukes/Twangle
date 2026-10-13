@@ -70,14 +70,25 @@ internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
 /** The face for number readouts in [style] (see [StyleFaces.numbers]). */
 fun numberFontFor(style: VisualStyle): FontFamily = facesFor(style).numbers
 
-/** Material 3's type scale set in the faces of [style]. */
+/**
+ * The OpenType feature for lining figures: digits standing full height on the baseline, so a 0 never
+ * looks like an o (Playfair Display's own figures are old-style). Every text style asks for it; faces
+ * without the feature already have lining figures and ignore it.
+ */
+const val LINING_FIGURES = "lnum"
+
+/** Material 3's type scale set in the faces of [style], every style with [LINING_FIGURES]. */
 fun typographyFor(style: VisualStyle): Typography {
     val faces = facesFor(style)
     val base = Typography()
-    fun TextStyle.display() = copy(fontFamily = faces.display, fontWeight = faces.displayWeight ?: fontWeight)
-    fun TextStyle.title() = copy(fontFamily = faces.title, letterSpacing = if (faces.titleSpacing != TextUnit.Unspecified) faces.titleSpacing else letterSpacing)
-    fun TextStyle.body() = copy(fontFamily = faces.body)
-    fun TextStyle.label() = copy(fontFamily = faces.label)
+    fun TextStyle.display() = copy(fontFamily = faces.display, fontWeight = faces.displayWeight ?: fontWeight, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.title() = copy(
+        fontFamily = faces.title,
+        letterSpacing = if (faces.titleSpacing != TextUnit.Unspecified) faces.titleSpacing else letterSpacing,
+        fontFeatureSettings = LINING_FIGURES,
+    )
+    fun TextStyle.body() = copy(fontFamily = faces.body, fontFeatureSettings = LINING_FIGURES)
+    fun TextStyle.label() = copy(fontFamily = faces.label, fontFeatureSettings = LINING_FIGURES)
     return base.copy(
         displayLarge = base.displayLarge.display(),
         displayMedium = base.displayMedium.display(),

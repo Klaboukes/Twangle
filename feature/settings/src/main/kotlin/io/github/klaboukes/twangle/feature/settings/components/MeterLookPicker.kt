@@ -10,6 +10,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,7 +56,8 @@ fun MeterLookPicker(
         demo = demo,
         modifier = modifier,
     ) { look, _ ->
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO)) {
+        // The art's calm field and glow reach past its box; a card keeps them off its name.
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(METER_ASPECT_RATIO).clipToBounds()) {
             MeterLookArt(look, reading, effect)
         }
     }

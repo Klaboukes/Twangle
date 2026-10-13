@@ -4,16 +4,13 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -23,8 +20,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.PI
 import kotlin.math.cos
@@ -34,62 +29,45 @@ import kotlin.random.Random
 
 /**
  * The style's background, filling the whole window behind the screens: a cave wall, a concert
- * hall, 70s walnut, a calm wash, a neon grid or a starfield. Frames and corner marks keep inside
- * [frameInsets] so the status and navigation bars don't cut them.
+ * hall, 70s walnut, a calm wash, a neon grid or a starfield. Nothing is fixed to the screen's
+ * edges: no frame, corner marks or edge stripes (Phase 14 art language).
  *
  * It is drawn once into its own layer, so readings that redraw the tuner never redraw it. A change of
  * style cross-fades to the new background.
  */
 @Composable
-fun StyleBackdrop(modifier: Modifier = Modifier, frameInsets: WindowInsets = WindowInsets.safeDrawing) {
+fun StyleBackdrop(modifier: Modifier = Modifier) {
     val tokens = MaterialTheme.styleTokens
-    val density = LocalDensity.current
-    val direction = LocalLayoutDirection.current
-    val inset = FrameInset(
-        left = frameInsets.getLeft(density, direction).toFloat(),
-        top = frameInsets.getTop(density).toFloat(),
-        right = frameInsets.getRight(density, direction).toFloat(),
-        bottom = frameInsets.getBottom(density).toFloat(),
-    )
     Crossfade(targetState = tokens, animationSpec = tween(COLOR_FADE_MS), modifier = modifier, label = "backdrop") { shown ->
         Spacer(
             Modifier
                 .fillMaxSize()
                 .graphicsLayer()
-                .drawBehind { drawBackdrop(shown, inset) },
+                .drawBehind { drawBackdrop(shown) },
         )
     }
 }
 
 /**
  * The same background in a small preview, e.g. a style card, with its decoration shrunk to [scale].
- * Frames sit at the preview's edges.
  */
 @Composable
 fun StyleBackdropPreview(modifier: Modifier = Modifier, scale: Float = 0.6f) {
     val tokens = MaterialTheme.styleTokens
-    Box(modifier.graphicsLayer().drawBehind { drawBackdrop(tokens, FrameInset.None, scale) })
-}
-
-/** Space the bars take at each edge, in pixels. */
-internal data class FrameInset(val left: Float, val top: Float, val right: Float, val bottom: Float) {
-    companion object {
-        val None = FrameInset(0f, 0f, 0f, 0f)
-    }
+    Box(modifier.graphicsLayer().drawBehind { drawBackdrop(tokens, scale) })
 }
 
 /** Draws the whole background of [tokens]' style. [scale] shrinks the decoration for small previews. */
-internal fun DrawScope.drawBackdrop(tokens: StyleTokens, inset: FrameInset, scale: Float = 1f) {
+internal fun DrawScope.drawBackdrop(tokens: StyleTokens, scale: Float = 1f) {
     val c = tokens.scheme
     drawRect(c.background)
-    val frame = Rect(inset.left, inset.top, size.width - inset.right, size.height - inset.bottom)
     val unit = density * scale
     when (tokens.style) {
         VisualStyle.ANCIENT -> cave(tokens, unit)
-        VisualStyle.CLASSIC -> concertHall(tokens, frame, unit)
-        VisualStyle.RETRO -> hiFi(tokens, frame, unit)
+        VisualStyle.CLASSIC -> concertHall(tokens, unit)
+        VisualStyle.RETRO -> hiFi(tokens, unit)
         VisualStyle.CONTEMPORARY -> calmWash(tokens)
-        VisualStyle.FUTURISTIC -> hud(tokens, frame, unit)
+        VisualStyle.FUTURISTIC -> hud(tokens, unit)
         VisualStyle.SPACE_AGE -> if (tokens.dark) deepSpace(tokens, unit) else jetAge(tokens, unit)
     }
 }
@@ -166,21 +144,9 @@ private fun DrawScope.handStencil(centre: Offset, size: Float, degrees: Float, c
 private val FINGER_X = floatArrayOf(-0.235f, -0.08f, 0.075f, 0.225f)
 private val FINGER_LENGTH = floatArrayOf(0.40f, 0.50f, 0.48f, 0.38f)
 
-/** A diamond of half-height [r] around [centre]. */
-internal fun DrawScope.lozenge(centre: Offset, r: Float, color: Color) {
-    val path = Path().apply {
-        moveTo(centre.x, centre.y - r)
-        lineTo(centre.x + r * 0.7f, centre.y)
-        lineTo(centre.x, centre.y + r)
-        lineTo(centre.x - r * 0.7f, centre.y)
-        close()
-    }
-    drawPath(path, color)
-}
-
 // ---- Classic -----------------------------------------------------------------------------------
 
-private fun DrawScope.concertHall(tokens: StyleTokens, frame: Rect, unit: Float) {
+private fun DrawScope.concertHall(tokens: StyleTokens, unit: Float) {
     val c = tokens.scheme
     val w = size.width
     val h = size.height
@@ -206,20 +172,11 @@ private fun DrawScope.concertHall(tokens: StyleTokens, frame: Rect, unit: Float)
         x += step * 1.4f
     }
     vignette(if (tokens.dark) Color.Black.copy(alpha = 0.5f) else Color(0xFF3A2A10).copy(alpha = 0.10f))
-    // A brass hairline frame with a small diamond at the top. It hugs the screen's edge (inner line
-    // 8 dp in), because the tuner's column nearly fills a phone's height in this face:
-    // further in, the line ran through the mode switch and the string row.
-    val brass = tokens.dial.rim
-    val outer = frame.deflate(5f * unit)
-    drawRoundRect(brass.copy(alpha = 0.7f), outer.topLeft, outer.size, CornerRadius(5f * unit), style = Stroke(1.2f * unit))
-    val inner = outer.deflate(3f * unit)
-    drawRoundRect(brass.copy(alpha = 0.35f), inner.topLeft, inner.size, CornerRadius(3f * unit), style = Stroke(0.6f * unit))
-    lozenge(Offset(outer.center.x, outer.top), 4f * unit, brass)
 }
 
 // ---- Retro -------------------------------------------------------------------------------------
 
-private fun DrawScope.hiFi(tokens: StyleTokens, frame: Rect, unit: Float) {
+private fun DrawScope.hiFi(tokens: StyleTokens, unit: Float) {
     val c = tokens.scheme
     val w = size.width
     val h = size.height
@@ -258,16 +215,7 @@ private fun DrawScope.hiFi(tokens: StyleTokens, frame: Rect, unit: Float) {
         drawPath(ray, c.secondary.copy(alpha = if (tokens.dark) 0.035f else 0.06f))
     }
     vignette(if (tokens.dark) Color.Black.copy(alpha = 0.5f) else Color(0xFF7A3A10).copy(alpha = 0.12f))
-    // Mustard, orange, rust and brown stripes along the bottom edge.
-    val stripe = 4.5f * unit
-    for (i in RETRO_STRIPES.indices) {
-        val top = frame.bottom - (RETRO_STRIPES.size - i) * stripe
-        drawRect(RETRO_STRIPES[i], Offset(0f, top), Size(w, stripe))
-    }
 }
-
-/** The 70s stripe colours, top to bottom. */
-internal val RETRO_STRIPES = listOf(Color(0xFFE8A82A), Color(0xFFD9641E), Color(0xFFB03A1A), Color(0xFF5A2A14))
 
 // ---- Contemporary ------------------------------------------------------------------------------
 
@@ -281,7 +229,7 @@ private fun DrawScope.calmWash(tokens: StyleTokens) {
 
 // ---- Futuristic --------------------------------------------------------------------------------
 
-private fun DrawScope.hud(tokens: StyleTokens, frame: Rect, unit: Float) {
+private fun DrawScope.hud(tokens: StyleTokens, unit: Float) {
     val c = tokens.scheme
     val w = size.width
     val h = size.height
@@ -313,20 +261,6 @@ private fun DrawScope.hud(tokens: StyleTokens, frame: Rect, unit: Float) {
             y += 3f * unit
         }
     }
-    // Corner brackets of the heads-up display. They stay within 16 dp of the edges, the margin the
-    // screens keep free of text (bigger, they covered settings rows scrolling past the corners).
-    val box = frame.deflate(4f * unit)
-    val arm = 11f * unit
-    val bracket = c.primary.copy(alpha = 0.6f)
-    val stroke = 1.6f * unit
-    fun corner(p: Offset, dx: Float, dy: Float) {
-        drawLine(bracket, p, Offset(p.x + dx * arm, p.y), stroke, StrokeCap.Square)
-        drawLine(bracket, p, Offset(p.x, p.y + dy * arm), stroke, StrokeCap.Square)
-    }
-    corner(box.topLeft, 1f, 1f)
-    corner(box.topRight, -1f, 1f)
-    corner(box.bottomLeft, 1f, -1f)
-    corner(box.bottomRight, -1f, -1f)
 }
 
 // ---- Space Age ---------------------------------------------------------------------------------

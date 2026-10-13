@@ -135,8 +135,9 @@ private const val MAX_STRETCH = 0.25f
 private const val STRETCH_PER_CENT_PER_SECOND = 0.0025f
 
 /**
- * Spirit level: the plate, the tube under recessed glass (its face tinted 13 % towards the accent in
- * light, 20 % in dark) with the scale's marks under it, numbers below; the in-tune glow around the
+ * Spirit level: the calm field, the tube lying on the screen with a soft contact shadow, under
+ * recessed glass (its face tinted 13 % towards the accent in light, 20 % in dark) with the scale's
+ * marks under it, numbers below; the in-tune glow around the
  * bubble; the two marks at ±12 cents
  * (fading to "in tune"); the bubble; and over it a highlight streak inside the tube and the glass's
  * sheen and rim. The bubble is drawn once, at rest, in a layer of its own: a reading only moves,
@@ -150,7 +151,8 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
     StaticArt {
         val level = LevelGeometry(size.width, size.height)
         val u = level.u
-        val plate = PlateArt(size, u, roles)
+        val field = meterField(size, roles)
+        val contact = ContactShadowArt(level.tube(), u, roles)
         val glass = levelGlass(level, size, roles)
         val marks = ScaleMarks(u, roles, measurer, this) { cents, out ->
             val angle = level.angle(cents)
@@ -160,7 +162,8 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
             out[3] = cos(angle)
         }
         val draw: DrawScope.() -> Unit = {
-            plate.draw(this)
+            field.draw(this)
+            contact.draw(this)
             glass.drawUnder(this)
             marks.draw(this)
         }
@@ -254,7 +257,7 @@ private fun levelGlass(level: LevelGeometry, size: Size, roles: MeterRoles): Gla
 )
 
 /**
- * The bubble at rest, in tune's place: a pale oval (the face lightened in dark, the plate in light, a
+ * The bubble at rest, in tune's place: a pale oval (the face lightened in dark, the surface in light, a
  * little of the way to "in tune" as the note is reached) with a 1u ink rim at 30 %, and a soft white
  * highlight towards its upper left.
  */

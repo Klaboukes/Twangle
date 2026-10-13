@@ -12,10 +12,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
@@ -39,11 +37,13 @@ import kotlin.math.sin
 /*
  * The meter looks. The tuner draws them inside its MeterFrame (`:feature:tuner`) and the meter
  * picker in settings draws them in its cards, so a look's art is written once, here, and shows in
- * both. A look fills its 2:1 box (METER_ASPECT_RATIO), clipped to it, and reads the MeterReading it
- * is handed in its layer and draw phases only. Every look is built from the shared art in
- * MeterArt.kt, in layers: the static art under the marker (plate, glass, scale), the centre mark
- * (redrawn only while it fades to "in tune"), the moving marker, and the glass's sheen and rim over
- * it. A part that only turns goes in its own graphicsLayer (like the classic needle); a part that
+ * both. A look fills its 2:1 box (METER_ASPECT_RATIO) straight on the screen's background, without a
+ * plate or frame; its calm field and in-tune glow reach past the box and fade out (nothing clips
+ * them; a card that must stay tidy clips its own preview). It reads the MeterReading it is handed in
+ * its layer and draw phases only. Every look is built from the shared art in MeterArt.kt, in layers:
+ * the static art under the marker (field, a window's contact shadow and glass, scale), the centre
+ * mark (redrawn only while it fades to "in tune"), the moving marker, and a window's sheen and rim
+ * over it. A part that only turns goes in its own graphicsLayer (like the classic needle); a part that
  * changes shape is redrawn from the reading in its own layer, with paths, brushes and paints made
  * once in drawWithCache, not per frame. Every moving layer calls MeterReading.applyMarkerLook for
  * the shared resting and reception fade.
@@ -56,7 +56,7 @@ import kotlin.math.sin
  */
 @Composable
 fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTuneEffect = InTuneEffect.DEFAULT) {
-    Box(modifier = Modifier.matchParentSize().clipToBounds()) {
+    Box(modifier = Modifier.matchParentSize()) {
         when (look) {
             MeterLook.CLASSIC -> ClassicMeter(reading, effect)
             MeterLook.LIGHT_ARC -> LightArcMeter(reading, effect)
@@ -71,49 +71,41 @@ fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTune
 // ---- The dial shared by Classic, Light arc and Comet ---------------------------------------------
 
 /**
- * The dial's geometry in a box of [size]: a half circle of radius [r] (124u) around a pivot 24u
- * above the bottom centre, its glass face [faceRadius] (8u more) across.
+ * The dial's geometry in a box of [size]: a half circle of radius [r] (146u) around a pivot 17u
+ * above the bottom centre. Open faced, with no plate around it, the dial fills more of its box than
+ * the old plated one (124u).
  */
 internal class DialGeometry(size: Size) {
     val u = meterUnit(size.width)
     val cx = size.width / 2f
     val cy = size.height - DIAL_PIVOT_UNITS * u
     val r = DIAL_RADIUS_UNITS * u
-    val faceRadius = r + 8f * u
 
     /** The x of the point [distance] from the pivot towards [cents]. */
     fun x(distance: Float, cents: Float): Float = cx + distance * sin(meterAngle(cents))
 
     /** The y of the point [distance] from the pivot towards [cents]. */
     fun y(distance: Float, cents: Float): Float = cy - distance * cos(meterAngle(cents))
-
-    /** The glass face: the half disc over the pivot. */
-    fun face(): Path = Path().apply {
-        moveTo(cx - faceRadius, cy)
-        arcTo(Rect(cx - faceRadius, cy - faceRadius, cx + faceRadius, cy + faceRadius), 180f, 180f, false)
-        close()
-    }
 }
 
 /** The dial's arc has a radius of this many units. */
-internal const val DIAL_RADIUS_UNITS = 124f
+internal const val DIAL_RADIUS_UNITS = 146f
 
 /** The dial's pivot sits this many units above the bottom of the box. */
-private const val DIAL_PIVOT_UNITS = 24f
+private const val DIAL_PIVOT_UNITS = 17f
 
 /** How far down a box of [size] the dial's pivot is, as a fraction of its height (for a layer's transformOrigin). */
 internal fun dialPivotFraction(size: Size): Float =
     if (size.height > 0f) (size.height - DIAL_PIVOT_UNITS * meterUnit(size.width)) / size.height else 1f
 
 /**
- * The dial under the marker: the plate, the recessed glass face, the scale's arc (1.5u, in the
- * track colour) and the marks along its inside, numbers inwards.
+ * The dial under the marker, open faced (no plate, no glass): the calm field ([meterField]), the scale's arc (1.5u, in the track colour) and the marks along its inside, numbers
+ * inwards.
  */
 internal class DialUnderArt(size: Size, roles: MeterRoles, measurer: TextMeasurer, density: Density) {
     private val dial = DialGeometry(size)
     private val u = dial.u
-    private val plate = PlateArt(size, u, roles)
-    private val glass = GlassArt(dial.face(), size, dial.cy - dial.faceRadius, dial.cy, u, roles)
+    private val field = meterField(size, roles)
     private val track = roles.track
     private val trackStroke = Stroke(1.5f * u)
     private val marks = ScaleMarks(u, roles, measurer, density) { cents, out ->
@@ -125,8 +117,7 @@ internal class DialUnderArt(size: Size, roles: MeterRoles, measurer: TextMeasure
     }
 
     fun draw(scope: DrawScope) = with(scope) {
-        plate.draw(this)
-        glass.drawUnder(this)
+        field.draw(this)
         drawArc(
             track, startAngle = 180f, sweepAngle = 180f, useCenter = false,
             topLeft = Offset(dial.cx - dial.r, dial.cy - dial.r), size = Size(dial.r * 2f, dial.r * 2f),
@@ -134,12 +125,6 @@ internal class DialUnderArt(size: Size, roles: MeterRoles, measurer: TextMeasure
         )
         marks.draw(this)
     }
-}
-
-/** The dial's glass over the marker: its sheen and rim. */
-internal fun dialGlass(size: Size, roles: MeterRoles): GlassArt {
-    val dial = DialGeometry(size)
-    return GlassArt(dial.face(), size, dial.cy - dial.faceRadius, dial.cy, dial.u, roles)
 }
 
 /** The dial under the marker, drawn once per size and colours. */
@@ -152,16 +137,6 @@ internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra
             dial.draw(this)
             more?.invoke(this)
         }
-        draw
-    }
-}
-
-/** The dial's glass over the marker. */
-@Composable
-internal fun BoxScope.DialOver(roles: MeterRoles) {
-    StaticArt {
-        val glass = dialGlass(size, roles)
-        val draw: DrawScope.() -> Unit = { glass.drawOver(this) }
         draw
     }
 }
@@ -230,7 +205,6 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
             }
         },
     )
-    DialOver(roles)
 }
 
 /** Classic's needle: from the pivot to 6u short of the arc. */
@@ -282,7 +256,6 @@ private fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) 
             }
         },
     )
-    DialOver(roles)
 }
 
 /**

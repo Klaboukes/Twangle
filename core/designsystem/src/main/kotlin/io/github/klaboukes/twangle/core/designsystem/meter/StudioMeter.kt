@@ -32,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.R
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlin.math.PI
@@ -40,8 +41,8 @@ import kotlin.math.sin
 
 /*
  * 6. Studio meter, as on the approved mock-up page (docs/design/meter-looks-preview.html, STUDIO and
- * studioGeo): a backlit meter like a recording desk's. The same plate, glass, marks and needle as the
- * other looks; only its face differs: lit softly from below in the accent, with the scale along a
+ * studioGeo): a backlit meter like a recording desk's, its face lying on the screen like an object.
+ * The same glass, marks and needle as the other looks; only its face differs: lit softly from below in the accent, with the scale along a
  * flatter arc around a pivot hidden below the face under a small cover, and a lamp in the top right
  * corner that lights in the "in tune" colour on the note.
  */
@@ -118,7 +119,7 @@ internal fun studioLampGlint(tuned: Float): Float = 0.25f + 0.45f * tuned.coerce
 private val StudioFaceShape = GenericShape { size, _ -> addRoundRect(StudioGeometry(size.width, size.height).faceRect()) }
 
 /**
- * Studio meter: the plate and the backlit face with its scale, the "CENTS" label and the lamp's
+ * Studio meter: the calm field and the backlit face (with a soft contact shadow) with its scale, the "CENTS" label and the lamp's
  * housing (static); the centre mark (fading to "in tune"); the shared needle and its shadow, each
  * drawn once pointing up and only turned about the pivot by their layers, clipped to the face; the
  * lamp; and over them the pivot's cover and the glass's sheen and rim.
@@ -131,7 +132,8 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
     StaticArt {
         val studio = StudioGeometry(size.width, size.height)
         val u = studio.u
-        val plate = PlateArt(size, u, roles)
+        val field = meterField(size, roles)
+        val contact = ContactShadowArt(studio.face(), u, roles)
         val glass = studioGlass(studio, size, roles)
         val face = studio.face()
         // Lit from below, as through a translucent face.
@@ -157,7 +159,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
         }
         val label = measurer.measure(
             unit,
-            TextStyle(fontFamily = roles.numbers, fontSize = (7.5f * u).toSp(), letterSpacing = 0.3.em),
+            TextStyle(fontFamily = roles.numbers, fontSize = (7.5f * u).toSp(), letterSpacing = 0.3.em, fontFeatureSettings = LINING_FIGURES),
         )
         val labelColor = roles.muted.copy(alpha = 0.9f)
         val labelAt = Offset(studio.cx - label.size.width / 2f, studio.bottom - 42f * u - label.size.height / 2f)
@@ -166,7 +168,8 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
         val housingStroke = Stroke(u)
         val lamp = Offset(studio.lampX, studio.lampY)
         val draw: DrawScope.() -> Unit = {
-            plate.draw(this)
+            field.draw(this)
+            contact.draw(this)
             glass.drawUnder(this)
             clipPath(face) { drawRect(backlight, faceTopLeft, faceSize) }
             drawArc(track, -90f - sweepDegrees, 2f * sweepDegrees, false, arcTopLeft, arcSize, style = trackStroke)
@@ -225,7 +228,7 @@ internal fun BoxScope.StudioMeter(reading: MeterReading, effect: InTuneEffect) {
     }
     // The lamp, in a layer of its own: it lights only with the "in tune" amount.
     Spacer(
-        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {}.drawWithCache {
+        modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val lamp = StudioLampArt(StudioGeometry(size.width, size.height), roles)
             onDrawBehind { lamp.draw(this, reading.tuned, reading.glow) }
         },
@@ -280,8 +283,8 @@ private class StudioLampArt(private val studio: StudioGeometry, private val role
 }
 
 /**
- * The needle's cover: a 30u half disc over the bottom middle of the face, lit from above (the plate
- * lightened 30 % in light, 5 % in dark, to the plate a little toward ink), with a soft shadow above
+ * The needle's cover: a 30u half disc over the bottom middle of the face, lit from above (the surface
+ * lightened 30 % in light, 5 % in dark, to the surface a little toward ink), with a soft shadow above
  * it (8u blur) and a 1u rim in ink at 12 %.
  */
 private class PivotCoverArt(studio: StudioGeometry, roles: MeterRoles) {

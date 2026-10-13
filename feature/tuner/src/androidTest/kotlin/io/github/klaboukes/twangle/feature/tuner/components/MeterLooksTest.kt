@@ -12,12 +12,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
@@ -45,10 +47,10 @@ import kotlin.math.roundToInt
 
 /**
  * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
- * each of the six styles, light and dark: clearly drawn, inside their 2:1 box (nothing spills onto
- * the flat and sharp labels or around the frame), skipped by TalkBack, moved by a new reading
- * without recomposing, and lit by the soft in-tune glow (inside the box, Calm and the stronger
- * Bold; at once with "Remove animations").
+ * each of the six styles, light and dark: clearly drawn in their 2:1 box, straight on the background
+ * (no plate), with a calm field and an in-tune glow that reach past the box and fade out there,
+ * never cut off at its edge; skipped by TalkBack, moved by a new reading without recomposing, and
+ * lit by the soft in-tune glow (Calm and the stronger Bold; at once with "Remove animations").
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -86,7 +88,8 @@ class MeterLooksTest(private val style: VisualStyle) {
                         for (dark in listOf(false, true)) {
                             TwangleTheme(style = style, darkTheme = dark, animate = false) {
                                 inTuneColours[dark] = MaterialTheme.styleTokens.inTune
-                                Box(modifier = Modifier.testTag(caseTag(look, dark)).background(BACKGROUND).padding(PADDING.dp)) {
+                                // Clipped, so a case's soft field and glow can't reach its neighbour: they must fade out within the padding.
+                                Box(modifier = Modifier.testTag(caseTag(look, dark)).clipToBounds().background(BACKGROUND).padding(PADDING.dp)) {
                                     MeterFrame(
                                         look = look,
                                         cents = { cents.floatValue },
@@ -117,19 +120,15 @@ class MeterLooksTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun everyLookIsClearlyDrawnInsideItsBox() = eachPage { looks ->
+    fun everyLookIsClearlyDrawnInItsBoxAndFadesOutAroundIt() = eachPage { looks ->
         for ((case, pixels) in captureCases(looks)) {
             val name = "$style $case"
-            val pad = pixels.width * PADDING / (FRAME_WIDTH + 2 * PADDING)
-            val boxRight = pixels.width - pad
-            val boxBottom = pad + (boxRight - pad) / 2
-            assertNothingOutsideTheBox(name, pixels)
-            // In the box: the plate covers most of it, with clearly drawn marks on it.
+            val box = boxOf(pixels)
+            assertFadesOutAroundTheBox(name, pixels, box)
+            // In the box: clearly drawn marks on the calm field.
             val inBox = buildList {
-                for (x in pad until boxRight step 2) for (y in pad until boxBottom step 2) add(pixels[x, y])
+                for (x in box.left until box.right step 2) for (y in box.top until box.bottom step 2) add(pixels[x, y])
             }
-            val drawn = inBox.count { !it.near(BACKGROUND) } / inBox.size.toFloat()
-            assertTrue("$name covers ${(drawn * 100).toInt()} % of its box", drawn > 0.75f)
             val face = inBox.groupingBy { it }.eachCount().maxBy { it.value }.key
             val details = inBox.count { it.distanceTo(face) > 0.25f } / inBox.size.toFloat()
             assertTrue("$name details ${(details * 100).toInt()} %", details > 0.01f)
@@ -179,13 +178,15 @@ class MeterLooksTest(private val style: VisualStyle) {
             val b = bold.getValue(case)
             assertGlows("$style $case ${InTuneEffect.CALM}", c)
             assertGlows("$style $case ${InTuneEffect.BOLD}", b)
+            // Not cut off at the box: the glow fades out past it.
+            assertTrue("$style $case: bold glow reaches past the box", b.litOutside > 0)
             assertTrue("$style $case: bold lights ${b.lit} pixels, calm ${c.lit}", b.lit > c.lit)
             assertTrue("$style $case: bold glows ${b.strength}, calm ${c.strength}", b.strength > c.strength * BOLD_MIN_GAIN)
         }
     }
 
-    /** How much of a case the glow lights, and how strongly (the summed move towards "in tune"). */
-    private data class Glow(val lit: Int, val stray: Int, val all: Int, val strength: Float)
+    /** How much of a case the glow lights (and how much of that is outside the box), and how strongly (the summed move towards "in tune"). */
+    private data class Glow(val lit: Int, val litOutside: Int, val stray: Int, val all: Int, val strength: Float)
 
     /** The glow of every case of [looks] in [effect], measured against the same case unlit. */
     private fun glowsOf(looks: List<MeterLook>, effect: InTuneEffect): Map<Case, Glow> {
@@ -198,10 +199,12 @@ class MeterLooksTest(private val style: VisualStyle) {
         glow.value = true
         compose.waitForIdle()
         val result = captureCases(looks).mapValues { (case, after) ->
-            assertNothingOutsideTheBox("$style $case $effect", after)
+            val box = boxOf(after)
+            assertFadesOutAroundTheBox("$style $case $effect", after, box)
             val target = inTuneColours.getValue(case.dark)
             val before = unlit.getValue(case)
             var lit = 0
+            var litOutside = 0
             var stray = 0
             var all = 0
             var strength = 0f
@@ -210,13 +213,14 @@ class MeterLooksTest(private val style: VisualStyle) {
                     val change = before[x, y].distanceTo(target) - after[x, y].distanceTo(target)
                     if (change > GLOW_STEP) {
                         lit++
+                        if (x < box.left || x >= box.right || y < box.top || y >= box.bottom) litOutside++
                         strength += change
                     }
                     if (change < -GLOW_STEP) stray++
                     all++
                 }
             }
-            Glow(lit, stray, all, strength)
+            Glow(lit, litOutside, stray, all, strength)
         }
         inTune.value = false
         glow.value = false
@@ -225,9 +229,9 @@ class MeterLooksTest(private val style: VisualStyle) {
         return result
     }
 
-    /** [case] glows: a soft patch moves towards "in tune", inside the box, and nothing moves away. */
+    /** [case] glows: a soft patch moves towards "in tune", and nothing moves away. */
     private fun assertGlows(case: String, glow: Glow) {
-        assertTrue("$case glows on ${glow.lit * 100 / glow.all} % of its box", glow.lit > glow.all * GLOW_MIN_SHARE)
+        assertTrue("$case glows on ${glow.lit * 100 / glow.all} % of its case", glow.lit > glow.all * GLOW_MIN_SHARE)
         assertTrue("$case: ${glow.stray} pixels moved away from the in-tune colour", glow.stray <= glow.all * GLOW_STRAY_SHARE)
     }
 
@@ -291,23 +295,35 @@ class MeterLooksTest(private val style: VisualStyle) {
         }
     }
 
-    /** Asserts nothing of [case] was drawn around its frame or between the flat and sharp labels. */
-    private fun assertNothingOutsideTheBox(case: String, pixels: PixelMap) {
+    /** Where the meter's 2:1 box lies in a case's [pixels] (its padding all round, the flat and sharp labels under it). */
+    private fun boxOf(pixels: PixelMap): IntRect {
         val pad = pixels.width * PADDING / (FRAME_WIDTH + 2 * PADDING)
-        val boxRight = pixels.width - pad
-        val boxBottom = pad + (boxRight - pad) / 2
-        // Around the frame: untouched. (The messages are built only on a failure: per pixel they cost
-        // more than the check.)
+        val right = pixels.width - pad
+        return IntRect(pad, pad, right, pad + (right - pad) / 2)
+    }
+
+    /**
+     * Asserts [case] reaches past its [box] only softly: at the edge of its padding nothing is drawn
+     * (the field and the glow have faded out), and across the box's top and sides there is no edge
+     * where something stops (a clip), only a gentle change. (The messages are built only on a failure:
+     * per pixel they cost more than the check.)
+     */
+    private fun assertFadesOutAroundTheBox(case: String, pixels: PixelMap, box: IntRect) {
         for (x in 0 until pixels.width) {
-            for (y in 0 until pixels.height) {
-                val around = x < pad - 1 || x > boxRight || y < pad - 1 || y > pixels.height - pad
-                if (around && !pixels[x, y].near(BACKGROUND)) fail("$case drew outside the frame at $x, $y")
-            }
+            for (y in listOf(0, pixels.height - 1)) if (!pixels[x, y].near(BACKGROUND)) fail("$case drew at the edge of its padding at $x, $y")
         }
-        // Between the flat and sharp labels, under the box: untouched too.
-        for (x in pixels.width / 4 until pixels.width * 3 / 4) {
-            for (y in boxBottom + 2 until pixels.height - pad) {
-                if (!pixels[x, y].near(BACKGROUND)) fail("$case drew under its box at $x, $y")
+        for (y in 0 until pixels.height) {
+            for (x in listOf(0, pixels.width - 1)) if (!pixels[x, y].near(BACKGROUND)) fail("$case drew at the edge of its padding at $x, $y")
+        }
+        val across = EDGE_STEP_PIXELS
+        for (x in box.left + across until box.right - across) {
+            val step = pixels[x, box.top - across].distanceTo(pixels[x, box.top + across])
+            if (step > EDGE_JUMP) fail("$case stops at the box's top at $x: $step")
+        }
+        for (y in box.top + across until box.bottom - across) {
+            for ((outside, inside) in listOf(box.left - across to box.left + across, box.right + across to box.right - across)) {
+                val step = pixels[outside, y].distanceTo(pixels[inside, y])
+                if (step > EDGE_JUMP) fail("$case stops at the box's side at $outside, $y: $step")
             }
         }
     }
@@ -333,13 +349,23 @@ class MeterLooksTest(private val style: VisualStyle) {
         /** Nothing in the styles is this colour. */
         val BACKGROUND = Color(0xFF7F00FF)
 
-        const val PADDING = 8
+        /**
+         * Room round each box for the field and the glow to fade out in: the dial's field reaches
+         * about 100 units below its box and Bold's glow nearly 90 above, 0.3 box widths.
+         */
+        const val PADDING = 32
+
+        /** Pixels either side of a box's edge compared for an abrupt stop. */
+        const val EDGE_STEP_PIXELS = 2
+
+        /** More change than this across a box's edge would be a stop, not a fade. */
+        const val EDGE_JUMP = 0.06f
 
         /** A pixel this much nearer the "in tune" colour (in its most changed channel) is lit by the glow. */
         const val GLOW_STEP = 0.01f
 
-        /** The glow lights at least this share of a case (its box is about three quarters of it). */
-        const val GLOW_MIN_SHARE = 0.04f
+        /** The glow lights at least this share of a case (its box is about a fifth of it). */
+        const val GLOW_MIN_SHARE = 0.02f
 
         /** Antialiased edges may shift a hair; nothing more moves away from "in tune". */
         const val GLOW_STRAY_SHARE = 0.002f
@@ -352,7 +378,7 @@ class MeterLooksTest(private val style: VisualStyle) {
 
         /** Two captures of the same look differ by less than this anywhere. */
         const val AT_ONCE_STEP = 0.02f
-        const val FRAME_WIDTH = 130
+        const val FRAME_WIDTH = 100
 
         /** Each test takes a few seconds at most; 20 s means it hangs. */
         const val TEST_TIMEOUT_SECONDS = 20L

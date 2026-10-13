@@ -143,7 +143,7 @@ class CometTrailTest {
     }
 
     @Test
-    fun `the comet's path is 84 units from the pivot`() {
-        assertEquals(84f * 2.6f, cometPathRadius(340f * 2.6f), 1e-3f)
+    fun `the comet's path is 106 units from the pivot`() {
+        assertEquals(106f * 2.6f, cometPathRadius(340f * 2.6f), 1e-3f)
     }
 }

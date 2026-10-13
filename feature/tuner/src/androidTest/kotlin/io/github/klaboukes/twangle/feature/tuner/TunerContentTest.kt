@@ -800,6 +800,32 @@ class TunerContentTest {
         }
     }
 
+    /**
+     * Upright, the meter spans the screen less 8 dp at each side, between the mode switch at the top
+     * and the strings at the bottom, sitting a little high (the gap above it is the smaller one), and
+     * there is no "A4 = 440 Hz" line.
+     */
+    @Test
+    fun uprightTheMeterSpansTheScreenBetweenModeSwitchAndStrings() {
+        show(detected(-12.3f), size = PHONE_UPRIGHT)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val scale = window.width / PHONE_UPRIGHT.width
+        val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
+        assertEquals("meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, gauge.width.value, 1f)
+        val modeSwitch = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).getBoundsInRoot()
+        val note = compose.onNodeWithText("E").getBoundsInRoot()
+        val strings = stringChip("E2").getBoundsInRoot()
+        assertTrue("mode switch near the top at ${modeSwitch.top}", modeSwitch.top - window.top < 40.dp * scale)
+        assertTrue("strings near the bottom at ${strings.bottom}", window.bottom - strings.bottom < 40.dp * scale)
+        assertTrue("meter under the mode switch", gauge.top > modeSwitch.bottom)
+        assertTrue("note under the meter", note.top > gauge.bottom)
+        assertTrue(
+            "gap above the meter ${gauge.top - modeSwitch.bottom}, above the strings ${strings.top - note.bottom}",
+            gauge.top - modeSwitch.bottom < strings.top - note.bottom,
+        )
+        compose.onNodeWithText("A4", substring = true).assertDoesNotExist()
+    }
+
     private fun PixelMap.differsFrom(other: PixelMap): Boolean =
         (0 until width).any { x -> (0 until height).any { y -> this[x, y] != other[x, y] } }
 
@@ -1377,11 +1403,10 @@ class TunerContentTest {
         assertTrue("note should be right of the gauge", note.left >= gauge.right)
         assertTrue("gauge ends at ${gauge.bottom}, window at ${window.bottom}", gauge.bottom <= window.bottom)
         assertTrue("frequency ends at ${frequency.bottom}, window at ${window.bottom}", frequency.bottom <= window.bottom)
-        // No mode switch, A4 label or tuning picker.
+        // No mode switch or tuning picker.
         compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuner_a4, 440)).assertDoesNotExist()
     }
 
     @Test

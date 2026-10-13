@@ -311,7 +311,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             if (look != MeterLook.CLASSIC) {
                 assertSameOutsideTheBox(lookCase, pixels, classic, boxLeft, boxTop, boxRight, boxBottom)
             }
-            // In the box (every other pixel): the plate covers most of it (all of it that is on screen),
+            // In the box (every other pixel): the calm field covers most of it (all of it that is on screen),
             // with clear marks on it. Colours as ARGB ints, as a million pixels a look add up.
             val background = BACKGROUND.toArgb()
             var inBox = 0

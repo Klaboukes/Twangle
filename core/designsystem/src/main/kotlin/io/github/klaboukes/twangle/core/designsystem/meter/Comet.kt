@@ -11,7 +11,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -44,7 +43,7 @@ private const val COMET_PATH_UNITS = 40f
 /** The comet may run a little past the ends of the scale with the spring. */
 internal const val COMET_LIMIT_CENTS = 52f
 
-/** The radius of the comet's path in a box [width] wide: 40u inside the dial's 124u arc. */
+/** The radius of the comet's path in a box [width] wide: 40u inside the dial's 146u arc. */
 internal fun cometPathRadius(width: Float): Float = (DIAL_RADIUS_UNITS - COMET_PATH_UNITS) * meterUnit(width)
 
 /** Where the comet's head is for [cents]: readings beyond ±[COMET_LIMIT_CENTS] are pinned there. */
@@ -53,8 +52,7 @@ internal fun cometCents(cents: Float): Float = cents.coerceIn(-COMET_LIMIT_CENTS
 /**
  * Comet: the dial and its dotted path (static), the centre mark, the tail (redrawn from the trail in
  * its own layer, stepped by a frame loop only while there is a tail), the head (drawn once in tune's
- * place and only moved by its layer; redrawn only while its colour fades to "in tune") and the
- * dial's glass over them.
+ * place and only moved by its layer; redrawn only while its colour fades to "in tune").
  */
 @Composable
 internal fun BoxScope.CometMeter(reading: MeterReading, effect: InTuneEffect) {
@@ -78,8 +76,7 @@ internal fun BoxScope.CometMeter(reading: MeterReading, effect: InTuneEffect) {
         },
     )
     Spacer(
-        // The head's glow stays on the plate.
-        modifier = Modifier.matchParentSize().clip(MeterPlateShape).graphicsLayer {
+        modifier = Modifier.matchParentSize().graphicsLayer {
             // Carried from tune's place along the path, without making anything per frame.
             val path = cometPathRadius(size.width)
             val angle = meterAngle(cometCents(reading.cents))
@@ -91,7 +88,6 @@ internal fun BoxScope.CometMeter(reading: MeterReading, effect: InTuneEffect) {
             onDrawBehind { head.draw(this, reading.tuned, reading.glow) }
         },
     )
-    DialOver(roles)
 }
 
 /**

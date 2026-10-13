@@ -25,6 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
+import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import kotlin.math.PI
 import kotlin.math.abs
@@ -106,9 +107,10 @@ internal class DrumGeometry(width: Float, height: Float) {
 }
 
 /**
- * Rolling scale: the plate and the recessed window; the drum's marks and numbers, redrawn from the
- * reading in their own layer (each mark placed, narrowed and faded by how far round the drum it is,
- * the numbers measured once and only moved and narrowed) over the in-tune glow; the fixed centre line with a pointer above
+ * Rolling scale: the calm field and the recessed window, lying on the screen with a soft contact
+ * shadow; the drum's marks and numbers, redrawn from the reading in their own layer (each mark
+ * placed, narrowed and faded by how far round the drum it is, the numbers measured once and only
+ * moved and narrowed) over the in-tune glow; the fixed centre line with a pointer above
  * and below the window (fading to "in tune"); and over them the drum's shading towards its sides and
  * the glass's sheen and rim.
  */
@@ -118,22 +120,23 @@ internal fun BoxScope.RollingScaleMeter(reading: MeterReading, effect: InTuneEff
     val measurer = rememberTextMeasurer()
     StaticArt {
         val drum = DrumGeometry(size.width, size.height)
-        val plate = PlateArt(size, drum.u, roles)
+        val field = meterField(size, roles)
+        val contact = ContactShadowArt(drum.window(), drum.u, roles)
         val glass = drumGlass(drum, roles, this)
         val draw: DrawScope.() -> Unit = {
-            plate.draw(this)
+            field.draw(this)
+            contact.draw(this)
             glass.drawUnder(this)
         }
         draw
     }
-    // The in-tune glow, in the middle of the window and inside it, under the drum's print.
+    // The in-tune glow, in the middle of the window, under the drum's print; it fades out past the window.
     TuneGlow(
         roles, reading, DRUM_GLOW_UNITS,
         centre = { size ->
             val drum = DrumGeometry(size.width, size.height)
             Offset(drum.cx, drum.middle)
         },
-        clip = { size -> DrumGeometry(size.width, size.height).window() },
     )
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
@@ -210,7 +213,11 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
     private val numberY = drum.middle + 2f * u
 
     init {
-        val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { (9.5f * roles.numberScale * u).toSp() })
+        val style = TextStyle(
+            fontFamily = roles.numbers,
+            fontSize = with(density) { (9.5f * roles.numberScale * u).toSp() },
+            fontFeatureSettings = LINING_FIGURES,
+        )
         numbers = Array(DRUM_NUMBERS) { measurer.measure(((it + 1) * 10).toString(), style) }
     }
 

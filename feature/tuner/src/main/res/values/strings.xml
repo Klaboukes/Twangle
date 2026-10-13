@@ -18,7 +18,6 @@
     <!-- Tuner screen. -->
     <string name="tuner_mode_guitar">Guitar</string>
     <string name="tuner_mode_chromatic">Chromatic</string>
-    <string name="tuner_a4">A4 = %1$d Hz</string>
     <string name="tuner_open_settings">Settings</string>
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>

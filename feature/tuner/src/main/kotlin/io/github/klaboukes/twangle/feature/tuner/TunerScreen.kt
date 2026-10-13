@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -61,6 +63,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
@@ -96,7 +99,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
@@ -307,12 +309,7 @@ fun TunerContent(
     } else {
         null
     }
-    val header = @Composable {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ModeSwitch(mode = mode, onModeChange = onModeChange)
-            A4Label(state)
-        }
-    }
+    val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
         GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip, onMenuOpenChange)
@@ -325,7 +322,8 @@ fun TunerContent(
             inTune = (state as? TunerUiState.Detected)?.inTune == true,
             glow = meterGlow,
             animationsOff = animationsOff,
-            modifier = Modifier.testTag(TunerTestTags.GAUGE),
+            // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
+            modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
             reception = reception,
         )
     }
@@ -384,25 +382,16 @@ fun TunerContent(
             )
         }
         when (tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)) {
-            TunerLayout.SINGLE_COLUMN -> Column(
-                modifier = Modifier
-                    // With a very large system font it can be taller than the screen; then it scrolls.
-                    .verticalScroll(rememberScrollState())
-                    .widthIn(max = COLUMN_MAX_WIDTH)
-                    .padding(horizontal = COLUMN_PADDING),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
-            ) {
-                header()
-                if (error != null) {
-                    TunerErrorMessage(error, onRetry)
-                } else {
-                    gauge()
-                    note(false)
-                    // Under the strings there's no room on an upright phone; in the corner beside the picker there is.
-                    guitarSlot(TipPointer.DOWN) {}
-                }
-            }
+            TunerLayout.SINGLE_COLUMN -> SingleColumnLayout(
+                height = maxHeight,
+                error = error,
+                onRetry = onRetry,
+                header = header,
+                gauge = gauge,
+                note = { note(false) },
+                // Under the strings there's no room on an upright phone; in the corner beside the picker there is.
+                guitarSlot = { guitarSlot(TipPointer.DOWN) {} },
+            )
             TunerLayout.TWO_PANE -> twoPane {}
             TunerLayout.COMPACT -> {
                 var controlsShown by remember { mutableStateOf(false) }
@@ -447,6 +436,76 @@ fun TunerContent(
 }
 
 /**
+ * The upright layout, as on the approved mock-up (docs/design/theme-styles-preview.html): the mode
+ * switch at the top (beside the settings gear when there is room, else under it), the meter as wide
+ * as the screen less [METER_MARGIN] at each side, the note under it, and the tuning picker and
+ * strings at the bottom. The free [height] is shared out one to two above the meter and above the
+ * strings, so the meter sits a little high and the gaps look balanced. Everything but the meter keeps
+ * the [COLUMN_PADDING] text margin. With a very large system font it can be taller than the screen;
+ * then the gaps close up to [SECTION_SPACING] and it scrolls. The scroll area fills the screen, so
+ * the meter's glow fades out on the screen rather than at the column's edge.
+ */
+@Composable
+private fun SingleColumnLayout(
+    height: Dp,
+    error: TunerError?,
+    onRetry: () -> Unit,
+    header: @Composable () -> Unit,
+    gauge: @Composable () -> Unit,
+    note: @Composable () -> Unit,
+    guitarSlot: @Composable () -> Unit,
+) {
+    val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = height)
+            .widthIn(max = COLUMN_MAX_WIDTH)
+            .padding(horizontal = METER_MARGIN),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(textMargin.padding(top = CORNER_BUTTON_INSET)) { ClearOfCornerButton(header) }
+        Spacer(Modifier.weight(TOP_GAP_WEIGHT))
+        Spacer(Modifier.height(SECTION_SPACING))
+        if (error != null) {
+            Column(textMargin, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
+                TunerErrorMessage(error, onRetry)
+            }
+            Spacer(Modifier.weight(1f))
+        } else {
+            gauge()
+            Spacer(Modifier.height(SECTION_SPACING))
+            Box(textMargin) { note() }
+            Spacer(Modifier.height(SECTION_SPACING))
+            Spacer(Modifier.weight(1f))
+            Box(textMargin) { guitarSlot() }
+        }
+        Spacer(Modifier.height(CORNER_BUTTON_INSET))
+    }
+}
+
+/**
+ * The mode switch at the top of the upright layout, beside the settings gear: centred when that
+ * keeps it clear of the gear, else moved towards the start just enough; where even that leaves no
+ * room (a very large font), under the gear. The gear never covers it.
+ */
+@Composable
+private fun ClearOfCornerButton(content: @Composable () -> Unit) {
+    Layout(content) { measurables, constraints ->
+        val placeable = measurables.single().measure(constraints.copy(minWidth = 0, minHeight = 0))
+        // The whole column's width (it is bounded there), so the gear's place is known.
+        val width = max(placeable.width, constraints.maxWidth)
+        // The gear's touch target reaches this far into the column at the end.
+        val gear = (GEAR_CLEARANCE - COLUMN_PADDING).roundToPx()
+        val centred = (width - placeable.width) / 2
+        val x = min(centred, width - gear - placeable.width)
+        val beside = x >= 0
+        val top = if (beside) 0 else (GEAR_CLEARANCE - CORNER_BUTTON_INSET).roundToPx()
+        layout(width, top + placeable.height) { placeable.placeRelative(if (beside) x else centred, top) }
+    }
+}
+
+/**
  * Readout pane beside the controls pane: landscape and wide screens, and the [TunerLayout.COMPACT]
  * layout while its controls show. [compactNote] (the wave view, or the tune hint's line)
  * makes the readout taller; on a phone on its side it only fits with a smaller note.
@@ -469,9 +528,13 @@ private fun TwoPaneLayout(
         BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             val paneHeight = maxHeight
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()).widthIn(max = READOUT_PANE_MAX_WIDTH),
+                // At least the pane's height, so the meter's glow fades out on the screen, not at the scroll area's edge.
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = paneHeight)
+                    .widthIn(max = READOUT_PANE_MAX_WIDTH),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
+                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterVertically),
             ) {
                 if (error != null) {
                     TunerErrorMessage(error, onRetry)
@@ -502,8 +565,8 @@ private fun TwoPaneLayout(
 
 /**
  * The compact landscape layout: the [gauge] as big as the space allows, beside the [note] with
- * [below] under it (the small string row or the chromatic numbers). No mode switch, A4 label,
- * tuning picker or string buttons. A tap anywhere, or TalkBack's double tap on the screen's
+ * [below] under it (the small string row or the chromatic numbers). No mode switch, tuning picker
+ * or string buttons. A tap anywhere, or TalkBack's double tap on the screen's
  * "Show controls" button, calls [onShowControls]. An [error] shows its message and retry instead.
  */
 @Composable
@@ -870,8 +933,14 @@ private val PICKER_TOUCH_INSET = 4.dp
 /** Between the string row and a tip under it. */
 private val TIP_STRINGS_GAP = 4.dp
 
-/** The single column's padding at each side: room the tip in the corner may use. */
-private val COLUMN_PADDING = 24.dp
+/** The single column's text margin at each side: room the tip in the corner may use. */
+private val COLUMN_PADDING = 16.dp
+
+/** The upright meter's margin at each side of the screen (the approved mock-up's 8 dp). */
+private val METER_MARGIN = 8.dp
+
+/** The free height above the meter, against 1 above the strings (the mock-up's `.grow.top`). */
+private const val TOP_GAP_WEIGHT = 0.5f
 
 /** The tip in the corner keeps this far from the screen's edge, from the picker, and (with its pointer's tip) from the strings. */
 private val CORNER_TIP_EDGE = 8.dp
@@ -911,7 +980,7 @@ private val COMPACT_NOTE_SPACING = 12.dp
 /** Between gauge and note in the two-pane layout, where height is scarce. */
 private val GAUGE_NOTE_SPACING = 8.dp
 
-/** The style and settings buttons sit this far in, clear of the frames some styles draw. */
+/** The settings button sits this far in from the screen's corner. */
 private val CORNER_BUTTON_INSET = 8.dp
 
 /** Room for the settings gear's 48 dp touch target in the top corner. */
@@ -919,21 +988,6 @@ private val GEAR_CLEARANCE = 48.dp + CORNER_BUTTON_INSET
 
 /** Tuning picker (a 48 dp touch target) + 8 dp + string row (48 dp). */
 private val GUITAR_SLOT_HEIGHT = 104.dp
-
-/** "A4 = 440 Hz", the reference the readings use. Blank (same height) before listening starts. */
-@Composable
-private fun A4Label(state: TunerUiState) {
-    val a4Hz = when (state) {
-        is TunerUiState.Listening -> state.a4Hz
-        is TunerUiState.Detected -> state.a4Hz
-        else -> null
-    }
-    Text(
-        text = if (a4Hz != null) stringResource(R.string.tuner_a4, a4Hz.roundToInt()) else "",
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */
 @Composable
