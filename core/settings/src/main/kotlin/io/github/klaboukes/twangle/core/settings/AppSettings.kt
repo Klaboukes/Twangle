@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -164,6 +166,8 @@ data class AppSettings(
     val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
     /** Guitar or chromatic, as last picked on the tuner, so the app reopens in it. */
     val mode: TunerMode = TunerMode.AUTO,
+    /** The instrument picked beside the tuning picker; [tuning] is always one of its presets. */
+    val instrument: Instrument = Instruments.DEFAULT,
     val tuning: Tuning = Tunings.DEFAULT,
     val notation: Notation = Notation.DEFAULT,
     /** How close a note has to be to count as "in tune". */

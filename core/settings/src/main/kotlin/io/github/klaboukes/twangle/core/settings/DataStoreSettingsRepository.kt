@@ -11,9 +11,10 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
-import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -44,8 +45,19 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[MODE] = mode.name }
     }
 
+    override suspend fun setInstrument(instrument: Instrument) {
+        dataStore.edit {
+            if (instrumentAndTuning(it).first == instrument) return@edit
+            it[INSTRUMENT_ID] = instrument.id
+            it[TUNING_ID] = instrument.defaultTuning.id
+        }
+    }
+
     override suspend fun setTuning(tuning: Tuning) {
-        dataStore.edit { it[TUNING_ID] = tuning.id }
+        dataStore.edit {
+            it[TUNING_ID] = tuning.id
+            Instruments.ofTuning(tuning.id)?.let { instrument -> it[INSTRUMENT_ID] = instrument.id }
+        }
     }
 
     override suspend fun setNotation(notation: Notation) {
@@ -126,10 +138,12 @@ class DataStoreSettingsRepository internal constructor(
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
         val oldStrobe = prefs[DISPLAY] == OLD_STROBE_DISPLAY
+        val (instrument, tuning) = instrumentAndTuning(prefs)
         return AppSettings(
             a4Hz = prefs[A4_HZ]?.let(AppSettings::normalizeA4) ?: defaults.a4Hz,
             mode = enumOrNull<TunerMode>(prefs[MODE]) ?: defaults.mode,
-            tuning = prefs[TUNING_ID]?.let(Tunings::byId) ?: defaults.tuning,
+            instrument = instrument,
+            tuning = tuning,
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
@@ -160,6 +174,7 @@ class DataStoreSettingsRepository internal constructor(
         private val A4_HZ = floatPreferencesKey("a4_hz")
         private val MODE = stringPreferencesKey("tuner_mode")
         private val TUNING_ID = stringPreferencesKey("tuning_id")
+        private val INSTRUMENT_ID = stringPreferencesKey("instrument_id")
         private val NOTATION = stringPreferencesKey("notation")
         private val IN_TUNE_PRECISION = stringPreferencesKey("in_tune_precision")
         private val THEME = stringPreferencesKey("theme")
@@ -196,6 +211,20 @@ class DataStoreSettingsRepository internal constructor(
                 corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
             ) { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
         )
+
+        /**
+         * The saved instrument and tuning, always a matching pair. Versions before the instrument
+         * picker saved only a (guitar) tuning, whose instrument it then is. A tuning that isn't one
+         * of the instrument's presets, or a missing or unknown one, gives the instrument's standard
+         * tuning; an unknown instrument the tuning's own, else the default guitar.
+         */
+        private fun instrumentAndTuning(prefs: Preferences): Pair<Instrument, Tuning> {
+            val tuningId = prefs[TUNING_ID]
+            val instrument = prefs[INSTRUMENT_ID]?.let(Instruments::byId)
+                ?: tuningId?.let(Instruments::ofTuning)
+                ?: Instruments.DEFAULT
+            return instrument to (tuningId?.let(instrument::tuningById) ?: instrument.defaultTuning)
+        }
 
         /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */
         private fun displayFromWaveSwitch(showWaves: Boolean?): TunerDisplay? = when (showWaves) {

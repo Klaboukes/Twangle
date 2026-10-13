@@ -15,9 +15,10 @@ The full [privacy policy](PRIVACY.md) ([Nederlands](PRIVACY.nl.md)) explains it 
 
 ## Features
 
-- **Guitar mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
+- **Strings mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
+- **Instruments:** guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (standard or low G), violin, viola, cello and mandolin. Tap the instrument's name beside the tuning to switch.
 - **Chromatic mode:** tunes any note, for any instrument.
-- **Tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
+- **Guitar tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E. Tap the tuning name to switch.
 - **Note names:** sharps (C♯), flats (D♭) or Do Re Mi.
 - **Your look:** six visual styles, six meter looks and six wave looks (a strobe among them); light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Helpful hints:** "Tune up" or "Tune down", and a tip when it's too quiet, too noisy or too loud to hear you well.

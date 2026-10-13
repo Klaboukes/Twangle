@@ -48,6 +48,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -58,6 +59,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
@@ -71,6 +73,8 @@ import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -90,12 +94,17 @@ import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.DOWN_POINTER_FROM_START
+import io.github.klaboukes.twangle.feature.tuner.components.InstrumentPicker
+import io.github.klaboukes.twangle.feature.tuner.components.PICKER_FIXED_WIDTH
+import io.github.klaboukes.twangle.feature.tuner.components.pickerTextStyle
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.stringRowFitFor
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
 import io.github.klaboukes.twangle.feature.tuner.components.TuningPicker
+import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
+import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -109,7 +118,8 @@ import kotlin.math.min
  * [savedMode] is the mode in the settings already read, so the
  * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
  * likewise keeps a dismissed string-lock tip from flashing up at the start, and
- * [savedKeepTwoPaneLandscape] a turned phone from switching layout. The compact layout on its side is
+ * [savedKeepTwoPaneLandscape] a turned phone from switching layout, and [savedInstrument] the instrument
+ * picker from showing the guitar a moment first. The compact layout on its side is
  * used unless the "full layout on its side" setting is on.
  */
 @Composable
@@ -121,6 +131,7 @@ fun TunerScreen(
     savedMode: TunerMode = TunerMode.AUTO,
     savedStringLockTipSeen: Boolean = false,
     savedKeepTwoPaneLandscape: Boolean = false,
+    savedInstrument: Instrument = Instruments.DEFAULT,
 ) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel {
@@ -130,6 +141,7 @@ fun TunerScreen(
             savedMode = savedMode,
             savedStringLockTipSeen = savedStringLockTipSeen,
             savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
+            savedInstrument = savedInstrument,
         )
     }
     val readings = viewModel.state.collectAsStateWithLifecycle()
@@ -138,6 +150,7 @@ fun TunerScreen(
     // needle follows the exact cents without recomposing (see MeterFrame).
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
+    val instrument by viewModel.instrument.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val display by viewModel.display.collectAsStateWithLifecycle()
@@ -191,6 +204,8 @@ fun TunerScreen(
                     mode = mode,
                     onModeChange = viewModel::setMode,
                     onTuningChange = viewModel::setTuning,
+                    instrument = instrument,
+                    onInstrumentChange = viewModel::setInstrument,
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
                     display = display,
@@ -235,6 +250,10 @@ object TunerTestTags {
     const val SIGNAL_BARS = "tuner_signal_bars"
     const val SIGNAL_FIGURES = "tuner_signal_figures"
 
+    /** The tuning picker and the instrument picker beside it. */
+    const val TUNING_PICKER = "tuner_tuning_picker"
+    const val INSTRUMENT_PICKER = "tuner_instrument_picker"
+
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
@@ -268,7 +287,8 @@ private fun KeepScreenOn() {
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
- * [onStringLockTipDismiss].
+ * [onStringLockTipDismiss]. [instrument] is the one picked beside the tuning picker (by default the one
+ * [state]'s tuning belongs to); picking another calls [onInstrumentChange].
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -299,6 +319,8 @@ fun TunerContent(
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
     compactLandscape: Boolean = true,
+    instrument: Instrument = instrumentOf(state),
+    onInstrumentChange: (Instrument) -> Unit = {},
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -319,7 +341,8 @@ fun TunerContent(
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
-        GuitarSlotFor(state, mode, pictured, onTuningChange, onStringClick, tip, onMenuOpenChange)
+        val pickers = InstrumentChoice(instrument, onInstrumentChange)
+        GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, onStringClick, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
         MeterFrame(
@@ -731,6 +754,7 @@ private fun GuitarSlotFor(
     mode: TunerMode,
     pictured: Boolean,
     onTuningChange: (Tuning) -> Unit,
+    instrument: InstrumentChoice,
     onStringClick: (Int) -> Unit,
     tip: StringLockTipState,
     onMenuOpenChange: (Boolean) -> Unit,
@@ -764,7 +788,7 @@ private fun GuitarSlotFor(
     val guitar: (@Composable () -> Unit)? = if (controls != null) {
         {
             GuitarControls(
-                controls.tuning, controls.notation, onTuningChange, onStringClick,
+                controls.tuning, controls.notation, onTuningChange, instrument, onStringClick,
                 controls.targetString, controls.lockedString, controls.tip, controls.inTune, controls.noteSounding, onMenuOpenChange,
             )
         }
@@ -785,24 +809,43 @@ private data class GuitarControlsState(
     val noteSounding: Boolean,
 )
 
+/** The instrument picked beside the tuning picker, and what picking another does. */
+private data class InstrumentChoice(val instrument: Instrument, val onChange: (Instrument) -> Unit)
+
+/** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
+private fun instrumentOf(state: TunerUiState): Instrument {
+    val tuning = when (state) {
+        is TunerUiState.Listening -> state.tuning
+        is TunerUiState.Detected -> state.tuning
+        else -> null
+    }
+    return tuning?.let { Instruments.ofTuning(it.id) } ?: Instruments.DEFAULT
+}
+
 /** Whether the one-time string-lock tip is [shown], what tapping it does, and where it [pointer]s from. */
 private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit, val pointer: TipPointer)
 
 /**
- * The tuning picker above the string row: what guitar mode shows in the [ModeSlot]. While [tip] is
- * shown, the string-lock tip floats as a speech balloon. Pointer up: under the strings. Pointer
- * down: in the corner left of the picker, its pointer on the first string, wrapped onto a few lines
- * and staying while a note sounds. Where a very large font leaves no room there, it goes in the gap
- * above the picker instead; there it would cover the numbers or the hint under the note, so it steps
- * aside while [noteSounding] and comes back only after [TIP_QUIET_MS] without a note, so it doesn't
- * blink between plucks. It takes no room of its own, so nothing moves when it comes or goes, and it
- * leaves the picker and the strings uncovered.
+ * The tuning picker with the instrument picker after it, above the string row: what guitar mode
+ * shows in the [ModeSlot]. The tuning picker sits in the middle, as it always did, and the
+ * instrument's name follows it ("Standard ▾ Bass ▾"); where the name doesn't fit after it, both move
+ * towards the start just enough, and where the two don't fit on one line (very large font) the
+ * instrument goes centred on a line of its own under the tuning ([pickerRowFor]).
+ *
+ * While [tip] is shown, the string-lock tip floats as a speech balloon. Pointer up: under the
+ * strings. Pointer down: in the corner left of the pickers, its pointer on the first string, wrapped
+ * onto a few lines and staying while a note sounds. Where a very large font leaves no room there, it
+ * goes in the gap above the pickers instead; there it would cover the numbers or the hint under the
+ * note, so it steps aside while [noteSounding] and comes back only after [TIP_QUIET_MS] without a
+ * note, so it doesn't blink between plucks. It takes no room of its own, so nothing moves when it
+ * comes or goes, and it leaves the pickers and the strings uncovered.
  */
 @Composable
 private fun GuitarControls(
     tuning: Tuning,
     notation: Notation,
     onTuningChange: (Tuning) -> Unit,
+    instrument: InstrumentChoice,
     onStringClick: (Int) -> Unit,
     targetString: Int?,
     lockedString: Int?,
@@ -812,7 +855,7 @@ private fun GuitarControls(
     onMenuOpenChange: (Boolean) -> Unit = {},
 ) {
     var quiet by remember { mutableStateOf(!noteSounding) }
-    // Whether the tip went above the picker for want of room in the corner; set while measuring.
+    // Whether the tip went above the pickers for want of room in the corner; set while measuring.
     var abovePicker by remember { mutableStateOf(false) }
     LaunchedEffect(noteSounding) {
         if (noteSounding) {
@@ -822,72 +865,129 @@ private fun GuitarControls(
             quiet = true
         }
     }
+    // Either menu being open counts as a menu being open.
+    var tuningMenuOpen by remember { mutableStateOf(false) }
+    var instrumentMenuOpen by remember { mutableStateOf(false) }
+    val currentOnMenuOpenChange by rememberUpdatedState(onMenuOpenChange)
+    LaunchedEffect(tuningMenuOpen, instrumentMenuOpen) { currentOnMenuOpenChange(tuningMenuOpen || instrumentMenuOpen) }
     val style = MaterialTheme.styleTokens.style
-    val picker = @Composable {
-        TuningPicker(selected = tuning, notation = notation, onSelect = onTuningChange, onExpandedChange = onMenuOpenChange)
-    }
-    val strings = @Composable {
-        StringSelector(
-            tuning,
-            targetString,
-            notation = notation,
-            inTune = inTune,
-            lockedString = lockedString,
-            onStringClick = onStringClick,
-        )
-    }
-    val balloon = @Composable {
-        AnimatedVisibility(visible = tip.shown, enter = fadeIn(), exit = fadeOut()) {
-            // While it steps aside above the picker it isn't placed; TalkBack and UI tests mustn't find it either.
-            StringLockTip(
-                onDismiss = tip.onDismiss,
-                pointer = tip.pointer,
-                modifier = if (abovePicker && !quiet) Modifier.clearAndSetSemantics {} else Modifier,
+    // The pickers' names at full size, as their buttons set them, to work out how small they must be
+    // to share a line (pickerRowFor) before they are composed at that size.
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = pickerTextStyle()
+    val tuningText = textMeasurer.measure(tuningLabel(tuning), textStyle, maxLines = 1).size.width
+    val instrumentText = textMeasurer.measure(instrumentLabel(instrument.instrument), textStyle, maxLines = 1).size.width
+    BoxWithConstraints {
+        val density = LocalDensity.current
+        val fixedWidth = with(density) { PICKER_FIXED_WIDTH.roundToPx() }
+        // Upright the pickers may reach into the column's margin, as the tip does, up to its edge.
+        val sideRoom = if (tip.pointer == TipPointer.DOWN) with(density) { (COLUMN_PADDING - CORNER_TIP_EDGE).roundToPx() } else 0
+        // A pixel to spare, so a name measured to the pixel never comes out a fraction too wide.
+        val row = pickerRowFor(constraints.maxWidth, fixedWidth + tuningText + 1, fixedWidth + instrumentText + 1, fixedWidth, sideRoom)
+        // Small type doesn't narrow quite in step with its size; a shrunk name gets a little to spare.
+        val textScale = if (row.textScale < 1f) row.textScale * SHRUNK_NAME_MARGIN else 1f
+        val picker = @Composable {
+            TuningPicker(
+                selected = tuning,
+                instrument = instrument.instrument,
+                notation = notation,
+                onSelect = onTuningChange,
+                onExpandedChange = { tuningMenuOpen = it },
+                textScale = textScale,
             )
         }
-    }
-    Layout(contents = listOf(picker, strings, balloon)) { (pickerMeasurables, stringMeasurables, tipMeasurables), constraints ->
-        val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-        val pickerPlaceable = pickerMeasurables.single().measure(partConstraints)
-        val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
-        val gap = PICKER_STRINGS_GAP.roundToPx()
-        val width = max(pickerPlaceable.width, stringsPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = (pickerPlaceable.height + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        val pickerX = (width - pickerPlaceable.width) / 2
-        val stringsX = (width - stringsPlaceable.width) / 2
-        val stringsY = pickerPlaceable.height + gap
-        val tipMeasurable = tipMeasurables.firstOrNull()
-        // The corner left of the picker: from the column's edge (it is centred in the column, inside
-        // the column's padding) to the picker, reaching up into the gap above the slot but not to the
-        // hint. It starts by the edge, unless its pointer would then miss the first string.
-        // Where the first string's button starts: a bass's four strings spread wider than a guitar's six.
-        val firstString = stringsX + stringRowFitFor(style, stringsPlaceable.width.toDp(), tuning.strings.size, small = false)
-            .firstSlotStartDp.dp.roundToPx()
-        val cornerX = max(
-            firstString + POINTER_INTO_FIRST_STRING.roundToPx() - DOWN_POINTER_FROM_START.roundToPx(),
-            -((constraints.maxWidth - width) / 2 + COLUMN_PADDING.roundToPx()) + CORNER_TIP_EDGE.roundToPx(),
-        )
-        val cornerWidth = pickerX - CORNER_TIP_PICKER_GAP.roundToPx() - cornerX
-        val cornerBottom = stringsY - CORNER_TIP_STRINGS_GAP.roundToPx()
-        val inCorner = tip.pointer == TipPointer.DOWN && tipMeasurable != null &&
-            cornerWidth >= CORNER_TIP_MIN_WIDTH.roundToPx() &&
-            tipMeasurable.minIntrinsicHeight(cornerWidth) <= cornerBottom + CORNER_TIP_ROOM_ABOVE.roundToPx()
-        abovePicker = tip.pointer == TipPointer.DOWN && !inCorner
-        // Elsewhere the balloon is no wider than the row it points at. It isn't counted in the height.
-        val tipPlaceable = tipMeasurable?.measure(Constraints(maxWidth = if (inCorner) cornerWidth else width))
-        layout(width, height) {
-            pickerPlaceable.placeRelative(pickerX, 0)
-            stringsPlaceable.placeRelative(stringsX, stringsY)
-            // Above the picker it waits for a quiet moment (see above).
-            if (tipPlaceable != null && (!abovePicker || quiet)) {
-                val x = if (inCorner) cornerX else (width - tipPlaceable.width) / 2
-                val y = when {
-                    inCorner -> cornerBottom - tipPlaceable.height
-                    // The body ends where the picker's button starts; the pointer reaches past it.
-                    tip.pointer == TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
-                    else -> height + TIP_STRINGS_GAP.roundToPx()
+        val instrumentPicker = @Composable {
+            InstrumentPicker(
+                selected = instrument.instrument,
+                notation = notation,
+                onSelect = instrument.onChange,
+                onExpandedChange = { instrumentMenuOpen = it },
+                textScale = textScale,
+            )
+        }
+        val strings = @Composable {
+            StringSelector(
+                tuning,
+                targetString,
+                notation = notation,
+                inTune = inTune,
+                lockedString = lockedString,
+                onStringClick = onStringClick,
+            )
+        }
+        val balloon = @Composable {
+            AnimatedVisibility(visible = tip.shown, enter = fadeIn(), exit = fadeOut()) {
+                // While it steps aside above the pickers it isn't placed; TalkBack and UI tests mustn't find it either.
+                StringLockTip(
+                    onDismiss = tip.onDismiss,
+                    pointer = tip.pointer,
+                    modifier = if (abovePicker && !quiet) Modifier.clearAndSetSemantics {} else Modifier,
+                )
+            }
+        }
+        Layout(contents = listOf(picker, instrumentPicker, strings, balloon)) { measurables, constraints ->
+            val (pickerMeasurables, instrumentMeasurables, stringMeasurables, tipMeasurables) = measurables
+            val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+            val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
+            val pickerPlaceable = pickerMeasurables.single().measure(partConstraints)
+            val instrumentPlaceable = instrumentMeasurables.single().measure(partConstraints)
+            val gap = PICKER_STRINGS_GAP.roundToPx()
+            val width = maxOf(pickerPlaceable.width, instrumentPlaceable.width, stringsPlaceable.width)
+                .coerceIn(constraints.minWidth, constraints.maxWidth)
+            // Placed as they came out at the size picked above: the tuning in the middle unless the
+            // instrument needs some of its room, or each centred on its own line.
+            val pickers = if (row.oneLine) {
+                val tuningX = min((width - pickerPlaceable.width) / 2, width + sideRoom - pickerPlaceable.width - instrumentPlaceable.width)
+                    .coerceAtLeast(-sideRoom)
+                PickerRow(true, tuningX, tuningX + pickerPlaceable.width, pickerPlaceable.width, instrumentPlaceable.width, row.textScale)
+            } else {
+                PickerRow(false, (width - pickerPlaceable.width) / 2, (width - instrumentPlaceable.width) / 2, pickerPlaceable.width, instrumentPlaceable.width, 1f)
+            }
+            val pickersHeight = if (pickers.oneLine) {
+                max(pickerPlaceable.height, instrumentPlaceable.height)
+            } else {
+                pickerPlaceable.height + instrumentPlaceable.height
+            }
+            val pickerY = if (pickers.oneLine) (pickersHeight - pickerPlaceable.height) / 2 else 0
+            val instrumentY = if (pickers.oneLine) (pickersHeight - instrumentPlaceable.height) / 2 else pickerPlaceable.height
+            val height = (pickersHeight + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+            val stringsX = (width - stringsPlaceable.width) / 2
+            val stringsY = pickersHeight + gap
+            val tipMeasurable = tipMeasurables.firstOrNull()
+            // The corner left of the pickers: from the column's edge (it is centred in the column, inside
+            // the column's padding) to the first picker, reaching up into the gap above the slot but not
+            // to the hint. It starts by the edge, unless its pointer would then miss the first string.
+            // Where the first string's button starts: a bass's four strings spread wider than a guitar's six.
+            val firstString = stringsX + stringRowFitFor(style, stringsPlaceable.width.toDp(), tuning.strings.size, small = false)
+                .firstSlotStartDp.dp.roundToPx()
+            val cornerX = max(
+                firstString + POINTER_INTO_FIRST_STRING.roundToPx() - DOWN_POINTER_FROM_START.roundToPx(),
+                -((constraints.maxWidth - width) / 2 + COLUMN_PADDING.roundToPx()) + CORNER_TIP_EDGE.roundToPx(),
+            )
+            // On one line the corner ends at the tuning picker; on two at whichever picker starts first.
+            val cornerWidth = min(pickers.tuningX, pickers.instrumentX) - CORNER_TIP_PICKER_GAP.roundToPx() - cornerX
+            val cornerBottom = stringsY - CORNER_TIP_STRINGS_GAP.roundToPx()
+            val inCorner = tip.pointer == TipPointer.DOWN && tipMeasurable != null &&
+                cornerWidth >= CORNER_TIP_MIN_WIDTH.roundToPx() &&
+                tipMeasurable.minIntrinsicHeight(cornerWidth) <= cornerBottom + CORNER_TIP_ROOM_ABOVE.roundToPx()
+            abovePicker = tip.pointer == TipPointer.DOWN && !inCorner
+            // Elsewhere the balloon is no wider than the row it points at. It isn't counted in the height.
+            val tipPlaceable = tipMeasurable?.measure(Constraints(maxWidth = if (inCorner) cornerWidth else width))
+            layout(width, height) {
+                pickerPlaceable.placeRelative(pickers.tuningX, pickerY)
+                instrumentPlaceable.placeRelative(pickers.instrumentX, instrumentY)
+                stringsPlaceable.placeRelative(stringsX, stringsY)
+                // Above the pickers it waits for a quiet moment (see above).
+                if (tipPlaceable != null && (!abovePicker || quiet)) {
+                    val x = if (inCorner) cornerX else (width - tipPlaceable.width) / 2
+                    val y = when {
+                        inCorner -> cornerBottom - tipPlaceable.height
+                        // The body ends where the picker's button starts; the pointer reaches past it.
+                        tip.pointer == TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
+                        else -> height + TIP_STRINGS_GAP.roundToPx()
+                    }
+                    tipPlaceable.placeRelative(x, y, zIndex = 1f)
                 }
-                tipPlaceable.placeRelative(x, y, zIndex = 1f)
             }
         }
     }
@@ -940,6 +1040,9 @@ private val PICKER_STRINGS_GAP = 8.dp
 
 /** The tuning picker's button sits this far inside its 48 dp touch target. */
 private val PICKER_TOUCH_INSET = 4.dp
+
+/** A picker name set smaller to share its line is set this much smaller again, so rounding never cuts it off. */
+private const val SHRUNK_NAME_MARGIN = 0.98f
 
 /** Between the string row and a tip under it. */
 private val TIP_STRINGS_GAP = 4.dp

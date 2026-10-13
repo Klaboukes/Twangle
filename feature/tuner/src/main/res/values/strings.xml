@@ -16,7 +16,8 @@
     <string name="error_retry">Try again</string>
 
     <!-- Tuner screen. -->
-    <string name="tuner_mode_guitar">Guitar</string>
+    <!-- Mode switch: the picked instrument's strings, or any note (Chromatic). -->
+    <string name="tuner_mode_strings">Strings</string>
     <string name="tuner_mode_chromatic">Chromatic</string>
     <string name="tuner_open_settings">Settings</string>
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
@@ -31,6 +32,20 @@
     <string name="tuning_open_g">Open G</string>
     <string name="tuning_open_d">Open D</string>
     <string name="tuning_open_e">Open E</string>
+    <!-- Ukulele with its G string an octave lower than standard. -->
+    <string name="tuning_low_g">Low G</string>
+
+    <!-- Instruments, see Instruments in :core:dsp: the picker beside the tuning picker. -->
+    <string name="instrument_guitar">Guitar</string>
+    <string name="instrument_guitar_7">7-string guitar</string>
+    <string name="instrument_guitar_8">8-string guitar</string>
+    <string name="instrument_bass_4">Bass</string>
+    <string name="instrument_bass_5">5-string bass</string>
+    <string name="instrument_ukulele">Ukulele</string>
+    <string name="instrument_violin">Violin</string>
+    <string name="instrument_viola">Viola</string>
+    <string name="instrument_cello">Cello</string>
+    <string name="instrument_mandolin">Mandolin</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
@@ -84,4 +99,5 @@
          "Half step down, E flat, A flat, D flat, G flat, B flat, E flat". -->
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_change_tuning">Change tuning</string>
+    <string name="tuner_change_instrument">Change instrument</string>
 </resources>

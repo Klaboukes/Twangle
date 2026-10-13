@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import android.content.res.Configuration
+import android.content.res.Resources
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -14,6 +16,9 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.Locales
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -21,6 +26,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -29,11 +35,14 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
+import io.github.klaboukes.twangle.feature.tuner.components.tuningNameRes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -43,7 +52,9 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 /**
  * The string row from a 4-string bass to an 8-string guitar, in each of the six styles: upright, in
@@ -70,6 +81,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
     private val shownNotation = mutableStateOf(Notation.SHARPS)
     private val shownLayout = mutableStateOf(Layout.UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
+    private val shownLocale = mutableStateOf("en")
     private val clicked = mutableListOf<Int>()
 
     private enum class Layout(val size: DpSize, val compact: Boolean) {
@@ -82,7 +94,8 @@ class StringRowStylesTest(private val style: VisualStyle) {
         compose.setContent {
             val layout = shownLayout.value
             val override = DeviceConfigurationOverride.ForcedSize(layout.size) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value)
+                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
+                DeviceConfigurationOverride.Locales(LocaleList(shownLocale.value))
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     val tuning = shownTuning.value
@@ -195,8 +208,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
         show(listening = true, tip = true)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val tip = compose.onNodeWithText(context.getString(R.string.tuner_string_lock_tip)).assertIsDisplayed().getBoundsInRoot()
-        // Bass tunings have no name of their own yet, so the picker shows the id.
-        val picker = compose.onNodeWithText(shownTuning.value.id, useUnmergedTree = true).getBoundsInRoot()
+        val picker = compose.onNodeWithTag(TunerTestTags.TUNING_PICKER).getBoundsInRoot()
         val chips = labels(shownTuning.value, Notation.SHARPS).map { compose.onNodeWithText(it).getBoundsInRoot() }
         chips.forEachIndexed { index, chip ->
             if (tip.overlaps(chip)) fail("$style: the tip $tip covers string $index $chip")
@@ -208,6 +220,92 @@ class StringRowStylesTest(private val style: VisualStyle) {
             val pointer = tip.left + 32.dp
             assertTrue("$style: the tip points at $pointer, the first string is ${first.left}..${first.right}", pointer in first.left..first.right)
         }
+    }
+
+    /**
+     * Every instrument with its tunings (the guitar's longest names), in English and Dutch, upright
+     * and in the full layout on its side: the tuning and instrument pickers share one line, each
+     * name wholly shown, the instrument after the tuning, both in the window.
+     */
+    @Test
+    fun everyInstrumentsPickersShareALineInEnglish() = assertPickersShareALine("en")
+
+    @Test
+    fun everyInstrumentsPickersShareALineInDutch() = assertPickersShareALine("nl")
+
+    private fun assertPickersShareALine(locale: String) {
+        shownLocale.value = locale
+        show(listening = true)
+        val resources = resourcesFor(locale)
+        for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
+            shownLayout.value = layout
+            for (tuning in PICKER_TUNINGS) {
+                shownTuning.value = tuning
+                compose.waitForIdle()
+                val case = "$style $locale $layout ${tuning.id}"
+                val (tuningName, instrumentName) = pickerNames(resources, tuning)
+                val (tuningLabel, instrumentLabel) = assertPickersFit(case, tuningName, instrumentName, scroll = false)
+                val sameLine = abs((tuningLabel.top + tuningLabel.bottom - instrumentLabel.top - instrumentLabel.bottom).value) < 2f
+                assertTrue("$case: $tuningLabel and $instrumentLabel are not on one line", sameLine)
+                assertTrue("$case: the instrument $instrumentLabel is not after the tuning $tuningLabel", instrumentLabel.left >= tuningLabel.right)
+            }
+        }
+    }
+
+    /** At 2x text the longest Dutch names, scrolled to, are whole and clear of each other (each may get its own line). */
+    @Test
+    fun theLongestPickerNamesFitAtTwiceTheTextSize() {
+        shownLocale.value = "nl"
+        shownFontScale.value = 2f
+        show(listening = true)
+        val resources = resourcesFor("nl")
+        for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
+            shownLayout.value = layout
+            for (tuning in listOf(Tunings.HALF_STEP_DOWN, Instruments.GUITAR_7.defaultTuning, Instruments.BASS_5.defaultTuning)) {
+                shownTuning.value = tuning
+                compose.waitForIdle()
+                val (tuningName, instrumentName) = pickerNames(resources, tuning)
+                assertPickersFit("$style nl $layout ${tuning.id} at 2x", tuningName, instrumentName, scroll = true)
+            }
+        }
+    }
+
+    /** Both pickers' names wholly shown, in the window, clear of each other and of the strings; their bounds. */
+    private fun assertPickersFit(case: String, tuningName: String, instrumentName: String, scroll: Boolean): Pair<DpRect, DpRect> {
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        fun label(name: String, tag: String) =
+            compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true)
+        val tuningNode = label(tuningName, TunerTestTags.TUNING_PICKER)
+        val instrumentNode = label(instrumentName, TunerTestTags.INSTRUMENT_PICKER)
+        assertWhollyShown(tuningNode, "$case: $tuningName", scroll = scroll)
+        val tuningLabel = tuningNode.getBoundsInRoot()
+        assertWhollyShown(instrumentNode, "$case: $instrumentName", scroll = scroll)
+        val instrumentLabel = instrumentNode.getBoundsInRoot()
+        val tuningPicker = compose.onNodeWithTag(TunerTestTags.TUNING_PICKER).getBoundsInRoot()
+        val instrumentPicker = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).getBoundsInRoot()
+        for ((name, bounds) in listOf(tuningName to tuningPicker, instrumentName to instrumentPicker)) {
+            if (bounds.left < window.left - SLACK || bounds.right > window.right + SLACK) fail("$case: $name $bounds is outside the window $window")
+        }
+        if (tuningPicker.overlaps(instrumentPicker)) fail("$case: the pickers $tuningPicker and $instrumentPicker overlap")
+        // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
+        val pickerNode = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).fetchSemanticsNode()
+        val stringNode = compose.onNodeWithText(labels(shownTuning.value, Notation.SHARPS).first()).fetchSemanticsNode()
+        val pickerBottom = pickerNode.positionInRoot.y + pickerNode.size.height
+        if (pickerBottom > stringNode.positionInRoot.y + 1f) fail("$case: the instrument picker ends at $pickerBottom px, the strings start at ${stringNode.positionInRoot.y}")
+        return tuningLabel to instrumentLabel
+    }
+
+    /** The tuning's and its instrument's names in the language of [resources]. */
+    private fun pickerNames(resources: Resources, tuning: Tuning): Pair<String, String> {
+        val instrument = Instruments.ofTuning(tuning.id)!!
+        return resources.getString(tuningNameRes(tuning.id)!!) to resources.getString(instrumentNameRes(instrument.id)!!)
+    }
+
+    private fun resourcesFor(locale: String): Resources {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        return context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) },
+        ).resources
     }
 
     /** Each of [tuning]'s buttons in the window, wholly shown, clear of the others. */
@@ -249,5 +347,9 @@ class StringRowStylesTest(private val style: VisualStyle) {
             Instruments.GUITAR_7.defaultTuning,
             Instruments.GUITAR_8.defaultTuning,
         )
+
+        /** Each instrument's tunings, with the guitar's longest names and the ukulele's low G. */
+        private val PICKER_TUNINGS = Instruments.all.map { it.defaultTuning } +
+            listOf(Tunings.HALF_STEP_DOWN, Tunings.FULL_STEP_DOWN, Instruments.UKULELE.tunings.last())
     }
 }

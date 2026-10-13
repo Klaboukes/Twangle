@@ -266,6 +266,59 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `picking an instrument saves it with its standard tuning and tunes its strings`() = runTest(dispatcher) {
+        // G3 (196 Hz): the violin's lowest string.
+        val recorder = FakeAudioRecorder(TestSignals.sawtooth(195.998f, length = 48_000), loop = true)
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertEquals(Instruments.GUITAR, vm.instrument.value)
+
+        vm.setInstrument(Instruments.VIOLIN)
+        advanceTimeBy(500)
+
+        assertEquals(Instruments.VIOLIN, settings.current.instrument)
+        assertEquals(Instruments.VIOLIN.defaultTuning, settings.current.tuning)
+        assertEquals(Instruments.VIOLIN, vm.instrument.value)
+        val state = vm.detected()
+        assertEquals(Instruments.VIOLIN.defaultTuning, state.tuning)
+        assertEquals(0, state.targetString)
+        assertEquals("G", state.noteName)
+        assertEquals(3, state.octave)
+        assertEquals(1, recorder.startCount)
+    }
+
+    @Test
+    fun `picking another instrument releases the lock`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.toggleString(5)
+        advanceTimeBy(500)
+        assertEquals(5, vm.detected().lockedString)
+
+        vm.setInstrument(Instruments.BASS_4)
+        advanceTimeBy(500)
+
+        val state = vm.state.value
+        val locked = (state as? TunerUiState.Detected)?.lockedString ?: (state as? TunerUiState.Listening)?.lockedString
+        assertNull(locked)
+    }
+
+    @Test
+    fun `the instrument starts as the saved one before the settings arrive`() = runTest(dispatcher) {
+        val vm = TunerViewModel(
+            a2Recorder(),
+            FakeSettingsRepository(AppSettings(instrument = Instruments.CELLO, tuning = Instruments.CELLO.defaultTuning)),
+            StandardTestDispatcher(testScheduler),
+            savedInstrument = Instruments.CELLO,
+        )
+
+        assertEquals(Instruments.CELLO, vm.instrument.value)
+    }
+
+    @Test
     fun `choosing a tuning saves it and retargets the strings`() = runTest(dispatcher) {
         // D2 (73.42 Hz): the 6th string in Drop D, but 2 semitones flat of E2 in standard.
         val vm = viewModel(FakeAudioRecorder(TestSignals.sawtooth(73.416f, length = 48_000), loop = true))

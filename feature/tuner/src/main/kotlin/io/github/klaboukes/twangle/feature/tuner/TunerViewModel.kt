@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -43,8 +44,8 @@ import kotlinx.coroutines.launch
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedStringLockTipSeen] does the same for the one-time string-lock tip, and
- * [savedKeepTwoPaneLandscape] for the layout on its side.
+ * [savedStringLockTipSeen] does the same for the one-time string-lock tip, [savedInstrument] for the
+ * instrument picker, and [savedKeepTwoPaneLandscape] for the layout on its side.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -54,6 +55,7 @@ class TunerViewModel(
     savedMode: TunerMode = AppSettings().mode,
     savedStringLockTipSeen: Boolean = AppSettings().stringLockTipSeen,
     savedKeepTwoPaneLandscape: Boolean = AppSettings().keepTwoPaneLandscape,
+    savedInstrument: Instrument = AppSettings().instrument,
 ) : ViewModel() {
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
@@ -70,6 +72,11 @@ class TunerViewModel(
     val mode: StateFlow<TunerMode> =
         combine(settingsRepository.settings, pickedMode) { settings, picked -> picked ?: settings.mode }
             .stateIn(viewModelScope, SharingStarted.Eagerly, savedMode)
+
+    /** The instrument whose strings guitar mode tunes (a saved setting); the tuning is always one of its presets. */
+    val instrument: StateFlow<Instrument> = settingsRepository.settings
+        .map { it.instrument }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, savedInstrument)
 
     /** Whether the screen should stay on while the tuner is shown (a saved setting). */
     val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings
@@ -202,6 +209,14 @@ class TunerViewModel(
         if (stringLockTipDismissed.value) return
         stringLockTipDismissed.value = true
         viewModelScope.launch { settingsRepository.setStringLockTipSeen(true) }
+    }
+
+    /**
+     * Saves [instrument] with its standard tuning; listening follows from the next frame, with the
+     * longer window for low strings where needed. The instrument already picked keeps its tuning.
+     */
+    fun setInstrument(instrument: Instrument) {
+        viewModelScope.launch { settingsRepository.setInstrument(instrument) }
     }
 
     /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */

@@ -57,7 +57,7 @@ class TunerScreenTest {
         }
     }
 
-    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar))
+    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     @Test
     fun onItsSideTheScreenIsCompactByDefault() {

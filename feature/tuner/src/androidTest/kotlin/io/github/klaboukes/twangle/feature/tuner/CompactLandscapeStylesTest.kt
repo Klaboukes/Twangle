@@ -128,7 +128,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     private val tuneUp get() = compose.onNodeWithText(context.getString(R.string.tuner_tune_up))
     private val targetString get() = compose.onNodeWithText("A2")
     private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS)
-    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar))
+    private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     /**
      * Guitar mode with the needle and the wave, then chromatic mode with the wave (the cents and

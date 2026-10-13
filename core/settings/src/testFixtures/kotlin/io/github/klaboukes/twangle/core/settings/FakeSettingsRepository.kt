@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,13 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMode(mode: TunerMode) = state.update { it.copy(mode = mode) }
 
-    override suspend fun setTuning(tuning: Tuning) = state.update { it.copy(tuning = tuning) }
+    override suspend fun setInstrument(instrument: Instrument) = state.update {
+        if (it.instrument == instrument) it else it.copy(instrument = instrument, tuning = instrument.defaultTuning)
+    }
+
+    override suspend fun setTuning(tuning: Tuning) = state.update {
+        it.copy(instrument = Instruments.ofTuning(tuning.id) ?: it.instrument, tuning = tuning)
+    }
 
     override suspend fun setNotation(notation: Notation) = state.update { it.copy(notation = notation) }
 

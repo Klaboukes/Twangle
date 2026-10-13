@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +66,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(AppSettings(), settings)
         assertEquals(440f, settings.a4Hz)
         assertEquals(TunerMode.AUTO, settings.mode)
+        assertEquals(Instruments.GUITAR, settings.instrument)
         assertEquals(Tunings.STANDARD, settings.tuning)
         assertEquals(Notation.SHARPS, settings.notation)
         assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
@@ -163,6 +165,85 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `picking an instrument picks its standard tuning, and both survive a restart`() = runTest {
+        repository().setInstrument(Instruments.BASS_5)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.BASS_5, settings.instrument)
+        assertEquals(Instruments.BASS_5.defaultTuning, settings.tuning)
+    }
+
+    @Test
+    fun `picking the instrument already picked keeps its tuning`() = runTest {
+        val repo = repository()
+        repo.setTuning(Instruments.UKULELE.tuningById("ukulele_low_g")!!)
+        repo.setInstrument(Instruments.UKULELE)
+
+        assertEquals("ukulele_low_g", repo.settings.first().tuning.id)
+    }
+
+    @Test
+    fun `picking a tuning picks its instrument too`() = runTest {
+        val repo = repository()
+        repo.setInstrument(Instruments.CELLO)
+        repo.setTuning(Tunings.DROP_D)
+
+        val settings = repo.settings.first()
+        assertEquals(Instruments.GUITAR, settings.instrument)
+        assertEquals(Tunings.DROP_D, settings.tuning)
+    }
+
+    @Test
+    fun `a tuning saved before the instrument picker opens on the guitar`() = runTest {
+        dataStore().edit { it[stringPreferencesKey("tuning_id")] = Tunings.OPEN_G.id }
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.GUITAR, settings.instrument)
+        assertEquals(Tunings.OPEN_G, settings.tuning)
+    }
+
+    @Test
+    fun `a saved tuning that isn't the saved instrument's gives the instrument's standard tuning`() = runTest {
+        dataStore().edit {
+            it[stringPreferencesKey("instrument_id")] = Instruments.VIOLIN.id
+            it[stringPreferencesKey("tuning_id")] = Tunings.DROP_D.id
+        }
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.VIOLIN, settings.instrument)
+        assertEquals(Instruments.VIOLIN.defaultTuning, settings.tuning)
+    }
+
+    @Test
+    fun `an unknown saved instrument goes with its saved tuning`() = runTest {
+        dataStore().edit {
+            it[stringPreferencesKey("instrument_id")] = "banjo"
+            it[stringPreferencesKey("tuning_id")] = "bass_4_standard"
+        }
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.BASS_4, settings.instrument)
+        assertEquals("bass_4_standard", settings.tuning.id)
+    }
+
+    @Test
+    fun `a known instrument with an unknown tuning gets its standard tuning`() = runTest {
+        dataStore().edit {
+            it[stringPreferencesKey("instrument_id")] = Instruments.MANDOLIN.id
+            it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
+        }
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.MANDOLIN, settings.instrument)
+        assertEquals(Instruments.MANDOLIN.defaultTuning, settings.tuning)
+    }
+
+    @Test
     fun `A4 is rounded to whole Hz and kept within 415 to 466`() = runTest {
         val repo = repository()
 
@@ -180,6 +261,7 @@ class DataStoreSettingsRepositoryTest {
         store.edit {
             it[stringPreferencesKey("tuner_mode")] = "BASS"
             it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
+            it[stringPreferencesKey("instrument_id")] = "theremin"
             it[stringPreferencesKey("notation")] = "GERMAN"
             it[stringPreferencesKey("in_tune_precision")] = "PERFECT"
             it[stringPreferencesKey("theme")] = "SEPIA"
@@ -193,6 +275,7 @@ class DataStoreSettingsRepositoryTest {
 
         val settings = repository(store).settings.first()
         assertEquals(TunerMode.AUTO, settings.mode)
+        assertEquals(Instruments.DEFAULT, settings.instrument)
         assertEquals(Tunings.DEFAULT, settings.tuning)
         assertEquals(Notation.DEFAULT, settings.notation)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)

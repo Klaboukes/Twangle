@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,13 @@ interface SettingsRepository {
 
     suspend fun setMode(mode: TunerMode)
 
+    /**
+     * Picks [instrument] and its standard tuning ([Instrument.defaultTuning]), both at once. Picking
+     * the instrument already picked changes nothing, so its tuning stays.
+     */
+    suspend fun setInstrument(instrument: Instrument)
+
+    /** Picks [tuning] and, for a preset, the instrument it belongs to, so the two always match. */
     suspend fun setTuning(tuning: Tuning)
 
     suspend fun setNotation(notation: Notation)

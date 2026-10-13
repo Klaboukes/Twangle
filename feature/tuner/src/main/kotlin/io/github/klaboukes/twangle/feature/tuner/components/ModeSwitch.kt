@@ -52,7 +52,7 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
 private const val NEON_OUTLINE_ALPHA = 0.55f
 
 private fun label(mode: TunerMode): Int = when (mode) {
-    TunerMode.AUTO -> R.string.tuner_mode_guitar
+    TunerMode.AUTO -> R.string.tuner_mode_strings
     TunerMode.CHROMATIC -> R.string.tuner_mode_chromatic
 }
 

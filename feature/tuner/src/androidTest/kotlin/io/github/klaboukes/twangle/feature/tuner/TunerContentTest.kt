@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -93,6 +95,7 @@ class TunerContentTest {
     private var retries = 0
     private val modeChanges = mutableListOf<TunerMode>()
     private val tuningChanges = mutableListOf<Tuning>()
+    private val instrumentChanges = mutableListOf<Instrument>()
     private val stringClicks = mutableListOf<Int>()
     private var tipDismissals = 0
 
@@ -156,6 +159,7 @@ class TunerContentTest {
                         shownMode.value,
                         onModeChange = { modeChanges += it },
                         onTuningChange = { tuningChanges += it },
+                        onInstrumentChange = { instrumentChanges += it },
                         onStringClick = { stringClicks += it },
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
@@ -245,7 +249,7 @@ class TunerContentTest {
     @Test
     fun modeSwitchReportsTheChoice() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performClick()
         assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
     }
@@ -257,6 +261,43 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performClick()
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
+    }
+
+    @Test
+    fun instrumentPickerListsEveryInstrumentAndReportsTheChoice() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
+            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_guitar))))
+            .performClick()
+        compose.onNodeWithText(context.getString(R.string.instrument_bass_5)).assertIsDisplayed()
+        // TalkBack hears each with its standard tuning's strings.
+        compose.onNode(hasContentDescription("${context.getString(R.string.instrument_violin)}, G, D, A, E")).assertExists()
+        compose.onNodeWithText(context.getString(R.string.instrument_cello)).performScrollTo().performClick()
+        assertEquals(listOf(Instruments.CELLO), instrumentChanges)
+    }
+
+    @Test
+    fun tuningMenuShowsOnlyTheInstrumentsTunings() {
+        val ukulele = Instruments.UKULELE
+        show(TunerUiState.Listening(TunerMode.AUTO, ukulele.defaultTuning))
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
+            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_ukulele))))
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuning_low_g)).assertIsDisplayed().performClick()
+        assertEquals(listOf(ukulele.tunings.last()), tuningChanges)
+    }
+
+    @Test
+    fun aBassShowsItsOwnNamesAndStrings() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Instruments.BASS_5.defaultTuning))
+        compose.onNodeWithTag(TunerTestTags.TUNING_PICKER)
+            .assert(hasAnyDescendant(hasText(context.getString(R.string.tuning_standard))))
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
+            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_bass_5))))
+        compose.onNodeWithText(Instruments.BASS_5.defaultTuning.id).assertDoesNotExist()
+        stringChip("B0").assertIsDisplayed()
+        stringChip("G2").assertIsDisplayed()
     }
 
     @Test
@@ -409,7 +450,7 @@ class TunerContentTest {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
         // The whole readout fits: the gauge shrinks so the frequency under the note isn't cut off.
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val frequency = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).getBoundsInRoot()
@@ -812,7 +853,7 @@ class TunerContentTest {
         val scale = window.width / PHONE_UPRIGHT.width
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         assertEquals("meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, gauge.width.value, 1f)
-        val modeSwitch = compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).getBoundsInRoot()
+        val modeSwitch = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).getBoundsInRoot()
         val note = compose.onNodeWithText("E").getBoundsInRoot()
         val strings = stringChip("E2").getBoundsInRoot()
         assertTrue("mode switch near the top at ${modeSwitch.top}", modeSwitch.top - window.top < 40.dp * scale)
@@ -1321,7 +1362,7 @@ class TunerContentTest {
         for (text in listOf(tuneUp, twelveCentsFlat, frequency)) {
             assertWholeTextShown(compose.onNodeWithText(text).performScrollTo().assertIsDisplayed())
         }
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -1404,7 +1445,7 @@ class TunerContentTest {
         assertTrue("gauge ends at ${gauge.bottom}, window at ${window.bottom}", gauge.bottom <= window.bottom)
         assertTrue("frequency ends at ${frequency.bottom}, window at ${window.bottom}", frequency.bottom <= window.bottom)
         // No mode switch or tuning picker.
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
     }
@@ -1474,7 +1515,7 @@ class TunerContentTest {
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         assertTrue("gauge is ${gauge.width} wide in ${window.width}", gauge.width >= window.width * 0.5f)
         assertTrue(compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot().left >= gauge.right)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
     }
 
     @Test
@@ -1497,7 +1538,7 @@ class TunerContentTest {
     @Test
     fun uprightPhoneIgnoresCompactLandscape() {
         show(detected(-12.3f), compactLandscape = true)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
     }
 
@@ -1507,13 +1548,13 @@ class TunerContentTest {
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertIsDisplayed()
         stringChip("E4").assertIsDisplayed().performClick()
         assertEquals(listOf(5), stringClicks)
         // Without touching them again they hide after a few seconds.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertIsDisplayed()
     }
 
@@ -1527,9 +1568,9 @@ class TunerContentTest {
         assertEquals(listOf(TunerMode.CHROMATIC), modeChanges)
         // Past the first deadline, the touch started the time again.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS - 1_000)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
         compose.mainClock.advanceTimeBy(1_000 + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
     }
 
     @Test
@@ -1544,7 +1585,21 @@ class TunerContentTest {
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
         // Once the menu is closed, the controls hide after the usual time.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+    }
+
+    @Test
+    fun anOpenInstrumentMenuKeepsTheControls() {
+        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        compose.mainClock.advanceTimeBy(FADE_MS)
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).performClick()
+        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS * 2)
+        compose.onNodeWithText(context.getString(R.string.instrument_violin)).assertIsDisplayed().performClick()
+        assertEquals(listOf(Instruments.VIOLIN), instrumentChanges)
+        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
     }
 
     @Test
@@ -1555,7 +1610,7 @@ class TunerContentTest {
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .performSemanticsAction(SemanticsActions.OnClick)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_guitar)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
     }
 
     @Test
