@@ -101,4 +101,12 @@
     <string name="tuning_editor_string">%1$s-snaar</string>
     <string name="tuning_editor_lower">%1$s, halve toon lager</string>
     <string name="tuning_editor_raise">%1$s, halve toon hoger</string>
+
+    <string name="tuner_my_tunings">Mijn stemmingen</string>
+    <string name="tuner_tuning_options">Opties voor %1$s</string>
+    <string name="tuner_edit_tuning">Bewerken</string>
+    <string name="tuner_delete_tuning">Verwijderen</string>
+    <string name="tuner_delete_tuning_title">Deze stemming verwijderen?</string>
+    <string name="tuner_delete_tuning_text">“%1$s” is daarna voorgoed weg.</string>
+    <string name="tuner_delete_tuning_cancel">Annuleren</string>
 </resources>

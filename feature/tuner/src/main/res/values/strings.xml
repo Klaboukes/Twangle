@@ -125,4 +125,16 @@
     <string name="tuning_editor_raise">%1$s, a semitone higher</string>
     <!-- A string's note as TalkBack says it: %1$s the string ("E 2 string"), %2$s its note now ("D 2"). -->
     <string name="tuning_editor_spoken_note" translatable="false">%1$s, %2$s</string>
+
+    <!-- The small heading over the player's own tunings in the instrument and tuning panel. -->
+    <string name="tuner_my_tunings">My tunings</string>
+    <!-- The ⋮ button at the end of one of the player's own tunings, as TalkBack says it. %1$s is its name. -->
+    <string name="tuner_tuning_options">Options for %1$s</string>
+    <!-- The ⋮ button's menu, and the button that confirms the delete. -->
+    <string name="tuner_edit_tuning">Edit</string>
+    <string name="tuner_delete_tuning">Delete</string>
+    <!-- Asks before one of the player's own tunings is deleted. %1$s is its name, e.g. "“Drop D loose” will be gone for good." -->
+    <string name="tuner_delete_tuning_title">Delete this tuning?</string>
+    <string name="tuner_delete_tuning_text">“%1$s” will be gone for good.</string>
+    <string name="tuner_delete_tuning_cancel">Cancel</string>
 </resources>

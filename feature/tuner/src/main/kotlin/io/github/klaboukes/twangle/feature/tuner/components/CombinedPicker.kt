@@ -90,8 +90,10 @@ import kotlin.math.max
  * instrument calls [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the
  * panel open; picking a tuning calls [onTuningChange] and closes it. [onExpandedChange] hears when the
  * panel opens and closes (closed also when the button goes away). [customTunings] are the player's own
- * tunings; the button names a picked one by its name. With [onNewTuning], the list ends in "New
- * tuning", which closes the panel and calls it with the instrument shown.
+ * tunings; the button names a picked one by its name, and the panel lists the instrument's under its
+ * presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls [onEditTuning], Delete
+ * asks first and then calls [onDeleteTuning] (no menu entry without its lambda). With [onNewTuning], the
+ * list ends in "New tuning", which closes the panel and calls it with the instrument shown.
  */
 @Composable
 fun CombinedPicker(
@@ -104,6 +106,8 @@ fun CombinedPicker(
     onExpandedChange: (Boolean) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
     onNewTuning: ((Instrument) -> Unit)? = null,
+    onEditTuning: ((CustomTuning) -> Unit)? = null,
+    onDeleteTuning: ((CustomTuning) -> Unit)? = null,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
@@ -116,7 +120,15 @@ fun CombinedPicker(
         modifier = modifier,
     )
     if (expanded) {
-        PickerPanel(instrument, tuning, notation, onInstrumentChange, onTuningChange, onNewTuning, onDismiss = { expanded = false })
+        PickerPanel(
+            instrument,
+            tuning,
+            notation,
+            onInstrumentChange,
+            onTuningChange,
+            TuningActions(customTunings.filter { it.instrument == instrument }, onNewTuning, onEditTuning, onDeleteTuning),
+            onDismiss = { expanded = false },
+        )
     }
 }
 
@@ -187,7 +199,8 @@ private fun TextStyle.scaledBy(scale: Float): TextStyle =
 /**
  * The panel from the bottom (a Material 3 modal bottom sheet over the dimmed tuner): its title, the
  * instruments in one row that scrolls sideways ([instrument] picked), then [instrument]'s tunings
- * with their strings ([tuning] ticked). The list scrolls when it is taller than the room.
+ * with their strings ([tuning] ticked): the presets, then the player's own ([mine]). The list scrolls
+ * when it is taller than the room.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,7 +210,7 @@ private fun PickerPanel(
     notation: Notation,
     onInstrumentChange: (Instrument) -> Unit,
     onTuningChange: (Tuning) -> Unit,
-    onNewTuning: ((Instrument) -> Unit)?,
+    mine: TuningActions,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -245,21 +258,41 @@ private fun PickerPanel(
                     .verticalScroll(rememberScrollState())
                     .padding(start = LIST_PADDING, end = LIST_PADDING, top = 2.dp, bottom = 22.dp),
             ) {
-                PresetTunings(instrument, tuning, notation, onSelect = pick)
-                // Later in Phase 16 the player's own tunings follow here, under the presets.
-                if (onNewTuning != null) NewTuningRow(onClick = { close { onNewTuning(instrument) } })
+                Column(Modifier.selectableGroup()) {
+                    PresetTunings(instrument, tuning, notation, onSelect = pick)
+                    if (mine.tunings.isNotEmpty() || mine.onNew != null) {
+                        MyTunings(
+                            mine.tunings,
+                            tuning,
+                            notation,
+                            onSelect = pick,
+                            onEdit = mine.onEdit?.let { edit -> { picked: CustomTuning -> close { edit(picked) } } },
+                            onDelete = mine.onDelete,
+                        )
+                    }
+                }
+                mine.onNew?.let { onNew -> NewTuningRow(onClick = { close { onNew(instrument) } }) }
             }
         }
     }
 }
 
+/**
+ * The player's own tunings for the instrument shown ([tunings]) and what "New tuning" ([onNew]), Edit
+ * ([onEdit]) and Delete ([onDelete]) do; null leaves that row or menu entry out.
+ */
+private data class TuningActions(
+    val tunings: List<CustomTuning>,
+    val onNew: ((Instrument) -> Unit)?,
+    val onEdit: ((CustomTuning) -> Unit)?,
+    val onDelete: ((CustomTuning) -> Unit)?,
+)
+
 /** [instrument]'s preset tunings, each a [TuningRow]; [selected] is ticked. */
 @Composable
 private fun PresetTunings(instrument: Instrument, selected: Tuning, notation: Notation, onSelect: (Tuning) -> Unit) {
-    Column(Modifier.selectableGroup()) {
-        for (preset in instrument.tunings) {
-            TuningRow(tuningLabel(preset), preset, notation, selected = preset == selected, onClick = { onSelect(preset) })
-        }
+    for (preset in instrument.tunings) {
+        TuningRow(tuningLabel(preset), preset, notation, selected = preset == selected, onClick = { onSelect(preset) })
     }
 }
 
@@ -366,7 +399,7 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
 /**
  * A tuning in the panel: its [name] over its open strings, the [selected] one in the container colour
  * and ticked. TalkBack says the name and the strings ("Half step down, E flat, A flat …"). The
- * player's own tunings will use it too.
+ * player's own tunings put their ⋮ button in [trailing], at the end, outside the part that picks it.
  */
 @Composable
 internal fun TuningRow(
@@ -376,6 +409,7 @@ internal fun TuningRow(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     val speech = rememberNoteNameSpeech()
@@ -387,24 +421,32 @@ internal fun TuningRow(
             .fillMaxWidth()
             .heightIn(min = ROW_HEIGHT)
             .clip(shape)
-            .background(if (selected) scheme.primaryContainer else Color.Transparent, shape)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .semantics { contentDescription = spoken }
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .background(if (selected) scheme.primaryContainer else Color.Transparent, shape),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(
-                name,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
-            )
-            Text(openStrings(tuning, notation), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .heightIn(min = ROW_HEIGHT)
+                .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+                .semantics { contentDescription = spoken }
+                .padding(start = 12.dp, end = if (trailing != null) 4.dp else 12.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    name,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
+                )
+                Text(openStrings(tuning, notation), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+            }
+            if (selected) {
+                Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
+            }
         }
-        if (selected) {
-            Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
-        }
+        trailing?.invoke()
     }
 }
 
@@ -467,6 +509,9 @@ private val CHIP_PADDING = 16.dp
 private val CHIP_GAP = 8.dp
 private val ROW_HEIGHT = 56.dp
 private val CHECK_SIZE = 22.dp
+
+/** The list's side padding, which [MyTunings]' heading lines up with. */
+internal val TUNING_TEXT_INSET = 12.dp
 
 @Preview(showBackground = true)
 @Composable

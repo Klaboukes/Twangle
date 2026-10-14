@@ -232,6 +232,14 @@ class TunerViewModel(
         viewModelScope.launch { settingsRepository.setTuning(tuning) }
     }
 
+    /**
+     * Deletes the player's own tuning [id] for good; when it was picked, the tuner goes back to its
+     * instrument's standard tuning (see [SettingsRepository.deleteCustomTuning]).
+     */
+    fun deleteCustomTuning(id: String) {
+        viewModelScope.launch { settingsRepository.deleteCustomTuning(id) }
+    }
+
     /** Opens the microphone again after an error. */
     fun retry() {
         attempt.value++

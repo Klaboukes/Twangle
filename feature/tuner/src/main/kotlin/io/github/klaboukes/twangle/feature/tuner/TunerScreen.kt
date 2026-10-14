@@ -115,8 +115,8 @@ import kotlin.math.min
  * [savedKeepTwoPaneLandscape] a turned phone from switching layout, and [savedInstrument] the instrument
  * button from showing the guitar a moment first ([savedCustomTunings] likewise names a picked custom
  * tuning from the start). The compact layout on its side is used unless the "full layout on its side"
- * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning;
- * the tuner rests (and lets go of the microphone) while the editor is shown in its place.
+ * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
+ * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  */
 @Composable
 fun TunerScreen(
@@ -208,6 +208,8 @@ fun TunerScreen(
                     onInstrumentChange = viewModel::setInstrument,
                     customTunings = customTunings,
                     onNewTuning = { onOpenTuningEditor(it, null) },
+                    onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
+                    onDeleteTuning = { viewModel.deleteCustomTuning(it.id) },
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
                     display = display,
@@ -259,6 +261,13 @@ object TunerTestTags {
     /** The panel's "New tuning" row, which opens the tuning editor. */
     const val NEW_TUNING = "tuner_new_tuning"
 
+    /** The dialog that asks before one of the player's own tunings is deleted. */
+    const val DELETE_TUNING_DIALOG = "tuner_delete_tuning_dialog"
+
+    /** One of the player's own tunings in the panel, by its id, and its ⋮ button (Edit, Delete). */
+    fun customTuning(id: String): String = "tuner_custom_tuning_$id"
+    fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
+
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
@@ -294,8 +303,9 @@ private fun KeepScreenOn() {
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss]. [instrument] is the one on the instrument-and-tuning button (by default the one
  * [state]'s tuning belongs to); picking another calls [onInstrumentChange]. [customTunings] are the player's
- * own tunings (the button names a picked one by its name), and [onNewTuning], when given, adds "New tuning"
- * to the panel's list.
+ * own tunings (the button names a picked one by its name; the panel lists the instrument's under its
+ * presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after asking), and [onNewTuning],
+ * when given, adds "New tuning" to the panel's list.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -330,6 +340,8 @@ fun TunerContent(
     onInstrumentChange: (Instrument) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
     onNewTuning: ((Instrument) -> Unit)? = null,
+    onEditTuning: ((CustomTuning) -> Unit)? = null,
+    onDeleteTuning: ((CustomTuning) -> Unit)? = null,
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -350,7 +362,7 @@ fun TunerContent(
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
-        val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning)
+        val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning, onEditTuning, onDeleteTuning)
         GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, onStringClick, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
@@ -820,13 +832,15 @@ private data class GuitarControlsState(
 
 /**
  * The instrument on the instrument-and-tuning button, what picking another does, the player's own
- * tunings and what "New tuning" does (no such row without it).
+ * tunings and what "New tuning", Edit and Delete do (no such row or menu entry without them).
  */
 private data class InstrumentChoice(
     val instrument: Instrument,
     val onChange: (Instrument) -> Unit,
     val customTunings: List<CustomTuning> = emptyList(),
     val onNewTuning: ((Instrument) -> Unit)? = null,
+    val onEdit: ((CustomTuning) -> Unit)? = null,
+    val onDelete: ((CustomTuning) -> Unit)? = null,
 )
 
 /** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
@@ -890,6 +904,8 @@ private fun GuitarControls(
             onExpandedChange = onMenuOpenChange,
             customTunings = instrument.customTunings,
             onNewTuning = instrument.onNewTuning,
+            onEditTuning = instrument.onEdit,
+            onDeleteTuning = instrument.onDelete,
         )
     }
     val strings = @Composable {

@@ -28,11 +28,14 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -65,6 +68,7 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
+import io.github.klaboukes.twangle.feature.tuner.components.tuningNameRes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -101,6 +105,8 @@ class TunerContentTest {
     private val tuningChanges = mutableListOf<Tuning>()
     private val instrumentChanges = mutableListOf<Instrument>()
     private val newTuningRequests = mutableListOf<Instrument>()
+    private val editRequests = mutableListOf<CustomTuning>()
+    private val deleteRequests = mutableListOf<CustomTuning>()
 
     /** The player's own tunings [show] passes on. */
     private var shownCustomTunings = emptyList<CustomTuning>()
@@ -170,6 +176,8 @@ class TunerContentTest {
                         onInstrumentChange = { instrumentChanges += it },
                         customTunings = shownCustomTunings,
                         onNewTuning = { newTuningRequests += it },
+                        onEditTuning = { editRequests += it },
+                        onDeleteTuning = { deleteRequests += it },
                         onStringClick = { stringClicks += it },
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
@@ -320,6 +328,107 @@ class TunerContentTest {
         val guitar = context.getString(R.string.instrument_guitar)
         picker.assert(hasText("$guitar · Low C")).assert(hasContentDescription("$guitar, Low C"))
         compose.onNodeWithText(mine.id, substring = true).assertDoesNotExist()
+    }
+
+    private val lowC = CustomTuning("custom_1", "Low C", Instruments.GUITAR, listOf(36, 43, 48, 55, 59, 64).map(::Note))
+    private val ukuleleOwn = CustomTuning("custom_2", "Uke own", Instruments.UKULELE, listOf(67, 60, 64, 71).map(::Note))
+
+    private fun ownRow(tuning: CustomTuning) = compose.onNodeWithTag(TunerTestTags.customTuning(tuning.id))
+    private fun ownMenu(tuning: CustomTuning) = compose.onNodeWithTag(TunerTestTags.customTuningMenu(tuning.id))
+    private fun text(id: Int) = context.getString(id)
+
+    @Test
+    fun thePanelListsTheInstrumentsOwnTuningsUnderThePresetsAndPicksOne() {
+        shownCustomTunings = listOf(lowC, ukuleleOwn)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        picker.performClick()
+        // Under the last preset, above "New tuning" (where they are, also when scrolled out of view).
+        val heading = compose.onNodeWithContentDescription(text(R.string.tuner_my_tunings))
+        val row = compose.onNodeWithText("Low C")
+        val tops = listOf(
+            compose.onNodeWithText(text(tuningNameRes(Instruments.GUITAR.tunings.last().id)!!)).fetchSemanticsNode().let { it.positionInRoot.y + it.size.height },
+            heading.fetchSemanticsNode().positionInRoot.y,
+            row.fetchSemanticsNode().positionInRoot.y,
+            compose.onNodeWithTag(TunerTestTags.NEW_TUNING).fetchSemanticsNode().positionInRoot.y,
+        )
+        assertEquals(tops.sorted(), tops)
+        heading.performScrollTo().assertIsDisplayed().assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
+        row.performScrollTo().assertIsDisplayed().assertIsNotSelected()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+        // TalkBack: its name and strings, and the ⋮ button by the tuning's name.
+        row.assert(hasContentDescription("Low C, C, G, C, G, B, E"))
+        ownMenu(lowC).assert(hasContentDescription(context.getString(R.string.tuner_tuning_options, "Low C")))
+        // Only this instrument's own tunings.
+        ownRow(ukuleleOwn).assertDoesNotExist()
+        row.performClick()
+        assertEquals(listOf(lowC.tuning), tuningChanges)
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
+    }
+
+    @Test
+    fun aPickedOwnTuningIsTickedInThePanel() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning))
+        picker.performClick()
+        compose.onNodeWithText("Low C").performScrollTo().assertIsSelected()
+        compose.onNodeWithText(text(R.string.tuning_standard)).assertIsNotSelected()
+    }
+
+    @Test
+    fun withoutOwnTuningsMyTuningsStandsOverNewTuning() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        picker.performClick()
+        val heading = compose.onNodeWithContentDescription(text(R.string.tuner_my_tunings)).performScrollTo().assertIsDisplayed()
+        assertTrue(compose.onNodeWithTag(TunerTestTags.NEW_TUNING).fetchSemanticsNode().positionInRoot.y > heading.fetchSemanticsNode().positionInRoot.y)
+    }
+
+    @Test
+    fun editClosesThePanelAndOpensTheEditorForThatTuning() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        picker.performClick()
+        ownMenu(lowC).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.tuner_edit_tuning)).assertIsDisplayed().performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(lowC), editRequests)
+        assertTrue(tuningChanges.isEmpty())
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
+    }
+
+    @Test
+    fun deleteAsksFirstAndCancelKeepsTheTuning() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        picker.performClick()
+        ownMenu(lowC).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.tuner_delete_tuning)).performClick()
+        compose.onNodeWithTag(TunerTestTags.DELETE_TUNING_DIALOG).assertExists()
+        compose.onNodeWithText(text(R.string.tuner_delete_tuning_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_delete_tuning_text, "Low C")).assertIsDisplayed()
+        assertTrue(deleteRequests.isEmpty())
+        compose.onNodeWithText(text(R.string.tuner_delete_tuning_cancel)).performClick()
+        compose.onNodeWithTag(TunerTestTags.DELETE_TUNING_DIALOG).assertDoesNotExist()
+        assertTrue(deleteRequests.isEmpty())
+        // The panel stays open, the tuning still in it.
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+        ownRow(lowC).assertExists()
+    }
+
+    @Test
+    fun deleteDeletesOnlyOnceConfirmedAndKeepsThePanelOpen() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        picker.performClick()
+        ownMenu(lowC).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.tuner_delete_tuning)).performClick()
+        compose.onNode(hasText(text(R.string.tuner_delete_tuning)) and hasAnyAncestor(hasTestTag(TunerTestTags.DELETE_TUNING_DIALOG)))
+            .performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(lowC), deleteRequests)
+        assertTrue(tuningChanges.isEmpty())
+        compose.onNodeWithTag(TunerTestTags.DELETE_TUNING_DIALOG).assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
     }
 
     @Test
