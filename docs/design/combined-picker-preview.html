@@ -1,0 +1,713 @@
+<title>Twangle Combined Picker</title>
+<!--
+TWANGLE COMBINED PICKER, ROUND 1 (Phase 16 preview), APPROVED by the owner 2026-10-14 without changes: instrument first,
+the outline kept, the instruments in one sideways-scrolling row. One button for instrument and tuning, in place of the two menus.
+Button   "Guitar · Standard ▾": the instrument first, then its tuning, one line, under the note and above the strings.
+         A thin outline in the style's button shape on a see-through backing; the name shrinks only if it would not fit.
+Panel    Tapping the button opens a panel from the bottom (Material 3 modal bottom sheet) over a dimmed tuner:
+         a handle, the title, the instruments in one row that scrolls sideways (the picked one in the container
+         colour), then that instrument's tunings with their strings, the current one ticked. Below them, from
+         Phase 16, the player's own tunings and "New tuning".
+Picking  Tapping an instrument switches the tuner to its standard tuning at once and keeps the panel open, so the
+         strings change behind it. Tapping a tuning picks it and closes the panel. Tapping outside closes it.
+Styles   Colours, letters, shapes and backgrounds come from docs/design/theme-styles-preview.html (its data block is
+         copied here unchanged). The meter here is a plain sketch; the real one does not change.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+/* Layout: a sticky bar (style, light or dark, language) over a short explanation and three phones side by side
+   (now, new, panel open); one column on a phone. The script sets these tokens to the chosen style. */
+:root {
+  --bg: #F5F7FC; --surface: #FFFFFF; --fg: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF; --intune: #1B7A3E; --container: #D0D6F8; --third: #B9C4EA; --bezel: #0E0F11;
+  --display: Roboto, system-ui, sans-serif; --display-weight: 300; --display-track: 0em;
+  --num: Roboto, system-ui, sans-serif; --pbody: Roboto, system-ui, sans-serif;
+  --btn-r: 20; --pill-r: 18; --card-r: 12; --str-w: 46; --str-h: 46; --sr1: 23; --sr2: 23; --sr3: 23; --sr4: 23;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --third: #2A3160; --bezel: #000000; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --third: #2A3160; --bezel: #000000; color-scheme: dark;
+}
+
+html { background: var(--bg); }
+body {
+  background:
+    radial-gradient(80% 40% at 10% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(80% 40% at 95% 100%, color-mix(in srgb, var(--third) 8%, transparent), transparent 70%),
+    var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--ui);
+  padding-inline: 16px;
+  padding-block: 0 56px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header.intro { display: grid; gap: 10px; padding-block: 28px 0; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: clamp(28px, 7.5vw, 44px); line-height: 1.12; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 68ch; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* ---- Controls ---- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 10px 16px 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
+}
+.bar > * { min-width: 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.seg { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.seg label { flex: 1; text-align: center; padding: 8px 6px; border-radius: 999px; cursor: pointer; font: 500 13px/1.15 var(--ui); color: var(--muted); white-space: nowrap; }
+.seg input:checked + label { background: var(--accent); color: var(--on-accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 1px 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px/1.1 var(--ui); white-space: nowrap; }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--container); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sw { width: 22px; height: 22px; border-radius: 50%; flex: none; border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent); }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.toggles fieldset { flex: 1 1 200px; max-width: 360px; }
+.tlabel { display: block; font: 500 11px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px 4px; }
+
+/* ---- Explanation ---- */
+.points { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px 28px; }
+@media (min-width: 820px) { .points { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.points li { min-width: 0; display: grid; gap: 2px; }
+.points b { font-weight: 500; }
+.points span { color: var(--muted); font-size: 15px; line-height: 1.45; }
+
+/* ---- Phones ---- */
+.phones { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 22px; justify-items: center; }
+@media (min-width: 760px) { .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1120px) { .phones { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+figure { margin: 0; display: grid; gap: 10px; width: 100%; justify-items: center; min-width: 0; }
+figcaption { font: 500 12px/1.3 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-align: center; }
+figcaption em { display: block; font-style: normal; letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 13px; margin-top: 2px; }
+.phone { width: min(100%, 360px); padding: 8px; border-radius: 46px; background: var(--bezel); box-shadow: 0 1px 0 1px color-mix(in srgb, var(--fg) 12%, transparent), 0 18px 40px -18px rgba(0,0,0,.45); }
+.screen { position: relative; width: 100%; max-width: 100%; aspect-ratio: 393 / 800; border-radius: 38px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--pbody); container-type: inline-size; }
+.screen > canvas.backdrop { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dp { --dp: calc(100cqw / 393); }
+
+/* Tuner */
+.tuner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: calc(var(--dp) * 34) calc(var(--dp) * 8) calc(var(--dp) * 30); }
+.corner { position: absolute; top: calc(var(--dp) * 28); right: calc(var(--dp) * 8); width: calc(var(--dp) * 44); height: calc(var(--dp) * 44); display: grid; place-items: center; color: var(--fg); }
+.corner svg { width: calc(var(--dp) * 24); height: calc(var(--dp) * 24); }
+.mode { display: flex; border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 70%, transparent); border-radius: calc(var(--dp) * var(--btn-r)); overflow: hidden; margin-top: calc(var(--dp) * 4); background: color-mix(in srgb, var(--surface) 40%, transparent); }
+.mode span { padding: calc(var(--dp) * 10) calc(var(--dp) * 18); font: 500 calc(var(--dp) * 14)/1 var(--pbody); color: var(--fg); white-space: nowrap; }
+.mode span.on { background: var(--container); }
+.mode span + span { border-left: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 70%, transparent); }
+.meter { position: relative; width: 100%; aspect-ratio: 2 / 1; max-width: 100%; margin-top: calc(var(--dp) * 20); }
+.meter canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.note { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 88); line-height: 1.1; height: calc(var(--dp) * 100); display: flex; align-items: center; white-space: nowrap; margin-top: calc(var(--dp) * 6); }
+.note sub, .str sub, .tn sub { font-family: var(--num); font-weight: 400; vertical-align: baseline; position: relative; font-variant-numeric: lining-nums; }
+.note sub { font-size: .3em; color: var(--muted); margin-left: .06em; top: .55em; }
+.pill { display: inline-flex; align-items: center; justify-content: center; min-width: calc(var(--dp) * 150); height: calc(var(--dp) * 36); padding: 0 calc(var(--dp) * 16); border-radius: calc(var(--dp) * var(--pill-r)); border: calc(var(--dp) * 1) solid var(--line); background: color-mix(in srgb, var(--surface) 72%, transparent); font: 500 calc(var(--dp) * 16)/1 var(--num); font-variant-numeric: lining-nums; white-space: nowrap; margin-top: calc(var(--dp) * 10); }
+.grow { flex: 1; }
+.grow.top { flex: 0.5; }
+
+/* Pickers: now (two menus) and new (one button) */
+.pickers { width: 100%; display: flex; justify-content: center; }
+.pickrow { display: flex; justify-content: center; gap: calc(var(--dp) * 2); margin-bottom: calc(var(--dp) * 8); max-width: 100%; }
+.pk { font: 500 calc(var(--dp) * 15)/1 var(--display); letter-spacing: var(--display-track); color: var(--fg); padding: calc(var(--dp) * 12) calc(var(--dp) * 10); white-space: nowrap; }
+.combo {
+  display: inline-flex; align-items: center; gap: calc(var(--dp) * 8); max-width: calc(100% - var(--dp) * 16);
+  min-height: calc(var(--dp) * 44); padding: 0 calc(var(--dp) * 14) 0 calc(var(--dp) * 18); margin-bottom: calc(var(--dp) * 12);
+  border-radius: calc(var(--dp) * var(--btn-r)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent);
+  background: color-mix(in srgb, var(--surface) 45%, transparent); color: var(--fg); cursor: pointer;
+  font: 500 calc(var(--dp) * 15 * var(--fit, 1))/1 var(--display); letter-spacing: var(--display-track); white-space: nowrap;
+}
+.combo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.combo .dotsep { color: var(--muted); }
+.combo svg { flex: none; width: calc(var(--dp) * 18); height: calc(var(--dp) * 18); color: var(--muted); }
+.combo .lbl { overflow: hidden; }
+
+/* String row: shrinks alike to fit 7 or 8 strings */
+.strings { display: flex; gap: calc(var(--dp) * 7 * var(--ss, 1)); align-items: center; justify-content: center; }
+.str { width: calc(var(--dp) * var(--str-w) * var(--ss, 1)); height: calc(var(--dp) * var(--str-h) * var(--ss, 1)); display: grid; place-items: center; border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); border-radius: calc(var(--dp) * var(--sr1)) calc(var(--dp) * var(--sr2)) calc(var(--dp) * var(--sr3)) calc(var(--dp) * var(--sr4)); background: color-mix(in srgb, var(--surface) 60%, transparent); font: 500 calc(var(--dp) * 16 * max(var(--ss, 1), .8))/1 var(--display); color: var(--fg); white-space: nowrap; }
+.str sub { font-size: .62em; top: .3em; margin-left: .05em; }
+.str.target { background: var(--container); border-color: var(--accent); border-width: calc(var(--dp) * 2); }
+
+/* Shape families, as theme-styles-preview.html */
+:root[data-shape="neon"] :is(.mode, .pill, .str, .combo, .ichip, .newrow) { corner-shape: bevel; }
+:root[data-shape="pebble"] .str:nth-child(6n+1) { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .str:nth-child(6n+2) { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+:root[data-shape="pebble"] .str:nth-child(6n+3) { border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%; }
+:root[data-shape="pebble"] .str:nth-child(6n+4) { border-radius: 42% 58% 55% 45% / 50% 55% 45% 50%; }
+:root[data-shape="pebble"] .str:nth-child(6n+5) { border-radius: 55% 45% 48% 52% / 42% 60% 40% 58%; }
+:root[data-shape="pebble"] .str:nth-child(6n) { border-radius: 48% 52% 58% 42% / 58% 44% 56% 42%; }
+:root[data-shape="pebble"] :is(.pill, .combo) { border-radius: 42% 58% 46% 54% / 60% 52% 48% 40%; }
+:root[data-shape="pebble"] .ichip:nth-child(odd) { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .ichip:nth-child(even) { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+:root[data-shape="pebble"] .mode { border-radius: calc(var(--dp) * 22) calc(var(--dp) * 16) calc(var(--dp) * 24) calc(var(--dp) * 14); }
+:root[data-shape="keys"] .strings { gap: calc(var(--dp) * 3 * var(--ss, 1)); }
+:root[data-shape="keys"] .str { background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: inset 0 calc(var(--dp) * -4) 0 color-mix(in srgb, var(--fg) 8%, transparent); place-items: end center; padding-bottom: calc(var(--dp) * 9 * var(--ss, 1)); }
+:root[data-shape="soft"] :is(.str, .ichip) { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) color-mix(in srgb, #fff 35%, transparent), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) color-mix(in srgb, #000 12%, transparent); background: color-mix(in srgb, var(--surface) 85%, transparent); }
+:root[data-shape="neon"] :is(.str, .pill, .mode, .combo, .ichip) { background: transparent; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+:root[data-shape="neon"] :is(.str.target, .ichip.on) { box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 35%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* The panel: a modal bottom sheet over a dimmed tuner */
+.scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, .38); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; max-height: 74%;
+  display: flex; flex-direction: column;
+  background: var(--surface); color: var(--fg);
+  border-radius: calc(var(--dp) * max(var(--card-r), 14)) calc(var(--dp) * max(var(--card-r), 14)) 0 0;
+  box-shadow: 0 calc(var(--dp) * -6) calc(var(--dp) * 24) rgba(0, 0, 0, .22);
+  transform: translateY(102%); transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+}
+.open .scrim { opacity: 1; pointer-events: auto; }
+.open .sheet { transform: none; }
+:root[data-shape="neon"] .sheet { corner-shape: bevel; border-top: calc(var(--dp) * 1) solid color-mix(in srgb, var(--accent) 55%, transparent); }
+.handle { flex: none; width: calc(var(--dp) * 32); height: calc(var(--dp) * 4); border-radius: 99px; background: color-mix(in srgb, var(--muted) 55%, transparent); margin: calc(var(--dp) * 12) auto calc(var(--dp) * 6); }
+.sh-title { flex: none; margin: 0; padding: calc(var(--dp) * 4) calc(var(--dp) * 20) calc(var(--dp) * 10); font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 20); line-height: 1.25; }
+.irow { flex: none; display: flex; gap: calc(var(--dp) * 8); overflow-x: auto; scrollbar-width: none; padding: calc(var(--dp) * 2) calc(var(--dp) * 20) calc(var(--dp) * 12); scroll-padding-inline: calc(var(--dp) * 20); }
+.irow::-webkit-scrollbar { display: none; }
+.ichip { flex: none; min-height: calc(var(--dp) * 40); padding: 0 calc(var(--dp) * 16); display: inline-flex; align-items: center; border-radius: calc(var(--dp) * var(--btn-r)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: transparent; color: var(--fg); font: 500 calc(var(--dp) * 14)/1 var(--pbody); white-space: nowrap; cursor: pointer; }
+.ichip.on { background: var(--container); border-color: var(--accent); border-width: calc(var(--dp) * 2); padding: 0 calc(var(--dp) * 15); }
+.ichip:focus-visible, .trow:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: calc(var(--dp) * 2) calc(var(--dp) * 12) calc(var(--dp) * 22); border-top: calc(var(--dp) * 1) solid var(--line); }
+.trow { width: 100%; display: flex; align-items: center; gap: calc(var(--dp) * 12); min-height: calc(var(--dp) * 56); padding: calc(var(--dp) * 6) calc(var(--dp) * 12); margin-top: calc(var(--dp) * 4); border: 0; border-radius: calc(var(--dp) * min(var(--card-r), 16)); background: transparent; color: var(--fg); text-align: left; font: inherit; cursor: pointer; }
+.trow.on { background: var(--container); }
+.trow .tx { flex: 1; min-width: 0; display: grid; gap: calc(var(--dp) * 3); }
+.trow .tt { font: 500 calc(var(--dp) * 16)/1.25 var(--pbody); }
+.trow .tn { font: 400 calc(var(--dp) * 13)/1.2 var(--num); color: var(--muted); white-space: nowrap; word-spacing: .18em; }
+.tn sub { font-size: .72em; top: .2em; }
+.trow .ck { flex: none; width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); color: var(--accent); }
+.sub-h { margin: calc(var(--dp) * 14) calc(var(--dp) * 12) 0; font: 500 calc(var(--dp) * 12)/1.2 var(--pbody); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.newrow { display: flex; align-items: center; gap: calc(var(--dp) * 10); min-height: calc(var(--dp) * 52); margin: calc(var(--dp) * 8) 0 0; padding: 0 calc(var(--dp) * 12); border-radius: calc(var(--dp) * min(var(--card-r), 16)); border: calc(var(--dp) * 1) dashed color-mix(in srgb, var(--muted) 55%, transparent); color: var(--muted); font: 500 calc(var(--dp) * 15)/1.2 var(--pbody); }
+.newrow svg { width: calc(var(--dp) * 20); height: calc(var(--dp) * 20); flex: none; }
+.newrow .soon { margin-left: auto; font-size: calc(var(--dp) * 11); letter-spacing: .06em; text-transform: uppercase; }
+
+.ask { padding: 20px 22px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--accent); display: grid; gap: 8px; max-width: 76ch; }
+.ask p { margin: 0; }
+.ask .big { font-size: 18px; line-height: 1.4; font-weight: 500; text-wrap: balance; }
+.ask ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .sheet, .scrim { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Twangle · Phase 16 preview · approved</p>
+    <h1>One button for instrument and tuning</h1>
+    <p class="lede">The two menus under the note become <strong>one button</strong> that says what you are tuning, such as <strong>Guitar · Standard</strong>. Tap it and a panel slides up with the instruments along the top and that instrument's tunings below. Your own tunings will join that list in Phase 16. Try it on the middle phone.</p>
+  </header>
+
+  <form class="bar" id="controls" onsubmit="return false" aria-label="Preview settings">
+    <div class="chips" id="chips" role="group" aria-label="The six styles"></div>
+    <div class="toggles">
+      <fieldset>
+        <legend class="tlabel">Light or dark</legend>
+        <div class="seg">
+          <input type="radio" name="theme" id="theme-auto" value="auto"><label for="theme-auto">Auto</label>
+          <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
+          <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="tlabel">Language</legend>
+        <div class="seg">
+          <input type="radio" name="lang" id="lang-en" value="en"><label for="lang-en">English</label>
+          <input type="radio" name="lang" id="lang-nl" value="nl"><label for="lang-nl">Nederlands</label>
+        </div>
+      </fieldset>
+    </div>
+  </form>
+
+  <ul class="points">
+    <li><b>One line, always</b><span>The button names the instrument first, then the tuning. Even the longest pair, "8-snarige gitaar · Standaard", stays on one line. Only the widest letters (Futuristic, Space Age) set it a little smaller, and nothing splits over two lines any more.</span></li>
+    <li><b>Instrument, then tuning</b><span>Tapping an instrument switches the tuner to its standard tuning right away. The panel stays open so you can pick another tuning. Tapping a tuning picks it and closes the panel.</span></li>
+    <li><b>Room to grow</b><span>The instrument row scrolls sideways, so all ten fit and more can come. The tuning list scrolls too. In Phase 16 your own tunings go under the presets, with "New tuning" at the bottom (shown greyed out here).</span></li>
+    <li><b>Same look as the rest</b><span>The button and instrument chips take each style's own shape, like the string buttons. The panel uses the style's surface colour. The meter here is only a sketch; the real one stays as it is.</span></li>
+  </ul>
+
+  <div class="phones">
+    <figure>
+      <div class="phone"><div class="screen" id="scr-now" role="img" aria-label="Tuner today, with a tuning menu and an instrument menu"></div></div>
+      <figcaption>Now<em>Two menus side by side</em></figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen" id="scr-new"></div></div>
+      <figcaption>New<em>One button: tap it</em></figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen" id="scr-open"></div></div>
+      <figcaption>New, panel open<em>Tap an instrument or a tuning</em></figcaption>
+    </figure>
+  </div>
+
+  <aside class="ask">
+    <p class="big">Approved on 14 October 2026, as shown.</p>
+    <ul>
+      <li>The button names the instrument first: "Guitar · Standard".</li>
+      <li>It keeps the thin outline in each style's button shape.</li>
+      <li>The instruments sit in one row that scrolls sideways.</li>
+    </ul>
+  </aside>
+</div>
+
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],
+"styles":{
+ "ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone: the first marks people made","font":"Caesar Dressing","fb":"serif","w":400,"track":0.01,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"body":"sans",
+  "shape":{"kind":"pebble","btn":20,"pill":18,"card":14,"strW":48,"strH":46,"strR":[20]},
+  "mark":{"type":"dots","smudge":true,"gap":13},"period":13,"motif":"ancient",
+  "fin":{"needle":"spear","hub":"stone","track":"dots","caps":"round","jitter":true},
+  "look":{"Colours":"Terracotta red and charcoal on warm grey stone","Letters":"Caesar Dressing, hewn capitals; numbers in Alegreya Sans so they read easily","Background":"A stone wall with a terracotta hand stencil and rows of scratched tally marks, the first written numbers","Shapes":"Pebbles: no two string buttons alike","Wave":"Fingertip dabs of terracotta","Meter":"Charcoal ticks drawn by hand, a spear needle on a stone hub, an arc of terracotta dots"},
+  "light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+  "dark":{"bg":"#1B1715","surface":"#25201D","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"}},
+ "classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"track":0,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"body":"serif",
+  "shape":{"kind":"keys","btn":4,"pill":4,"card":4,"strW":44,"strH":58,"strR":[3,3,9,9]},
+  "mark":{"type":"band","fill":0.32,"outline":1.7,"halo":0,"centre":true},"period":12,"motif":"velvet",
+  "fin":{"needle":"breguet","hub":"cap","track":"rail","caps":"butt","jitter":false},
+  "look":{"Colours":"Deep burgundy, ivory and gold leaf","Letters":"Playfair Display, a high-contrast serif; numbers in Bodoni Moda, whose digits stand full height","Background":"Velvet stage curtains in soft folds, a spotlight and the gold curve of a concert-hall shell","Shapes":"Fine square corners; the strings are ivory keys","Wave":"An engraved band with a hairline through it","Meter":"A watchmaker's needle with a ring near its tip, a gold cap, a railway-track scale"},
+  "light":{"bg":"#F7F2E8","surface":"#FCF9F2","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+  "dark":{"bg":"#170C11","surface":"#22131A","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"}},
+ "retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"track":0,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"soft","btn":22,"pill":22,"card":18,"strW":50,"strH":44,"strR":[14]},
+  "mark":{"type":"band","fill":0.4,"outline":1.6,"halo":0.14,"centre":false},"period":12,"motif":"seventies",
+  "fin":{"needle":"vu","hub":"disc","track":"band","caps":"butt","jitter":false},
+  "look":{"Colours":"Avocado green with mustard and orange on cream","Letters":"Righteous, round 70s letters","Background":"Big rainbow stripes in avocado, mustard and orange curving in from the side, like 70s wallpaper","Shapes":"Fat soft corners; strings like chunky hi-fi push buttons","Wave":"A glowing phosphor trace","Meter":"A VU needle with an orange tip over a broad arc"},
+  "light":{"bg":"#F1EDD8","surface":"#F8F5E6","ink":"#24260F","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+  "dark":{"bg":"#15160B","surface":"#1F2113","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"}},
+ "contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"track":0,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"round","btn":20,"pill":18,"card":12,"strW":46,"strH":46,"strR":[23]},
+  "mark":{"type":"bars","gap":6,"width":3,"cap":"round","slant":0,"halo":0},"period":9,"motif":"wash",
+  "fin":{"needle":"bar","hub":"dot","track":"line","caps":"round","jitter":false},
+  "look":{"Colours":"A fresh, calm blue on cool white, or on deep blue-grey at night; can follow the wallpaper","Letters":"The phone's own font (Roboto here), light","Background":"Two soft colour washes, nothing else","Shapes":"Round and friendly: circle strings, pill buttons","Wave":"Rounded bars, like a voice memo","Meter":"A plain rounded needle, a thin arc, nothing extra"},
+  "light":{"bg":"#F5F7FC","surface":"#FFFFFF","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#1B7A3E","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+  "dark":{"bg":"#0E1220","surface":"#151A2B","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"}},
+ "futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"track":0.06,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"neon","btn":10,"pill":10,"card":8,"strW":50,"strH":40,"strR":[10]},
+  "mark":{"type":"bars","gap":4,"width":1.5,"cap":"square","slant":0,"halo":0.16},"period":8,"motif":"hud",
+  "fin":{"needle":"beam","hub":"ring","track":"dashed","caps":"square","jitter":false},
+  "look":{"Colours":"Neon cyan and magenta on near-black; a cool lab white by day","Letters":"Orbitron, geometric capitals","Background":"A neon perspective grid low on the screen, a magenta horizon glow and faint scan lines","Shapes":"Cut corners and thin glowing outlines, no fills","Wave":"Thin neon bars with a soft halo","Meter":"A beam of light with a chevron tip, a dashed arc and a ring hub"},
+  "light":{"bg":"#EDF3F6","surface":"#F8FCFE","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#007482","onAccent":"#FFFFFF","inTune":"#007A46","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+  "dark":{"bg":"#03070A","surface":"#08121A","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"}},
+ "spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver: the future as the 60s saw it","font":"Michroma","fb":"sans-serif","w":400,"track":0.02,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"capsule","btn":999,"pill":999,"card":20,"strW":44,"strH":52,"strR":[22]},
+  "mark":{"type":"stars"},"period":12,"motif":"space",
+  "fin":{"needle":"ball","hub":"saturn","track":"dots","caps":"round","jitter":false},
+  "look":{"Colours":"Deep violet and indigo with rocket orange and silver","Letters":"Michroma, wide jet-age letters","Background":"By night a violet starfield with an orange ringed planet; by day silver atomic orbits and starbursts","Shapes":"Capsules, like a 60s rocket's portholes and buttons","Wave":"Pairs of stars","Meter":"A needle with a ball tip, an orbit of dots and a little ringed planet at the pivot"},
+  "light":{"bg":"#F3F0F8","surface":"#FBF9FE","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+  "dark":{"bg":"#120C26","surface":"#1C1536","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"}}
+}}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  const root = document.documentElement;
+  const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+  const $ = (id) => document.getElementById(id);
+
+  // The colour helpers, drawing helpers and backgrounds below are copied unchanged from theme-styles-preview.html.
+  // ---- Colour helpers ----------------------------------------------------------------------------
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const css = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+  const TAU = Math.PI * 2;
+  const smooth = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+  const SIGNS = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Music", "Apple Symbols", serif';
+  const stack = (f, fb) => `"${f}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  const palCache = new Map();
+  function palette(s, dark) {
+    const key = s.id + dark; if (palCache.has(key)) return palCache.get(key);
+    const raw = s[dark ? 'dark' : 'light']; const p = {};
+    for (const k in raw) p[k] = hex(raw[k]);
+    p.container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    palCache.set(key, p); return p;
+  }
+  for (const id in STY) STY[id].id = id;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  const hash = (v) => { const s = Math.sin(v * 12.9898 + 78.233) * 43758.5453; return (s - Math.floor(s)) * 2 - 1; };
+
+
+  // ---- Drawing helpers ---------------------------------------------------------------------------
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function lozenge(ctx, x, y, r, col) { ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.7, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.7, y); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
+  function sparkle(ctx, x, y, r, col, u) { seg(ctx, x - r, y, x + r, y, col, 0.9 * u); seg(ctx, x, y - r, x, y + r, col, 0.9 * u); dot(ctx, x, y, 1.4 * u, col); }
+  function starburst(ctx, x, y, r, col, u) { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, l = i % 2 ? r * 0.55 : r; seg(ctx, x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, col, 1.4 * u); } dot(ctx, x, y, r * 0.16, col); }
+  function hand(ctx, cx, cy, size, deg, col) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(0, size * 0.25, size * 0.32, size * 0.31, 0, 0, TAU); ctx.fill();
+    const f = size * 0.13;
+    [[-0.235, 0.40], [-0.08, 0.50], [0.075, 0.48], [0.225, 0.38]].forEach(([fx, fl]) => { ctx.beginPath(); rrAdd(ctx, fx * size - f / 2, -fl * size, f, fl * size + size * 0.12, f / 2); ctx.fill(); });
+    ctx.translate(-size * 0.26, size * 0.26); ctx.rotate(-52 * Math.PI / 180); ctx.beginPath(); rrAdd(ctx, -f / 2, -size * 0.44, f, size * 0.44, f / 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ---- Backgrounds: one calm picture per style, drawn once, nothing at the edge -------------------
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  function stone(B) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    const n = B.mini ? 60 : 520; for (let i = 0; i < n; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  /** An x in the outer fifth on either side, so motifs keep clear of the note and pill. */
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  const MOTIFS = {
+    ancient(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B);
+      if (!B.mini && !B.quiet) hand(ctx, W * 0.84, H * 0.66, 54 * u, 22, rgba(p.accent, dark ? 0.16 : 0.13));
+      // Rows of tally marks, scratched into the wall: the first written numbers.
+      const tc = rgba(p.ink, dark ? 0.12 : 0.11);
+      const rows = B.mini ? [[0.2, 0.12]] : [[0.18, 0.07], [0.26, 0.92], [0.62, 0.95]];
+      for (const [fx, fy] of rows) { let x = W * fx; const y = H * fy; for (let gI = 0; gI < 3; gI++) { for (let k = 0; k < 4; k++) { const j = r() * 1.5 * u; seg(ctx, x + k * 4 * u + j, y - 7 * u, x + k * 4 * u - j, y + 7 * u, tc, 1.4 * u); } seg(ctx, x - 3 * u, y + 5 * u, x + 15 * u, y - 5 * u, tc, 1.4 * u); x += 26 * u; } }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    velvet(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      // Velvet stage curtains: soft vertical folds, deep at night, a faint blush by day.
+      const folds = ctx.createLinearGradient(0, 0, W, 0), n = B.mini ? 5 : 9;
+      for (let k = 0; k <= n * 2; k++) folds.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : (dark ? 0.22 : 0.05) * (B.quiet ? 0.5 : 1)));
+      ctx.fillStyle = folds; ctx.fillRect(0, 0, W, H);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      // The gold curve of a concert-hall shell behind the meter.
+      const cy = B.mini ? H * 1.1 : H * 0.36;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, dark ? 0.16 : 0.22); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.10);
+    },
+    seventies(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      // Rainbow bands curving in from the left edge, like 70s wallpaper: avocado, mustard, orange.
+      const cx = B.mini ? -W * 0.05 : -W * 0.08, cy = B.mini ? H * 1.05 : H * 0.62, band = (B.mini ? 10 : 15) * u, a = B.quiet ? (dark ? 0.08 : 0.10) : (dark ? 0.2 : 0.26);
+      [p.accent, p.second, p.third, p.accent, p.second].forEach((col, k) => {
+        ctx.beginPath(); ctx.arc(cx, cy, W * (B.mini ? 0.2 : 0.22) + k * band, -Math.PI / 2, Math.PI / 2); ctx.strokeStyle = rgba(col, a * (1 - k * 0.12)); ctx.lineWidth = band - 1.5 * u; ctx.lineCap = 'butt'; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    wash(B) { const { W, H, p } = B; radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.10); radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, p.third, 0.07); },
+    hud(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * (B.mini ? 0.8 : 0.3), W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const gc = rgba(p.accent, dark ? 0.14 : 0.10), hz = H * (B.mini ? 0.6 : 0.74), vy = hz - H * 0.1;
+      radial(B, W * 0.5, hz, W * 0.6, p.second, dark ? 0.14 : 0.07);
+      for (let i = -14; i <= 14; i++) { const bx = W * 0.5 + i * W * 0.14, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, gc, u, 'butt'); }
+      for (let k = 0; k <= 10; k++) { const f = k / 10, y = hz + (H - hz) * f * f; seg(ctx, 0, y, W, y, gc, u, 'butt'); }
+      const g = ctx.createLinearGradient(0, hz - u, 0, hz + H * 0.06); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz - u, W, H * 0.06 + u);
+      seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      if (dark) for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, 0.16), u, 'butt');
+    },
+    space(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) {
+        vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.16)]]);
+        radial(B, W * 0.85, H * 0.18, W * 0.7, p.accent, 0.10); radial(B, W * 0.1, H * 0.55, W * 0.6, p.second, 0.06);
+        for (const [rx, ry, rot] of [[0.7, 0.16, -0.25], [0.55, 0.12, 0.35]]) { ctx.save(); ctx.translate(W * 0.5, H * 0.3); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, W * rx, W * ry, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.10); ctx.lineWidth = 0.8 * u; ctx.stroke(); ctx.restore(); }
+        const n = B.mini ? 50 : 200; for (let i = 0; i < n; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, 0.25 + r() * 0.6)); }
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 2 : 6); i++) sparkle(ctx, sideX(r(), W), (0.4 + r() * 0.5) * H, (5 + r() * 5) * u, rgba(p.ink, 0.75), u);
+        if (!B.mini && !B.quiet) {
+          const cx = W * 0.0, cy = H * 1.05, rad = W * 0.3;
+          const g = ctx.createRadialGradient(cx + rad * 0.3, cy - rad * 0.4, 0, cx + rad * 0.3, cy - rad * 0.4, rad * 1.3); g.addColorStop(0, rgba(p.second, 0.55)); g.addColorStop(1, rgba(mix(p.second, p.bg, 0.6), 0.45));
+          dot(ctx, cx, cy, rad, g);
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(-14 * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, rad * 1.55, rad * 0.32, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.45); ctx.lineWidth = 2 * u; ctx.stroke(); ctx.restore();
+        }
+      } else {
+        const nx = W * 0.5, ny = H * (B.mini ? 0.5 : 0.25);
+        for (const a of [0, 60, 120]) { ctx.save(); ctx.translate(nx, ny); ctx.rotate(a * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, W * 0.55, W * 0.18, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.22); ctx.lineWidth = 1.2 * u; ctx.stroke(); ctx.restore(); }
+        radial(B, W * 0.5, H * 0.9, W * 0.8, p.accent, 0.08);
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 3 : 8); i++) starburst(ctx, sideX(r(), W), (0.35 + r() * 0.55) * H, (7 + r() * 8) * u, rgba(i % 2 ? p.second : p.accent, 0.3), u);
+        for (let i = 0; i < 36; i++) dot(ctx, r() * W, r() * H, 2 * u, rgba(p.accent, 0.10));
+      }
+    },
+  };
+  function drawBackdrop(ctx, W, H, s, dark, mini, quiet) {
+    const p = palette(s, dark);
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u: mini ? W / 393 * 2.2 : W / 393, p, dark, s, mini, quiet, r: rng(7 + s.id.length * 31) };
+    try { (MOTIFS[s.motif] || MOTIFS.wash)(B); } catch (err) { console.error('backdrop', s.id, err); }
+    // A small card shows the style's own colour at a glance: a soft wash of its accent from below.
+    if (mini) radial(B, W * 0.5, H * 1.15, W * 0.95, p.accent, dark ? 0.30 : 0.24);
+  }
+
+
+  // ---- Instruments and tunings, as Instruments / Tunings in :core:dsp, names as strings.xml (en, nl) -----
+  const INSTRUMENTS = [
+    { id: 'guitar', en: 'Guitar', nl: 'Gitaar', tunings: [
+      ['standard', 'E2 A2 D3 G3 B3 E4'], ['drop_d', 'D2 A2 D3 G3 B3 E4'], ['half_step_down', 'Eb2 Ab2 Db3 Gb3 Bb3 Eb4'],
+      ['full_step_down', 'D2 G2 C3 F3 A3 D4'], ['dadgad', 'D2 A2 D3 G3 A3 D4'], ['open_g', 'D2 G2 D3 G3 B3 D4'],
+      ['open_d', 'D2 A2 D3 F#3 A3 D4'], ['open_e', 'E2 B2 E3 G#3 B3 E4']] },
+    { id: 'guitar_7', en: '7-string guitar', nl: '7-snarige gitaar', tunings: [['standard', 'B1 E2 A2 D3 G3 B3 E4']] },
+    { id: 'guitar_8', en: '8-string guitar', nl: '8-snarige gitaar', tunings: [['standard', 'F#1 B1 E2 A2 D3 G3 B3 E4']] },
+    { id: 'bass_4', en: 'Bass', nl: 'Bas', tunings: [['standard', 'E1 A1 D2 G2']] },
+    { id: 'bass_5', en: '5-string bass', nl: '5-snarige bas', tunings: [['standard', 'B0 E1 A1 D2 G2']] },
+    { id: 'ukulele', en: 'Ukulele', nl: 'Ukelele', tunings: [['standard', 'G4 C4 E4 A4'], ['low_g', 'G3 C4 E4 A4']] },
+    { id: 'violin', en: 'Violin', nl: 'Viool', tunings: [['standard', 'G3 D4 A4 E5']] },
+    { id: 'viola', en: 'Viola', nl: 'Altviool', tunings: [['standard', 'C3 G3 D4 A4']] },
+    { id: 'cello', en: 'Cello', nl: 'Cello', tunings: [['standard', 'C2 G2 D3 A3']] },
+    { id: 'mandolin', en: 'Mandolin', nl: 'Mandoline', tunings: [['standard', 'G3 D4 A4 E5']] },
+  ];
+  const TUNING_NAMES = {
+    standard: ['Standard', 'Standaard'], drop_d: ['Drop D', 'Drop D'], half_step_down: ['Half step down', 'Halve toon lager'],
+    full_step_down: ['Full step down', 'Hele toon lager'], dadgad: ['DADGAD', 'DADGAD'], open_g: ['Open G', 'Open G'],
+    open_d: ['Open D', 'Open D'], open_e: ['Open E', 'Open E'], low_g: ['Low G', 'Lage G'],
+  };
+  const TEXT = {
+    en: { strings: 'Strings', chromatic: 'Chromatic', flat: '12 cents flat', title: 'Instrument and tuning', newTuning: 'New tuning', soon: 'Phase 16', mine: 'My tunings', open: 'Change instrument or tuning' },
+    nl: { strings: 'Snaren', chromatic: 'Chromatisch', flat: '12 cent te laag', title: 'Instrument en stemming', newTuning: 'Nieuwe stemming', soon: 'Fase 16', mine: 'Mijn stemmingen', open: 'Instrument of stemming wijzigen' },
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const noteHTML = (n) => {
+    const m = /^([A-G])([#b]?)(\d)$/.exec(n);
+    return `${m[1]}${m[2] === '#' ? '♯' : m[2] === 'b' ? '♭' : ''}<sub>${m[3]}</sub>`;
+  };
+
+  // ---- State -------------------------------------------------------------------------------------
+  let picked = store.get('twangle.picker1.style'); if (!ORDER.includes(picked)) picked = 'contemporary';
+  let themePick = store.get('twangle.picker1.theme'); if (!['auto', 'light', 'dark'].includes(themePick)) themePick = 'auto';
+  let lang = store.get('twangle.picker1.lang'); if (!['en', 'nl'].includes(lang)) lang = 'en';
+  let instId = 'guitar', tuningId = 'standard';
+  const style = () => STY[picked];
+  const isDark = () => (themePick === 'auto' ? mqDark.matches : themePick === 'dark');
+  const inst = () => INSTRUMENTS.find((i) => i.id === instId);
+  const tuning = () => inst().tunings.find((t) => t[0] === tuningId) || inst().tunings[0];
+  const T = () => TEXT[lang];
+  const instName = (i) => i[lang];
+  const tuningName = (id) => TUNING_NAMES[id][lang === 'en' ? 0 : 1];
+
+  // ---- Phones ------------------------------------------------------------------------------------
+  const GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+  const CHEVRON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  const CHECK = '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+
+  const phones = [
+    { el: $('scr-now'), kind: 'now' },
+    { el: $('scr-new'), kind: 'new' },
+    { el: $('scr-open'), kind: 'open' },
+  ];
+  for (const ph of phones) {
+    ph.el.innerHTML = `<canvas class="backdrop" aria-hidden="true"></canvas>
+      <div class="tuner dp">
+        <span class="corner" aria-hidden="true">${GEAR}</span>
+        <div class="mode" aria-hidden="true"><span class="on m1"></span><span class="m2"></span></div>
+        <div class="grow top"></div>
+        <div class="meter" aria-hidden="true"><canvas></canvas></div>
+        <div class="note" aria-hidden="true"></div>
+        <div class="pill" aria-hidden="true"></div>
+        <div class="grow"></div>
+        <div class="pickers"></div>
+        <div class="strings" aria-hidden="true"></div>
+      </div>
+      ${ph.kind === 'now' ? '' : `<div class="dp sheetwrap${ph.kind === 'open' ? ' open' : ''}">
+        <div class="scrim"></div>
+        <div class="sheet" role="dialog" aria-modal="false">
+          <div class="handle"></div>
+          <h3 class="sh-title"></h3>
+          <div class="irow" role="radiogroup"></div>
+          <div class="tlist"></div>
+        </div>
+      </div>`}`;
+    ph.bd = ph.el.querySelector('canvas.backdrop');
+    ph.meter = ph.el.querySelector('.meter canvas');
+    ph.wrap = ph.el.querySelector('.sheetwrap');
+    if (ph.wrap) {
+      const sheet = ph.wrap.querySelector('.sheet');
+      ph.wrap.querySelector('.scrim').addEventListener('click', () => { if (ph.kind === 'new') setOpen(ph, false); });
+      // Inert while closed, so keyboard focus never lands in a hidden panel.
+      if (ph.kind === 'new') sheet.inert = true;
+    }
+  }
+  function setOpen(ph, open) {
+    ph.wrap.classList.toggle('open', open);
+    ph.wrap.querySelector('.sheet').inert = !open;
+    const btn = ph.el.querySelector('.combo');
+    if (btn) btn.setAttribute('aria-expanded', String(open));
+    if (open) {
+      const on = ph.wrap.querySelector('.ichip.on');
+      if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      setTimeout(() => { const t = ph.wrap.querySelector('.trow.on'); if (t) t.focus({ preventScroll: true }); }, 50);
+    } else if (btn) btn.focus({ preventScroll: true });
+  }
+
+  function renderPhone(ph) {
+    const tx = T(), i = inst(), t = tuning(), notes = t[1].split(' ');
+    const q = (sel) => ph.el.querySelector(sel);
+    q('.m1').textContent = tx.strings; q('.m2').textContent = tx.chromatic;
+    const target = Math.min(1, notes.length - 1);
+    q('.note').innerHTML = noteHTML(notes[target]);
+    q('.pill').textContent = tx.flat;
+    if (ph.kind === 'now') {
+      q('.pickers').innerHTML = `<div class="pickrow" aria-hidden="true"><span class="pk">${esc(tuningName(t[0]))} ▾</span><span class="pk">${esc(instName(i))} ▾</span></div>`;
+    } else {
+      q('.pickers').innerHTML = `<button type="button" class="combo" aria-haspopup="dialog" aria-expanded="${ph.wrap.classList.contains('open')}" aria-label="${esc(instName(i))}, ${esc(tuningName(t[0]))}. ${esc(tx.open)}"><span class="lbl">${esc(instName(i))} <span class="dotsep">·</span> ${esc(tuningName(t[0]))}</span>${CHEVRON}</button>`;
+      q('.combo').addEventListener('click', () => { if (ph.kind === 'new') setOpen(ph, !ph.wrap.classList.contains('open')); });
+    }
+    q('.strings').innerHTML = notes.map((n, k) => `<span class="str${k === target ? ' target' : ''}">${noteHTML(n)}</span>`).join('');
+    if (ph.wrap) renderSheet(ph);
+  }
+
+  function renderSheet(ph) {
+    const tx = T(), i = inst(), t = tuning();
+    const sheet = ph.wrap.querySelector('.sheet');
+    sheet.setAttribute('aria-label', tx.title);
+    sheet.querySelector('.sh-title').textContent = tx.title;
+    const irow = sheet.querySelector('.irow'), keep = irow.scrollLeft;
+    irow.setAttribute('aria-label', tx.title);
+    irow.innerHTML = INSTRUMENTS.map((x) => `<button type="button" class="ichip${x.id === i.id ? ' on' : ''}" role="radio" aria-checked="${x.id === i.id}" data-inst="${x.id}">${esc(instName(x))}</button>`).join('');
+    irow.scrollLeft = keep;
+    const rows = i.tunings.map(([id, ns]) => `<button type="button" class="trow${id === t[0] ? ' on' : ''}" aria-pressed="${id === t[0]}" data-tuning="${id}">
+        <span class="tx"><span class="tt">${esc(tuningName(id))}</span><span class="tn">${ns.split(' ').map(noteHTML).join(' ')}</span></span>${id === t[0] ? CHECK : ''}</button>`).join('');
+    sheet.querySelector('.tlist').innerHTML = rows +
+      `<p class="sub-h">${esc(tx.mine)}</p><div class="newrow" aria-disabled="true">${PLUS}<span>${esc(tx.newTuning)}</span><span class="soon">${esc(tx.soon)}</span></div>`;
+    irow.querySelectorAll('.ichip').forEach((b) => b.addEventListener('click', () => {
+      instId = b.dataset.inst; tuningId = inst().tunings[0][0];
+      renderAll(); fitAll();
+      const on = ph.wrap.querySelector(`.ichip[data-inst="${instId}"]`);
+      if (on) { on.focus({ preventScroll: true }); on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+    }));
+    sheet.querySelectorAll('.trow').forEach((b) => b.addEventListener('click', () => {
+      tuningId = b.dataset.tuning; renderAll(); fitAll();
+      if (ph.kind === 'new') setOpen(ph, false);
+    }));
+  }
+
+  // The button's name shrinks only if it would not fit; the strings shrink alike to fit 7 or 8.
+  function fitAll() {
+    for (const ph of phones) {
+      const btn = ph.el.querySelector('.combo');
+      if (btn) {
+        btn.style.setProperty('--fit', '1');
+        const lbl = btn.querySelector('.lbl');
+        let f = 1;
+        while (lbl.scrollWidth > lbl.clientWidth + 0.5 && f > 0.7) { f -= 0.02; btn.style.setProperty('--fit', f.toFixed(2)); }
+      }
+      const row = ph.el.querySelector('.strings');
+      row.style.setProperty('--ss', '1');
+      const room = ph.el.clientWidth * (377 / 393);
+      if (row.scrollWidth > room) row.style.setProperty('--ss', (room / row.scrollWidth * 0.98).toFixed(3));
+    }
+  }
+
+  // ---- Drawing: the style's background, and a sketch of the meter --------------------------------
+  function sizeCanvas(cv) {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, W: r.width, H: r.height };
+  }
+  function drawMeter(cv, s, dark) {
+    const { ctx, W, H } = sizeCanvas(cv); if (W < 2) return;
+    const p = palette(s, dark), u = W / 340, cx = W / 2, cy = H * 0.92, R = W * 0.44;
+    ctx.clearRect(0, 0, W, H);
+    const at = (d, c) => { const a = c / 50 * Math.PI / 2.4; return [cx + d * Math.sin(a), cy - d * Math.cos(a)]; };
+    const cap = s.fin && s.fin.caps === 'square' ? 'square' : s.fin && s.fin.caps === 'butt' ? 'butt' : 'round';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `${s.numW || 400} ${12.5 * u * (s.numScale || 1)}px ${stack(s.num, s.numFb)}`;
+    for (let c = -50; c <= 50; c += 5) {
+      if (c === 0) continue;
+      const major = c % 10 === 0, [x1, y1] = at(R, c), [x2, y2] = at(R - (major ? 13 : 7) * u, c);
+      seg(ctx, x1, y1, x2, y2, rgba(p.ink, major ? 1 : 0.5), (major ? 2.1 : 1.3) * u, cap);
+      if (major) { const [nx, ny] = at(R - 27 * u, c); ctx.fillStyle = rgba(p.ink, 0.8); ctx.fillText(String(Math.abs(c)), nx, ny); }
+    }
+    const [c1x, c1y] = at(R + 3 * u, 0), [c2x, c2y] = at(R - 16 * u, 0);
+    seg(ctx, c1x, c1y, c2x, c2y, rgba(p.accent), 3.5 * u, cap);
+    ctx.font = `${16 * u}px ${SIGNS}`; ctx.fillStyle = rgba(p.muted);
+    ctx.fillText('♭', cx - R * 0.62, cy - 6 * u); ctx.fillText('♯', cx + R * 0.62, cy - 6 * u);
+    const [nx, ny] = at(R - 4 * u, -12);
+    seg(ctx, cx, cy, nx, ny, rgba(p.ink), 2.6 * u, 'round');
+    dot(ctx, cx, cy, 6 * u, rgba(p.ink));
+  }
+  function drawAll() {
+    const s = style(), dark = isDark();
+    for (const ph of phones) {
+      const { ctx, W, H } = sizeCanvas(ph.bd);
+      if (W > 1) drawBackdrop(ctx, W, H, s, dark, false, false);
+      drawMeter(ph.meter, s, dark);
+    }
+  }
+
+  // ---- Controls ----------------------------------------------------------------------------------
+  function buildChips() {
+    const box = $('chips'), dark = isDark();
+    box.innerHTML = ORDER.map((id) => {
+      const p = palette(STY[id], dark);
+      return `<button type="button" class="chip" aria-pressed="${id === picked}" data-style="${id}"><span class="sw" style="background:linear-gradient(135deg, ${css(p.bg)} 50%, ${css(p.accent)} 50%)"></span>${esc(STY[id].name)}</button>`;
+    }).join('');
+    box.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => {
+      picked = b.dataset.style; store.set('twangle.picker1.style', picked); refresh();
+    }));
+  }
+  function applyStyle() {
+    const s = style(), dark = isDark(), p = palette(s, dark), sh = s.shape;
+    const set = (k, v) => root.style.setProperty(k, v);
+    set('--bg', css(p.bg)); set('--surface', css(p.surface)); set('--fg', css(p.ink)); set('--muted', css(p.muted)); set('--line', css(p.track));
+    set('--accent', css(p.accent)); set('--on-accent', css(p.onAccent)); set('--intune', css(p.inTune));
+    set('--container', css(p.container)); set('--third', css(p.third));
+    set('--display', stack(s.font, s.fb)); set('--display-weight', String(s.w)); set('--display-track', s.track + 'em');
+    set('--num', stack(s.num, s.numFb)); set('--pbody', s.body === 'serif' ? 'Georgia, "Noto Serif", serif' : 'Roboto, system-ui, sans-serif');
+    set('--btn-r', String(sh.btn)); set('--pill-r', String(sh.pill)); set('--card-r', String(sh.card)); set('--str-w', String(sh.strW)); set('--str-h', String(sh.strH));
+    const rr = sh.strR.length === 4 ? sh.strR : [sh.strR[0], sh.strR[0], sh.strR[0], sh.strR[0]]; rr.forEach((r, k) => set('--sr' + (k + 1), String(r)));
+    root.dataset.shape = sh.kind;
+    root.style.colorScheme = dark ? 'dark' : 'light';
+    if (themePick === 'auto') delete root.dataset.theme; else root.dataset.theme = themePick;
+  }
+  function renderAll() { phones.forEach(renderPhone); }
+  function refresh() {
+    applyStyle(); buildChips(); renderAll();
+    requestAnimationFrame(() => { fitAll(); drawAll(); });
+    const s = style();
+    if (document.fonts && document.fonts.load) {
+      Promise.all([s.font, s.num].map((f) => document.fonts.load(`16px "${f}"`))).then(() => { fitAll(); drawAll(); }, () => {});
+    }
+  }
+  for (const v of ['auto', 'light', 'dark']) {
+    const r = $('theme-' + v); r.checked = v === themePick;
+    r.addEventListener('change', () => { themePick = v; store.set('twangle.picker1.theme', v); refresh(); });
+  }
+  for (const v of ['en', 'nl']) {
+    const r = $('lang-' + v); r.checked = v === lang;
+    r.addEventListener('change', () => { lang = v; store.set('twangle.picker1.lang', v); document.documentElement.lang = v; refresh(); });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && phones[1].wrap.classList.contains('open')) setOpen(phones[1], false);
+  });
+  mqDark.addEventListener('change', () => { if (themePick === 'auto') refresh(); });
+  let resizeTimer = 0;
+  new ResizeObserver(() => { cancelAnimationFrame(resizeTimer); resizeTimer = requestAnimationFrame(() => { fitAll(); drawAll(); }); }).observe(phones[0].el);
+  document.documentElement.lang = lang;
+  refresh();
+})();
+</script>

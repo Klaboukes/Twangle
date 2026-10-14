@@ -23,7 +23,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
-- ☐ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked. The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Mock-up first, then every style, English and Dutch, TalkBack and 2× font; phone check
+- ☐ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked, as the approved mock-up [docs/design/combined-picker-preview.html](docs/design/combined-picker-preview.html) (instrument first, a thin outline in the style's button shape, instruments in one sideways-scrolling row). The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Every style, English and Dutch, TalkBack and 2× font; phone check
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
 - ☐ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete
