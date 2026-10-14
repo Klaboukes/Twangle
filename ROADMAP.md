@@ -18,7 +18,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 14: try each of the six styles on the phone, light and dark, upright and on its side, and say if any colour, letter or background picture feels wrong
 - ☐ Phase 15: with a real bass (or a 7-string guitar or cello), check the lowest strings read correctly (B0, E1, B1, C2), and that the tuner shows no note while the amp only hums
 - ☐ Phase 16: make a tuning of your own ("New tuning" in the instrument and tuning panel), tune a real guitar to it, then change it with Edit and delete it
-- ☐ Phase 17: hold each string of a real guitar's tuning and tune by ear to the tone; check it sounds like a plucked string, at a comfortable loudness, and fades out by itself
+- ☑ Phase 17: hold each string of a real guitar's tuning and tune by ear to the tone; check it sounds like a plucked string, at a comfortable loudness, and fades out by itself (owner, 2026-10-14: good enough for now)
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
