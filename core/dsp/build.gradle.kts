@@ -13,18 +13,19 @@ dependencies {
     testImplementation(libs.junit)
 }
 
-// Timing benchmarks (classes named *Benchmark) are slow and machine-dependent, so they stay out of
-// `test` and CI. Run them on demand with `./gradlew :core:dsp:benchmark`.
+// Timing benchmarks (classes named *Benchmark) and accuracy reports (*Report, print-only) are slow
+// or machine-dependent, so they stay out of `test` and CI. Run them on demand with
+// `./gradlew :core:dsp:benchmark`.
 tasks.test {
-    exclude("**/*Benchmark*")
+    exclude("**/*Benchmark*", "**/*Report*")
 }
 
 tasks.register<Test>("benchmark") {
-    description = "Runs the DSP timing benchmarks."
+    description = "Runs the DSP timing benchmarks and accuracy reports."
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
-    include("**/*Benchmark*")
+    include("**/*Benchmark*", "**/*Report*")
     outputs.upToDateWhen { false }
     testLogging {
         showStandardStreams = true

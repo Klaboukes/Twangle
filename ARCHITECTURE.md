@@ -7,7 +7,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## Contents
 1. [Tech stack](#1-tech-stack): name, app ID and icon · rejected alternatives
 2. [Module structure](#2-module-structure)
-3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone
+3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic)
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
 6. [UI](#6-ui): UI state model · tuner screen · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
@@ -293,6 +293,43 @@ Phase 17: the app can play a string's note so it can be tuned by ear. `TonePlaye
 - **Measured on the Xiaomi 12X:** a long-press starts a `USAGE_MEDIA` float `AudioTrack` at 48 kHz (`dumpsys audio`), the tuner shows "Play a string" throughout, the track is gone about 4.3 s later, within 0.5 s of a stopping tap, and within a second of pressing Home.
 - **Measured on the Xiaomi 12X (focus and volume):** a long-press holds `GAIN_TRANSIENT` focus with `USAGE_MEDIA` (`dumpsys audio`, focus stack) and gives it back when the tone ends; the volume keys reach `STREAM_MUSIC` on the tuner and the phone's default stream in Settings (`adjustSuggestedStreamVolume`); at media volume 0 MIUI's volume panel opens on the long-press. `VolumeKeysTest` checks the tuner's stream on the phone; Settings isn't, since the ever-moving tuner keeps a Compose test rule from going idle.
 - **Measured:** every preset string of every instrument, at A4 = 415, 432, 440 and 466 Hz, reads within 1 cent with the app's YIN (`PluckSynthTest`), also 3 s into the tone and at 44.1 kHz.
+
+### Strum check (polyphonic)
+Phase 18 research spike; nothing in the app uses it yet. `strum/StrumDetector` (`:core:dsp`) reads every string of one strum from one frame, given the frequencies to expect: the tuning's open strings at the current A4, for any instrument up to 8 strings, in any order. `detect(frame, expectedHz, count, result)` fills a `StrumResult` per string: Hz, cents from the expected note, level in dB below the loudest string, `present` and `shadowed`. Allocation-free (byte-counting test).
+
+**Method.** A Hann window over the frame, a 2× zero-padded FFT, then five steps per string, steps 2–5 repeated 4 times because each string's result depends on the others':
+1. **Coarse search:** weighted harmonic summation (Hermes 1988; Klapuri 2006), `Σ_k |X(k·f)| / k` over the first 8 harmonics, on a 1-cent grid ±100 cents around the expected note. Searching near the expected strings keeps the other fundamentals out. The 1/k weight was needed: unweighted, A2 at −22 cents locked onto E4's fundamental landing on its 3rd harmonic.
+2. **Partial peaks:** each harmonic of the estimate is followed to its peak within half a main lobe; quadratic interpolation of the log magnitude (Smith & Serra 1987) gives its frequency and amplitude. A peak further off belongs to another string.
+3. **Isolation:** partials closer than one main lobe merge into one peak. Each partial gets weight 0 within one main-lobe half-width (2 bins of the unpadded FFT: 5.9 Hz at 341 ms) of another heard string's partial, 1 from two.
+4. **Estimate:** the mean of `f_k / k` weighted by power × isolation (power favours the low partials, which inharmonicity bends least). A string with no clear partial is **shadowed** and reads its lowest partial as it is: the other string's partial there is one of its own higher, weaker harmonics.
+5. **Presence**, judged on the first two partials: a clear partial counts with its amplitude, a shadowed one with what is left after the other strings' expected share there (their nearest clear partial, falling as 1/j), and not at all when the other string's harmonic number is ≤ ours (else a missing string's search settles where its upper harmonics hit other fundamentals). Heard: within 25 dB of the loudest string (a Hann window's highest sidelobe is −31 dB, so a sidelobe never counts) and above −74 dBFS.
+
+**Overlapping harmonics are the core problem.** Equal temperament puts many partials of different strings within 2 cents. In standard tuning B3 ≈ 3 × E2 (1.96 cents apart), E4 = 4 × E2 and ≈ 3 × A2, A2's 4th ≈ D3's 3rd, D3's 4th ≈ G3's 3rd. Telling apart two partials 2 cents apart at 247 Hz (0.3 Hz) would take a window of seconds. So:
+- **B3 and E4 are shadowed** in standard tuning: every partial of theirs sits on one of E2's. They read the merged peak, pulled towards E2's harmonic by its share: in tune +0.4 to 0.6 cents (part of the 2-cent gap). When a lower string is 10–30 cents off, its partial sits 1–2 main lobes away and pulls them by up to 2.3 cents at 341 ms (0.5 at 683 ms). A detuned string itself separates: 20 cents is 2.9 Hz at 247 Hz but 11 Hz at its 4th harmonic.
+- **Octave strings** (DADGAD, open D, open G: D2 D3 D4) are shadowed the same way. An octave pair detuned against each other (A2 −20, A3 +15 in DADGAD, A3 also on D2's 3rd) reads 7.3 cents off at 341 ms, 0.7 at 683 ms.
+- **A missing shadowed string** is filled in by the lower string's partials, and coinciding partials add with unknown phases (anywhere from the difference to the sum of their amplitudes). The 1/j share catches a missing B3 or E4 in synthetic strums, but a missing D4 in DADGAD or open D reads as heard, and real guitars' harmonics don't fall as 1/j. For the strum view: a shadowed string's reading is the weaker evidence.
+
+**Measured** (`StrumAccuracyReport`, synthetic `PluckSynth` strums: equal strings 15 ms apart, the frame starting 50 ms after the first). Worst error in cents, strings with a clear partial (E2–G3) / shadowed (B3, E4):
+
+| Standard tuning | 171 ms | **341 ms** (default) | 683 ms |
+|---|---|---|---|
+| All six in tune | 0.70 / 1.09 | **0.11 / 0.56** | 0.03 / 0.48 |
+| One string ±10, 20, 30 cents (36 strums) | 0.95 / 4.33 | **0.12 / 2.25** | 0.04 / 0.48 |
+| All six random within ±30 cents (100 strums); rms | 1.00 / 7.28 | **0.12 / 1.77; 0.06 / 0.53** | 0.06 / 1.17 |
+| One string missing (each of the six) | 6 of 6 caught | **6 of 6** | 6 of 6 |
+| In tune, 10 dB SNR (white noise) | 0.89 / 1.06 | **0.38 / 0.46** | 0.04 / 0.48 |
+| Frame starting at the strum (strings start inside it) | 1.15 / 11.7 | **0.34 / 1.30** | 0.03 / 0.54 |
+| G3 at 0.3, B3 and E4 at 0.2 of the other strings | 0.48 / 1.81 | **0.11 / 1.30** | 0.03 / 1.20 |
+| Stiff strings (B 1.5·10⁻⁴ on E2 … 2·10⁻⁵ on E4), vs partial 1 | 1.21 / 0.59 | **0.28 / 0.41** | 0.10 / 0.29 |
+| Same, weak fundamentals on E2 and A2 | 1.60 / 1.10 | **0.58 / 0.82** | 0.46 / 0.68 |
+
+Other presets, at their range's frame (341 ms; 683 ms for 7- and 8-string guitar, basses and cello): in tune and with strings alternately +15 / −20 cents, every string within 0.2 cents (shadowed ones within 1), except the octave pair above; every missing string caught except D4 in DADGAD and open D. A five-string bass needs the long frame: 2.5 cents on B0 at 341 ms, 0.03 at 683.
+
+**Frame and latency.** Accuracy comes from resolving partials: a Hann main lobe is 2/T wide each side (11.7 Hz at 171 ms, 5.9 at 341, 2.9 at 683). Default **16 384 samples (341 ms, four tuner windows)**; `frameLengthFor(rate, PitchRange.LOW)` doubles it for instruments below the guitar, like the tuner's window. A reading needs the whole frame after the strum, so ≈ 0.4 s (0.75 s low), plus ≈ 50 ms to skip the attack, which costs accuracy while strings are still starting. The `FrameAssembler` holds 8192 samples today, so the strum view needs a bigger one. 171 ms is too short for the shadowed strings.
+
+**CPU.** One detection: JVM 1.6 ms (341 ms frame) / 3.6 ms (683 ms). Xiaomi 12X (`scripts/dsp-phone-benchmark.sh`): **1.9 / 4.2 ms**; little cores only 12.7 / 26.9 ms. A few readings a second cost about 1 % of a big core, so Phase 21's native detector isn't needed for this. Most of it is the 32 768-point FFT.
+
+**Not modelled yet:** pick noise and buzz, sympathetic strings, the body's resonances, and the phone mic's weak response at 82 Hz beyond the weak-fundamental case; the phone check with real strums (Phase 18's last item) will tell. Inharmonicity bends partial k sharp by ≈ 866·B·(k² − 1) cents; the low-partial weighting keeps it to +0.6 cents with weak fundamentals (+1 at three times those B values); fitting B per string would remove it. Higher partials decay first, so a late frame has fewer clear partials (fine 1.5 s after the strum in synthetic strums). A string more than ±100 cents off reads at the edge of its search or as missing.
 
 ## 4. Threading & performance
 - `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`. The reference tone's blocking `AudioTrack.write()` has its own single thread too (§3, Reference tone).
@@ -605,6 +642,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     strobe/     StrobeMotion
     synth/      PluckSynth (reference tone samples)
+    strum/      StrumDetector, StrumResult (strum check spike, §3)
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)
@@ -655,7 +693,7 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 ## 8. Testing strategy
 | Layer | How |
 |---|---|
-| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. `PluckSynthTest`: the reference tone's pitch within 1 cent by YIN, decay, end on silence, no clipping, no click at start, end or release. |
+| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. `PluckSynthTest`: the reference tone's pitch within 1 cent by YIN, decay, end on silence, no clipping, no click at start, end or release. `StrumDetectorTest` on synthetic strums from `StrumChords` (`PluckSynth` strings, or stiff strings with any harmonic levels); `StrumAccuracyReport` prints the strum check's accuracy tables (with the benchmarks, not in CI). |
 | `:core:audio` | JVM tests for source, rate and Bluetooth selection and chunk sizes. Instrumented tests record from the real mic (don't play test tones during them). `FakeAudioRecorder` (`testFixtures`) plays a `FloatArray` as chunks paced like a mic (instant under `runTest`), can loop or fail, and reports `isRecording` / `startCount`, so everything downstream, mic lifetime included, runs without a device. `FakeTonePlayer` (`testFixtures`) records `play`/`stop` and drives `isPlaying` (`finish()` = the tone died away). Instrumented `AndroidTonePlayerTest` plays short tones through the speaker: it ends by itself after the whole tone, `stop` ends it quickly, a new note replaces the old one, losing audio focus stops it. |
 | `:core:settings` | JVM tests on a real DataStore file: defaults, saving, restart, clamping, unknown or unreadable values, migrations. |
 | `:core:designsystem` | JVM tests: WCAG contrast of every palette, distinct styles, `ThemeMode.useDarkTheme`, font credits, the meter and wave maths. |

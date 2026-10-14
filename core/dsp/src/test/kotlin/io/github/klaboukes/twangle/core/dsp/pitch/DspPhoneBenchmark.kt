@@ -2,12 +2,14 @@ package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
+import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import java.io.File
 
 /**
  * CPU time per frame of the pitch detector on a phone, for the standard (4096-sample) and low-note
- * (8192-sample) windows at 48 kHz. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this
+ * (8192-sample) windows at 48 kHz, and of the strum detector (16 384 / 32 768 samples). `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this
  * class and runs it with `dalvikvm` on the connected phone: the same ART runtime and JIT as the app,
  * without a debuggable build's slowdown. Plain `main`, so it also runs on the JVM.
  *
@@ -19,6 +21,8 @@ object DspPhoneBenchmark {
 
     private const val WARM_UP = 2_000
     private const val MEASURED = 1_000
+    private const val STRUM_WARM_UP = 300
+    private const val STRUM_MEASURED = 100
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -50,24 +54,46 @@ object DspPhoneBenchmark {
                 },
             )
         }
+
+        // Strum check (Phase 18 spike): every string of one strum in one long frame. Fewer frames,
+        // since each takes milliseconds.
+        for (range in PitchRange.entries) {
+            val n = StrumDetector.frameLengthFor(48_000, range)
+            val strings = if (range == PitchRange.LOW) {
+                floatArrayOf(30.87f, 41.2f, 55f, 73.42f, 98f)
+            } else {
+                floatArrayOf(82.41f, 110f, 146.83f, 196f, 246.94f, 329.63f)
+            }
+            val strum = FloatArray(n)
+            for (f in strings) TestSignals.pluck(f, n, amplitude = 0.1f).forEachIndexed { i, x -> strum[i] += x }
+            val detector = StrumDetector(48_000, n)
+            val result = StrumResult(StrumDetector.MAX_STRINGS)
+            report(
+                "$range strum detect ($n)",
+                time(STRUM_WARM_UP, STRUM_MEASURED) { _ ->
+                    detector.detect(strum, strings, strings.size, result)
+                    result.present[0]
+                },
+            )
+        }
     }
 
     private class Stats(val medianMs: Double, val p95Ms: Double, val cpuMsPerFrame: Double)
 
-    private inline fun time(frame: (Int) -> Boolean): Stats {
+    private inline fun time(warmUp: Int = WARM_UP, measured: Int = MEASURED, frame: (Int) -> Boolean): Stats {
         var sink = 0
-        repeat(WARM_UP) { if (frame(it)) sink++ }
-        val nanos = LongArray(MEASURED)
+        repeat(warmUp) { if (frame(it)) sink++ }
+        val nanos = LongArray(measured)
         val cpuBefore = threadCpuNanos()
-        for (i in 0 until MEASURED) {
+        for (i in 0 until measured) {
             val start = System.nanoTime()
             if (frame(i)) sink++
             nanos[i] = System.nanoTime() - start
         }
-        val cpu = (threadCpuNanos() - cpuBefore) / MEASURED / 1e6
+        val cpu = (threadCpuNanos() - cpuBefore) / measured / 1e6
         check(sink >= 0) // Keeps the JIT from discarding the work.
         nanos.sort()
-        return Stats(nanos[MEASURED / 2] / 1e6, nanos[MEASURED * 95 / 100] / 1e6, cpu)
+        return Stats(nanos[measured / 2] / 1e6, nanos[measured * 95 / 100] / 1e6, cpu)
     }
 
     // First field of schedstat: nanoseconds this thread has run on a CPU.
