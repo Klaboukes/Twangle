@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–16 on 2026-10-14). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -24,6 +24,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 14 — New theme styles](#phase-14--new-theme-styles)
 - [Phase 15 — More instruments](#phase-15--more-instruments)
 - [Phase 16 — Custom tunings](#phase-16--custom-tunings)
+- [Phase 17 — Reference tone](#phase-17--reference-tone)
 
 ---
 
@@ -209,3 +210,10 @@ Goal: players can make, name and keep their own tunings.
 - ☑ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates (notes B0–E6; opened from "New tuning" at the end of the panel's list; saving picks the tuning; English and Dutch, TalkBack labels and a 2× font test already in)
 - ☑ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete (under "My tunings", each with a ⋮ menu; Delete asks first in a dialog)
 - ☑ English and Dutch texts, TalkBack and 2× font for the editor; phone check (editor, panel, menu and delete dialog on the Xiaomi 12X in English and Dutch at 2× text and with TalkBack; `MyTuningsStylesTest` in all six styles)
+
+## Phase 17 — Reference tone
+Goal: the app can play the target note so players can tune by ear.
+- ☑ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds (4 s; every preset string within 1 cent by YIN at A4 415–466 Hz)
+- ☑ Long-press a string (or a play button) to hear it; tap again to stop (a tap only stops, it doesn't lock; sounding rings in each style; TalkBack action "Play A 2")
+- ☑ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound (mic stays open, readings set aside while playing + 0.3 s)
+- ☑ Volume follows the phone's media volume; TalkBack labels; phone check by ear (volume keys set the media volume on the tuner; transient audio focus pauses other music; rings checked in all six styles, light and dark; listening is an owner check)
