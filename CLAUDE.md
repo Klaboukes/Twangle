@@ -19,7 +19,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ settings ↔ About ↔ metronome, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ metronome ↔ settings ↔ About through the navigation bar or rail, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |

@@ -123,7 +123,6 @@ class SettingsContentTest {
                     } else SettingsContent(
                         settings,
                         appVersion = VERSION,
-                        onBack = { backs++ },
                         onOpenAbout = { aboutOpened++ },
                         onA4Change = { a4Changes += it },
                         onNotationChange = { notationChanges += it },
@@ -189,11 +188,12 @@ class SettingsContentTest {
         compose.onNodeWithContentDescription(context.getString(R.string.settings_a4_lower)).assertIsEnabled()
     }
 
+    /** Settings is one of the app's tabs: the navigation bar and Back lead away, not an arrow. */
     @Test
-    fun backArrowGoesBack() {
+    fun settingsHasNoBackArrow() {
         show(AppSettings())
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
-        assertEquals(1, backs)
+        compose.onNodeWithText(context.getString(R.string.settings_title)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).assertDoesNotExist()
     }
 
     @Test

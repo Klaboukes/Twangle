@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Twangle</string>
+    <!-- The navigation bar's three tabs. -->
+    <string name="nav_tuner">Tuner</string>
+    <string name="nav_metronome">Metronome</string>
+    <string name="nav_settings">Settings</string>
 </resources>

@@ -52,13 +52,13 @@ class MeterFramesBenchmark {
         shell("input keyevent KEYCODE_WAKEUP")
         shell("pm grant $TARGET_PACKAGE android.permission.RECORD_AUDIO")
         shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
-        waitFor(By.res(SETTINGS_TAG), "Tuner screen")
+        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
 
         // Only the meter moves: the cents display instead of the wave view.
         openSettings()
         click(findInSettings(By.text(NEEDLE_DISPLAY)))
         device.pressBack()
-        waitFor(By.res(SETTINGS_TAG), "Tuner screen")
+        waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
 
         val pid = shell("pidof $TARGET_PACKAGE").trim().split(' ').first()
         check(pid.isNotEmpty()) { "Twangle isn't running" }
@@ -152,8 +152,8 @@ class MeterFramesBenchmark {
     }
 
     private fun openSettings() {
-        click(waitFor(By.res(SETTINGS_TAG), "Settings button"))
-        check(device.wait(Until.gone(By.res(SETTINGS_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
+        click(waitFor(By.res(SETTINGS_TAB_TAG), "Settings tab"))
+        check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
     }
 
     /** Finds [selector] in the settings, scrolling up and then down to it (settings keep their scroll place). */
@@ -211,7 +211,7 @@ class MeterFramesBenchmark {
     private companion object {
         const val TAG = "MeterFrames"
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
-        const val SETTINGS_TAG = "tuner_settings"
+        const val SETTINGS_TAB_TAG = "nav_settings"
         const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
         const val CARD_TAG_PREFIX = "meter_look_card_"
         const val CURRENT = "CURRENT"

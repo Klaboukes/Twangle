@@ -56,14 +56,13 @@ import io.github.klaboukes.twangle.feature.settings.components.SwitchSetting
 import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 
 /**
- * Settings entry point. Every change is saved straight away; [onBack] returns to the tuner and
- * [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
+ * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
+ * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
  */
 @Composable
 fun SettingsScreen(
     settingsRepository: SettingsRepository,
     appVersion: String,
-    onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,7 +71,6 @@ fun SettingsScreen(
     SettingsContent(
         settings = settings,
         appVersion = appVersion,
-        onBack = onBack,
         onOpenAbout = onOpenAbout,
         onA4Change = viewModel::setA4,
         onNotationChange = viewModel::setNotation,
@@ -105,7 +103,6 @@ fun SettingsScreen(
 fun SettingsContent(
     settings: AppSettings?,
     appVersion: String,
-    onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
@@ -126,7 +123,7 @@ fun SettingsContent(
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
 ) {
-    SettingsPage(title = stringResource(R.string.settings_title), onBack = onBack, modifier = modifier) {
+    SettingsPage(title = stringResource(R.string.settings_title), onBack = null, modifier = modifier) {
         if (settings != null) {
             SettingsGroups(
                 settings = settings,
@@ -155,14 +152,14 @@ fun SettingsContent(
 }
 
 /**
- * A page of the settings: a top bar with [title] and a back arrow ([onBack]), then [content] in a
+ * A page of the settings: a top bar with [title] and, with [onBack], a back arrow, then [content] in a
  * scrolling column. The page is see-through, so the style's background shows behind it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SettingsPage(
     title: String,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -179,8 +176,10 @@ internal fun SettingsPage(
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
+                        }
                     }
                 },
             )
@@ -456,7 +455,6 @@ private fun SettingsContentPreview() {
         SettingsContent(
             AppSettings(a4Hz = 442f),
             appVersion = "0.9.0-beta",
-            onBack = {},
             onOpenAbout = {},
             onA4Change = {},
             onNotationChange = {},

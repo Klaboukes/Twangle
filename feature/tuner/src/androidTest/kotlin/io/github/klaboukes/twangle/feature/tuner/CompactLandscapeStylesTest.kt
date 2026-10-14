@@ -55,7 +55,7 @@ import kotlin.math.abs
 /**
  * The compact landscape layout in each of the six styles: each style brings its own fonts and
  * dial, so the note column and the meter differ in size. On a phone and a tablet on their side
- * everything fits beside a big meter, clear of the top corners (the settings button sits in one); with
+ * everything fits beside a big meter (the navigation rail is hidden here, so it has the whole width); with
  * 2× font it can still be reached; a tap (light) or TalkBack (dark) brings back the controls. Every
  * meter look, at its biggest here, is clearly drawn inside its box in the style's colours, light and
  * dark, skipped by TalkBack, and moves nothing else on the screen, also at 2× font.
@@ -190,8 +190,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
     /**
      * The meter takes at least half the width, every one of [parts] sits beside it and in the window
-     * (no scrolling), none overlap, and none reach into the top corners, where the settings button
-     * sits (the other corner is kept just as clear).
+     * (no scrolling) and none overlap.
      */
     private fun assertBigMeterBeside(parts: List<Pair<String, SemanticsNodeInteraction>>, case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
@@ -202,7 +201,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         for ((name, rect) in bounds.drop(1)) {
             assertInside(window, name, rect, case)
             assertTrue("$case: $name should be right of the meter", rect.left >= meter.right)
-            for (corner in corners(window)) assertFalse("$case: $name $rect is under a corner button", rect.overlaps(corner))
         }
         for (i in bounds.indices) {
             for (j in i + 1 until bounds.size) {
@@ -424,12 +422,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         )
     }
 
-    /** The top corners where `TunerScreen` puts its corner buttons: 48 dp, 8 dp in from the edges. */
-    private fun corners(window: DpRect) = listOf(
-        DpRect(window.left, window.top, window.left + CORNER, window.top + CORNER),
-        DpRect(window.right - CORNER, window.top, window.right, window.top + CORNER),
-    )
-
     private fun DpRect.overlaps(other: DpRect) =
         left < other.right && other.left < right && top < other.bottom && other.top < bottom
 
@@ -450,8 +442,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         private val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
         private val TABLET_LANDSCAPE = DpSize(1280.dp, 760.dp)
 
-        /** The corner button's 48 dp plus its 8 dp inset. */
-        private val CORNER = 56.dp
         private val SLACK = 0.5.dp
 
         /** Long enough for the compact layout's cross-fade to finish. */

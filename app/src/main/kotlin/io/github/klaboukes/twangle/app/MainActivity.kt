@@ -16,6 +16,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -24,6 +25,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
+import io.github.klaboukes.twangle.app.navigation.Screen
+import io.github.klaboukes.twangle.app.navigation.back
+import io.github.klaboukes.twangle.app.navigation.destination
+import io.github.klaboukes.twangle.app.navigation.screen
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
@@ -34,12 +40,6 @@ import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
-
-/**
- * The five screens. Navigation is just this one value; the back button leads from About to settings,
- * and from settings, the metronome and the tuning editor to the tuner.
- */
-private enum class Screen { TUNER, SETTINGS, ABOUT, TUNING_EDITOR, METRONOME }
 
 class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
@@ -62,7 +62,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app in the user's style and theme, showing the tuner, settings, About, the tuning editor or the metronome over the style's background. */
+    /**
+     * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
+     * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
+     * at the bottom, or the rail at the start edge on its side. Back leads from About to Settings, from
+     * every other screen to the tuner, and from the tuner out of the app.
+     */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
@@ -77,93 +82,92 @@ class MainActivity : ComponentActivity() {
         }
 
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
-            Box(Modifier.fillMaxSize()) {
+            // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
+            Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
                 var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
+                // Whether the tuner shows its compact layout on its side without the controls: the rail hides then.
+                var tunerCompact by remember { mutableStateOf(false) }
                 // Every screen but the tuner gets the quiet version of the style's background.
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
                 val saveableState = rememberSaveableStateHolder()
-                saveableState.SaveableStateProvider(screen.name) {
-                    when (screen) {
-                        Screen.TUNER -> {
-                            // The volume keys set the reference tone's loudness (the media volume)
-                            // while the tuner is shown, also when no tone sounds.
-                            DisposableEffect(Unit) {
-                                volumeControlStream = AudioManager.STREAM_MUSIC
-                                onDispose { volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE }
+                val closeEditor = {
+                    // Each opening starts afresh, not from the last draft.
+                    saveableState.removeState(Screen.TUNING_EDITOR.name)
+                    screen = Screen.TUNER
+                }
+                // From the tuner, Back is Android's own: it leaves the app.
+                screen.back?.let { target ->
+                    BackHandler { if (screen == Screen.TUNING_EDITOR) closeEditor() else screen = target }
+                }
+                AppNavigationFrame(
+                    selected = screen.destination,
+                    onSelect = { screen = it.screen },
+                    hidden = screen == Screen.TUNER && tunerCompact,
+                ) {
+                    saveableState.SaveableStateProvider(screen.name) {
+                        when (screen) {
+                            Screen.TUNER -> {
+                                // The volume keys set the reference tone's loudness (the media volume)
+                                // while the tuner is shown, also when no tone sounds.
+                                MediaVolumeKeys()
+                                TunerScreen(
+                                    audioRecorder = container.audioRecorder,
+                                    settingsRepository = container.settingsRepository,
+                                    tonePlayer = container.tonePlayer,
+                                    onCompactChange = { tunerCompact = it },
+                                    savedMode = settings.mode,
+                                    savedStringLockTipSeen = settings.stringLockTipSeen,
+                                    savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
+                                    savedInstrument = settings.instrument,
+                                    savedCustomTunings = settings.customTunings,
+                                    onOpenTuningEditor = { instrument, customTuningId ->
+                                        editorInstrumentId = instrument.id
+                                        editorTuningId = customTuningId
+                                        screen = Screen.TUNING_EDITOR
+                                    },
+                                )
                             }
-                            TunerScreen(
-                                audioRecorder = container.audioRecorder,
-                                settingsRepository = container.settingsRepository,
-                                tonePlayer = container.tonePlayer,
-                                onOpenSettings = { screen = Screen.SETTINGS },
-                                // Temporary, until the bottom bar (Phase 19): a button beside the gear.
-                                onOpenMetronome = { screen = Screen.METRONOME },
-                                savedMode = settings.mode,
-                                savedStringLockTipSeen = settings.stringLockTipSeen,
-                                savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
-                                savedInstrument = settings.instrument,
-                                savedCustomTunings = settings.customTunings,
-                                onOpenTuningEditor = { instrument, customTuningId ->
-                                    editorInstrumentId = instrument.id
-                                    editorTuningId = customTuningId
-                                    screen = Screen.TUNING_EDITOR
-                                },
-                                // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
-                                modifier = Modifier.semantics { testTagsAsResourceId = true },
-                            )
-                        }
-                        Screen.METRONOME -> {
-                            BackHandler { screen = Screen.TUNER }
-                            // The volume keys set the clicks' loudness (the media volume).
-                            DisposableEffect(Unit) {
-                                volumeControlStream = AudioManager.STREAM_MUSIC
-                                onDispose { volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE }
+                            Screen.METRONOME -> {
+                                // The volume keys set the clicks' loudness (the media volume).
+                                MediaVolumeKeys()
+                                MetronomeScreen(
+                                    player = container.metronomePlayer,
+                                    settingsRepository = container.settingsRepository,
+                                    savedBpm = settings.metronomeBpm,
+                                    savedMeter = settings.metronomeMeter,
+                                    savedVibrate = settings.metronomeVibrate,
+                                )
                             }
-                            MetronomeScreen(
-                                player = container.metronomePlayer,
-                                settingsRepository = container.settingsRepository,
-                                savedBpm = settings.metronomeBpm,
-                                savedMeter = settings.metronomeMeter,
-                                savedVibrate = settings.metronomeVibrate,
-                            )
-                        }
-                        Screen.SETTINGS -> {
-                            BackHandler { screen = Screen.TUNER }
-                            SettingsScreen(
+                            Screen.SETTINGS -> SettingsScreen(
                                 settingsRepository = container.settingsRepository,
                                 appVersion = BuildConfig.VERSION_NAME,
-                                onBack = { screen = Screen.TUNER },
                                 onOpenAbout = { screen = Screen.ABOUT },
-                                // Lets UI Automator (the meter frame-time benchmark) find the meter cards.
-                                modifier = Modifier.semantics { testTagsAsResourceId = true },
                             )
-                        }
-                        Screen.ABOUT -> {
-                            BackHandler { screen = Screen.SETTINGS }
-                            AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
-                        }
-                        Screen.TUNING_EDITOR -> {
-                            val close = {
-                                // Each opening starts afresh, not from the last draft.
-                                saveableState.removeState(Screen.TUNING_EDITOR.name)
-                                screen = Screen.TUNER
-                            }
-                            BackHandler(onBack = close)
-                            TuningEditorScreen(
+                            Screen.ABOUT -> AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
+                            Screen.TUNING_EDITOR -> TuningEditorScreen(
                                 settingsRepository = container.settingsRepository,
                                 settings = settings,
                                 instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
                                 editingId = editorTuningId,
-                                onClose = close,
+                                onClose = closeEditor,
                             )
                         }
                     }
                 }
             }
+        }
+    }
+
+    /** While this is in the composition, the volume keys set the media volume (the tone's and the clicks' loudness). */
+    @Composable
+    private fun MediaVolumeKeys() {
+        DisposableEffect(Unit) {
+            volumeControlStream = AudioManager.STREAM_MUSIC
+            onDispose { volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE }
         }
     }
 

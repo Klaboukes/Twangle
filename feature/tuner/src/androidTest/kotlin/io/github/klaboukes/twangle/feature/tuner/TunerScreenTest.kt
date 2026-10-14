@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,7 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -43,6 +45,9 @@ class TunerScreenTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val silence = FakeAudioRecorder(signal = FloatArray(AudioConfig().chunkSize), loop = true)
 
+    /** What the screen told the app about its compact layout, in order (the navigation rail hides while true). */
+    private val compactReports = mutableListOf<Boolean>()
+
     private fun show(settings: FakeSettingsRepository) {
         compose.setContent {
             DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE_LANDSCAPE)) {
@@ -51,7 +56,7 @@ class TunerScreenTest {
                         audioRecorder = silence,
                         settingsRepository = settings,
                         tonePlayer = FakeTonePlayer(),
-                        onOpenSettings = {},
+                        onCompactChange = { compactReports += it },
                         savedKeepTwoPaneLandscape = settings.current.keepTwoPaneLandscape,
                     )
                 }
@@ -88,6 +93,30 @@ class TunerScreenTest {
         settings.current = settings.current.copy(keepTwoPaneLandscape = false)
         compose.waitForIdle()
         modeSwitch.assertDoesNotExist()
+    }
+
+    /** The compact layout tells the app to hide the rail; a tap shows the controls and the rail for 5 s. */
+    @Test
+    fun theCompactLayoutHidesTheRailUntilTapped() {
+        compose.mainClock.autoAdvance = false
+        show(FakeSettingsRepository())
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
+        assertEquals(true, compactReports.last())
+
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        compose.mainClock.advanceTimeBy(1_000)
+        assertEquals(false, compactReports.last())
+
+        compose.mainClock.advanceTimeBy(6_000)
+        assertEquals(true, compactReports.last())
+    }
+
+    @Test
+    fun theFullLayoutOnItsSideKeepsTheRail() {
+        show(FakeSettingsRepository(AppSettings(keepTwoPaneLandscape = true)))
+        compose.waitForIdle()
+        assertEquals(false, compactReports.last())
     }
 
     private companion object {

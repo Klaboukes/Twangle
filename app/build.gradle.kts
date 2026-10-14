@@ -111,6 +111,7 @@ dependencies {
     baselineProfile(project(":baselineprofile"))
 
     testImplementation(libs.junit)
+    androidTestImplementation(project(":core:testing"))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.test.rules)

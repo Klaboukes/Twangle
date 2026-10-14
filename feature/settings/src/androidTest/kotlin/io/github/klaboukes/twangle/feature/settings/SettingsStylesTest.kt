@@ -88,7 +88,6 @@ class SettingsStylesTest(private val style: VisualStyle) {
                         SettingsContent(
                             AppSettings(style = style, display = TunerDisplay.WAVE, meterLook = MeterLook.COMET, waveLook = WaveLook.LOOP),
                             appVersion = VERSION,
-                            onBack = {},
                             onOpenAbout = {},
                             onA4Change = {},
                             onNotationChange = {},
@@ -207,7 +206,6 @@ class SettingsStylesTest(private val style: VisualStyle) {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"}:"
-            compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).assertHasClickAction()
             val picked = mapOf(styleCardTag(style) to true, meterLookCardTag(MeterLook.COMET) to true, waveLookCardTag(WaveLook.LOOP) to true)
             for ((tag, name) in cardNames()) {
                 val card = compose.onNodeWithTag(tag).performScrollTo()

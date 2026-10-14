@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit
 /**
  * The tuner upright and in its full layout on its side, in each of the six styles, light and dark:
  * each style brings its own fonts and string-button shapes, so the parts differ in size. Upright and
- * on its side everything fits without scrolling and nothing overlaps or reaches under the settings
- * button; at the owner's 1.25× text on the Xiaomi 12X too. At 2× text every part can be scrolled to
+ * on its side everything fits without scrolling (in the room the navigation bar or rail leaves) and
+ * nothing overlaps; at the owner's 1.25× text on the Xiaomi 12X too. At 2× text every part can be scrolled to
  * and is then wholly shown, and the string buttons' names (solfège flats, the longest) fit. TalkBack
  * hears the reading once, skips the meter and the wave, and hears the mode switch and every string
  * by name with which one is picked. [TunerContentTest] covers each behaviour in one style, and
@@ -246,19 +246,14 @@ class TunerStylesTest(private val style: VisualStyle) {
         }
     }
 
-    /**
-     * Every part is on screen without scrolling, inside the window, clear of the corner buttons
-     * (metronome and settings), and no two overlap.
-     */
+    /** Every part is on screen without scrolling, inside the window, and no two overlap. */
     private fun assertAllInView(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val corner = DpRect(window.right - CORNER_WIDTH, window.top, window.right, window.top + CORNER)
         val bounds = parts(shownDisplay.value).map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
                 fail("$case $name $rect is outside the window $window")
             }
-            if (rect.overlaps(corner)) fail("$case $name $rect is under the corner buttons")
         }
         for (i in bounds.indices) {
             for (j in i + 1 until bounds.size) {
@@ -290,19 +285,17 @@ class TunerStylesTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 10L
 
-        /** A narrow phone (a Galaxy S26) without the status and navigation bars, upright and on its side. */
-        private val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)
-        private val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+        /**
+         * A narrow phone (a Galaxy S26, 360 x 730 dp without the status and navigation bars): upright
+         * less the app's navigation bar (at most 80 dp up to 1.25× text, `NavigationBarTest` in :app),
+         * on its side less the 80 dp rail.
+         */
+        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
 
-        /** The owner's Xiaomi 12X upright (393 x 873 dp) without the status bar and the button bar. */
-        private val XIAOMI_UPRIGHT = DpSize(393.dp, 793.dp)
+        /** The owner's Xiaomi 12X upright (393 x 873 dp) without the status bar, the button bar and the app's navigation bar. */
+        private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
-
-        /** The settings button's 48 dp plus its 8 dp inset, in the window's top end corner … */
-        private val CORNER = 56.dp
-
-        /** … with the metronome button beside it (temporary, until the bottom bar). */
-        private val CORNER_WIDTH = 104.dp
         private val SLACK = 0.5.dp
     }
 }

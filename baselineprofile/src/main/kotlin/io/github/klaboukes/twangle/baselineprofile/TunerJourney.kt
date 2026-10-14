@@ -7,9 +7,9 @@ import androidx.test.uiautomator.Until
 /** The app under test (`:app`). */
 const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 
-// Test tags from `TunerTestTags` in :feature:tuner. UI Automator sees them as resource ids, which
-// stay the same in every app language.
-private const val SETTINGS_TAG = "tuner_settings"
+// Test tags from `TunerTestTags` in :feature:tuner and `NavigationTestTags` in :app. UI Automator sees
+// them as resource ids, which stay the same in every app language.
+private const val SETTINGS_TAB_TAG = "nav_settings"
 private const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
 private const val MODE_GUITAR_TAG = "tuner_mode_auto"
 
@@ -26,9 +26,9 @@ fun MacrobenchmarkScope.grantMicPermission() {
     device.executeShellCommand("pm grant $packageName android.permission.RECORD_AUDIO")
 }
 
-/** Waits until the tuner screen is shown (its settings button is a stable landmark). */
+/** Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone). */
 fun MacrobenchmarkScope.waitForTuner() {
-    check(device.wait(Until.hasObject(By.res(SETTINGS_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
+    check(device.wait(Until.hasObject(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
 }
 
 /**
@@ -45,8 +45,8 @@ fun MacrobenchmarkScope.useTuner() {
     clickTag(MODE_GUITAR_TAG)
     Thread.sleep(LISTEN_MS)
 
-    clickTag(SETTINGS_TAG)
-    check(device.wait(Until.gone(By.res(SETTINGS_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
+    clickTag(SETTINGS_TAB_TAG)
+    check(device.wait(Until.gone(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Settings didn't open" }
     device.waitForIdle()
     device.pressBack()
     waitForTuner()

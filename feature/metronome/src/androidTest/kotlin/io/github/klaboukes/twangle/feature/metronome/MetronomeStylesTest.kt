@@ -151,12 +151,15 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 20L
 
-        /** A narrow phone (a Galaxy S26) without the status and navigation bars, upright and on its side. */
-        private val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)
-        private val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+        /**
+         * A narrow phone (a Galaxy S26, 360 x 730 dp without the status and navigation bars): upright
+         * less the app's navigation bar (at most 80 dp up to 1.25× text), on its side less the 80 dp rail.
+         */
+        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
 
-        /** The owner's Xiaomi 12X upright without the status bar and the button bar. */
-        private val XIAOMI_UPRIGHT = DpSize(393.dp, 793.dp)
+        /** The owner's Xiaomi 12X upright without the status bar, the button bar and the app's navigation bar. */
+        private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
     }
