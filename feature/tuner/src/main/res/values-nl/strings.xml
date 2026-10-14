@@ -48,6 +48,10 @@
     <string name="tuner_string_lock">Vastzetten op deze snaar</string>
     <string name="tuner_string_unlock">Snaren automatisch kiezen</string>
     <string name="tuner_string_locked">Vastgezet</string>
+    <string name="tuner_string_play">%1$s laten horen</string>
+    <string name="tuner_string_stop_tone">Toon stoppen</string>
+    <string name="tuner_string_sounding">Klinkt</string>
+    <string name="tuner_string_locked_sounding">Vastgezet, klinkt</string>
     <!-- One-time tip above the string row; tapping it (or a string) makes it go away for good. -->
     <string name="tuner_string_lock_tip">Kies een snaar om die vast te zetten</string>
     <string name="tuner_string_lock_tip_dismiss">Tip sluiten</string>

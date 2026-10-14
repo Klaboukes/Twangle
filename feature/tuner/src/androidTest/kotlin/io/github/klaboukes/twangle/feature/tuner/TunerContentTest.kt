@@ -34,6 +34,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -111,6 +112,10 @@ class TunerContentTest {
     /** The player's own tunings [show] passes on. */
     private var shownCustomTunings = emptyList<CustomTuning>()
     private val stringClicks = mutableListOf<Int>()
+    private val stringLongClicks = mutableListOf<Int>()
+
+    /** The string whose tone [show] says is sounding; set it while the tuner is shown. */
+    private val shownSounding = mutableStateOf<Int?>(null)
     private var tipDismissals = 0
 
     /** The mode [show] passes on; set it to switch modes while the tuner is shown. */
@@ -165,6 +170,7 @@ class TunerContentTest {
         shownLook.value = waveLook
         shownMeterLook.value = MeterLook.DEFAULT
         shownSignalBars.value = signalBars
+        shownSounding.value = null
         compose.setContent {
             val content = @Composable {
                 MaterialTheme {
@@ -179,6 +185,8 @@ class TunerContentTest {
                         onEditTuning = { editRequests += it },
                         onDeleteTuning = { deleteRequests += it },
                         onStringClick = { stringClicks += it },
+                        onStringLongClick = { stringLongClicks += it },
+                        soundingString = shownSounding.value,
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         display = display,
@@ -489,6 +497,52 @@ class TunerContentTest {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
         stringChip("G3").performClick()
         assertEquals(listOf(3), stringClicks)
+    }
+
+    @Test
+    fun longPressingAStringPlaysIt() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        stringChip("A2").performTouchInput { longClick() }
+        assertEquals(listOf(1), stringLongClicks)
+        assertTrue("a long-press doesn't lock", stringClicks.isEmpty())
+    }
+
+    @Test
+    fun talkBackCanPlayAStringByName() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        val play = context.getString(R.string.tuner_string_play, "A 2")
+        compose.onNode(hasContentDescription("A 2"))
+            .assert(SemanticsMatcher("long-click label is \"$play\"") { it.config.getOrNull(SemanticsActions.OnLongClick)?.label == play })
+            .performSemanticsAction(SemanticsActions.OnLongClick)
+        assertEquals(listOf(1), stringLongClicks)
+    }
+
+    @Test
+    fun aSoundingStringSaysSoAndATapOnAnyStringStopsIt() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 3))
+        shownSounding.value = 1
+        compose.waitForIdle()
+        val stop = context.getString(R.string.tuner_string_stop_tone)
+        compose.onNode(hasContentDescription("A 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_sounding)))
+        compose.onNode(hasContentDescription("G 3"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_locked)))
+        compose.onNode(hasContentDescription("E 2"))
+            .assert(SemanticsMatcher("click label is \"$stop\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == stop })
+            .performClick()
+        assertEquals(listOf(0), stringClicks)
+    }
+
+    @Test
+    fun aSoundingStringMovesNothing() {
+        show(detected(-12.3f, targetString = 0))
+        val labels = listOf("E2", "A2", "D3", "G3", "B3", "E4")
+        val before = labels.map { stringChip(it).getBoundsInRoot() }
+        val note = compose.onNodeWithText("E").getBoundsInRoot()
+        shownSounding.value = 1
+        compose.waitForIdle()
+        assertEquals(before, labels.map { stringChip(it).getBoundsInRoot() })
+        assertEquals(note, compose.onNodeWithText("E").getBoundsInRoot())
     }
 
     @Test

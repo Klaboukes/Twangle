@@ -1,10 +1,17 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,7 +31,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -63,7 +79,11 @@ import io.github.klaboukes.twangle.feature.tuner.R
  * turns green while [inTune].
  *
  * With [onStringClick] the strings are buttons: tapping one locks the tuner to it, tapping the
- * [lockedString] again unlocks it. The locked string gets an extra outer ring.
+ * [lockedString] again unlocks it. The locked string gets an extra outer ring. With [onStringLongClick]
+ * a long-press plays the string's note (TalkBack: the named long-press action "Play A 2"); the
+ * [soundingString], whose tone sounds now, sends rings out round its button like sound waves (one
+ * still ring with Android's animations off), drawn outside it so nothing moves. While a tone sounds
+ * a tap on any string stops it, and TalkBack says so.
  *
  * [small] draws a narrow row of small chips, for the compact landscape layout: it only shows which
  * string is the target. It takes no more width than it needs and is hidden from TalkBack, since the
@@ -79,10 +99,17 @@ fun StringSelector(
     lockedString: Int? = null,
     onStringClick: ((Int) -> Unit)? = null,
     small: Boolean = false,
+    onStringLongClick: ((Int) -> Unit)? = null,
+    soundingString: Int? = null,
 ) {
     val lockLabel = stringResource(R.string.tuner_string_lock)
     val unlockLabel = stringResource(R.string.tuner_string_unlock)
+    val stopLabel = stringResource(R.string.tuner_string_stop_tone)
     val lockedState = stringResource(R.string.tuner_string_locked)
+    val soundingState = stringResource(R.string.tuner_string_sounding)
+    val lockedSoundingState = stringResource(R.string.tuner_string_locked_sounding)
+    val playLabel = stringResource(R.string.tuner_string_play)
+    val animationsOff = soundingString != null && rememberAnimationsOff()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
     val style = MaterialTheme.styleTokens.style
@@ -100,20 +127,32 @@ fun StringSelector(
         ) {
             tuning.strings.forEachIndexed { index, note ->
                 val locked = index == lockedString
+                val sounding = index == soundingString
                 val name = notation.nameIn(tuning, note.pitchClass)
+                val spokenName = spokenString.format(speech.name(name), note.octave)
                 StringChip(
                     name = name,
-                    spokenName = spokenString.format(
-                        speech.name(name),
-                        note.octave,
-                    ),
+                    spokenName = spokenName,
                     octave = note.octave,
                     highlighted = index == targetString,
                     inTune = inTune,
                     locked = locked,
                     onClick = onStringClick?.let { click -> { click(index) } },
-                    clickLabel = if (locked) unlockLabel else lockLabel,
-                    lockedState = lockedState,
+                    clickLabel = when {
+                        soundingString != null -> stopLabel
+                        locked -> unlockLabel
+                        else -> lockLabel
+                    },
+                    onLongClick = onStringLongClick?.let { play -> { play(index) } },
+                    longClickLabel = playLabel.format(spokenName),
+                    state = when {
+                        locked && sounding -> lockedSoundingState
+                        locked -> lockedState
+                        sounding -> soundingState
+                        else -> null
+                    },
+                    sounding = sounding,
+                    animationsOff = animationsOff,
                     index = index,
                     fit = fit,
                     small = small,
@@ -147,7 +186,11 @@ private fun StringChip(
     locked: Boolean,
     onClick: (() -> Unit)?,
     clickLabel: String,
-    lockedState: String,
+    onLongClick: (() -> Unit)?,
+    longClickLabel: String,
+    state: String?,
+    sounding: Boolean,
+    animationsOff: Boolean,
     index: Int,
     fit: StringRowFit,
     small: Boolean,
@@ -189,12 +232,21 @@ private fun StringChip(
             )
             .size(button.width + ringGap * 2, button.height + ringGap * 2)
             .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
+            // Outside the clip, so the rings reach past the button without taking room.
+            .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
             .clip(shape)
             .then(
-                if (onClick != null) {
-                    Modifier.clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
-                } else {
-                    Modifier
+                when {
+                    onClick == null -> Modifier
+                    // A long-press gives Android's long-press haptic tick by itself.
+                    onLongClick != null -> Modifier.combinedClickable(
+                        onClickLabel = clickLabel,
+                        role = Role.Button,
+                        onLongClickLabel = longClickLabel,
+                        onLongClick = onLongClick,
+                        onClick = onClick,
+                    )
+                    else -> Modifier.clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
                 },
             )
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
@@ -216,7 +268,7 @@ private fun StringChip(
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted
-                if (locked) stateDescription = lockedState
+                if (state != null) stateDescription = state
                 if (small) hideFromAccessibility()
             },
         // Classic's ivory keys carry their name low, above the shaded front edge.
@@ -265,6 +317,54 @@ private fun StringChip(
     }
 }
 
+/**
+ * Rings in [color] that grow out of the button (the box less [inset] each side, in [shape]) and fade,
+ * two at a time, like sound waves; with [steady] (Android's animations off) one still ring instead.
+ * Drawn behind the button, in the draw phase only.
+ */
+@Composable
+private fun Modifier.soundingRings(shape: Shape, inset: Dp, color: Color, steady: Boolean): Modifier {
+    val progress = if (steady) {
+        null
+    } else {
+        rememberInfiniteTransition(label = "soundingRings").animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(SOUND_RING_PERIOD_MS, easing = LinearEasing), RepeatMode.Restart),
+            label = "soundingRing",
+        )
+    }
+    return drawWithCache {
+        val gap = inset.toPx()
+        val inner = Size((size.width - gap * 2f).coerceAtLeast(1f), (size.height - gap * 2f).coerceAtLeast(1f))
+        val outline = Path().apply {
+            addOutline(shape.createOutline(inner, layoutDirection, this@drawWithCache))
+            translate(Offset(gap, gap))
+        }
+        val reach = gap + SOUND_RING_REACH.toPx()
+        val stroke = SOUND_RING_STROKE.toPx()
+        onDrawBehind {
+            if (progress == null) {
+                soundRing(outline, inner, gap + SOUND_RING_STEADY.toPx(), color.copy(alpha = color.alpha * SOUND_RING_STEADY_ALPHA), stroke)
+            } else {
+                for (wave in 0 until SOUND_RING_WAVES) {
+                    val p = (progress.value + wave.toFloat() / SOUND_RING_WAVES) % 1f
+                    soundRing(outline, inner, reach * p, color.copy(alpha = color.alpha * (1f - p) * SOUND_RING_ALPHA), stroke)
+                }
+            }
+        }
+    }
+}
+
+/** [outline] (the button, [inner] in size) widened by [grow] px all round, drawn as a [stroke] px line. */
+private fun DrawScope.soundRing(outline: Path, inner: Size, grow: Float, color: Color, stroke: Float) {
+    val sx = (inner.width + grow * 2f) / inner.width
+    val sy = (inner.height + grow * 2f) / inner.height
+    scale(sx, sy) {
+        drawPath(outline, color, style = Stroke(stroke / ((sx + sy) / 2f)))
+    }
+}
+
 /** This size shrunk to fit a [side] square, keeping its proportions. */
 private fun DpSize.fitInside(side: Dp): DpSize {
     val scale = minOf(side / width, side / height)
@@ -296,6 +396,17 @@ private val KEY_LABEL_PADDING = 6.dp
 private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
+
+/** The sounding string's rings: how often one starts, how many at once, how far past the lock ring they reach, line and alpha. */
+private const val SOUND_RING_PERIOD_MS = 1_200
+private const val SOUND_RING_WAVES = 2
+private val SOUND_RING_REACH = 10.dp
+private val SOUND_RING_STROKE = 2.dp
+private const val SOUND_RING_ALPHA = 0.9f
+
+/** With animations off: one still ring this far outside the lock ring's place, at this alpha. */
+private val SOUND_RING_STEADY = 4.dp
+private const val SOUND_RING_STEADY_ALPHA = 0.8f
 
 @Preview(showBackground = true, widthDp = 360)
 @Composable

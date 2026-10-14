@@ -53,6 +53,13 @@
     <string name="tuner_string_lock">Lock to this string</string>
     <string name="tuner_string_unlock">Pick strings automatically</string>
     <string name="tuner_string_locked">Locked</string>
+    <!-- TalkBack: a long-press on a string plays its note; %1$s is the string as spoken, e.g. "A 2". -->
+    <string name="tuner_string_play">Play %1$s</string>
+    <!-- TalkBack: what tapping a string does while a reference tone sounds. -->
+    <string name="tuner_string_stop_tone">Stop the tone</string>
+    <!-- TalkBack: the state of the string whose reference tone sounds now. -->
+    <string name="tuner_string_sounding">Playing</string>
+    <string name="tuner_string_locked_sounding">Locked, playing</string>
     <!-- One-time tip above the string row; tapping it (or a string) makes it go away for good. -->
     <string name="tuner_string_lock_tip">Tap a string to lock it</string>
     <string name="tuner_string_lock_tip_dismiss">Dismiss tip</string>

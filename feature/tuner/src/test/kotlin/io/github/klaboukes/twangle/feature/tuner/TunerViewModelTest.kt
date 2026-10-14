@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -48,9 +49,10 @@ class TunerViewModelTest {
     private fun a2Recorder() = FakeAudioRecorder(TestSignals.sawtooth(110f, length = 48_000), loop = true)
 
     private val settings = FakeSettingsRepository()
+    private val tones = FakeTonePlayer()
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder) =
-        TunerViewModel(recorder, settings, StandardTestDispatcher(testScheduler))
+        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler))
 
     private fun TunerViewModel.detected(): TunerUiState.Detected {
         val state = state.value
@@ -143,7 +145,7 @@ class TunerViewModelTest {
     @Test
     fun `shows the mode the screen already read before the settings arrive`() = runTest(dispatcher) {
         settings.current = AppSettings(mode = TunerMode.CHROMATIC)
-        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), TunerMode.CHROMATIC)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), TunerMode.CHROMATIC)
 
         assertEquals(TunerMode.CHROMATIC, vm.mode.value)
         runCurrent()
@@ -311,6 +313,7 @@ class TunerViewModelTest {
         val vm = TunerViewModel(
             a2Recorder(),
             FakeSettingsRepository(AppSettings(instrument = Instruments.CELLO, tuning = Instruments.CELLO.defaultTuning)),
+            FakeTonePlayer(),
             StandardTestDispatcher(testScheduler),
             savedInstrument = Instruments.CELLO,
         )
@@ -414,7 +417,7 @@ class TunerViewModelTest {
     @Test
     fun `keepTwoPaneLandscape starts from the saved value and follows the setting`() = runTest(dispatcher) {
         settings.current = AppSettings(keepTwoPaneLandscape = true)
-        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), savedKeepTwoPaneLandscape = true)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), savedKeepTwoPaneLandscape = true)
         assertTrue("before the settings arrive", vm.keepTwoPaneLandscape.value)
         backgroundScope.launch { vm.keepTwoPaneLandscape.collect {} }
         runCurrent()
@@ -531,7 +534,7 @@ class TunerViewModelTest {
     @Test
     fun `a string lock tip seen before never shows`() = runTest(dispatcher) {
         settings.current = AppSettings(stringLockTipSeen = true)
-        val vm = TunerViewModel(a2Recorder(), settings, StandardTestDispatcher(testScheduler), savedStringLockTipSeen = true)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), savedStringLockTipSeen = true)
         assertFalse("not even before the settings arrive", vm.showStringLockTip.value)
         runCurrent()
         assertFalse(vm.showStringLockTip.value)
@@ -602,5 +605,122 @@ class TunerViewModelTest {
         settings.setVibrateInTune(false)
         runCurrent()
         assertFalse(vm.vibrateInTune.value)
+    }
+
+    // Reference tone (Phase 17): a long-press plays a string, a tap stops it, the mic is ignored meanwhile.
+
+    @Test
+    fun `a long-press plays the string's note at the current A4 and marks it sounding`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+
+        vm.playString(1)
+        runCurrent()
+        assertEquals(listOf(110f), tones.played)
+        assertEquals(1, vm.soundingString.value)
+
+        settings.setA4(432f)
+        settings.setTuning(Tunings.DROP_D)
+        runCurrent()
+        vm.playString(0)
+        runCurrent()
+        // D2 at A4 = 432 Hz: 432 × 2^((38 − 69) / 12).
+        assertEquals(432.0 * Math.pow(2.0, -31.0 / 12.0), tones.played.last().toDouble(), 0.01)
+        assertEquals(0, vm.soundingString.value)
+
+        tones.finish()
+        runCurrent()
+        assertNull("the tone died away", vm.soundingString.value)
+    }
+
+    @Test
+    fun `a tap while a tone sounds only stops it, and the next tap locks as before`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.state.collect {} }
+        vm.onPermissionChanged(true)
+        runCurrent()
+        vm.playString(2)
+        runCurrent()
+
+        vm.toggleString(4)
+        runCurrent()
+        assertEquals(1, tones.stopCount)
+        assertFalse(tones.isPlaying.value)
+        assertNull(vm.soundingString.value)
+        advanceTimeBy(1_000)
+        assertEquals("the stopping tap locked nothing", null, (vm.state.value as? TunerUiState.Detected)?.lockedString)
+
+        vm.toggleString(4)
+        advanceTimeBy(200)
+        assertEquals(4, vm.detected().lockedString)
+    }
+
+    @Test
+    fun `while a tone sounds the tuner keeps the mic open but shows no reading`() = runTest(dispatcher) {
+        val recorder = a2Recorder()
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        vm.detected()
+
+        vm.playString(1)
+        advanceTimeBy(1_000)
+        assertTrue("listening while the tone sounds, was ${vm.state.value}", vm.state.value is TunerUiState.Listening)
+        assertTrue(recorder.isRecording.value)
+        assertEquals(1, recorder.startCount)
+
+        // The tone has left the speaker; its echo may still be in the room for a moment.
+        tones.finish()
+        advanceTimeBy((TunerViewModel.TONE_TAIL_SECONDS * 1000 / 2).toLong())
+        assertTrue("still listening in the tail, was ${vm.state.value}", vm.state.value is TunerUiState.Listening)
+
+        advanceTimeBy(500)
+        assertEquals("A", vm.detected().noteName)
+        assertEquals(1, recorder.startCount)
+    }
+
+    @Test
+    fun `a new tuning or chromatic mode stops the tone`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        vm.playString(0)
+        runCurrent()
+
+        vm.setTuning(Tunings.DROP_D)
+        runCurrent()
+        assertFalse("a new tuning stops it", tones.isPlaying.value)
+        assertNull(vm.soundingString.value)
+
+        vm.playString(0)
+        runCurrent()
+        vm.setMode(TunerMode.CHROMATIC)
+        runCurrent()
+        assertFalse("chromatic mode stops it", tones.isPlaying.value)
+    }
+
+    @Test
+    fun `stopTone stops a sounding tone and leaves a silent player alone`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        vm.stopTone()
+        assertEquals(0, tones.stopCount)
+
+        vm.playString(5)
+        runCurrent()
+        vm.stopTone()
+        runCurrent()
+        assertEquals(1, tones.stopCount)
+        assertNull(vm.soundingString.value)
+    }
+
+    @Test
+    fun `a string the tuning doesn't have plays nothing`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        vm.playString(6)
+        runCurrent()
+        assertTrue(tones.played.isEmpty())
+        assertNull(vm.soundingString.value)
     }
 }

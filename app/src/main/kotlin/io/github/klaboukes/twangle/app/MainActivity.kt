@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
                         Screen.TUNER -> TunerScreen(
                             audioRecorder = container.audioRecorder,
                             settingsRepository = container.settingsRepository,
+                            tonePlayer = container.tonePlayer,
                             onOpenSettings = { screen = Screen.SETTINGS },
                             savedMode = settings.mode,
                             savedStringLockTipSeen = settings.stringLockTipSeen,

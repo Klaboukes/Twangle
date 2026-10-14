@@ -64,9 +64,13 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -117,11 +121,14 @@ import kotlin.math.min
  * tuning from the start). The compact layout on its side is used unless the "full layout on its side"
  * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
+ * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
+ * the screen (another screen, or the app in the background).
  */
 @Composable
 fun TunerScreen(
     audioRecorder: AudioRecorder,
     settingsRepository: SettingsRepository,
+    tonePlayer: TonePlayer,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     savedMode: TunerMode = TunerMode.AUTO,
@@ -136,6 +143,7 @@ fun TunerScreen(
         TunerViewModel(
             audioRecorder,
             settingsRepository,
+            tonePlayer,
             savedMode = savedMode,
             savedStringLockTipSeen = savedStringLockTipSeen,
             savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
@@ -162,6 +170,8 @@ fun TunerScreen(
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
+    val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
+    StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
     if (granted && keepScreenOn) KeepScreenOn()
@@ -211,6 +221,8 @@ fun TunerScreen(
                     onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
                     onDeleteTuning = { viewModel.deleteCustomTuning(it.id) },
                     onStringClick = viewModel::toggleString,
+                    onStringLongClick = viewModel::playString,
+                    soundingString = soundingString,
                     onRetry = viewModel::retry,
                     display = display,
                     waveLook = waveLook,
@@ -276,6 +288,24 @@ object TunerTestTags {
 }
 
 /**
+ * Calls [stopTone] when the tuner leaves the screen: the app goes to the background, or another
+ * screen (settings, the tuning editor) takes the tuner's place. A tone never outlives the tuner.
+ */
+@Composable
+private fun StopToneWhenHidden(stopTone: () -> Unit) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val currentStopTone by rememberUpdatedState(stopTone)
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) currentStopTone() }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            currentStopTone()
+        }
+    }
+}
+
+/**
  * Stops the screen from dimming and locking while this is in the composition, i.e. while the tuner
  * is shown. Leaving the screen (or the app) lets it time out normally again.
  */
@@ -305,7 +335,9 @@ private fun KeepScreenOn() {
  * [state]'s tuning belongs to); picking another calls [onInstrumentChange]. [customTunings] are the player's
  * own tunings (the button names a picked one by its name; the panel lists the instrument's under its
  * presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after asking), and [onNewTuning],
- * when given, adds "New tuning" to the panel's list.
+ * when given, adds "New tuning" to the panel's list. A long-press on a string calls [onStringLongClick] (play its
+ * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
+ * sounds a tap on any string calls [onStringClick], which stops the tone.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -321,6 +353,8 @@ fun TunerContent(
     onStringClick: (Int) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    onStringLongClick: ((Int) -> Unit)? = null,
+    soundingString: Int? = null,
     needleCents: () -> Float? = { (state as? TunerUiState.Detected)?.cents },
     reception: () -> Float? = { (state as? TunerUiState.Detected)?.reception },
     display: TunerDisplay = TunerDisplay.NEEDLE,
@@ -363,7 +397,8 @@ fun TunerContent(
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
         val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning, onEditTuning, onDeleteTuning)
-        GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, onStringClick, tip, onMenuOpenChange)
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString)
+        GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, strings, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
         MeterFrame(
@@ -776,7 +811,7 @@ private fun GuitarSlotFor(
     pictured: Boolean,
     onTuningChange: (Tuning) -> Unit,
     instrument: InstrumentChoice,
-    onStringClick: (Int) -> Unit,
+    strings: StringActions,
     tip: StringLockTipState,
     onMenuOpenChange: (Boolean) -> Unit,
 ) {
@@ -809,7 +844,7 @@ private fun GuitarSlotFor(
     val guitar: (@Composable () -> Unit)? = if (controls != null) {
         {
             GuitarControls(
-                controls.tuning, controls.notation, onTuningChange, instrument, onStringClick,
+                controls.tuning, controls.notation, onTuningChange, instrument, strings,
                 controls.targetString, controls.lockedString, controls.tip, controls.inTune, controls.noteSounding, onMenuOpenChange,
             )
         }
@@ -843,6 +878,16 @@ private data class InstrumentChoice(
     val onDelete: ((CustomTuning) -> Unit)? = null,
 )
 
+/**
+ * What the string buttons do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
+ * ([onLongClick]: play the string's note, none without it), and which string's tone is [sounding].
+ */
+private data class StringActions(
+    val onClick: (Int) -> Unit,
+    val onLongClick: ((Int) -> Unit)?,
+    val sounding: Int?,
+)
+
 /** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
 private fun instrumentOf(state: TunerUiState): Instrument {
     val tuning = when (state) {
@@ -874,7 +919,7 @@ private fun GuitarControls(
     notation: Notation,
     onTuningChange: (Tuning) -> Unit,
     instrument: InstrumentChoice,
-    onStringClick: (Int) -> Unit,
+    stringActions: StringActions,
     targetString: Int?,
     lockedString: Int?,
     tip: StringLockTipState,
@@ -915,7 +960,9 @@ private fun GuitarControls(
             notation = notation,
             inTune = inTune,
             lockedString = lockedString,
-            onStringClick = onStringClick,
+            onStringClick = stringActions.onClick,
+            onStringLongClick = stringActions.onLongClick,
+            soundingString = stringActions.sounding,
         )
     }
     val balloon = @Composable {

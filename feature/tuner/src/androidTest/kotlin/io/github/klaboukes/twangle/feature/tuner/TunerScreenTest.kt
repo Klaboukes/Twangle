@@ -13,6 +13,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.AudioConfig
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -49,6 +50,7 @@ class TunerScreenTest {
                     TunerScreen(
                         audioRecorder = silence,
                         settingsRepository = settings,
+                        tonePlayer = FakeTonePlayer(),
                         onOpenSettings = {},
                         savedKeepTwoPaneLandscape = settings.current.keepTwoPaneLandscape,
                     )

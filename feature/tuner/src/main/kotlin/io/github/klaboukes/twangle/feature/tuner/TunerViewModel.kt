@@ -3,7 +3,9 @@ package io.github.klaboukes.twangle.feature.tuner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.ceil
 
 /**
  * Owns the tuner's audio pipeline and exposes everything the screen shows as one [state].
@@ -48,11 +51,16 @@ import kotlinx.coroutines.launch
  * [savedStringLockTipSeen] does the same for the one-time string-lock tip, [savedInstrument] and
  * [savedCustomTunings] for the instrument-and-tuning button, and [savedKeepTwoPaneLandscape] for the
  * layout on its side.
+ *
+ * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
+ * sounds, and for [TONE_TAIL_SECONDS] after, the microphone stays open but its readings are set
+ * aside, so the tuner shows the listening state instead of measuring its own tone.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
     recorder: AudioRecorder,
     private val settingsRepository: SettingsRepository,
+    private val tonePlayer: TonePlayer,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     savedMode: TunerMode = AppSettings().mode,
     savedStringLockTipSeen: Boolean = AppSettings().stringLockTipSeen,
@@ -178,11 +186,24 @@ class TunerViewModel(
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    /** The string whose tone was played last, while its tone may still sound. */
+    private val playedString = MutableStateFlow<Int?>(null)
+
+    /**
+     * The string whose reference tone is sounding now (lowest = 0), or null. Set by [playString],
+     * cleared when the tone has died away or is stopped.
+     */
+    val soundingString: StateFlow<Int?> =
+        combine(playedString, tonePlayer.isPlaying) { string, playing -> string.takeIf { playing } }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     init {
         // A lock belongs to one tuning: a string index means something else in another tuning.
+        // A tone still sounding belonged to the old tuning too.
         viewModelScope.launch {
             settingsRepository.settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
                 lockedString.value = null
+                stopTone()
             }
         }
     }
@@ -198,6 +219,8 @@ class TunerViewModel(
 
     /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
     fun setMode(mode: TunerMode) {
+        // Chromatic mode has no strings to show which one sounds.
+        if (mode != this.mode.value) stopTone()
         pickedMode.value = mode
         viewModelScope.launch { settingsRepository.setMode(mode) }
     }
@@ -206,10 +229,39 @@ class TunerViewModel(
      * Locks guitar mode to string [index] (lowest = 0), or back to automatic if it was already
      * locked. Kept while switching to chromatic and back. Also dismisses the string-lock tip: the
      * user has found out what tapping a string does.
+     *
+     * While a reference tone sounds, a tap on any string only stops the tone ("tap again to stop"):
+     * the lock stays as it was, so stopping the sound never changes what the tuner listens for.
      */
     fun toggleString(index: Int) {
+        if (tonePlayer.isPlaying.value) {
+            stopTone()
+            return
+        }
         lockedString.value = if (lockedString.value == index) null else index
         dismissStringLockTip()
+    }
+
+    /**
+     * Plays string [index]'s note of the current tuning as a plucked tone at the current A4, so it
+     * can be tuned by ear. A tone already sounding gives way to it. Does nothing before the settings
+     * have loaded or for a string the tuning doesn't have.
+     */
+    fun playString(index: Int) {
+        val options = options.value ?: return
+        val note = options.tuning.strings.getOrNull(index) ?: return
+        playedString.value = index
+        tonePlayer.play(NoteMapper(options.a4Hz).frequencyOf(note))
+    }
+
+    /** Stops a reference tone that is sounding (it fades out within a few tens of ms); also when the tuner leaves the screen. */
+    fun stopTone() {
+        playedString.value = null
+        if (tonePlayer.isPlaying.value) tonePlayer.stop()
+    }
+
+    override fun onCleared() {
+        stopTone()
     }
 
     /** Hides the string-lock tip and saves that, so it doesn't come back at the next start. */
@@ -245,21 +297,38 @@ class TunerViewModel(
         attempt.value++
     }
 
-    private companion object {
+    companion object {
         /** The signal bars' figures change this often: often enough to follow, slow enough to read. */
-        const val SIGNAL_UPDATES_PER_SECOND = 4f
+        private const val SIGNAL_UPDATES_PER_SECOND = 4f
+
+        /**
+         * After a reference tone has left the speaker the microphone is ignored this much longer, so
+         * the room's echo of it isn't read as a note either.
+         */
+        const val TONE_TAIL_SECONDS = 0.3f
     }
 
     private fun listen(): Flow<TunerUiState> = flow {
-        val interpreter = TunerInterpreter(pipeline.frameSeconds)
+        var interpreter = TunerInterpreter(pipeline.frameSeconds)
         val initial = options.filterNotNull().first()
         emit(interpreter.listening(initial))
         val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
+        val tailFrames = ceil(TONE_TAIL_SECONDS / pipeline.frameSeconds).toInt()
         var frame = 0
+        // Frames still to set aside: the tone sounds, or its echo may still be in the room.
+        var ignoredFrames = 0
         emitAll(
             // The window follows the tuning's lowest string (bass notes need the longer one).
             pipeline.readings { (options.value ?: initial).pitchRange }.map { reading ->
-                val state = interpreter.interpret(reading, options.value ?: initial)
+                val current = options.value ?: initial
+                if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
+                if (ignoredFrames > 0) {
+                    // The mic would hear the app's own tone: show the listening state instead, and
+                    // start the smoothing afresh afterwards so nothing of the tone carries over.
+                    if (--ignoredFrames == 0) interpreter = TunerInterpreter(pipeline.frameSeconds)
+                    return@map interpreter.listening(current)
+                }
+                val state = interpreter.interpret(reading, current)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception
                     signal.value = SignalFigures(
