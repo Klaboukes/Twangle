@@ -19,6 +19,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 15: with a real bass (or a 7-string guitar or cello), check the lowest strings read correctly (B0, E1, B1, C2), and that the tuner shows no note while the amp only hums
 - ☐ Phase 16: make a tuning of your own ("New tuning" in the instrument and tuning panel), tune a real guitar to it, then change it with Edit and delete it
 - ☑ Phase 17: hold each string of a real guitar's tuning and tune by ear to the tone; check it sounds like a plucked string, at a comfortable loudness, and fades out by itself (owner, 2026-10-14: good enough for now)
+- ☐ Phase 18: with a real guitar in a quiet room, switch on strum check (the strings button beside "Guitar · Standard"), strum all six open strings and check each one reads like the tuner does when you play it alone; then detune one or two strings a little and leave one out (mute it). Try it in drop D too
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
@@ -28,7 +29,7 @@ Goal: strum once and see which strings are out of tune.
 - ☑ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable — `StrumDetector`: with a 341 ms frame ≤ 0.12 cent on strings with a clear partial, ≤ 2.3 on B3/E4 (under E2's harmonics); 1.9 ms per reading on the Xiaomi (ARCHITECTURE.md, *Strum check*)
 - ☑ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string) — joint fit of overlapping partials: an octave pair detuned against each other 7.3 → 0.44 cent; `StrumListener` gives the first reading 0.39–0.44 s after a strum, then one every 0.1 s; `StrumVerdict` flat / in tune / sharp / not heard; 2.6 ms per reading on the Xiaomi. Known limits: a soft upper octave string within 35 cents of the lower one reads up to 19 cents off, a missing D4 in DADGAD/open D reads as heard (ARCHITECTURE.md, *Strum check*)
 - ☑ "Strum check" view: every string shows flat, in tune or sharp at once, in each style — a switch beside the instrument-and-tuning button; the panel takes the meter's place, less sure strings hollow; a synthetic strum from a laptop speaker read A2 −21 / G3 +15 on the Xiaomi (ARCHITECTURE.md, *Strum check view*)
-- ☐ phone check with recorded strums from short test tones; owner check with a real guitar
+- ☑ phone check with recorded strums from short test tones; owner check with a real guitar (now under *Owner checks*) — `scripts/strum-check.sh` plays synthetic strums from the computer's speaker to the Xiaomi: every string within 1 cent of what was played, missing strings caught. It found that the last reading, as the strings die away, was up to 7 cents off and that clicks and room sounds were read as strums; each string now shows the strum's readings together, weighted by loudness (ARCHITECTURE.md, *Strum check*, *Phone check*)
 
 ## Phase 19 — Metronome
 Goal: a simple, steady metronome in the same app.

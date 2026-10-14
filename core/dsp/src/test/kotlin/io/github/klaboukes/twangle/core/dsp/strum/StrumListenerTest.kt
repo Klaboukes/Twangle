@@ -10,7 +10,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.log10
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 class StrumListenerTest {
 
@@ -126,6 +128,45 @@ class StrumListenerTest {
         assertEquals(0, afterSecond.first().reading)
         assertTrue(afterSecond.first().readyAt - frameLength >= seconds(1.5 + StrumListener.ATTACK_SECONDS))
     }
+
+    // A 1 ms click of [amplitude] added at [at] seconds: a knock, or strings stopped at once.
+    private fun click(input: FloatArray, at: Double, amplitude: Float = 0.3f) {
+        val from = seconds(at)
+        for (i in 0 until seconds(0.001)) input[from + i] += if (i % 2 == 0) amplitude else -amplitude
+    }
+
+    @Test
+    fun `a click over strings dying away is noticed but not read`() {
+        // The tail of a strum at ≈ −53 dBFS, still ringing (above −56) but under the gate, and a
+        // knock or the click of muting them: the case seen on the phone.
+        val tail = TestSignals.sawtooth(110f, length = seconds(2.5), amplitude = 0.004f)
+        val noise = TestSignals.noise(tail.size, rms = 3e-5f, seed = 3L)
+        for (i in tail.indices) tail[i] += noise[i]
+        click(tail, 1.0)
+        assertTrue(listen(tail).isEmpty())
+        assertEquals(1, listener.strumCount)
+        assertTrue("tail at ${listener.levelDbfs} dBFS", listener.levelDbfs in -56f..-50f)
+        assertFalse(listener.isRinging)
+    }
+
+    @Test
+    fun `a soft strum just above the first frame's limit is read`() {
+        val loud = listen(take(2.0, 0.5 to standard))
+        val full = levelDbfs(loud.first().samples)
+        assertTrue("first frame at $full dBFS", full > -30f)
+        // frameLevelDbfs tells the level of the last frame offered.
+        assertEquals(levelDbfs(loud.last().samples), listener.frameLevelDbfs, 0.1f)
+        val gain = Math.pow(10.0, (StrumListener.MIN_FIRST_FRAME_DBFS + 3f - full) / 20.0).toFloat()
+        val soft = TestSignals.noise(seconds(2.0), rms = 3e-5f, seed = 3L)
+        val strum = StrumChords.pluckSynthStrum(standard, seconds(1.4), fromSeconds = 0.0)
+        for (i in strum.indices) soft[seconds(0.5) + i] += gain * strum[i]
+        val frames = listen(soft, with = StrumListener(rate))
+        assertTrue(frames.isNotEmpty())
+        assertEquals(StrumListener.MIN_FIRST_FRAME_DBFS + 3f, levelDbfs(frames.first().samples), 0.5f)
+    }
+
+    private fun levelDbfs(frame: FloatArray): Float =
+        (20 * log10(sqrt(frame.sumOf { it.toDouble() * it } / frame.size))).toFloat()
 
     @Test
     fun `chunk size changes nothing`() {

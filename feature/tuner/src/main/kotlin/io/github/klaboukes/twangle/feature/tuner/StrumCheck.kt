@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.dsp.strum.StrumListener
 import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /** Where the strum check is: see [TunerUiState.StrumCheck]. */
@@ -51,6 +52,8 @@ data class StrumReading(
     val readingsSinceStrum: Int,
     /** This reading's strings, in the tuning's order; null when only the status changed. */
     val strings: List<StrumStringReading>? = null,
+    /** The level of this reading's frame in dBFS ([StrumListener.frameLevelDbfs]); it weighs the reading against the strum's others. */
+    val levelDbfs: Float = 0f,
 ) : PipelineReading
 
 /** One string of a [StrumReading]: cents from its open note (NaN when not heard), and the detector's flags. */
@@ -63,16 +66,28 @@ data class StrumStringReading(val cents: Float, val present: Boolean, val shadow
  * was in tune stays so a little further ([StrumVerdict.RELEASE_CENTS]), so readings every 0.1 s
  * don't flicker. A new strum keeps the last strum's strings on screen (faded by the view) until its
  * own first reading. Not thread-safe; one per listening session.
+ *
+ * Each string shows all readings of the strum so far together, weighted by their frames' power, so
+ * the loud start counts most and the noisy readings as the strings die away barely count (on the
+ * phone, the last reading alone was up to 7 cents off or lost a string that the first ones read
+ * within 1 cent): heard when it was heard in more than half the weight, its cents the weighted
+ * median of the readings that heard it, less sure when more than half of those were.
  */
 class StrumCheckInterpreter {
-    private var strumCount = 0
     private var strings: List<StrumString> = emptyList()
     private var phase = StrumPhase.WAITING
 
+    // The readings shown (at most MAX_READINGS), their weights, and the strum they are of.
+    private var readingsStrum = 0
+    private val readings = ArrayList<List<StrumStringReading>>()
+    private val weights = ArrayList<Double>()
+
     /** The state shown before anything is heard, or after strum check starts over. */
     fun waiting(options: TunerOptions): TunerUiState.StrumCheck {
-        strumCount = 0
         strings = emptyList()
+        readingsStrum = 0
+        readings.clear()
+        weights.clear()
         phase = StrumPhase.WAITING
         return shown(options)
     }
@@ -88,14 +103,27 @@ class StrumCheckInterpreter {
 
     fun interpret(reading: StrumReading, options: TunerOptions): TunerUiState.StrumCheck {
         if (reading.strumCount == 0) return waiting(options)
-        val newStrum = reading.strumCount != strumCount
-        strumCount = reading.strumCount
-        val readings = reading.strings
-        if (readings != null) {
+        // A strum's first reading must hear at least half the strings: anything else is some other
+        // sound (a voice, a knock), and what was shown stays.
+        val latest = reading.strings?.takeIf { strings ->
+            reading.strumCount == readingsStrum || strings.count { it.present && !it.cents.isNaN() } * 2 >= strings.size
+        }
+        if (latest != null) {
             val tolerance = toleranceFor(options.inTunePrecision)
             // The same strum's previous verdicts hold "in tune" a little longer.
-            val previous = if (newStrum || readings.size != strings.size) null else strings
-            strings = readings.mapIndexed { i, string ->
+            val sameStrum = reading.strumCount == readingsStrum && latest.size == strings.size
+            val previous = if (sameStrum) strings else null
+            if (!sameStrum) {
+                readings.clear()
+                weights.clear()
+                readingsStrum = reading.strumCount
+            }
+            if (readings.size < MAX_READINGS) {
+                readings += latest
+                weights += 10.0.pow(reading.levelDbfs / 10.0)
+            }
+            strings = latest.indices.map { i ->
+                val string = combined(i)
                 StrumString(
                     verdict = StrumVerdict.of(string.cents, string.present, string.shadowed, tolerance, previous?.get(i)?.verdict),
                     cents = if (string.present && !string.cents.isNaN()) string.cents.roundToInt().toFloat() else 0f,
@@ -104,17 +132,48 @@ class StrumCheckInterpreter {
             }
         }
         phase = when {
-            readings != null -> if (reading.ringing) StrumPhase.RINGING else StrumPhase.DONE
-            reading.readingsSinceStrum == 0 && reading.ringing -> StrumPhase.HEARING
-            // Too short to read: what was shown stays, or else it waits for a proper strum.
-            reading.readingsSinceStrum == 0 -> if (strings.isEmpty()) StrumPhase.WAITING else StrumPhase.DONE
-            reading.ringing -> StrumPhase.RINGING
+            reading.strumCount == readingsStrum -> if (reading.ringing) StrumPhase.RINGING else StrumPhase.DONE
+            reading.ringing -> StrumPhase.HEARING
+            // Too short or too quiet to read, or not a strum: what was shown stays, or else it
+            // waits for a proper strum.
+            strings.isEmpty() -> StrumPhase.WAITING
             else -> StrumPhase.DONE
         }
         return shown(options)
     }
 
+    // String i over this strum's readings: see the class comment.
+    private fun combined(i: Int): StrumStringReading {
+        var total = 0.0
+        var heard = 0.0
+        var shadowed = 0.0
+        for (r in readings.indices) {
+            val w = weights[r]
+            val s = readings[r][i]
+            total += w
+            if (s.present && !s.cents.isNaN()) {
+                heard += w
+                if (s.shadowed) shadowed += w
+            }
+        }
+        if (heard * 2 <= total) return NOT_HEARD
+        val heardIn = readings.indices
+            .filter { readings[it][i].present && !readings[it][i].cents.isNaN() }
+            .sortedBy { readings[it][i].cents }
+        var sum = 0.0
+        for (r in heardIn) {
+            sum += weights[r]
+            if (sum * 2 >= heard) return StrumStringReading(readings[r][i].cents, present = true, shadowed = shadowed * 2 > heard)
+        }
+        return NOT_HEARD
+    }
+
     companion object {
+        /** Readings of one strum taken together: 10 s of ringing. Later ones are the faintest. */
+        const val MAX_READINGS = 100
+
+        private val NOT_HEARD = StrumStringReading(Float.NaN, present = false, shadowed = false)
+
         /** The strum check's in-tune tolerance for [precision]: the tuner's own 5 or 2 cents. */
         fun toleranceFor(precision: InTunePrecision): Float = when (precision) {
             InTunePrecision.RELAXED -> StrumVerdict.DEFAULT_TOLERANCE_CENTS
@@ -178,7 +237,7 @@ internal class StrumAnalysis(private val sampleRate: Int) {
                     StrumStringReading(Float.NaN, present = false, shadowed = false)
                 }
             }
-            return StrumReading(listener.strumCount, listener.isRinging, listener.readingsSinceStrum, strings)
+            return StrumReading(listener.strumCount, listener.isRinging, listener.readingsSinceStrum, strings, listener.frameLevelDbfs)
         }
         if (listener.strumCount == lastStrumCount && listener.isRinging == lastRinging) return null
         lastStrumCount = listener.strumCount

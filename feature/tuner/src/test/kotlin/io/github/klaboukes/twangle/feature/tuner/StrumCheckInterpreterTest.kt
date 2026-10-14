@@ -67,11 +67,81 @@ class StrumCheckInterpreterTest {
     fun `a string in tune stays so a cent further within one strum, not into the next`() {
         val interpreter = StrumCheckInterpreter()
         interpreter.interpret(StrumReading(1, true, 1, strings(0f, 4.5f, 0f, 0f, 0f, 0f)), options)
-        val edge = interpreter.interpret(StrumReading(1, true, 2, strings(0f, 5.6f, 0f, 0f, 0f, 0f)), options)
+        interpreter.interpret(StrumReading(1, true, 2, strings(0f, 5.6f, 0f, 0f, 0f, 0f)), options)
+        val edge = interpreter.interpret(StrumReading(1, true, 3, strings(0f, 5.6f, 0f, 0f, 0f, 0f)), options)
+        assertEquals(6f, edge.strings[1].cents)
         assertEquals(StrumVerdict.IN_TUNE, edge.strings[1].verdict)
 
+        // As from the pipeline: the next strum is heard, then read.
+        interpreter.interpret(StrumReading(2, ringing = true, readingsSinceStrum = 0), options)
         val next = interpreter.interpret(StrumReading(2, true, 1, strings(0f, 5.6f, 0f, 0f, 0f, 0f)), options)
         assertEquals(StrumVerdict.SHARP, next.strings[1].verdict)
+    }
+
+    @Test
+    fun `a strum's readings count together, the loud ones most`() {
+        val interpreter = StrumCheckInterpreter()
+        val nan = Float.NaN
+        // Two loud readings, then fainter ones as the strings die away: off by several cents, a
+        // string lost, a missing one found.
+        interpreter.interpret(StrumReading(1, true, 1, strings(-10f, nan, 25f, 0.2f, -30f, 0.1f), levelDbfs = -42f), options)
+        interpreter.interpret(StrumReading(1, true, 2, strings(-9.6f, nan, 24.8f, 0f, -29.9f, -0.8f), levelDbfs = -43f), options)
+        var state = interpreter.interpret(StrumReading(1, true, 3, strings(-14.2f, 59.6f, 25.3f, -0.3f, nan, -0.8f), levelDbfs = -50f), options)
+        repeat(5) { n ->
+            state = interpreter.interpret(StrumReading(1, true, 4 + n, strings(-15f, 61f, 27f, 1.5f, nan, 2f), levelDbfs = -53f), options)
+        }
+        assertEquals(listOf(-10f, 0f, 25f, 0f, -30f, 0f), state.strings.map { it.cents })
+        assertEquals(
+            listOf(StrumVerdict.FLAT, StrumVerdict.NOT_HEARD, StrumVerdict.SHARP, StrumVerdict.IN_TUNE, StrumVerdict.FLAT, StrumVerdict.IN_TUNE),
+            state.strings.map { it.verdict },
+        )
+
+        // Equal weights: the median, not the mean.
+        val equal = StrumCheckInterpreter()
+        equal.interpret(StrumReading(1, true, 1, strings(1f, 0f, 0f, 0f, 0f, 0f)), options)
+        equal.interpret(StrumReading(1, true, 2, strings(30f, 0f, 0f, 0f, 0f, 0f)), options)
+        assertEquals(2f, equal.interpret(StrumReading(1, true, 3, strings(2f, 0f, 0f, 0f, 0f, 0f)), options).strings[0].cents)
+    }
+
+    @Test
+    fun `a new strum starts its own readings`() {
+        val interpreter = StrumCheckInterpreter()
+        interpreter.interpret(StrumReading(1, true, 1, strings(0f, -20f, 0f, 0f, 0f, 0f), levelDbfs = -30f), options)
+        interpreter.interpret(StrumReading(1, false, 1), options)
+        // The string tuned up and strummed again, more softly: heard, then read.
+        interpreter.interpret(StrumReading(2, ringing = true, readingsSinceStrum = 0), options)
+        val next = interpreter.interpret(StrumReading(2, true, 1, strings(0f, 1f, 0f, 0f, 0f, 0f), levelDbfs = -45f), options)
+        assertEquals(1f, next.strings[1].cents)
+        assertEquals(StrumVerdict.IN_TUNE, next.strings[1].verdict)
+    }
+
+    @Test
+    fun `a sound that hears fewer than half the strings is no strum`() {
+        val interpreter = StrumCheckInterpreter()
+        val nan = Float.NaN
+        val noise = strings(nan, -43f, nan, 100f, nan, nan)
+        interpreter.interpret(StrumReading(1, ringing = true, readingsSinceStrum = 0), options)
+        assertEquals(StrumPhase.HEARING, interpreter.interpret(StrumReading(1, true, 1, noise), options).phase)
+        val nothing = interpreter.interpret(StrumReading(1, ringing = false, readingsSinceStrum = 1), options)
+        assertEquals(StrumPhase.WAITING, nothing.phase)
+        assertTrue(nothing.strings.isEmpty())
+
+        // After a real strum, a voice or a knock leaves it on screen.
+        interpreter.interpret(StrumReading(2, true, 1, strings(0f, -20f, 0f, nan, 0f, 0f)), options)
+        interpreter.interpret(StrumReading(2, ringing = false, readingsSinceStrum = 1), options)
+        interpreter.interpret(StrumReading(3, ringing = true, readingsSinceStrum = 0), options)
+        val hearing = interpreter.interpret(StrumReading(3, true, 1, noise), options)
+        assertEquals(StrumPhase.HEARING, hearing.phase)
+        assertEquals(-20f, hearing.strings[1].cents)
+        val done = interpreter.interpret(StrumReading(3, ringing = false, readingsSinceStrum = 1), options)
+        assertEquals(StrumPhase.DONE, done.phase)
+        assertEquals(StrumVerdict.FLAT, done.strings[1].verdict)
+        assertEquals(StrumVerdict.NOT_HEARD, done.strings[3].verdict)
+
+        // Half the strings is enough: three strummed, three missing.
+        val half = interpreter.interpret(StrumReading(4, true, 1, strings(0f, 0f, 0f, nan, nan, nan)), options)
+        assertEquals(StrumPhase.RINGING, half.phase)
+        assertEquals(StrumVerdict.IN_TUNE, half.strings[1].verdict)
     }
 
     @Test

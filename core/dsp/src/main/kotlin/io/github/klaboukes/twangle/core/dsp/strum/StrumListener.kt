@@ -12,7 +12,9 @@ import kotlin.math.sqrt
  * Turns microphone chunks into [StrumDetector] frames, timed from each strum: it notices the strum
  * by its sudden rise in level, waits until the strings have started ([ATTACK_SECONDS]) and one
  * whole frame of ringing has arrived, and then offers a frame every [REREAD_SECONDS] while the
- * strings ring. A new strum starts over. See ARCHITECTURE.md, *Strum check (polyphonic)*.
+ * strings ring. A strum whose first frame is quieter than [MIN_FIRST_FRAME_DBFS] (a knock, a click,
+ * strings muted at once) is not read at all. A new strum starts over. See ARCHITECTURE.md, *Strum
+ * check (polyphonic)*.
  *
  * The first frame after a strum is ready ≈ [ATTACK_SECONDS] + [frameLength] after it (0.39 s at the
  * standard range, 0.73 s at [PitchRange.LOW]), up to two hops (≈ 43 ms) more.
@@ -59,6 +61,13 @@ class StrumListener(
 
     /** Level of the latest hop in dBFS (RMS, DC removed). */
     var levelDbfs: Float = SignalGate.SILENCE_DBFS
+        private set
+
+    /**
+     * Level of the frame last offered in dBFS (RMS over the whole frame, DC removed): steadier than
+     * [levelDbfs], for weighing readings of one strum against each other.
+     */
+    var frameLevelDbfs: Float = SignalGate.SILENCE_DBFS
         private set
 
     /** Samples since the latest strum was noticed (counted in hops), or −1 before the first strum. */
@@ -117,6 +126,7 @@ class StrumListener(
         recentPos = 0
         heardAny = false
         levelDbfs = SignalGate.SILENCE_DBFS
+        frameLevelDbfs = SignalGate.SILENCE_DBFS
         samplesSinceStrum = NO_STRUM
         isRinging = false
         readingsSinceStrum = 0
@@ -125,7 +135,7 @@ class StrumListener(
     }
 
     private fun onHop() {
-        val db = hopLevelDbfs()
+        val db = rmsDbfs(hop, hopSize)
         if (!heardAny) {
             // Whatever already sounds when listening starts (strings still ringing, a steady note,
             // a fan) is where a strum must rise from, not a strum itself.
@@ -159,22 +169,28 @@ class StrumListener(
         }
         if (samplesSinceStrum >= nextReadingAt && assembler.available >= frameLength) {
             assembler.copyLatest(frame, frameLength)
+            frameLevelDbfs = rmsDbfs(frame, frameLength)
+            if (readingsSinceStrum == 0 && frameLevelDbfs < MIN_FIRST_FRAME_DBFS) {
+                // Too quiet to read: no strings ringing after the rise. What was read stays.
+                isRinging = false
+                return
+            }
             isFrameReady = true
             nextReadingAt = samplesSinceStrum + rereadSamples
         }
     }
 
-    // RMS of the hop after removing its mean (the mic's DC offset), in dBFS.
-    private fun hopLevelDbfs(): Float {
+    // RMS of the first n samples after removing their mean (the mic's DC offset), in dBFS.
+    private fun rmsDbfs(samples: FloatArray, n: Int): Float {
         var mean = 0.0
-        for (s in hop) mean += s
-        mean /= hopSize
+        for (i in 0 until n) mean += samples[i]
+        mean /= n
         var sum = 0.0
-        for (s in hop) {
-            val d = s - mean
+        for (i in 0 until n) {
+            val d = samples[i] - mean
             sum += d * d
         }
-        val rms = sqrt(sum / hopSize)
+        val rms = sqrt(sum / n)
         return if (rms <= 0.0) SignalGate.SILENCE_DBFS else maxOf(SignalGate.SILENCE_DBFS, (20 * log10(rms)).toFloat())
     }
 
@@ -187,6 +203,13 @@ class StrumListener(
 
         /** Hops (≈ 21 ms each) a strum's rise is measured over: ≈ 130 ms. */
         const val RECENT_HOPS = 6
+
+        /**
+         * A strum's first frame must be at least this loud (the tuner's gate), or the strum is not
+         * read: on the phone, the click of strings stopped at once and the beating of a dying strum
+         * near the gate were taken for strums, and their one noisy reading replaced a good one.
+         */
+        const val MIN_FIRST_FRAME_DBFS = GATE_DBFS
 
         /** The strings ring until the level drops this far below [GATE_DBFS] (the gate's hysteresis). */
         const val GATE_HYSTERESIS_DB = SignalGate.DEFAULT_HYSTERESIS_DB
