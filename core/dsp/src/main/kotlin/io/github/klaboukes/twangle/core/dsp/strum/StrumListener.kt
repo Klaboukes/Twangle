@@ -54,6 +54,9 @@ class StrumListener(
     private var recentPos = 0
     private var nextReadingAt = 0
 
+    // False until the first hop after construction or reset: that hop sets the level a strum rises from.
+    private var heardAny = false
+
     /** Level of the latest hop in dBFS (RMS, DC removed). */
     var levelDbfs: Float = SignalGate.SILENCE_DBFS
         private set
@@ -112,6 +115,7 @@ class StrumListener(
         assembler.reset()
         recentDb.fill(SignalGate.SILENCE_DBFS)
         recentPos = 0
+        heardAny = false
         levelDbfs = SignalGate.SILENCE_DBFS
         samplesSinceStrum = NO_STRUM
         isRinging = false
@@ -122,6 +126,14 @@ class StrumListener(
 
     private fun onHop() {
         val db = hopLevelDbfs()
+        if (!heardAny) {
+            // Whatever already sounds when listening starts (strings still ringing, a steady note,
+            // a fan) is where a strum must rise from, not a strum itself.
+            heardAny = true
+            recentDb.fill(db)
+            levelDbfs = db
+            return
+        }
         var quiet = Float.MAX_VALUE
         for (d in recentDb) if (d < quiet) quiet = d
         recentDb[recentPos] = db

@@ -113,4 +113,21 @@
     <string name="tuner_delete_tuning_title">Deze stemming verwijderen?</string>
     <string name="tuner_delete_tuning_text">“%1$s” is daarna voorgoed weg.</string>
     <string name="tuner_delete_tuning_cancel">Annuleren</string>
+    <!-- Strum check: strum once and every string shows flat, in tune or sharp at once (guitar mode). -->
+    <string name="tuner_strum_check">Strumcheck</string>
+    <string name="tuner_strum_waiting">Strum alle losse snaren</string>
+    <string name="tuner_strum_waiting_detail">Elke snaar toont te laag, zuiver of te hoog</string>
+    <string name="tuner_strum_hearing">Luisteren…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="one">%1$d snaar bijstemmen</item>
+        <item quantity="other">%1$d snaren bijstemmen</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Niet elke snaar was te horen</string>
+    <string name="tuner_strum_all_in_tune">Alle snaren zijn zuiver</string>
+    <string name="tuner_strum_tap_to_tune">Tik op een snaar om die te stemmen</string>
+    <string name="tuner_strum_again">Strum opnieuw, of tik op een snaar om die te stemmen</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, nog niet gestrumd</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
 </resources>

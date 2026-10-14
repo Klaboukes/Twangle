@@ -5,6 +5,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TunerOptionsTest {
@@ -29,5 +31,16 @@ class TunerOptionsTest {
         for (tuning in Instruments.UKULELE.tunings + Instruments.VIOLIN.tunings) {
             assertEquals(tuning.id, PitchRange.STANDARD, TunerOptions(tuning = tuning).pitchRange)
         }
+    }
+
+    @Test
+    fun `strum check listens for the open strings at the current A4, only in guitar mode`() {
+        val options = TunerOptions(tuning = Tunings.DROP_D, a4Hz = 432f, strumCheck = true)
+        assertEquals(6, options.stringHz.size)
+        assertEquals(73.42f * 432f / 440f, options.stringHz[0], 0.01f)
+        assertEquals(329.63f * 432f / 440f, options.stringHz[5], 0.01f)
+        assertTrue(options.strumChecking)
+        assertFalse(options.copy(mode = TunerMode.CHROMATIC).strumChecking)
+        assertFalse(TunerOptions().strumChecking)
     }
 }

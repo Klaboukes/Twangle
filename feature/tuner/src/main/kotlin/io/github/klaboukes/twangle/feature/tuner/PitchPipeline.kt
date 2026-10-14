@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 /** One analysis frame's raw result, before smoothing. */
 data class PitchReading(
@@ -34,7 +35,7 @@ data class PitchReading(
     val clarity: Float = 0f,
     /** Peak of the frame before DC removal, in dBFS ([SignalGate.peakDbfs]); near 0 the input clips. */
     val peakDbfs: Float = SignalGate.SILENCE_DBFS,
-) {
+) : PipelineReading {
     val isPitched: Boolean get() = frequencyHz > 0f
 }
 
@@ -64,7 +65,18 @@ class PitchPipeline(
     val frameSeconds: Float get() = AnalysisSettings.forSampleRate(sampleRate.coerceIn(SUPPORTED_RATES)).hopSeconds
 
     /** One reading per hop; [range] is asked every frame how low to listen (it must not allocate). */
-    fun readings(range: () -> PitchRange = { PitchRange.STANDARD }): Flow<PitchReading> = flow {
+    fun readings(range: () -> PitchRange = { PitchRange.STANDARD }): Flow<PitchReading> =
+        listen(range) { null }.map { it as PitchReading }
+
+    /**
+     * Like [readings], but while [strumStrings] gives the open strings' frequencies (Hz, in the
+     * tuning's order) the microphone's chunks go to the strum check instead: a [StrumReading] when
+     * it starts, when a strum is heard or stops ringing, and with each reading of the strings
+     * (about every 0.1 s while they ring). It starts over whenever the frequencies change. The
+     * microphone stays open through every switch. [strumStrings] and [range] are asked for every
+     * chunk and must not allocate.
+     */
+    fun listen(range: () -> PitchRange = { PitchRange.STANDARD }, strumStrings: () -> FloatArray?): Flow<PipelineReading> = flow {
         val rate = sampleRate
         if (rate !in SUPPORTED_RATES) {
             throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
@@ -74,8 +86,31 @@ class PitchPipeline(
         val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
         val gate = SignalGate()
         val noise = standard.settings.newNoiseFloorTracker()
+        // Made the first time strum check starts: its buffers are large.
+        var strum: StrumAnalysis? = null
+        var strumming = false
 
         recorder.chunks().collect { chunk ->
+            val strings = strumStrings()
+            if (strings != null) {
+                val analysis = strum ?: StrumAnalysis(rate).also { strum = it }
+                val expected = analysis.expected
+                if (!strumming || (strings !== expected && !strings.contentEquals(expected))) {
+                    emit(analysis.start(strings, PitchRange.forLowestNote(strings.minOrNull() ?: 0f)))
+                    strumming = true
+                }
+                var pos = 0
+                while (pos < chunk.size) {
+                    pos += analysis.push(chunk, pos, chunk.size - pos)
+                    analysis.next()?.let { emit(it) }
+                }
+                return@collect
+            }
+            if (strumming) {
+                // Back to the tuner: its window starts afresh rather than joining audio from before.
+                strumming = false
+                assembler.reset()
+            }
             var pos = 0
             while (pos < chunk.size) {
                 pos += assembler.push(chunk, pos, chunk.size - pos)

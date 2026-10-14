@@ -129,6 +129,8 @@ class StringRowStylesTest(private val style: VisualStyle) {
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showStringLockTip = tip,
                         compactLandscape = layout.compact,
+                        // As in the app: the strum check's switch shares the row with the instrument-and-tuning button.
+                        onStrumCheckChange = {},
                     )
                 }
             }
@@ -278,6 +280,10 @@ class StringRowStylesTest(private val style: VisualStyle) {
         assertWhollyShown(labelNode, "$case: $label", scroll = scroll)
         val button = compose.onNodeWithTag(TunerTestTags.PICKER).getBoundsInRoot()
         if (button.left < window.left - SLACK || button.right > window.right + SLACK) fail("$case: the button $button is outside the window $window")
+        val strum = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).getBoundsInRoot()
+        val besideOrAbove = strum.left >= button.right - SLACK || strum.bottom <= button.top + SLACK
+        if (!besideOrAbove) fail("$case: the button $button reaches the strum check's switch $strum")
+        if (strum.right > window.right + SLACK) fail("$case: the strum check's switch $strum is outside the window $window")
         // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
         val buttonNode = compose.onNodeWithTag(TunerTestTags.PICKER).fetchSemanticsNode()
         val stringNode = compose.onNodeWithText(labels(shownTuning.value, Notation.SHARPS).first()).fetchSemanticsNode()

@@ -94,6 +94,7 @@ class TunerStylesTest(private val style: VisualStyle) {
                         showTuneHint = true,
                         showSignalBars = true,
                         compactLandscape = false,
+                        onStrumCheckChange = {},
                     )
                 }
             }
@@ -131,6 +132,7 @@ class TunerStylesTest(private val style: VisualStyle) {
         add("tune hint" to compose.onNodeWithText(context.getString(R.string.tuner_tune_up)))
         add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS))
         add("instrument and tuning button" to compose.onNodeWithTag(TunerTestTags.PICKER))
+        add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
     }
 

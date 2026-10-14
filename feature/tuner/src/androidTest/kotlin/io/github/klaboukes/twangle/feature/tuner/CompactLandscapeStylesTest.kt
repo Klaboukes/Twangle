@@ -104,6 +104,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                         showTuneHint = true,
                         showSignalBars = true,
                         compactLandscape = true,
+                        onStrumCheckChange = {},
                     )
                 }
             }

@@ -198,6 +198,7 @@ class TunerContentTest {
                         compactLandscape = shownCompact.value,
                         showSignalBars = shownSignalBars.value,
                         signalFigures = signalFigures,
+                        onStrumCheckChange = {},
                     )
                 }
             }

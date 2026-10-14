@@ -144,4 +144,24 @@
     <string name="tuner_delete_tuning_title">Delete this tuning?</string>
     <string name="tuner_delete_tuning_text">“%1$s” will be gone for good.</string>
     <string name="tuner_delete_tuning_cancel">Cancel</string>
+    <!-- Strum check: strum once and every string shows flat, in tune or sharp at once (guitar mode). -->
+    <string name="tuner_strum_check">Strum check</string>
+    <string name="tuner_strum_waiting">Strum all the open strings</string>
+    <string name="tuner_strum_waiting_detail">Every string shows flat, in tune or sharp</string>
+    <string name="tuner_strum_hearing">Listening…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="one">%1$d string to tune</item>
+        <item quantity="other">%1$d strings to tune</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Not every string was heard</string>
+    <string name="tuner_strum_all_in_tune">All strings in tune</string>
+    <string name="tuner_strum_tap_to_tune">Tap a string to tune it</string>
+    <string name="tuner_strum_again">Strum again, or tap a string to tune it</string>
+    <!-- TalkBack, one string of the strum check. %1$s is the string as spoken ("A 2"), %2$s its reading
+         ("12 cents flat, tune up" or "in tune"). -->
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, not heard</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
+    <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
+    <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
 </resources>

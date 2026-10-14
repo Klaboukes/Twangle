@@ -100,6 +100,9 @@ import io.github.klaboukes.twangle.feature.tuner.components.DOWN_POINTER_FROM_ST
 import io.github.klaboukes.twangle.feature.tuner.components.CombinedPicker
 import io.github.klaboukes.twangle.feature.tuner.components.StringLockTip
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
+import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckToggle
+import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
+import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
 import io.github.klaboukes.twangle.feature.tuner.components.stringRowFitFor
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
@@ -171,6 +174,7 @@ fun TunerScreen(
     val showStringLockTip by viewModel.showStringLockTip.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
+    val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -237,6 +241,8 @@ fun TunerScreen(
                     showStringLockTip = showStringLockTip,
                     onStringLockTipDismiss = viewModel::dismissStringLockTip,
                     compactLandscape = !keepTwoPaneLandscape,
+                    strumCheck = strumCheck,
+                    onStrumCheckChange = viewModel::setStrumCheck,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -282,6 +288,14 @@ object TunerTestTags {
 
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
+
+    /** Strum check: its switch beside the instrument-and-tuning button, its panel in the meter's place, and the line under it. */
+    const val STRUM_TOGGLE = "tuner_strum_toggle"
+    const val STRUM_PANEL = "tuner_strum_panel"
+    const val STRUM_STATUS = "tuner_strum_status"
+
+    /** String [index]'s column in the strum check's panel. */
+    fun strumString(index: Int): String = "tuner_strum_string_$index"
 
     /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
     fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
@@ -337,7 +351,10 @@ private fun KeepScreenOn() {
  * presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after asking), and [onNewTuning],
  * when given, adds "New tuning" to the panel's list. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
- * sounds a tap on any string calls [onStringClick], which stops the tone.
+ * sounds a tap on any string calls [onStringClick], which stops the tone. With [onStrumCheckChange] a
+ * switch at the end of the instrument-and-tuning button's row turns strum check on and off ([strumCheck]
+ * is whether it is on); a [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
+ * line in the note's ([StrumPanel], [StrumStatus]).
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -376,6 +393,8 @@ fun TunerContent(
     onNewTuning: ((Instrument) -> Unit)? = null,
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
+    strumCheck: Boolean = false,
+    onStrumCheckChange: ((Boolean) -> Unit)? = null,
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -398,23 +417,30 @@ fun TunerContent(
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
         val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning, onEditTuning, onDeleteTuning)
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
-        GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, strings, tip, onMenuOpenChange)
+        val strum = onStrumCheckChange?.let { StrumToggleState(strumCheck, it) }
+        GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, strings, tip, onMenuOpenChange, strum)
     }
     val gauge = @Composable {
-        MeterFrame(
-            look = meterLook,
-            effect = inTuneEffect,
-            cents = needleCents,
-            inTune = (state as? TunerUiState.Detected)?.inTune == true,
-            glow = meterGlow,
-            animationsOff = animationsOff,
-            // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-            modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
-            reception = reception,
-        )
+        // Strum check takes the meter's place, at its shape.
+        if (state is TunerUiState.StrumCheck) {
+            StrumPanel(state, Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL))
+        } else {
+            MeterFrame(
+                look = meterLook,
+                effect = inTuneEffect,
+                cents = needleCents,
+                inTune = (state as? TunerUiState.Detected)?.inTune == true,
+                glow = meterGlow,
+                animationsOff = animationsOff,
+                // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
+                reception = reception,
+            )
+        }
     }
     val note = @Composable { compact: Boolean ->
         when (state) {
+            is TunerUiState.StrumCheck -> StrumStatus(state)
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
                 hint = "",
@@ -814,6 +840,7 @@ private fun GuitarSlotFor(
     strings: StringActions,
     tip: StringLockTipState,
     onMenuOpenChange: (Boolean) -> Unit,
+    strum: StrumToggleState? = null,
 ) {
     val chromatic:(@Composable () -> Unit)? = if (pictured) {
         when (state) {
@@ -835,6 +862,9 @@ private fun GuitarSlotFor(
         // A locked string is the target before anything is played, so it stays highlighted.
         is TunerUiState.Listening ->
             GuitarControlsState(state.tuning, state.notation, state.lockedString, state.lockedString, tip, inTune = false, noteSounding = false)
+        // Strum check reads every string at once: none is the target.
+        is TunerUiState.StrumCheck ->
+            GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, tip, inTune = false, noteSounding = false)
         // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
         // permission is granted): empty space of the same height.
         else -> null
@@ -846,6 +876,7 @@ private fun GuitarSlotFor(
             GuitarControls(
                 controls.tuning, controls.notation, onTuningChange, instrument, strings,
                 controls.targetString, controls.lockedString, controls.tip, controls.inTune, controls.noteSounding, onMenuOpenChange,
+                strum,
             )
         }
     } else {
@@ -898,6 +929,9 @@ private fun instrumentOf(state: TunerUiState): Instrument {
     return tuning?.let { Instruments.ofTuning(it.id) } ?: Instruments.DEFAULT
 }
 
+/** Whether strum check is [on], and what its switch calls when tapped. */
+private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> Unit)
+
 /** Whether the one-time string-lock tip is [shown], what tapping it does, and where it [pointer]s from. */
 private data class StringLockTipState(val shown: Boolean, val onDismiss: () -> Unit, val pointer: TipPointer)
 
@@ -926,6 +960,7 @@ private fun GuitarControls(
     inTune: Boolean = false,
     noteSounding: Boolean = false,
     onMenuOpenChange: (Boolean) -> Unit = {},
+    strum: StrumToggleState? = null,
 ) {
     var quiet by remember { mutableStateOf(!noteSounding) }
     // Whether the tip went above the button for want of room in the corner; set while measuring.
@@ -975,17 +1010,27 @@ private fun GuitarControls(
             )
         }
     }
-    Layout(contents = listOf(picker, strings, balloon)) { measurables, constraints ->
-        val (pickerMeasurables, stringMeasurables, tipMeasurables) = measurables
+    val toggle = @Composable { if (strum != null) StrumCheckToggle(strum.on, strum.onChange) }
+    Layout(contents = listOf(picker, strings, balloon, toggle)) { measurables, constraints ->
+        val (pickerMeasurables, stringMeasurables, tipMeasurables, toggleMeasurables) = measurables
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
+        val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
         val pickerPlaceable = pickerMeasurables.single().measure(partConstraints)
         val gap = PICKER_STRINGS_GAP.roundToPx()
         val width = max(pickerPlaceable.width, stringsPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val pickerX = (width - pickerPlaceable.width) / 2
-        val height = (pickerPlaceable.height + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+        // The strum check's switch sits at the end of the button's row. The button keeps its own
+        // room (so its names shrink or wrap no sooner): centred where the switch fits beside it,
+        // moved towards the start where only that makes room, and else the switch gets a row of
+        // its own above the button's (wide faces at very large text).
+        val toggleRoom = togglePlaceable?.let { it.width + TOGGLE_PICKER_GAP.roundToPx() } ?: 0
+        val centredX = (width - pickerPlaceable.width) / 2
+        val toggleOwnRow = togglePlaceable != null && pickerPlaceable.width + toggleRoom > width
+        val pickerX = if (togglePlaceable == null || toggleOwnRow) centredX else min(centredX, width - toggleRoom - pickerPlaceable.width)
+        val pickerY = if (toggleOwnRow) togglePlaceable.height else 0
+        val height = (pickerY + pickerPlaceable.height + gap + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
         val stringsX = (width - stringsPlaceable.width) / 2
-        val stringsY = pickerPlaceable.height + gap
+        val stringsY = pickerY + pickerPlaceable.height + gap
         val tipMeasurable = tipMeasurables.firstOrNull()
         // The corner left of the button: from the column's edge (it is centred in the column, inside
         // the column's padding) to the button, reaching up into the gap above the slot but not to the
@@ -1006,7 +1051,11 @@ private fun GuitarControls(
         // Elsewhere the balloon is no wider than the row it points at. It isn't counted in the height.
         val tipPlaceable = tipMeasurable?.measure(Constraints(maxWidth = if (inCorner) cornerWidth else width))
         layout(width, height) {
-            pickerPlaceable.placeRelative(pickerX, 0)
+            pickerPlaceable.placeRelative(pickerX, pickerY)
+            togglePlaceable?.placeRelative(
+                width - togglePlaceable.width,
+                if (toggleOwnRow) 0 else (pickerPlaceable.height - togglePlaceable.height) / 2,
+            )
             stringsPlaceable.placeRelative(stringsX, stringsY)
             // Above the button it waits for a quiet moment (see above).
             if (tipPlaceable != null && (!abovePicker || quiet)) {
@@ -1014,7 +1063,7 @@ private fun GuitarControls(
                 val y = when {
                     inCorner -> cornerBottom - tipPlaceable.height
                     // The body ends where the button's outline starts; the pointer reaches past it.
-                    tip.pointer == TipPointer.DOWN -> PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
+                    tip.pointer == TipPointer.DOWN -> pickerY + PICKER_TOUCH_INSET.roundToPx() + POINTER_HEIGHT.roundToPx() - tipPlaceable.height
                     else -> height + TIP_STRINGS_GAP.roundToPx()
                 }
                 tipPlaceable.placeRelative(x, y, zIndex = 1f)
@@ -1070,6 +1119,9 @@ private val PICKER_STRINGS_GAP = 8.dp
 
 /** The instrument-and-tuning button's 44 dp outline sits this far inside its 48 dp touch target. */
 private val PICKER_TOUCH_INSET = 2.dp
+
+/** At least this between the instrument-and-tuning button's touch target and the strum check's switch. */
+private val TOGGLE_PICKER_GAP = 4.dp
 
 /** Between the string row and a tip under it. */
 private val TIP_STRINGS_GAP = 4.dp

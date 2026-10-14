@@ -24,7 +24,18 @@ data class TunerOptions(
     val notation: Notation = Notation.DEFAULT,
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
+    /** Whether strum check is switched on; it only runs in guitar mode ([strumChecking]). */
+    val strumCheck: Boolean = false,
 ) {
+    /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
+    val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO
+
+    /**
+     * The open strings' frequencies at [a4Hz], in the tuning's order: what the strum check listens
+     * for. Worked out once here, so the DSP loop only reads it; never changed after.
+     */
+    val stringHz: FloatArray = NoteMapper(a4Hz).let { mapper -> FloatArray(tuning.strings.size) { mapper.frequencyOf(tuning.strings[it]) } }
+
     /**
      * How low the detector listens: [PitchRange.LOW] (the longer window) when the tuning's lowest
      * string goes below what the standard window reads. Every guitar tuning stays standard. Worked

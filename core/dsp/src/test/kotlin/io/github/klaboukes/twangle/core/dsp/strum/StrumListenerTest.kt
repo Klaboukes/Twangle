@@ -151,6 +151,25 @@ class StrumListenerTest {
     }
 
     @Test
+    fun `a sound already there when listening starts is no strum`() {
+        // A steady note at about −20 dBFS from the first sample, and strings still ringing after a reset.
+        assertTrue(listen(TestSignals.sawtooth(110f, length = seconds(1.0), amplitude = 0.15f)).isEmpty())
+        assertEquals(0, listener.strumCount)
+
+        val ringing = take(2.5, 0.2 to standard)
+        val later = ringing.copyOfRange(seconds(0.4), ringing.size)
+        listener.reset()
+        assertTrue(listen(later).isEmpty())
+        assertEquals(0, listener.strumCount)
+
+        // The next strum still counts.
+        listener.reset()
+        val restrum = take(3.5, 0.2 to standard, 2.0 to standard)
+        assertEquals(1, listen(restrum.copyOfRange(seconds(0.4), restrum.size)).map { it.strum }.distinct().size)
+        assertEquals(1, listener.strumCount)
+    }
+
+    @Test
     fun `reset forgets the strum`() {
         listen(take(1.2, 0.5 to standard))
         assertEquals(1, listener.strumCount)

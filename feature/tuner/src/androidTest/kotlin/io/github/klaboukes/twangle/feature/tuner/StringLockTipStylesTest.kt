@@ -78,6 +78,7 @@ class StringLockTipStylesTest(private val style: VisualStyle) {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         showStringLockTip = true,
+                        onStrumCheckChange = {},
                     )
                 }
             }

@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -76,6 +77,20 @@ sealed interface TunerUiState {
          * back"), held steady by [SteadyHint]; null for none. [TunerInterpreter] sets it.
          */
         val tip: ReceptionTip? = null,
+    ) : TunerUiState
+
+    /**
+     * Strum check (guitar mode, switched on beside the instrument-and-tuning button): strum once and
+     * every string of [tuning] shows flat, in tune or sharp at once. [strings] are in the tuning's
+     * order, empty until the first reading; in [StrumPhase.HEARING] they are still the strum before.
+     * [toleranceCents] is how far off "in tune" reaches (a less sure string gets a little more).
+     */
+    data class StrumCheck(
+        val tuning: Tuning,
+        val notation: Notation = Notation.DEFAULT,
+        val phase: StrumPhase = StrumPhase.WAITING,
+        val strings: List<StrumString> = emptyList(),
+        val toleranceCents: Float = StrumVerdict.DEFAULT_TOLERANCE_CENTS,
     ) : TunerUiState
 }
 

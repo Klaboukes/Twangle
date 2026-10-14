@@ -170,12 +170,21 @@ class TunerViewModel(
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)
 
+    private val strumCheckOn = MutableStateFlow(false)
+
+    /**
+     * Whether strum check is on: strum once and every string shows flat, in tune or sharp at once.
+     * Only in guitar mode; switching to chromatic turns it off. Kept in memory only, so the app
+     * always opens on the tuner.
+     */
+    val strumCheck: StateFlow<Boolean> = strumCheckOn
+
     /**
      * What readings are compared with; null until the saved settings have loaded. Rebuilt only
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, pickedMode, lockedString) { settings, picked, locked ->
+        combine(settingsRepository.settings, pickedMode, lockedString, strumCheckOn) { settings, picked, locked, strum ->
             TunerOptions(
                 mode = picked ?: settings.mode,
                 tuning = settings.tuning,
@@ -183,6 +192,7 @@ class TunerViewModel(
                 lockedString = locked,
                 notation = settings.notation,
                 inTunePrecision = settings.inTunePrecision,
+                strumCheck = strum,
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -221,6 +231,7 @@ class TunerViewModel(
     fun setMode(mode: TunerMode) {
         // Chromatic mode has no strings to show which one sounds.
         if (mode != this.mode.value) stopTone()
+        if (mode != TunerMode.AUTO) strumCheckOn.value = false
         pickedMode.value = mode
         viewModelScope.launch { settingsRepository.setMode(mode) }
     }
@@ -238,8 +249,24 @@ class TunerViewModel(
             stopTone()
             return
         }
-        lockedString.value = if (lockedString.value == index) null else index
+        if (strumCheckOn.value) {
+            // From strum check a string is tapped to tune it: back to the tuner, locked to that string.
+            strumCheckOn.value = false
+            lockedString.value = index
+        } else {
+            lockedString.value = if (lockedString.value == index) null else index
+        }
         dismissStringLockTip()
+    }
+
+    /**
+     * Switches strum check [on] or off. The microphone stays open; from the next chunk its sound goes
+     * to the strum check (or back to the tuner). Turning it on also switches to guitar mode, since
+     * it checks the tuning's strings.
+     */
+    fun setStrumCheck(on: Boolean) {
+        if (on && mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
+        strumCheckOn.value = on
     }
 
     /**
@@ -310,24 +337,45 @@ class TunerViewModel(
 
     private fun listen(): Flow<TunerUiState> = flow {
         var interpreter = TunerInterpreter(pipeline.frameSeconds)
+        val strumInterpreter = StrumCheckInterpreter()
         val initial = options.filterNotNull().first()
-        emit(interpreter.listening(initial))
+        emit(if (initial.strumChecking) strumInterpreter.waiting(initial) else interpreter.listening(initial))
         val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
         val tailFrames = ceil(TONE_TAIL_SECONDS / pipeline.frameSeconds).toInt()
         var frame = 0
         // Frames still to set aside: the tone sounds, or its echo may still be in the room.
         var ignoredFrames = 0
+        // Whether the last reading was the strum check's: the tuner's smoothing starts afresh after it.
+        var strummed = false
         emitAll(
-            // The window follows the tuning's lowest string (bass notes need the longer one).
-            pipeline.readings { (options.value ?: initial).pitchRange }.map { reading ->
+            pipeline.listen(
+                // The window follows the tuning's lowest string (bass notes need the longer one).
+                range = { (options.value ?: initial).pitchRange },
+                // Strum check hears the mic unless the app's own tone (or its echo) would be heard.
+                strumStrings = {
+                    val current = options.value ?: initial
+                    if (current.strumChecking && ignoredFrames == 0 && !tonePlayer.isPlaying.value) current.stringHz else null
+                },
+            ).map { reading ->
                 val current = options.value ?: initial
+                if (reading is StrumReading) {
+                    strummed = true
+                    return@map if (current.strumChecking) strumInterpreter.interpret(reading, current) else interpreter.listening(current)
+                }
+                reading as PitchReading
+                if (strummed) {
+                    strummed = false
+                    interpreter = TunerInterpreter(pipeline.frameSeconds)
+                }
                 if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
                 if (ignoredFrames > 0) {
                     // The mic would hear the app's own tone: show the listening state instead, and
                     // start the smoothing afresh afterwards so nothing of the tone carries over.
                     if (--ignoredFrames == 0) interpreter = TunerInterpreter(pipeline.frameSeconds)
-                    return@map interpreter.listening(current)
+                    return@map if (current.strumChecking) strumInterpreter.waiting(current) else interpreter.listening(current)
                 }
+                // Strum check was switched on between two chunks: its first reading comes with the next.
+                if (current.strumChecking) return@map strumInterpreter.shown(current)
                 val state = interpreter.interpret(reading, current)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception
