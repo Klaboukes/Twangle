@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home-screen widget (TuningWidget). Three cells wide by one tall, narrower on request. It is
+     redrawn by the app when the tuning or the look changes, never on a timer (updatePeriodMillis 0).
+     xml-v31 adds Android 12's size targets, preview and description. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/widget_tuning"
+    android:minWidth="180dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:resizeMode="horizontal"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

@@ -33,8 +33,9 @@ internal fun spokenOpenStrings(tuning: Tuning, notation: Notation, speech: NoteN
 /** Every instrument's first preset is its "Standard" tuning. */
 private val standardTuningIds: Set<String> = Instruments.all.mapTo(HashSet()) { it.defaultTuning.id }
 
+/** The string of the preset tuning [id]'s name (also read by the home-screen widget), or null for an unknown one. */
 @StringRes
-internal fun tuningNameRes(id: String): Int? = when (id) {
+fun tuningNameRes(id: String): Int? = when (id) {
     in standardTuningIds -> R.string.tuning_standard
     Tunings.DROP_D.id -> R.string.tuning_drop_d
     Tunings.HALF_STEP_DOWN.id -> R.string.tuning_half_step_down
@@ -47,8 +48,9 @@ internal fun tuningNameRes(id: String): Int? = when (id) {
     else -> null
 }
 
+/** The string of the instrument [id]'s name (also read by the home-screen widget), or null for an unknown one. */
 @StringRes
-internal fun instrumentNameRes(id: String): Int? = when (id) {
+fun instrumentNameRes(id: String): Int? = when (id) {
     Instruments.GUITAR.id -> R.string.instrument_guitar
     Instruments.GUITAR_7.id -> R.string.instrument_guitar_7
     Instruments.GUITAR_8.id -> R.string.instrument_guitar_8

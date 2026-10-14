@@ -10,7 +10,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic) · metronome
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
-6. [UI](#6-ui): UI state model · navigation bar · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · metronome screen · landscape and wide screens · accessibility · languages
+6. [UI](#6-ui): UI state model · navigation bar · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · metronome screen · home-screen widget · landscape and wide screens · accessibility · languages
 7. [Package layout](#7-package-layout-per-module)
 8. [Testing strategy](#8-testing-strategy): fast UI tests · quick and thorough UI runs
 9. [Privacy](#9-privacy)
@@ -46,7 +46,8 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## 2. Module structure
 
 ```
-:app               Android application: Activity, Application, AppContainer (DI), navigation bar and screen switching
+:app               Android application: Activity, Application, AppContainer (DI), navigation bar and screen switching,
+                   home-screen widget
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
@@ -697,6 +698,16 @@ Phase 19 (`:feature:metronome`), after the approved mock-up [docs/design/metrono
 - **State** (`MetronomeViewModel`): tempo, meter and vibration, each saved at once (a dial drag when the finger lifts); opens stopped at the saved values (passed in from the settings already read, so the first frame is right). It stops the clicks when cleared; the screen stops them when it leaves (§5).
 - **Tests**: `MetronomeViewModelTest`, `TapTempoTest`, settings tests (JVM); `MetronomeScreenTest` (opens stopped, Start / Stop, ± and meter reach the player and are saved, the dial by touch and by TalkBack, labels, vibration switch, tap tempo, leaving stops it, Dutch at 2× on its side) and `MetronomeStylesTest` (every style light and dark: fits without scrolling on a 360 dp phone, the Xiaomi at 1.25× and on its side, nothing overlaps; at 2× every control wholly shown).
 
+### Home-screen widget
+Phase 20 (`:app` `widget/`). A tile for the home screen, three cells by one (resizable across, down to two): the navigation bar's tuning fork in the accent, the instrument and tuning as the tuner's button names them ("Guitar · Standard", a custom tuning by its own name, "Chromatic" in chromatic mode) in ink, and "Open the tuner" ("Open de stemmer") in the muted colour under it, on a rounded tile in the style's background colour (corners: the launcher's own on Android 12+, 16 dp before). No border, no art: calm beside other widgets. A tap anywhere opens Twangle on the tuner.
+- **Tech: plain `RemoteViews`** (`layout/widget_tuning.xml`, an `AppWidgetProvider`), not Jetpack Glance. The widget is one static layout with three values to fill in; Glance would add a library, a second Compose runtime for widgets and a WorkManager-backed session for no gain here. Text sizes come from the layout (the title shrinks from 16 to 11 sp to fit, `autoSizeTextType`), the face is the system's medium sans: `RemoteViews` can't take the styles' bundled faces without a layout per style, and the colours already carry the style.
+- **Colours** (`TuningWidget.paint`): the style's scheme as the app ends up with it (`colorSchemeFor` in `:core:designsystem`, wallpaper colours for Contemporary with Material You on, `usesWallpaperColors`): background, `onBackground` (ink), `onSurfaceVariant` (muted) and `primary` (accent), set as colour filters on the tile and the fork and as text colours. With the theme on "System" on Android 12+ both sets go in (`setColorInt` light/night), so the launcher follows the phone's dark mode without a redraw; otherwise the set for the current brightness. The picker's preview (Android 12+, `previewLayout`) is the layout itself in Contemporary light or dark (`values/widget.xml`).
+- **Kept up to date by the app, never on a timer** (`updatePeriodMillis` 0): `TwangleApplication` follows the settings (`TuningWidget.follow`) for as long as its process lives and redraws the widgets when what they show changes (`WidgetState`: mode, instrument, tuning, custom name, style, theme, wallpaper colours; A4 or the meter's look change nothing), and when the configuration changes (language, dark mode before Android 12). `TuningWidgetReceiver` draws a widget when it is placed and redraws on the phone's `LOCALE_CHANGED`, reading the settings off the main thread (`goAsync`). With no widget placed, a redraw is one `getAppWidgetIds` call.
+- **One tap opens the tuner** (`TuningWidget.openTuner`): an immutable `PendingIntent` to `MainActivity` with `ACTION_OPEN_TUNER` and `NEW_TASK | CLEAR_TOP | SINGLE_TOP`. A cold start opens on the tuner anyway; an open app gets `onNewIntent`, which counts a request, and `TwangleApp` switches to the tuner (an open tuning editor closes as with Back, dropping its draft).
+- **Never the microphone:** the widget and its receiver touch only the settings. The mic opens only when the tuner it opens is shown, exactly as from the launcher (§5), and the tuner asks for the permission there.
+- **TalkBack:** the tile is one button; the title reads as the tuner's button does ("Guitar, Standard"), then "Open the tuner".
+- **Tests:** `WidgetStateTest` (JVM: names, custom tuning, chromatic, which changes redraw); `TuningWidgetTest` (device: the views applied as a launcher does show the names in the style's colours and are tappable; drawing them records nothing; the tap's intent brings the open app from Settings back to the tuner).
+
 ### Landscape and wide screens
 `tunerLayoutFor(width, height, compactLandscape)` (`TunerLayout.kt`, JVM-tested) picks the arrangement from the space, not the device: `SINGLE_COLUMN` (max 480 dp wide) unless the window is at least 600 dp wide *and* wider than tall. Then `COMPACT` by default, or `TWO_PANE` with the setting "Full layout on its side" (`keepTwoPaneLandscape`). `TunerScreenTest` checks both layouts and a live change on a phone on its side.
 
@@ -786,6 +797,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
     TwangleApplication, AppContainer, MainActivity, SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
+    widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState
 
 baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, MeterFramesBenchmark, TunerJourney
@@ -816,6 +828,6 @@ Compose UI tests use `createSharedActivityComposeRule()` (`:core:testing`): one 
 While the look is still changing (October 2026 until Phase 23), a normal run leaves out the double checks: style test classes (`TunerStylesTest`, `SettingsStylesTest`, `MeterLooksTest`, `CompactLandscapeStylesTest`, `StringLockTipStylesTest`, `StringRowStylesTest`, two checks in `WaveViewTest`) run in the default style only (`allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)`), and `@Thorough` tests (variants of a quicker test in another font size, language, orientation or view) are skipped. `--thorough` runs everything. This cut the tuner suite from ~3 minutes to ~1. Each family keeps its hardest case in the quick run (e.g. Dutch at 2× font on a phone on its side), so most layout breaks still show at once. The six styles were finished in Phase 14 (October 2026), but the double checks stay out of normal runs until Phase 23: phases 15 to 22 still add screens (instruments, the tuning editor, the metronome), and every increment would pay the thorough run (about 15 minutes on the Xiaomi 12X, which also heats the phone). Each increment that changes a style's look, fonts or shapes runs `--thorough` once before it lands.
 
 ## 9. Privacy
-Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. The home-screen widget (§6) adds none: it shows the saved instrument and tuning on the home screen and holds no mic.
 
 The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. Settings stay in DataStore on the device, and because `android:allowBackup="true"` (no extraction rules) Android's own backup and device transfer may include them. If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About page shows the gist; the Play listing will link to a public copy (Phase 23), and the data-safety form will say no data is collected or shared.

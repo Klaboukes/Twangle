@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home-screen widget on Android 12+: as xml/widget_tuning_info.xml, plus the size in cells, the
+     picker's live preview (the layout itself, "Guitar · Standard") and a description. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_tuning"
+    android:minWidth="180dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_tuning"
+    android:resizeMode="horizontal"
+    android:targetCellWidth="3"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

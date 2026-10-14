@@ -3,4 +3,10 @@
     <string name="nav_tuner">Stemmer</string>
     <string name="nav_metronome">Metronoom</string>
     <string name="nav_settings">Instellingen</string>
+    <!-- De widget voor het startscherm. -->
+    <string name="widget_name">Stemmer</string>
+    <string name="widget_description">Toont je instrument en stemming. Eén tik opent de stemmer.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Open de stemmer</string>
+    <string name="widget_preview_title">Gitaar · Standaard</string>
 </resources>

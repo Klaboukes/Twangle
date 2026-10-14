@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.app
 
+import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.os.Bundle
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,6 +33,7 @@ import io.github.klaboukes.twangle.app.navigation.Screen
 import io.github.klaboukes.twangle.app.navigation.back
 import io.github.klaboukes.twangle.app.navigation.destination
 import io.github.klaboukes.twangle.app.navigation.screen
+import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
@@ -45,6 +49,9 @@ class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
     private var ready = false
 
+    /** Counts the home-screen widget's taps while the app was already open; each one shows the tuner. */
+    private var openTunerRequests by mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // The opening screen (Theme.Twangle.Starting): the icon on gold, or on dark brown in dark mode.
         installSplashScreen().setKeepOnScreenCondition { !ready }
@@ -57,19 +64,26 @@ class MainActivity : ComponentActivity() {
             val settings by container.settingsRepository.settings.collectAsStateWithLifecycle(initialValue = null)
             settings?.let {
                 SideEffect { ready = true }
-                TwangleApp(container, it)
+                TwangleApp(container, it, openTunerRequests)
             }
         }
+    }
+
+    /** A tap on the home-screen widget while Twangle was open: show the tuner (on a fresh start it already does). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.action == TuningWidget.ACTION_OPEN_TUNER) openTunerRequests++
     }
 
     /**
      * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
      * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
      * at the bottom, or the rail at the start edge on its side. Back leads from About to Settings, from
-     * every other screen to the tuner, and from the tuner out of the app.
+     * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
+     * (the home-screen widget) shows the tuner, as Back does.
      */
     @Composable
-    private fun TwangleApp(container: AppContainer, settings: AppSettings) {
+    private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
 
         // Status and navigation bar icons follow the app's theme, not just the phone's.
@@ -98,6 +112,11 @@ class MainActivity : ComponentActivity() {
                     // Each opening starts afresh, not from the last draft.
                     saveableState.removeState(Screen.TUNING_EDITOR.name)
                     screen = Screen.TUNER
+                }
+                // A tap on the home-screen widget: back to the tuner (an open editor's draft is dropped, as with Back).
+                LaunchedEffect(openTunerRequest) {
+                    if (openTunerRequest == 0) return@LaunchedEffect
+                    if (screen == Screen.TUNING_EDITOR) closeEditor() else screen = Screen.TUNER
                 }
                 // From the tuner, Back is Android's own: it leaves the app.
                 screen.back?.let { target ->

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home-screen widget (TuningWidget): the tuning fork in the accent, the instrument and tuning
+     ("Guitar · Standard") and "Open the tuner" under it, on a rounded tile in the style's background.
+     The whole tile opens the tuner. The texts and colours here are the widget picker's preview;
+     TuningWidget sets the real ones. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        android:src="@drawable/widget_backdrop" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <ImageView
+            android:id="@+id/widget_icon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@null"
+            android:src="@drawable/widget_tuning_fork" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_title"
+                android:layout_width="match_parent"
+                android:layout_height="22dp"
+                android:autoSizeMaxTextSize="16sp"
+                android:autoSizeMinTextSize="11sp"
+                android:autoSizeStepGranularity="1sp"
+                android:autoSizeTextType="uniform"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center_vertical|start"
+                android:maxLines="1"
+                android:text="@string/widget_preview_title"
+                android:textColor="@color/widget_ink" />
+
+            <TextView
+                android:id="@+id/widget_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/widget_open_tuner"
+                android:textColor="@color/widget_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

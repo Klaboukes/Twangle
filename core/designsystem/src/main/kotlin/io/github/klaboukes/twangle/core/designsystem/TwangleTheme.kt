@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.core.designsystem
 
+import android.content.Context
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -58,6 +60,25 @@ fun tokensFor(style: VisualStyle, dark: Boolean): StyleTokens {
 }
 
 /**
+ * Whether [style] takes its colours from the wallpaper (Material You): [dynamicColor] is on, the
+ * style is Contemporary and the phone runs Android 12 or later. The other styles keep their own.
+ */
+@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+fun usesWallpaperColors(style: VisualStyle, dynamicColor: Boolean): Boolean =
+    dynamicColor && style == VisualStyle.CONTEMPORARY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+/**
+ * The colour scheme [TwangleTheme] settles on for [style], light or [dark], for drawings made outside
+ * Compose (the home-screen widget).
+ */
+fun colorSchemeFor(context: Context, style: VisualStyle, dark: Boolean, dynamicColor: Boolean): ColorScheme =
+    if (usesWallpaperColors(style, dynamicColor)) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        tokensFor(style, dark).scheme
+    }
+
+/**
  * The app's theme: the colours, lettering and shapes of [style] in light or [darkTheme]. With
  * [dynamicColor] (Android 12+) the contemporary style takes its colours from the wallpaper; the
  * other styles keep their own. A change of style or brightness fades the colours over
@@ -71,17 +92,12 @@ fun TwangleTheme(
     animate: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val useDynamic = dynamicColor && style == VisualStyle.CONTEMPORARY && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val useDynamic = usesWallpaperColors(style, dynamicColor)
     val context = LocalContext.current
     // Built once per style and brightness: the same value keeps the background and fade still.
     val tokens = remember(style, darkTheme, useDynamic) {
-        if (useDynamic) {
-            val scheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            val palette = paletteFor(style, darkTheme)
-            StyleTokens(style, darkTheme, palette.inTune, palette.onInTune, scheme)
-        } else {
-            tokensFor(style, darkTheme)
-        }
+        // The wallpaper's scheme keeps the style's own "in tune" pair.
+        tokensFor(style, darkTheme).copy(scheme = colorSchemeFor(context, style, darkTheme, dynamicColor))
     }
     val target = tokens.scheme
     val colorScheme = if (animate) animatedColorScheme(target) else target

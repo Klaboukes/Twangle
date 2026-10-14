@@ -4,4 +4,11 @@
     <string name="nav_tuner">Tuner</string>
     <string name="nav_metronome">Metronome</string>
     <string name="nav_settings">Settings</string>
+    <!-- The home-screen widget: its name and description in the widget picker, its line (instrument ·
+         tuning), the line under it, and the picker's preview text. -->
+    <string name="widget_name">Tuner</string>
+    <string name="widget_description">Shows your instrument and tuning. One tap opens the tuner.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Open the tuner</string>
+    <string name="widget_preview_title">Guitar · Standard</string>
 </resources>
