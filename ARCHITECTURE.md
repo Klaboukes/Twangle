@@ -177,7 +177,7 @@ All allocation-free (byte-counting tests). **No meters** for these (owner's deci
 
 The wanted tip passes through its own `SteadyHint<ReceptionTip>` (not restarted per note): settles in 0.5 s (loud), 0.6 s (soft) or 1 s (noisy), stays at least **3 s**, then the line stays tip-free for 1 s. `Detected.tip` and `Listening.tip` carry it.
 
-On screen (`NoteDisplay`) a tip **replaces something less needed, so nothing moves**: "Play a string" without a note, the direction in the wave's pill, or the frequency under the needle (so "Tune up/down" stays). One line, set smaller (down to 11 sp) when it doesn't fit. TalkBack: "E 2, 12 cents flat, Play a bit louder".
+On screen (`NoteDisplay`) a tip **replaces something less needed, so nothing moves**: "Play a string" without a note, the direction in the wave's pill, or the frequency under the needle (so "Tune up/down" stays). One line, set smaller (down to 11 sp) when it doesn't fit; its line keeps the height of a full-size line (measured with a `TextMeasurer`), the shrunk text centred in it. Without that it came out a pixel taller at 1.25× text and pushed the note up: under Android 14's non-linear font scaling Compose keeps an sp line height in proportion to the font size, and a smaller font is enlarged by a larger factor. TalkBack: "E 2, 12 cents flat, Play a bit louder".
 
 ### Signal bars (optional)
 Behind "Show signal bars" (off by default). Four bars in the free slot at the right end of the note's pill (mirroring the check mark), so they add and move nothing in any layout.

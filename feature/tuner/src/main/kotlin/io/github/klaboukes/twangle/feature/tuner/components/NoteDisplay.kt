@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -42,9 +44,13 @@ import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -259,6 +265,7 @@ fun NoteDisplay(
                 else -> MaterialTheme.typography.titleLarge
             }
             val tipInPill = tipText != null && (readout == null || pictured)
+            val pillLine = rememberLineHeight(pillStyle)
             Text(
                 text = when {
                     // The hint can name a note: "Play the C♯ string".
@@ -276,7 +283,10 @@ fun NoteDisplay(
                 textAlign = TextAlign.Center,
                 maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
                 autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
-                modifier = Modifier.weight(1f, fill = false).hiddenFromTalkBack(),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
+                    .hiddenFromTalkBack(),
             )
             Box(Modifier.size(CHECK_SIZE)) {
                 signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
@@ -292,6 +302,8 @@ fun NoteDisplay(
             )
         }
         if (!pictured) {
+            val tipInLine = tipText != null && readout != null
+            val frequencyLine = rememberLineHeight(MaterialTheme.typography.bodyLarge)
             Text(
                 text = when {
                     readout == null -> ""
@@ -299,11 +311,13 @@ fun NoteDisplay(
                     else -> stringResource(R.string.tuner_frequency, readout.frequencyHz)
                 },
                 style = MaterialTheme.typography.bodyLarge,
-                color = if (tipText != null && readout != null) colors.primary else colors.onSurfaceVariant,
+                color = if (tipInLine) colors.primary else colors.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
-                autoSize = if (tipText != null && readout != null) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
-                modifier = Modifier.hiddenFromTalkBack(),
+                autoSize = if (tipInLine) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
+                modifier = Modifier
+                    .then(if (tipInLine) Modifier.keepLineHeight(frequencyLine) else Modifier)
+                    .hiddenFromTalkBack(),
             )
         }
     }
@@ -331,6 +345,27 @@ private fun tipAutoSize(maxSize: TextUnit): TextAutoSize =
     TextAutoSize.StepBased(minFontSize = TIP_MIN_SIZE, maxFontSize = maxSize, stepSize = 1.sp)
 
 private val TIP_MIN_SIZE = 11.sp
+
+/** The height in px of one line of [style] at its own size, as a [Text] in it would have. */
+@Composable
+private fun rememberLineHeight(style: TextStyle): Int {
+    val measurer = rememberTextMeasurer(cacheSize = 1)
+    val merged = LocalTextStyle.current.merge(style)
+    return remember(measurer, merged) { measurer.measure(" ", merged, maxLines = 1).size.height }
+}
+
+/**
+ * Keeps a text exactly [height] px tall (the line it replaces, from [rememberLineHeight]), with the
+ * text centred in it. A tip set smaller to fit ([tipAutoSize]) needs this: with Android 14's
+ * non-linear font scaling, Compose keeps an sp line height in proportion to the font size, and a
+ * smaller font is enlarged by a larger factor, so the shrunk line would come out a pixel or two
+ * taller and push the note up. Nothing is clipped: a slightly taller text just reaches past the slot.
+ */
+private fun Modifier.keepLineHeight(height: Int): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    val slot = constraints.constrainHeight(height)
+    layout(placeable.width, slot) { placeable.place(0, (slot - placeable.height) / 2) }
+}
 
 /** The "in tune" glow fades in and out over this. */
 private const val GLOW_MS = 600

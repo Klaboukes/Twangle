@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–19 on 2026-10-14). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 on 2026-10-15). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -27,6 +27,8 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 17 — Reference tone](#phase-17--reference-tone)
 - [Phase 18 — Strum all strings](#phase-18--strum-all-strings)
 - [Phase 19 — Metronome](#phase-19--metronome)
+- [Phase 20 — Wear OS companion and home-screen widget](#phase-20--wear-os-companion-and-home-screen-widget)
+- [Phase 24 — Show me around](#phase-24--show-me-around)
 
 ---
 
@@ -241,3 +243,11 @@ Goal: Twangle on the watch and one tap from the home screen.
 - ☑ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp` — standalone `:wear` app with the phone's app ID, `:core:audio`'s recorder, a simple note-and-cents screen; starts and listens on the Wear OS 6 emulator
 - ☑ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off — a ring along the edge with the cents scale at the top, the note large in the middle, a soft in-tune glow that eases in and out (the phone's `InTuneDetector`, now in `:core:dsp`), the phone's Contemporary colours; screen off or ambient lets go of the mic within a second
 - ☑ Check on a Wear OS emulator; real watch test by the owner — emulator check done (6 Compose tests, mic released on sleep and back on wake); the PC's mic didn't reach the emulator, so a live note waits for a real watch, now in *Owner checks*
+
+## Phase 24 — Show me around
+Goal: a short tour on first start that points out the main parts of the tuner, one at a time, with text balloons that float on their own layer above the screen.
+**Owner decided (2026-10-14):** the tour balloons live in a separate overlay layer above the whole UI instead of being squeezed into the layout, since the tour runs once at first start; under the dim layer they may cover anything.
+- ☑ Preview for the owner before anything is built: mock-up of the tour in `docs/design/tour-preview.html` (each step on a tuner screen: the screen dimmed, one part lit up, a short balloon with Next / Skip; a few styles, light and dark, Dutch at 2× text, a 360 dp phone). **Owner decided (2026-10-14), round 2:** balloons without an outline, lifted by a soft shadow (Futuristic: a glow), carrying the style's mark, filled with the style's **accent**; texts as short as possible: "How far off your note is", "Lock a string", "Pick instrument and tuning", "Tune strings or any note", "Metronome and settings" (Dutch in the mock-up). The mock-up's top comment is the design the build follows
+- ☑ The tour: on first start the screen dims and one part at a time is lit up (spotlight cut-out) — the note with needle/wave, the strings (tap one to lock it), the instrument-and-tuning button, the guitar/chromatic mode switch, the bottom bar (metronome, settings) — each with a short balloon and Next / Skip tour (last step: Done); shown once (a saved setting), "Show me around" in Settings starts it again; never a nuisance for experienced players (owner, 2026-10-14): one tap on "Skip tour" or Back ends the whole tour for good, and updates of an existing install never show it; balloon wholly shown at 2× font, in Dutch, on a 360 dp phone, on a phone on its side and in the two-pane layout, every style (the in-layout string-lock tip misses its corner in Dutch, Futuristic and Space Age on the Xiaomi 12X, and in Dutch in every style on a 360 dp phone; the overlay balloon must not); TalkBack; English and Dutch; phone check (done 2026-10-14: an overlay over the whole window, `TourHost` in `:feature:tuner` `tour/`; on the rail of a phone on its side the balloon goes beside it; `TourStylesTest`, `TourFlowTest`, `TourGeometryTest`; the in-layout tip stays, hidden while the tour is due or has run)
+- ☑ The one-time string-lock tip becomes the tour's strings step: the in-layout balloon (`StringLockTip`, its corner/above-the-button fallback and `stringLockTipSeen`) goes; `StringLockTipStylesTest`, which checks that fallback, is replaced by the tour's tests (the landscape controls pane keeps its 56 dp clearance, which also keeps a margin when it scrolls; the old `string_lock_tip_seen` key stays in existing installs and still marks them as updates)
+- ☑ A reception tip that is set smaller to fit ("Too loud, move the phone back" at 1.25× text) no longer moves the note by 1–2 px; `TunerContentTest.aShrunkTipMovesNothing…` (now `@Ignore`d) switched back on (cause: with Android 14's non-linear font scaling Compose keeps an sp line height in proportion to the font size, and a smaller font is enlarged by more, so the shrunk line came out 1 px taller; now the tip's line keeps the measured height of a full-size line, the text centred in it. Both tests run again and also check the tip really was set smaller and is wholly shown)

@@ -43,6 +43,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -74,7 +75,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -906,23 +906,34 @@ class TunerContentTest {
     @Thorough
     fun aTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE)
 
-    // With a larger font the long tip is set smaller to fit its line, and that line comes out a pixel
-    // or two taller than the frequency's or the hint's, so the note moves up by that much.
-    @Ignore("Known: the note moves 1-2 px; fixed in the ROADMAP phase 'Show me around'")
+    // With a larger font the long tip is set smaller to fit its line, yet its line keeps the height
+    // of the frequency's or the hint's, so the note stays where it is.
     @Test
-    fun aShrunkTipMovesNothingUnderTheNeedle() = assertReceptionTipMovesNothing(TunerDisplay.NEEDLE, fontScale = 1.25f)
+    fun aShrunkTipMovesNothingUnderTheNeedle() =
+        assertReceptionTipMovesNothing(TunerDisplay.NEEDLE, fontScale = 1.25f, shrunk = true)
 
-    @Ignore("Known: the note moves 1-2 px; fixed in the ROADMAP phase 'Show me around'")
     @Test
     @Thorough
-    fun aShrunkTipMovesNothingInTheWaveView() = assertReceptionTipMovesNothing(TunerDisplay.WAVE, fontScale = 1.25f)
+    fun aShrunkTipMovesNothingInTheWaveView() =
+        assertReceptionTipMovesNothing(TunerDisplay.WAVE, fontScale = 1.25f, shrunk = true)
 
-    private fun assertReceptionTipMovesNothing(display: TunerDisplay, fontScale: Float? = null) {
+    private fun assertReceptionTipMovesNothing(display: TunerDisplay, fontScale: Float? = null, shrunk: Boolean = false) {
         show(detected(-12.3f), fontScale = fontScale, display = display, showTuneHint = true)
         val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
         shownState.value = detected(-12.3f).copy(tip = ReceptionTip.TOO_LOUD)
         compose.waitForIdle()
-        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).assertIsDisplayed()
+        val tip = compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).assertIsDisplayed()
+        assertWholeTextShown(tip)
+        if (shrunk) {
+            // At its full size the tip is wider than its line, so being shown whole means it was set smaller.
+            val layouts = mutableListOf<TextLayoutResult>()
+            tip.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            val input = layouts.single().layoutInput
+            val fullWidth = TextMeasurer(input.fontFamilyResolver, input.density, input.layoutDirection)
+                .measure(input.text, input.style, maxLines = 1, softWrap = false).size.width
+            val width = layouts.single().size.width
+            assertTrue("the tip, $fullWidth px at full size, fits its $width px unshrunk", fullWidth > width)
+        }
         assertEquals(noteTop, compose.onNodeWithText("E").getBoundsInRoot().top)
     }
 
