@@ -60,6 +60,17 @@ fun stringChipSize(style: VisualStyle): DpSize = when (style) {
 }
 
 /**
+ * The outline of the tuner's instrument-and-tuning button in [style], from the approved mock-up
+ * (docs/design/combined-picker-preview.html): Ancient's wide pebble, else [otherwise] (the style's
+ * button shape, `shapes.small`).
+ */
+fun pickerButtonShape(style: VisualStyle, otherwise: Shape): Shape =
+    if (style == VisualStyle.ANCIENT) PICKER_PEBBLE else otherwise
+
+/** The mock-up's pebble for the instrument-and-tuning button (`42% 58% 46% 54% / 60% 52% 48% 40%`). */
+private val PICKER_PEBBLE = PebbleShape(floatArrayOf(0.42f, 0.58f, 0.46f, 0.54f), floatArrayOf(0.60f, 0.52f, 0.48f, 0.40f))
+
+/**
  * A pebble: a rounded box whose eight corner radii (as fractions of its width and height, like CSS's
  * `border-radius: a b c d / e f g h`) are all a little different.
  */

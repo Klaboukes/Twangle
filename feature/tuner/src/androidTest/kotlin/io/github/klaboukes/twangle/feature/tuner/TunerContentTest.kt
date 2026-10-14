@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import android.content.res.Configuration
+import android.content.res.Resources
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -195,6 +197,16 @@ class TunerContentTest {
     /** String chips read e.g. "A2": note name plus subscript octave. */
     private fun stringChip(label: String) = compose.onNodeWithText(label)
 
+    /** The instrument-and-tuning button above the strings. */
+    private val picker get() = compose.onNodeWithTag(TunerTestTags.PICKER)
+
+    /** What the instrument-and-tuning button says, e.g. "Guitar · Standard". */
+    private fun pickerText(
+        instrument: Int = R.string.instrument_guitar,
+        tuning: Int = R.string.tuning_standard,
+        resources: Resources = context.resources,
+    ) = "${resources.getString(instrument)} · ${resources.getString(tuning)}"
+
     @Test
     fun detectedShowsNoteOctaveCentsAndFrequency() {
         show(detected(-12.3f))
@@ -242,7 +254,7 @@ class TunerContentTest {
     fun chromaticModeHidesTheStringsAndThePicker() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
         stringChip("A2").assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
+        picker.assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_note)).assertIsDisplayed()
     }
 
@@ -255,34 +267,48 @@ class TunerContentTest {
     }
 
     @Test
-    fun tuningPickerListsThePresetsAndReportsTheChoice() {
+    fun thePickerNamesTheInstrumentThenTheTuning() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
+        picker.assert(hasText(pickerText(tuning = R.string.tuning_drop_d)))
+        // TalkBack: "Guitar, Drop D", and what a double tap does.
+        val change = context.getString(R.string.tuner_change_instrument_or_tuning)
+        picker.assert(hasContentDescription("${context.getString(R.string.instrument_guitar)}, ${context.getString(R.string.tuning_drop_d)}"))
+            .assert(SemanticsMatcher("click label is \"$change\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == change })
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+    }
+
+    @Test
+    fun thePanelListsThePresetsAndClosesOnATuning() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
-        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performClick()
+        picker.performClick()
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+        compose.onNodeWithText(context.getString(R.string.tuner_picker_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).performScrollTo().assertIsDisplayed().assertIsNotSelected()
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performScrollTo().performClick()
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
     }
 
     @Test
-    fun instrumentPickerListsEveryInstrumentAndReportsTheChoice() {
+    fun thePanelListsEveryInstrumentAndStaysOpenOnOne() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
-            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_guitar))))
-            .performClick()
-        compose.onNodeWithText(context.getString(R.string.instrument_bass_5)).assertIsDisplayed()
-        // TalkBack hears each with its standard tuning's strings.
-        compose.onNode(hasContentDescription("${context.getString(R.string.instrument_violin)}, G, D, A, E")).assertExists()
-        compose.onNodeWithText(context.getString(R.string.instrument_cello)).performScrollTo().performClick()
+        picker.performClick()
+        compose.onNodeWithText(context.getString(R.string.instrument_guitar)).assertIsDisplayed().assertIsSelected()
+        for (instrument in Instruments.all) {
+            compose.onNodeWithText(context.getString(instrumentNameRes(instrument.id)!!)).assertExists()
+        }
+        compose.onNodeWithText(context.getString(R.string.instrument_cello)).performScrollTo().assertIsNotSelected().performClick()
         assertEquals(listOf(Instruments.CELLO), instrumentChanges)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
     }
 
     @Test
-    fun tuningMenuShowsOnlyTheInstrumentsTunings() {
+    fun thePanelShowsOnlyTheInstrumentsTunings() {
         val ukulele = Instruments.UKULELE
         show(TunerUiState.Listening(TunerMode.AUTO, ukulele.defaultTuning))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
-            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_ukulele))))
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
+        picker.assert(hasText(pickerText(R.string.instrument_ukulele))).performClick()
+        compose.onNodeWithText(context.getString(R.string.instrument_ukulele)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuning_low_g)).assertIsDisplayed().performClick()
         assertEquals(listOf(ukulele.tunings.last()), tuningChanges)
@@ -291,30 +317,28 @@ class TunerContentTest {
     @Test
     fun aBassShowsItsOwnNamesAndStrings() {
         show(TunerUiState.Listening(TunerMode.AUTO, Instruments.BASS_5.defaultTuning))
-        compose.onNodeWithTag(TunerTestTags.TUNING_PICKER)
-            .assert(hasAnyDescendant(hasText(context.getString(R.string.tuning_standard))))
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER)
-            .assert(hasAnyDescendant(hasText(context.getString(R.string.instrument_bass_5))))
-        compose.onNodeWithText(Instruments.BASS_5.defaultTuning.id).assertDoesNotExist()
+        picker.assert(hasText(pickerText(R.string.instrument_bass_5)))
+        compose.onNodeWithText(Instruments.BASS_5.defaultTuning.id, substring = true).assertDoesNotExist()
         stringChip("B0").assertIsDisplayed()
         stringChip("G2").assertIsDisplayed()
     }
 
     @Test
-    fun tuningMenuStaysOpenWhenANoteStartsOrStops() {
+    fun thePanelStaysOpenWhenANoteStartsOrStops() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
-        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        picker.performClick()
+        val openG = compose.onNodeWithText(context.getString(R.string.tuning_open_g))
+        openG.assertExists()
         shownState.value = detected(cents = -12f)
-        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        openG.assertExists()
         shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
-        compose.onNodeWithText(context.getString(R.string.tuning_open_g)).assertIsDisplayed()
+        openG.assertExists()
     }
 
     @Test
     fun stringRowFollowsTheTuning() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
-        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertIsDisplayed()
+        picker.assert(hasText(pickerText(tuning = R.string.tuning_drop_d))).assertIsDisplayed()
         stringChip("D2").assertIsDisplayed()
         stringChip("E2").assertDoesNotExist()
     }
@@ -348,9 +372,9 @@ class TunerContentTest {
         stringChip("E♭2").assertIsSelected()
         stringChip("G♭3").assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "E♭2")).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuning_half_step_down)).performClick()
-        compose.onNodeWithText("E♭ A♭ D♭ G♭ B♭ E♭").assertIsDisplayed()
-        compose.onNodeWithText("D A D F♯ A D").assertIsDisplayed()
+        picker.performClick()
+        compose.onNodeWithText("E♭ A♭ D♭ G♭ B♭ E♭", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("D A D F♯ A D", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -403,9 +427,9 @@ class TunerContentTest {
     }
 
     /**
-     * The menu isn't checked here: it opens in a popup, which takes the phone's own language, not the
-     * test's [DeviceConfigurationOverride.Locales]. The English test below covers the menu, and the
-     * Dutch menu was checked on the phone with the app set to Dutch.
+     * The instrument and tuning panel isn't checked here: it opens in a window of its own, which takes
+     * the phone's own language, not the test's [DeviceConfigurationOverride.Locales]. The English test
+     * below covers the panel, and the Dutch panel was checked on the phone with the app set to Dutch.
      */
     @Test
     fun dutchTalkBackSaysStringsAndHintTheDutchWay() {
@@ -432,7 +456,7 @@ class TunerContentTest {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, lockedString = 0, notation = Notation.SHARPS))
         compose.onNode(hasContentDescription("E flat 2")).assertExists()
         compose.onNode(hasContentDescription("Play the E flat 2 string")).assertExists()
-        compose.onNodeWithText(context.getString(R.string.tuning_half_step_down)).performClick()
+        picker.performClick()
         compose.onNode(hasContentDescription("Half step down, E flat, A flat, D flat, G flat, B flat, E flat")).assertExists()
         compose.onNode(hasContentDescription("${context.getString(R.string.tuning_standard)}, E, A, D, G, B, E")).assertExists()
     }
@@ -443,6 +467,7 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).performScrollTo().assertIsDisplayed()
         stringChip("E4").performScrollTo().assertIsDisplayed()
         stringChip("E2").performScrollTo().assertIsDisplayed()
+        picker.performScrollTo().assertIsDisplayed().assert(SemanticsMatcher.keyIsDefined(SemanticsActions.OnClick))
     }
 
     @Test
@@ -953,10 +978,8 @@ class TunerContentTest {
 
     private val tip get() = compose.onNodeWithText(context.getString(R.string.tuner_string_lock_tip))
 
-    private val picker get() = compose.onNodeWithText(context.getString(R.string.tuning_standard))
-
-    /** The picker's label itself (not its 48 dp touch target). */
-    private val pickerLabel get() = compose.onNodeWithText(context.getString(R.string.tuning_standard), useUnmergedTree = true)
+    /** The instrument-and-tuning button's label itself (not its 48 dp touch target). */
+    private val pickerLabel get() = compose.onNodeWithText(pickerText(), useUnmergedTree = true)
     private val listening get() = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD)
 
     @Test
@@ -992,8 +1015,8 @@ class TunerContentTest {
     fun stringLockTipCoversNothingWithTheNeedleAndTheLargestFont() = assertTipCoversNothing(display = TunerDisplay.NEEDLE, fontScale = 2f)
 
     /**
-     * On an upright phone the tip's balloon sits in the corner left of the tuning picker, above the
-     * strings, and covers nothing: not the picker, the strings, the readout under the note or (with
+     * On an upright phone the tip's balloon sits in the corner left of the instrument-and-tuning
+     * button, above the strings, and covers nothing: not the button, the strings, the readout under the note or (with
      * a note) the tune hint. It stays while a note sounds.
      */
     private fun assertTipInTheCorner(
@@ -1006,12 +1029,14 @@ class TunerContentTest {
         show(state, fontScale = fontScale, size = PHONE_UPRIGHT, display = display, showTuneHint = showTuneHint, showStringLockTip = true, locale = locale)
         val resources = if (locale != null) dutch.resources else context.resources
         val tip = compose.onNodeWithText(resources.getString(R.string.tuner_string_lock_tip))
-        val pickerLabel = compose.onNodeWithText(resources.getString(R.string.tuning_standard), useUnmergedTree = true)
+        val pickerLabel = compose.onNodeWithText(pickerText(resources = resources), useUnmergedTree = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val label = pickerLabel.assertIsDisplayed().getBoundsInRoot()
         val e2 = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
         val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
+        val button = picker.getBoundsInRoot()
         assertTrue("tip ends at ${tipBounds.right}, picker starts at ${label.left}", tipBounds.right <= label.left)
+        assertTrue("tip ends at ${tipBounds.right}, button starts at ${button.left}", tipBounds.right <= button.left)
         assertTrue("tip ends at ${tipBounds.bottom}, strings start at ${e2.top}", tipBounds.bottom <= e2.top)
         assertTrue("tip starts at ${tipBounds.left}, window at ${window.left}", tipBounds.left >= window.left)
         // The pointer, near the balloon's start, lands on the first string.
@@ -1032,17 +1057,19 @@ class TunerContentTest {
 
     /**
      * With the largest font on a narrow phone there's no room in the corner, so the tip's balloon
-     * sits in the gap above the tuning picker: its body ends where the picker's label starts, and it
+     * sits in the gap above the instrument-and-tuning button: its body ends where the button's outline starts, and it
      * overlaps neither the "Play a string" line nor the strings.
      */
     private fun assertTipCoversNothing(display: TunerDisplay, fontScale: Float? = null) {
         show(listening, fontScale = fontScale, size = PHONE_UPRIGHT, display = display, showStringLockTip = true)
         // Scrolled to the picker, not the balloon: performScrollTo never returns for the floating
         // balloon, which sits outside its parent's bounds.
-        val label = pickerLabel.performScrollTo().assertIsDisplayed().getBoundsInRoot()
+        pickerLabel.performScrollTo().assertIsDisplayed()
+        // The outline sits 2 dp inside the button's 48 dp touch target.
+        val outlineTop = picker.getBoundsInRoot().top + 2.dp
         val tipBounds = tip.assertIsDisplayed().getBoundsInRoot()
         val bodyBottom = tipBounds.bottom - POINTER
-        assertTrue("tip's body ends at $bodyBottom, picker starts at ${label.top}", bodyBottom.value <= label.top.value + 0.5f)
+        assertTrue("tip's body ends at $bodyBottom, the button starts at $outlineTop", bodyBottom.value <= outlineTop.value + 0.5f)
         val playAString = compose.onNodeWithText(context.getString(R.string.tuner_hint_play_string))
         assertNoOverlap("tip" to tip, "play a string" to playAString, "E2" to stringChip("E2"), "E4" to stringChip("E4"))
         // The picker is still there for TalkBack, and still a button.
@@ -1055,7 +1082,7 @@ class TunerContentTest {
     fun thePickerStillWorksWhileTheTipShows() {
         show(listening, display = TunerDisplay.WAVE, showStringLockTip = true)
         picker.performClick()
-        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performClick()
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performScrollTo().performClick()
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
         assertEquals(0, tipDismissals)
     }
@@ -1444,10 +1471,10 @@ class TunerContentTest {
         assertTrue("note should be right of the gauge", note.left >= gauge.right)
         assertTrue("gauge ends at ${gauge.bottom}, window at ${window.bottom}", gauge.bottom <= window.bottom)
         assertTrue("frequency ends at ${frequency.bottom}, window at ${window.bottom}", frequency.bottom <= window.bottom)
-        // No mode switch or tuning picker.
+        // No mode switch or instrument-and-tuning button.
         compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertDoesNotExist()
+        picker.assertDoesNotExist()
     }
 
     @Test
@@ -1549,7 +1576,7 @@ class TunerContentTest {
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
         compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsDisplayed()
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).assertIsDisplayed()
+        picker.assertIsDisplayed()
         stringChip("E4").assertIsDisplayed().performClick()
         assertEquals(listOf(5), stringClicks)
         // Without touching them again they hide after a few seconds.
@@ -1574,30 +1601,23 @@ class TunerContentTest {
     }
 
     @Test
-    fun anOpenTuningMenuKeepsTheControls() {
+    fun anOpenPanelKeepsTheControls() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuning_standard)).performClick()
+        picker.performClick()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS * 2)
-        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertIsDisplayed().performClick()
-        assertEquals(listOf(Tunings.DROP_D), tuningChanges)
-        // Once the menu is closed, the controls hide after the usual time.
-        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
-        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
-    }
-
-    @Test
-    fun anOpenInstrumentMenuKeepsTheControls() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
-        compose.mainClock.autoAdvance = false
-        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        compose.mainClock.advanceTimeBy(FADE_MS)
-        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).performClick()
-        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS * 2)
-        compose.onNodeWithText(context.getString(R.string.instrument_violin)).assertIsDisplayed().performClick()
+        // The panel's own window never goes idle on a stopped clock.
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertExists()
+        // Picking an instrument keeps the panel open, and the controls with it.
+        compose.onNodeWithText(context.getString(R.string.instrument_violin)).performScrollTo().performClick()
         assertEquals(listOf(Instruments.VIOLIN), instrumentChanges)
+        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS * 2)
+        compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performScrollTo().performClick()
+        assertEquals(listOf(Tunings.DROP_D), tuningChanges)
+        // Once the panel is closed, the controls hide after the usual time.
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
         compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
     }
@@ -1638,7 +1658,7 @@ class TunerContentTest {
 
         /**
          * A narrow phone held upright (a Galaxy S26, without the status and navigation bars), for
-         * tests where the room beside the tuning picker matters; wider phones have more.
+         * tests where the room beside the instrument-and-tuning button matters; wider phones have more.
          */
         val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)
 

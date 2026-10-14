@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.Locales
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -24,8 +26,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
@@ -54,7 +58,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 /**
  * The string row from a 4-string bass to an 8-string guitar, in each of the six styles: upright, in
@@ -208,13 +211,13 @@ class StringRowStylesTest(private val style: VisualStyle) {
         show(listening = true, tip = true)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val tip = compose.onNodeWithText(context.getString(R.string.tuner_string_lock_tip)).assertIsDisplayed().getBoundsInRoot()
-        val picker = compose.onNodeWithTag(TunerTestTags.TUNING_PICKER).getBoundsInRoot()
+        val picker = compose.onNodeWithTag(TunerTestTags.PICKER).getBoundsInRoot()
         val chips = labels(shownTuning.value, Notation.SHARPS).map { compose.onNodeWithText(it).getBoundsInRoot() }
         chips.forEachIndexed { index, chip ->
             if (tip.overlaps(chip)) fail("$style: the tip $tip covers string $index $chip")
         }
         val first = chips.first()
-        // In the corner beside the picker (not above it, where a wide picker leaves no room), its
+        // In the corner beside the button (not above it, where a wide button leaves no room), its
         // pointer (32 dp from its start) lands on the first string.
         if (tip.right <= picker.left) {
             val pointer = tip.left + 32.dp
@@ -224,16 +227,16 @@ class StringRowStylesTest(private val style: VisualStyle) {
 
     /**
      * Every instrument with its tunings (the guitar's longest names), in English and Dutch, upright
-     * and in the full layout on its side: the tuning and instrument pickers share one line, each
-     * name wholly shown, the instrument after the tuning, both in the window.
+     * and in the full layout on its side: the instrument-and-tuning button keeps to one line, its
+     * label wholly shown ("8-snarige gitaar · Standaard"), the button in the window, above the strings.
      */
     @Test
-    fun everyInstrumentsPickersShareALineInEnglish() = assertPickersShareALine("en")
+    fun everyInstrumentsButtonKeepsToOneLineInEnglish() = assertButtonsKeepToOneLine("en")
 
     @Test
-    fun everyInstrumentsPickersShareALineInDutch() = assertPickersShareALine("nl")
+    fun everyInstrumentsButtonKeepsToOneLineInDutch() = assertButtonsKeepToOneLine("nl")
 
-    private fun assertPickersShareALine(locale: String) {
+    private fun assertButtonsKeepToOneLine(locale: String) {
         shownLocale.value = locale
         show(listening = true)
         val resources = resourcesFor(locale)
@@ -243,16 +246,15 @@ class StringRowStylesTest(private val style: VisualStyle) {
                 shownTuning.value = tuning
                 compose.waitForIdle()
                 val case = "$style $locale $layout ${tuning.id}"
-                val (tuningName, instrumentName) = pickerNames(resources, tuning)
-                val (tuningLabel, instrumentLabel) = assertPickersFit(case, tuningName, instrumentName, scroll = false)
-                val sameLine = abs((tuningLabel.top + tuningLabel.bottom - instrumentLabel.top - instrumentLabel.bottom).value) < 2f
-                assertTrue("$case: $tuningLabel and $instrumentLabel are not on one line", sameLine)
-                assertTrue("$case: the instrument $instrumentLabel is not after the tuning $tuningLabel", instrumentLabel.left >= tuningLabel.right)
+                val label = assertButtonFits(case, buttonLabel(resources, tuning), scroll = false)
+                val layouts = mutableListOf<TextLayoutResult>()
+                label.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                assertEquals("$case: lines on the button", 1, layouts.single().lineCount)
             }
         }
     }
 
-    /** At 2x text the longest Dutch names, scrolled to, are whole and clear of each other (each may get its own line). */
+    /** At 2x text the longest Dutch names, scrolled to, are wholly shown (they may wrap), the button in the window. */
     @Test
     fun theLongestPickerNamesFitAtTwiceTheTextSize() {
         shownLocale.value = "nl"
@@ -261,38 +263,33 @@ class StringRowStylesTest(private val style: VisualStyle) {
         val resources = resourcesFor("nl")
         for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
             shownLayout.value = layout
-            for (tuning in listOf(Tunings.HALF_STEP_DOWN, Instruments.GUITAR_7.defaultTuning, Instruments.BASS_5.defaultTuning)) {
+            for (tuning in listOf(Tunings.HALF_STEP_DOWN, Instruments.GUITAR_8.defaultTuning, Instruments.BASS_5.defaultTuning)) {
                 shownTuning.value = tuning
                 compose.waitForIdle()
-                val (tuningName, instrumentName) = pickerNames(resources, tuning)
-                assertPickersFit("$style nl $layout ${tuning.id} at 2x", tuningName, instrumentName, scroll = true)
+                assertButtonFits("$style nl $layout ${tuning.id} at 2x", buttonLabel(resources, tuning), scroll = true)
             }
         }
     }
 
-    /** Both pickers' names wholly shown, in the window, clear of each other and of the strings; their bounds. */
-    private fun assertPickersFit(case: String, tuningName: String, instrumentName: String, scroll: Boolean): Pair<DpRect, DpRect> {
+    /** The button's [label] wholly shown, the button in the window and above the strings; the label's node. */
+    private fun assertButtonFits(case: String, label: String, scroll: Boolean): SemanticsNodeInteraction {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        fun label(name: String, tag: String) =
-            compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true)
-        val tuningNode = label(tuningName, TunerTestTags.TUNING_PICKER)
-        val instrumentNode = label(instrumentName, TunerTestTags.INSTRUMENT_PICKER)
-        assertWhollyShown(tuningNode, "$case: $tuningName", scroll = scroll)
-        val tuningLabel = tuningNode.getBoundsInRoot()
-        assertWhollyShown(instrumentNode, "$case: $instrumentName", scroll = scroll)
-        val instrumentLabel = instrumentNode.getBoundsInRoot()
-        val tuningPicker = compose.onNodeWithTag(TunerTestTags.TUNING_PICKER).getBoundsInRoot()
-        val instrumentPicker = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).getBoundsInRoot()
-        for ((name, bounds) in listOf(tuningName to tuningPicker, instrumentName to instrumentPicker)) {
-            if (bounds.left < window.left - SLACK || bounds.right > window.right + SLACK) fail("$case: $name $bounds is outside the window $window")
-        }
-        if (tuningPicker.overlaps(instrumentPicker)) fail("$case: the pickers $tuningPicker and $instrumentPicker overlap")
+        val labelNode = compose.onNode(hasText(label) and hasAnyAncestor(hasTestTag(TunerTestTags.PICKER)), useUnmergedTree = true)
+        assertWhollyShown(labelNode, "$case: $label", scroll = scroll)
+        val button = compose.onNodeWithTag(TunerTestTags.PICKER).getBoundsInRoot()
+        if (button.left < window.left - SLACK || button.right > window.right + SLACK) fail("$case: the button $button is outside the window $window")
         // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
-        val pickerNode = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_PICKER).fetchSemanticsNode()
+        val buttonNode = compose.onNodeWithTag(TunerTestTags.PICKER).fetchSemanticsNode()
         val stringNode = compose.onNodeWithText(labels(shownTuning.value, Notation.SHARPS).first()).fetchSemanticsNode()
-        val pickerBottom = pickerNode.positionInRoot.y + pickerNode.size.height
-        if (pickerBottom > stringNode.positionInRoot.y + 1f) fail("$case: the instrument picker ends at $pickerBottom px, the strings start at ${stringNode.positionInRoot.y}")
-        return tuningLabel to instrumentLabel
+        val buttonBottom = buttonNode.positionInRoot.y + buttonNode.size.height
+        if (buttonBottom > stringNode.positionInRoot.y + 1f) fail("$case: the button ends at $buttonBottom px, the strings start at ${stringNode.positionInRoot.y}")
+        return labelNode
+    }
+
+    /** What the button says for [tuning] in the language of [resources], e.g. "Gitaar · Halve toon lager". */
+    private fun buttonLabel(resources: Resources, tuning: Tuning): String {
+        val (tuningName, instrumentName) = pickerNames(resources, tuning)
+        return "$instrumentName · $tuningName"
     }
 
     /** The tuning's and its instrument's names in the language of [resources]. */

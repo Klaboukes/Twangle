@@ -35,7 +35,7 @@
     <!-- Ukulele with its G string an octave lower than standard. -->
     <string name="tuning_low_g">Low G</string>
 
-    <!-- Instruments, see Instruments in :core:dsp: the picker beside the tuning picker. -->
+    <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Guitar</string>
     <string name="instrument_guitar_7">7-string guitar</string>
     <string name="instrument_guitar_8">8-string guitar</string>
@@ -95,9 +95,12 @@
     <string name="tuner_spoken_tune_down">tune down</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
-    <!-- A tuning in the menu as TalkBack says it: %1$s its name, %2$s its open strings, e.g.
+    <!-- A tuning in the instrument and tuning panel as TalkBack says it: %1$s its name, %2$s its open strings, e.g.
          "Half step down, E flat, A flat, D flat, G flat, B flat, E flat". -->
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
-    <string name="tuner_change_tuning">Change tuning</string>
-    <string name="tuner_change_instrument">Change instrument</string>
+    <!-- The button above the strings ("Guitar · Standard") as TalkBack says it: %1$s the instrument, %2$s its tuning. -->
+    <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">Change instrument or tuning</string>
+    <!-- Title of the panel that opens from the bottom, with the instruments and their tunings. -->
+    <string name="tuner_picker_title">Instrument and tuning</string>
 </resources>

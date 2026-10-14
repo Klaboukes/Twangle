@@ -23,7 +23,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
-- ☐ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked, as the approved mock-up [docs/design/combined-picker-preview.html](docs/design/combined-picker-preview.html) (instrument first, a thin outline in the style's button shape, instruments in one sideways-scrolling row). The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Every style, English and Dutch, TalkBack and 2× font; phone check
+- ☑ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked, as the approved mock-up [docs/design/combined-picker-preview.html](docs/design/combined-picker-preview.html) (instrument first, a thin outline in the style's button shape, instruments in one sideways-scrolling row). The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Every style, English and Dutch, TalkBack and 2× font; phone check
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
 - ☐ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete
@@ -76,7 +76,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 
 ## Phase 24 — Show me around
 Goal: a short tour on first start that points out the main parts of the tuner with text balloons like the string-lock tip. **Owner to fill in** the rest of this phase and decide where it goes in the order (probably before going live).
-- ☐ Balloons and tips that fit and move nothing at every text size and screen width: the string-lock tip reaches its corner beside the tuning picker in every style and language (Space Age in Dutch now just misses it on the Xiaomi 12X and goes above the picker; its check in `StringLockTipStylesTest` is skipped until then), and on wider phones; a reception tip that is set smaller to fit ("Too loud, move the phone back" at 1.25× text) no longer moves the note by 1–2 px (`TunerContentTest.aShrunkTipMovesNothing…`, now `@Ignore`d); both checks switched back on
+- ☐ Balloons and tips that fit and move nothing at every text size and screen width: the string-lock tip reaches its corner beside the instrument-and-tuning button in every style and language (in Dutch, Futuristic and Space Age now miss it on the Xiaomi 12X and go above the button, and on a 360 dp phone so does Dutch in every style; `StringLockTipStylesTest` checks that fallback until then), and on wider phones; a reception tip that is set smaller to fit ("Too loud, move the phone back" at 1.25× text) no longer moves the note by 1–2 px (`TunerContentTest.aShrunkTipMovesNothing…`, now `@Ignore`d); both checks switched back on
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
