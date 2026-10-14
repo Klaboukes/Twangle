@@ -10,7 +10,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic) · metronome
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
-6. [UI](#6-ui): UI state model · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
+6. [UI](#6-ui): UI state model · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · metronome screen · landscape and wide screens · accessibility · languages
 7. [Package layout](#7-package-layout-per-module)
 8. [Testing strategy](#8-testing-strategy): fast UI tests · quick and thorough UI runs
 9. [Privacy](#9-privacy)
@@ -49,6 +49,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 :app               Android application: Activity, Application, AppContainer (DI), screen switching
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
+:feature:metronome Metronome screen: Compose UI, MetronomeViewModel
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones and metronome clicks (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
@@ -64,12 +65,13 @@ Dependencies ("→" = depends on):
 :app               → every module below (it wires them together)
 :feature:tuner     → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
+:feature:metronome → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: PluckSynth makes the reference tone's samples, ClickTrack the metronome's;
                      MetronomePlayer's beats and meters are :core:dsp types)
 :core:dsp          → no other module
-:core:testing      → no other module; used by the UI tests of :feature:tuner and :feature:settings
+:core:testing      → no other module; used by the UI tests of the :feature modules
 :baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
 ```
 
@@ -362,13 +364,14 @@ The readings behind it (a temporary log of every reading): over the first ≈ 0.
 **Not modelled yet:** pick noise and buzz, sympathetic strings, the body's resonances, and the phone mic's weak response at 82 Hz beyond the weak-fundamental case; the owner's check with a real guitar (*Owner checks* in ROADMAP.md) will tell. Inharmonicity bends partial k sharp by ≈ 866·B·(k² − 1) cents; the low-partial weighting keeps it to +0.6 cents with weak fundamentals (+1 at three times those B values); fitting B per string would remove it. Higher partials decay first, so a late frame has fewer clear partials (fine 1.5 s after the strum in synthetic strums).
 
 ### Metronome
-Phase 19. The engine is in place; the metronome screen comes next.
+Phase 19. The engine and the screen are in place (the screen: §6, *Metronome screen*); the bottom bar comes next.
 - **Meters** (`Meter`, `:core:dsp` `metronome/`): 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8. One click per beat of the bar, and the tempo counts clicks, so in 6/8 and 7/8 it counts eighth notes (as most practice metronomes do). Beat 1 is the accent (`BeatAccent.DOWNBEAT`); the start of each later beat group gets a middle accent (`GROUP`): 5/4 as 3 + 2 (beat 4), 6/8 as 3 + 3 (beat 4), 7/8 as 2 + 2 + 3 (beats 3 and 5), the most common groupings. The other beats are `PLAIN`.
 - **Clicks** (`ClickSounds`): a 40 ms wood-block "tock", two decaying modes of a struck free bar at 1 : 2.756 (Fletcher & Rossing §2.15), the upper one decaying twice as fast, with a 0.8 ms raised-cosine attack and an 8 ms fade that ends on exactly 0. The accent is told apart by pitch and level: downbeat A6 (1760 Hz) at peak 0.8 (never clips), group E6 at 0.6, plain A5 at 0.45. Rendered once per sample rate, so playing a click is a copy.
 - **Sample-exact timing** (`ClickTrack`): beat n starts on sample `A + round((n − a) · 60 · rate / bpm)`, worked out in integer arithmetic from the beat a and sample A where the tempo was last set, never by adding up rounded intervals. Each beat is within half a sample of its ideal time and the error never builds up (`ClickTrackTest`: every beat of ten minutes at 97 BPM / 44.1 kHz, 233 BPM / 48 kHz and 31 BPM / 16 kHz, whatever the chunk size). The tempo is an integer, clamped to 30–250 BPM, so beats are ≥ 0.24 s apart and clicks never overlap.
 - **Changes while playing** take effect from the next beat: a new tempo puts it one new interval after the last beat (or at once if that moment has passed), and the tempo counts on from there; a new meter makes it a downbeat without moving it. `render` and the setters allocate nothing (byte-counting test).
 - **Playback** (`MetronomePlayer`, `AndroidMetronomePlayer` in `:core:audio`): like the reference tone (*Reference tone*, above; both share `AudioOutput`), a mono float `AudioTrack` at the native rate, `USAGE_MEDIA` / `CONTENT_TYPE_SONIFICATION`, on its own single writer thread, existing only while it plays. It keeps 12 chunks of 10 ms queued: a busy moment can't starve the speaker (a gap would shift every later beat), and a change is heard ≈ 0.12 s after it is asked for. Underruns are logged. `start(bpm, meter)`, `setTempo`, `setMeter` and `stop` only set fields under a lock, read before every chunk. Audio focus `AUDIOFOCUS_GAIN` (it runs for minutes; other apps' music stops), stopped by a loss or a transient loss (a call); no sound when focus is refused. It never touches the microphone.
 - **Beats for the screen** (`beats: SharedFlow<MetronomeBeat>`, with `index`, `beatInBar`, `accent`, `heardAtNanos` on the `System.nanoTime()` clock): each rendered beat waits in a small ring; once `AudioTrack.getTimestamp` runs, its moment is known about one buffer ahead and a timer emits it then (the writer thread only wakes when the speaker takes a block, every 10–40 ms, which told beats up to 35 ms late); before the first timestamp it is emitted when the playback head reaches it. So beat lights and vibration can match the sound. `FakeMetronomePlayer` (`testFixtures`) emits beats on request.
+- **Tap tempo** (`TapTempo`, pure, allocation-free): the tempo of the last taps, the time from the oldest of the last six to the newest over the intervals between them (so one late tap only shifts it by its share), whole BPM within 30–250; a pause of more than 2 s (slower than 30 BPM) starts afresh. A tap counts when the finger touches, not when it lifts. **Tempo markings** (`TempoMarking`): the Italian name under the tempo, from Grave (under 40) through Largo, Larghetto, Adagio, Andante, Moderato, Allegro (120–167), Presto to Prestissimo (200 and up), the mock-up's bounds. `TapTempoTest`.
 - **Measured on the Xiaomi 12X** (`AndroidMetronomePlayerTest`, 240 BPM): a float track at 48 kHz, no underruns; beats heard 250 ms apart within ±0.02 ms by the output's timestamps, and told 2–4 ms after their sound. The ten-minute drift check and the owner's listening come with the metronome screen.
 
 ## 4. Threading & performance
@@ -456,8 +459,10 @@ Lists the classes and methods used at startup and on the tuner screen so Android
 - The microphone is open **only while the tuner screen is visible**: `SharingStarted.WhileSubscribed(5_000)` plus `collectAsStateWithLifecycle()`, so `AudioRecord` is released in the background and the privacy indicator turns off. The 5 s grace keeps the session through a rotation. `MicLifecycleTest` (`:app`, device) checks it against `AudioManager.activeRecordingConfigurations`.
 - No foreground service: background capture is neither needed nor allowed.
 
+- **The metronome** plays only while its screen is shown (`StopWhenHidden` in `MetronomeScreen`: `ON_STOP` and leaving the composition both stop it), so going home, locking the phone or opening another screen stops the clicks. No foreground service. While it plays it keeps the screen on (`View.keepScreenOn`), so the screen timeout doesn't stop it; the volume keys set the media volume there, as on the tuner.
+
 ### Settings
-The gear button opens settings (`:feature:settings`). `MainActivity` switches between tuner, settings, About and the tuning editor with one saved `Screen` value (no navigation library) and a `SaveableStateHolder`; back returns About → settings → tuner, and editor → tuner. The editor's draft is dropped on leaving it (`removeState`), so each opening starts afresh. `SettingsViewModel` saves every change at once; there is no save button.
+The gear button opens settings (`:feature:settings`). `MainActivity` switches between tuner, settings, About, the tuning editor and the metronome with one saved `Screen` value (no navigation library) and a `SaveableStateHolder`; back returns About → settings → tuner, and editor or metronome → tuner. Until the bottom bar (Phase 19), a metronome button beside the gear opens the metronome; the mode switch keeps clear of both corner buttons (`CORNER_BUTTONS_WIDTH`). The editor's draft is dropped on leaving it (`removeState`), so each opening starts afresh. `SettingsViewModel` saves every change at once; there is no save button.
 
 Three groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), then About. Groups are 32 dp apart; rows, including the card grids, keep 16 dp from the edges.
 - **Tuning:** A4 calibration, note names, in-tune precision. (The instrument and tuning are picked on the tuner itself.)
@@ -499,6 +504,9 @@ What each does:
 | `waveBreathesInTune` | true | **Temporary** "When in tune: Breathe gently / Hold perfectly still"; it and the losing option go after the owner check |
 | `keepTwoPaneLandscape` | false | "Full layout on its side" |
 | `stringLockTipSeen` | false | Set once the string-lock tip is dismissed; no switch |
+| `metronomeBpm` | 120 | Key `metronome_bpm` (int); clamped to 30–250 in the setter and when read |
+| `metronomeMeter` | `FOUR_FOUR` | `Meter` (`:core:dsp`) by name; key `metronome_meter`; unknown gives 4/4 |
+| `metronomeVibrate` | false | Key `metronome_vibrate`: "Vibrate on the beat" |
 
 - **Forgiving reads:** a missing, unknown or out-of-range value gives its default; an unreadable file gives all defaults, and a corrupt one is replaced so saving works again. Instrument and tuning are read as a pair: no saved instrument (versions before the picker) or an unknown one gives the saved tuning's own instrument, else the guitar; a tuning that isn't one of the instrument's presets, or an unknown one, gives the instrument's standard tuning.
 - **Migrations** (in `DataStoreSettingsRepository`, not as enum constants, so no code can pick the old names again; JVM tests cover each case): while no `tuner_display` is saved, the old switch `show_waves` gives `WAVE` (on) or `NEEDLE` (off), and saving a display removes it. A saved display `"STROBE"` reads as `WAVE` with look `STROBE`, rewritten by the first `setDisplay` or `setWaveLook`. A saved look `"STRIPES"` reads as `STROBE`. A saved style `"PREHISTORIC"` or `"MIDDLE_AGES"` (the seven styles before October 2026) reads as `ANCIENT`, rewritten by the next `setStyle`; any other unknown style gives the default.
@@ -664,6 +672,16 @@ Six styles, in the owner's order (Phase 14, October 2026): Ancient, Classic, Ret
 
 `TwangleTheme(style, darkTheme, dynamicColor)` provides the `ColorScheme`, `Typography`, `Shapes` and `LocalStyleTokens` (`StyleTokens`: the style, its "in tune" pair, the unfaded scheme), remembered per style and brightness. A style or brightness change fades every colour over 450 ms (one `Animatable`) and cross-fades the background. Each mood card wraps its own `TwangleTheme`, so it previews that style whatever the current one is.
 
+### Metronome screen
+Phase 19 (`:feature:metronome`), after the approved mock-up [docs/design/metronome-nav-preview.html](docs/design/metronome-nav-preview.html) (its top comment is the spec). **Owner decided (2026-10-14):** keep the round tempo dial; everything else as shown; bar variant B (Frameless) for the bottom bar that comes next.
+- **Layout, upright** (one column, at most 480 dp, scrolls with very large fonts): the meter picker (2/4 3/4 4/4 5/4 6/8 7/8, where the tuner's mode switch is; one radio group "Beats in a bar"; 50 dp buttons so six fit a 360 dp phone, wrapping at very large fonts), the beat lights (64 dp), the tempo dial (288 dp, smaller on a narrow phone), − Tap tempo +, Start / Stop, "Vibrate on the beat"; the free height shared evenly between the groups. **On its side** (≥ 600 dp wide and wider than tall): the dial (up to 300 dp) at the start, the rest in a scrolling column beside it. The quiet background, as Settings.
+- **Tempo dial** (`TempoDialArt` in `:core:designsystem` `metronome/`, gestures and TalkBack in `TempoDial`): frameless on the meter's calm field, 30–250 BPM clockwise over 300° (`dialDegrees`), the gap at the bottom; a tick every 10 BPM with the meter's scale rules (major ticks and numbers at 30, 50, 100, 150, 200, 250; numbers kept 3u clear of their tick's end whichever way it points), the style's arc finish unlit over the range and lit in the accent up to the tempo, the style's needle inside the arc pointing at it. The tempo sits in the middle in the style's number face (58 units, fixed like the tuner's note; the mock-up draws it in the number face, which also spares Ancient's display face its diamond 0), "BPM" and the Italian marking under it (growing with the font up to 1.3×). A touch sets the tempo it points to, a drag follows the finger (a touch in the gap keeps to the nearer end, `bpmAtTouch`), saved when the finger lifts. TalkBack: one slider "Tempo, drag to change", "96 beats per minute, Andante", 30–250 in 1 BPM steps (`progressBarRangeInfo` + `setProgress`).
+- **Beat lights** (`BeatLightsArt`): one mark per beat of the bar in the style's own wave mark (Ancient dab, Classic engraved band, Retro phosphor band, Contemporary rounded bar, Futuristic neon bar, Space Age star pair), beat 1 largest, group starts (`BeatAccent.GROUP`) middle sized, the plain beats smallest; beat numbers under them. The beat heard lights up in the accent (never in-tune green) with a soft glow and eases (200 ms) to a resting 40 % until the next. Hidden from TalkBack.
+- **The beat** (`BeatClock`): `MetronomePlayer.beats` gives each click with the moment it is heard; a frame loop (`withInfiniteAnimationFrameNanos`, only while playing, skipped by UI tests) moves only the lights and one soft accent glow behind the tempo (220 ms decay, full on a downbeat, 75 % on a group start, 55 % otherwise), read in the draw phase, so playing never recomposes. Changes are heard from the next beat (≈ 0.12 s).
+- **Controls**: see-through buttons in the style's shape (`shapes.small`, round − and + in Contemporary and Space Age) with a muted outline; picked ones in the container colour with an accent outline; Start in the accent; Futuristic's as neon outlines. − / + step 1 BPM; Tap tempo (`TapTempo`, §3) counts the touch, lights up for 120 ms, and TalkBack's double tap counts too. "Vibrate on the beat" (off by default) buzzes the motor directly (as `InTuneHaptic`): `EFFECT_HEAVY_CLICK` on the downbeat, `EFFECT_CLICK` otherwise (35 / 18 ms one-shots before Android 10).
+- **State** (`MetronomeViewModel`): tempo, meter and vibration, each saved at once (a dial drag when the finger lifts); opens stopped at the saved values (passed in from the settings already read, so the first frame is right). It stops the clicks when cleared; the screen stops them when it leaves (§5).
+- **Tests**: `MetronomeViewModelTest`, `TapTempoTest`, settings tests (JVM); `MetronomeScreenTest` (opens stopped, Start / Stop, ± and meter reach the player and are saved, the dial by touch and by TalkBack, labels, vibration switch, tap tempo, leaving stops it, Dutch at 2× on its side) and `MetronomeStylesTest` (every style light and dark: fits without scrolling on a 360 dp phone, the Xiaomi at 1.25× and on its side, nothing overlaps; at 2× every control wholly shown).
+
 ### Landscape and wide screens
 `tunerLayoutFor(width, height, compactLandscape)` (`TunerLayout.kt`, JVM-tested) picks the arrangement from the space, not the device: `SINGLE_COLUMN` (max 480 dp wide) unless the window is at least 600 dp wide *and* wider than tall. Then `COMPACT` by default, or `TWO_PANE` with the setting "Full layout on its side" (`keepTwoPaneLandscape`). `TunerScreenTest` checks both layouts and a live change on a phone on its side.
 
@@ -701,7 +719,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     strobe/     StrobeMotion
     synth/      PluckSynth (reference tone samples)
-    metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent)
+    metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent), TapTempo (+ TempoMarking)
     strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check, §3)
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
@@ -725,6 +743,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
     meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, LightArcHeat, SpiritLevel,
                 RollingScale, Comet, CometTrail, StudioMeter
+    metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
     SharedActivityComposeRule, SharedActivityTestRunner, Thorough (+ allIfThorough)
@@ -739,6 +758,10 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
                 CombinedPicker (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle)
     editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft)
+
+feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
+    MetronomeScreen (+ MetronomeContent, BeatClock), MetronomeViewModel
+    components/ TempoDial, MetronomeControls (MeterPicker, TempoButtons, StartStopButton, VibrateSwitch)
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel
@@ -760,6 +783,7 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 | `:core:settings` | JVM tests on a real DataStore file: defaults, saving, restart, clamping, unknown or unreadable values, migrations. |
 | `:core:designsystem` | JVM tests: WCAG contrast of every palette, distinct styles, `ThemeMode.useDarkTheme`, font credits, the meter and wave maths. |
 | `:feature:tuner` | ViewModel and interpreter tests with `kotlinx-coroutines-test` and the fake recorder; Compose UI tests for each state, layout, TalkBack and every look. |
+| `:feature:metronome` | `MetronomeViewModelTest` with `FakeMetronomePlayer` and `FakeSettingsRepository`; Compose UI tests `MetronomeScreenTest` and `MetronomeStylesTest` (§6, *Metronome screen*). |
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`; `CreditsTest`; Compose UI tests (`SettingsContentTest`) for each control, About and the licence dialogs; `SettingsStylesTest` for Settings and About in every style. |
 | `:app` | `LocalizationTest` (JVM); instrumented `MicLifecycleTest` (§5). |
 | `:baselineprofile` | On demand, device needed (§4). |
@@ -770,12 +794,12 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 Compose UI tests use `createSharedActivityComposeRule()` (`:core:testing`): one activity for the whole run, a fresh composition (own recomposer, test clock and `ViewModelStore`) per test. `SharedActivityTestRunner` stops AndroidJUnitRunner closing every activity after each test, which took ~0.7 s per test on the Xiaomi 12X; together they cut the tuner suite from ~8½ to ~3 minutes. Pixel checks take one capture and cut it up (a capture costs a frame), and build assertion messages only on failure. A test that changes the activity itself (rotation, recreation, window flags) still uses `createComposeRule()` or `ActivityScenario`. How to write them: [writing-tests.md](.claude/skills/ui-test/writing-tests.md).
 
 ### Every screen in every style
-`TunerStylesTest` and `SettingsStylesTest` (Phase 14) check each screen in each of the six styles, light and dark, because a style brings its own fonts and button shapes: the tuner upright (a narrow S26-sized phone at 1×, the owner's Xiaomi 12X at 1.25×) and in its full layout on its side fits without scrolling, nothing overlaps or reaches under the settings button; at 2× text every part, Settings row, card name and About text can be scrolled to and is then wholly shown (`assertWhollyShown` in `:core:testing`: nothing clipped, no line cut off or ellipsized), and the string buttons fit the longest names (solfège flats); TalkBack hears the reading once, nothing in the meter or wave, the mode switch, strings, style/meter/wave cards and light-or-dark choices by name with which one is picked. `CompactLandscapeStylesTest` covers the compact layout, `MeterLooksTest` and `WaveViewTest` every look. The Phase 14 check ran them all in every style (`--all --thorough`) and on the Xiaomi 12X by hand (each style light and dark, upright and on its side, at 1.25× and 2× text).
+`TunerStylesTest`, `SettingsStylesTest` (Phase 14) and `MetronomeStylesTest` (Phase 19) check each screen in each of the six styles, light and dark, because a style brings its own fonts and button shapes: the tuner upright (a narrow S26-sized phone at 1×, the owner's Xiaomi 12X at 1.25×) and in its full layout on its side fits without scrolling, nothing overlaps or reaches under the settings button; at 2× text every part, Settings row, card name and About text can be scrolled to and is then wholly shown (`assertWhollyShown` in `:core:testing`: nothing clipped, no line cut off or ellipsized), and the string buttons fit the longest names (solfège flats); TalkBack hears the reading once, nothing in the meter or wave, the mode switch, strings, style/meter/wave cards and light-or-dark choices by name with which one is picked. `CompactLandscapeStylesTest` covers the compact layout, `MeterLooksTest` and `WaveViewTest` every look. The Phase 14 check ran them all in every style (`--all --thorough`) and on the Xiaomi 12X by hand (each style light and dark, upright and on its side, at 1.25× and 2× text).
 
 ### Quick and thorough UI runs
 While the look is still changing (October 2026 until Phase 23), a normal run leaves out the double checks: style test classes (`TunerStylesTest`, `SettingsStylesTest`, `MeterLooksTest`, `CompactLandscapeStylesTest`, `StringLockTipStylesTest`, `StringRowStylesTest`, two checks in `WaveViewTest`) run in the default style only (`allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)`), and `@Thorough` tests (variants of a quicker test in another font size, language, orientation or view) are skipped. `--thorough` runs everything. This cut the tuner suite from ~3 minutes to ~1. Each family keeps its hardest case in the quick run (e.g. Dutch at 2× font on a phone on its side), so most layout breaks still show at once. The six styles were finished in Phase 14 (October 2026), but the double checks stay out of normal runs until Phase 23: phases 15 to 22 still add screens (instruments, the tuning editor, the metronome), and every increment would pay the thorough run (about 15 minutes on the Xiaomi 12X, which also heats the phone). Each increment that changes a style's look, fonts or shapes runs `--thorough` once before it lands.
 
 ## 9. Privacy
-Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 
 The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. Settings stay in DataStore on the device, and because `android:allowBackup="true"` (no extraction rules) Android's own backup and device transfer may include them. If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About page shows the gist; the Play listing will link to a public copy (Phase 23), and the data-safety form will say no data is collected or shared.

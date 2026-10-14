@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -107,4 +109,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         state.update { it.copy(keepTwoPaneLandscape = enabled) }
 
     override suspend fun setStringLockTipSeen(seen: Boolean) = state.update { it.copy(stringLockTipSeen = seen) }
+
+    override suspend fun setMetronomeBpm(bpm: Int) = state.update { it.copy(metronomeBpm = ClickTrack.clampBpm(bpm)) }
+
+    override suspend fun setMetronomeMeter(meter: Meter) = state.update { it.copy(metronomeMeter = meter) }
+
+    override suspend fun setMetronomeVibrate(enabled: Boolean) = state.update { it.copy(metronomeVibrate = enabled) }
 }

@@ -19,13 +19,14 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ settings ↔ About, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
+| `:app` | Android app | `MainActivity` (switches tuner ↔ settings ↔ About ↔ metronome, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
-| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones through `AudioTrack`) |
-| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
-| `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks |
-| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, pluck synthesis |
+| `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
+| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones) and `MetronomePlayer` (clicks) through `AudioTrack` |
+| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/vibration |
+| `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights |
+| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, pluck synthesis, metronome click track and tap tempo |
 | `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks left out of normal runs until Phase 23), `assertWhollyShown` (nothing clipped or cut off) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 

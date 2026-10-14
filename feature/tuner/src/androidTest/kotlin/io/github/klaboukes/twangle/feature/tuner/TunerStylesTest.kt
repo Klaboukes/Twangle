@@ -247,18 +247,18 @@ class TunerStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * Every part is on screen without scrolling, inside the window, clear of the settings button's
-     * corner, and no two overlap.
+     * Every part is on screen without scrolling, inside the window, clear of the corner buttons
+     * (metronome and settings), and no two overlap.
      */
     private fun assertAllInView(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val corner = DpRect(window.right - CORNER, window.top, window.right, window.top + CORNER)
+        val corner = DpRect(window.right - CORNER_WIDTH, window.top, window.right, window.top + CORNER)
         val bounds = parts(shownDisplay.value).map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
                 fail("$case $name $rect is outside the window $window")
             }
-            if (rect.overlaps(corner)) fail("$case $name $rect is under the settings button")
+            if (rect.overlaps(corner)) fail("$case $name $rect is under the corner buttons")
         }
         for (i in bounds.indices) {
             for (j in i + 1 until bounds.size) {
@@ -298,8 +298,11 @@ class TunerStylesTest(private val style: VisualStyle) {
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 793.dp)
         private const val OWNER_FONT_SCALE = 1.25f
 
-        /** The settings button's 48 dp plus its 8 dp inset, in the window's top end corner. */
+        /** The settings button's 48 dp plus its 8 dp inset, in the window's top end corner … */
         private val CORNER = 56.dp
+
+        /** … with the metronome button beside it (temporary, until the bottom bar). */
+        private val CORNER_WIDTH = 104.dp
         private val SLACK = 0.5.dp
     }
 }

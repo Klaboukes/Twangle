@@ -30,6 +30,7 @@ rootProject.name = "Twangle"
 include(":app")
 include(":feature:tuner")
 include(":feature:settings")
+include(":feature:metronome")
 include(":core:audio")
 include(":core:dsp")
 include(":core:settings")

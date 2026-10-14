@@ -27,7 +27,7 @@ export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
-UI_MODULES=(:feature:tuner :feature:settings :core:audio :app)
+UI_MODULES=(:feature:tuner :feature:settings :feature:metronome :core:audio :app)
 
 usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
@@ -41,27 +41,30 @@ affected_modules() {
     local base changed
     base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
     changed="$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)"
-    local tuner=0 settings=0 audio=0 app=0 path
+    local tuner=0 settings=0 metronome=0 audio=0 app=0 path
     while IFS= read -r path; do
         [ -z "$path" ] && continue
         case "$path" in
             *.md | .github/* | .claude/* | scripts/* | docs/* | */src/test/* | core/dsp/src/benchmark/*) ;;
             feature/tuner/src/androidTest/*) tuner=1 ;;
             feature/settings/src/androidTest/*) settings=1 ;;
+            feature/metronome/src/androidTest/*) metronome=1 ;;
             core/audio/src/androidTest/*) audio=1 ;;
             app/src/androidTest/*) app=1 ;;
             feature/tuner/*) tuner=1; app=1 ;;
             feature/settings/*) settings=1; app=1 ;;
-            core/audio/*) audio=1; tuner=1; app=1 ;;
-            core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; app=1 ;;
-            core/testing/*) tuner=1; settings=1 ;;
+            feature/metronome/*) metronome=1; app=1 ;;
+            core/audio/*) audio=1; tuner=1; metronome=1; app=1 ;;
+            core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; metronome=1; app=1 ;;
+            core/testing/*) tuner=1; settings=1; metronome=1 ;;
             app/*) app=1 ;;
             baselineprofile/*) ;;
-            *) tuner=1; settings=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
+            *) tuner=1; settings=1; metronome=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
         esac
     done <<< "$changed"
     [ $tuner = 1 ] && echo :feature:tuner
     [ $settings = 1 ] && echo :feature:settings
+    [ $metronome = 1 ] && echo :feature:metronome
     [ $audio = 1 ] && echo :core:audio
     [ $app = 1 ] && echo :app
 }

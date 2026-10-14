@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
@@ -91,4 +92,11 @@ interface SettingsRepository {
 
     /** Remembers that the string-lock tip was dismissed (or brings it back with false). */
     suspend fun setStringLockTipSeen(seen: Boolean)
+
+    /** The metronome's tempo, clamped to 30–250 BPM (`ClickTrack.clampBpm`). */
+    suspend fun setMetronomeBpm(bpm: Int)
+
+    suspend fun setMetronomeMeter(meter: Meter)
+
+    suspend fun setMetronomeVibrate(enabled: Boolean)
 }

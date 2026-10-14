@@ -177,7 +177,7 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
 }
 
 /** Wide number faces (Michroma, Orbitron) are set at 82 % so "50" fits like the others. */
-internal fun numberScaleFor(style: VisualStyle): Float = when (style) {
+fun numberScaleFor(style: VisualStyle): Float = when (style) {
     VisualStyle.SPACE_AGE, VisualStyle.FUTURISTIC -> WIDE_NUMBER_SCALE
     else -> 1f
 }

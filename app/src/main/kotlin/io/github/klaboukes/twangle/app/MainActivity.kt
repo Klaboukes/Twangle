@@ -29,16 +29,17 @@ import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
 
 /**
- * The four screens. Navigation is just this one value; the back button leads from About to settings,
- * and from settings and the tuning editor to the tuner.
+ * The five screens. Navigation is just this one value; the back button leads from About to settings,
+ * and from settings, the metronome and the tuning editor to the tuner.
  */
-private enum class Screen { TUNER, SETTINGS, ABOUT, TUNING_EDITOR }
+private enum class Screen { TUNER, SETTINGS, ABOUT, TUNING_EDITOR, METRONOME }
 
 class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app in the user's style and theme, showing the tuner, settings, About or the tuning editor over the style's background. */
+    /** The app in the user's style and theme, showing the tuner, settings, About, the tuning editor or the metronome over the style's background. */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
-                // Settings and About get the quiet version of the style's background.
+                // Every screen but the tuner gets the quiet version of the style's background.
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
                 val saveableState = rememberSaveableStateHolder()
@@ -99,6 +100,8 @@ class MainActivity : ComponentActivity() {
                                 settingsRepository = container.settingsRepository,
                                 tonePlayer = container.tonePlayer,
                                 onOpenSettings = { screen = Screen.SETTINGS },
+                                // Temporary, until the bottom bar (Phase 19): a button beside the gear.
+                                onOpenMetronome = { screen = Screen.METRONOME },
                                 savedMode = settings.mode,
                                 savedStringLockTipSeen = settings.stringLockTipSeen,
                                 savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
@@ -111,6 +114,21 @@ class MainActivity : ComponentActivity() {
                                 },
                                 // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
                                 modifier = Modifier.semantics { testTagsAsResourceId = true },
+                            )
+                        }
+                        Screen.METRONOME -> {
+                            BackHandler { screen = Screen.TUNER }
+                            // The volume keys set the clicks' loudness (the media volume).
+                            DisposableEffect(Unit) {
+                                volumeControlStream = AudioManager.STREAM_MUSIC
+                                onDispose { volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE }
+                            }
+                            MetronomeScreen(
+                                player = container.metronomePlayer,
+                                settingsRepository = container.settingsRepository,
+                                savedBpm = settings.metronomeBpm,
+                                savedMeter = settings.metronomeMeter,
+                                savedVibrate = settings.metronomeVibrate,
                             )
                         }
                         Screen.SETTINGS -> {

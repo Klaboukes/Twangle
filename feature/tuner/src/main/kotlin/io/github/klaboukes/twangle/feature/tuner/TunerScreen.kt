@@ -115,7 +115,8 @@ import kotlin.math.min
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
  * with the lifecycle releases the mic when the screen isn't visible. The gear button in the corner
- * calls [onOpenSettings], also while the permission prompt is shown (the style is picked there).
+ * calls [onOpenSettings], also while the permission prompt is shown (the style is picked there), and
+ * the metronome button beside it [onOpenMetronome] (temporary, until the bottom bar).
  * [savedMode] is the mode in the settings already read, so the
  * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
  * likewise keeps a dismissed string-lock tip from flashing up at the start, and
@@ -134,6 +135,7 @@ fun TunerScreen(
     tonePlayer: TonePlayer,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenMetronome: () -> Unit = {},
     savedMode: TunerMode = TunerMode.AUTO,
     savedStringLockTipSeen: Boolean = false,
     savedKeepTwoPaneLandscape: Boolean = false,
@@ -194,6 +196,8 @@ fun TunerScreen(
         retuning = detected?.hint?.isDirection == true,
     )
     val animationsOff = rememberAnimationsOff()
+    // Whether the compact layout (on its side, controls hidden) is showing: the metronome button hides then.
+    var compactShown by remember { mutableStateOf(false) }
 
     // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
     // See-through, so the style's background (drawn behind every screen) shows.
@@ -243,12 +247,23 @@ fun TunerScreen(
                     compactLandscape = !keepTwoPaneLandscape,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,
+                    onCompactShownChange = { compactShown = it },
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
             }
-            IconButton(onClick = onOpenSettings, modifier = Modifier.align(Alignment.TopEnd).padding(CORNER_BUTTON_INSET).testTag(TunerTestTags.SETTINGS)) {
-                Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
+            // The metronome button is temporary: the bottom bar (Phase 19) replaces both. Like the bar,
+            // it hides in the compact layout, where the note column reaches up beside the gear, and
+            // comes back with the controls.
+            Row(Modifier.align(Alignment.TopEnd).padding(CORNER_BUTTON_INSET)) {
+                if (!(granted && compactShown)) {
+                    IconButton(onClick = onOpenMetronome, modifier = Modifier.testTag(TunerTestTags.METRONOME)) {
+                        Icon(painterResource(R.drawable.ic_metronome), contentDescription = stringResource(R.string.tuner_open_metronome))
+                    }
+                }
+                IconButton(onClick = onOpenSettings, modifier = Modifier.testTag(TunerTestTags.SETTINGS)) {
+                    Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.tuner_open_settings))
+                }
             }
         }
     }
@@ -261,6 +276,9 @@ fun TunerScreen(
  */
 object TunerTestTags {
     const val SETTINGS = "tuner_settings"
+
+    /** The metronome button beside the settings gear (temporary, until the bottom bar). */
+    const val METRONOME = "tuner_metronome"
 
     /** The wave view. It has nothing for TalkBack to say; the tag lets UI tests find where it sits. */
     const val WAVE = "tuner_wave"
@@ -395,7 +413,9 @@ fun TunerContent(
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
     strumCheck: Boolean = false,
     onStrumCheckChange: ((Boolean) -> Unit)? = null,
+    onCompactShownChange: (Boolean) -> Unit = {},
 ) {
+    val currentOnCompactShownChange by rememberUpdatedState(onCompactShownChange)
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
     // Movable, so the bars keep their count (and an open figures panel stays open) when a note
@@ -498,7 +518,9 @@ fun TunerContent(
                 compactNote = pictured || showTuneHint,
             )
         }
-        when (tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)) {
+        val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
+        if (layout != TunerLayout.COMPACT) LaunchedEffect(Unit) { currentOnCompactShownChange(false) }
+        when (layout) {
             TunerLayout.SINGLE_COLUMN -> SingleColumnLayout(
                 height = maxHeight,
                 error = error,
@@ -525,6 +547,7 @@ fun TunerContent(
                         containsControls = true,
                     ) ?: COMPACT_CONTROLS_SHOWN_MS
                 }
+                LaunchedEffect(controlsShown) { currentOnCompactShownChange(!controlsShown) }
                 LaunchedEffect(controlsShown, touches, menuOpen) {
                     if (controlsShown && !menuOpen) {
                         delay(shownMillis)
@@ -602,9 +625,9 @@ private fun SingleColumnLayout(
 }
 
 /**
- * The mode switch at the top of the upright layout, beside the settings gear: centred when that
- * keeps it clear of the gear, else moved towards the start just enough; where even that leaves no
- * room (a very large font), under the gear. The gear never covers it.
+ * The mode switch at the top of the upright layout, beside the corner buttons (the metronome's and
+ * the settings gear): centred when that keeps it clear of them, else moved towards the start just
+ * enough; where even that leaves no room (a very large font), under them. They never cover it.
  */
 @Composable
 private fun ClearOfCornerButton(content: @Composable () -> Unit) {
@@ -612,8 +635,8 @@ private fun ClearOfCornerButton(content: @Composable () -> Unit) {
         val placeable = measurables.single().measure(constraints.copy(minWidth = 0, minHeight = 0))
         // The whole column's width (it is bounded there), so the gear's place is known.
         val width = max(placeable.width, constraints.maxWidth)
-        // The gear's touch target reaches this far into the column at the end.
-        val gear = (GEAR_CLEARANCE - COLUMN_PADDING).roundToPx()
+        // The corner buttons' touch targets reach this far into the column at the end.
+        val gear = (CORNER_BUTTONS_WIDTH - COLUMN_PADDING).roundToPx()
         val centred = (width - placeable.width) / 2
         val x = min(centred, width - gear - placeable.width)
         val beside = x >= 0
@@ -1183,6 +1206,9 @@ private val CORNER_BUTTON_INSET = 8.dp
 
 /** Room for the settings gear's 48 dp touch target in the top corner. */
 private val GEAR_CLEARANCE = 48.dp + CORNER_BUTTON_INSET
+
+/** How far the corner buttons (the metronome's and the gear, side by side) reach in from the end. */
+private val CORNER_BUTTONS_WIDTH = 48.dp * 2 + CORNER_BUTTON_INSET
 
 /** Instrument-and-tuning button (a 48 dp touch target) + 8 dp + string row (48 dp). */
 private val GUITAR_SLOT_HEIGHT = 104.dp

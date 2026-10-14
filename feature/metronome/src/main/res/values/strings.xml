@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The meter picker at the top: one button per time signature. -->
+    <string name="metronome_beats_in_bar">Beats in a bar</string>
+    <!-- The tempo dial, for TalkBack: what it is, and what it is set to. -->
+    <string name="metronome_tempo">Tempo, drag to change</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d beat per minute, %2$s</item>
+        <item quantity="other">%1$d beats per minute, %2$s</item>
+    </plurals>
+    <string name="metronome_bpm" translatable="false">BPM</string>
+    <string name="metronome_slower">Slower</string>
+    <string name="metronome_faster">Faster</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Vibrate on the beat</string>
+
+    <!-- Time signatures: the same in every language. -->
+    <string name="metronome_meter_2_4" translatable="false">2/4</string>
+    <string name="metronome_meter_3_4" translatable="false">3/4</string>
+    <string name="metronome_meter_4_4" translatable="false">4/4</string>
+    <string name="metronome_meter_5_4" translatable="false">5/4</string>
+    <string name="metronome_meter_6_8" translatable="false">6/8</string>
+    <string name="metronome_meter_7_8" translatable="false">7/8</string>
+
+    <!-- Italian tempo markings under the tempo: the same in every language. -->
+    <string name="metronome_marking_grave" translatable="false">Grave</string>
+    <string name="metronome_marking_largo" translatable="false">Largo</string>
+    <string name="metronome_marking_larghetto" translatable="false">Larghetto</string>
+    <string name="metronome_marking_adagio" translatable="false">Adagio</string>
+    <string name="metronome_marking_andante" translatable="false">Andante</string>
+    <string name="metronome_marking_moderato" translatable="false">Moderato</string>
+    <string name="metronome_marking_allegro" translatable="false">Allegro</string>
+    <string name="metronome_marking_presto" translatable="false">Presto</string>
+    <string name="metronome_marking_prestissimo" translatable="false">Prestissimo</string>
+</resources>

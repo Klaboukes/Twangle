@@ -19,6 +19,8 @@
     <!-- Mode switch: the picked instrument's strings, or any note (Chromatic). -->
     <string name="tuner_mode_strings">Strings</string>
     <string name="tuner_mode_chromatic">Chromatic</string>
+    <!-- Temporary, until the bottom bar: opens the metronome. -->
+    <string name="tuner_open_metronome">Metronome</string>
     <string name="tuner_open_settings">Settings</string>
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>

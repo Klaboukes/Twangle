@@ -24,6 +24,8 @@ enum class BeatAccent {
  * - 7/8: grouped 2 + 2 + 3, the most common grouping in Balkan and rock music: beat 1, and group
  *   accents on 3 and 5.
  *
+ * Saved in settings by [name] (the metronome's meter), so don't rename the entries.
+ *
  * @property groups lengths of the beat groups in a bar, in order; they add up to [beatsPerBar].
  */
 enum class Meter(val beatsPerBar: Int, val noteValue: Int, private val groups: IntArray) {

@@ -42,7 +42,8 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:app` | App entry point, theme, wiring |
 | `:feature:tuner` | The tuner screen |
 | `:feature:settings` | The settings screen |
-| `:core:audio` | Microphone capture |
+| `:feature:metronome` | The metronome screen |
+| `:core:audio` | Microphone capture, reference tones and metronome clicks |
 | `:core:settings` | Saved settings |
 | `:core:designsystem` | The six visual styles: colours, fonts, backgrounds and style cards |
 | `:core:dsp` | Pitch detection, note math, tunings (pure Kotlin, no Android) |

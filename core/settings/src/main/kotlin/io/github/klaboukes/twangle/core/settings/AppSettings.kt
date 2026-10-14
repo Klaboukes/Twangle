@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -207,6 +209,12 @@ data class AppSettings(
     val keepTwoPaneLandscape: Boolean = false,
     /** The one-time tip "Tap a string to lock it" was dismissed, so it doesn't come back. */
     val stringLockTipSeen: Boolean = false,
+    /** The metronome's tempo, whole BPM from [ClickTrack.MIN_BPM] to [ClickTrack.MAX_BPM]. */
+    val metronomeBpm: Int = ClickTrack.DEFAULT_BPM,
+    /** The metronome's time signature. */
+    val metronomeMeter: Meter = Meter.DEFAULT,
+    /** One short vibration on every metronome beat (off until the player turns it on). */
+    val metronomeVibrate: Boolean = false,
 ) {
     /** The custom tuning that is picked, or null when [tuning] is a preset. */
     val pickedCustomTuning: CustomTuning? get() = customTunings.firstOrNull { it.id == tuning.id }

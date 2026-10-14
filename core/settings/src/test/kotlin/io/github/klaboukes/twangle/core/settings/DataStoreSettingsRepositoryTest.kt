@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
@@ -89,6 +91,9 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, settings.waveBreathesInTune)
         assertEquals(false, settings.stringLockTipSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
+        assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
+        assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
+        assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
     }
 
     @Test
@@ -113,6 +118,9 @@ class DataStoreSettingsRepositoryTest {
         repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
         repo.setKeepTwoPaneLandscape(true)
+        repo.setMetronomeBpm(96)
+        repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
+        repo.setMetronomeVibrate(true)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -134,6 +142,9 @@ class DataStoreSettingsRepositoryTest {
             waveBreathesInTune = false,
             stringLockTipSeen = true,
             keepTwoPaneLandscape = true,
+            metronomeBpm = 96,
+            metronomeMeter = Meter.SEVEN_EIGHT,
+            metronomeVibrate = true,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -152,6 +163,9 @@ class DataStoreSettingsRepositoryTest {
             setWaveBreathesInTune(false)
             setMeterLook(MeterLook.SPIRIT_LEVEL)
             setInTuneEffect(InTuneEffect.BOLD)
+            setMetronomeBpm(72)
+            setMetronomeMeter(Meter.SIX_EIGHT)
+            setMetronomeVibrate(true)
         }
         close()
 
@@ -167,6 +181,34 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
         assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
         assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
+        assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
+        assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
+        assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
+    }
+
+    @Test
+    fun `the metronome's tempo is kept within 30 to 250 BPM, saved or read`() = runTest {
+        val repo = repository()
+        repo.setMetronomeBpm(10)
+        assertEquals(30, repo.settings.first().metronomeBpm)
+        repo.setMetronomeBpm(400)
+        assertEquals(250, repo.settings.first().metronomeBpm)
+        close()
+
+        val store = dataStore()
+        store.edit { it[intPreferencesKey("metronome_bpm")] = 9999 }
+        assertEquals("a saved tempo out of range is clamped", 250, repository(store).settings.first().metronomeBpm)
+    }
+
+    @Test
+    fun `every meter is saved under metronome_meter by its name`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (meter in Meter.entries) {
+            repo.setMetronomeMeter(meter)
+            assertEquals(meter.name, store.data.first()[stringPreferencesKey("metronome_meter")])
+            assertEquals(meter, repo.settings.first().metronomeMeter)
+        }
     }
 
     @Test
@@ -276,6 +318,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("in_tune_effect")] = "FIREWORKS"
             it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
+            it[stringPreferencesKey("metronome_meter")] = "THIRTEEN_EIGHT"
         }
 
         val settings = repository(store).settings.first()
@@ -291,6 +334,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("an unknown in-tune effect gives Calm", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
+        assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
     }
 
     @Test

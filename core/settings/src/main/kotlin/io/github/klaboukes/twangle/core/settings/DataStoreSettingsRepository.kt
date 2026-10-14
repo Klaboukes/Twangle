@@ -10,8 +10,11 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -173,6 +176,18 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[STRING_LOCK_TIP_SEEN] = seen }
     }
 
+    override suspend fun setMetronomeBpm(bpm: Int) {
+        dataStore.edit { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
+    }
+
+    override suspend fun setMetronomeMeter(meter: Meter) {
+        dataStore.edit { it[METRONOME_METER] = meter.name }
+    }
+
+    override suspend fun setMetronomeVibrate(enabled: Boolean) {
+        dataStore.edit { it[METRONOME_VIBRATE] = enabled }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -205,6 +220,9 @@ class DataStoreSettingsRepository internal constructor(
             waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
+            metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
+            metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
+            metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
         )
     }
 
@@ -244,6 +262,11 @@ class DataStoreSettingsRepository internal constructor(
         private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
+        private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
+
+        /** The metronome's [Meter], by its name. */
+        private val METRONOME_METER = stringPreferencesKey("metronome_meter")
+        private val METRONOME_VIBRATE = booleanPreferencesKey("metronome_vibrate")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

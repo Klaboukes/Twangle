@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Tellen per maat</string>
+    <string name="metronome_tempo">Tempo, sleep om te wijzigen</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d tel per minuut, %2$s</item>
+        <item quantity="other">%1$d tellen per minuut, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Langzamer</string>
+    <string name="metronome_faster">Sneller</string>
+    <string name="metronome_tap">Tik tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Trillen op de tel</string>
+</resources>

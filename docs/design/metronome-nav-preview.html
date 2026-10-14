@@ -1,0 +1,1118 @@
+<meta charset="utf-8">
+<title>Twangle Metronome and Bar</title>
+<!--
+TWANGLE METRONOME AND NAVIGATION BAR, ROUND 1 (Phase 19 preview). Nothing is built yet; the owner picks here first.
+Bar      Three screens, one bar at the bottom: Tuner · Metronome · Settings (Material 3 NavigationBar), in place of
+         the gear button. Settings becomes a tab, so it loses its back arrow. Three variants, none with a frame
+         or hard line that fights the frameless meter:
+         A  Quiet bar: the standard bar on a see-through strip of the style's surface (80 %) that fades in over
+            its top 20 dp, so it has no edge line. The open screen's icon sits in a 64 × 32 dp indicator in the
+            style's button shape and the container colour (Futuristic: a neon outline, no fill).
+         B  Frameless: icons and names straight on the background, like the meter. Under them a calm field (a soft
+            wash of the background colour, no edge) keeps them readable over the motifs. The open screen is in
+            the accent, with the style's own wave mark under its name (dab, engraved band, phosphor capsule,
+            voice-memo bar, neon bar, star).
+         C  Floating capsule: an island 12 dp above the gesture bar, in the style's button shape, on the surface
+            at 88 % with the glass objects' rim and contact shadow (Futuristic: a neon outline over the
+            background at 72 %). The open screen shows icon and name in the container colour; the other two show
+            only their icon (TalkBack still says their names).
+Rail     On a phone on its side the bar becomes a rail along the start edge, in the same variant. In the
+         compact tuner it is hidden; a tap shows it for 5 s, with the controls (the compact layout's rule).
+Metronome  Meter picker 2/4 3/4 4/4 5/4 6/8 7/8 at the top (where the tuner's mode switch is), beat lights in the
+         style's own wave marks (beat 1 largest, group starts middle sized: 5/4 = 3 + 2, 6/8 = 3 + 3,
+         7/8 = 2 + 2 + 3, as ClickTrack), a frameless tempo dial (30-250 BPM over 300 degrees, the meter's scale
+         rules and the style's arc and needle finish, the part up to the tempo in the accent), the tempo in the
+         display face with its Italian name, − / + (1 BPM), Tap tempo (average of the last taps, reset after 2 s),
+         Start / Stop, and "Vibrate on the beat". Lit marks use the accent, never "in tune" green. One soft
+         accent glow behind the tempo on each beat; nothing else moves.
+Ground   The tuner keeps its full background; Metronome and Settings get the quiet one (no hand stencil, planet or
+         starbursts), so no motif sits behind a button.
+Styles   Colours, letters, shapes and backgrounds from docs/design/theme-styles-preview.html: its data block is copied
+         here unchanged, and so is its drawing code for the backgrounds and the Classic meter.
+Sound    Off by default. On: the app's clicks, synthesised the same way (two modes of a struck bar at 1 : 2.756,
+         downbeat A6, group E6, others A5). Vibration uses the phone's vibrator if the browser allows it.
+ASSETS   Fonts from Google Fonts (SIL Open Font License 1.1), as the styles preview. Every icon and drawing is code
+         on this page; no outside images.
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+/* The script sets these tokens to the chosen style. */
+:root {
+  --bg: #F5F7FC; --surface: #FFFFFF; --fg: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF; --intune: #1B7A3E; --on-intune: #FFFFFF;
+  --container: #D0D6F8; --second: #8FA0F0; --third: #B9C4EA; --bezel: #0E0F11; --shadow-a: .16;
+  --display: Roboto, system-ui, sans-serif; --display-weight: 300; --display-track: 0em;
+  --num: Roboto, system-ui, sans-serif; --pbody: Roboto, system-ui, sans-serif;
+  --btn-r: 20; --pill-r: 18; --card-r: 12; --str-w: 46; --str-h: 46; --sr1: 23; --sr2: 23; --sr3: 23; --sr4: 23;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --on-intune: #00391A;
+    --container: #3B427A; --second: #3C4FB8; --third: #2A3160; --bezel: #000000; --shadow-a: .5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --on-intune: #00391A;
+  --container: #3B427A; --second: #3C4FB8; --third: #2A3160; --bezel: #000000; --shadow-a: .5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(80% 40% at 10% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(80% 40% at 95% 100%, color-mix(in srgb, var(--third) 8%, transparent), transparent 70%),
+    var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--ui);
+  padding-inline: 16px;
+  padding-block: 0 56px;
+  overflow-x: hidden;
+}
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header.intro { display: grid; gap: 10px; padding-block: 28px 0; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: clamp(28px, 7.5vw, 44px); line-height: 1.12; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 66ch; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* ---- Controls ---- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 8px 16px 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
+}
+.bar > * { min-width: 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.seg { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.seg label { flex: 1; text-align: center; padding: 8px 4px; border-radius: 999px; cursor: pointer; font: 500 13px/1.15 var(--ui); color: var(--muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.seg input:checked + label { background: var(--accent); color: var(--on-accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 1px 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px/1.1 var(--ui); white-space: nowrap; }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--container); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sw { width: 22px; height: 22px; border-radius: 50%; flex: none; border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent); }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+.toggles fieldset { flex: 1 1 200px; }
+.tlabel { display: block; font: 500 11px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px 4px; }
+.tbtn { flex: 0 0 auto; cursor: pointer; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px/1.15 var(--ui); }
+.tbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tbtn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* ---- Variant explanation ---- */
+.variant { display: grid; gap: 6px; padding: 14px 16px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--line); }
+.variant h2 { margin: 0; font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: 24px; line-height: 1.2; }
+.variant p { margin: 0; font-size: 15px; line-height: 1.5; }
+.variant .good { color: var(--muted); }
+
+/* ---- Phones ---- */
+.phones { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 24px; justify-items: center; }
+@media (min-width: 760px) { .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+figure { margin: 0; display: grid; gap: 10px; width: 100%; justify-items: center; min-width: 0; }
+figcaption { display: grid; gap: 4px; text-align: center; max-width: 360px; }
+figcaption b { font: 500 12px/1.2 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+figcaption span { font-size: 14px; line-height: 1.45; color: var(--fg); }
+.phone { width: min(100%, 360px); padding: 8px; border-radius: 46px; background: var(--bezel); box-shadow: 0 1px 0 1px color-mix(in srgb, var(--fg) 12%, transparent), 0 18px 40px -18px rgba(0,0,0,.45); }
+.phone.land { width: min(100%, 820px); padding: 7px; border-radius: 36px; }
+.screen { position: relative; width: 100%; aspect-ratio: 393 / 873; border-radius: 38px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--pbody); container-type: inline-size; --dp: calc(100cqw / 393); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.screen.land { aspect-ratio: 873 / 393; border-radius: 30px; --dp: calc(100cqw / 873); }
+.screen > canvas.backdrop { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dp { --dp: inherit; }
+
+.status { position: absolute; top: 0; left: 0; right: 0; height: calc(var(--dp) * 34); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(var(--dp) * 24); font: 500 calc(var(--dp) * 13)/1 var(--ui); color: var(--fg); z-index: 4; pointer-events: none; }
+.land .status { height: calc(var(--dp) * 24); padding: 0 calc(var(--dp) * 64); }
+.status svg { height: calc(var(--dp) * 12); width: auto; }
+.gesture { position: absolute; left: 50%; bottom: calc(var(--dp) * 8); width: calc(var(--dp) * 108); height: calc(var(--dp) * 4); border-radius: 99px; transform: translateX(-50%); background: color-mix(in srgb, var(--fg) 55%, transparent); z-index: 5; pointer-events: none; }
+.land .gesture { bottom: calc(var(--dp) * 5); width: calc(var(--dp) * 140); }
+
+/* The screen's content area; its bottom (or start) leaves room for the bar (or rail), set per variant. */
+.body { position: absolute; left: 0; right: 0; top: calc(var(--dp) * 34); bottom: var(--below); display: flex; flex-direction: column; align-items: center; padding: calc(var(--dp) * 8) calc(var(--dp) * 16) calc(var(--dp) * 12); z-index: 1; }
+.screen[data-var="A"] { --below: calc(var(--dp) * 104); --beside: calc(var(--dp) * 80); }
+.screen[data-var="B"] { --below: calc(var(--dp) * 96); --beside: calc(var(--dp) * 80); }
+.screen[data-var="C"] { --below: calc(var(--dp) * 112); --beside: calc(var(--dp) * 88); }
+.land .body { top: calc(var(--dp) * 24); bottom: calc(var(--dp) * 14); left: var(--beside); padding: calc(var(--dp) * 4) calc(var(--dp) * 24) 0 calc(var(--dp) * 12); flex-direction: row; align-items: center; justify-content: center; gap: calc(var(--dp) * 24); }
+.land .body.full { left: 0; padding-left: calc(var(--dp) * 40); padding-right: calc(var(--dp) * 40); transition: left .35s, padding-left .35s; }
+.land .body.full.withrail { left: var(--beside); padding-left: calc(var(--dp) * 12); }
+.grow { flex: 1 1 0; min-height: 0; }
+.grow.half { flex: 0.5 1 0; }
+
+/* ---- Tuner (a sketch of today's screen, the gear gone) ---- */
+.mode { display: flex; border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 70%, transparent); border-radius: calc(var(--dp) * var(--btn-r)); overflow: hidden; margin-top: calc(var(--dp) * 12); background: color-mix(in srgb, var(--surface) 40%, transparent); flex: none; }
+.mode span { padding: calc(var(--dp) * 10) calc(var(--dp) * 18); font: 500 calc(var(--dp) * 14)/1 var(--pbody); color: var(--fg); white-space: nowrap; }
+.mode span.on { background: var(--container); }
+.mode span + span { border-left: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 70%, transparent); }
+.meter { position: relative; width: calc(100% + var(--dp) * 16); aspect-ratio: 2 / 1; flex: none; z-index: -1; }
+.meter canvas { position: absolute; pointer-events: none; display: block; }
+.notebox { display: flex; flex-direction: column; align-items: center; flex: none; margin-top: calc(var(--dp) * 4); }
+.note { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 88); line-height: 1.1; height: calc(var(--dp) * 100); display: flex; align-items: center; white-space: nowrap; }
+.note sub { font-family: var(--num); font-weight: 400; font-size: .3em; color: var(--muted); vertical-align: baseline; margin-left: .06em; position: relative; top: .55em; }
+.pill { display: inline-flex; align-items: center; justify-content: center; min-width: calc(var(--dp) * 150); height: calc(var(--dp) * 36); padding: 0 calc(var(--dp) * 16); border-radius: calc(var(--dp) * var(--pill-r)); border: calc(var(--dp) * 1) solid var(--line); background: color-mix(in srgb, var(--surface) 72%, transparent); font: 500 calc(var(--dp) * 16)/1 var(--num); font-variant-numeric: lining-nums; white-space: nowrap; margin-top: calc(var(--dp) * 6); }
+.freq { font: 400 calc(var(--dp) * 14)/1 var(--num); color: var(--muted); margin-top: calc(var(--dp) * 10); }
+.prow1 { display: flex; align-items: center; gap: calc(var(--dp) * 8); margin-bottom: calc(var(--dp) * 12); flex: none; }
+.cpick { display: inline-flex; align-items: center; gap: calc(var(--dp) * 8); height: calc(var(--dp) * 44); padding: 0 calc(var(--dp) * 16); border-radius: calc(var(--dp) * var(--btn-r)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15)/1 var(--pbody); white-space: nowrap; }
+.cpick i { font-style: normal; color: var(--muted); }
+.strum { width: calc(var(--dp) * 44); height: calc(var(--dp) * 44); display: grid; place-items: center; border-radius: calc(var(--dp) * var(--btn-r)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); }
+.strum svg { width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); }
+.strings { display: flex; gap: calc(var(--dp) * 7); align-items: center; flex: none; margin-bottom: calc(var(--dp) * 4); }
+.str { width: calc(var(--dp) * var(--str-w)); height: calc(var(--dp) * var(--str-h)); display: grid; place-items: center; border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); border-radius: calc(var(--dp) * var(--sr1)) calc(var(--dp) * var(--sr2)) calc(var(--dp) * var(--sr3)) calc(var(--dp) * var(--sr4)); background: color-mix(in srgb, var(--surface) 60%, transparent); font: 500 calc(var(--dp) * 17)/1 var(--display); letter-spacing: var(--display-track); color: var(--fg); }
+.str sub { font: 400 .62em/1 var(--num); vertical-align: baseline; position: relative; top: .3em; margin-left: .05em; }
+.str.target { background: var(--container); border-color: var(--accent); border-width: calc(var(--dp) * 2); }
+/* Shape families, as the styles preview. */
+:root[data-shape="neon"] :is(.mode, .pill, .str, .cpick, .strum, .mbtn, .pm, .tapb, .go, .nb.vC, .vC .ni, .vA .ind) { corner-shape: bevel; }
+:root[data-shape="pebble"] .str:nth-child(1) { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .str:nth-child(2) { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+:root[data-shape="pebble"] .str:nth-child(3) { border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%; }
+:root[data-shape="pebble"] .str:nth-child(4) { border-radius: 42% 58% 55% 45% / 50% 55% 45% 50%; }
+:root[data-shape="pebble"] .str:nth-child(5) { border-radius: 55% 45% 48% 52% / 42% 60% 40% 58%; }
+:root[data-shape="pebble"] .str:nth-child(6) { border-radius: 48% 52% 58% 42% / 58% 44% 56% 42%; }
+:root[data-shape="pebble"] .pill { border-radius: 42% 58% 46% 54% / 60% 52% 48% 40%; }
+:root[data-shape="pebble"] :is(.mode, .cpick) { border-radius: calc(var(--dp) * 22) calc(var(--dp) * 16) calc(var(--dp) * 24) calc(var(--dp) * 14); }
+:root[data-shape="keys"] .strings { gap: calc(var(--dp) * 3); }
+:root[data-shape="keys"] .str { background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: inset 0 calc(var(--dp) * -4) 0 color-mix(in srgb, var(--fg) 8%, transparent); place-items: end center; padding-bottom: calc(var(--dp) * 9); }
+:root[data-shape="soft"] :is(.str, .pm, .tapb, .mbtn) { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) color-mix(in srgb, #fff 35%, transparent), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) color-mix(in srgb, #000 12%, transparent); background: color-mix(in srgb, var(--surface) 85%, transparent); }
+:root[data-shape="neon"] :is(.str, .pill, .mode, .cpick, .strum, .pm, .tapb, .mbtn) { background: transparent; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+:root[data-shape="neon"] .str.target { box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 35%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+
+/* ---- Metronome ---- */
+.msel { display: flex; gap: calc(var(--dp) * 4); margin-top: calc(var(--dp) * 12); flex: none; }
+.mbtn { min-width: calc(var(--dp) * 52); height: calc(var(--dp) * 40); padding: 0 calc(var(--dp) * 6); border-radius: calc(var(--dp) * min(var(--btn-r), 20)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15 * var(--num-scale, 1))/1 var(--num); font-variant-numeric: lining-nums; color: var(--fg); cursor: pointer; white-space: nowrap; }
+.mbtn.on { background: var(--container); border-color: var(--accent); border-width: calc(var(--dp) * 2); }
+:root[data-shape="neon"] .mbtn.on { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 35%, transparent); }
+:root[data-shape="pebble"] .mbtn:nth-child(odd) { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .mbtn:nth-child(even) { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+.lights { width: 100%; height: calc(var(--dp) * 64); flex: none; display: block; }
+.dialbox { position: relative; width: calc(var(--dp) * 288); height: calc(var(--dp) * 288); flex: none; }
+.dialbox canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.dread { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.bpmn { font-family: var(--num); font-weight: var(--num-w, 400); letter-spacing: 0; font-size: calc(var(--dp) * 58 * var(--num-scale, 1)); line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.bpml { font: 500 calc(var(--dp) * 13)/1 var(--num); letter-spacing: .12em; color: var(--muted); margin-top: calc(var(--dp) * 6); }
+.tname { font: italic 400 calc(var(--dp) * 15)/1 var(--pbody); color: var(--muted); margin-top: calc(var(--dp) * 8); }
+.prow { display: flex; align-items: center; gap: calc(var(--dp) * 16); flex: none; }
+.pm { width: calc(var(--dp) * 56); height: calc(var(--dp) * 56); border-radius: calc(var(--dp) * min(var(--btn-r), 28)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); display: grid; place-items: center; cursor: pointer; color: var(--fg); padding: 0; }
+.pm svg { width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); }
+:root[data-shape="round"] .pm, :root[data-shape="capsule"] .pm { border-radius: 50%; }
+:root[data-shape="pebble"] .pm.minus { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .pm.plus { border-radius: 55% 45% 48% 52% / 42% 60% 40% 58%; }
+.tapb { height: calc(var(--dp) * 56); min-width: calc(var(--dp) * 132); padding: 0 calc(var(--dp) * 18); border-radius: calc(var(--dp) * min(var(--btn-r), 28)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15)/1 var(--pbody); cursor: pointer; color: var(--fg); white-space: nowrap; transition: background-color .12s; }
+.tapb.hit { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+:root[data-shape="pebble"] .tapb { border-radius: 42% 58% 46% 54% / 60% 52% 48% 40%; }
+.go { margin-top: calc(var(--dp) * 16); height: calc(var(--dp) * 56); min-width: calc(var(--dp) * 196); padding: 0 calc(var(--dp) * 24); border: 0; border-radius: calc(var(--dp) * min(var(--btn-r), 28)); background: var(--accent); color: var(--on-accent); font: 500 calc(var(--dp) * 17)/1 var(--display); letter-spacing: var(--display-track); display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dp) * 10); cursor: pointer; flex: none; white-space: nowrap; }
+.go svg { width: calc(var(--dp) * 18); height: calc(var(--dp) * 18); }
+:root[data-shape="pebble"] .go { border-radius: calc(var(--dp) * 26) calc(var(--dp) * 18) calc(var(--dp) * 28) calc(var(--dp) * 16); }
+:root[data-shape="soft"] .go { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) rgba(255,255,255,.3), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) rgba(0,0,0,.18); }
+:root[data-shape="neon"] .go { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border: calc(var(--dp) * 1.5) solid var(--accent); box-shadow: 0 0 calc(var(--dp) * 14) color-mix(in srgb, var(--accent) 35%, transparent); }
+.vib { display: flex; align-items: center; gap: calc(var(--dp) * 12); margin-top: calc(var(--dp) * 12); min-height: calc(var(--dp) * 48); padding: 0 calc(var(--dp) * 4); cursor: pointer; flex: none; font: 400 calc(var(--dp) * 15)/1.25 var(--pbody); background: none; border: 0; color: var(--fg); }
+.vib > svg { width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); color: var(--muted); flex: none; }
+.vib.on > svg { color: var(--accent); }
+.vib.buzz > svg { animation: buzz .14s linear; }
+@keyframes buzz { 0%, 100% { transform: none; } 25% { transform: translateX(calc(var(--dp) * -1.5)); } 75% { transform: translateX(calc(var(--dp) * 1.5)); } }
+.switch { flex: none; position: relative; width: calc(var(--dp) * 52); height: calc(var(--dp) * 32); border-radius: calc(var(--dp) * 16); border: calc(var(--dp) * 2) solid var(--muted); background: color-mix(in srgb, var(--fg) 8%, var(--surface)); }
+.switch::after { content: ""; position: absolute; top: 50%; left: calc(var(--dp) * 6); width: calc(var(--dp) * 16); height: calc(var(--dp) * 16); border-radius: 50%; background: var(--muted); transform: translateY(-50%); }
+.on > .switch, .switch.on { background: var(--accent); border-color: var(--accent); }
+.on > .switch::after, .switch.on::after { left: auto; right: calc(var(--dp) * 2); width: calc(var(--dp) * 24); height: calc(var(--dp) * 24); background: var(--on-accent); }
+/* Metronome on its side: the dial at the start, the controls in a column beside it. */
+.lcol { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; height: 100%; }
+.land .dialbox { width: calc(var(--dp) * 300); height: calc(var(--dp) * 300); }
+.land .msel { margin-top: 0; }
+.land .lights { width: calc(var(--dp) * 330); height: calc(var(--dp) * 56); margin: calc(var(--dp) * 8) 0; }
+.land .go { margin-top: calc(var(--dp) * 12); }
+.land .vib { margin-top: calc(var(--dp) * 4); }
+
+/* ---- Settings (a sketch: it becomes a tab, so no back arrow) ---- */
+.sbody { position: absolute; left: 0; right: 0; top: calc(var(--dp) * 34); bottom: var(--below); overflow-y: auto; scrollbar-width: none; padding: calc(var(--dp) * 8) 0 calc(var(--dp) * 16); z-index: 1; }
+.sbody::-webkit-scrollbar { display: none; }
+.land .sbody { top: calc(var(--dp) * 24); bottom: 0; left: var(--beside); }
+.land .sbody > * { max-width: calc(var(--dp) * 600); margin-inline: auto; }
+.sh { margin: 0; padding: calc(var(--dp) * 18) calc(var(--dp) * 16) calc(var(--dp) * 4); font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 28); line-height: 1.2; }
+.gh { margin: 0; padding: calc(var(--dp) * 22) calc(var(--dp) * 16) calc(var(--dp) * 6); font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 20); line-height: 1.25; color: var(--accent); }
+.row { display: flex; align-items: center; gap: calc(var(--dp) * 14); padding: calc(var(--dp) * 10) calc(var(--dp) * 16); }
+.row .tx { flex: 1; min-width: 0; display: grid; gap: calc(var(--dp) * 3); }
+.rt { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: calc(var(--dp) * 16); line-height: 1.3; }
+.rs { font-size: calc(var(--dp) * 14); line-height: 1.4; color: var(--muted); }
+.rv { font: 500 calc(var(--dp) * 15)/1 var(--num); white-space: nowrap; }
+
+/* ---- Compact tuner on its side (the rail hides; a tap brings it back for 5 s) ---- */
+.cmeter { position: relative; height: calc(var(--dp) * 230); aspect-ratio: 2 / 1; flex: none; z-index: -1; }
+.cmeter canvas { position: absolute; pointer-events: none; display: block; }
+.cnote { display: flex; flex-direction: column; align-items: center; flex: none; width: calc(var(--dp) * 220); }
+.cnote .note { font-size: calc(var(--dp) * 110); height: calc(var(--dp) * 124); }
+.cstr { display: flex; gap: calc(var(--dp) * 4); margin-top: calc(var(--dp) * 14); }
+.cstr i { font-style: normal; width: calc(var(--dp) * 32); height: calc(var(--dp) * 32); display: grid; place-items: center; border-radius: 50%; border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 50%, transparent); font: 500 calc(var(--dp) * 13)/1 var(--display); }
+.cstr i.t { background: var(--container); border-color: var(--accent); }
+.taphint { position: absolute; left: 50%; bottom: calc(var(--dp) * 18); transform: translateX(-50%); font: 400 calc(var(--dp) * 13)/1 var(--pbody); color: var(--muted); white-space: nowrap; z-index: 2; transition: opacity .3s; }
+
+/* ---- The bar (upright) and the rail (on its side): three variants ---- */
+.nb { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: space-around; align-items: flex-start; transition: opacity .35s; }
+.nb::before { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.nb.hide { opacity: 0; pointer-events: none; }
+.ni { flex: 1 1 0; position: relative; background: none; border: 0; padding: 0; margin: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: calc(var(--dp) * 4); font: 500 calc(var(--dp) * 12)/1.2 var(--pbody); cursor: pointer; min-width: 0; }
+.ni .ind { width: calc(var(--dp) * 64); height: calc(var(--dp) * 32); display: grid; place-items: center; border-radius: calc(var(--dp) * min(var(--btn-r), 16)); transition: background-color .2s; }
+.ni svg { width: calc(var(--dp) * 24); height: calc(var(--dp) * 24); }
+.ni .nl { white-space: nowrap; max-width: 100%; overflow: hidden; }
+.ni.on { color: var(--fg); }
+.ni.on svg { stroke-width: 2.2; }
+.ni .mk { display: none; }
+.ni:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:root[data-shape="pebble"] .ni .ind { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+/* A: the standard bar on a see-through surface that fades in at its top: no edge line. */
+.vA { height: calc(var(--dp) * 104); padding-top: calc(var(--dp) * 12); }
+.vA::before { inset: calc(var(--dp) * -14) 0 0 0; background: color-mix(in srgb, var(--surface) 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--dp) * 22)); mask-image: linear-gradient(to bottom, transparent, #000 calc(var(--dp) * 22)); }
+.vA .ni.on .ind { background: var(--container); }
+:root[data-shape="neon"] .vA::before { background: color-mix(in srgb, var(--bg) 78%, transparent); }
+:root[data-shape="neon"] .vA .ni.on .ind { background: color-mix(in srgb, var(--accent) 12%, transparent); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 calc(var(--dp) * 8) color-mix(in srgb, var(--accent) 30%, transparent); }
+/* B: frameless. Icons and names on the background over a calm field; the open one in the accent with the style's mark. */
+.vB { height: calc(var(--dp) * 96); padding-top: calc(var(--dp) * 16); }
+.vB::before { inset: calc(var(--dp) * -36) 0 0 0; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 70%, transparent) 55%); }
+.vB .ni .ind { width: auto; height: calc(var(--dp) * 28); }
+.vB .ni.on { color: var(--accent); }
+.vB .ni.on .mk { display: block; margin-top: calc(var(--dp) * 3); }
+.mk { width: calc(var(--dp) * 20); height: calc(var(--dp) * 4); border-radius: 99px; background: var(--accent); }
+:root[data-shape="pebble"] .mk { width: calc(var(--dp) * 8); height: calc(var(--dp) * 7); border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; box-shadow: calc(var(--dp) * 1.5) calc(var(--dp) * 1.2) 0 calc(var(--dp) * .6) color-mix(in srgb, var(--accent) 35%, transparent); }
+:root[data-shape="keys"] .mk { width: calc(var(--dp) * 24); height: calc(var(--dp) * 5); border-radius: calc(var(--dp) * 1); background: color-mix(in srgb, var(--accent) 32%, transparent); border: calc(var(--dp) * 1.2) solid var(--accent); }
+:root[data-shape="soft"] .mk { width: calc(var(--dp) * 24); height: calc(var(--dp) * 6); box-shadow: 0 0 calc(var(--dp) * 6) color-mix(in srgb, var(--accent) 55%, transparent); }
+:root[data-shape="neon"] .mk { width: calc(var(--dp) * 26); height: calc(var(--dp) * 2); border-radius: 0; box-shadow: 0 0 calc(var(--dp) * 6) var(--accent), 0 0 calc(var(--dp) * 2) var(--accent); }
+:root[data-shape="capsule"] .mk { width: calc(var(--dp) * 11); height: calc(var(--dp) * 11); border-radius: 0; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+/* C: a floating capsule in the style's button shape; only the open screen shows its name. */
+.nb.vC { left: 50%; right: auto; bottom: calc(var(--dp) * 36); transform: translateX(-50%); height: calc(var(--dp) * 64); padding: 0 calc(var(--dp) * 8); gap: calc(var(--dp) * 4); align-items: center; border-radius: calc(var(--dp) * min(var(--btn-r), 32)); background: color-mix(in srgb, var(--surface) 88%, transparent); box-shadow: inset 0 0 0 calc(var(--dp) * 1) color-mix(in srgb, var(--fg) 14%, transparent), 0 calc(var(--dp) * 4) calc(var(--dp) * 10) rgba(0, 0, 0, var(--shadow-a)); }
+.vC .ni { flex: none; flex-direction: row; height: calc(var(--dp) * 48); min-width: calc(var(--dp) * 52); padding: 0 calc(var(--dp) * 14); gap: calc(var(--dp) * 8); justify-content: center; border-radius: calc(var(--dp) * min(var(--btn-r), 24)); font-size: calc(var(--dp) * 14); }
+.vC .ni .ind { width: auto; height: auto; background: none; }
+.vC .ni .nl { display: none; }
+.vC .ni.on { background: var(--container); padding: 0 calc(var(--dp) * 18) 0 calc(var(--dp) * 14); }
+.vC .ni.on .nl { display: inline; }
+:root[data-shape="pebble"] .nb.vC { border-radius: 40% 60% 45% 55% / 60% 50% 50% 40%; }
+:root[data-shape="pebble"] .vC .ni.on { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="neon"] .nb.vC { background: color-mix(in srgb, var(--bg) 72%, transparent); box-shadow: 0 0 calc(var(--dp) * 12) color-mix(in srgb, var(--accent) 22%, transparent); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--accent) 55%, transparent); }
+:root[data-shape="neon"] .vC .ni.on { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+/* The rail on a phone on its side: same three variants along the start edge. */
+.nb.rail { top: 0; bottom: 0; right: auto; width: calc(var(--dp) * 80); height: auto; padding: 0; flex-direction: column; justify-content: center; align-items: stretch; gap: calc(var(--dp) * 14); }
+.nb.rail .ni { flex: none; }
+.rail.vA::before { inset: 0 calc(var(--dp) * -14) 0 0; -webkit-mask-image: linear-gradient(to left, transparent, #000 calc(var(--dp) * 22)); mask-image: linear-gradient(to left, transparent, #000 calc(var(--dp) * 22)); }
+.rail.vA .ni .ind { width: calc(var(--dp) * 56); }
+.rail.vB::before { inset: 0 calc(var(--dp) * -40) 0 0; background: linear-gradient(to left, transparent, color-mix(in srgb, var(--bg) 70%, transparent) 50%); }
+.nb.rail.vC { left: calc(var(--dp) * 14); top: 50%; bottom: auto; width: auto; transform: translateY(-50%); padding: calc(var(--dp) * 8) 0; flex-direction: column; align-items: center; gap: calc(var(--dp) * 6); }
+.rail.vC .ni { width: calc(var(--dp) * 60); min-width: 0; padding: 0; height: calc(var(--dp) * 48); }
+.rail.vC .ni.on { flex-direction: column; height: auto; padding: calc(var(--dp) * 8) 0; gap: calc(var(--dp) * 3); font-size: calc(var(--dp) * 11); }
+:root[data-shape="pebble"] .nb.rail.vC { border-radius: 45% 55% 50% 50% / 30% 35% 30% 35%; }
+
+/* ---- What to look at ---- */
+.look { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; max-width: 72ch; }
+.look li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.look li b { font: 500 13px/1 var(--ui); color: var(--on-accent); background: var(--accent); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; }
+.look li span { font-size: 15px; line-height: 1.5; }
+.ask { padding: 20px 22px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--accent); display: grid; gap: 8px; max-width: 72ch; }
+.ask p { margin: 0; }
+.ask .big { font-size: 18px; line-height: 1.4; font-weight: 500; text-wrap: balance; }
+.ask .small { font-size: 15px; color: var(--muted); }
+h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: 24px; line-height: 1.2; }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Twangle · Phase 19 preview · round 1</p>
+    <h1>The metronome, and a bar to reach it</h1>
+    <p class="lede">The app gets a third screen, the <strong>metronome</strong>, so the gear button in the corner gives way to a <strong>bar at the bottom</strong>: Tuner · Metronome · Settings. Below are <strong>three kinds of bar</strong> to choose from (A, B, C). All three keep the big frameless meter free of boxes and lines. The metronome runs by itself on this page so you can see its beat lights; tap the bar to switch screens. No sound unless you turn it on.</p>
+  </header>
+
+  <form class="bar" onsubmit="return false" aria-label="Pick a style and a bar">
+    <div class="chips" id="chips" role="group" aria-label="The six styles"></div>
+    <fieldset>
+      <legend class="sr">Bar</legend>
+      <div class="seg" id="varSeg">
+        <input type="radio" name="var" id="var-A" value="A"><label for="var-A">A · Quiet bar</label>
+        <input type="radio" name="var" id="var-B" value="B"><label for="var-B">B · Frameless</label>
+        <input type="radio" name="var" id="var-C" value="C"><label for="var-C">C · Floating</label>
+      </div>
+    </fieldset>
+  </form>
+
+  <section class="variant" aria-live="polite">
+    <p class="eyebrow" id="varEyebrow">Bar A</p>
+    <h2 id="varName"></h2>
+    <p id="varText"></p>
+    <p class="good" id="varGood"></p>
+  </section>
+
+  <form class="toggles" onsubmit="return false">
+    <fieldset>
+      <legend class="tlabel">Light or dark</legend>
+      <div class="seg">
+        <input type="radio" name="theme" id="theme-auto" value="auto"><label for="theme-auto">Auto</label>
+        <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
+        <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="tlabel">Language on the phones</legend>
+      <div class="seg">
+        <input type="radio" name="lang" id="lang-en" value="en"><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-nl" value="nl"><label for="lang-nl">Nederlands</label>
+      </div>
+    </fieldset>
+    <button type="button" class="tbtn" id="soundBtn" aria-pressed="false">Click sound: off</button>
+  </form>
+
+  <div class="phones">
+    <figure>
+      <div class="phone"><div class="screen" id="scrA" data-start="tuner"></div></div>
+      <figcaption><b>Tuner</b><span>The gear is gone; Settings is now in the bar. Everything else stays where it was.</span></figcaption>
+    </figure>
+    <figure>
+      <div class="phone"><div class="screen" id="scrB" data-start="metro"></div></div>
+      <figcaption><b>Metronome</b><span>Drag round the dial, tap − or +, or tap <i>Tap tempo</i> a few times in time. Pick the beats in a bar at the top.</span></figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <div class="phone land"><div class="screen land" id="scrL" data-start="metro"></div></div>
+    <figcaption style="max-width: 640px"><b>On its side</b><span>The bar becomes a rail along the left edge. In the tuner's compact view (tap Tuner on the rail) the rail hides so the meter can be big; tapping the screen brings it back for 5 seconds. Turn your phone on its side to see this one larger.</span></figcaption>
+  </figure>
+
+  <h3 class="sec">What to look at</h3>
+  <ol class="look">
+    <li><b>1</b><span><strong>Which bar: A, B or C?</strong> Try each in a few styles, especially Futuristic and Retro in the dark, where the background reaches the bottom of the screen.</span></li>
+    <li><b>2</b><span><strong>The beat lights.</strong> Each style uses its own marks (dabs, engraved bands, glowing capsules, voice-memo bars, neon bars, stars). Beat 1 is the biggest; in 5/4, 6/8 and 7/8 the start of each group is middle sized, matching the accented clicks.</span></li>
+    <li><b>3</b><span><strong>The dial.</strong> A round dial you drag, without a frame, drawn like the meter. Is that right, or would you rather have a big number and a slider?</span></li>
+    <li><b>4</b><span><strong>Starting.</strong> In the app the metronome opens stopped and stops when you leave it. Here it starts by itself so you can see it move.</span></li>
+    <li><b>5</b><span><strong>Names.</strong> Dutch: Stemmer · Metronoom · Instellingen, and "Tik tempo", "Trillen op de tel". Switch the language above to see them fit.</span></li>
+  </ol>
+
+  <aside class="ask">
+    <p class="big">Tell Claude which bar (A, B or C) and what to change on the metronome, or that it is right.</p>
+    <p class="small">Useful: anything that looks crowded or too faint in a style, the order of the buttons, and whether you want the dial, the tap button or the vibration switch somewhere else. This page remembers your switches on this phone.</p>
+  </aside>
+</div>
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],
+"styles":{
+ "ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone: the first marks people made","font":"Caesar Dressing","fb":"serif","w":400,"track":0.01,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"body":"sans",
+  "shape":{"kind":"pebble","btn":20,"pill":18,"card":14,"strW":48,"strH":46,"strR":[20]},
+  "mark":{"type":"dots","smudge":true,"gap":13},"period":13,"motif":"ancient",
+  "fin":{"needle":"spear","hub":"stone","track":"dots","caps":"round","jitter":true},
+  "look":{"Colours":"Terracotta red and charcoal on warm grey stone","Letters":"Caesar Dressing, hewn capitals; numbers in Alegreya Sans so they read easily","Background":"A stone wall with a terracotta hand stencil and rows of scratched tally marks, the first written numbers","Shapes":"Pebbles: no two string buttons alike","Wave":"Fingertip dabs of terracotta","Meter":"Charcoal ticks drawn by hand, a spear needle on a stone hub, an arc of terracotta dots"},
+  "light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+  "dark":{"bg":"#1B1715","surface":"#25201D","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"}},
+ "classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"track":0,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"body":"serif",
+  "shape":{"kind":"keys","btn":4,"pill":4,"card":4,"strW":44,"strH":58,"strR":[3,3,9,9]},
+  "mark":{"type":"band","fill":0.32,"outline":1.7,"halo":0,"centre":true},"period":12,"motif":"velvet",
+  "fin":{"needle":"breguet","hub":"cap","track":"rail","caps":"butt","jitter":false},
+  "look":{"Colours":"Deep burgundy, ivory and gold leaf","Letters":"Playfair Display, a high-contrast serif; numbers in Bodoni Moda, whose digits stand full height","Background":"Velvet stage curtains in soft folds, a spotlight and the gold curve of a concert-hall shell","Shapes":"Fine square corners; the strings are ivory keys","Wave":"An engraved band with a hairline through it","Meter":"A watchmaker's needle with a ring near its tip, a gold cap, a railway-track scale"},
+  "light":{"bg":"#F7F2E8","surface":"#FCF9F2","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+  "dark":{"bg":"#170C11","surface":"#22131A","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"}},
+ "retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"track":0,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"soft","btn":22,"pill":22,"card":18,"strW":50,"strH":44,"strR":[14]},
+  "mark":{"type":"band","fill":0.4,"outline":1.6,"halo":0.14,"centre":false},"period":12,"motif":"seventies",
+  "fin":{"needle":"vu","hub":"disc","track":"band","caps":"butt","jitter":false},
+  "look":{"Colours":"Avocado green with mustard and orange on cream","Letters":"Righteous, round 70s letters","Background":"Big rainbow stripes in avocado, mustard and orange curving in from the side, like 70s wallpaper","Shapes":"Fat soft corners; strings like chunky hi-fi push buttons","Wave":"A glowing phosphor trace","Meter":"A VU needle with an orange tip over a broad arc"},
+  "light":{"bg":"#F1EDD8","surface":"#F8F5E6","ink":"#24260F","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+  "dark":{"bg":"#15160B","surface":"#1F2113","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"}},
+ "contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"track":0,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"round","btn":20,"pill":18,"card":12,"strW":46,"strH":46,"strR":[23]},
+  "mark":{"type":"bars","gap":6,"width":3,"cap":"round","slant":0,"halo":0},"period":9,"motif":"wash",
+  "fin":{"needle":"bar","hub":"dot","track":"line","caps":"round","jitter":false},
+  "look":{"Colours":"A fresh, calm blue on cool white, or on deep blue-grey at night; can follow the wallpaper","Letters":"The phone's own font (Roboto here), light","Background":"Two soft colour washes, nothing else","Shapes":"Round and friendly: circle strings, pill buttons","Wave":"Rounded bars, like a voice memo","Meter":"A plain rounded needle, a thin arc, nothing extra"},
+  "light":{"bg":"#F5F7FC","surface":"#FFFFFF","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#1B7A3E","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+  "dark":{"bg":"#0E1220","surface":"#151A2B","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"}},
+ "futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"track":0.06,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"neon","btn":10,"pill":10,"card":8,"strW":50,"strH":40,"strR":[10]},
+  "mark":{"type":"bars","gap":4,"width":1.5,"cap":"square","slant":0,"halo":0.16},"period":8,"motif":"hud",
+  "fin":{"needle":"beam","hub":"ring","track":"dashed","caps":"square","jitter":false},
+  "look":{"Colours":"Neon cyan and magenta on near-black; a cool lab white by day","Letters":"Orbitron, geometric capitals","Background":"A neon perspective grid low on the screen, a magenta horizon glow and faint scan lines","Shapes":"Cut corners and thin glowing outlines, no fills","Wave":"Thin neon bars with a soft halo","Meter":"A beam of light with a chevron tip, a dashed arc and a ring hub"},
+  "light":{"bg":"#EDF3F6","surface":"#F8FCFE","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#007482","onAccent":"#FFFFFF","inTune":"#007A46","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+  "dark":{"bg":"#03070A","surface":"#08121A","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"}},
+ "spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver: the future as the 60s saw it","font":"Michroma","fb":"sans-serif","w":400,"track":0.02,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"capsule","btn":999,"pill":999,"card":20,"strW":44,"strH":52,"strR":[22]},
+  "mark":{"type":"stars"},"period":12,"motif":"space",
+  "fin":{"needle":"ball","hub":"saturn","track":"dots","caps":"round","jitter":false},
+  "look":{"Colours":"Deep violet and indigo with rocket orange and silver","Letters":"Michroma, wide jet-age letters","Background":"By night a violet starfield with an orange ringed planet; by day silver atomic orbits and starbursts","Shapes":"Capsules, like a 60s rocket's portholes and buttons","Wave":"Pairs of stars","Meter":"A needle with a ball tip, an orbit of dots and a little ringed planet at the pivot"},
+  "light":{"bg":"#F3F0F8","surface":"#FBF9FE","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+  "dark":{"bg":"#120C26","surface":"#1C1536","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"}}
+}}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  const root = document.documentElement;
+  const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+  const $ = (id) => document.getElementById(id);
+  let fontsVersion = 0;
+
+  // ==== Copied unchanged from docs/design/theme-styles-preview.html: colours, backgrounds, the Classic meter ====
+  // ---- Colour helpers ----------------------------------------------------------------------------
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const css = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+  const TAU = Math.PI * 2;
+  const smooth = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+  const SIGNS = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Music", "Apple Symbols", serif';
+  const stack = (f, fb) => `"${f}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  const palCache = new Map();
+  function palette(s, dark) {
+    const key = s.id + dark; if (palCache.has(key)) return palCache.get(key);
+    const raw = s[dark ? 'dark' : 'light']; const p = {};
+    for (const k in raw) p[k] = hex(raw[k]);
+    p.container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    palCache.set(key, p); return p;
+  }
+  for (const id in STY) STY[id].id = id;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  const hash = (v) => { const s = Math.sin(v * 12.9898 + 78.233) * 43758.5453; return (s - Math.floor(s)) * 2 - 1; };
+
+  // ---- Drawing helpers ---------------------------------------------------------------------------
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function lozenge(ctx, x, y, r, col) { ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.7, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.7, y); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
+  function sparkle(ctx, x, y, r, col, u) { seg(ctx, x - r, y, x + r, y, col, 0.9 * u); seg(ctx, x, y - r, x, y + r, col, 0.9 * u); dot(ctx, x, y, 1.4 * u, col); }
+  function starburst(ctx, x, y, r, col, u) { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, l = i % 2 ? r * 0.55 : r; seg(ctx, x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, col, 1.4 * u); } dot(ctx, x, y, r * 0.16, col); }
+  function hand(ctx, cx, cy, size, deg, col) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(0, size * 0.25, size * 0.32, size * 0.31, 0, 0, TAU); ctx.fill();
+    const f = size * 0.13;
+    [[-0.235, 0.40], [-0.08, 0.50], [0.075, 0.48], [0.225, 0.38]].forEach(([fx, fl]) => { ctx.beginPath(); rrAdd(ctx, fx * size - f / 2, -fl * size, f, fl * size + size * 0.12, f / 2); ctx.fill(); });
+    ctx.translate(-size * 0.26, size * 0.26); ctx.rotate(-52 * Math.PI / 180); ctx.beginPath(); rrAdd(ctx, -f / 2, -size * 0.44, f, size * 0.44, f / 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ---- Backgrounds: one calm picture per style, drawn once, nothing at the edge -------------------
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  function stone(B) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    const n = B.mini ? 60 : 520; for (let i = 0; i < n; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  /** An x in the outer fifth on either side, so motifs keep clear of the note and pill. */
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  const MOTIFS = {
+    ancient(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B);
+      if (!B.mini && !B.quiet) hand(ctx, W * 0.84, H * 0.66, 54 * u, 22, rgba(p.accent, dark ? 0.16 : 0.13));
+      // Rows of tally marks, scratched into the wall: the first written numbers.
+      const tc = rgba(p.ink, dark ? 0.12 : 0.11);
+      const rows = B.mini ? [[0.2, 0.12]] : [[0.18, 0.07], [0.26, 0.92], [0.62, 0.95]];
+      for (const [fx, fy] of rows) { let x = W * fx; const y = H * fy; for (let gI = 0; gI < 3; gI++) { for (let k = 0; k < 4; k++) { const j = r() * 1.5 * u; seg(ctx, x + k * 4 * u + j, y - 7 * u, x + k * 4 * u - j, y + 7 * u, tc, 1.4 * u); } seg(ctx, x - 3 * u, y + 5 * u, x + 15 * u, y - 5 * u, tc, 1.4 * u); x += 26 * u; } }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    velvet(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      // Velvet stage curtains: soft vertical folds, deep at night, a faint blush by day.
+      const folds = ctx.createLinearGradient(0, 0, W, 0), n = B.mini ? 5 : 9;
+      for (let k = 0; k <= n * 2; k++) folds.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : (dark ? 0.22 : 0.05) * (B.quiet ? 0.5 : 1)));
+      ctx.fillStyle = folds; ctx.fillRect(0, 0, W, H);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      // The gold curve of a concert-hall shell behind the meter.
+      const cy = B.mini ? H * 1.1 : H * 0.36;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, dark ? 0.16 : 0.22); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.10);
+    },
+    seventies(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      // Rainbow bands curving in from the left edge, like 70s wallpaper: avocado, mustard, orange.
+      const cx = B.mini ? -W * 0.05 : -W * 0.08, cy = B.mini ? H * 1.05 : H * 0.62, band = (B.mini ? 10 : 15) * u, a = B.quiet ? (dark ? 0.08 : 0.10) : (dark ? 0.2 : 0.26);
+      [p.accent, p.second, p.third, p.accent, p.second].forEach((col, k) => {
+        ctx.beginPath(); ctx.arc(cx, cy, W * (B.mini ? 0.2 : 0.22) + k * band, -Math.PI / 2, Math.PI / 2); ctx.strokeStyle = rgba(col, a * (1 - k * 0.12)); ctx.lineWidth = band - 1.5 * u; ctx.lineCap = 'butt'; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    wash(B) { const { W, H, p } = B; radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.10); radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, p.third, 0.07); },
+    hud(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * (B.mini ? 0.8 : 0.3), W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const gc = rgba(p.accent, dark ? 0.14 : 0.10), hz = H * (B.mini ? 0.6 : 0.74), vy = hz - H * 0.1;
+      radial(B, W * 0.5, hz, W * 0.6, p.second, dark ? 0.14 : 0.07);
+      for (let i = -14; i <= 14; i++) { const bx = W * 0.5 + i * W * 0.14, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, gc, u, 'butt'); }
+      for (let k = 0; k <= 10; k++) { const f = k / 10, y = hz + (H - hz) * f * f; seg(ctx, 0, y, W, y, gc, u, 'butt'); }
+      const g = ctx.createLinearGradient(0, hz - u, 0, hz + H * 0.06); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz - u, W, H * 0.06 + u);
+      seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      if (dark) for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, 0.16), u, 'butt');
+    },
+    space(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) {
+        vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.16)]]);
+        radial(B, W * 0.85, H * 0.18, W * 0.7, p.accent, 0.10); radial(B, W * 0.1, H * 0.55, W * 0.6, p.second, 0.06);
+        for (const [rx, ry, rot] of [[0.7, 0.16, -0.25], [0.55, 0.12, 0.35]]) { ctx.save(); ctx.translate(W * 0.5, H * 0.3); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, W * rx, W * ry, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.10); ctx.lineWidth = 0.8 * u; ctx.stroke(); ctx.restore(); }
+        const n = B.mini ? 50 : 200; for (let i = 0; i < n; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, 0.25 + r() * 0.6)); }
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 2 : 6); i++) sparkle(ctx, sideX(r(), W), (0.4 + r() * 0.5) * H, (5 + r() * 5) * u, rgba(p.ink, 0.75), u);
+        if (!B.mini && !B.quiet) {
+          const cx = W * 0.0, cy = H * 1.05, rad = W * 0.3;
+          const g = ctx.createRadialGradient(cx + rad * 0.3, cy - rad * 0.4, 0, cx + rad * 0.3, cy - rad * 0.4, rad * 1.3); g.addColorStop(0, rgba(p.second, 0.55)); g.addColorStop(1, rgba(mix(p.second, p.bg, 0.6), 0.45));
+          dot(ctx, cx, cy, rad, g);
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(-14 * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, rad * 1.55, rad * 0.32, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.45); ctx.lineWidth = 2 * u; ctx.stroke(); ctx.restore();
+        }
+      } else {
+        const nx = W * 0.5, ny = H * (B.mini ? 0.5 : 0.25);
+        for (const a of [0, 60, 120]) { ctx.save(); ctx.translate(nx, ny); ctx.rotate(a * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, W * 0.55, W * 0.18, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.22); ctx.lineWidth = 1.2 * u; ctx.stroke(); ctx.restore(); }
+        radial(B, W * 0.5, H * 0.9, W * 0.8, p.accent, 0.08);
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 3 : 8); i++) starburst(ctx, sideX(r(), W), (0.35 + r() * 0.55) * H, (7 + r() * 8) * u, rgba(i % 2 ? p.second : p.accent, 0.3), u);
+        for (let i = 0; i < 36; i++) dot(ctx, r() * W, r() * H, 2 * u, rgba(p.accent, 0.10));
+      }
+    },
+  };
+
+  // ---- The meter, open face: no plate, a calm field, the scale straight on the screen -------------
+  function roles(s, dark) {
+    const p = palette(s, dark);
+    return { bg: p.bg, surface: p.surface, ink: p.ink, muted: p.muted, track: p.track, accent: p.accent, inTune: p.inTune,
+      face: dark ? mix(p.bg, BLACK, 0.3) : mix(p.surface, p.bg, 0.5), dark, num: stack(s.num, s.numFb), numW: s.numW || 400, numScale: s.numScale || 1, fin: s.fin };
+  }
+  const ang = (c) => c / 50 * Math.PI / 2;
+  const pt = (cx, cy, d, c) => { const a = ang(c); return [cx + d * Math.sin(a), cy - d * Math.cos(a)]; };
+  function glow(ctx, x, y, rad, c, a) {
+    if (a <= 0.004 || rad <= 0) return;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(0.45, rgba(c, a * 0.4)); gr.addColorStop(1, rgba(c, 0));
+    ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+  const tuneGlow = (ctx, c, x, y, rad, e) => glow(ctx, x, y, rad, c.inTune, e * (c.dark ? 0.32 : 0.16));
+  /** The calm field: a soft wash of bg under the scale, no edge. */
+  function field(ctx, c, x, y, rx, ry, a) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, rgba(c.bg, a)); gr.addColorStop(0.62, rgba(c.bg, a * 0.75)); gr.addColorStop(1, rgba(c.bg, 0));
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, rx, 0, TAU); ctx.fill(); ctx.restore();
+  }
+  function scale(ctx, g, c, place) {
+    const { u } = g, f = c.fin; ctx.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let v = -50; v <= 50; v += 5) {
+      if (v === 0) continue; const major = v % 10 === 0; const [x, y, dx, dy] = place(v); const j = f.jitter ? hash(v) : 0;
+      const len = (major ? 13 : 7) * u * (1 + 0.12 * j), w = (major ? 2.1 : 1.3) * u * (1 + 0.2 * j);
+      const ca = Math.cos(0.05 * j), sa = Math.sin(0.05 * j), ddx = dx * ca - dy * sa, ddy = dx * sa + dy * ca;
+      seg(ctx, x, y, x + ddx * len, y + ddy * len, rgba(c.ink, major ? 1 : 0.5), w, f.caps);
+      if (major) { ctx.fillStyle = rgba(c.ink, 0.8); ctx.fillText(String(Math.abs(v)), x + dx * 27 * u, y + dy * 27 * u); }
+    }
+  }
+  function signs(ctx, g, c, xl, xr, y) { ctx.font = `${16 * g.u}px ${SIGNS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = rgba(c.muted, 0.95); ctx.fillText('♭', xl, y); ctx.fillText('♯', xr, y); }
+  const centreColour = (c, e) => mix(c.accent, c.inTune, e);
+  const markerColour = (c, e) => mix(c.ink, c.inTune, e * 0.9);
+  function softShadow(ctx, g, c) { ctx.shadowColor = rgba(BLACK, c.dark ? 0.45 : 0.22); ctx.shadowBlur = 3 * g.u; ctx.shadowOffsetX = 1.5 * g.u; ctx.shadowOffsetY = 2.5 * g.u; }
+  function poly(ctx, pts) { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
+  /** The needle in the style's finish, turning by a around (px, py). */
+  function needle(ctx, g, c, px, py, a, L, e) {
+    const u = g.u, col = rgba(markerColour(c, e)), kind = c.fin.needle;
+    ctx.save(); ctx.translate(px, py); ctx.rotate(a);
+    if (kind === 'beam') {
+      seg(ctx, 0, 0, 0, -L + 4 * u, rgba(markerColour(c, e), 0.18), 6 * u);
+      seg(ctx, 0, 0, 0, -L + 4 * u, col, 1.7 * u);
+      poly(ctx, [[0, -L - 1 * u], [-4.5 * u, -L + 7 * u], [0, -L + 4.5 * u], [4.5 * u, -L + 7 * u]]); ctx.fillStyle = col; ctx.fill();
+      ctx.restore(); return;
+    }
+    softShadow(ctx, g, c); ctx.fillStyle = col; ctx.strokeStyle = col;
+    if (kind === 'spear') { poly(ctx, [[-2.2 * u, 0], [-1.1 * u, -0.8 * L], [-3.6 * u, -0.83 * L], [0, -L], [3.6 * u, -0.83 * L], [1.1 * u, -0.8 * L], [2.2 * u, 0]]); ctx.fill(); }
+    else if (kind === 'breguet') { poly(ctx, [[-1.8 * u, 0], [-0.5 * u, -L], [0.5 * u, -L], [1.8 * u, 0]]); ctx.fill(); ctx.beginPath(); ctx.arc(0, -0.7 * L, 4.2 * u, 0, TAU); ctx.lineWidth = 1.5 * u; ctx.stroke(); }
+    else if (kind === 'vu') { seg(ctx, 0, 0, 0, -0.78 * L, col, 1.4 * u, 'butt'); ctx.shadowColor = 'transparent'; seg(ctx, 0, -0.78 * L, 0, -L, rgba(mix(c.accent, c.inTune, e)), 1.8 * u, 'round'); }
+    else if (kind === 'bar') { seg(ctx, 0, 0, 0, -L, col, 2.6 * u, 'round'); }
+    else if (kind === 'ball') { poly(ctx, [[-1.8 * u, 0], [-0.8 * u, -L + 6 * u], [0.8 * u, -L + 6 * u], [1.8 * u, 0]]); ctx.fill(); dot(ctx, 0, -L + 3.6 * u, 3.6 * u, col); }
+    else { poly(ctx, [[-2.2 * u, 0], [-0.6 * u, -L], [0.6 * u, -L], [2.2 * u, 0]]); ctx.fill(); }
+    ctx.restore();
+  }
+  function hub(ctx, g, c, x, y, e) {
+    const u = g.u, cc = rgba(centreColour(c, e)), ink = rgba(c.ink), kind = c.fin.hub;
+    ctx.save(); softShadow(ctx, g, c);
+    if (kind === 'stone') { const pts = []; for (let k = 0; k < 9; k++) { const a = k / 9 * TAU, rr = 7.5 * u * (1 + 0.14 * hash(k + 3)); pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.9]); } poly(ctx, pts); ctx.fillStyle = ink; ctx.fill(); ctx.restore(); dot(ctx, x, y, 2.2 * u, cc); }
+    else if (kind === 'cap') { dot(ctx, x, y, 7.5 * u, rgba(centreColour(c, e * 0.5))); ctx.restore(); dot(ctx, x, y, 3.4 * u, ink); }
+    else if (kind === 'ring') { ctx.restore(); ctx.beginPath(); ctx.arc(x, y, 6.5 * u, 0, TAU); ctx.strokeStyle = ink; ctx.lineWidth = 2 * u; ctx.stroke(); dot(ctx, x, y, 2.4 * u, cc); }
+    else if (kind === 'dot') { dot(ctx, x, y, 5 * u, ink); ctx.restore(); }
+    else if (kind === 'saturn') { dot(ctx, x, y, 5.5 * u, ink); ctx.restore(); ctx.save(); ctx.translate(x, y); ctx.rotate(-0.35); ctx.beginPath(); ctx.ellipse(0, 0, 11 * u, 3.4 * u, 0, 0, TAU); ctx.strokeStyle = cc; ctx.lineWidth = 1.6 * u; ctx.stroke(); ctx.restore(); }
+    else { dot(ctx, x, y, 7 * u, ink); ctx.restore(); dot(ctx, x, y, 2.4 * u, cc); }
+  }
+  // Classic, open face: centre low in the box, a bigger radius now there is no plate.
+  const dial = (g) => ({ cy: g.H - 17 * g.u, r: 146 * g.u });
+  function dialTrack(ctx, g, c, cx, cy, r) {
+    const u = g.u, arc = (rad, col, w, dash) => { ctx.save(); if (dash) ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(cx, cy, rad, Math.PI, TAU); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'butt'; ctx.stroke(); ctx.restore(); };
+    switch (c.fin.track) {
+      case 'rail': arc(r, rgba(c.ink, 0.4), 0.8 * u); arc(r - 6 * u, rgba(c.ink, 0.4), 0.8 * u); break;
+      case 'band': arc(r + 4 * u, rgba(c.track), 6 * u); break;
+      case 'dashed': arc(r + 3 * u, rgba(c.accent, 0.55), 2 * u, [5 * u, 3.5 * u]); break;
+      case 'dots': for (let k = -50; k <= 50; k += 2.5) { const [x, y] = pt(cx, cy, r + 4 * u, k); dot(ctx, x, y, 1.5 * u, rgba(c.accent, 0.6)); } break;
+      default: arc(r, rgba(c.track), 1.8 * u);
+    }
+  }
+  const CLASSIC = {
+    under(ctx, g, c) {
+      const { u, cx } = g; const { cy, r } = dial(g);
+      field(ctx, c, cx, cy - 30 * u, 190 * u, 150 * u, 0.75);
+      dialTrack(ctx, g, c, cx, cy, r);
+      scale(ctx, g, c, (v) => { const [x, y] = pt(cx, cy, r - 4 * u, v); const a = ang(v); return [x, y, -Math.sin(a), Math.cos(a)]; });
+      signs(ctx, g, c, cx - r + 4 * u, cx + r - 4 * u, cy + 7 * u);
+    },
+    over() {},
+    draw(ctx, g, c, M, e, pres) {
+      const { cx, u } = g; const { cy, r } = dial(g);
+      tuneGlow(ctx, c, cx, cy - r + 22 * u, 100 * u, e);
+      seg(ctx, cx, cy - r + 16 * u, cx, cy - r - 2 * u, rgba(centreColour(c, e)), 3.5 * u);
+      ctx.globalAlpha = 0.3 + 0.7 * pres;
+      needle(ctx, g, c, cx, cy, ang(clamp(M.x, -53, 53)), r - 8 * u, e);
+      ctx.globalAlpha = 1;
+      hub(ctx, g, c, cx, cy, e);
+    },
+  };
+  const LOOKS = { classic: CLASSIC };
+
+  /** How far the tuner's meter canvas reaches past the 2:1 box on every side, in u, so glow and field fade out unclipped. */
+  const METER_PAD = 80;
+  /** One meter canvas with its cached art. With pad (in u) the canvas is the box plus pad on every side. */
+  function MeterView(canvas, pad) { this.canvas = canvas; this.pad = pad || 0; this.key = ''; this.under = null; this.over = null; }
+  MeterView.prototype.render = function (s, dark, lookKey, M, e, pres) {
+    const cv = this.canvas, Wc = cv.width, Hc = cv.height; if (!Wc || !Hc) return;
+    const k = this.pad / 340, W = Wc / (1 + 2 * k), P = k * W, H = W / 2;
+    const c = roles(s, dark), g = { W, H, u: W / 340, cx: W / 2 }, look = LOOKS[lookKey];
+    const key = [s.id, dark, lookKey, Wc, Hc, fontsVersion].join('|');
+    if (key !== this.key) {
+      this.key = key;
+      this.under = document.createElement('canvas'); this.under.width = Wc; this.under.height = Hc;
+      this.over = document.createElement('canvas'); this.over.width = Wc; this.over.height = Hc;
+      const uc = this.under.getContext('2d'), oc = this.over.getContext('2d');
+      uc.translate(P, P); oc.translate(P, P);
+      look.under(uc, g, c); look.over(oc, g, c);
+    }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, Wc, Hc); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+    ctx.drawImage(this.under, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, P, P);
+    look.draw(ctx, g, c, M, e, pres);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.shadowColor = 'transparent'; ctx.globalAlpha = 1;
+    ctx.drawImage(this.over, 0, 0);
+  };
+
+  // ==== End of the copied part ====================================================================
+
+  /** The backdrop at 1 unit = 1 dp (u in canvas pixels), so it reads the same upright and on its side. */
+  function drawBackdrop(ctx, W, H, s, dark, quiet, u) {
+    const p = palette(s, dark);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u, p, dark, s, mini: false, quiet, r: rng(7 + s.id.length * 31) };
+    try { (MOTIFS[s.motif] || MOTIFS.wash)(B); } catch (err) { console.error('backdrop', s.id, err); }
+  }
+
+  // ---- Texts on the phones (English, Dutch) -----------------------------------------------------
+  const TX = {
+    en: { tuner: 'Tuner', metro: 'Metronome', settings: 'Settings', strings: 'Strings', chromatic: 'Chromatic', guitar: 'Guitar', standard: 'Standard',
+      flat: '12 cents flat', tap: 'Tap tempo', start: 'Start', stop: 'Stop', vib: 'Vibrate on the beat', slower: 'Slower', faster: 'Faster',
+      beats: 'Beats in a bar', tempo: 'Tempo, drag to change', gTuning: 'Tuning', a4: 'Tuning note (A4)', gLook: 'Look', style: 'Style',
+      theme: 'Light or dark', light: 'Light', dark: 'Dark', gWhile: 'While tuning', keep: 'Keep screen on',
+      keepS: 'The screen stays on while the tuner is open', taphint: 'Tap the screen for the bar and controls', nav: 'Screens' },
+    nl: { tuner: 'Stemmer', metro: 'Metronoom', settings: 'Instellingen', strings: 'Snaren', chromatic: 'Chromatisch', guitar: 'Gitaar', standard: 'Standaard',
+      flat: '12 cent te laag', tap: 'Tik tempo', start: 'Start', stop: 'Stop', vib: 'Trillen op de tel', slower: 'Langzamer', faster: 'Sneller',
+      beats: 'Tellen per maat', tempo: 'Tempo, sleep om te wijzigen', gTuning: 'Stemmen', a4: 'Stemtoon (A4)', gLook: 'Uiterlijk', style: 'Stijl',
+      theme: 'Licht of donker', light: 'Licht', dark: 'Donker', gWhile: 'Tijdens het stemmen', keep: 'Scherm aan laten',
+      keepS: 'Het scherm blijft aan zolang de stemmer open is', taphint: 'Tik op het scherm voor de balk en knoppen', nav: 'Schermen' },
+  };
+  const VARS = {
+    A: { name: 'Quiet bar', text: 'The standard Android bar, on a see-through strip of the style\'s own surface colour that fades out towards the top, so no hard line runs across the screen. The open screen\'s icon sits in a small pill in the style\'s button shape.',
+      good: 'Most familiar: it looks like the bar in most Android apps. It takes the most room and covers the bottom of the background.' },
+    B: { name: 'Frameless', text: 'Just the icons and names, straight on the background, like the meter. The open screen is in the style\'s accent colour, with the style\'s own little mark under its name (a dab, a band, a bar, a star …).',
+      good: 'Lightest: the background shows all the way down. A faint wash of the background colour behind the names keeps them readable.' },
+    C: { name: 'Floating capsule', text: 'A small island floating just above the bottom edge, in the style\'s button shape. The open screen shows its name; the other two show only their picture.',
+      good: 'Most modern, and it leaves the screen\'s edges free. The two closed screens have no names on show (TalkBack still says them).' },
+  };
+
+  // ---- Icons (drawn here) -----------------------------------------------------------------------
+  const svg = (inner) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  const ICON = {
+    tuner: svg('<path d="M8.5 2.5v6.5a3.5 3.5 0 0 0 7 0V2.5"/><path d="M12 12.5v7"/><path d="M9.5 21.5h5"/>'),
+    metro: svg('<path d="M9.6 3h4.8l4.4 18H5.2z"/><path d="M6.6 16.5h10.8"/><path d="M12 16.5 16.8 6"/><circle cx="15.6" cy="8.6" r="1.4"/>'),
+    settings: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>'),
+    minus: svg('<path d="M5 12h14"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>'),
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="5.5" width="13" height="13" rx="2" fill="currentColor"/></svg>',
+    vib: svg('<rect x="8" y="3.5" width="8" height="17" rx="1.8"/><path d="M4.5 8.5v7M19.5 8.5v7M1.8 10.5v3M22.2 10.5v3"/>'),
+    strum: svg('<path d="M6 4v16M10 4v16M14 4v16M18 4v16"/><path d="M3.5 15.5 20.5 8.5" stroke="var(--accent)" stroke-width="2"/>'),
+  };
+  const STATUS = '<div class="status" aria-hidden="true"><span>12:30</span><svg viewBox="0 0 44 12"><path d="M2 10 8 2l6 8z" fill="currentColor" opacity=".9"/><rect x="24" y="2" width="16" height="8" rx="2" fill="none" stroke="currentColor"/><rect x="26" y="4" width="10" height="4" rx=".8" fill="currentColor"/><rect x="41" y="4.5" width="1.6" height="3" rx=".5" fill="currentColor"/></svg></div>';
+
+  // ---- Metronome: meters and accents as ClickTrack (5/4 = 3 + 2, 6/8 = 3 + 3, 7/8 = 2 + 2 + 3) ----
+  const METERS = [{ id: '2/4', n: 2, g: [] }, { id: '3/4', n: 3, g: [] }, { id: '4/4', n: 4, g: [] }, { id: '5/4', n: 5, g: [3] }, { id: '6/8', n: 6, g: [3] }, { id: '7/8', n: 7, g: [2, 4] }];
+  const tierOf = (m, i) => (i === 0 ? 2 : m.g.includes(i) ? 1 : 0);
+  const TEMPO_NAMES = [[40, 'Grave'], [60, 'Largo'], [66, 'Larghetto'], [76, 'Adagio'], [108, 'Andante'], [120, 'Moderato'], [168, 'Allegro'], [200, 'Presto'], [999, 'Prestissimo']];
+  const tempoName = (b) => TEMPO_NAMES.find(([lim]) => b < lim)[1];
+  const BPM_MIN = 30, BPM_MAX = 250;
+
+  // ---- State -------------------------------------------------------------------------------------
+  let picked = store.get('twangle.metro1.style'); if (!ORDER.includes(picked)) picked = 'contemporary';
+  let themePick = store.get('twangle.metro1.theme'); if (!['auto', 'light', 'dark'].includes(themePick)) themePick = 'auto';
+  let variant = store.get('twangle.metro1.var'); if (!['A', 'B', 'C'].includes(variant)) variant = 'A';
+  let lang = store.get('twangle.metro1.lang'); if (!['en', 'nl'].includes(lang)) lang = 'en';
+  const M = { playing: !reduceMotion, bpm: 96, meter: 2, beat: -1, nextAt: 0, lastAt: -1e9, lastTier: 2, vib: false, taps: [], schedFor: -1 };
+  let sound = false, actx = null, clickBufs = null;
+  let DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const style = () => STY[picked];
+  const isDark = () => (themePick === 'auto' ? mqDark.matches : themePick === 'dark');
+  const meter = () => METERS[M.meter];
+
+  const SCREENS = [
+    { el: $('scrA'), land: false, kind: 'tuner' },
+    { el: $('scrB'), land: false, kind: 'metro' },
+    { el: $('scrL'), land: true, kind: 'metro' },
+  ];
+  SCREENS.forEach((s) => { s.visible = true; s.railUntil = 0; });
+
+  // ---- Screens -----------------------------------------------------------------------------------
+  function navHTML(scr) {
+    const t = TX[lang], hidden = scr.land && scr.kind === 'tuner' && !scr.railUntil;
+    const items = ['tuner', 'metro', 'settings'].map((k) => {
+      const on = scr.kind === k;
+      return `<button type="button" class="ni${on ? ' on' : ''}" data-go="${k}" aria-label="${t[k]}"${on ? ' aria-current="page"' : ''}><span class="ind">${ICON[k]}</span><span class="nl">${t[k]}</span><i class="mk"></i></button>`;
+    }).join('');
+    return `<nav class="nb v${variant}${scr.land ? ' rail' : ''}${hidden ? ' hide' : ''}" aria-label="${t.nav}">${items}</nav>`;
+  }
+  const meterButtons = (t) => `<div class="msel" role="radiogroup" aria-label="${t.beats}">${METERS.map((m, i) => `<button type="button" class="mbtn${i === M.meter ? ' on' : ''}" role="radio" aria-checked="${i === M.meter}" data-meter="${i}">${m.id}</button>`).join('')}</div>`;
+  const dialHTML = (t) => `<div class="dialbox"><canvas class="dialc" role="slider" aria-label="${t.tempo}" aria-valuemin="${BPM_MIN}" aria-valuemax="${BPM_MAX}" aria-valuenow="${M.bpm}"></canvas><div class="dread"><b class="bpmn">${M.bpm}</b><span class="bpml">BPM</span><span class="tname">${tempoName(M.bpm)}</span></div></div>`;
+  const pmRow = (t) => `<div class="prow"><button type="button" class="pm minus" aria-label="${t.slower}">${ICON.minus}</button><button type="button" class="tapb">${t.tap}</button><button type="button" class="pm plus" aria-label="${t.faster}">${ICON.plus}</button></div>`;
+  const goBtn = (t) => `<button type="button" class="go">${M.playing ? ICON.stop + t.stop : ICON.play + t.start}</button>`;
+  const vibRow = (t) => `<button type="button" class="vib${M.vib ? ' on' : ''}" role="switch" aria-checked="${M.vib}">${ICON.vib}<span>${t.vib}</span><span class="switch"></span></button>`;
+  const stringsHTML = () => ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'].map((n, i) => `<span class="str${i === 0 ? ' target' : ''}">${n[0]}<sub>${n[1]}</sub></span>`).join('');
+
+  function bodyHTML(scr) {
+    const t = TX[lang], s = style();
+    if (scr.kind === 'settings') {
+      return `<div class="sbody"><div><h2 class="sh">${t.settings}</h2>
+        <h3 class="gh">${t.gTuning}</h3><div class="row"><div class="tx"><span class="rt">${t.a4}</span></div><span class="rv">440 Hz</span></div>
+        <h3 class="gh">${t.gLook}</h3><div class="row"><div class="tx"><span class="rt">${t.style}</span><span class="rs">${s.name}</span></div></div>
+        <div class="row"><div class="tx"><span class="rt">${t.theme}</span><span class="rs">${isDark() ? t.dark : t.light}</span></div></div>
+        <h3 class="gh">${t.gWhile}</h3><div class="row"><div class="tx"><span class="rt">${t.keep}</span><span class="rs">${t.keepS}</span></div><span class="switch on"></span></div></div></div>`;
+    }
+    if (scr.kind === 'tuner' && scr.land) {
+      return `<div class="body full${scr.railUntil ? ' withrail' : ''}"><div class="cmeter"><canvas></canvas></div><div class="cnote"><div class="note">E<sub>2</sub></div><div class="pill">${t.flat}</div>
+        <div class="cstr" aria-hidden="true"><i class="t">E</i><i>A</i><i>D</i><i>G</i><i>B</i><i>E</i></div></div></div>
+        <div class="taphint" style="opacity:${scr.railUntil ? 0 : 1}">${t.taphint}</div>`;
+    }
+    if (scr.kind === 'tuner') {
+      return `<div class="body"><div class="mode"><span class="on">✓ ${t.strings}</span><span>${t.chromatic}</span></div><div class="grow half"></div>
+        <div class="meter"><canvas></canvas></div>
+        <div class="notebox"><div class="note">E<sub>2</sub></div><div class="pill">${t.flat}</div><div class="freq">81.8 Hz</div></div><div class="grow"></div>
+        <div class="prow1"><span class="cpick">${t.guitar} <i>·</i> ${t.standard} <i>⌄</i></span><span class="strum">${ICON.strum}</span></div>
+        <div class="strings">${stringsHTML()}</div></div>`;
+    }
+    if (scr.land) {
+      return `<div class="body"><div class="lcol">${dialHTML(t)}</div><div class="lcol">${meterButtons(t)}<canvas class="lights"></canvas>${pmRow(t)}${goBtn(t)}${vibRow(t)}</div></div>`;
+    }
+    return `<div class="body">${meterButtons(t)}<div class="grow half"></div><canvas class="lights"></canvas><div class="grow half"></div>${dialHTML(t)}<div class="grow half"></div>
+      ${pmRow(t)}${goBtn(t)}${vibRow(t)}<div class="grow half"></div></div>`;
+  }
+
+  function build(scr) {
+    scr.el.dataset.var = variant;
+    scr.el.innerHTML = `<canvas class="backdrop" aria-hidden="true"></canvas>${STATUS}${bodyHTML(scr)}${navHTML(scr)}<div class="gesture"></div>`;
+    scr.bd = scr.el.querySelector('canvas.backdrop');
+    const mc = scr.el.querySelector('.meter canvas, .cmeter canvas');
+    scr.mv = mc ? new MeterView(mc, METER_PAD) : null;
+    scr.dial = scr.el.querySelector('.dialc'); scr.dialKey = ''; scr.dialCache = null;
+    scr.lights = scr.el.querySelector('.lights');
+    scr.nav = scr.el.querySelector('nav');
+    sizeScreen(scr);
+  }
+
+  function sizeScreen(scr) {
+    const w = scr.el.clientWidth, h = scr.el.clientHeight; if (!w || !h) return;
+    const s = style(), dark = isDark();
+    scr.bd.width = Math.round(w * DPR); scr.bd.height = Math.round(h * DPR);
+    drawBackdrop(scr.bd.getContext('2d'), scr.bd.width, scr.bd.height, s, dark, scr.kind !== 'tuner', (scr.land ? w / 873 : w / 393) * DPR);
+    if (scr.mv) {
+      const box = scr.mv.canvas.parentElement, bw = box.clientWidth, P = bw / 340 * METER_PAD, cv = scr.mv.canvas;
+      cv.style.left = -P + 'px'; cv.style.top = -P + 'px'; cv.style.width = (bw + 2 * P) + 'px'; cv.style.height = (bw / 2 + 2 * P) + 'px';
+      cv.width = Math.round((bw + 2 * P) * DPR); cv.height = Math.round((bw / 2 + 2 * P) * DPR);
+      scr.mv.key = '';
+      scr.mv.render(s, dark, 'classic', { x: -12, v: 0 }, 0, 1);
+    }
+    if (scr.dial) { const d = scr.dial.clientWidth; scr.dial.width = scr.dial.height = Math.round(d * DPR); scr.dialKey = ''; drawDial(scr, performance.now()); }
+    if (scr.lights) { scr.lights.width = Math.round(scr.lights.clientWidth * DPR); scr.lights.height = Math.round(scr.lights.clientHeight * DPR); drawLights(scr, performance.now()); }
+  }
+
+  // ---- The tempo dial: frameless, the meter's scale rules, the style's arc and needle --------------
+  const dialDeg = (b) => -150 + (clamp(b, BPM_MIN, BPM_MAX) - BPM_MIN) / (BPM_MAX - BPM_MIN) * 300;
+  const onDial = (cx, cy, r, b) => { const a = dialDeg(b) * Math.PI / 180; return [cx + r * Math.sin(a), cy - r * Math.cos(a)]; };
+  function trackArc(ctx, u, cx, cy, R, b1, c, lit) {
+    if (b1 <= BPM_MIN) return;
+    const a0 = (dialDeg(BPM_MIN) - 90) * Math.PI / 180, a1 = (dialDeg(b1) - 90) * Math.PI / 180;
+    const arc = (rad, col, w, dash, cap) => { ctx.save(); if (dash) ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(cx, cy, rad, a0, a1); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap || 'butt'; ctx.stroke(); ctx.restore(); };
+    switch (c.fin.track) {
+      case 'rail': if (lit) { arc(R, rgba(c.accent), 1.5 * u); arc(R - 6 * u, rgba(c.accent), 1.5 * u); } else { arc(R, rgba(c.ink, 0.4), 0.8 * u); arc(R - 6 * u, rgba(c.ink, 0.4), 0.8 * u); } break;
+      case 'band': arc(R - 2 * u, lit ? rgba(c.accent, 0.9) : rgba(c.track), 6 * u); break;
+      case 'dashed': arc(R, lit ? rgba(c.accent) : rgba(c.accent, 0.3), 2 * u, [5 * u, 3.5 * u]); break;
+      case 'dots': for (let b = BPM_MIN; b <= b1 + 1e-6; b += 2.5) { const [x, y] = onDial(cx, cy, R, b); dot(ctx, x, y, (lit ? 1.9 : 1.4) * u, lit ? rgba(c.accent) : rgba(c.accent, 0.35)); } break;
+      default: arc(R, lit ? rgba(c.accent) : rgba(c.track), lit ? 2.6 * u : 1.8 * u, null, lit ? 'round' : 'butt');
+    }
+  }
+  function drawDial(scr, now) {
+    const cv = scr.dial; if (!cv || !cv.width) return;
+    const S = cv.width, s = style(), dark = isDark(), c = roles(s, dark), u = S / 288, cx = S / 2, cy = S / 2, R = 94 * u;
+    const key = [s.id, dark, S, fontsVersion].join('|');
+    if (scr.dialKey !== key) {
+      scr.dialKey = key;
+      const cache = scr.dialCache || document.createElement('canvas'); cache.width = S; cache.height = S; scr.dialCache = cache;
+      const k = cache.getContext('2d'); k.clearRect(0, 0, S, S);
+      field(k, c, cx, cy, 142 * u, 142 * u, 0.72);
+      trackArc(k, u, cx, cy, R, BPM_MAX, c, false);
+      k.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; k.textAlign = 'center'; k.textBaseline = 'middle';
+      for (let b = BPM_MIN; b <= BPM_MAX; b += 10) {
+        const major = b === BPM_MIN || b % 50 === 0, a = dialDeg(b) * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), j = c.fin.jitter ? hash(b) : 0;
+        const [x, y] = onDial(cx, cy, R + 6 * u, b), len = (major ? 13 : 7) * u * (1 + 0.12 * j), w = (major ? 2.1 : 1.3) * u * (1 + 0.2 * j);
+        seg(k, x, y, x + dx * len, y + dy * len, rgba(c.ink, major ? 1 : 0.5), w, c.fin.caps);
+        if (major) { k.fillStyle = rgba(c.ink, 0.8); k.fillText(String(b), x + dx * 24 * u, y + dy * 24 * u); }
+      }
+    }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, S, S); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+    ctx.drawImage(scr.dialCache, 0, 0);
+    if (M.playing) {
+      const lv = Math.exp(-(now - M.lastAt) / 220) * [0.55, 0.75, 1][M.lastTier];
+      glow(ctx, cx, cy, 90 * u, c.accent, lv * (dark ? 0.30 : 0.16));
+    }
+    trackArc(ctx, u, cx, cy, R, M.bpm, c, true);
+    const [px, py] = onDial(cx, cy, R - 16 * u, M.bpm);
+    needle(ctx, { u }, c, px, py, dialDeg(M.bpm) * Math.PI / 180, 22 * u, 0);
+  }
+
+  // ---- Beat lights in the style's own wave marks; lit in the accent, never "in tune" green ---------
+  function drawMark(ctx, s, c, x, y, d, k, L) {
+    const lit = L > 0, colr = lit ? c.accent : c.ink, A = lit ? 0.5 + 0.5 * L : (c.dark ? 0.26 : 0.2) + 0.06 * k, col = (a) => rgba(colr, A * a);
+    const sz = [0.62, 0.8, 1][k], mk = s.mark;
+    if (lit) glow(ctx, x, y, 24 * d * sz, c.accent, L * (c.dark ? 0.34 : 0.2));
+    if (mk.type === 'dots') {
+      const r = 9 * d * sz * (1 + 0.08 * L);
+      if (mk.smudge) dot(ctx, x + r * 0.18, y + r * 0.14, r * 1.08, col(0.35));
+      dot(ctx, x, y, r, col(1));
+    } else if (mk.type === 'band') {
+      const w = 13 * d * sz, h = 38 * d * sz, rr = s.shape.kind === 'soft' ? w / 2 : 3 * d;
+      ctx.beginPath(); rrAdd(ctx, x - w / 2, y - h / 2, w, h, rr);
+      if (mk.halo && lit) { ctx.strokeStyle = col(mk.halo + 0.3 * L); ctx.lineWidth = mk.outline * d * 4; ctx.stroke(); }
+      ctx.fillStyle = col(Math.min(1, mk.fill + 0.6 * L)); ctx.fill();
+      ctx.strokeStyle = col(1); ctx.lineWidth = mk.outline * d; ctx.stroke();
+      if (mk.centre) seg(ctx, x, y - h / 2 + 3 * d, x, y + h / 2 - 3 * d, col(0.45), 0.8 * d, 'butt');
+    } else if (mk.type === 'bars') {
+      const w = (mk.cap === 'round' ? 7 : 3.5) * d * Math.max(0.8, sz), h = 40 * d * sz;
+      if (mk.halo) seg(ctx, x, y - h / 2, x, y + h / 2, col(mk.halo + 0.3 * L), w * 3, 'round');
+      seg(ctx, x, y - h / 2 + (mk.cap === 'round' ? w / 2 : 0), x, y + h / 2 - (mk.cap === 'round' ? w / 2 : 0), col(1), w, mk.cap);
+    } else {
+      const r = 13 * d * sz * (1 + 0.2 * L), star = (sx, sy, rr, a) => { const pts = []; for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 - Math.PI / 2, q = i % 2 ? rr * 0.28 : rr; pts.push([sx + Math.cos(an) * q, sy + Math.sin(an) * q]); } poly(ctx, pts); ctx.fillStyle = col(a); ctx.fill(); };
+      star(x, y, r, 1); star(x + r * 0.95, y - r * 0.85, r * 0.36, 0.7);
+    }
+  }
+  function drawLights(scr, now) {
+    const cv = scr.lights; if (!cv || !cv.width) return;
+    const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = H / (scr.land ? 56 : 64), s = style(), c = roles(s, isDark()), m = meter();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H); ctx.shadowColor = 'transparent'; ctx.globalAlpha = 1;
+    const sp = Math.min(48 * d, (W - 16 * d) / m.n), cy = H * 0.4;
+    ctx.font = `${c.numW} ${11 * c.numScale * d}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < m.n; i++) {
+      const x = W / 2 + (i - (m.n - 1) / 2) * sp, L = M.playing && i === M.beat ? 0.4 + 0.6 * Math.exp(-(now - M.lastAt) / 200) : 0;
+      drawMark(ctx, s, c, x, cy, d, tierOf(m, i), L);
+      ctx.fillStyle = rgba(L > 0 ? c.ink : c.muted, L > 0 ? 1 : 0.85); ctx.fillText(String(i + 1), x, H * 0.88);
+    }
+  }
+
+  // ---- Timing (the page's clock; the app counts samples) and the optional click ----------------
+  function makeClicks() {
+    const sr = actx.sampleRate, n = Math.round(sr * 0.04), att = sr * 0.0008, fade = sr * 0.008;
+    return [[880, 0.45], [1318.5, 0.6], [1760, 0.8]].map(([f, peak]) => {
+      const b = actx.createBuffer(1, n, sr), x = b.getChannelData(0); let mx = 0;
+      for (let i = 0; i < n; i++) { const t = i / sr; x[i] = Math.exp(-t / 0.010) * Math.sin(TAU * f * t) + 0.5 * Math.exp(-t / 0.005) * Math.sin(TAU * f * 2.756 * t); mx = Math.max(mx, Math.abs(x[i])); }
+      for (let i = 0; i < n; i++) { let g = peak / mx; if (i < att) g *= 0.5 - 0.5 * Math.cos(Math.PI * i / att); if (i > n - 1 - fade) g *= (n - 1 - i) / fade; x[i] *= g; }
+      return b;
+    });
+  }
+  function scheduleClick(inMs, tier) {
+    if (!actx || !clickBufs) return;
+    const src = actx.createBufferSource(); src.buffer = clickBufs[tier]; src.connect(actx.destination); src.start(actx.currentTime + Math.max(0, inMs) / 1000);
+  }
+  function stepMetronome(now) {
+    if (!M.playing) return;
+    if (now - M.nextAt > 1000) M.nextAt = now; // back from a hidden tab: start again cleanly
+    const m = meter();
+    if (sound && M.nextAt - now < 90 && M.schedFor !== M.nextAt) { M.schedFor = M.nextAt; scheduleClick(M.nextAt - now, tierOf(m, (M.beat + 1) % m.n)); }
+    let beat = false;
+    while (now >= M.nextAt) { M.beat = (M.beat + 1) % m.n; M.lastAt = M.nextAt; M.lastTier = tierOf(m, M.beat); M.nextAt += 60000 / M.bpm; beat = true; }
+    if (beat && M.vib) {
+      try { if (navigator.vibrate) navigator.vibrate(M.lastTier === 2 ? 35 : 18); } catch (e) { /* not allowed */ }
+      document.querySelectorAll('.vib').forEach((el) => { el.classList.remove('buzz'); void el.offsetWidth; el.classList.add('buzz'); });
+    }
+  }
+  function setBpm(b) {
+    b = clamp(Math.round(b), BPM_MIN, BPM_MAX); if (b === M.bpm) return;
+    M.bpm = b;
+    if (M.playing) M.nextAt = Math.max(performance.now(), M.lastAt + 60000 / b); // from the next beat, as ClickTrack
+    document.querySelectorAll('.bpmn').forEach((el) => { el.textContent = b; });
+    document.querySelectorAll('.tname').forEach((el) => { el.textContent = tempoName(b); });
+    document.querySelectorAll('.dialc').forEach((el) => el.setAttribute('aria-valuenow', b));
+    SCREENS.forEach((scr) => drawDial(scr, performance.now()));
+  }
+  function setMeter(i) {
+    M.meter = i; M.beat = METERS[i].n - 1; // the next beat is a downbeat, without moving it
+    document.querySelectorAll('.mbtn').forEach((el) => { const on = +el.dataset.meter === i; el.classList.toggle('on', on); el.setAttribute('aria-checked', on); });
+    SCREENS.forEach((scr) => drawLights(scr, performance.now()));
+  }
+  function setPlaying(on) {
+    M.playing = on;
+    if (on) { M.beat = -1; M.nextAt = performance.now() + 20; M.schedFor = -1; }
+    const t = TX[lang];
+    document.querySelectorAll('.go').forEach((el) => { el.innerHTML = on ? ICON.stop + t.stop : ICON.play + t.start; });
+    const now = performance.now(); SCREENS.forEach((scr) => { drawDial(scr, now); drawLights(scr, now); });
+  }
+  function tapTempo(now) {
+    const T = M.taps; if (T.length && now - T[T.length - 1] > 2000) T.length = 0;
+    T.push(now); if (T.length > 6) T.shift();
+    if (T.length >= 2) setBpm(60000 / ((T[T.length - 1] - T[0]) / (T.length - 1)));
+  }
+  function showRail(scr) {
+    scr.railUntil = performance.now() + 5000;
+    if (scr.nav) scr.nav.classList.remove('hide');
+    const b = scr.el.querySelector('.body.full'); if (b) b.classList.add('withrail');
+    const h = scr.el.querySelector('.taphint'); if (h) h.style.opacity = 0;
+  }
+  function hideRail(scr) {
+    scr.railUntil = 0;
+    if (scr.nav) scr.nav.classList.add('hide');
+    const b = scr.el.querySelector('.body.full'); if (b) b.classList.remove('withrail');
+    const h = scr.el.querySelector('.taphint'); if (h) h.style.opacity = 1;
+  }
+
+  // ---- Page controls -----------------------------------------------------------------------------
+  function buildChips() {
+    const dark = isDark();
+    $('chips').innerHTML = ORDER.map((id) => { const t = STY[id], p = palette(t, dark); return `<button type="button" class="chip" data-id="${id}" aria-pressed="${id === picked}"><span class="sw" style="background: linear-gradient(135deg, ${css(p.bg)} 50%, ${css(p.accent)} 50%)"></span>${t.name}</button>`; }).join('');
+  }
+  function buildVariantInfo() {
+    const v = VARS[variant];
+    $('varEyebrow').textContent = 'Bar ' + variant + ' of A, B, C'; $('varName').textContent = v.name; $('varText').textContent = v.text; $('varGood').textContent = v.good;
+  }
+  function applyAll() {
+    const s = style(), dark = isDark(), p = palette(s, dark), sh = s.shape;
+    const set = (k, v) => root.style.setProperty(k, v);
+    set('--bg', css(p.bg)); set('--surface', css(p.surface)); set('--fg', css(p.ink)); set('--muted', css(p.muted)); set('--line', css(p.track));
+    set('--accent', css(p.accent)); set('--on-accent', css(p.onAccent)); set('--intune', css(p.inTune)); set('--on-intune', css(p.onInTune));
+    set('--container', css(p.container)); set('--second', css(p.second)); set('--third', css(p.third)); set('--shadow-a', dark ? '.5' : '.16');
+    set('--display', stack(s.font, s.fb)); set('--display-weight', String(s.w)); set('--display-track', s.track + 'em');
+    set('--num', stack(s.num, s.numFb)); set('--num-w', String(s.numW || 400)); set('--num-scale', String(s.numScale || 1));
+    set('--pbody', s.body === 'serif' ? 'Georgia, "Noto Serif", serif' : 'Roboto, system-ui, sans-serif');
+    set('--btn-r', String(sh.btn)); set('--pill-r', String(sh.pill)); set('--card-r', String(sh.card)); set('--str-w', String(sh.strW)); set('--str-h', String(sh.strH));
+    const rr = sh.strR.length === 4 ? sh.strR : [sh.strR[0], sh.strR[0], sh.strR[0], sh.strR[0]]; rr.forEach((r, k) => set('--sr' + (k + 1), String(r)));
+    root.dataset.shape = sh.kind;
+    root.style.colorScheme = dark ? 'dark' : 'light';
+    if (themePick === 'auto') delete root.dataset.theme; else root.dataset.theme = themePick;
+    if (document.fonts && document.fonts.load) Promise.all([s.font, s.num].map((f) => document.fonts.load(`16px "${f}"`))).then(() => { fontsVersion++; SCREENS.forEach(sizeScreen); }, () => {});
+  }
+  function refresh() { applyAll(); buildChips(); buildVariantInfo(); SCREENS.forEach(build); }
+
+  $('chips').addEventListener('click', (ev) => { const b = ev.target.closest('.chip'); if (!b) return; picked = b.dataset.id; store.set('twangle.metro1.style', picked); refresh(); });
+  const bindSeg = (name, get, setv) => {
+    document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => { inp.checked = inp.value === get(); inp.addEventListener('change', () => { if (inp.checked) { setv(inp.value); refresh(); } }); });
+  };
+  bindSeg('var', () => variant, (v) => { variant = v; store.set('twangle.metro1.var', v); });
+  bindSeg('theme', () => themePick, (v) => { themePick = v; store.set('twangle.metro1.theme', v); });
+  bindSeg('lang', () => lang, (v) => { lang = v; store.set('twangle.metro1.lang', v); });
+  mqDark.addEventListener && mqDark.addEventListener('change', () => { if (themePick === 'auto') refresh(); });
+  $('soundBtn').addEventListener('click', (ev) => {
+    sound = !sound;
+    if (sound) {
+      try {
+        if (!actx) { actx = new (window.AudioContext || window.webkitAudioContext)(); clickBufs = makeClicks(); }
+        actx.resume();
+      } catch (e) { sound = false; }
+    }
+    ev.currentTarget.setAttribute('aria-pressed', String(sound)); ev.currentTarget.textContent = 'Click sound: ' + (sound ? 'on' : 'off');
+  });
+
+  // ---- Phone interactions ------------------------------------------------------------------------
+  const screenOf = (el) => SCREENS.find((s) => s.el === el.closest('.screen'));
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest || !ev.target.closest('.screen')) return;
+    const scr = screenOf(ev.target); if (!scr) return;
+    const go = ev.target.closest('[data-go]');
+    if (go) { if (scr.kind !== go.dataset.go) { scr.kind = go.dataset.go; scr.railUntil = 0; build(scr); } else if (scr.land && scr.kind === 'tuner') showRail(scr); return; }
+    const mb = ev.target.closest('[data-meter]'); if (mb) { setMeter(+mb.dataset.meter); return; }
+    if (ev.target.closest('.minus')) { setBpm(M.bpm - 1); return; }
+    if (ev.target.closest('.plus')) { setBpm(M.bpm + 1); return; }
+    if (ev.target.closest('.go')) { setPlaying(!M.playing); return; }
+    if (ev.target.closest('.vib')) {
+      M.vib = !M.vib;
+      document.querySelectorAll('.vib').forEach((el) => { el.classList.toggle('on', M.vib); el.setAttribute('aria-checked', M.vib); });
+      if (M.vib) { try { if (navigator.vibrate) navigator.vibrate(20); } catch (e) { /* not allowed */ } }
+      return;
+    }
+    if (scr.land && scr.kind === 'tuner') showRail(scr);
+  });
+  let drag = null;
+  function dialTo(ev) {
+    const r = drag.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+    let deg = Math.atan2(dx, -dy) * 180 / Math.PI;
+    if (Math.abs(deg) > 150) deg = M.bpm > (BPM_MIN + BPM_MAX) / 2 ? 150 : -150; // no jump across the gap at the bottom
+    setBpm(BPM_MIN + (deg + 150) / 300 * (BPM_MAX - BPM_MIN));
+  }
+  document.addEventListener('pointerdown', (ev) => {
+    if (!ev.target.closest) return;
+    const tb = ev.target.closest('.tapb');
+    if (tb) { tapTempo(performance.now()); tb.classList.add('hit'); setTimeout(() => tb.classList.remove('hit'), 120); return; }
+    const dc = ev.target.closest('.dialc');
+    if (dc) { drag = dc; try { dc.setPointerCapture(ev.pointerId); } catch (e) { /* fine */ } dialTo(ev); ev.preventDefault(); }
+  });
+  document.addEventListener('pointermove', (ev) => { if (drag) dialTo(ev); });
+  const endDrag = () => { drag = null; };
+  document.addEventListener('pointerup', endDrag); document.addEventListener('pointercancel', endDrag);
+
+  // ---- Frame loop: only the dial and the lights move, and only while playing and on screen -------
+  function frame(now) {
+    stepMetronome(now);
+    for (const scr of SCREENS) {
+      if (scr.land && scr.kind === 'tuner' && scr.railUntil && now > scr.railUntil) hideRail(scr);
+      if (!scr.visible || !M.playing) continue;
+      if (scr.dial) drawDial(scr, now);
+      if (scr.lights) drawLights(scr, now);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Start -------------------------------------------------------------------------------------
+  refresh();
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => { const scr = SCREENS.find((s) => s.el === e.target); if (scr) scr.visible = e.isIntersecting; }));
+    SCREENS.forEach((s) => io.observe(s.el));
+  }
+  if ('ResizeObserver' in window) { const ro = new ResizeObserver((es) => es.forEach((e) => { const scr = SCREENS.find((s) => s.el === e.target); if (scr) sizeScreen(scr); })); SCREENS.forEach((s) => ro.observe(s.el)); }
+  window.addEventListener('resize', () => { DPR = Math.min(window.devicePixelRatio || 1, 2); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fontsVersion++; SCREENS.forEach(sizeScreen); });
+  if (M.playing) setPlaying(true);
+  requestAnimationFrame(frame);
+})();
+</script>

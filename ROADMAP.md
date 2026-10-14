@@ -34,8 +34,8 @@ Goal: strum once and see which strings are out of tune.
 ## Phase 19 — Metronome
 Goal: a simple, steady metronome in the same app.
 - ☑ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8 (`ClickTrack` + `AndroidMetronomePlayer`; no drift over ten simulated minutes, beats 250 ms apart within ±0.02 ms on the Xiaomi 12X)
-- ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
-- ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
+- ☑ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat. Mock-up: [docs/design/metronome-nav-preview.html](docs/design/metronome-nav-preview.html). **Owner decided (2026-10-14):** bar variant **B · Frameless** (for the bar, below); keep the round tempo dial; the rest of the metronome as shown: meter picker 2/4 3/4 4/4 5/4 6/8 7/8 at the top, beat lights in the style's own wave marks (beat 1 largest, group starts middle sized), a frameless dial 30–250 BPM over 300° with the meter's scale rules and the style's arc and needle, the tempo with its Italian name, − / + by 1 BPM, Tap tempo (average of the last taps, reset after 2 s), Start / Stop, "Vibrate on the beat"; lit marks in the accent, never in-tune green; one soft accent glow behind the tempo on each beat; the quiet background; opens stopped. Until the bar lands it opens from a small metronome button beside the tuner's gear (temporary); Back returns to the tuner
+- ☑ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings (and the vibration switch; the screen stays on while it plays)
 - ☐ Timing drift measured over 10 minutes; English and Dutch texts; phone check
 - ☐ Bottom navigation bar with Tuner · Metronome · Settings (Material 3 `NavigationBar`), replacing the gear button; a navigation rail along the edge on a phone on its side, hidden in the compact layout; in each style, without a frame that fights the frameless meter. Mock-up first; English and Dutch, TalkBack and 2× font; phone check
 
