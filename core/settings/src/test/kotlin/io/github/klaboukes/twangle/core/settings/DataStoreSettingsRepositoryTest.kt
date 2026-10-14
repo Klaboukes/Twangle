@@ -89,7 +89,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(MeterLook.CLASSIC, settings.meterLook)
         assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals(true, settings.waveBreathesInTune)
-        assertEquals(false, settings.stringLockTipSeen)
         assertEquals("a fresh install is due the tour", false, settings.tourSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
@@ -117,7 +116,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setMeterLook(MeterLook.COMET)
         repo.setInTuneEffect(InTuneEffect.BOLD)
         repo.setWaveBreathesInTune(false)
-        repo.setStringLockTipSeen(true)
         repo.setTourSeen(true)
         repo.setKeepTwoPaneLandscape(true)
         repo.setMetronomeBpm(96)
@@ -142,7 +140,6 @@ class DataStoreSettingsRepositoryTest {
             meterLook = MeterLook.COMET,
             inTuneEffect = InTuneEffect.BOLD,
             waveBreathesInTune = false,
-            stringLockTipSeen = true,
             tourSeen = true,
             keepTwoPaneLandscape = true,
             metronomeBpm = 96,
@@ -161,7 +158,6 @@ class DataStoreSettingsRepositoryTest {
             setNotation(Notation.FLATS)
             setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
-            setStringLockTipSeen(true)
             setKeepTwoPaneLandscape(true)
             setWaveBreathesInTune(false)
             setMeterLook(MeterLook.SPIRIT_LEVEL)
@@ -179,7 +175,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Notation.FLATS, settings.notation)
         assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
-        assertEquals("the string-lock tip doesn't come back", true, settings.stringLockTipSeen)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
         assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
         assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
@@ -729,7 +724,8 @@ class DataStoreSettingsRepositoryTest {
 
     @Test
     fun `settings saved before the tour is decided make an update, which never shows the tour`() = runTest {
-        // An install from before the tour: it saved other settings, never the tour.
+        // An install from before the tour that only dismissed the string-lock tip (a key no longer
+        // read): it saved other settings, never the tour.
         val store = dataStore()
         store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
         val repo = repository(store)
@@ -755,7 +751,7 @@ class DataStoreSettingsRepositoryTest {
         repo.decideTourOnce()
         // E.g. the microphone was refused at first and the style picked in Settings first.
         repo.setStyle(VisualStyle.FUTURISTIC)
-        repo.setStringLockTipSeen(true)
+        repo.setKeepTwoPaneLandscape(true)
         repo.decideTourOnce()
         close()
 

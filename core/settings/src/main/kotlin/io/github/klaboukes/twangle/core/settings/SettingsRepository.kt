@@ -90,9 +90,6 @@ interface SettingsRepository {
     /** True keeps the two-pane layout on its side; false (the default) uses the compact one. */
     suspend fun setKeepTwoPaneLandscape(enabled: Boolean)
 
-    /** Remembers that the string-lock tip was dismissed (or brings it back with false). */
-    suspend fun setStringLockTipSeen(seen: Boolean)
-
     /** Remembers that the first-start tour was skipped or finished (or brings it back with false). */
     suspend fun setTourSeen(seen: Boolean)
 

@@ -14,7 +14,6 @@ class StringRowFitTest {
         assertFalse(fit.squeezed)
         assertEquals(1f, fit.buttonScale)
         assertEquals(48f, fit.slotDp)
-        assertEquals((328f - 6 * 48f) / 7, fit.firstSlotStartDp, 0.001f)
     }
 
     /** A four-string bass spreads its buttons over the same width. */
@@ -22,7 +21,7 @@ class StringRowFitTest {
     fun fourStringsSpreadOut() {
         val fit = stringRowFit(availableDp = 328f, count = 4, buttonWidthDp = 40f, ringGapDp = 4f, minSlotDp = 48f)
         assertFalse(fit.squeezed)
-        assertEquals((328f - 4 * 48f) / 5, fit.firstSlotStartDp, 0.001f)
+        assertEquals(1f, fit.buttonScale)
     }
 
     /** Eight strings on a narrow phone: equal shares, smaller buttons that still keep apart. */
@@ -32,7 +31,6 @@ class StringRowFitTest {
             val fit = stringRowFit(availableDp = 328f, count = 8, buttonWidthDp = button, ringGapDp = 4f, minSlotDp = 48f)
             assertTrue(fit.squeezed)
             assertEquals(41f, fit.slotDp, 0.001f)
-            assertEquals(0f, fit.firstSlotStartDp)
             val outer = button * fit.buttonScale + fit.ringGapDp * 2f
             assertEquals(41f - SQUEEZED_GAP_DP, outer, 0.001f)
             assertTrue(fit.ringGapDp in MIN_RING_GAP_DP..4f)
@@ -46,7 +44,6 @@ class StringRowFitTest {
         val roomy = stringRowFit(availableDp = 400f, count = 8, buttonWidthDp = 28f, ringGapDp = 2f, minSlotDp = 0f, spacingDp = 4f)
         assertFalse(roomy.squeezed)
         assertEquals(32f, roomy.slotDp)
-        assertEquals(0f, roomy.firstSlotStartDp)
         val tight = stringRowFit(availableDp = 200f, count = 8, buttonWidthDp = 28f, ringGapDp = 2f, minSlotDp = 0f, spacingDp = 4f)
         assertTrue(tight.squeezed)
         assertEquals(25f, tight.slotDp, 0.001f)

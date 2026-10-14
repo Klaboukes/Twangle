@@ -90,8 +90,8 @@ class MainActivity : ComponentActivity() {
      *
      * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
      * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
-     * Back or Done end it for good; the one-time string-lock tip, which the tour's strings step
-     * replaces, is never shown beside it or after it.
+     * Back or Done end it for good. Its strings step ("tap one to lock it") is how people find the
+     * string lock.
      */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
@@ -145,11 +145,8 @@ class MainActivity : ComponentActivity() {
                     onEnd = {
                         tourEnded = true
                         tourRequested = false
-                        // For good, and the string-lock tip, which the tour's strings step replaces, with it.
-                        lifecycleScope.launch {
-                            container.settingsRepository.setTourSeen(true)
-                            container.settingsRepository.setStringLockTipSeen(true)
-                        }
+                        // For good: it doesn't come back by itself.
+                        lifecycleScope.launch { container.settingsRepository.setTourSeen(true) }
                     },
                     modifier = Modifier.fillMaxSize(),
                 ) {
@@ -170,7 +167,6 @@ class MainActivity : ComponentActivity() {
                                         tonePlayer = container.tonePlayer,
                                         onCompactChange = { tunerCompact = it },
                                         savedMode = settings.mode,
-                                        savedStringLockTipSeen = settings.stringLockTipSeen,
                                         savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
                                         savedInstrument = settings.instrument,
                                         savedCustomTunings = settings.customTunings,
@@ -180,7 +176,6 @@ class MainActivity : ComponentActivity() {
                                             screen = Screen.TUNING_EDITOR
                                         },
                                         tourOpen = tourOpen,
-                                        hideStringLockTip = tourDue || tourEnded,
                                         onMicGrantedChange = { tunerShown = it },
                                     )
                                 }

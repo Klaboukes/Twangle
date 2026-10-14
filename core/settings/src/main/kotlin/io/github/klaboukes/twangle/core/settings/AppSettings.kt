@@ -207,8 +207,6 @@ data class AppSettings(
      * one where the meter fills the screen.
      */
     val keepTwoPaneLandscape: Boolean = false,
-    /** The one-time tip "Tap a string to lock it" was dismissed, so it doesn't come back. */
-    val stringLockTipSeen: Boolean = false,
     /**
      * The first-start tour ("Show me around") was skipped or finished, so it doesn't come back by
      * itself. An install that already had saved settings before the tour came (an update) counts as

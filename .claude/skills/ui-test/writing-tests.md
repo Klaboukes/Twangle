@@ -20,7 +20,6 @@ Background and measurements: ARCHITECTURE.md §8, *Fast UI tests* and *Quick and
 
 ## Traps
 
-- Don't call `performScrollTo` on the string-lock balloon. It lies outside its parent's bounds and never finishes scrolling. Scroll to the picker or the strings instead.
 - `MeterLookScreenshots` has no cases unless `-a meterScreenshots=true` is passed (`scripts/meter-look-screens.sh` passes it).
 
 ## Profiling a slow test

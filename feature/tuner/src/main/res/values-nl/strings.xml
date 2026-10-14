@@ -51,9 +51,6 @@
     <string name="tuner_string_stop_tone">Toon stoppen</string>
     <string name="tuner_string_sounding">Klinkt</string>
     <string name="tuner_string_locked_sounding">Vastgezet, klinkt</string>
-    <!-- One-time tip above the string row; tapping it (or a string) makes it go away for good. -->
-    <string name="tuner_string_lock_tip">Kies een snaar om die vast te zetten</string>
-    <string name="tuner_string_lock_tip_dismiss">Tip sluiten</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- In Dutch the unit stays singular after a number: "12 cent". -->
     <string name="tuner_cents_zero">0 cent</string>

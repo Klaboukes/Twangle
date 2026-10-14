@@ -17,8 +17,6 @@ internal data class StringRowFit(
     val buttonScale: Float,
     /** Room between the button and the lock ring round it. */
     val ringGapDp: Float,
-    /** Where the first button's slot starts, from the row's start. */
-    val firstSlotStartDp: Float,
 )
 
 /**
@@ -40,15 +38,13 @@ internal fun stringRowFit(
     val strings = count.coerceAtLeast(1)
     val needed = slot * strings + spacingDp * (strings - 1)
     if (needed <= availableDp) {
-        // Spread evenly: the same gap before, between and after the buttons (Arrangement.SpaceEvenly).
-        val start = if (spacingDp > 0f) 0f else (availableDp - slot * strings) / (strings + 1)
-        return StringRowFit(squeezed = false, slotDp = slot, buttonScale = 1f, ringGapDp = ringGapDp, firstSlotStartDp = start)
+        return StringRowFit(squeezed = false, slotDp = slot, buttonScale = 1f, ringGapDp = ringGapDp)
     }
     val share = availableDp / strings
     val room = (share - SQUEEZED_GAP_DP).coerceAtLeast(0f)
     val ringGap = (ringGapDp * room / outer).coerceIn(minOf(MIN_RING_GAP_DP, ringGapDp), ringGapDp)
     val scale = ((room - ringGap * 2f) / buttonWidthDp).coerceIn(0f, 1f)
-    return StringRowFit(squeezed = true, slotDp = share, buttonScale = scale, ringGapDp = ringGap, firstSlotStartDp = 0f)
+    return StringRowFit(squeezed = true, slotDp = share, buttonScale = scale, ringGapDp = ringGap)
 }
 
 /** Squeezed buttons keep at least this far apart, lock rings included. */

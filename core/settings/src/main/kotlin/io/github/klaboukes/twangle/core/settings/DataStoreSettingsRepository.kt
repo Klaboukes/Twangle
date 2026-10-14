@@ -172,10 +172,6 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[KEEP_TWO_PANE_LANDSCAPE] = enabled }
     }
 
-    override suspend fun setStringLockTipSeen(seen: Boolean) {
-        dataStore.edit { it[STRING_LOCK_TIP_SEEN] = seen }
-    }
-
     override suspend fun setTourSeen(seen: Boolean) {
         dataStore.edit { it[TOUR_SEEN] = seen }
     }
@@ -227,7 +223,6 @@ class DataStoreSettingsRepository internal constructor(
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
             waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
-            stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
             tourSeen = tourSeen(prefs),
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
@@ -269,7 +264,6 @@ class DataStoreSettingsRepository internal constructor(
         private val WAVE_BREATHES_IN_TUNE = booleanPreferencesKey("wave_breathes_in_tune")
         private val METER_LOOK = stringPreferencesKey("meter_look")
         private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
-        private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
         /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
         private val TOUR_SEEN = booleanPreferencesKey("tour_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
@@ -319,7 +313,10 @@ class DataStoreSettingsRepository internal constructor(
 
         /**
          * The saved tour flag; without one (before [decideTourOnce] has run on this install), any other
-         * saved setting means an install from before the tour, which counts as having seen it.
+         * saved setting means an install from before the tour, which counts as having seen it. That
+         * includes keys no longer read, such as `string_lock_tip_seen` (the string-lock tip the tour's
+         * strings step replaced): they stay in the file, so an install that only dismissed that tip
+         * still counts as used.
          */
         private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
 

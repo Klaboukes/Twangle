@@ -108,8 +108,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) =
         state.update { it.copy(keepTwoPaneLandscape = enabled) }
 
-    override suspend fun setStringLockTipSeen(seen: Boolean) = state.update { it.copy(stringLockTipSeen = seen) }
-
     override suspend fun setTourSeen(seen: Boolean) = state.update { it.copy(tourSeen = seen) }
 
     /** Nothing to decide: the fake starts from the settings it is given. */

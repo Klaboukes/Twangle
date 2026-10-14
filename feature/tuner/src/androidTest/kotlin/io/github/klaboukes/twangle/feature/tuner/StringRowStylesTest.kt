@@ -63,7 +63,7 @@ import java.util.concurrent.TimeUnit
  * The string row from a 4-string bass to an 8-string guitar, in each of the six styles: upright, in
  * the full layout and the compact layout on its side, at normal and 2× text. Every button is in the
  * window, wholly shown with its whole name, clear of its neighbours; every one can be tapped (also
- * just beside it) and TalkBack names it. The string-lock tip points at a bass's first string.
+ * just beside it) and TalkBack names it.
  * [TunerStylesTest] covers the six-string guitar.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -93,7 +93,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
         COMPACT_ON_ITS_SIDE(DpSize(780.dp, 330.dp), compact = true),
     }
 
-    private fun show(listening: Boolean = false, tip: Boolean = false) {
+    private fun show(listening: Boolean = false) {
         compose.setContent {
             val layout = shownLayout.value
             val override = DeviceConfigurationOverride.ForcedSize(layout.size) then
@@ -127,7 +127,6 @@ class StringRowStylesTest(private val style: VisualStyle) {
                         onStringClick = { clicked += it },
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        showStringLockTip = tip,
                         compactLandscape = layout.compact,
                         // As in the app: the strum check's switch shares the row with the instrument-and-tuning button.
                         onStrumCheckChange = {},
@@ -203,27 +202,6 @@ class StringRowStylesTest(private val style: VisualStyle) {
                     fail("$style $layout: a tap between ${labels[index]} and ${labels[index + 1]} reached $clicked")
                 }
             }
-        }
-    }
-
-    /** Upright, a bass's four strings spread wider than a guitar's six: the tip in the corner still points at the first. */
-    @Test
-    fun theTipPointsAtABasssFirstString() {
-        shownTuning.value = Instruments.BASS_4.defaultTuning
-        show(listening = true, tip = true)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val tip = compose.onNodeWithText(context.getString(R.string.tuner_string_lock_tip)).assertIsDisplayed().getBoundsInRoot()
-        val picker = compose.onNodeWithTag(TunerTestTags.PICKER).getBoundsInRoot()
-        val chips = labels(shownTuning.value, Notation.SHARPS).map { compose.onNodeWithText(it).getBoundsInRoot() }
-        chips.forEachIndexed { index, chip ->
-            if (tip.overlaps(chip)) fail("$style: the tip $tip covers string $index $chip")
-        }
-        val first = chips.first()
-        // In the corner beside the button (not above it, where a wide button leaves no room), its
-        // pointer (32 dp from its start) lands on the first string.
-        if (tip.right <= picker.left) {
-            val pointer = tip.left + 32.dp
-            assertTrue("$style: the tip points at $pointer, the first string is ${first.left}..${first.right}", pointer in first.left..first.right)
         }
     }
 

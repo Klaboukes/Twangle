@@ -50,10 +50,7 @@ class TourFlowTest {
 
     @Test
     fun backEndsTheTourForGoodAndShowMeAroundStartsItAgain() {
-        runBlocking {
-            repository.setTourSeen(false)
-            repository.setStringLockTipSeen(false)
-        }
+        runBlocking { repository.setTourSeen(false) }
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertTrue("the tour shows", shown(TourTestTags.BALLOON))
             assertFalse("the tuner below is hidden from TalkBack", device.hasObject(By.res(TunerTestTags.PICKER)))
@@ -63,7 +60,6 @@ class TourFlowTest {
             assertTrue("Back ends it", gone(TourTestTags.BALLOON))
             assertTrue("the tuner is there again", shown(TunerTestTags.PICKER))
             assertTrue("seen for good", waitUntil { saved.tourSeen })
-            assertTrue("the string-lock tip goes with it", saved.stringLockTipSeen)
 
             // It stays gone when the app starts again.
             scenario.recreate()
