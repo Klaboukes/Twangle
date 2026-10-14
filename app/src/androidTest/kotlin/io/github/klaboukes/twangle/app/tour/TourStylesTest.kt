@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -43,12 +44,17 @@ import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerContent
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
+import io.github.klaboukes.twangle.feature.tuner.tour.BalloonSide
 import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
+import io.github.klaboukes.twangle.feature.tuner.tour.TourMeasures
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.TourShown
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTargets
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTestTags
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
@@ -64,7 +70,8 @@ import java.util.concurrent.TimeUnit
  * together: in every style (only the default one unless the run is thorough), each step's balloon
  * and both its buttons wholly shown inside the window, in Dutch at 2× text on a 360 dp phone, on a
  * phone on its side (the compact tuner shows its controls and rail) and in the two-pane layout; Next
- * steps through every part, Skip tour and Back end it at once; TalkBack hears only the balloon; taps
+ * steps through every part in the layout's reading order, each balloon's pointer at its own part;
+ * Skip tour and Back end it at once; TalkBack hears only the balloon; taps
  * outside it do nothing; nothing in the tuner moves when it comes.
  */
 @RunWith(Parameterized::class)
@@ -86,6 +93,9 @@ class TourStylesTest(private val style: VisualStyle) {
     private val keepTwoPane = mutableStateOf(false)
     private val ends = mutableIntStateOf(0)
     private val targets = TourTargets()
+
+    // The content's own density: a forced size scales it to fit the real window.
+    private var contentDensity = 1f
     private var modeChanges = 0
 
     private fun show() {
@@ -94,6 +104,7 @@ class TourStylesTest(private val style: VisualStyle) {
                 DeviceConfigurationOverride.FontScale(shownFontScale.value) then
                 DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
             DeviceConfigurationOverride(override) {
+                contentDensity = LocalDensity.current.density
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     TourHost(
                         open = shownOpen.value,
@@ -134,19 +145,26 @@ class TourStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * Steps through the whole tour with Next (Done at the end): at each step the balloon, its text and
-     * both buttons are wholly shown inside the window, and TalkBack hears "Step i of n. …".
+     * Steps through the whole tour with Next (Done at the end), in [order]: at each step the balloon,
+     * its text and both buttons are wholly shown inside the window, TalkBack hears "Step i of n. …",
+     * and the balloon points at its own part (the pointer's tip over the part, 2 dp from it) without
+     * lying over it.
      */
-    private fun stepThroughWhollyShown(case: String) {
-        val steps = TourPart.stepsFor(shownMode.value)
+    private fun stepThroughWhollyShown(case: String, layoutOrder: List<TourPart>) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        steps.forEachIndexed { index, part ->
+        val density = contentDensity
+        val order = withStrumRow(layoutOrder)
+        order.forEachIndexed { index, part ->
             val at = "$case step ${index + 1} ($part)"
+            val shown = targets.shown ?: error("$at: nothing shown")
+            assertEquals("$at: the step in reading order", part, shown.part)
+            assertEquals(at, index, shown.index)
+            assertEquals(at, order.size, shown.count)
             val text = string(part.text)
             compose.onNodeWithTag(TourTestTags.TEXT)
                 .assert(hasText(text))
-                .assertContentDescriptionEquals(string(R.string.tour_step_spoken, index + 1, steps.size, text))
-            val next = string(if (index == steps.lastIndex) R.string.tour_done else R.string.tour_next)
+                .assertContentDescriptionEquals(string(R.string.tour_step_spoken, index + 1, order.size, text))
+            val next = string(if (index == order.lastIndex) R.string.tour_done else R.string.tour_next)
             compose.onNodeWithTag(TourTestTags.NEXT).assert(hasText(next))
             for ((tag, what) in listOf(TourTestTags.BALLOON to "balloon", TourTestTags.TEXT to "text", TourTestTags.SKIP to "Skip", TourTestTags.NEXT to "Next")) {
                 val node = compose.onNodeWithTag(tag, useUnmergedTree = true)
@@ -158,12 +176,50 @@ class TourStylesTest(private val style: VisualStyle) {
             }
             assertWhollyShown(compose.onNode(hasText(string(R.string.tour_skip)), useUnmergedTree = true), "$at Skip's text", scroll = false)
             assertWhollyShown(compose.onNode(hasText(next), useUnmergedTree = true), "$at Next's text", scroll = false)
-            assertNotNull("$at: the part is laid out", targets.boundsOf(part))
+            assertPointsAtItsPart(at, part, shown, density)
             compose.onNodeWithTag(TourTestTags.NEXT).performClick()
             compose.waitForIdle()
         }
         assertEquals("$case: Done ends it once", 1, ends.intValue)
         compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
+    }
+
+    /**
+     * [order] with the strum check before the instrument button where its switch sits on a row of its
+     * own above the button (very large text): rows read top to bottom.
+     */
+    private fun withStrumRow(order: List<TourPart>): List<TourPart> {
+        val strum = targets.boundsOf(TourPart.STRUM) ?: return order
+        val picker = targets.boundsOf(TourPart.PICKER) ?: return order
+        if (strum.bottom > picker.top) return order
+        return order.map { if (it == TourPart.STRUM) TourPart.PICKER else if (it == TourPart.PICKER) TourPart.STRUM else it }
+    }
+
+    /** The pointer's tip over [part] (across it), [TourMeasures.POINTER_GAP] from its edge; the balloon not over it. */
+    private fun assertPointsAtItsPart(at: String, part: TourPart, shown: TourShown, density: Float) {
+        val element = targets.boundsOf(part) ?: error("$at: the part isn't laid out")
+        val tip = shown.tip ?: error("$at: no pointer (${shown.side})")
+        val gap = when (shown.side) {
+            BalloonSide.ABOVE -> element.top - tip.y
+            BalloonSide.BELOW -> tip.y - element.bottom
+            BalloonSide.RIGHT -> tip.x - element.right
+            BalloonSide.LEFT -> element.left - tip.x
+            BalloonSide.OVER -> error("$at: over the part")
+        }
+        assertEquals("$at: the tip ${TourMeasures.POINTER_GAP} dp from the part", TourMeasures.POINTER_GAP * density, gap, 1f)
+        val across = if (shown.side == BalloonSide.ABOVE || shown.side == BalloonSide.BELOW) {
+            tip.x in element.left..element.right
+        } else {
+            tip.y in element.top..element.bottom
+        }
+        assertTrue("$at: the tip $tip points at the part $element", across)
+        val b = shown.balloon
+        val overlaps = b.left < element.right && element.left < b.right && b.top < element.bottom && element.top < b.bottom
+        assertFalse("$at: the balloon $b lies over its part $element", overlaps)
+        // The balloon on screen is where the placement says.
+        val node = compose.onNodeWithTag(TourTestTags.BALLOON).getBoundsInRoot()
+        assertEquals("$at: balloon left", b.left, node.left.value * density, 1.5f)
+        assertEquals("$at: balloon top", b.top, node.top.value * density, 1.5f)
     }
 
     private fun restart() {
@@ -179,7 +235,7 @@ class TourStylesTest(private val style: VisualStyle) {
         shownFontScale.value = 2f
         shownLocale.value = "nl"
         show()
-        stepThroughWhollyShown("$style nl 2x 360 dp")
+        stepThroughWhollyShown("$style nl 2x 360 dp", UPRIGHT)
     }
 
     /** On its side the compact tuner shows its controls and rail for the tour; Dutch at 2× text. */
@@ -191,7 +247,8 @@ class TourStylesTest(private val style: VisualStyle) {
         show()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
         assertNotNull("the rail is lit in the last step", targets.boundsOf(TourPart.NAVIGATION))
-        stepThroughWhollyShown("$style nl 2x on its side")
+        assertNotNull("the strum check's switch shows", targets.boundsOf(TourPart.STRUM))
+        stepThroughWhollyShown("$style nl 2x on its side", SIDEWAYS)
     }
 
     /** The full two-pane layout on its side ("Full layout on its side"), in English at 1.25×. */
@@ -201,7 +258,7 @@ class TourStylesTest(private val style: VisualStyle) {
         shownFontScale.value = OWNER_FONT_SCALE
         keepTwoPane.value = true
         show()
-        stepThroughWhollyShown("$style two-pane")
+        stepThroughWhollyShown("$style two-pane", SIDEWAYS)
     }
 
     @Thorough
@@ -209,7 +266,7 @@ class TourStylesTest(private val style: VisualStyle) {
     fun theOwnersPhoneShowsEveryBalloonWhole() {
         shownFontScale.value = OWNER_FONT_SCALE
         show()
-        stepThroughWhollyShown("$style Xiaomi 1.25x")
+        stepThroughWhollyShown("$style Xiaomi 1.25x", UPRIGHT)
     }
 
     @Thorough
@@ -219,15 +276,26 @@ class TourStylesTest(private val style: VisualStyle) {
         shownLocale.value = "nl"
         shownFontScale.value = 2f
         show()
-        stepThroughWhollyShown("$style tablet nl 2x")
+        stepThroughWhollyShown("$style tablet nl 2x", SIDEWAYS)
     }
 
-    /** Chromatic mode (the tour started again from Settings) leaves out the strings and the instrument button. */
+    /** Chromatic mode (the tour started again from Settings) leaves out the instrument button, strum check and strings. */
     @Test
-    fun chromaticModeHasThreeSteps() {
+    fun chromaticModeHasFourSteps() {
         shownMode.value = TunerMode.CHROMATIC
         show()
-        stepThroughWhollyShown("$style chromatic")
+        stepThroughWhollyShown("$style chromatic", UPRIGHT.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
+    }
+
+    /** Chromatic mode on its side, Dutch at 2× text: the readout pane first, the rail last. */
+    @Test
+    fun chromaticModeOnItsSideReadsThePanes() {
+        shownMode.value = TunerMode.CHROMATIC
+        shownSize.value = LANDSCAPE
+        shownFontScale.value = 2f
+        shownLocale.value = "nl"
+        show()
+        stepThroughWhollyShown("$style chromatic on its side", SIDEWAYS.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
     }
 
     @Test
@@ -260,7 +328,7 @@ class TourStylesTest(private val style: VisualStyle) {
         compose.onNodeWithTag(TourTestTags.SKIP).performClick()
         compose.waitForIdle()
         restart()
-        compose.onNodeWithTag(TourTestTags.TEXT).assert(hasText(string(TourPart.NOTE.text)))
+        compose.onNodeWithTag(TourTestTags.TEXT).assert(hasText(string(TourPart.MODE.text)))
     }
 
     /** TalkBack hears a pane "Show me around" with the step's text and two buttons, and nothing of the screen below. */
@@ -268,7 +336,7 @@ class TourStylesTest(private val style: VisualStyle) {
     fun talkBackHearsOnlyTheBalloon() {
         show()
         compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, string(R.string.tour_title))).assertIsDisplayed()
-        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, 5, string(R.string.tour_note)))
+        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, 7, string(R.string.tour_mode)))
         for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
             compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
@@ -335,5 +403,9 @@ class TourStylesTest(private val style: VisualStyle) {
         private val NARROW = DpSize(360.dp, 800.dp)
         private val LANDSCAPE = DpSize(800.dp, 360.dp)
         private val TABLET = DpSize(1280.dp, 800.dp)
+
+        /** The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane), the bar or rail last. */
+        private val UPRIGHT = listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
+        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
     }
 }

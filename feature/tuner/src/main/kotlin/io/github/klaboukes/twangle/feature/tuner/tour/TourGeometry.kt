@@ -62,7 +62,7 @@ object TourMeasures {
     /** Futuristic's spotlight corners are cut, by at most this much. */
     const val NEON_CUT = 12f
 
-    /** The pointer: this wide at the balloon, this tall, its tip this far from the spotlight. */
+    /** The pointer: this wide at the balloon, this tall, its tip this far from the lit element itself. */
     const val POINTER_WIDTH = 14f
     const val POINTER_HEIGHT = 8f
     const val POINTER_GAP = 2f
@@ -78,9 +78,23 @@ object TourMeasures {
     /** The balloon is at most this wide, times the font scale (and never wider than the window allows). */
     const val MAX_WIDTH = 260f
 
-    /** The dim layer: the background colour at this strength; light themes mix it with this much ink. */
-    const val SCRIM_ALPHA = 0.62f
-    const val SCRIM_INK = 0.10f
+    /**
+     * The dim layer (stronger since 2026-10-15, owner: the lit part hardly stood out): dark themes the
+     * background mixed with this much black at this strength, so it keeps the style's hue; light
+     * themes the background mixed with this much ink at this strength, a clear grey in the hue.
+     */
+    const val DARK_SCRIM_BLACK = 0.50f
+    const val DARK_SCRIM_ALPHA = 0.80f
+    const val LIGHT_SCRIM_INK = 0.60f
+    const val LIGHT_SCRIM_ALPHA = 0.80f
+
+    /**
+     * A soft halo hugging the spotlight's edge, in the style's accent: this strong at the edge (dark,
+     * light), fading to nothing over [HALO_REACH] outward. Steady: no pulse.
+     */
+    const val HALO_DARK_ALPHA = 0.28f
+    const val HALO_LIGHT_ALPHA = 0.20f
+    const val HALO_REACH = 12f
 }
 
 /** The mock-up's timings, in milliseconds. */
@@ -109,17 +123,21 @@ fun spotlightFor(part: TourBox, windowWidth: Float, windowHeight: Float, pad: Fl
 }
 
 /**
- * Where a [width] × [height] balloon goes beside [hole] (null: no part to point at, so in the middle
- * of the window) in a [windowWidth] × [windowHeight] window keeping [margins]. Its pointer's tip sits
- * [reach] (the pointer's height plus its gap) from the hole. It takes [preferred] (above or below)
- * if it fits between the margins, else the other of the two, else to the hole's right or left (a
- * rail along an edge), else over the part, on the side with more room and clamped to the window,
- * without a pointer. Above or below it is centred on the part, at least the side margins from the
- * window's edges; beside it, centred on the part's height. The pointer sits at the part's middle,
- * at least [pointerEnd] from the balloon's ends (its middle, when the balloon is smaller than that).
+ * Where a [width] × [height] balloon goes beside [part] (the lit element's own bounds; null: no part
+ * to point at, so in the middle of the window) in a [windowWidth] × [windowHeight] window keeping
+ * [margins]. Its body sits [reach] (the pointer's height plus its gap) from the element, so the
+ * pointer's tip ends that gap from the element itself: the balloon may lie over the spotlight's pad
+ * and soft edge, never over the element. It takes [preferred] (above or below) if it fits between the
+ * margins, else the other of the two; but where the preferred side would cover one of [avoid] (the
+ * other interactive controls) and the other side fits without covering one, the other side. Where
+ * neither fits, to the element's right or left (a rail along an edge; again one that covers no
+ * control first), else over the element, on the side with more room and clamped to the window,
+ * without a pointer. Above or below it is centred on the element, at least the side margins from the
+ * window's edges; beside it, centred on the element's height. The pointer sits at the element's
+ * middle, at least [pointerEnd] from the balloon's ends (its middle, when the balloon is smaller).
  */
 fun placeBalloon(
-    hole: TourBox?,
+    part: TourBox?,
     width: Float,
     height: Float,
     windowWidth: Float,
@@ -128,6 +146,7 @@ fun placeBalloon(
     preferred: BalloonSide,
     reach: Float,
     pointerEnd: Float,
+    avoid: List<TourBox> = emptyList(),
 ): BalloonPlacement {
     val topLimit = margins.top
     val bottomLimit = windowHeight - margins.bottom
@@ -136,41 +155,109 @@ fun placeBalloon(
     // Centred on [centre], kept between the side margins; a top kept between the top and bottom ones.
     fun x(centre: Float) = (centre - width / 2f).coerceIn(leftLimit, max(leftLimit, rightLimit - width))
     fun y(top: Float) = top.coerceIn(topLimit, max(topLimit, bottomLimit - height))
-    if (hole == null) {
+    if (part == null) {
         return BalloonPlacement(x(windowWidth / 2f), y(windowHeight / 2f - height / 2f), BalloonSide.OVER, width / 2f)
     }
-    val roomBelow = bottomLimit - (hole.bottom + reach)
-    val roomAbove = hole.top - reach - topLimit
-    val roomRight = rightLimit - (hole.right + reach)
-    val roomLeft = hole.left - reach - leftLimit
-    val other = if (preferred == BalloonSide.BELOW) BalloonSide.ABOVE else BalloonSide.BELOW
-    val side = listOf(preferred, other, BalloonSide.RIGHT, BalloonSide.LEFT).firstOrNull { side ->
-        when (side) {
-            BalloonSide.BELOW -> roomBelow >= height
-            BalloonSide.ABOVE -> roomAbove >= height
-            BalloonSide.RIGHT -> roomRight >= width && bottomLimit - topLimit >= height
-            BalloonSide.LEFT -> roomLeft >= width && bottomLimit - topLimit >= height
-            BalloonSide.OVER -> true
+    val roomBelow = bottomLimit - (part.bottom + reach)
+    val roomAbove = part.top - reach - topLimit
+    fun box(side: BalloonSide): TourBox {
+        val left = when (side) {
+            BalloonSide.RIGHT -> part.right + reach
+            BalloonSide.LEFT -> part.left - reach - width
+            else -> x(part.centerX)
         }
-    } ?: BalloonSide.OVER
+        val top = when (side) {
+            BalloonSide.BELOW -> part.bottom + reach
+            BalloonSide.ABOVE -> part.top - reach - height
+            BalloonSide.RIGHT, BalloonSide.LEFT -> y(part.centerY - height / 2f)
+            BalloonSide.OVER -> y(if (roomBelow >= roomAbove) part.bottom + reach else part.top - reach - height)
+        }
+        return TourBox(left, top, left + width, top + height)
+    }
+    fun fits(side: BalloonSide): Boolean = when (side) {
+        BalloonSide.BELOW -> roomBelow >= height
+        BalloonSide.ABOVE -> roomAbove >= height
+        BalloonSide.RIGHT -> rightLimit - (part.right + reach) >= width && bottomLimit - topLimit >= height
+        BalloonSide.LEFT -> part.left - reach - leftLimit >= width && bottomLimit - topLimit >= height
+        BalloonSide.OVER -> true
+    }
+    fun clear(side: BalloonSide): Boolean = avoid.none { it.overlaps(box(side)) }
+    val other = if (preferred == BalloonSide.BELOW) BalloonSide.ABOVE else BalloonSide.BELOW
+    val vertical = listOf(preferred, other).filter(::fits)
+    val beside = listOf(BalloonSide.RIGHT, BalloonSide.LEFT).filter(::fits)
+    val side = vertical.firstOrNull(::clear) ?: vertical.firstOrNull() ?: beside.firstOrNull(::clear) ?: beside.firstOrNull()
+        ?: BalloonSide.OVER
     fun along(centre: Float, start: Float, length: Float): Float =
         (centre - start).coerceIn(min(pointerEnd, length / 2f), max(length / 2f, length - pointerEnd))
-    return when (side) {
-        BalloonSide.BELOW, BalloonSide.ABOVE -> {
-            val left = x(hole.centerX)
-            val top = if (side == BalloonSide.BELOW) hole.bottom + reach else hole.top - reach - height
-            BalloonPlacement(left, top, side, along(hole.centerX, left, width))
-        }
-        BalloonSide.RIGHT, BalloonSide.LEFT -> {
-            val left = if (side == BalloonSide.RIGHT) hole.right + reach else hole.left - reach - width
-            val top = y(hole.centerY - height / 2f)
-            BalloonPlacement(left, top, side, along(hole.centerY, top, height))
-        }
-        BalloonSide.OVER -> {
-            val top = y(if (roomBelow >= roomAbove) hole.bottom + reach else hole.top - reach - height)
-            BalloonPlacement(x(hole.centerX), top, side, width / 2f)
-        }
+    val b = box(side)
+    val pointer = when (side) {
+        BalloonSide.BELOW, BalloonSide.ABOVE -> along(part.centerX, b.left, width)
+        BalloonSide.RIGHT, BalloonSide.LEFT -> along(part.centerY, b.top, height)
+        BalloonSide.OVER -> width / 2f
     }
+    return BalloonPlacement(b.left, b.top, side, pointer)
+}
+
+/** Whether this box and [other] share some area (touching edges don't count). */
+fun TourBox.overlaps(other: TourBox): Boolean =
+    left < other.right && other.left < right && top < other.bottom && other.top < bottom
+
+/** A point in pixels, in the same coordinates as the boxes. */
+data class TourPoint(val x: Float, val y: Float)
+
+/**
+ * Where the pointer's tip is for a [width] × [height] balloon at [placement] with a pointer
+ * [pointerHeight] tall, in the placement's coordinates; null over the part (no pointer).
+ */
+fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointerHeight: Float): TourPoint? = when (placement.side) {
+    BalloonSide.ABOVE -> TourPoint(placement.x + placement.pointer, placement.y + height + pointerHeight)
+    BalloonSide.BELOW -> TourPoint(placement.x + placement.pointer, placement.y - pointerHeight)
+    BalloonSide.RIGHT -> TourPoint(placement.x - pointerHeight, placement.y + placement.pointer)
+    BalloonSide.LEFT -> TourPoint(placement.x + width + pointerHeight, placement.y + placement.pointer)
+    BalloonSide.OVER -> null
+}
+
+/**
+ * The tour's order in the current layout: [steps] in reading order ([readingOrder]) by their
+ * [bounds], with the navigation bar or rail always last. Steps not laid out yet keep their place in
+ * [steps] after the others, before the bar. Upright that is mode switch, meter, note, instrument
+ * button, strum check, strings, bar; in the two panes (a phone on its side, wide screens) the readout
+ * pane's meter and note, then the controls pane's mode switch, instrument button, strum check and
+ * strings, then the rail or bar.
+ */
+fun tourOrder(steps: List<TourPart>, bounds: (TourPart) -> TourBox?): List<TourPart> {
+    val (bar, rest) = steps.partition { it == TourPart.NAVIGATION }
+    val placed = rest.mapNotNull { part -> bounds(part)?.let { part to it } }
+    val unplaced = rest.filter { bounds(it) == null }
+    return readingOrder(placed) { it.second }.map { it.first } + unplaced + bar
+}
+
+/**
+ * [items] in reading order by their [box]es (an XY cut): blocks that stand side by side with a clear
+ * gap from top to bottom between them (the two panes) are read left to right, each on its own;
+ * within a block, rows (boxes whose heights overlap) top to bottom; within a row, left to right
+ * again. Side by side goes first, so a pane scrolled on its own never changes the order; upright the
+ * full-width meter keeps everything in one block. Boxes overlapping both ways keep top-then-left order.
+ */
+fun <T> readingOrder(items: List<T>, box: (T) -> TourBox): List<T> {
+    if (items.size <= 1) return items
+    val columns = groups(items.sortedWith(compareBy({ box(it).left }, { box(it).top })), { box(it).left }, { box(it).right })
+    if (columns.size > 1) return columns.flatMap { readingOrder(it, box) }
+    val rows = groups(items.sortedWith(compareBy({ box(it).top }, { box(it).left })), { box(it).top }, { box(it).bottom })
+    if (rows.size > 1) return rows.flatMap { readingOrder(it, box) }
+    return rows.single()
+}
+
+/** [sorted] (by [start]) split wherever one starts at or past the end of every one before it. */
+private fun <T> groups(sorted: List<T>, start: (T) -> Float, end: (T) -> Float): List<List<T>> {
+    val result = mutableListOf<MutableList<T>>()
+    var reach = Float.NEGATIVE_INFINITY
+    for (item in sorted) {
+        if (result.isEmpty() || start(item) >= reach) result.add(mutableListOf())
+        result.last().add(item)
+        reach = max(reach, end(item))
+    }
+    return result
 }
 
 /** Between [from] and [to] by [fraction] (0 is [from]): position, size and corners glide together. */

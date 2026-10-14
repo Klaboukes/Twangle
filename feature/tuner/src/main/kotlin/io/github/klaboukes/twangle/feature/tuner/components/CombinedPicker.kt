@@ -96,6 +96,7 @@ import kotlin.math.max
  * presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls [onEditTuning], Delete
  * asks first and then calls [onDeleteTuning] (no menu entry without its lambda). With [onNewTuning], the
  * list ends in "New tuning", which closes the panel and calls it with the instrument shown.
+ * [inTour]: the button's outline is the tour's instrument step (not where it isn't shown).
  */
 @Composable
 fun CombinedPicker(
@@ -110,6 +111,7 @@ fun CombinedPicker(
     onNewTuning: ((Instrument) -> Unit)? = null,
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
+    inTour: Boolean = true,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
@@ -120,6 +122,7 @@ fun CombinedPicker(
         tuningName = customTunings.firstOrNull { it.id == tuning.id }?.name ?: tuningLabel(tuning),
         onClick = { expanded = true },
         modifier = modifier,
+        inTour = inTour,
     )
     if (expanded) {
         PickerPanel(
@@ -141,7 +144,7 @@ fun CombinedPicker(
  * [MIN_PICKER_TEXT_SCALE] ([pickerTextScale]); only past that (very large fonts) do they wrap.
  */
 @Composable
-private fun PickerButton(instrumentName: String, tuningName: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun PickerButton(instrumentName: String, tuningName: String, onClick: () -> Unit, modifier: Modifier = Modifier, inTour: Boolean = true) {
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     val neon = style == VisualStyle.FUTURISTIC
@@ -166,7 +169,7 @@ private fun PickerButton(instrumentName: String, tuningName: String, onClick: ()
                 .minimumInteractiveComponentSize()
                 .testTag(TunerTestTags.PICKER)
                 // The tour lights up the outline, not the touch target round it.
-                .tourTarget(TourPart.PICKER)
+                .then(if (inTour) Modifier.tourTarget(TourPart.PICKER) else Modifier)
                 .heightIn(min = BUTTON_HEIGHT)
                 .clip(shape)
                 .background(if (neon) Color.Transparent else scheme.surface.copy(alpha = BUTTON_BACKING_ALPHA), shape)

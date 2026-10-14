@@ -83,6 +83,8 @@ import io.github.klaboukes.twangle.feature.tuner.StrumPhase
 import io.github.klaboukes.twangle.feature.tuner.StrumString
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerUiState
+import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -409,10 +411,10 @@ private fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String
 /**
  * The strum check's switch beside the instrument-and-tuning button: an icon of strings with a sweep
  * across them, in the button's outline and shape; filled with the accent's container while on.
- * TalkBack: "Strum check, switch, on/off".
+ * TalkBack: "Strum check, switch, on/off". With [inTour] its outline is the tour's strum check step.
  */
 @Composable
-fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, inTour: Boolean = false) {
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     val neon = style == VisualStyle.FUTURISTIC
@@ -433,6 +435,8 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
             .minimumInteractiveComponentSize()
             .testTag(TunerTestTags.STRUM_TOGGLE)
             .size(TOGGLE_SIZE)
+            // The tour lights up the outline, not the touch target round it.
+            .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
             .clip(shape)
             .background(fill, shape)
             .border(if (checked) 2.dp else 1.dp, outline, shape)

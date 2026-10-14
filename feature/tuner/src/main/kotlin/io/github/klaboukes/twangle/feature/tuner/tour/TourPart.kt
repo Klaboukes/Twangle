@@ -7,35 +7,48 @@ import io.github.klaboukes.twangle.feature.tuner.R
 /**
  * One step of the first-start tour: the part of the window it lights up, the side its balloon would
  * rather be on ([preferredSide], [BalloonSide.ABOVE] or [BalloonSide.BELOW]), whose corner the
- * spotlight copies ([corner]) and the balloon's [text]. In the order of the approved mock-up
- * (docs/design/tour-preview.html).
+ * spotlight copies ([corner]), the balloon's [text], and whether the part is a control people tap
+ * ([interactive]), which other steps' balloons keep clear of where they can. Listed in the upright
+ * layout's reading order; the tour itself goes in the current layout's ([tourOrder]).
  */
-enum class TourPart(val preferredSide: BalloonSide, val corner: TourCorner, @param:StringRes val text: Int) {
-    /** The meter with its needle or wave, and the note under it. */
-    NOTE(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_note),
+enum class TourPart(
+    val preferredSide: BalloonSide,
+    val corner: TourCorner,
+    @param:StringRes val text: Int,
+    val interactive: Boolean,
+) {
+    /** The guitar/chromatic mode switch. */
+    MODE(BalloonSide.BELOW, TourCorner.BUTTON, R.string.tour_mode, interactive = true),
 
-    /** The string buttons (tap one to lock it). */
-    STRINGS(BalloonSide.ABOVE, TourCorner.STRING, R.string.tour_strings),
+    /** The meter (its look, also with the wave display; the strum panel in its place). */
+    METER(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_meter, interactive = false),
+
+    /** The note under the meter: its name with the cents pill and frequency, or with the wave. */
+    NOTE(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_note, interactive = false),
 
     /** The instrument-and-tuning button. */
-    PICKER(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_picker),
+    PICKER(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_picker, interactive = true),
 
-    /** The guitar/chromatic mode switch. */
-    MODE(BalloonSide.BELOW, TourCorner.BUTTON, R.string.tour_mode),
+    /** The strum check's switch beside the instrument-and-tuning button. */
+    STRUM(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_strum, interactive = true),
 
-    /** The navigation bar's tabs (the rail's on a phone on its side). */
-    NAVIGATION(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_navigation),
+    /** The string buttons (tap one to lock it). */
+    STRINGS(BalloonSide.BELOW, TourCorner.STRING, R.string.tour_strings, interactive = true),
+
+    /** The navigation bar's Metronome and Settings tabs (the rail's on a phone on its side). */
+    NAVIGATION(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_navigation, interactive = true),
     ;
 
     companion object {
         /**
-         * The tour's steps in [mode]: all five in guitar mode; in chromatic mode (only when started
-         * again from Settings) without the strings and the instrument-and-tuning button, which
-         * aren't shown there.
+         * The tour's steps in [mode]: all seven in guitar mode, without the strum check's switch where
+         * strum check isn't offered ([strumCheck]; every instrument has it today, up to 8 strings); in
+         * chromatic mode (only when started again from Settings) without the instrument-and-tuning
+         * button, the strum check and the strings, which aren't shown there.
          */
-        fun stepsFor(mode: TunerMode): List<TourPart> = when (mode) {
-            TunerMode.AUTO -> entries
-            TunerMode.CHROMATIC -> listOf(NOTE, MODE, NAVIGATION)
+        fun stepsFor(mode: TunerMode, strumCheck: Boolean = true): List<TourPart> = when (mode) {
+            TunerMode.AUTO -> entries.filter { strumCheck || it != STRUM }
+            TunerMode.CHROMATIC -> listOf(MODE, METER, NOTE, NAVIGATION)
         }
     }
 }

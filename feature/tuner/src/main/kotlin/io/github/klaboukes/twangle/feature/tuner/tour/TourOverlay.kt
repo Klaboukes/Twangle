@@ -99,8 +99,8 @@ import kotlin.math.min
  * The first-start tour's home: [content] (the whole window: the screen and its navigation bar or
  * rail) with the tour on its own layer above it while [open], never in its layout, so nothing in
  * [content] moves when the tour comes or goes. The parts in [steps] mark themselves with
- * [tourTarget] somewhere in [content]; the tour lights them up one at a time, each with a balloon.
- * Skip tour, Done (the last step's Next) and Back call [onEnd], which should close it (make [open]
+ * [tourTarget] somewhere in [content]; the tour lights them up one at a time, each with a balloon,
+ * in the layout's reading order ([tourOrder]: the navigation bar or rail last). Skip tour, Done (the last step's Next) and Back call [onEnd], which should close it (make [open]
  * false); it then fades out. While it is open, taps outside the balloon do nothing and TalkBack
  * hears only the balloon. [targets] is where the parts' places are kept (tests read it).
  */
@@ -138,7 +138,9 @@ object TourTestTags {
  * The tour's layer: the dim layer with the spotlight cut out round the current step's part, and the
  * balloon beside it (approved mock-up, docs/design/tour-preview.html). It fades in when [open] turns
  * true (at the step it was on, or the first after it ended) and out when it turns false. Next glides
- * the spotlight to the next part while the balloon fades out, then fades the next balloon in.
+ * the spotlight to the next part while the balloon fades out, then fades the next balloon in. The
+ * steps go in the current layout's reading order ([tourOrder]); each balloon points at its own
+ * element and keeps clear of the other controls where it can ([placeBalloon]).
  */
 @Composable
 private fun TourOverlay(
@@ -164,19 +166,18 @@ private fun TourOverlay(
     val scope = rememberCoroutineScope()
     val moving = remember { arrayOfNulls<Job>(1) }
     val currentOnEnd by rememberUpdatedState(onEnd)
+    // In the current layout's reading order (a turned phone reads its own), the bar or rail last.
+    val order by remember(steps) { derivedStateOf { tourOrder(steps) { targets.boundsOf(it) } } }
     val last = steps.lastIndex
     val atStep = step.coerceIn(0, last)
     val balloonStep = shownStep.coerceIn(0, last)
 
+    // A box in the window's pixels in the overlay's own.
+    fun local(b: TourBox) = TourBox(b.left - frame.originX, b.top - frame.originY, b.right - frame.originX, b.bottom - frame.originY)
+
     fun spotlightOf(part: TourPart): Spotlight? = targets.boundsOf(part)?.let { b ->
         val pad = TourMeasures.HOLE_PAD * density.density
-        spotlightFor(
-            TourBox(b.left - frame.originX, b.top - frame.originY, b.right - frame.originX, b.bottom - frame.originY),
-            frame.width,
-            frame.height,
-            pad,
-            tourCornerDp(style, part.corner) * density.density,
-        )
+        spotlightFor(local(b), frame.width, frame.height, pad, tourCornerDp(style, part.corner) * density.density)
     }
 
     fun finish() {
@@ -192,10 +193,10 @@ private fun TourOverlay(
             return
         }
         moving[0] = scope.launch {
-            glideFrom = spotlightOf(steps[atStep])
+            glideFrom = spotlightOf(order[atStep])
             step = atStep + 1
             launch { balloonAlpha.animateTo(0f, tween(ms(TourTimings.FADE_OUT))) }
-            launch { targets.reveal(steps[step]) }
+            launch { targets.reveal(order[step]) }
             glide.snapTo(0f)
             glide.animateTo(1f, tween(ms(TourTimings.GLIDE), easing = LinearEasing))
             glideFrom = null
@@ -216,10 +217,11 @@ private fun TourOverlay(
             glideFrom = null
             glide.snapTo(1f)
             balloonAlpha.snapTo(0f)
-            launch { targets.reveal(steps[step.coerceIn(0, last)]) }
+            launch { targets.reveal(order[step.coerceIn(0, last)]) }
             dim.animateTo(1f, tween(ms(TourTimings.DIM_IN)))
             balloonAlpha.animateTo(1f, tween(ms(TourTimings.FADE_IN)))
         } else {
+            targets.shown = null
             launch { balloonAlpha.animateTo(0f, tween(ms(TourTimings.CLOSE))) }
             dim.animateTo(0f, tween(ms(TourTimings.CLOSE)))
         }
@@ -231,7 +233,12 @@ private fun TourOverlay(
 
     val scheme = MaterialTheme.colorScheme
     val dark = MaterialTheme.styleTokens.dark
-    val scrim = if (dark) scheme.background else lerp(scheme.background, scheme.onBackground, TourMeasures.SCRIM_INK)
+    val scrim = if (dark) {
+        lerp(scheme.background, Color.Black, TourMeasures.DARK_SCRIM_BLACK).copy(alpha = TourMeasures.DARK_SCRIM_ALPHA)
+    } else {
+        lerp(scheme.background, scheme.onBackground, TourMeasures.LIGHT_SCRIM_INK).copy(alpha = TourMeasures.LIGHT_SCRIM_ALPHA)
+    }
+    val halo = scheme.primary.copy(alpha = if (dark) TourMeasures.HALO_DARK_ALPHA else TourMeasures.HALO_LIGHT_ALPHA)
     val neon = style == VisualStyle.FUTURISTIC
     val holePaint = remember { HolePaint() }
     val placement = remember { mutableStateOf<BalloonPlacement?>(null) }
@@ -243,7 +250,7 @@ private fun TourOverlay(
             TourBalloon(
                 index = balloonStep,
                 count = steps.size,
-                part = steps[balloonStep],
+                part = order[balloonStep],
                 placement = { placement.value },
                 onSkip = ::finish,
                 onNext = ::next,
@@ -272,10 +279,10 @@ private fun TourOverlay(
                 }
             }
             .drawBehind {
-                val to = spotlightOf(steps[atStep])
+                val to = spotlightOf(order[atStep])
                 val from = glideFrom
                 val hole = if (from != null && to != null) lerp(from, to, easeInOutCubic(glide.value)) else to
-                drawScrim(scrim.copy(alpha = TourMeasures.SCRIM_ALPHA * dim.value), hole, neon, holePaint)
+                drawScrim(scrim.copy(alpha = scrim.alpha * dim.value), halo.copy(alpha = halo.alpha * dim.value), hole, neon, holePaint)
             },
     ) { measurables, constraints ->
         val width = constraints.maxWidth
@@ -290,11 +297,11 @@ private fun TourOverlay(
         )
         val maxWidth = min(width - margins.left - margins.right, TourMeasures.MAX_WIDTH.dp.toPx() * fontScale).toInt().coerceAtLeast(0)
         val balloon = measurables.single().measure(Constraints(maxWidth = maxWidth, maxHeight = height))
-        val part = steps[balloonStep]
-        val spot = spotlightOf(part)
+        val part = order[balloonStep]
+        val element = targets.boundsOf(part)?.let(::local)
         val reach = (TourMeasures.POINTER_GAP + TourMeasures.POINTER_HEIGHT).dp.toPx()
         val place = placeBalloon(
-            spot?.box,
+            element,
             balloon.width.toFloat(),
             balloon.height.toFloat(),
             width.toFloat(),
@@ -303,8 +310,22 @@ private fun TourOverlay(
             part.preferredSide,
             reach,
             TourMeasures.POINTER_END.dp.toPx(),
+            avoid = targets.controlsBesides(part).map(::local),
         )
         placement.value = place
+        if (open) {
+            // Where the step on screen is, in the window's pixels, for tests.
+            val tip = pointerTip(place, balloon.width.toFloat(), balloon.height.toFloat(), TourMeasures.POINTER_HEIGHT.dp.toPx())
+            val shownNow = TourShown(
+                part,
+                balloonStep,
+                steps.size,
+                place.side,
+                TourBox(place.x + frame.originX, place.y + frame.originY, place.x + balloon.width + frame.originX, place.y + balloon.height + frame.originY),
+                tip?.let { TourPoint(it.x + frame.originX, it.y + frame.originY) },
+            )
+            if (targets.shown != shownNow) targets.shown = shownNow
+        }
         layout(width, height) { balloon.place(place.x.toInt(), place.y.toInt()) }
     }
 }
@@ -318,12 +339,17 @@ private class TourFrame {
     var height = 0f
 }
 
-/** What draws the spotlight's soft edge: cut out of the dim layer with a blur (Android 9+; before it, a sharp edge). */
+/**
+ * What draws the spotlight's soft edge, cut out of the dim layer with a blur, and its halo, a blur
+ * outside the edge only (Android 9+; before it, a sharp edge and no halo).
+ */
 private class HolePaint {
     val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
     }
+    val haloPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
     var blur = -1f
+    var haloBlur = -1f
 
     fun blurred(radius: Float): android.graphics.Paint {
         if (radius != blur && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -332,13 +358,26 @@ private class HolePaint {
         }
         return paint
     }
+
+    /** The halo in [color]: an outer blur of [radius], so it starts at the edge and fades outward. */
+    fun halo(radius: Float, color: Color): android.graphics.Paint? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || radius <= 0f) return null
+        if (radius != haloBlur) {
+            haloPaint.maskFilter = BlurMaskFilter(radius, BlurMaskFilter.Blur.OUTER)
+            haloBlur = radius
+        }
+        // An outer blur is half as strong as its paint at the edge.
+        haloPaint.color = color.copy(alpha = (color.alpha * 2f).coerceAtMost(1f)).toArgb()
+        return haloPaint
+    }
 }
 
 /**
  * The dim layer, [color] over the whole window, with [hole] cut out of it: its corners rounded, or
- * cut in Futuristic ([neon]), with a soft edge and no outline.
+ * cut in Futuristic ([neon]), with a soft edge and no outline, and a soft [halo] in the accent
+ * hugging the edge outside, fading out over [TourMeasures.HALO_REACH].
  */
-private fun DrawScope.drawScrim(color: Color, hole: Spotlight?, neon: Boolean, holePaint: HolePaint) {
+private fun DrawScope.drawScrim(color: Color, halo: Color, hole: Spotlight?, neon: Boolean, holePaint: HolePaint) {
     if (color.alpha <= 0f) return
     drawIntoCanvas { canvas ->
         val native = canvas.nativeCanvas
@@ -349,6 +388,9 @@ private fun DrawScope.drawScrim(color: Color, hole: Spotlight?, neon: Boolean, h
             // The mock-up's 14 dp canvas shadow blur is a Gaussian of half that; Android's blur radius is about 1.7 of those.
             val radius = TourMeasures.HOLE_SOFT.dp.toPx() * 0.5f * BLUR_RADIUS_PER_SIGMA
             native.drawPath(path.asAndroidPath(), holePaint.blurred(radius))
+            // Fades to nothing over the reach: about two Gaussian sigmas.
+            val haloRadius = TourMeasures.HALO_REACH.dp.toPx() * 0.5f * BLUR_RADIUS_PER_SIGMA
+            if (halo.alpha > 0f) holePaint.halo(haloRadius, halo)?.let { native.drawPath(path.asAndroidPath(), it) }
         }
         native.restoreToCount(layer)
     }

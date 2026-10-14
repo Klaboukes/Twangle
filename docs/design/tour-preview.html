@@ -2,17 +2,23 @@
 <title>Twangle Tour Preview</title>
 <!--
 TWANGLE FIRST-START TOUR, ROUND 2 (Phase 24 preview). APPROVED by the owner on 2026-10-14: the Accent fill, with the
-shorter texts below. The build follows this comment.
+shorter texts below. The build follows this comment. Follow-up 2026-10-15 (owner): reading order, the meter and
+the strum check as steps of their own, each pointer at its own element, balloons off other controls (Place, Steps).
 Layer    The tour lies on its own overlay above the whole window (screen, navigation bar, sheets), never in the
          layout: nothing moves when it comes or goes, and under the dim layer the balloon may cover any part
          (owner decided 2026-10-14). Taps outside the balloon are swallowed (the lit part is not live, so the tour
          never changes a setting); Back = Skip. The screen below is hidden from TalkBack while the tour runs.
-Dim      One scrim over the whole window: the style's background colour (light themes: mixed 10 % with ink, so it
-         dims instead of fogging) at 62 %, with one spotlight cut out of it.
+Dim      One scrim over the whole window, with one spotlight cut out of it. Stronger since 2026-10-15 (owner: the lit
+         part hardly stood out, light or dark): dark themes the style's background mixed 50 % with black at 80 %
+         (it keeps the style's hue); light themes the background mixed 60 % with ink at 80 %, a clear grey in the
+         hue (it was the background, light themes mixed 10 % with ink, at 62 %). Target: the lit part at least 3x
+         as bright as the same kind of part under the dim.
 Spotlight The part's bounds plus 8 dp on every side, clamped to the window. Corners = the part's own corner
          (button shape for the mode switch and the instrument-and-tuning button, the string chips' radius for
          the strings, shapes.medium for the note and the bar) plus 8 dp, at most half the hole's height;
-         Futuristic's are cut (12 dp at most). A soft edge (14 dp blur), no outline, no glow.
+         Futuristic's are cut (12 dp at most). A soft edge (14 dp blur), no outline. A soft halo hugs the edge
+         outside (2026-10-15): the style's accent, 28 % at the edge in dark themes and 20 % in light, fading to
+         nothing over 12 dp; steady (no pulse), it glides with the spotlight and follows Futuristic's cut corners.
 Balloon  Round 2 (owner, 2026-10-14: round 1's primaryContainer fill with a 1 dp primary outline looked off): no
          outline at all; the balloon stands out by its fill and a soft two-layer drop shadow that also falls under
          the pointer (Futuristic: an accent glow instead of the shadow, cut corners). Of three fills the owner
@@ -23,29 +29,44 @@ Balloon  Round 2 (owner, 2026-10-14: round 1's primaryContainer fill with a 1 dp
          Above the text: the style's own mark (as under the open tab in the bar) and the step count (Accent: both
          in on-accent, the count at 78 %). shapes.medium corners, a 14 x 8 dp pointer at the part's centre (kept 27 dp from the balloon's
          ends). Padding 12 dp top, 14 dp sides, 8 dp bottom. Width hugs the text, at most
-         min(window - 32 dp, 260 dp x font scale). Inside: the mark and step count ("2 of 5", 12 sp), the text
+         min(window - 32 dp, 260 dp x font scale). Inside: the mark and step count ("2 of 7", 12 sp), the text
          (16 sp, 1.35 line height), then Skip (text button in the accent, at the start) and Next (filled accent,
          the style's button shape, at most 20 dp corners, 40 dp tall; Done on the last step). The two buttons
          wrap onto two rows (Next at the end) when they don't fit side by side. Grows with the font, no cap.
-Place    Each step has a preferred side. The balloon's pointer tip sits 2 dp from the spotlight on that side if
-         the balloon fits between 40 dp from the top (the status bar) and 24 dp from the bottom (the gesture bar);
-         else on the other side; else on the side with more room, clamped to the window, over the part, with no
-         pointer. Horizontally centred on the part, at least 16 dp from the window's edges.
+Place    Each step has a preferred side. The balloon's pointer is centred on the part's own element (kept 27 dp
+         from the balloon's ends) and its tip sits 2 dp from the ELEMENT itself (follow-up, owner 2026-10-15; it
+         was 2 dp from the spotlight, 8 dp further out): the balloon may lie over the spotlight's pad and soft
+         edge, never over the element. The preferred side if the balloon fits between 40 dp from the top (the
+         status bar) and 24 dp from the bottom (the gesture bar), else the other side; but where the preferred
+         side would cover another interactive control (mode switch, instrument button, strum check, string
+         chips, the bar's tabs) and the other side fits without covering one, the other side. Where neither
+         fits: beside the part (a rail), else on the side with more room, clamped to the window, over the part,
+         with no pointer. Horizontally centred on the part, at least 16 dp from the window's edges. Under the
+         dim it may still cover parts nobody taps (the meter, the note).
 Motion   Calm. Start: the dim fades in (300 ms). Next: the balloon fades out (150 ms) while the spotlight glides to
          the next part (300 ms, ease in-out: position, size and corners together), then the new balloon fades in
          (200 ms). Skip / Done: dim and balloon fade out (250 ms). Nothing bounces, pulses or scales. With the
          phone's "remove animations" every change is instant.
-Steps    1 the note with the meter and the needle or wave (balloon below); 2 the strings ("tap one to lock it",
-         above); 3 the instrument-and-tuning button (above); 4 the guitar/chromatic mode switch (below); 5 the
-         navigation bar's tabs (above). In Chromatic mode (only when started again from Settings) steps 2 and 3
-         are left out and the count says "of 3".
-Texts    English / Dutch, as short as they can be (owner, 2026-10-14); never "tik" for the on-screen strings:
-         1 How far off your note is / Hoe ver je noot ernaast zit
-         2 Lock a string / Zet een snaar vast
-         3 Pick instrument and tuning / Kies instrument en stemming
-         4 Tune strings or any note / Stem snaren of elke noot
-         5 Metronome and settings / Metronoom en instellingen
-         Buttons Skip tour / Overslaan, Next / Volgende, Done / Klaar; count "2 of 5" / "2 van 5".
+Steps    Follow-up (owner, 2026-10-15: the balloons jumped around): the parts in reading order of the layout
+         shown, rows top to bottom and left to right within a row, the navigation bar or rail ALWAYS last.
+         Upright: 1 the mode switch (balloon below); 2 the meter, its look also with the wave display (below);
+         3 the note: its name with the cents pill and frequency, or with the wave (below); 4 the
+         instrument-and-tuning button (above); 5 the strum check's switch beside it (above); 6 the strings
+         ("tap one to lock it", below); 7 the bar's Metronome and Settings tabs, not Tuner (above), the pointer
+         at the pair's middle. A phone on its side and the two-pane layout read pane by pane: the readout pane
+         (meter, note), then the controls pane (mode switch, instrument button, strum check, strings), then the
+         rail or bar. In Chromatic mode (only when started again from Settings) the instrument button, strum
+         check and strings are left out and the count says "of 4"; without strum check its step goes too.
+Texts    English / Dutch, as short as they can be (owner, 2026-10-14 and 2026-10-15); never "tik" for the
+         on-screen strings:
+         1 Tune strings or any note / Stem snaren of elke noot
+         2 How far off you are / Hoe ver je ernaast zit
+         3 The note you play / De noot die je speelt
+         4 Pick instrument and tuning / Kies instrument en stemming
+         5 Strum to check every string / Sla aan en check alle snaren
+         6 Lock a string / Zet een snaar vast
+         7 Metronome and settings / Metronoom en instellingen
+         Buttons Skip tour / Overslaan, Next / Volgende, Done / Klaar; count "2 of 7" / "2 van 7".
 Once     Shown once at first start, on the tuner, after the microphone question (a saved setting, set by Skip or
          Done, replacing stringLockTipSeen). Never a nuisance for experienced players (owner, 2026-10-14): one tap
          on "Skip tour" (or Back) ends the whole tour for good, no "are you sure"; an update of an existing install
@@ -53,8 +74,8 @@ Once     Shown once at first start, on the tuner, after the microphone question 
          opens the tuner and starts it again.
 Other    On a phone on its side and in the two-pane layout the same rules place the balloon round the parts where
          they are (the rail instead of the bar); the compact tuner shows its controls and rail while the tour runs.
-TalkBack Focus moves to the balloon, a pane titled "Show me around" that reads "Step 2 of 5. Tap a string to lock
-         it.", then its Skip and Next buttons.
+TalkBack Focus moves to the balloon, a pane titled "Show me around" that reads "Step 6 of 7. Lock a string.",
+         then its Skip and Next buttons.
 Styles   Colours, letters, shapes and backgrounds from docs/design/theme-styles-preview.html, by way of
          docs/design/metronome-nav-preview.html: its data block, its drawing code (backgrounds, the Classic meter)
          and its tuner and frameless-bar (variant B, as built) drawing are copied here unchanged.
@@ -321,7 +342,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   <header class="intro">
     <p class="eyebrow">Twangle · Phase 24 preview · round 2 · approved</p>
     <h1>Show me around: the first-start tour</h1>
-    <p class="lede">The first time Twangle opens, the screen <strong>dims</strong> and lights up <strong>one part at a time</strong>, each with a <strong>short balloon</strong>: the note, the strings, the instrument button, the mode switch and the bar at the bottom. The balloons float on their own layer above the screen, so nothing in the tuner moves. Step through it on the phone below with <strong>Next</strong> and <strong>Skip tour</strong>, or let it play by itself. Experienced players lose nothing: one tap on <strong>Skip tour</strong> (or Back) ends the whole tour for good, and people updating from an earlier Twangle never see it.</p>
+    <p class="lede">The first time Twangle opens, the screen <strong>dims</strong> and lights up <strong>one part at a time</strong>, each with a <strong>short balloon</strong>, top to bottom: the mode switch, the meter, the note, the instrument button, the strum check, the strings and the bar at the bottom. The balloons float on their own layer above the screen, so nothing in the tuner moves. Step through it on the phone below with <strong>Next</strong> and <strong>Skip tour</strong>, or let it play by itself. Experienced players lose nothing: one tap on <strong>Skip tour</strong> (or Back) ends the whole tour for good, and people updating from an earlier Twangle never see it.</p>
   </header>
 
   <form class="bar" onsubmit="return false" aria-label="Pick a style">
@@ -376,7 +397,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
       <figcaption><b>First start</b><span>Tap <i>Next</i>, or <i>Skip tour</i> to end it at once.</span></figcaption>
     </figure>
     <section class="side" aria-label="Tour steps">
-      <h2>The five steps</h2>
+      <h2>The seven steps</h2>
       <ol class="steps" id="steps"></ol>
       <div class="row2">
         <button type="button" class="tbtn" id="againBtn">Start the tour again</button>
@@ -398,7 +419,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     <li><b>4</b><span><strong>The words.</strong> Short enough? Right in Dutch? The table beside the phone has every text.</span></li>
     <li><b>5</b><span><strong>The movement.</strong> The light glides to the next part in a third of a second and the balloon fades in after it. Too slow, too fast, or just right?</span></li>
     <li><b>6</b><span><strong>Out of the way.</strong> <i>Skip tour</i> sits in every balloon and ends everything in one tap, no "are you sure". Clear enough?</span></li>
-    <li><b>7</b><span><strong>The order.</strong> Note, strings, instrument button, mode switch, bar. Would you change it, or leave a step out?</span></li>
+    <li><b>7</b><span><strong>The order.</strong> Top to bottom, left to right, the bar last: mode switch, meter, note, instrument button, strum check, strings, bar. Does each arrow point at its own part, and does no balloon sit on another button?</span></li>
   </ol>
 
   <aside class="ask">
@@ -747,21 +768,28 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   };
   /** The tour's steps: which parts are lit, the balloon's preferred side, the corner the hole copies. */
   const STEPS = [
-    { id: 'note', sel: ['.meter', '.notebox'], side: 'below', corner: 'card', name: 'The note and the needle',
-      en: 'How far off your note is', nl: 'Hoe ver je noot ernaast zit' },
-    { id: 'strings', sel: ['.strings'], side: 'above', corner: 'string', name: 'The strings',
-      en: 'Lock a string', nl: 'Zet een snaar vast' },
-    { id: 'picker', sel: ['.cpick'], side: 'above', corner: 'btn', name: 'The instrument-and-tuning button',
-      en: 'Pick instrument and tuning', nl: 'Kies instrument en stemming' },
     { id: 'mode', sel: ['.mode'], side: 'below', corner: 'btn', name: 'The mode switch',
       en: 'Tune strings or any note', nl: 'Stem snaren of elke noot' },
-    { id: 'bar', sel: ['.nb .ni'], side: 'above', corner: 'card', name: 'The bar at the bottom',
+    { id: 'meter', sel: ['.meter'], side: 'below', corner: 'card', name: 'The meter',
+      en: 'How far off you are', nl: 'Hoe ver je ernaast zit' },
+    { id: 'note', sel: ['.notebox'], side: 'below', corner: 'card', name: 'The note',
+      en: 'The note you play', nl: 'De noot die je speelt' },
+    { id: 'picker', sel: ['.cpick'], side: 'above', corner: 'btn', name: 'The instrument-and-tuning button',
+      en: 'Pick instrument and tuning', nl: 'Kies instrument en stemming' },
+    { id: 'strum', sel: ['.strum'], side: 'above', corner: 'btn', name: 'The strum check',
+      en: 'Strum to check every string', nl: 'Sla aan en check alle snaren' },
+    { id: 'strings', sel: ['.strings'], side: 'below', corner: 'string', name: 'The strings',
+      en: 'Lock a string', nl: 'Zet een snaar vast' },
+    { id: 'bar', sel: ['.nb .ni:not(.on)'], side: 'above', corner: 'card', name: 'Metronome and Settings in the bar',
       en: 'Metronome and settings', nl: 'Metronoom en instellingen' },
   ];
+  /** The controls people tap: a balloon keeps clear of the ones that aren't its own part where it can. */
+  const CONTROLS = ['.mode', '.cpick', '.strum', '.strings', '.nb .ni'];
 
   // ---- Geometry and timing (the build follows these) ---------------------------------------------
   const G = {
-    scrimAlpha: 0.62, scrimInk: 0.10, holePad: 8, holeSoft: 14, neonCut: 12,
+    scrimDarkBlack: 0.50, scrimDarkAlpha: 0.80, scrimLightInk: 0.60, scrimLightAlpha: 0.80, haloDark: 0.28, haloLight: 0.20, haloReach: 12,
+    holePad: 8, holeSoft: 14, neonCut: 12,
     ptrW: 14, ptrH: 8, ptrGap: 2, ptrEnd: 27, edge: 16, top: 40, bottom: 24, maxW: 260,
     glide: 300, fadeOut: 150, fadeIn: 200, dimIn: 300, dimOut: 250, autoStep: 4200, autoAgain: 2500,
   };
@@ -846,20 +874,30 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   // ---- The spotlight -----------------------------------------------------------------------------
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const dpNow = () => scr.clientWidth / +pwPick;
-  /** The lit hole for a step: the parts' bounds plus 8 dp, clamped to the screen, with the part's corner plus 8 dp. */
+  /** An element's box in the screen's CSS px. */
+  function boxOf(el) {
+    const sr = scr.getBoundingClientRect(), k = sr.width / scr.clientWidth || 1, r = el.getBoundingClientRect();
+    return { x0: (r.left - sr.left) / k, y0: (r.top - sr.top) / k, x1: (r.right - sr.left) / k, y1: (r.bottom - sr.top) / k };
+  }
+  /**
+   * The lit hole for a step: the parts' bounds plus 8 dp, clamped to the screen, with the part's corner plus 8 dp;
+   * e is the parts' own bounds (the pointer ends 2 dp from them), avoid the other controls' boxes.
+   */
   function holeFor(i) {
-    const sr = scr.getBoundingClientRect(), k = sr.width / scr.clientWidth || 1, dp = dpNow(), st = STEPS[i];
+    const dp = dpNow(), st = STEPS[i], own = new Set();
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const sel of st.sel) scr.querySelectorAll(sel).forEach((el) => {
-      const r = el.getBoundingClientRect();
-      x0 = Math.min(x0, (r.left - sr.left) / k); y0 = Math.min(y0, (r.top - sr.top) / k);
-      x1 = Math.max(x1, (r.right - sr.left) / k); y1 = Math.max(y1, (r.bottom - sr.top) / k);
+      const b = boxOf(el); own.add(el);
+      x0 = Math.min(x0, b.x0); y0 = Math.min(y0, b.y0); x1 = Math.max(x1, b.x1); y1 = Math.max(y1, b.y1);
     });
+    const e = { x0, y0, x1, y1 };
+    const avoid = [];
+    for (const sel of CONTROLS) scr.querySelectorAll(sel).forEach((el) => { if (!own.has(el)) avoid.push(boxOf(el)); });
     const cx = (x0 + x1) / 2, W = scr.clientWidth, H = scr.clientHeight, pad = G.holePad * dp;
     x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(W, x1 + pad); y1 = Math.min(H, y1 + pad);
     const sh = style().shape, corner = st.corner === 'btn' ? sh.btn : st.corner === 'string' ? sh.strR[0] : sh.card;
     const w = x1 - x0, h = y1 - y0;
-    return { x: x0, y: y0, w, h, r: Math.min(h / 2, w / 2, (corner + G.holePad) * dp), cx };
+    return { x: x0, y: y0, w, h, r: Math.min(h / 2, w / 2, (corner + G.holePad) * dp), cx, e, avoid };
   }
   function holePath(ctx, x, y, w, h, r, cut) {
     if (cut) {
@@ -873,14 +911,21 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, k = W / scr.clientWidth, dp = dpNow();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.shadowColor = 'transparent'; ctx.clearRect(0, 0, W, H);
     if (T.alpha <= 0) return;
-    const p = palette(style(), isDark()), col = isDark() ? p.bg : mix(p.bg, p.ink, G.scrimInk);
-    ctx.fillStyle = rgba(col, G.scrimAlpha * T.alpha); ctx.fillRect(0, 0, W, H);
+    const dark = isDark(), p = palette(style(), dark);
+    const col = dark ? mix(p.bg, [0, 0, 0], G.scrimDarkBlack) : mix(p.bg, p.ink, G.scrimLightInk);
+    ctx.fillStyle = rgba(col, (dark ? G.scrimDarkAlpha : G.scrimLightAlpha) * T.alpha); ctx.fillRect(0, 0, W, H);
     const o = T.hole; if (!o) return;
     // Cut the hole with a blurred shadow of a shape drawn off the canvas: a soft edge in every browser.
     ctx.globalCompositeOperation = 'destination-out';
     const off = W + 2000; ctx.shadowColor = '#000'; ctx.shadowBlur = G.holeSoft * dp * k; ctx.shadowOffsetX = off; ctx.shadowOffsetY = 0; ctx.fillStyle = '#000';
-    ctx.beginPath(); holePath(ctx, o.x * k - off, o.y * k, o.w * k, o.h * k, o.r * k, style().shape.kind === 'neon' ? G.neonCut * dp * k : 0); ctx.fill();
-    ctx.globalCompositeOperation = 'source-over'; ctx.shadowColor = 'transparent';
+    const cut = style().shape.kind === 'neon' ? G.neonCut * dp * k : 0;
+    ctx.beginPath(); holePath(ctx, o.x * k - off, o.y * k, o.w * k, o.h * k, o.r * k, cut); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    // The halo: the accent hugging the hole's edge outside only, fading out over 12 dp; steady, no pulse.
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); holePath(ctx, o.x * k, o.y * k, o.w * k, o.h * k, o.r * k, cut); ctx.clip('evenodd');
+    ctx.shadowColor = rgba(p.accent, 2 * (dark ? G.haloDark : G.haloLight) * T.alpha); ctx.shadowBlur = G.haloReach * dp * k;
+    ctx.beginPath(); holePath(ctx, o.x * k - off, o.y * k, o.w * k, o.h * k, o.r * k, cut); ctx.fill();
+    ctx.restore(); ctx.shadowColor = 'transparent';
   }
   const lerpHole = (a, b, e) => ({ x: lerp(a.x, b.x, e), y: lerp(a.y, b.y, e), w: lerp(a.w, b.w, e), h: lerp(a.h, b.h, e), r: lerp(a.r, b.r, e), cx: lerp(a.cx, b.cx, e) });
   /** One animation at a time: the hole from → to and the dim a0 → a1; a new one starts from where the last one is. */
@@ -910,20 +955,26 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     b.querySelector('.bnext').textContent = last ? t.done : t.next;
     b.setAttribute('aria-description', t.step(i + 1, STEPS.length));
   }
-  /** Places the balloon by the hole: its step's side if it fits, else the other, else over the part without a pointer. */
+  /**
+   * Places the balloon by its part's own element: its step's side if it fits, else the other; the other side
+   * when the preferred one would cover another control and the other fits without covering one; else over the
+   * part without a pointer. The pointer's tip ends 2 dp from the element.
+   */
   function placeBalloon(i, o) {
-    const b = T.balloon, dp = dpNow(), W = scr.clientWidth, H = scr.clientHeight, fs = +fsPick;
+    const b = T.balloon, dp = dpNow(), W = scr.clientWidth, H = scr.clientHeight, fs = +fsPick, e = o.e;
     fillBalloon(i);
     b.style.setProperty('--bmax', Math.min(W - 2 * G.edge * dp, G.maxW * dp * fs) + 'px');
     b.style.left = '0px'; b.style.top = '0px';
     const bw = b.offsetWidth, bh = b.offsetHeight, reach = (G.ptrGap + G.ptrH) * dp, topLim = G.top * dp, botLim = H - G.bottom * dp;
-    const room = { below: botLim - (o.y + o.h + reach), above: o.y - reach - topLim };
-    const pref = STEPS[i].side, other = pref === 'below' ? 'above' : 'below';
-    let side = room[pref] >= bh ? pref : room[other] >= bh ? other : 'over', top;
-    if (side === 'below') top = o.y + o.h + reach;
-    else if (side === 'above') top = o.y - reach - bh;
-    else top = clamp(room.below >= room.above ? o.y + o.h + reach : o.y - reach - bh, topLim, Math.max(topLim, botLim - bh));
+    const room = { below: botLim - (e.y1 + reach), above: e.y0 - reach - topLim };
     const left = clamp(o.cx - bw / 2, G.edge * dp, Math.max(G.edge * dp, W - G.edge * dp - bw));
+    const topOf = { below: e.y1 + reach, above: e.y0 - reach - bh };
+    const clear = (s) => o.avoid.every((a) => a.x1 <= left || left + bw <= a.x0 || a.y1 <= topOf[s] || topOf[s] + bh <= a.y0);
+    const pref = STEPS[i].side, other = pref === 'below' ? 'above' : 'below';
+    const fits = [pref, other].filter((s) => room[s] >= bh);
+    let side = fits.find(clear) || fits[0] || 'over', top;
+    if (side !== 'over') top = topOf[side];
+    else top = clamp(room.below >= room.above ? topOf.below : topOf.above, topLim, Math.max(topLim, botLim - bh));
     const px = clamp(o.cx - left, Math.min(G.ptrEnd * dp, bw / 2), Math.max(bw / 2, bw - G.ptrEnd * dp));
     b.dataset.side = side;
     b.querySelector('.ptr').style.left = (px - G.ptrW / 2 * dp - 1 * dp) + 'px';

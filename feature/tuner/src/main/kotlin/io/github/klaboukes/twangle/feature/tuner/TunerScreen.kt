@@ -421,7 +421,7 @@ fun TunerContent(
         if (state is TunerUiState.StrumCheck) {
             StrumPanel(
                 state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.NOTE),
+                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.METER),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
@@ -434,7 +434,7 @@ fun TunerContent(
                 glow = meterGlow,
                 animationsOff = animationsOff,
                 // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.NOTE),
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.METER),
                 reception = reception,
             )
         }
@@ -480,7 +480,7 @@ fun TunerContent(
             )
         }
     }
-    // The note is the tour's first step, together with the meter.
+    // The note (with its pill and frequency, or the wave) is a tour step of its own, after the meter.
     val note = @Composable { compact: Boolean -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact) } }
     val error = (state as? TunerUiState.Error)?.reason
 
@@ -858,6 +858,8 @@ private fun GuitarSlotFor(
                 controls.tuning, controls.notation, onTuningChange, instrument, strings,
                 controls.targetString, controls.lockedString, controls.inTune, onMenuOpenChange,
                 strum,
+                // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
+                inTour = mode == TunerMode.AUTO,
             )
         }
     } else {
@@ -914,7 +916,7 @@ private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> 
 /**
  * The instrument-and-tuning button ([CombinedPicker], "Guitar · Standard ⌄") centred above the string
  * row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch sits at the end
- * of the button's row.
+ * of the button's row. [inTour]: the button, the switch and the strings are the tour's steps.
  */
 @Composable
 private fun GuitarControls(
@@ -928,6 +930,7 @@ private fun GuitarControls(
     inTune: Boolean = false,
     onMenuOpenChange: (Boolean) -> Unit = {},
     strum: StrumToggleState? = null,
+    inTour: Boolean = true,
 ) {
     val picker = @Composable {
         CombinedPicker(
@@ -941,6 +944,7 @@ private fun GuitarControls(
             onNewTuning = instrument.onNewTuning,
             onEditTuning = instrument.onEdit,
             onDeleteTuning = instrument.onDelete,
+            inTour = inTour,
         )
     }
     val strings = @Composable {
@@ -953,10 +957,10 @@ private fun GuitarControls(
             onStringClick = stringActions.onClick,
             onStringLongClick = stringActions.onLongClick,
             soundingString = stringActions.sounding,
-            modifier = Modifier.tourTarget(TourPart.STRINGS),
+            modifier = if (inTour) Modifier.tourTarget(TourPart.STRINGS) else Modifier,
         )
     }
-    val toggle = @Composable { if (strum != null) StrumCheckToggle(strum.on, strum.onChange) }
+    val toggle = @Composable { if (strum != null) StrumCheckToggle(strum.on, strum.onChange, inTour = inTour) }
     Layout(contents = listOf(picker, strings, toggle)) { (pickerMeasurables, stringMeasurables, toggleMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)

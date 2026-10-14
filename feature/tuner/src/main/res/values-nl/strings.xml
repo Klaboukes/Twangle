@@ -130,7 +130,9 @@
     <string name="tour_title">Laat me rondkijken</string>
     <string name="tour_step_count">%1$d van %2$d</string>
     <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
-    <string name="tour_note">Hoe ver je noot ernaast zit</string>
+    <string name="tour_meter">Hoe ver je ernaast zit</string>
+    <string name="tour_note">De noot die je speelt</string>
+    <string name="tour_strum">Sla aan en check alle snaren</string>
     <string name="tour_strings">Zet een snaar vast</string>
     <string name="tour_picker">Kies instrument en stemming</string>
     <string name="tour_mode">Stem snaren of elke noot</string>
