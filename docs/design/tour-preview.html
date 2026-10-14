@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <title>Twangle Tour Preview</title>
 <!--
-TWANGLE FIRST-START TOUR, ROUND 1 (Phase 24 preview). Nothing is built yet; the owner approves the look here first.
+TWANGLE FIRST-START TOUR, ROUND 2 (Phase 24 preview). Nothing is built yet; the owner approves the look here first.
 Layer    The tour lies on its own overlay above the whole window (screen, navigation bar, sheets), never in the
          layout: nothing moves when it comes or goes, and under the dim layer the balloon may cover any part
          (owner decided 2026-10-14). Taps outside the balloon are swallowed (the lit part is not live, so the tour
@@ -12,10 +12,16 @@ Spotlight The part's bounds plus 8 dp on every side, clamped to the window. Corn
          (button shape for the mode switch and the instrument-and-tuning button, the string chips' radius for
          the strings, shapes.medium for the note and the bar) plus 8 dp, at most half the hole's height;
          Futuristic's are cut (12 dp at most). A soft edge (14 dp blur), no outline, no glow.
-Balloon  As the string-lock tip: shapes.medium, primaryContainer, a 1 dp primary outline, a 14 x 8 dp pointer at the
-         part's centre (kept 27 dp from the balloon's ends), plus a soft drop shadow (Futuristic: a faint accent
-         glow, cut corners). Padding 12 dp top, 14 dp sides, 8 dp bottom. Width hugs the text, at most
-         min(window - 32 dp, 260 dp x font scale). Inside: the step count ("2 of 5", 12 sp, muted), the text
+Balloon  Round 2 (owner, 2026-10-14: round 1's primaryContainer fill with a 1 dp primary outline looked off): no
+         outline at all; the balloon stands out by its fill and a soft two-layer drop shadow that also falls under
+         the pointer (Futuristic: an accent glow instead of the shadow, cut corners). Three fills to choose from:
+           Card   the style's surface (dark: lifted 7 % towards ink), text in ink, Next filled accent;
+           Accent the style's accent, text and Next's fill in on-accent, Next's text in the accent;
+           Glass  the surface at 74 % over a 16 dp frosted blur of the screen, a faint light top edge.
+         Above the text: the style's own mark (as under the open tab in the bar) and the step count in the
+         accent. shapes.medium corners, a 14 x 8 dp pointer at the part's centre (kept 27 dp from the balloon's
+         ends). Padding 12 dp top, 14 dp sides, 8 dp bottom. Width hugs the text, at most
+         min(window - 32 dp, 260 dp x font scale). Inside: the mark and step count ("2 of 5", 12 sp), the text
          (16 sp, 1.35 line height), then Skip (text button in the accent, at the start) and Next (filled accent,
          the style's button shape, at most 20 dp corners, 40 dp tall; Done on the last step). The two buttons
          wrap onto two rows (Next at the end) when they don't fit side by side. Grows with the font, no cap.
@@ -271,36 +277,47 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
 .balloon {
   position: absolute; left: 0; top: 0; box-sizing: border-box; width: max-content; max-width: var(--bmax, 260px);
   padding: calc(var(--dp) * 12) calc(var(--dp) * 14) calc(var(--dp) * 8);
-  background: var(--container); color: var(--fg); font-family: var(--pbody);
-  border: calc(var(--dp) * 1) solid var(--accent); border-radius: calc(var(--dp) * var(--card-r));
-  box-shadow: 0 calc(var(--dp) * 4) calc(var(--dp) * 14) rgba(0, 0, 0, var(--shadow-a));
+  background: var(--b-bg); color: var(--b-fg); font-family: var(--pbody);
+  border: 0; border-radius: calc(var(--dp) * var(--card-r));
+  /* One shadow for the body and the pointer together: no outline, the fill and the lift set it apart. */
+  filter: drop-shadow(0 calc(var(--dp) * 6) calc(var(--dp) * 10) rgba(0, 0, 0, var(--b-sh))) drop-shadow(0 calc(var(--dp) * 1) calc(var(--dp) * 2) rgba(0, 0, 0, calc(var(--b-sh) * .8)));
   opacity: 0; transition: opacity .15s ease-out; pointer-events: none;
 }
 .balloon.show { opacity: 1; transition: opacity .2s ease-in; pointer-events: auto; }
 .ptr { position: absolute; width: calc(var(--dp) * 14); height: calc(var(--dp) * 9); overflow: visible; display: block; }
-.balloon[data-side="above"] .ptr { top: 100%; }
-.balloon[data-side="below"] .ptr { bottom: 100%; transform: scaleY(-1); }
+.balloon[data-side="above"] .ptr { top: calc(100% - 1px); }
+.balloon[data-side="below"] .ptr { bottom: calc(100% - 1px); transform: scaleY(-1); }
 .balloon[data-side="over"] .ptr { display: none; }
-.ptr polygon { fill: var(--container); }
-.ptr polyline { fill: none; stroke: var(--accent); stroke-width: 1; stroke-linejoin: round; }
-.bcount { margin: 0 0 calc(var(--dp) * 4); font: 500 calc(var(--dp) * 12 * var(--fs))/1.3 var(--pbody); letter-spacing: .03em; color: var(--muted); }
+.ptr polygon { fill: var(--b-bg); }
+.bhead { display: flex; align-items: center; gap: calc(var(--dp) * 7); margin: 0 0 calc(var(--dp) * 4); }
+.balloon .mk { display: block; flex: none; background: var(--b-mark); }
+:root[data-shape="pebble"] .balloon .mk { box-shadow: calc(var(--dp) * 1.5) calc(var(--dp) * 1.2) 0 calc(var(--dp) * .6) color-mix(in srgb, var(--b-mark) 35%, transparent); }
+:root[data-shape="keys"] .balloon .mk { background: color-mix(in srgb, var(--b-mark) 32%, transparent); border-color: var(--b-mark); }
+:root[data-shape="soft"] .balloon .mk { box-shadow: 0 0 calc(var(--dp) * 6) color-mix(in srgb, var(--b-mark) 55%, transparent); }
+:root[data-shape="neon"] .balloon .mk { box-shadow: 0 0 calc(var(--dp) * 6) var(--b-mark), 0 0 calc(var(--dp) * 2) var(--b-mark); }
+.bcount { margin: 0; font: 500 calc(var(--dp) * 12 * var(--fs))/1.3 var(--pbody); letter-spacing: .03em; color: var(--b-count); }
 .btext { margin: 0; font: 400 calc(var(--dp) * 16 * var(--fs))/1.35 var(--pbody); text-wrap: pretty; overflow-wrap: break-word; }
 .bact { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: calc(var(--dp) * 4) calc(var(--dp) * 8); margin-top: calc(var(--dp) * 8); }
 .bact button { min-height: calc(var(--dp) * 40); padding: calc(var(--dp) * 6) calc(var(--dp) * 16); border-radius: calc(var(--dp) * min(var(--btn-r), 20)); font: 500 calc(var(--dp) * 14 * var(--fs))/1.2 var(--pbody); cursor: pointer; }
-.bact button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.bskip { background: none; border: 0; color: var(--accent); margin-inline-start: calc(var(--dp) * -12); }
-.bnext { background: var(--accent); color: var(--on-accent); border: 0; margin-inline-start: auto; }
+.bact button:focus-visible { outline: 2px solid var(--b-fg); outline-offset: 2px; }
+.bskip { background: none; border: 0; color: var(--b-skip); margin-inline-start: calc(var(--dp) * -12); }
+.bnext { background: var(--b-next); color: var(--b-next-fg); border: 0; margin-inline-start: auto; }
+/* The three fills. */
+:root[data-balloon="card"] { --b-bg: var(--b-card); --b-fg: var(--fg); --b-count: var(--accent); --b-mark: var(--accent); --b-skip: var(--accent); --b-next: var(--accent); --b-next-fg: var(--on-accent); }
+:root[data-balloon="accent"] { --b-bg: var(--accent); --b-fg: var(--on-accent); --b-count: color-mix(in srgb, var(--on-accent) 78%, transparent); --b-mark: var(--on-accent); --b-skip: var(--on-accent); --b-next: var(--on-accent); --b-next-fg: var(--accent); }
+:root[data-balloon="glass"] { --b-bg: color-mix(in srgb, var(--b-card) 74%, transparent); --b-fg: var(--fg); --b-count: var(--accent); --b-mark: var(--accent); --b-skip: var(--accent); --b-next: var(--accent); --b-next-fg: var(--on-accent); }
+:root[data-balloon="glass"] .balloon { backdrop-filter: blur(calc(var(--dp) * 16)) saturate(1.3); -webkit-backdrop-filter: blur(calc(var(--dp) * 16)) saturate(1.3); box-shadow: inset 0 calc(var(--dp) * 1) 0 color-mix(in srgb, #fff 22%, transparent); }
 :root[data-shape="pebble"] .balloon { border-radius: calc(var(--dp) * 18) calc(var(--dp) * 12) calc(var(--dp) * 20) calc(var(--dp) * 10) / calc(var(--dp) * 14) calc(var(--dp) * 18) calc(var(--dp) * 12) calc(var(--dp) * 16); }
 :root[data-shape="pebble"] .bnext { border-radius: calc(var(--dp) * 22) calc(var(--dp) * 16) calc(var(--dp) * 24) calc(var(--dp) * 14); }
 :root[data-shape="soft"] .bnext { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) rgba(255,255,255,.3), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) rgba(0,0,0,.18); }
 :root[data-shape="neon"] :is(.balloon, .bnext) { corner-shape: bevel; }
-:root[data-shape="neon"] .balloon { box-shadow: 0 0 calc(var(--dp) * 14) color-mix(in srgb, var(--accent) 30%, transparent); }
-:root[data-shape="neon"] .bnext { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border: calc(var(--dp) * 1.5) solid var(--accent); box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 30%, transparent); }
+:root[data-shape="neon"] .balloon { filter: drop-shadow(0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 40%, transparent)) drop-shadow(0 calc(var(--dp) * 2) calc(var(--dp) * 4) rgba(0, 0, 0, var(--b-sh))); }
+:root[data-shape="neon"] .bnext { background: color-mix(in srgb, var(--b-next) 16%, transparent); color: var(--b-next); border: calc(var(--dp) * 1.5) solid var(--b-next); box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--b-next) 30%, transparent); }
 </style>
 
 <div class="wrap">
   <header class="intro">
-    <p class="eyebrow">Twangle · Phase 24 preview · round 1</p>
+    <p class="eyebrow">Twangle · Phase 24 preview · round 2</p>
     <h1>Show me around: the first-start tour</h1>
     <p class="lede">The first time Twangle opens, the screen <strong>dims</strong> and lights up <strong>one part at a time</strong>, each with a <strong>short balloon</strong>: the note, the strings, the instrument button, the mode switch and the bar at the bottom. The balloons float on their own layer above the screen, so nothing in the tuner moves. Step through it on the phone below with <strong>Next</strong> and <strong>Skip tour</strong>, or let it play by itself. Experienced players lose nothing: one tap on <strong>Skip tour</strong> (or Back) ends the whole tour for good, and people updating from an earlier Twangle never see it.</p>
   </header>
@@ -340,6 +357,14 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
         <input type="radio" name="pw" id="pw-360" value="360"><label for="pw-360">360 dp narrow</label>
       </div>
     </fieldset>
+    <fieldset>
+      <legend class="tlabel">Balloon</legend>
+      <div class="seg">
+        <input type="radio" name="bl" id="bl-card" value="card"><label for="bl-card">Card</label>
+        <input type="radio" name="bl" id="bl-accent" value="accent"><label for="bl-accent">Accent</label>
+        <input type="radio" name="bl" id="bl-glass" value="glass"><label for="bl-glass">Glass</label>
+      </div>
+    </fieldset>
     <button type="button" class="tbtn" id="hardBtn">Hardest: Dutch, 2×, 360 dp</button>
   </form>
 
@@ -366,7 +391,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   <h3 class="sec">What to look at</h3>
   <ol class="look">
     <li><b>1</b><span><strong>The dim and the light.</strong> Everything but one part fades back in the style's own background colour, and that part stays bright. Calm enough, light and dark? Try Futuristic and Ancient in the dark too.</span></li>
-    <li><b>2</b><span><strong>The balloon.</strong> It looks like the old "Tap a string to lock it" tip, in each style's own corners. Does it belong in every style?</span></li>
+    <li><b>2</b><span><strong>The balloon, round 2.</strong> No hard border any more: the balloon lifts off the dimmed screen with a soft shadow (in Futuristic, a glow), and carries the style's own mark, the one under the open tab in the bottom bar. Three fills to compare with the <i>Balloon</i> switch: <i>Card</i> (the style's plain card colour), <i>Accent</i> (the style's own colour, bold) and <i>Glass</i> (frosted, the screen faintly showing through). Which one, and does it suit every style, light and dark?</span></li>
     <li><b>3</b><span><strong>The hardest case.</strong> Tap <i>Hardest: Dutch, 2×, 360 dp</i>. Balloons grow, flip above or below their part, or cover other parts. Under the dim layer that's allowed (your choice of 14 October); what matters is that the whole balloon and both buttons stay on the screen.</span></li>
     <li><b>4</b><span><strong>The words.</strong> Short enough? Right in Dutch? The table beside the phone has every text.</span></li>
     <li><b>5</b><span><strong>The movement.</strong> The light glides to the next part in a third of a second and the balloon fades in after it. Too slow, too fast, or just right?</span></li>
@@ -757,6 +782,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   let lang = pick('lang', ['en', 'nl'], 'en');
   let fsPick = pick('fs', ['1', '1.3', '2'], '1');
   let pwPick = pick('pw', ['393', '360'], '393');
+  let blPick = pick('bl', ['card', 'accent', 'glass'], 'card');
   let auto = pick('auto', ['on', 'off'], 'off') === 'on';
   const PH = { 393: 873, 360: 800 };
   let DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -788,8 +814,8 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
       ${navHTML()}
       <div class="tour"><canvas class="scrim" aria-hidden="true"></canvas>
         <div class="balloon" role="dialog" aria-label="${t.tour}" data-side="below">
-          <svg class="ptr" viewBox="0 0 14 9" aria-hidden="true"><polygon points="0,0 14,0 7,9"/><polyline points="0,0.5 7,8.6 14,0.5"/></svg>
-          <p class="bcount"></p><p class="btext"></p>
+          <svg class="ptr" viewBox="0 0 14 9" aria-hidden="true"><polygon points="0,0 14,0 7,9"/></svg>
+          <div class="bhead"><i class="mk"></i><p class="bcount"></p></div><p class="btext"></p>
           <div class="bact"><button type="button" class="bskip"></button><button type="button" class="bnext"></button></div>
         </div></div>
       <div class="gesture"></div>`;
@@ -977,6 +1003,8 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     const rr = sh.strR.length === 4 ? sh.strR : [sh.strR[0], sh.strR[0], sh.strR[0], sh.strR[0]]; rr.forEach((r, k) => set('--sr' + (k + 1), String(r)));
     set('--pw', pwPick); set('--ph', String(PH[pwPick])); set('--fs', fsPick); set('--afs', String(Math.min(1.3, +fsPick)));
     root.dataset.shape = sh.kind;
+    root.dataset.balloon = blPick;
+    set('--b-card', css(dark ? mix(p.surface, p.ink, 0.07) : p.surface)); set('--b-sh', dark ? '.55' : '.22');
     root.style.colorScheme = dark ? 'dark' : 'light';
     if (themePick === 'auto') delete root.dataset.theme; else root.dataset.theme = themePick;
     if (document.fonts && document.fonts.load) Promise.all([s.font, s.num].map((f) => document.fonts.load(`16px "${f}"`))).then(() => { fontsVersion++; size(); }, () => {});
@@ -989,6 +1017,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     lang: [() => lang, (v) => { lang = v; }],
     fs: [() => fsPick, (v) => { fsPick = v; }],
     pw: [() => pwPick, (v) => { pwPick = v; }],
+    bl: [() => blPick, (v) => { blPick = v; }],
   };
   const syncSegs = () => Object.keys(segs).forEach((name) => document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => { inp.checked = inp.value === segs[name][0](); }));
   Object.keys(segs).forEach((name) => document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => {
