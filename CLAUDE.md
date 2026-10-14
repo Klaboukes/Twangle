@@ -22,10 +22,10 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | `:app` | Android app | `MainActivity` (switches tuner ↔ settings ↔ About, draws the style's background), `TwangleApplication`, `AppContainer` (DI) |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
-| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames |
+| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones through `AudioTrack`) |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks |
-| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing |
+| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, pluck synthesis |
 | `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks left out of normal runs until Phase 23), `assertWhollyShown` (nothing clipped or cut off) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 

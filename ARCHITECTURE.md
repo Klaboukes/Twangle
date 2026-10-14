@@ -7,7 +7,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## Contents
 1. [Tech stack](#1-tech-stack): name, app ID and icon · rejected alternatives
 2. [Module structure](#2-module-structure)
-3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture
+3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
 6. [UI](#6-ui): UI state model · tuner screen · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
@@ -49,10 +49,11 @@ This file holds the design decisions, the numbers that define behaviour and the 
 :app               Android application: Activity, Application, AppContainer (DI), screen switching
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
-:core:audio        Microphone capture: AudioRecord wrapper exposing Flow<FloatArray>
+:core:audio        Microphone capture (AudioRecord → Flow<FloatArray>) and reference tones (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
-:core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing
+:core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
+                   pluck synthesis
 :core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough
 :baselineprofile   Android test module: Baseline Profile generator, startup and meter-frame benchmarks
 ```
@@ -65,7 +66,7 @@ Dependencies ("→" = depends on):
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
-:core:audio        → no other module
+:core:audio        → :core:dsp (PluckSynth makes the reference tone's samples)
 :core:dsp          → no other module
 :core:testing      → no other module; used by the UI tests of :feature:tuner and :feature:settings
 :baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
@@ -73,7 +74,7 @@ Dependencies ("→" = depends on):
 
 Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module and never imports `android.*`, so the most important code stays fast to test and portable.
-- `:core:audio` knows Android audio, nothing about notes or UI. `:core:settings` knows how settings are saved, nothing about audio or UI.
+- `:core:audio` knows Android audio, nothing about notes or UI (a tone is asked for in Hz). `:core:settings` knows how settings are saved, nothing about audio or UI.
 - `:core:designsystem` holds everything both screens draw with (including the meter and wave art, so the settings previews draw exactly what the tuner draws), and nothing about audio.
 - `:feature:*` modules never depend on each other. Only `:app` wires implementations together (`AppContainer`) and switches screens (`MainActivity`).
 - `:baselineprofile` runs only on demand with a phone connected (§4). CI never runs it.
@@ -279,8 +280,16 @@ Failures end the flow with a typed `AudioRecorderException`, mapped by `toTunerE
 
 **Measured on the Galaxy S26 (Android 16):** no `UNPROCESSED`, so `VOICE_RECOGNITION` at 48 kHz with no effects attached; a 440 Hz tone read 439.98 Hz (−0.1 cents) at −31 dBFS; quiet room noise −52 to −56 dBFS, right at the gate.
 
+### Reference tone
+Phase 17: the app can play a string's note so it can be tuned by ear. `TonePlayer` (`:core:audio`) has `play(frequencyHz)`, `stop()` and `isPlaying: StateFlow<Boolean>`; the caller turns the note into Hz with its `NoteMapper`, so the tone follows the A4 calibration.
+- **Sound:** `PluckSynth` (`:core:dsp`, pure) adds up harmonics of an ideal plucked string (Fletcher & Rossing, ch. 2): harmonic k starts at 1/k and decays exponentially with time constant 1.5 s / (1 + (k − 1)/2), so the tone starts bright and mellows like a string. Harmonics stop below 6 kHz and 0.45 × the rate (at most 32), so low notes keep enough harmonics to be heard on a phone speaker that can't play their fundamental. Each harmonic is a decaying phasor turned by a fixed complex step per sample: exact pitch, no tables, no allocation.
+- **Length and envelope:** 4 s from pluck to silence: a 5 ms raised-cosine attack (harmonics at 1/k starting together would jump like a sawtooth), then a 0.6 s raised-cosine fade that ends on exactly 0. `release()` fades out over 30 ms from the current level; a new note releases the old one first. The level is scaled so the sum of all harmonic amplitudes is 0.8 (about −2 dBFS), so it can never clip.
+- **Playback:** `AndroidTonePlayer` streams `ENCODING_PCM_FLOAT` mono at the phone's native output rate through an `AudioTrack` with `USAGE_MEDIA` / `CONTENT_TYPE_MUSIC`, so the media volume sets its loudness. The track exists only while a tone sounds. `AudioTrack.write` blocks, so a session runs on its own single-thread dispatcher and renders 10 ms chunks into one buffer (buffer ≥ 4 chunks); `play` and `stop` only set a request field under a lock and return. At the end the session pads one buffer of silence (a very short tone otherwise might never start), waits for the playback head to pass the last sample, releases the track, and only then `isPlaying` turns false. It turns true on `play`. A track that fails ends the session quietly (logged).
+- **Not yet:** no audio focus (a 4 s tone mixes with other audio), no UI. Next increments wire it to the strings and make the tuner ignore the mic while `isPlaying`.
+- **Measured:** every preset string of every instrument, at A4 = 415, 432, 440 and 466 Hz, reads within 1 cent with the app's YIN (`PluckSynthTest`), also 3 s into the tone and at 44.1 kHz.
+
 ## 4. Threading & performance
-- `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`.
+- `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`. The reference tone's blocking `AudioTrack.write()` has its own single thread too (§3, Reference tone).
 - **No allocations in the per-frame loop.** Buffers are allocated once; per-frame garbage at ~47 Hz causes GC jank.
 - **YIN difference function via FFT.** The direct O(W·τ_max) sum (~2.6 M multiply-adds per frame) took 69 % of the app's CPU cycles on the S26 (~7 ms per frame). `FftDifference` computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): energies as a running sum, the cross-correlation from one complex FFT carrying both real inputs plus one inverse (N = 4096, or 8192 for low notes; radix-2 `Fft`, doubles, no allocation). `FftDifferenceTest` checks it within 1e-10 of the direct sum. `./gradlew :core:dsp:benchmark` (kept out of CI): YIN **1.05 → 0.48 ms** per frame on the JVM. Budget: 2 ms.
 - **FFT passes block by block** (Phase 15). `Fft` used to run each pass twiddle by twiddle, sweeping the whole arrays once per twiddle; at N = 8192 (128 KB of doubles) they no longer stay in the CPU's cache, and the low-note window cost 4× the standard one on the JVM. Walking each pass block by block, in memory order, gives identical results and: JVM 0.48 → **0.18 ms** (4096), 2.0 → **0.49 ms** (8192).
@@ -589,14 +598,16 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     strobe/     StrobeMotion
+    synth/      PluckSynth (reference tone samples)
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)
 
 core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
-    AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector
-core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder
+    AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector,
+    TonePlayer (interface), AndroidTonePlayer
+core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
@@ -638,8 +649,8 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 ## 8. Testing strategy
 | Layer | How |
 |---|---|
-| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. |
-| `:core:audio` | JVM tests for source, rate and Bluetooth selection and chunk sizes. Instrumented tests record from the real mic (don't play test tones during them). `FakeAudioRecorder` (`testFixtures`) plays a `FloatArray` as chunks paced like a mic (instant under `runTest`), can loop or fail, and reports `isRecording` / `startCount`, so everything downstream, mic lifetime included, runs without a device. |
+| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. `PluckSynthTest`: the reference tone's pitch within 1 cent by YIN, decay, end on silence, no clipping, no click at start, end or release. |
+| `:core:audio` | JVM tests for source, rate and Bluetooth selection and chunk sizes. Instrumented tests record from the real mic (don't play test tones during them). `FakeAudioRecorder` (`testFixtures`) plays a `FloatArray` as chunks paced like a mic (instant under `runTest`), can loop or fail, and reports `isRecording` / `startCount`, so everything downstream, mic lifetime included, runs without a device. `FakeTonePlayer` (`testFixtures`) records `play`/`stop` and drives `isPlaying` (`finish()` = the tone died away). Instrumented `AndroidTonePlayerTest` plays short tones through the speaker: it ends by itself after the whole tone, `stop` ends it quickly, a new note replaces the old one. |
 | `:core:settings` | JVM tests on a real DataStore file: defaults, saving, restart, clamping, unknown or unreadable values, migrations. |
 | `:core:designsystem` | JVM tests: WCAG contrast of every palette, distinct styles, `ThemeMode.useDarkTheme`, font credits, the meter and wave maths. |
 | `:feature:tuner` | ViewModel and interpreter tests with `kotlinx-coroutines-test` and the fake recorder; Compose UI tests for each state, layout, TalkBack and every look. |

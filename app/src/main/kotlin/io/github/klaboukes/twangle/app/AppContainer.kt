@@ -2,7 +2,9 @@ package io.github.klaboukes.twangle.app
 
 import android.content.Context
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
+import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 
@@ -21,6 +23,9 @@ class AppContainer(private val appContext: Context) {
     val audioRecorder: AudioRecorder by lazy {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
+
+    /** Reference tones (Phase 17). Holds the speaker only while a tone sounds. */
+    val tonePlayer: TonePlayer by lazy { AndroidTonePlayer() }
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

@@ -23,6 +23,8 @@ kotlin {
 }
 
 dependencies {
+    // PluckSynth makes the reference tone's samples (pure DSP, no Android).
+    implementation(project(":core:dsp"))
     implementation(libs.androidx.core.ktx)
     api(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

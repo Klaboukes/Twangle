@@ -24,7 +24,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 17 — Reference tone
 Goal: the app can play the target note so players can tune by ear.
-- ☐ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds
+- ☑ Tone player in `:core:audio` (`AudioTrack`): a short plucked tone at the target pitch that follows A4 calibration and stops by itself after a few seconds (4 s; every preset string within 1 cent by YIN at A4 415–466 Hz)
 - ☐ Long-press a string (or a play button) to hear it; tap again to stop
 - ☐ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound
 - ☐ Volume follows the phone's media volume; TalkBack labels; phone check by ear

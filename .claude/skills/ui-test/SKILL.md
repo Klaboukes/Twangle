@@ -42,7 +42,7 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 - **A hang with `MIUILOG- Permission Denied Activity` in logcat:** the script's MIUI app-op loop wasn't running. Never run tests around the script.
 - **The laptop side died mid-run:** the tests carry on on the phone. Stop them with `adb shell am force-stop <package>.test` before the next run.
 - After a deliberate restyle, a failing pixel or layout check usually means the check hasn't caught up with the new look. Name the check, explain why, and adjust the check rather than the design.
-- `:core:audio` records from the real mic, so don't play test tones during it.
+- `:core:audio` records from the real mic, so don't play test tones during it. Its `AndroidTonePlayerTest` plays a few short tones through the speaker itself (about 5 s, at media volume).
 
 ## Writing or changing UI tests
 
