@@ -23,6 +23,7 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -620,7 +621,8 @@ class SettingsContentTest {
     @Test
     fun styleCardsComeInTheOwnersOrderThreeToARow() {
         show(AppSettings())
-        val bounds = VisualStyle.entries.map { compose.onNodeWithTag(styleCardTag(it)).fetchSemanticsNode().boundsInRoot }
+        // Unclipped: the second row may sit below the bottom of the screen.
+        val bounds = VisualStyle.entries.map { compose.onNodeWithTag(styleCardTag(it)).getUnclippedBoundsInRoot() }
         assertEquals(
             listOf(
                 VisualStyle.ANCIENT,
@@ -634,11 +636,11 @@ class SettingsContentTest {
         )
         for (row in bounds.chunked(3)) {
             row.zipWithNext { a, b ->
-                assertEquals("same row", a.top, b.top, 0.5f)
+                assertEquals("same row", a.top.value, b.top.value, 0.5f)
                 assertTrue("left to right", a.right <= b.left)
             }
         }
-        assertTrue("second row below the first", bounds[3].top >= bounds[0].bottom)
+        assertTrue("second row starts at ${bounds[3].top}, the first ends at ${bounds[0].bottom}: $bounds", bounds[3].top >= bounds[0].bottom)
     }
 
     /**

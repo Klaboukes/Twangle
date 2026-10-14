@@ -214,7 +214,19 @@ take_lock() {
     adb shell "rm -rf $LOCK && mkdir $LOCK" > /dev/null 2>&1
 }
 take_lock
-trap 'adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
+
+# The tests expect an upright phone. With auto-rotate on and the phone lying on its side, the screen
+# turns to landscape mid-run: the tuner hides its navigation bar there and the settings list is
+# shorter, so checks that pass upright fail. Hold the screen upright for the run, then put the
+# owner's rotation settings back.
+ROTATION_AUTO="$(adb shell settings get system accelerometer_rotation 2>/dev/null | tr -d '\r')"
+ROTATION_USER="$(adb shell settings get system user_rotation 2>/dev/null | tr -d '\r')"
+adb shell "settings put system accelerometer_rotation 0 && settings put system user_rotation 0" > /dev/null 2>&1
+restore_rotation() {
+    [[ "$ROTATION_USER" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$ROTATION_USER" > /dev/null 2>&1
+    [[ "$ROTATION_AUTO" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$ROTATION_AUTO" > /dev/null 2>&1
+}
+trap 'restore_rotation; adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
 # Ctrl+C or `timeout` stop the script through its EXIT trap too, so the lock and the loop below go.
 trap 'exit 130' INT TERM
 

@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -84,7 +85,7 @@ class StringLockTipStylesTest(private val style: VisualStyle) {
             }
         }
         val resources = context.createConfigurationContext(
-            context.resources.configuration.apply { setLocale(Locale.forLanguageTag(locale)) },
+            Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) },
         ).resources
         fun text(id: Int) = compose.onNodeWithText(resources.getString(id), useUnmergedTree = true)
         val tip = compose.onNodeWithText(resources.getString(R.string.tuner_string_lock_tip))
