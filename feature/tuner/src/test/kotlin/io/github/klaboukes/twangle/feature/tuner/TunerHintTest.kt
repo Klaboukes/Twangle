@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

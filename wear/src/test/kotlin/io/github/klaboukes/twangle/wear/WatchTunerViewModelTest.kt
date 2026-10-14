@@ -76,6 +76,41 @@ class WatchTunerViewModelTest {
     }
 
     @Test
+    fun `lets go of the mic at once when the screen turns off, and listens again when it comes on`() = runTest(dispatcher) {
+        val recorder = e4Recorder()
+        val vm = viewModel(recorder)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+        assertTrue(vm.state.value is WatchTunerState.Detected)
+
+        vm.setScreenOn(false)
+        advanceTimeBy(1)
+        assertFalse("no 5 s grace when the screen goes off", recorder.isRecording.value)
+        assertEquals(WatchTunerState.Listening, vm.state.value)
+
+        advanceTimeBy(10_000)
+        assertEquals(1, recorder.startCount)
+
+        vm.setScreenOn(true)
+        advanceTimeBy(1_000)
+        assertTrue(recorder.isRecording.value)
+        assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value is WatchTunerState.Detected)
+    }
+
+    @Test
+    fun `screen off before the tuner shows keeps the mic closed`() = runTest(dispatcher) {
+        val recorder = e4Recorder()
+        val vm = viewModel(recorder)
+        vm.setScreenOn(false)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(1_000)
+
+        assertEquals(0, recorder.startCount)
+        assertEquals(WatchTunerState.Listening, vm.state.value)
+    }
+
+    @Test
     fun `a busy mic shows an error, and retry opens it again`() = runTest(dispatcher) {
         val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
         val vm = viewModel(recorder)

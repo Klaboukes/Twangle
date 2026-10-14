@@ -9,8 +9,11 @@ sealed interface WatchTunerState {
     /** The microphone is open but no note is heard. */
     data object Listening : WatchTunerState
 
-    /** A note is heard: [note] and how far off it is, in whole [cents] (positive = sharp). */
-    data class Detected(val note: Note, val cents: Int) : WatchTunerState
+    /**
+     * A note is heard: [note] and how far off it is, in whole [cents] (positive = sharp), and
+     * whether it has been [inTune] long enough to count (the phone's `InTuneDetector`).
+     */
+    data class Detected(val note: Note, val cents: Int, val inTune: Boolean = false) : WatchTunerState
 
     /** The microphone could not be used. */
     data class Failed(val error: WatchTunerError) : WatchTunerState

@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumListener
 import io.github.klaboukes.twangle.core.dsp.strum.StrumResult

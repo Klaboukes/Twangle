@@ -19,6 +19,8 @@ android {
         // (the phone's own codes stay below that up to version 99.99.99). Bump with :app.
         versionCode = 1_000_900
         versionName = "0.9.0-beta"
+        // UI tests run on the Wear OS emulator, not the phone (scripts/ui-tests.sh leaves :wear out).
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -57,8 +59,17 @@ dependencies {
     implementation(libs.androidx.wear.compose.foundation)
     implementation(libs.androidx.wear.compose.material3)
 
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(testFixtures(project(":core:audio")))
     testImplementation(testFixtures(project(":core:dsp")))
+    // Only to check that the watch's copied colours still match the phone's default style.
+    testImplementation(project(":core:designsystem"))
+
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }

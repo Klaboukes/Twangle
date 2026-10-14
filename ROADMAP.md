@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–19 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
+Phases 0–20 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
 ---
 
@@ -21,16 +21,10 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☑ Phase 17: hold each string of a real guitar's tuning and tune by ear to the tone; check it sounds like a plucked string, at a comfortable loudness, and fades out by itself (owner, 2026-10-14: good enough for now)
 - ☐ Phase 18: with a real guitar in a quiet room, switch on strum check (the strings button beside "Guitar · Standard"), strum all six open strings and check each one reads like the tuner does when you play it alone; then detune one or two strings a little and leave one out (mute it). Try it in drop D too
 - ☐ Phase 19: play along with the metronome for a few minutes with a real guitar, at a few tempos and meters: check it feels steady, the accents help you find beat 1, and the clicks are pleasant at a comfortable loudness
+- ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
-
-## Phase 20 — Wear OS companion and home-screen widget
-Goal: Twangle on the watch and one tap from the home screen.
-- ☑ Home-screen widget: shows the chosen tuning and opens the tuner with one tap (the widget never holds the microphone) — plain RemoteViews, in the style's colours, redrawn by the app when the tuning or look changes
-- ☑ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp` — standalone `:wear` app with the phone's app ID, `:core:audio`'s recorder, a simple note-and-cents screen; starts and listens on the Wear OS 6 emulator
-- ☐ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off
-- ☐ Check on a Wear OS emulator; real watch test by the owner
 
 ## Phase 21 — Native pitch detector (only if needed)
 Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).

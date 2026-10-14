@@ -7,6 +7,8 @@
         <item quantity="one">%1$s cent</item>
         <item quantity="other">%1$s cents</item>
     </plurals>
+    <!-- What TalkBack adds while the note is in tune (the ring glows). -->
+    <string name="wear_in_tune">in tune</string>
     <!-- Microphone permission on the watch. -->
     <string name="wear_mic_needed">Twangle listens to your instrument with the watch\'s microphone.</string>
     <string name="wear_allow_mic">Allow microphone</string>

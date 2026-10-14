@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import kotlin.math.abs
 import kotlin.math.roundToInt
 

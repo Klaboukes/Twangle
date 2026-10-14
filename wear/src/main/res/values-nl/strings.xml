@@ -4,6 +4,7 @@
         <item quantity="one">%1$s cent</item>
         <item quantity="other">%1$s cent</item>
     </plurals>
+    <string name="wear_in_tune">zuiver</string>
     <string name="wear_mic_needed">Twangle luistert met de microfoon van je horloge naar je instrument.</string>
     <string name="wear_allow_mic">Microfoon toestaan</string>
     <string name="wear_open_settings">Instellingen openen</string>
