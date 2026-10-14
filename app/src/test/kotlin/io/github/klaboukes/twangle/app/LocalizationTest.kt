@@ -18,7 +18,7 @@ class LocalizationTest {
         .first { File(it, "settings.gradle.kts").isFile }
 
     private val modules: List<File> =
-        listOf("app", "feature", "core").map { File(root, it) }
+        listOf("app", "wear", "feature", "core").map { File(root, it) }
             .flatMap { if (File(it, "src").isDirectory) listOf(it) else it.listFiles().orEmpty().toList() }
             .filter { File(it, "src/main").isDirectory }
 

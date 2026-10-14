@@ -28,6 +28,7 @@ dependencyResolutionManagement {
 rootProject.name = "Twangle"
 
 include(":app")
+include(":wear")
 include(":feature:tuner")
 include(":feature:settings")
 include(":feature:metronome")

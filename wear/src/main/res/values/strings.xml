@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name" translatable="false">Twangle</string>
+    <!-- Watch tuner: shown while no note is heard. -->
+    <string name="wear_play_note">Play a note</string>
+    <!-- How far the note is off, under the note name. %1$s is the signed number, e.g. "+12" or "−3". -->
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="other">%1$s cents</item>
+    </plurals>
+    <!-- Microphone permission on the watch. -->
+    <string name="wear_mic_needed">Twangle listens to your instrument with the watch\'s microphone.</string>
+    <string name="wear_allow_mic">Allow microphone</string>
+    <string name="wear_open_settings">Open settings</string>
+    <!-- When the microphone can't be used. -->
+    <string name="wear_mic_busy">Another app is using the microphone.</string>
+    <string name="wear_mic_unavailable">The microphone can\'t be opened.</string>
+    <string name="wear_try_again">Try again</string>
+</resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Twangle "untangle" mark: a string comes in at an angle, makes one loop and leaves straight,
+     passing under itself where it crosses. Drawn on a 96-unit grid, then scaled into the 108dp
+     canvas so it stays inside the 66dp safe zone that every launcher mask keeps. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:scaleX="0.82"
+        android:scaleY="0.82"
+        android:translateX="8.9"
+        android:translateY="9.72">
+
+        <!-- Incoming string, cut flat where it goes under the outgoing line -->
+        <path
+            android:fillColor="#412402"
+            android:pathData="M28.82,76.82 L39.14,66.5 L51.86,66.5 L35.18,83.18 Z" />
+        <path
+            android:fillColor="#412402"
+            android:pathData="M32,80 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
+
+        <!-- The loop, then the straight outgoing string -->
+        <path
+            android:pathData="M61.3,50.7 A17,17 0 1,0 49,56 L84,56"
+            android:strokeWidth="9"
+            android:strokeColor="#412402"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

@@ -28,7 +28,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 20 — Wear OS companion and home-screen widget
 Goal: Twangle on the watch and one tap from the home screen.
 - ☑ Home-screen widget: shows the chosen tuning and opens the tuner with one tap (the widget never holds the microphone) — plain RemoteViews, in the style's colours, redrawn by the app when the tuning or look changes
-- ☐ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp`
+- ☑ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp` — standalone `:wear` app with the phone's app ID, `:core:audio`'s recorder, a simple note-and-cents screen; starts and listens on the Wear OS 6 emulator
 - ☐ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off
 - ☐ Check on a Wear OS emulator; real watch test by the owner
 

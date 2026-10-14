@@ -59,6 +59,7 @@ affected_modules() {
             core/testing/*) tuner=1; settings=1; metronome=1 ;;
             app/*) app=1 ;;
             baselineprofile/*) ;;
+            wear/*) ;; # the watch app: checked on a Wear OS emulator, not on the phone
             *) tuner=1; settings=1; metronome=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
         esac
     done <<< "$changed"

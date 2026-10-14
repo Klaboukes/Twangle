@@ -10,7 +10,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic) · metronome
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
-6. [UI](#6-ui): UI state model · navigation bar · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · metronome screen · home-screen widget · landscape and wide screens · accessibility · languages
+6. [UI](#6-ui): UI state model · navigation bar · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · metronome screen · home-screen widget · watch app (Wear OS) · landscape and wide screens · accessibility · languages
 7. [Package layout](#7-package-layout-per-module)
 8. [Testing strategy](#8-testing-strategy): fast UI tests · quick and thorough UI runs
 9. [Privacy](#9-privacy)
@@ -48,6 +48,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ```
 :app               Android application: Activity, Application, AppContainer (DI), navigation bar and screen switching,
                    home-screen widget
+:wear              Wear OS application (same app ID): the watch tuner, with its own mic and its own small UI
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
@@ -64,6 +65,7 @@ Dependencies ("→" = depends on):
 
 ```
 :app               → every module below (it wires them together)
+:wear              → :core:audio, :core:dsp (nothing else: no settings, no design system, no :feature module)
 :feature:tuner     → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :feature:metronome → :core:audio, :core:settings, :core:designsystem, :core:dsp
@@ -80,7 +82,7 @@ Rules:
 - `:core:dsp` is a plain `kotlin("jvm")` module and never imports `android.*`, so the most important code stays fast to test and portable.
 - `:core:audio` knows Android audio, nothing about notes or UI (a tone is asked for in Hz). `:core:settings` knows how settings are saved, nothing about audio or UI.
 - `:core:designsystem` holds everything both screens draw with (including the meter and wave art, so the settings previews draw exactly what the tuner draws), and nothing about audio.
-- `:feature:*` modules never depend on each other. Only `:app` wires implementations together (`AppContainer`) and switches screens (`MainActivity`).
+- `:feature:*` modules never depend on each other, and `:wear` uses none of them. Only `:app` wires implementations together (`AppContainer`) and switches screens (`MainActivity`).
 - `:baselineprofile` runs only on demand with a phone connected (§4). CI never runs it.
 
 ## 3. Signal pipeline
@@ -708,6 +710,15 @@ Phase 20 (`:app` `widget/`). A tile for the home screen, three cells by one (res
 - **TalkBack:** the tile is one button; the title reads as the tuner's button does ("Guitar, Standard"), then "Open the tuner".
 - **Tests:** `WidgetStateTest` (JVM: names, custom tuning, chromatic, which changes redraw); `TuningWidgetTest` (device: the views applied as a launcher does show the names in the style's colours and are tappable; drawing them records nothing; the tap's intent brings the open app from Settings back to the tuner).
 
+### Watch app (Wear OS)
+Phase 20 (`:wear`). A standalone Wear OS app (`com.google.android.wearable.standalone`): it listens with the watch's own microphone and needs nothing from the phone. Compose for Wear OS (`androidx.wear.compose` Material 3, `AppScaffold` with the time at the top), minSdk 30 (Wear OS 3).
+- **Same application ID as the phone** (`io.github.klaboukes.twangle`), as Wear OS and Play expect for a phone app and its watch app; namespace `…twangle.wear`. **`versionCode` = the phone's + 1,000,000** (1,000,900 now), because Play needs a different code for each build; bump it with `:app`'s. The launcher icon is the phone's adaptive icon (copied into `wear/src/main/res`).
+- **The pitch engine is the phone's**: `WatchPitchPipeline` runs `:core:dsp`'s `FrameAssembler` → `SignalGate` → YIN (`AnalysisSettings.newPitchDetector`) → `PitchSmoother`, with frame sizes from the recorder's rate, so a 16 kHz watch mic gets the same window and hop as 48 kHz. It leaves out the phone's extras (noise floor, reception, tips, strum check, low-note window): chromatic, A4 = 440 Hz, sharps. It allocates nothing per frame and sends a new `WatchTunerState` (`Listening`, `Detected(note, cents)`, `Failed`) only when the note or the whole cents change.
+- **The microphone is `:core:audio`'s `AndroidAudioRecorder`**, unchanged: unprocessed source, then voice recognition, the watch's native rate, the built-in mic while a Bluetooth headset is connected.
+- **Microphone lifetime** as on the phone: `WatchTunerViewModel.state` is `stateIn(WhileSubscribed(5_000))` and the screen collects it with `collectAsStateWithLifecycle()`, only once `RECORD_AUDIO` is granted. The permission is asked for when the app first opens; afterwards a button asks again, or opens the app's page in the watch's settings once Android stops showing its dialog. A busy or broken mic shows a message with "Try again".
+- **Screen (first version):** the note large (letter and octave apart), the cents under it ("+12 cents", "−3 cents"), "Play a note" while nothing is heard. The round-screen design, the in-tune ring and letting go of the mic when the watch screen turns off are the next increments.
+- **Tests:** `WatchPitchPipelineTest` (JVM, synthetic notes through the fake recorder: A4 in tune, cents within 1 of the played pitch, a 16 kHz mic, silence, few states for a held note) and `WatchTunerViewModelTest` (mic closed until collected, released 5 s after, error and retry, note names). On the Wear OS emulator (AVD `Wear_OS_Large_Round`, Wear OS 6) it installs, asks for the mic, shows "Play a note" and records through voice recognition at 48 kHz (the emulator has no unprocessed source), and lets go of the mic within the 5 s grace after Home; whether the PC's mic reaches it is not checked yet.
+
 ### Landscape and wide screens
 `tunerLayoutFor(width, height, compactLandscape)` (`TunerLayout.kt`, JVM-tested) picks the arrangement from the space, not the device: `SINGLE_COLUMN` (max 480 dp wide) unless the window is at least 600 dp wide *and* wider than tall. Then `COMPACT` by default, or `TWO_PANE` with the setting "Full layout on its side" (`keepTwoPaneLandscape`). `TunerScreenTest` checks both layouts and a live change on a phone on its side.
 
@@ -799,6 +810,10 @@ app/src/main/kotlin/io/github/klaboukes/twangle/app/
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState
 
+wear/src/main/kotlin/io/github/klaboukes/twangle/wear/
+    WatchActivity, WatchTunerViewModel, WatchPitchPipeline, WatchTunerState (+ WatchTunerError),
+    WatchTunerScreen (WatchTunerApp, WatchTuner, WatchNoteName), MicPermission (rememberWatchMicPermission)
+
 baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, MeterFramesBenchmark, TunerJourney
 ```
@@ -814,6 +829,7 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 | `:feature:metronome` | `MetronomeViewModelTest` with `FakeMetronomePlayer` and `FakeSettingsRepository`; Compose UI tests `MetronomeScreenTest` and `MetronomeStylesTest` (§6, *Metronome screen*). |
 | `:feature:settings` | `SettingsViewModel` tests with `FakeSettingsRepository`; `CreditsTest`; Compose UI tests (`SettingsContentTest`) for each control, About and the licence dialogs; `SettingsStylesTest` for Settings and About in every style. |
 | `:app` | `LocalizationTest` and `NavigationTest` (JVM); instrumented `MicLifecycleTest` (§5), `VolumeKeysTest` and `NavigationBarTest` (§6, *Navigation bar*). |
+| `:wear` | `WatchPitchPipelineTest` and `WatchTunerViewModelTest` (JVM) with the fake recorder and `TestSignals` (§6, *Watch app*). No device tests yet: they will run on the Wear OS emulator, not the phone (`scripts/ui-tests.sh` leaves `:wear` out). |
 | `:baselineprofile` | On demand, device needed (§4). |
 | Running UI tests | Always `scripts/ui-tests.sh` (the [ui-test skill](.claude/skills/ui-test/SKILL.md)), never Gradle's `connectedDebugAndroidTest`, which is 15–25 s slower per module and uninstalls the app. The script builds every test APK in one Gradle call, then installs and runs each module with `adb shell am instrument` under a time limit, prints one line per module and runs only the modules a branch touches. `-a key=value` passes an instrumentation argument. One run at a time holds the phone (a lock folder on it), its MIUI app-op loop ends with the run, and it wakes the screen before each module: a run beside another one, a screen that is off, or leftover loops (each about a third of a core) make the first test of a run time out, which in a `--thorough` run is always an Ancient one. |
 | Device | Manual checklist per release: real guitar, noisy room, Bluetooth headset, permission denial paths. |
@@ -828,6 +844,6 @@ Compose UI tests use `createSharedActivityComposeRule()` (`:core:testing`): one 
 While the look is still changing (October 2026 until Phase 23), a normal run leaves out the double checks: style test classes (`TunerStylesTest`, `SettingsStylesTest`, `MeterLooksTest`, `CompactLandscapeStylesTest`, `StringLockTipStylesTest`, `StringRowStylesTest`, two checks in `WaveViewTest`) run in the default style only (`allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)`), and `@Thorough` tests (variants of a quicker test in another font size, language, orientation or view) are skipped. `--thorough` runs everything. This cut the tuner suite from ~3 minutes to ~1. Each family keeps its hardest case in the quick run (e.g. Dutch at 2× font on a phone on its side), so most layout breaks still show at once. The six styles were finished in Phase 14 (October 2026), but the double checks stay out of normal runs until Phase 23: phases 15 to 22 still add screens (instruments, the tuning editor, the metronome), and every increment would pay the thorough run (about 15 minutes on the Xiaomi 12X, which also heats the phone). Each increment that changes a style's look, fonts or shapes runs `--thorough` once before it lands.
 
 ## 9. Privacy
-Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. The home-screen widget (§6) adds none: it shows the saved instrument and tuning on the home screen and holds no mic.
+Audio is processed in memory and thrown away immediately. Nothing is recorded to disk or sent over the network, and there is no `INTERNET` permission. The merged manifest holds only `RECORD_AUDIO`, `VIBRATE` (in-tune tick, metronome beat) and AndroidX's internal `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. The home-screen widget (§6) adds none: it shows the saved instrument and tuning on the home screen and holds no mic. The watch app (`:wear`, §6) asks only for `RECORD_AUDIO`, has no `INTERNET` either and stores nothing.
 
 The privacy policy is [PRIVACY.md](PRIVACY.md), with a Dutch copy in [PRIVACY.nl.md](PRIVACY.nl.md); keep the two in sync. Settings stay in DataStore on the device, and because `android:allowBackup="true"` (no extraction rules) Android's own backup and device transfer may include them. If a change touches permissions, stored data, backup or anything that leaves the device, update the policy (and its effective date) in the same change. The About page shows the gist; the Play listing will link to a public copy (Phase 23), and the data-safety form will say no data is collected or shared.

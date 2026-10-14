@@ -20,6 +20,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | Module | Type | Purpose |
 |---|---|---|
 | `:app` | Android app | `MainActivity` (switches tuner ↔ metronome ↔ settings ↔ About through the navigation bar or rail, draws the style's background), `TwangleApplication`, `AppContainer` (DI), the home-screen widget (`widget/`) |
+| `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
@@ -53,6 +54,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Android SDK: `%LOCALAPPDATA%\Android\Sdk`. `adb` is at `<sdk>/platform-tools/adb.exe` and is not on PATH.
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
+- Wear OS emulator: AVD `Wear_OS_Large_Round` (Wear OS 6, API 36, `system-images;android-36;android-wear-signed;x86_64`). Start it with `<sdk>/emulator/emulator.exe -avd Wear_OS_Large_Round`, then `./gradlew :wear:installDebug`. `<sdk>/cmdline-tools/latest` has `sdkmanager` and `avdmanager`; from Git Bash, write package paths with `/` instead of `;`.
 - **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in ARCHITECTURE.md and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
   - MIUI needs *Developer options → Install via USB* for `installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
   - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
@@ -60,7 +62,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
-`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main`, and uploads the debug APK as the `twangle-debug-apk` artifact.
+`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main` (the watch app included), and uploads the phone's and the watch's debug APKs as the `twangle-debug-apk` artifact.
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.

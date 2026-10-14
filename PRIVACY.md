@@ -1,6 +1,6 @@
 # Twangle privacy policy
 
-*Effective date: 13 October 2026* · [Nederlands](PRIVACY.nl.md)
+*Effective date: 14 October 2026* · [Nederlands](PRIVACY.nl.md)
 
 Twangle is a guitar tuner for Android, made by the developer Klaboukes. In short: **Twangle collects no data about you.** Nothing you play and nothing about you leaves your phone.
 
@@ -8,6 +8,9 @@ Twangle is a guitar tuner for Android, made by the developer Klaboukes. In short
 - Twangle needs the microphone to hear the note you play. Android asks your permission first, and you can take it back at any time in the phone's settings.
 - The microphone is only on **while the tuner screen is open**. When you go to the settings screen, switch apps, lock the phone or turn the screen off, Twangle lets go of the microphone within about 5 seconds. Android's microphone indicator shows when it is on.
 - The sound is analysed live, in the phone's memory, to find the pitch, and thrown away straight after. Twangle **never records, saves or sends** any sound.
+
+## On a watch
+Twangle also comes as a Wear OS watch app that works on its own, without the phone. It follows the same rules: it hears through the watch's own microphone only while its tuner is on the watch's screen, analyses the sound in the watch's memory and throws it away straight after, and never records, saves or sends anything. It has no internet permission either, and stores no settings.
 
 ## No internet, no tracking
 - Twangle has **no internet permission**, so it cannot send anything anywhere.

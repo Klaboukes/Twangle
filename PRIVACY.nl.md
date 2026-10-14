@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 13 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 14 oktober 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -8,6 +8,9 @@ Twangle is een gitaarstemmer voor Android, gemaakt door de ontwikkelaar Klabouke
 - Twangle heeft de microfoon nodig om de noot te horen die je speelt. Android vraagt eerst je toestemming, en die kun je altijd weer intrekken in de instellingen van je telefoon.
 - De microfoon staat alleen aan **zolang het stemscherm open is**. Ga je naar de instellingen, wissel je van app, vergrendel je de telefoon of gaat het scherm uit, dan laat Twangle de microfoon binnen ongeveer 5 seconden los. De microfoonindicator van Android laat zien wanneer hij aan staat.
 - Het geluid wordt live in het geheugen van de telefoon geanalyseerd om de toonhoogte te vinden, en daarna meteen weggegooid. Twangle **neemt nooit geluid op, bewaart het niet en verstuurt het niet**.
+
+## Op een horloge
+Twangle bestaat ook als app voor Wear OS-horloges, die zelfstandig werkt, zonder de telefoon. Daarvoor gelden dezelfde regels: hij luistert met de microfoon van het horloge alleen zolang de stemmer op het scherm van het horloge staat, analyseert het geluid in het geheugen van het horloge en gooit het daarna meteen weg, en neemt nooit iets op, bewaart niets en verstuurt niets. Ook de horloge-app heeft geen internettoestemming, en hij bewaart geen instellingen.
 
 ## Geen internet, geen tracking
 - Twangle heeft **geen internettoestemming** en kan dus niets versturen.
