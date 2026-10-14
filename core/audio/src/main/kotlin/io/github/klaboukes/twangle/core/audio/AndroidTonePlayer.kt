@@ -1,9 +1,13 @@
 package io.github.klaboukes.twangle.core.audio
 
+import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
@@ -31,8 +35,15 @@ import kotlinx.coroutines.launch
  * releases. When the tone has ended the session pads the track with one buffer of silence (so a
  * very short tone still starts playing), waits until the last sample has been played, then releases
  * the track and [isPlaying] turns false. A failing track ends the session the same way, quietly.
+ *
+ * Each session holds transient audio focus (`AUDIOFOCUS_GAIN_TRANSIENT`), so music from another
+ * app pauses while the tone sounds and resumes after it; losing focus (a call, another app's sound
+ * that won't share) stops the tone, and when focus is refused (during a call) nothing plays. With
+ * the media volume at 0 a session shows the phone's own volume panel, so a silent tone explains itself.
  */
-class AndroidTonePlayer : TonePlayer {
+class AndroidTonePlayer(context: Context) : TonePlayer {
+
+    private val audioManager = context.getSystemService(AudioManager::class.java)
 
     /** Sample rate of the tone: the phone's native output rate, 48 kHz if it reports nothing usable. */
     val sampleRate: Int = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
@@ -54,6 +65,23 @@ class AndroidTonePlayer : TonePlayer {
 
     private val playing = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = playing.asStateFlow()
+
+    private val attributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    // Asked for when a session starts, given up when it ends. A loss that lets the tone duck
+    // (a notification) is left to the system, which lowers the tone by itself; any other loss stops it.
+    private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+        .setAudioAttributes(attributes)
+        .setOnAudioFocusChangeListener(
+            { change ->
+                if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) stop()
+            },
+            Handler(Looper.getMainLooper()),
+        )
+        .build()
 
     override fun play(frequencyHz: Float) {
         require(frequencyHz > 0f && frequencyHz <= synth.maxFrequencyHz) {
@@ -91,7 +119,14 @@ class AndroidTonePlayer : TonePlayer {
     private suspend fun session() {
         var track: AudioTrack? = null
         var finished = false
+        var focused = false
         try {
+            if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                Log.i(TAG, "No audio focus (a call?): the tone stays silent")
+                return
+            }
+            focused = true
+            showVolumeIfSilent()
             val opened = openTrack()
             track = opened
             opened.play()
@@ -150,6 +185,7 @@ class AndroidTonePlayer : TonePlayer {
                 }
                 it.release()
             }
+            if (focused) audioManager.abandonAudioFocusRequest(focusRequest)
             if (!finished) {
                 synchronized(lock) {
                     active = false
@@ -164,12 +200,7 @@ class AndroidTonePlayer : TonePlayer {
         val minBytes = AudioTrack.getMinBufferSize(sampleRate, CHANNEL_MASK, ENCODING)
         val bufferBytes = maxOf(minBytes, chunkFrames * Float.SIZE_BYTES * BUFFERED_CHUNKS)
         val track = AudioTrack.Builder()
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build(),
-            )
+            .setAudioAttributes(attributes)
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setSampleRate(sampleRate)
@@ -185,6 +216,18 @@ class AndroidTonePlayer : TonePlayer {
             throw IllegalStateException("AudioTrack did not initialize at $sampleRate Hz")
         }
         return track
+    }
+
+    /**
+     * At media volume 0 the tone would be silent: show the phone's volume panel (at its level, not
+     * changing it), so the player sees why and can turn it up with the volume keys.
+     */
+    private fun showVolumeIfSilent() {
+        runCatching {
+            if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
+            }
+        }
     }
 
     /** Blocks until [count] samples of [buffer] are queued. */

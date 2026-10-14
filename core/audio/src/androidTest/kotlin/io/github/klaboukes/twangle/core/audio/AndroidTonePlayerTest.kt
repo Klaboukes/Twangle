@@ -1,12 +1,17 @@
 package io.github.klaboukes.twangle.core.audio
 
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -16,7 +21,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AndroidTonePlayerTest {
 
-    private val player = AndroidTonePlayer()
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val player = AndroidTonePlayer(context)
     private val toneMillis = (PluckSynth.DEFAULT_DURATION_SECONDS * 1000).toLong()
 
     @Test
@@ -59,6 +65,26 @@ class AndroidTonePlayerTest {
         assertTrue(player.isPlaying.value)
         player.stop()
         withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+        assertFalse(player.isPlaying.value)
+    }
+
+    /** Another app taking audio focus for good (here: the test, as another focus owner) stops the tone. */
+    @Test
+    fun losingAudioFocusStopsTheTone() = runBlocking {
+        player.play(220f)
+        delay(300)
+        assertTrue(player.isPlaying.value)
+        val audioManager = context.getSystemService(AudioManager::class.java)
+        val other = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build())
+            .setOnAudioFocusChangeListener {}
+            .build()
+        try {
+            assertEquals(AudioManager.AUDIOFOCUS_REQUEST_GRANTED, audioManager.requestAudioFocus(other))
+            withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+        } finally {
+            audioManager.abandonAudioFocusRequest(other)
+        }
         assertFalse(player.isPlaying.value)
     }
 

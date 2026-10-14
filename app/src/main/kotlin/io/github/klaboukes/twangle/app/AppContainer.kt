@@ -24,8 +24,8 @@ class AppContainer(private val appContext: Context) {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
 
-    /** Reference tones (Phase 17). Holds the speaker only while a tone sounds. */
-    val tonePlayer: TonePlayer by lazy { AndroidTonePlayer() }
+    /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
+    val tonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

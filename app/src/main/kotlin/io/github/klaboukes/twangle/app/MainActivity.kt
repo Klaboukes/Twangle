@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.app
 
 import android.graphics.Color
+import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -86,24 +87,32 @@ class MainActivity : ComponentActivity() {
                 val saveableState = rememberSaveableStateHolder()
                 saveableState.SaveableStateProvider(screen.name) {
                     when (screen) {
-                        Screen.TUNER -> TunerScreen(
-                            audioRecorder = container.audioRecorder,
-                            settingsRepository = container.settingsRepository,
-                            tonePlayer = container.tonePlayer,
-                            onOpenSettings = { screen = Screen.SETTINGS },
-                            savedMode = settings.mode,
-                            savedStringLockTipSeen = settings.stringLockTipSeen,
-                            savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
-                            savedInstrument = settings.instrument,
-                            savedCustomTunings = settings.customTunings,
-                            onOpenTuningEditor = { instrument, customTuningId ->
-                                editorInstrumentId = instrument.id
-                                editorTuningId = customTuningId
-                                screen = Screen.TUNING_EDITOR
-                            },
-                            // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
-                            modifier = Modifier.semantics { testTagsAsResourceId = true },
-                        )
+                        Screen.TUNER -> {
+                            // The volume keys set the reference tone's loudness (the media volume)
+                            // while the tuner is shown, also when no tone sounds.
+                            DisposableEffect(Unit) {
+                                volumeControlStream = AudioManager.STREAM_MUSIC
+                                onDispose { volumeControlStream = AudioManager.USE_DEFAULT_STREAM_TYPE }
+                            }
+                            TunerScreen(
+                                audioRecorder = container.audioRecorder,
+                                settingsRepository = container.settingsRepository,
+                                tonePlayer = container.tonePlayer,
+                                onOpenSettings = { screen = Screen.SETTINGS },
+                                savedMode = settings.mode,
+                                savedStringLockTipSeen = settings.stringLockTipSeen,
+                                savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
+                                savedInstrument = settings.instrument,
+                                savedCustomTunings = settings.customTunings,
+                                onOpenTuningEditor = { instrument, customTuningId ->
+                                    editorInstrumentId = instrument.id
+                                    editorTuningId = customTuningId
+                                    screen = Screen.TUNING_EDITOR
+                                },
+                                // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
+                                modifier = Modifier.semantics { testTagsAsResourceId = true },
+                            )
+                        }
                         Screen.SETTINGS -> {
                             BackHandler { screen = Screen.TUNER }
                             SettingsScreen(

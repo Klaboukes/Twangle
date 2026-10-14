@@ -533,6 +533,25 @@ class TunerContentTest {
         assertEquals(listOf(0), stringClicks)
     }
 
+    /** In Dutch: "a 2 laten horen" on the long-press, "Klinkt" while it sounds, "Toon stoppen" on every tap. */
+    @Test
+    fun dutchTalkBackCanPlayAStringAndHearsItSound() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl")
+        val play = dutch.getString(R.string.tuner_string_play, "a 2")
+        compose.onNode(hasContentDescription("a 2"))
+            .assert(SemanticsMatcher("long-click label is \"$play\"") { it.config.getOrNull(SemanticsActions.OnLongClick)?.label == play })
+            .performSemanticsAction(SemanticsActions.OnLongClick)
+        assertEquals(listOf(1), stringLongClicks)
+
+        shownSounding.value = 1
+        compose.waitForIdle()
+        val stop = dutch.getString(R.string.tuner_string_stop_tone)
+        compose.onNode(hasContentDescription("a 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, dutch.getString(R.string.tuner_string_sounding)))
+        compose.onNode(hasContentDescription("e 2"))
+            .assert(SemanticsMatcher("click label is \"$stop\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == stop })
+    }
+
     @Test
     fun aSoundingStringMovesNothing() {
         show(detected(-12.3f, targetString = 0))
