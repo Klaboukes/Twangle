@@ -121,9 +121,23 @@ internal fun meterLabel(meter: Meter): String = stringResource(
     },
 )
 
+/** The meter as TalkBack says it, e.g. "Six-eight time" (it would read "6/8" as a date or a fraction). */
+@Composable
+internal fun meterSpoken(meter: Meter): String = stringResource(
+    when (meter) {
+        Meter.TWO_FOUR -> R.string.metronome_meter_2_4_spoken
+        Meter.THREE_FOUR -> R.string.metronome_meter_3_4_spoken
+        Meter.FOUR_FOUR -> R.string.metronome_meter_4_4_spoken
+        Meter.FIVE_FOUR -> R.string.metronome_meter_5_4_spoken
+        Meter.SIX_EIGHT -> R.string.metronome_meter_6_8_spoken
+        Meter.SEVEN_EIGHT -> R.string.metronome_meter_7_8_spoken
+    },
+)
+
 /**
  * The meter picker at the top: 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8 in a row, one radio group for
- * TalkBack ("Beats in a bar"). With a very large font they wrap onto a second row.
+ * TalkBack ("Beats in a bar", each meter by its spoken name). With a very large font they wrap onto
+ * a second row.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -144,10 +158,12 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
     ) {
         for (option in Meter.entries) {
             val picked = option == meter
+            val spoken = meterSpoken(option)
             Box(
                 modifier = Modifier
                     .testTag(MetronomeTestTags.meter(option))
                     .selectable(selected = picked, role = Role.RadioButton, onClick = { onMeterChange(option) })
+                    .semantics { contentDescription = spoken }
                     .minimumInteractiveComponentSize(),
                 contentAlignment = Alignment.Center,
             ) {

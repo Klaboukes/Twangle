@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–19 on 2026-10-14). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -25,6 +25,8 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 15 — More instruments](#phase-15--more-instruments)
 - [Phase 16 — Custom tunings](#phase-16--custom-tunings)
 - [Phase 17 — Reference tone](#phase-17--reference-tone)
+- [Phase 18 — Strum all strings](#phase-18--strum-all-strings)
+- [Phase 19 — Metronome](#phase-19--metronome)
 
 ---
 
@@ -217,3 +219,18 @@ Goal: the app can play the target note so players can tune by ear.
 - ☑ Long-press a string (or a play button) to hear it; tap again to stop (a tap only stops, it doesn't lock; sounding rings in each style; TalkBack action "Play A 2")
 - ☑ The tuner ignores the microphone while a tone plays, so it doesn't measure its own sound (mic stays open, readings set aside while playing + 0.3 s)
 - ☑ Volume follows the phone's media volume; TalkBack labels; phone check by ear (volume keys set the media volume on the tuner; transient audio focus pauses other music; rings checked in all six styles, light and dark; listening is an owner check)
+
+## Phase 18 — Strum all strings
+Goal: strum once and see which strings are out of tune.
+- ☑ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable — `StrumDetector`: with a 341 ms frame ≤ 0.12 cent on strings with a clear partial, ≤ 2.3 on B3/E4 (under E2's harmonics); 1.9 ms per reading on the Xiaomi (ARCHITECTURE.md, *Strum check*)
+- ☑ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string) — joint fit of overlapping partials: an octave pair detuned against each other 7.3 → 0.44 cent; `StrumListener` gives the first reading 0.39–0.44 s after a strum, then one every 0.1 s; `StrumVerdict` flat / in tune / sharp / not heard; 2.6 ms per reading on the Xiaomi. Known limits: a soft upper octave string within 35 cents of the lower one reads up to 19 cents off, a missing D4 in DADGAD/open D reads as heard (ARCHITECTURE.md, *Strum check*)
+- ☑ "Strum check" view: every string shows flat, in tune or sharp at once, in each style — a switch beside the instrument-and-tuning button; the panel takes the meter's place, less sure strings hollow; a synthetic strum from a laptop speaker read A2 −21 / G3 +15 on the Xiaomi (ARCHITECTURE.md, *Strum check view*)
+- ☑ phone check with recorded strums from short test tones; owner check with a real guitar (now under *Owner checks*) — `scripts/strum-check.sh` plays synthetic strums from the computer's speaker to the Xiaomi: every string within 1 cent of what was played, missing strings caught. It found that the last reading, as the strings die away, was up to 7 cents off and that clicks and room sounds were read as strums; each string now shows the strum's readings together, weighted by loudness (ARCHITECTURE.md, *Strum check*, *Phone check*)
+
+## Phase 19 — Metronome
+Goal: a simple, steady metronome in the same app.
+- ☑ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8 (`ClickTrack` + `AndroidMetronomePlayer`; no drift over ten simulated minutes, beats 250 ms apart within ±0.02 ms on the Xiaomi 12X)
+- ☑ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat. Mock-up: [docs/design/metronome-nav-preview.html](docs/design/metronome-nav-preview.html). **Owner decided (2026-10-14):** bar variant **B · Frameless** (for the bar, below); keep the round tempo dial; the rest of the metronome as shown: meter picker 2/4 3/4 4/4 5/4 6/8 7/8 at the top, beat lights in the style's own wave marks (beat 1 largest, group starts middle sized), a frameless dial 30–250 BPM over 300° with the meter's scale rules and the style's arc and needle, the tempo with its Italian name, − / + by 1 BPM, Tap tempo (average of the last taps, reset after 2 s), Start / Stop, "Vibrate on the beat"; lit marks in the accent, never in-tune green; one soft accent glow behind the tempo on each beat; the quiet background; opens stopped. Until the bar lands it opens from a small metronome button beside the tuner's gear (temporary); Back returns to the tuner
+- ☑ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings (and the vibration switch; the screen stays on while it plays)
+- ☑ Timing drift measured over 10 minutes; English and Dutch texts; phone check (`scripts/metronome-drift.sh` on the Xiaomi 12X, 120 BPM for 10 min: every beat on its exact sample, speaker clock 0.0 ppm from the system clock, at most 0.02 ms off a perfect wall-clock grid, beat reports within ±0.3 ms, told 1–6 ms after the sound, no underruns; meter buttons heard by name, Dutch "slagen per minuut"; tuner, metronome and settings through the bar on the phone)
+- ☑ Bottom navigation bar with Tuner · Metronome · Settings (Material 3 `NavigationBar`), replacing the gear button; a navigation rail along the edge on a phone on its side, hidden in the compact layout; in each style, without a frame that fights the frameless meter. Mock-up first; English and Dutch, TalkBack and 2× font; phone check (variant B: icons and names on a calm field, the open tab in the accent with the style's mark; tabs heard as tabs; the gear and the temporary metronome button are gone, Settings lost its back arrow; checked on the Xiaomi 12X upright and on its side)

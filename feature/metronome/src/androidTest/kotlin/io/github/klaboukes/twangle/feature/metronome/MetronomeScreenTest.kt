@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -167,6 +168,8 @@ class MetronomeScreenTest {
             compose.onNodeWithTag(MetronomeTestTags.meter(meter))
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, androidx.compose.ui.semantics.Role.RadioButton))
         }
+        // Heard by name, not as "6/8" (which TalkBack can read as a date).
+        compose.onNodeWithTag(MetronomeTestTags.meter(Meter.SIX_EIGHT)).assertContentDescriptionEquals("Six-eight time")
         compose.onNodeWithTag(MetronomeTestTags.LIGHTS).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
     }
 
@@ -202,7 +205,8 @@ class MetronomeScreenTest {
         }
         compose.onNodeWithContentDescription("Langzamer").assertExists()
         compose.onNodeWithContentDescription("Tellen per maat").assertExists()
-        dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 tellen per minuut, Andante"))
+        compose.onNodeWithContentDescription("Driekwartsmaat").assertExists()
+        dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 slagen per minuut, Andante"))
     }
 
     private companion object {
