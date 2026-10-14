@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,11 +19,15 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -479,5 +484,188 @@ class DataStoreSettingsRepositoryTest {
             MeterLook.entries,
         )
         assertEquals(MeterLook.CLASSIC, MeterLook.DEFAULT)
+    }
+
+    // --- Custom tunings ---
+
+    private val dropC = listOf(36, 43, 48, 53, 57, 62).map(::Note)
+    private val openC = listOf(36, 43, 48, 55, 60, 64).map(::Note)
+    private val fifthsBass = listOf(24, 31, 38, 45).map(::Note)
+    private val customKey = stringPreferencesKey("custom_tunings")
+
+    @Test
+    fun `a new custom tuning is saved after the others, not picked, and survives a restart`() = runTest {
+        val repo = repository()
+        val first = repo.addCustomTuning("  Drop   C ", Instruments.GUITAR, dropC)
+        val second = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+
+        assertEquals("the name is normalized", "Drop C", first.name)
+        assertTrue(first.id.startsWith(CustomTuning.ID_PREFIX))
+        assertTrue("every tuning gets its own id", first.id != second.id)
+        assertEquals(Tunings.STANDARD, repo.settings.first().tuning)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(listOf(first, second), settings.customTunings)
+        assertEquals(listOf(second), settings.customTuningsFor(Instruments.BASS_4))
+        assertNull(settings.pickedCustomTuning)
+    }
+
+    @Test
+    fun `a custom tuning without a name or with the wrong number of notes is refused and nothing is saved`() = runTest {
+        val repo = repository()
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.addCustomTuning(" \n ", Instruments.GUITAR, dropC) }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.addCustomTuning("Drop C", Instruments.BASS_4, dropC) }
+        }
+        assertEquals(emptyList<CustomTuning>(), repo.settings.first().customTunings)
+    }
+
+    @Test
+    fun `picking a custom tuning picks its instrument too, and both survive a restart`() = runTest {
+        val repo = repository()
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        repo.setTuning(fifths.tuning)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(Instruments.BASS_4, settings.instrument)
+        assertEquals(fifths.tuning, settings.tuning)
+        assertEquals(fifths, settings.pickedCustomTuning)
+    }
+
+    @Test
+    fun `picking the instrument of the picked custom tuning keeps it`() = runTest {
+        val repo = repository()
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        repo.setTuning(drop.tuning)
+        repo.setInstrument(Instruments.GUITAR)
+        assertEquals(drop.tuning, repo.settings.first().tuning)
+
+        repo.setInstrument(Instruments.UKULELE)
+        assertEquals(Instruments.UKULELE.defaultTuning, repo.settings.first().tuning)
+    }
+
+    @Test
+    fun `editing a custom tuning keeps its id and place, and it stays picked with the new notes`() = runTest {
+        val repo = repository()
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        repo.setTuning(drop.tuning)
+
+        val changed = repo.updateCustomTuning(drop.id, " Open  C", openC)
+        assertEquals(CustomTuning(drop.id, "Open C", Instruments.GUITAR, openC), changed)
+        assertNull("an unknown id changes nothing", repo.updateCustomTuning("custom_gone", "X", openC))
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(listOf(changed, fifths), settings.customTunings)
+        assertEquals(Instruments.GUITAR, settings.instrument)
+        assertEquals(openC, settings.tuning.strings)
+        assertEquals(changed, settings.pickedCustomTuning)
+    }
+
+    @Test
+    fun `an edit that doesn't fit its instrument is refused and the tuning is kept`() = runTest {
+        val repo = repository()
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.updateCustomTuning(drop.id, "Bass", fifthsBass) }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.updateCustomTuning(drop.id, "", dropC) }
+        }
+        assertEquals(listOf(drop), repo.settings.first().customTunings)
+    }
+
+    @Test
+    fun `deleting the picked custom tuning picks its instrument's standard tuning`() = runTest {
+        val repo = repository()
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        repo.setTuning(fifths.tuning)
+
+        repo.deleteCustomTuning(fifths.id)
+        close()
+
+        val settings = repository().settings.first()
+        assertEquals(listOf(drop), settings.customTunings)
+        assertEquals(Instruments.BASS_4, settings.instrument)
+        assertEquals(Instruments.BASS_4.defaultTuning, settings.tuning)
+    }
+
+    @Test
+    fun `deleting another custom tuning keeps the picked one, and an unknown id changes nothing`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)
+        repo.setTuning(open.tuning)
+
+        repo.deleteCustomTuning(drop.id)
+        repo.deleteCustomTuning("custom_gone")
+        assertEquals(listOf(open), repo.settings.first().customTunings)
+        assertEquals(open.tuning, repo.settings.first().tuning)
+
+        repo.deleteCustomTuning(open.id)
+        assertNull("nothing is left behind", store.data.first()[customKey])
+        assertEquals(Tunings.STANDARD, repo.settings.first().tuning)
+    }
+
+    @Test
+    fun `damaged custom tunings fall back to the presets`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[customKey] = "custom_1|guitar|36,43,48|Too+few\n\u0000garbage"
+            it[stringPreferencesKey("instrument_id")] = Instruments.GUITAR.id
+            it[stringPreferencesKey("tuning_id")] = "custom_1"
+        }
+
+        val settings = repository(store).settings.first()
+        assertEquals(emptyList<CustomTuning>(), settings.customTunings)
+        assertEquals(Instruments.GUITAR, settings.instrument)
+        assertEquals(Tunings.STANDARD, settings.tuning)
+    }
+
+    @Test
+    fun `a damaged custom tuning costs only itself`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[customKey] = "custom_1|guitar|36,43,48,53,57,62|Drop+C\ncustom_2|banjo|1,2,3,4,5|Banjo"
+            it[stringPreferencesKey("tuning_id")] = "custom_2"
+        }
+
+        val settings = repository(store).settings.first()
+        assertEquals(listOf(CustomTuning("custom_1", "Drop C", Instruments.GUITAR, dropC)), settings.customTunings)
+        assertEquals("the lost tuning gives the guitar's standard", Tunings.STANDARD, settings.tuning)
+    }
+
+    @Test
+    fun `a saved custom tuning of another instrument gives the instrument's standard tuning`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        store.edit {
+            it[stringPreferencesKey("instrument_id")] = Instruments.CELLO.id
+            it[stringPreferencesKey("tuning_id")] = drop.id
+        }
+
+        val settings = repo.settings.first()
+        assertEquals(Instruments.CELLO, settings.instrument)
+        assertEquals(Instruments.CELLO.defaultTuning, settings.tuning)
+    }
+
+    @Test
+    fun `a custom tuning saved without its instrument opens on its own instrument`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass)
+        store.edit { it[stringPreferencesKey("tuning_id")] = fifths.id }
+
+        val settings = repo.settings.first()
+        assertEquals(Instruments.BASS_4, settings.instrument)
+        assertEquals(fifths.tuning, settings.tuning)
     }
 }

@@ -9,7 +9,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 2. [Module structure](#2-module-structure)
 3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
-5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings
+5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
 6. [UI](#6-ui): UI state model · tuner screen · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
 7. [Package layout](#7-package-layout-per-module)
 8. [Testing strategy](#8-testing-strategy): fast UI tests · quick and thorough UI runs
@@ -392,7 +392,8 @@ What each does:
 | `a4Hz` | 440 | Clamped to 415–466 and rounded (`AppSettings.normalizeA4`, also in the setter) |
 | `mode` | `AUTO` | `TunerMode.AUTO` / `CHROMATIC` |
 | `instrument` | Guitar | Key `instrument_id`; `setInstrument` also saves its standard tuning (the instrument already picked keeps its tuning) |
-| `tuning` | Standard | Key `tuning_id`; always one of the instrument's presets, and `setTuning` saves its instrument too |
+| `tuning` | Standard | Key `tuning_id`; always one of the instrument's presets or custom tunings, and `setTuning` saves its instrument too |
+| `customTunings` | none | Key `custom_tunings`; the player's own tunings, see *Custom tunings* below |
 | `notation` | `SHARPS` | `FLATS`, `SOLFEGE` |
 | `inTunePrecision` | `RELAXED` | `PRECISE`; key `in_tune_precision` |
 | `theme` | `SYSTEM` | `LIGHT`, `DARK` |
@@ -409,6 +410,14 @@ What each does:
 
 - **Forgiving reads:** a missing, unknown or out-of-range value gives its default; an unreadable file gives all defaults, and a corrupt one is replaced so saving works again. Instrument and tuning are read as a pair: no saved instrument (versions before the picker) or an unknown one gives the saved tuning's own instrument, else the guitar; a tuning that isn't one of the instrument's presets, or an unknown one, gives the instrument's standard tuning.
 - **Migrations** (in `DataStoreSettingsRepository`, not as enum constants, so no code can pick the old names again; JVM tests cover each case): while no `tuner_display` is saved, the old switch `show_waves` gives `WAVE` (on) or `NEEDLE` (off), and saving a display removes it. A saved display `"STROBE"` reads as `WAVE` with look `STROBE`, rewritten by the first `setDisplay` or `setWaveLook`. A saved look `"STRIPES"` reads as `STROBE`. A saved style `"PREHISTORIC"` or `"MIDDLE_AGES"` (the seven styles before October 2026) reads as `ANCIENT`, rewritten by the next `setStyle`; any other unknown style gives the default.
+
+### Custom tunings
+Phase 16. A `CustomTuning(id, name, instrument, notes)` (`:core:settings`) is a tuning the player made; its `tuning` is a plain `Tuning` with the same id and no spelling of its own (the sharps/flats setting writes it), so the tuner, string row and pitch range treat it like a preset. `AppSettings.customTunings` holds them all in the order they were made; `customTuningsFor(instrument)` gives one instrument's (for the picker, below its presets) and `pickedCustomTuning` the picked one, or null for a preset.
+- **Ids** are `custom_` plus a random UUID, made once by `addCustomTuning` and never changed, so editing keeps the tuning picked. No preset id starts with `custom_` (JVM-tested).
+- **Names** are normalized on every save and read (`CustomTuning.normalizeName`: trimmed, runs of white space made one space, at most 40 characters) and may not come out empty. Duplicate names are the editor's to refuse; compare normalized names.
+- **Notes** are one per string of the instrument (MIDI 0–127). The instrument is fixed when the tuning is made.
+- **Repository:** `addCustomTuning(name, instrument, notes)` saves it after the others and returns it, not picked (pick it with `setTuning(it.tuning)`); `updateCustomTuning(id, name, notes)` keeps its id, instrument and place, and a picked one stays picked with the new notes (that is a tuning change, so a locked string is released); `deleteCustomTuning(id)` removes it and, if it was picked, picks its instrument's standard tuning. Bad input (empty name, wrong number of notes) throws `IllegalArgumentException` and saves nothing. `FakeSettingsRepository` does the same, with ids `custom_1`, `custom_2`, ….
+- **Stored** in one string (`CustomTuningCodec`): a line per tuning, `id|instrument id|midi,midi,…|URL-encoded name`; fields added later go after the name and older readers ignore them. A line that can't be read (unknown instrument, wrong note count, bad number or note, no name, repeated id) is skipped and the rest kept; the next save writes only the good ones. A picked custom tuning that is gone, damaged or of another instrument gives the instrument's standard tuning, so damaged data always falls back to the presets.
 
 ## 6. UI
 

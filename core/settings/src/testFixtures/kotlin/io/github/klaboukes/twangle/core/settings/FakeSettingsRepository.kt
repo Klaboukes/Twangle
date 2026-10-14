@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.settings
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.update
 /**
  * In-memory [SettingsRepository] for tests. Starts from [initial]; [current] shows what was saved,
  * and setting [current] directly simulates a change made elsewhere (e.g. on the settings screen).
+ * New custom tunings get the ids `custom_1`, `custom_2`, … in the order they are added.
  */
 class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRepository {
 
@@ -33,8 +35,42 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         if (it.instrument == instrument) it else it.copy(instrument = instrument, tuning = instrument.defaultTuning)
     }
 
-    override suspend fun setTuning(tuning: Tuning) = state.update {
-        it.copy(instrument = Instruments.ofTuning(tuning.id) ?: it.instrument, tuning = tuning)
+    override suspend fun setTuning(tuning: Tuning) = state.update { settings ->
+        val instrument = Instruments.ofTuning(tuning.id)
+            ?: settings.customTunings.firstOrNull { it.id == tuning.id }?.instrument
+        settings.copy(instrument = instrument ?: settings.instrument, tuning = tuning)
+    }
+
+    private var lastCustomId = 0
+
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>): CustomTuning {
+        val added = CustomTuning(
+            "${CustomTuning.ID_PREFIX}${++lastCustomId}", CustomTuning.normalizeName(name), instrument, notes,
+        )
+        state.update { it.copy(customTunings = it.customTunings + added) }
+        return added
+    }
+
+    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>): CustomTuning? {
+        val old = state.value.customTunings.firstOrNull { it.id == id } ?: return null
+        val changed = CustomTuning(id, CustomTuning.normalizeName(name), old.instrument, notes)
+        state.update { settings ->
+            settings.copy(
+                customTunings = settings.customTunings.map { if (it.id == id) changed else it },
+                tuning = if (settings.tuning.id == id) changed.tuning else settings.tuning,
+            )
+        }
+        return changed
+    }
+
+    override suspend fun deleteCustomTuning(id: String) = state.update { settings ->
+        val deleted = settings.customTunings.firstOrNull { it.id == id } ?: return@update settings
+        val picked = settings.tuning.id == id
+        settings.copy(
+            customTunings = settings.customTunings - deleted,
+            instrument = if (picked) deleted.instrument else settings.instrument,
+            tuning = if (picked) deleted.instrument.defaultTuning else settings.tuning,
+        )
     }
 
     override suspend fun setNotation(notation: Notation) = state.update { it.copy(notation = notation) }

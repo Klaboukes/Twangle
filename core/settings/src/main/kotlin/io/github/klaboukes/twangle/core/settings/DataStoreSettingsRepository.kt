@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.settings
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -14,22 +15,27 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.util.UUID
 
 /**
  * [SettingsRepository] saved with Jetpack DataStore (Preferences) in the app's private files.
  *
  * Reading is forgiving: a missing, unknown or out-of-range value (e.g. a tuning removed in a later
  * version) falls back to its default, and an unreadable file gives all defaults instead of crashing
- * the tuner. Create it once per process with [create]: DataStore allows only one instance per file.
+ * the tuner. Damaged custom tunings are skipped (see [CustomTuningCodec]), and a picked one that is
+ * gone gives its instrument's standard tuning. Create it once per process with [create]: DataStore
+ * allows only one instance per file. [newId] makes the ids of new custom tunings.
  */
 class DataStoreSettingsRepository internal constructor(
     private val dataStore: DataStore<Preferences>,
+    private val newId: () -> String = { CustomTuning.ID_PREFIX + UUID.randomUUID() },
 ) : SettingsRepository {
 
     override val settings: Flow<AppSettings> = dataStore.data
@@ -47,7 +53,7 @@ class DataStoreSettingsRepository internal constructor(
 
     override suspend fun setInstrument(instrument: Instrument) {
         dataStore.edit {
-            if (instrumentAndTuning(it).first == instrument) return@edit
+            if (instrumentAndTuning(it, customTunings(it)).first == instrument) return@edit
             it[INSTRUMENT_ID] = instrument.id
             it[TUNING_ID] = instrument.defaultTuning.id
         }
@@ -56,7 +62,40 @@ class DataStoreSettingsRepository internal constructor(
     override suspend fun setTuning(tuning: Tuning) {
         dataStore.edit {
             it[TUNING_ID] = tuning.id
-            Instruments.ofTuning(tuning.id)?.let { instrument -> it[INSTRUMENT_ID] = instrument.id }
+            val instrument = Instruments.ofTuning(tuning.id)
+                ?: customTunings(it).firstOrNull { custom -> custom.id == tuning.id }?.instrument
+            instrument?.let { found -> it[INSTRUMENT_ID] = found.id }
+        }
+    }
+
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>): CustomTuning {
+        val added = CustomTuning(newId(), CustomTuning.normalizeName(name), instrument, notes)
+        dataStore.edit { saveCustomTunings(it, customTunings(it) + added) }
+        return added
+    }
+
+    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>): CustomTuning? {
+        var updated: CustomTuning? = null
+        dataStore.edit {
+            val tunings = customTunings(it)
+            val index = tunings.indexOfFirst { custom -> custom.id == id }
+            if (index < 0) return@edit
+            val changed = CustomTuning(id, CustomTuning.normalizeName(name), tunings[index].instrument, notes)
+            saveCustomTunings(it, tunings.toMutableList().apply { set(index, changed) })
+            updated = changed
+        }
+        return updated
+    }
+
+    override suspend fun deleteCustomTuning(id: String) {
+        dataStore.edit {
+            val tunings = customTunings(it)
+            val deleted = tunings.firstOrNull { custom -> custom.id == id } ?: return@edit
+            saveCustomTunings(it, tunings - deleted)
+            if (it[TUNING_ID] == id) {
+                it[INSTRUMENT_ID] = deleted.instrument.id
+                it[TUNING_ID] = deleted.instrument.defaultTuning.id
+            }
         }
     }
 
@@ -138,12 +177,14 @@ class DataStoreSettingsRepository internal constructor(
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
         val oldStrobe = prefs[DISPLAY] == OLD_STROBE_DISPLAY
-        val (instrument, tuning) = instrumentAndTuning(prefs)
+        val customTunings = customTunings(prefs)
+        val (instrument, tuning) = instrumentAndTuning(prefs, customTunings)
         return AppSettings(
             a4Hz = prefs[A4_HZ]?.let(AppSettings::normalizeA4) ?: defaults.a4Hz,
             mode = enumOrNull<TunerMode>(prefs[MODE]) ?: defaults.mode,
             instrument = instrument,
             tuning = tuning,
+            customTunings = customTunings,
             notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
@@ -204,6 +245,9 @@ class DataStoreSettingsRepository internal constructor(
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
 
+        /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
+        private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")
+
         /** The app's settings, stored in `files/datastore/settings.preferences_pb`. Call once per process. */
         fun create(context: Context): SettingsRepository = DataStoreSettingsRepository(
             PreferenceDataStoreFactory.create(
@@ -212,18 +256,31 @@ class DataStoreSettingsRepository internal constructor(
             ) { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
         )
 
+        private fun customTunings(prefs: Preferences): List<CustomTuning> =
+            CustomTuningCodec.decode(prefs[CUSTOM_TUNINGS])
+
+        private fun saveCustomTunings(prefs: MutablePreferences, tunings: List<CustomTuning>) {
+            if (tunings.isEmpty()) prefs.remove(CUSTOM_TUNINGS) else prefs[CUSTOM_TUNINGS] = CustomTuningCodec.encode(tunings)
+        }
+
         /**
          * The saved instrument and tuning, always a matching pair. Versions before the instrument
-         * picker saved only a (guitar) tuning, whose instrument it then is. A tuning that isn't one
-         * of the instrument's presets, or a missing or unknown one, gives the instrument's standard
-         * tuning; an unknown instrument the tuning's own, else the default guitar.
+         * picker saved only a (guitar) tuning, whose instrument it then is. A tuning that is neither
+         * one of the instrument's presets nor one of its [customs], or a missing or unknown one (a
+         * deleted or damaged custom tuning), gives the instrument's standard tuning; an unknown
+         * instrument the tuning's own, else the default guitar.
          */
-        private fun instrumentAndTuning(prefs: Preferences): Pair<Instrument, Tuning> {
+        private fun instrumentAndTuning(prefs: Preferences, customs: List<CustomTuning>): Pair<Instrument, Tuning> {
             val tuningId = prefs[TUNING_ID]
+            val custom = tuningId?.let { id -> customs.firstOrNull { it.id == id } }
             val instrument = prefs[INSTRUMENT_ID]?.let(Instruments::byId)
+                ?: custom?.instrument
                 ?: tuningId?.let(Instruments::ofTuning)
                 ?: Instruments.DEFAULT
-            return instrument to (tuningId?.let(instrument::tuningById) ?: instrument.defaultTuning)
+            val tuning = tuningId?.let(instrument::tuningById)
+                ?: custom?.takeIf { it.instrument == instrument }?.tuning
+                ?: instrument.defaultTuning
+            return instrument to tuning
         }
 
         /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */

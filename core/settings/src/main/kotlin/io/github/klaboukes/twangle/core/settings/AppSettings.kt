@@ -166,9 +166,12 @@ data class AppSettings(
     val a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
     /** Guitar or chromatic, as last picked on the tuner, so the app reopens in it. */
     val mode: TunerMode = TunerMode.AUTO,
-    /** The instrument picked beside the tuning picker; [tuning] is always one of its presets. */
+    /** The instrument picked in the tuning picker; [tuning] is always one of its presets or custom tunings. */
     val instrument: Instrument = Instruments.DEFAULT,
+    /** A preset of [instrument], or the [CustomTuning.tuning] of one of its [customTunings]. */
     val tuning: Tuning = Tunings.DEFAULT,
+    /** The tunings the player made, for every instrument, in the order they were made. */
+    val customTunings: List<CustomTuning> = emptyList(),
     val notation: Notation = Notation.DEFAULT,
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
@@ -205,6 +208,13 @@ data class AppSettings(
     /** The one-time tip "Tap a string to lock it" was dismissed, so it doesn't come back. */
     val stringLockTipSeen: Boolean = false,
 ) {
+    /** The custom tuning that is picked, or null when [tuning] is a preset. */
+    val pickedCustomTuning: CustomTuning? get() = customTunings.firstOrNull { it.id == tuning.id }
+
+    /** The player's own tunings for [instrument], in the order they were made. */
+    fun customTuningsFor(instrument: Instrument): List<CustomTuning> =
+        customTunings.filter { it.instrument == instrument }
+
     companion object {
         /** Rounds [hz] to whole Hz and keeps it in the range [NoteMapper] accepts. NaN gives the default. */
         fun normalizeA4(hz: Float): Float =
