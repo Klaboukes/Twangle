@@ -89,13 +89,23 @@ class FrameAssembler(
     fun readFrame(out: FloatArray, length: Int = windowSize) {
         check(isFrameReady) { "No frame is ready" }
         require(length in 1..capacity) { "length must be in 1..$capacity, was $length" }
+        copyLatest(out, length)
+        isFrameReady = false
+    }
+
+    /**
+     * Copies the latest [length] samples (at most [capacity]) into [out], oldest first, at any
+     * time and without touching [isFrameReady]: e.g. a long strum frame read right after the
+     * hop's own frame. Samples older than [available] read as silence.
+     */
+    fun copyLatest(out: FloatArray, length: Int) {
+        require(length in 1..capacity) { "length must be in 1..$capacity, was $length" }
         require(out.size >= length) { "Output must hold $length samples, was ${out.size}" }
         // The newest sample sits just before writePos: copy start..end of the ring, then the rest from 0.
         val start = (writePos - length + capacity) % capacity
         val first = minOf(length, capacity - start)
         System.arraycopy(ring, start, out, 0, first)
         System.arraycopy(ring, 0, out, first, length - first)
-        isFrameReady = false
     }
 
     /** Passes on the ready frame without reading it, e.g. while a longer window is still filling. */

@@ -58,6 +58,20 @@ class StrumAccuracyReport {
             }
             single.print("one string ±10/20/30 (36 strums)")
 
+            val pairs = Worst()
+            for (a in 0 until 6) {
+                for (b in a + 1 until 6) {
+                    for ((offA, offB) in listOf(10f to -20f, -30f to 30f, 20f to 10f, -10f to -30f)) {
+                        val cents = FloatArray(6).also {
+                            it[a] = offA
+                            it[b] = offB
+                        }
+                        pairs.add(detect(detector, standard, StrumChords.pluckSynthStrum(StrumChords.detuned(standard, cents), n)), cents)
+                    }
+                }
+            }
+            pairs.print("two strings ±10..30 (60 strums)")
+
             val random = Random(3)
             val chords = Worst()
             repeat(100) {
@@ -75,7 +89,32 @@ class StrumAccuracyReport {
                 missing.add(result, zero, skip = s)
             }
             missing.print("one string missing, others ($found of 6 missing ones caught)")
+            uneven(detector, standard, n, "uneven: ±30, gains .3-1")
         }
+    }
+
+    // 100 strums, every string random within ±30 cents at a random gain from 0.3 to 1; then the same
+    // with one random string left out. Counts present strings read as missing and missing ones read
+    // as heard.
+    private fun uneven(detector: StrumDetector, expected: FloatArray, n: Int, label: String) {
+        val random = Random(5)
+        val all = Worst()
+        var lost = 0
+        var heard = 0
+        val strings = expected.size
+        repeat(100) {
+            val cents = FloatArray(strings) { (random.nextDouble() * 60 - 30).toFloat() }
+            val gains = FloatArray(strings) { (0.3 + 0.7 * random.nextDouble()).toFloat() }
+            val result = detect(detector, expected, StrumChords.pluckSynthStrum(StrumChords.detuned(expected, cents), n, gains = gains))
+            all.add(result, cents)
+            val missing = random.nextInt(strings)
+            gains[missing] = 0f
+            val without = detect(detector, expected, StrumChords.pluckSynthStrum(StrumChords.detuned(expected, cents), n, gains = gains))
+            if (without.present[missing]) heard++
+            for (s in 0 until strings) if (s != missing && !without.present[s]) lost++
+        }
+        all.print("$label (100)")
+        println("  ${"  … one left out (100)".padEnd(38)}others read as missing $lost of ${100 * (strings - 1)}, missing read as heard $heard of 100")
     }
 
     @Test
@@ -99,6 +138,7 @@ class StrumAccuracyReport {
                 if (result.present[s]) missed.append(" $s")
             }
             println("  ${name.padEnd(38)} missing string read as heard:${if (missed.isEmpty()) " none" else missed}")
+            if (tuning.stringCount == 6) uneven(detector, expected, n, "$name uneven")
         }
     }
 

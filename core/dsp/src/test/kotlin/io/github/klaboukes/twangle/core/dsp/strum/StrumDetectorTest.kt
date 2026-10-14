@@ -15,11 +15,12 @@ import kotlin.math.log2
 import kotlin.math.sqrt
 
 /**
- * Phase 18 spike: the strum detector on synthetic strums of [PluckSynth][io.github.klaboukes.twangle.core.dsp.synth.PluckSynth]
+ * The strum detector on synthetic strums of [PluckSynth][io.github.klaboukes.twangle.core.dsp.synth.PluckSynth]
  * strings, at the default 341 ms frame. Limits are set a little above what was measured (see
  * [StrumAccuracyReport] and ARCHITECTURE.md, *Strum check*): strings with a clear partial within
  * [CLEAR_CENTS], shadowed ones (B3 and E4 in standard tuning, under E2's 3rd and 4th harmonic)
- * within [SHADOWED_CENTS].
+ * within [SHADOWED_CENTS]. Each string's [StrumVerdict] must match the truth wherever the reading's
+ * error can't cross the verdict's limit.
  */
 class StrumDetectorTest {
 
@@ -44,6 +45,15 @@ class StrumDetectorTest {
             val limit = if (result.shadowed[s]) SHADOWED_CENTS else clearCents
             val error = abs(result.cents[s] - trueCents[s])
             assertTrue("$label: string $s reads ${result.cents[s]}, true ${trueCents[s]}", error <= limit)
+            // Where the reading's error can't cross the verdict's limit, the verdict must match the truth.
+            val tolerance = StrumVerdict.DEFAULT_TOLERANCE_CENTS + if (result.shadowed[s]) StrumVerdict.SHADOWED_MARGIN_CENTS else 0f
+            val truth = when {
+                abs(trueCents[s]) + limit <= tolerance -> StrumVerdict.IN_TUNE
+                abs(trueCents[s]) - limit <= tolerance -> null
+                trueCents[s] < 0 -> StrumVerdict.FLAT
+                else -> StrumVerdict.SHARP
+            }
+            if (truth != null) assertEquals("$label: string $s verdict", truth, StrumVerdict.of(result, s))
         }
     }
 
@@ -77,6 +87,22 @@ class StrumDetectorTest {
     }
 
     @Test
+    fun `two strings off by 10 to 30 cents`() {
+        val offsets = listOf(10f to -20f, -30f to 30f, 20f to 10f, -10f to -30f)
+        for (a in 0 until 6) {
+            for (b in a + 1 until 6) {
+                for ((offA, offB) in offsets) {
+                    val cents = FloatArray(6).also {
+                        it[a] = offA
+                        it[b] = offB
+                    }
+                    assertReadings(detect(StrumChords.pluckSynthStrum(StrumChords.detuned(standard, cents), n)), cents, "strings $a, $b at $offA, $offB")
+                }
+            }
+        }
+    }
+
+    @Test
     fun `every string off by up to 30 cents`() {
         val random = Random(11)
         repeat(30) {
@@ -93,6 +119,50 @@ class StrumDetectorTest {
             assertFalse("missing string $missing heard", result.present[missing])
             assertTrue(result.cents[missing].isNaN())
             assertReadings(result, FloatArray(6), "without string $missing", skip = missing)
+        }
+    }
+
+    @Test
+    fun `strings struck unevenly are all heard`() {
+        val random = Random(5)
+        repeat(30) {
+            val cents = FloatArray(6) { (random.nextDouble() * 60 - 30).toFloat() }
+            val gains = FloatArray(6) { (0.3 + 0.7 * random.nextDouble()).toFloat() }
+            val signal = StrumChords.pluckSynthStrum(StrumChords.detuned(standard, cents), n, gains = gains)
+            assertReadings(detect(signal), cents, "${cents.contentToString()} at ${gains.contentToString()}")
+        }
+    }
+
+    @Test
+    fun `octave strings detuned against each other`() {
+        // DADGAD, open D and open G have strings an octave apart (D2 D3 D4, A2 A3, G2 G3): every
+        // partial of the upper one lies on a harmonic of the lower. Detuned against each other they
+        // are 2–6 Hz apart, under a main lobe, and the fit with the known lower partials pulls them
+        // apart (7.3 cents off before it).
+        for (tuning in listOf(Tunings.DADGAD, Tunings.OPEN_D, Tunings.OPEN_G)) {
+            val expected = StrumChords.expectedHz(tuning)
+            for (sign in floatArrayOf(1f, -1f)) {
+                val cents = FloatArray(6) { sign * if (it % 2 == 0) 15f else -20f }
+                val result = detect(StrumChords.pluckSynthStrum(StrumChords.detuned(expected, cents), n), expected)
+                assertReadings(result, cents, "${tuning.id} ${cents.contentToString()}", clearCents = 0.5f)
+                for (s in 0 until 6) assertEquals("${tuning.id} string $s", cents[s], result.cents[s], 1f)
+            }
+        }
+    }
+
+    @Test
+    fun `a missing string in the other guitar tunings`() {
+        for (tuning in listOf(Tunings.DROP_D, Tunings.DADGAD, Tunings.OPEN_D, Tunings.OPEN_G, Tunings.OPEN_E)) {
+            val expected = StrumChords.expectedHz(tuning)
+            for (missing in 0 until 6) {
+                val gains = FloatArray(6) { 1f }.also { it[missing] = 0f }
+                val result = detect(StrumChords.pluckSynthStrum(expected, n, gains = gains), expected)
+                assertReadings(result, FloatArray(6), "${tuning.id} without string $missing", skip = missing)
+                // Known limit (ARCHITECTURE.md, Strum check): D4 two octaves over D2 and one over D3
+                // has every partial on theirs, and its absence can't be told from their harmonics.
+                val knownMiss = missing == 5 && (tuning == Tunings.DADGAD || tuning == Tunings.OPEN_D)
+                if (!knownMiss) assertFalse("${tuning.id}: missing string $missing heard", result.present[missing])
+            }
         }
     }
 

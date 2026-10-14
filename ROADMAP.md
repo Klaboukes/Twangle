@@ -26,7 +26,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 18 — Strum all strings
 Goal: strum once and see which strings are out of tune.
 - ☑ Research spike: polyphonic detection of 6 strings at once in `:core:dsp` (spectrum peaks per expected string, harmonics that overlap); write down the accuracy that is reachable — `StrumDetector`: with a 341 ms frame ≤ 0.12 cent on strings with a clear partial, ≤ 2.3 on B3/E4 (under E2's harmonics); 1.9 ms per reading on the Xiaomi (ARCHITECTURE.md, *Strum check*)
-- ☐ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string)
+- ☑ Detector with synthetic chord tests (all six strings, one or two strings off by 10–30 cents, a missing string) — joint fit of overlapping partials: an octave pair detuned against each other 7.3 → 0.44 cent; `StrumListener` gives the first reading 0.39–0.44 s after a strum, then one every 0.1 s; `StrumVerdict` flat / in tune / sharp / not heard; 2.6 ms per reading on the Xiaomi. Known limits: a soft upper octave string within 35 cents of the lower one reads up to 19 cents off, a missing D4 in DADGAD/open D reads as heard (ARCHITECTURE.md, *Strum check*)
 - ☐ "Strum check" view: every string shows flat, in tune or sharp at once, in each style
 - ☐ phone check with recorded strums from short test tones; owner check with a real guitar
 

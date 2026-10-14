@@ -16,8 +16,9 @@ import kotlin.math.sqrt
 
 /**
  * Finds the pitch of every string of one strum at once, when the strings to expect are known (the
- * selected tuning's open strings, at the current A4). Phase 18 research prototype: method, measured
- * accuracy and limits are in ARCHITECTURE.md, *Strum check (polyphonic)*.
+ * selected tuning's open strings, at the current A4). Method, measured accuracy and limits are in
+ * ARCHITECTURE.md, *Strum check (polyphonic)*; [StrumListener] times the frames after a strum and
+ * [StrumVerdict] turns the readings into flat / in tune / sharp / not heard.
  *
  * One long frame ([frameLength] samples, ≈ 341 ms at 48 kHz, see [frameLengthFor]) goes through a
  * Hann window and a 2× zero-padded FFT. Then, per expected string `s` at `f_s`:
@@ -30,11 +31,15 @@ import kotlin.math.sqrt
  * 2. **Partial peaks:** each harmonic `k` of the estimate is followed to its spectral peak (within
  *    half a main lobe) and refined by quadratic interpolation of the log magnitude (Smith & Serra
  *    1987, PARSHL; J. O. Smith, *Spectral Audio Signal Processing*, "Quadratic Interpolation of
- *    Spectral Peaks"), which also gives its amplitude.
- * 3. **Isolation:** partials closer than a Hann main lobe merge into one peak somewhere between
- *    their frequencies. In standard tuning that is common: B3 ≈ 3 × E2 and E4 = 4 × E2 within
- *    2 cents. So partial `k` of `s` counts only as far as it is clear of every other heard string's
- *    partials (weight 0 within one main-lobe half-width, 1 from two).
+ *    Spectral Peaks"), which also gives its amplitude. When other heard strings' partials lie
+ *    between [MERGED_LOBES] and [FIT_REACH_LOBES] main-lobe half-widths away, close enough to bend
+ *    the peak but far enough to tell apart, the partial is instead fitted together with them at
+ *    their known frequencies ([PartialFit]); closer ones merge with it into one peak.
+ * 3. **Isolation:** partials closer than a Hann main lobe are hard to measure apart, and closer
+ *    than half of one they merge into one peak somewhere between their frequencies. In standard
+ *    tuning that is common: B3 ≈ 3 × E2 and E4 = 4 × E2 within 2 cents. So partial `k` of `s`
+ *    counts only as far as it is clear of every other heard string's partials (weight 0 within one
+ *    main-lobe half-width, 1 from two).
  * 4. **Estimate:** `f_s = Σ w_k · (f_k / k) / Σ w_k` with `w_k = a_k² · isolation_k`. A string none
  *    of whose partials is clear is [StrumResult.shadowed]: its lowest partial is used as it is,
  *    since the other string's partial there is a higher, weaker harmonic of its own.
@@ -97,6 +102,10 @@ class StrumDetector(
     private val partialAmplitude = DoubleArray(maxStrings * MAX_PARTIALS)
     private val partialIsolation = DoubleArray(maxStrings * MAX_PARTIALS)
 
+    // Other strings' partials fitted together with the one being measured.
+    private val partialFit = PartialFit(frameLength, fftSize, sampleRate, maxStrings)
+    private val othersHz = DoubleArray(maxStrings)
+
     /**
      * Finds each of the first [stringCount] strings of [expectedHz] (Hz, any order) in the last
      * [frameLength] samples of [frame] (−1..1) and writes the readings to [result].
@@ -119,7 +128,7 @@ class StrumDetector(
         sortByFrequency(expectedHz, stringCount)
         for (s in 0 until stringCount) level[s] = 0.0
         for (pass in 0 until REFINE_PASSES) {
-            for (s in 0 until stringCount) measurePartials(s)
+            for (s in 0 until stringCount) measurePartials(s, stringCount)
             for (s in 0 until stringCount) refine(s, stringCount)
             decidePresence(stringCount)
         }
@@ -168,12 +177,18 @@ class StrumDetector(
     }
 
     // Follows each harmonic of the current estimate to its peak (frequency 0 when there is none).
-    private fun measurePartials(s: Int) {
+    // When other strings' partials lie near enough to bend the peak but far enough to be told
+    // apart, they are fitted together with it (PartialFit); closer ones stay merged with it.
+    private fun measurePartials(s: Int, stringCount: Int) {
         for (k in 1..partialCount[s]) {
             val index = s * MAX_PARTIALS + k - 1
             partialHz[index] = 0.0
             partialAmplitude[index] = 0.0
-            val center = k * estimate[s] / binHz
+            val centerHz = k * estimate[s]
+            val others = nearbyPartials(s, centerHz, stringCount)
+            // If the fit finds nothing between the others, fall back to the plain peak.
+            if (others > 0 && fitPartial(index, centerHz, others)) continue
+            val center = centerHz / binHz
             val from = maxOf(1, (center - lobeBins).toInt())
             val to = minOf(bins - 2, (center + lobeBins).toInt() + 1)
             var m = from
@@ -190,6 +205,52 @@ class StrumDetector(
             // A sinusoid of amplitude A peaks at A·N/4 after a Hann window of length N.
             partialAmplitude[index] = exp(b - 0.25 * (a - c) * p) * 4.0 / frameLength
         }
+    }
+
+    // Fills othersHz with the other heard strings' partials between MERGED_LOBES and FIT_REACH_LOBES
+    // main-lobe half-widths of hz (one per string, those within MERGED_LOBES of each other once);
+    // returns how many. One within MERGED_LOBES of hz is left out: it merges with ours into one peak.
+    private fun nearbyPartials(s: Int, hz: Double, stringCount: Int): Int {
+        val lobeHz = lobeBins * binHz
+        var count = 0
+        for (t in 0 until stringCount) {
+            if (t == s || !heard[t]) continue
+            val j = (hz / estimate[t]).roundToInt().coerceAtLeast(1)
+            val other = j * estimate[t]
+            val distance = abs(other - hz) / lobeHz
+            if (distance > FIT_REACH_LOBES) continue
+            if (distance <= MERGED_LOBES) continue
+            // Two others that merge with each other are one column, at the lower frequency (so the
+            // result doesn't depend on the strings' order).
+            var duplicate = false
+            for (i in 0 until count) {
+                if (abs(othersHz[i] - other) <= MERGED_LOBES * lobeHz) {
+                    othersHz[i] = minOf(othersHz[i], other)
+                    duplicate = true
+                }
+            }
+            if (!duplicate) othersHz[count++] = other
+        }
+        return count
+    }
+
+    // Measures partial `index` near centerHz together with othersHz[0 until others]. Our frequency
+    // is searched within MAX_PEAK_OFFSET main-lobe half-widths of centerHz, and no nearer than
+    // MERGED_LOBES to one of the others (where the fit can't tell the two apart).
+    private fun fitPartial(index: Int, centerHz: Double, others: Int): Boolean {
+        val lobeHz = lobeBins * binHz
+        var from = centerHz - MAX_PEAK_OFFSET * lobeHz
+        var to = centerHz + MAX_PEAK_OFFSET * lobeHz
+        for (i in 0 until others) {
+            val other = othersHz[i]
+            if (other < centerHz) from = maxOf(from, other + MERGED_LOBES * lobeHz)
+            else to = minOf(to, other - MERGED_LOBES * lobeHz)
+        }
+        if (to - from < MIN_FIT_RANGE * lobeHz) return false
+        if (!partialFit.fit(re, im, centerHz, from, to, othersHz, others)) return false
+        partialHz[index] = partialFit.frequencyHz
+        partialAmplitude[index] = partialFit.amplitude
+        return true
     }
 
     private fun refine(s: Int, stringCount: Int) {
@@ -267,7 +328,9 @@ class StrumDetector(
     private fun expectedLeak(s: Int, k: Int, stringCount: Int): Double {
         val hz = k * estimate[s]
         var leak = 0.0
-        val reach = ISOLATION_TO * lobeBins * binHz
+        // Partials further off were fitted apart from ours (measurePartials), so their share is
+        // already out of our amplitude; if that fit found nothing, our plain peak is a weak one.
+        val reach = MERGED_LOBES * lobeBins * binHz
         for (t in 0 until stringCount) {
             if (t == s || !heard[t]) continue
             val j = (hz / estimate[t]).roundToInt().coerceAtLeast(1)
@@ -374,6 +437,18 @@ class StrumDetector(
         // Isolation 0 within ISOLATION_FROM main-lobe half-widths of another string's partial, 1 from ISOLATION_TO.
         private const val ISOLATION_FROM = 1.0
         private const val ISOLATION_TO = 2.0
+
+        /**
+         * Partials within this many main-lobe half-widths of each other (1/T: 2.9 Hz at 341 ms) are
+         * one merged peak; tried down to 0.1, closer fits only added errors.
+         */
+        const val MERGED_LOBES = 0.5
+
+        /** Other strings' partials within this many main-lobe half-widths are fitted together with ours. */
+        const val FIT_REACH_LOBES = 3.0
+
+        // A fit needs at least this much room (main-lobe half-widths) to search our frequency in.
+        private const val MIN_FIT_RANGE = 0.2
         private val PRESENCE_RATIO = 10.0.pow(-PRESENCE_DB / 20)
     }
 }

@@ -122,6 +122,30 @@ class FrameAssemblerTest {
     }
 
     @Test
+    fun `copyLatest reads any length at any time without taking the frame`() {
+        val assembler = FrameAssembler(windowSize = 2, hopSize = 2, capacity = 6)
+        val out = FloatArray(6)
+        assembler.copyLatest(out, 6) // Nothing yet: silence.
+        assertArrayEquals(FloatArray(6), out, 0f)
+        assertEquals(2, assembler.push(ramp(0, 2)))
+        assembler.readFrame(out, 2)
+        assertEquals(2, assembler.push(ramp(2, 2)))
+        assertTrue(assembler.isFrameReady)
+        assembler.copyLatest(out, 6)
+        assertArrayEquals(floatArrayOf(0f, 0f) + ramp(0, 4), out, 0f)
+        assertTrue("copyLatest leaves the frame waiting", assembler.isFrameReady)
+        assembler.readFrame(out, 2)
+        // Wrapping round the ring.
+        assertEquals(2, assembler.push(ramp(4, 2)))
+        assembler.readFrame(out, 2)
+        assertEquals(2, assembler.push(ramp(6, 2)))
+        assembler.copyLatest(out, 6)
+        assertArrayEquals(ramp(2, 6), out, 0f)
+        assembler.copyLatest(out, 3)
+        assertArrayEquals(ramp(5, 3), out.copyOf(3), 0f)
+    }
+
+    @Test
     fun `invalid use is rejected`() {
         assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 0) }
         assertThrows(IllegalArgumentException::class.java) { FrameAssembler(windowSize = 4, hopSize = 5) }
