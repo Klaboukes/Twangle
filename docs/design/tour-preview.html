@@ -37,10 +37,12 @@ Texts    English / Dutch (never "tik" for the on-screen strings: "Kies een snaar
          3 Pick your instrument and tuning / Kies je instrument en stemming
          4 Switch between guitar strings and any note / Wissel tussen gitaarsnaren en elke noot
          5 Metronome and settings live here / Hier vind je de metronoom en de instellingen
-         Buttons Skip / Overslaan, Next / Volgende, Done / Klaar; count "2 of 5" / "2 van 5".
+         Buttons Skip tour / Overslaan, Next / Volgende, Done / Klaar; count "2 of 5" / "2 van 5".
 Once     Shown once at first start, on the tuner, after the microphone question (a saved setting, set by Skip or
-         Done, replacing stringLockTipSeen; existing installs see it once too). Settings -> "Show me around"
-         ("Laat me rondkijken") opens the tuner and starts it again.
+         Done, replacing stringLockTipSeen). Never a nuisance for experienced players (owner, 2026-10-14): one tap
+         on "Skip tour" (or Back) ends the whole tour for good, no "are you sure"; an update of an existing install
+         (any saved setting already there) never shows it. Settings -> "Show me around" ("Laat me rondkijken")
+         opens the tuner and starts it again.
 Other    On a phone on its side and in the two-pane layout the same rules place the balloon round the parts where
          they are (the rail instead of the bar); the compact tuner shows its controls and rail while the tour runs.
 TalkBack Focus moves to the balloon, a pane titled "Show me around" that reads "Step 2 of 5. Tap a string to lock
@@ -300,7 +302,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   <header class="intro">
     <p class="eyebrow">Twangle · Phase 24 preview · round 1</p>
     <h1>Show me around: the first-start tour</h1>
-    <p class="lede">The first time Twangle opens, the screen <strong>dims</strong> and lights up <strong>one part at a time</strong>, each with a <strong>short balloon</strong>: the note, the strings, the instrument button, the mode switch and the bar at the bottom. The balloons float on their own layer above the screen, so nothing in the tuner moves. Step through it on the phone below with <strong>Next</strong> and <strong>Skip</strong>, or let it play by itself.</p>
+    <p class="lede">The first time Twangle opens, the screen <strong>dims</strong> and lights up <strong>one part at a time</strong>, each with a <strong>short balloon</strong>: the note, the strings, the instrument button, the mode switch and the bar at the bottom. The balloons float on their own layer above the screen, so nothing in the tuner moves. Step through it on the phone below with <strong>Next</strong> and <strong>Skip tour</strong>, or let it play by itself. Experienced players lose nothing: one tap on <strong>Skip tour</strong> (or Back) ends the whole tour for good, and people updating from an earlier Twangle never see it.</p>
   </header>
 
   <form class="bar" onsubmit="return false" aria-label="Pick a style">
@@ -344,7 +346,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   <div class="stage">
     <figure>
       <div class="phone"><div class="screen" id="scr"></div></div>
-      <figcaption><b>First start</b><span>Tap <i>Next</i> or <i>Skip</i> in the balloon.</span></figcaption>
+      <figcaption><b>First start</b><span>Tap <i>Next</i>, or <i>Skip tour</i> to end it at once.</span></figcaption>
     </figure>
     <section class="side" aria-label="Tour steps">
       <h2>The five steps</h2>
@@ -368,7 +370,8 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
     <li><b>3</b><span><strong>The hardest case.</strong> Tap <i>Hardest: Dutch, 2×, 360 dp</i>. Balloons grow, flip above or below their part, or cover other parts. Under the dim layer that's allowed (your choice of 14 October); what matters is that the whole balloon and both buttons stay on the screen.</span></li>
     <li><b>4</b><span><strong>The words.</strong> Short enough? Right in Dutch? The table beside the phone has every text.</span></li>
     <li><b>5</b><span><strong>The movement.</strong> The light glides to the next part in a third of a second and the balloon fades in after it. Too slow, too fast, or just right?</span></li>
-    <li><b>6</b><span><strong>The order.</strong> Note, strings, instrument button, mode switch, bar. Would you change it, or leave a step out?</span></li>
+    <li><b>6</b><span><strong>Out of the way.</strong> <i>Skip tour</i> sits in every balloon and ends everything in one tap, no "are you sure". Clear enough?</span></li>
+    <li><b>7</b><span><strong>The order.</strong> Note, strings, instrument button, mode switch, bar. Would you change it, or leave a step out?</span></li>
   </ol>
 
   <aside class="ask">
@@ -710,7 +713,7 @@ h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--displa
   const TX = {
     en: { tuner: 'Tuner', metro: 'Metronome', settings: 'Settings', strings: 'Strings', chromatic: 'Chromatic', guitar: 'Guitar', standard: 'Standard',
       flat: '12 cents flat', nav: 'Screens', tour: 'Show me around', of: (i, n) => `${i} of ${n}`, step: (i, n) => `Step ${i} of ${n}.`,
-      skip: 'Skip', next: 'Next', done: 'Done' },
+      skip: 'Skip tour', next: 'Next', done: 'Done' },
     nl: { tuner: 'Stemmer', metro: 'Metronoom', settings: 'Instellingen', strings: 'Snaren', chromatic: 'Chromatisch', guitar: 'Gitaar', standard: 'Standaard',
       flat: '12 cent te laag', nav: 'Schermen', tour: 'Laat me rondkijken', of: (i, n) => `${i} van ${n}`, step: (i, n) => `Stap ${i} van ${n}.`,
       skip: 'Overslaan', next: 'Volgende', done: 'Klaar' },
