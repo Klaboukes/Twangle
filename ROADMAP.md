@@ -33,7 +33,7 @@ Goal: strum once and see which strings are out of tune.
 
 ## Phase 19 — Metronome
 Goal: a simple, steady metronome in the same app.
-- ☐ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8
+- ☑ Click generator with sample-exact timing (`AudioTrack`), 30–250 BPM, accent on the first beat, 2/4 to 7/8 (`ClickTrack` + `AndroidMetronomePlayer`; no drift over ten simulated minutes, beats 250 ms apart within ±0.02 ms on the Xiaomi 12X)
 - ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
 - ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
 - ☐ Timing drift measured over 10 minutes; English and Dutch texts; phone check

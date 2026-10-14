@@ -3,7 +3,6 @@ package io.github.klaboukes.twangle.core.audio
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
-import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Handler
@@ -46,8 +45,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
     private val audioManager = context.getSystemService(AudioManager::class.java)
 
     /** Sample rate of the tone: the phone's native output rate, 48 kHz if it reports nothing usable. */
-    val sampleRate: Int = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC)
-        .takeIf { it in MIN_SAMPLE_RATE..MAX_SAMPLE_RATE } ?: DEFAULT_SAMPLE_RATE
+    val sampleRate: Int = AudioOutput.nativeSampleRate()
 
     // Used only on the writer thread, apart from the immutable maxFrequencyHz.
     private val synth = PluckSynth(sampleRate)
@@ -126,8 +124,8 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                 return
             }
             focused = true
-            showVolumeIfSilent()
-            val opened = openTrack()
+            AudioOutput.showVolumeIfSilent(audioManager)
+            val opened = AudioOutput.openTrack(sampleRate, attributes, chunkFrames * BUFFERED_CHUNKS)
             track = opened
             opened.play()
             val buffer = FloatArray(chunkFrames)
@@ -153,7 +151,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                 }
                 val count = synth.render(buffer)
                 if (count > 0) {
-                    write(opened, buffer, count)
+                    AudioOutput.write(opened, buffer, count)
                     framesWritten += count
                     continue
                 }
@@ -162,7 +160,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                 var padding = opened.bufferSizeInFrames
                 while (padding > 0) {
                     val n = minOf(padding, buffer.size)
-                    write(opened, buffer, n)
+                    AudioOutput.write(opened, buffer, n)
                     padding -= n
                 }
                 awaitPlayed(opened, framesWritten)
@@ -178,13 +176,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
             // IllegalStateException). The tone is a convenience, so it fails quietly.
             Log.w(TAG, "Tone playback failed", e)
         } finally {
-            track?.let {
-                runCatching {
-                    it.pause()
-                    it.flush()
-                }
-                it.release()
-            }
+            track?.let(AudioOutput::close)
             if (focused) audioManager.abandonAudioFocusRequest(focusRequest)
             if (!finished) {
                 synchronized(lock) {
@@ -193,50 +185,6 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                     playing.value = false
                 }
             }
-        }
-    }
-
-    private fun openTrack(): AudioTrack {
-        val minBytes = AudioTrack.getMinBufferSize(sampleRate, CHANNEL_MASK, ENCODING)
-        val bufferBytes = maxOf(minBytes, chunkFrames * Float.SIZE_BYTES * BUFFERED_CHUNKS)
-        val track = AudioTrack.Builder()
-            .setAudioAttributes(attributes)
-            .setAudioFormat(
-                AudioFormat.Builder()
-                    .setSampleRate(sampleRate)
-                    .setChannelMask(CHANNEL_MASK)
-                    .setEncoding(ENCODING)
-                    .build(),
-            )
-            .setBufferSizeInBytes(bufferBytes)
-            .setTransferMode(AudioTrack.MODE_STREAM)
-            .build()
-        if (track.state != AudioTrack.STATE_INITIALIZED) {
-            track.release()
-            throw IllegalStateException("AudioTrack did not initialize at $sampleRate Hz")
-        }
-        return track
-    }
-
-    /**
-     * At media volume 0 the tone would be silent: show the phone's volume panel (at its level, not
-     * changing it), so the player sees why and can turn it up with the volume keys.
-     */
-    private fun showVolumeIfSilent() {
-        runCatching {
-            if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) == 0) {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI)
-            }
-        }
-    }
-
-    /** Blocks until [count] samples of [buffer] are queued. */
-    private fun write(track: AudioTrack, buffer: FloatArray, count: Int) {
-        var done = 0
-        while (done < count) {
-            val n = track.write(buffer, done, count - done, AudioTrack.WRITE_BLOCKING)
-            check(n >= 0) { "AudioTrack.write failed: $n" }
-            done += n
         }
     }
 
@@ -259,14 +207,9 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         const val NONE = -1f
         const val STOP = -2f
 
-        const val CHANNEL_MASK = AudioFormat.CHANNEL_OUT_MONO
-        const val ENCODING = AudioFormat.ENCODING_PCM_FLOAT
         const val CHUNKS_PER_SECOND = 100
         const val BUFFERED_CHUNKS = 4
         const val DRAIN_POLL_MILLIS = 5L
         const val DRAIN_MARGIN_MILLIS = 300L
-        const val MIN_SAMPLE_RATE = 16_000
-        const val MAX_SAMPLE_RATE = 192_000
-        const val DEFAULT_SAMPLE_RATE = 48_000
     }
 }

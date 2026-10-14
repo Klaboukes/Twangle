@@ -23,8 +23,9 @@ kotlin {
 }
 
 dependencies {
-    // PluckSynth makes the reference tone's samples (pure DSP, no Android).
-    implementation(project(":core:dsp"))
+    // PluckSynth makes the reference tone's samples and ClickTrack the metronome's (pure DSP, no
+    // Android). api: MetronomePlayer's beats and meters are :core:dsp types.
+    api(project(":core:dsp"))
     implementation(libs.androidx.core.ktx)
     api(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

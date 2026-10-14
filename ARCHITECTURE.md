@@ -7,7 +7,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 ## Contents
 1. [Tech stack](#1-tech-stack): name, app ID and icon · rejected alternatives
 2. [Module structure](#2-module-structure)
-3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic)
+3. [Signal pipeline](#3-signal-pipeline): key numbers · other sample rates · frame assembly · low notes · signal gate · noise floor, SNR and clarity · reception · tips · signal bars · YIN · smoothing · edge cases · note math · tunings · instruments · strobe model · audio source selection · audio capture · reference tone · strum check (polyphonic) · metronome
 4. [Threading & performance](#4-threading--performance): measured on the Galaxy S26 · low-note window on the Xiaomi 12X · meter looks · Baseline Profile · release build
 5. [Lifecycle & permissions](#5-lifecycle--permissions): settings · saved settings · custom tunings
 6. [UI](#6-ui): UI state model · tuner screen · strum check view · string-lock tip · display · meter · meter art language · wave view · strobe look · wave looks · visual styles · landscape and wide screens · accessibility · languages
@@ -49,11 +49,11 @@ This file holds the design decisions, the numbers that define behaviour and the 
 :app               Android application: Activity, Application, AppContainer (DI), screen switching
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
-:core:audio        Microphone capture (AudioRecord → Flow<FloatArray>) and reference tones (AudioTrack)
+:core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones and metronome clicks (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
-                   pluck synthesis
+                   pluck synthesis, metronome click track
 :core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough
 :baselineprofile   Android test module: Baseline Profile generator, startup and meter-frame benchmarks
 ```
@@ -66,7 +66,8 @@ Dependencies ("→" = depends on):
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
-:core:audio        → :core:dsp (PluckSynth makes the reference tone's samples)
+:core:audio        → :core:dsp (api: PluckSynth makes the reference tone's samples, ClickTrack the metronome's;
+                     MetronomePlayer's beats and meters are :core:dsp types)
 :core:dsp          → no other module
 :core:testing      → no other module; used by the UI tests of :feature:tuner and :feature:settings
 :baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
@@ -360,8 +361,18 @@ The readings behind it (a temporary log of every reading): over the first ≈ 0.
 
 **Not modelled yet:** pick noise and buzz, sympathetic strings, the body's resonances, and the phone mic's weak response at 82 Hz beyond the weak-fundamental case; the owner's check with a real guitar (*Owner checks* in ROADMAP.md) will tell. Inharmonicity bends partial k sharp by ≈ 866·B·(k² − 1) cents; the low-partial weighting keeps it to +0.6 cents with weak fundamentals (+1 at three times those B values); fitting B per string would remove it. Higher partials decay first, so a late frame has fewer clear partials (fine 1.5 s after the strum in synthetic strums).
 
+### Metronome
+Phase 19. The engine is in place; the metronome screen comes next.
+- **Meters** (`Meter`, `:core:dsp` `metronome/`): 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8. One click per beat of the bar, and the tempo counts clicks, so in 6/8 and 7/8 it counts eighth notes (as most practice metronomes do). Beat 1 is the accent (`BeatAccent.DOWNBEAT`); the start of each later beat group gets a middle accent (`GROUP`): 5/4 as 3 + 2 (beat 4), 6/8 as 3 + 3 (beat 4), 7/8 as 2 + 2 + 3 (beats 3 and 5), the most common groupings. The other beats are `PLAIN`.
+- **Clicks** (`ClickSounds`): a 40 ms wood-block "tock", two decaying modes of a struck free bar at 1 : 2.756 (Fletcher & Rossing §2.15), the upper one decaying twice as fast, with a 0.8 ms raised-cosine attack and an 8 ms fade that ends on exactly 0. The accent is told apart by pitch and level: downbeat A6 (1760 Hz) at peak 0.8 (never clips), group E6 at 0.6, plain A5 at 0.45. Rendered once per sample rate, so playing a click is a copy.
+- **Sample-exact timing** (`ClickTrack`): beat n starts on sample `A + round((n − a) · 60 · rate / bpm)`, worked out in integer arithmetic from the beat a and sample A where the tempo was last set, never by adding up rounded intervals. Each beat is within half a sample of its ideal time and the error never builds up (`ClickTrackTest`: every beat of ten minutes at 97 BPM / 44.1 kHz, 233 BPM / 48 kHz and 31 BPM / 16 kHz, whatever the chunk size). The tempo is an integer, clamped to 30–250 BPM, so beats are ≥ 0.24 s apart and clicks never overlap.
+- **Changes while playing** take effect from the next beat: a new tempo puts it one new interval after the last beat (or at once if that moment has passed), and the tempo counts on from there; a new meter makes it a downbeat without moving it. `render` and the setters allocate nothing (byte-counting test).
+- **Playback** (`MetronomePlayer`, `AndroidMetronomePlayer` in `:core:audio`): like the reference tone (*Reference tone*, above; both share `AudioOutput`), a mono float `AudioTrack` at the native rate, `USAGE_MEDIA` / `CONTENT_TYPE_SONIFICATION`, on its own single writer thread, existing only while it plays. It keeps 12 chunks of 10 ms queued: a busy moment can't starve the speaker (a gap would shift every later beat), and a change is heard ≈ 0.12 s after it is asked for. Underruns are logged. `start(bpm, meter)`, `setTempo`, `setMeter` and `stop` only set fields under a lock, read before every chunk. Audio focus `AUDIOFOCUS_GAIN` (it runs for minutes; other apps' music stops), stopped by a loss or a transient loss (a call); no sound when focus is refused. It never touches the microphone.
+- **Beats for the screen** (`beats: SharedFlow<MetronomeBeat>`, with `index`, `beatInBar`, `accent`, `heardAtNanos` on the `System.nanoTime()` clock): each rendered beat waits in a small ring; once `AudioTrack.getTimestamp` runs, its moment is known about one buffer ahead and a timer emits it then (the writer thread only wakes when the speaker takes a block, every 10–40 ms, which told beats up to 35 ms late); before the first timestamp it is emitted when the playback head reaches it. So beat lights and vibration can match the sound. `FakeMetronomePlayer` (`testFixtures`) emits beats on request.
+- **Measured on the Xiaomi 12X** (`AndroidMetronomePlayerTest`, 240 BPM): a float track at 48 kHz, no underruns; beats heard 250 ms apart within ±0.02 ms by the output's timestamps, and told 2–4 ms after their sound. The ten-minute drift check and the owner's listening come with the metronome screen.
+
 ## 4. Threading & performance
-- `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`. The reference tone's blocking `AudioTrack.write()` has its own single thread too (§3, Reference tone).
+- `AudioRecord.read()` blocks, so it runs on `Dispatchers.IO.limitedParallelism(1)`. DSP runs on `Dispatchers.Default`. The reference tone's and the metronome's blocking `AudioTrack.write()` each have their own single thread too (§3, Reference tone, Metronome).
 - **No allocations in the per-frame loop.** Buffers are allocated once; per-frame garbage at ~47 Hz causes GC jank.
 - **YIN difference function via FFT.** The direct O(W·τ_max) sum (~2.6 M multiply-adds per frame) took 69 % of the app's CPU cycles on the S26 (~7 ms per frame). `FftDifference` computes `d(τ) = e(0) + e(τ) − 2·r(τ)` (paper, eq. 7): energies as a running sum, the cross-correlation from one complex FFT carrying both real inputs plus one inverse (N = 4096, or 8192 for low notes; radix-2 `Fft`, doubles, no allocation). `FftDifferenceTest` checks it within 1e-10 of the direct sum. `./gradlew :core:dsp:benchmark` (kept out of CI): YIN **1.05 → 0.48 ms** per frame on the JVM. Budget: 2 ms.
 - **FFT passes block by block** (Phase 15). `Fft` used to run each pass twiddle by twiddle, sweeping the whole arrays once per twiddle; at N = 8192 (128 KB of doubles) they no longer stay in the CPU's cache, and the low-note window cost 4× the standard one on the JVM. Walking each pass block by block, in memory order, gives identical results and: JVM 0.48 → **0.18 ms** (4096), 2.0 → **0.49 ms** (8192).
@@ -690,6 +701,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother
     strobe/     StrobeMotion
     synth/      PluckSynth (reference tone samples)
+    metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent)
     strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check, §3)
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
@@ -698,8 +710,9 @@ core/dsp/src/testFixtures/…/core/dsp/testsignals/
 core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
     AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector,
-    TonePlayer (interface), AndroidTonePlayer
-core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer
+    TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
+    AndroidMetronomePlayer, AudioOutput (shared AudioTrack helpers)
+core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
@@ -742,8 +755,8 @@ baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
 ## 8. Testing strategy
 | Layer | How |
 |---|---|
-| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. `PluckSynthTest`: the reference tone's pitch within 1 cent by YIN, decay, end on silence, no clipping, no click at start, end or release. `StrumDetectorTest`, `StrumListenerTest` and `StrumVerdictTest` on synthetic strums from `StrumChords` (`PluckSynth` strings, or stiff strings with any harmonic levels); `PartialFitTest` on plain sinusoids; `StrumAccuracyReport` prints the strum check's accuracy tables (with the benchmarks, not in CI). |
-| `:core:audio` | JVM tests for source, rate and Bluetooth selection and chunk sizes. Instrumented tests record from the real mic (don't play test tones during them). `FakeAudioRecorder` (`testFixtures`) plays a `FloatArray` as chunks paced like a mic (instant under `runTest`), can loop or fail, and reports `isRecording` / `startCount`, so everything downstream, mic lifetime included, runs without a device. `FakeTonePlayer` (`testFixtures`) records `play`/`stop` and drives `isPlaying` (`finish()` = the tone died away). Instrumented `AndroidTonePlayerTest` plays short tones through the speaker: it ends by itself after the whole tone, `stop` ends it quickly, a new note replaces the old one, losing audio focus stops it. |
+| `:core:dsp` | JVM tests with `TestSignals` (`testFixtures`, shared via `testImplementation(testFixtures(project(":core:dsp")))`): sines, saw/square, weak fundamentals, white noise, mains hum, band-limited audio at any rate, decaying plucks. Assert ±1 cent. `EdgeCaseTest` runs whole recordings through the app's chain (`TunerChain`) and checks what would be shown (§3, Edge cases). Recorded WAV fixtures go in `src/test/resources/`. Allocation-free paths have byte-counting tests. `PluckSynthTest`: the reference tone's pitch within 1 cent by YIN, decay, end on silence, no clipping, no click at start, end or release. `ClickTrackTest` and `ClickSoundsTest`: every click on its exact sample, no drift over ten minutes, accents per meter, tempo clamped and changed while playing, clicks that start and end on silence and never clip. `StrumDetectorTest`, `StrumListenerTest` and `StrumVerdictTest` on synthetic strums from `StrumChords` (`PluckSynth` strings, or stiff strings with any harmonic levels); `PartialFitTest` on plain sinusoids; `StrumAccuracyReport` prints the strum check's accuracy tables (with the benchmarks, not in CI). |
+| `:core:audio` | JVM tests for source, rate and Bluetooth selection and chunk sizes. Instrumented tests record from the real mic (don't play test tones during them). `FakeAudioRecorder` (`testFixtures`) plays a `FloatArray` as chunks paced like a mic (instant under `runTest`), can loop or fail, and reports `isRecording` / `startCount`, so everything downstream, mic lifetime included, runs without a device. `FakeTonePlayer` (`testFixtures`) records `play`/`stop` and drives `isPlaying` (`finish()` = the tone died away). Instrumented `AndroidTonePlayerTest` plays short tones through the speaker: it ends by itself after the whole tone, `stop` ends it quickly, a new note replaces the old one, losing audio focus stops it. `FakeMetronomePlayer` follows tempo and meter and emits beats on request; instrumented `AndroidMetronomePlayerTest` plays clicks: beats heard 250 ms apart at 240 BPM with the right accents and told on time, tempo and meter change while playing, `stop` ends it quickly, losing focus stops it. |
 | `:core:settings` | JVM tests on a real DataStore file: defaults, saving, restart, clamping, unknown or unreadable values, migrations. |
 | `:core:designsystem` | JVM tests: WCAG contrast of every palette, distinct styles, `ThemeMode.useDarkTheme`, font credits, the meter and wave maths. |
 | `:feature:tuner` | ViewModel and interpreter tests with `kotlinx-coroutines-test` and the fake recorder; Compose UI tests for each state, layout, TalkBack and every look. |
