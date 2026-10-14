@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15 on 2026-10-14). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–16 on 2026-10-14). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -23,6 +23,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 13 — A meter with a wow factor](#phase-13--a-meter-with-a-wow-factor)
 - [Phase 14 — New theme styles](#phase-14--new-theme-styles)
 - [Phase 15 — More instruments](#phase-15--more-instruments)
+- [Phase 16 — Custom tunings](#phase-16--custom-tunings)
 
 ---
 
@@ -200,3 +201,11 @@ Goal: tune more than a six-string guitar.
 - ☑ Instrument picker (beside the tuning picker), saved in settings; the tuning menu shows only that instrument's tunings — "Standard ▾ Guitar ▾" on one line (names set up to 30 % smaller in wide faces, a line each at 2× text), English and Dutch names for every instrument and tuning; the mode switch now reads "Strings / Chromatic"
 - ☑ String row that fits 4 to 8 strings in portrait, landscape and at 2× font — full-size buttons spread out while they fit; otherwise equal shares, shrunk alike (8 strings on a 360 dp phone: 41 dp each); names shrink to fit their buttons (also fixed Space Age's solfège at 2× text)
 - ☑ phone check for each instrument with short test tones — Xiaomi 12X, 4 s laptop tones, all 10 instruments (and ukulele low G): every string the laptop can play showed the right string, note and cents (e.g. 20 cents flat read as 20 flat, 10 sharp as 10 sharp, in tune green), from C3 (130.8 Hz) up to E5; a note between strings or an octave off read honestly against the nearest string (G3 on bass: "G2, 1180 cents sharp"). The laptop speakers can't make notes under about 130 Hz loud enough at the phone (E2 and A2 failed on the plain guitar too), so B0 to A2 stayed at "Play a string" — a speaker limit, the ±1 cent DSP tests cover them; a real bass is an owner check. No false note: silence and room noise with 5-string bass, bass, 8-string and cello (also chromatic), and short 50 and 60 Hz hum bursts, all stayed at "Play a string"
+
+## Phase 16 — Custom tunings
+Goal: players can make, name and keep their own tunings.
+- ☑ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked, as the approved mock-up [docs/design/combined-picker-preview.html](docs/design/combined-picker-preview.html) (instrument first, a thin outline in the style's button shape, instruments in one sideways-scrolling row). The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Every style, English and Dutch, TalkBack and 2× font; phone check
+- ☑ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets (`CustomTuning`, add/update/delete with lasting ids; groundwork, nothing visible yet)
+- ☑ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates (notes B0–E6; opened from "New tuning" at the end of the panel's list; saving picks the tuning; English and Dutch, TalkBack labels and a 2× font test already in)
+- ☑ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete (under "My tunings", each with a ⋮ menu; Delete asks first in a dialog)
+- ☑ English and Dutch texts, TalkBack and 2× font for the editor; phone check (editor, panel, menu and delete dialog on the Xiaomi 12X in English and Dutch at 2× text and with TalkBack; `MyTuningsStylesTest` in all six styles)

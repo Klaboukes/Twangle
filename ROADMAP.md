@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–15 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
+Phases 0–16 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
 ---
 
@@ -21,14 +21,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 22: native speakers look over the new translations where possible
 
 ---
-
-## Phase 16 — Custom tunings
-Goal: players can make, name and keep their own tunings.
-- ☑ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked, as the approved mock-up [docs/design/combined-picker-preview.html](docs/design/combined-picker-preview.html) (instrument first, a thin outline in the style's button shape, instruments in one sideways-scrolling row). The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Every style, English and Dutch, TalkBack and 2× font; phone check
-- ☑ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets (`CustomTuning`, add/update/delete with lasting ids; groundwork, nothing visible yet)
-- ☑ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates (notes B0–E6; opened from "New tuning" at the end of the panel's list; saving picks the tuning; English and Dutch, TalkBack labels and a 2× font test already in)
-- ☑ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete (under "My tunings", each with a ⋮ menu; Delete asks first in a dialog)
-- ☑ English and Dutch texts, TalkBack and 2× font for the editor; phone check (editor, panel, menu and delete dialog on the Xiaomi 12X in English and Dutch at 2× text and with TalkBack; `MyTuningsStylesTest` in all six styles)
 
 ## Phase 17 — Reference tone
 Goal: the app can play the target note so players can tune by ear.
