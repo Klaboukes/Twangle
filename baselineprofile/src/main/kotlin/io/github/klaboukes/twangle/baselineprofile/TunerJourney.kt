@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.baselineprofile
 import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
+import java.util.regex.Pattern
 
 /** The app under test (`:app`). */
 const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
@@ -12,6 +13,9 @@ const val TARGET_PACKAGE = "io.github.klaboukes.twangle"
 private const val SETTINGS_TAB_TAG = "nav_settings"
 private const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
 private const val MODE_GUITAR_TAG = "tuner_mode_auto"
+
+/** "Skip tour" in the first-start tour's balloon (`TourTestTags` in :feature:tuner), which a fresh install shows. */
+const val TOUR_SKIP_TAG = "tour_skip"
 
 private const val TIMEOUT_MS = 10_000L
 
@@ -26,8 +30,14 @@ fun MacrobenchmarkScope.grantMicPermission() {
     device.executeShellCommand("pm grant $packageName android.permission.RECORD_AUDIO")
 }
 
-/** Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone). */
+/**
+ * Waits until the tuner screen is shown (its mode switch is a stable landmark on an upright phone),
+ * skipping the first-start tour that a fresh install shows over it.
+ */
 fun MacrobenchmarkScope.waitForTuner() {
+    val tunerOrTour = By.res(Pattern.compile("$MODE_CHROMATIC_TAG|$TOUR_SKIP_TAG"))
+    check(device.wait(Until.hasObject(tunerOrTour), TIMEOUT_MS)) { "Tuner screen didn't appear" }
+    device.findObject(By.res(TOUR_SKIP_TAG))?.click()
     check(device.wait(Until.hasObject(By.res(MODE_CHROMATIC_TAG)), TIMEOUT_MS)) { "Tuner screen didn't appear" }
 }
 

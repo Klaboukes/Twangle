@@ -75,6 +75,8 @@
     <string name="settings_show_signal_bars_summary">Voor wie het wil weten: streepjes bij de noot tonen hoe goed de stemmer je hoort. Tik erop voor de cijfers</string>
 
     <!-- About (the last group). -->
+    <string name="settings_show_tour_title">Laat me rondkijken</string>
+    <string name="settings_show_tour_summary">Een korte rondleiding door de stemmer</string>
     <string name="about_title">Over Twangle</string>
     <string name="settings_about_link_summary">Versie %1$s, privacy en licenties</string>
     <string name="settings_about_version">Versie %1$s</string>

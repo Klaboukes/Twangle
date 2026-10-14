@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
 import io.github.klaboukes.twangle.app.navigation.Screen
 import io.github.klaboukes.twangle.app.navigation.back
@@ -44,6 +45,9 @@ import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
+import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
+import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
@@ -58,6 +62,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
+        // A fresh install is due the first-start tour; an update from before the tour is not. Decided once.
+        lifecycleScope.launch { container.settingsRepository.decideTourOnce() }
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
             // never flashes the wrong theme. The opening screen covers that gap.
@@ -81,6 +87,11 @@ class MainActivity : ComponentActivity() {
      * at the bottom, or the rail at the start edge on its side. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does.
+     *
+     * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
+     * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
+     * Back or Done end it for good; the one-time string-lock tip, which the tour's strings step
+     * replaces, is never shown beside it or after it.
      */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
@@ -104,6 +115,12 @@ class MainActivity : ComponentActivity() {
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
                 // Whether the tuner shows its compact layout on its side without the controls: the rail hides then.
                 var tunerCompact by remember { mutableStateOf(false) }
+                // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
+                var tourRequested by rememberSaveable { mutableStateOf(false) }
+                var tourEnded by rememberSaveable { mutableStateOf(false) }
+                var tunerShown by remember { mutableStateOf(false) }
+                val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
+                val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
                 // Every screen but the tuner gets the quiet version of the style's background.
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
@@ -122,58 +139,80 @@ class MainActivity : ComponentActivity() {
                 screen.back?.let { target ->
                     BackHandler { if (screen == Screen.TUNING_EDITOR) closeEditor() else screen = target }
                 }
-                AppNavigationFrame(
-                    selected = screen.destination,
-                    onSelect = { screen = it.screen },
-                    hidden = screen == Screen.TUNER && tunerCompact,
+                TourHost(
+                    open = tourOpen,
+                    steps = TourPart.stepsFor(settings.mode),
+                    onEnd = {
+                        tourEnded = true
+                        tourRequested = false
+                        // For good, and the string-lock tip, which the tour's strings step replaces, with it.
+                        lifecycleScope.launch {
+                            container.settingsRepository.setTourSeen(true)
+                            container.settingsRepository.setStringLockTipSeen(true)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
                 ) {
-                    saveableState.SaveableStateProvider(screen.name) {
-                        when (screen) {
-                            Screen.TUNER -> {
-                                // The volume keys set the reference tone's loudness (the media volume)
-                                // while the tuner is shown, also when no tone sounds.
-                                MediaVolumeKeys()
-                                TunerScreen(
-                                    audioRecorder = container.audioRecorder,
+                    AppNavigationFrame(
+                        selected = screen.destination,
+                        onSelect = { screen = it.screen },
+                        hidden = screen == Screen.TUNER && tunerCompact,
+                    ) {
+                        saveableState.SaveableStateProvider(screen.name) {
+                            when (screen) {
+                                Screen.TUNER -> {
+                                    // The volume keys set the reference tone's loudness (the media volume)
+                                    // while the tuner is shown, also when no tone sounds.
+                                    MediaVolumeKeys()
+                                    TunerScreen(
+                                        audioRecorder = container.audioRecorder,
+                                        settingsRepository = container.settingsRepository,
+                                        tonePlayer = container.tonePlayer,
+                                        onCompactChange = { tunerCompact = it },
+                                        savedMode = settings.mode,
+                                        savedStringLockTipSeen = settings.stringLockTipSeen,
+                                        savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
+                                        savedInstrument = settings.instrument,
+                                        savedCustomTunings = settings.customTunings,
+                                        onOpenTuningEditor = { instrument, customTuningId ->
+                                            editorInstrumentId = instrument.id
+                                            editorTuningId = customTuningId
+                                            screen = Screen.TUNING_EDITOR
+                                        },
+                                        tourOpen = tourOpen,
+                                        hideStringLockTip = tourDue || tourEnded,
+                                        onMicGrantedChange = { tunerShown = it },
+                                    )
+                                }
+                                Screen.METRONOME -> {
+                                    // The volume keys set the clicks' loudness (the media volume).
+                                    MediaVolumeKeys()
+                                    MetronomeScreen(
+                                        player = container.metronomePlayer,
+                                        settingsRepository = container.settingsRepository,
+                                        savedBpm = settings.metronomeBpm,
+                                        savedMeter = settings.metronomeMeter,
+                                        savedVibrate = settings.metronomeVibrate,
+                                    )
+                                }
+                                Screen.SETTINGS -> SettingsScreen(
                                     settingsRepository = container.settingsRepository,
-                                    tonePlayer = container.tonePlayer,
-                                    onCompactChange = { tunerCompact = it },
-                                    savedMode = settings.mode,
-                                    savedStringLockTipSeen = settings.stringLockTipSeen,
-                                    savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
-                                    savedInstrument = settings.instrument,
-                                    savedCustomTunings = settings.customTunings,
-                                    onOpenTuningEditor = { instrument, customTuningId ->
-                                        editorInstrumentId = instrument.id
-                                        editorTuningId = customTuningId
-                                        screen = Screen.TUNING_EDITOR
+                                    appVersion = BuildConfig.VERSION_NAME,
+                                    onOpenAbout = { screen = Screen.ABOUT },
+                                    onShowTour = {
+                                        tourRequested = true
+                                        screen = Screen.TUNER
                                     },
                                 )
-                            }
-                            Screen.METRONOME -> {
-                                // The volume keys set the clicks' loudness (the media volume).
-                                MediaVolumeKeys()
-                                MetronomeScreen(
-                                    player = container.metronomePlayer,
+                                Screen.ABOUT -> AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
+                                Screen.TUNING_EDITOR -> TuningEditorScreen(
                                     settingsRepository = container.settingsRepository,
-                                    savedBpm = settings.metronomeBpm,
-                                    savedMeter = settings.metronomeMeter,
-                                    savedVibrate = settings.metronomeVibrate,
+                                    settings = settings,
+                                    instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
+                                    editingId = editorTuningId,
+                                    onClose = closeEditor,
                                 )
                             }
-                            Screen.SETTINGS -> SettingsScreen(
-                                settingsRepository = container.settingsRepository,
-                                appVersion = BuildConfig.VERSION_NAME,
-                                onOpenAbout = { screen = Screen.ABOUT },
-                            )
-                            Screen.ABOUT -> AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
-                            Screen.TUNING_EDITOR -> TuningEditorScreen(
-                                settingsRepository = container.settingsRepository,
-                                settings = settings,
-                                instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
-                                editingId = editorTuningId,
-                                onClose = closeEditor,
-                            )
                         }
                     }
                 }

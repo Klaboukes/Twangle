@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,6 +59,7 @@ import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
 /**
  * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
  * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
+ * With [onShowTour], a "Show me around" row starts the first-start tour again (on the tuner).
  */
 @Composable
 fun SettingsScreen(
@@ -65,6 +67,7 @@ fun SettingsScreen(
     appVersion: String,
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
+    onShowTour: (() -> Unit)? = null,
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -89,6 +92,7 @@ fun SettingsScreen(
         onWaveBreathesInTuneChange = viewModel::setWaveBreathesInTune,
         onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
         modifier = modifier,
+        onShowTour = onShowTour,
     )
 }
 
@@ -122,6 +126,7 @@ fun SettingsContent(
     onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+    onShowTour: (() -> Unit)? = null,
 ) {
     SettingsPage(title = stringResource(R.string.settings_title), onBack = null, modifier = modifier) {
         if (settings != null) {
@@ -129,6 +134,7 @@ fun SettingsContent(
                 settings = settings,
                 appVersion = appVersion,
                 onOpenAbout = onOpenAbout,
+                onShowTour = onShowTour,
                 onA4Change = onA4Change,
                 onNotationChange = onNotationChange,
                 onInTunePrecisionChange = onInTunePrecisionChange,
@@ -218,6 +224,7 @@ private fun SettingsGroups(
     settings: AppSettings,
     appVersion: String,
     onOpenAbout: () -> Unit,
+    onShowTour: (() -> Unit)?,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
@@ -356,6 +363,14 @@ private fun SettingsGroups(
         }
         Rows {
             HorizontalDivider()
+            if (onShowTour != null) {
+                LinkSetting(
+                    title = stringResource(R.string.settings_show_tour_title),
+                    summary = stringResource(R.string.settings_show_tour_summary),
+                    onClick = onShowTour,
+                    modifier = Modifier.testTag(SHOW_TOUR_TAG),
+                )
+            }
             LinkSetting(
                 title = stringResource(R.string.about_title),
                 summary = stringResource(R.string.settings_about_link_summary, appVersion),
@@ -396,6 +411,9 @@ private fun Rows(content: @Composable ColumnScope.() -> Unit) {
 
 /** Space between two groups, so each heading clearly starts a new one. */
 private val GROUP_GAP = 32.dp
+
+/** Test tag of the "Show me around" row, which starts the first-start tour again. */
+const val SHOW_TOUR_TAG = "settings_show_tour"
 
 /** Rows and headings keep this far from the column's edges. */
 private val ROW_INSET = 16.dp

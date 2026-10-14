@@ -103,6 +103,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
 import io.github.klaboukes.twangle.feature.tuner.components.stringRowFitFor
 import io.github.klaboukes.twangle.feature.tuner.components.TipPointer
 import io.github.klaboukes.twangle.feature.tuner.components.POINTER_HEIGHT
+import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -124,6 +126,10 @@ import kotlin.math.min
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
  * the screen (another screen, or the app in the background).
+ * While the first-start tour runs ([tourOpen]) the compact layout on its side shows its controls, so
+ * the tour can point at them; [hideStringLockTip] keeps the one-time string-lock tip away (while the
+ * tour is due or has just run). [onMicGrantedChange] says whether the tuner itself shows (the
+ * microphone is allowed), and false when it leaves.
  */
 @Composable
 fun TunerScreen(
@@ -138,6 +144,9 @@ fun TunerScreen(
     savedInstrument: Instrument = Instruments.DEFAULT,
     savedCustomTunings: List<CustomTuning> = emptyList(),
     onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
+    tourOpen: Boolean = false,
+    hideStringLockTip: Boolean = false,
+    onMicGrantedChange: (Boolean) -> Unit = {},
 ) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel {
@@ -176,6 +185,10 @@ fun TunerScreen(
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
+    // The tour starts once the tuner shows (after the microphone question), and not while it's away.
+    val currentOnMicGrantedChange by rememberUpdatedState(onMicGrantedChange)
+    LaunchedEffect(granted) { currentOnMicGrantedChange(granted) }
+    DisposableEffect(Unit) { onDispose { currentOnMicGrantedChange(false) } }
     if (granted && keepScreenOn) KeepScreenOn()
     val detected = state as? TunerUiState.Detected
     val inTuneTarget = detected?.let { it.noteName + it.octave }
@@ -241,9 +254,11 @@ fun TunerScreen(
                     showTuneHint = showTuneHint,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
-                    showStringLockTip = showStringLockTip,
+                    // Never both: the tour has a step of its own for the strings.
+                    showStringLockTip = showStringLockTip && !hideStringLockTip,
                     onStringLockTipDismiss = viewModel::dismissStringLockTip,
                     compactLandscape = !keepTwoPaneLandscape,
+                    controlsAlwaysShown = tourOpen,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,
                     onCompactShownChange = { compactShown = it },
@@ -359,6 +374,8 @@ private fun KeepScreenOn() {
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
  * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
  * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
+ * [controlsAlwaysShown] (while the first-start tour runs) keeps the compact layout's controls shown.
+ * The parts the tour lights up mark themselves with [tourTarget].
  */
 @Composable
 fun TunerContent(
@@ -386,6 +403,7 @@ fun TunerContent(
     showStringLockTip: Boolean = false,
     onStringLockTipDismiss: () -> Unit = {},
     compactLandscape: Boolean = true,
+    controlsAlwaysShown: Boolean = false,
     instrument: Instrument = instrumentOf(state),
     onInstrumentChange: (Instrument) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
@@ -413,7 +431,7 @@ fun TunerContent(
     } else {
         null
     }
-    val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
+    val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
         val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning, onEditTuning, onDeleteTuning)
@@ -426,7 +444,7 @@ fun TunerContent(
         if (state is TunerUiState.StrumCheck) {
             StrumPanel(
                 state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL),
+                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.NOTE),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
@@ -439,12 +457,12 @@ fun TunerContent(
                 glow = meterGlow,
                 animationsOff = animationsOff,
                 // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE),
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.NOTE),
                 reception = reception,
             )
         }
     }
-    val note = @Composable { compact: Boolean ->
+    val noteFor = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state)
             is TunerUiState.Detected -> NoteDisplay(
@@ -485,6 +503,8 @@ fun TunerContent(
             )
         }
     }
+    // The note is the tour's first step, together with the meter.
+    val note = @Composable { compact: Boolean -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact) } }
     val error = (state as? TunerUiState.Error)?.reason
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
@@ -528,14 +548,16 @@ fun TunerContent(
                         containsControls = true,
                     ) ?: COMPACT_CONTROLS_SHOWN_MS
                 }
-                LaunchedEffect(controlsShown) { currentOnCompactShownChange(!controlsShown) }
+                // While the tour runs the controls stay, so it can point at them.
+                val showing = controlsShown || controlsAlwaysShown
+                LaunchedEffect(showing) { currentOnCompactShownChange(!showing) }
                 LaunchedEffect(controlsShown, touches, menuOpen) {
                     if (controlsShown && !menuOpen) {
                         delay(shownMillis)
                         controlsShown = false
                     }
                 }
-                Crossfade(targetState = controlsShown, label = "compactControls") { shown ->
+                Crossfade(targetState = showing, label = "compactControls") { shown ->
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
                             twoPane { menuOpen = it }
@@ -985,6 +1007,7 @@ private fun GuitarControls(
             onStringClick = stringActions.onClick,
             onStringLongClick = stringActions.onLongClick,
             soundingString = stringActions.sounding,
+            modifier = Modifier.tourTarget(TourPart.STRINGS),
         )
     }
     val balloon = @Composable {

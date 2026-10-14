@@ -101,6 +101,7 @@ class SettingsContentTest {
     private val twoPaneChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
+    private var toursAsked = 0
 
     /**
      * Shows [settings] (or, with [about], the About page), as if the window were [size] ([ForcedSize]
@@ -143,6 +144,7 @@ class SettingsContentTest {
                         onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
+                        onShowTour = { toursAsked++ },
                     )
                 }
             }
@@ -208,6 +210,19 @@ class SettingsContentTest {
             .assertIsDisplayed()
             .performClick()
         assertEquals(1, aboutOpened)
+    }
+
+    /** "Show me around", above About, starts the first-start tour again. */
+    @Test
+    fun showMeAroundStartsTheTourAgain() {
+        show(AppSettings(tourSeen = true))
+        compose.onNodeWithTag(SHOW_TOUR_TAG)
+            .assert(hasText(context.getString(R.string.settings_show_tour_title)))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, toursAsked)
     }
 
     @Test

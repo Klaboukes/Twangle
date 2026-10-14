@@ -176,6 +176,14 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[STRING_LOCK_TIP_SEEN] = seen }
     }
 
+    override suspend fun setTourSeen(seen: Boolean) {
+        dataStore.edit { it[TOUR_SEEN] = seen }
+    }
+
+    override suspend fun decideTourOnce() {
+        dataStore.edit { if (TOUR_SEEN !in it) it[TOUR_SEEN] = tourSeen(it) }
+    }
+
     override suspend fun setMetronomeBpm(bpm: Int) {
         dataStore.edit { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
     }
@@ -220,6 +228,7 @@ class DataStoreSettingsRepository internal constructor(
             waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             stringLockTipSeen = prefs[STRING_LOCK_TIP_SEEN] ?: defaults.stringLockTipSeen,
+            tourSeen = tourSeen(prefs),
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
@@ -261,6 +270,8 @@ class DataStoreSettingsRepository internal constructor(
         private val METER_LOOK = stringPreferencesKey("meter_look")
         private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
         private val STRING_LOCK_TIP_SEEN = booleanPreferencesKey("string_lock_tip_seen")
+        /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
+        private val TOUR_SEEN = booleanPreferencesKey("tour_seen")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 
@@ -305,6 +316,12 @@ class DataStoreSettingsRepository internal constructor(
                 ?: instrument.defaultTuning
             return instrument to tuning
         }
+
+        /**
+         * The saved tour flag; without one (before [decideTourOnce] has run on this install), any other
+         * saved setting means an install from before the tour, which counts as having seen it.
+         */
+        private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
 
         /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */
         private fun displayFromWaveSwitch(showWaves: Boolean?): TunerDisplay? = when (showWaves) {

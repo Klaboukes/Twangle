@@ -130,4 +130,15 @@
     <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
     <string name="tuner_strum_spoken_waiting">%1$s, nog niet gestrumd</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
+    <string name="tour_title">Laat me rondkijken</string>
+    <string name="tour_step_count">%1$d van %2$d</string>
+    <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
+    <string name="tour_note">Hoe ver je noot ernaast zit</string>
+    <string name="tour_strings">Zet een snaar vast</string>
+    <string name="tour_picker">Kies instrument en stemming</string>
+    <string name="tour_mode">Stem snaren of elke noot</string>
+    <string name="tour_navigation">Metronoom en instellingen</string>
+    <string name="tour_skip">Overslaan</string>
+    <string name="tour_next">Volgende</string>
+    <string name="tour_done">Klaar</string>
 </resources>

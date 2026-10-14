@@ -80,6 +80,8 @@ import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
+import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
@@ -163,6 +165,8 @@ private fun PickerButton(instrumentName: String, tuningName: String, onClick: ()
             modifier = Modifier
                 .minimumInteractiveComponentSize()
                 .testTag(TunerTestTags.PICKER)
+                // The tour lights up the outline, not the touch target round it.
+                .tourTarget(TourPart.PICKER)
                 .heightIn(min = BUTTON_HEIGHT)
                 .clip(shape)
                 .background(if (neon) Color.Transparent else scheme.surface.copy(alpha = BUTTON_BACKING_ALPHA), shape)

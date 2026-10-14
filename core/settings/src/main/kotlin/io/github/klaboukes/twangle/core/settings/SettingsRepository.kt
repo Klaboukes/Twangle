@@ -93,6 +93,17 @@ interface SettingsRepository {
     /** Remembers that the string-lock tip was dismissed (or brings it back with false). */
     suspend fun setStringLockTipSeen(seen: Boolean)
 
+    /** Remembers that the first-start tour was skipped or finished (or brings it back with false). */
+    suspend fun setTourSeen(seen: Boolean)
+
+    /**
+     * Decides once, at the app's start, whether this install is due the first-start tour, and saves
+     * that: an install that already has saved settings (an update from a version before the tour)
+     * counts as having seen it, a fresh one hasn't. Once decided, later saves of other settings don't
+     * change it; only [setTourSeen] does.
+     */
+    suspend fun decideTourOnce()
+
     /** The metronome's tempo, clamped to 30–250 BPM (`ClickTrack.clampBpm`). */
     suspend fun setMetronomeBpm(bpm: Int)
 

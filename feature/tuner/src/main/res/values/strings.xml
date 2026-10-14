@@ -166,4 +166,18 @@
     <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
     <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
     <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
+    <!-- The first-start tour ("Show me around"): one part of the tuner lit up at a time, with a short balloon. -->
+    <string name="tour_title">Show me around</string>
+    <!-- Above the balloon's text: which step this is. %1$d is the step, %2$d how many there are. -->
+    <string name="tour_step_count">%1$d of %2$d</string>
+    <!-- TalkBack reads the balloon as this. %1$d is the step, %2$d how many there are, %3$s the balloon's text. -->
+    <string name="tour_step_spoken">Step %1$d of %2$d. %3$s.</string>
+    <string name="tour_note">How far off your note is</string>
+    <string name="tour_strings">Lock a string</string>
+    <string name="tour_picker">Pick instrument and tuning</string>
+    <string name="tour_mode">Tune strings or any note</string>
+    <string name="tour_navigation">Metronome and settings</string>
+    <string name="tour_skip">Skip tour</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_done">Done</string>
 </resources>

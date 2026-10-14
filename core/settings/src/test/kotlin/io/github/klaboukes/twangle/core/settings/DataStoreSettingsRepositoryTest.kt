@@ -90,6 +90,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals(true, settings.waveBreathesInTune)
         assertEquals(false, settings.stringLockTipSeen)
+        assertEquals("a fresh install is due the tour", false, settings.tourSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
@@ -117,6 +118,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setInTuneEffect(InTuneEffect.BOLD)
         repo.setWaveBreathesInTune(false)
         repo.setStringLockTipSeen(true)
+        repo.setTourSeen(true)
         repo.setKeepTwoPaneLandscape(true)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
@@ -141,6 +143,7 @@ class DataStoreSettingsRepositoryTest {
             inTuneEffect = InTuneEffect.BOLD,
             waveBreathesInTune = false,
             stringLockTipSeen = true,
+            tourSeen = true,
             keepTwoPaneLandscape = true,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
@@ -711,5 +714,60 @@ class DataStoreSettingsRepositoryTest {
         val settings = repo.settings.first()
         assertEquals(Instruments.BASS_4, settings.instrument)
         assertEquals(fifths.tuning, settings.tuning)
+    }
+
+    @Test
+    fun `a fresh install is due the tour until it is skipped or finished, also after a restart`() = runTest {
+        val repo = repository()
+        repo.decideTourOnce()
+        assertEquals("fresh: the tour shows", false, repo.settings.first().tourSeen)
+        repo.setTourSeen(true)
+        close()
+
+        assertEquals("skipped or finished: never again by itself", true, repository().settings.first().tourSeen)
+    }
+
+    @Test
+    fun `settings saved before the tour is decided make an update, which never shows the tour`() = runTest {
+        // An install from before the tour: it saved other settings, never the tour.
+        val store = dataStore()
+        store.edit { it[booleanPreferencesKey("string_lock_tip_seen")] = true }
+        val repo = repository(store)
+        assertEquals("read as seen before anything is decided", true, repo.settings.first().tourSeen)
+
+        repo.decideTourOnce()
+        close()
+        assertEquals("and saved as seen", true, repository().settings.first().tourSeen)
+    }
+
+    @Test
+    fun `any saved setting at all counts as an update`() = runTest {
+        val store = dataStore()
+        store.edit { it[stringPreferencesKey("visual_style")] = VisualStyle.RETRO.name }
+        val repo = repository(store)
+        repo.decideTourOnce()
+        assertEquals(true, repo.settings.first().tourSeen)
+    }
+
+    @Test
+    fun `once a fresh install is decided, saving other settings doesn't cancel the tour`() = runTest {
+        val repo = repository()
+        repo.decideTourOnce()
+        // E.g. the microphone was refused at first and the style picked in Settings first.
+        repo.setStyle(VisualStyle.FUTURISTIC)
+        repo.setStringLockTipSeen(true)
+        repo.decideTourOnce()
+        close()
+
+        assertEquals("still due after a restart", false, repository().settings.first().tourSeen)
+    }
+
+    @Test
+    fun `deciding again never brings a seen tour back`() = runTest {
+        val repo = repository()
+        repo.decideTourOnce()
+        repo.setTourSeen(true)
+        repo.decideTourOnce()
+        assertEquals(true, repo.settings.first().tourSeen)
     }
 }

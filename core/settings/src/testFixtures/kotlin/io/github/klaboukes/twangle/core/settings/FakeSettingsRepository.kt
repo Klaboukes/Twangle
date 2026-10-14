@@ -110,6 +110,11 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setStringLockTipSeen(seen: Boolean) = state.update { it.copy(stringLockTipSeen = seen) }
 
+    override suspend fun setTourSeen(seen: Boolean) = state.update { it.copy(tourSeen = seen) }
+
+    /** Nothing to decide: the fake starts from the settings it is given. */
+    override suspend fun decideTourOnce() = Unit
+
     override suspend fun setMetronomeBpm(bpm: Int) = state.update { it.copy(metronomeBpm = ClickTrack.clampBpm(bpm)) }
 
     override suspend fun setMetronomeMeter(meter: Meter) = state.update { it.copy(metronomeMeter = meter) }

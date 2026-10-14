@@ -1,0 +1,339 @@
+package io.github.klaboukes.twangle.app.tour
+
+import android.os.LocaleList
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.FontScale
+import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.Locales
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.then
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import androidx.test.espresso.Espresso
+import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
+import io.github.klaboukes.twangle.app.navigation.Destination
+import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.Thorough
+import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.feature.tuner.R
+import io.github.klaboukes.twangle.feature.tuner.TunerContent
+import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
+import io.github.klaboukes.twangle.feature.tuner.TunerUiState
+import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
+import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.TourTargets
+import io.github.klaboukes.twangle.feature.tuner.tour.TourTestTags
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.fail
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.Timeout
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
+import java.util.Locale
+import java.util.concurrent.TimeUnit
+
+/**
+ * The first-start tour over the tuner and its navigation bar (or rail), as the app puts them
+ * together: in every style (only the default one unless the run is thorough), each step's balloon
+ * and both its buttons wholly shown inside the window, in Dutch at 2× text on a 360 dp phone, on a
+ * phone on its side (the compact tuner shows its controls and rail) and in the two-pane layout; Next
+ * steps through every part, Skip tour and Back end it at once; TalkBack hears only the balloon; taps
+ * outside it do nothing; nothing in the tuner moves when it comes.
+ */
+@RunWith(Parameterized::class)
+class TourStylesTest(private val style: VisualStyle) {
+
+    private val compose = createSharedActivityComposeRule()
+
+    @get:Rule
+    val rules: RuleChain = RuleChain.outerRule(
+        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+    ).around(compose)
+
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val shownSize = mutableStateOf(XIAOMI)
+    private val shownFontScale = mutableStateOf(1f)
+    private val shownLocale = mutableStateOf("en")
+    private val shownMode = mutableStateOf(TunerMode.AUTO)
+    private val shownOpen = mutableStateOf(true)
+    private val keepTwoPane = mutableStateOf(false)
+    private val ends = mutableIntStateOf(0)
+    private val targets = TourTargets()
+    private var modeChanges = 0
+
+    private fun show() {
+        compose.setContent {
+            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
+                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
+                DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
+            DeviceConfigurationOverride(override) {
+                TwangleTheme(style = style, darkTheme = false, animate = false) {
+                    TourHost(
+                        open = shownOpen.value,
+                        steps = TourPart.stepsFor(shownMode.value),
+                        onEnd = {
+                            ends.intValue++
+                            shownOpen.value = false
+                        },
+                        modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                        targets = targets,
+                    ) {
+                        AppNavigationFrame(selected = Destination.TUNER, onSelect = {}) {
+                            TunerContent(
+                                state = TunerUiState.Listening(shownMode.value, Tunings.STANDARD),
+                                mode = shownMode.value,
+                                onModeChange = { modeChanges++ },
+                                onTuningChange = {},
+                                onStringClick = {},
+                                onRetry = {},
+                                onStrumCheckChange = {},
+                                compactLandscape = !keepTwoPane.value,
+                                controlsAlwaysShown = shownOpen.value,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+    }
+
+    private fun string(id: Int, vararg args: Any): String {
+        if (shownLocale.value == "en") return context.getString(id, *args)
+        val configuration = android.content.res.Configuration(context.resources.configuration)
+        configuration.setLocales(LocaleList(Locale.forLanguageTag(shownLocale.value)))
+        return context.createConfigurationContext(configuration).getString(id, *args)
+    }
+
+    /**
+     * Steps through the whole tour with Next (Done at the end): at each step the balloon, its text and
+     * both buttons are wholly shown inside the window, and TalkBack hears "Step i of n. …".
+     */
+    private fun stepThroughWhollyShown(case: String) {
+        val steps = TourPart.stepsFor(shownMode.value)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        steps.forEachIndexed { index, part ->
+            val at = "$case step ${index + 1} ($part)"
+            val text = string(part.text)
+            compose.onNodeWithTag(TourTestTags.TEXT)
+                .assert(hasText(text))
+                .assertContentDescriptionEquals(string(R.string.tour_step_spoken, index + 1, steps.size, text))
+            val next = string(if (index == steps.lastIndex) R.string.tour_done else R.string.tour_next)
+            compose.onNodeWithTag(TourTestTags.NEXT).assert(hasText(next))
+            for ((tag, what) in listOf(TourTestTags.BALLOON to "balloon", TourTestTags.TEXT to "text", TourTestTags.SKIP to "Skip", TourTestTags.NEXT to "Next")) {
+                val node = compose.onNodeWithTag(tag, useUnmergedTree = true)
+                assertWhollyShown(node, "$at $what", scroll = false)
+                val b = node.getBoundsInRoot()
+                if (b.left < window.left - SLACK.dp || b.right > window.right + SLACK.dp || b.top < window.top - SLACK.dp || b.bottom > window.bottom + SLACK.dp) {
+                    fail("$at: $what at $b outside the window $window")
+                }
+            }
+            assertWhollyShown(compose.onNode(hasText(string(R.string.tour_skip)), useUnmergedTree = true), "$at Skip's text", scroll = false)
+            assertWhollyShown(compose.onNode(hasText(next), useUnmergedTree = true), "$at Next's text", scroll = false)
+            assertNotNull("$at: the part is laid out", targets.boundsOf(part))
+            compose.onNodeWithTag(TourTestTags.NEXT).performClick()
+            compose.waitForIdle()
+        }
+        assertEquals("$case: Done ends it once", 1, ends.intValue)
+        compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
+    }
+
+    private fun restart() {
+        ends.intValue = 0
+        shownOpen.value = true
+        compose.waitForIdle()
+    }
+
+    /** The hardest upright case: Dutch at 2× text on a 360 dp phone. */
+    @Test
+    fun dutchAtTwiceTheTextOnANarrowPhoneShowsEveryBalloonWhole() {
+        shownSize.value = NARROW
+        shownFontScale.value = 2f
+        shownLocale.value = "nl"
+        show()
+        stepThroughWhollyShown("$style nl 2x 360 dp")
+    }
+
+    /** On its side the compact tuner shows its controls and rail for the tour; Dutch at 2× text. */
+    @Test
+    fun onItsSideTheCompactTunerShowsItsControlsAndEveryBalloonWhole() {
+        shownSize.value = LANDSCAPE
+        shownFontScale.value = 2f
+        shownLocale.value = "nl"
+        show()
+        compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
+        assertNotNull("the rail is lit in the last step", targets.boundsOf(TourPart.NAVIGATION))
+        stepThroughWhollyShown("$style nl 2x on its side")
+    }
+
+    /** The full two-pane layout on its side ("Full layout on its side"), in English at 1.25×. */
+    @Test
+    fun theTwoPaneLayoutShowsEveryBalloonWhole() {
+        shownSize.value = LANDSCAPE
+        shownFontScale.value = OWNER_FONT_SCALE
+        keepTwoPane.value = true
+        show()
+        stepThroughWhollyShown("$style two-pane")
+    }
+
+    @Thorough
+    @Test
+    fun theOwnersPhoneShowsEveryBalloonWhole() {
+        shownFontScale.value = OWNER_FONT_SCALE
+        show()
+        stepThroughWhollyShown("$style Xiaomi 1.25x")
+    }
+
+    @Thorough
+    @Test
+    fun aTabletOnItsSideShowsEveryBalloonWhole() {
+        shownSize.value = TABLET
+        shownLocale.value = "nl"
+        shownFontScale.value = 2f
+        show()
+        stepThroughWhollyShown("$style tablet nl 2x")
+    }
+
+    /** Chromatic mode (the tour started again from Settings) leaves out the strings and the instrument button. */
+    @Test
+    fun chromaticModeHasThreeSteps() {
+        shownMode.value = TunerMode.CHROMATIC
+        show()
+        stepThroughWhollyShown("$style chromatic")
+    }
+
+    @Test
+    fun skipTourEndsItAtOnce() {
+        show()
+        compose.onNodeWithTag(TourTestTags.NEXT).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(TourTestTags.SKIP).performClick()
+        compose.waitForIdle()
+        assertEquals(1, ends.intValue)
+        compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
+        compose.onNodeWithTag(TourTestTags.OVERLAY).assertDoesNotExist()
+    }
+
+    @Test
+    fun backEndsItAtOnce() {
+        show()
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertEquals(1, ends.intValue)
+        compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
+    }
+
+    /** Started again after it ended (Settings → Show me around), it begins at the first step. */
+    @Test
+    fun startedAgainItBeginsAtTheFirstStep() {
+        show()
+        compose.onNodeWithTag(TourTestTags.NEXT).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(TourTestTags.SKIP).performClick()
+        compose.waitForIdle()
+        restart()
+        compose.onNodeWithTag(TourTestTags.TEXT).assert(hasText(string(TourPart.NOTE.text)))
+    }
+
+    /** TalkBack hears a pane "Show me around" with the step's text and two buttons, and nothing of the screen below. */
+    @Test
+    fun talkBackHearsOnlyTheBalloon() {
+        show()
+        compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, string(R.string.tour_title))).assertIsDisplayed()
+        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, 5, string(R.string.tour_note)))
+        for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
+            compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+        }
+        for (tag in listOf(TunerTestTags.PICKER, TunerTestTags.mode(TunerMode.CHROMATIC), NavigationTestTags.tab(Destination.SETTINGS))) {
+            compose.onNodeWithTag(tag).assertDoesNotExist()
+        }
+        compose.onNodeWithTag(TourTestTags.SKIP).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.PICKER).assertExists()
+        compose.onNodeWithTag(NavigationTestTags.tab(Destination.SETTINGS)).assertExists()
+    }
+
+    /** A tap on the lit part (or anywhere outside the balloon) does nothing: the tour never changes a setting. */
+    @Test
+    fun tapsOutsideTheBalloonDoNothing() {
+        show()
+        repeat(3) {
+            compose.onNodeWithTag(TourTestTags.NEXT).performClick()
+            compose.waitForIdle()
+        }
+        val mode = targets.boundsOf(TourPart.MODE) ?: error("no mode switch")
+        val window = compose.onNodeWithTag(WINDOW).fetchSemanticsNode().positionInRoot
+        compose.onNodeWithTag(WINDOW).performTouchInput {
+            click(Offset(mode.left + mode.width * 0.75f, mode.centerY) - window)
+        }
+        compose.waitForIdle()
+        assertEquals("the mode switch wasn't reached", 0, modeChanges)
+        compose.onNodeWithTag(TourTestTags.BALLOON).assertExists()
+    }
+
+    /** The tour lies over the screen: nothing in the tuner or the bar moves when it comes. */
+    @Test
+    fun nothingMovesWhenTheTourComes() {
+        shownOpen.value = false
+        keepTwoPane.value = true
+        show()
+        for (size in listOf(XIAOMI, LANDSCAPE)) {
+            shownSize.value = size
+            shownOpen.value = false
+            compose.waitForIdle()
+            val before = TourPart.entries.associateWith { targets.boundsOf(it) }
+            shownOpen.value = true
+            compose.waitForIdle()
+            compose.onNodeWithTag(TourTestTags.BALLOON).assertExists()
+            for (part in TourPart.entries) {
+                assertNotNull("$style $size: $part laid out", before[part])
+                assertEquals("$style $size: $part moved", before[part], targets.boundsOf(part))
+            }
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+
+        private const val TEST_TIMEOUT_SECONDS = 20L
+        private const val WINDOW = "tour_test_window"
+        private const val SLACK = 1f
+        private const val OWNER_FONT_SCALE = 1.25f
+
+        /** Whole windows, the system bars included, as the tour's layer covers them. */
+        private val XIAOMI = DpSize(393.dp, 873.dp)
+        private val NARROW = DpSize(360.dp, 800.dp)
+        private val LANDSCAPE = DpSize(800.dp, 360.dp)
+        private val TABLET = DpSize(1280.dp, 800.dp)
+    }
+}

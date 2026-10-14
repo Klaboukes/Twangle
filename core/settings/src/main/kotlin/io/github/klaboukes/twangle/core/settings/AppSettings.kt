@@ -209,6 +209,12 @@ data class AppSettings(
     val keepTwoPaneLandscape: Boolean = false,
     /** The one-time tip "Tap a string to lock it" was dismissed, so it doesn't come back. */
     val stringLockTipSeen: Boolean = false,
+    /**
+     * The first-start tour ("Show me around") was skipped or finished, so it doesn't come back by
+     * itself. An install that already had saved settings before the tour came (an update) counts as
+     * having seen it (see [SettingsRepository.decideTourOnce]).
+     */
+    val tourSeen: Boolean = false,
     /** The metronome's tempo, whole BPM from [ClickTrack.MIN_BPM] to [ClickTrack.MAX_BPM]. */
     val metronomeBpm: Int = ClickTrack.DEFAULT_BPM,
     /** The metronome's time signature. */
