@@ -23,9 +23,10 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 16 — Custom tunings
 Goal: players can make, name and keep their own tunings.
+- ☐ One combined picker on the tuner ("Guitar · Standard ▾") in place of the separate tuning and instrument menus; tapping it opens a panel from the bottom with the instruments along the top and that instrument's tunings below, the current one ticked. The string-lock tip moves its corner to the new button; the one-line shrinking in `PickerRow.kt` goes. Mock-up first, then every style, English and Dutch, TalkBack and 2× font; phone check
 - ☐ Custom tunings stored in DataStore (name, instrument, one note per string); damaged data falls back to the presets
 - ☐ Tuning editor: pick each string's note with ± semitone buttons, name it, save; checks for empty names and duplicates
-- ☐ Custom tunings in the tuning menu below the presets, with edit and delete
+- ☐ Custom tunings in the picker panel below the presets, with "New tuning", edit and delete
 - ☐ English and Dutch texts, TalkBack and 2× font for the editor; phone check
 
 ## Phase 17 — Reference tone
@@ -48,6 +49,7 @@ Goal: a simple, steady metronome in the same app.
 - ☐ Metronome screen: tempo dial, ± buttons, tap tempo, beat lights in each style; optional vibration on the beat
 - ☐ Stops when the app leaves the screen (no foreground service); tempo and meter saved in settings
 - ☐ Timing drift measured over 10 minutes; English and Dutch texts; phone check
+- ☐ Bottom navigation bar with Tuner · Metronome · Settings (Material 3 `NavigationBar`), replacing the gear button; a navigation rail along the edge on a phone on its side, hidden in the compact layout; in each style, without a frame that fights the frameless meter. Mock-up first; English and Dutch, TalkBack and 2× font; phone check
 
 ## Phase 20 — Wear OS companion and home-screen widget
 Goal: Twangle on the watch and one tap from the home screen.
