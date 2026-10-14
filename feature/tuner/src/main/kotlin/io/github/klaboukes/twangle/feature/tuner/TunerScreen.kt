@@ -75,6 +75,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
@@ -112,8 +113,10 @@ import kotlin.math.min
  * first frame shows the right mode instead of switching a moment later; [savedStringLockTipSeen]
  * likewise keeps a dismissed string-lock tip from flashing up at the start, and
  * [savedKeepTwoPaneLandscape] a turned phone from switching layout, and [savedInstrument] the instrument
- * button from showing the guitar a moment first. The compact layout on its side is
- * used unless the "full layout on its side" setting is on.
+ * button from showing the guitar a moment first ([savedCustomTunings] likewise names a picked custom
+ * tuning from the start). The compact layout on its side is used unless the "full layout on its side"
+ * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning;
+ * the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  */
 @Composable
 fun TunerScreen(
@@ -125,6 +128,8 @@ fun TunerScreen(
     savedStringLockTipSeen: Boolean = false,
     savedKeepTwoPaneLandscape: Boolean = false,
     savedInstrument: Instrument = Instruments.DEFAULT,
+    savedCustomTunings: List<CustomTuning> = emptyList(),
+    onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
 ) {
     val mic = rememberMicPermissionState()
     val viewModel: TunerViewModel = viewModel {
@@ -135,6 +140,7 @@ fun TunerScreen(
             savedStringLockTipSeen = savedStringLockTipSeen,
             savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
             savedInstrument = savedInstrument,
+            savedCustomTunings = savedCustomTunings,
         )
     }
     val readings = viewModel.state.collectAsStateWithLifecycle()
@@ -144,6 +150,7 @@ fun TunerScreen(
     val state by remember(readings) { derivedStateOf(structuralEqualityPolicy()) { readings.value.asShown() } }
     val mode by viewModel.mode.collectAsStateWithLifecycle()
     val instrument by viewModel.instrument.collectAsStateWithLifecycle()
+    val customTunings by viewModel.customTunings.collectAsStateWithLifecycle()
     val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
     val vibrateInTune by viewModel.vibrateInTune.collectAsStateWithLifecycle()
     val display by viewModel.display.collectAsStateWithLifecycle()
@@ -199,6 +206,8 @@ fun TunerScreen(
                     onTuningChange = viewModel::setTuning,
                     instrument = instrument,
                     onInstrumentChange = viewModel::setInstrument,
+                    customTunings = customTunings,
+                    onNewTuning = { onOpenTuningEditor(it, null) },
                     onStringClick = viewModel::toggleString,
                     onRetry = viewModel::retry,
                     display = display,
@@ -247,6 +256,9 @@ object TunerTestTags {
     const val PICKER = "tuner_picker"
     const val PICKER_PANEL = "tuner_picker_panel"
 
+    /** The panel's "New tuning" row, which opens the tuning editor. */
+    const val NEW_TUNING = "tuner_new_tuning"
+
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
@@ -281,7 +293,9 @@ private fun KeepScreenOn() {
  * adds small signal bars by the note, which open the live [signalFigures] when tapped. [showStringLockTip] shows the
  * one-time tip, a speech balloon pointing at the string row in guitar mode; tapping it calls
  * [onStringLockTipDismiss]. [instrument] is the one on the instrument-and-tuning button (by default the one
- * [state]'s tuning belongs to); picking another calls [onInstrumentChange].
+ * [state]'s tuning belongs to); picking another calls [onInstrumentChange]. [customTunings] are the player's
+ * own tunings (the button names a picked one by its name), and [onNewTuning], when given, adds "New tuning"
+ * to the panel's list.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -314,6 +328,8 @@ fun TunerContent(
     compactLandscape: Boolean = true,
     instrument: Instrument = instrumentOf(state),
     onInstrumentChange: (Instrument) -> Unit = {},
+    customTunings: List<CustomTuning> = emptyList(),
+    onNewTuning: ((Instrument) -> Unit)? = null,
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -334,7 +350,7 @@ fun TunerContent(
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange) }
     val guitarSlot = @Composable { tipPointer: TipPointer, onMenuOpenChange: (Boolean) -> Unit ->
         val tip = StringLockTipState(showStringLockTip, onStringLockTipDismiss, tipPointer)
-        val pickers = InstrumentChoice(instrument, onInstrumentChange)
+        val pickers = InstrumentChoice(instrument, onInstrumentChange, customTunings, onNewTuning)
         GuitarSlotFor(state, mode, pictured, onTuningChange, pickers, onStringClick, tip, onMenuOpenChange)
     }
     val gauge = @Composable {
@@ -802,8 +818,16 @@ private data class GuitarControlsState(
     val noteSounding: Boolean,
 )
 
-/** The instrument on the instrument-and-tuning button, and what picking another does. */
-private data class InstrumentChoice(val instrument: Instrument, val onChange: (Instrument) -> Unit)
+/**
+ * The instrument on the instrument-and-tuning button, what picking another does, the player's own
+ * tunings and what "New tuning" does (no such row without it).
+ */
+private data class InstrumentChoice(
+    val instrument: Instrument,
+    val onChange: (Instrument) -> Unit,
+    val customTunings: List<CustomTuning> = emptyList(),
+    val onNewTuning: ((Instrument) -> Unit)? = null,
+)
 
 /** The instrument [state]'s tuning belongs to; the default guitar without a tuning. */
 private fun instrumentOf(state: TunerUiState): Instrument {
@@ -864,6 +888,8 @@ private fun GuitarControls(
             onTuningChange = onTuningChange,
             notation = notation,
             onExpandedChange = onMenuOpenChange,
+            customTunings = instrument.customTunings,
+            onNewTuning = instrument.onNewTuning,
         )
     }
     val strings = @Composable {

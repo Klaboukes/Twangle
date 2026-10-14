@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
@@ -44,8 +45,9 @@ import kotlinx.coroutines.launch
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedStringLockTipSeen] does the same for the one-time string-lock tip, [savedInstrument] for the
- * instrument picker, and [savedKeepTwoPaneLandscape] for the layout on its side.
+ * [savedStringLockTipSeen] does the same for the one-time string-lock tip, [savedInstrument] and
+ * [savedCustomTunings] for the instrument-and-tuning button, and [savedKeepTwoPaneLandscape] for the
+ * layout on its side.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -56,6 +58,7 @@ class TunerViewModel(
     savedStringLockTipSeen: Boolean = AppSettings().stringLockTipSeen,
     savedKeepTwoPaneLandscape: Boolean = AppSettings().keepTwoPaneLandscape,
     savedInstrument: Instrument = AppSettings().instrument,
+    savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
 ) : ViewModel() {
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
@@ -77,6 +80,11 @@ class TunerViewModel(
     val instrument: StateFlow<Instrument> = settingsRepository.settings
         .map { it.instrument }
         .stateIn(viewModelScope, SharingStarted.Eagerly, savedInstrument)
+
+    /** The player's own tunings, every instrument's (a saved setting); the button names a picked one by its name. */
+    val customTunings: StateFlow<List<CustomTuning>> = settingsRepository.settings
+        .map { it.customTunings }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, savedCustomTunings)
 
     /** Whether the screen should stay on while the tuner is shown (a saved setting). */
     val keepScreenOn: StateFlow<Boolean> = settingsRepository.settings

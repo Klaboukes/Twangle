@@ -87,4 +87,18 @@
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_change_instrument_or_tuning">Instrument of stemming wijzigen</string>
     <string name="tuner_picker_title">Instrument en stemming</string>
+
+    <string name="tuner_new_tuning">Nieuwe stemming</string>
+
+    <string name="tuning_editor_title_edit">Stemming bewerken</string>
+    <string name="tuning_editor_close">Sluiten zonder opslaan</string>
+    <string name="tuning_editor_save">Opslaan</string>
+    <string name="tuning_editor_instrument">Instrument: %1$s</string>
+    <string name="tuning_editor_name">Naam</string>
+    <string name="tuning_editor_name_empty">Geef de stemming een naam</string>
+    <string name="tuning_editor_name_taken">Er is al een stemming met deze naam</string>
+    <string name="tuning_editor_strings">Snaren</string>
+    <string name="tuning_editor_string">%1$s-snaar</string>
+    <string name="tuning_editor_lower">%1$s, halve toon lager</string>
+    <string name="tuning_editor_raise">%1$s, halve toon hoger</string>
 </resources>

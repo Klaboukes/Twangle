@@ -26,16 +26,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
+import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
 
 /**
- * The three screens. Navigation is just this one value; the back button leads from About to settings
- * and from settings to the tuner.
+ * The four screens. Navigation is just this one value; the back button leads from About to settings,
+ * and from settings and the tuning editor to the tuner.
  */
-private enum class Screen { TUNER, SETTINGS, ABOUT }
+private enum class Screen { TUNER, SETTINGS, ABOUT, TUNING_EDITOR }
 
 class MainActivity : ComponentActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
@@ -58,7 +60,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app in the user's style and theme, showing the tuner, settings or About over the style's background. */
+    /** The app in the user's style and theme, showing the tuner, settings, About or the tuning editor over the style's background. */
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
@@ -75,6 +77,9 @@ class MainActivity : ComponentActivity() {
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             Box(Modifier.fillMaxSize()) {
                 var screen by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
+                var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
+                var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
                 // Settings and About get the quiet version of the style's background.
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = screen != Screen.TUNER)
                 // Keeps each screen's saved UI state (e.g. the mic permission status) while the other one is shown.
@@ -89,6 +94,12 @@ class MainActivity : ComponentActivity() {
                             savedStringLockTipSeen = settings.stringLockTipSeen,
                             savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
                             savedInstrument = settings.instrument,
+                            savedCustomTunings = settings.customTunings,
+                            onOpenTuningEditor = { instrument, customTuningId ->
+                                editorInstrumentId = instrument.id
+                                editorTuningId = customTuningId
+                                screen = Screen.TUNING_EDITOR
+                            },
                             // Lets UI Automator (the Baseline Profile generator) find the tuner's test tags.
                             modifier = Modifier.semantics { testTagsAsResourceId = true },
                         )
@@ -106,6 +117,21 @@ class MainActivity : ComponentActivity() {
                         Screen.ABOUT -> {
                             BackHandler { screen = Screen.SETTINGS }
                             AboutScreen(appVersion = BuildConfig.VERSION_NAME, onBack = { screen = Screen.SETTINGS })
+                        }
+                        Screen.TUNING_EDITOR -> {
+                            val close = {
+                                // Each opening starts afresh, not from the last draft.
+                                saveableState.removeState(Screen.TUNING_EDITOR.name)
+                                screen = Screen.TUNER
+                            }
+                            BackHandler(onBack = close)
+                            TuningEditorScreen(
+                                settingsRepository = container.settingsRepository,
+                                settings = settings,
+                                instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
+                                editingId = editorTuningId,
+                                onClose = close,
+                            )
                         }
                     }
                 }

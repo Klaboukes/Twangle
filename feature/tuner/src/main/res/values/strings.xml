@@ -103,4 +103,26 @@
     <string name="tuner_change_instrument_or_tuning">Change instrument or tuning</string>
     <!-- Title of the panel that opens from the bottom, with the instruments and their tunings. -->
     <string name="tuner_picker_title">Instrument and tuning</string>
+
+    <!-- The last row of the instrument and tuning panel's tunings, and the title of the screen it opens. -->
+    <string name="tuner_new_tuning">New tuning</string>
+
+    <!-- The tuning editor: a screen to make a tuning of your own, or change one. -->
+    <string name="tuning_editor_title_edit">Edit tuning</string>
+    <string name="tuning_editor_close">Close without saving</string>
+    <string name="tuning_editor_save">Save</string>
+    <!-- %1$s is the instrument the tuning is for, e.g. "Guitar". -->
+    <string name="tuning_editor_instrument">Instrument: %1$s</string>
+    <string name="tuning_editor_name">Name</string>
+    <!-- Shown under the name only after Save is tapped, until the name is changed. -->
+    <string name="tuning_editor_name_empty">Give the tuning a name</string>
+    <string name="tuning_editor_name_taken">There is already a tuning with this name</string>
+    <string name="tuning_editor_strings">Strings</string>
+    <!-- A string by its note in the standard tuning, e.g. "E2 string"; as TalkBack says it, "E 2 string". -->
+    <string name="tuning_editor_string">%1$s string</string>
+    <!-- The − and + buttons beside a string's note. %1$s is the string as TalkBack says it, e.g. "E 2 string". -->
+    <string name="tuning_editor_lower">%1$s, a semitone lower</string>
+    <string name="tuning_editor_raise">%1$s, a semitone higher</string>
+    <!-- A string's note as TalkBack says it: %1$s the string ("E 2 string"), %2$s its note now ("D 2"). -->
+    <string name="tuning_editor_spoken_note" translatable="false">%1$s, %2$s</string>
 </resources>

@@ -76,6 +76,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -88,7 +89,9 @@ import kotlin.math.max
  * bottom: the instruments along the top, [instrument]'s tunings below, [tuning] ticked. Picking an
  * instrument calls [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the
  * panel open; picking a tuning calls [onTuningChange] and closes it. [onExpandedChange] hears when the
- * panel opens and closes (closed also when the button goes away).
+ * panel opens and closes (closed also when the button goes away). [customTunings] are the player's own
+ * tunings; the button names a picked one by its name. With [onNewTuning], the list ends in "New
+ * tuning", which closes the panel and calls it with the instrument shown.
  */
 @Composable
 fun CombinedPicker(
@@ -99,6 +102,8 @@ fun CombinedPicker(
     modifier: Modifier = Modifier,
     notation: Notation = Notation.DEFAULT,
     onExpandedChange: (Boolean) -> Unit = {},
+    customTunings: List<CustomTuning> = emptyList(),
+    onNewTuning: ((Instrument) -> Unit)? = null,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
@@ -106,12 +111,12 @@ fun CombinedPicker(
     DisposableEffect(Unit) { onDispose { currentOnExpandedChange(false) } }
     PickerButton(
         instrumentName = instrumentLabel(instrument),
-        tuningName = tuningLabel(tuning),
+        tuningName = customTunings.firstOrNull { it.id == tuning.id }?.name ?: tuningLabel(tuning),
         onClick = { expanded = true },
         modifier = modifier,
     )
     if (expanded) {
-        PickerPanel(instrument, tuning, notation, onInstrumentChange, onTuningChange, onDismiss = { expanded = false })
+        PickerPanel(instrument, tuning, notation, onInstrumentChange, onTuningChange, onNewTuning, onDismiss = { expanded = false })
     }
 }
 
@@ -192,6 +197,7 @@ private fun PickerPanel(
     notation: Notation,
     onInstrumentChange: (Instrument) -> Unit,
     onTuningChange: (Tuning) -> Unit,
+    onNewTuning: ((Instrument) -> Unit)?,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -202,9 +208,18 @@ private fun PickerPanel(
     val window = LocalWindowInfo.current.containerSize.height
     val navigationBar = WindowInsets.navigationBars.getBottom(density)
     val maxHeight = with(density) { (window * PANEL_MAX_HEIGHT - navigationBar).toDp() - HANDLE_HEIGHT }
+    // Closed before anything else happens, so the panel isn't open again on coming back from the editor.
+    val close: (then: () -> Unit) -> Unit = { then ->
+        scope.launch { sheetState.hide() }.invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                onDismiss()
+                then()
+            }
+        }
+    }
     val pick: (Tuning) -> Unit = { picked ->
         onTuningChange(picked)
-        scope.launch { sheetState.hide() }.invokeOnCompletion { if (!sheetState.isVisible) onDismiss() }
+        close {}
     }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -231,7 +246,8 @@ private fun PickerPanel(
                     .padding(start = LIST_PADDING, end = LIST_PADDING, top = 2.dp, bottom = 22.dp),
             ) {
                 PresetTunings(instrument, tuning, notation, onSelect = pick)
-                // Later in Phase 16 the player's own tunings follow here, under the presets, with "New tuning".
+                // Later in Phase 16 the player's own tunings follow here, under the presets.
+                if (onNewTuning != null) NewTuningRow(onClick = { close { onNewTuning(instrument) } })
             }
         }
     }
@@ -244,6 +260,32 @@ private fun PresetTunings(instrument: Instrument, selected: Tuning, notation: No
         for (preset in instrument.tunings) {
             TuningRow(tuningLabel(preset), preset, notation, selected = preset == selected, onClick = { onSelect(preset) })
         }
+    }
+}
+
+/** The list's last row: a + and "New tuning", opening the tuning editor for the instrument shown. */
+@Composable
+private fun NewTuningRow(onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.medium
+    Row(
+        modifier = Modifier
+            .padding(top = 4.dp)
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .clip(shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .testTag(TunerTestTags.NEW_TUNING)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
+        Text(
+            stringResource(R.string.tuner_new_tuning),
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+            color = scheme.primary,
+        )
     }
 }
 

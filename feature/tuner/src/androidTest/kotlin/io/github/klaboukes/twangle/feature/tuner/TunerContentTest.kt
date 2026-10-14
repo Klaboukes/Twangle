@@ -54,8 +54,10 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -98,6 +100,10 @@ class TunerContentTest {
     private val modeChanges = mutableListOf<TunerMode>()
     private val tuningChanges = mutableListOf<Tuning>()
     private val instrumentChanges = mutableListOf<Instrument>()
+    private val newTuningRequests = mutableListOf<Instrument>()
+
+    /** The player's own tunings [show] passes on. */
+    private var shownCustomTunings = emptyList<CustomTuning>()
     private val stringClicks = mutableListOf<Int>()
     private var tipDismissals = 0
 
@@ -162,6 +168,8 @@ class TunerContentTest {
                         onModeChange = { modeChanges += it },
                         onTuningChange = { tuningChanges += it },
                         onInstrumentChange = { instrumentChanges += it },
+                        customTunings = shownCustomTunings,
+                        onNewTuning = { newTuningRequests += it },
                         onStringClick = { stringClicks += it },
                         onRetry = { retries++ },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
@@ -288,6 +296,30 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).performScrollTo().performClick()
         assertEquals(listOf(Tunings.DROP_D), tuningChanges)
         compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
+    }
+
+    @Test
+    fun thePanelsListEndsInNewTuningWhichClosesItAndOpensTheEditor() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Instruments.UKULELE.defaultTuning))
+        picker.performClick()
+        compose.onNodeWithTag(TunerTestTags.NEW_TUNING)
+            .performScrollTo()
+            .assert(hasText(context.getString(R.string.tuner_new_tuning)))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(Instruments.UKULELE), newTuningRequests)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertDoesNotExist()
+    }
+
+    @Test
+    fun aPickedCustomTuningIsNamedOnTheButton() {
+        val mine = CustomTuning("custom_1", "Low C", Instruments.GUITAR, listOf(36, 43, 48, 55, 59, 64).map(::Note))
+        shownCustomTunings = listOf(mine)
+        show(TunerUiState.Listening(TunerMode.AUTO, mine.tuning))
+        val guitar = context.getString(R.string.instrument_guitar)
+        picker.assert(hasText("$guitar · Low C")).assert(hasContentDescription("$guitar, Low C"))
+        compose.onNodeWithText(mine.id, substring = true).assertDoesNotExist()
     }
 
     @Test
