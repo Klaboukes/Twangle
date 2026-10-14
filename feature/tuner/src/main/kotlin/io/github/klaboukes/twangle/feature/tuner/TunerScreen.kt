@@ -354,7 +354,7 @@ private fun KeepScreenOn() {
  * sounds a tap on any string calls [onStringClick], which stops the tone. With [onStrumCheckChange] a
  * switch at the end of the instrument-and-tuning button's row turns strum check on and off ([strumCheck]
  * is whether it is on); a [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
- * line in the note's ([StrumPanel], [StrumStatus]).
+ * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -423,7 +423,12 @@ fun TunerContent(
     val gauge = @Composable {
         // Strum check takes the meter's place, at its shape.
         if (state is TunerUiState.StrumCheck) {
-            StrumPanel(state, Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL))
+            StrumPanel(
+                state,
+                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL),
+                onStringClick = onStringClick,
+                toneSounding = soundingString != null,
+            )
         } else {
             MeterFrame(
                 look = meterLook,

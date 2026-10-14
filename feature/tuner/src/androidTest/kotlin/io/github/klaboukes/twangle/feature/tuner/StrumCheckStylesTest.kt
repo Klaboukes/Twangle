@@ -10,11 +10,13 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -26,6 +28,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
@@ -59,7 +62,9 @@ import kotlin.math.abs
  * scrolling, in the window, clear of the settings button and of each other, and nothing moves from
  * one phase to the next. At 2× text in Dutch every part can be scrolled to and is wholly shown.
  * TalkBack hears each string with its reading, the line as a live region and the switch with its
- * state. Each string's marker is drawn in the style's own colours, light and dark.
+ * state. Each string's marker is drawn in the style's own colours, light and dark. Once the strum is
+ * read, each string's column is a button that tunes that string, as on the string row (also for
+ * TalkBack), big enough to touch.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -83,6 +88,7 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownCompact = mutableStateOf(false)
+    private val shownSounding = mutableStateOf<Int?>(null)
     private val switched = mutableListOf<Boolean>()
     private val stringClicks = mutableListOf<Int>()
 
@@ -108,6 +114,7 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         compactLandscape = shownCompact.value,
+                        soundingString = shownSounding.value,
                         strumCheck = true,
                         onStrumCheckChange = { switched += it },
                     )
@@ -228,6 +235,62 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         assertEquals(listOf(1), stringClicks)
     }
 
+    /** In every phase with readings a tap on a string's column tunes that string, as on the string row; before the first reading there is nothing to tap. */
+    @Test
+    fun tappingAStringsColumnTunesThatString() {
+        show()
+        for (phase in StrumPhase.entries) {
+            shownState.value = ringing(phase)
+            compose.waitForIdle()
+            stringClicks.clear()
+            for (index in strings.indices) compose.onNodeWithTag(TunerTestTags.strumString(index)).performClick()
+            val expected = if (phase == StrumPhase.WAITING) emptyList() else strings.indices.toList()
+            assertEquals("$style $phase", expected, stringClicks)
+        }
+    }
+
+    /** Each column is at least 48 dp each way to touch, upright on a narrow phone and on its side in both layouts. */
+    @Test
+    fun everyColumnIsBigEnoughToTouch() {
+        show()
+        for ((size, compact) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to false, PHONE_LANDSCAPE to true)) {
+            shownSize.value = size
+            shownCompact.value = compact
+            compose.waitForIdle()
+            for (index in strings.indices) {
+                val cell = compose.onNodeWithTag(TunerTestTags.strumString(index)).getBoundsInRoot()
+                val case = "$style $size${if (compact) " compact" else ""}: ${strings[index]} $cell"
+                if (cell.right - cell.left < MIN_TOUCH - SLACK || cell.bottom - cell.top < MIN_TOUCH - SLACK) fail("$case is under $MIN_TOUCH")
+            }
+        }
+    }
+
+    /** TalkBack: each string's column is a button, "Tune A 2" (or "Stop the tone" while a tone sounds), and the action tunes it; not before the first reading. */
+    @Test
+    fun talkBackCanTuneEachStringFromItsColumn() {
+        show()
+        val spoken = listOf("E 2", "A 2", "D 3", "G 3", "B 3", "E 4")
+        spoken.forEachIndexed { index, name ->
+            val node = compose.onNodeWithTag(TunerTestTags.strumString(index))
+            val config = node.fetchSemanticsNode().config
+            assertEquals("$style $name", Role.Button, config.getOrNull(SemanticsProperties.Role))
+            assertEquals("$style $name", context.getString(R.string.tuner_strum_tune_string, name), config.getOrNull(SemanticsActions.OnClick)?.label)
+        }
+        compose.onNodeWithTag(TunerTestTags.strumString(1)).performSemanticsAction(SemanticsActions.OnClick)
+        assertEquals(listOf(1), stringClicks)
+
+        shownSounding.value = 0
+        compose.waitForIdle()
+        val stop = compose.onNodeWithTag(TunerTestTags.strumString(3)).fetchSemanticsNode().config
+        assertEquals(context.getString(R.string.tuner_string_stop_tone), stop.getOrNull(SemanticsActions.OnClick)?.label)
+
+        shownState.value = ringing(StrumPhase.WAITING)
+        compose.waitForIdle()
+        compose.onNodeWithTag(TunerTestTags.strumString(1))
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
+    }
+
     /**
      * Light and dark: the in-tune strings' markers are drawn in the style's "in tune" colour at the
      * centre, the flat one's in its accent below the centre and the sharp one's above it, and a
@@ -339,5 +402,8 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         /** The settings button's 48 dp plus its 8 dp inset, in the window's top end corner. */
         private val CORNER = 56.dp
         private val SLACK = 0.5.dp
+
+        /** Android's smallest touch target. */
+        private val MIN_TOUCH = 48.dp
     }
 }

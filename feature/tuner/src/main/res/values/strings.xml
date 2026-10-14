@@ -157,6 +157,8 @@
     <string name="tuner_strum_all_in_tune">All strings in tune</string>
     <string name="tuner_strum_tap_to_tune">Tap a string to tune it</string>
     <string name="tuner_strum_again">Strum again, or tap a string to tune it</string>
+    <!-- TalkBack action on a string of the strum check: leave it and tune that string. %1$s is the string as spoken ("A 2"). -->
+    <string name="tuner_strum_tune_string">Tune %1$s</string>
     <!-- TalkBack, one string of the strum check. %1$s is the string as spoken ("A 2"), %2$s its reading
          ("12 cents flat, tune up" or "in tune"). -->
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>

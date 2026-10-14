@@ -2,8 +2,12 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +36,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -45,6 +51,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -89,9 +97,20 @@ import kotlin.math.roundToInt
  * While a new strum is heard, the strum before stays faded. Drawn in the current style's colours and
  * faces on a calm field like the meter's, sized by its width (like the meter, not by the font size);
  * TalkBack hears each string as one item ("A 2, 12 cents flat, tune up").
+ *
+ * With [onStringClick], once the strum has given readings, each column is a button for its string,
+ * as on the string row: tapping it calls [onStringClick] with the string's index (leave strum check,
+ * locked to that string; while a reference tone sounds, [toneSounding], it stops the tone). The
+ * columns tile the panel, so a tap anywhere on it reaches a string; they press with the style's
+ * ripple, in the style's button shape, over the art. Before the first reading there is nothing to tap.
  */
 @Composable
-fun StrumPanel(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
+fun StrumPanel(
+    state: TunerUiState.StrumCheck,
+    modifier: Modifier = Modifier,
+    onStringClick: ((Int) -> Unit)? = null,
+    toneSounding: Boolean = false,
+) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     val colours = PanelColours(
@@ -110,6 +129,9 @@ fun StrumPanel(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
     val spokenString = stringResource(R.string.tuner_spoken_string)
     val signs = SignLabels(musicText("♯"), musicText("♭"))
     val faded = state.phase == StrumPhase.HEARING
+    val tuneLabel = stringResource(R.string.tuner_strum_tune_string)
+    val stopLabel = stringResource(R.string.tuner_string_stop_tone)
+    val pressShape = pickerButtonShape(tokens.style, MaterialTheme.shapes.medium)
     Box(
         modifier
             .aspectRatio(PANEL_ASPECT_RATIO)
@@ -140,6 +162,8 @@ fun StrumPanel(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
                 val string = state.strings.getOrNull(index)
                 val spokenName = spokenString.format(speech.name(name), note.octave)
                 val spoken = spokenStrumString(spokenName, string)
+                val click: (() -> Unit)? = if (onStringClick != null && state.strings.isNotEmpty()) ({ onStringClick(index) }) else null
+                val clickLabel = if (toneSounding) stopLabel else tuneLabel.format(spokenName)
                 StrumCell(
                     name = buildAnnotatedString {
                         append(musicText(name))
@@ -153,12 +177,23 @@ fun StrumPanel(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
                     numberStyle = numberStyle,
                     numberScale = numberScale,
                     measurer = measurer,
+                    onClick = click,
+                    clickLabel = clickLabel,
+                    pressShape = pressShape,
+                    // The column's own semantics: the clickable's inside are cleared, so its role and action are set here.
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .clearAndSetSemantics {
                             contentDescription = spoken
                             testTag = TunerTestTags.strumString(index)
+                            if (click != null) {
+                                role = Role.Button
+                                onClick(label = clickLabel) {
+                                    click()
+                                    true
+                                }
+                            }
                         },
                 )
             }
@@ -193,9 +228,13 @@ private fun StrumCell(
     numberStyle: TextStyle,
     numberScale: Float,
     measurer: TextMeasurer,
+    onClick: (() -> Unit)?,
+    clickLabel: String,
+    pressShape: Shape,
     modifier: Modifier,
 ) {
     val heard = string != null && string.verdict != StrumVerdict.NOT_HEARD
+    val interactions = remember { MutableInteractionSource() }
     val target = if (heard) string!!.cents.coerceIn(-SCALE_CENTS, SCALE_CENTS) else 0f
     val markerCents by animateFloatAsState(target, tween(MARKER_MILLIS), label = "strumMarker")
     val markerAlpha by animateFloatAsState(if (heard) 1f else 0f, tween(MARKER_MILLIS), label = "strumMarkerAlpha")
@@ -275,7 +314,18 @@ private fun StrumCell(
                     drawText(labelLayout, topLeft = Offset(x - labelLayout.size.width / 2f, LABEL_CENTRE * u - labelLayout.size.height / 2f), alpha = labelAlpha)
                 }
             }
-        },
+        }
+            // The whole column takes the touch; the press is drawn over the art, clipped to the style's shape.
+            .then(
+                if (onClick == null) {
+                    Modifier
+                } else {
+                    Modifier
+                        .clickable(interactions, indication = null, onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
+                        .clip(pressShape)
+                        .indication(interactions, LocalIndication.current)
+                },
+            ),
     )
 }
 
