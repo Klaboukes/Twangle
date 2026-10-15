@@ -7,7 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
+import android.os.LocaleList
 import android.widget.RemoteViews
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.toArgb
 import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.R
@@ -58,15 +60,33 @@ object TuningWidget {
             .collect { update(context, it) }
     }
 
-    /** The widget's views for [state]. */
+    /** The widget's views for [state], with their texts in the app's language. */
     internal fun views(context: Context, state: WidgetState): RemoteViews {
-        val string = { id: Int, args: Array<out Any> -> if (args.isEmpty()) context.getString(id) else context.getString(id, *args) }
+        val texts = inAppLanguage(context)
+        val string = { id: Int, args: Array<out Any> -> if (args.isEmpty()) texts.getString(id) else texts.getString(id, *args) }
         return RemoteViews(context.packageName, R.layout.widget_tuning).apply {
             setTextViewText(R.id.widget_title, state.title(string))
             setContentDescription(R.id.widget_title, state.spoken(string))
+            // Set here, not only in the layout, which the launcher would read in the phone's language.
+            setTextViewText(R.id.widget_subtitle, texts.getString(R.string.widget_open_tuner))
             setOnClickPendingIntent(android.R.id.background, openTuner(context))
             paint(context, state)
         }
+    }
+
+    /**
+     * [context] in the language picked in the app's Settings. Android 13+ gives the app that language
+     * itself; before, AppCompat sets it only on the app's activities, so the widget asks AppCompat.
+     * (In a process started for the widget alone, before the app has been opened, AppCompat hasn't
+     * read the saved language yet; the widget then shows the phone's language until the app opens.)
+     */
+    private fun inAppLanguage(context: Context): Context {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return context
+        val picked = AppCompatDelegate.getApplicationLocales()
+        if (picked.isEmpty) return context
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocales(LocaleList.forLanguageTags(picked.toLanguageTags()))
+        return context.createConfigurationContext(configuration)
     }
 
     /**

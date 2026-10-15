@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>
     <string name="settings_show_signal_bars_summary">Meraklısı için: notanın yanındaki küçük çubuklar, akort cihazının seni ne kadar iyi duyduğunu gösterir. Değerler için onlara dokun</string>
 
+    <string name="settings_language_title">Dil</string>
+    <string name="settings_language_phone">Telefonun dili</string>
+    <string name="settings_language_cancel">İptal</string>
     <string name="settings_show_tour_title">Tanıtım turu</string>
     <string name="settings_show_tour_summary">Akort ekranında kısa bir tur</string>
     <string name="about_title">Twangle hakkında</string>

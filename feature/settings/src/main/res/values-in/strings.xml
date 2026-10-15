@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
     <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di samping nada menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
 
+    <string name="settings_language_title">Bahasa</string>
+    <string name="settings_language_phone">Bahasa ponsel</string>
+    <string name="settings_language_cancel">Batal</string>
     <string name="settings_show_tour_title">Tur aplikasi</string>
     <string name="settings_show_tour_summary">Tur singkat tuner</string>
     <string name="about_title">Tentang Twangle</string>

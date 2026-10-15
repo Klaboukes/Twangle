@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.settings
 
 import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -26,6 +27,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -36,6 +40,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
@@ -51,6 +56,7 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
+import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
 import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
@@ -62,6 +68,11 @@ import io.github.klaboukes.twangle.feature.settings.components.WaveLookPicker
  * Settings entry point, one of the app's three tabs (no back arrow: the navigation bar and Back
  * lead away). Every change is saved straight away; [onOpenAbout] opens the About page. [appVersion] is the app's version name, shown on the About link.
  * With [onShowTour], a "Show me around" row starts the first-start tour again (on the tuner).
+ *
+ * With [languages] (`twangle.languages`, as resource qualifiers), a Language row sets the app's
+ * language through AppCompat: on Android 13+ that is the per-app language of phone Settings, on
+ * Android 8–12 AppCompat keeps it. The app's screens are then recreated in it; [onLanguageChange]
+ * follows, for what lives outside them (the home-screen widget).
  */
 @Composable
 fun SettingsScreen(
@@ -70,9 +81,15 @@ fun SettingsScreen(
     onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier,
     onShowTour: (() -> Unit)? = null,
+    languages: List<String> = emptyList(),
+    onLanguageChange: () -> Unit = {},
 ) {
     val viewModel: SettingsViewModel = viewModel { SettingsViewModel(settingsRepository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val languageTags = remember(languages) { AppLanguages.tagsOf(languages) }
+    var appLanguage by remember(languageTags) {
+        mutableStateOf(AppLanguages.selectedOf(AppCompatDelegate.getApplicationLocales()[0], languageTags))
+    }
     SettingsContent(
         settings = settings,
         appVersion = appVersion,
@@ -95,6 +112,15 @@ fun SettingsScreen(
         onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
         modifier = modifier,
         onShowTour = onShowTour,
+        languages = languageTags,
+        appLanguage = appLanguage,
+        onAppLanguageChange = { tag ->
+            appLanguage = tag
+            AppCompatDelegate.setApplicationLocales(
+                if (tag == null) LocaleListCompat.getEmptyLocaleList() else LocaleListCompat.forLanguageTags(tag),
+            )
+            onLanguageChange()
+        },
     )
 }
 
@@ -103,7 +129,8 @@ fun SettingsScreen(
  * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
  * (Android 12+); the meter looks always show, and the wave looks (and whether the wave breathes in
- * tune) only while the wave is the display.
+ * tune) only while the wave is the display. The Language row shows when there are [languages]
+ * (language tags, in the order shown); [appLanguage] is the picked one, null for the phone's.
  */
 @Composable
 fun SettingsContent(
@@ -129,6 +156,9 @@ fun SettingsContent(
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     onShowTour: (() -> Unit)? = null,
+    languages: List<String> = emptyList(),
+    appLanguage: String? = null,
+    onAppLanguageChange: (String?) -> Unit = {},
 ) {
     SettingsPage(title = stringResource(R.string.settings_title), onBack = null, modifier = modifier) {
         if (settings != null) {
@@ -137,6 +167,9 @@ fun SettingsContent(
                 appVersion = appVersion,
                 onOpenAbout = onOpenAbout,
                 onShowTour = onShowTour,
+                languages = languages,
+                appLanguage = appLanguage,
+                onAppLanguageChange = onAppLanguageChange,
                 onA4Change = onA4Change,
                 onNotationChange = onNotationChange,
                 onInTunePrecisionChange = onInTunePrecisionChange,
@@ -217,9 +250,9 @@ internal fun SettingsPage(
 /**
  * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
  * (the style, light or dark, the meter's look, how far off a note is shown and the layout on its
- * side) and While tuning (what the tuner does while it listens), followed by one row that opens the
- * About page (version, promise, privacy and licences), so those long texts don't crowd the
- * settings. Rows, including the card grids, keep 16 dp from the column's edges.
+ * side) and While tuning (what the tuner does while it listens), followed by the app's language,
+ * the tour and one row that opens the About page (version, promise, privacy and licences), so those
+ * long texts don't crowd the settings. Rows, including the card grids, keep 16 dp from the column's edges.
  */
 @Composable
 private fun SettingsGroups(
@@ -227,6 +260,9 @@ private fun SettingsGroups(
     appVersion: String,
     onOpenAbout: () -> Unit,
     onShowTour: (() -> Unit)?,
+    languages: List<String>,
+    appLanguage: String?,
+    onAppLanguageChange: (String?) -> Unit,
     onA4Change: (Float) -> Unit,
     onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
@@ -373,6 +409,15 @@ private fun SettingsGroups(
         }
         Rows {
             HorizontalDivider()
+            if (languages.isNotEmpty()) {
+                val names = remember(languages) { languages.associateWith(AppLanguages::nameOf) }
+                LanguageSetting(
+                    languages = languages,
+                    selected = appLanguage,
+                    nameOf = { names.getValue(it) },
+                    onSelect = onAppLanguageChange,
+                )
+            }
             if (onShowTour != null) {
                 LinkSetting(
                     title = stringResource(R.string.settings_show_tour_title),

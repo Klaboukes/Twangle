@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">信号バーを表示</string>
     <string name="settings_show_signal_bars_summary">気になる方へ：音名の横の小さなバーで、チューナーがどれだけよく聞き取れているかがわかります。タップすると数値を表示します</string>
 
+    <string name="settings_language_title">言語</string>
+    <string name="settings_language_phone">スマートフォンの言語</string>
+    <string name="settings_language_cancel">キャンセル</string>
     <string name="settings_show_tour_title">使い方を見る</string>
     <string name="settings_show_tour_summary">チューナーの簡単なツアー</string>
     <string name="about_title">Twangle について</string>

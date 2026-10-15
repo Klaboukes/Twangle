@@ -29,6 +29,11 @@ class TwangleApplication : Application() {
     /** A new language, or dark mode on phones before Android 12: the widget's names and colours follow. */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        redrawWidgets()
+    }
+
+    /** Redraws the home-screen widgets with the current settings, e.g. in a language just picked in Settings. */
+    fun redrawWidgets() {
         appScope.launch { TuningWidget.update(this@TwangleApplication, WidgetState.from(container.settingsRepository.settings.first())) }
     }
 }

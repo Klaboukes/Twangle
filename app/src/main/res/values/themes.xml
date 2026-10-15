@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window theme only; the real UI theme is Compose Material 3 (ui/theme). -->
-    <style name="Theme.Twangle" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Window theme only; the real UI theme is Compose Material 3 (ui/theme). An AppCompat theme
+         because MainActivity is an AppCompatActivity (for the in-app language). -->
+    <style name="Theme.Twangle" parent="Theme.AppCompat.Light.NoActionBar" />
 
     <!-- Launch theme: the opening screen (androidx core-splashscreen, so it looks the same on Android 8
          to 11 as on 12+). The icon's string on a gold tile (the launcher's icon shape), centred on splash_background.

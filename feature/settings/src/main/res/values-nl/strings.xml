@@ -78,6 +78,9 @@
     <string name="settings_show_signal_bars_summary">Voor wie het wil weten: streepjes bij de noot tonen hoe goed de stemmer je hoort. Tik erop voor de cijfers</string>
 
     <!-- About (the last group). -->
+    <string name="settings_language_title">Taal</string>
+    <string name="settings_language_phone">Taal van de telefoon</string>
+    <string name="settings_language_cancel">Annuleren</string>
     <string name="settings_show_tour_title">Laat me rondkijken</string>
     <string name="settings_show_tour_summary">Een korte rondleiding door de stemmer</string>
     <string name="about_title">Over Twangle</string>

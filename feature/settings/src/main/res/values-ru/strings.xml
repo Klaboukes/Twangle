@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
     <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
 
+    <string name="settings_language_title">Язык</string>
+    <string name="settings_language_phone">Язык телефона</string>
+    <string name="settings_language_cancel">Отмена</string>
     <string name="settings_show_tour_title">Экскурсия</string>
     <string name="settings_show_tour_summary">Короткий обзор тюнера</string>
     <string name="about_title">О Twangle</string>

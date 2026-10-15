@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
 
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_phone">Idioma del teléfono</string>
+    <string name="settings_language_cancel">Cancelar</string>
     <string name="settings_show_tour_title">Hacer un recorrido</string>
     <string name="settings_show_tour_summary">Un breve recorrido por el afinador</string>
     <string name="about_title">Acerca de Twangle</string>

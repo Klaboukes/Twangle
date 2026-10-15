@@ -22,11 +22,18 @@ kotlin {
     jvmToolchain(17)
 }
 
+// AppLanguagesTest names every language in twangle.languages, so a change there reruns it.
+tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.file("gradle.properties")).withPropertyName("languageList").withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 dependencies {
     implementation(project(":core:settings"))
     implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.core.ktx)
+    // The Language setting reads and sets the app's language (AppCompatDelegate.setApplicationLocales).
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(platform(libs.androidx.compose.bom))

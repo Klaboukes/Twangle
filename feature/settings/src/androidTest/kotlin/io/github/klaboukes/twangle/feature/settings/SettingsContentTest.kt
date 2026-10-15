@@ -56,7 +56,9 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.feature.settings.components.LANGUAGE_SETTING_TAG
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
+import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
@@ -102,6 +104,7 @@ class SettingsContentTest {
     private var backs = 0
     private var aboutOpened = 0
     private var toursAsked = 0
+    private val languageChanges = mutableListOf<String?>()
 
     /**
      * Shows [settings] (or, with [about], the About page), as if the window were [size] ([ForcedSize]
@@ -116,6 +119,8 @@ class SettingsContentTest {
         locale: String? = null,
         about: Boolean = false,
         style: VisualStyle? = null,
+        languages: List<String> = emptyList(),
+        appLanguage: String? = null,
     ) {
         compose.setContent {
             val content = @Composable {
@@ -145,6 +150,9 @@ class SettingsContentTest {
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                         onShowTour = { toursAsked++ },
+                        languages = languages,
+                        appLanguage = appLanguage,
+                        onAppLanguageChange = { languageChanges += it },
                     )
                 }
             }
@@ -155,6 +163,55 @@ class SettingsContentTest {
             ).reduceOrNull { a, b -> a then b }
             if (overrides != null) DeviceConfigurationOverride(overrides) { content() } else content()
         }
+    }
+
+    /**
+     * The Language row shows the app's language in its own name; its dialog lists the phone's
+     * language first and then each language in its own name, marked with its language for TalkBack.
+     */
+    @Test
+    fun languageDialogListsThePhonesLanguageFirstThenEachInItsOwnName() {
+        show(AppSettings(), languages = listOf("de", "pl", "zh-CN"), appLanguage = "pl")
+        compose.onNodeWithTag(LANGUAGE_SETTING_TAG).performScrollTo().assert(hasText("Polski")).performClick()
+        val options = listOf(null, "de", "pl", "zh-CN")
+        val tops = options.map { tag ->
+            val option = compose.onNodeWithTag(languageOptionTag(tag)).assert(hasAnyAncestor(isDialog()))
+            option.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+            if (tag == "pl") option.assertIsSelected() else option.assertIsNotSelected()
+            val text = option.fetchSemanticsNode().config[SemanticsProperties.Text].single()
+            if (tag == null) {
+                assertEquals(context.getString(R.string.settings_language_phone), text.text)
+            } else {
+                assertEquals(AppLanguages.nameOf(tag), text.text)
+                assertTrue(tag, text.spanStyles.any { it.item.localeList == LocaleList(tag) })
+            }
+            option.getUnclippedBoundsInRoot().top
+        }
+        assertEquals(tops.sorted(), tops)
+    }
+
+    @Test
+    fun pickingALanguageReportsItAndClosesTheDialog() {
+        show(AppSettings(), languages = listOf("de", "pl"))
+        compose.onNodeWithTag(LANGUAGE_SETTING_TAG).performScrollTo()
+            .assert(hasText(context.getString(R.string.settings_language_phone))).performClick()
+        compose.onNodeWithTag(languageOptionTag(null)).assertIsSelected()
+        compose.onNodeWithTag(languageOptionTag("de")).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        // Cancel and the language already picked change nothing.
+        compose.onNodeWithTag(LANGUAGE_SETTING_TAG).performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_language_cancel)).performClick()
+        compose.onNode(isDialog()).assertDoesNotExist()
+        compose.onNodeWithTag(LANGUAGE_SETTING_TAG).performClick()
+        compose.onNodeWithTag(languageOptionTag(null)).performClick()
+        assertEquals(listOf("de"), languageChanges)
+    }
+
+    /** Without a language list (previews, the watch) there is no Language row. */
+    @Test
+    fun noLanguageRowWithoutLanguages() {
+        show(AppSettings())
+        compose.onNodeWithTag(LANGUAGE_SETTING_TAG).assertDoesNotExist()
     }
 
     @Test

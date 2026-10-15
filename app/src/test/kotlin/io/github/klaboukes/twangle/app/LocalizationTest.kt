@@ -61,6 +61,15 @@ class LocalizationTest {
     }
 
     @Test
+    fun `the Language setting offers the shared list`() {
+        val build = File(root, "app/build.gradle.kts").readText()
+        assertTrue(
+            "app/build.gradle.kts must set BuildConfig.LANGUAGES from twangle.languages",
+            Regex("""buildConfigField\("String", "LANGUAGES", .*providers\.gradleProperty\("twangle\.languages"\)""").containsMatchIn(build),
+        )
+    }
+
+    @Test
     fun `every translation folder is a supported language`() {
         val found = modules.flatMap { module ->
             File(module, "src/main/res").listFiles().orEmpty()

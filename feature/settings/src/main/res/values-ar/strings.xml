@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
     <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
 
+    <string name="settings_language_title">اللغة</string>
+    <string name="settings_language_phone">لغة الهاتف</string>
+    <string name="settings_language_cancel">إلغاء</string>
     <string name="settings_show_tour_title">جولة تعريفية</string>
     <string name="settings_show_tour_summary">جولة قصيرة في الموالف</string>
     <string name="about_title">حول Twangle</string>

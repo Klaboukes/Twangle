@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">सिग्नल बार दिखाएँ</string>
     <string name="settings_show_signal_bars_summary">जिज्ञासुओं के लिए: नोट के पास छोटे बार दिखाते हैं कि ट्यूनर आपको कितनी अच्छी तरह सुन रहा है। आँकड़े देखने के लिए उन पर टैप करें</string>
 
+    <string name="settings_language_title">भाषा</string>
+    <string name="settings_language_phone">फ़ोन की भाषा</string>
+    <string name="settings_language_cancel">रद्द करें</string>
     <string name="settings_show_tour_title">ऐप का टूर</string>
     <string name="settings_show_tour_summary">ट्यूनर का छोटा-सा टूर</string>
     <string name="about_title">Twangle के बारे में</string>

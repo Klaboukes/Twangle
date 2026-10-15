@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Signalbalken zeigen</string>
     <string name="settings_show_signal_bars_summary">Für Neugierige: kleine Balken neben der Note zeigen, wie gut dich das Stimmgerät hört. Tippe darauf für die Werte</string>
 
+    <string name="settings_language_title">Sprache</string>
+    <string name="settings_language_phone">Sprache des Handys</string>
+    <string name="settings_language_cancel">Abbrechen</string>
     <string name="settings_show_tour_title">Rundgang</string>
     <string name="settings_show_tour_summary">Ein kurzer Rundgang durch das Stimmgerät</string>
     <string name="about_title">Über Twangle</string>

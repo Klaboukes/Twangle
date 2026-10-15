@@ -4,11 +4,11 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,7 +49,12 @@ import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+/**
+ * The app's one activity. An [AppCompatActivity] (rather than a plain ComponentActivity) so the
+ * language picked in Settings applies on Android 8–12 too: AppCompat keeps it and sets it on the
+ * activity; Android 13+ keeps it as the per-app language itself.
+ */
+class MainActivity : AppCompatActivity() {
     /** True once the first frame with the user's settings has been composed; until then the opening screen stays up. */
     private var ready = false
 
@@ -194,6 +199,9 @@ class MainActivity : ComponentActivity() {
                                     settingsRepository = container.settingsRepository,
                                     appVersion = BuildConfig.VERSION_NAME,
                                     onOpenAbout = { screen = Screen.ABOUT },
+                                    languages = BuildConfig.LANGUAGES.split(","),
+                                    // Android 13+ redraws the widget itself on the new configuration.
+                                    onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onShowTour = {
                                         tourRequested = true
                                         screen = Screen.TUNER

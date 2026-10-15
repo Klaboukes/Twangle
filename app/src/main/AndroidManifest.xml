@@ -28,6 +28,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Lets AppCompat keep the language picked in Settings on Android 8–12 (Android 13+ keeps
+             it itself, as the per-app language of phone Settings). -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
         <!-- The home-screen widget (widget/TuningWidget): shows the instrument and tuning, and opens
              the tuner. Exported so the launcher can place and draw it. -->
         <receiver

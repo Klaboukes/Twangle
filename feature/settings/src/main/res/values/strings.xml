@@ -80,6 +80,9 @@
     <string name="settings_show_signal_bars_summary">For the curious: small bars by the note show how well the tuner hears you. Tap them for the figures</string>
 
     <!-- About (the last group). -->
+    <string name="settings_language_title">Language</string>
+    <string name="settings_language_phone">Phone\'s language</string>
+    <string name="settings_language_cancel">Cancel</string>
     <string name="settings_show_tour_title">Show me around</string>
     <string name="settings_show_tour_summary">A short tour of the tuner</string>
     <string name="about_title">About Twangle</string>

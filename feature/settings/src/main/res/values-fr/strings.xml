@@ -70,6 +70,9 @@
     <string name="settings_show_signal_bars_title">Afficher les barres de signal</string>
     <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres près de la note montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
 
+    <string name="settings_language_title">Langue</string>
+    <string name="settings_language_phone">Langue du téléphone</string>
+    <string name="settings_language_cancel">Annuler</string>
     <string name="settings_show_tour_title">Visite guidée</string>
     <string name="settings_show_tour_summary">Une courte visite de l\'accordeur</string>
     <string name="about_title">À propos de Twangle</string>

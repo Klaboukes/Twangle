@@ -69,6 +69,9 @@
     <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
     <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 
+    <string name="settings_language_title">Język</string>
+    <string name="settings_language_phone">Język telefonu</string>
+    <string name="settings_language_cancel">Anuluj</string>
     <string name="settings_show_tour_title">Oprowadź mnie</string>
     <string name="settings_show_tour_summary">Krótki przewodnik po stroiku</string>
     <string name="about_title">O Twangle</string>

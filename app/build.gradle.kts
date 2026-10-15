@@ -30,6 +30,9 @@ android {
         versionCode = 900
         versionName = "0.9.0-beta"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // The languages of the Language setting: the same list as localeFilters below, as resource
+        // qualifiers (e.g. "pt-rBR"), comma-separated.
+        buildConfigField("String", "LANGUAGES", "\"${providers.gradleProperty("twangle.languages").get()}\"")
     }
 
     signingConfigs {
@@ -66,6 +69,14 @@ android {
         localeFilters += providers.gradleProperty("twangle.languages").get().split(",")
         // Writes the locale config Android 13+ uses for the per-app language setting.
         generateLocaleConfig = true
+    }
+
+    bundle {
+        // Every language ships in every install from the Play Store, so one picked in Settings
+        // that the phone itself doesn't use is there at once (no download, also on Android 8–12).
+        language {
+            enableSplit = false
+        }
     }
 }
 
@@ -111,6 +122,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     // The opening screen: Twangle's icon on its own background, the same on every Android version.
     implementation(libs.androidx.core.splashscreen)
+    // MainActivity is an AppCompatActivity, so the language picked in Settings applies on Android 8–12 too.
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(platform(libs.androidx.compose.bom))
