@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">Classico</string>
     <string name="settings_meter_look_light_arc">Arco di luce</string>
     <string name="settings_meter_look_spirit_level">Livella</string>
+    <string name="settings_meter_look_eclipse">Eclissi</string>
+    <string name="settings_meter_look_arrows">Frecce</string>
+    <string name="settings_meter_look_light_bars">Barre di luce</string>
     <string name="settings_in_tune_effect_title">Effetto intonato</string>
     <string name="settings_in_tune_effect_calm">Calmo</string>
     <string name="settings_in_tune_effect_bold">Deciso</string>

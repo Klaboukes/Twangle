@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">クラシック</string>
     <string name="settings_meter_look_light_arc">光のアーチ</string>
     <string name="settings_meter_look_spirit_level">水準器</string>
+    <string name="settings_meter_look_eclipse">日食</string>
+    <string name="settings_meter_look_arrows">矢印</string>
+    <string name="settings_meter_look_light_bars">光のバー</string>
     <string name="settings_in_tune_effect_title">合ったときの効果</string>
     <string name="settings_in_tune_effect_calm">控えめ</string>
     <string name="settings_in_tune_effect_bold">華やか</string>

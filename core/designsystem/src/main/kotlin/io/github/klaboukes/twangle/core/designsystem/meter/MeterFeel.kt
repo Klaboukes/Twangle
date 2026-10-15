@@ -26,12 +26,16 @@ data class MeterFeel(val frequencyHz: Float, val dampingRatio: Float) {
 /**
  * Each look's spring, as on the approved mock-up page (`docs/design/meter-looks-preview.html`,
  * `FEEL`): Classic swings a little past a new string, like a mechanical needle; Light arc follows
- * almost without swinging; the bubble of the spirit level floats slowly.
+ * almost without swinging; the bubble of the spirit level floats slowly; the eclipse's moon glides
+ * in calmly; the arrows and the light bars follow closely (the round-2 mock-up's springs).
  */
 fun meterFeel(look: MeterLook): MeterFeel = when (look) {
     MeterLook.CLASSIC -> MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
     MeterLook.LIGHT_ARC -> MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
     MeterLook.SPIRIT_LEVEL -> MeterFeel(frequencyHz = 1.0f, dampingRatio = 0.5f)
+    MeterLook.ECLIPSE -> MeterFeel(frequencyHz = 1.2f, dampingRatio = 0.8f)
+    MeterLook.ARROWS -> MeterFeel(frequencyHz = 2.0f, dampingRatio = 0.9f)
+    MeterLook.LIGHT_BARS -> MeterFeel(frequencyHz = 1.8f, dampingRatio = 0.8f)
 }
 
 /** Smoothstep: starts and ends gently. */

@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">Klasik</string>
     <string name="settings_meter_look_light_arc">Işık yayı</string>
     <string name="settings_meter_look_spirit_level">Su terazisi</string>
+    <string name="settings_meter_look_eclipse">Tutulma</string>
+    <string name="settings_meter_look_arrows">Oklar</string>
+    <string name="settings_meter_look_light_bars">Işık çubukları</string>
     <string name="settings_in_tune_effect_title">Akort efekti</string>
     <string name="settings_in_tune_effect_calm">Sakin</string>
     <string name="settings_in_tune_effect_bold">Belirgin</string>

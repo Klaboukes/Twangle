@@ -38,6 +38,9 @@
     <string name="settings_meter_look_classic">Classique</string>
     <string name="settings_meter_look_light_arc">Arc lumineux</string>
     <string name="settings_meter_look_spirit_level">Niveau à bulle</string>
+    <string name="settings_meter_look_eclipse">Éclipse</string>
+    <string name="settings_meter_look_arrows">Flèches</string>
+    <string name="settings_meter_look_light_bars">Barres lumineuses</string>
     <string name="settings_in_tune_effect_title">Effet de justesse</string>
     <string name="settings_in_tune_effect_calm">Discret</string>
     <string name="settings_in_tune_effect_bold">Marqué</string>

@@ -462,6 +462,9 @@ private fun meterLookLabel(look: MeterLook): Int = when (look) {
     MeterLook.CLASSIC -> R.string.settings_meter_look_classic
     MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
     MeterLook.SPIRIT_LEVEL -> R.string.settings_meter_look_spirit_level
+    MeterLook.ECLIPSE -> R.string.settings_meter_look_eclipse
+    MeterLook.ARROWS -> R.string.settings_meter_look_arrows
+    MeterLook.LIGHT_BARS -> R.string.settings_meter_look_light_bars
 }
 
 private fun inTuneEffectLabel(effect: InTuneEffect): Int = when (effect) {

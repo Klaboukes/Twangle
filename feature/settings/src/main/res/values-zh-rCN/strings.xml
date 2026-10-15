@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">经典</string>
     <string name="settings_meter_look_light_arc">光弧</string>
     <string name="settings_meter_look_spirit_level">水平仪</string>
+    <string name="settings_meter_look_eclipse">日食</string>
+    <string name="settings_meter_look_arrows">箭头</string>
+    <string name="settings_meter_look_light_bars">光柱</string>
     <string name="settings_in_tune_effect_title">调准效果</string>
     <string name="settings_in_tune_effect_calm">柔和</string>
     <string name="settings_in_tune_effect_bold">醒目</string>

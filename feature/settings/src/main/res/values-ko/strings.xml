@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">클래식</string>
     <string name="settings_meter_look_light_arc">빛의 호</string>
     <string name="settings_meter_look_spirit_level">수평계</string>
+    <string name="settings_meter_look_eclipse">일식</string>
+    <string name="settings_meter_look_arrows">화살표</string>
+    <string name="settings_meter_look_light_bars">빛 막대</string>
     <string name="settings_in_tune_effect_title">음이 맞을 때 효과</string>
     <string name="settings_in_tune_effect_calm">차분하게</string>
     <string name="settings_in_tune_effect_bold">화려하게</string>

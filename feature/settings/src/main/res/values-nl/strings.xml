@@ -42,6 +42,9 @@
     <string name="settings_meter_look_classic">Klassiek</string>
     <string name="settings_meter_look_light_arc">Lichtboog</string>
     <string name="settings_meter_look_spirit_level">Waterpas</string>
+    <string name="settings_meter_look_eclipse">Eclips</string>
+    <string name="settings_meter_look_arrows">Pijlen</string>
+    <string name="settings_meter_look_light_bars">Lichtbalken</string>
     <string name="settings_in_tune_effect_title">Effect bij gestemd</string>
     <string name="settings_in_tune_effect_calm">Rustig</string>
     <string name="settings_in_tune_effect_bold">Krachtig</string>

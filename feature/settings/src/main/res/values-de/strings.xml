@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">Klassisch</string>
     <string name="settings_meter_look_light_arc">Lichtbogen</string>
     <string name="settings_meter_look_spirit_level">Wasserwaage</string>
+    <string name="settings_meter_look_eclipse">Finsternis</string>
+    <string name="settings_meter_look_arrows">Pfeile</string>
+    <string name="settings_meter_look_light_bars">Lichtbalken</string>
     <string name="settings_in_tune_effect_title">Effekt bei Treffer</string>
     <string name="settings_in_tune_effect_calm">Ruhig</string>
     <string name="settings_in_tune_effect_bold">Kräftig</string>

@@ -125,11 +125,20 @@ enum class MeterLook {
     /** The half-circle dial with a needle and a numbered scale. */
     CLASSIC,
 
-    /** A curve of glowing segments that light up from the centre out to the reading. */
+    /** A fan of little lights that opens from the centre toward the note. */
     LIGHT_ARC,
 
-    /** A bubble in a curved glass tube that floats to the side the note is off. */
+    /** A bubble in a straight glass vial that slides to the side the note is off. */
     SPIRIT_LEVEL,
+
+    /** The note is a moon sliding across the sun; in tune, a total eclipse. */
+    ECLIPSE,
+
+    /** Chevrons on the side the note is off light up and point the way to turn. */
+    ARROWS,
+
+    /** A row of light bars with a soft peak where the note is. */
+    LIGHT_BARS,
     ;
 
     companion object {

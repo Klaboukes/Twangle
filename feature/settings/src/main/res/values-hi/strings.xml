@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">क्लासिक</string>
     <string name="settings_meter_look_light_arc">रोशनी का चाप</string>
     <string name="settings_meter_look_spirit_level">स्पिरिट लेवल</string>
+    <string name="settings_meter_look_eclipse">ग्रहण</string>
+    <string name="settings_meter_look_arrows">तीर</string>
+    <string name="settings_meter_look_light_bars">रोशनी की पट्टियाँ</string>
     <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
     <string name="settings_in_tune_effect_calm">शांत</string>
     <string name="settings_in_tune_effect_bold">ज़ोरदार</string>

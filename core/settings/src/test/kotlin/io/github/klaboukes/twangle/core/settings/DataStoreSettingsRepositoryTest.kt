@@ -526,12 +526,15 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `the meter looks come in the owner's order, Classic first and the default`() {
+    fun `the six meter looks come in the owner's order, Classic first and the default`() {
         assertEquals(
             listOf(
                 MeterLook.CLASSIC,
                 MeterLook.LIGHT_ARC,
                 MeterLook.SPIRIT_LEVEL,
+                MeterLook.ECLIPSE,
+                MeterLook.ARROWS,
+                MeterLook.LIGHT_BARS,
             ),
             MeterLook.entries,
         )

@@ -37,6 +37,9 @@
     <string name="settings_meter_look_classic">Clásico</string>
     <string name="settings_meter_look_light_arc">Arco de luz</string>
     <string name="settings_meter_look_spirit_level">Nivel de burbuja</string>
+    <string name="settings_meter_look_eclipse">Eclipse</string>
+    <string name="settings_meter_look_arrows">Flechas</string>
+    <string name="settings_meter_look_light_bars">Barras de luz</string>
     <string name="settings_in_tune_effect_title">Efecto al afinar</string>
     <string name="settings_in_tune_effect_calm">Suave</string>
     <string name="settings_in_tune_effect_bold">Intenso</string>

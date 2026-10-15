@@ -243,6 +243,9 @@ class SettingsStylesTest(private val style: VisualStyle) {
         MeterLook.CLASSIC to R.string.settings_meter_look_classic,
         MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
         MeterLook.SPIRIT_LEVEL to R.string.settings_meter_look_spirit_level,
+        MeterLook.ECLIPSE to R.string.settings_meter_look_eclipse,
+        MeterLook.ARROWS to R.string.settings_meter_look_arrows,
+        MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,
     )
 
     private val waveLookNames = mapOf(

@@ -44,6 +44,9 @@
     <string name="settings_meter_look_classic">Classic</string>
     <string name="settings_meter_look_light_arc">Light arc</string>
     <string name="settings_meter_look_spirit_level">Spirit level</string>
+    <string name="settings_meter_look_eclipse">Eclipse</string>
+    <string name="settings_meter_look_arrows">Arrows</string>
+    <string name="settings_meter_look_light_bars">Light bars</string>
     <string name="settings_in_tune_effect_title">In-tune effect</string>
     <string name="settings_in_tune_effect_calm">Calm</string>
     <string name="settings_in_tune_effect_bold">Bold</string>
