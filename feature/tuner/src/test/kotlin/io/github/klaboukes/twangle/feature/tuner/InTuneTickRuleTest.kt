@@ -52,4 +52,22 @@ class InTuneTickRuleTest {
         val restored = InTuneTickRule(initiallyInTune = true)
         assertFalse(restored.update(true, "A2", 0))
     }
+    @Test
+    fun `with the pill sheen's long quiet time a drifting note shines once`() {
+        // A real string drifts a few cents around the note and drops in and out of tune.
+        val sheen = InTuneTickRule(quietMillis = 6_000)
+        assertTrue(sheen.update(true, "A2", 0))
+        var now = 0L
+        repeat(10) {
+            now += 1_500
+            assertFalse(sheen.update(false, "A2", now))
+            now += 2_500
+            assertFalse("back in tune at $now", sheen.update(true, "A2", now))
+        }
+        // Another string shines at once; the same one only after 6 s out of tune.
+        sheen.update(false, null, now + 500)
+        assertTrue(sheen.update(true, "D3", now + 1_000))
+        sheen.update(false, "D3", now + 2_000)
+        assertTrue(sheen.update(true, "D3", now + 8_000))
+    }
 }

@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner.components
 import android.os.SystemClock
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -26,6 +27,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +75,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.feature.tuner.InTuneTickRule
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
 import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
@@ -78,6 +84,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tunerHintFor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -175,17 +182,39 @@ fun NoteDisplay(
         spring(stiffness = Spring.StiffnessVeryLow),
         label = "pillFill",
     )
+    // One soft sheen across the pill as the note gets in tune. A real string drifts a few cents and
+    // drops in and out of tune, so the same note shines again only after [SHEEN_QUIET_MILLIS] out of
+    // tune (InTuneTickRule, as the haptic tick but with a longer quiet time); another note shines at
+    // once. Launched apart from the effect, so the note leaving tune doesn't freeze it half way.
+    val sheen = remember { Animatable(1f) }
+    val sheenScope = rememberCoroutineScope()
+    val animationsOff = rememberAnimationsOff()
+    val sheenRule = rememberSaveable(saver = SHEEN_RULE_SAVER) {
+        InTuneTickRule(initiallyInTune = inTune, quietMillis = SHEEN_QUIET_MILLIS)
+    }
+    val sheenTarget = readout?.let { "${it.noteName}${it.octave}" }
+    val currentSheenTarget by rememberUpdatedState(sheenTarget)
+    val sheenShown by rememberUpdatedState(!pictured && !animationsOff)
+    LaunchedEffect(inTune) {
+        if (sheenRule.update(inTune, currentSheenTarget, SystemClock.uptimeMillis()) && sheenShown) {
+            sheenScope.launch {
+                sheen.snapTo(0f)
+                delay(SHEEN_DELAY_MS)
+                sheen.animateTo(1f, tween(SHEEN_MS, easing = FastOutSlowInEasing))
+            }
+        }
+    }
     // The text switches (with a short fade) to whichever of the normal and the "in tune" text colour
-    // reads better on the fill at that moment; a blend of the two would be grey on mid-green. It can
-    // only switch past the "getting close" tint, so the cents never change colour while the note is
-    // off. Derived, so the fill's gliding doesn't recompose the rest.
+    // reads better on the fill behind it at that moment; a blend of the two would be grey on
+    // mid-green. It can only switch past the "getting close" tint, so the cents never change colour
+    // while the note is off. Derived, so the fill's gliding doesn't recompose the rest.
     val onSurface = colors.onSurface
     val onTune = onInTuneColor()
     val pillSurface = colors.surfaceContainerHigh
     val pillTextTarget by remember(onSurface, onTune, pillSurface, tuneColor) {
         derivedStateOf {
             val fill = pillFill.value
-            val behind = lerp(pillSurface, tuneColor, fill)
+            val behind = lerp(pillSurface, tuneColor, bloomCentre(fill))
             if (fill > PILL_NEAR_TINT && contrast(onTune, behind) > contrast(onSurface, behind)) onTune else onSurface
         }
     }
@@ -277,8 +306,8 @@ fun NoteDisplay(
                 .clip(MaterialTheme.shapes.small)
                 .drawBehind {
                     drawRect(pillBase.value)
-                    val fill = pillFill.value
-                    if (fill > 0f) drawRect(tuneColor.copy(alpha = tuneColor.alpha * fill))
+                    drawPillBloom(tuneColor, pillFill.value)
+                    drawPillSheen(sheen.value)
                 }
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -437,6 +466,21 @@ private fun Modifier.keepLineHeight(height: Int): Modifier = layout { measurable
     val slot = constraints.constrainHeight(height)
     layout(placeable.width, slot) { placeable.place(0, (slot - placeable.height) / 2) }
 }
+
+/**
+ * The same note sheens again only after this long out of tune: a real string drifts a few cents and
+ * drops in and out of tune while it rings, which shouldn't keep restarting the sheen.
+ */
+private const val SHEEN_QUIET_MILLIS = 6_000L
+
+/** The sheen starts this long after the note gets in tune, as the pill fills, and crosses it in [SHEEN_MS]. */
+private const val SHEEN_DELAY_MS = 250L
+private const val SHEEN_MS = 900
+
+private val SHEEN_RULE_SAVER = Saver<InTuneTickRule, Boolean>(
+    save = { it.wasInTune },
+    restore = { InTuneTickRule(initiallyInTune = it, quietMillis = SHEEN_QUIET_MILLIS) },
+)
 
 /** The pill's text fades to its other colour over this. */
 private const val PILL_TEXT_MS = 150

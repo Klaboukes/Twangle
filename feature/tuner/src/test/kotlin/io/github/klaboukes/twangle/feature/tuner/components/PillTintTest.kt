@@ -43,4 +43,25 @@ class PillTintTest {
         // Half way to the far edge it has only just begun.
         assertTrue(pillTint(12.5f) <= 0.5f * PILL_NEAR_TINT)
     }
+
+    @Test
+    fun `the bloom grows and deepens steadily up to in tune`() {
+        var reach = 0f
+        var centre = 0f
+        for (step in 0..100) {
+            val fill = step / 100f
+            assertTrue(bloomReach(fill) >= reach)
+            assertTrue(bloomCentre(fill) >= centre)
+            reach = bloomReach(fill)
+            centre = bloomCentre(fill)
+        }
+    }
+
+    @Test
+    fun `close but not in tune the bloom reaches past the ends, in tune its middle is full`() {
+        assertTrue(bloomReach(0f) < 1f)
+        assertTrue(bloomReach(PILL_NEAR_TINT) > 1f)
+        assertTrue(bloomCentre(PILL_NEAR_TINT) < 1f)
+        assertEquals(1f, bloomCentre(1f), 0f)
+    }
 }
