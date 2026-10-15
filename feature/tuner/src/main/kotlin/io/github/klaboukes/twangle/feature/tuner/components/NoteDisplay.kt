@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -157,15 +160,36 @@ fun NoteDisplay(
             pop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
         }
     }
-    val pillColor = animateColorAsState(
-        when {
-            readout == null || pictured -> Color.Transparent
-            inTune -> tuneColor
-            else -> colors.surfaceContainerHigh.copy(alpha = 0.85f)
-        },
+    val pillBase = animateColorAsState(
+        if (readout == null || pictured) Color.Transparent else colors.surfaceContainerHigh.copy(alpha = 0.85f),
         label = "pill",
     )
-    val pillText by animateColorAsState(if (inTune) onInTuneColor() else colors.onSurface, label = "pillText")
+    // The "in tune" colour over the pill: a little as the note comes close ([pillTint]), all of it in
+    // tune. A slow spring, so it glides with the note instead of following every jitter of the cents.
+    val pillFill = animateFloatAsState(
+        when {
+            readout == null || pictured -> 0f
+            inTune -> 1f
+            else -> pillTint(readout.cents)
+        },
+        spring(stiffness = Spring.StiffnessVeryLow),
+        label = "pillFill",
+    )
+    // The text switches (with a short fade) to whichever of the normal and the "in tune" text colour
+    // reads better on the fill at that moment; a blend of the two would be grey on mid-green. It can
+    // only switch past the "getting close" tint, so the cents never change colour while the note is
+    // off. Derived, so the fill's gliding doesn't recompose the rest.
+    val onSurface = colors.onSurface
+    val onTune = onInTuneColor()
+    val pillSurface = colors.surfaceContainerHigh
+    val pillTextTarget by remember(onSurface, onTune, pillSurface, tuneColor) {
+        derivedStateOf {
+            val fill = pillFill.value
+            val behind = lerp(pillSurface, tuneColor, fill)
+            if (fill > PILL_NEAR_TINT && contrast(onTune, behind) > contrast(onSurface, behind)) onTune else onSurface
+        }
+    }
+    val pillText by animateColorAsState(pillTextTarget, tween(PILL_TEXT_MS), label = "pillText")
     val spoken = rememberSpokenReading(
         text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
@@ -251,7 +275,11 @@ fun NoteDisplay(
         Row(
             modifier = Modifier
                 .clip(MaterialTheme.shapes.small)
-                .drawBehind { drawRect(pillColor.value) }
+                .drawBehind {
+                    drawRect(pillBase.value)
+                    val fill = pillFill.value
+                    if (fill > 0f) drawRect(tuneColor.copy(alpha = tuneColor.alpha * fill))
+                }
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -408,6 +436,16 @@ private fun Modifier.keepLineHeight(height: Int): Modifier = layout { measurable
     val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
     val slot = constraints.constrainHeight(height)
     layout(placeable.width, slot) { placeable.place(0, (slot - placeable.height) / 2) }
+}
+
+/** The pill's text fades to its other colour over this. */
+private const val PILL_TEXT_MS = 150
+
+/** WCAG contrast ratio of two colours, from 1 to 21. */
+private fun contrast(a: Color, b: Color): Float {
+    val la = a.luminance()
+    val lb = b.luminance()
+    return (maxOf(la, lb) + 0.05f) / (minOf(la, lb) + 0.05f)
 }
 
 /** The "in tune" glow fades in and out over this. */
