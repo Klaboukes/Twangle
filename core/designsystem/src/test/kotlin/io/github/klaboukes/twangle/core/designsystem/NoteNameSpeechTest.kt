@@ -77,6 +77,9 @@ class NoteNameSpeechTest {
         assertEquals("Lá", portuguese.name("La"))
         assertEquals("Sol", portuguese.name("Sol"))
         assertEquals("Re", english.name("Re"))
+        val arabic = NoteNameSpeech("%1\$s دييز", "%1\$s بيمول", solfege = "دو ري مي فا صول لا سي".split(' '))
+        assertEquals("صول دييز", arabic.name("Sol♯"))
+        assertEquals("سي بيمول", arabic.name("Si♭"))
         // A bare syllable in a text may be a word, so only one with a sign is changed there.
         assertEquals("Do Re Mi : Do, Dó sustenido, Re …", portuguese.text("Do Re Mi : Do, Do♯, Re …"))
     }

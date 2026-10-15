@@ -11,7 +11,7 @@ Phases 0–20 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCH
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
 - ☐ **Overnight run for Phase 22's fit check and Phase 25's meter looks:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, runs the on-device UI tests of the new meter looks (`MeterLooksTest`, `SettingsContentTest`, `SettingsStylesTest`, `CompactLandscapeStylesTest`, `TunerContentTest`), fixes what it finds, and runs the full UI tests, which takes a few hours
-- ☐ **Note names:** decide whether Polish and Russian should call B "H" (as German does) and whether Turkish and Arabic should use Do-Re-Mi. Until then they use letters with sharps
+- ☑ **Note names:** owner chose "what is most common in those countries" (2026-10-15): Polish and Russian call B "H" as German does, Turkish and Arabic use Do-Re-Mi
 
 ## Owner checks (live tests)
 Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
@@ -46,7 +46,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☑ Asian: Chinese (Simplified), Japanese, Korean, Hindi, Indonesian (phone and watch apps, all texts; CJK and Devanagari from the phone's own fonts; UI tests in these languages still to run, in the fit-check item below)
 - ☑ Russian, Turkish and Polish (phone and watch apps, all texts; Cyrillic falls back to the phone font in four styles, and Ancient and Futuristic mix faces in Turkish and Polish titles, see the fit-check item below)
 - ☑ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL): texts, settings and panels mirror; meter, wave, strum check, string row, tempo dial, beat lights and the A4 slider stay low-left/high-right; Arabic-Indic digits everywhere except octaves in note names (phone checked in Arabic; UI tests in Arabic still to run, in the fit-check item below)
-- ☑ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose). Settings has *Automatic* (follows the language) plus a German option; German TalkBack says Cis/Des/H; the watch follows its own language (phone checked in German and French; watch not checked on a device)
+- ☑ Note names that match local habit: German, Polish and Russian use H for B, and French, Italian, Spanish, Portuguese, Turkish and Arabic start on Do-Re-Mi (only the default; the notation setting still lets players choose). Settings has *Automatic* (follows the language) plus a German option; German TalkBack says Cis/Des/H; the watch follows its own language (phone checked in German and French; watch not checked on a device)
 - ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages. **Runs overnight, started by the owner** (see *Waiting on the owner*); also fix the Turkish/Polish letters missing from Ancient's and Futuristic's title fonts (words mix two fonts) and check Futuristic's and Space Age's letter spacing on Chinese and Japanese
 
 ## Phase 25 — Meter looks, round 2

@@ -59,13 +59,14 @@ enum class Notation(
 
         /**
          * How players who speak [language] (an ISO 639 code, e.g. "de", as `Locale.getLanguage`
-         * gives it) usually write note names: German letters in German, fixed-do solfège in French,
-         * Italian, Spanish and Portuguese, [DEFAULT] otherwise. Only the default: a notation the
+         * gives it) usually write note names: German letters (H for B) in German, Polish and Russian,
+         * fixed-do solfège in French, Italian, Spanish, Portuguese, Turkish and Arabic, [DEFAULT]
+         * otherwise. Only the default: a notation the
          * player picks always wins. A new language that has a habit of its own is added here.
          */
         fun forLanguage(language: String): Notation = when (language) {
-            "de" -> GERMAN
-            "fr", "it", "es", "pt" -> SOLFEGE
+            "de", "pl", "ru" -> GERMAN
+            "fr", "it", "es", "pt", "tr", "ar" -> SOLFEGE
             else -> DEFAULT
         }
     }
