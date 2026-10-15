@@ -50,7 +50,7 @@ import kotlin.math.ceil
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
  * [savedInstrument] and [savedCustomTunings] do the same for the instrument and tuning panel, and [savedKeepTwoPaneLandscape] for the
- * layout on its side. [language] is the app's language (e.g. "de"): note names follow its habit
+ * layout on its side, and [savedMicRefused] for [micRefused]. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *
  * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
@@ -68,6 +68,7 @@ class TunerViewModel(
     savedInstrument: Instrument = AppSettings().instrument,
     savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
     language: String = "",
+    savedMicRefused: Boolean = AppSettings().micRefused,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */
@@ -183,6 +184,19 @@ class TunerViewModel(
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    /**
+     * The selected tuning and the notation its notes are named in, for the instrument and tuning panel
+     * while the tuner isn't listening (the microphone not allowed); null until the saved settings have loaded.
+     */
+    val panelTuning: StateFlow<PanelTuning?> = options
+        .map { it?.let { options -> PanelTuning(options.tuning, options.notation) } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** Whether the microphone was ever refused in Android's dialog on this install (a saved setting, see [MicPermissionRules]). */
+    val micRefused: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.micRefused }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, savedMicRefused)
+
     /** The string whose tone was played last, while its tone may still sound. */
     private val playedString = MutableStateFlow<Int?>(null)
 
@@ -208,6 +222,11 @@ class TunerViewModel(
     val state: StateFlow<TunerUiState> = combine(permissionGranted, attempt) { granted, _ -> granted }
         .flatMapLatest { granted -> if (granted) listen() else flowOf(TunerUiState.PermissionRequired) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TunerUiState.PermissionRequired)
+
+    /** The player refused the microphone in Android's dialog: saved, so [micRefused] knows it on later starts too. */
+    fun onMicRefused() {
+        if (!micRefused.value) viewModelScope.launch { settingsRepository.setMicRefused(true) }
+    }
 
     /** Tells the ViewModel whether `RECORD_AUDIO` is granted. The mic stays closed until it is. */
     fun onPermissionChanged(granted: Boolean) {
@@ -379,3 +398,6 @@ class TunerViewModel(
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)
 }
+
+/** A tuning as the instrument and tuning panel shows it: its notes named in [notation]. */
+data class PanelTuning(val tuning: Tuning, val notation: Notation)

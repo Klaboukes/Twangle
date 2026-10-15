@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle\'ın mikrofona ihtiyacı var</string>
     <string name="mic_permission_intro">Akort için Twangle enstrümanını dinler. Ses telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.</string>
     <string name="mic_permission_rationale">Mikrofon olmadan Twangle tellerini duyamaz, bu yüzden akortlu olup olmadıklarını söyleyemez. Ses telefonundan hiç çıkmaz.</string>
-    <string name="mic_permission_settings_hint">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e, sonra Mikrofon\'a dokun ve İzin ver\'i seç.</string>
+    <string name="mic_permission_settings_hint">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e, sonra Mikrofon\'a dokun ve uygulama kullanılırken izin ver.</string>
+    <string name="mic_permission_settings_hint_switch">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e dokun ve Mikrofon\'u aç.</string>
     <string name="mic_permission_allow">Mikrofona izin ver</string>
     <string name="mic_permission_open_settings">Ayarları aç</string>
 

@@ -2,7 +2,8 @@
     <string name="mic_permission_title">يحتاج Twangle إلى الميكروفون</string>
     <string name="mic_permission_intro">ليضبط الدوزان، يستمع Twangle إلى آلتك. يُحلَّل الصوت على هاتفك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
     <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر هاتفك أبدًا.</string>
-    <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واختر «السماح».</string>
+    <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واسمح بالوصول أثناء استخدام التطبيق.</string>
+    <string name="mic_permission_settings_hint_switch">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، وشغّل «الميكروفون».</string>
     <string name="mic_permission_allow">اسمح بالميكروفون</string>
     <string name="mic_permission_open_settings">افتح الإعدادات</string>
 

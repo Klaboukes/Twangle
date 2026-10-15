@@ -120,7 +120,10 @@ import kotlin.math.min
  * the screen (another screen, or the app in the background).
  * While the first-start tour runs ([tourOpen]) the compact layout on its side shows its controls, so
  * the tour can point at them. [onMicGrantedChange] says whether the tuner itself shows (the
- * microphone is allowed), and false when it leaves.
+ * microphone is allowed), and false when it leaves. Without the microphone the permission prompt shows
+ * instead, and [pickerOpen] opens the panel over it all the same. [savedMicRefused] is the saved
+ * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
+ * from one Android no longer shows ([MicPermissionRules]).
  */
 @Composable
 fun TunerScreen(
@@ -138,8 +141,8 @@ fun TunerScreen(
     onPickerOpenChange: (Boolean) -> Unit = {},
     tourOpen: Boolean = false,
     onMicGrantedChange: (Boolean) -> Unit = {},
+    savedMicRefused: Boolean = false,
 ) {
-    val mic = rememberMicPermissionState()
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
         TunerViewModel(
@@ -151,8 +154,11 @@ fun TunerScreen(
             savedInstrument = savedInstrument,
             savedCustomTunings = savedCustomTunings,
             language = language,
+            savedMicRefused = savedMicRefused,
         )
     }
+    val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
+    val mic = rememberMicPermissionState(refusedBefore = micRefused, onRefused = viewModel::onMicRefused)
     LaunchedEffect(language) { viewModel.setLanguage(language) }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
@@ -181,8 +187,10 @@ fun TunerScreen(
     LaunchedEffect(granted) { currentOnMicGrantedChange(granted) }
     DisposableEffect(Unit) { onDispose { currentOnMicGrantedChange(false) } }
     if (granted && keepScreenOn) KeepScreenOn()
-    // The panel shows over the tuner only: without the microphone it closes, rather than popping up later.
-    if (!granted && pickerOpen) LaunchedEffect(Unit) { onPickerOpenChange(false) }
+    // The microphone refused to open for want of the permission (taken back while the app was open):
+    // the prompt comes back, unless Android still says it is granted (then the error stays, with Try again).
+    val permissionLost = (state as? TunerUiState.Error)?.reason == TunerError.MIC_PERMISSION_MISSING
+    if (granted && permissionLost) LaunchedEffect(Unit) { mic.recheck() }
     val detected = state as? TunerUiState.Detected
     val inTuneTarget = detected?.let { it.noteName + it.octave }
     InTuneHaptic(
@@ -256,9 +264,67 @@ fun TunerScreen(
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
+                // The navigation bar's Tuning item works without the microphone too: the panel opens
+                // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
+                val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
+                val shown = panelTuning
+                if (pickerOpen && shown != null) {
+                    TuningPanel(
+                        instrument = instrument,
+                        tuning = shown,
+                        mode = mode,
+                        onModeChange = viewModel::setMode,
+                        onInstrumentChange = viewModel::setInstrument,
+                        onTuningChange = viewModel::setTuning,
+                        onDismiss = { onPickerOpenChange(false) },
+                        customTunings = customTunings,
+                        onNewTuning = { onOpenTuningEditor(it, null) },
+                        onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
+                        onDeleteTuning = { viewModel.deleteCustomTuning(it.id) },
+                    )
+                }
             }
         }
     }
+}
+
+/**
+ * The instrument and tuning panel ([InstrumentTuningPanel]) for [tuning]. The strings show in guitar
+ * mode only, so a pick made in chromatic [mode] switches to it.
+ */
+@Composable
+private fun TuningPanel(
+    instrument: Instrument,
+    tuning: PanelTuning,
+    mode: TunerMode,
+    onModeChange: (TunerMode) -> Unit,
+    onInstrumentChange: (Instrument) -> Unit,
+    onTuningChange: (Tuning) -> Unit,
+    onDismiss: () -> Unit,
+    customTunings: List<CustomTuning>,
+    onNewTuning: ((Instrument) -> Unit)?,
+    onEditTuning: ((CustomTuning) -> Unit)?,
+    onDeleteTuning: ((CustomTuning) -> Unit)?,
+) {
+    val toGuitar = { if (mode != TunerMode.AUTO) onModeChange(TunerMode.AUTO) }
+    InstrumentTuningPanel(
+        instrument = instrument,
+        tuning = tuning.tuning,
+        onInstrumentChange = {
+            toGuitar()
+            onInstrumentChange(it)
+        },
+        onTuningChange = {
+            toGuitar()
+            onTuningChange(it)
+        },
+        onDismiss = onDismiss,
+        notation = tuning.notation,
+        customTunings = customTunings,
+        onNewTuning = onNewTuning,
+        onEditTuning = onEditTuning,
+        onDeleteTuning = onDeleteTuning,
+    )
 }
 
 /**
@@ -560,29 +626,22 @@ fun TunerContent(
         }
     }
     val shownTuning = when (state) {
-        is TunerUiState.Detected -> state.tuning to state.notation
-        is TunerUiState.Listening -> state.tuning to state.notation
-        is TunerUiState.StrumCheck -> state.tuning to state.notation
+        is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
     // Only over the tuner itself, not over an error (it closes then) or the moment before the microphone is heard.
     if (pickerOpen && state is TunerUiState.Error) LaunchedEffect(Unit) { onPickerOpenChange(false) }
     if (pickerOpen && shownTuning != null) {
-        // The strings show in guitar mode only, so a pick made in chromatic mode switches to it.
-        val toGuitar = { if (mode != TunerMode.AUTO) onModeChange(TunerMode.AUTO) }
-        InstrumentTuningPanel(
+        TuningPanel(
             instrument = instrument,
-            tuning = shownTuning.first,
-            onInstrumentChange = {
-                toGuitar()
-                onInstrumentChange(it)
-            },
-            onTuningChange = {
-                toGuitar()
-                onTuningChange(it)
-            },
+            tuning = shownTuning,
+            mode = mode,
+            onModeChange = onModeChange,
+            onInstrumentChange = onInstrumentChange,
+            onTuningChange = onTuningChange,
             onDismiss = { onPickerOpenChange(false) },
-            notation = shownTuning.second,
             customTunings = customTunings,
             onNewTuning = onNewTuning,
             onEditTuning = onEditTuning,

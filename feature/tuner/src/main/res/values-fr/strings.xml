@@ -3,7 +3,8 @@
     <string name="mic_permission_title">Twangle a besoin de votre micro</string>
     <string name="mic_permission_intro">Pour accorder, Twangle écoute votre instrument. Le son est analysé sur votre téléphone, jamais enregistré ni envoyé.</string>
     <string name="mic_permission_rationale">Sans le micro, Twangle ne peut pas entendre vos cordes, ni savoir si elles sont justes. Le son ne quitte jamais votre téléphone.</string>
-    <string name="mic_permission_settings_hint">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations, puis Micro, et choisissez Autoriser.</string>
+    <string name="mic_permission_settings_hint">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations, puis Micro, et autorisez-le pendant l\'utilisation de l\'appli.</string>
+    <string name="mic_permission_settings_hint_switch">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations et activez Micro.</string>
     <string name="mic_permission_allow">Autoriser le micro</string>
     <string name="mic_permission_open_settings">Ouvrir les paramètres</string>
 

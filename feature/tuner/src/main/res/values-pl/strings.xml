@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle potrzebuje twojego mikrofonu</string>
     <string name="mic_permission_intro">Aby stroić, Twangle słucha twojego instrumentu. Dźwięk jest analizowany na telefonie i nigdy nie jest nagrywany ani nigdzie wysyłany.</string>
     <string name="mic_permission_rationale">Bez mikrofonu Twangle nie słyszy twoich strun, więc nie wie, czy są nastrojone. Dźwięk nigdy nie opuszcza telefonu.</string>
-    <string name="mic_permission_settings_hint">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia, potem Mikrofon, i wybierz Zezwalaj.</string>
+    <string name="mic_permission_settings_hint">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia, potem Mikrofon, i zezwól podczas korzystania z aplikacji.</string>
+    <string name="mic_permission_settings_hint_switch">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia i włącz Mikrofon.</string>
     <string name="mic_permission_allow">Zezwól na mikrofon</string>
     <string name="mic_permission_open_settings">Otwórz ustawienia</string>
 

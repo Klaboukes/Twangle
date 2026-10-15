@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle нужен твой микрофон</string>
     <string name="mic_permission_intro">Чтобы настраивать, Twangle слушает твой инструмент. Звук анализируется на телефоне и никогда не записывается и никуда не отправляется.</string>
     <string name="mic_permission_rationale">Без микрофона Twangle не слышит твои струны и не может сказать, настроены ли они. Звук не покидает телефон.</string>
-    <string name="mic_permission_settings_hint">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения», затем «Микрофон» и выбери «Разрешить».</string>
+    <string name="mic_permission_settings_hint">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения», затем «Микрофон» и разреши доступ во время использования приложения.</string>
+    <string name="mic_permission_settings_hint_switch">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения» и включи «Микрофон».</string>
     <string name="mic_permission_allow">Разрешить микрофон</string>
     <string name="mic_permission_open_settings">Открыть настройки</string>
 

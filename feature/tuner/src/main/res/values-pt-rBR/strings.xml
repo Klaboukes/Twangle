@@ -2,7 +2,8 @@
     <string name="mic_permission_title">O Twangle precisa do seu microfone</string>
     <string name="mic_permission_intro">Para afinar, o Twangle ouve seu instrumento. O som é analisado no seu celular e nunca é gravado nem enviado.</string>
     <string name="mic_permission_rationale">Sem o microfone, o Twangle não ouve suas cordas e não consegue dizer se estão afinadas. O som nunca sai do seu celular.</string>
-    <string name="mic_permission_settings_hint">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões, depois em Microfone, e escolha Permitir.</string>
+    <string name="mic_permission_settings_hint">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões, depois em Microfone, e permita durante o uso do app.</string>
+    <string name="mic_permission_settings_hint_switch">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões e ative Microfone.</string>
     <string name="mic_permission_allow">Permitir microfone</string>
     <string name="mic_permission_open_settings">Abrir configurações</string>
 

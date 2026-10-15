@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle memerlukan mikrofon Anda</string>
     <string name="mic_permission_intro">Untuk menyetem, Twangle mendengarkan instrumen Anda. Suara dianalisis di ponsel Anda dan tidak pernah direkam atau dikirim ke mana pun.</string>
     <string name="mic_permission_rationale">Tanpa mikrofon, Twangle tidak bisa mendengar senar Anda, jadi tidak bisa tahu apakah senarnya sudah pas. Suara tidak pernah keluar dari ponsel Anda.</string>
-    <string name="mic_permission_settings_hint">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu Mikrofon, dan pilih Izinkan.</string>
+    <string name="mic_permission_settings_hint">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu Mikrofon, dan izinkan saat aplikasi digunakan.</string>
+    <string name="mic_permission_settings_hint_switch">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu aktifkan Mikrofon.</string>
     <string name="mic_permission_allow">Izinkan mikrofon</string>
     <string name="mic_permission_open_settings">Buka setelan</string>
 

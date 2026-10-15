@@ -214,6 +214,12 @@ data class AppSettings(
      * having seen it (see [SettingsRepository.decideTourOnce]).
      */
     val tourSeen: Boolean = false,
+    /**
+     * The player has refused the microphone in Android's own dialog at least once on this install.
+     * Android doesn't say whether it will show that dialog again, so the tuner uses this to tell a
+     * dialog that was only dismissed (ask again) from one Android no longer shows (only Settings helps).
+     */
+    val micRefused: Boolean = false,
     /** The metronome's tempo, whole BPM from [ClickTrack.MIN_BPM] to [ClickTrack.MAX_BPM]. */
     val metronomeBpm: Int = ClickTrack.DEFAULT_BPM,
     /** The metronome's time signature. */

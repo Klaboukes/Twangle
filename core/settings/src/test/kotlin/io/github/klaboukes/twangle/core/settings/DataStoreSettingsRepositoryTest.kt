@@ -797,4 +797,17 @@ class DataStoreSettingsRepositoryTest {
         repo.decideTourOnce()
         assertEquals(true, repo.settings.first().tourSeen)
     }
+
+    @Test
+    fun `a refused microphone is remembered across restarts, and doesn't cancel a fresh install's tour`() = runTest {
+        val repo = repository()
+        repo.decideTourOnce()
+        assertEquals("not refused on a fresh install", false, repo.settings.first().micRefused)
+        repo.setMicRefused(true)
+        close()
+
+        val reopened = repository().settings.first()
+        assertEquals(true, reopened.micRefused)
+        assertEquals("the tour is still due", false, reopened.tourSeen)
+    }
 }

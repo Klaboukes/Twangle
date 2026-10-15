@@ -197,6 +197,7 @@ class MainActivity : AppCompatActivity() {
                                         onPickerOpenChange = { tuningPanelOpen = it },
                                         tourOpen = tourOpen,
                                         onMicGrantedChange = { tunerShown = it },
+                                        savedMicRefused = settings.micRefused,
                                     )
                                 }
                                 Screen.METRONOME -> {

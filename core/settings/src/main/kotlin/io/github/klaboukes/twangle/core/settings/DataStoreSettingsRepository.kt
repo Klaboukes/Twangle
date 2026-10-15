@@ -177,6 +177,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { if (TOUR_SEEN !in it) it[TOUR_SEEN] = tourSeen(it) }
     }
 
+    override suspend fun setMicRefused(refused: Boolean) {
+        dataStore.edit { it[MIC_REFUSED] = refused }
+    }
+
     override suspend fun setMetronomeBpm(bpm: Int) {
         dataStore.edit { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
     }
@@ -220,6 +224,7 @@ class DataStoreSettingsRepository internal constructor(
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             tourSeen = tourSeen(prefs),
+            micRefused = prefs[MIC_REFUSED] ?: defaults.micRefused,
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
@@ -261,6 +266,9 @@ class DataStoreSettingsRepository internal constructor(
         private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
         /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
         private val TOUR_SEEN = booleanPreferencesKey("tour_seen")
+
+        /** Whether the microphone was ever refused in Android's dialog ([AppSettings.micRefused]). */
+        private val MIC_REFUSED = booleanPreferencesKey("mic_refused")
         private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 

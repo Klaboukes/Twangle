@@ -99,6 +99,9 @@ interface SettingsRepository {
      */
     suspend fun decideTourOnce()
 
+    /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
+    suspend fun setMicRefused(refused: Boolean)
+
     /** The metronome's tempo, clamped to 30–250 BPM (`ClickTrack.clampBpm`). */
     suspend fun setMetronomeBpm(bpm: Int)
 

@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle को आपके माइक्रोफ़ोन की ज़रूरत है</string>
     <string name="mic_permission_intro">ट्यून करने के लिए Twangle आपका वाद्य सुनता है। आवाज़ का विश्लेषण आपके फ़ोन पर ही होता है, उसे कभी रिकॉर्ड या कहीं भेजा नहीं जाता।</string>
     <string name="mic_permission_rationale">माइक्रोफ़ोन के बिना Twangle आपके तार नहीं सुन सकता, इसलिए वह नहीं बता सकता कि वे सुर में हैं या नहीं। आवाज़ कभी आपके फ़ोन से बाहर नहीं जाती।</string>
-    <string name="mic_permission_settings_hint">Twangle के लिए माइक्रोफ़ोन की अनुमति बंद है। सेटिंग्स खोलें, अनुमतियाँ पर टैप करें, फिर माइक्रोफ़ोन पर, और अनुमति दें चुनें।</string>
+    <string name="mic_permission_settings_hint">Twangle के लिए माइक्रोफ़ोन की अनुमति बंद है। सेटिंग्स खोलें, अनुमतियाँ पर टैप करें, फिर माइक्रोफ़ोन पर, और ऐप इस्तेमाल करते समय अनुमति दें।</string>
+    <string name="mic_permission_settings_hint_switch">Twangle के लिए माइक्रोफ़ोन की अनुमति बंद है। सेटिंग्स खोलें, अनुमतियाँ पर टैप करें, और माइक्रोफ़ोन चालू करें।</string>
     <string name="mic_permission_allow">माइक्रोफ़ोन की अनुमति दें</string>
     <string name="mic_permission_open_settings">सेटिंग्स खोलें</string>
 

@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle 需要使用麦克风</string>
     <string name="mic_permission_intro">调音时，Twangle 会聆听你的乐器。声音在手机上分析，从不录制，也不会发送到任何地方。</string>
     <string name="mic_permission_rationale">没有麦克风，Twangle 就听不到你的琴弦，也就无法判断音准。声音永远不会离开你的手机。</string>
-    <string name="mic_permission_settings_hint">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，再点按“麦克风”，然后选择“允许”。</string>
+    <string name="mic_permission_settings_hint">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，再点按“麦克风”，然后选择仅在使用该应用时允许。</string>
+    <string name="mic_permission_settings_hint_switch">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，然后开启“麦克风”。</string>
     <string name="mic_permission_allow">允许使用麦克风</string>
     <string name="mic_permission_open_settings">打开设置</string>
 

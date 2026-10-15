@@ -328,6 +328,32 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `the panel knows the saved tuning without the microphone`() = runTest(dispatcher) {
+        settings.current = AppSettings(tuning = Tunings.DROP_D, notationChoice = Notation.SOLFEGE)
+        val recorder = a2Recorder()
+        val vm = viewModel(recorder)
+        runCurrent()
+
+        assertEquals(PanelTuning(Tunings.DROP_D, Notation.SOLFEGE), vm.panelTuning.value)
+        assertEquals("the mic stays closed", 0, recorder.startCount)
+    }
+
+    @Test
+    fun `a refused microphone is saved once and known from the start`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        assertFalse(vm.micRefused.value)
+
+        vm.onMicRefused()
+        runCurrent()
+        assertTrue(settings.current.micRefused)
+        assertTrue(vm.micRefused.value)
+
+        val started = TunerViewModel(a2Recorder(), FakeSettingsRepository(), FakeTonePlayer(), savedMicRefused = true)
+        assertTrue("the saved value before the settings arrive", started.micRefused.value)
+    }
+
+    @Test
     fun `the instrument starts as the saved one before the settings arrive`() = runTest(dispatcher) {
         val vm = TunerViewModel(
             a2Recorder(),

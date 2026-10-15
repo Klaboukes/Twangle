@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -57,7 +58,7 @@ fun PermissionPrompt(
             text = stringResource(
                 when (status) {
                     MicPermissionStatus.DENIED -> R.string.mic_permission_rationale
-                    MicPermissionStatus.PERMANENTLY_DENIED -> R.string.mic_permission_settings_hint
+                    MicPermissionStatus.PERMANENTLY_DENIED -> settingsHint()
                     else -> R.string.mic_permission_intro
                 },
             ),
@@ -74,6 +75,17 @@ fun PermissionPrompt(
         }
     }
 }
+
+/**
+ * The way to the microphone in Settings. From Android 11 its page offers "only while using the app"
+ * among other choices; before, Microphone is a switch in the Permissions list.
+ */
+private fun settingsHint(): Int =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        R.string.mic_permission_settings_hint
+    } else {
+        R.string.mic_permission_settings_hint_switch
+    }
 
 @Preview(showBackground = true)
 @Composable

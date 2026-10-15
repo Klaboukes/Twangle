@@ -2,7 +2,8 @@
     <string name="mic_permission_title">Twangle にはマイクが必要です</string>
     <string name="mic_permission_intro">チューニングのため、Twangle は楽器の音を聞き取ります。音はスマートフォン上で解析され、録音や送信は一切されません。</string>
     <string name="mic_permission_rationale">マイクがないと Twangle は弦の音を聞き取れず、合っているかどうかを判断できません。音がスマートフォンの外に出ることはありません。</string>
-    <string name="mic_permission_settings_hint">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」→「マイク」の順にタップして「許可」を選んでください。</string>
+    <string name="mic_permission_settings_hint">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」→「マイク」の順にタップして、アプリの使用中のみ許可してください。</string>
+    <string name="mic_permission_settings_hint_switch">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」をタップして「マイク」をオンにしてください。</string>
     <string name="mic_permission_allow">マイクを許可</string>
     <string name="mic_permission_open_settings">設定を開く</string>
 
