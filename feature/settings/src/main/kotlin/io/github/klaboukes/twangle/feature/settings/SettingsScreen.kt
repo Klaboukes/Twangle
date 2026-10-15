@@ -125,7 +125,7 @@ fun SettingsScreen(
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in three headed groups, then a link to the About page (see [SettingsGroups]);
+ * load. The settings come in four headed groups, then a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
  * (Android 12+); the meter looks always show, and the wave looks only while the wave is the
  * display. The Language row shows when there are [languages]
@@ -245,9 +245,11 @@ internal fun SettingsPage(
 }
 
 /**
- * Every setting, in three headed groups: Tuning (which note it is and what counts as in tune), Look
- * (the style, light or dark, the meter's look, how far off a note is shown and the layout on its
- * side) and While tuning (what the tuner does while it listens), followed by the app's language,
+ * Every setting, in four headed groups: Pitch and notes (which note it is and what counts as in
+ * tune; not "Tuning", which the navigation bar's item for picking a tuning is called), Look (the
+ * style, light or dark and the wallpaper colours), Tuner screen (the meter's look and in-tune effect,
+ * what shows below the note and the layout on its side) and While tuning (what the tuner does while
+ * it listens), followed by the app's language,
  * the tour and one row that opens the About page (version, promise, privacy and licences), so those
  * long texts don't crowd the settings. Rows, including the card grids, keep 16 dp from the column's edges.
  */
@@ -279,7 +281,7 @@ private fun SettingsGroups(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(GROUP_GAP)) {
-        SettingsGroup(title = stringResource(R.string.settings_group_tuning)) {
+        SettingsGroup(title = stringResource(R.string.settings_group_pitch)) {
             Rows {
                 A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
                 HorizontalDivider()
@@ -328,7 +330,10 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
-                HorizontalDivider()
+            }
+        }
+        SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
+            Rows {
                 // The meter sits above the note with both displays, so its looks come first.
                 MeterLookPicker(
                     title = stringResource(R.string.settings_meter_look_title),
@@ -338,6 +343,7 @@ private fun SettingsGroups(
                 ) { stringResource(meterLookLabel(it)) }
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_in_tune_effect_title),
+                    summary = stringResource(R.string.settings_in_tune_effect_summary),
                     options = InTuneEffect.entries,
                     selected = settings.inTuneEffect,
                     onSelect = onInTuneEffectChange,
@@ -485,7 +491,7 @@ private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precis
 }
 
 private fun displayLabel(display: TunerDisplay): Int = when (display) {
-    TunerDisplay.NEEDLE -> R.string.settings_display_needle
+    TunerDisplay.NEEDLE -> R.string.settings_display_numbers
     TunerDisplay.WAVE -> R.string.settings_display_wave
 }
 

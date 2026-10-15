@@ -88,7 +88,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
-import io.github.klaboukes.twangle.feature.tuner.components.rememberAnimationsOff
+import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout

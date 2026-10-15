@@ -22,7 +22,8 @@ import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 
 /**
- * A titled setting with one choice out of [options], shown as radio buttons. Each whole row is the
+ * A titled setting with one choice out of [options], shown as radio buttons, with an optional
+ * one-line [summary] under the title that says what the choice is about. Each whole row is the
  * touch target (at least 48 dp high), and the rows form one selectable group for TalkBack.
  */
 @Composable
@@ -32,11 +33,17 @@ fun <T> RadioGroupSetting(
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
+    summary: String? = null,
     label: @Composable (T) -> String,
 ) {
     val speech = rememberNoteNameSpeech()
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            if (summary != null) {
+                Text(text = summary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         Column(modifier = Modifier.selectableGroup()) {
             options.forEach { option ->
                 Row(

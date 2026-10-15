@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 
 /**
  * A titled grid of look cards, three to a row (two from 1.3× system font), shared by the wave look
@@ -40,7 +41,9 @@ import androidx.compose.ui.unit.sp
  *
  * [demo] is advanced on every animation frame while some of the cards are on screen; the previews
  * read what it moves in their layer and draw phases only, so nothing is recomposed. It is an
- * "infinite" animation, like the tuner's wave view: UI tests skip these.
+ * "infinite" animation, like the tuner's wave view: UI tests skip these. With Android's "Remove
+ * animations" ([rememberAnimationsOff]) the cards hold still instead, on the loop's first moment
+ * ([STILL_SECONDS] in, so a wave has its shape), and follow the setting if it changes.
  */
 @Composable
 internal fun <T> LookCardGrid(
@@ -55,8 +58,11 @@ internal fun <T> LookCardGrid(
     preview: @Composable ColumnScope.(look: T, selected: Boolean) -> Unit,
 ) {
     var onScreen by remember { mutableStateOf(false) }
-    LaunchedEffect(onScreen, demo) {
-        if (!onScreen) return@LaunchedEffect
+    val animationsOff = rememberAnimationsOff()
+    // The still picture is set up once per demo; the loop then carries on from it if animations come back.
+    LaunchedEffect(demo) { holdStill(demo) }
+    LaunchedEffect(onScreen, demo, animationsOff) {
+        if (!onScreen || animationsOff) return@LaunchedEffect
         var last = withInfiniteAnimationFrameNanos { it }
         while (true) {
             withInfiniteAnimationFrameNanos { now ->
@@ -138,6 +144,16 @@ private fun LookCard(
         )
     }
 }
+
+/** Plays [demo]'s first [STILL_SECONDS] at once, in the steps a smooth frame rate would take. */
+internal fun holdStill(demo: LookDemo) {
+    repeat(STILL_STEPS) { step -> demo.advance(STILL_SECONDS / STILL_STEPS, (step + 1) * STILL_STEP_NANOS) }
+}
+
+/** How far into its loop a still card shows: still flat, with the wave drawn and the needle at rest. */
+internal const val STILL_SECONDS = 1f
+private const val STILL_STEPS = 60
+private const val STILL_STEP_NANOS = 1_000_000_000L / STILL_STEPS
 
 /** A long pause (e.g. coming back to the app) counts as one short step in a preview loop. */
 internal const val MAX_STEP_SECONDS = 0.1f

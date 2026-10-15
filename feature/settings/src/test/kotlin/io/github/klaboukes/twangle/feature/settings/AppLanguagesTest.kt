@@ -35,6 +35,13 @@ class AppLanguagesTest {
     }
 
     @Test
+    fun `Indonesian is named Bahasa Indonesia, not the country`() {
+        assertEquals("Bahasa Indonesia", AppLanguages.nameOf("in"))
+        assertEquals("Bahasa Indonesia", AppLanguages.nameOf("id"))
+        assertEquals("Bahasa Indonesia", AppLanguages.nameOf(AppLanguages.tagOf("in")))
+    }
+
+    @Test
     fun `Chinese is named by its script, not its country`() {
         // "简体中文" on Android, "中文 (简体)" on the JVM: Chinese once, and the script.
         val name = AppLanguages.nameOf("zh-CN")

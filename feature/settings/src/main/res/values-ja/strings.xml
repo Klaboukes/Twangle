@@ -2,16 +2,17 @@
     <string name="settings_title">設定</string>
     <string name="settings_back">戻る</string>
 
-    <string name="settings_group_tuning">チューニング</string>
+    <string name="settings_group_pitch">音の高さと音名</string>
     <string name="settings_group_look">外観</string>
+    <string name="settings_group_tuner_screen">チューナー画面</string>
     <string name="settings_group_while_tuning">チューニング中</string>
 
     <string name="settings_a4_title">基準ピッチ (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">ほとんどの音楽は 440 Hz です。オーケストラは 442 Hz、バロック・アンサンブルは 415 Hz に合わせることがよくあります。</string>
-    <string name="settings_a4_lower">A4 を 1 Hz 下げる</string>
-    <string name="settings_a4_raise">A4 を 1 Hz 上げる</string>
-    <string name="settings_a4_reset">%1$d Hz に戻す</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">ほとんどの音楽は 440\u00A0Hz です。オーケストラは 442\u00A0Hz、バロック・アンサンブルは 415\u00A0Hz に合わせることがよくあります。</string>
+    <string name="settings_a4_lower">A4 を 1\u00A0Hz 下げる</string>
+    <string name="settings_a4_raise">A4 を 1\u00A0Hz 上げる</string>
+    <string name="settings_a4_reset">%1$d\u00A0Hz に戻す</string>
 
     <string name="settings_notation_title">音名</string>
     <string name="settings_notation_sharps">シャープ：C, C♯, D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">矢印</string>
     <string name="settings_meter_look_light_bars">光のバー</string>
     <string name="settings_in_tune_effect_title">合ったときの効果</string>
+    <string name="settings_in_tune_effect_summary">音が合ったときのメーターの光り方</string>
     <string name="settings_in_tune_effect_calm">控えめ</string>
     <string name="settings_in_tune_effect_bold">華やか</string>
 
-    <string name="settings_display_title">表示</string>
-    <string name="settings_display_needle">針：セント数を表示</string>
+    <string name="settings_display_title">音名の下</string>
+    <string name="settings_display_numbers">数字：何セントずれているか</string>
     <string name="settings_display_wave">波：好みの見た目で動くアニメーション</string>
     <string name="settings_wave_look_title">波の見た目</string>
     <string name="settings_wave_look_strobe">ストロボ</string>

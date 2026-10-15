@@ -2,16 +2,17 @@
     <string name="settings_title">الإعدادات</string>
     <string name="settings_back">رجوع</string>
 
-    <string name="settings_group_tuning">الدوزان</string>
+    <string name="settings_group_pitch">طبقة الصوت والنوتات</string>
     <string name="settings_group_look">المظهر</string>
+    <string name="settings_group_tuner_screen">شاشة الموالف</string>
     <string name="settings_group_while_tuning">أثناء الضبط</string>
 
     <string name="settings_a4_title">النغمة المرجعية (A4)</string>
-    <string name="settings_a4_value">%1$d هرتز</string>
-    <string name="settings_a4_summary">معظم الموسيقى تعتمد ٤٤٠ هرتز. كثيرًا ما تضبط الأوركسترات على ٤٤٢ هرتز، وفرق الباروك على ٤١٥ هرتز.</string>
+    <string name="settings_a4_value">%1$d\u00A0هرتز</string>
+    <string name="settings_a4_summary">معظم الموسيقى تعتمد ٤٤٠\u00A0هرتز. كثيرًا ما تضبط الأوركسترات على ٤٤٢\u00A0هرتز، وفرق الباروك على ٤١٥\u00A0هرتز.</string>
     <string name="settings_a4_lower">اخفض A4 هرتزًا واحدًا</string>
     <string name="settings_a4_raise">ارفع A4 هرتزًا واحدًا</string>
-    <string name="settings_a4_reset">أعِد إلى %1$d هرتز</string>
+    <string name="settings_a4_reset">أعِد إلى %1$d\u00A0هرتز</string>
 
     <string name="settings_notation_title">أسماء النغمات</string>
     <string name="settings_notation_sharps">دييز: C، C♯، D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">أسهم</string>
     <string name="settings_meter_look_light_bars">أشرطة ضوئية</string>
     <string name="settings_in_tune_effect_title">تأثير الضبط</string>
+    <string name="settings_in_tune_effect_summary">مدى توهّج المقياس عندما تُضبط النوتة</string>
     <string name="settings_in_tune_effect_calm">هادئ</string>
     <string name="settings_in_tune_effect_bold">جريء</string>
 
-    <string name="settings_display_title">العرض</string>
-    <string name="settings_display_needle">إبرة: عدد السنتات</string>
+    <string name="settings_display_title">تحت النوتة</string>
+    <string name="settings_display_numbers">أرقام: مقدار الانحراف بالسنتات</string>
     <string name="settings_display_wave">موجة: صورة متحركة بالشكل الذي تختاره</string>
     <string name="settings_wave_look_title">شكل الموجة</string>
     <string name="settings_wave_look_strobe">ستروب</string>

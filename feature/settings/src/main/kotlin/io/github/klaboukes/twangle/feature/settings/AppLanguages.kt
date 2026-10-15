@@ -23,10 +23,14 @@ internal object AppLanguages {
     /**
      * [tag]'s language in its own words, starting with a capital: "Deutsch", "Polski", "Português
      * (Brasil)", "العربية". Chinese is named by its script rather than its country: "简体中文" on
-     * Android, whose script name already says Chinese, "中文 (简体)" where it doesn't.
+     * Android, whose script name already says Chinese, "中文 (简体)" where it doesn't. Indonesian is
+     * "Bahasa Indonesia", as Indonesians name it in a list of languages; the locale data gives only
+     * "Indonesia", the country's name.
      */
     fun nameOf(tag: String): String {
         val locale = Locale.forLanguageTag(tag)
+        // Android (and older Java) still report Indonesian as "in", its old code.
+        if (locale.language == "id" || locale.language == "in") return INDONESIAN
         val name = if (locale.language == "zh") {
             val script = locale.script.ifEmpty { if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans" }
             val scriptName = Locale.Builder().setScript(script).build().getDisplayScript(locale)
@@ -49,4 +53,6 @@ internal object AppLanguages {
         return tags.firstOrNull { it.equals(currentTag, ignoreCase = true) }
             ?: tags.firstOrNull { Locale.forLanguageTag(it).language == current.language }
     }
+
+    private const val INDONESIAN = "Bahasa Indonesia"
 }

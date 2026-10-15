@@ -2,16 +2,17 @@
     <string name="settings_title">Configurações</string>
     <string name="settings_back">Voltar</string>
 
-    <string name="settings_group_tuning">Afinação</string>
+    <string name="settings_group_pitch">Diapasão e notas</string>
     <string name="settings_group_look">Aparência</string>
+    <string name="settings_group_tuner_screen">Tela do afinador</string>
     <string name="settings_group_while_tuning">Ao afinar</string>
 
     <string name="settings_a4_title">Diapasão (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">A maioria das músicas usa 440 Hz. Orquestras costumam afinar em 442 Hz, grupos barrocos em 415 Hz.</string>
-    <string name="settings_a4_lower">Baixar A4 em 1 Hz</string>
-    <string name="settings_a4_raise">Subir A4 em 1 Hz</string>
-    <string name="settings_a4_reset">Voltar para %1$d Hz</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">A maioria das músicas usa 440\u00A0Hz. Orquestras costumam afinar em 442\u00A0Hz, grupos barrocos em 415\u00A0Hz.</string>
+    <string name="settings_a4_lower">Baixar A4 em 1\u00A0Hz</string>
+    <string name="settings_a4_raise">Subir A4 em 1\u00A0Hz</string>
+    <string name="settings_a4_reset">Voltar para %1$d\u00A0Hz</string>
 
     <string name="settings_notation_title">Nomes das notas</string>
     <string name="settings_notation_sharps">Sustenidos: C, C♯, D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">Setas</string>
     <string name="settings_meter_look_light_bars">Barras de luz</string>
     <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
+    <string name="settings_in_tune_effect_summary">Quanto o medidor brilha quando a nota está afinada</string>
     <string name="settings_in_tune_effect_calm">Suave</string>
     <string name="settings_in_tune_effect_bold">Marcante</string>
 
-    <string name="settings_display_title">Exibição</string>
-    <string name="settings_display_needle">Ponteiro: o número de cents</string>
+    <string name="settings_display_title">Abaixo da nota</string>
+    <string name="settings_display_numbers">Números: quantos cents de desvio</string>
     <string name="settings_display_wave">Onda: uma imagem em movimento, no estilo que você escolher</string>
     <string name="settings_wave_look_title">Estilo da onda</string>
     <string name="settings_wave_look_strobe">Estroboscópio</string>

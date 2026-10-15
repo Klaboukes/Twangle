@@ -91,7 +91,7 @@ import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
-import io.github.klaboukes.twangle.feature.tuner.components.rememberAnimationsOff
+import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.max

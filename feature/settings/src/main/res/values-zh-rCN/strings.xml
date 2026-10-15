@@ -2,16 +2,17 @@
     <string name="settings_title">设置</string>
     <string name="settings_back">返回</string>
 
-    <string name="settings_group_tuning">调音</string>
+    <string name="settings_group_pitch">音高与音名</string>
     <string name="settings_group_look">外观</string>
+    <string name="settings_group_tuner_screen">调音器界面</string>
     <string name="settings_group_while_tuning">调音时</string>
 
     <string name="settings_a4_title">标准音高 (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">大多数音乐使用 440 Hz。管弦乐团常调到 442 Hz，巴洛克乐团调到 415 Hz。</string>
-    <string name="settings_a4_lower">A4 降低 1 Hz</string>
-    <string name="settings_a4_raise">A4 升高 1 Hz</string>
-    <string name="settings_a4_reset">重置为 %1$d Hz</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">大多数音乐使用 440\u00A0Hz。管弦乐团常调到 442\u00A0Hz，巴洛克乐团调到 415\u00A0Hz。</string>
+    <string name="settings_a4_lower">A4 降低 1\u00A0Hz</string>
+    <string name="settings_a4_raise">A4 升高 1\u00A0Hz</string>
+    <string name="settings_a4_reset">重置为 %1$d\u00A0Hz</string>
 
     <string name="settings_notation_title">音名</string>
     <string name="settings_notation_sharps">升号：C, C♯, D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">箭头</string>
     <string name="settings_meter_look_light_bars">光柱</string>
     <string name="settings_in_tune_effect_title">调准效果</string>
+    <string name="settings_in_tune_effect_summary">音准时表盘发光的强弱</string>
     <string name="settings_in_tune_effect_calm">柔和</string>
     <string name="settings_in_tune_effect_bold">醒目</string>
 
-    <string name="settings_display_title">显示方式</string>
-    <string name="settings_display_needle">指针：显示音分数</string>
+    <string name="settings_display_title">音名下方</string>
+    <string name="settings_display_numbers">数字：偏差多少音分</string>
     <string name="settings_display_wave">波形：动态画面，样式由你选</string>
     <string name="settings_wave_look_title">波形样式</string>
     <string name="settings_wave_look_strobe">频闪</string>

@@ -1,10 +1,10 @@
-package io.github.klaboukes.twangle.feature.tuner.components
+package io.github.klaboukes.twangle.core.designsystem
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class InTuneGlowTest {
+class AnimationsOffTest {
 
     @Test
     fun `only an animator scale of 0 means Remove animations`() {

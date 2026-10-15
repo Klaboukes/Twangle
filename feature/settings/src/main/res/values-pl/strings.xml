@@ -2,16 +2,17 @@
     <string name="settings_title">Ustawienia</string>
     <string name="settings_back">Wstecz</string>
 
-    <string name="settings_group_tuning">Strój</string>
+    <string name="settings_group_pitch">Wysokość i nuty</string>
     <string name="settings_group_look">Wygląd</string>
+    <string name="settings_group_tuner_screen">Ekran stroika</string>
     <string name="settings_group_while_tuning">Podczas strojenia</string>
 
     <string name="settings_a4_title">Dźwięk wzorcowy (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">Większość muzyki używa 440 Hz. Orkiestry często stroją do 442 Hz, zespoły barokowe do 415 Hz.</string>
-    <string name="settings_a4_lower">Obniż A4 o 1 Hz</string>
-    <string name="settings_a4_raise">Podnieś A4 o 1 Hz</string>
-    <string name="settings_a4_reset">Przywróć %1$d Hz</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">Większość muzyki używa 440\u00A0Hz. Orkiestry często stroją do 442\u00A0Hz, zespoły barokowe do 415\u00A0Hz.</string>
+    <string name="settings_a4_lower">Obniż A4 o 1\u00A0Hz</string>
+    <string name="settings_a4_raise">Podnieś A4 o 1\u00A0Hz</string>
+    <string name="settings_a4_reset">Przywróć %1$d\u00A0Hz</string>
 
     <string name="settings_notation_title">Nazwy dźwięków</string>
     <string name="settings_notation_sharps">Krzyżyki: C, C♯, D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">Strzałki</string>
     <string name="settings_meter_look_light_bars">Paski świetlne</string>
     <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>
+    <string name="settings_in_tune_effect_summary">Jak mocno świeci wskaźnik, gdy dźwięk jest nastrojony</string>
     <string name="settings_in_tune_effect_calm">Spokojny</string>
     <string name="settings_in_tune_effect_bold">Wyrazisty</string>
 
-    <string name="settings_display_title">Wyświetlanie</string>
-    <string name="settings_display_needle">Wskazówka: liczba centów</string>
+    <string name="settings_display_title">Pod nutą</string>
+    <string name="settings_display_numbers">Liczby: odchylenie w centach</string>
     <string name="settings_display_wave">Fala: ruchomy obraz w wybranym wyglądzie</string>
     <string name="settings_wave_look_title">Wygląd fali</string>
     <string name="settings_wave_look_strobe">Stroboskop</string>

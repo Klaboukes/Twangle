@@ -396,7 +396,7 @@ class SettingsContentTest {
     fun displayPickerShowsTheChoiceAndReportsANewOne() {
         show(AppSettings(display = TunerDisplay.WAVE))
         compose.onNodeWithText(context.getString(R.string.settings_display_wave)).performScrollTo().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.settings_display_needle)).assertIsNotSelected().performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_display_numbers)).assertIsNotSelected().performClick()
         assertEquals(listOf(TunerDisplay.NEEDLE), displayChanges)
     }
 
@@ -786,11 +786,12 @@ class SettingsContentTest {
     )
 
     @Test
-    fun settingsComeInThreeHeadedGroupsThenTheAboutLink() {
+    fun settingsComeInFourHeadedGroupsThenTheAboutLink() {
         show(AppSettings(display = TunerDisplay.WAVE))
         val headings = listOf(
-            R.string.settings_group_tuning,
+            R.string.settings_group_pitch,
             R.string.settings_group_look,
+            R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
         )
         headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
@@ -799,7 +800,7 @@ class SettingsContentTest {
         // Unclipped positions: most of these rows are below the fold.
         fun top(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().positionInRoot.y
         val order = listOf(
-            top(context.getString(R.string.settings_group_tuning)),
+            top(context.getString(R.string.settings_group_pitch)),
             top(context.getString(R.string.settings_a4_title)),
             top(context.getString(R.string.settings_notation_title)),
             top(context.getString(R.string.settings_in_tune_precision_title)),
@@ -807,8 +808,10 @@ class SettingsContentTest {
             compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
             top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_group_tuner_screen)),
             top(context.getString(R.string.settings_meter_look_title)),
             top(context.getString(R.string.settings_in_tune_effect_title)),
+            top(context.getString(R.string.settings_in_tune_effect_summary)),
             top(context.getString(R.string.settings_display_title)),
             top(context.getString(R.string.settings_wave_look_title)),
             top(context.getString(R.string.settings_group_while_tuning)),
@@ -1002,13 +1005,14 @@ class SettingsContentTest {
         show(AppSettings(), size = size, fontScale = fontScale, locale = locale)
         val res = resourcesIn(locale)
         val texts = listOf(
-            R.string.settings_group_tuning,
+            R.string.settings_group_pitch,
             R.string.settings_notation_title,
             R.string.settings_notation_sharps,
             R.string.settings_notation_flats,
             R.string.settings_notation_solfege,
             R.string.settings_notation_german,
             R.string.settings_group_look,
+            R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
             R.string.about_title,
         ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)

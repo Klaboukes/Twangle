@@ -131,7 +131,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
 
     private fun assertEverySettingWhollyShown(case: String) {
         val texts = listOf(
-            R.string.settings_group_tuning,
+            R.string.settings_group_pitch,
             R.string.settings_a4_title,
             R.string.settings_notation_title,
             R.string.settings_notation_sharps,
@@ -147,12 +147,14 @@ class SettingsStylesTest(private val style: VisualStyle) {
             R.string.settings_theme_system,
             R.string.settings_theme_light,
             R.string.settings_theme_dark,
+            R.string.settings_group_tuner_screen,
             R.string.settings_meter_look_title,
             R.string.settings_in_tune_effect_title,
+            R.string.settings_in_tune_effect_summary,
             R.string.settings_in_tune_effect_calm,
             R.string.settings_in_tune_effect_bold,
             R.string.settings_display_title,
-            R.string.settings_display_needle,
+            R.string.settings_display_numbers,
             R.string.settings_display_wave,
             R.string.settings_wave_look_title,
             R.string.settings_group_while_tuning,

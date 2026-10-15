@@ -2,16 +2,17 @@
     <string name="settings_title">설정</string>
     <string name="settings_back">뒤로</string>
 
-    <string name="settings_group_tuning">튜닝</string>
+    <string name="settings_group_pitch">음높이와 음이름</string>
     <string name="settings_group_look">디자인</string>
+    <string name="settings_group_tuner_screen">튜너 화면</string>
     <string name="settings_group_while_tuning">튜닝하는 동안</string>
 
     <string name="settings_a4_title">기준음 (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">대부분의 음악은 440 Hz를 써요. 오케스트라는 442 Hz, 바로크 앙상블은 415 Hz에 맞추는 경우가 많아요.</string>
-    <string name="settings_a4_lower">A4를 1 Hz 낮추기</string>
-    <string name="settings_a4_raise">A4를 1 Hz 높이기</string>
-    <string name="settings_a4_reset">%1$d Hz로 초기화</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">대부분의 음악은 440\u00A0Hz를 써요. 오케스트라는 442\u00A0Hz, 바로크 앙상블은 415\u00A0Hz에 맞추는 경우가 많아요.</string>
+    <string name="settings_a4_lower">A4를 1\u00A0Hz 낮추기</string>
+    <string name="settings_a4_raise">A4를 1\u00A0Hz 높이기</string>
+    <string name="settings_a4_reset">%1$d\u00A0Hz로 초기화</string>
 
     <string name="settings_notation_title">음 이름</string>
     <string name="settings_notation_sharps">샵: C, C♯, D …</string>
@@ -41,11 +42,12 @@
     <string name="settings_meter_look_arrows">화살표</string>
     <string name="settings_meter_look_light_bars">빛 막대</string>
     <string name="settings_in_tune_effect_title">음이 맞을 때 효과</string>
+    <string name="settings_in_tune_effect_summary">음이 맞을 때 미터가 빛나는 정도</string>
     <string name="settings_in_tune_effect_calm">차분하게</string>
     <string name="settings_in_tune_effect_bold">화려하게</string>
 
-    <string name="settings_display_title">표시 방식</string>
-    <string name="settings_display_needle">바늘: 센트 수</string>
+    <string name="settings_display_title">음이름 아래</string>
+    <string name="settings_display_numbers">숫자: 몇 센트 벗어났는지</string>
     <string name="settings_display_wave">물결: 고른 모양으로 움직이는 그림</string>
     <string name="settings_wave_look_title">물결 모양</string>
     <string name="settings_wave_look_strobe">스트로브</string>

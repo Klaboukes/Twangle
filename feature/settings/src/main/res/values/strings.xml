@@ -3,17 +3,18 @@
     <string name="settings_back">Back</string>
 
     <!-- Group headings. -->
-    <string name="settings_group_tuning">Tuning</string>
+    <string name="settings_group_pitch">Pitch and notes</string>
     <string name="settings_group_look">Look</string>
+    <string name="settings_group_tuner_screen">Tuner screen</string>
     <string name="settings_group_while_tuning">While tuning</string>
 
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Reference pitch (A4)</string>
-    <string name="settings_a4_value">%1$d Hz</string>
-    <string name="settings_a4_summary">Most music uses 440 Hz. Orchestras often tune to 442 Hz, baroque ensembles to 415 Hz.</string>
-    <string name="settings_a4_lower">Lower A4 by 1 Hz</string>
-    <string name="settings_a4_raise">Raise A4 by 1 Hz</string>
-    <string name="settings_a4_reset">Reset to %1$d Hz</string>
+    <string name="settings_a4_value">%1$d\u00A0Hz</string>
+    <string name="settings_a4_summary">Most music uses 440\u00A0Hz. Orchestras often tune to 442\u00A0Hz, baroque ensembles to 415\u00A0Hz.</string>
+    <string name="settings_a4_lower">Lower A4 by 1\u00A0Hz</string>
+    <string name="settings_a4_raise">Raise A4 by 1\u00A0Hz</string>
+    <string name="settings_a4_reset">Reset to %1$d\u00A0Hz</string>
 
     <!-- Notation. -->
     <string name="settings_notation_title">Note names</string>
@@ -48,12 +49,13 @@
     <string name="settings_meter_look_arrows">Arrows</string>
     <string name="settings_meter_look_light_bars">Light bars</string>
     <string name="settings_in_tune_effect_title">In-tune effect</string>
+    <string name="settings_in_tune_effect_summary">How strongly the meter glows when a note is in tune</string>
     <string name="settings_in_tune_effect_calm">Calm</string>
     <string name="settings_in_tune_effect_bold">Bold</string>
 
     <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
-    <string name="settings_display_title">Display</string>
-    <string name="settings_display_needle">Needle: the number of cents</string>
+    <string name="settings_display_title">Below the note</string>
+    <string name="settings_display_numbers">Numbers: how many cents off</string>
     <string name="settings_display_wave">Wave: a moving picture, in the look you pick</string>
     <string name="settings_wave_look_title">Wave look</string>
     <string name="settings_wave_look_strobe">Strobe</string>
