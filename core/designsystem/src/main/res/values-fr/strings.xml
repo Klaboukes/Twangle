@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$s dièse</string>
     <string name="spoken_flat">%1$s bémol</string>
 
-    <string name="meter_studio_unit">CENTS</string>
+    <string name="meter_cents_label">CENTS</string>
 </resources>

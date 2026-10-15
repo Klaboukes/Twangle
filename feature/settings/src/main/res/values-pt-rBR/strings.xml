@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Clássico</string>
     <string name="settings_meter_look_light_arc">Arco de luz</string>
     <string name="settings_meter_look_spirit_level">Nível de bolha</string>
-    <string name="settings_meter_look_rolling_scale">Escala rolante</string>
-    <string name="settings_meter_look_comet">Cometa</string>
-    <string name="settings_meter_look_studio_meter">VU de estúdio</string>
     <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
     <string name="settings_in_tune_effect_calm">Suave</string>
     <string name="settings_in_tune_effect_bold">Marcante</string>

@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$s diyez</string>
     <string name="spoken_flat">%1$s bemol</string>
 
-    <string name="meter_studio_unit">SENT</string>
+    <string name="meter_cents_label">SENT</string>
 </resources>

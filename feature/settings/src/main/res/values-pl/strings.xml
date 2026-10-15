@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Klasyczny</string>
     <string name="settings_meter_look_light_arc">Świetlny łuk</string>
     <string name="settings_meter_look_spirit_level">Poziomica</string>
-    <string name="settings_meter_look_rolling_scale">Przewijana skala</string>
-    <string name="settings_meter_look_comet">Kometa</string>
-    <string name="settings_meter_look_studio_meter">Studyjny</string>
     <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>
     <string name="settings_in_tune_effect_calm">Spokojny</string>
     <string name="settings_in_tune_effect_bold">Wyrazisty</string>

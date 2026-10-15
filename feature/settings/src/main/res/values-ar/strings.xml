@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">كلاسيكي</string>
     <string name="settings_meter_look_light_arc">قوس ضوئي</string>
     <string name="settings_meter_look_spirit_level">ميزان الماء</string>
-    <string name="settings_meter_look_rolling_scale">مقياس دوّار</string>
-    <string name="settings_meter_look_comet">مذنّب</string>
-    <string name="settings_meter_look_studio_meter">مقياس الاستوديو</string>
     <string name="settings_in_tune_effect_title">تأثير الضبط</string>
     <string name="settings_in_tune_effect_calm">هادئ</string>
     <string name="settings_in_tune_effect_bold">جريء</string>

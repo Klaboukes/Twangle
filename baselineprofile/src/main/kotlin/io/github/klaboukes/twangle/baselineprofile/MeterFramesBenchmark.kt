@@ -218,7 +218,7 @@ class MeterFramesBenchmark {
         const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
         const val CARD_TAG_PREFIX = "meter_look_card_"
         const val CURRENT = "CURRENT"
-        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:SPIRIT_LEVEL:ROLLING_SCALE:COMET:STUDIO_METER"
+        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:SPIRIT_LEVEL"
         const val SUMMARY_HEADER = "look\tfps\tjanky\tdeadlineMissed\tworst p50/p90/p95/p99 ms\tmain%\tmainMs/frame\trender%\tapp%"
 
         /** The gfxinfo lines that say why frames were late ("Number Slow UI thread: 2", GPU percentiles). */

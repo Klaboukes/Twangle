@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$s 샵</string>
     <string name="spoken_flat">%1$s 플랫</string>
 
-    <string name="meter_studio_unit">센트</string>
+    <string name="meter_cents_label">센트</string>
 </resources>

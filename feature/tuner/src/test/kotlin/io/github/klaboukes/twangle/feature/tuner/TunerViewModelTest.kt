@@ -503,9 +503,9 @@ class TunerViewModelTest {
         runCurrent()
         assertEquals(MeterLook.CLASSIC, vm.meterLook.value)
 
-        settings.setMeterLook(MeterLook.STUDIO_METER)
+        settings.setMeterLook(MeterLook.SPIRIT_LEVEL)
         runCurrent()
-        assertEquals(MeterLook.STUDIO_METER, vm.meterLook.value)
+        assertEquals(MeterLook.SPIRIT_LEVEL, vm.meterLook.value)
     }
 
     @Test

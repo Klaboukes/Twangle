@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Klasik</string>
     <string name="settings_meter_look_light_arc">Işık yayı</string>
     <string name="settings_meter_look_spirit_level">Su terazisi</string>
-    <string name="settings_meter_look_rolling_scale">Kayan ölçek</string>
-    <string name="settings_meter_look_comet">Kuyruklu yıldız</string>
-    <string name="settings_meter_look_studio_meter">Stüdyo göstergesi</string>
     <string name="settings_in_tune_effect_title">Akort efekti</string>
     <string name="settings_in_tune_effect_calm">Sakin</string>
     <string name="settings_in_tune_effect_bold">Belirgin</string>

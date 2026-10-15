@@ -78,7 +78,7 @@ import kotlin.math.sin
 internal data class MeterRoles(
     /** The stage behind the meter. */
     val background: Color,
-    /** The surface colour: what the bubble and the studio meter's pivot cover are made of. */
+    /** The surface colour: what the spirit level's bubble is made of. */
     val plate: Color,
     /** Lines, numbers, needles. */
     val ink: Color,
@@ -95,7 +95,7 @@ internal data class MeterRoles(
     val numbers: FontFamily,
     /** How big the numbers are set: smaller for wide faces. */
     val numberScale: Float,
-    /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize], [lampHaloAlpha]). */
+    /** How strong the in-tune moment's glow is ([tuneGlowAlpha], [tuneGlowSize]). */
     val effect: InTuneEffect = InTuneEffect.DEFAULT,
     /** The style's own needle, hub, arc and tick caps ([meterFinishFor]). */
     val finish: MeterFinish = MeterFinish.PLAIN,
@@ -119,25 +119,19 @@ internal data class MeterRoles(
 
     /** How much larger than its look's own radius the in-tune glow is (see [tuneGlowSize]). */
     val tuneGlowSize: Float = tuneGlowSize(effect)
-
-    /** The studio lamp's halo's opacity at its middle when fully lit (see [lampHaloAlpha]). */
-    val lampHaloAlpha: Float = lampHaloAlpha(dark, effect)
 }
 
 /*
  * The in-tune moment's strength. Calm is the approved mock-up's soft glow: 32 % at its middle in
  * dark, 16 % in light. Bold is the same glow, eased the same way, only brighter (1.7 times, but at
  * most 52 % so the scale's numbers and the marker over it stay clearly readable in every style) and
- * 1.35 times larger. The studio lamp's halo (55 % dark, 35 % light) grows the same way, to at most 85 %.
+ * 1.35 times larger.
  */
 private const val TUNE_GLOW_DARK_ALPHA = 0.32f
 private const val TUNE_GLOW_LIGHT_ALPHA = 0.16f
-private const val LAMP_HALO_DARK_ALPHA = 0.55f
-private const val LAMP_HALO_LIGHT_ALPHA = 0.35f
 internal const val BOLD_GLOW_STRENGTH = 1.7f
 internal const val BOLD_GLOW_SIZE = 1.35f
 internal const val BOLD_GLOW_MAX_ALPHA = 0.52f
-internal const val BOLD_LAMP_HALO_MAX_ALPHA = 0.85f
 
 /** The in-tune glow's opacity at its middle when fully lit, in [dark] or light, for [effect]. */
 internal fun tuneGlowAlpha(dark: Boolean, effect: InTuneEffect): Float {
@@ -152,15 +146,6 @@ internal fun tuneGlowAlpha(dark: Boolean, effect: InTuneEffect): Float {
 internal fun tuneGlowSize(effect: InTuneEffect): Float = when (effect) {
     InTuneEffect.CALM -> 1f
     InTuneEffect.BOLD -> BOLD_GLOW_SIZE
-}
-
-/** The studio lamp's halo's opacity at its middle when fully lit, in [dark] or light, for [effect]. */
-internal fun lampHaloAlpha(dark: Boolean, effect: InTuneEffect): Float {
-    val calm = if (dark) LAMP_HALO_DARK_ALPHA else LAMP_HALO_LIGHT_ALPHA
-    return when (effect) {
-        InTuneEffect.CALM -> calm
-        InTuneEffect.BOLD -> (calm * BOLD_GLOW_STRENGTH).coerceAtMost(BOLD_LAMP_HALO_MAX_ALPHA)
-    }
 }
 
 /** The current style's [MeterRoles], with the in-tune glow as strong as [effect] says. */
@@ -263,8 +248,7 @@ internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
 private const val FIELD_CENTRE_UNITS = 47f
 
 /**
- * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube,
- * the rolling scale's drum window, the studio meter's face): [outline] filled in [fill] with a shadow
+ * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube): [outline] filled in [fill] with a shadow
  * 10u blurred and 4u down (black at 50 % in dark, 16 % in light). Drawn first; the glass covers the
  * fill.
  */
@@ -281,7 +265,7 @@ internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill
 }
 
 /**
- * The recessed glass over a look's window [face] (a dial face, a tube, a drum window): under the
+ * The recessed glass over a look's window [face] (the spirit level's tube): under the
  * look's art ([drawUnder]) the face sunk toward the stage with a soft inner shadow under its top
  * edge (7u blur, 2.5u down); over the art ([drawOver]) one sheen from the top (white at 28 % in
  * light, 7 % in dark, gone by 45 % of the way from [top] to [bottom]) and a 1u rim in ink at 14 %.

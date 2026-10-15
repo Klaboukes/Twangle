@@ -446,13 +446,13 @@ class SettingsContentTest {
     fun dutchTalkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = "nl")
 
     private fun assertMeterLooksSpoken(locale: String?) {
-        show(AppSettings(meterLook = MeterLook.COMET), locale = locale)
+        show(AppSettings(meterLook = MeterLook.SPIRIT_LEVEL), locale = locale)
         val res = resourcesIn(locale)
         for ((look, id) in meterLookNames) {
             val name = res.getString(id)
             val card = compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo()
             card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == MeterLook.COMET) card.assertIsSelected() else card.assertIsNotSelected()
+            if (look == MeterLook.SPIRIT_LEVEL) card.assertIsSelected() else card.assertIsNotSelected()
             // Its name, said once: the moving meter inside says nothing.
             assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
             card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
@@ -461,7 +461,7 @@ class SettingsContentTest {
 
     /**
      * At 2× font every meter look's name still fits its card on one line (two cards to a row then,
-     * and the name gets smaller when needed), in English and Dutch ("Studiometer"), on a phone and
+     * and the name gets smaller when needed), in English and Dutch ("Waterpas"), on a phone and
      * on a phone on its side.
      */
     @Test
@@ -514,9 +514,6 @@ class SettingsContentTest {
         MeterLook.CLASSIC to R.string.settings_meter_look_classic,
         MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
         MeterLook.SPIRIT_LEVEL to R.string.settings_meter_look_spirit_level,
-        MeterLook.ROLLING_SCALE to R.string.settings_meter_look_rolling_scale,
-        MeterLook.COMET to R.string.settings_meter_look_comet,
-        MeterLook.STUDIO_METER to R.string.settings_meter_look_studio_meter,
     )
 
     @Test

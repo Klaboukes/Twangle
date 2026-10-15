@@ -54,11 +54,9 @@ class TuneGlowTest {
     }
 
     @Test
-    fun `calm is the default, at the mock-up's size, with the lamp's halo at 55 % dark and 35 % light`() {
+    fun `calm is the default, at the mock-up's size`() {
         assertEquals(InTuneEffect.CALM, roles(dark = true).effect)
         assertEquals(1f, roles(dark = true).tuneGlowSize, 1e-6f)
-        assertEquals(0.55f, roles(dark = true).lampHaloAlpha, 1e-6f)
-        assertEquals(0.35f, roles(dark = false).lampHaloAlpha, 1e-6f)
     }
 
     @Test
@@ -67,21 +65,17 @@ class TuneGlowTest {
             val calm = roles(dark, InTuneEffect.CALM)
             val bold = roles(dark, InTuneEffect.BOLD)
             assertTrue("dark=$dark: ${bold.tuneGlowAlpha} vs ${calm.tuneGlowAlpha}", bold.tuneGlowAlpha >= calm.tuneGlowAlpha * 1.6f)
-            assertTrue("dark=$dark lamp", bold.lampHaloAlpha >= calm.lampHaloAlpha * 1.5f)
             assertEquals(1.35f, bold.tuneGlowSize, 1e-6f)
         }
-        // 1.7 times the calm glow, capped at 52 % in dark; the lamp's halo capped at 85 %.
+        // 1.7 times the calm glow, capped at 52 % in dark.
         assertEquals(0.52f, roles(dark = true, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
         assertEquals(0.272f, roles(dark = false, InTuneEffect.BOLD).tuneGlowAlpha, 1e-6f)
-        assertEquals(0.85f, roles(dark = true, InTuneEffect.BOLD).lampHaloAlpha, 1e-6f)
-        assertEquals(0.595f, roles(dark = false, InTuneEffect.BOLD).lampHaloAlpha, 1e-6f)
     }
 
     @Test
     fun `bold never covers the readings, in light or dark`() {
         for (dark in listOf(false, true)) {
             assertTrue(tuneGlowAlpha(dark, InTuneEffect.BOLD) <= BOLD_GLOW_MAX_ALPHA)
-            assertTrue(lampHaloAlpha(dark, InTuneEffect.BOLD) <= BOLD_LAMP_HALO_MAX_ALPHA)
         }
     }
 

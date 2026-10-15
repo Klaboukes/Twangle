@@ -38,9 +38,6 @@
     <string name="settings_meter_look_classic">Classique</string>
     <string name="settings_meter_look_light_arc">Arc lumineux</string>
     <string name="settings_meter_look_spirit_level">Niveau à bulle</string>
-    <string name="settings_meter_look_rolling_scale">Échelle défilante</string>
-    <string name="settings_meter_look_comet">Comète</string>
-    <string name="settings_meter_look_studio_meter">Vumètre</string>
     <string name="settings_in_tune_effect_title">Effet de justesse</string>
     <string name="settings_in_tune_effect_calm">Discret</string>
     <string name="settings_in_tune_effect_bold">Marqué</string>

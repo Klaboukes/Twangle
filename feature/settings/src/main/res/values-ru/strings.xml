@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Классический</string>
     <string name="settings_meter_look_light_arc">Световая дуга</string>
     <string name="settings_meter_look_spirit_level">Уровень</string>
-    <string name="settings_meter_look_rolling_scale">Бегущая шкала</string>
-    <string name="settings_meter_look_comet">Комета</string>
-    <string name="settings_meter_look_studio_meter">Студийный</string>
     <string name="settings_in_tune_effect_title">Эффект «настроено»</string>
     <string name="settings_in_tune_effect_calm">Спокойный</string>
     <string name="settings_in_tune_effect_bold">Яркий</string>

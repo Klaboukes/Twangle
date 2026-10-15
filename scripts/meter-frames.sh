@@ -3,8 +3,8 @@
 # (MeterFramesBenchmark in :baselineprofile) and prints the table. See ARCHITECTURE.md §4,
 # "Meter looks (Phase 13)".
 #
-#   scripts/meter-frames.sh                      all six looks, 3 windows of 7 s each
-#   scripts/meter-frames.sh COMET:STUDIO_METER   only these looks (MeterLook names, colon-separated)
+#   scripts/meter-frames.sh                      every look, 3 windows of 7 s each
+#   scripts/meter-frames.sh CLASSIC:LIGHT_ARC    only these looks (MeterLook names, colon-separated)
 #   scripts/meter-frames.sh CURRENT              keep the look the app has (e.g. an older build)
 #
 # Needs the phone connected, unlocked and upright, about 4 minutes. It installs the minified

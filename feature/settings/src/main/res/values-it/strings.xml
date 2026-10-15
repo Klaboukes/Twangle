@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Classico</string>
     <string name="settings_meter_look_light_arc">Arco di luce</string>
     <string name="settings_meter_look_spirit_level">Livella</string>
-    <string name="settings_meter_look_rolling_scale">Scala scorrevole</string>
-    <string name="settings_meter_look_comet">Cometa</string>
-    <string name="settings_meter_look_studio_meter">VU meter</string>
     <string name="settings_in_tune_effect_title">Effetto intonato</string>
     <string name="settings_in_tune_effect_calm">Calmo</string>
     <string name="settings_in_tune_effect_bold">Deciso</string>

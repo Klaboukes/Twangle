@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$sシャープ</string>
     <string name="spoken_flat">%1$sフラット</string>
 
-    <string name="meter_studio_unit">セント</string>
+    <string name="meter_cents_label">セント</string>
 </resources>

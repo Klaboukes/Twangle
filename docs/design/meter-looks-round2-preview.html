@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Meter Looks 2</title>
+<meta name="description" content="Round 2 of the meter looks: each look shows the note its own way, without the shared numbered scale.">
+<!--
+METER LOOKS, ROUND 2 (October 2026). Goal: every look reads at a glance as its own thing. Only one needle
+look keeps the numbered scale; the others show the reading through their own picture. Inspiration (not
+copied): LED fan pedals, Korg Pitchblack's converging wedges, Korg GA's light bars, an eclipse.
+Owner's line-up so far (2026-10-15): Light arc, Spirit level, Eclipse, Arrows, Light bars, plus one needle
+look: Classic, or (suggested) Studio meter at full size. Rolling scale and Comet go.
+
+Shared language (unchanged from round 1, so the looks still feel made by one artist):
+Box      2:1, ±50 cents, left = flat, right = sharp, centre = in tune. u = box width / 340 (about 1 dp).
+Colours  Roles only from the style: bg, surface, ink, muted, track (unlit parts), accent (lit parts and the
+         centre reference), inTune. No other colours.
+Unlit    Every look shows its unlit parts in track, like a dark LED, so the shape is always readable.
+In tune  One eased amount e (0.4 s in, 0.6 s out) turns the reference and the lit parts to inTune and
+         raises one soft glow. Nothing flashes, bursts or repeats. ♭ and ♯ in muted mark the sides.
+Motion   Springs with damping 0.5 or more, one per look.
+
+Looks:
+Light arc   17 rays of 5 dots (one ray per 6.25 cents) fanning out over ±69° from a pivot just under the box. Rays from the centre to the
+            reading light up, rising to the reading's ray (a wedge of light); the last 0.22 s fades behind.
+            The centre ray always shows two dim dots, and lights fully in tune.
+Spirit lvl  A big straight vial (0.86 box wide, 0.38 high) of liquid tinted by the accent. The bubble stays at
+            the vial's middle height and only slides sideways (±50 cents = ±100u); it stretches up to 25 % when
+            fast. Two etched lines at ±7 cents. No ticks or numbers. In tune, the liquid between them glows.
+Eclipse     The sun (accent) sits in the centre, your note is the moon sliding along a dotted path (±50 cents
+            = ±118u). Overlap starts within ±38 cents; in tune the moon covers the sun and a corona glows.
+Arrows      Four chevrons each side point at a centre bar. On the side the note is off they light one by one
+            (one per ~10.5 cents), with a slow shimmer running toward the centre. In tune the inner pair and
+            the bar glow.
+Light bars  41 bars, one every 2.5 cents, mirrored up and down. A soft peak (σ = 4.5 cents) rises at the
+            reading; the centre bar is taller and tinted. In tune the peak sits on the centre bar.
+Studio big  Today's studio meter (StudioMeter.kt) with new geometry: face 4u in from the box (14u corners),
+            sweep ±1.1 rad (was ±0.78), the arc's ends 16u inside the face's sides and its top 16u under the
+            face's top, so radius = (face half-width − 16u) / sin 1.1 ≈ 168u and the pivot sits ≈ 22u under
+            the face (hidden by the 30u cover). Scale length ≈ 370u, was ≈ 265u (Classic ≈ 459u). "CENTS" 48u
+            above the face's bottom. Marks, numbers, needle, lamp and glass unchanged.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500&family=Playfair+Display&family=Righteous&family=Roboto:wght@300;400;500&display=swap">
+<style>
+:root {
+  --bg: #F5F7FC; --surface: #FFFFFF; --fg: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF;
+  --display: Roboto, system-ui, sans-serif; --display-weight: 300;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--ui); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 72px; }
+header h1 { font-family: var(--display); font-weight: var(--display-weight); font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 28px 0 8px; }
+header p { color: var(--muted); max-width: 70ch; margin: 0 0 8px; }
+.bar { position: sticky; top: 0; z-index: 5; margin: 12px -16px 0; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 13px/1 var(--ui); padding: 9px 13px; border-radius: 999px; cursor: pointer; color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); border: 0; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctl { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+input[type=range] { accent-color: var(--accent); width: min(220px, 52vw); }
+.read { font-variant-numeric: tabular-nums; min-width: 7ch; color: var(--fg); }
+h2 { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 40px 0 4px; }
+.sub { color: var(--muted); margin: 0 0 16px; max-width: 72ch; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 30px 28px; }
+@media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
+.card { margin: 0; min-width: 0; }
+.card canvas { display: block; width: 100%; aspect-ratio: 1.84 / 1; }
+.card h3 { font-family: var(--display); font-weight: var(--display-weight); font-size: 23px; line-height: 1.2; margin: 2px 0 4px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.badge { font: 500 11px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.card p { margin: 0; color: var(--muted); max-width: 62ch; }
+.card .from { font-size: 13px; margin-top: 6px; opacity: .8; }
+.plan { margin-top: 44px; padding: 20px 22px; border-radius: 18px; background: color-mix(in srgb, var(--accent) 9%, var(--surface)); max-width: 76ch; box-shadow: 0 8px 28px color-mix(in srgb, var(--fg) 8%, transparent); }
+.plan h2 { margin-top: 0; }
+.plan ul { margin: 6px 0 0; padding-left: 20px; }
+.plan li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Meter looks, round 2</h1>
+    <p>Four of today's six looks share the same numbered half-circle, so they look alike. In this round each look shows the note its own way, without numbers, so you can tell them apart at a glance. Classic keeps the numbers.</p>
+    <p>Every meter plays the same story: 18 cents flat, tuned up slowly, in tune, drifting 14 sharp, tuned back. Drag the slider to set the note yourself.</p>
+  </header>
+
+  <div class="bar" role="toolbar" aria-label="Preview controls">
+    <div class="chips" id="styles" aria-label="Style"></div>
+    <div class="chips" id="themes" aria-label="Light or dark"></div>
+    <div class="ctl">
+      <button type="button" id="play" aria-pressed="true">Playing</button>
+      <label for="cents">Note</label>
+      <input type="range" id="cents" min="-60" max="60" step="0.5" value="-18">
+      <span class="read" id="read" aria-live="off">−18 ¢</span>
+    </div>
+  </div>
+
+  <main id="sections"></main>
+
+  <section class="plan" aria-labelledby="plan-h">
+    <h2 id="plan-h">The line-up</h2>
+    <ul>
+      <li><b>Studio meter, full size</b> is the one look with numbers, and the default for new installs.</li>
+      <li><b>Light arc</b> and <b>Spirit level</b> are reworked as shown: no numbers, and the spirit level is straight.</li>
+      <li><b>Eclipse</b>, <b>Arrows</b> and <b>Light bars</b> are new.</li>
+      <li><b>Classic</b>, <b>Rolling scale</b> and <b>Comet</b> go. Anyone who picked one of those gets Studio meter.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(() => {
+  const STYLES = {
+    ancient: { name: 'Ancient', font: '"Caesar Dressing", serif', w: 400, num: '"Alegreya Sans", sans-serif', numW: 500, numScale: 1,
+      light: { bg: '#ECE4DC', surface: '#F5EFE9', ink: '#2A1E1A', muted: '#5E4A42', track: '#CFC1B6', accent: '#A8431F', onAccent: '#FFF4EE', inTune: '#2F6A2A' },
+      dark: { bg: '#1B1715', surface: '#25201D', ink: '#EFE4DD', muted: '#C2ADA3', track: '#4A3D37', accent: '#F0957A', onAccent: '#3A1206', inTune: '#9DD47F' } },
+    classic: { name: 'Classic', font: '"Playfair Display", serif', w: 400, num: '"Bodoni Moda", serif', numW: 500, numScale: 1,
+      light: { bg: '#F7F2E8', surface: '#FCF9F2', ink: '#1C1518', muted: '#5A4A50', track: '#DCCFC4', accent: '#7A1F45', onAccent: '#FFF6F9', inTune: '#22663A' },
+      dark: { bg: '#170C11', surface: '#22131A', ink: '#F2E6EA', muted: '#C4AAB5', track: '#45303A', accent: '#EBA3C0', onAccent: '#3A0B1F', inTune: '#86D3A0' } },
+    retro: { name: 'Retro', font: 'Righteous, sans-serif', w: 400, num: 'Righteous, sans-serif', numW: 400, numScale: 1,
+      light: { bg: '#F1EDD8', surface: '#F8F5E6', ink: '#24260F', muted: '#55573A', track: '#D5D2AE', accent: '#5F6E0E', onAccent: '#FBFDEB', inTune: '#1C6E4A' },
+      dark: { bg: '#15160B', surface: '#1F2113', ink: '#EEF0D2', muted: '#B9BC92', track: '#3E412A', accent: '#C5D45A', onAccent: '#252B00', inTune: '#6FD6A4' } },
+    contemporary: { name: 'Contemporary', font: 'Roboto, sans-serif', w: 300, num: 'Roboto, sans-serif', numW: 400, numScale: 1,
+      light: { bg: '#F5F7FC', surface: '#FFFFFF', ink: '#10141F', muted: '#4A5268', track: '#CDD3E3', accent: '#3A4FD6', onAccent: '#FFFFFF', inTune: '#1B7A3E' },
+      dark: { bg: '#0E1220', surface: '#151A2B', ink: '#E6E9F4', muted: '#A6AECB', track: '#2B3350', accent: '#A6ADFF', onAccent: '#121A5A', inTune: '#6DD58C' } },
+    futuristic: { name: 'Futuristic', font: 'Orbitron, sans-serif', w: 500, num: 'Orbitron, sans-serif', numW: 500, numScale: 0.82,
+      light: { bg: '#EDF3F6', surface: '#F8FCFE', ink: '#061822', muted: '#3A5463', track: '#BFD2DC', accent: '#007482', onAccent: '#FFFFFF', inTune: '#007A46' },
+      dark: { bg: '#03070A', surface: '#08121A', ink: '#DDF8FF', muted: '#84B3C4', track: '#143040', accent: '#22E5FF', onAccent: '#00252B', inTune: '#39FF9A' } },
+    spaceage: { name: 'Space Age', font: 'Michroma, sans-serif', w: 400, num: 'Michroma, sans-serif', numW: 400, numScale: 0.82,
+      light: { bg: '#F3F0F8', surface: '#FBF9FE', ink: '#1A1530', muted: '#4E4766', track: '#D6D0E4', accent: '#8A35B8', onAccent: '#FFFFFF', inTune: '#26703A' },
+      dark: { bg: '#120C26', surface: '#1C1536', ink: '#F1EDFA', muted: '#B3A9D2', track: '#352C5A', accent: '#D9A0FF', onAccent: '#2E0B4A', inTune: '#7EE08A' } },
+  };
+  const ORDER = ['ancient', 'classic', 'retro', 'contemporary', 'futuristic', 'spaceage'];
+
+  const SIGNS = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Music", "Apple Symbols", serif';
+  const TAU = Math.PI * 2;
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+  const rgba = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${clamp(a, 0, 1)})`;
+  const smooth = (t) => t * t * (3 - 2 * t);
+
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* private window */ } },
+  };
+  const root = document.documentElement;
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let style = store.get('tw-ml2-style', 'contemporary'); if (!STYLES[style]) style = 'contemporary';
+  let theme = store.get('tw-ml2-theme', 'auto'); if (!['auto', 'light', 'dark'].includes(theme)) theme = 'auto';
+  let playing = !reduce, manual = -18, clock = 0;
+
+  function roles() {
+    const S = STYLES[style]; const dark = theme === 'dark' || (theme === 'auto' && mq.matches);
+    const p = S[dark ? 'dark' : 'light']; const c = { dark, num: S.num, numW: S.numW, numScale: S.numScale };
+    for (const k in p) c[k] = hex(p[k]);
+    return c;
+  }
+  function applyPage() {
+    const S = STYLES[style]; const dark = theme === 'dark' || (theme === 'auto' && mq.matches); const p = S[dark ? 'dark' : 'light'];
+    if (theme === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', theme);
+    const set = (k, v) => root.style.setProperty(k, v);
+    set('--bg', p.bg); set('--surface', p.surface); set('--fg', p.ink); set('--muted', p.muted); set('--line', p.track);
+    set('--accent', p.accent); set('--on-accent', p.onAccent); set('--display', S.font); set('--display-weight', S.w);
+    document.querySelectorAll('#styles button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === style)));
+    document.querySelectorAll('#themes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === theme)));
+  }
+
+  // ---------- drawing helpers ----------
+  function line(ctx, x1, y1, x2, y2, stroke, w, cap = 'round') {
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = stroke; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke();
+  }
+  function disc(ctx, x, y, r, fill) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+  function glow(ctx, x, y, rad, col, a) {
+    if (a <= 0.003) return;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    gr.addColorStop(0, rgba(col, a)); gr.addColorStop(0.45, rgba(col, a * 0.4)); gr.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+  const tuneGlow = (ctx, c, x, y, rad, e) => glow(ctx, x, y, rad, c.inTune, e * (c.dark ? 0.34 : 0.2));
+  function signs(ctx, g, c, xl, yl, xr, yr) {
+    ctx.font = `${15 * g.u}px ${SIGNS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = rgba(c.muted, 0.9);
+    ctx.fillText('♭', xl, yl); ctx.fillText('♯', xr, yr);
+  }
+  function softShadow(ctx, g, c) { ctx.shadowColor = rgba(BLACK, c.dark ? 0.45 : 0.2); ctx.shadowBlur = 3 * g.u; ctx.shadowOffsetX = 1.5 * g.u; ctx.shadowOffsetY = 2.5 * g.u; }
+  function noShadow(ctx) { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; }
+  // The calm field under every look: the same soft lift, fading out well before the canvas edge.
+  function field(ctx, g, c) {
+    ctx.save(); ctx.translate(g.W / 2, g.H * 0.55); ctx.scale(1, 0.58);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, g.W * 0.55);
+    gr.addColorStop(0, rgba(c.surface, c.dark ? 0.85 : 0.9)); gr.addColorStop(1, rgba(c.surface, 0));
+    ctx.fillStyle = gr; ctx.fillRect(-g.W * 0.6, -g.W * 0.6, g.W * 1.2, g.W * 1.2); ctx.restore();
+  }
+
+  // ---------- Classic (unchanged, for comparison) ----------
+  function drawClassic(ctx, g, c, S) {
+    const { H, u, cx } = g; const py = H - 17 * u, r = 146 * u, e = S.e;
+    const P = (rad, v) => { const a = v / 50 * Math.PI / 2; return [cx + rad * Math.sin(a), py - rad * Math.cos(a)]; };
+    tuneGlow(ctx, c, cx, py - r * 0.8, r * 0.95, e);
+    ctx.beginPath(); ctx.arc(cx, py, r, Math.PI, TAU); ctx.strokeStyle = rgba(c.track); ctx.lineWidth = 1.5 * u; ctx.stroke();
+    ctx.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let v = -50; v <= 50; v += 5) {
+      if (!v) continue; const maj = v % 10 === 0; const r0 = r - 4 * u, len = (maj ? 13 : 7) * u;
+      const [x1, y1] = P(r0, v), [x2, y2] = P(r0 - len, v);
+      line(ctx, x1, y1, x2, y2, rgba(c.ink, maj ? 1 : 0.5), (maj ? 2.1 : 1.3) * u);
+      if (maj) { const [tx, ty] = P(r0 - 27 * u, v); ctx.fillStyle = rgba(c.ink, 0.8); ctx.fillText(String(Math.abs(v)), tx, ty); }
+    }
+    const [c1x, c1y] = P(r - 4 * u, 0), [c2x, c2y] = P(r - 20 * u, 0);
+    line(ctx, c1x, c1y, c2x, c2y, rgba(mix(c.accent, c.inTune, e)), 3.2 * u);
+    const [nx, ny] = P(r - 10 * u, clamp(S.x, -53, 53));
+    ctx.save(); softShadow(ctx, g, c); line(ctx, cx, py, nx, ny, rgba(mix(c.ink, c.inTune, e * 0.9)), 3 * u); ctx.restore();
+    disc(ctx, cx, py, 7 * u, rgba(c.ink)); disc(ctx, cx, py, 2.6 * u, rgba(c.accent));
+    signs(ctx, g, c, cx - r + 4 * u, py + 13 * u, cx + r - 4 * u, py + 13 * u);
+  }
+
+  // ---------- Studio meter: today's size, and full size ----------
+  // Today (StudioGeometry): face 18u in, pivot 42 % of the face's height under it, ±0.78 rad.
+  // Full size: face 4u in, ±1.1 rad, the arc's ends 16u inside the face's sides, its top 16u under the face's top.
+  function studioGeo(g, big) {
+    const { W, H, u, cx } = g; const inset = (big ? 4 : 18) * u;
+    const left = inset, top = inset, right = W - inset, bottom = H - inset;
+    let sweep, radius, pivotY;
+    if (big) { sweep = 1.1; radius = ((right - left) / 2 - 16 * u) / Math.sin(sweep); pivotY = top + 16 * u + radius; }
+    else { sweep = 0.78; pivotY = bottom + (bottom - top) * 0.42; radius = pivotY - (top + 20 * u); }
+    const ang = (v) => v / 50 * sweep;
+    const P = (d, v) => [cx + d * Math.sin(ang(v)), pivotY - d * Math.cos(ang(v))];
+    return { left, top, right, bottom, sweep, radius, pivotY, ang, P, corner: (big ? 14 : 10) * u, label: bottom - (big ? 48 : 42) * u };
+  }
+  function drawStudio(ctx, g, c, S, big) {
+    const { u, cx } = g; const s = studioGeo(g, big), e = S.e; const w = s.right - s.left, h = s.bottom - s.top;
+    const facePath = () => { ctx.beginPath(); ctx.roundRect(s.left, s.top, w, h, s.corner); };
+    const face = mix(c.surface, c.bg, 0.5);
+    ctx.save(); ctx.shadowColor = rgba(BLACK, c.dark ? 0.5 : 0.16); ctx.shadowBlur = 10 * u; ctx.shadowOffsetY = 4 * u;
+    facePath(); ctx.fillStyle = rgba(face); ctx.fill(); ctx.restore();
+    ctx.save(); facePath(); ctx.clip();
+    const bl = ctx.createRadialGradient(cx, s.bottom + h * 0.3, 0, cx, s.bottom + h * 0.3, w * 0.75);
+    bl.addColorStop(0, rgba(c.accent, c.dark ? 0.22 : 0.11)); bl.addColorStop(1, rgba(c.accent, 0));
+    ctx.fillStyle = bl; ctx.fillRect(s.left, s.top, w, h);
+    const ish = ctx.createLinearGradient(0, s.top, 0, s.top + 9 * u); ish.addColorStop(0, rgba(BLACK, c.dark ? 0.35 : 0.1)); ish.addColorStop(1, rgba(BLACK, 0));
+    ctx.fillStyle = ish; ctx.fillRect(s.left, s.top, w, 9 * u);
+    tuneGlow(ctx, c, cx, s.top + 26 * u, 80 * u, e);
+    ctx.beginPath(); ctx.arc(cx, s.pivotY, s.radius, -Math.PI / 2 - s.sweep, -Math.PI / 2 + s.sweep); ctx.strokeStyle = rgba(c.track); ctx.lineWidth = 1.5 * u; ctx.stroke();
+    ctx.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let v = -50; v <= 50; v += 5) {
+      if (!v) continue; const maj = v % 10 === 0; const r0 = s.radius - 4 * u, len = (maj ? 13 : 7) * u;
+      const [x1, y1] = s.P(r0, v), [x2, y2] = s.P(r0 - len, v);
+      line(ctx, x1, y1, x2, y2, rgba(c.ink, maj ? 1 : 0.5), (maj ? 2.1 : 1.3) * u);
+      if (maj) { const [tx, ty] = s.P(r0 - 27 * u, v); ctx.fillStyle = rgba(c.ink, 0.8); ctx.fillText(String(Math.abs(v)), tx, ty); }
+    }
+    ctx.beginPath(); ctx.arc(cx, s.pivotY, s.radius - 0.5 * u, -Math.PI / 2 - s.ang(5), -Math.PI / 2 + s.ang(5));
+    ctx.strokeStyle = rgba(mix(c.accent, c.inTune, e)); ctx.lineWidth = 3.5 * u; ctx.lineCap = 'round'; ctx.stroke();
+    signs(ctx, g, c, s.left + 20 * u, s.bottom - 20 * u, s.right - 20 * u, s.bottom - 20 * u);
+    ctx.font = `${7.5 * u}px ${c.num}`; ctx.fillStyle = rgba(c.muted, 0.9);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${2.2 * u}px`;
+    ctx.fillText('CENTS', cx, s.label); if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    const [nx, ny] = s.P(s.radius + 3 * u, clamp(S.x, -55, 55));
+    ctx.save(); softShadow(ctx, g, c); line(ctx, cx, s.pivotY, nx, ny, rgba(mix(c.ink, c.inTune, e * 0.9)), 3 * u); ctx.restore();
+    const cr = 30 * u; ctx.save(); ctx.shadowColor = rgba(BLACK, c.dark ? 0.5 : 0.18); ctx.shadowBlur = 8 * u; ctx.shadowOffsetY = -u;
+    ctx.beginPath(); ctx.arc(cx, s.bottom, cr, Math.PI, TAU); ctx.closePath();
+    const cg = ctx.createLinearGradient(0, s.bottom - cr, 0, s.bottom);
+    cg.addColorStop(0, rgba(mix(c.surface, WHITE, c.dark ? 0.05 : 0.3))); cg.addColorStop(1, rgba(mix(c.surface, c.ink, c.dark ? 0.04 : 0.1)));
+    ctx.fillStyle = cg; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(cx, s.bottom, cr, Math.PI, TAU); ctx.strokeStyle = rgba(c.ink, 0.12); ctx.lineWidth = u; ctx.stroke();
+    const sh = ctx.createLinearGradient(0, s.top, 0, s.top + h * 0.45); sh.addColorStop(0, rgba(WHITE, c.dark ? 0.07 : 0.28)); sh.addColorStop(1, rgba(WHITE, 0));
+    ctx.fillStyle = sh; ctx.fillRect(s.left, s.top, w, h * 0.45);
+    ctx.restore();
+    const lx = s.right - 15 * u, ly = s.top + 15 * u;
+    disc(ctx, lx, ly, 5.5 * u, rgba(mix(face, c.ink, 0.08))); ctx.beginPath(); ctx.arc(lx, ly, 5.5 * u, 0, TAU); ctx.strokeStyle = rgba(c.ink, 0.25); ctx.lineWidth = u; ctx.stroke();
+    glow(ctx, lx, ly, 22 * u, c.inTune, e * (c.dark ? 0.5 : 0.3));
+    disc(ctx, lx, ly, 3.8 * u, rgba(mix(mix(face, c.ink, 0.2), c.inTune, e))); disc(ctx, lx - 1.1 * u, ly - 1.1 * u, 1.1 * u, rgba(WHITE, 0.25 + 0.45 * e));
+    facePath(); ctx.strokeStyle = rgba(c.ink, 0.14); ctx.lineWidth = u; ctx.stroke();
+  }
+
+  // ---------- Light arc, reworked: a fan of LED dots ----------
+  function drawFan(ctx, g, c, S, dt) {
+    const { H, u, cx } = g; const py = H + 6 * u, span = 1.2, step = 50 / 8;
+    const x = clamp(S.x, -52, 52), ax = Math.abs(x), e = S.e, dec = Math.exp(-dt / 0.22);
+    const hot = mix(c.accent, c.inTune, e);
+    tuneGlow(ctx, c, cx, py - 125 * u, 115 * u, e);
+    for (let i = 0; i < 17; i++) {
+      const v = -50 + step * i, av = Math.abs(v), a = v / 50 * span, s = Math.sin(a), co = Math.cos(a);
+      let n = 0, br = 0;
+      if (i !== 8 && Math.sign(v) === Math.sign(x)) {
+        const w = clamp((ax - av) / step + 1, 0, 1);
+        if (w > 0) { const rel = Math.min(1, av / Math.max(ax, step)); n = w * (1.6 + 3.4 * rel); br = 0.4 + 0.6 * rel; }
+      }
+      for (let j = 0; j < 5; j++) {
+        const rad = (78 + 17.5 * j) * u, dr = (3.4 + 0.55 * j) * u, px = cx + rad * s, qy = py - rad * co, k = i * 5 + j;
+        let lit = clamp(n - j, 0, 1) * br; S.heat[k] = Math.max(lit, S.heat[k] * dec); lit = S.heat[k];
+        let col = c.accent;
+        if (i === 8) { lit = Math.max((j < 2 ? 0.45 : 0.14) * (1 - e), e); col = hot; }
+        else if (i === 7 || i === 9) { const t2 = e * (j < 3 ? 0.5 : 0.2); if (t2 > lit) { lit = t2; col = hot; } }
+        disc(ctx, px, qy, dr, rgba(c.track, c.dark ? 0.75 : 0.7));
+        if (lit > 0.01) { glow(ctx, px, qy, dr * 3.4, col, lit * (c.dark ? 0.45 : 0.28)); disc(ctx, px, qy, dr * (1 + 0.08 * lit), rgba(col, lit)); }
+      }
+    }
+    signs(ctx, g, c, 24 * u, H - 12 * u, g.W - 24 * u, H - 12 * u);
+  }
+
+  // ---------- Spirit level, reworked: a big straight vial, no scale ----------
+  function levelGeo(g) {
+    const { W, H, cx } = g; const T = H * 0.38, y0 = H * 0.45, half = W * 0.43;
+    return { T, y0, x0: cx - half, x1: cx + half, travel: 100 * g.u };
+  }
+  function tubePath(ctx, g, L) { ctx.beginPath(); ctx.roundRect(L.x0, L.y0 - L.T / 2, L.x1 - L.x0, L.T, L.T / 2); }
+  function drawLevel(ctx, g, c, S) {
+    const L = levelGeo(g); const { u, cx } = g; const e = S.e; const top = L.y0 - L.T / 2, bot = L.y0 + L.T / 2;
+    ctx.save(); ctx.shadowColor = rgba(BLACK, c.dark ? 0.5 : 0.16); ctx.shadowBlur = 12 * u; ctx.shadowOffsetY = 5 * u;
+    tubePath(ctx, g, L); ctx.fillStyle = rgba(c.bg); ctx.fill(); ctx.restore();
+    const lg = ctx.createLinearGradient(0, top, 0, bot);
+    lg.addColorStop(0, rgba(mix(c.surface, c.accent, c.dark ? 0.2 : 0.14))); lg.addColorStop(1, rgba(mix(c.bg, c.accent, c.dark ? 0.34 : 0.26)));
+    tubePath(ctx, g, L); ctx.fillStyle = lg; ctx.fill();
+    ctx.save(); tubePath(ctx, g, L); ctx.clip();
+    const ig = ctx.createLinearGradient(0, top, 0, top + 10 * u);
+    ig.addColorStop(0, rgba(BLACK, c.dark ? 0.38 : 0.14)); ig.addColorStop(1, rgba(BLACK, 0));
+    ctx.fillStyle = ig; ctx.fillRect(L.x0, top, L.x1 - L.x0, 10 * u);
+    glow(ctx, cx, L.y0, L.T * 1.8, c.inTune, e * (c.dark ? 0.5 : 0.3));
+    const gate = 7 / 50 * L.travel;
+    for (const s of [-1, 1]) line(ctx, cx + s * gate, top + 5 * u, cx + s * gate, bot - 5 * u, rgba(mix(c.ink, c.inTune, e), 0.45 + 0.45 * e), 1.8 * u, 'butt');
+    const bx = cx + clamp(S.x, -55, 55) / 50 * L.travel, by = L.y0;
+    const st = clamp(Math.abs(S.v) / 140, 0, 0.25), rx = L.T * 0.62 * (1 + st), ry = L.T * 0.33 * (1 - st * 0.35);
+    ctx.save(); ctx.translate(bx, by);
+    const bg2 = ctx.createRadialGradient(-rx * 0.25, -ry * 0.35, 0, 0, 0, rx);
+    bg2.addColorStop(0, rgba(WHITE, c.dark ? 0.2 : 0.55)); bg2.addColorStop(0.75, rgba(WHITE, c.dark ? 0.07 : 0.28)); bg2.addColorStop(1, rgba(WHITE, c.dark ? 0.14 : 0.4));
+    ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, TAU); ctx.fillStyle = bg2; ctx.fill();
+    ctx.strokeStyle = rgba(mix(c.ink, c.inTune, e * 0.8), c.dark ? 0.4 : 0.32); ctx.lineWidth = 1.3 * u; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, ry * 0.12, rx * 0.86, ry * 0.72, 0, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.strokeStyle = rgba(WHITE, c.dark ? 0.18 : 0.5); ctx.lineWidth = 1.6 * u; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(-rx * 0.42, -ry * 0.42, rx * 0.2, ry * 0.16, -0.15, 0, TAU); ctx.fillStyle = rgba(WHITE, c.dark ? 0.55 : 0.85); ctx.fill();
+    ctx.restore();
+    line(ctx, L.x0 + L.T * 0.45, top + 6 * u, L.x1 - L.T * 0.45, top + 6 * u, rgba(WHITE, c.dark ? 0.1 : 0.5), 3 * u);
+    ctx.restore();
+    tubePath(ctx, g, L); ctx.strokeStyle = rgba(c.ink, 0.16); ctx.lineWidth = 1 * u; ctx.stroke();
+    signs(ctx, g, c, L.x0 + 14 * u, bot + 18 * u, L.x1 - 14 * u, bot + 18 * u);
+  }
+
+  // ---------- Eclipse: your note is the moon ----------
+  function drawEclipse(ctx, g, c, S) {
+    const { W, H, u, cx } = g; const cy = H * 0.47, Rs = 44 * u, Rm = 45.5 * u, e = S.e;
+    const mx = cx + clamp(S.x, -56, 56) / 50 * 118 * u;
+    ctx.save(); ctx.setLineDash([0.1 * u, 7 * u]); line(ctx, 22 * u, cy, W - 22 * u, cy, rgba(c.muted, 0.5), 1.8 * u); ctx.restore();
+    signs(ctx, g, c, 24 * u, cy + Rm + 16 * u, W - 24 * u, cy + Rm + 16 * u);
+    const sun = mix(c.accent, c.inTune, e * 0.6);
+    glow(ctx, cx, cy, Rs * 2.4, sun, (c.dark ? 0.24 : 0.15) * (1 - 0.6 * e));
+    const sg = ctx.createRadialGradient(cx - Rs * 0.2, cy - Rs * 0.25, 0, cx, cy, Rs);
+    sg.addColorStop(0, rgba(mix(sun, WHITE, c.dark ? 0.5 : 0.3))); sg.addColorStop(0.7, rgba(sun)); sg.addColorStop(1, rgba(mix(sun, c.bg, 0.2)));
+    disc(ctx, cx, cy, Rs, sg);
+    if (e > 0.005) {
+      const cg = ctx.createRadialGradient(mx, cy, Rm * 0.95, mx, cy, Rm * 2.1);
+      cg.addColorStop(0, rgba(c.inTune, e * (c.dark ? 0.6 : 0.42))); cg.addColorStop(0.35, rgba(c.inTune, e * (c.dark ? 0.22 : 0.15))); cg.addColorStop(1, rgba(c.inTune, 0));
+      ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(mx, cy, Rm * 2.1, 0, TAU); ctx.fill();
+    }
+    const mg = ctx.createRadialGradient(mx - Rm * 0.35, cy - Rm * 0.35, 0, mx, cy, Rm);
+    mg.addColorStop(0, rgba(mix(c.bg, c.ink, c.dark ? 0.08 : 0.04))); mg.addColorStop(1, rgba(c.bg));
+    disc(ctx, mx, cy, Rm, mg);
+    ctx.beginPath(); ctx.arc(mx, cy, Rm, 0, TAU); ctx.strokeStyle = rgba(mix(c.ink, c.inTune, e), 0.22 + 0.6 * e); ctx.lineWidth = (1.2 + 0.6 * e) * u; ctx.stroke();
+  }
+
+  // ---------- Arrows: chevrons that point the way ----------
+  function drawArrows(ctx, g, c, S, dt, t) {
+    const { W, H, u, cx } = g; const cy = H * 0.5, e = S.e, ax = Math.abs(S.x), side = Math.sign(S.x), lvl = (ax - 2) / 10.5;
+    const hot = mix(c.accent, c.inTune, e);
+    tuneGlow(ctx, c, cx, cy, 100 * u, e);
+    const bw = 9 * u, bh = 100 * u;
+    ctx.beginPath(); ctx.roundRect(cx - bw / 2, cy - bh / 2, bw, bh, bw / 2);
+    ctx.fillStyle = rgba(hot, 0.18 + 0.82 * e); ctx.fill(); ctx.strokeStyle = rgba(hot); ctx.lineWidth = 1.8 * u; ctx.stroke();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    for (const sd of [-1, 1]) for (let k = 0; k < 4; k++) {
+      const sc = 1 - 0.07 * k, tx = cx + sd * (26 + 30 * k) * u, dep = 17 * u * sc, hh = 30 * u * sc;
+      const path = () => { ctx.beginPath(); ctx.moveTo(tx + sd * dep, cy - hh); ctx.lineTo(tx, cy); ctx.lineTo(tx + sd * dep, cy + hh); };
+      ctx.lineWidth = 7.5 * u * sc; path(); ctx.strokeStyle = rgba(c.track, c.dark ? 1 : 0.95); ctx.stroke();
+      let I = sd === side ? clamp(lvl - k, 0, 1) : 0;
+      if (I > 0) I *= 0.8 + 0.2 * (0.5 + 0.5 * Math.sin(TAU * 0.7 * t + k * 1.1));
+      let col = c.accent;
+      if (k === 0 && e * 0.9 > I) { I = e * 0.9; col = hot; }
+      if (I > 0.01) { ctx.save(); ctx.shadowColor = rgba(col, I * 0.7); ctx.shadowBlur = 10 * u; path(); ctx.strokeStyle = rgba(col, I); ctx.stroke(); ctx.restore(); }
+    }
+    signs(ctx, g, c, 34 * u, cy + 54 * u, W - 34 * u, cy + 54 * u);
+  }
+
+  // ---------- Light bars: a soft peak of light at the reading ----------
+  function drawBars(ctx, g, c, S) {
+    const { W, H, u, cx } = g; const cy = H * 0.5, e = S.e, xc = clamp(S.x, -53, 53), sig = 4.5 + 2 * e;
+    const hot = mix(c.accent, c.inTune, e);
+    glow(ctx, cx + xc / 50 * 150 * u, cy, 72 * u, hot, (c.dark ? 0.26 : 0.14) * (0.6 + 0.6 * e));
+    for (let i = 0; i < 41; i++) {
+      const v = -50 + 2.5 * i, bx = cx + v / 50 * 150 * u, centre = i === 20;
+      const gp = Math.exp(-((v - xc) ** 2) / (2 * sig * sig));
+      const h = (centre ? 12 : 5) * u + 62 * u * gp;
+      line(ctx, bx, cy - h, bx, cy + h, rgba(centre ? mix(c.track, c.accent, 0.6) : c.track, c.dark ? 1 : 0.95), 3.6 * u);
+      if (gp > 0.01) {
+        const col = centre ? hot : mix(c.accent, c.inTune, e * gp), a = Math.min(1, gp * 1.25);
+        const lg = ctx.createLinearGradient(0, cy - h, 0, cy + h);
+        lg.addColorStop(0, rgba(col, a * 0.3)); lg.addColorStop(0.5, rgba(col, a)); lg.addColorStop(1, rgba(col, a * 0.3));
+        line(ctx, bx, cy - h, bx, cy + h, lg, 3.6 * u);
+      }
+    }
+    signs(ctx, g, c, 18 * u, H - 12 * u, W - 18 * u, H - 12 * u);
+  }
+
+  // ---------- the looks ----------
+  const LOOKS = [
+    { id: 'arc', group: 'rework', name: 'Light arc', badge: 'Reworked', f: 2.2, z: 0.9, draw: drawFan,
+      text: 'A fan of little lights. It opens from the centre toward the note, brightest at the tip, like an LED pedal. The numbered dial is gone.',
+      from: 'Idea from LED fan pedals.' },
+    { id: 'level', group: 'rework', name: 'Spirit level', badge: 'Reworked', f: 1.0, z: 0.5, draw: drawLevel,
+      text: 'A big, straight glass vial of tinted liquid. The bubble stays in the middle of the vial and slides to the side the note is off; in tune it rests between two etched lines. No ticks or numbers.',
+      from: 'Straight now, with the scale taken away.' },
+    { id: 'eclipse', group: 'new', name: 'Eclipse', badge: 'New · instead of Comet', f: 1.2, z: 0.8, draw: drawEclipse,
+      text: 'The target is the sun, your note is the moon. The closer you get, the more the moon covers the sun. In tune it is a total eclipse, with a soft green corona.',
+      from: 'Calm, and like nothing else in the set.' },
+    { id: 'arrows', group: 'new', name: 'Arrows', badge: 'New', f: 2.0, z: 0.9, draw: drawArrows,
+      text: 'Arrows on the side you are off light up and point the way to turn: more arrows means further off. In tune the inner pair and the centre bar glow.',
+      from: 'Idea from Korg Pitchblack’s wedges.' },
+    { id: 'bars', group: 'new', name: 'Light bars', badge: 'New', f: 1.8, z: 0.8, draw: drawBars,
+      text: 'A row of light bars with a soft peak of light where the note is. In tune the peak sits on the taller centre bar.',
+      from: 'Idea from the Korg GA display.' },
+    { id: 'studio-big', group: 'needle', name: 'Studio meter, full size', badge: 'Suggested', f: 1.9, z: 0.62, draw: (ctx, g, c, S) => drawStudio(ctx, g, c, S, true),
+      text: 'The face fills the whole box and the needle swings wider (±63° instead of ±45°), so the scale is about 40 % longer than today. Same backlight, lamp, “CENTS” and needle cover.',
+      from: 'Would take Classic’s place as the one look with numbers.' },
+    { id: 'classic', group: 'needle', name: 'Classic', badge: 'As now', f: 1.6, z: 0.6, draw: drawClassic,
+      text: 'The open half-circle dial. Its scale is still the longest, because it uses the whole half circle.',
+      from: 'Shown so you can compare.' },
+    { id: 'studio', group: 'needle', name: 'Studio meter, today', badge: 'As now', f: 1.9, z: 0.62, draw: (ctx, g, c, S) => drawStudio(ctx, g, c, S, false),
+      text: 'Today’s size: the face sits 18 units in from the box and the scale swings only ±45°, so it looks small next to Classic.',
+      from: 'Shown so you can compare.' },
+  ];
+  const GROUPS = [
+    { id: 'rework', title: 'Reworked', sub: 'The same idea as now, without the numbered scale, so the look itself does the talking.' },
+    { id: 'new', title: 'New', sub: 'Each keeps the same box, the style’s colours and the same calm in-tune glow.' },
+    { id: 'needle', title: 'Classic or Studio meter?', sub: 'One needle look with numbers stays. Studio meter at full size could take Classic’s place.' },
+  ];
+
+  // ---------- page ----------
+  const stylesEl = document.getElementById('styles');
+  ORDER.forEach((id) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.id = id; b.textContent = STYLES[id].name; b.onclick = () => { style = id; store.set('tw-ml2-style', id); applyPage(); }; stylesEl.append(b); });
+  const themesEl = document.getElementById('themes');
+  [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].forEach(([id, label]) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.id = id; b.textContent = label; b.onclick = () => { theme = id; store.set('tw-ml2-theme', id); applyPage(); }; themesEl.append(b); });
+  mq.addEventListener('change', applyPage);
+
+  const cards = [];
+  const sectionsEl = document.getElementById('sections');
+  for (const G of GROUPS) {
+    const sec = document.createElement('section'); sec.setAttribute('aria-labelledby', `h-${G.id}`);
+    sec.innerHTML = `<h2 id="h-${G.id}">${G.title}</h2>${G.sub ? `<p class="sub">${G.sub}</p>` : ''}<div class="grid"></div>`;
+    const grid = sec.querySelector('.grid');
+    for (const L of LOOKS.filter((l) => l.group === G.id)) {
+      const fig = document.createElement('figure'); fig.className = 'card';
+      fig.innerHTML = `<canvas aria-hidden="true"></canvas><figcaption><h3>${L.name} <span class="badge">${L.badge}</span></h3><p>${L.text}</p><p class="from">${L.from}</p></figcaption>`;
+      grid.append(fig);
+      const cv = fig.querySelector('canvas');
+      cards.push({ look: L, cv, ctx: cv.getContext('2d'), st: { x: -18, v: 0, e: 0, heat: new Float32Array(105) } });
+    }
+    sectionsEl.append(sec);
+  }
+
+  const playBtn = document.getElementById('play'), slider = document.getElementById('cents'), readEl = document.getElementById('read');
+  const setPlay = (p) => { playing = p; playBtn.setAttribute('aria-pressed', String(p)); playBtn.textContent = p ? 'Playing' : 'Play'; };
+  playBtn.onclick = () => setPlay(!playing);
+  slider.addEventListener('input', () => { setPlay(false); manual = parseFloat(slider.value); });
+  setPlay(playing);
+
+  // The demo: 18 cents flat, tuned up slowing like a peg, in tune, drifting 14 sharp, tuned back.
+  const KEYS = [[0, -34], [1.3, -18], [2.1, -18], [4.6, 0], [6.8, 0], [8.0, 14], [9.0, 14], [10.8, 0], [12.8, 0]];
+  const PERIOD = 12.8;
+  function demo(t) {
+    let v = 0;
+    for (let i = 1; i < KEYS.length; i++) {
+      if (t <= KEYS[i][0]) { const [t0, a] = KEYS[i - 1], [t1, b] = KEYS[i]; const p = (t - t0) / (t1 - t0); v = lerp(a, b, 1 - (1 - p) ** 3); break; }
+    }
+    return v + 0.45 * Math.sin(t * 5.3) + 0.25 * Math.sin(t * 8.9 + 1);
+  }
+
+  let last = performance.now(), inTune = false, eRaw = 0;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing) clock = (clock + dt) % PERIOD;
+    const target = playing ? demo(clock) : manual;
+    if (playing) slider.value = String(Math.round(target * 2) / 2);
+    const at = Math.abs(target);
+    if (inTune ? at > 3.5 : at < 2) inTune = !inTune;
+    readEl.textContent = inTune ? 'in tune' : `${target < 0 ? '−' : '+'}${at.toFixed(1)} ¢`;
+    eRaw = clamp(eRaw + (inTune ? dt / 0.4 : -dt / 0.6), 0, 1);
+    const e = smooth(eRaw), c = roles(), t = now / 1000;
+    for (const k of cards) {
+      const S = k.st, w = TAU * k.look.f, kk = w * w, cc = 2 * k.look.z * w, goal = clamp(target, -60, 60);
+      const steps = Math.max(1, Math.ceil(dt / (1 / 240))), h = dt / steps;
+      for (let i = 0; i < steps; i++) { const acc = kk * (goal - S.x) - cc * S.v; S.v += acc * h; S.x += S.v * h; }
+      S.e = e;
+      const cw = k.cv.clientWidth, ch = k.cv.clientHeight; if (!cw || !ch) continue;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (k.cv.width !== Math.round(cw * dpr) || k.cv.height !== Math.round(ch * dpr)) { k.cv.width = Math.round(cw * dpr); k.cv.height = Math.round(ch * dpr); }
+      const ctx = k.ctx; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cw, ch);
+      const W = cw / 1.14, H = W / 2, ox = (cw - W) / 2, oy = (ch - H) / 2;
+      ctx.translate(ox, oy);
+      const g = { W, H, u: W / 340, cx: W / 2, ox, oy };
+      ctx.save(); field(ctx, g, c); k.look.draw(ctx, g, c, S, dt, t); ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  }
+  applyPage();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

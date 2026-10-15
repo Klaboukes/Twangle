@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$s शार्प</string>
     <string name="spoken_flat">%1$s फ़्लैट</string>
 
-    <string name="meter_studio_unit">सेंट</string>
+    <string name="meter_cents_label">सेंट</string>
 </resources>

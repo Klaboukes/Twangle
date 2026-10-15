@@ -10,7 +10,7 @@ Phases 0–20 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCH
 
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
-- ☐ **Overnight run for Phase 22's fit check:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, fixes what it finds, and runs the full UI tests, which takes a few hours
+- ☐ **Overnight run for Phase 22's fit check and Phase 25's meter looks:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, runs the on-device UI tests of the new meter looks (`MeterLooksTest`, `SettingsContentTest`, `SettingsStylesTest`, `CompactLandscapeStylesTest`, `TunerContentTest`), fixes what it finds, and runs the full UI tests, which takes a few hours
 - ☐ **Note names:** decide whether Polish and Russian should call B "H" (as German does) and whether Turkish and Arabic should use Do-Re-Mi. Until then they use letters with sharps
 
 ## Owner checks (live tests)
@@ -28,6 +28,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 19: play along with the metronome for a few minutes with a real guitar, at a few tempos and meters: check it feels steady, the accents help you find beat 1, and the clicks are pleasant at a comfortable loudness
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears
 - ☐ Phase 22: native speakers look over the new translations where possible
+- ☐ Phase 25: tune a real guitar with each of the six meter looks, light and dark, and say if any feels hard to read or too busy
 
 ---
 
@@ -46,6 +47,12 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☑ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL): texts, settings and panels mirror; meter, wave, strum check, string row, tempo dial, beat lights and the A4 slider stay low-left/high-right; Arabic-Indic digits everywhere except octaves in note names (phone checked in Arabic; UI tests in Arabic still to run, in the fit-check item below)
 - ☑ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose). Settings has *Automatic* (follows the language) plus a German option; German TalkBack says Cis/Des/H; the watch follows its own language (phone checked in German and French; watch not checked on a device)
 - ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages. **Runs overnight, started by the owner** (see *Waiting on the owner*); also fix the Turkish/Polish letters missing from Ancient's and Futuristic's title fonts (words mix two fonts) and check Futuristic's and Space Age's letter spacing on Chinese and Japanese
+
+## Phase 25 — Meter looks, round 2
+Goal: every meter look shows the note its own way, so they no longer look alike (approved mock-up: [docs/design/meter-looks-round2-preview.html](docs/design/meter-looks-round2-preview.html), owner 2026-10-15). Six looks: Classic, Light arc, Spirit level, Eclipse, Arrows, Light bars. UI tests run in the overnight run (see *Waiting on the owner*).
+- ☑ Classic gets the "CENTS" label from Studio meter; Rolling scale, Comet and Studio meter go (a saved one opens as Classic)
+- ☐ Light arc becomes a fan of little lights that opens toward the note, and Spirit level a big straight vial with the bubble at its middle height; neither has numbers any more
+- ☐ New looks Eclipse, Arrows and Light bars, with their names in every language
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.

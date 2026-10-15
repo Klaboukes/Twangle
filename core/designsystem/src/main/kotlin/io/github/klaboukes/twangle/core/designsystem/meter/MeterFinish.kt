@@ -12,7 +12,7 @@ import kotlin.math.sin
  * so the six meter looks wear the style they sit in without leaving the shared art language.
  */
 
-/** The needle's shape (Classic and Studio meter). */
+/** The needle's shape (Classic). */
 internal enum class NeedleKind {
     /** Ancient: a spear with a leaf-shaped head. */
     SPEAR,
@@ -54,7 +54,7 @@ internal enum class HubKind {
     SATURN,
 }
 
-/** The scale's arc (the dial looks and the studio meter). */
+/** The scale's arc (the dial looks). */
 internal enum class TrackKind {
     /** Contemporary: one thin line in the track colour. */
     LINE,

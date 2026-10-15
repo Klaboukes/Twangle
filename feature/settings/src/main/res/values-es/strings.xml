@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Clásico</string>
     <string name="settings_meter_look_light_arc">Arco de luz</string>
     <string name="settings_meter_look_spirit_level">Nivel de burbuja</string>
-    <string name="settings_meter_look_rolling_scale">Escala móvil</string>
-    <string name="settings_meter_look_comet">Cometa</string>
-    <string name="settings_meter_look_studio_meter">Vúmetro</string>
     <string name="settings_in_tune_effect_title">Efecto al afinar</string>
     <string name="settings_in_tune_effect_calm">Suave</string>
     <string name="settings_in_tune_effect_bold">Intenso</string>

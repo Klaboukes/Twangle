@@ -44,9 +44,6 @@
     <string name="settings_meter_look_classic">Classic</string>
     <string name="settings_meter_look_light_arc">Light arc</string>
     <string name="settings_meter_look_spirit_level">Spirit level</string>
-    <string name="settings_meter_look_rolling_scale">Rolling scale</string>
-    <string name="settings_meter_look_comet">Comet</string>
-    <string name="settings_meter_look_studio_meter">Studio meter</string>
     <string name="settings_in_tune_effect_title">In-tune effect</string>
     <string name="settings_in_tune_effect_calm">Calm</string>
     <string name="settings_in_tune_effect_bold">Bold</string>

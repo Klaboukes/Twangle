@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">经典</string>
     <string name="settings_meter_look_light_arc">光弧</string>
     <string name="settings_meter_look_spirit_level">水平仪</string>
-    <string name="settings_meter_look_rolling_scale">滚动刻度</string>
-    <string name="settings_meter_look_comet">彗星</string>
-    <string name="settings_meter_look_studio_meter">录音棚表头</string>
     <string name="settings_in_tune_effect_title">调准效果</string>
     <string name="settings_in_tune_effect_calm">柔和</string>
     <string name="settings_in_tune_effect_bold">醒目</string>

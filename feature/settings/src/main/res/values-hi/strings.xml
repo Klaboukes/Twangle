@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">क्लासिक</string>
     <string name="settings_meter_look_light_arc">रोशनी का चाप</string>
     <string name="settings_meter_look_spirit_level">स्पिरिट लेवल</string>
-    <string name="settings_meter_look_rolling_scale">घूमता स्केल</string>
-    <string name="settings_meter_look_comet">धूमकेतु</string>
-    <string name="settings_meter_look_studio_meter">स्टूडियो मीटर</string>
     <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
     <string name="settings_in_tune_effect_calm">शांत</string>
     <string name="settings_in_tune_effect_bold">ज़ोरदार</string>

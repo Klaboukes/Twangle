@@ -9,5 +9,5 @@
     <string name="spoken_sharp">%1$s z krzyżykiem</string>
     <string name="spoken_flat">%1$s z bemolem</string>
 
-    <string name="meter_studio_unit">CENTY</string>
+    <string name="meter_cents_label">CENTY</string>
 </resources>

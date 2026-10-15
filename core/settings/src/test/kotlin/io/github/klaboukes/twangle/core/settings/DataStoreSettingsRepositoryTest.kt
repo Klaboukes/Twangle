@@ -115,7 +115,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setShowSignalBars(true)
         repo.setDisplay(TunerDisplay.NEEDLE)
         repo.setWaveLook(WaveLook.FIREFLIES)
-        repo.setMeterLook(MeterLook.COMET)
+        repo.setMeterLook(MeterLook.LIGHT_ARC)
         repo.setInTuneEffect(InTuneEffect.BOLD)
         repo.setWaveBreathesInTune(false)
         repo.setTourSeen(true)
@@ -139,7 +139,7 @@ class DataStoreSettingsRepositoryTest {
             showSignalBars = true,
             display = TunerDisplay.NEEDLE,
             waveLook = WaveLook.FIREFLIES,
-            meterLook = MeterLook.COMET,
+            meterLook = MeterLook.LIGHT_ARC,
             inTuneEffect = InTuneEffect.BOLD,
             waveBreathesInTune = false,
             tourSeen = true,
@@ -526,19 +526,26 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
-    fun `the six meter looks come in the owner's order, Classic first and the default`() {
+    fun `the meter looks come in the owner's order, Classic first and the default`() {
         assertEquals(
             listOf(
                 MeterLook.CLASSIC,
                 MeterLook.LIGHT_ARC,
                 MeterLook.SPIRIT_LEVEL,
-                MeterLook.ROLLING_SCALE,
-                MeterLook.COMET,
-                MeterLook.STUDIO_METER,
             ),
             MeterLook.entries,
         )
         assertEquals(MeterLook.CLASSIC, MeterLook.DEFAULT)
+    }
+
+    @Test
+    fun `a meter look that went in Phase 25 reads as Classic`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (gone in listOf("ROLLING_SCALE", "COMET", "STUDIO_METER")) {
+            store.edit { it[stringPreferencesKey("meter_look")] = gone }
+            assertEquals(gone, MeterLook.CLASSIC, repo.settings.first().meterLook)
+        }
     }
 
     // --- Custom tunings ---

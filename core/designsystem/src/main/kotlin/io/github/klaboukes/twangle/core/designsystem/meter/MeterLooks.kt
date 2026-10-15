@@ -12,6 +12,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -23,9 +24,15 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
+import io.github.klaboukes.twangle.core.designsystem.R
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import kotlinx.coroutines.flow.first
@@ -61,14 +68,11 @@ fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTune
             MeterLook.CLASSIC -> ClassicMeter(reading, effect)
             MeterLook.LIGHT_ARC -> LightArcMeter(reading, effect)
             MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading, effect)
-            MeterLook.ROLLING_SCALE -> RollingScaleMeter(reading, effect)
-            MeterLook.COMET -> CometMeter(reading, effect)
-            MeterLook.STUDIO_METER -> StudioMeter(reading, effect)
         }
     }
 }
 
-// ---- The dial shared by Classic, Light arc and Comet ---------------------------------------------
+// ---- The dial shared by Classic and Light arc ---------------------------------------------------
 
 /**
  * The dial's geometry in a box of [size]: a half circle of radius [r] (146u) around a pivot 17u
@@ -134,10 +138,10 @@ internal class DialUnderArt(size: Size, roles: MeterRoles, measurer: TextMeasure
 
 /** The dial under the marker, drawn once per size and colours. */
 @Composable
-internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra: ((Size) -> (DrawScope.() -> Unit))? = null) {
+internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra: (CacheDrawScope.(Size) -> (DrawScope.() -> Unit))? = null) {
     StaticArt {
         val dial = DialUnderArt(size, roles, measurer, this)
-        val more = extra?.invoke(size)
+        val more = extra?.invoke(this, size)
         val draw: DrawScope.() -> Unit = {
             dial.draw(this)
             more?.invoke(this)
@@ -185,7 +189,12 @@ private const val DIAL_GLOW_UNITS = 80f
 private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
     val roles = meterRoles(effect)
     val measurer = rememberTextMeasurer()
-    DialUnder(roles, measurer)
+    val unit = stringResource(R.string.meter_cents_label)
+    DialUnder(roles, measurer) { size ->
+        val label = CentsLabelArt(DialGeometry(size), roles, measurer, this, unit)
+        val draw: DrawScope.() -> Unit = { label.draw(this) }
+        draw
+    }
     DialCentre(roles, reading)
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
@@ -219,6 +228,33 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
         },
     )
 }
+
+/**
+ * The unit under Classic's scale, as on a real meter's face (it was the studio meter's): [text] ("CENTS")
+ * in the style's number face, 7.5u with wide letter spacing, muted at 90 %, centred [CENTS_LABEL_UNITS]
+ * above the pivot, under the needle.
+ */
+private class CentsLabelArt(dial: DialGeometry, roles: MeterRoles, measurer: TextMeasurer, density: Density, text: String) {
+    private val label = measurer.measure(
+        text,
+        TextStyle(
+            fontFamily = roles.numbers,
+            fontSize = with(density) { (CENTS_LABEL_SIZE_UNITS * dial.u).toSp() },
+            letterSpacing = 0.3.em,
+            fontFeatureSettings = LINING_FIGURES,
+        ),
+    )
+    private val color = roles.muted.copy(alpha = 0.9f)
+    private val at = Offset(dial.cx - label.size.width / 2f, dial.cy - CENTS_LABEL_UNITS * dial.u - label.size.height / 2f)
+
+    fun draw(scope: DrawScope) = with(scope) { drawText(label, color = color, topLeft = at) }
+}
+
+/** The unit's middle sits this many units above the dial's pivot … */
+private const val CENTS_LABEL_UNITS = 42f
+
+/** … and its letters are this many units high. */
+private const val CENTS_LABEL_SIZE_UNITS = 7.5f
 
 /** Classic's needle: from the pivot to 8u short of the arc, over the ticks' outer ends. */
 private fun classicNeedle(size: Size, roles: MeterRoles): NeedleArt {

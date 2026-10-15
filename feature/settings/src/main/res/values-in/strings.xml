@@ -37,9 +37,6 @@
     <string name="settings_meter_look_classic">Klasik</string>
     <string name="settings_meter_look_light_arc">Busur cahaya</string>
     <string name="settings_meter_look_spirit_level">Waterpas</string>
-    <string name="settings_meter_look_rolling_scale">Skala bergulir</string>
-    <string name="settings_meter_look_comet">Komet</string>
-    <string name="settings_meter_look_studio_meter">Meter studio</string>
     <string name="settings_in_tune_effect_title">Efek saat pas</string>
     <string name="settings_in_tune_effect_calm">Tenang</string>
     <string name="settings_in_tune_effect_bold">Mencolok</string>

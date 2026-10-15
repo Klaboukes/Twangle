@@ -16,6 +16,6 @@
     <string name="spoken_sharp">%1$s sharp</string>
     <string name="spoken_flat">%1$s flat</string>
 
-    <!-- The unit printed on the studio meter's face, under its scale (in capitals, as on a real meter). -->
-    <string name="meter_studio_unit">CENTS</string>
+    <!-- The unit printed on the Classic meter's dial, above the needle's pivot (in capitals, as on a real meter). -->
+    <string name="meter_cents_label">CENTS</string>
 </resources>

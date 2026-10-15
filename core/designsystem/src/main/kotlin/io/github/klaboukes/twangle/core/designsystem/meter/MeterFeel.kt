@@ -32,9 +32,6 @@ fun meterFeel(look: MeterLook): MeterFeel = when (look) {
     MeterLook.CLASSIC -> MeterFeel(frequencyHz = 1.6f, dampingRatio = 0.6f)
     MeterLook.LIGHT_ARC -> MeterFeel(frequencyHz = 2.2f, dampingRatio = 0.9f)
     MeterLook.SPIRIT_LEVEL -> MeterFeel(frequencyHz = 1.0f, dampingRatio = 0.5f)
-    MeterLook.ROLLING_SCALE -> MeterFeel(frequencyHz = 1.3f, dampingRatio = 0.75f)
-    MeterLook.COMET -> MeterFeel(frequencyHz = 1.7f, dampingRatio = 0.7f)
-    MeterLook.STUDIO_METER -> MeterFeel(frequencyHz = 1.9f, dampingRatio = 0.62f)
 }
 
 /** Smoothstep: starts and ends gently. */

@@ -46,7 +46,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * All six meter looks (Classic, Light arc, Spirit level, Rolling scale, Comet and Studio meter) in
+ * Every meter look (Classic, Light arc and Spirit level) in
  * each of the six styles, light and dark: clearly drawn in their 2:1 box, straight on the background
  * (no plate), with a calm field and an in-tune glow that reach past the box and fade out there,
  * never cut off at its edge; skipped by TalkBack, moved by a new reading without recomposing, and
@@ -154,7 +154,7 @@ class MeterLooksTest(private val style: VisualStyle) {
         val before = captureCases(looks)
         val changes = changeCount()
         cents.floatValue = 25f
-        // The spring and the light arc's and the comet's trails settle, then everything is idle again.
+        // The spring and the light arc's trail settle, then everything is idle again.
         compose.waitForIdle()
         val after = captureCases(looks)
         for (look in looks) {

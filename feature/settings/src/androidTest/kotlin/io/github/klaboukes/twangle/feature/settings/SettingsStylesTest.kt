@@ -86,7 +86,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
                         AboutScreen(appVersion = VERSION, onBack = {}, modifier = Modifier.testTag(WINDOW))
                     } else {
                         SettingsContent(
-                            AppSettings(style = style, display = TunerDisplay.WAVE, meterLook = MeterLook.COMET, waveLook = WaveLook.LOOP),
+                            AppSettings(style = style, display = TunerDisplay.WAVE, meterLook = MeterLook.SPIRIT_LEVEL, waveLook = WaveLook.LOOP),
                             appVersion = VERSION,
                             onOpenAbout = {},
                             onA4Change = {},
@@ -207,7 +207,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
             shownDark.value = dark
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"}:"
-            val picked = mapOf(styleCardTag(style) to true, meterLookCardTag(MeterLook.COMET) to true, waveLookCardTag(WaveLook.LOOP) to true)
+            val picked = mapOf(styleCardTag(style) to true, meterLookCardTag(MeterLook.SPIRIT_LEVEL) to true, waveLookCardTag(WaveLook.LOOP) to true)
             for ((tag, name) in cardNames()) {
                 val card = compose.onNodeWithTag(tag).performScrollTo()
                 card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
@@ -243,9 +243,6 @@ class SettingsStylesTest(private val style: VisualStyle) {
         MeterLook.CLASSIC to R.string.settings_meter_look_classic,
         MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
         MeterLook.SPIRIT_LEVEL to R.string.settings_meter_look_spirit_level,
-        MeterLook.ROLLING_SCALE to R.string.settings_meter_look_rolling_scale,
-        MeterLook.COMET to R.string.settings_meter_look_comet,
-        MeterLook.STUDIO_METER to R.string.settings_meter_look_studio_meter,
     )
 
     private val waveLookNames = mapOf(

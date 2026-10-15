@@ -117,10 +117,12 @@ enum class WaveLook {
 /**
  * How the meter above the note draws how far off a note is. Every look sits in the same frame (a
  * 2:1 box, ±50 cents, left flat and right sharp), so picking one moves nothing else on the screen.
- * Saved in settings by [name], so don't rename the entries.
+ * Saved in settings by [name], so don't rename the entries. (Rolling scale, Comet and Studio meter,
+ * saved as "ROLLING_SCALE", "COMET" and "STUDIO_METER", went in Phase 25; a saved one reads as the
+ * default.)
  */
 enum class MeterLook {
-    /** The half-circle dial with a needle, polished with depth and a glass shine. */
+    /** The half-circle dial with a needle and a numbered scale. */
     CLASSIC,
 
     /** A curve of glowing segments that light up from the centre out to the reading. */
@@ -128,15 +130,6 @@ enum class MeterLook {
 
     /** A bubble in a curved glass tube that floats to the side the note is off. */
     SPIRIT_LEVEL,
-
-    /** A scale on a turning drum that rolls past a fixed centre mark, like a ship's compass. */
-    ROLLING_SCALE,
-
-    /** A bright comet that runs along the arc with a glittering tail. */
-    COMET,
-
-    /** A backlit meter like a recording desk's, with a needle and a small lamp. */
-    STUDIO_METER,
     ;
 
     companion object {
