@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_back">Zurück</string>
+
+    <string name="settings_group_tuning">Stimmung</string>
+    <string name="settings_group_look">Aussehen</string>
+    <string name="settings_group_while_tuning">Beim Stimmen</string>
+
+    <string name="settings_a4_title">Kammerton (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Die meiste Musik nutzt 440 Hz. Orchester stimmen oft auf 442 Hz, Barockensembles auf 415 Hz.</string>
+    <string name="settings_a4_lower">A4 um 1 Hz senken</string>
+    <string name="settings_a4_raise">A4 um 1 Hz erhöhen</string>
+    <string name="settings_a4_reset">Auf %1$d Hz zurücksetzen</string>
+
+    <string name="settings_notation_title">Notennamen</string>
+    <string name="settings_notation_sharps">Mit Kreuz: C, C♯, D …</string>
+    <string name="settings_notation_flats">Mit b: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Stimmgenauigkeit</string>
+    <string name="settings_in_tune_precision_relaxed">Locker: bis 5 Cent</string>
+    <string name="settings_in_tune_precision_precise">Genau: bis 2 Cent</string>
+
+    <string name="settings_style_title">Stil</string>
+    <string name="settings_theme_title">Hell oder dunkel</string>
+    <string name="settings_theme_system">Systemstandard</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_dynamic_color_title">Hintergrundfarben</string>
+    <string name="settings_dynamic_color_summary">Farben deines Hintergrundbilds verwenden</string>
+
+    <string name="settings_meter_look_title">Anzeige</string>
+    <string name="settings_meter_look_classic">Klassisch</string>
+    <string name="settings_meter_look_light_arc">Lichtbogen</string>
+    <string name="settings_meter_look_spirit_level">Wasserwaage</string>
+    <string name="settings_meter_look_rolling_scale">Rollskala</string>
+    <string name="settings_meter_look_comet">Komet</string>
+    <string name="settings_meter_look_studio_meter">Studio-Meter</string>
+    <string name="settings_in_tune_effect_title">Effekt bei Treffer</string>
+    <string name="settings_in_tune_effect_calm">Ruhig</string>
+    <string name="settings_in_tune_effect_bold">Kräftig</string>
+
+    <string name="settings_display_title">Darstellung</string>
+    <string name="settings_display_needle">Nadel: die Zahl der Cent</string>
+    <string name="settings_display_wave">Welle: ein bewegtes Bild im Stil deiner Wahl</string>
+    <string name="settings_wave_look_title">Wellenstil</string>
+    <string name="settings_wave_look_strobe">Stroboskop</string>
+    <string name="settings_wave_look_ribbon">Band</string>
+    <string name="settings_wave_look_dots">Punkte</string>
+    <string name="settings_wave_look_fireflies">Glühwürmchen</string>
+    <string name="settings_wave_look_loop">Schleife</string>
+    <string name="settings_wave_in_tune_title">Wenn gestimmt</string>
+    <string name="settings_wave_in_tune_breathe">Sanft atmen</string>
+    <string name="settings_wave_in_tune_hold_still">Ganz still stehen</string>
+    <string name="settings_wave_look_ripples">Kreise</string>
+    <string name="settings_keep_two_pane_landscape_title">Volles Layout im Querformat</string>
+    <string name="settings_keep_two_pane_landscape_summary">Im Querformat die Bedienelemente neben dem Stimmgerät zeigen statt einer großen Anzeige</string>
+
+    <string name="settings_keep_screen_on_title">Bildschirm anlassen</string>
+    <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt an, solange das Stimmgerät offen ist</string>
+    <string name="settings_vibrate_in_tune_title">Vibrieren, wenn gestimmt</string>
+    <string name="settings_vibrate_in_tune_summary">Ein kurzes Summen, wenn der Ton stimmt</string>
+    <string name="settings_show_tune_hint_title">Hinweis höher/tiefer zeigen</string>
+    <string name="settings_show_tune_hint_summary">Zeigt, wohin du den Wirbel drehen musst, solange ein Ton nicht stimmt</string>
+    <string name="settings_show_signal_bars_title">Signalbalken zeigen</string>
+    <string name="settings_show_signal_bars_summary">Für Neugierige: kleine Balken neben der Note zeigen, wie gut dich das Stimmgerät hört. Tippe darauf für die Werte</string>
+
+    <string name="settings_show_tour_title">Rundgang</string>
+    <string name="settings_show_tour_summary">Ein kurzer Rundgang durch das Stimmgerät</string>
+    <string name="about_title">Über Twangle</string>
+    <string name="settings_about_link_summary">Version %1$s, Datenschutz und Lizenzen</string>
+    <string name="settings_about_version">Version %1$s</string>
+    <string name="settings_about_free_title">Für immer kostenlos</string>
+    <string name="settings_about_free_summary">Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Nicht jetzt, nicht später.</string>
+    <string name="settings_about_privacy_title">Datenschutz</string>
+    <string name="settings_about_privacy_summary">Twangle sammelt keine Daten über dich. Das Mikrofon ist nur an, solange das Stimmgerät offen ist. Der Ton wird live analysiert und nie aufgenommen, gespeichert oder gesendet. Twangle hat keine Internetberechtigung und kann daher nichts irgendwohin senden. Deine Einstellungen werden nur auf deinem Handy gespeichert.</string>
+    <string name="settings_about_credits_title">Schriften und Open-Source-Software</string>
+    <string name="settings_about_credits_summary">Twangle ist damit gemacht. Tippe auf einen Eintrag, um seine Lizenz zu lesen.</string>
+    <string name="settings_about_licence_open">Lizenz lesen</string>
+    <string name="settings_about_licence_close">Schließen</string>
+</resources>

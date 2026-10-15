@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Pulsos por compás</string>
+    <string name="metronome_tempo">Tempo, arrastra para cambiar</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d pulso por minuto, %2$s</item>
+        <item quantity="many">%1$d pulsos por minuto, %2$s</item>
+        <item quantity="other">%1$d pulsos por minuto, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Más lento</string>
+    <string name="metronome_faster">Más rápido</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Iniciar</string>
+    <string name="metronome_stop">Detener</string>
+    <string name="metronome_vibrate">Vibrar con el pulso</string>
+    <string name="metronome_meter_2_4_spoken">Compás de dos por cuatro</string>
+    <string name="metronome_meter_3_4_spoken">Compás de tres por cuatro</string>
+    <string name="metronome_meter_4_4_spoken">Compás de cuatro por cuatro</string>
+    <string name="metronome_meter_5_4_spoken">Compás de cinco por cuatro</string>
+    <string name="metronome_meter_6_8_spoken">Compás de seis por ocho</string>
+    <string name="metronome_meter_7_8_spoken">Compás de siete por ocho</string>
+</resources>

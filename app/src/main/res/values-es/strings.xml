@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Afinador</string>
+    <string name="nav_metronome">Metrónomo</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="widget_name">Afinador</string>
+    <string name="widget_description">Muestra tu instrumento y tu afinación. Un toque abre el afinador.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Abrir el afinador</string>
+    <string name="widget_preview_title">Guitarra · Estándar</string>
+</resources>

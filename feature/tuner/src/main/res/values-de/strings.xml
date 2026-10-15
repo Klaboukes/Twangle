@@ -1,0 +1,134 @@
+<resources>
+    <string name="mic_permission_title">Twangle braucht dein Mikrofon</string>
+    <string name="mic_permission_intro">Zum Stimmen hört Twangle deinem Instrument zu. Der Ton wird auf deinem Handy analysiert und nie aufgenommen oder gesendet.</string>
+    <string name="mic_permission_rationale">Ohne Mikrofon hört Twangle deine Saiten nicht und kann nicht sagen, ob sie gestimmt sind. Der Ton verlässt nie dein Handy.</string>
+    <string name="mic_permission_settings_hint">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen, dann auf Mikrofon, und wähle Zulassen.</string>
+    <string name="mic_permission_allow">Mikrofon erlauben</string>
+    <string name="mic_permission_open_settings">Einstellungen öffnen</string>
+
+    <string name="error_mic_permission">Der Mikrofonzugriff wurde ausgeschaltet. Erlaube ihn wieder, um weiter zu stimmen.</string>
+    <string name="error_mic_busy">Eine andere App nutzt das Mikrofon. Schließe sie und versuche es erneut.</string>
+    <string name="error_mic_unavailable">Das Mikrofon ließ sich auf diesem Handy nicht öffnen.</string>
+    <string name="error_mic_stopped">Das Mikrofon hat unerwartet aufgehört.</string>
+    <string name="error_retry">Erneut versuchen</string>
+
+    <string name="tuner_mode_strings">Saiten</string>
+    <string name="tuner_mode_chromatic">Chromatisch</string>
+    <string name="tuner_show_controls">Bedienelemente zeigen</string>
+
+    <string name="tuning_standard">Standard</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Halbton tiefer</string>
+    <string name="tuning_full_step_down">Ganzton tiefer</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">Gitarre</string>
+    <string name="instrument_guitar_7">7-saitige Gitarre</string>
+    <string name="instrument_guitar_8">8-saitige Gitarre</string>
+    <string name="instrument_bass_4">Bass</string>
+    <string name="instrument_bass_5">5-saitiger Bass</string>
+    <string name="instrument_ukulele">Ukulele</string>
+    <string name="instrument_violin">Geige</string>
+    <string name="instrument_viola">Bratsche</string>
+    <string name="instrument_cello">Cello</string>
+    <string name="instrument_mandolin">Mandoline</string>
+    <string name="tuner_hint_play_string">Spiel eine Saite</string>
+    <string name="tuner_hint_play_note">Spiel einen Ton</string>
+    <string name="tuner_hint_play_locked_string">Spiel die %1$s-Saite</string>
+    <string name="tuner_string_lock">Auf diese Saite festlegen</string>
+    <string name="tuner_string_unlock">Saiten automatisch wählen</string>
+    <string name="tuner_string_locked">Festgelegt</string>
+    <string name="tuner_string_play">%1$s abspielen</string>
+    <string name="tuner_string_stop_tone">Ton stoppen</string>
+    <string name="tuner_string_sounding">Spielt</string>
+    <string name="tuner_string_locked_sounding">Festgelegt, spielt</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <!-- Nach einer Zahl bleibt „Cent“ in der Einzahl: „12 Cent“. -->
+    <string name="tuner_cents_zero">0 Cent</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="one">%1$d Cent zu tief</item>
+        <item quantity="other">%1$d Cent zu tief</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="one">%1$d Cent zu hoch</item>
+        <item quantity="other">%1$d Cent zu hoch</item>
+    </plurals>
+    <string name="tuner_in_tune">gestimmt</string>
+    <string name="tuner_tune_up">Höher stimmen ↑</string>
+    <string name="tuner_tune_down">Tiefer stimmen ↓</string>
+    <string name="tuner_tip_too_soft">Spiel etwas lauter</string>
+    <string name="tuner_tip_too_noisy">Zu viel Lärm hier</string>
+    <string name="tuner_tip_too_loud">Zu laut, Handy weiter weg</string>
+    <string name="tuner_signal_bars">Signalbalken: %1$d von %2$d</string>
+    <string name="tuner_signal_no_note">Signal: noch kein Ton</string>
+    <string name="tuner_signal_show_figures">Werte zeigen</string>
+    <string name="tuner_signal_title">Wie gut Twangle dich hört</string>
+    <string name="tuner_signal_volume">Lautstärke</string>
+    <string name="tuner_signal_background">Hintergrund</string>
+    <string name="tuner_signal_clarity">Klarheit</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_tune_up">höher stimmen</string>
+    <string name="tuner_spoken_tune_down">tiefer stimmen</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s, %2$s</string>
+    <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">Instrument oder Stimmung ändern</string>
+    <string name="tuner_picker_title">Instrument und Stimmung</string>
+
+    <string name="tuner_new_tuning">Neue Stimmung</string>
+
+    <string name="tuning_editor_title_edit">Stimmung bearbeiten</string>
+    <string name="tuning_editor_close">Ohne Speichern schließen</string>
+    <string name="tuning_editor_save">Speichern</string>
+    <string name="tuning_editor_instrument">Instrument: %1$s</string>
+    <string name="tuning_editor_name">Name</string>
+    <string name="tuning_editor_name_empty">Gib der Stimmung einen Namen</string>
+    <string name="tuning_editor_name_taken">Es gibt schon eine Stimmung mit diesem Namen</string>
+    <string name="tuning_editor_strings">Saiten</string>
+    <string name="tuning_editor_string">%1$s-Saite</string>
+    <string name="tuning_editor_lower">%1$s, einen Halbton tiefer</string>
+    <string name="tuning_editor_raise">%1$s, einen Halbton höher</string>
+
+    <string name="tuner_my_tunings">Meine Stimmungen</string>
+    <string name="tuner_tuning_options">Optionen für %1$s</string>
+    <string name="tuner_edit_tuning">Bearbeiten</string>
+    <string name="tuner_delete_tuning">Löschen</string>
+    <string name="tuner_delete_tuning_title">Diese Stimmung löschen?</string>
+    <string name="tuner_delete_tuning_text">„%1$s“ ist dann für immer weg.</string>
+    <string name="tuner_delete_tuning_cancel">Abbrechen</string>
+    <string name="tuner_strum_check">Anschlag-Check</string>
+    <string name="tuner_strum_waiting">Schlag alle leeren Saiten an</string>
+    <string name="tuner_strum_waiting_detail">Jede Saite zeigt zu tief, gestimmt oder zu hoch</string>
+    <string name="tuner_strum_hearing">Höre zu…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="one">%1$d Saite zu stimmen</item>
+        <item quantity="other">%1$d Saiten zu stimmen</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Nicht jede Saite war zu hören</string>
+    <string name="tuner_strum_all_in_tune">Alle Saiten gestimmt</string>
+    <string name="tuner_strum_tap_to_tune">Tippe auf eine Saite, um sie zu stimmen</string>
+    <string name="tuner_strum_again">Schlag erneut an oder tippe auf eine Saite, um sie zu stimmen</string>
+    <string name="tuner_strum_tune_string">%1$s stimmen</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, nicht gehört</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, noch nicht angeschlagen</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, weniger sicher</string>
+    <string name="tour_title">Rundgang</string>
+    <string name="tour_step_count">%1$d von %2$d</string>
+    <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
+    <string name="tour_meter">Wie weit du daneben liegst</string>
+    <string name="tour_note">Der Ton, den du spielst</string>
+    <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
+    <string name="tour_strings">Eine Saite festlegen</string>
+    <string name="tour_picker">Instrument und Stimmung wählen</string>
+    <string name="tour_mode">Saiten oder jeden Ton stimmen</string>
+    <string name="tour_navigation">Metronom und Einstellungen</string>
+    <string name="tour_skip">Überspringen</string>
+    <string name="tour_next">Weiter</string>
+    <string name="tour_done">Fertig</string>
+</resources>

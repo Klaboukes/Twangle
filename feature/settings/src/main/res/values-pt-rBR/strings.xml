@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Configurações</string>
+    <string name="settings_back">Voltar</string>
+
+    <string name="settings_group_tuning">Afinação</string>
+    <string name="settings_group_look">Aparência</string>
+    <string name="settings_group_while_tuning">Ao afinar</string>
+
+    <string name="settings_a4_title">Diapasão (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">A maioria das músicas usa 440 Hz. Orquestras costumam afinar em 442 Hz, grupos barrocos em 415 Hz.</string>
+    <string name="settings_a4_lower">Baixar A4 em 1 Hz</string>
+    <string name="settings_a4_raise">Subir A4 em 1 Hz</string>
+    <string name="settings_a4_reset">Voltar para %1$d Hz</string>
+
+    <string name="settings_notation_title">Nomes das notas</string>
+    <string name="settings_notation_sharps">Sustenidos: C, C♯, D …</string>
+    <string name="settings_notation_flats">Bemóis: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Precisão da afinação</string>
+    <string name="settings_in_tune_precision_relaxed">Tolerante: até 5 cents</string>
+    <string name="settings_in_tune_precision_precise">Precisa: até 2 cents</string>
+
+    <string name="settings_style_title">Estilo</string>
+    <string name="settings_theme_title">Claro ou escuro</string>
+    <string name="settings_theme_system">Padrão do sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_dynamic_color_title">Cores do papel de parede</string>
+    <string name="settings_dynamic_color_summary">Usar as cores do seu papel de parede</string>
+
+    <string name="settings_meter_look_title">Medidor</string>
+    <string name="settings_meter_look_classic">Clássico</string>
+    <string name="settings_meter_look_light_arc">Arco de luz</string>
+    <string name="settings_meter_look_spirit_level">Nível de bolha</string>
+    <string name="settings_meter_look_rolling_scale">Escala rolante</string>
+    <string name="settings_meter_look_comet">Cometa</string>
+    <string name="settings_meter_look_studio_meter">VU de estúdio</string>
+    <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
+    <string name="settings_in_tune_effect_calm">Suave</string>
+    <string name="settings_in_tune_effect_bold">Marcante</string>
+
+    <string name="settings_display_title">Exibição</string>
+    <string name="settings_display_needle">Ponteiro: o número de cents</string>
+    <string name="settings_display_wave">Onda: uma imagem em movimento, no estilo que você escolher</string>
+    <string name="settings_wave_look_title">Estilo da onda</string>
+    <string name="settings_wave_look_strobe">Estroboscópio</string>
+    <string name="settings_wave_look_ribbon">Fita</string>
+    <string name="settings_wave_look_dots">Pontos</string>
+    <string name="settings_wave_look_fireflies">Vaga-lumes</string>
+    <string name="settings_wave_look_loop">Laço</string>
+    <string name="settings_wave_in_tune_title">Quando afinado</string>
+    <string name="settings_wave_in_tune_breathe">Respirar suavemente</string>
+    <string name="settings_wave_in_tune_hold_still">Ficar totalmente parada</string>
+    <string name="settings_wave_look_ripples">Ondulações</string>
+    <string name="settings_keep_two_pane_landscape_title">Layout completo na horizontal</string>
+    <string name="settings_keep_two_pane_landscape_summary">Com o celular deitado, mostrar os controles ao lado do afinador em vez de um medidor grande</string>
+
+    <string name="settings_keep_screen_on_title">Manter a tela ligada</string>
+    <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto o afinador está aberto</string>
+    <string name="settings_vibrate_in_tune_title">Vibrar quando afinado</string>
+    <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota chega ao tom</string>
+    <string name="settings_show_tune_hint_title">Mostrar se é para subir ou baixar</string>
+    <string name="settings_show_tune_hint_summary">Diz para que lado girar a tarraxa enquanto uma nota está desafinada</string>
+    <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>
+    <string name="settings_show_signal_bars_summary">Para curiosos: barrinhas ao lado da nota mostram se o afinador ouve você bem. Toque nelas para ver os números</string>
+
+    <string name="settings_show_tour_title">Fazer um tour</string>
+    <string name="settings_show_tour_summary">Um tour rápido pelo afinador</string>
+    <string name="about_title">Sobre o Twangle</string>
+    <string name="settings_about_link_summary">Versão %1$s, privacidade e licenças</string>
+    <string name="settings_about_version">Versão %1$s</string>
+    <string name="settings_about_free_title">Grátis para sempre</string>
+    <string name="settings_about_free_summary">Sem anúncios, sem conta, sem compras no app e sem rastreamento. Nem agora, nem depois.</string>
+    <string name="settings_about_privacy_title">Privacidade</string>
+    <string name="settings_about_privacy_summary">O Twangle não coleta nenhum dado sobre você. O microfone só fica ligado enquanto a tela do afinador está aberta. O som é analisado ao vivo e nunca é gravado, salvo ou enviado. O Twangle não tem permissão de internet, então não pode enviar nada para lugar nenhum. Suas configurações ficam salvas só no seu celular.</string>
+    <string name="settings_about_credits_title">Fontes e software de código aberto</string>
+    <string name="settings_about_credits_summary">O Twangle é feito com eles. Toque em um para ler a licença.</string>
+    <string name="settings_about_licence_open">Ler a licença</string>
+    <string name="settings_about_licence_close">Fechar</string>
+</resources>

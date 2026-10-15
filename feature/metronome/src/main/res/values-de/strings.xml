@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Schläge pro Takt</string>
+    <string name="metronome_tempo">Tempo, zum Ändern ziehen</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d Schlag pro Minute, %2$s</item>
+        <item quantity="other">%1$d Schläge pro Minute, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Langsamer</string>
+    <string name="metronome_faster">Schneller</string>
+    <string name="metronome_tap">Tap-Tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stopp</string>
+    <string name="metronome_vibrate">Im Takt vibrieren</string>
+    <string name="metronome_meter_2_4_spoken">Zweivierteltakt</string>
+    <string name="metronome_meter_3_4_spoken">Dreivierteltakt</string>
+    <string name="metronome_meter_4_4_spoken">Viervierteltakt</string>
+    <string name="metronome_meter_5_4_spoken">Fünfvierteltakt</string>
+    <string name="metronome_meter_6_8_spoken">Sechsachteltakt</string>
+    <string name="metronome_meter_7_8_spoken">Siebenachteltakt</string>
+</resources>

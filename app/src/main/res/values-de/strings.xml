@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Stimmgerät</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="widget_name">Stimmgerät</string>
+    <string name="widget_description">Zeigt dein Instrument und deine Stimmung. Ein Tippen öffnet das Stimmgerät.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Stimmgerät öffnen</string>
+    <string name="widget_preview_title">Gitarre · Standard</string>
+</resources>

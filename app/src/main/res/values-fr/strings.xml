@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Accordeur</string>
+    <string name="nav_metronome">Métronome</string>
+    <string name="nav_settings">Paramètres</string>
+    <string name="widget_name">Accordeur</string>
+    <string name="widget_description">Affiche votre instrument et votre accordage. Touchez pour ouvrir l\'accordeur.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Ouvrir l\'accordeur</string>
+    <string name="widget_preview_title">Guitare · Standard</string>
+</resources>

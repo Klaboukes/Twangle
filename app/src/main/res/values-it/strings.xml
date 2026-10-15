@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Accordatore</string>
+    <string name="nav_metronome">Metronomo</string>
+    <string name="nav_settings">Impostazioni</string>
+    <string name="widget_name">Accordatore</string>
+    <string name="widget_description">Mostra il tuo strumento e l\'accordatura. Un tocco apre l\'accordatore.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Apri l\'accordatore</string>
+    <string name="widget_preview_title">Chitarra · Standard</string>
+</resources>

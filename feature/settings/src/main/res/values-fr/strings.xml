@@ -1,0 +1,83 @@
+<resources>
+    <!-- French typography: a no-break space (U+00A0) before ":" so the colon never starts a line. -->
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_back">Retour</string>
+
+    <string name="settings_group_tuning">Accordage</string>
+    <string name="settings_group_look">Apparence</string>
+    <string name="settings_group_while_tuning">Pendant l\'accordage</string>
+
+    <string name="settings_a4_title">Diapason (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">La plupart des musiques utilisent 440 Hz. Les orchestres s\'accordent souvent à 442 Hz, les ensembles baroques à 415 Hz.</string>
+    <string name="settings_a4_lower">Baisser A4 de 1 Hz</string>
+    <string name="settings_a4_raise">Monter A4 de 1 Hz</string>
+    <string name="settings_a4_reset">Revenir à %1$d Hz</string>
+
+    <string name="settings_notation_title">Noms des notes</string>
+    <string name="settings_notation_sharps">Dièses : C, C♯, D …</string>
+    <string name="settings_notation_flats">Bémols : C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi : Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Précision de justesse</string>
+    <string name="settings_in_tune_precision_relaxed">Souple : à 5 cents près</string>
+    <string name="settings_in_tune_precision_precise">Précise : à 2 cents près</string>
+
+    <string name="settings_style_title">Style</string>
+    <string name="settings_theme_title">Clair ou sombre</string>
+    <string name="settings_theme_system">Selon le système</string>
+    <string name="settings_theme_light">Clair</string>
+    <string name="settings_theme_dark">Sombre</string>
+    <string name="settings_dynamic_color_title">Couleurs du fond d\'écran</string>
+    <string name="settings_dynamic_color_summary">Utiliser les couleurs de votre fond d\'écran</string>
+
+    <string name="settings_meter_look_title">Cadran</string>
+    <string name="settings_meter_look_classic">Classique</string>
+    <string name="settings_meter_look_light_arc">Arc lumineux</string>
+    <string name="settings_meter_look_spirit_level">Niveau à bulle</string>
+    <string name="settings_meter_look_rolling_scale">Échelle défilante</string>
+    <string name="settings_meter_look_comet">Comète</string>
+    <string name="settings_meter_look_studio_meter">Vumètre</string>
+    <string name="settings_in_tune_effect_title">Effet de justesse</string>
+    <string name="settings_in_tune_effect_calm">Discret</string>
+    <string name="settings_in_tune_effect_bold">Marqué</string>
+
+    <string name="settings_display_title">Affichage</string>
+    <string name="settings_display_needle">Aiguille : le nombre de cents</string>
+    <string name="settings_display_wave">Onde : une image animée, dans le style choisi</string>
+    <string name="settings_wave_look_title">Style d\'onde</string>
+    <string name="settings_wave_look_strobe">Stroboscope</string>
+    <string name="settings_wave_look_ribbon">Ruban</string>
+    <string name="settings_wave_look_dots">Points</string>
+    <string name="settings_wave_look_fireflies">Lucioles</string>
+    <string name="settings_wave_look_loop">Boucle</string>
+    <string name="settings_wave_in_tune_title">Une fois juste</string>
+    <string name="settings_wave_in_tune_breathe">Respirer doucement</string>
+    <string name="settings_wave_in_tune_hold_still">Rester parfaitement immobile</string>
+    <string name="settings_wave_look_ripples">Ondulations</string>
+    <string name="settings_keep_two_pane_landscape_title">Affichage complet à l\'horizontale</string>
+    <string name="settings_keep_two_pane_landscape_summary">Téléphone tourné, afficher les commandes à côté de l\'accordeur plutôt qu\'un grand cadran</string>
+
+    <string name="settings_keep_screen_on_title">Garder l\'écran allumé</string>
+    <string name="settings_keep_screen_on_summary">L\'écran reste allumé tant que l\'accordeur est ouvert</string>
+    <string name="settings_vibrate_in_tune_title">Vibrer quand c\'est juste</string>
+    <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
+    <string name="settings_show_tune_hint_title">Indiquer plus haut ou plus bas</string>
+    <string name="settings_show_tune_hint_summary">Indique dans quel sens tourner la mécanique tant qu\'une note n\'est pas juste</string>
+    <string name="settings_show_signal_bars_title">Afficher les barres de signal</string>
+    <string name="settings_show_signal_bars_summary">Pour les curieux : de petites barres près de la note montrent si l\'accordeur vous entend bien. Touchez-les pour voir les chiffres</string>
+
+    <string name="settings_show_tour_title">Visite guidée</string>
+    <string name="settings_show_tour_summary">Une courte visite de l\'accordeur</string>
+    <string name="about_title">À propos de Twangle</string>
+    <string name="settings_about_link_summary">Version %1$s, confidentialité et licences</string>
+    <string name="settings_about_version">Version %1$s</string>
+    <string name="settings_about_free_title">Gratuit pour toujours</string>
+    <string name="settings_about_free_summary">Pas de pub, pas de compte, pas d\'achats intégrés, pas de pistage. Ni maintenant, ni plus tard.</string>
+    <string name="settings_about_privacy_title">Confidentialité</string>
+    <string name="settings_about_privacy_summary">Twangle ne collecte aucune donnée sur vous. Le micro n\'est actif que lorsque l\'écran de l\'accordeur est ouvert. Le son est analysé en direct, jamais enregistré, sauvegardé ni envoyé. Twangle n\'a pas l\'autorisation d\'accéder à Internet, il ne peut donc rien envoyer nulle part. Vos réglages restent uniquement sur votre téléphone.</string>
+    <string name="settings_about_credits_title">Polices et logiciels libres</string>
+    <string name="settings_about_credits_summary">Twangle est fait avec eux. Touchez-en un pour lire sa licence.</string>
+    <string name="settings_about_licence_open">Lire la licence</string>
+    <string name="settings_about_licence_close">Fermer</string>
+</resources>

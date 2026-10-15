@@ -1,0 +1,137 @@
+<resources>
+    <!-- French typography: a no-break space (U+00A0) before ":" and "?" and inside « ». -->
+    <string name="mic_permission_title">Twangle a besoin de votre micro</string>
+    <string name="mic_permission_intro">Pour accorder, Twangle écoute votre instrument. Le son est analysé sur votre téléphone, jamais enregistré ni envoyé.</string>
+    <string name="mic_permission_rationale">Sans le micro, Twangle ne peut pas entendre vos cordes, ni savoir si elles sont justes. Le son ne quitte jamais votre téléphone.</string>
+    <string name="mic_permission_settings_hint">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations, puis Micro, et choisissez Autoriser.</string>
+    <string name="mic_permission_allow">Autoriser le micro</string>
+    <string name="mic_permission_open_settings">Ouvrir les paramètres</string>
+
+    <string name="error_mic_permission">L\'accès au micro a été désactivé. Autorisez-le à nouveau pour continuer à accorder.</string>
+    <string name="error_mic_busy">Une autre app utilise le micro. Fermez-la, puis réessayez.</string>
+    <string name="error_mic_unavailable">Impossible d\'ouvrir le micro sur ce téléphone.</string>
+    <string name="error_mic_stopped">Le micro s\'est arrêté de façon inattendue.</string>
+    <string name="error_retry">Réessayer</string>
+
+    <string name="tuner_mode_strings">Cordes</string>
+    <string name="tuner_mode_chromatic">Chromatique</string>
+    <string name="tuner_show_controls">Afficher les commandes</string>
+
+    <string name="tuning_standard">Standard</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Un demi-ton plus bas</string>
+    <string name="tuning_full_step_down">Un ton plus bas</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">Guitare</string>
+    <string name="instrument_guitar_7">Guitare 7 cordes</string>
+    <string name="instrument_guitar_8">Guitare 8 cordes</string>
+    <string name="instrument_bass_4">Basse</string>
+    <string name="instrument_bass_5">Basse 5 cordes</string>
+    <string name="instrument_ukulele">Ukulélé</string>
+    <string name="instrument_violin">Violon</string>
+    <string name="instrument_viola">Alto</string>
+    <string name="instrument_cello">Violoncelle</string>
+    <string name="instrument_mandolin">Mandoline</string>
+    <string name="tuner_hint_play_string">Jouez une corde</string>
+    <string name="tuner_hint_play_note">Jouez une note</string>
+    <string name="tuner_hint_play_locked_string">Jouez la corde %1$s</string>
+    <string name="tuner_string_lock">Verrouiller sur cette corde</string>
+    <string name="tuner_string_unlock">Choisir les cordes automatiquement</string>
+    <string name="tuner_string_locked">Verrouillée</string>
+    <string name="tuner_string_play">Jouer %1$s</string>
+    <string name="tuner_string_stop_tone">Arrêter le son</string>
+    <string name="tuner_string_sounding">En cours</string>
+    <string name="tuner_string_locked_sounding">Verrouillée, en cours</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_cents_zero">0 cent</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="one">%1$d cent trop bas</item>
+        <item quantity="many">%1$d cents trop bas</item>
+        <item quantity="other">%1$d cents trop bas</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="one">%1$d cent trop haut</item>
+        <item quantity="many">%1$d cents trop haut</item>
+        <item quantity="other">%1$d cents trop haut</item>
+    </plurals>
+    <string name="tuner_in_tune">juste</string>
+    <string name="tuner_tune_up">Plus haut ↑</string>
+    <string name="tuner_tune_down">Plus bas ↓</string>
+    <string name="tuner_tip_too_soft">Jouez un peu plus fort</string>
+    <string name="tuner_tip_too_noisy">Trop de bruit ici</string>
+    <string name="tuner_tip_too_loud">Trop fort, éloignez le téléphone</string>
+    <string name="tuner_signal_bars">Barres de signal : %1$d sur %2$d</string>
+    <string name="tuner_signal_no_note">Signal : pas encore de note</string>
+    <string name="tuner_signal_show_figures">afficher les chiffres</string>
+    <string name="tuner_signal_title">Comment Twangle vous entend</string>
+    <string name="tuner_signal_volume">Volume</string>
+    <string name="tuner_signal_background">Bruit de fond</string>
+    <string name="tuner_signal_clarity">Clarté</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_tune_up">plus haut</string>
+    <string name="tuner_spoken_tune_down">plus bas</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s, %2$s</string>
+    <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">Changer d\'instrument ou d\'accordage</string>
+    <string name="tuner_picker_title">Instrument et accordage</string>
+
+    <string name="tuner_new_tuning">Nouvel accordage</string>
+
+    <string name="tuning_editor_title_edit">Modifier l\'accordage</string>
+    <string name="tuning_editor_close">Fermer sans enregistrer</string>
+    <string name="tuning_editor_save">Enregistrer</string>
+    <string name="tuning_editor_instrument">Instrument : %1$s</string>
+    <string name="tuning_editor_name">Nom</string>
+    <string name="tuning_editor_name_empty">Donnez un nom à l\'accordage</string>
+    <string name="tuning_editor_name_taken">Un accordage porte déjà ce nom</string>
+    <string name="tuning_editor_strings">Cordes</string>
+    <string name="tuning_editor_string">Corde %1$s</string>
+    <string name="tuning_editor_lower">%1$s, un demi-ton plus bas</string>
+    <string name="tuning_editor_raise">%1$s, un demi-ton plus haut</string>
+
+    <string name="tuner_my_tunings">Mes accordages</string>
+    <string name="tuner_tuning_options">Options pour %1$s</string>
+    <string name="tuner_edit_tuning">Modifier</string>
+    <string name="tuner_delete_tuning">Supprimer</string>
+    <string name="tuner_delete_tuning_title">Supprimer cet accordage ?</string>
+    <string name="tuner_delete_tuning_text">« %1$s » sera supprimé pour de bon.</string>
+    <string name="tuner_delete_tuning_cancel">Annuler</string>
+    <string name="tuner_strum_check">Test en grattant</string>
+    <string name="tuner_strum_waiting">Grattez toutes les cordes à vide</string>
+    <string name="tuner_strum_waiting_detail">Chaque corde indique trop bas, juste ou trop haut</string>
+    <string name="tuner_strum_hearing">Écoute…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="one">%1$d corde à accorder</item>
+        <item quantity="many">%1$d cordes à accorder</item>
+        <item quantity="other">%1$d cordes à accorder</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Certaines cordes n\'ont pas été entendues</string>
+    <string name="tuner_strum_all_in_tune">Toutes les cordes sont justes</string>
+    <string name="tuner_strum_tap_to_tune">Touchez une corde pour l\'accorder</string>
+    <string name="tuner_strum_again">Grattez à nouveau, ou touchez une corde pour l\'accorder</string>
+    <string name="tuner_strum_tune_string">Accorder %1$s</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, pas entendue</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, pas encore grattée</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, moins sûr</string>
+    <string name="tour_title">Visite guidée</string>
+    <string name="tour_step_count">%1$d sur %2$d</string>
+    <string name="tour_step_spoken">Étape %1$d sur %2$d. %3$s.</string>
+    <string name="tour_meter">Votre écart de justesse</string>
+    <string name="tour_note">La note que vous jouez</string>
+    <string name="tour_strum">Grattez pour tester toutes les cordes</string>
+    <string name="tour_strings">Verrouillez une corde</string>
+    <string name="tour_picker">Choisissez instrument et accordage</string>
+    <string name="tour_mode">Accordez des cordes ou toute note</string>
+    <string name="tour_navigation">Métronome et paramètres</string>
+    <string name="tour_skip">Passer</string>
+    <string name="tour_next">Suivant</string>
+    <string name="tour_done">Terminé</string>
+</resources>

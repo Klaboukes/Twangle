@@ -1,0 +1,15 @@
+<resources>
+    <string name="wear_play_note">Toca una nota</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="many">%1$s cents</item>
+        <item quantity="other">%1$s cents</item>
+    </plurals>
+    <string name="wear_in_tune">afinado</string>
+    <string name="wear_mic_needed">Twangle escucha tu instrumento con el micrófono del reloj.</string>
+    <string name="wear_allow_mic">Permitir micrófono</string>
+    <string name="wear_open_settings">Abrir ajustes</string>
+    <string name="wear_mic_busy">Otra app está usando el micrófono.</string>
+    <string name="wear_mic_unavailable">No se puede abrir el micrófono.</string>
+    <string name="wear_try_again">Reintentar</string>
+</resources>

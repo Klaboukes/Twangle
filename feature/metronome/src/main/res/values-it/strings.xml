@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Battiti per battuta</string>
+    <string name="metronome_tempo">Tempo, trascina per cambiare</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d battito al minuto, %2$s</item>
+        <item quantity="many">%1$d battiti al minuto, %2$s</item>
+        <item quantity="other">%1$d battiti al minuto, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Più lento</string>
+    <string name="metronome_faster">Più veloce</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Avvia</string>
+    <string name="metronome_stop">Ferma</string>
+    <string name="metronome_vibrate">Vibra a tempo</string>
+    <string name="metronome_meter_2_4_spoken">Tempo in due quarti</string>
+    <string name="metronome_meter_3_4_spoken">Tempo in tre quarti</string>
+    <string name="metronome_meter_4_4_spoken">Tempo in quattro quarti</string>
+    <string name="metronome_meter_5_4_spoken">Tempo in cinque quarti</string>
+    <string name="metronome_meter_6_8_spoken">Tempo in sei ottavi</string>
+    <string name="metronome_meter_7_8_spoken">Tempo in sette ottavi</string>
+</resources>
