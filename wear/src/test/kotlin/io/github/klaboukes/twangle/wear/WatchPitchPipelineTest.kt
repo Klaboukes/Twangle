@@ -74,6 +74,19 @@ class WatchPitchPipelineTest {
     }
 
     @Test
+    fun `a microphone that opens at 16 kHz instead of 48 kHz reads the same note`() = runTest {
+        val rate = 16_000
+        val recorder = FakeAudioRecorder(
+            TestSignals.sine(220f, length = rate, sampleRate = rate),
+            AudioConfig(),
+            openedConfig = AudioConfig.forSampleRate(rate),
+        )
+        val states = WatchPitchPipeline(recorder, dspDispatcher = StandardTestDispatcher(testScheduler)).states().toList()
+
+        assertEquals(WatchTunerState.Detected(Note.of(PitchClass.A, 3), 0, inTune = true), states.lastDetected())
+    }
+
+    @Test
     fun `in tune only after 300 ms within 5 cents`() = runTest {
         val states = statesFor(TestSignals.sine(440f * 1.002f, length = 48_000)) // +3.5 cents
         val readings = states.filterIsInstance<WatchTunerState.Detected>()

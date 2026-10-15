@@ -15,7 +15,10 @@ sealed class AudioRecorderException(message: String, cause: Throwable? = null) :
     class MicrophoneBusy(message: String = "The microphone is in use by another app", cause: Throwable? = null) :
         AudioRecorderException(message, cause)
 
-    /** Recording started but a read failed, e.g. the audio server restarted. Retrying may work. */
-    class ReadFailed(val errorCode: Int) :
-        AudioRecorderException("AudioRecord.read failed with code $errorCode")
+    /**
+     * Recording started but a read failed, e.g. the audio server restarted, or reads kept coming
+     * back empty ([errorCode] 0). Retrying may work.
+     */
+    class ReadFailed(val errorCode: Int, message: String = "AudioRecord.read failed with code $errorCode") :
+        AudioRecorderException(message)
 }

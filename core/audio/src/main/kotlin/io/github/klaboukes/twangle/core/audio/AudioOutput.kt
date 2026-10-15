@@ -49,14 +49,18 @@ internal object AudioOutput {
         return track
     }
 
-    /** Blocks until [count] samples of [buffer] are queued. */
+    /**
+     * Blocks until [count] samples of [buffer] are queued. A failing write, or a run of writes
+     * that take nothing (a track the system stopped), throws [IllegalStateException] rather than
+     * spinning; the players end their session quietly on it.
+     */
     fun write(track: AudioTrack, buffer: FloatArray, count: Int) {
-        var done = 0
-        while (done < count) {
-            val n = track.write(buffer, done, count - done, AudioTrack.WRITE_BLOCKING)
-            check(n >= 0) { "AudioTrack.write failed: $n" }
-            done += n
-        }
+        transferFully(
+            count = count,
+            pause = ::pauseAfterEmptyStep,
+            onError = { throw IllegalStateException("AudioTrack.write failed: $it") },
+            onStalled = { throw IllegalStateException("AudioTrack.write took nothing $MAX_EMPTY_STEPS times in a row") },
+        ) { done -> track.write(buffer, done, count - done, AudioTrack.WRITE_BLOCKING) }
     }
 
     /** Stops and frees [track], ignoring a track that is already broken. */

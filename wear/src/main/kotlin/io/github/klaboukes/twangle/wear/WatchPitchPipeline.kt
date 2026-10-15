@@ -24,7 +24,8 @@ import kotlin.math.roundToInt
  * the phone's [InTuneDetector] (within 5 cents for 300 ms, released past 7) for the in-tune ring.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so a watch
- * that records at 16 kHz gets the same ≈ 85 ms window and ≈ 21 ms hop as a phone at 48 kHz.
+ * that records at 16 kHz gets the same ≈ 85 ms window and ≈ 21 ms hop as a phone at 48 kHz, also
+ * when the microphone opens at another rate than the recorder expected.
  *
  * A note that is lost for a moment stays on screen for [HOLD_SECONDS], and keeps "in tune" if
  * the same note comes back, so the watch never flickers between a reading and "Play a note".
@@ -41,30 +42,32 @@ class WatchPitchPipeline(
 
     /** [WatchTunerState.Listening] first, then each change of the reading. Failures end the flow. */
     fun states(): Flow<WatchTunerState> = flow {
-        val rate = recorder.config.sampleRate
-        if (rate !in AnalysisSettings.MIN_SAMPLE_RATE..AnalysisSettings.MAX_SAMPLE_RATE) {
-            throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
-        }
-        val settings = AnalysisSettings.forSampleRate(rate)
-        val assembler = settings.newFrameAssembler()
-        val frame = FloatArray(settings.windowSize)
-        val gate = SignalGate()
-        val sustain = settings.newSustainCheck()
-        // Only for SustainCheck: what the room sounds like between notes.
-        val noise = settings.newNoiseFloorTracker()
-        val detector = settings.newPitchDetector()
+        var analysis = Analysis(supportedRate())
         val smoother = PitchSmoother()
         val mapper = NoteMapper(a4Hz)
         val inTune = InTuneDetector()
-        val frameSeconds = settings.hopSeconds
-        val holdFrames = ceil(HOLD_SECONDS / frameSeconds).toInt()
         var lostFrames = 0
         var shownMidi = NO_NOTE
         var shownCents = 0
         var shownInTune = false
+        var first = true
 
         emit(WatchTunerState.Listening)
         recorder.chunks().collect { chunk ->
+            if (first) {
+                first = false
+                // The microphone may have opened at another rate than expected (AudioRecorder.config).
+                val rate = supportedRate()
+                if (rate != analysis.rate) analysis = Analysis(rate)
+            }
+            val assembler = analysis.assembler
+            val frame = analysis.frame
+            val gate = analysis.gate
+            val sustain = analysis.sustain
+            val noise = analysis.noise
+            val detector = analysis.detector
+            val frameSeconds = analysis.frameSeconds
+            val holdFrames = analysis.holdFrames
             var pos = 0
             while (pos < chunk.size) {
                 pos += assembler.push(chunk, pos, chunk.size - pos)
@@ -104,6 +107,28 @@ class WatchPitchPipeline(
             }
         }
     }.flowOn(dspDispatcher)
+
+    private fun supportedRate(): Int = recorder.config.sampleRate.also { rate ->
+        if (rate !in AnalysisSettings.MIN_SAMPLE_RATE..AnalysisSettings.MAX_SAMPLE_RATE) {
+            throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
+        }
+    }
+
+    // The frame-size-dependent part of the chain at one sample rate, made once per collection
+    // (again only if the microphone opened at another rate).
+    private class Analysis(val rate: Int) {
+        private val settings = AnalysisSettings.forSampleRate(rate)
+        val assembler = settings.newFrameAssembler()
+        val frame = FloatArray(settings.windowSize)
+        val gate = SignalGate()
+        val sustain = settings.newSustainCheck()
+
+        // Only for SustainCheck: what the room sounds like between notes.
+        val noise = settings.newNoiseFloorTracker()
+        val detector = settings.newPitchDetector()
+        val frameSeconds = settings.hopSeconds
+        val holdFrames = ceil(HOLD_SECONDS / frameSeconds).toInt()
+    }
 
     private companion object {
         const val NO_NOTE = Int.MIN_VALUE

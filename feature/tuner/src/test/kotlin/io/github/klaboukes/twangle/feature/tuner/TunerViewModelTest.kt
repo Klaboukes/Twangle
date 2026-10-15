@@ -214,6 +214,25 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `a mic silenced mid-session shows busy instead of listening`() = runTest(dispatcher) {
+        // A note, then Android hands the mic to a call: the recorder ends with MicrophoneBusy.
+        val recorder = FakeAudioRecorder(
+            TestSignals.sawtooth(110f, length = 48_000),
+            failure = AudioRecorderException.MicrophoneBusy(),
+        )
+        val vm = viewModel(recorder)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertTrue(vm.state.value is TunerUiState.Detected)
+
+        advanceTimeBy(1_000)
+
+        assertEquals(TunerUiState.Error(TunerError.MIC_BUSY), vm.state.value)
+        assertFalse(recorder.isRecording.value)
+    }
+
+    @Test
     fun `a busy mic shows an error and retry opens it again`() = runTest(dispatcher) {
         val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
         val vm = viewModel(recorder)

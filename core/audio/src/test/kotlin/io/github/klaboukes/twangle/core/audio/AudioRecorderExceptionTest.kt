@@ -15,6 +15,13 @@ class AudioRecorderExceptionTest {
     }
 
     @Test
+    fun `a stuck read can say why`() {
+        val e = AudioRecorderException.ReadFailed(0, "nothing came")
+        assertEquals(0, e.errorCode)
+        assertEquals("nothing came", e.message)
+    }
+
+    @Test
     fun `causes are kept for diagnostics`() {
         val cause = IllegalStateException("start failed")
         assertSame(cause, AudioRecorderException.MicrophoneBusy(cause = cause).cause)

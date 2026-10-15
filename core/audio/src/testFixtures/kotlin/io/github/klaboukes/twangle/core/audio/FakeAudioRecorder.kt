@@ -17,16 +17,22 @@ import kotlinx.coroutines.flow.flow
  * - [failure], if set, ends the flow after the signal (immediately if the signal is empty), the way
  *   [AndroidAudioRecorder] reports errors.
  * - Like the real recorder it reuses one array, so code that holds on to chunks breaks in tests too.
+ * - [openedConfig], if set, becomes [config] when the "mic" opens, like a real microphone that
+ *   refuses its usual rate and opens at another one; [signal] is then at that rate.
  * - [isRecording] and [startCount] let tests check that the "mic" is only open while needed.
  *
  * Use [signal] from the `:core:dsp` test fixtures (`TestSignals`) to play synthetic notes.
  */
 class FakeAudioRecorder(
     var signal: FloatArray = FloatArray(0),
-    override val config: AudioConfig = AudioConfig(),
+    config: AudioConfig = AudioConfig(),
     var loop: Boolean = false,
     var failure: AudioRecorderException? = null,
+    private val openedConfig: AudioConfig? = null,
 ) : AudioRecorder {
+
+    override var config: AudioConfig = config
+        private set
 
     private val recording = MutableStateFlow(false)
 
@@ -42,6 +48,7 @@ class FakeAudioRecorder(
 
     override fun chunks(): Flow<FloatArray> = flow {
         startCount++
+        openedConfig?.let { config = it }
         recording.value = true
         try {
             val chunk = FloatArray(config.chunkSize)

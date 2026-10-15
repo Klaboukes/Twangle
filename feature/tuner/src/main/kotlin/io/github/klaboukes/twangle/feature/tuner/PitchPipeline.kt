@@ -53,7 +53,8 @@ data class PitchReading(
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside
  * [AnalysisSettings.MIN_SAMPLE_RATE]..[AnalysisSettings.MAX_SAMPLE_RATE] ends the flow with
- * [AudioRecorderException.InitializationFailed].
+ * [AudioRecorderException.InitializationFailed]. If the microphone opens at another rate than
+ * the recorder expected, the frame sizes follow it from the first chunk.
  *
  * The DSP objects and the frame buffer are created once per collection, so the per-frame loop
  * doesn't allocate; only the small immutable reading handed to the UI is new each frame. Chunks
@@ -83,20 +84,25 @@ class PitchPipeline(
      * chunk and must not allocate.
      */
     fun listen(range: () -> PitchRange = { PitchRange.STANDARD }, strumStrings: () -> FloatArray?): Flow<PipelineReading> = flow {
-        val rate = sampleRate
-        if (rate !in SUPPORTED_RATES) {
-            throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
-        }
-        val standard = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.STANDARD))
-        val low = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.LOW))
-        val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
-        val gate = SignalGate()
-        val noise = standard.settings.newNoiseFloorTracker()
+        var tuner = TunerAnalysis(supportedRate())
         // Made the first time strum check starts: its buffers are large.
         var strum: StrumAnalysis? = null
         var strumming = false
+        var first = true
 
         recorder.chunks().collect { chunk ->
+            if (first) {
+                first = false
+                // The microphone may have opened at another rate than expected (AudioRecorder.config).
+                val rate = supportedRate()
+                if (rate != tuner.rate) tuner = TunerAnalysis(rate)
+            }
+            val rate = tuner.rate
+            val standard = tuner.standard
+            val low = tuner.low
+            val assembler = tuner.assembler
+            val gate = tuner.gate
+            val noise = tuner.noise
             val strings = strumStrings()
             if (strings != null) {
                 val analysis = strum ?: StrumAnalysis(rate).also { strum = it }
@@ -146,6 +152,20 @@ class PitchPipeline(
             }
         }
     }.flowOn(dspDispatcher)
+
+    private fun supportedRate(): Int = sampleRate.also { rate ->
+        if (rate !in SUPPORTED_RATES) throw AudioRecorderException.InitializationFailed("Unsupported sample rate $rate Hz")
+    }
+
+    // Everything the tuner needs at one sample rate, made once per collection (again only if the
+    // microphone opened at another rate).
+    private class TunerAnalysis(val rate: Int) {
+        val standard = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.STANDARD))
+        val low = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.LOW))
+        val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
+        val gate = SignalGate()
+        val noise = standard.settings.newNoiseFloorTracker()
+    }
 
     // The frame buffer and detector for one range, made once per collection.
     private class Analysis(val settings: AnalysisSettings) {

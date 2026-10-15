@@ -5,7 +5,11 @@ import kotlinx.coroutines.flow.Flow
 /** Live microphone audio as a stream of fixed-size chunks. */
 interface AudioRecorder {
 
-    /** Sample rate and chunk size of the audio from [chunks]. */
+    /**
+     * Sample rate and chunk size of the audio from [chunks]. It may change when the microphone
+     * opens (a device that refuses its usual rate records at another one), so read it again once
+     * the first chunk has come.
+     */
     val config: AudioConfig
 
     /** The microphone input in use while [chunks] is being collected, if known. For diagnostics. */

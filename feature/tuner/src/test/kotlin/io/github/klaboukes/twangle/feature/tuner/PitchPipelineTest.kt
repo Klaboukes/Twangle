@@ -99,6 +99,39 @@ class PitchPipelineTest {
     }
 
     @Test
+    fun `a microphone that opens at another rate than expected is still read correctly`() = runTest {
+        // The phone refused 48 kHz, so the mic opened at 44.1 kHz; frame sizes must follow.
+        val opened = AudioConfig.forSampleRate(44_100)
+        val signal = TestSignals.sine(196f, length = 30 * opened.chunkSize, sampleRate = 44_100)
+        val recorder = FakeAudioRecorder(signal, AudioConfig(), openedConfig = opened)
+        val readings = PitchPipeline(recorder, StandardTestDispatcher(testScheduler)).readings().toList()
+
+        // First frame after one 3763-sample window, then one per 941-sample hop.
+        assertEquals((30 * 941 - 3763) / 941 + 1, readings.size)
+        assertTrue(readings.all { abs(cents(it.frequencyHz, 196f)) < 1f })
+        assertEquals(44_100, recorder.config.sampleRate)
+    }
+
+    @Test
+    fun `a microphone silenced mid-note ends the readings with a busy error`() = runTest {
+        val recorder = FakeAudioRecorder(
+            TestSignals.sawtooth(110f, length = 24 * 1024),
+            failure = AudioRecorderException.MicrophoneBusy(),
+        )
+        val readings = mutableListOf<PitchReading>()
+        var failure: Throwable? = null
+        PitchPipeline(recorder, StandardTestDispatcher(testScheduler)).readings()
+            .catch { failure = it }
+            .collect { readings += it }
+
+        // The note was read until the end (the last hop may be cut off by the failure).
+        assertTrue("${readings.size} readings", readings.size >= 20)
+        assertTrue(readings.all { it.isPitched })
+        assertTrue("got $failure", failure is AudioRecorderException.MicrophoneBusy)
+        assertFalse(recorder.isRecording.value)
+    }
+
+    @Test
     fun `low headset-style rates work end to end at the same pace`() = runTest {
         for (rate in listOf(8_000, 16_000)) {
             val config = AudioConfig.forSampleRate(rate)
