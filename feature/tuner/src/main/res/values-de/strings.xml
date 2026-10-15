@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle braucht dein Mikrofon</string>
-    <string name="mic_permission_intro">Zum Stimmen hört Twangle deinem Instrument zu. Der Ton wird auf deinem Handy analysiert und nie aufgenommen oder gesendet.</string>
-    <string name="mic_permission_rationale">Ohne Mikrofon hört Twangle deine Saiten nicht und kann nicht sagen, ob sie gestimmt sind. Der Ton verlässt nie dein Handy.</string>
+    <string name="mic_permission_intro">Zum Stimmen hört Twangle deinem Instrument zu. Der Ton wird auf deinem Gerät analysiert und nie aufgenommen oder gesendet.</string>
+    <string name="mic_permission_rationale">Ohne Mikrofon hört Twangle deine Saiten nicht und kann nicht sagen, ob sie gestimmt sind. Der Ton verlässt nie dein Gerät.</string>
     <string name="mic_permission_settings_hint">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen, dann auf Mikrofon, und erlaube den Zugriff während der Nutzung der App.</string>
     <string name="mic_permission_settings_hint_switch">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen und schalte Mikrofon ein.</string>
     <string name="mic_permission_allow">Mikrofon erlauben</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">Der Mikrofonzugriff wurde ausgeschaltet. Erlaube ihn wieder, um weiter zu stimmen.</string>
     <string name="error_mic_busy">Eine andere App nutzt das Mikrofon. Schließe sie und versuche es erneut.</string>
-    <string name="error_mic_unavailable">Das Mikrofon ließ sich auf diesem Handy nicht öffnen.</string>
+    <string name="error_mic_unavailable">Das Mikrofon ließ sich auf diesem Gerät nicht öffnen.</string>
     <string name="error_mic_stopped">Das Mikrofon hat unerwartet aufgehört.</string>
     <string name="error_retry">Erneut versuchen</string>
 
     <string name="tuner_mode_strings">Saiten</string>
     <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
+    <string name="tuner_compact_tap_hint">Tippen, um die Bedienelemente zu zeigen</string>
 
     <string name="tuning_standard">Standard</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -76,6 +77,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">höher stimmen</string>
     <string name="tuner_spoken_tune_down">tiefer stimmen</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

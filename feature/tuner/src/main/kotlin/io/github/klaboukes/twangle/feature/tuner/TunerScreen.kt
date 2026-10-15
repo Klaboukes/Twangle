@@ -1,6 +1,10 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -51,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -349,6 +354,9 @@ object TunerTestTags {
     const val SIGNAL_BARS = "tuner_signal_bars"
     const val SIGNAL_FIGURES = "tuner_signal_figures"
 
+    /** The signal bars as drawn, in their small slot; [SIGNAL_BARS] is the 48 dp button around them. */
+    const val SIGNAL_BARS_ICON = "tuner_signal_bars_icon"
+
     /** The instrument and tuning panel, opened from the navigation bar's Tuning item. */
     const val PICKER_PANEL = "tuner_picker_panel"
 
@@ -367,6 +375,9 @@ object TunerTestTags {
 
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
+
+    /** The compact layout's "Tap to show the controls" line, shown for a few seconds after it appears. */
+    const val COMPACT_TAP_HINT = "tuner_compact_tap_hint"
 
     /** Strum check: its switch above the strings, its panel in the meter's place, and the line under it. */
     const val STRUM_TOGGLE = "tuner_strum_toggle"
@@ -611,6 +622,16 @@ fun TunerContent(
                         containsControls = true,
                     ) ?: COMPACT_CONTROLS_SHOWN_MS
                 }
+                // "Tap to show the controls" for a few seconds after the compact layout appears, or until a tap.
+                var tapHintShown by remember { mutableStateOf(true) }
+                val hintMillis = remember(accessibility) {
+                    accessibility?.calculateRecommendedTimeoutMillis(COMPACT_TAP_HINT_SHOWN_MS, containsText = true)
+                        ?: COMPACT_TAP_HINT_SHOWN_MS
+                }
+                LaunchedEffect(Unit) {
+                    delay(hintMillis)
+                    tapHintShown = false
+                }
                 // While the tour runs the controls stay, so it can point at them.
                 val showing = controlsShown || controlsAlwaysShown
                 LaunchedEffect(showing) { currentOnCompactShownChange(!showing) }
@@ -632,7 +653,11 @@ fun TunerContent(
                             gauge = gauge,
                             note = { note(false) },
                             below = { CompactExtraFor(state, mode, pictured) },
-                            onShowControls = { controlsShown = true },
+                            tapHint = tapHintShown,
+                            onShowControls = {
+                                tapHintShown = false
+                                controlsShown = true
+                            },
                         )
                     }
                 }
@@ -773,7 +798,8 @@ private fun TwoPaneLayout(
  * The compact landscape layout: the [gauge] as big as the space allows, beside the [note] with
  * [below] under it (the small string row or the chromatic numbers). No mode switch, strum check
  * switch or string buttons. A tap anywhere, or TalkBack's double tap on the screen's
- * "Show controls" button, calls [onShowControls]. An [error] shows its message and retry instead.
+ * "Show controls" button, calls [onShowControls]; while [tapHint], a quiet line at the bottom says
+ * so (TalkBack has the button instead). An [error] shows its message and retry instead.
  */
 @Composable
 private fun CompactLayout(
@@ -782,11 +808,12 @@ private fun CompactLayout(
     gauge: @Composable () -> Unit,
     note: @Composable () -> Unit,
     below: @Composable () -> Unit,
+    tapHint: Boolean,
     onShowControls: () -> Unit,
 ) {
     val showControls = stringResource(R.string.tuner_show_controls)
     val currentOnShowControls by rememberUpdatedState(onShowControls)
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .testTag(TunerTestTags.COMPACT)
@@ -798,8 +825,38 @@ private fun CompactLayout(
                     currentOnShowControls()
                     true
                 }
-            }
-            .padding(horizontal = 24.dp),
+            },
+    ) {
+        CompactRow(error, onRetry, gauge, note, below)
+        // Laid over the layout, so nothing moves when it fades out.
+        AnimatedVisibility(
+            visible = tapHint && error == null,
+            enter = fadeIn(tween(TAP_HINT_FADE_MS)),
+            exit = fadeOut(tween(TAP_HINT_FADE_MS)),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
+        ) {
+            Text(
+                stringResource(R.string.tuner_compact_tap_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                modifier = Modifier.testTag(TunerTestTags.COMPACT_TAP_HINT).semantics { hideFromAccessibility() },
+            )
+        }
+    }
+}
+
+/** The compact layout's meter beside the note column, or the [error]. */
+@Composable
+private fun CompactRow(
+    error: TunerError?,
+    onRetry: () -> Unit,
+    gauge: @Composable () -> Unit,
+    note: @Composable () -> Unit,
+    below: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterHorizontally),
     ) {
@@ -1187,6 +1244,9 @@ private val GAUGE_MIN_WIDTH = 160.dp
 
 /** Readout panes shorter than this (a phone on its side) get the compact note with the wave view or the hint. */
 private val COMPACT_PANE_HEIGHT = 420.dp
+
+/** The compact layout's "Tap to show the controls" fades in and out this gently. */
+private const val TAP_HINT_FADE_MS = 400
 
 /** In the compact layout the meter grows with the screen, up to this. */
 private val COMPACT_GAUGE_MAX_WIDTH = 840.dp

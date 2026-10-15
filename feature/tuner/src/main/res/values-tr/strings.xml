@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle\'ın mikrofona ihtiyacı var</string>
-    <string name="mic_permission_intro">Akort için Twangle enstrümanını dinler. Ses telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.</string>
-    <string name="mic_permission_rationale">Mikrofon olmadan Twangle tellerini duyamaz, bu yüzden akortlu olup olmadıklarını söyleyemez. Ses telefonundan hiç çıkmaz.</string>
+    <string name="mic_permission_intro">Akort için Twangle enstrümanını dinler. Ses cihazında analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.</string>
+    <string name="mic_permission_rationale">Mikrofon olmadan Twangle tellerini duyamaz, bu yüzden akortlu olup olmadıklarını söyleyemez. Ses cihazından hiç çıkmaz.</string>
     <string name="mic_permission_settings_hint">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e, sonra Mikrofon\'a dokun ve uygulama kullanılırken izin ver.</string>
     <string name="mic_permission_settings_hint_switch">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e dokun ve Mikrofon\'u aç.</string>
     <string name="mic_permission_allow">Mikrofona izin ver</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">Mikrofon erişimi kapatıldı. Akorda devam etmek için yeniden izin ver.</string>
     <string name="error_mic_busy">Mikrofonu başka bir uygulama kullanıyor. Onu kapat ve tekrar dene.</string>
-    <string name="error_mic_unavailable">Bu telefonda mikrofon açılamadı.</string>
+    <string name="error_mic_unavailable">Bu cihazda mikrofon açılamadı.</string>
     <string name="error_mic_stopped">Mikrofon beklenmedik şekilde durdu.</string>
     <string name="error_retry">Tekrar dene</string>
 
     <string name="tuner_mode_strings">Teller</string>
     <string name="tuner_mode_chromatic">Kromatik</string>
     <string name="tuner_show_controls">Kontrolleri göster</string>
+    <string name="tuner_compact_tap_hint">Kontrolleri göstermek için dokun</string>
 
     <string name="tuning_standard">Standart</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -76,6 +77,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">yükselt</string>
     <string name="tuner_spoken_tune_down">düşür</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

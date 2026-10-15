@@ -128,7 +128,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     private val frequency get() = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f))
     private val tuneUp get() = compose.onNodeWithText(context.getString(R.string.tuner_tune_up))
     private val targetString get() = compose.onNodeWithText("A2")
-    private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS)
+    private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     /**
@@ -258,6 +258,21 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             .performSemanticsAction(SemanticsActions.OnClick)
         compose.mainClock.advanceTimeBy(FADE_MS)
         modeSwitch.assertIsDisplayed()
+    }
+
+    /** A quiet "Tap to show the controls" when the compact layout appears, not for TalkBack, gone by itself. */
+    @Test
+    fun aQuietLineSaysATapShowsTheControls() {
+        compose.mainClock.autoAdvance = false
+        show()
+        val hint = compose.onNodeWithText(context.getString(R.string.tuner_compact_tap_hint))
+        hint.assertIsDisplayed()
+        assertTrue("TalkBack hears the hint", hint.fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
+        // Still there just before its time is up (no flicker), then gone.
+        compose.mainClock.advanceTimeBy(COMPACT_TAP_HINT_SHOWN_MS - FADE_MS)
+        hint.assertIsDisplayed()
+        compose.mainClock.advanceTimeBy(2 * FADE_MS)
+        hint.assertDoesNotExist()
     }
 
     /**

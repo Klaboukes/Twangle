@@ -218,8 +218,10 @@ private fun spokenStrumString(spokenName: String, string: StrumString?): String 
     val reading = when (string.verdict) {
         StrumVerdict.NOT_HEARD -> return stringResource(R.string.tuner_strum_spoken_not_heard, spokenName)
         StrumVerdict.IN_TUNE -> stringResource(R.string.tuner_in_tune)
-        StrumVerdict.FLAT -> pluralStringResource(R.plurals.tuner_cents_flat, cents, cents) + ", " + stringResource(R.string.tuner_spoken_tune_up)
-        StrumVerdict.SHARP -> pluralStringResource(R.plurals.tuner_cents_sharp, cents, cents) + ", " + stringResource(R.string.tuner_spoken_tune_down)
+        StrumVerdict.FLAT -> pluralStringResource(R.plurals.tuner_cents_flat, cents, cents) +
+            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_spoken_tune_up)
+        StrumVerdict.SHARP -> pluralStringResource(R.plurals.tuner_cents_sharp, cents, cents) +
+            stringResource(R.string.tuner_spoken_separator) + stringResource(R.string.tuner_spoken_tune_down)
     }
     val spoken = stringResource(R.string.tuner_strum_spoken_string, spokenName, reading)
     return if (string.sure) spoken else stringResource(R.string.tuner_strum_spoken_less_sure, spoken)

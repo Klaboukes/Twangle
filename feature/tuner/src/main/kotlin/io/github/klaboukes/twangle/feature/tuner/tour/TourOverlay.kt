@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
@@ -480,15 +481,19 @@ private fun TourBalloon(
                     liveRegion = LiveRegionMode.Polite
                 },
         )
+        val last = index == count - 1
         TourButtons(
-            skip = {
-                TextButton(
-                    onClick = onSkip,
-                    shape = tourButtonShape(style),
-                    colors = ButtonDefaults.textButtonColors(contentColor = onFill),
-                    contentPadding = PaddingValues(horizontal = SKIP_SHIFT, vertical = 6.dp),
-                    modifier = Modifier.testTag(TourTestTags.SKIP),
-                ) { Text(stringResource(R.string.tour_skip), style = buttonText(body)) }
+            // The last step has nothing left to skip: Done alone ends it.
+            skip = if (last) null else {
+                {
+                    TextButton(
+                        onClick = onSkip,
+                        shape = tourButtonShape(style),
+                        colors = ButtonDefaults.textButtonColors(contentColor = onFill),
+                        contentPadding = PaddingValues(horizontal = SKIP_SHIFT, vertical = 6.dp),
+                        modifier = Modifier.testTag(TourTestTags.SKIP),
+                    ) { Text(stringResource(R.string.tour_skip), style = buttonText(body)) }
+                }
             },
             next = {
                 Button(
@@ -503,7 +508,7 @@ private fun TourBalloon(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                     modifier = Modifier.testTag(TourTestTags.NEXT),
                 ) {
-                    Text(stringResource(if (index == count - 1) R.string.tour_done else R.string.tour_next), style = buttonText(body))
+                    Text(stringResource(if (last) R.string.tour_done else R.string.tour_next), style = buttonText(body))
                 }
             },
             modifier = Modifier.padding(top = 4.dp),
@@ -525,10 +530,15 @@ private fun tourButtonShape(style: VisualStyle): Shape = when (style) {
  * Skip tour at the start and Next at the end of one row; where the two don't fit side by side, Skip
  * on the first row and Next at the end of a second. Skip's text lines up with the balloon's text
  * ([SKIP_SHIFT] into the padding). Its widest is both side by side, so the balloon hugs them.
+ * Without [skip] (the last step), Next (Done) alone at the end of the row.
  */
 @Composable
-private fun TourButtons(skip: @Composable () -> Unit, next: @Composable () -> Unit, modifier: Modifier = Modifier) {
-    Layout(contents = listOf(skip, next), modifier = modifier, measurePolicy = TourButtonsPolicy)
+private fun TourButtons(skip: (@Composable () -> Unit)?, next: @Composable () -> Unit, modifier: Modifier = Modifier) {
+    if (skip == null) {
+        Box(modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) { next() }
+    } else {
+        Layout(contents = listOf(skip, next), modifier = modifier, measurePolicy = TourButtonsPolicy)
+    }
 }
 
 private object TourButtonsPolicy : MultiContentMeasurePolicy {

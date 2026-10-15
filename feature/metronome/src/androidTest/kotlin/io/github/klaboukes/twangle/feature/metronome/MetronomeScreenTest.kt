@@ -218,7 +218,7 @@ class MetronomeScreenTest {
     @Test
     fun dutchAtTwiceTheTextSizeOnItsSideIsWhollyShown() {
         show(locale = "nl", fontScale = 2f, size = PHONE_LANDSCAPE)
-        for (text in listOf("Tik tempo", "Start", "Trillen op de tel")) {
+        for (text in listOf("Tempo tikken", "Start", "Trillen op de tel")) {
             assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), text)
         }
         compose.onNodeWithContentDescription("Langzamer").assertExists()

@@ -41,7 +41,7 @@
     <string name="settings_meter_look_eclipse">Finsternis</string>
     <string name="settings_meter_look_arrows">Pfeile</string>
     <string name="settings_meter_look_light_bars">Lichtbalken</string>
-    <string name="settings_in_tune_effect_title">Effekt bei Treffer</string>
+    <string name="settings_in_tune_effect_title">Effekt, wenn gestimmt</string>
     <string name="settings_in_tune_effect_summary">Wie stark die Anzeige leuchtet, wenn ein Ton stimmt</string>
     <string name="settings_in_tune_effect_calm">Ruhig</string>
     <string name="settings_in_tune_effect_bold">Kräftig</string>
@@ -79,7 +79,7 @@
     <string name="settings_about_free_title">Für immer kostenlos</string>
     <string name="settings_about_free_summary">Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Nicht jetzt, nicht später.</string>
     <string name="settings_about_privacy_title">Datenschutz</string>
-    <string name="settings_about_privacy_summary">Twangle sammelt keine Daten über dich. Das Mikrofon ist nur an, solange das Stimmgerät offen ist. Der Ton wird live analysiert und nie aufgenommen, gespeichert oder gesendet. Twangle hat keine Internetberechtigung und kann daher nichts irgendwohin senden. Deine Einstellungen werden nur auf deinem Handy gespeichert.</string>
+    <string name="settings_about_privacy_summary">Twangle sammelt keine Daten über dich. Das Mikrofon ist nur an, solange das Stimmgerät offen ist. Der Ton wird live analysiert und nie aufgenommen, gespeichert oder gesendet. Twangle hat keine Internetberechtigung und kann daher nichts irgendwohin senden. Deine Einstellungen bleiben auf diesem Gerät (und in der Sicherung von Android selbst, wenn du sie eingeschaltet hast).</string>
     <string name="settings_about_credits_title">Schriften und Open-Source-Software</string>
     <string name="settings_about_credits_summary">Twangle ist damit gemacht. Tippe auf einen Eintrag, um seine Lizenz zu lesen.</string>
     <string name="settings_about_licence_open">Lizenz lesen</string>

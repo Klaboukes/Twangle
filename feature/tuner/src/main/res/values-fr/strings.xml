@@ -1,8 +1,8 @@
 <resources>
     <!-- French typography: a no-break space (U+00A0) before ":" and "?" and inside « ». -->
     <string name="mic_permission_title">Twangle a besoin de votre micro</string>
-    <string name="mic_permission_intro">Pour accorder, Twangle écoute votre instrument. Le son est analysé sur votre téléphone, jamais enregistré ni envoyé.</string>
-    <string name="mic_permission_rationale">Sans le micro, Twangle ne peut pas entendre vos cordes, ni savoir si elles sont justes. Le son ne quitte jamais votre téléphone.</string>
+    <string name="mic_permission_intro">Pour accorder, Twangle écoute votre instrument. Le son est analysé sur votre appareil, jamais enregistré ni envoyé.</string>
+    <string name="mic_permission_rationale">Sans le micro, Twangle ne peut pas entendre vos cordes, ni savoir si elles sont justes. Le son ne quitte jamais votre appareil.</string>
     <string name="mic_permission_settings_hint">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations, puis Micro, et autorisez-le pendant l\'utilisation de l\'appli.</string>
     <string name="mic_permission_settings_hint_switch">L\'accès au micro est désactivé pour Twangle. Ouvrez les paramètres, touchez Autorisations et activez Micro.</string>
     <string name="mic_permission_allow">Autoriser le micro</string>
@@ -10,13 +10,14 @@
 
     <string name="error_mic_permission">L\'accès au micro a été désactivé. Autorisez-le à nouveau pour continuer à accorder.</string>
     <string name="error_mic_busy">Une autre app utilise le micro. Fermez-la, puis réessayez.</string>
-    <string name="error_mic_unavailable">Impossible d\'ouvrir le micro sur ce téléphone.</string>
+    <string name="error_mic_unavailable">Impossible d\'ouvrir le micro sur cet appareil.</string>
     <string name="error_mic_stopped">Le micro s\'est arrêté de façon inattendue.</string>
     <string name="error_retry">Réessayer</string>
 
     <string name="tuner_mode_strings">Cordes</string>
     <string name="tuner_mode_chromatic">Chromatique</string>
     <string name="tuner_show_controls">Afficher les commandes</string>
+    <string name="tuner_compact_tap_hint">Touchez pour afficher les commandes</string>
 
     <string name="tuning_standard">Standard</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -78,6 +79,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">plus haut</string>
     <string name="tuner_spoken_tune_down">plus bas</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

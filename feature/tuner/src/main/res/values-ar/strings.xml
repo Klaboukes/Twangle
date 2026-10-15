@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">يحتاج Twangle إلى الميكروفون</string>
-    <string name="mic_permission_intro">ليضبط الدوزان، يستمع Twangle إلى آلتك. يُحلَّل الصوت على هاتفك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
-    <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر هاتفك أبدًا.</string>
+    <string name="mic_permission_intro">ليضبط الدوزان، يستمع Twangle إلى آلتك. يُحلَّل الصوت على جهازك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
+    <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر جهازك أبدًا.</string>
     <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واسمح بالوصول أثناء استخدام التطبيق.</string>
     <string name="mic_permission_settings_hint_switch">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، وشغّل «الميكروفون».</string>
     <string name="mic_permission_allow">اسمح بالميكروفون</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">أُوقف الوصول إلى الميكروفون. اسمح به مجددًا لمتابعة الضبط.</string>
     <string name="error_mic_busy">تطبيق آخر يستخدم الميكروفون. أغلقه، ثم حاول مرة أخرى.</string>
-    <string name="error_mic_unavailable">تعذّر فتح الميكروفون على هذا الهاتف.</string>
+    <string name="error_mic_unavailable">تعذّر فتح الميكروفون على هذا الجهاز.</string>
     <string name="error_mic_stopped">توقف الميكروفون فجأة.</string>
     <string name="error_retry">حاول مرة أخرى</string>
 
     <string name="tuner_mode_strings">الأوتار</string>
     <string name="tuner_mode_chromatic">كروماتي</string>
     <string name="tuner_show_controls">إظهار عناصر التحكم</string>
+    <string name="tuner_compact_tap_hint">انقر لإظهار عناصر التحكم</string>
 
     <string name="tuning_standard">قياسي</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -84,6 +85,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
     <string name="tuner_spoken_tune_up">شُدّ</string>
     <string name="tuner_spoken_tune_down">أرخِ</string>
+    <string name="tuner_spoken_separator">"، "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s، %2$s</string>
     <string name="tuner_spoken_picker">%1$s، %2$s</string>

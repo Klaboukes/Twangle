@@ -922,6 +922,17 @@ class TunerContentTest {
     }
 
     @Test
+    fun theSignalBarsButtonIsAtLeast48DpEachWayAroundTheBars() {
+        show(detected(-12.3f), signalBars = true)
+        val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
+        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
+        assertTrue("button ${button.width} wide", button.width >= 48.dp)
+        assertTrue("button ${button.height} tall", button.height >= 48.dp)
+        assertEquals("centred across the bars", (bars.left + bars.right).value / 2, (button.left + button.right).value / 2, 1f)
+        assertEquals("centred on the bars", (bars.top + bars.bottom).value / 2, (button.top + button.bottom).value / 2, 1f)
+    }
+
+    @Test
     fun tappingTheSignalBarsShowsTheFigures() {
         show(detected(-12.3f), signalBars = true, signalFigures = flowOf(SignalFigures(-31.6f, -55.2f, 0.92f)))
         compose.onNodeWithTag(TunerTestTags.SIGNAL_FIGURES).assertDoesNotExist()

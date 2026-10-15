@@ -24,11 +24,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -36,6 +39,7 @@ import io.github.klaboukes.twangle.feature.tuner.SignalBars
 import io.github.klaboukes.twangle.feature.tuner.SignalFigures
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -45,7 +49,8 @@ import kotlin.math.roundToInt
  *
  * A tap opens a small panel with the [figures] behind them: the volume, the room's background and the
  * note's clarity, collected only while the panel is open. TalkBack hears "Signal bars: 3 of 4" and
- * can open the panel the same way; the count isn't announced as it changes.
+ * can open the panel the same way; the count isn't announced as it changes. The button reaches
+ * past the bars to 48 dp each way, so it's easy to hit, while the bars keep their small slot.
  */
 @Composable
 fun SignalBarsButton(
@@ -67,13 +72,7 @@ fun SignalBarsButton(
     }
     val showFigures = stringResource(R.string.tuner_signal_show_figures)
     Box(modifier) {
-        Canvas(
-            Modifier
-                .fillMaxSize()
-                .testTag(TunerTestTags.SIGNAL_BARS)
-                .clickable(onClickLabel = showFigures, role = Role.Button) { open = true }
-                .semantics { contentDescription = description },
-        ) {
+        Canvas(Modifier.fillMaxSize().testTag(TunerTestTags.SIGNAL_BARS_ICON)) {
             val slot = size.width / SignalBars.MAX_BARS
             val barWidth = slot * BAR_WIDTH_SHARE
             val bottom = size.height * BARS_BOTTOM
@@ -90,10 +89,30 @@ fun SignalBarsButton(
                 )
             }
         }
+        // The button: at least 48 dp each way around the small bars, without taking more room than they do.
+        Box(
+            Modifier
+                .touchArea(MIN_TOUCH)
+                .testTag(TunerTestTags.SIGNAL_BARS)
+                .clickable(onClickLabel = showFigures, role = Role.Button) { open = true }
+                .semantics { contentDescription = description },
+        )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             SignalFiguresPanel(figures)
         }
     }
+}
+
+/**
+ * At least [side] each way, centred on the space this is given, which it reports as its own size:
+ * a touch area that reaches past a small drawing without moving anything around it.
+ */
+private fun Modifier.touchArea(side: Dp): Modifier = layout { measurable, constraints ->
+    val min = side.roundToPx()
+    val width = constraints.maxWidth
+    val height = constraints.maxHeight
+    val placeable = measurable.measure(Constraints.fixed(max(min, width), max(min, height)))
+    layout(width, height) { placeable.place((width - placeable.width) / 2, (height - placeable.height) / 2) }
 }
 
 /** The figures behind the bars, read live while the panel is open. */
@@ -131,6 +150,9 @@ private fun FigureRow(label: String, value: String) {
         Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
+
+/** The smallest touch area, each way (Android's accessibility guideline). */
+private val MIN_TOUCH = 48.dp
 
 /** Share of a bar's slot it fills; the rest is the gap. */
 private const val BAR_WIDTH_SHARE = 0.62f

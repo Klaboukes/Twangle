@@ -326,15 +326,20 @@ fun NoteDisplay(
             )
         }
         Box(contentAlignment = Alignment.Center) {
-            Row(
-                modifier = Modifier
+            // The pill's fill is clipped to its shape on a layer of its own, so the signal bars'
+            // 48 dp touch area can reach past the pill's edge.
+            Box(
+                Modifier
+                    .matchParentSize()
                     .clip(MaterialTheme.shapes.small)
                     .drawBehind {
                         drawRect(pillBase.value)
                         drawPillBloom(tuneColor, pillFill.value)
                         drawPillSheen(sheen.value)
-                    }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    },
+            )
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {

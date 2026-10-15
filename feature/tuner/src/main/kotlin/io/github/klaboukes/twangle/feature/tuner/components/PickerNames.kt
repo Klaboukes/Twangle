@@ -26,9 +26,12 @@ fun instrumentLabel(instrument: Instrument): String =
 internal fun openStrings(tuning: Tuning, notation: Notation): AnnotatedString =
     musicText(tuning.strings.joinToString(" ") { notation.nameIn(tuning, it.pitchClass) })
 
-/** Open strings as TalkBack says them, in instrument order, e.g. "E flat, A flat, D flat …". */
-internal fun spokenOpenStrings(tuning: Tuning, notation: Notation, speech: NoteNameSpeech): String =
-    tuning.strings.joinToString(", ") { speech.name(notation.nameIn(tuning, it.pitchClass)) }
+/**
+ * Open strings as TalkBack says them, in instrument order, e.g. "E flat, A flat, D flat …", with the
+ * language's own [separator] (`tuner_spoken_separator`: "، " in Arabic, "、" in Japanese).
+ */
+internal fun spokenOpenStrings(tuning: Tuning, notation: Notation, speech: NoteNameSpeech, separator: String): String =
+    tuning.strings.joinToString(separator) { speech.name(notation.nameIn(tuning, it.pitchClass)) }
 
 /** Every instrument's first preset is its "Standard" tuning. */
 private val standardTuningIds: Set<String> = Instruments.all.mapTo(HashSet()) { it.defaultTuning.id }

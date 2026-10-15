@@ -2,8 +2,8 @@
     <string name="tuner_placeholder_note" translatable="false">♪</string>
 
     <string name="mic_permission_title">Twangle needs your microphone</string>
-    <string name="mic_permission_intro">To tune, Twangle listens to your instrument. Sound is analysed on your phone and never recorded or sent anywhere.</string>
-    <string name="mic_permission_rationale">Without the microphone Twangle can\'t hear your strings, so it can\'t tell whether they\'re in tune. Sound never leaves your phone.</string>
+    <string name="mic_permission_intro">To tune, Twangle listens to your instrument. Sound is analysed on your device and never recorded or sent anywhere.</string>
+    <string name="mic_permission_rationale">Without the microphone Twangle can\'t hear your strings, so it can\'t tell whether they\'re in tune. Sound never leaves your device.</string>
     <string name="mic_permission_settings_hint">Microphone access is turned off for Twangle. Open Settings, tap Permissions, then Microphone, and choose to allow it while using the app.</string>
     <string name="mic_permission_settings_hint_switch">Microphone access is turned off for Twangle. Open Settings, tap Permissions, and turn on Microphone.</string>
     <string name="mic_permission_allow">Allow microphone</string>
@@ -12,7 +12,7 @@
     <!-- Errors when the microphone can't be used. -->
     <string name="error_mic_permission">Microphone access was turned off. Allow it again to keep tuning.</string>
     <string name="error_mic_busy">Another app is using the microphone. Close it, then try again.</string>
-    <string name="error_mic_unavailable">The microphone could not be opened on this phone.</string>
+    <string name="error_mic_unavailable">The microphone could not be opened on this device.</string>
     <string name="error_mic_stopped">The microphone stopped unexpectedly.</string>
     <string name="error_retry">Try again</string>
 
@@ -23,6 +23,8 @@
     <!-- Temporary, until the bottom bar: opens the metronome. -->
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>
+    <!-- A quiet line in the compact layout on its side, for a few seconds after it appears: a tap anywhere shows the controls. -->
+    <string name="tuner_compact_tap_hint">Tap to show the controls</string>
 
     <!-- Tuning presets, see Tunings in :core:dsp. -->
     <string name="tuning_standard">Standard</string>
@@ -100,6 +102,8 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">tune up</string>
     <string name="tuner_spoken_tune_down">tune down</string>
+    <!-- What TalkBack says between the parts of a list: "E flat, A flat, ...", "12 cents flat, tune up". Quoted to keep the space. -->
+    <string name="tuner_spoken_separator">", "</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <!-- A tuning in the instrument and tuning panel as TalkBack says it: %1$s its name, %2$s its open strings, e.g.

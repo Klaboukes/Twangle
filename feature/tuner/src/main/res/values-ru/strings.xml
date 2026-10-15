@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle нужен твой микрофон</string>
-    <string name="mic_permission_intro">Чтобы настраивать, Twangle слушает твой инструмент. Звук анализируется на телефоне и никогда не записывается и никуда не отправляется.</string>
-    <string name="mic_permission_rationale">Без микрофона Twangle не слышит твои струны и не может сказать, настроены ли они. Звук не покидает телефон.</string>
+    <string name="mic_permission_intro">Чтобы настраивать, Twangle слушает твой инструмент. Звук анализируется на устройстве и никогда не записывается и никуда не отправляется.</string>
+    <string name="mic_permission_rationale">Без микрофона Twangle не слышит твои струны и не может сказать, настроены ли они. Звук не покидает устройство.</string>
     <string name="mic_permission_settings_hint">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения», затем «Микрофон» и разреши доступ во время использования приложения.</string>
     <string name="mic_permission_settings_hint_switch">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения» и включи «Микрофон».</string>
     <string name="mic_permission_allow">Разрешить микрофон</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">Доступ к микрофону выключен. Разреши его снова, чтобы продолжить настройку.</string>
     <string name="error_mic_busy">Микрофон занят другим приложением. Закрой его и попробуй снова.</string>
-    <string name="error_mic_unavailable">Не удалось открыть микрофон на этом телефоне.</string>
+    <string name="error_mic_unavailable">Не удалось открыть микрофон на этом устройстве.</string>
     <string name="error_mic_stopped">Микрофон неожиданно отключился.</string>
     <string name="error_retry">Попробовать снова</string>
 
     <string name="tuner_mode_strings">Струны</string>
     <string name="tuner_mode_chromatic">Хроматический</string>
     <string name="tuner_show_controls">Показать управление</string>
+    <string name="tuner_compact_tap_hint">Нажми, чтобы показать управление</string>
 
     <string name="tuning_standard">Стандартный</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -80,6 +81,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">подтяни</string>
     <string name="tuner_spoken_tune_down">ослабь</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

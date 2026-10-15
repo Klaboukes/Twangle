@@ -130,7 +130,7 @@ class TunerStylesTest(private val style: VisualStyle) {
             add("frequency" to compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f)))
         }
         add("tune hint" to compose.onNodeWithText(context.getString(R.string.tuner_tune_up)))
-        add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS))
+        add("signal bars" to compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON))
         add("strum check switch" to compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE))
         strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
     }

@@ -344,7 +344,7 @@ internal fun TuningRow(
 ) {
     val scheme = MaterialTheme.colorScheme
     val speech = rememberNoteNameSpeech()
-    val spoken = stringResource(R.string.tuner_spoken_tuning, name, spokenOpenStrings(tuning, notation, speech))
+    val spoken = stringResource(R.string.tuner_spoken_tuning, name, spokenOpenStrings(tuning, notation, speech, stringResource(R.string.tuner_spoken_separator)))
     val shape = MaterialTheme.shapes.medium
     Row(
         modifier = modifier

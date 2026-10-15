@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle memerlukan mikrofon Anda</string>
-    <string name="mic_permission_intro">Untuk menyetem, Twangle mendengarkan instrumen Anda. Suara dianalisis di ponsel Anda dan tidak pernah direkam atau dikirim ke mana pun.</string>
-    <string name="mic_permission_rationale">Tanpa mikrofon, Twangle tidak bisa mendengar senar Anda, jadi tidak bisa tahu apakah senarnya sudah pas. Suara tidak pernah keluar dari ponsel Anda.</string>
+    <string name="mic_permission_intro">Untuk menyetem, Twangle mendengarkan instrumen Anda. Suara dianalisis di perangkat Anda dan tidak pernah direkam atau dikirim ke mana pun.</string>
+    <string name="mic_permission_rationale">Tanpa mikrofon, Twangle tidak bisa mendengar senar Anda, jadi tidak bisa tahu apakah senarnya sudah pas. Suara tidak pernah keluar dari perangkat Anda.</string>
     <string name="mic_permission_settings_hint">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu Mikrofon, dan izinkan saat aplikasi digunakan.</string>
     <string name="mic_permission_settings_hint_switch">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu aktifkan Mikrofon.</string>
     <string name="mic_permission_allow">Izinkan mikrofon</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">Akses mikrofon dinonaktifkan. Izinkan lagi untuk terus menyetem.</string>
     <string name="error_mic_busy">Aplikasi lain sedang memakai mikrofon. Tutup aplikasi itu, lalu coba lagi.</string>
-    <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka di ponsel ini.</string>
+    <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka di perangkat ini.</string>
     <string name="error_mic_stopped">Mikrofon berhenti tiba-tiba.</string>
     <string name="error_retry">Coba lagi</string>
 
     <string name="tuner_mode_strings">Senar</string>
     <string name="tuner_mode_chromatic">Kromatik</string>
     <string name="tuner_show_controls">Tampilkan kontrol</string>
+    <string name="tuner_compact_tap_hint">Ketuk untuk menampilkan kontrol</string>
 
     <string name="tuning_standard">Standar</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -73,6 +74,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">naikkan</string>
     <string name="tuner_spoken_tune_down">turunkan</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

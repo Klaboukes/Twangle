@@ -79,7 +79,7 @@
     <string name="settings_about_free_title">영원히 무료</string>
     <string name="settings_about_free_summary">광고, 계정, 인앱 구매, 추적이 없어요. 지금도, 앞으로도.</string>
     <string name="settings_about_privacy_title">개인정보 보호</string>
-    <string name="settings_about_privacy_summary">Twangle은 사용자에 관한 데이터를 전혀 수집하지 않아요. 마이크는 튜너 화면이 열려 있을 때만 켜져요. 소리는 실시간으로 분석될 뿐, 녹음되거나 저장되거나 전송되지 않아요. Twangle에는 인터넷 권한이 없어서 어디로도 아무것도 보낼 수 없어요. 설정은 휴대폰에만 저장돼요.</string>
+    <string name="settings_about_privacy_summary">Twangle은 사용자에 관한 데이터를 전혀 수집하지 않아요. 마이크는 튜너 화면이 열려 있을 때만 켜져요. 소리는 실시간으로 분석될 뿐, 녹음되거나 저장되거나 전송되지 않아요. Twangle에는 인터넷 권한이 없어서 어디로도 아무것도 보낼 수 없어요. 설정은 이 기기에 저장돼요(Android 자체 백업을 켜 두었다면 백업에도 포함돼요).</string>
     <string name="settings_about_credits_title">글꼴 및 오픈소스 소프트웨어</string>
     <string name="settings_about_credits_summary">Twangle은 이것들로 만들어졌어요. 하나를 탭하면 라이선스를 볼 수 있어요.</string>
     <string name="settings_about_licence_open">라이선스 보기</string>

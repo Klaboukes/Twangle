@@ -164,9 +164,11 @@ class TourStylesTest(private val style: VisualStyle) {
             compose.onNodeWithTag(TourTestTags.TEXT)
                 .assert(hasText(text))
                 .assertContentDescriptionEquals(string(R.string.tour_step_spoken, index + 1, order.size, text))
-            val next = string(if (index == order.lastIndex) R.string.tour_done else R.string.tour_next)
+            val last = index == order.lastIndex
+            val next = string(if (last) R.string.tour_done else R.string.tour_next)
             compose.onNodeWithTag(TourTestTags.NEXT).assert(hasText(next))
-            for ((tag, what) in listOf(TourTestTags.BALLOON to "balloon", TourTestTags.TEXT to "text", TourTestTags.SKIP to "Skip", TourTestTags.NEXT to "Next")) {
+            val buttons = if (last) listOf(TourTestTags.NEXT to "Next") else listOf(TourTestTags.SKIP to "Skip", TourTestTags.NEXT to "Next")
+            for ((tag, what) in listOf(TourTestTags.BALLOON to "balloon", TourTestTags.TEXT to "text") + buttons) {
                 val node = compose.onNodeWithTag(tag, useUnmergedTree = true)
                 assertWhollyShown(node, "$at $what", scroll = false)
                 val b = node.getBoundsInRoot()
@@ -174,7 +176,12 @@ class TourStylesTest(private val style: VisualStyle) {
                     fail("$at: $what at $b outside the window $window")
                 }
             }
-            assertWhollyShown(compose.onNode(hasText(string(R.string.tour_skip)), useUnmergedTree = true), "$at Skip's text", scroll = false)
+            if (last) {
+                // Nothing left to skip on the last step: Done alone.
+                compose.onNodeWithTag(TourTestTags.SKIP).assertDoesNotExist()
+            } else {
+                assertWhollyShown(compose.onNode(hasText(string(R.string.tour_skip)), useUnmergedTree = true), "$at Skip's text", scroll = false)
+            }
             assertWhollyShown(compose.onNode(hasText(next), useUnmergedTree = true), "$at Next's text", scroll = false)
             assertPointsAtItsPart(at, part, shown, density)
             compose.onNodeWithTag(TourTestTags.NEXT).performClick()

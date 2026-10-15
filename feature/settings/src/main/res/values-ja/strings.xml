@@ -79,7 +79,7 @@
     <string name="settings_about_free_title">ずっと無料</string>
     <string name="settings_about_free_summary">広告なし、アカウント不要、アプリ内課金なし、トラッキングなし。今もこれからも。</string>
     <string name="settings_about_privacy_title">プライバシー</string>
-    <string name="settings_about_privacy_summary">Twangle はあなたに関するデータを一切収集しません。マイクはチューナー画面を開いている間だけオンになります。音はその場で解析され、録音・保存・送信されることはありません。Twangle にはインターネットの権限がないため、どこにも何も送信できません。設定はお使いのスマートフォンにだけ保存されます。</string>
+    <string name="settings_about_privacy_summary">Twangle はあなたに関するデータを一切収集しません。マイクはチューナー画面を開いている間だけオンになります。音はその場で解析され、録音・保存・送信されることはありません。Twangle にはインターネットの権限がないため、どこにも何も送信できません。設定はこの端末に保存されます（Android 本体のバックアップをオンにしている場合は、そこにも含まれます）。</string>
     <string name="settings_about_credits_title">フォントとオープンソース ソフトウェア</string>
     <string name="settings_about_credits_summary">Twangle はこれらを使って作られています。タップするとライセンスを読めます。</string>
     <string name="settings_about_licence_open">ライセンスを読む</string>

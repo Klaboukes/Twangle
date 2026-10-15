@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle heeft je microfoon nodig</string>
-    <string name="mic_permission_intro">Om te stemmen luistert Twangle naar je instrument. Het geluid wordt op je telefoon geanalyseerd en nooit opgenomen of verstuurd.</string>
-    <string name="mic_permission_rationale">Zonder microfoon kan Twangle je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je telefoon nooit.</string>
+    <string name="mic_permission_intro">Om te stemmen luistert Twangle naar je instrument. Het geluid wordt op je apparaat geanalyseerd en nooit opgenomen of verstuurd.</string>
+    <string name="mic_permission_rationale">Zonder microfoon kan Twangle je snaren niet horen en dus niet zeggen of ze goed gestemd zijn. Het geluid verlaat je apparaat nooit.</string>
     <string name="mic_permission_settings_hint">De microfoon staat uit voor Twangle. Open Instellingen, tik op Machtigingen en dan op Microfoon, en sta hem toe terwijl je de app gebruikt.</string>
     <string name="mic_permission_settings_hint_switch">De microfoon staat uit voor Twangle. Open Instellingen, tik op Machtigingen en zet Microfoon aan.</string>
     <string name="mic_permission_allow">Microfoon toestaan</string>
@@ -10,7 +10,7 @@
     <!-- Errors when the microphone can't be used. -->
     <string name="error_mic_permission">De microfoon is uitgezet. Sta hem weer toe om verder te stemmen.</string>
     <string name="error_mic_busy">Een andere app gebruikt de microfoon. Sluit die app en probeer het opnieuw.</string>
-    <string name="error_mic_unavailable">De microfoon kon op deze telefoon niet worden geopend.</string>
+    <string name="error_mic_unavailable">De microfoon kon op dit apparaat niet worden geopend.</string>
     <string name="error_mic_stopped">De microfoon is onverwacht gestopt.</string>
     <string name="error_retry">Opnieuw proberen</string>
 
@@ -18,6 +18,7 @@
     <string name="tuner_mode_strings">Snaren</string>
     <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bediening tonen</string>
+    <string name="tuner_compact_tap_hint">Tik om de bediening te tonen</string>
 
     <!-- Tuning presets, see Tunings in :core:dsp. -->
     <string name="tuning_standard">Standaard</string>
@@ -83,6 +84,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">hoger stemmen</string>
     <string name="tuner_spoken_tune_down">lager stemmen</string>
+    <string name="tuner_spoken_separator">", "</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
@@ -123,14 +125,14 @@
     </plurals>
     <string name="tuner_strum_not_all_heard">Niet elke snaar was te horen</string>
     <string name="tuner_strum_all_in_tune">Alle snaren zijn zuiver</string>
-    <string name="tuner_strum_tap_to_tune">Tik op een snaar om die te stemmen</string>
-    <string name="tuner_strum_again">Strum opnieuw, of tik op een snaar om die te stemmen</string>
+    <string name="tuner_strum_tap_to_tune">Kies een snaar om die te stemmen</string>
+    <string name="tuner_strum_again">Strum opnieuw, of kies een snaar om die te stemmen</string>
     <string name="tuner_strum_tune_string">%1$s stemmen</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, niet gehoord</string>
     <string name="tuner_strum_spoken_waiting">%1$s, nog niet gestrumd</string>
     <string name="tuner_strum_spoken_less_sure">%1$s, minder zeker</string>
-    <string name="tour_title">Laat me rondkijken</string>
+    <string name="tour_title">Rondleiding</string>
     <string name="tour_step_count">%1$d van %2$d</string>
     <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
     <string name="tour_meter">Hoe ver je ernaast zit</string>

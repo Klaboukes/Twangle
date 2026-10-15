@@ -8,7 +8,7 @@
     </plurals>
     <string name="metronome_slower">Langzamer</string>
     <string name="metronome_faster">Sneller</string>
-    <string name="metronome_tap">Tik tempo</string>
+    <string name="metronome_tap">Tempo tikken</string>
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Trillen op de tel</string>

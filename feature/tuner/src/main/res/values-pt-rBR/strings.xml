@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">O Twangle precisa do seu microfone</string>
-    <string name="mic_permission_intro">Para afinar, o Twangle ouve seu instrumento. O som é analisado no seu celular e nunca é gravado nem enviado.</string>
-    <string name="mic_permission_rationale">Sem o microfone, o Twangle não ouve suas cordas e não consegue dizer se estão afinadas. O som nunca sai do seu celular.</string>
+    <string name="mic_permission_intro">Para afinar, o Twangle ouve seu instrumento. O som é analisado no seu dispositivo e nunca é gravado nem enviado.</string>
+    <string name="mic_permission_rationale">Sem o microfone, o Twangle não ouve suas cordas e não consegue dizer se estão afinadas. O som nunca sai do seu dispositivo.</string>
     <string name="mic_permission_settings_hint">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões, depois em Microfone, e permita durante o uso do app.</string>
     <string name="mic_permission_settings_hint_switch">O acesso ao microfone está desativado para o Twangle. Abra as Configurações, toque em Permissões e ative Microfone.</string>
     <string name="mic_permission_allow">Permitir microfone</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">O acesso ao microfone foi desativado. Permita de novo para continuar afinando.</string>
     <string name="error_mic_busy">Outro app está usando o microfone. Feche-o e tente de novo.</string>
-    <string name="error_mic_unavailable">Não foi possível abrir o microfone neste celular.</string>
+    <string name="error_mic_unavailable">Não foi possível abrir o microfone neste dispositivo.</string>
     <string name="error_mic_stopped">O microfone parou de repente.</string>
     <string name="error_retry">Tentar de novo</string>
 
     <string name="tuner_mode_strings">Cordas</string>
     <string name="tuner_mode_chromatic">Cromático</string>
     <string name="tuner_show_controls">Mostrar controles</string>
+    <string name="tuner_compact_tap_hint">Toque para mostrar os controles</string>
 
     <string name="tuning_standard">Padrão</string>
     <string name="tuning_drop_d">Drop D</string>
@@ -78,6 +79,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">subir</string>
     <string name="tuner_spoken_tune_down">baixar</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>

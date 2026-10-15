@@ -1,7 +1,7 @@
 <resources>
     <string name="mic_permission_title">Twangle에 마이크가 필요해요</string>
-    <string name="mic_permission_intro">튜닝을 위해 Twangle이 악기 소리를 들어요. 소리는 휴대폰에서 분석되고, 녹음되거나 어디로도 전송되지 않아요.</string>
-    <string name="mic_permission_rationale">마이크가 없으면 Twangle이 줄 소리를 들을 수 없어서 음이 맞는지 알 수 없어요. 소리는 절대 휴대폰 밖으로 나가지 않아요.</string>
+    <string name="mic_permission_intro">튜닝을 위해 Twangle이 악기 소리를 들어요. 소리는 기기에서 분석되고, 녹음되거나 어디로도 전송되지 않아요.</string>
+    <string name="mic_permission_rationale">마이크가 없으면 Twangle이 줄 소리를 들을 수 없어서 음이 맞는지 알 수 없어요. 소리는 절대 기기 밖으로 나가지 않아요.</string>
     <string name="mic_permission_settings_hint">Twangle의 마이크 접근이 꺼져 있어요. 설정을 열고 권한, 마이크를 차례로 탭한 다음 앱 사용 중에만 허용을 선택하세요.</string>
     <string name="mic_permission_settings_hint_switch">Twangle의 마이크 접근이 꺼져 있어요. 설정을 열고 권한을 탭한 다음 마이크를 켜세요.</string>
     <string name="mic_permission_allow">마이크 허용</string>
@@ -9,13 +9,14 @@
 
     <string name="error_mic_permission">마이크 접근이 꺼졌어요. 튜닝을 계속하려면 다시 허용하세요.</string>
     <string name="error_mic_busy">다른 앱이 마이크를 사용 중이에요. 그 앱을 닫고 다시 시도하세요.</string>
-    <string name="error_mic_unavailable">이 휴대폰에서 마이크를 열 수 없었어요.</string>
+    <string name="error_mic_unavailable">이 기기에서 마이크를 열 수 없었어요.</string>
     <string name="error_mic_stopped">마이크가 예기치 않게 멈췄어요.</string>
     <string name="error_retry">다시 시도</string>
 
     <string name="tuner_mode_strings">줄</string>
     <string name="tuner_mode_chromatic">크로매틱</string>
     <string name="tuner_show_controls">컨트롤 보기</string>
+    <string name="tuner_compact_tap_hint">탭하면 컨트롤이 보여요</string>
 
     <string name="tuning_standard">표준</string>
     <string name="tuning_drop_d">드롭 D</string>
@@ -73,6 +74,7 @@
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
     <string name="tuner_spoken_tune_up">올리기</string>
     <string name="tuner_spoken_tune_down">내리기</string>
+    <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
