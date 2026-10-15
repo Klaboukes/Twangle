@@ -276,9 +276,10 @@ private class Art(
             topLeft = Offset(0f, horizon - u),
             size = Size(w, h * 0.06f + u),
         )
-        // The magenta horizon glow, over the fade so it has no hard edge.
+        // The magenta horizon glow, over the fade so it has no hard edge. The quiet ground leaves out its
+        // line: on the metronome it ran through the see-through Start / Stop button.
         radial(w * 0.5f, horizon, w * 0.6f, second, if (dark) 0.14f else 0.07f)
-        line(accent.copy(alpha = if (dark) 0.35f else 0.25f), w * 0.1f, horizon, w * 0.9f, horizon, 0.8f * u, StrokeCap.Butt)
+        if (!quiet) line(accent.copy(alpha = if (dark) 0.35f else 0.25f), w * 0.1f, horizon, w * 0.9f, horizon, 0.8f * u, StrokeCap.Butt)
         if (dark) {
             val scan = Color.Black.copy(alpha = 0.16f)
             var y = 0f

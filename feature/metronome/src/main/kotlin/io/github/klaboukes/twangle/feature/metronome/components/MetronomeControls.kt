@@ -264,13 +264,15 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit) {
 /** How long Tap tempo stays lit after a tap. */
 private const val TAP_FLASH_MILLIS = 120L
 
-/** Start / Stop, in the accent (Futuristic: a neon outline). */
+/** Start / Stop, in the accent (Futuristic: a neon outline on a solid tint). */
 @Composable
 fun StartStopButton(playing: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
     val shape = look.shape
-    val fill = if (look.neon) scheme.primary.copy(alpha = 0.14f) else scheme.primary
+    // Futuristic's tint lies on the background colour, not over the picture: the grid's lines would
+    // run through the button.
+    val fill = if (look.neon) scheme.primary.copy(alpha = 0.14f).compositeOver(scheme.background) else scheme.primary
     val content = if (look.neon) scheme.primary else scheme.onPrimary
     var face = modifier
         .heightIn(min = 56.dp)
