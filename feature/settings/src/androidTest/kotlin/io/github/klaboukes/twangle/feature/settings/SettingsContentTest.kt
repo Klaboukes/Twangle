@@ -861,7 +861,7 @@ class SettingsContentTest {
     @Test
     fun everyFontAndLibraryIsCredited() {
         show(AppSettings(), about = true)
-        assertEquals(bundledFontCredits.size + 2, credits.size)
+        assertEquals(bundledFontCredits.size + 6, credits.size)
         bundledFontCredits.forEach { font ->
             compose.onNodeWithTag(creditTag(font.name)).performScrollTo().assertIsDisplayed()
             compose.onNodeWithText(font.name).assertIsDisplayed()
@@ -870,6 +870,10 @@ class SettingsContentTest {
         compose.onNodeWithTag(creditTag("Jetpack Compose & AndroidX")).performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag(creditTag("Kotlin & kotlinx.coroutines")).performScrollTo().assertIsDisplayed()
         compose.onAllNodesWithText("Google · Apache License 2.0").assertCountEquals(1)
+        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture").forEach {
+            compose.onNodeWithTag(creditTag(it)).performScrollTo().assertIsDisplayed()
+        }
+        compose.onNodeWithText("Google Inc. · BSD 3-Clause License").assertIsDisplayed()
     }
 
     @Test
@@ -902,6 +906,16 @@ class SettingsContentTest {
         compose.waitUntil(5_000) { compose.onAllNodesWithText("TERMS AND CONDITIONS FOR USE", substring = true).fetchSemanticsNodes().isNotEmpty() }
         // Reflowed: a paragraph's lines are joined, so it wraps to the screen.
         compose.onNodeWithText("Apache License Version 2.0, January 2004", substring = true).assertExists()
+        compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).performClick()
+        compose.onNodeWithTag(LICENCE_TEXT_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun tappingProtocolBuffersShowsItsBsdLicence() {
+        show(AppSettings(), about = true)
+        compose.onNodeWithTag(creditTag("Protocol Buffers")).performScrollTo().performClick()
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Copyright 2008 Google Inc.", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Redistribution and use in source and binary forms", substring = true).assertExists()
         compose.onNodeWithText(context.getString(R.string.settings_about_licence_close)).performClick()
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assertDoesNotExist()
     }

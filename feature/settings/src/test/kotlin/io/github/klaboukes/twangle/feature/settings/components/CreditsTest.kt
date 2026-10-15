@@ -61,4 +61,26 @@ class CreditsTest {
             assertTrue(file.readText().contains("Apache License") && file.readText().contains("Version 2.0, January 2004"))
         }
     }
+
+    @Test
+    fun theProtobufLicenceIsBundledWithItsCopyright() {
+        val protobuf = credits.single { it.name == "Protocol Buffers" }
+        val text = File("src/main/assets/${protobuf.licenceAsset}").readText()
+        assertTrue(text.contains("Copyright 2008 Google Inc."))
+        assertTrue(text.contains("Redistribution and use in source and binary forms"))
+    }
+
+    @Test
+    fun theLibrariesShippedThroughDataStoreAndAndroidXAreCredited() {
+        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture").forEach { name ->
+            assertTrue("$name not credited", credits.any { it.name == name })
+        }
+    }
+
+    @Test
+    fun theBSDBulletsStayOnLinesOfTheirOwn() {
+        val text = File("src/main/assets/licenses/BSD-3-Clause-protobuf.txt").readText()
+        val paragraphs = reflowLicence(text).split("\n\n")
+        assertEquals(3, paragraphs.count { it.startsWith("* ") })
+    }
 }

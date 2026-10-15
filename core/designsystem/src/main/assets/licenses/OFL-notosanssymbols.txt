@@ -1,6 +1,6 @@
 Copyright 2013 Google Inc. All Rights Reserved. (Noto Sans Symbols)
-Twangle bundles a subset with only the signs U+2669 U+266A U+266D U+266E U+266F
-(res/font/music_signs.ttf, made with scripts/subset-font.py).
+
+Twangle bundles a subset with only five music signs (U+2669 U+266A U+266D U+266E U+266F).
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

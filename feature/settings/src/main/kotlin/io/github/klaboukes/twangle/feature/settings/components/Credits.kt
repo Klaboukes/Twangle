@@ -17,15 +17,26 @@ data class Credit(
 
 private const val OFL = "SIL Open Font License 1.1"
 private const val APACHE = "Apache License 2.0"
+private const val BSD_3 = "BSD 3-Clause License"
 
 /** Bundled with this module (assets/licenses); the font licences come from `:core:designsystem`. */
 private const val APACHE_ASSET = "licenses/Apache-2.0.txt"
+private const val PROTOBUF_ASSET = "licenses/BSD-3-Clause-protobuf.txt"
 
-/** The bundled fonts, then the open-source libraries in the app, all under the Apache License 2.0. */
+/**
+ * The bundled fonts, then the open-source libraries in the app. Besides AndroidX and Kotlin, these
+ * ship inside it: Okio and a copy of Protocol Buffers with DataStore (the settings store), JSpecify
+ * and Guava's ListenableFuture with AndroidX. A new library needs a credit here, and its licence
+ * text in assets if it is not one of these.
+ */
 val credits: List<Credit> =
     bundledFontCredits.map { Credit(it.name, it.designer, OFL, it.licenceAsset) } + listOf(
         Credit("Jetpack Compose & AndroidX", "Google", APACHE, APACHE_ASSET),
         Credit("Kotlin & kotlinx.coroutines", "JetBrains", APACHE, APACHE_ASSET),
+        Credit("Okio", "Square, Inc.", APACHE, APACHE_ASSET),
+        Credit("Protocol Buffers", "Google Inc.", BSD_3, PROTOBUF_ASSET),
+        Credit("JSpecify", "The JSpecify Authors", APACHE, APACHE_ASSET),
+        Credit("Guava: ListenableFuture", "The Guava Authors", APACHE, APACHE_ASSET),
     )
 
 /**
