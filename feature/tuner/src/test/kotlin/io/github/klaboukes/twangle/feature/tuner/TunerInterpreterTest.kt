@@ -262,6 +262,39 @@ class TunerInterpreterTest {
     }
 
     @Test
+    fun `the string being tuned read an octave high stays on that string with the same cents`() {
+        // G3 heard as G4 (its fundamental faint): the nearest string to G4 is high E, +300 cents.
+        assertEquals("G", play(pitched(hz(55.05f))).detected().noteName)
+        val octaveHigh = play(pitched(hz(67.05f))).detected()
+        assertEquals("G", octaveHigh.noteName)
+        assertEquals(3, octaveHigh.octave)
+        assertEquals(3, octaveHigh.targetString)
+        assertEquals(5f, octaveHigh.cents, 0.5f)
+        assertEquals(hz(55.05f), octaveHigh.frequencyHz, 0.1f)
+        // The low E read an octave high (E3, nearest D3 +200 cents) stays the low E too.
+        play(silent, frames = 10)
+        play(pitched(hz(40f)))
+        assertEquals(0, play(pitched(hz(52f))).detected().targetString)
+    }
+
+    @Test
+    fun `another string, or an octave of one played from scratch, is taken as it is`() {
+        play(pitched(hz(55f)))
+        // The B string is a string: switch to it.
+        assertEquals(4, play(pitched(hz(59f))).detected().targetString)
+        // Fresh, G4 is nearest high E, as before: there is no string being tuned to keep.
+        play(silent, frames = 10)
+        assertEquals(5, play(pitched(hz(67f))).detected().targetString)
+        // In open D the D3 string is an octave above D2: plucking it is that string, not D2.
+        val options = TunerOptions(TunerMode.AUTO, Tunings.OPEN_D)
+        play(silent, frames = 10)
+        repeat(40) { interpreter.interpret(pitched(hz(38f)), options) }
+        var state: TunerUiState? = null
+        repeat(40) { state = interpreter.interpret(pitched(hz(50f)), options) }
+        assertEquals(2, state!!.detected().targetString)
+    }
+
+    @Test
     fun `a tick's frames neither show a note nor end the one shown`() {
         // A tick ringing at 1000 Hz for one frame, then the frames in which it has died away.
         val tick = pitched(1000f)

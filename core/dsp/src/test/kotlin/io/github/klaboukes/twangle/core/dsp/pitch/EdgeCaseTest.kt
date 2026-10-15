@@ -89,6 +89,24 @@ class EdgeCaseTest {
         }
     }
 
+    @Test
+    fun `a G string with a faint fundamental and faint odd harmonics reads G3, not G4`() {
+        // How a phone can hear the G string: its 196 Hz fundamental and odd harmonics faint, so the
+        // tone very nearly repeats every half period. It used to read G4 in every frame. Measured:
+        // 0.5–2 % of the mean of d left at the half period, against under 0.2 % for a true G4.
+        val yin = YinPitchDetector()
+        for ((name, harmonics) in FAINT_ODD_TONES) for (snr in listOf(60f, 40f, 30f)) {
+            val tone = TestSignals.withNoise(TestSignals.harmonics(196f, harmonics), snr, seed = 3)
+            assertWithin("$name at $snr dB", 196f, yin.detect(tone), 1f)
+        }
+        // A true G4 still reads G4, clean or in noise.
+        for (snr in listOf(99f, 30f, 20f, 10f)) {
+            for (tone in listOf(TestSignals.sine(392f), TestSignals.sawtooth(392f), TestSignals.weakFundamental(392f))) {
+                assertWithin("G4 at $snr dB", 392f, yin.detect(TestSignals.withNoise(tone, snr, seed = 3)), 5f)
+            }
+        }
+    }
+
     // ---- Sustain decay ----
 
     @Test
@@ -310,6 +328,11 @@ class EdgeCaseTest {
          * The last two used to read an octave high: the 2nd harmonic dominates and the odd ones
          * are weak, so the tone very nearly repeats every half period.
          */
+        val FAINT_ODD_TONES = mapOf(
+            "very faint fundamental" to floatArrayOf(0.03f, 1f, 0.1f, 0.4f, 0.05f, 0.2f),
+            "no fundamental to speak of" to floatArrayOf(0.01f, 1f, 0.05f, 0.5f, 0.02f, 0.2f),
+        )
+
         val HIGH_STRING_TONES = mapOf(
             "strong 2nd and 3rd" to floatArrayOf(0.3f, 1f, 0.7f, 0.3f, 0.2f),
             "faint fundamental" to floatArrayOf(0.05f, 1f, 1f, 0.5f, 0.3f),

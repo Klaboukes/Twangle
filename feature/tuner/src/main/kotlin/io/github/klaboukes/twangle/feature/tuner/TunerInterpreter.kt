@@ -94,7 +94,8 @@ class TunerInterpreter(
                 } else {
                     trackString(midi, tuning)
                 }
-                detected(options, tuning.strings[string], frequencyHz, tuning.centsFromString(midi, string), string, tip)
+                val onString = octaveOnString(midi, tuning.strings[string].midi)
+                detected(options, tuning.strings[string], noteMapper.frequencyOf(onString), tuning.centsFromString(onString, string), string, tip)
             }
         }
     }
@@ -120,6 +121,12 @@ class TunerInterpreter(
      */
     private fun trackString(midi: Float, tuning: Tuning): Int {
         val nearest = tuning.nearestStringIndex(midi)
+        if (tuning == stringTuning && stringIndex != NO_STRING && nearest != stringIndex) {
+            val stringMidi = tuning.strings[stringIndex].midi
+            val awayFromStrings = abs(midi - tuning.strings[nearest].midi) > OCTAVE_MATCH_SEMITONES
+            // The current string read an octave off: keep it (see octaveOnString).
+            if (awayFromStrings && octaveOnString(midi, stringMidi) != midi) return stringIndex
+        }
         if (tuning != stringTuning || stringIndex == NO_STRING) {
             stringTuning = tuning
             stringIndex = nearest
@@ -129,6 +136,23 @@ class TunerInterpreter(
             if (currentDistance - nearestDistance > STRING_HYSTERESIS_SEMITONES) stringIndex = nearest
         }
         return stringIndex
+    }
+
+    /**
+     * [midi] moved by an octave onto the string at [stringMidi] when it is within
+     * [OCTAVE_MATCH_SEMITONES] of the octave above or below it, otherwise [midi] itself. A string
+     * whose fundamental the phone barely hears (the G string, through its mic) can read an octave
+     * high, and a 12th-fret harmonic is an octave high by design. Its cents are the same either way;
+     * without this the reading, nearest to no string, jumped to another string far off (G4 to high
+     * E, +300 cents). [trackString] keeps the string, so only one octave away, and only while no
+     * other string is near the reading (in open D, D3 after D2 is the D3 string).
+     */
+    private fun octaveOnString(midi: Float, stringMidi: Int): Float {
+        for (octave in OCTAVE_MOVES) {
+            val moved = midi - octave
+            if (abs(moved - stringMidi) <= OCTAVE_MATCH_SEMITONES) return moved
+        }
+        return midi
     }
 
     private fun detected(
@@ -177,6 +201,10 @@ class TunerInterpreter(
         /** 15 cents, matching [PitchSmoother.DEFAULT_HYSTERESIS_CENTS]. */
         const val STRING_HYSTERESIS_SEMITONES = 0.15f
 
+        /** How near an octave of a string a reading must be to count as that string: 50 cents. */
+        const val OCTAVE_MATCH_SEMITONES = 0.5f
+
+        private val OCTAVE_MOVES = floatArrayOf(12f, -12f)
         private const val NO_STRING = -1
         private const val NO_TARGET = Int.MIN_VALUE
     }

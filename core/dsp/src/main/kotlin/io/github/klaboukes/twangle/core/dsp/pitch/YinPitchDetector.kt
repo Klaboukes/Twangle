@@ -166,39 +166,65 @@ class YinPitchDetector(
             // τ is k periods of about `lag` each, every one off by at most half a lag either way.
             val k = (tau + lag / 2) / lag
             if (k < 2 || abs(tau - k * lag) > k) continue
-            if (limit < 0.0) {
-                var sum = 0.0
-                for (i in 1..tau) sum += difference[i]
-                limit = SHORTER_PERIOD_TOLERANCE * dipFloor(tau) + CLEAN_DIP * sum / tau
-            }
+            if (limit < 0.0) limit = SHORTER_PERIOD_TOLERANCE * dipFloor(tau) + CLEAN_DIP * meanDifference(tau)
             if (dipFloor(lag) <= limit) return true
         }
         return false
     }
 
-    // Lowest value of the parabola through d at tau − 1, tau, tau + 1 (d itself if it isn't a dip).
+    // Lowest value of d around the dip at lag tau, between whole lags (d itself if it isn't a dip).
     private fun dipFloor(tau: Int): Double {
         val left = difference[tau - 1]
         val mid = difference[tau]
         val right = difference[tau + 1]
         val curvature = left - 2 * mid + right
         if (curvature <= 0.0) return mid
-        return (mid - (left - right) * (left - right) / (8 * curvature)).coerceAtLeast(0.0)
+        val offset = (left - right) / (2 * curvature)
+        if (tau < 2 || tau + 2 > lastLag) return (mid - curvature * offset * offset / 2).coerceAtLeast(0.0)
+        // The quartic through d at tau − 2 … tau + 2 (central differences), its minimum found by a
+        // few Newton steps from the parabola's. A parabola misjudges a sharp dip's floor by up to
+        // ≈ 0.3 % of the mean of d at a low analysis rate (a high note in 11 kHz audio), as much as
+        // a G string's faint odd harmonics leave; the quartic, a tenth of that.
+        val far = difference[tau - 2]
+        val farRight = difference[tau + 2]
+        val c1 = (far - 8 * left + 8 * right - farRight) / 12
+        val c2 = (-far + 16 * left - 30 * mid + 16 * right - farRight) / 24
+        val c3 = (-far + 2 * left - 2 * right + farRight) / 12
+        val c4 = (far - 4 * left + 6 * mid - 4 * right + farRight) / 24
+        var x = offset.coerceIn(-1.0, 1.0)
+        repeat(DIP_FLOOR_NEWTON_STEPS) {
+            val slope = c1 + x * (2 * c2 + x * (3 * c3 + x * 4 * c4))
+            val bend = 2 * c2 + x * (6 * c3 + x * 12 * c4)
+            if (bend > 0.0) x = (x - slope / bend).coerceIn(-1.0, 1.0)
+        }
+        return (mid + x * (c1 + x * (c2 + x * (c3 + x * c4)))).coerceAtLeast(0.0)
     }
 
     // Strong 2nd (or 3rd) harmonic with weak neighbours: the first accepted dip may be a fraction
     // of the period. If d at 2τ or 3τ is below LONGER_PERIOD_RATIO of d(τ), the tone only *nearly*
-    // repeats at τ and truly repeats there. Clean tones (d'(τ) below LONGER_PERIOD_MIN_DIP) are left
-    // alone: their tiny d(τ) only reflects where the period falls between two lags.
+    // repeats at τ and truly repeats there. A G3 string heard through a phone, its fundamental and
+    // odd harmonics faint, leaves only about 1 % of the mean of d at its half period: so clean that
+    // d(τ) at whole lags mostly reflects where the period falls between two lags. So this compares
+    // the parabola-interpolated floors of the dips, which don't depend on that, and only leaves
+    // alone a dip whose floor is under LONGER_PERIOD_MIN_FLOOR of the mean of d (a tone that does
+    // repeat at τ, give or take rounding).
     private fun checkLongerPeriods(tau: Int): Int {
-        if (normalized[tau] < LONGER_PERIOD_MIN_DIP) return tau
-        val limit = LONGER_PERIOD_RATIO * difference[tau]
+        val floor = dipFloor(tau)
+        if (floor < LONGER_PERIOD_MIN_FLOOR * meanDifference(tau)) return tau
+        val limit = LONGER_PERIOD_RATIO * floor
         for (m in 2..3) {
             if (m * tau > tauMax) break
             val candidate = localMinimum(m * tau)
-            if (candidate in tauMin..tauMax && difference[candidate] < limit) return candidate
+            if (candidate in tauMin..tauMax && dipFloor(candidate) < limit) return candidate
         }
         return tau
+    }
+
+    // Mean of d over lags 1..tau.
+    private fun meanDifference(tau: Int): Double {
+        var sum = 0.0
+        for (lag in 1..tau) sum += difference[lag]
+        return sum / tau
     }
 
     // Follows d downhill from [start] to the nearest local minimum, staying inside 1 until lastLag.
@@ -300,12 +326,16 @@ class YinPitchDetector(
         // Shortest lag isAboveRange tries as a period: 12 kHz at 48 kHz.
         private const val MIN_PERIOD_LAG = 4
 
+        private const val DIP_FLOOR_NEWTON_STEPS = 3
+
         // A dip whose floor is within 1 % of the mean of d (d' ≈ 0.01) is clean, whatever d(τ).
         private const val CLEAN_DIP = 0.01
 
         // 2τ or 3τ replaces τ if its d is under a quarter of d(τ), and only when d'(τ) is not
         // already near zero.
         private const val LONGER_PERIOD_RATIO = 0.25
-        private const val LONGER_PERIOD_MIN_DIP = 0.05
+        // A dip floor under 0.2 % of the mean of d is a tone repeating at that lag: the interpolated
+        // floor of a clean tone's dip is accurate to about 0.02 % (4 kHz low-pass, at 48 kHz).
+        private const val LONGER_PERIOD_MIN_FLOOR = 0.002
     }
 }
