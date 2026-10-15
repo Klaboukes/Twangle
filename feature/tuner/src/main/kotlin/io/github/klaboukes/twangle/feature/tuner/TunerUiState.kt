@@ -81,7 +81,7 @@ sealed interface TunerUiState {
     ) : TunerUiState
 
     /**
-     * Strum check (guitar mode, switched on beside the instrument-and-tuning button): strum once and
+     * Strum check (guitar mode, switched on above the strings): strum once and
      * every string of [tuning] shows flat, in tune or sharp at once. [strings] are in the tuning's
      * order, empty until the first reading; in [StrumPhase.HEARING] they are still the strum before.
      * [toleranceCents] is how far off "in tune" reaches (a less sure string gets a little more).

@@ -126,7 +126,6 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
     private val panel get() = compose.onNodeWithTag(TunerTestTags.STRUM_PANEL)
     private val status get() = compose.onNodeWithTag(TunerTestTags.STRUM_STATUS)
     private val toggle get() = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE)
-    private val picker get() = compose.onNodeWithTag(TunerTestTags.PICKER)
     private val strings = listOf("E2", "A2", "D3", "G3", "B3", "E4")
 
     private fun parts(controls: Boolean): List<Pair<String, SemanticsNodeInteraction>> = buildList {
@@ -134,7 +133,6 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         add("status" to status)
         if (controls) {
             add("strum check switch" to toggle)
-            add("instrument and tuning button" to picker)
             strings.forEach { add("string $it" to compose.onNodeWithText(it)) }
         }
     }

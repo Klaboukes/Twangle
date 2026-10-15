@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 /**
  * The tabs' line icons, drawn for Twangle as on the approved mock-up (docs/design/metronome-nav-preview.html):
  * a tuning fork, a metronome and a gear, in 1.8 dp lines on a 24 dp grid; the open tab's in 2.2 dp.
+ * The Tuning item's headstock ([TUNING_ICON]) is drawn the same way.
  */
 internal fun navIcon(destination: Destination, selected: Boolean): ImageVector =
     (if (selected) BOLD else REGULAR).getValue(destination)
@@ -18,15 +19,38 @@ internal fun navIcon(destination: Destination, selected: Boolean): ImageVector =
 private val REGULAR = Destination.entries.associateWith { icon(it, 1.8f) }
 private val BOLD = Destination.entries.associateWith { icon(it, 2.2f) }
 
+/** The Tuning item's icon: a guitar headstock with three tuning pegs at each side, in 1.8 dp lines. It is never selected. */
+internal val TUNING_ICON: ImageVector = icon(
+    "nav_tuning",
+    listOf(
+        // The headstock, narrowing into the neck at the bottom.
+        "M10.5,21.5V15.5L8.5,13.5V4a1.5,1.5 0,0 1,1.5,-1.5h4a1.5,1.5 0,0 1,1.5,1.5v9.5L13.5,15.5v6",
+        // The pegs.
+        "M5,5.5h3.5", "M5,9h3.5", "M5,12.5h3.5",
+        "M15.5,5.5H19", "M15.5,9H19", "M15.5,12.5H19",
+    ),
+    1.8f,
+).build()
+
 private fun icon(destination: Destination, stroke: Float): ImageVector {
+    val builder = icon("nav_" + destination.name.lowercase(), paths(destination), stroke)
+    if (destination == Destination.METRONOME) {
+        // The weight on the pendulum: a dot.
+        builder.addPath(pathData = addPathNodes("M14.2,8.6a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0z"), fill = SolidColor(Color.Black))
+    }
+    return builder.build()
+}
+
+/** An icon [name]d so, of [paths] in [stroke] dp round-ended lines on the 24 dp grid, still open for more paths. */
+private fun icon(name: String, paths: List<String>, stroke: Float): ImageVector.Builder {
     val builder = ImageVector.Builder(
-        name = "nav_" + destination.name.lowercase(),
+        name = name,
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
         viewportHeight = 24f,
     )
-    for (path in paths(destination)) {
+    for (path in paths) {
         builder.addPath(
             pathData = addPathNodes(path),
             stroke = SolidColor(Color.Black),
@@ -35,11 +59,7 @@ private fun icon(destination: Destination, stroke: Float): ImageVector {
             strokeLineJoin = StrokeJoin.Round,
         )
     }
-    if (destination == Destination.METRONOME) {
-        // The weight on the pendulum: a dot.
-        builder.addPath(pathData = addPathNodes("M14.2,8.6a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0z"), fill = SolidColor(Color.Black))
-    }
-    return builder.build()
+    return builder
 }
 
 private fun paths(destination: Destination): List<String> = when (destination) {

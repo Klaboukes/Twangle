@@ -49,7 +49,7 @@ import kotlin.math.ceil
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedInstrument] and [savedCustomTunings] do the same for the instrument-and-tuning button, and [savedKeepTwoPaneLandscape] for the
+ * [savedInstrument] and [savedCustomTunings] do the same for the instrument and tuning panel, and [savedKeepTwoPaneLandscape] for the
  * layout on its side. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *

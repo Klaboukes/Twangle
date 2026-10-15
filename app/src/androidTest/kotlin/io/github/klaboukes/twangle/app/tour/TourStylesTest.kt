@@ -153,7 +153,7 @@ class TourStylesTest(private val style: VisualStyle) {
     private fun stepThroughWhollyShown(case: String, layoutOrder: List<TourPart>) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val density = contentDensity
-        val order = withStrumRow(layoutOrder)
+        val order = layoutOrder
         order.forEachIndexed { index, part ->
             val at = "$case step ${index + 1} ($part)"
             val shown = targets.shown ?: error("$at: nothing shown")
@@ -182,17 +182,6 @@ class TourStylesTest(private val style: VisualStyle) {
         }
         assertEquals("$case: Done ends it once", 1, ends.intValue)
         compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
-    }
-
-    /**
-     * [order] with the strum check before the instrument button where its switch sits on a row of its
-     * own above the button (very large text): rows read top to bottom.
-     */
-    private fun withStrumRow(order: List<TourPart>): List<TourPart> {
-        val strum = targets.boundsOf(TourPart.STRUM) ?: return order
-        val picker = targets.boundsOf(TourPart.PICKER) ?: return order
-        if (strum.bottom > picker.top) return order
-        return order.map { if (it == TourPart.STRUM) TourPart.PICKER else if (it == TourPart.PICKER) TourPart.STRUM else it }
     }
 
     /** The pointer's tip over [part] (across it), [TourMeasures.POINTER_GAP] from its edge; the balloon not over it. */
@@ -340,12 +329,12 @@ class TourStylesTest(private val style: VisualStyle) {
         for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
             compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
-        for (tag in listOf(TunerTestTags.PICKER, TunerTestTags.mode(TunerMode.CHROMATIC), NavigationTestTags.tab(Destination.SETTINGS))) {
+        for (tag in listOf(NavigationTestTags.TUNING, TunerTestTags.mode(TunerMode.CHROMATIC), NavigationTestTags.tab(Destination.SETTINGS))) {
             compose.onNodeWithTag(tag).assertDoesNotExist()
         }
         compose.onNodeWithTag(TourTestTags.SKIP).performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag(TunerTestTags.PICKER).assertExists()
+        compose.onNodeWithTag(NavigationTestTags.TUNING).assertExists()
         compose.onNodeWithTag(NavigationTestTags.tab(Destination.SETTINGS)).assertExists()
     }
 
@@ -404,8 +393,11 @@ class TourStylesTest(private val style: VisualStyle) {
         private val LANDSCAPE = DpSize(800.dp, 360.dp)
         private val TABLET = DpSize(1280.dp, 800.dp)
 
-        /** The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane), the bar or rail last. */
-        private val UPRIGHT = listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
-        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
+        /**
+         * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane),
+         * the bar's or rail's Tuning item and tabs last.
+         */
+        private val UPRIGHT = listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
     }
 }

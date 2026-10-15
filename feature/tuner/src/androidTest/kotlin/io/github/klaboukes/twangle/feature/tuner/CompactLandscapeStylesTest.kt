@@ -246,7 +246,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
         modeSwitch.assertIsDisplayed()
-        compose.onNodeWithTag(TunerTestTags.PICKER).assertIsDisplayed()
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + FADE_MS)
         modeSwitch.assertDoesNotExist()
         shownDark.value = true

@@ -1,13 +1,10 @@
 package io.github.klaboukes.twangle.feature.tuner
 
-import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -18,18 +15,13 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.Locales
-import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.then
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
@@ -39,14 +31,11 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
-import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.feature.tuner.components.instrumentNameRes
-import io.github.klaboukes.twangle.feature.tuner.components.tuningNameRes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -56,7 +45,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
@@ -128,7 +116,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         compactLandscape = layout.compact,
-                        // As in the app: the strum check's switch shares the row with the instrument-and-tuning button.
+                        // As in the app: the strum check's switch above the strings.
                         onStrumCheckChange = {},
                     )
                 }
@@ -210,83 +198,39 @@ class StringRowStylesTest(private val style: VisualStyle) {
      * and in the full layout on its side: the instrument-and-tuning button keeps to one line, its
      * label wholly shown ("8-snarige gitaar · Standaard"), the button in the window, above the strings.
      */
+    /**
+     * The strum check's switch sits above the strings at their end, in the window, for every instrument
+     * (4 to 8 strings), upright and on its side, at normal and at 2x text.
+     */
     @Test
-    fun everyInstrumentsButtonKeepsToOneLineInEnglish() = assertButtonsKeepToOneLine("en")
-
-    @Test
-    fun everyInstrumentsButtonKeepsToOneLineInDutch() = assertButtonsKeepToOneLine("nl")
-
-    private fun assertButtonsKeepToOneLine(locale: String) {
-        shownLocale.value = locale
+    fun theStrumSwitchSitsAboveTheStringsAtTheirEnd() {
         show(listening = true)
-        val resources = resourcesFor(locale)
-        for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
-            shownLayout.value = layout
-            for (tuning in PICKER_TUNINGS) {
-                shownTuning.value = tuning
-                compose.waitForIdle()
-                val case = "$style $locale $layout ${tuning.id}"
-                val label = assertButtonFits(case, buttonLabel(resources, tuning), scroll = false)
-                val layouts = mutableListOf<TextLayoutResult>()
-                label.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
-                assertEquals("$case: lines on the button", 1, layouts.single().lineCount)
+        for (scale in listOf(1f, 2f)) {
+            shownFontScale.value = scale
+            for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
+                shownLayout.value = layout
+                for (tuning in Instruments.all.map { it.defaultTuning }) {
+                    shownTuning.value = tuning
+                    compose.waitForIdle()
+                    val case = "$style $layout ${tuning.id} at ${scale}x"
+                    val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+                    val toggle = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE)
+                    assertWhollyShown(toggle, "$case: strum check switch", scroll = true)
+                    val strum = toggle.getBoundsInRoot()
+                    if (strum.left < window.left - SLACK || strum.right > window.right + SLACK) fail("$case: the switch $strum is outside the window $window")
+                    // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
+                    val switchNode = toggle.fetchSemanticsNode()
+                    val labels = labels(tuning, Notation.SHARPS)
+                    val first = compose.onNodeWithText(labels.first()).fetchSemanticsNode()
+                    val last = compose.onNodeWithText(labels.last()).fetchSemanticsNode()
+                    val switchBottom = switchNode.positionInRoot.y + switchNode.size.height
+                    if (switchBottom > first.positionInRoot.y + 1f) fail("$case: the switch ends at $switchBottom px, the strings start at ${first.positionInRoot.y}")
+                    val switchEnd = switchNode.positionInRoot.x + switchNode.size.width
+                    val stringsEnd = last.positionInRoot.x + last.size.width
+                    assertTrue("$case: the switch ends at $switchEnd px, the strings at $stringsEnd", switchEnd <= stringsEnd + 1f)
+                }
             }
         }
-    }
-
-    /** At 2x text the longest Dutch names, scrolled to, are wholly shown (they may wrap), the button in the window. */
-    @Test
-    fun theLongestPickerNamesFitAtTwiceTheTextSize() {
-        shownLocale.value = "nl"
-        shownFontScale.value = 2f
-        show(listening = true)
-        val resources = resourcesFor("nl")
-        for (layout in listOf(Layout.UPRIGHT, Layout.FULL_ON_ITS_SIDE)) {
-            shownLayout.value = layout
-            for (tuning in listOf(Tunings.HALF_STEP_DOWN, Instruments.GUITAR_8.defaultTuning, Instruments.BASS_5.defaultTuning)) {
-                shownTuning.value = tuning
-                compose.waitForIdle()
-                assertButtonFits("$style nl $layout ${tuning.id} at 2x", buttonLabel(resources, tuning), scroll = true)
-            }
-        }
-    }
-
-    /** The button's [label] wholly shown, the button in the window and above the strings; the label's node. */
-    private fun assertButtonFits(case: String, label: String, scroll: Boolean): SemanticsNodeInteraction {
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val labelNode = compose.onNode(hasText(label) and hasAnyAncestor(hasTestTag(TunerTestTags.PICKER)), useUnmergedTree = true)
-        assertWhollyShown(labelNode, "$case: $label", scroll = scroll)
-        val button = compose.onNodeWithTag(TunerTestTags.PICKER).getBoundsInRoot()
-        if (button.left < window.left - SLACK || button.right > window.right + SLACK) fail("$case: the button $button is outside the window $window")
-        val strum = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).getBoundsInRoot()
-        val besideOrAbove = strum.left >= button.right - SLACK || strum.bottom <= button.top + SLACK
-        if (!besideOrAbove) fail("$case: the button $button reaches the strum check's switch $strum")
-        if (strum.right > window.right + SLACK) fail("$case: the strum check's switch $strum is outside the window $window")
-        // Where they are, also when scrolled out of view (bounds in the root are cut to the window).
-        val buttonNode = compose.onNodeWithTag(TunerTestTags.PICKER).fetchSemanticsNode()
-        val stringNode = compose.onNodeWithText(labels(shownTuning.value, Notation.SHARPS).first()).fetchSemanticsNode()
-        val buttonBottom = buttonNode.positionInRoot.y + buttonNode.size.height
-        if (buttonBottom > stringNode.positionInRoot.y + 1f) fail("$case: the button ends at $buttonBottom px, the strings start at ${stringNode.positionInRoot.y}")
-        return labelNode
-    }
-
-    /** What the button says for [tuning] in the language of [resources], e.g. "Gitaar · Halve toon lager". */
-    private fun buttonLabel(resources: Resources, tuning: Tuning): String {
-        val (tuningName, instrumentName) = pickerNames(resources, tuning)
-        return "$instrumentName · $tuningName"
-    }
-
-    /** The tuning's and its instrument's names in the language of [resources]. */
-    private fun pickerNames(resources: Resources, tuning: Tuning): Pair<String, String> {
-        val instrument = Instruments.ofTuning(tuning.id)!!
-        return resources.getString(tuningNameRes(tuning.id)!!) to resources.getString(instrumentNameRes(instrument.id)!!)
-    }
-
-    private fun resourcesFor(locale: String): Resources {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        return context.createConfigurationContext(
-            Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) },
-        ).resources
     }
 
     /** Each of [tuning]'s buttons in the window, wholly shown, clear of the others. */
@@ -328,9 +272,5 @@ class StringRowStylesTest(private val style: VisualStyle) {
             Instruments.GUITAR_7.defaultTuning,
             Instruments.GUITAR_8.defaultTuning,
         )
-
-        /** Each instrument's tunings, with the guitar's longest names and the ukulele's low G. */
-        private val PICKER_TUNINGS = Instruments.all.map { it.defaultTuning } +
-            listOf(Tunings.HALF_STEP_DOWN, Tunings.FULL_STEP_DOWN, Instruments.UKULELE.tunings.last())
     }
 }

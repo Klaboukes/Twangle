@@ -409,8 +409,8 @@ private fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String
 }
 
 /**
- * The strum check's switch beside the instrument-and-tuning button: an icon of strings with a sweep
- * across them, in the button's outline and shape; filled with the accent's container while on.
+ * The strum check's switch above the strings: an icon of strings with a sweep
+ * across them, in the style's button outline and shape; filled with the accent's container while on.
  * TalkBack: "Strum check, switch, on/off". With [inTour] its outline is the tour's strum check step.
  */
 @Composable
@@ -453,7 +453,7 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
     }
 }
 
-/** The toggle's outline: 44 dp like the instrument-and-tuning button, in a 48 dp touch target. */
+/** The toggle's outline: 44 dp like the style's buttons, in a 48 dp touch target. */
 private val TOGGLE_SIZE = 44.dp
 private val ICON_SIZE = 26.dp
 private const val OUTLINE_ALPHA = 0.6f

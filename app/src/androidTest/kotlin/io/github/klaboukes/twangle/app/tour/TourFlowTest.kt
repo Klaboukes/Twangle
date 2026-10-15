@@ -13,6 +13,7 @@ import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.settings.SHOW_TOUR_TAG
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTestTags
@@ -53,22 +54,22 @@ class TourFlowTest {
         runBlocking { repository.setTourSeen(false) }
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertTrue("the tour shows", shown(TourTestTags.BALLOON))
-            assertFalse("the tuner below is hidden from TalkBack", device.hasObject(By.res(TunerTestTags.PICKER)))
+            assertFalse("the tuner below is hidden from TalkBack", device.hasObject(By.res(TUNER_SHOWN)))
 
             // Back ends the tour, not the app.
             device.pressBack()
             assertTrue("Back ends it", gone(TourTestTags.BALLOON))
-            assertTrue("the tuner is there again", shown(TunerTestTags.PICKER))
+            assertTrue("the tuner is there again", shown(TUNER_SHOWN))
             assertTrue("seen for good", waitUntil { saved.tourSeen })
 
             // It stays gone when the app starts again.
             scenario.recreate()
-            assertTrue(shown(TunerTestTags.PICKER))
+            assertTrue(shown(TUNER_SHOWN))
             assertFalse("not again", shown(TourTestTags.BALLOON))
 
             // Settings → Show me around: the tuner, with the tour from its first step.
             click(NavigationTestTags.tab(Destination.SETTINGS))
-            assertTrue("Settings opened", gone(TunerTestTags.PICKER))
+            assertTrue("Settings opened", gone(TUNER_SHOWN))
             val row = device.findObject(By.res(SHOW_TOUR_TAG))
                 ?: device.wait(Until.findObject(By.scrollable(true)), WAIT_MS)?.scrollUntil(Direction.DOWN, Until.findObject(By.res(SHOW_TOUR_TAG)))
                 ?: error("no Show me around")
@@ -77,7 +78,7 @@ class TourFlowTest {
             click(TourTestTags.NEXT)
             click(TourTestTags.SKIP)
             assertTrue("Skip tour ends it", gone(TourTestTags.BALLOON))
-            assertTrue(shown(TunerTestTags.PICKER))
+            assertTrue(shown(TUNER_SHOWN))
             assertTrue(saved.tourSeen)
         }
     }
@@ -94,5 +95,8 @@ class TourFlowTest {
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+
+        /** A part of the tuner screen itself, so its being found means the tuner shows (and TalkBack reaches it). */
+        val TUNER_SHOWN = TunerTestTags.mode(TunerMode.CHROMATIC)
     }
 }

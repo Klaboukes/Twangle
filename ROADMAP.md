@@ -10,7 +10,7 @@ Phases 0–20 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCH
 
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
-- ☐ **Overnight run for Phase 22's fit check and Phase 25's meter looks:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, runs the on-device UI tests of the new meter looks (`MeterLooksTest`, `SettingsContentTest`, `SettingsStylesTest`, `CompactLandscapeStylesTest`, `TunerContentTest`), fixes what it finds, and runs the full UI tests, which takes a few hours
+- ☐ **Overnight run for Phase 22's fit check and Phase 25's meter looks:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, runs the on-device UI tests of the new meter looks (`MeterLooksTest`, `SettingsContentTest`, `SettingsStylesTest`, `CompactLandscapeStylesTest`, `TunerContentTest`), the tests of the Tuning item in the navigation bar (`NavigationBarTest`, `TourFlowTest`, `TourStylesTest`, `StringRowStylesTest`, `StrumCheckStylesTest`, `TunerStylesTest`), fixes what it finds, and runs the full UI tests, which takes a few hours
 - ☑ **Note names:** owner chose "what is most common in those countries" (2026-10-15): Polish and Russian call B "H" as German does, Turkish and Arabic use Do-Re-Mi
 
 ## Owner checks (live tests)

@@ -1,5 +1,6 @@
 <resources>
     <string name="nav_tuner">Tuner</string>
+    <string name="nav_tuning">Stem</string>
     <string name="nav_metronome">Metronom</string>
     <string name="nav_settings">Setelan</string>
     <string name="widget_name">Tuner</string>

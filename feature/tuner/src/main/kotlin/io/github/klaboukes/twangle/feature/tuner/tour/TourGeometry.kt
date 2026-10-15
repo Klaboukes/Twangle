@@ -219,15 +219,15 @@ fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointer
 
 /**
  * The tour's order in the current layout: [steps] in reading order ([readingOrder]) by their
- * [bounds], with the navigation bar or rail always last. Steps not laid out yet keep their place in
- * [steps] after the others, before the bar. Upright that is mode switch, meter, note, instrument
- * button, strum check, strings, bar; in the two panes (a phone on its side, wide screens) the readout
- * pane's meter and note, then the controls pane's mode switch, instrument button, strum check and
- * strings, then the rail or bar. [rightToLeft] reads right to left, as in Arabic, where the layout is
- * mirrored (upright the instrument button then comes before the strum check).
+ * [bounds], with the navigation bar's or rail's parts (its Tuning item, then its Metronome and
+ * Settings tabs) always last. Steps not laid out yet keep their place in [steps] after the others,
+ * before the bar. Upright that is mode switch, meter, note, strum check, strings, then the bar; in the
+ * two panes (a phone on its side, wide screens) the readout pane's meter and note, then the controls
+ * pane's mode switch, strum check and strings, then the rail or bar. [rightToLeft] reads right to
+ * left, as in Arabic, where the layout is mirrored.
  */
 fun tourOrder(steps: List<TourPart>, rightToLeft: Boolean = false, bounds: (TourPart) -> TourBox?): List<TourPart> {
-    val (bar, rest) = steps.partition { it == TourPart.NAVIGATION }
+    val (bar, rest) = steps.partition { it in BAR_PARTS }.let { (bar, rest) -> bar.sortedBy(BAR_PARTS::indexOf) to rest }
     val placed = rest.mapNotNull { part -> bounds(part)?.let { part to it } }
     val unplaced = rest.filter { bounds(it) == null }
     return readingOrder(placed, rightToLeft) { it.second }.map { it.first } + unplaced + bar
@@ -297,3 +297,6 @@ fun easeInOutCubic(t: Float): Float {
     val c = t.coerceIn(0f, 1f)
     return if (c < 0.5f) 4f * c * c * c else 1f - ((-2f * c + 2f).let { it * it * it }) / 2f
 }
+
+/** The tour's parts on the navigation bar or rail, in their tour order. */
+private val BAR_PARTS = listOf(TourPart.PICKER, TourPart.NAVIGATION)

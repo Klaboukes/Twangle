@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -43,7 +44,10 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
+import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
+import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
+import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
 import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
@@ -88,8 +92,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
-     * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
-     * at the bottom, or the rail at the start edge on its side. Back leads from About to Settings, from
+     * tuning editor over the style's background, with the navigation bar (Tuner · Tuning · Metronome ·
+     * Settings) at the bottom, or the rail at the start edge on its side. Tuning shows the tuner with
+     * the instrument and tuning panel open over it. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does.
      *
@@ -118,6 +123,8 @@ class MainActivity : AppCompatActivity() {
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
+                // Whether the instrument and tuning panel shows over the tuner (the bar's Tuning item opens it).
+                var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
                 // Whether the tuner shows its compact layout on its side without the controls: the rail hides then.
                 var tunerCompact by remember { mutableStateOf(false) }
                 // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
@@ -158,6 +165,12 @@ class MainActivity : AppCompatActivity() {
                     AppNavigationFrame(
                         selected = screen.destination,
                         onSelect = { screen = it.screen },
+                        // The panel opens over the tuner, so its tunings can be tried on the strings at once.
+                        onTuning = {
+                            screen = Screen.TUNER
+                            tuningPanelOpen = true
+                        },
+                        tuningState = spokenTuning(settings),
                         hidden = screen == Screen.TUNER && tunerCompact,
                     ) {
                         saveableState.SaveableStateProvider(screen.name) {
@@ -180,6 +193,8 @@ class MainActivity : AppCompatActivity() {
                                             editorTuningId = customTuningId
                                             screen = Screen.TUNING_EDITOR
                                         },
+                                        pickerOpen = tuningPanelOpen,
+                                        onPickerOpenChange = { tuningPanelOpen = it },
                                         tourOpen = tourOpen,
                                         onMicGrantedChange = { tunerShown = it },
                                     )
@@ -221,6 +236,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /** The picked instrument and tuning as TalkBack says them on the bar's Tuning item, e.g. "Guitar, Standard" or a custom tuning's name. */
+    @Composable
+    private fun spokenTuning(settings: AppSettings): String {
+        val tuningName = settings.customTunings.firstOrNull { it.id == settings.tuning.id }?.name ?: tuningLabel(settings.tuning)
+        return stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), tuningName)
     }
 
     /** While this is in the composition, the volume keys set the media volume (the tone's and the clicks' loudness). */

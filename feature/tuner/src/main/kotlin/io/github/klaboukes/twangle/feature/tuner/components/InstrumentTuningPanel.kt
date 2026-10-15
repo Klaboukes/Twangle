@@ -6,17 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -34,15 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,17 +49,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipShading
 import io.github.klaboukes.twangle.core.designsystem.stringChipShape
@@ -81,128 +66,43 @@ import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 /**
- * One button for the instrument and its tuning ("Guitar · Standard ⌄"), above the strings, as the
- * approved mock-up docs/design/combined-picker-preview.html. Tapping it opens [PickerPanel] from the
- * bottom: the instruments along the top, [instrument]'s tunings below, [tuning] ticked. Picking an
- * instrument calls [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the
- * panel open; picking a tuning calls [onTuningChange] and closes it. [onExpandedChange] hears when the
- * panel opens and closes (closed also when the button goes away). [customTunings] are the player's own
- * tunings; the button names a picked one by its name, and the panel lists the instrument's under its
- * presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls [onEditTuning], Delete
- * asks first and then calls [onDeleteTuning] (no menu entry without its lambda). With [onNewTuning], the
- * list ends in "New tuning", which closes the panel and calls it with the instrument shown.
- * [inTour]: the button's outline is the tour's instrument step (not where it isn't shown).
+ * The instrument and tuning panel, as the approved mock-up docs/design/combined-picker-preview.html,
+ * opened from the navigation bar's Tuning item: a sheet from the bottom with the instruments along
+ * the top and [instrument]'s tunings below, [tuning] ticked. Picking an instrument calls
+ * [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the panel open; picking a
+ * tuning calls [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap
+ * outside, a swipe down or Back). [customTunings] are the player's own tunings; the panel lists the
+ * instrument's under its presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls
+ * [onEditTuning], Delete asks first and then calls [onDeleteTuning] (no menu entry without its lambda).
+ * With [onNewTuning], the list ends in "New tuning", which closes the panel and calls it with the
+ * instrument shown.
  */
 @Composable
-fun CombinedPicker(
+fun InstrumentTuningPanel(
     instrument: Instrument,
     tuning: Tuning,
     onInstrumentChange: (Instrument) -> Unit,
     onTuningChange: (Tuning) -> Unit,
-    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
     notation: Notation = Notation.DEFAULT,
-    onExpandedChange: (Boolean) -> Unit = {},
     customTunings: List<CustomTuning> = emptyList(),
     onNewTuning: ((Instrument) -> Unit)? = null,
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
-    inTour: Boolean = true,
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    val currentOnExpandedChange by rememberUpdatedState(onExpandedChange)
-    LaunchedEffect(expanded) { currentOnExpandedChange(expanded) }
-    DisposableEffect(Unit) { onDispose { currentOnExpandedChange(false) } }
-    PickerButton(
-        instrumentName = instrumentLabel(instrument),
-        tuningName = customTunings.firstOrNull { it.id == tuning.id }?.name ?: tuningLabel(tuning),
-        onClick = { expanded = true },
-        modifier = modifier,
-        inTour = inTour,
+    PickerPanel(
+        instrument,
+        tuning,
+        notation,
+        onInstrumentChange,
+        onTuningChange,
+        TuningActions(customTunings.filter { it.instrument == instrument }, onNewTuning, onEditTuning, onDeleteTuning),
+        onDismiss = onDismiss,
     )
-    if (expanded) {
-        PickerPanel(
-            instrument,
-            tuning,
-            notation,
-            onInstrumentChange,
-            onTuningChange,
-            TuningActions(customTunings.filter { it.instrument == instrument }, onNewTuning, onEditTuning, onDeleteTuning),
-            onDismiss = { expanded = false },
-        )
-    }
 }
-
-/**
- * The button: the instrument's name, a dot, the tuning's name and an arrow, in a thin outline in the
- * style's button shape on a see-through backing (Futuristic: a neon outline, nothing behind). It
- * keeps to one line: where the names don't fit the room they get, they are set smaller, down to
- * [MIN_PICKER_TEXT_SCALE] ([pickerTextScale]); only past that (very large fonts) do they wrap.
- */
-@Composable
-private fun PickerButton(instrumentName: String, tuningName: String, onClick: () -> Unit, modifier: Modifier = Modifier, inTour: Boolean = true) {
-    val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape = pickerButtonShape(style, MaterialTheme.shapes.small)
-    val muted = scheme.onSurfaceVariant
-    val label = buildAnnotatedString {
-        append(instrumentName)
-        withStyle(SpanStyle(color = muted)) { append(SEPARATOR) }
-        append(tuningName)
-    }
-    // TalkBack: "Guitar, Standard, button, double-tap to change instrument or tuning".
-    val spoken = stringResource(R.string.tuner_spoken_picker, instrumentName, tuningName)
-    val clickLabel = stringResource(R.string.tuner_change_instrument_or_tuning)
-    val textStyle = pickerTextStyle()
-    val textMeasurer = rememberTextMeasurer()
-    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val room = constraints.maxWidth - with(LocalDensity.current) { BUTTON_FIXED_WIDTH.roundToPx() }
-        val full = textMeasurer.measure(label, textStyle, maxLines = 1, softWrap = false).size.width
-        val scale = pickerTextScale(full, room)
-        Row(
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .testTag(TunerTestTags.PICKER)
-                // The tour lights up the outline, not the touch target round it.
-                .then(if (inTour) Modifier.tourTarget(TourPart.PICKER) else Modifier)
-                .heightIn(min = BUTTON_HEIGHT)
-                .clip(shape)
-                .background(if (neon) Color.Transparent else scheme.surface.copy(alpha = BUTTON_BACKING_ALPHA), shape)
-                .border(BORDER, if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else muted.copy(alpha = OUTLINE_ALPHA), shape)
-                .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
-                .semantics { contentDescription = spoken }
-                .padding(start = BUTTON_START_PADDING, end = BUTTON_END_PADDING),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                label,
-                style = textStyle.scaledBy(scale),
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            Spacer(Modifier.width(ARROW_GAP))
-            Icon(painterResource(R.drawable.ic_expand_more), contentDescription = null, tint = muted, modifier = Modifier.size(ARROW_SIZE))
-        }
-    }
-}
-
-/**
- * How much smaller the button's names are set so [fullWidth] (their width at full size, in pixels)
- * fits [room]: 1 when it fits, else just enough smaller (and 2 % more, as small type doesn't narrow
- * quite in step), but never below [MIN_PICKER_TEXT_SCALE].
- */
-internal fun pickerTextScale(fullWidth: Int, room: Int): Float =
-    if (fullWidth + 1 <= room) 1f else max(MIN_PICKER_TEXT_SCALE, room.toFloat() / (fullWidth + 1) * SHRUNK_NAME_MARGIN)
-
-private fun TextStyle.scaledBy(scale: Float): TextStyle =
-    if (scale == 1f) this else copy(fontSize = fontSize * scale, letterSpacing = if (letterSpacing.isSp) letterSpacing * scale else letterSpacing)
 
 /**
  * The panel from the bottom (a Material 3 modal bottom sheet over the dimmed tuner): its title, the
@@ -472,32 +372,8 @@ private fun panelShape(style: VisualStyle): Shape = when (style) {
     else -> RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)
 }
 
-/** The style a picker's name is set in at full size: the title face over the button's own label style. */
-@Composable
-internal fun pickerTextStyle(): TextStyle = MaterialTheme.typography.labelLarge.merge(MaterialTheme.typography.titleMedium)
-
-/** Between the instrument's and the tuning's names on the button. */
-private const val SEPARATOR = " · "
-
-/** The button's names never get smaller than this; past it they wrap. */
-internal const val MIN_PICKER_TEXT_SCALE = 0.7f
-
-/** Names set smaller are set this much smaller again, so rounding never cuts them off. */
-private const val SHRUNK_NAME_MARGIN = 0.98f
-
-private val BUTTON_HEIGHT = 44.dp
-private val BUTTON_START_PADDING = 18.dp
-private val BUTTON_END_PADDING = 14.dp
-private val ARROW_GAP = 6.dp
-private val ARROW_SIZE = 20.dp
 private val BORDER = 1.dp
 private val PICKED_BORDER = 2.dp
-
-/** What of the button's width never shrinks with its names: padding, arrow and outline. */
-private val BUTTON_FIXED_WIDTH = BUTTON_START_PADDING + BUTTON_END_PADDING + ARROW_GAP + ARROW_SIZE + BORDER * 2
-
-/** The button's see-through backing, so it reads on any style's background (the mock-up's 45 %). */
-private const val BUTTON_BACKING_ALPHA = 0.45f
 
 /** The thin outline: the muted text colour at 60 %; Futuristic's neon: the accent at 55 %. */
 private const val OUTLINE_ALPHA = 0.6f
@@ -529,6 +405,6 @@ internal val TUNING_TEXT_INSET = 12.dp
 
 @Preview(showBackground = true)
 @Composable
-private fun CombinedPickerPreview() {
-    MaterialTheme { CombinedPicker(Instruments.UKULELE, Instruments.UKULELE.defaultTuning, onInstrumentChange = {}, onTuningChange = {}) }
+private fun InstrumentTuningPanelPreview() {
+    MaterialTheme { InstrumentTuningPanel(Instruments.UKULELE, Instruments.UKULELE.defaultTuning, onInstrumentChange = {}, onTuningChange = {}, onDismiss = {}) }
 }

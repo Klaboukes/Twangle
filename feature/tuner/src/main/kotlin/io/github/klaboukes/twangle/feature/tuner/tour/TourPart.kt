@@ -26,10 +26,10 @@ enum class TourPart(
     /** The note under the meter: its name with the cents pill and frequency, or with the wave. */
     NOTE(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_note, interactive = false),
 
-    /** The instrument-and-tuning button. */
-    PICKER(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_picker, interactive = true),
+    /** The navigation bar's Tuning item (the rail's on a phone on its side), which opens the instrument and tuning panel. */
+    PICKER(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_picker, interactive = true),
 
-    /** The strum check's switch beside the instrument-and-tuning button. */
+    /** The strum check's switch above the strings. */
     STRUM(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_strum, interactive = true),
 
     /** The string buttons (tap one to lock it). */
@@ -43,12 +43,12 @@ enum class TourPart(
         /**
          * The tour's steps in [mode]: all seven in guitar mode, without the strum check's switch where
          * strum check isn't offered ([strumCheck]; every instrument has it today, up to 8 strings); in
-         * chromatic mode (only when started again from Settings) without the instrument-and-tuning
-         * button, the strum check and the strings, which aren't shown there.
+         * chromatic mode (only when started again from Settings) without the strum check and the
+         * strings, which aren't shown there.
          */
         fun stepsFor(mode: TunerMode, strumCheck: Boolean = true): List<TourPart> = when (mode) {
             TunerMode.AUTO -> entries.filter { strumCheck || it != STRUM }
-            TunerMode.CHROMATIC -> listOf(MODE, METER, NOTE, NAVIGATION)
+            TunerMode.CHROMATIC -> listOf(MODE, METER, NOTE, PICKER, NAVIGATION)
         }
     }
 }
