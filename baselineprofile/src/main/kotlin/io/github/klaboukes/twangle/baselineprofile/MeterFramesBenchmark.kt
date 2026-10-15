@@ -22,7 +22,7 @@ import java.util.regex.Pattern
  * all the time. The `benchmarkRelease` app hears a synthetic tone that sweeps across about ±30
  * cents (`SyntheticAudioRecorder` in `:app`), so every look and every run gets the same input.
  *
- * For each look it picks the look in settings (display: needle with cents, so only the meter
+ * For each look it picks the look in settings (below the note: numbers, so only the meter
  * moves), switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in ARCHITECTURE §4.
@@ -59,7 +59,7 @@ class MeterFramesBenchmark {
 
         // Only the meter moves: the cents display instead of the wave view.
         openSettings()
-        click(findInSettings(By.text(NEEDLE_DISPLAY)))
+        click(findInSettings(By.text(NUMBERS_DISPLAY)))
         device.pressBack()
         waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
 
@@ -225,8 +225,8 @@ class MeterFramesBenchmark {
         val JANK_CAUSE: Pattern = Pattern.compile("^\\s*(Number [A-Z].*|.*gpu percentile.*): ")
         const val JANK_CAUSE_LINES = 16
 
-        /** The display choice "Needle: the number of cents", in English or Dutch. */
-        val NEEDLE_DISPLAY: Pattern = Pattern.compile("(Needle|Naald): .*")
+        /** The display choice "Numbers: how many cents off", in English or Dutch (the meter on its own). */
+        val NUMBERS_DISPLAY: Pattern = Pattern.compile("(Numbers|Getallen): .*")
 
         const val RUNS = 3
         const val WINDOW_SECONDS = 7

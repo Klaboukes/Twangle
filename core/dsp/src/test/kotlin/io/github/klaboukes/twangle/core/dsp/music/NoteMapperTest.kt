@@ -63,7 +63,6 @@ class NoteMapperTest {
             val reading = mapper.map(hz)
             assertEquals("note for $offset cents", "A2", reading.note.toString())
             assertEquals("cents for $offset cents", offset, reading.cents, CENT_TOLERANCE)
-            assertEquals("centsOff for $offset cents", offset, mapper.centsOff(hz), CENT_TOLERANCE)
         }
     }
 
@@ -76,12 +75,6 @@ class NoteMapperTest {
         val justAboveHalf = mapper.map(detune(440f, 50.1f))
         assertEquals(Note(70), justAboveHalf.note)
         assertEquals(-49.9f, justAboveHalf.cents, CENT_TOLERANCE)
-    }
-
-    @Test
-    fun `nearestNote agrees with map`() {
-        assertEquals(Note.of(PitchClass.E, 2), mapper.nearestNote(detune(82.4069f, -20f)))
-        assertEquals(Note.of(PitchClass.F, 2), mapper.nearestNote(detune(82.4069f, 60f)))
     }
 
     @Test

@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.centsBetween
+import io.github.klaboukes.twangle.core.dsp.music.nearestNote
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

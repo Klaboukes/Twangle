@@ -982,13 +982,13 @@ class SettingsContentTest {
         compose.onNodeWithTag(LICENCE_TEXT_TAG).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
     }
 
-    /** Resources in [locale], or the test's own when it is null. */
     /** [MaterialTheme], or with a [style] that style's lettering and colours (light). */
     @Composable
     private fun Themed(style: VisualStyle?, content: @Composable () -> Unit) {
         if (style == null) MaterialTheme { content() } else TwangleTheme(style = style, darkTheme = false, animate = false) { content() }
     }
 
+    /** Resources in [locale], or the test's own when it is null. */
     private fun resourcesIn(locale: String?): android.content.res.Resources {
         if (locale == null) return context.resources
         val config = android.content.res.Configuration(context.resources.configuration)

@@ -194,11 +194,6 @@ class StringRowStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * Every instrument with its tunings (the guitar's longest names), in English and Dutch, upright
-     * and in the full layout on its side: the instrument-and-tuning button keeps to one line, its
-     * label wholly shown ("8-snarige gitaar · Standaard"), the button in the window, above the strings.
-     */
-    /**
      * The strum check's switch sits above the strings at their end, in the window, for every instrument
      * (4 to 8 strings), upright and on its side, at normal and at 2x text.
      */

@@ -74,7 +74,7 @@ interface SettingsRepository {
     suspend fun setShowSignalBars(enabled: Boolean)
 
     /**
-     * Needle or wave. Replaces the old wave-view switch, which counts only until this is first
+     * Numbers ([TunerDisplay.NEEDLE]) or wave. Replaces the old wave-view switch, which counts only until this is first
      * saved, and carries an old saved strobe display over to the wave's strobe look.
      */
     suspend fun setDisplay(display: TunerDisplay)

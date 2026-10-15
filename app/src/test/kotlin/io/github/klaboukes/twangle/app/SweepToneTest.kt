@@ -1,11 +1,11 @@
 package io.github.klaboukes.twangle.app
 
-import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.log2
 
 /** The benchmark build's synthetic input: it must sweep as documented and read as that pitch. */
 class SweepToneTest {
@@ -49,7 +49,7 @@ class SweepToneTest {
             samples.copyInto(window, 0, start, start + window.size)
             val result = yin.detect(window)
             assertTrue("no pitch at sample $start", result.isPitched)
-            val heard = NoteMapper.centsBetween(result.frequencyHz, SweepTone.A4_HZ.toFloat())
+            val heard = 1200f * log2(result.frequencyHz / SweepTone.A4_HZ.toFloat())
             val expected = SweepTone.centsAt((start + window.size / 2.0) / sampleRate)
             assertEquals("at ${start / sampleRate.toDouble()} s", expected, heard.toDouble(), 1.5)
             start += sampleRate / 10

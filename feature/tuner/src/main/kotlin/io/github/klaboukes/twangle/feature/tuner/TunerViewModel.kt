@@ -234,12 +234,12 @@ class TunerViewModel(
         permissionGranted.value = granted
     }
 
-    /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
     /** The app's language changed (e.g. to "fr"): note names follow its habit unless the player picked a notation. */
     fun setLanguage(language: String) {
         appLanguage.value = language
     }
 
+    /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
     fun setMode(mode: TunerMode) {
         // Chromatic mode has no strings to show which one sounds.
         if (mode != this.mode.value) stopTone()

@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.core.dsp.strobe
 
 import io.github.klaboukes.twangle.core.dsp.allocatedBytes
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.centsBetween
 import io.github.klaboukes.twangle.core.dsp.pitch.TunerChain
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion.Companion.MAX_STRIPES_PER_SECOND
