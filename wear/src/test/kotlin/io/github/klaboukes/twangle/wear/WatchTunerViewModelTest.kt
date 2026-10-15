@@ -20,6 +20,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WatchTunerViewModelTest {
@@ -144,5 +145,9 @@ class WatchTunerViewModelTest {
         assertEquals("+12", WatchNoteName.signedCents(12))
         assertEquals("−3", WatchNoteName.signedCents(-3))
         assertEquals("0", WatchNoteName.signedCents(0))
+        // In the digits of the app's language, like its texts; the octave stays 0–9.
+        val arabic = Locale.forLanguageTag("ar-u-nu-arab")
+        assertEquals("+١٢", WatchNoteName.signedCents(12, arabic))
+        assertEquals("−٣", WatchNoteName.signedCents(-3, arabic))
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,9 +54,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
+import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -108,18 +113,12 @@ private fun Modifier.buttonFace(look: ButtonLook, shape: Shape, picked: Boolean 
 /** Futuristic's outline: the accent at 55 %, as its tuner's neon buttons. */
 private const val NEON_OUTLINE_ALPHA = 0.55f
 
-/** The meter's label, e.g. "6/8". */
+/** The meter's label, e.g. "6/8", in the app language's digits (٦/٨ in Arabic). */
 @Composable
-internal fun meterLabel(meter: Meter): String = stringResource(
-    when (meter) {
-        Meter.TWO_FOUR -> R.string.metronome_meter_2_4
-        Meter.THREE_FOUR -> R.string.metronome_meter_3_4
-        Meter.FOUR_FOUR -> R.string.metronome_meter_4_4
-        Meter.FIVE_FOUR -> R.string.metronome_meter_5_4
-        Meter.SIX_EIGHT -> R.string.metronome_meter_6_8
-        Meter.SEVEN_EIGHT -> R.string.metronome_meter_7_8
-    },
-)
+internal fun meterLabel(meter: Meter): String {
+    val locale = appLocale()
+    return localDigits(meter.beatsPerBar, locale) + "/" + localDigits(meter.noteValue, locale)
+}
 
 /** The meter as TalkBack says it, e.g. "Six-eight time" (it would read "6/8" as a date or a fraction). */
 @Composable
@@ -189,10 +188,15 @@ private val METER_BUTTON_WIDTH = 50.dp
 /** − and + (one BPM slower, faster) either side of Tap tempo. */
 @Composable
 fun TempoButtons(onSlower: () -> Unit, onFaster: () -> Unit, onTap: (atMillis: Long) -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        StepButton(R.drawable.ic_remove, stringResource(R.string.metronome_slower), onSlower, Modifier.testTag(MetronomeTestTags.SLOWER))
-        TapTempoButton(onTap)
-        StepButton(R.drawable.ic_add, stringResource(R.string.metronome_faster), onFaster, Modifier.testTag(MetronomeTestTags.FASTER))
+    // Slower on the left, faster on the right in every language, as on the tempo dial above, which
+    // like a clock is not mirrored in right-to-left languages.
+    val textDirection = LocalLayoutDirection.current
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            StepButton(R.drawable.ic_remove, stringResource(R.string.metronome_slower), onSlower, Modifier.testTag(MetronomeTestTags.SLOWER))
+            CompositionLocalProvider(LocalLayoutDirection provides textDirection) { TapTempoButton(onTap) }
+            StepButton(R.drawable.ic_add, stringResource(R.string.metronome_faster), onFaster, Modifier.testTag(MetronomeTestTags.FASTER))
+        }
     }
 }
 

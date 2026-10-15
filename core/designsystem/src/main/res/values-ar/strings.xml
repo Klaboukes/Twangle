@@ -1,0 +1,13 @@
+<resources>
+    <string name="style_ancient">عتيق</string>
+    <string name="style_classic">كلاسيكي</string>
+    <string name="style_retro">ريترو</string>
+    <string name="style_contemporary">معاصر</string>
+    <string name="style_futuristic">مستقبلي</string>
+    <string name="style_space_age">عصر الفضاء</string>
+
+    <string name="spoken_sharp">%1$s دييز</string>
+    <string name="spoken_flat">%1$s بيمول</string>
+
+    <string name="meter_studio_unit">سنت</string>
+</resources>

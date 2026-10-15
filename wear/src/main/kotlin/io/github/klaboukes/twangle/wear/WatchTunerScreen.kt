@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +29,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -45,6 +48,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.min
@@ -57,6 +61,7 @@ import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -173,22 +178,27 @@ private fun Reading(reading: WatchTunerState.Detected, dial: Dp, glow: () -> Flo
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Row {
-            Text(
-                noteNameText(WatchNoteName.letter(reading.note)),
-                modifier = Modifier.alignByBaseline(),
-                color = noteColor,
-                style = TextStyle(fontSize = (dial * WatchDial.NOTE_SIZE).fixedSp(), fontWeight = FontWeight.Light),
-            )
-            Text(
-                WatchNoteName.octave(reading.note),
-                modifier = Modifier.alignByBaseline(),
-                color = WatchColors.muted,
-                style = TextStyle(fontSize = (dial * WatchDial.OCTAVE_SIZE).fixedSp()),
-            )
+        // A note name reads "A4" in every language, so the octave stays right of the letter in
+        // right-to-left languages too.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row {
+                Text(
+                    noteNameText(WatchNoteName.letter(reading.note)),
+                    modifier = Modifier.alignByBaseline(),
+                    color = noteColor,
+                    style = TextStyle(fontSize = (dial * WatchDial.NOTE_SIZE).fixedSp(), fontWeight = FontWeight.Light),
+                )
+                Text(
+                    WatchNoteName.octave(reading.note),
+                    modifier = Modifier.alignByBaseline(),
+                    color = WatchColors.muted,
+                    style = TextStyle(fontSize = (dial * WatchDial.OCTAVE_SIZE).fixedSp()),
+                )
+            }
         }
+        val locale = LocalConfiguration.current.locales[0]
         Text(
-            pluralStringResource(R.plurals.wear_cents, abs(reading.cents), WatchNoteName.signedCents(reading.cents)),
+            pluralStringResource(R.plurals.wear_cents, abs(reading.cents), WatchNoteName.signedCents(reading.cents, locale)),
             color = WatchColors.muted,
             style = TextStyle(fontSize = (dial * WatchDial.CENTS_SIZE).fixedSp()),
         )
@@ -319,10 +329,16 @@ object WatchNoteName {
 
     fun octave(note: Note): String = note.octave.toString()
 
-    /** "+12", "−3" (a real minus sign), or "0". */
-    fun signedCents(cents: Int): String = when {
-        cents > 0 -> "+$cents"
-        cents < 0 -> "−${-cents}"
-        else -> "0"
+    /**
+     * "+12", "−3" (a real minus sign), or "0", in the digits of [locale] as the texts around it write
+     * them (Arabic-Indic in Arabic: "+١٢"). The octave stays 0–9, as part of the note's name.
+     */
+    fun signedCents(cents: Int, locale: Locale = Locale.ROOT): String {
+        val digits = String.format(locale, "%d", abs(cents))
+        return when {
+            cents > 0 -> "+$digits"
+            cents < 0 -> "−$digits"
+            else -> digits
+        }
     }
 }

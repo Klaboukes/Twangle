@@ -176,6 +176,14 @@ class TourGeometryTest {
     }
 
     @Test
+    fun `in a right-to-left language the mirrored layout reads in the same order`() {
+        // Arabic mirrors the screen: the strum check sits left of the instrument button, read after it.
+        val mirrored = upright.mapValues { (_, b) -> TourBox(w - b.right, b.top, w - b.left, b.bottom) }
+        val order = tourOrder(TourPart.entries, rightToLeft = true) { mirrored[it] }
+        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
+    }
+
+    @Test
     fun `on its side and in two panes it reads the readout pane, then the controls pane, the rail last`() {
         val order = tourOrder(TourPart.entries) { sideways[it] }
         assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
@@ -218,6 +226,8 @@ class TourGeometryTest {
             "d" to TourBox(200f, -40f, 260f, -30f),
         )
         assertEquals(listOf("a", "b", "c", "d", "e"), readingOrder(boxes) { it.second }.map { it.first })
+        // Right to left (Arabic): the right-hand block first, and right to left within a row.
+        assertEquals(listOf("d", "e", "b", "a", "c"), readingOrder(boxes, rightToLeft = true) { it.second }.map { it.first })
     }
 
     private fun controlsBesides(part: TourPart, boxes: Map<TourPart, TourBox>) =

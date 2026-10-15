@@ -70,6 +70,7 @@ import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -82,6 +83,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -166,8 +168,10 @@ private fun TourOverlay(
     val scope = rememberCoroutineScope()
     val moving = remember { arrayOfNulls<Job>(1) }
     val currentOnEnd by rememberUpdatedState(onEnd)
-    // In the current layout's reading order (a turned phone reads its own), the bar or rail last.
-    val order by remember(steps) { derivedStateOf { tourOrder(steps) { targets.boundsOf(it) } } }
+    // In the current layout's reading order (a turned phone reads its own, Arabic right to left), the
+    // bar or rail last.
+    val rightToLeft = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val order by remember(steps, rightToLeft) { derivedStateOf { tourOrder(steps, rightToLeft) { targets.boundsOf(it) } } }
     val last = steps.lastIndex
     val atStep = step.coerceIn(0, last)
     val balloonStep = shownStep.coerceIn(0, last)

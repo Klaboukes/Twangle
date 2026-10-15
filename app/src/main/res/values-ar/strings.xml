@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">الموالف</string>
+    <string name="nav_metronome">المترونوم</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="widget_name">الموالف</string>
+    <string name="widget_description">يعرض آلتك ودوزانها. لمسة واحدة تفتح الموالف.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">افتح الموالف</string>
+    <string name="widget_preview_title">جيتار · قياسي</string>
+</resources>

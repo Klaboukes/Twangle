@@ -61,7 +61,7 @@ fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modif
                 fontSize = (NUMBER_DP * roles.numberScale).dp.toSp(),
                 fontFeatureSettings = LINING_FIGURES,
             )
-            val numbers = List(meter.beatsPerBar) { measurer.measure((it + 1).toString(), numberStyle) }
+            val numbers = List(meter.beatsPerBar) { measurer.measure(roles.digits(it + 1), numberStyle) }
             val numberY = size.height * NUMBER_Y
             val litInk = roles.ink
             val restingInk = roles.muted.copy(alpha = 0.85f)

@@ -20,6 +20,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -49,6 +51,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
@@ -181,49 +184,53 @@ fun NoteDisplay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(
-            modifier = Modifier
-                .drawBehind {
-                    val strength = glow.value
-                    if (strength > 0f) {
-                        drawCircle(
-                            Brush.radialGradient(listOf(tuneColor.copy(alpha = 0.32f * strength), Color.Transparent)),
-                            radius = size.maxDimension * 0.75f,
-                        )
-                    }
-                }
-                .graphicsLayer {
-                    scaleX = pop.value
-                    scaleY = pop.value
-                },
-        ) {
-            Text(
-                text = noteText,
-                // Already huge, so it doesn't grow further with the system font size; that would
-                // push the rest of the tuner off the screen.
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = with(density) { noteSize.toSp() },
-                    lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
-                ),
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
-                    maxFontSize = with(density) { noteSize.toSp() },
-                    stepSize = with(density) { 4.dp.toSp() },
-                ),
-                color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
-                maxLines = 1,
+        // The note reads "E2" in every language: the octave stays right of the letter in
+        // right-to-left languages too.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(
                 modifier = Modifier
-                    .alignByBaseline()
-                    .widthIn(max = BIG_NOTE_MAX_WIDTH)
-                    .hiddenFromTalkBack(),
-            )
-            if (readout != null) {
+                    .drawBehind {
+                        val strength = glow.value
+                        if (strength > 0f) {
+                            drawCircle(
+                                Brush.radialGradient(listOf(tuneColor.copy(alpha = 0.32f * strength), Color.Transparent)),
+                                radius = size.maxDimension * 0.75f,
+                            )
+                        }
+                    }
+                    .graphicsLayer {
+                        scaleX = pop.value
+                        scaleY = pop.value
+                    },
+            ) {
                 Text(
-                    text = readout.octave.toString(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = colors.onSurfaceVariant,
-                    modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                    text = noteText,
+                    // Already huge, so it doesn't grow further with the system font size; that would
+                    // push the rest of the tuner off the screen.
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = with(density) { noteSize.toSp() },
+                        lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
+                    ),
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
+                        maxFontSize = with(density) { noteSize.toSp() },
+                        stepSize = with(density) { 4.dp.toSp() },
+                    ),
+                    color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
+                    maxLines = 1,
+                    modifier = Modifier
+                        .alignByBaseline()
+                        .widthIn(max = BIG_NOTE_MAX_WIDTH)
+                        .hiddenFromTalkBack(),
                 )
+                if (readout != null) {
+                    Text(
+                        text = readout.octave.toString(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                    )
+                }
             }
         }
         val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)

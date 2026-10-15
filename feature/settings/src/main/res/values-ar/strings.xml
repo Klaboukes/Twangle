@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_back">رجوع</string>
+
+    <string name="settings_group_tuning">الدوزان</string>
+    <string name="settings_group_look">المظهر</string>
+    <string name="settings_group_while_tuning">أثناء الضبط</string>
+
+    <string name="settings_a4_title">النغمة المرجعية (A4)</string>
+    <string name="settings_a4_value">%1$d هرتز</string>
+    <string name="settings_a4_summary">معظم الموسيقى تعتمد ٤٤٠ هرتز. كثيرًا ما تضبط الأوركسترات على ٤٤٢ هرتز، وفرق الباروك على ٤١٥ هرتز.</string>
+    <string name="settings_a4_lower">اخفض A4 هرتزًا واحدًا</string>
+    <string name="settings_a4_raise">ارفع A4 هرتزًا واحدًا</string>
+    <string name="settings_a4_reset">أعِد إلى %1$d هرتز</string>
+
+    <string name="settings_notation_title">أسماء النغمات</string>
+    <string name="settings_notation_sharps">دييز: C، C♯، D …</string>
+    <string name="settings_notation_flats">بيمول: C، D♭، D …</string>
+    <string name="settings_notation_solfege">دو ري مي: Do، Do♯، Re …</string>
+
+    <string name="settings_in_tune_precision_title">دقة الضبط</string>
+    <string name="settings_in_tune_precision_relaxed">مرنة: في حدود ٥ سنتات</string>
+    <string name="settings_in_tune_precision_precise">دقيقة: في حدود سنتين</string>
+
+    <string name="settings_style_title">النمط</string>
+    <string name="settings_theme_title">فاتح أو داكن</string>
+    <string name="settings_theme_system">حسب النظام</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_dynamic_color_title">ألوان الخلفية</string>
+    <string name="settings_dynamic_color_summary">استخدم ألوانًا من خلفية شاشتك</string>
+
+    <string name="settings_meter_look_title">المقياس</string>
+    <string name="settings_meter_look_classic">كلاسيكي</string>
+    <string name="settings_meter_look_light_arc">قوس ضوئي</string>
+    <string name="settings_meter_look_spirit_level">ميزان الماء</string>
+    <string name="settings_meter_look_rolling_scale">مقياس دوّار</string>
+    <string name="settings_meter_look_comet">مذنّب</string>
+    <string name="settings_meter_look_studio_meter">مقياس الاستوديو</string>
+    <string name="settings_in_tune_effect_title">تأثير الضبط</string>
+    <string name="settings_in_tune_effect_calm">هادئ</string>
+    <string name="settings_in_tune_effect_bold">جريء</string>
+
+    <string name="settings_display_title">العرض</string>
+    <string name="settings_display_needle">إبرة: عدد السنتات</string>
+    <string name="settings_display_wave">موجة: صورة متحركة بالشكل الذي تختاره</string>
+    <string name="settings_wave_look_title">شكل الموجة</string>
+    <string name="settings_wave_look_strobe">ستروب</string>
+    <string name="settings_wave_look_ribbon">شريط</string>
+    <string name="settings_wave_look_dots">نقاط</string>
+    <string name="settings_wave_look_fireflies">يراعات</string>
+    <string name="settings_wave_look_loop">حلقة</string>
+    <string name="settings_wave_in_tune_title">عند الضبط</string>
+    <string name="settings_wave_in_tune_breathe">تنفّس بهدوء</string>
+    <string name="settings_wave_in_tune_hold_still">ثبات تام</string>
+    <string name="settings_wave_look_ripples">تموّجات</string>
+    <string name="settings_keep_two_pane_landscape_title">التخطيط الكامل في الوضع الأفقي</string>
+    <string name="settings_keep_two_pane_landscape_summary">عند تدوير الهاتف، اعرض عناصر التحكم بجانب الموالف بدلًا من مقياس واحد كبير</string>
+
+    <string name="settings_keep_screen_on_title">إبقاء الشاشة مضاءة</string>
+    <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة ما دام الموالف مفتوحًا</string>
+    <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
+    <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
+    <string name="settings_show_tune_hint_title">إظهار تلميح الشدّ والإرخاء</string>
+    <string name="settings_show_tune_hint_summary">يبيّن اتجاه تدوير المفتاح ما دامت النغمة غير مضبوطة</string>
+    <string name="settings_show_signal_bars_title">إظهار أشرطة الإشارة</string>
+    <string name="settings_show_signal_bars_summary">للفضوليين: أشرطة صغيرة بجانب النغمة تبيّن مدى وضوح سماع الموالف لك. المسها لعرض الأرقام</string>
+
+    <string name="settings_show_tour_title">جولة تعريفية</string>
+    <string name="settings_show_tour_summary">جولة قصيرة في الموالف</string>
+    <string name="about_title">حول Twangle</string>
+    <string name="settings_about_link_summary">الإصدار %1$s، الخصوصية والتراخيص</string>
+    <string name="settings_about_version">الإصدار %1$s</string>
+    <string name="settings_about_free_title">مجاني إلى الأبد</string>
+    <string name="settings_about_free_summary">بلا إعلانات ولا حساب ولا مشتريات داخل التطبيق ولا تتبّع. لا الآن ولا لاحقًا.</string>
+    <string name="settings_about_privacy_title">الخصوصية</string>
+    <string name="settings_about_privacy_summary">لا يجمع Twangle أي بيانات عنك. لا يعمل الميكروفون إلا وشاشة الموالف مفتوحة. يُحلَّل الصوت مباشرةً ولا يُسجَّل أو يُحفَظ أو يُرسَل أبدًا. ليس لدى Twangle إذن الوصول إلى الإنترنت، فلا يمكنه إرسال أي شيء إلى أي مكان. تُحفَظ إعداداتك على هاتفك فقط.</string>
+    <string name="settings_about_credits_title">الخطوط والبرمجيات مفتوحة المصدر</string>
+    <string name="settings_about_credits_summary">صُنع Twangle بهذه الأعمال. اختر أحدها لقراءة ترخيصه.</string>
+    <string name="settings_about_licence_open">اقرأ الترخيص</string>
+    <string name="settings_about_licence_close">إغلاق</string>
+</resources>

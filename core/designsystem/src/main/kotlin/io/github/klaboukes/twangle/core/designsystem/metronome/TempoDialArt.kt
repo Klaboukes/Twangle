@@ -302,7 +302,7 @@ private class DialScale(dial: DialShape, roles: MeterRoles, density: Density, me
             ticks[i * 5 + 4] = width
             major[i] = isMajor
             if (isMajor) {
-                val text = measure(bpm.toString(), style)
+                val text = measure(roles.digits(bpm), style)
                 numbers += text
                 // Out from the tick's end by a gap, plus the half of the number's box that faces the
                 // tick, so "200" beside a sideways tick keeps as clear of it as "150" above an upright one.

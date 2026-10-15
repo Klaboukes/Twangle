@@ -64,6 +64,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -447,7 +448,13 @@ internal fun TuningRow(
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                     color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
                 )
-                Text(openStrings(tuning, notation), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                // Lowest string first, left to right, in right-to-left languages too (else "E♭ … E♭"
+                // would put its last ♭ in front).
+                Text(
+                    openStrings(tuning, notation),
+                    style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr),
+                    color = scheme.onSurfaceVariant,
+                )
             }
             if (selected) {
                 Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))

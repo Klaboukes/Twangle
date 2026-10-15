@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -57,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -74,7 +76,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 
 /**
- * The open strings of [tuning], lowest on the left, with the [targetString] (if any) highlighted.
+ * The open strings of [tuning], lowest on the left (in right-to-left languages too), with the [targetString] (if any) highlighted.
  * Each string shows its note name with the octave as a small subscript, e.g. E₂. The highlight
  * turns green while [inTune].
  *
@@ -117,47 +119,51 @@ fun StringSelector(
         // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
         val width = if (constraints.hasBoundedWidth) maxWidth else Dp.Infinity
         val fit = stringRowFitFor(style, width, tuning.strings.size, small)
-        Row(
-            modifier = if (small && !fit.squeezed) Modifier else Modifier.fillMaxWidth(),
-            horizontalArrangement = when {
-                fit.squeezed -> Arrangement.Start
-                small -> Arrangement.spacedBy(SMALL_CHIP_SPACING)
-                else -> Arrangement.SpaceEvenly
-            },
-        ) {
-            tuning.strings.forEachIndexed { index, note ->
-                val locked = index == lockedString
-                val sounding = index == soundingString
-                val name = notation.nameIn(tuning, note.pitchClass)
-                val spokenName = spokenString.format(speech.name(name), note.octave)
-                StringChip(
-                    name = name,
-                    spokenName = spokenName,
-                    octave = note.octave,
-                    highlighted = index == targetString,
-                    inTune = inTune,
-                    locked = locked,
-                    onClick = onStringClick?.let { click -> { click(index) } },
-                    clickLabel = when {
-                        soundingString != null -> stopLabel
-                        locked -> unlockLabel
-                        else -> lockLabel
-                    },
-                    onLongClick = onStringLongClick?.let { play -> { play(index) } },
-                    longClickLabel = playLabel.format(spokenName),
-                    state = when {
-                        locked && sounding -> lockedSoundingState
-                        locked -> lockedState
-                        sounding -> soundingState
-                        else -> null
-                    },
-                    sounding = sounding,
-                    animationsOff = animationsOff,
-                    index = index,
-                    fit = fit,
-                    small = small,
-                    modifier = if (fit.squeezed) Modifier.weight(1f) else Modifier,
-                )
+        // Low to high, left to right, in every language: like a keyboard and the meter, not mirrored
+        // in right-to-left languages (Material's rule for graphs and gauges).
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(
+                modifier = if (small && !fit.squeezed) Modifier else Modifier.fillMaxWidth(),
+                horizontalArrangement = when {
+                    fit.squeezed -> Arrangement.Start
+                    small -> Arrangement.spacedBy(SMALL_CHIP_SPACING)
+                    else -> Arrangement.SpaceEvenly
+                },
+            ) {
+                tuning.strings.forEachIndexed { index, note ->
+                    val locked = index == lockedString
+                    val sounding = index == soundingString
+                    val name = notation.nameIn(tuning, note.pitchClass)
+                    val spokenName = spokenString.format(speech.name(name), note.octave)
+                    StringChip(
+                        name = name,
+                        spokenName = spokenName,
+                        octave = note.octave,
+                        highlighted = index == targetString,
+                        inTune = inTune,
+                        locked = locked,
+                        onClick = onStringClick?.let { click -> { click(index) } },
+                        clickLabel = when {
+                            soundingString != null -> stopLabel
+                            locked -> unlockLabel
+                            else -> lockLabel
+                        },
+                        onLongClick = onStringLongClick?.let { play -> { play(index) } },
+                        longClickLabel = playLabel.format(spokenName),
+                        state = when {
+                            locked && sounding -> lockedSoundingState
+                            locked -> lockedState
+                            sounding -> soundingState
+                            else -> null
+                        },
+                        sounding = sounding,
+                        animationsOff = animationsOff,
+                        index = index,
+                        fit = fit,
+                        small = small,
+                        modifier = if (fit.squeezed) Modifier.weight(1f) else Modifier,
+                    )
+                }
             }
         }
     }

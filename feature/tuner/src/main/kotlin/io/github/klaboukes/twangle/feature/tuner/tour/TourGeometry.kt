@@ -223,13 +223,14 @@ fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointer
  * [steps] after the others, before the bar. Upright that is mode switch, meter, note, instrument
  * button, strum check, strings, bar; in the two panes (a phone on its side, wide screens) the readout
  * pane's meter and note, then the controls pane's mode switch, instrument button, strum check and
- * strings, then the rail or bar.
+ * strings, then the rail or bar. [rightToLeft] reads right to left, as in Arabic, where the layout is
+ * mirrored (upright the instrument button then comes before the strum check).
  */
-fun tourOrder(steps: List<TourPart>, bounds: (TourPart) -> TourBox?): List<TourPart> {
+fun tourOrder(steps: List<TourPart>, rightToLeft: Boolean = false, bounds: (TourPart) -> TourBox?): List<TourPart> {
     val (bar, rest) = steps.partition { it == TourPart.NAVIGATION }
     val placed = rest.mapNotNull { part -> bounds(part)?.let { part to it } }
     val unplaced = rest.filter { bounds(it) == null }
-    return readingOrder(placed) { it.second }.map { it.first } + unplaced + bar
+    return readingOrder(placed, rightToLeft) { it.second }.map { it.first } + unplaced + bar
 }
 
 /**
@@ -238,13 +239,14 @@ fun tourOrder(steps: List<TourPart>, bounds: (TourPart) -> TourBox?): List<TourP
  * within a block, rows (boxes whose heights overlap) top to bottom; within a row, left to right
  * again. Side by side goes first, so a pane scrolled on its own never changes the order; upright the
  * full-width meter keeps everything in one block. Boxes overlapping both ways keep top-then-left order.
+ * [rightToLeft] reads side by side blocks right to left instead, for right-to-left languages.
  */
-fun <T> readingOrder(items: List<T>, box: (T) -> TourBox): List<T> {
+fun <T> readingOrder(items: List<T>, rightToLeft: Boolean = false, box: (T) -> TourBox): List<T> {
     if (items.size <= 1) return items
     val columns = groups(items.sortedWith(compareBy({ box(it).left }, { box(it).top })), { box(it).left }, { box(it).right })
-    if (columns.size > 1) return columns.flatMap { readingOrder(it, box) }
+    if (columns.size > 1) return (if (rightToLeft) columns.asReversed() else columns).flatMap { readingOrder(it, rightToLeft, box) }
     val rows = groups(items.sortedWith(compareBy({ box(it).top }, { box(it).left })), { box(it).top }, { box(it).bottom })
-    if (rows.size > 1) return rows.flatMap { readingOrder(it, box) }
+    if (rows.size > 1) return rows.flatMap { readingOrder(it, rightToLeft, box) }
     return rows.single()
 }
 

@@ -1,0 +1,147 @@
+<resources>
+    <string name="mic_permission_title">يحتاج Twangle إلى الميكروفون</string>
+    <string name="mic_permission_intro">ليضبط الدوزان، يستمع Twangle إلى آلتك. يُحلَّل الصوت على هاتفك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
+    <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر هاتفك أبدًا.</string>
+    <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واختر «السماح».</string>
+    <string name="mic_permission_allow">اسمح بالميكروفون</string>
+    <string name="mic_permission_open_settings">افتح الإعدادات</string>
+
+    <string name="error_mic_permission">أُوقف الوصول إلى الميكروفون. اسمح به مجددًا لمتابعة الضبط.</string>
+    <string name="error_mic_busy">تطبيق آخر يستخدم الميكروفون. أغلقه، ثم حاول مرة أخرى.</string>
+    <string name="error_mic_unavailable">تعذّر فتح الميكروفون على هذا الهاتف.</string>
+    <string name="error_mic_stopped">توقف الميكروفون فجأة.</string>
+    <string name="error_retry">حاول مرة أخرى</string>
+
+    <string name="tuner_mode_strings">الأوتار</string>
+    <string name="tuner_mode_chromatic">كروماتي</string>
+    <string name="tuner_show_controls">إظهار عناصر التحكم</string>
+
+    <string name="tuning_standard">قياسي</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">نصف درجة أخفض</string>
+    <string name="tuning_full_step_down">درجة كاملة أخفض</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">جيتار</string>
+    <string name="instrument_guitar_7">جيتار سباعي الأوتار</string>
+    <string name="instrument_guitar_8">جيتار ثماني الأوتار</string>
+    <string name="instrument_bass_4">باص</string>
+    <string name="instrument_bass_5">باص خماسي الأوتار</string>
+    <string name="instrument_ukulele">يوكوليلي</string>
+    <string name="instrument_violin">كمان</string>
+    <string name="instrument_viola">فيولا</string>
+    <string name="instrument_cello">تشيلو</string>
+    <string name="instrument_mandolin">ماندولين</string>
+    <string name="tuner_hint_play_string">اعزف وترًا</string>
+    <string name="tuner_hint_play_note">اعزف نغمة</string>
+    <string name="tuner_hint_play_locked_string">اعزف وتر %1$s</string>
+    <string name="tuner_string_lock">ثبّت هذا الوتر</string>
+    <string name="tuner_string_unlock">اختر الأوتار تلقائيًا</string>
+    <string name="tuner_string_locked">مثبّت</string>
+    <string name="tuner_string_play">شغّل %1$s</string>
+    <string name="tuner_string_stop_tone">أوقف النغمة</string>
+    <string name="tuner_string_sounding">قيد التشغيل</string>
+    <string name="tuner_string_locked_sounding">مثبّت، قيد التشغيل</string>
+    <string name="tuner_frequency">%1$.1f هرتز</string>
+    <!-- 0, 100+: سنت; 1: بسنت واحد; 2: بسنتين; 3–10: سنتات; 11–99: سنتًا. -->
+    <string name="tuner_cents_zero">٠ سنت</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="zero">أخفض بـ%1$d سنت</item>
+        <item quantity="one">أخفض بسنت واحد</item>
+        <item quantity="two">أخفض بسنتين</item>
+        <item quantity="few">أخفض بـ%1$d سنتات</item>
+        <item quantity="many">أخفض بـ%1$d سنتًا</item>
+        <item quantity="other">أخفض بـ%1$d سنت</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="zero">أعلى بـ%1$d سنت</item>
+        <item quantity="one">أعلى بسنت واحد</item>
+        <item quantity="two">أعلى بسنتين</item>
+        <item quantity="few">أعلى بـ%1$d سنتات</item>
+        <item quantity="many">أعلى بـ%1$d سنتًا</item>
+        <item quantity="other">أعلى بـ%1$d سنت</item>
+    </plurals>
+    <string name="tuner_in_tune">مضبوط</string>
+    <string name="tuner_tune_up">شُدّ ↑</string>
+    <string name="tuner_tune_down">أرخِ ↓</string>
+    <string name="tuner_tip_too_soft">اعزف بصوت أعلى قليلًا</string>
+    <string name="tuner_tip_too_noisy">المكان صاخب جدًا</string>
+    <string name="tuner_tip_too_loud">الصوت عالٍ جدًا، أبعد الهاتف</string>
+    <string name="tuner_signal_bars">أشرطة الإشارة: %1$d من %2$d</string>
+    <string name="tuner_signal_no_note">الإشارة: لا نغمة بعد</string>
+    <string name="tuner_signal_show_figures">اعرض الأرقام</string>
+    <string name="tuner_signal_title">مدى وضوح سماع Twangle لك</string>
+    <string name="tuner_signal_volume">مستوى الصوت</string>
+    <string name="tuner_signal_background">الخلفية</string>
+    <string name="tuner_signal_clarity">الوضوح</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d، %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d، %3$s، %4$s</string>
+    <string name="tuner_spoken_tune_up">شُدّ</string>
+    <string name="tuner_spoken_tune_down">أرخِ</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s، %2$s</string>
+    <string name="tuner_spoken_picker">%1$s، %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">غيّر الآلة أو الدوزان</string>
+    <string name="tuner_picker_title">الآلة والدوزان</string>
+
+    <string name="tuner_new_tuning">دوزان جديد</string>
+
+    <string name="tuning_editor_title_edit">عدّل الدوزان</string>
+    <string name="tuning_editor_close">أغلق دون حفظ</string>
+    <string name="tuning_editor_save">حفظ</string>
+    <string name="tuning_editor_instrument">الآلة: %1$s</string>
+    <string name="tuning_editor_name">الاسم</string>
+    <string name="tuning_editor_name_empty">أعطِ الدوزان اسمًا</string>
+    <string name="tuning_editor_name_taken">يوجد دوزان بهذا الاسم بالفعل</string>
+    <string name="tuning_editor_strings">الأوتار</string>
+    <string name="tuning_editor_string">وتر %1$s</string>
+    <string name="tuning_editor_lower">%1$s، نصف درجة أخفض</string>
+    <string name="tuning_editor_raise">%1$s، نصف درجة أعلى</string>
+
+    <string name="tuner_my_tunings">دوزاناتي</string>
+    <string name="tuner_tuning_options">خيارات %1$s</string>
+    <string name="tuner_edit_tuning">تعديل</string>
+    <string name="tuner_delete_tuning">حذف</string>
+    <string name="tuner_delete_tuning_title">حذف هذا الدوزان؟</string>
+    <string name="tuner_delete_tuning_text">سيُحذف «%1$s» نهائيًا.</string>
+    <string name="tuner_delete_tuning_cancel">إلغاء</string>
+    <string name="tuner_strum_check">فحص بضربة</string>
+    <string name="tuner_strum_waiting">اضرب كل الأوتار المفتوحة</string>
+    <string name="tuner_strum_waiting_detail">يظهر لكل وتر إن كان منخفضًا أو مضبوطًا أو مرتفعًا</string>
+    <string name="tuner_strum_hearing">جارٍ الاستماع…</string>
+    <!-- 0, 100+: وتر; 1: وتر واحد; 2: وتران; 3–10: أوتار; 11–99: وترًا. -->
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="zero">%1$d وتر للضبط</item>
+        <item quantity="one">وتر واحد للضبط</item>
+        <item quantity="two">وتران للضبط</item>
+        <item quantity="few">%1$d أوتار للضبط</item>
+        <item quantity="many">%1$d وترًا للضبط</item>
+        <item quantity="other">%1$d وتر للضبط</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">لم تُسمع كل الأوتار</string>
+    <string name="tuner_strum_all_in_tune">كل الأوتار مضبوطة</string>
+    <string name="tuner_strum_tap_to_tune">اختر وترًا لضبطه</string>
+    <string name="tuner_strum_again">اضرب مجددًا، أو اختر وترًا لضبطه</string>
+    <string name="tuner_strum_tune_string">اضبط %1$s</string>
+    <string name="tuner_strum_spoken_string">%1$s، %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s، لم يُسمع</string>
+    <string name="tuner_strum_spoken_waiting">%1$s، لم يُضرب بعد</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s، قراءة أقل يقينًا</string>
+    <string name="tour_title">جولة تعريفية</string>
+    <string name="tour_step_count">%1$d من %2$d</string>
+    <string name="tour_step_spoken">الخطوة %1$d من %2$d. %3$s.</string>
+    <string name="tour_meter">كم تبعد عن النغمة</string>
+    <string name="tour_note">النغمة التي تعزفها</string>
+    <string name="tour_strum">اضرب لفحص كل الأوتار</string>
+    <string name="tour_strings">ثبّت وترًا</string>
+    <string name="tour_picker">اختر الآلة والدوزان</string>
+    <string name="tour_mode">اضبط الأوتار أو أي نغمة</string>
+    <string name="tour_navigation">المترونوم والإعدادات</string>
+    <string name="tour_skip">تخطَّ الجولة</string>
+    <string name="tour_next">التالي</string>
+    <string name="tour_done">تم</string>
+</resources>

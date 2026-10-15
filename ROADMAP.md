@@ -38,7 +38,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☑ Western European: German, French, Spanish, Italian, Portuguese (Brazil) (phone and watch apps, all texts; UI tests in these languages still to run, in the fit-check item below)
 - ☑ Asian: Chinese (Simplified), Japanese, Korean, Hindi, Indonesian (phone and watch apps, all texts; CJK and Devanagari from the phone's own fonts; UI tests in these languages still to run, in the fit-check item below)
 - ☑ Russian, Turkish and Polish (phone and watch apps, all texts; Cyrillic falls back to the phone font in four styles, and Ancient and Futuristic mix faces in Turkish and Polish titles, see the fit-check item below)
-- ☐ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL)
+- ☑ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL): texts, settings and panels mirror; meter, wave, strum check, string row, tempo dial, beat lights and the A4 slider stay low-left/high-right; Arabic-Indic digits everywhere except octaves in note names (phone checked in Arabic; UI tests in Arabic still to run, in the fit-check item below)
 - ☐ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose)
 - ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages
 

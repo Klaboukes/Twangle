@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,11 +27,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.dial.WaveMotion
 import io.github.klaboukes.twangle.core.designsystem.dial.drawWave
@@ -104,13 +107,16 @@ fun StyleMood(
                     stir = motion.stir,
                 )
             }
-            Row(
-                modifier = Modifier.align(Alignment.BottomCenter).offset(y = -maxHeight * STRINGS_BOTTOM),
-                horizontalArrangement = Arrangement.spacedBy(unit * if (style == VisualStyle.CLASSIC) KEY_GAP else STRING_GAP),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                MoodString(stringResource(R.string.style_card_low_string), index = 0, picked = false, unit = unit)
-                MoodString(stringResource(R.string.style_card_note), index = 1, picked = true, unit = unit)
+            // Low string first, left to right in every language, like the tuner's string row.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(
+                    modifier = Modifier.align(Alignment.BottomCenter).offset(y = -maxHeight * STRINGS_BOTTOM),
+                    horizontalArrangement = Arrangement.spacedBy(unit * if (style == VisualStyle.CLASSIC) KEY_GAP else STRING_GAP),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    MoodString(stringResource(R.string.style_card_low_string), index = 0, picked = false, unit = unit)
+                    MoodString(stringResource(R.string.style_card_note), index = 1, picked = true, unit = unit)
+                }
             }
         }
     }

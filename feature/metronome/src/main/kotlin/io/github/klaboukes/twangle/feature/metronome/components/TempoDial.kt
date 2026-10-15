@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
+import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.TempoDialArt
 import io.github.klaboukes.twangle.core.designsystem.metronome.bpmAtTouch
@@ -139,7 +141,7 @@ private fun TempoReadout(bpm: Int, marking: String, size: Dp) {
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            bpm.toString(),
+            localDigits(bpm, appLocale()),
             style = TextStyle(
                 fontFamily = numbers,
                 fontSize = fixed(BPM_UNITS * numberScaleFor(style)),

@@ -243,7 +243,7 @@ private class DrumArt(private val drum: DrumGeometry, private val roles: MeterRo
             fontSize = with(density) { (NUMBER_SIZE_UNITS * roles.numberScale * u).toSp() },
             fontFeatureSettings = LINING_FIGURES,
         )
-        numbers = Array(DRUM_NUMBERS) { measurer.measure(((it + 1) * 10).toString(), style) }
+        numbers = Array(DRUM_NUMBERS) { measurer.measure(roles.digits((it + 1) * 10), style) }
     }
 
     fun draw(scope: DrawScope, cents: Float, tuned: Float) = with(scope) {

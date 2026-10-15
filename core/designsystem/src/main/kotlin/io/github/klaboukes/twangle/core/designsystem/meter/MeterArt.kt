@@ -42,10 +42,13 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.FontFamily
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.MusicSignsFont
+import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -96,7 +99,12 @@ internal data class MeterRoles(
     val effect: InTuneEffect = InTuneEffect.DEFAULT,
     /** The style's own needle, hub, arc and tick caps ([meterFinishFor]). */
     val finish: MeterFinish = MeterFinish.PLAIN,
+    /** The app's language, whose digits the numbers are written in ([localDigits]). */
+    val locale: Locale = Locale.ROOT,
 ) {
+    /** [value] in the app language's digits (Arabic-Indic in Arabic). */
+    fun digits(value: Int): String = localDigits(value, locale)
+
     /** A glass window's face: the surface sunk toward the stage. */
     val face: Color = if (dark) mix(background, Color.Black, 0.3f) else mix(plate, background, 0.7f)
 
@@ -173,6 +181,7 @@ internal fun meterRoles(effect: InTuneEffect = InTuneEffect.DEFAULT): MeterRoles
         numberScale = numberScaleFor(tokens.style),
         effect = effect,
         finish = meterFinishFor(tokens.style),
+        locale = appLocale(),
     )
 }
 
@@ -411,7 +420,7 @@ internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, d
 
     private fun measureNumbers(measurer: TextMeasurer, roles: MeterRoles, density: Density, size: Float): List<TextLayoutResult> {
         val style = TextStyle(fontFamily = roles.numbers, fontSize = with(density) { size.toSp() }, fontFeatureSettings = LINING_FIGURES)
-        return (1..5).map { measurer.measure((it * 10).toString(), style) }
+        return (1..5).map { measurer.measure(roles.digits(it * 10), style) }
     }
 
     fun draw(scope: DrawScope) = with(scope) {

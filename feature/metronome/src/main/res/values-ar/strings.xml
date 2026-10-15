@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">النبضات في المازورة</string>
+    <string name="metronome_tempo">السرعة، اسحب للتغيير</string>
+    <!-- 0, 1, 2, 11–99 and 100+: نبضة; 3–10: نبضات. -->
+    <plurals name="metronome_tempo_value">
+        <item quantity="zero">%1$d نبضة في الدقيقة، %2$s</item>
+        <item quantity="one">نبضة واحدة في الدقيقة، %2$s</item>
+        <item quantity="two">نبضتان في الدقيقة، %2$s</item>
+        <item quantity="few">%1$d نبضات في الدقيقة، %2$s</item>
+        <item quantity="many">%1$d نبضة في الدقيقة، %2$s</item>
+        <item quantity="other">%1$d نبضة في الدقيقة، %2$s</item>
+    </plurals>
+    <string name="metronome_slower">أبطأ</string>
+    <string name="metronome_faster">أسرع</string>
+    <string name="metronome_tap">السرعة بالنقر</string>
+    <string name="metronome_start">ابدأ</string>
+    <string name="metronome_stop">أوقف</string>
+    <string name="metronome_vibrate">اهتزاز مع النبضة</string>
+    <string name="metronome_meter_2_4_spoken">ميزان اثنان على أربعة</string>
+    <string name="metronome_meter_3_4_spoken">ميزان ثلاثة على أربعة</string>
+    <string name="metronome_meter_4_4_spoken">ميزان أربعة على أربعة</string>
+    <string name="metronome_meter_5_4_spoken">ميزان خمسة على أربعة</string>
+    <string name="metronome_meter_6_8_spoken">ميزان ستة على ثمانية</string>
+    <string name="metronome_meter_7_8_spoken">ميزان سبعة على ثمانية</string>
+</resources>

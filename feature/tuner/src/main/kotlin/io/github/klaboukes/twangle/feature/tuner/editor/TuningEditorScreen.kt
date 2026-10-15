@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +59,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -307,20 +310,26 @@ private fun StringStepper(
                 .weight(1f)
                 .semantics { hideFromAccessibility() },
         )
-        StepButton(R.drawable.ic_remove, stringResource(R.string.tuning_editor_lower, spokenString), canLower, onLower)
-        Text(
-            noteText(noteName, note.octave),
-            style = MaterialTheme.typography.headlineSmall,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            modifier = Modifier
-                .widthIn(min = NOTE_WIDTH)
-                .semantics {
-                    contentDescription = spoken
-                    liveRegion = LiveRegionMode.Polite
-                },
-        )
-        StepButton(R.drawable.ic_add, stringResource(R.string.tuning_editor_raise, spokenString), canRaise, onRaise)
+        // − note + reads lower to higher left to right in every language, like the tuner's meter and
+        // the string row, which are not mirrored in right-to-left languages.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StepButton(R.drawable.ic_remove, stringResource(R.string.tuning_editor_lower, spokenString), canLower, onLower)
+                Text(
+                    noteText(noteName, note.octave),
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .widthIn(min = NOTE_WIDTH)
+                        .semantics {
+                            contentDescription = spoken
+                            liveRegion = LiveRegionMode.Polite
+                        },
+                )
+                StepButton(R.drawable.ic_add, stringResource(R.string.tuning_editor_raise, spokenString), canRaise, onRaise)
+            }
+        }
     }
 }
 

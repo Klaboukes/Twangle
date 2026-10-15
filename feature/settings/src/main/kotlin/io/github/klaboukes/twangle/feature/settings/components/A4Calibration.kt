@@ -12,6 +12,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,12 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -33,9 +36,9 @@ import io.github.klaboukes.twangle.feature.settings.R
 import kotlin.math.roundToInt
 
 /**
- * A4 calibration: a slider over 415–466 Hz in 1 Hz steps, − and + buttons for single steps, and a
- * reset to 440 Hz. A drag is saved once the finger lifts; until the saved value comes back the
- * slider keeps showing where it was dropped, so it doesn't jump back.
+ * A4 calibration: a slider over 415–466 Hz in 1 Hz steps (low on the left in every language), − and +
+ * buttons for single steps, and a reset to 440 Hz. A drag is saved once the finger lifts; until the
+ * saved value comes back the slider keeps showing where it was dropped, so it doesn't jump back.
  */
 @Composable
 fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier = Modifier) {
@@ -64,29 +67,33 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) }, enabled = shown > MIN_HZ) {
-                Icon(painterResource(R.drawable.ic_remove), contentDescription = stringResource(R.string.settings_a4_lower))
-            }
-            Slider(
-                value = shown,
-                onValueChange = { pending = AppSettings.normalizeA4(it) },
-                onValueChangeFinished = { pending?.let(onA4Change) },
-                valueRange = MIN_HZ..MAX_HZ,
-                // One stop per whole Hz: 415, 416 … 466.
-                steps = (MAX_HZ - MIN_HZ).toInt() - 1,
-                // 50 stops would draw a row of dots; the value above says where the thumb is.
-                colors = SliderDefaults.colors(activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent),
-                // TalkBack would otherwise read the position as a percentage.
-                modifier = Modifier
-                    .weight(1f)
-                    .semantics {
-                        contentDescription = a4Title
-                        stateDescription = a4Value
-                    },
-            )
-            IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
-                Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.settings_a4_raise))
+        // Lower on the left, higher on the right in every language, like the tuner's meter and a
+        // keyboard: a pitch scale is not mirrored in right-to-left languages.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) }, enabled = shown > MIN_HZ) {
+                    Icon(painterResource(R.drawable.ic_remove), contentDescription = stringResource(R.string.settings_a4_lower))
+                }
+                Slider(
+                    value = shown,
+                    onValueChange = { pending = AppSettings.normalizeA4(it) },
+                    onValueChangeFinished = { pending?.let(onA4Change) },
+                    valueRange = MIN_HZ..MAX_HZ,
+                    // One stop per whole Hz: 415, 416 … 466.
+                    steps = (MAX_HZ - MIN_HZ).toInt() - 1,
+                    // 50 stops would draw a row of dots; the value above says where the thumb is.
+                    colors = SliderDefaults.colors(activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent),
+                    // TalkBack would otherwise read the position as a percentage.
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics {
+                            contentDescription = a4Title
+                            stateDescription = a4Value
+                        },
+                )
+                IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
+                    Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.settings_a4_raise))
+                }
             }
         }
         TextButton(

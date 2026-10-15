@@ -1,0 +1,19 @@
+<resources>
+    <string name="wear_play_note">اعزف نغمة</string>
+    <!-- 0, 1, 2 and 100+: سنت; 3–10: سنتات; 11–99: سنتًا. -->
+    <plurals name="wear_cents">
+        <item quantity="zero">%1$s سنت</item>
+        <item quantity="one">%1$s سنت</item>
+        <item quantity="two">%1$s سنت</item>
+        <item quantity="few">%1$s سنتات</item>
+        <item quantity="many">%1$s سنتًا</item>
+        <item quantity="other">%1$s سنت</item>
+    </plurals>
+    <string name="wear_in_tune">مضبوط</string>
+    <string name="wear_mic_needed">يستمع Twangle إلى آلتك عبر ميكروفون الساعة.</string>
+    <string name="wear_allow_mic">اسمح بالميكروفون</string>
+    <string name="wear_open_settings">افتح الإعدادات</string>
+    <string name="wear_mic_busy">تطبيق آخر يستخدم الميكروفون.</string>
+    <string name="wear_mic_unavailable">تعذّر فتح الميكروفون.</string>
+    <string name="wear_try_again">حاول مرة أخرى</string>
+</resources>
