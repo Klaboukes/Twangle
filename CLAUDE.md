@@ -89,6 +89,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the test phone (the Xiaomi 12X).
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
+- **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update ARCHITECTURE.md in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
 

@@ -770,7 +770,7 @@ Phase 20 (`:wear`). A standalone Wear OS app (`com.google.android.wearable.stand
   - Kotlin passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar.
 
   Every module's `res` and Kotlin sources, the build files and `gradle.properties` are declared inputs of `:app`'s unit tests, so changing any of them reruns the test. Lint's `MissingTranslation` and `StringFormat*` back it up.
-- **Adding a language:** append its qualifier to `twangle.languages`, then add `res/values-<language>/strings.xml` to every module that has a `res/values/strings.xml` (today `:app`, `:wear`, the three features and `:core:designsystem`), translating every translatable string and plural. `LocalizationTest` names what is missing. Nothing else changes: the language list on the phone and the watch's texts follow.
+- **Adding a language:** append its qualifier to `twangle.languages`, then add `res/values-<language>/strings.xml` to every module that has a `res/values/strings.xml` (today `:app`, `:wear`, the three features and `:core:designsystem`), translating every translatable string and plural. `LocalizationTest` names what is missing. Nothing else changes: the language list on the phone and the watch's texts follow. The `/add-language` skill walks through it, including the note-name default, TalkBack names, fonts and right-to-left checks.
 
 ## 7. Package layout (per module)
 
