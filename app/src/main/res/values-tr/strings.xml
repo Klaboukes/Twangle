@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Akort</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_settings">Ayarlar</string>
+    <string name="widget_name">Akort cihazı</string>
+    <string name="widget_description">Enstrümanını ve akordunu gösterir. Tek dokunuş akort ekranını açar.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Akort ekranını aç</string>
+    <string name="widget_preview_title">Gitar · Standart</string>
+</resources>

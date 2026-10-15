@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_back">Назад</string>
+
+    <string name="settings_group_tuning">Строй</string>
+    <string name="settings_group_look">Внешний вид</string>
+    <string name="settings_group_while_tuning">Во время настройки</string>
+
+    <string name="settings_a4_title">Камертон (A4)</string>
+    <string name="settings_a4_value">%1$d Гц</string>
+    <string name="settings_a4_summary">Чаще всего используют 440 Гц. Оркестры нередко строят на 442 Гц, барочные ансамбли — на 415 Гц.</string>
+    <string name="settings_a4_lower">Понизить A4 на 1 Гц</string>
+    <string name="settings_a4_raise">Повысить A4 на 1 Гц</string>
+    <string name="settings_a4_reset">Сбросить на %1$d Гц</string>
+
+    <string name="settings_notation_title">Названия нот</string>
+    <string name="settings_notation_sharps">Диезы: C, C♯, D …</string>
+    <string name="settings_notation_flats">Бемоли: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Точность настройки</string>
+    <string name="settings_in_tune_precision_relaxed">Свободно: до 5 центов</string>
+    <string name="settings_in_tune_precision_precise">Точно: до 2 центов</string>
+
+    <string name="settings_style_title">Стиль</string>
+    <string name="settings_theme_title">Светлая или тёмная тема</string>
+    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_dynamic_color_title">Цвета обоев</string>
+    <string name="settings_dynamic_color_summary">Брать цвета из обоев</string>
+
+    <string name="settings_meter_look_title">Индикатор</string>
+    <string name="settings_meter_look_classic">Классический</string>
+    <string name="settings_meter_look_light_arc">Световая дуга</string>
+    <string name="settings_meter_look_spirit_level">Уровень</string>
+    <string name="settings_meter_look_rolling_scale">Бегущая шкала</string>
+    <string name="settings_meter_look_comet">Комета</string>
+    <string name="settings_meter_look_studio_meter">Студийный</string>
+    <string name="settings_in_tune_effect_title">Эффект «настроено»</string>
+    <string name="settings_in_tune_effect_calm">Спокойный</string>
+    <string name="settings_in_tune_effect_bold">Яркий</string>
+
+    <string name="settings_display_title">Отображение</string>
+    <string name="settings_display_needle">Стрелка: число центов</string>
+    <string name="settings_display_wave">Волна: движущаяся картинка в выбранном виде</string>
+    <string name="settings_wave_look_title">Вид волны</string>
+    <string name="settings_wave_look_strobe">Строб</string>
+    <string name="settings_wave_look_ribbon">Лента</string>
+    <string name="settings_wave_look_dots">Точки</string>
+    <string name="settings_wave_look_fireflies">Светлячки</string>
+    <string name="settings_wave_look_loop">Петля</string>
+    <string name="settings_wave_in_tune_title">Когда настроено</string>
+    <string name="settings_wave_in_tune_breathe">Мягко дышать</string>
+    <string name="settings_wave_in_tune_hold_still">Замереть</string>
+    <string name="settings_wave_look_ripples">Рябь</string>
+    <string name="settings_keep_two_pane_landscape_title">Полный вид горизонтально</string>
+    <string name="settings_keep_two_pane_landscape_summary">Когда телефон повёрнут, показывать управление рядом с тюнером, а не один большой индикатор</string>
+
+    <string name="settings_keep_screen_on_title">Не выключать экран</string>
+    <string name="settings_keep_screen_on_summary">Экран не гаснет, пока открыт тюнер</string>
+    <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
+    <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
+    <string name="settings_show_tune_hint_title">Подсказка «подтяни/ослабь»</string>
+    <string name="settings_show_tune_hint_summary">Показывает, куда крутить колок, пока нота не строит</string>
+    <string name="settings_show_signal_bars_title">Индикатор сигнала</string>
+    <string name="settings_show_signal_bars_summary">Для любопытных: полоски у ноты показывают, как хорошо тюнер тебя слышит. Нажми на них, чтобы увидеть цифры</string>
+
+    <string name="settings_show_tour_title">Экскурсия</string>
+    <string name="settings_show_tour_summary">Короткий обзор тюнера</string>
+    <string name="about_title">О Twangle</string>
+    <string name="settings_about_link_summary">Версия %1$s, конфиденциальность и лицензии</string>
+    <string name="settings_about_version">Версия %1$s</string>
+    <string name="settings_about_free_title">Бесплатно навсегда</string>
+    <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>
+    <string name="settings_about_privacy_title">Конфиденциальность</string>
+    <string name="settings_about_privacy_summary">Twangle не собирает о тебе никаких данных. Микрофон включён, только пока открыт экран тюнера. Звук анализируется на лету и никогда не записывается, не сохраняется и не отправляется. У Twangle нет разрешения на доступ к интернету, поэтому он ничего не может никуда отправить. Твои настройки хранятся только на телефоне.</string>
+    <string name="settings_about_credits_title">Шрифты и открытое ПО</string>
+    <string name="settings_about_credits_summary">Twangle сделан с их помощью. Нажми на любой пункт, чтобы прочитать лицензию.</string>
+    <string name="settings_about_licence_open">Прочитать лицензию</string>
+    <string name="settings_about_licence_close">Закрыть</string>
+</resources>

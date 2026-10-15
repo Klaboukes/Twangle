@@ -1,0 +1,15 @@
+<resources>
+    <string name="wear_play_note">Bir nota çal</string>
+    <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s sent</item>
+        <item quantity="other">%1$s sent</item>
+    </plurals>
+    <string name="wear_in_tune">akortlu</string>
+    <string name="wear_mic_needed">Twangle enstrümanını saatin mikrofonuyla dinler.</string>
+    <string name="wear_allow_mic">Mikrofona izin ver</string>
+    <string name="wear_open_settings">Ayarları aç</string>
+    <string name="wear_mic_busy">Mikrofonu başka bir uygulama kullanıyor.</string>
+    <string name="wear_mic_unavailable">Mikrofon açılamıyor.</string>
+    <string name="wear_try_again">Tekrar dene</string>
+</resources>

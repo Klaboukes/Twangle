@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Ölçüdeki vuruş</string>
+    <string name="metronome_tempo">Tempo, değiştirmek için sürükle</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">Dakikada %1$d vuruş, %2$s</item>
+        <item quantity="other">Dakikada %1$d vuruş, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Daha yavaş</string>
+    <string name="metronome_faster">Daha hızlı</string>
+    <string name="metronome_tap">Dokunarak tempo</string>
+    <string name="metronome_start">Başlat</string>
+    <string name="metronome_stop">Durdur</string>
+    <string name="metronome_vibrate">Vuruşta titreşim</string>
+    <string name="metronome_meter_2_4_spoken">İki dörtlük ölçü</string>
+    <string name="metronome_meter_3_4_spoken">Üç dörtlük ölçü</string>
+    <string name="metronome_meter_4_4_spoken">Dört dörtlük ölçü</string>
+    <string name="metronome_meter_5_4_spoken">Beş dörtlük ölçü</string>
+    <string name="metronome_meter_6_8_spoken">Altı sekizlik ölçü</string>
+    <string name="metronome_meter_7_8_spoken">Yedi sekizlik ölçü</string>
+</resources>

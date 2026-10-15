@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_back">Geri</string>
+
+    <string name="settings_group_tuning">Akort</string>
+    <string name="settings_group_look">Görünüm</string>
+    <string name="settings_group_while_tuning">Akort sırasında</string>
+
+    <string name="settings_a4_title">Referans ses (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Çoğu müzik 440 Hz kullanır. Orkestralar genellikle 442 Hz\'e, barok topluluklar 415 Hz\'e akort eder.</string>
+    <string name="settings_a4_lower">A4\'ü 1 Hz düşür</string>
+    <string name="settings_a4_raise">A4\'ü 1 Hz yükselt</string>
+    <string name="settings_a4_reset">%1$d Hz\'e sıfırla</string>
+
+    <string name="settings_notation_title">Nota adları</string>
+    <string name="settings_notation_sharps">Diyezler: C, C♯, D …</string>
+    <string name="settings_notation_flats">Bemoller: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Akort hassasiyeti</string>
+    <string name="settings_in_tune_precision_relaxed">Rahat: 5 sent içinde</string>
+    <string name="settings_in_tune_precision_precise">Hassas: 2 sent içinde</string>
+
+    <string name="settings_style_title">Stil</string>
+    <string name="settings_theme_title">Açık veya koyu</string>
+    <string name="settings_theme_system">Sistem varsayılanı</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_dynamic_color_title">Duvar kâğıdı renkleri</string>
+    <string name="settings_dynamic_color_summary">Duvar kâğıdındaki renkleri kullan</string>
+
+    <string name="settings_meter_look_title">Gösterge</string>
+    <string name="settings_meter_look_classic">Klasik</string>
+    <string name="settings_meter_look_light_arc">Işık yayı</string>
+    <string name="settings_meter_look_spirit_level">Su terazisi</string>
+    <string name="settings_meter_look_rolling_scale">Kayan ölçek</string>
+    <string name="settings_meter_look_comet">Kuyruklu yıldız</string>
+    <string name="settings_meter_look_studio_meter">Stüdyo göstergesi</string>
+    <string name="settings_in_tune_effect_title">Akort efekti</string>
+    <string name="settings_in_tune_effect_calm">Sakin</string>
+    <string name="settings_in_tune_effect_bold">Belirgin</string>
+
+    <string name="settings_display_title">Gösterim</string>
+    <string name="settings_display_needle">İbre: sent cinsinden sayı</string>
+    <string name="settings_display_wave">Dalga: seçtiğin görünümde hareketli bir resim</string>
+    <string name="settings_wave_look_title">Dalga görünümü</string>
+    <string name="settings_wave_look_strobe">Stroboskop</string>
+    <string name="settings_wave_look_ribbon">Şerit</string>
+    <string name="settings_wave_look_dots">Noktalar</string>
+    <string name="settings_wave_look_fireflies">Ateş böcekleri</string>
+    <string name="settings_wave_look_loop">Döngü</string>
+    <string name="settings_wave_in_tune_title">Akortlu olunca</string>
+    <string name="settings_wave_in_tune_breathe">Hafifçe nefes alsın</string>
+    <string name="settings_wave_in_tune_hold_still">Tamamen sabit dursun</string>
+    <string name="settings_wave_look_ripples">Halkalar</string>
+    <string name="settings_keep_two_pane_landscape_title">Yatayda tam düzen</string>
+    <string name="settings_keep_two_pane_landscape_summary">Telefon yan çevrildiğinde tek büyük gösterge yerine kontrolleri akort ekranının yanında göster</string>
+
+    <string name="settings_keep_screen_on_title">Ekranı açık tut</string>
+    <string name="settings_keep_screen_on_summary">Akort ekranı açıkken ekran kapanmaz</string>
+    <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
+    <string name="settings_vibrate_in_tune_summary">Nota doğru perdeye ulaşınca kısa bir titreşim</string>
+    <string name="settings_show_tune_hint_title">Yükselt/düşür ipucunu göster</string>
+    <string name="settings_show_tune_hint_summary">Nota akortsuzken burgunun hangi yöne çevrileceğini söyler</string>
+    <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>
+    <string name="settings_show_signal_bars_summary">Meraklısı için: notanın yanındaki küçük çubuklar, akort cihazının seni ne kadar iyi duyduğunu gösterir. Değerler için onlara dokun</string>
+
+    <string name="settings_show_tour_title">Tanıtım turu</string>
+    <string name="settings_show_tour_summary">Akort ekranında kısa bir tur</string>
+    <string name="about_title">Twangle hakkında</string>
+    <string name="settings_about_link_summary">Sürüm %1$s, gizlilik ve lisanslar</string>
+    <string name="settings_about_version">Sürüm %1$s</string>
+    <string name="settings_about_free_title">Sonsuza dek ücretsiz</string>
+    <string name="settings_about_free_summary">Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Ne şimdi ne de sonra.</string>
+    <string name="settings_about_privacy_title">Gizlilik</string>
+    <string name="settings_about_privacy_summary">Twangle seninle ilgili hiçbir veri toplamaz. Mikrofon yalnızca akort ekranı açıkken çalışır. Ses anlık olarak analiz edilir; asla kaydedilmez, saklanmaz veya gönderilmez. Twangle\'ın internet izni yoktur, bu yüzden hiçbir yere hiçbir şey gönderemez. Ayarların yalnızca telefonunda saklanır.</string>
+    <string name="settings_about_credits_title">Yazı tipleri ve açık kaynak yazılımlar</string>
+    <string name="settings_about_credits_summary">Twangle bunlarla yapıldı. Lisansını okumak için birine dokun.</string>
+    <string name="settings_about_licence_open">Lisansı oku</string>
+    <string name="settings_about_licence_close">Kapat</string>
+</resources>

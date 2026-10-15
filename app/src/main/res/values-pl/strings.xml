@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Stroik</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_settings">Ustawienia</string>
+    <string name="widget_name">Stroik</string>
+    <string name="widget_description">Pokazuje instrument i strój. Jedno dotknięcie otwiera stroik.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Otwórz stroik</string>
+    <string name="widget_preview_title">Gitara · Standardowy</string>
+</resources>

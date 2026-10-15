@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Ustawienia</string>
+    <string name="settings_back">Wstecz</string>
+
+    <string name="settings_group_tuning">Strój</string>
+    <string name="settings_group_look">Wygląd</string>
+    <string name="settings_group_while_tuning">Podczas strojenia</string>
+
+    <string name="settings_a4_title">Dźwięk wzorcowy (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Większość muzyki używa 440 Hz. Orkiestry często stroją do 442 Hz, zespoły barokowe do 415 Hz.</string>
+    <string name="settings_a4_lower">Obniż A4 o 1 Hz</string>
+    <string name="settings_a4_raise">Podnieś A4 o 1 Hz</string>
+    <string name="settings_a4_reset">Przywróć %1$d Hz</string>
+
+    <string name="settings_notation_title">Nazwy dźwięków</string>
+    <string name="settings_notation_sharps">Krzyżyki: C, C♯, D …</string>
+    <string name="settings_notation_flats">Bemole: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Precyzja strojenia</string>
+    <string name="settings_in_tune_precision_relaxed">Swobodna: do 5 centów</string>
+    <string name="settings_in_tune_precision_precise">Dokładna: do 2 centów</string>
+
+    <string name="settings_style_title">Styl</string>
+    <string name="settings_theme_title">Jasny czy ciemny</string>
+    <string name="settings_theme_system">Domyślny systemu</string>
+    <string name="settings_theme_light">Jasny</string>
+    <string name="settings_theme_dark">Ciemny</string>
+    <string name="settings_dynamic_color_title">Kolory tapety</string>
+    <string name="settings_dynamic_color_summary">Używaj kolorów z tapety</string>
+
+    <string name="settings_meter_look_title">Wskaźnik</string>
+    <string name="settings_meter_look_classic">Klasyczny</string>
+    <string name="settings_meter_look_light_arc">Świetlny łuk</string>
+    <string name="settings_meter_look_spirit_level">Poziomica</string>
+    <string name="settings_meter_look_rolling_scale">Przewijana skala</string>
+    <string name="settings_meter_look_comet">Kometa</string>
+    <string name="settings_meter_look_studio_meter">Studyjny</string>
+    <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>
+    <string name="settings_in_tune_effect_calm">Spokojny</string>
+    <string name="settings_in_tune_effect_bold">Wyrazisty</string>
+
+    <string name="settings_display_title">Wyświetlanie</string>
+    <string name="settings_display_needle">Wskazówka: liczba centów</string>
+    <string name="settings_display_wave">Fala: ruchomy obraz w wybranym wyglądzie</string>
+    <string name="settings_wave_look_title">Wygląd fali</string>
+    <string name="settings_wave_look_strobe">Stroboskop</string>
+    <string name="settings_wave_look_ribbon">Wstęga</string>
+    <string name="settings_wave_look_dots">Kropki</string>
+    <string name="settings_wave_look_fireflies">Świetliki</string>
+    <string name="settings_wave_look_loop">Pętla</string>
+    <string name="settings_wave_in_tune_title">Po nastrojeniu</string>
+    <string name="settings_wave_in_tune_breathe">Łagodnie oddychaj</string>
+    <string name="settings_wave_in_tune_hold_still">Zastygnij w bezruchu</string>
+    <string name="settings_wave_look_ripples">Kręgi</string>
+    <string name="settings_keep_two_pane_landscape_title">Pełny układ w poziomie</string>
+    <string name="settings_keep_two_pane_landscape_summary">Po obróceniu telefonu pokazuj sterowanie obok stroika zamiast jednego dużego wskaźnika</string>
+
+    <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
+    <string name="settings_keep_screen_on_summary">Ekran nie gaśnie, gdy stroik jest otwarty</string>
+    <string name="settings_vibrate_in_tune_title">Wibruj po nastrojeniu</string>
+    <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
+    <string name="settings_show_tune_hint_title">Podpowiedź podciągnij/popuść</string>
+    <string name="settings_show_tune_hint_summary">Mówi, w którą stronę kręcić kluczem, gdy dźwięk nie stroi</string>
+    <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
+    <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
+
+    <string name="settings_show_tour_title">Oprowadź mnie</string>
+    <string name="settings_show_tour_summary">Krótki przewodnik po stroiku</string>
+    <string name="about_title">O Twangle</string>
+    <string name="settings_about_link_summary">Wersja %1$s, prywatność i licencje</string>
+    <string name="settings_about_version">Wersja %1$s</string>
+    <string name="settings_about_free_title">Za darmo na zawsze</string>
+    <string name="settings_about_free_summary">Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Ani teraz, ani później.</string>
+    <string name="settings_about_privacy_title">Prywatność</string>
+    <string name="settings_about_privacy_summary">Twangle nie zbiera o tobie żadnych danych. Mikrofon działa tylko wtedy, gdy ekran stroika jest otwarty. Dźwięk jest analizowany na bieżąco i nigdy nie jest nagrywany, zapisywany ani wysyłany. Twangle nie ma uprawnienia do internetu, więc nie może nic nigdzie wysłać. Twoje ustawienia są przechowywane tylko na telefonie.</string>
+    <string name="settings_about_credits_title">Czcionki i oprogramowanie open source</string>
+    <string name="settings_about_credits_summary">Twangle powstał dzięki nim. Dotknij pozycji, aby przeczytać jej licencję.</string>
+    <string name="settings_about_licence_open">Przeczytaj licencję</string>
+    <string name="settings_about_licence_close">Zamknij</string>
+</resources>

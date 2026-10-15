@@ -1,0 +1,134 @@
+<resources>
+    <string name="mic_permission_title">Twangle\'ın mikrofona ihtiyacı var</string>
+    <string name="mic_permission_intro">Akort için Twangle enstrümanını dinler. Ses telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.</string>
+    <string name="mic_permission_rationale">Mikrofon olmadan Twangle tellerini duyamaz, bu yüzden akortlu olup olmadıklarını söyleyemez. Ses telefonundan hiç çıkmaz.</string>
+    <string name="mic_permission_settings_hint">Twangle için mikrofon erişimi kapalı. Ayarlar\'ı aç, İzinler\'e, sonra Mikrofon\'a dokun ve İzin ver\'i seç.</string>
+    <string name="mic_permission_allow">Mikrofona izin ver</string>
+    <string name="mic_permission_open_settings">Ayarları aç</string>
+
+    <string name="error_mic_permission">Mikrofon erişimi kapatıldı. Akorda devam etmek için yeniden izin ver.</string>
+    <string name="error_mic_busy">Mikrofonu başka bir uygulama kullanıyor. Onu kapat ve tekrar dene.</string>
+    <string name="error_mic_unavailable">Bu telefonda mikrofon açılamadı.</string>
+    <string name="error_mic_stopped">Mikrofon beklenmedik şekilde durdu.</string>
+    <string name="error_retry">Tekrar dene</string>
+
+    <string name="tuner_mode_strings">Teller</string>
+    <string name="tuner_mode_chromatic">Kromatik</string>
+    <string name="tuner_show_controls">Kontrolleri göster</string>
+
+    <string name="tuning_standard">Standart</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Yarım ses düşük</string>
+    <string name="tuning_full_step_down">Tam ses düşük</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">Gitar</string>
+    <string name="instrument_guitar_7">7 telli gitar</string>
+    <string name="instrument_guitar_8">8 telli gitar</string>
+    <string name="instrument_bass_4">Bas</string>
+    <string name="instrument_bass_5">5 telli bas</string>
+    <string name="instrument_ukulele">Ukulele</string>
+    <string name="instrument_violin">Keman</string>
+    <string name="instrument_viola">Viyola</string>
+    <string name="instrument_cello">Çello</string>
+    <string name="instrument_mandolin">Mandolin</string>
+    <string name="tuner_hint_play_string">Bir tel çal</string>
+    <string name="tuner_hint_play_note">Bir nota çal</string>
+    <string name="tuner_hint_play_locked_string">%1$s telini çal</string>
+    <string name="tuner_string_lock">Bu tele sabitle</string>
+    <string name="tuner_string_unlock">Telleri otomatik seç</string>
+    <string name="tuner_string_locked">Sabit</string>
+    <string name="tuner_string_play">%1$s çal</string>
+    <string name="tuner_string_stop_tone">Sesi durdur</string>
+    <string name="tuner_string_sounding">Çalıyor</string>
+    <string name="tuner_string_locked_sounding">Sabit, çalıyor</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
+    <string name="tuner_cents_zero">0 sent</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="one">%1$d sent düşük</item>
+        <item quantity="other">%1$d sent düşük</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="one">%1$d sent yüksek</item>
+        <item quantity="other">%1$d sent yüksek</item>
+    </plurals>
+    <string name="tuner_in_tune">akortlu</string>
+    <string name="tuner_tune_up">Yükselt ↑</string>
+    <string name="tuner_tune_down">Düşür ↓</string>
+    <string name="tuner_tip_too_soft">Biraz daha güçlü çal</string>
+    <string name="tuner_tip_too_noisy">Burası çok gürültülü</string>
+    <string name="tuner_tip_too_loud">Çok yüksek, telefonu uzaklaştır</string>
+    <string name="tuner_signal_bars">Sinyal çubukları: %1$d / %2$d</string>
+    <string name="tuner_signal_no_note">Sinyal: henüz nota yok</string>
+    <string name="tuner_signal_show_figures">değerleri göster</string>
+    <string name="tuner_signal_title">Twangle seni ne kadar iyi duyuyor</string>
+    <string name="tuner_signal_volume">Ses düzeyi</string>
+    <string name="tuner_signal_background">Arka plan</string>
+    <string name="tuner_signal_clarity">Netlik</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_tune_up">yükselt</string>
+    <string name="tuner_spoken_tune_down">düşür</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s, %2$s</string>
+    <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">Enstrümanı veya akordu değiştir</string>
+    <string name="tuner_picker_title">Enstrüman ve akort</string>
+
+    <string name="tuner_new_tuning">Yeni akort</string>
+
+    <string name="tuning_editor_title_edit">Akordu düzenle</string>
+    <string name="tuning_editor_close">Kaydetmeden kapat</string>
+    <string name="tuning_editor_save">Kaydet</string>
+    <string name="tuning_editor_instrument">Enstrüman: %1$s</string>
+    <string name="tuning_editor_name">Ad</string>
+    <string name="tuning_editor_name_empty">Akorda bir ad ver</string>
+    <string name="tuning_editor_name_taken">Bu adda bir akort zaten var</string>
+    <string name="tuning_editor_strings">Teller</string>
+    <string name="tuning_editor_string">%1$s teli</string>
+    <string name="tuning_editor_lower">%1$s, yarım ses aşağı</string>
+    <string name="tuning_editor_raise">%1$s, yarım ses yukarı</string>
+
+    <string name="tuner_my_tunings">Akortlarım</string>
+    <string name="tuner_tuning_options">%1$s seçenekleri</string>
+    <string name="tuner_edit_tuning">Düzenle</string>
+    <string name="tuner_delete_tuning">Sil</string>
+    <string name="tuner_delete_tuning_title">Bu akort silinsin mi?</string>
+    <string name="tuner_delete_tuning_text">“%1$s” kalıcı olarak silinecek.</string>
+    <string name="tuner_delete_tuning_cancel">İptal</string>
+    <string name="tuner_strum_check">Tel kontrolü</string>
+    <string name="tuner_strum_waiting">Tüm boş tellere birlikte vur</string>
+    <string name="tuner_strum_waiting_detail">Her tel düşük, akortlu ya da yüksek görünür</string>
+    <string name="tuner_strum_hearing">Dinliyor…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="one">Akort edilecek %1$d tel</item>
+        <item quantity="other">Akort edilecek %1$d tel</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Tüm teller duyulmadı</string>
+    <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
+    <string name="tuner_strum_tap_to_tune">Akort etmek için bir tele dokun</string>
+    <string name="tuner_strum_again">Yeniden vur ya da akort etmek için bir tele dokun</string>
+    <string name="tuner_strum_tune_string">%1$s akort et</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, duyulmadı</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, henüz çalınmadı</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, daha az kesin</string>
+    <string name="tour_title">Tanıtım turu</string>
+    <string name="tour_step_count">%1$d / %2$d</string>
+    <string name="tour_step_spoken">Adım %1$d / %2$d. %3$s.</string>
+    <string name="tour_meter">Ne kadar sapma var</string>
+    <string name="tour_note">Çaldığın nota</string>
+    <string name="tour_strum">Tüm telleri kontrol etmek için vur</string>
+    <string name="tour_strings">Bir teli sabitle</string>
+    <string name="tour_picker">Enstrüman ve akort seç</string>
+    <string name="tour_mode">Teller ya da herhangi bir nota</string>
+    <string name="tour_navigation">Metronom ve ayarlar</string>
+    <string name="tour_skip">Turu atla</string>
+    <string name="tour_next">İleri</string>
+    <string name="tour_done">Bitti</string>
+</resources>

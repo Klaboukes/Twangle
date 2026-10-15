@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,8 +52,9 @@ internal fun MyTunings(
     var deletingId by rememberSaveable { mutableStateOf<String?>(null) }
     val title = stringResource(R.string.tuner_my_tunings)
     Text(
-        // In capitals as the mock-up, but TalkBack says it as written.
-        title.uppercase(),
+        // In capitals as the mock-up, but TalkBack says it as written. The app's language decides the
+        // capitals: Turkish turns i into İ, not I.
+        title.uppercase(LocalConfiguration.current.locales[0]),
         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium, letterSpacing = 0.08.em),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier

@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">Тюнер</string>
+    <string name="nav_metronome">Метроном</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="widget_name">Тюнер</string>
+    <string name="widget_description">Показывает инструмент и строй. Одно касание открывает тюнер.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Открыть тюнер</string>
+    <string name="widget_preview_title">Гитара · Стандартный</string>
+</resources>

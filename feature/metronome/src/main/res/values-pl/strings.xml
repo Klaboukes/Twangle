@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Uderzeń w takcie</string>
+    <string name="metronome_tempo">Tempo, przeciągnij, aby zmienić</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d uderzenie na minutę, %2$s</item>
+        <item quantity="few">%1$d uderzenia na minutę, %2$s</item>
+        <item quantity="many">%1$d uderzeń na minutę, %2$s</item>
+        <item quantity="other">%1$d uderzenia na minutę, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Wolniej</string>
+    <string name="metronome_faster">Szybciej</string>
+    <string name="metronome_tap">Wystukaj tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Wibruj w rytm</string>
+    <string name="metronome_meter_2_4_spoken">Metrum dwie czwarte</string>
+    <string name="metronome_meter_3_4_spoken">Metrum trzy czwarte</string>
+    <string name="metronome_meter_4_4_spoken">Metrum cztery czwarte</string>
+    <string name="metronome_meter_5_4_spoken">Metrum pięć czwartych</string>
+    <string name="metronome_meter_6_8_spoken">Metrum sześć ósmych</string>
+    <string name="metronome_meter_7_8_spoken">Metrum siedem ósmych</string>
+</resources>
