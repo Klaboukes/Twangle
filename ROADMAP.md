@@ -51,7 +51,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 ## Phase 25 — Meter looks, round 2
 Goal: every meter look shows the note its own way, so they no longer look alike (approved mock-up: [docs/design/meter-looks-round2-preview.html](docs/design/meter-looks-round2-preview.html), owner 2026-10-15). Six looks: Classic, Light arc, Spirit level, Eclipse, Arrows, Light bars. UI tests run in the overnight run (see *Waiting on the owner*).
 - ☑ Classic gets the "CENTS" label from Studio meter; Rolling scale, Comet and Studio meter go (a saved one opens as Classic)
-- ☐ Light arc becomes a fan of little lights that opens toward the note, and Spirit level a big straight vial with the bubble at its middle height; neither has numbers any more
+- ☑ Light arc becomes a fan of little lights that opens toward the note, and Spirit level a big straight vial with the bubble at its middle height; neither has numbers any more
 - ☐ New looks Eclipse, Arrows and Light bars, with their names in every language
 
 ## Phase 23 — Go live on the Play Store → **v1.0**

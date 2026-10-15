@@ -4,25 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextMeasurer
@@ -35,10 +25,7 @@ import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
 import io.github.klaboukes.twangle.core.designsystem.R
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import kotlinx.coroutines.flow.first
-import kotlin.math.abs
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.sin
 
 /*
@@ -270,129 +257,3 @@ private fun GraphicsLayerScope.turnAboutDialPivot(cents: Float) {
 
 /** A needle's swing may carry it a little past the end of the scale, as a real one would. */
 private const val NEEDLE_LIMIT_CENTS = 53f
-
-// ---- 2. Light arc --------------------------------------------------------------------------------
-
-/**
- * Light arc: 41 segments inside the dial's arc light up from the centre out to the reading, with a
- * soft halo around the lit end; segments the reading leaves fade slowly, so a swing leaves a trail
- * ([LightArcHeat]). The centre segments fade to "in tune" with the centre mark. The segments are
- * redrawn from the reading in their own layer; a frame loop runs only while some segment is still
- * fading, so a steady reading moves nothing.
- */
-@Composable
-private fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) {
-    val roles = meterRoles(effect)
-    val measurer = rememberTextMeasurer()
-    val heat = remember(reading) { LightArcHeat(Snapshot.withoutReadObservation { reading.cents }) }
-    val frames = remember(heat) { mutableIntStateOf(0) }
-    LaunchedEffect(heat) { runLightArc(heat, reading, frames) }
-    DialUnder(roles, measurer) { size ->
-        val segments = LightArcSegments(size, roles)
-        val draw: DrawScope.() -> Unit = { segments.drawUnlit(this) }
-        draw
-    }
-    DialCentre(roles, reading)
-    Spacer(
-        modifier = Modifier.matchParentSize().graphicsLayer {
-            reading.applyMarkerLook(this)
-        }.drawWithCache {
-            val segments = LightArcSegments(size, roles)
-            onDrawBehind {
-                // Redraws on every step of the fading trail.
-                frames.intValue
-                segments.drawLit(this, heat.heat, reading.cents, reading.tuned)
-            }
-        },
-    )
-}
-
-/**
- * Steps [heat] on every frame while a segment is still on its way, then waits for the reading to
- * move again. Each step only changes [frames], which the segments' layer reads while drawing.
- */
-private suspend fun runLightArc(heat: LightArcHeat, reading: MeterReading, frames: MutableIntState) {
-    while (true) {
-        if (heat.isSettledAt(reading.cents)) snapshotFlow { reading.cents }.first { !heat.isSettledAt(it) }
-        var last = withFrameNanos { it }
-        while (!heat.isSettledAt(reading.cents)) {
-            withFrameNanos { now ->
-                heat.step(reading.cents, ((now - last) / NANOS_PER_SECOND).coerceIn(0f, MAX_STEP_SECONDS))
-                last = now
-                frames.intValue++
-            }
-        }
-    }
-}
-
-internal const val NANOS_PER_SECOND = 1_000_000_000f
-
-/** A long pause (coming back to the app) counts as one short step. */
-internal const val MAX_STEP_SECONDS = 0.1f
-
-/**
- * The light arc's segments: 3.5u wide, round-ended, from 62u to 46u inside the dial's arc (inside
- * the scale's numbers). Unlit
- * they are the track colour; lit they glow in the accent (a little whiter in dark), from 15 % to
- * full with their [LightArcHeat.heat].
- */
-private class LightArcSegments(size: Size, private val roles: MeterRoles) {
-    private val dial = DialGeometry(size)
-    private val u = dial.u
-    private val ends = FloatArray(LIGHT_ARC_SEGMENTS * 4)
-    private val width = 3.5f * u
-    private val unlit = Path()
-    private val unlitStroke = Stroke(width, cap = StrokeCap.Round)
-    private val unlitColor = roles.track.copy(alpha = if (roles.dark) 1f else 0.85f)
-    private val halo = GlowArt(30f * u, roles.accent)
-    private val haloAlpha = if (roles.dark) 0.22f else 0.12f
-
-    init {
-        for (i in 0 until LIGHT_ARC_SEGMENTS) {
-            val cents = lightArcSegmentCents(i)
-            ends[i * 4] = dial.x(dial.r - SEGMENT_INNER * u, cents)
-            ends[i * 4 + 1] = dial.y(dial.r - SEGMENT_INNER * u, cents)
-            ends[i * 4 + 2] = dial.x(dial.r - SEGMENT_OUTER * u, cents)
-            ends[i * 4 + 3] = dial.y(dial.r - SEGMENT_OUTER * u, cents)
-            unlit.moveTo(ends[i * 4], ends[i * 4 + 1])
-            unlit.lineTo(ends[i * 4 + 2], ends[i * 4 + 3])
-        }
-    }
-
-    fun drawUnlit(scope: DrawScope) = with(scope) { drawPath(unlit, unlitColor, style = unlitStroke) }
-
-    fun drawLit(scope: DrawScope, heat: FloatArray, cents: Float, tuned: Float) = with(scope) {
-        val reading = cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS)
-        val halfway = dial.r - (SEGMENT_INNER + SEGMENT_OUTER) / 2f * u
-        halo.draw(this, dial.x(halfway, reading), dial.y(halfway, reading), haloAlpha * (1f - tuned))
-        for (i in 0 until LIGHT_ARC_SEGMENTS) {
-            val near = abs(lightArcSegmentCents(i)) <= LIGHT_ARC_CENTRE_CENTS
-            val glow = if (near) max(heat[i], tuned) else heat[i]
-            if (glow < MIN_LIT) continue
-            val lit = if (near) roles.centre(tuned) else roles.accent
-            val color = if (roles.dark) mix(lit, Color.White, 0.15f * glow) else lit
-            drawLine(
-                color.copy(alpha = 0.15f + 0.85f * glow),
-                Offset(ends[i * 4], ends[i * 4 + 1]),
-                Offset(ends[i * 4 + 2], ends[i * 4 + 3]),
-                width,
-                StrokeCap.Round,
-            )
-        }
-        drawCircle(roles.centre(tuned), 3f * u, Offset(dial.cx, dial.cy))
-    }
-
-    private companion object {
-        /** The segments this close to the centre turn "in tune" with the centre mark. */
-        const val LIGHT_ARC_CENTRE_CENTS = 5f
-
-        /** Dimmer than this, a segment is left unlit. */
-        const val MIN_LIT = 0.02f
-
-        /** The segments run from this many units inside the dial's arc … */
-        const val SEGMENT_INNER = 62f
-
-        /** … out to this many. */
-        const val SEGMENT_OUTER = 46f
-    }
-}

@@ -336,7 +336,7 @@ internal fun interface MarkPlace {
  * longer or shorter, thicker or thinner and turned, always the same way). Numbers 10 to 50 without a
  * sign, [NUMBER_SIZE_UNITS] (times [MeterRoles.numberScale]) in the style's number face, ink at 80 %,
  * centred [NUMBER_OUT_UNITS] from the tick's base. [place] puts each tick on the look's own scale.
- * Where a look's numbers sit close (the spirit level's flat scale in a wide face) they are set a
+ * Where a look's numbers sit close (a flat scale in a wide face) they are set a
  * little smaller, so neighbours keep apart ([numberFit]).
  */
 internal class ScaleMarks(u: Float, roles: MeterRoles, measurer: TextMeasurer, density: Density, place: MarkPlace) {
@@ -449,8 +449,8 @@ internal const val NUMBER_OUT_UNITS = 27f
 /**
  * How much smaller than usual a scale's numbers are set (1 = not at all) so that the [widest] number
  * leaves at least [MIN_NUMBER_GAP_UNITS] of [u] free between two neighbours whose centres are
- * [nearest] apart, but never below [MIN_NUMBER_FIT]: only the spirit level's close, flat scale needs
- * it (about 80 % of the larger open-face size, 70 % in the wide faces, Michroma and Orbitron).
+ * [nearest] apart, but never below [MIN_NUMBER_FIT]. Classic's dial (the only scale since Phase 25)
+ * leaves room enough; a flatter scale (the old spirit level's) needed about 80 %, 70 % in the wide faces.
  */
 internal fun numberFit(nearest: Float, widest: Float, u: Float): Float {
     if (widest <= 0f) return 1f

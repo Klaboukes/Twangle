@@ -7,61 +7,80 @@ import org.junit.Test
 
 class LightArcHeatTest {
 
-    private val centre = LIGHT_ARC_SEGMENTS / 2
+    /** Light [dot] (0 innermost) of the ray at [cents]. */
+    private fun light(cents: Float, dot: Int): Int =
+        ((cents + METER_RANGE_CENTS) / LIGHT_ARC_STEP_CENTS).toInt() * LIGHT_ARC_DOTS + dot
 
-    /** The segment at [cents]. */
-    private fun segment(cents: Float): Int = ((cents + METER_RANGE_CENTS) / LIGHT_ARC_STEP_CENTS).toInt()
+    /** How many lights of the ray at [cents] are lit at all for a reading of [reading]. */
+    private fun litOnRay(cents: Float, reading: Float): Int = (0 until LIGHT_ARC_DOTS).count { lightArcGoal(light(cents, it), reading) > 0f }
 
     @Test
-    fun `the segments run from flat to sharp with one in the centre`() {
-        assertEquals(41, LIGHT_ARC_SEGMENTS)
-        assertEquals(-50f, lightArcSegmentCents(0))
-        assertEquals(0f, lightArcSegmentCents(centre))
-        assertEquals(50f, lightArcSegmentCents(LIGHT_ARC_SEGMENTS - 1))
+    fun `the rays run from flat to sharp with one in the centre`() {
+        assertEquals(17, LIGHT_ARC_RAYS)
+        assertEquals(5, LIGHT_ARC_DOTS)
+        assertEquals(-50f, lightArcRayCents(0))
+        assertEquals(0f, lightArcRayCents(LIGHT_ARC_CENTRE_RAY))
+        assertEquals(50f, lightArcRayCents(LIGHT_ARC_RAYS - 1))
     }
 
     @Test
-    fun `the segments light from the centre out to the reading, brightest at the reading`() {
-        for (cents in listOf(-20f, 20f)) {
-            for (i in 0 until LIGHT_ARC_SEGMENTS) {
-                val at = lightArcSegmentCents(i)
-                val inside = if (cents > 0f) at in 0f..cents else at in cents..0f
-                assertEquals("$cents: segment at $at", inside, lightArcGoal(i, cents) > 0f)
+    fun `the rays from the centre out to the reading light as a wedge, fullest and brightest at the reading`() {
+        for (reading in listOf(-25f, 25f)) {
+            for (ray in 0 until LIGHT_ARC_RAYS) {
+                val at = lightArcRayCents(ray)
+                val inside = at != 0f && (if (reading > 0f) at in 0f..reading else at in reading..0f)
+                assertEquals("$reading: ray at $at", inside, litOnRay(at, reading) > 0)
             }
-            assertEquals(1f, lightArcGoal(segment(cents), cents), 1e-6f)
-            assertEquals(0.35f, lightArcGoal(centre, cents), 1e-6f)
-            // Brighter towards the reading.
-            val half = segment(cents / 2f)
-            assertTrue(lightArcGoal(half, cents) > lightArcGoal(centre, cents))
-            assertTrue(lightArcGoal(half, cents) < lightArcGoal(segment(cents), cents))
+            // The ray at the reading lights all five at full; nearer the centre fewer, and dimmer.
+            assertEquals(5, litOnRay(reading, reading))
+            assertEquals(1f, lightArcGoal(light(reading, 4), reading), 1e-6f)
+            val inner = reading / 4f
+            assertTrue(litOnRay(inner, reading) in 2..3)
+            assertTrue(lightArcGoal(light(inner, 0), reading) < lightArcGoal(light(reading, 0), reading))
         }
     }
 
     @Test
-    fun `in tune only the centre is lit, and past the edge the whole side is`() {
-        for (i in 0 until LIGHT_ARC_SEGMENTS) {
-            assertEquals(if (i == centre) 0.35f else 0f, lightArcGoal(i, 0f), 1e-6f)
+    fun `the middle ray and the other side stay dark, so in tune nothing is lit from the reading`() {
+        for (i in 0 until LIGHT_ARC_LIGHTS) {
+            assertEquals(0f, lightArcGoal(i, 0f), 0f)
+            if (i / LIGHT_ARC_DOTS <= LIGHT_ARC_CENTRE_RAY) assertEquals(0f, lightArcGoal(i, 30f), 0f)
         }
-        for (i in centre until LIGHT_ARC_SEGMENTS) assertTrue(lightArcGoal(i, 80f) > 0f)
-        assertEquals(1f, lightArcGoal(LIGHT_ARC_SEGMENTS - 1, 80f), 1e-6f)
     }
 
     @Test
-    fun `a segment the reading reaches lights up quickly`() {
+    fun `the wedge grows smoothly as the reading nears the next ray`() {
+        // The first ray out lights a little a few cents off, fully once the reading reaches it.
+        val first = lightArcRayCents(LIGHT_ARC_CENTRE_RAY + 1)
+        val a = lightArcGoal(light(first, 0), 2f)
+        val b = lightArcGoal(light(first, 0), 4f)
+        val c = lightArcGoal(light(first, 0), first)
+        assertTrue("$a < $b < $c", a > 0f && a < b && b < c)
+        assertEquals(1f, c, 1e-6f)
+    }
+
+    @Test
+    fun `past the edge the whole side is lit`() {
+        assertEquals(5, litOnRay(50f, 80f))
+        assertEquals(1f, lightArcGoal(light(50f, 4), 80f), 1e-6f)
+    }
+
+    @Test
+    fun `a light the reading reaches lights up quickly`() {
         val heat = LightArcHeat(0f)
-        val far = segment(30f)
-        repeat(6) { heat.step(30f, 1f / 60f) }
+        val far = light(25f, 4)
+        repeat(6) { heat.step(25f, 1f / 60f) }
         // A tenth of a second later, nearly all the way.
         assertTrue("at ${heat.heat[far]}", heat.heat[far] > 0.8f)
-        repeat(30) { heat.step(30f, 1f / 60f) }
-        assertTrue(heat.isSettledAt(30f))
+        repeat(30) { heat.step(25f, 1f / 60f) }
+        assertTrue(heat.isSettledAt(25f))
         assertEquals(1f, heat.heat[far], 0f)
     }
 
     @Test
-    fun `when the reading swings back, the segments it leaves fade slowly into a trail`() {
-        val heat = LightArcHeat(30f)
-        val far = segment(30f)
+    fun `when the reading swings back, the lights it leaves fade into a short trail`() {
+        val heat = LightArcHeat(25f)
+        val far = light(25f, 4)
         var previous = heat.heat[far]
         var seconds = 0f
         while (heat.heat[far] > 0f) {
@@ -75,7 +94,6 @@ class LightArcHeatTest {
         }
         assertEquals(1f / LightArcHeat.FADE_PER_SECOND, seconds, 0.05f)
         assertTrue(heat.isSettledAt(0f))
-        assertEquals(0.35f, heat.heat[centre], 1e-6f)
     }
 
     @Test

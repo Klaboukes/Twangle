@@ -6,7 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -20,116 +22,68 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.rememberTextMeasurer
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.asin
-import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 /*
- * 3. Spirit level, as on the approved mock-up page (docs/design/meter-looks-preview.html, LEVEL and
- * levelGeo): a bubble in a gently curved glass tube floats to the side the note is off and settles; in
- * tune it rests between the two marks, which (with the bubble) take the "in tune" colour.
+ * 3. Spirit level, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html,
+ * drawLevel): a big straight vial of liquid tinted by the accent, with no scale or numbers. The bubble
+ * stays at the vial's middle height and slides to the side the note is off; in tune it rests between
+ * the two lines etched round the middle, which (with the bubble) take the "in tune" colour.
  */
 
 /**
- * The spirit level's tube in a box [width] × [height]: a band [thickness] thick along an arc of
- * [radius] (1.6 box widths) whose top, [top], is 38 % of the way down the box, around a centre far
- * below the box ([centreY]). The tube spans ±[maxAngle], 38 % of the width each side of the middle,
- * so it and its contact shadow keep clear of the box's sides (the open-face mock-up's wider tube
- * would touch them).
- * Angles are measured clockwise from straight up, so a positive angle is to the right (sharp).
+ * The spirit level's vial in a box [width] × [height]: [thickness] high (38 % of the box) round a
+ * middle line [centreY] 45 % of the way down, from [left] to [right] (43 % of the width each side of
+ * the middle), with round ends. The bubble ([bubbleHalfLength] by [bubbleHalfHeight] each way) slides
+ * along the middle line, [TRAVEL_UNITS] for 50 cents, and in tune rests between the two lines
+ * [markOffset] each side of the middle.
  */
 internal class LevelGeometry(width: Float, height: Float) {
     val u = meterUnit(width)
     val cx = width / 2f
-    val top = height * 0.38f
-    val radius = width * 1.6f
-    val centreY = top + radius
-    val maxAngle = asin(width * 0.38f / radius)
-    val thickness = height * 0.22f
+    val thickness = height * 0.38f
+    val centreY = height * 0.45f
+    val top = centreY - thickness / 2f
+    val bottom = centreY + thickness / 2f
+    val left = cx - width * 0.43f
+    val right = cx + width * 0.43f
 
-    /** The bubble's half length: as long as 7 cents of tube, so a bubble in tune fits between the marks. */
-    val bubbleHalfLength = radius * angleOf(BUBBLE_HALF_CENTS)
+    /** The bubble's half length: a little over half the vial's height. */
+    val bubbleHalfLength = thickness * 0.58f
 
-    /** The bubble's half height: about two thirds of the tube's inside. */
-    val bubbleHalfHeight = thickness * 0.34f
+    /** The bubble's half height: about three fifths of the vial's inside. */
+    val bubbleHalfHeight = thickness * 0.3f
 
-    /** The bubble floats a little above the tube's middle line, as a real one does. */
-    val bubbleDistance = radius + thickness * 0.06f
+    /** The two etched lines sit just clear of the bubble's ends when it rests in the middle. */
+    val markOffset = bubbleHalfLength + MARK_GAP_UNITS * u
 
-    /** The y of the bubble's middle at rest (in tune), straight above the centre. */
-    val bubbleRestY = centreY - bubbleDistance
+    /** The x of the bubble's middle for [cents]; its swing may carry it to ±[LEVEL_LIMIT_CENTS], no further. */
+    fun bubbleX(cents: Float): Float =
+        cx + cents.coerceIn(-LEVEL_LIMIT_CENTS, LEVEL_LIMIT_CENTS) / METER_RANGE_CENTS * TRAVEL_UNITS * u
 
-    /**
-     * The angle of [cents] on the tube: ±50 lands at 82 % of the tube's half angle, which leaves room
-     * for the bubble at the ends; the bubble's swing may carry it to ±[LEVEL_LIMIT_CENTS], no further.
-     */
-    fun angle(cents: Float): Float = angleOf(cents.coerceIn(-LEVEL_LIMIT_CENTS, LEVEL_LIMIT_CENTS))
-
-    private fun angleOf(cents: Float): Float = cents / METER_RANGE_CENTS * maxAngle * LEVEL_SCALE_SPAN
-
-    /** The x of the point [distance] from the centre at [angle]. */
-    fun x(angle: Float, distance: Float): Float = cx + distance * sin(angle)
-
-    /** The y of the point [distance] from the centre at [angle]. */
-    fun y(angle: Float, distance: Float): Float = centreY - distance * cos(angle)
-
-    /** The tube's outline: its outer edge, the round right end, its inner edge and the round left end. */
+    /** The vial's outline: a long rounded bar. */
     fun tube(): Path = Path().apply {
-        val half = thickness / 2f
-        for (k in 0..TUBE_STEPS) {
-            val angle = -maxAngle + 2f * maxAngle * k / TUBE_STEPS
-            if (k == 0) moveTo(x(angle, radius + half), y(angle, radius + half)) else lineTo(x(angle, radius + half), y(angle, radius + half))
-        }
-        end(maxAngle, 1f, half)
-        for (k in TUBE_STEPS downTo 0) {
-            val angle = -maxAngle + 2f * maxAngle * k / TUBE_STEPS
-            lineTo(x(angle, radius - half), y(angle, radius - half))
-        }
-        end(-maxAngle, -1f, half)
-        close()
-    }
-
-    /** A half circle from the outer edge to the inner one ([side] 1, right) or back ([side] −1, left). */
-    private fun Path.end(angle: Float, side: Float, half: Float) {
-        val x0 = x(angle, radius)
-        val y0 = y(angle, radius)
-        // Out of the centre (n) and along the tube (t).
-        val nx = sin(angle)
-        val ny = -cos(angle)
-        val tx = cos(angle)
-        val ty = sin(angle)
-        for (k in 1 until END_STEPS) {
-            val turn = k.toFloat() / END_STEPS * PI.toFloat()
-            val out = side * cos(turn) * half
-            val along = side * sin(turn) * half
-            lineTo(x0 + nx * out + tx * along, y0 + ny * out + ty * along)
-        }
+        addRoundRect(RoundRect(left, top, right, bottom, CornerRadius(thickness / 2f)))
     }
 
     companion object {
-        /** The bubble may float this far, a little past the ends of the scale. */
+        /** The bubble may slide this far, a little past the end of the range. */
         const val LEVEL_LIMIT_CENTS = 52f
 
-        /** The two marks the bubble rests between in tune. */
-        const val LEVEL_MARK_CENTS = 12f
+        /** 50 cents carries the bubble this many units from the middle. */
+        const val TRAVEL_UNITS = 92f
 
-        /** Half the bubble's length, in cents of tube. */
-        const val BUBBLE_HALF_CENTS = 7f
-
-        private const val LEVEL_SCALE_SPAN = 0.82f
-        private const val TUBE_STEPS = 48
-        private const val END_STEPS = 24
+        /** The etched lines keep this many units clear of a bubble at rest. */
+        const val MARK_GAP_UNITS = 3f
     }
 }
 
 /**
- * How much a moving bubble stretches along the tube at [velocity] cents per second: 1 at rest, up to
- * 1.25 at 100 cents a second or faster (it thins by the square root, as in the mock-up), so a pluck
- * pulls it out a little and it rounds again as it settles.
+ * How much a moving bubble stretches along the vial at [velocity] cents per second: 1 at rest, up to
+ * 1.25 at 100 cents a second or faster (it thins by the square root), so a pluck pulls it out a
+ * little and it rounds again as it settles.
  */
 internal fun bubbleStretch(velocity: Float): Float = 1f + min(MAX_STRETCH, abs(velocity) * STRETCH_PER_CENT_PER_SECOND)
 
@@ -137,12 +91,12 @@ private const val MAX_STRETCH = 0.25f
 private const val STRETCH_PER_CENT_PER_SECOND = 0.0025f
 
 /**
- * Spirit level: the calm field, the tube lying on the screen with a soft contact shadow, under
- * recessed glass (its face tinted 13 % towards the accent in light, 20 % in dark) with the scale's
- * marks under it, numbers below, and the ♭ and ♯ under its ends; the in-tune glow around the
- * bubble; the two marks at ±12 cents (in the style's tick caps, fading to "in tune"); the bubble; and over it a highlight streak inside the tube and the glass's
- * sheen and rim. The bubble is drawn once, at rest, in a layer of its own: a reading only moves,
- * turns and stretches that layer along the tube, so nothing is redrawn while it floats.
+ * Spirit level: the calm field, the vial lying on the screen with a soft contact shadow, under
+ * recessed glass (its face tinted 13 % towards the accent in light, 20 % in dark), and the ♭ and ♯
+ * under its ends; the in-tune glow around the bubble; the two etched lines (in the style's tick caps,
+ * fading to "in tune"); the bubble; and over it a highlight streak along the vial's upper inside and
+ * the glass's sheen and rim. The bubble is drawn once, at rest, in a layer of its own: a reading only
+ * moves and stretches that layer, so nothing is redrawn while it slides.
  */
 @Composable
 internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffect) {
@@ -155,26 +109,19 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
         val field = meterField(size, roles)
         val contact = ContactShadowArt(level.tube(), u, roles)
         val glass = levelGlass(level, size, roles)
-        val marks = ScaleMarks(u, roles, measurer, this) { cents, out ->
-            val angle = level.angle(cents)
-            out[0] = level.x(angle, level.radius - level.thickness / 2f - 6f * u)
-            out[1] = level.y(angle, level.radius - level.thickness / 2f - 6f * u)
-            out[2] = -sin(angle)
-            out[3] = cos(angle)
-        }
-        // The ♭ and ♯ under the tube's ends, inside the box.
-        val signDistance = level.radius - level.thickness / 2f - 18f * u
+        // The ♭ and ♯ under the vial's ends, inside the box.
+        val signY = level.bottom + SIGN_BELOW_UNITS * u
         val signs = SignsArt(
             measurer, this, u, roles,
-            flatX = level.x(-level.maxAngle, signDistance),
-            sharpX = level.x(level.maxAngle, signDistance),
-            y = level.y(level.maxAngle, signDistance),
+            flatX = level.left + SIGN_IN_UNITS * u,
+            sharpX = level.right - SIGN_IN_UNITS * u,
+            y = signY,
+            maxHeight = 2f * (size.height - u - signY),
         )
         val draw: DrawScope.() -> Unit = {
             field.draw(this)
             contact.draw(this)
             glass.drawUnder(this)
-            marks.draw(this)
             signs.draw(this)
         }
         draw
@@ -182,50 +129,39 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
     // The in-tune glow (70u) around the bubble, drawn at rest and carried with it by its layer.
     TuneGlow(
         roles, reading, LEVEL_GLOW_UNITS,
-        centre = { size -> Offset(size.width / 2f, LevelGeometry(size.width, size.height).bubbleRestY) },
+        centre = { size -> LevelGeometry(size.width, size.height).let { Offset(it.cx, it.centreY) } },
         move = {
             val level = layout.at(size.width, size.height)
-            val angle = level.angle(reading.cents)
-            translationX = level.x(angle, level.bubbleDistance) - level.cx
-            translationY = level.y(angle, level.bubbleDistance) - level.bubbleRestY
+            translationX = level.bubbleX(reading.cents) - level.cx
         },
     )
-    // The two marks across the tube, in a layer of their own so their in-tune fade redraws nothing else.
+    // The two etched lines across the vial, in a layer of their own so their in-tune fade redraws nothing else.
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val level = LevelGeometry(size.width, size.height)
-            val ends = FloatArray(8)
-            for ((i, cents) in listOf(-LevelGeometry.LEVEL_MARK_CENTS, LevelGeometry.LEVEL_MARK_CENTS).withIndex()) {
-                val angle = level.angle(cents)
-                ends[i * 4] = level.x(angle, level.radius - level.thickness / 2f + 3f * level.u)
-                ends[i * 4 + 1] = level.y(angle, level.radius - level.thickness / 2f + 3f * level.u)
-                ends[i * 4 + 2] = level.x(angle, level.radius + level.thickness / 2f - 3f * level.u)
-                ends[i * 4 + 3] = level.y(angle, level.radius + level.thickness / 2f - 3f * level.u)
-            }
+            val top = level.top + 3f * level.u
+            val bottom = level.bottom - 3f * level.u
             val width = 1.8f * level.u
             val cap = roles.finish.caps
             onDrawBehind {
                 val tuned = reading.tuned
                 val color = mix(roles.ink, roles.inTune, tuned).copy(alpha = 0.6f + 0.4f * tuned)
-                for (i in 0..1) {
-                    drawLine(color, Offset(ends[i * 4], ends[i * 4 + 1]), Offset(ends[i * 4 + 2], ends[i * 4 + 3]), width, cap)
+                for (side in SIDES) {
+                    val x = level.cx + side * level.markOffset
+                    drawLine(color, Offset(x, top), Offset(x, bottom), width, cap)
                 }
             }
         },
     )
-    // The bubble, drawn at rest and moved by its layer: stretched along the tube, turned with it and
-    // carried to the reading's place, as the mock-up's translate, rotate and ellipse.
+    // The bubble, drawn at rest and moved by its layer: stretched along the vial and carried to the reading's place.
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {
             val level = layout.at(size.width, size.height)
-            val angle = level.angle(reading.cents)
             val stretch = bubbleStretch(reading.velocity)
-            transformOrigin = TransformOrigin(0.5f, if (size.height > 0f) level.bubbleRestY / size.height else 0.5f)
+            transformOrigin = TransformOrigin(0.5f, if (size.height > 0f) level.centreY / size.height else 0.5f)
             scaleX = stretch
             scaleY = 1f / sqrt(stretch)
-            rotationZ = angle * DEGREES_PER_RADIAN
-            translationX = level.x(angle, level.bubbleDistance) - level.cx
-            translationY = level.y(angle, level.bubbleDistance) - level.bubbleRestY
+            translationX = level.bubbleX(reading.cents) - level.cx
             reading.applyMarkerLook(this)
         }.drawWithCache {
             val bubble = BubbleArt(LevelGeometry(size.width, size.height), roles)
@@ -236,32 +172,26 @@ internal fun BoxScope.SpiritLevelMeter(reading: MeterReading, effect: InTuneEffe
         val level = LevelGeometry(size.width, size.height)
         val tube = level.tube()
         val glass = levelGlass(level, size, roles)
-        // A thin bright streak along the tube's upper inside, as light catches curved glass.
-        val streakRadius = level.radius + level.thickness * 0.3f
+        // A thin bright streak along the vial's upper inside, as light catches the glass.
+        val streakY = level.top + level.thickness * 0.12f
+        val streakStart = Offset(level.left + level.thickness * 0.45f, streakY)
+        val streakEnd = Offset(level.right - level.thickness * 0.45f, streakY)
         val streakColor = Color.White.copy(alpha = if (roles.dark) 0.1f else 0.55f)
-        val streakStroke = Stroke(level.thickness * 0.1f, cap = StrokeCap.Round)
-        val sweep = 2f * level.maxAngle * DEGREES_PER_RADIAN
+        val streakWidth = level.thickness * 0.08f
         val draw: DrawScope.() -> Unit = {
-            clipPath(tube) {
-                drawArc(
-                    streakColor, startAngle = -90f - sweep / 2f, sweepAngle = sweep, useCenter = false,
-                    topLeft = Offset(level.cx - streakRadius, level.centreY - streakRadius),
-                    size = Size(streakRadius * 2f, streakRadius * 2f),
-                    style = streakStroke,
-                )
-            }
+            clipPath(tube) { drawLine(streakColor, streakStart, streakEnd, streakWidth, StrokeCap.Round) }
             glass.drawOver(this)
         }
         draw
     }
 }
 
-/** The tube's glass: its sheen runs from the tube's top to 20u below it. */
+/** The vial's glass: its sheen runs from the vial's top to 20u below it. */
 private fun levelGlass(level: LevelGeometry, size: Size, roles: MeterRoles): GlassArt = GlassArt(
     face = level.tube(),
     size = size,
-    top = level.top - level.thickness / 2f,
-    bottom = level.top + level.thickness / 2f + 20f * level.u,
+    top = level.top,
+    bottom = level.top + 20f * level.u,
     u = level.u,
     roles = roles,
     fill = mix(roles.face, roles.accent, if (roles.dark) 0.2f else 0.13f),
@@ -276,11 +206,11 @@ private class BubbleArt(level: LevelGeometry, private val roles: MeterRoles) {
     private val u = level.u
     private val halfLength = level.bubbleHalfLength
     private val halfHeight = level.bubbleHalfHeight
-    private val topLeft = Offset(level.cx - halfLength, level.bubbleRestY - halfHeight)
+    private val topLeft = Offset(level.cx - halfLength, level.centreY - halfHeight)
     private val ovalSize = Size(halfLength * 2f, halfHeight * 2f)
     private val body = if (roles.dark) mix(roles.face, Color.White, 0.25f) else mix(roles.plate, Color.White, 0.6f)
     private val rim = Stroke(u)
-    private val shineCentre = Offset(level.cx - halfLength * 0.35f, level.bubbleRestY - halfHeight * 0.36f)
+    private val shineCentre = Offset(level.cx - halfLength * 0.35f, level.centreY - halfHeight * 0.36f)
     private val shineRadius = halfLength * 0.3f
     private val shineSquash = halfHeight * 0.18f / shineRadius
     private val shineAlpha = if (roles.dark) 0.5f else 0.85f
@@ -299,7 +229,7 @@ private class BubbleArt(level: LevelGeometry, private val roles: MeterRoles) {
     }
 }
 
-/** The tube's geometry for the bubble's layer, made again only when the box's size changes. */
+/** The vial's geometry for the bubble's layer, made again only when the box's size changes. */
 private class LevelLayout {
     private var width = -1f
     private var height = -1f
@@ -315,7 +245,14 @@ private class LevelLayout {
     }
 }
 
+/** Left (−1) and right (1) of the middle. */
+private val SIDES = floatArrayOf(-1f, 1f)
+
+/** The ♭ and ♯ sit this many units in from the vial's ends … */
+private const val SIGN_IN_UNITS = 14f
+
+/** … and their middles this many units under it. */
+private const val SIGN_BELOW_UNITS = 18f
+
 /** The spirit level's in-tune glow reaches this many units from the bubble. */
 private const val LEVEL_GLOW_UNITS = 70f
-
-private const val DEGREES_PER_RADIAN = (180.0 / PI).toFloat()
