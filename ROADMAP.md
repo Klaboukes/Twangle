@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
-Phases 0–20 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
+Phases 0–21 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
 ---
 
@@ -32,12 +32,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Ticks and clicks: with no string ringing, tap the desk, click a pen and let a clock tick next to the phone: the needle stays still. Then tune a real guitar and check a plucked string still shows promptly and holds steady while you tap; the G string stays on G3 (it used to jump to E4)
 
 ---
-
-## Phase 21 — Native pitch detector (only if needed)
-Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
-- ☐ Decide with measurements from Phases 15, 18 and 20 whether it is needed; if not, close this phase
-- ☐ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version
-- ☐ CPU and battery compared with the Kotlin detector on the test phone
 
 ## Phase 22 — More languages
 Goal: Twangle speaks the world's major languages before it goes public.

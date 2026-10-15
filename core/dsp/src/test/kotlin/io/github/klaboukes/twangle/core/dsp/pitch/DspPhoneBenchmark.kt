@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.strum.StrumDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumResult
@@ -9,7 +10,8 @@ import java.io.File
 
 /**
  * CPU time per frame of the pitch detector on a phone, for the standard (4096-sample) and low-note
- * (8192-sample) windows at 48 kHz, and of the strum detector (16 384 / 32 768 samples). `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this
+ * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), and of the
+ * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this
  * class and runs it with `dalvikvm` on the connected phone: the same ART runtime and JIT as the app,
  * without a debuggable build's slowdown. Plain `main`, so it also runs on the JVM.
  *
@@ -52,6 +54,45 @@ object DspPhoneBenchmark {
                     val result = if (gate.process(window) && sustain.isSustained(window)) detector.detect(window) else PitchResult.NONE
                     if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz), result.confidence) else smoother.noReading()
                     smoother.hasReading
+                },
+            )
+        }
+
+        // The watch's chain (WatchPitchPipeline, Phase 20; the Phase 21 decision): gate, sustain check,
+        // noise floor, detector, smoother and in-tune detector, standard range. Many watch mics
+        // record at 16 kHz, where frames are upsampled ×2 before YIN (AnalysisSettings).
+        for (rate in intArrayOf(16_000, 48_000)) {
+            val settings = AnalysisSettings.forSampleRate(rate)
+            val n = settings.windowSize
+            val frames = listOf(
+                TestSignals.weakFundamental(82.41f, n, sampleRate = rate),
+                TestSignals.pluck(110f, n, sampleRate = rate),
+                TestSignals.withNoise(TestSignals.sawtooth(146.8f, n, sampleRate = rate), snrDb = 20f),
+                TestSignals.sine(329.6f, n, sampleRate = rate),
+                TestSignals.noise(n, rms = 0.1f),
+            )
+            val gate = SignalGate()
+            val sustain = settings.newSustainCheck()
+            val noise = settings.newNoiseFloorTracker()
+            val detector = settings.newPitchDetector()
+            val smoother = PitchSmoother()
+            val mapper = NoteMapper()
+            val inTune = InTuneDetector()
+            val window = FloatArray(n)
+            report(
+                "watch ${rate / 1000} kHz chain ($n, hop ${settings.hopSize})",
+                time { i ->
+                    frames[i % frames.size].copyInto(window)
+                    val open = gate.process(window)
+                    val sustained = !open || sustain.isSustained(window, floorDbfs = noise.floorDbfs)
+                    val pitch = if (open && sustained) detector.detect(window) else PitchResult.NONE
+                    noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
+                    if (pitch.isPitched) {
+                        smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold)
+                    } else {
+                        smoother.noReading(sustained)
+                    }
+                    smoother.hasReading && inTune.update(smoother.cents, settings.hopSeconds)
                 },
             )
         }

@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 on 2026-10-15). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -28,6 +28,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 18 — Strum all strings](#phase-18--strum-all-strings)
 - [Phase 19 — Metronome](#phase-19--metronome)
 - [Phase 20 — Wear OS companion and home-screen widget](#phase-20--wear-os-companion-and-home-screen-widget)
+- [Phase 21 — Native pitch detector (only if needed)](#phase-21--native-pitch-detector-only-if-needed)
 - [Phase 24 — Show me around](#phase-24--show-me-around)
 
 ---
@@ -243,6 +244,12 @@ Goal: Twangle on the watch and one tap from the home screen.
 - ☑ Wear OS module: a watch tuner that listens with the watch's own mic and reuses `:core:dsp` — standalone `:wear` app with the phone's app ID, `:core:audio`'s recorder, a simple note-and-cents screen; starts and listens on the Wear OS 6 emulator
 - ☑ Watch UI: note, cents and an in-tune ring sized for round screens; mic released when the watch screen turns off — a ring along the edge with the cents scale at the top, the note large in the middle, a soft in-tune glow that eases in and out (the phone's `InTuneDetector`, now in `:core:dsp`), the phone's Contemporary colours; screen off or ambient lets go of the mic within a second
 - ☑ Check on a Wear OS emulator; real watch test by the owner — emulator check done (6 Compose tests, mic released on sleep and back on wake); the PC's mic didn't reach the emulator, so a live note waits for a real watch, now in *Owner checks*
+
+## Phase 21 — Native pitch detector (only if needed)
+Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is too slow (for example for strum check or Wear OS).
+- ☑ Decide with measurements from Phases 15, 18 and 20 whether it is needed; if not, close this phase — not needed (2026-10-15). `DspPhoneBenchmark` now also times the watch's chain; on the Xiaomi 12X's little cores (a stand-in for a watch CPU) it takes 2.7 ms per 21 ms hop at 16 kHz (13 % of a core) and 2.2 ms at 48 kHz (10.5 %); on a big core 0.46 / 0.33 ms. The phone's low-note window takes 0.75 ms (3.5 % of a big core) and strum check 2.6 / 5.2 ms every 0.1 s (ARCHITECTURE.md §4, *Watch CPU and the native detector*)
+- ☑ Native YIN behind the `PitchDetector` interface, with the same ±1 cent tests as the Kotlin version — not needed, see the decision above
+- ☑ CPU and battery compared with the Kotlin detector on the test phone — not needed, see the decision above
 
 ## Phase 24 — Show me around
 Goal: a short tour on first start that points out the main parts of the tuner, one at a time, with text balloons that float on their own layer above the screen.
