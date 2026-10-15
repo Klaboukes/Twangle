@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
+import io.github.klaboukes.twangle.core.dsp.metronome.OnsetTempoDetector
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
@@ -10,10 +12,11 @@ import java.io.File
 
 /**
  * CPU time per frame of the pitch detector on a phone, for the standard (4096-sample) and low-note
- * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), and of the
- * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this
- * class and runs it with `dalvikvm` on the connected phone: the same ART runtime and JIT as the app,
- * without a debuggable build's slowdown. Plain `main`, so it also runs on the JVM.
+ * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), of the
+ * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, and of one microphone chunk into the tempo
+ * detector. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
+ * `dalvikvm` on the connected phone: the same ART runtime and JIT as the app, without a debuggable
+ * build's slowdown. Plain `main`, so it also runs on the JVM.
  *
  * Per case: [WARM_UP] untimed frames so the JIT compiles the hot loop, then [MEASURED] frames.
  * Reports the median wall time per frame and the thread's CPU time per frame, from
@@ -93,6 +96,27 @@ object DspPhoneBenchmark {
                         smoother.noReading(sustained)
                     }
                     smoother.hasReading && inTune.update(smoother.cents, settings.hopSeconds)
+                },
+            )
+        }
+
+        // Tempo from music (Phase 27): one microphone chunk (1024 samples at 48 kHz) into the tempo
+        // detector, a click track in noise; about one chunk in twelve also runs an estimate, so the
+        // CPU figure is the average per chunk.
+        run {
+            val chunk = 1024
+            val music = FloatArray(30 * 48_000)
+            ClickTrack(48_000, bpm = 123).render(music)
+            val noise = TestSignals.noise(music.size, rms = 0.02f)
+            for (i in music.indices) music[i] += noise[i]
+            val chunks = music.size / chunk
+            val tempo = OnsetTempoDetector(48_000)
+            report(
+                "tempo detector chunk (1024)",
+                time { i ->
+                    if (i % chunks == 0) tempo.reset()
+                    tempo.process(music, (i % chunks) * chunk, chunk)
+                    tempo.bpm > 0
                 },
             )
         }
