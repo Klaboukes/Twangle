@@ -1,0 +1,1568 @@
+<meta charset="utf-8">
+<title>Twangle Listen Preview</title>
+<!--
+TWANGLE METRONOME: "LISTEN" (Phase 27). FINAL, approved by the owner on 2026-10-15 after five rounds. The build
+follows this comment; the page shows it moving.
+Goal     The metronome listens to music playing nearby (a speaker, a band) through the microphone and sets its
+         tempo to match. Audio stays in memory only, as everywhere in Twangle (no INTERNET, nothing on disk).
+Owner decided (2026-10-15), all in one place (details in the sections below):
+         1. Listen sits beside Tap tempo: one row of two buttons of the same fixed size, whatever their labels
+            say (Row).
+         2. − and + move up into the tempo dial's bottom corners (− and +).
+         3. A found tempo is SUGGESTED first: a balloon with the found tempo, ½× / 2×, Use and Not now; nothing
+            changes until Use (Found). (Round 1's "set straight away with Undo" was dropped.)
+         4. The small ring on the dial's arc at the tempo it is settling on stays while listening (Listening).
+         5. After Use a stopped metronome stays stopped; the clicks only come back if they were playing before
+            Listen (Found).
+         6. Every button gets the new press effect: lit on touch-down, held while pressed, a slight sink
+            (3 %), fading over about a quarter second, in each style's finish; "Remove animations" = colour
+            only; no Material ripple anywhere (Press). Metronome screen first, then the whole app.
+         7. Tap tempo gets its own crisp flash instead: full light on touch-down, gone 0.11 s later, no sink
+            (Tap tempo's press).
+         8. The Listen button shows listening's 15 s as a subtle trace round its own edge (Progress; the
+            owner's pick of four, "but a bit more subtle").
+         9. Wording as on the page, English and Dutch (Words).
+         10. Clicks in step with the song: not in scope.
+Screen   The metronome as built (Phase 19 and 26, docs/design/metronome-nav-preview.html, ARCHITECTURE.md §6
+         *Metronome screen*), the navigation bar as built (variant B, Frameless, with the Tuning item), the quiet
+         background. New: − / + moved beside the dial, a Listen button, a status line, the press effect.
+Layout   Upright, top to bottom: meter picker, beat lights, the status line (new), the tempo dial with − and + in
+         its lower corners (moved), then ONE row of two equal buttons, Tap tempo and Listen, then Start / Stop and
+         "Vibrate on the beat". The column is no taller than before (the − / + row is gone, the 24 dp line is
+         added). On its side the same: the dial with − / + at its corners at the start, the rest beside it.
+− and +  Same buttons as built (52 dp, the style's shape: round in Contemporary and Space Age, pebbles in
+         Ancient, neon outlines in Futuristic; 48 dp touch targets at least), placed on the dial's box: their
+         centres 26 dp above its bottom edge and 8 dp in from its left and right edges (so they stand up to 18 dp
+         outside the 288 dp box, which the 16 dp screen padding plus the column's spare width allow: 20 dp a side
+         on a 360 dp phone, 36 dp on 393 dp; where the dial is smaller than 288 dp they keep that place relative
+         to it). That is the free corner under the 300° arc, beside its gap: clear of the "50" and "200" numbers
+         above them, the "30" and "250" numbers and the end ticks beside them, the needle (always inside the
+         arc) and the glow behind the tempo (100 units round the middle). They are not part of the dial's touch
+         ring (a touch on them never moves the dial). Slower on the left, faster on the right in every language,
+         as the dial (not mirrored in right-to-left languages). TalkBack: "Slower", "Faster", after the dial.
+Row      Tap tempo and Listen side by side, 12 dp apart, BOTH THE SAME FIXED WIDTH whatever their labels say:
+         min(156 dp, (column width − 12 dp) / 2), 56 dp tall. A label never changes the button's size: one that
+         doesn't fit is set smaller (down to 12 sp), then wraps onto two lines. 156 dp fits the longest of
+         "Tap tempo", "Tempo tikken", "Listen", "Luisteren" with room to spare; the other languages' lengths are
+         checked in the build. Same family as built: see-through in the style's shape, a muted 1 dp outline
+         (Futuristic: the accent at 55 %). Listen has a microphone line icon (24 dp grid, 1.8 dp round lines
+         like the bar's icons: capsule, cradle, stem, foot) before "Listen" ("Luisteren"); while listening the
+         icon becomes a stop square in the same line style, both in the accent, and the label "Stop" (TalkBack
+         "Stop listening"), in the same width. Start / Stop below keeps one width too (196 dp).
+Line     A status line under the beat lights, 24 dp, its room always kept so nothing moves when it shows or
+         hides. 14 sp in the muted colour, one line, centred; a change crossfades (160 ms out, 160 ms in). An
+         action in it (Try again) is a text button in the accent with a 48 dp touch area. TalkBack reads it as a
+         polite live region.
+Listening  A tap on Listen asks for the microphone first if it isn't allowed yet (the tuner's prompt and rules,
+         MicPermissionRules). Then, following OnsetTempoDetector (its status LISTENING, NO_BEAT, SETTLING,
+         STEADY):
+         - The metronome's own clicks pause (they would be heard by the microphone). Start / Stop rests at 38 %
+           and takes no taps; it comes back when listening ends. − + Tap tempo, the meter and the dial stay live:
+           using one ends listening (the player took over), as Stop does.
+         - The Listen button reads "Stop" and shows the time as a trace round its edge (Progress). No pulse, no
+           spinner, never a change of size.
+         - The line says "Listening…" ("Luisteren…") while the detector is LISTENING (its first 3 s) or reports
+           NO_BEAT.
+         - Once it is SETTLING (a tempo, typically 3-5 s in), the beat lights follow the detector's beat moments,
+           in order from the first, at a softer level than the metronome's own (lit 0.25 + 0.45 decaying over
+           200 ms, against 0.4 + 0.6), and with no glow behind the tempo. The detector can't know where the bar
+           starts, so beat 1 is just the first beat it heard.
+         - The tempo it is settling on is shown quietly: "Listening… 96 BPM" in the line, the number in ink, and
+           a small hollow ring on the dial's arc at that tempo (5.5 units radius, a 1.8 unit line in ink at 75 %
+           over a 6 unit disc of the background, fading in over 400 ms; the dial's needle, arc and big number
+           keep the current tempo until something is accepted). The number is the detector's bpm, which is
+           already steady (the median of its last 1.25 s, and it only moves once the estimate is 0.75 BPM away),
+           so it changes a few times at most; the ring glides to a new number in 500 ms (ease in-out) and the
+           line crossfades.
+         - Listening ends by itself when the detector reports STEADY (within ±1 BPM for 4 s): found. After 15 s
+           without STEADY: found if it is SETTLING (its current bpm), "no beat" if LISTENING or NO_BEAT. Also when
+           the player taps Stop or leaves the screen. The microphone is held only while listening.
+Progress  How listening's 15 s show (owner chose the edge trace, 2026-10-15, "but a bit more subtle"):
+         - While listening the button's own 1 dp outline dims to the muted colour at 35 % (Futuristic: the
+           accent at 25 %), and a trace is drawn over it, ON the outline (same path, same corners: round,
+           pebble or cut), clockwise from the top centre.
+         - The trace: 1.25 dp wide, the accent at 60 % (Futuristic too: never brighter than its normal 55 %
+           outline plus that little, and no glow of its own), with a soft round head (its last 8° fade out to
+           nothing, so there is no hard end).
+         - Its length is time / 15 s, linear (a clock, not a guess), drawn every frame so it moves evenly.
+           A full trace means the 15 s are up.
+         - When listening ends (found, Stop, no beat), the trace fades out over 300 ms where it is and the
+           outline comes back to normal; it never jumps to full.
+         - No picked look on the button while listening (no 2 dp accent outline, no fill): only the icon and
+           label change, in the accent.
+         - Remove animations: the same trace (it is information, not decoration), with no fade at the end.
+Found    Suggest first. Nothing changes yet. A balloon floats on its own layer above the screen, pointing at
+         Listen, the tour's balloon (Phase 24, docs/design/tour-preview.html, fill ACCENT): no outline, the
+         style's accent with on-accent text, a soft two-layer shadow (0 6 dp 10 dp black at 22 % light / 55 %
+         dark, plus 0 1 dp 2 dp at 80 % of that; Futuristic: an accent glow, 10 dp at 40 %, cut corners),
+         shapes.medium corners, at most 260 dp wide, 12 dp padding at the top, 14 dp at the sides, 8 dp at the
+         bottom, its 14 × 9 dp pointer centred on Listen and kept 20 dp from the balloon's ends, 11 dp above the
+         button. Inside: the style's mark and "Heard" ("Gehoord", 12 sp, on-accent at 78 %); the tempo big in
+         the number face (40 units) with "BPM" and its Italian marking (on-accent at 78 %); ½× 1× 2× as a small
+         radio row (48 × 32 dp chips, 4 dp apart, on-accent at 16 %, the picked one filled on-accent with
+         accent text; TalkBack "Half", "As heard", "Double"), 1× picked, from the detector's halfBpm and
+         doubleBpm, a choice only shown when it lands in 30-250; then "Not now" (text button, at the start) and
+         "Use" (filled on-accent, accent text, at the end, 40 dp tall). The number follows the pick. Use: the
+         balloon fades (150 ms), the dial's arc, needle and number glide to the tempo in 700 ms (ease in-out),
+         with one soft accent glow behind the number (eases in 300 ms, holds 400 ms, fades over 900 ms). Not now
+         or Back: the balloon fades, nothing changes. Touching another control also closes it, as Not now. It
+         waits for the player (no timeout). If the metronome was playing before Listen, its clicks come back
+         after Use (at the new tempo, once the dial has glided) or Not now (at the old one); if it was stopped,
+         it stays stopped. The clicks start on their own grid, not in step with the song.
+No beat  The line says "No steady beat heard  Try again" ("Geen duidelijk ritme gehoord  Opnieuw") for 8 s;
+         the tempo stays; clicks come back if they were playing. Try again listens again.
+Press    For every button (owner: "All buttons should have the feedback effect when tapped, like the tap tempo
+         button already has. But the feedback effect itself can also be improved."). Today: Tap tempo flashes the
+         accent at 22 % for 120 ms (buttonFace(hit = …) in MetronomeControls.kt); −, +, the meter chips, Start /
+         Stop and the vibrate row show Material's ripple. The new effect replaces both, one look for all
+         buttons, built once as a shared Modifier in :core:designsystem (e.g. Modifier.pressFeedback(
+         interactionSource, shape, crisp = false)) that reads the style from MaterialTheme.styleTokens and draws
+         in drawWithContent / graphicsLayer, with indication = null on the clickable so Material's ripple is gone
+         (no grey circle anywhere):
+         - Level: a 0..1 value per button. It jumps to 1 on touch-DOWN (not on release; the clickable's
+           PressInteraction.Press), stays 1 while the finger is held, and after release fades as
+           (1 − t/280 ms)³, to 0 at 280 ms. A new touch during the fade jumps back to 1. A tap shorter than a
+           frame still lights fully. Keyboard / TalkBack activation gives the same flash (down, then release at
+           once).
+         - Light: a layer clipped to the button's own shape, drawn above its background and below its icon and
+           text, at "alpha × level":
+             Contemporary, Space Age (round, capsule): the accent, alpha 0.20.
+             Ancient (pebble): a soft smudge, as a finger on stone: a radial gradient centred 56 % across and
+               60 % down, 75 % × 85 % of the button, from ink 45 % mixed into the accent to transparent at
+               78 %, alpha 0.24.
+             Classic (keys): the key pressed in: a shadow from the top edge (black 22 % to transparent at half
+               height) over the accent at 12 %, alpha 1.
+             Retro (soft): the push button pressed in: an inner shadow 3 dp down, 6 dp blur, black 28 %, over
+               the accent at 10 %, alpha 1.
+             Futuristic (neon): the neon brightens: the accent at 14 % inside, the outline lit to the full
+               accent (a 1 dp inner line), alpha 1; and a glow round the button and its text, the accent at up
+               to 70 % × level, 8 dp blur.
+           On a filled button (Start / Stop, outside Futuristic) the light is the on-accent colour at 0.20.
+           In the balloon (accent fill): the on-accent colour at 0.20, and on its filled ones (Use, the picked
+           ½× 1× 2×) the accent at 0.20. Text buttons (Not now, Try again) and the vibrate row get the light as
+           a pill (12 dp corners, 8 dp in from the top and bottom of a 48 dp touch area).
+         - Sink: the button scales to 1 − sink × s about its centre, where s follows the level with a 35 ms
+           smoothing (so the press goes in within a frame or two and comes back with the light): sink 0.03 for
+           most, 0.02 Ancient and Retro, 0.015 Classic and for the wide vibrate row. Only the button moves,
+           never its neighbours (graphicsLayer scale, no layout change).
+         - Remove animations (Android's "Remove animations", rememberAnimationsOff in :core:designsystem):
+           no sink, no fade: the light is on while the finger is down and off on release, held for at least
+           100 ms so a quick tap still shows.
+         - Colours only from the style: never in-tune green, nothing that bursts or bounces.
+         - On the metronome screen: −, +, Listen, Start / Stop, the meter chips, the vibrate row, the balloon's
+           ½× 1× 2×, Not now and Use, Try again; Tap tempo has its own (below). Then every other button of the
+           app with the same Modifier (a later roadmap item).
+Tap tempo's press  Tap tempo is played in time, so its light must mark the moment of each tap exactly and never
+         smear into the next (owner: "the effect's delay distracts from keeping the beat"). The same Modifier
+         with crisp = true, driven by the same first pointer down that counts the tap:
+         - Full light at the exact frame of touch-DOWN, held for a fixed 70 ms whatever the finger does (a
+           long press doesn't keep it lit, a quick lift doesn't cut it short), then off with a 40 ms linear
+           fade: dark again 110 ms after the touch. At 250 BPM (240 ms a beat) that leaves 130 ms of dark
+           between flashes, so every tap is a separate flash. A new tap during the fade starts a fresh flash.
+         - The light's colour and finish are the style's, as Press (Contemporary and Space Age the accent at
+           0.20, Ancient the smudge, Classic and Retro the pressed-in key, Futuristic the brightened neon outline
+           and glow), at a fixed level, no easing.
+         - No sink or scale, no movement at all, so the button never seems to lag the finger.
+         - Remove animations: the same 70 ms flash, cut off without the 40 ms fade.
+         - TalkBack's double tap counts as a tap and gives the same flash.
+Words    English / Dutch: Listen / Luisteren; Stop / Stop (TalkBack "Stop listening" / "Stop met luisteren");
+         Listening… / Luisteren…; Heard / Gehoord; Use / Gebruiken; Not now / Niet nu; Half / As heard / Double
+         (TalkBack) / Half / Zoals gehoord / Dubbel; No steady beat heard / Geen duidelijk ritme gehoord; Try
+         again / Opnieuw. Tap tempo stays "Tap tempo" / "Tempo tikken".
+Motion   Calm (owner: wow but calm, no flicker): only fades, one glide, one glow, the beat lights, the trace and
+         the press light. Nothing bounces or blinks (Tap tempo's short flash only answers the player's own tap);
+         no text appears and disappears within a second.
+Page     One phone runs a pretend song: the metronome plays at 80 BPM, a pretend tap on Listen (shown only by
+         the button's own press effect), it listens, settles and finds the tempo, and a pretend tap on Use (and
+         2× in the fast song). Three songs: a steady song at 96 BPM (found at 10.5 s), a fast song at 168 BPM
+         that the detector hears at half speed (84; found at 10 s), and soft music with no clear beat (the full
+         15 s). Everything on the phone also works by hand. A switch shows the phone 393 dp wide (the Xiaomi
+         12X) or 360 dp (a small phone); another removes animations. Three styles (Contemporary, Futuristic,
+         Ancient), light and dark, English and Dutch.
+Styles   Colours, letters, shapes and backgrounds from docs/design/theme-styles-preview.html via
+         docs/design/metronome-nav-preview.html: its data block, its drawing code for the backgrounds, the tempo
+         dial and the beat lights are copied here unchanged.
+Sound    Off by default and never starts by itself. On: a short pretend song (kick, snare and hi-hat, or a soft
+         pad with no beat) while the phone listens, at most 15 s, and the metronome's clicks; the page's
+         metronome goes quiet by itself a few seconds after the song.
+ASSETS   Fonts from Google Fonts (SIL Open Font License 1.1), as the styles preview. Every icon and drawing is code
+         on this page; no outside images.
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+/* The script sets these tokens to the chosen style. */
+:root {
+  --bg: #F5F7FC; --surface: #FFFFFF; --fg: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF; --intune: #1B7A3E; --on-intune: #FFFFFF;
+  --container: #D0D6F8; --second: #8FA0F0; --third: #B9C4EA; --bezel: #0E0F11; --shadow-a: .16;
+  --display: Roboto, system-ui, sans-serif; --display-weight: 300; --display-track: 0em;
+  --num: Roboto, system-ui, sans-serif; --pbody: Roboto, system-ui, sans-serif;
+  --btn-r: 20; --pill-r: 18; --card-r: 12; --str-w: 46; --str-h: 46; --sr1: 23; --sr2: 23; --sr3: 23; --sr4: 23;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --on-intune: #00391A;
+    --container: #3B427A; --second: #3C4FB8; --third: #2A3160; --bezel: #000000; --shadow-a: .5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1220; --surface: #151A2B; --fg: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --on-intune: #00391A;
+  --container: #3B427A; --second: #3C4FB8; --third: #2A3160; --bezel: #000000; --shadow-a: .5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(80% 40% at 10% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(80% 40% at 95% 100%, color-mix(in srgb, var(--third) 8%, transparent), transparent 70%),
+    var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.5 var(--ui);
+  padding-inline: 16px;
+  padding-block: 0 56px;
+  overflow-x: hidden;
+}
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+header.intro { display: grid; gap: 10px; padding-block: 28px 0; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: clamp(28px, 7.5vw, 44px); line-height: 1.12; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 66ch; }
+.lede strong { color: var(--fg); font-weight: 500; }
+
+/* ---- Controls ---- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin-inline: -16px; padding: 8px 16px 8px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px;
+}
+.bar > * { min-width: 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.seg { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.seg label { flex: 1; text-align: center; padding: 8px 4px; border-radius: 999px; cursor: pointer; font: 500 13px/1.15 var(--ui); color: var(--muted); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.seg input:checked + label { background: var(--accent); color: var(--on-accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 1px 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px/1.1 var(--ui); white-space: nowrap; }
+.chip[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--container); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sw { width: 22px; height: 22px; border-radius: 50%; flex: none; border: 1px solid color-mix(in srgb, var(--fg) 18%, transparent); }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+.toggles fieldset { flex: 1 1 200px; }
+.tlabel { display: block; font: 500 11px/1.2 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px 4px; }
+.tbtn { flex: 0 0 auto; cursor: pointer; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 500 13px/1.15 var(--ui); }
+.tbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tbtn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* ---- Variant explanation ---- */
+.variant { display: grid; gap: 6px; padding: 14px 16px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--line); }
+.variant h2 { margin: 0; font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: 24px; line-height: 1.2; }
+.variant p { margin: 0; font-size: 15px; line-height: 1.5; }
+.variant .good { color: var(--muted); }
+
+/* ---- Phones ---- */
+.phones { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 24px; justify-items: center; }
+@media (min-width: 760px) { .phones { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+figure { margin: 0; display: grid; gap: 10px; width: 100%; justify-items: center; min-width: 0; }
+figcaption { display: grid; gap: 4px; text-align: center; max-width: 360px; }
+figcaption b { font: 500 12px/1.2 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+figcaption span { font-size: 14px; line-height: 1.45; color: var(--fg); }
+.phone { width: min(100%, 360px); padding: 8px; border-radius: 46px; background: var(--bezel); box-shadow: 0 1px 0 1px color-mix(in srgb, var(--fg) 12%, transparent), 0 18px 40px -18px rgba(0,0,0,.45); }
+.phone.land { width: min(100%, 820px); padding: 7px; border-radius: 36px; }
+.screen { position: relative; width: 100%; aspect-ratio: 393 / 873; border-radius: 38px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--pbody); container-type: inline-size; --dp: calc(100cqw / 393); user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.screen[data-w="360"] { aspect-ratio: 360 / 800; --dp: calc(100cqw / 360); }
+.phone.w360 { width: min(100%, 330px); }
+.screen.land { aspect-ratio: 873 / 393; border-radius: 30px; --dp: calc(100cqw / 873); }
+.screen > canvas.backdrop { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.dp { --dp: inherit; }
+
+.status { position: absolute; top: 0; left: 0; right: 0; height: calc(var(--dp) * 34); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(var(--dp) * 24); font: 500 calc(var(--dp) * 13)/1 var(--ui); color: var(--fg); z-index: 4; pointer-events: none; }
+.land .status { height: calc(var(--dp) * 24); padding: 0 calc(var(--dp) * 64); }
+.status svg { height: calc(var(--dp) * 12); width: auto; }
+.gesture { position: absolute; left: 50%; bottom: calc(var(--dp) * 8); width: calc(var(--dp) * 108); height: calc(var(--dp) * 4); border-radius: 99px; transform: translateX(-50%); background: color-mix(in srgb, var(--fg) 55%, transparent); z-index: 5; pointer-events: none; }
+.land .gesture { bottom: calc(var(--dp) * 5); width: calc(var(--dp) * 140); }
+
+/* The screen's content area; its bottom (or start) leaves room for the bar (or rail), set per variant. */
+.body { position: absolute; left: 0; right: 0; top: calc(var(--dp) * 34); bottom: var(--below); display: flex; flex-direction: column; align-items: center; padding: calc(var(--dp) * 8) calc(var(--dp) * 16) calc(var(--dp) * 12); z-index: 1; }
+.screen[data-var="A"] { --below: calc(var(--dp) * 104); --beside: calc(var(--dp) * 80); }
+.screen[data-var="B"] { --below: calc(var(--dp) * 96); --beside: calc(var(--dp) * 80); }
+.screen[data-var="C"] { --below: calc(var(--dp) * 112); --beside: calc(var(--dp) * 88); }
+.land .body { top: calc(var(--dp) * 24); bottom: calc(var(--dp) * 14); left: var(--beside); padding: calc(var(--dp) * 4) calc(var(--dp) * 24) 0 calc(var(--dp) * 12); flex-direction: row; align-items: center; justify-content: center; gap: calc(var(--dp) * 24); }
+.land .body.full { left: 0; padding-left: calc(var(--dp) * 40); padding-right: calc(var(--dp) * 40); transition: left .35s, padding-left .35s; }
+.land .body.full.withrail { left: var(--beside); padding-left: calc(var(--dp) * 12); }
+.grow { flex: 1 1 0; min-height: 0; }
+.grow.half { flex: 0.5 1 0; }
+
+/* Shape families, as the styles preview. */
+:root[data-shape="neon"] :is(.mode, .pill, .str, .cpick, .strum, .mbtn, .pm, .tapb, .go, .nb.vC, .vC .ni, .vA .ind) { corner-shape: bevel; }
+:root[data-shape="soft"] :is(.str, .pm, .tapb, .mbtn) { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) color-mix(in srgb, #fff 35%, transparent), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) color-mix(in srgb, #000 12%, transparent); background: color-mix(in srgb, var(--surface) 85%, transparent); }
+:root[data-shape="neon"] :is(.str, .pill, .mode, .cpick, .strum, .pm, .tapb, .mbtn) { background: transparent; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+/* ---- Metronome ---- */
+.msel { display: flex; gap: calc(var(--dp) * 4); margin-top: calc(var(--dp) * 12); flex: none; }
+.mbtn { min-width: calc(var(--dp) * 52); height: calc(var(--dp) * 40); padding: 0 calc(var(--dp) * 6); border-radius: calc(var(--dp) * min(var(--btn-r), 20)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15 * var(--num-scale, 1))/1 var(--num); font-variant-numeric: lining-nums; color: var(--fg); cursor: pointer; white-space: nowrap; }
+.mbtn.on { background: var(--container); border-color: var(--accent); border-width: calc(var(--dp) * 2); }
+:root[data-shape="neon"] .mbtn.on { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: 0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 35%, transparent); }
+:root[data-shape="pebble"] .mbtn:nth-child(odd) { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .mbtn:nth-child(even) { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+.lights { width: 100%; height: calc(var(--dp) * 64); flex: none; display: block; }
+.dialbox { position: relative; width: calc(var(--dp) * 288); height: calc(var(--dp) * 288); flex: none; }
+.dialbox canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.dread { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.bpmn { font-family: var(--num); font-weight: var(--num-w, 400); letter-spacing: 0; font-size: calc(var(--dp) * 58 * var(--num-scale, 1)); line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.bpml { font: 500 calc(var(--dp) * 13)/1 var(--num); letter-spacing: .12em; color: var(--muted); margin-top: calc(var(--dp) * 6); }
+.tname { font: italic 400 calc(var(--dp) * 15)/1 var(--pbody); color: var(--muted); margin-top: calc(var(--dp) * 8); }
+.prow { display: flex; align-items: center; gap: calc(var(--dp) * 16); flex: none; }
+.pm { width: calc(var(--dp) * 56); height: calc(var(--dp) * 56); border-radius: calc(var(--dp) * min(var(--btn-r), 28)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); display: grid; place-items: center; cursor: pointer; color: var(--fg); padding: 0; }
+.pm svg { width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); }
+:root[data-shape="round"] .pm, :root[data-shape="capsule"] .pm { border-radius: 50%; }
+:root[data-shape="pebble"] .pm.minus { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+:root[data-shape="pebble"] .pm.plus { border-radius: 55% 45% 48% 52% / 42% 60% 40% 58%; }
+.tapb { height: calc(var(--dp) * 56); min-width: calc(var(--dp) * 132); padding: 0 calc(var(--dp) * 18); border-radius: calc(var(--dp) * min(var(--btn-r), 28)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15)/1 var(--pbody); cursor: pointer; color: var(--fg); white-space: nowrap; transition: background-color .12s; }
+.tapb.hit { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+:root[data-shape="pebble"] .tapb { border-radius: 42% 58% 46% 54% / 60% 52% 48% 40%; }
+.go { margin-top: calc(var(--dp) * 16); height: calc(var(--dp) * 56); min-width: calc(var(--dp) * 196); padding: 0 calc(var(--dp) * 24); border: 0; border-radius: calc(var(--dp) * min(var(--btn-r), 28)); background: var(--accent); color: var(--on-accent); font: 500 calc(var(--dp) * 17)/1 var(--display); letter-spacing: var(--display-track); display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dp) * 10); cursor: pointer; flex: none; white-space: nowrap; }
+.go svg { width: calc(var(--dp) * 18); height: calc(var(--dp) * 18); }
+:root[data-shape="pebble"] .go { border-radius: calc(var(--dp) * 26) calc(var(--dp) * 18) calc(var(--dp) * 28) calc(var(--dp) * 16); }
+:root[data-shape="soft"] .go { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) rgba(255,255,255,.3), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) rgba(0,0,0,.18); }
+:root[data-shape="neon"] .go { background: color-mix(in srgb, var(--accent) 14%, var(--bg)); color: var(--accent); border: calc(var(--dp) * 1.5) solid var(--accent); box-shadow: 0 0 calc(var(--dp) * 14) color-mix(in srgb, var(--accent) 35%, transparent); }
+.vib { display: flex; align-items: center; gap: calc(var(--dp) * 12); margin-top: calc(var(--dp) * 12); min-height: calc(var(--dp) * 48); padding: 0 calc(var(--dp) * 4); cursor: pointer; flex: none; font: 400 calc(var(--dp) * 15)/1.25 var(--pbody); background: none; border: 0; color: var(--fg); }
+.vib > svg { width: calc(var(--dp) * 22); height: calc(var(--dp) * 22); color: var(--muted); flex: none; }
+.vib.on > svg { color: var(--accent); }
+.vib.buzz > svg { animation: buzz .14s linear; }
+@keyframes buzz { 0%, 100% { transform: none; } 25% { transform: translateX(calc(var(--dp) * -1.5)); } 75% { transform: translateX(calc(var(--dp) * 1.5)); } }
+.switch { flex: none; position: relative; width: calc(var(--dp) * 52); height: calc(var(--dp) * 32); border-radius: calc(var(--dp) * 16); border: calc(var(--dp) * 2) solid var(--muted); background: color-mix(in srgb, var(--fg) 8%, var(--surface)); }
+.switch::after { content: ""; position: absolute; top: 50%; left: calc(var(--dp) * 6); width: calc(var(--dp) * 16); height: calc(var(--dp) * 16); border-radius: 50%; background: var(--muted); transform: translateY(-50%); }
+.on > .switch, .switch.on { background: var(--accent); border-color: var(--accent); }
+.on > .switch::after, .switch.on::after { left: auto; right: calc(var(--dp) * 2); width: calc(var(--dp) * 24); height: calc(var(--dp) * 24); background: var(--on-accent); }
+/* ---- The bar (upright) and the rail (on its side): three variants ---- */
+.nb { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: space-around; align-items: flex-start; transition: opacity .35s; }
+.nb::before { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.nb.hide { opacity: 0; pointer-events: none; }
+.ni { flex: 1 1 0; position: relative; background: none; border: 0; padding: 0; margin: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: calc(var(--dp) * 4); font: 500 calc(var(--dp) * 12)/1.2 var(--pbody); cursor: pointer; min-width: 0; }
+.ni .ind { width: calc(var(--dp) * 64); height: calc(var(--dp) * 32); display: grid; place-items: center; border-radius: calc(var(--dp) * min(var(--btn-r), 16)); transition: background-color .2s; }
+.ni svg { width: calc(var(--dp) * 24); height: calc(var(--dp) * 24); }
+.ni .nl { white-space: nowrap; max-width: 100%; overflow: hidden; }
+.ni.on { color: var(--fg); }
+.ni.on svg { stroke-width: 2.2; }
+.ni .mk { display: none; }
+.ni:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:root[data-shape="pebble"] .ni .ind { border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; }
+/* B: frameless. Icons and names on the background over a calm field; the open one in the accent with the style's mark. */
+.vB { height: calc(var(--dp) * 96); padding-top: calc(var(--dp) * 16); }
+.vB::before { inset: calc(var(--dp) * -36) 0 0 0; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 70%, transparent) 55%); }
+.vB .ni .ind { width: auto; height: calc(var(--dp) * 28); }
+.vB .ni.on { color: var(--accent); }
+.vB .ni.on .mk { display: block; margin-top: calc(var(--dp) * 3); }
+.mk { width: calc(var(--dp) * 20); height: calc(var(--dp) * 4); border-radius: 99px; background: var(--accent); }
+:root[data-shape="pebble"] .mk { width: calc(var(--dp) * 8); height: calc(var(--dp) * 7); border-radius: 46% 54% 42% 58% / 55% 45% 55% 45%; box-shadow: calc(var(--dp) * 1.5) calc(var(--dp) * 1.2) 0 calc(var(--dp) * .6) color-mix(in srgb, var(--accent) 35%, transparent); }
+:root[data-shape="keys"] .mk { width: calc(var(--dp) * 24); height: calc(var(--dp) * 5); border-radius: calc(var(--dp) * 1); background: color-mix(in srgb, var(--accent) 32%, transparent); border: calc(var(--dp) * 1.2) solid var(--accent); }
+:root[data-shape="soft"] .mk { width: calc(var(--dp) * 24); height: calc(var(--dp) * 6); box-shadow: 0 0 calc(var(--dp) * 6) color-mix(in srgb, var(--accent) 55%, transparent); }
+:root[data-shape="neon"] .mk { width: calc(var(--dp) * 26); height: calc(var(--dp) * 2); border-radius: 0; box-shadow: 0 0 calc(var(--dp) * 6) var(--accent), 0 0 calc(var(--dp) * 2) var(--accent); }
+:root[data-shape="capsule"] .mk { width: calc(var(--dp) * 11); height: calc(var(--dp) * 11); border-radius: 0; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+/* ---- What to look at ---- */
+.look { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; max-width: 72ch; }
+.look li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.look li b { font: 500 13px/1 var(--ui); color: var(--on-accent); background: var(--accent); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; }
+.look li span { font-size: 15px; line-height: 1.5; }
+.ask { padding: 20px 22px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--accent); display: grid; gap: 8px; max-width: 72ch; }
+.ask p { margin: 0; }
+.ask .big { font-size: 18px; line-height: 1.4; font-weight: 500; text-wrap: balance; }
+.ask .small { font-size: 15px; color: var(--muted); }
+h3.sec { margin: 8px 0 0; font-family: var(--display); font-weight: var(--display-weight); letter-spacing: var(--display-track); font-size: 24px; line-height: 1.2; }
+
+/* ---- New for Listen ---- */
+/* − and + in the dial's lower corners: centres 26 dp up from its box's bottom, 8 dp in from its sides. */
+.dialbox .pm { position: absolute; z-index: 1; bottom: 0; width: calc(var(--dp) * 52); height: calc(var(--dp) * 52); }
+.dialbox .pm.minus { left: calc(var(--dp) * -18); }
+.dialbox .pm.plus { right: calc(var(--dp) * -18); }
+/* Tap tempo and Listen: one width, whatever their labels say. */
+.prow { width: 100%; justify-content: center; gap: calc(var(--dp) * 12); }
+.prow > button { flex: none; width: min(calc(var(--dp) * 156), calc((100% - var(--dp) * 12) / 2)); min-width: 0; padding: 0 calc(var(--dp) * 10); overflow: hidden; text-overflow: ellipsis; }
+.go { width: calc(var(--dp) * 196); min-width: 0; }
+.listb { position: relative; overflow: hidden; height: calc(var(--dp) * 56); padding: 0 calc(var(--dp) * 12); display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--dp) * 6); border-radius: calc(var(--dp) * min(var(--btn-r), 28)); border: calc(var(--dp) * 1) solid color-mix(in srgb, var(--muted) 60%, transparent); background: color-mix(in srgb, var(--surface) 45%, transparent); font: 500 calc(var(--dp) * 15)/1 var(--pbody); cursor: pointer; color: var(--fg); white-space: nowrap; flex: none; transition: border-color .2s, box-shadow .2s; }
+.listb svg { position: relative; width: calc(var(--dp) * 20); height: calc(var(--dp) * 20); flex: none; transition: color .2s; }
+.listb .lt { position: relative; overflow: hidden; text-overflow: ellipsis; }
+.listb .ic { position: relative; display: grid; flex: none; }
+/* The time while listening: a subtle trace over the button's own outline, clockwise from the top centre
+   (owner's pick, 2026-10-15, "but a bit more subtle"). It fades out over 300 ms where it is when listening ends. */
+.prow > .listb { overflow: visible; }
+.listb .pt { position: absolute; inset: calc(var(--dp) * -1); border-radius: inherit; padding: calc(var(--dp) * 1.25); pointer-events: none;
+  opacity: 0; transition: opacity .3s; --tc: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: conic-gradient(from 0deg, var(--tc) 0deg, var(--tc) calc(var(--p, 0) * 360deg - 8deg), transparent calc(var(--p, 0) * 360deg));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.listb.on .pt { opacity: 1; }
+.screen[data-anim="off"] .listb .pt { transition: none; }
+.listb.on { border-color: color-mix(in srgb, var(--muted) 35%, transparent); }
+.listb.on svg { color: var(--accent); }
+:root[data-shape="neon"] .listb .pt { corner-shape: bevel; }
+:root[data-shape="neon"] .listb { background: transparent; border-color: color-mix(in srgb, var(--accent) 55%, transparent); corner-shape: bevel; }
+:root[data-shape="neon"] .listb.on { border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+:root[data-shape="pebble"] .listb { border-radius: 58% 42% 52% 48% / 45% 58% 42% 55%; }
+:root[data-shape="soft"] .listb { box-shadow: inset 0 calc(var(--dp) * 2) calc(var(--dp) * 3) color-mix(in srgb, #fff 35%, transparent), inset 0 calc(var(--dp) * -3) calc(var(--dp) * 4) color-mix(in srgb, #000 12%, transparent); background: color-mix(in srgb, var(--surface) 85%, transparent); }
+.go { transition: opacity .25s; }
+.go.wait { opacity: .38; pointer-events: none; }
+.lline { flex: none; width: 100%; height: calc(var(--dp) * 24); margin-top: calc(var(--dp) * 2); display: flex; align-items: center; justify-content: center; gap: calc(var(--dp) * 10); font: 400 calc(var(--dp) * 14)/1.2 var(--pbody); color: var(--muted); white-space: nowrap; transition: opacity .16s; }
+.lline.fade { opacity: 0; }
+.lline b { font-family: var(--num); font-weight: var(--num-w, 500); color: var(--fg); font-variant-numeric: lining-nums tabular-nums; }
+.lline .act { background: none; border: 0; padding: calc(var(--dp) * 12) calc(var(--dp) * 6); margin: calc(var(--dp) * -12) 0; color: var(--accent); font: 500 calc(var(--dp) * 14)/1 var(--pbody); cursor: pointer; }
+
+/* Variant B's balloon: the tour's balloon, fill Accent, no outline, a soft lift (Futuristic: a glow). */
+.lball { position: absolute; z-index: 6; left: 0; top: 0; box-sizing: border-box; width: max-content; max-width: calc(var(--dp) * 260); padding: calc(var(--dp) * 12) calc(var(--dp) * 14) calc(var(--dp) * 8); background: var(--accent); color: var(--on-accent); font-family: var(--pbody); border: 0; border-radius: calc(var(--dp) * var(--card-r)); filter: drop-shadow(0 calc(var(--dp) * 6) calc(var(--dp) * 10) rgba(0, 0, 0, var(--b-sh))) drop-shadow(0 calc(var(--dp) * 1) calc(var(--dp) * 2) rgba(0, 0, 0, calc(var(--b-sh) * .8))); opacity: 0; visibility: hidden; transition: opacity .15s ease-out, visibility 0s linear .15s; }
+.lball.show { opacity: 1; visibility: visible; transition: opacity .2s ease-in, visibility 0s; }
+.lball .ptr { position: absolute; top: calc(100% - 1px); left: 50%; width: calc(var(--dp) * 14); height: calc(var(--dp) * 9); overflow: visible; display: block; }
+.lball .ptr polygon { fill: var(--accent); }
+.lball .bhead { display: flex; align-items: center; gap: calc(var(--dp) * 7); margin: 0 0 calc(var(--dp) * 2); }
+.lball .mk { display: block; flex: none; background: var(--on-accent); }
+:root[data-shape="pebble"] .lball .mk { box-shadow: calc(var(--dp) * 1.5) calc(var(--dp) * 1.2) 0 calc(var(--dp) * .6) color-mix(in srgb, var(--on-accent) 35%, transparent); }
+:root[data-shape="keys"] .lball .mk { background: color-mix(in srgb, var(--on-accent) 32%, transparent); border-color: var(--on-accent); }
+:root[data-shape="soft"] .lball .mk { box-shadow: 0 0 calc(var(--dp) * 6) color-mix(in srgb, var(--on-accent) 55%, transparent); }
+:root[data-shape="neon"] .lball .mk { box-shadow: 0 0 calc(var(--dp) * 6) var(--on-accent), 0 0 calc(var(--dp) * 2) var(--on-accent); }
+.lball .bcount { margin: 0; font: 500 calc(var(--dp) * 12)/1.3 var(--pbody); letter-spacing: .03em; color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+.bnum { display: flex; align-items: baseline; gap: calc(var(--dp) * 7); margin: calc(var(--dp) * 2) 0 0; }
+.bnum b { font-family: var(--num); font-weight: var(--num-w, 400); font-size: calc(var(--dp) * 40 * var(--num-scale, 1)); line-height: 1.05; font-variant-numeric: lining-nums tabular-nums; }
+.bnum span { font: 500 calc(var(--dp) * 13)/1 var(--num); letter-spacing: .12em; color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+.bnum em { font: italic 400 calc(var(--dp) * 14)/1 var(--pbody); color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+.bmul { display: flex; gap: calc(var(--dp) * 4); margin-top: calc(var(--dp) * 8); }
+.bmul button { min-width: calc(var(--dp) * 48); height: calc(var(--dp) * 32); padding: 0 calc(var(--dp) * 10); border: 0; border-radius: calc(var(--dp) * min(var(--btn-r), 16)); background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); font: 500 calc(var(--dp) * 14)/1 var(--num); cursor: pointer; }
+.bmul button.on { background: var(--on-accent); color: var(--accent); }
+.lball .bact { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: calc(var(--dp) * 4) calc(var(--dp) * 8); margin-top: calc(var(--dp) * 8); }
+.lball .bact button { min-height: calc(var(--dp) * 40); padding: calc(var(--dp) * 6) calc(var(--dp) * 16); border-radius: calc(var(--dp) * min(var(--btn-r), 20)); font: 500 calc(var(--dp) * 14)/1.2 var(--pbody); cursor: pointer; }
+.lball .bskip { background: none; border: 0; color: var(--on-accent); margin-inline-start: calc(var(--dp) * -12); }
+.lball .buse { background: var(--on-accent); color: var(--accent); border: 0; margin-inline-start: auto; }
+:root[data-shape="pebble"] .lball { border-radius: calc(var(--dp) * 18) calc(var(--dp) * 12) calc(var(--dp) * 20) calc(var(--dp) * 10) / calc(var(--dp) * 14) calc(var(--dp) * 18) calc(var(--dp) * 12) calc(var(--dp) * 16); }
+:root[data-shape="pebble"] .lball .buse { border-radius: calc(var(--dp) * 22) calc(var(--dp) * 16) calc(var(--dp) * 24) calc(var(--dp) * 14); }
+:root[data-shape="neon"] :is(.lball, .lball .buse, .bmul button) { corner-shape: bevel; }
+:root[data-shape="neon"] .lball { filter: drop-shadow(0 0 calc(var(--dp) * 10) color-mix(in srgb, var(--accent) 40%, transparent)) drop-shadow(0 calc(var(--dp) * 2) calc(var(--dp) * 4) rgba(0, 0, 0, var(--b-sh))); }
+:root[data-shape="neon"] .lball .buse { background: color-mix(in srgb, var(--on-accent) 16%, transparent); color: var(--on-accent); border: calc(var(--dp) * 1.5) solid var(--on-accent); }
+
+/* ---- Press feedback: round 3's for every button; Tap tempo's own crisp flash on the right phone (round 4) ---- */
+/* New: one light layer under the label, its colour and finish from the style; --pr is the level, --ps the sink. */
+.screen[data-press="new"] { --press-bg: var(--accent); --press-shadow: none; --press-a: .2; --sink: .03; --press-glow: 0; }
+:root[data-shape="pebble"] .screen[data-press="new"] { --press-bg: radial-gradient(75% 85% at 56% 60%, color-mix(in srgb, var(--fg) 45%, var(--accent)) 0%, transparent 78%); --press-a: .24; --sink: .02; }
+:root[data-shape="keys"] .screen[data-press="new"] { --press-bg: linear-gradient(to bottom, rgba(0, 0, 0, .22), transparent 50%), color-mix(in srgb, var(--accent) 12%, transparent); --press-a: 1; --sink: .015; }
+:root[data-shape="soft"] .screen[data-press="new"] { --press-bg: color-mix(in srgb, var(--accent) 10%, transparent); --press-shadow: inset 0 calc(var(--dp) * 3) calc(var(--dp) * 6) rgba(0, 0, 0, .28); --press-a: 1; --sink: .02; }
+:root[data-shape="neon"] .screen[data-press="new"] { --press-bg: color-mix(in srgb, var(--accent) 14%, transparent); --press-shadow: inset 0 0 0 calc(var(--dp) * 1) var(--accent); --press-a: 1; --press-glow: 1; }
+:root:not([data-shape="neon"]) .screen[data-press="new"] .go { --press-bg: var(--on-accent); --press-shadow: none; --press-a: .2; }
+.screen[data-press="new"] .lball button { --press-bg: var(--on-accent); --press-shadow: none; --press-a: .2; }
+.screen[data-press="new"] .lball :is(.buse, .bmul button.on) { --press-bg: var(--accent); }
+.screen[data-press="new"] .vib { --sink: .015; }
+.screen[data-press="new"] :is(.pm, .tapb, .listb, .go, .mbtn, .vib, .bmul button, .lball .bact button, .lline .act) { isolation: isolate; transform: scale(calc(1 - var(--sink) * var(--ps, 0)));
+  filter: drop-shadow(0 0 calc(var(--dp) * 8) color-mix(in srgb, var(--accent) calc(70% * var(--pr, 0) * var(--press-glow)), transparent)); }
+.screen[data-press="new"] :is(.tapb, .go, .mbtn, .vib, .bmul button, .lball .bact button, .lline .act) { position: relative; }
+.screen[data-press="new"] :is(.pm, .tapb, .listb, .go, .mbtn, .vib, .bmul button, .lball .bact button, .lline .act)::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: var(--press-bg); box-shadow: var(--press-shadow); opacity: calc(var(--press-a) * var(--pr, 0)); }
+:root[data-shape="neon"] .screen[data-press="new"] :is(.pm, .tapb, .listb, .go, .mbtn, .vib, .bmul button, .lball .bact button, .lline .act)::after { corner-shape: bevel; }
+.screen[data-press="new"] :is(.vib, .lline .act, .lball .bskip)::after { inset: calc(var(--dp) * 8) 0; border-radius: calc(var(--dp) * 12); }
+.screen[data-press="new"] .lball .bskip::after { inset: 0; }
+/* The pretend song playing nearby, above the phones. */
+.sim { display: grid; gap: 10px; padding: 14px 16px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--line); }
+.sim .row2 { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+.sim fieldset { flex: 1 1 320px; }
+.song { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--fg); min-height: 24px; }
+.song i { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); opacity: .18; }
+.song span { color: var(--muted); }
+.phones figcaption { max-width: 380px; }
+.phones figure { align-content: start; }
+.phones.one { grid-template-columns: minmax(0, 1fr); } /* a longer caption beside it must not stretch the phone */
+figcaption .vt { font-size: 14px; line-height: 1.5; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Twangle · Phase 27 · final, approved 2026-10-15</p>
+    <h1>Let the metronome listen</h1>
+    <p class="lede">The metronome <strong>listens</strong> to music nearby and <strong>suggests</strong> the tempo it heard; nothing changes until you tap <strong>Use</strong>. While it listens, a thin line traces round the Listen button's edge over the 15 seconds. Every button lights up when touched; Tap tempo flashes crisply on each tap. This is the approved design the app will follow. No sound unless you turn it on.</p>
+  </header>
+
+  <form class="bar" onsubmit="return false" aria-label="Pick a style">
+    <div class="chips" id="chips" role="group" aria-label="Styles"></div>
+  </form>
+
+  <form class="toggles" onsubmit="return false">
+    <fieldset>
+      <legend class="tlabel">Light or dark</legend>
+      <div class="seg">
+        <input type="radio" name="theme" id="theme-auto" value="auto"><label for="theme-auto">Auto</label>
+        <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
+        <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="tlabel">Language on the phones</legend>
+      <div class="seg">
+        <input type="radio" name="lang" id="lang-en" value="en"><label for="lang-en">English</label>
+        <input type="radio" name="lang" id="lang-nl" value="nl"><label for="lang-nl">Nederlands</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="tlabel">Sound</legend>
+      <div class="seg">
+        <input type="radio" name="sound" id="sound-off" value="off"><label for="sound-off">Off</label>
+        <input type="radio" name="sound" id="sound-A" value="A"><label for="sound-A">On</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="tlabel">Phone width (Xiaomi / small)</legend>
+      <div class="seg">
+        <input type="radio" name="pw" id="pw-393" value="393"><label for="pw-393">393 dp</label>
+        <input type="radio" name="pw" id="pw-360" value="360"><label for="pw-360">360 dp</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend class="tlabel">Animations (Android setting)</legend>
+      <div class="seg">
+        <input type="radio" name="anim" id="anim-on" value="on"><label for="anim-on">On</label>
+        <input type="radio" name="anim" id="anim-off" value="off"><label for="anim-off">Removed</label>
+      </div>
+    </fieldset>
+  </form>
+
+  <section class="sim" aria-label="The pretend song">
+    <div class="row2">
+      <fieldset>
+        <legend class="tlabel">Song playing nearby (pick one to play it again)</legend>
+        <div class="seg" id="scenSeg">
+          <input type="radio" name="scen" id="scen-steady" value="steady"><label for="scen-steady">Steady, 96</label>
+          <input type="radio" name="scen" id="scen-half" value="half"><label for="scen-half">Fast, 168</label>
+          <input type="radio" name="scen" id="scen-none" value="none"><label for="scen-none">No clear beat</label>
+        </div>
+      </fieldset>
+      <button type="button" class="tbtn" id="replay">Play again</button>
+    </div>
+    <p class="song" aria-live="off"><i id="songDot"></i><b id="songText">Quiet</b><span id="songNote"></span></p>
+  </section>
+
+  <div class="phones one">
+    <figure>
+      <div class="phone"><div class="screen" id="scrA" data-press="new"></div></div>
+      <figcaption><b>As approved</b><span>Tap Listen (or Play again) and watch the thin trace go round the button's edge while it listens. Tap any button to see its press effect.</span></figcaption>
+    </figure>
+  </div>
+
+  <h3 class="sec">What to look at</h3>
+  <ol class="look">
+    <li><b>1</b><span><strong>Listening.</strong> The button reads Stop; a thin, soft line traces round its edge, clockwise from the top, over the 15 seconds, and fades where it is when the tempo is found.</span></li>
+    <li><b>2</b><span><strong>The suggestion.</strong> A balloon with the tempo it heard, ½× and 2×, Not now and Use. A stopped metronome stays stopped after Use.</span></li>
+    <li><b>3</b><span><strong>Buttons.</strong> Every button lights up the moment you touch it and fades after you let go; Tap tempo gives one crisp flash per tap.</span></li>
+  </ol>
+
+  <aside class="ask">
+    <p class="big">Approved on 15 October 2026. Next: building it in the app.</p>
+    <p class="small">This page remembers your switches on this phone.</p>
+  </aside>
+</div>
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],
+"styles":{
+ "ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone: the first marks people made","font":"Caesar Dressing","fb":"serif","w":400,"track":0.01,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"body":"sans",
+  "shape":{"kind":"pebble","btn":20,"pill":18,"card":14,"strW":48,"strH":46,"strR":[20]},
+  "mark":{"type":"dots","smudge":true,"gap":13},"period":13,"motif":"ancient",
+  "fin":{"needle":"spear","hub":"stone","track":"dots","caps":"round","jitter":true},
+  "look":{"Colours":"Terracotta red and charcoal on warm grey stone","Letters":"Caesar Dressing, hewn capitals; numbers in Alegreya Sans so they read easily","Background":"A stone wall with a terracotta hand stencil and rows of scratched tally marks, the first written numbers","Shapes":"Pebbles: no two string buttons alike","Wave":"Fingertip dabs of terracotta","Meter":"Charcoal ticks drawn by hand, a spear needle on a stone hub, an arc of terracotta dots"},
+  "light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+  "dark":{"bg":"#1B1715","surface":"#25201D","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"}},
+ "classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"track":0,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"body":"serif",
+  "shape":{"kind":"keys","btn":4,"pill":4,"card":4,"strW":44,"strH":58,"strR":[3,3,9,9]},
+  "mark":{"type":"band","fill":0.32,"outline":1.7,"halo":0,"centre":true},"period":12,"motif":"velvet",
+  "fin":{"needle":"breguet","hub":"cap","track":"rail","caps":"butt","jitter":false},
+  "look":{"Colours":"Deep burgundy, ivory and gold leaf","Letters":"Playfair Display, a high-contrast serif; numbers in Bodoni Moda, whose digits stand full height","Background":"Velvet stage curtains in soft folds, a spotlight and the gold curve of a concert-hall shell","Shapes":"Fine square corners; the strings are ivory keys","Wave":"An engraved band with a hairline through it","Meter":"A watchmaker's needle with a ring near its tip, a gold cap, a railway-track scale"},
+  "light":{"bg":"#F7F2E8","surface":"#FCF9F2","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+  "dark":{"bg":"#170C11","surface":"#22131A","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"}},
+ "retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"track":0,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"soft","btn":22,"pill":22,"card":18,"strW":50,"strH":44,"strR":[14]},
+  "mark":{"type":"band","fill":0.4,"outline":1.6,"halo":0.14,"centre":false},"period":12,"motif":"seventies",
+  "fin":{"needle":"vu","hub":"disc","track":"band","caps":"butt","jitter":false},
+  "look":{"Colours":"Avocado green with mustard and orange on cream","Letters":"Righteous, round 70s letters","Background":"Big rainbow stripes in avocado, mustard and orange curving in from the side, like 70s wallpaper","Shapes":"Fat soft corners; strings like chunky hi-fi push buttons","Wave":"A glowing phosphor trace","Meter":"A VU needle with an orange tip over a broad arc"},
+  "light":{"bg":"#F1EDD8","surface":"#F8F5E6","ink":"#24260F","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+  "dark":{"bg":"#15160B","surface":"#1F2113","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"}},
+ "contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"track":0,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"body":"sans",
+  "shape":{"kind":"round","btn":20,"pill":18,"card":12,"strW":46,"strH":46,"strR":[23]},
+  "mark":{"type":"bars","gap":6,"width":3,"cap":"round","slant":0,"halo":0},"period":9,"motif":"wash",
+  "fin":{"needle":"bar","hub":"dot","track":"line","caps":"round","jitter":false},
+  "look":{"Colours":"A fresh, calm blue on cool white, or on deep blue-grey at night; can follow the wallpaper","Letters":"The phone's own font (Roboto here), light","Background":"Two soft colour washes, nothing else","Shapes":"Round and friendly: circle strings, pill buttons","Wave":"Rounded bars, like a voice memo","Meter":"A plain rounded needle, a thin arc, nothing extra"},
+  "light":{"bg":"#F5F7FC","surface":"#FFFFFF","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#1B7A3E","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+  "dark":{"bg":"#0E1220","surface":"#151A2B","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"}},
+ "futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"track":0.06,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"neon","btn":10,"pill":10,"card":8,"strW":50,"strH":40,"strR":[10]},
+  "mark":{"type":"bars","gap":4,"width":1.5,"cap":"square","slant":0,"halo":0.16},"period":8,"motif":"hud",
+  "fin":{"needle":"beam","hub":"ring","track":"dashed","caps":"square","jitter":false},
+  "look":{"Colours":"Neon cyan and magenta on near-black; a cool lab white by day","Letters":"Orbitron, geometric capitals","Background":"A neon perspective grid low on the screen, a magenta horizon glow and faint scan lines","Shapes":"Cut corners and thin glowing outlines, no fills","Wave":"Thin neon bars with a soft halo","Meter":"A beam of light with a chevron tip, a dashed arc and a ring hub"},
+  "light":{"bg":"#EDF3F6","surface":"#F8FCFE","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#007482","onAccent":"#FFFFFF","inTune":"#007A46","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+  "dark":{"bg":"#03070A","surface":"#08121A","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"}},
+ "spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver: the future as the 60s saw it","font":"Michroma","fb":"sans-serif","w":400,"track":0.02,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"body":"sans",
+  "shape":{"kind":"capsule","btn":999,"pill":999,"card":20,"strW":44,"strH":52,"strR":[22]},
+  "mark":{"type":"stars"},"period":12,"motif":"space",
+  "fin":{"needle":"ball","hub":"saturn","track":"dots","caps":"round","jitter":false},
+  "look":{"Colours":"Deep violet and indigo with rocket orange and silver","Letters":"Michroma, wide jet-age letters","Background":"By night a violet starfield with an orange ringed planet; by day silver atomic orbits and starbursts","Shapes":"Capsules, like a 60s rocket's portholes and buttons","Wave":"Pairs of stars","Meter":"A needle with a ball tip, an orbit of dots and a little ringed planet at the pivot"},
+  "light":{"bg":"#F3F0F8","surface":"#FBF9FE","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+  "dark":{"bg":"#120C26","surface":"#1C1536","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"}}
+}}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  const root = document.documentElement;
+  const mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+  const $ = (id) => document.getElementById(id);
+  let fontsVersion = 0;
+
+  // ==== Copied unchanged from docs/design/theme-styles-preview.html: colours, backgrounds, the Classic meter ====
+  // ---- Colour helpers ----------------------------------------------------------------------------
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const css = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+  const TAU = Math.PI * 2;
+  const smooth = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+  const SIGNS = '"Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Music", "Apple Symbols", serif';
+  const stack = (f, fb) => `"${f}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  const palCache = new Map();
+  function palette(s, dark) {
+    const key = s.id + dark; if (palCache.has(key)) return palCache.get(key);
+    const raw = s[dark ? 'dark' : 'light']; const p = {};
+    for (const k in raw) p[k] = hex(raw[k]);
+    p.container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    palCache.set(key, p); return p;
+  }
+  for (const id in STY) STY[id].id = id;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  const hash = (v) => { const s = Math.sin(v * 12.9898 + 78.233) * 43758.5453; return (s - Math.floor(s)) * 2 - 1; };
+
+  // ---- Drawing helpers ---------------------------------------------------------------------------
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function lozenge(ctx, x, y, r, col) { ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.7, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r * 0.7, y); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
+  function sparkle(ctx, x, y, r, col, u) { seg(ctx, x - r, y, x + r, y, col, 0.9 * u); seg(ctx, x, y - r, x, y + r, col, 0.9 * u); dot(ctx, x, y, 1.4 * u, col); }
+  function starburst(ctx, x, y, r, col, u) { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, l = i % 2 ? r * 0.55 : r; seg(ctx, x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, col, 1.4 * u); } dot(ctx, x, y, r * 0.16, col); }
+  function hand(ctx, cx, cy, size, deg, col) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(0, size * 0.25, size * 0.32, size * 0.31, 0, 0, TAU); ctx.fill();
+    const f = size * 0.13;
+    [[-0.235, 0.40], [-0.08, 0.50], [0.075, 0.48], [0.225, 0.38]].forEach(([fx, fl]) => { ctx.beginPath(); rrAdd(ctx, fx * size - f / 2, -fl * size, f, fl * size + size * 0.12, f / 2); ctx.fill(); });
+    ctx.translate(-size * 0.26, size * 0.26); ctx.rotate(-52 * Math.PI / 180); ctx.beginPath(); rrAdd(ctx, -f / 2, -size * 0.44, f, size * 0.44, f / 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ---- Backgrounds: one calm picture per style, drawn once, nothing at the edge -------------------
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  function stone(B) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    const n = B.mini ? 60 : 520; for (let i = 0; i < n; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  /** An x in the outer fifth on either side, so motifs keep clear of the note and pill. */
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  const MOTIFS = {
+    ancient(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B);
+      if (!B.mini && !B.quiet) hand(ctx, W * 0.84, H * 0.66, 54 * u, 22, rgba(p.accent, dark ? 0.16 : 0.13));
+      // Rows of tally marks, scratched into the wall: the first written numbers.
+      const tc = rgba(p.ink, dark ? 0.12 : 0.11);
+      const rows = B.mini ? [[0.2, 0.12]] : [[0.18, 0.07], [0.26, 0.92], [0.62, 0.95]];
+      for (const [fx, fy] of rows) { let x = W * fx; const y = H * fy; for (let gI = 0; gI < 3; gI++) { for (let k = 0; k < 4; k++) { const j = r() * 1.5 * u; seg(ctx, x + k * 4 * u + j, y - 7 * u, x + k * 4 * u - j, y + 7 * u, tc, 1.4 * u); } seg(ctx, x - 3 * u, y + 5 * u, x + 15 * u, y - 5 * u, tc, 1.4 * u); x += 26 * u; } }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    velvet(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      // Velvet stage curtains: soft vertical folds, deep at night, a faint blush by day.
+      const folds = ctx.createLinearGradient(0, 0, W, 0), n = B.mini ? 5 : 9;
+      for (let k = 0; k <= n * 2; k++) folds.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : (dark ? 0.22 : 0.05) * (B.quiet ? 0.5 : 1)));
+      ctx.fillStyle = folds; ctx.fillRect(0, 0, W, H);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      // The gold curve of a concert-hall shell behind the meter.
+      const cy = B.mini ? H * 1.1 : H * 0.36;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, dark ? 0.16 : 0.22); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.10);
+    },
+    seventies(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      // Rainbow bands curving in from the left edge, like 70s wallpaper: avocado, mustard, orange.
+      const cx = B.mini ? -W * 0.05 : -W * 0.08, cy = B.mini ? H * 1.05 : H * 0.62, band = (B.mini ? 10 : 15) * u, a = B.quiet ? (dark ? 0.08 : 0.10) : (dark ? 0.2 : 0.26);
+      [p.accent, p.second, p.third, p.accent, p.second].forEach((col, k) => {
+        ctx.beginPath(); ctx.arc(cx, cy, W * (B.mini ? 0.2 : 0.22) + k * band, -Math.PI / 2, Math.PI / 2); ctx.strokeStyle = rgba(col, a * (1 - k * 0.12)); ctx.lineWidth = band - 1.5 * u; ctx.lineCap = 'butt'; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    wash(B) { const { W, H, p } = B; radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.10); radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, p.third, 0.07); },
+    hud(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * (B.mini ? 0.8 : 0.3), W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const gc = rgba(p.accent, dark ? 0.14 : 0.10), hz = H * (B.mini ? 0.6 : 0.74), vy = hz - H * 0.1;
+      radial(B, W * 0.5, hz, W * 0.6, p.second, dark ? 0.14 : 0.07);
+      for (let i = -14; i <= 14; i++) { const bx = W * 0.5 + i * W * 0.14, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, gc, u, 'butt'); }
+      for (let k = 0; k <= 10; k++) { const f = k / 10, y = hz + (H - hz) * f * f; seg(ctx, 0, y, W, y, gc, u, 'butt'); }
+      const g = ctx.createLinearGradient(0, hz - u, 0, hz + H * 0.06); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz - u, W, H * 0.06 + u);
+      // The quiet ground has no horizon line: it ran through the see-through Start / Stop button (fix/futuristic-quiet-horizon).
+      if (!B.quiet) seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      if (dark) for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, 0.16), u, 'butt');
+    },
+    space(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) {
+        vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.16)]]);
+        radial(B, W * 0.85, H * 0.18, W * 0.7, p.accent, 0.10); radial(B, W * 0.1, H * 0.55, W * 0.6, p.second, 0.06);
+        for (const [rx, ry, rot] of [[0.7, 0.16, -0.25], [0.55, 0.12, 0.35]]) { ctx.save(); ctx.translate(W * 0.5, H * 0.3); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, W * rx, W * ry, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.10); ctx.lineWidth = 0.8 * u; ctx.stroke(); ctx.restore(); }
+        const n = B.mini ? 50 : 200; for (let i = 0; i < n; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, 0.25 + r() * 0.6)); }
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 2 : 6); i++) sparkle(ctx, sideX(r(), W), (0.4 + r() * 0.5) * H, (5 + r() * 5) * u, rgba(p.ink, 0.75), u);
+        if (!B.mini && !B.quiet) {
+          const cx = W * 0.0, cy = H * 1.05, rad = W * 0.3;
+          const g = ctx.createRadialGradient(cx + rad * 0.3, cy - rad * 0.4, 0, cx + rad * 0.3, cy - rad * 0.4, rad * 1.3); g.addColorStop(0, rgba(p.second, 0.55)); g.addColorStop(1, rgba(mix(p.second, p.bg, 0.6), 0.45));
+          dot(ctx, cx, cy, rad, g);
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(-14 * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, rad * 1.55, rad * 0.32, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.45); ctx.lineWidth = 2 * u; ctx.stroke(); ctx.restore();
+        }
+      } else {
+        const nx = W * 0.5, ny = H * (B.mini ? 0.5 : 0.25);
+        for (const a of [0, 60, 120]) { ctx.save(); ctx.translate(nx, ny); ctx.rotate(a * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, W * 0.55, W * 0.18, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.22); ctx.lineWidth = 1.2 * u; ctx.stroke(); ctx.restore(); }
+        radial(B, W * 0.5, H * 0.9, W * 0.8, p.accent, 0.08);
+        for (let i = 0; i < (B.quiet ? 0 : B.mini ? 3 : 8); i++) starburst(ctx, sideX(r(), W), (0.35 + r() * 0.55) * H, (7 + r() * 8) * u, rgba(i % 2 ? p.second : p.accent, 0.3), u);
+        for (let i = 0; i < 36; i++) dot(ctx, r() * W, r() * H, 2 * u, rgba(p.accent, 0.10));
+      }
+    },
+  };
+
+  // ---- The meter, open face: no plate, a calm field, the scale straight on the screen -------------
+  function roles(s, dark) {
+    const p = palette(s, dark);
+    return { bg: p.bg, surface: p.surface, ink: p.ink, muted: p.muted, track: p.track, accent: p.accent, inTune: p.inTune,
+      face: dark ? mix(p.bg, BLACK, 0.3) : mix(p.surface, p.bg, 0.5), dark, num: stack(s.num, s.numFb), numW: s.numW || 400, numScale: s.numScale || 1, fin: s.fin };
+  }
+  const ang = (c) => c / 50 * Math.PI / 2;
+  const pt = (cx, cy, d, c) => { const a = ang(c); return [cx + d * Math.sin(a), cy - d * Math.cos(a)]; };
+  function glow(ctx, x, y, rad, c, a) {
+    if (a <= 0.004 || rad <= 0) return;
+    const gr = ctx.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(0.45, rgba(c, a * 0.4)); gr.addColorStop(1, rgba(c, 0));
+    ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+  }
+  const tuneGlow = (ctx, c, x, y, rad, e) => glow(ctx, x, y, rad, c.inTune, e * (c.dark ? 0.32 : 0.16));
+  /** The calm field: a soft wash of bg under the scale, no edge. */
+  function field(ctx, c, x, y, rx, ry, a) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, rgba(c.bg, a)); gr.addColorStop(0.62, rgba(c.bg, a * 0.75)); gr.addColorStop(1, rgba(c.bg, 0));
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, rx, 0, TAU); ctx.fill(); ctx.restore();
+  }
+  function scale(ctx, g, c, place) {
+    const { u } = g, f = c.fin; ctx.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let v = -50; v <= 50; v += 5) {
+      if (v === 0) continue; const major = v % 10 === 0; const [x, y, dx, dy] = place(v); const j = f.jitter ? hash(v) : 0;
+      const len = (major ? 13 : 7) * u * (1 + 0.12 * j), w = (major ? 2.1 : 1.3) * u * (1 + 0.2 * j);
+      const ca = Math.cos(0.05 * j), sa = Math.sin(0.05 * j), ddx = dx * ca - dy * sa, ddy = dx * sa + dy * ca;
+      seg(ctx, x, y, x + ddx * len, y + ddy * len, rgba(c.ink, major ? 1 : 0.5), w, f.caps);
+      if (major) { ctx.fillStyle = rgba(c.ink, 0.8); ctx.fillText(String(Math.abs(v)), x + dx * 27 * u, y + dy * 27 * u); }
+    }
+  }
+  function signs(ctx, g, c, xl, xr, y) { ctx.font = `${16 * g.u}px ${SIGNS}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = rgba(c.muted, 0.95); ctx.fillText('♭', xl, y); ctx.fillText('♯', xr, y); }
+  const centreColour = (c, e) => mix(c.accent, c.inTune, e);
+  const markerColour = (c, e) => mix(c.ink, c.inTune, e * 0.9);
+  function softShadow(ctx, g, c) { ctx.shadowColor = rgba(BLACK, c.dark ? 0.45 : 0.22); ctx.shadowBlur = 3 * g.u; ctx.shadowOffsetX = 1.5 * g.u; ctx.shadowOffsetY = 2.5 * g.u; }
+  function poly(ctx, pts) { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.closePath(); }
+  /** The needle in the style's finish, turning by a around (px, py). */
+  function needle(ctx, g, c, px, py, a, L, e) {
+    const u = g.u, col = rgba(markerColour(c, e)), kind = c.fin.needle;
+    ctx.save(); ctx.translate(px, py); ctx.rotate(a);
+    if (kind === 'beam') {
+      seg(ctx, 0, 0, 0, -L + 4 * u, rgba(markerColour(c, e), 0.18), 6 * u);
+      seg(ctx, 0, 0, 0, -L + 4 * u, col, 1.7 * u);
+      poly(ctx, [[0, -L - 1 * u], [-4.5 * u, -L + 7 * u], [0, -L + 4.5 * u], [4.5 * u, -L + 7 * u]]); ctx.fillStyle = col; ctx.fill();
+      ctx.restore(); return;
+    }
+    softShadow(ctx, g, c); ctx.fillStyle = col; ctx.strokeStyle = col;
+    if (kind === 'spear') { poly(ctx, [[-2.2 * u, 0], [-1.1 * u, -0.8 * L], [-3.6 * u, -0.83 * L], [0, -L], [3.6 * u, -0.83 * L], [1.1 * u, -0.8 * L], [2.2 * u, 0]]); ctx.fill(); }
+    else if (kind === 'breguet') { poly(ctx, [[-1.8 * u, 0], [-0.5 * u, -L], [0.5 * u, -L], [1.8 * u, 0]]); ctx.fill(); ctx.beginPath(); ctx.arc(0, -0.7 * L, 4.2 * u, 0, TAU); ctx.lineWidth = 1.5 * u; ctx.stroke(); }
+    else if (kind === 'vu') { seg(ctx, 0, 0, 0, -0.78 * L, col, 1.4 * u, 'butt'); ctx.shadowColor = 'transparent'; seg(ctx, 0, -0.78 * L, 0, -L, rgba(mix(c.accent, c.inTune, e)), 1.8 * u, 'round'); }
+    else if (kind === 'bar') { seg(ctx, 0, 0, 0, -L, col, 2.6 * u, 'round'); }
+    else if (kind === 'ball') { poly(ctx, [[-1.8 * u, 0], [-0.8 * u, -L + 6 * u], [0.8 * u, -L + 6 * u], [1.8 * u, 0]]); ctx.fill(); dot(ctx, 0, -L + 3.6 * u, 3.6 * u, col); }
+    else { poly(ctx, [[-2.2 * u, 0], [-0.6 * u, -L], [0.6 * u, -L], [2.2 * u, 0]]); ctx.fill(); }
+    ctx.restore();
+  }
+  function hub(ctx, g, c, x, y, e) {
+    const u = g.u, cc = rgba(centreColour(c, e)), ink = rgba(c.ink), kind = c.fin.hub;
+    ctx.save(); softShadow(ctx, g, c);
+    if (kind === 'stone') { const pts = []; for (let k = 0; k < 9; k++) { const a = k / 9 * TAU, rr = 7.5 * u * (1 + 0.14 * hash(k + 3)); pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.9]); } poly(ctx, pts); ctx.fillStyle = ink; ctx.fill(); ctx.restore(); dot(ctx, x, y, 2.2 * u, cc); }
+    else if (kind === 'cap') { dot(ctx, x, y, 7.5 * u, rgba(centreColour(c, e * 0.5))); ctx.restore(); dot(ctx, x, y, 3.4 * u, ink); }
+    else if (kind === 'ring') { ctx.restore(); ctx.beginPath(); ctx.arc(x, y, 6.5 * u, 0, TAU); ctx.strokeStyle = ink; ctx.lineWidth = 2 * u; ctx.stroke(); dot(ctx, x, y, 2.4 * u, cc); }
+    else if (kind === 'dot') { dot(ctx, x, y, 5 * u, ink); ctx.restore(); }
+    else if (kind === 'saturn') { dot(ctx, x, y, 5.5 * u, ink); ctx.restore(); ctx.save(); ctx.translate(x, y); ctx.rotate(-0.35); ctx.beginPath(); ctx.ellipse(0, 0, 11 * u, 3.4 * u, 0, 0, TAU); ctx.strokeStyle = cc; ctx.lineWidth = 1.6 * u; ctx.stroke(); ctx.restore(); }
+    else { dot(ctx, x, y, 7 * u, ink); ctx.restore(); dot(ctx, x, y, 2.4 * u, cc); }
+  }
+  // Classic, open face: centre low in the box, a bigger radius now there is no plate.
+  const dial = (g) => ({ cy: g.H - 17 * g.u, r: 146 * g.u });
+  function dialTrack(ctx, g, c, cx, cy, r) {
+    const u = g.u, arc = (rad, col, w, dash) => { ctx.save(); if (dash) ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(cx, cy, rad, Math.PI, TAU); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'butt'; ctx.stroke(); ctx.restore(); };
+    switch (c.fin.track) {
+      case 'rail': arc(r, rgba(c.ink, 0.4), 0.8 * u); arc(r - 6 * u, rgba(c.ink, 0.4), 0.8 * u); break;
+      case 'band': arc(r + 4 * u, rgba(c.track), 6 * u); break;
+      case 'dashed': arc(r + 3 * u, rgba(c.accent, 0.55), 2 * u, [5 * u, 3.5 * u]); break;
+      case 'dots': for (let k = -50; k <= 50; k += 2.5) { const [x, y] = pt(cx, cy, r + 4 * u, k); dot(ctx, x, y, 1.5 * u, rgba(c.accent, 0.6)); } break;
+      default: arc(r, rgba(c.track), 1.8 * u);
+    }
+  }
+  const CLASSIC = {
+    under(ctx, g, c) {
+      const { u, cx } = g; const { cy, r } = dial(g);
+      field(ctx, c, cx, cy - 30 * u, 190 * u, 150 * u, 0.75);
+      dialTrack(ctx, g, c, cx, cy, r);
+      scale(ctx, g, c, (v) => { const [x, y] = pt(cx, cy, r - 4 * u, v); const a = ang(v); return [x, y, -Math.sin(a), Math.cos(a)]; });
+      signs(ctx, g, c, cx - r + 4 * u, cx + r - 4 * u, cy + 7 * u);
+    },
+    over() {},
+    draw(ctx, g, c, M, e, pres) {
+      const { cx, u } = g; const { cy, r } = dial(g);
+      tuneGlow(ctx, c, cx, cy - r + 22 * u, 100 * u, e);
+      seg(ctx, cx, cy - r + 16 * u, cx, cy - r - 2 * u, rgba(centreColour(c, e)), 3.5 * u);
+      ctx.globalAlpha = 0.3 + 0.7 * pres;
+      needle(ctx, g, c, cx, cy, ang(clamp(M.x, -53, 53)), r - 8 * u, e);
+      ctx.globalAlpha = 1;
+      hub(ctx, g, c, cx, cy, e);
+    },
+  };
+  const LOOKS = { classic: CLASSIC };
+
+  /** How far the tuner's meter canvas reaches past the 2:1 box on every side, in u, so glow and field fade out unclipped. */
+  const METER_PAD = 80;
+  /** One meter canvas with its cached art. With pad (in u) the canvas is the box plus pad on every side. */
+  function MeterView(canvas, pad) { this.canvas = canvas; this.pad = pad || 0; this.key = ''; this.under = null; this.over = null; }
+  MeterView.prototype.render = function (s, dark, lookKey, M, e, pres) {
+    const cv = this.canvas, Wc = cv.width, Hc = cv.height; if (!Wc || !Hc) return;
+    const k = this.pad / 340, W = Wc / (1 + 2 * k), P = k * W, H = W / 2;
+    const c = roles(s, dark), g = { W, H, u: W / 340, cx: W / 2 }, look = LOOKS[lookKey];
+    const key = [s.id, dark, lookKey, Wc, Hc, fontsVersion].join('|');
+    if (key !== this.key) {
+      this.key = key;
+      this.under = document.createElement('canvas'); this.under.width = Wc; this.under.height = Hc;
+      this.over = document.createElement('canvas'); this.over.width = Wc; this.over.height = Hc;
+      const uc = this.under.getContext('2d'), oc = this.over.getContext('2d');
+      uc.translate(P, P); oc.translate(P, P);
+      look.under(uc, g, c); look.over(oc, g, c);
+    }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, Wc, Hc); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+    ctx.drawImage(this.under, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, P, P);
+    look.draw(ctx, g, c, M, e, pres);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.shadowColor = 'transparent'; ctx.globalAlpha = 1;
+    ctx.drawImage(this.over, 0, 0);
+  };
+
+  // ==== End of the copied part ====================================================================
+
+  /** The backdrop at 1 unit = 1 dp (u in canvas pixels), so it reads the same upright and on its side. */
+  function drawBackdrop(ctx, W, H, s, dark, quiet, u) {
+    const p = palette(s, dark);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u, p, dark, s, mini: false, quiet, r: rng(7 + s.id.length * 31) };
+    try { (MOTIFS[s.motif] || MOTIFS.wash)(B); } catch (err) { console.error('backdrop', s.id, err); }
+  }
+
+  // ---- Texts on the phones (English, Dutch; short, as the tips) -----------------------------------
+  const TX = {
+    en: { tuner: 'Tuner', tuning: 'Tuning', metro: 'Metronome', settings: 'Settings', nav: 'Screens',
+      tap: 'Tap tempo', start: 'Start', stop: 'Stop', vib: 'Vibrate on the beat', slower: 'Slower', faster: 'Faster',
+      beats: 'Beats in a bar', tempo: 'Tempo, drag to change',
+      listen: 'Listen', listenStop: 'Stop', listenStopSpoken: 'Stop listening', listening: 'Listening…',
+      heard: 'Heard', use: 'Use', notNow: 'Not now',
+      speed: 'Speed', half: 'Half', asHeard: 'As heard', double: 'Double',
+      noBeat: 'No steady beat heard', again: 'Try again' },
+    nl: { tuner: 'Stemmer', tuning: 'Stemming', metro: 'Metronoom', settings: 'Instellingen', nav: 'Schermen',
+      tap: 'Tempo tikken', start: 'Start', stop: 'Stop', vib: 'Trillen op de tel', slower: 'Langzamer', faster: 'Sneller',
+      beats: 'Tellen per maat', tempo: 'Tempo, sleep om te wijzigen',
+      listen: 'Luisteren', listenStop: 'Stop', listenStopSpoken: 'Stop met luisteren', listening: 'Luisteren…',
+      heard: 'Gehoord', use: 'Gebruiken', notNow: 'Niet nu',
+      speed: 'Snelheid', half: 'Half', asHeard: 'Zoals gehoord', double: 'Dubbel',
+      noBeat: 'Geen duidelijk ritme gehoord', again: 'Opnieuw' },
+  };
+
+  // ---- Icons (drawn here, as the app's NavIcons.kt and the metronome's drawables) ------------------
+  const svg = (inner) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  const ICON = {
+    tuner: svg('<path d="M8.5 2.5v6.5a3.5 3.5 0 0 0 7 0V2.5"/><path d="M12 12.5v7"/><path d="M9.5 21.5h5"/>'),
+    tuning: svg('<path d="M10.5 21.5V15.5L8.5 13.5V4a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v9.5L13.5 15.5v6"/><path d="M5 5.5h3.5M5 9h3.5M5 12.5h3.5M15.5 5.5H19M15.5 9H19M15.5 12.5H19"/>'),
+    metro: svg('<path d="M9.6 3h4.8l4.4 18H5.2z"/><path d="M6.6 16.5h10.8"/><path d="M12 16.5 16.8 6"/><circle cx="15.6" cy="8.6" r="1.4" fill="currentColor" stroke="none"/>'),
+    settings: svg('<path d="M10.21,4.82L10.44,2.4L13.56,2.4L13.79,4.82A7.4,7.4 0,0 1,15.81,5.66L17.68,4.11L19.89,6.32L18.34,8.19A7.4,7.4 0,0 1,19.18,10.21L21.6,10.44L21.6,13.56L19.18,13.79A7.4,7.4 0,0 1,18.34,15.81L19.89,17.68L17.68,19.89L15.81,18.34A7.4,7.4 0,0 1,13.79,19.18L13.56,21.6L10.44,21.6L10.21,19.18A7.4,7.4 0,0 1,8.19,18.34L6.32,19.89L4.11,17.68L5.66,15.81A7.4,7.4 0,0 1,4.82,13.79L2.4,13.56L2.4,10.44L4.82,10.21A7.4,7.4 0,0 1,5.66,8.19L4.11,6.32L6.32,4.11L8.19,5.66A7.4,7.4 0,0 1,10.21,4.82Z"/><circle cx="12" cy="12" r="3"/>'),
+    minus: svg('<path d="M5 12h14"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>'),
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="5.5" width="13" height="13" rx="2" fill="currentColor"/></svg>',
+    vib: svg('<rect x="8" y="3.5" width="8" height="17" rx="1.8"/><path d="M4.5 8.5v7M19.5 8.5v7M1.8 10.5v3M22.2 10.5v3"/>'),
+    // New: the microphone, in the same line style: capsule, cradle, stem and foot.
+    stopLine: svg('<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>'),
+    mic: svg('<rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5v3.5"/><path d="M9 21h6"/>'),
+  };
+  const STATUS = '<div class="status" aria-hidden="true"><span>12:30</span><svg viewBox="0 0 44 12"><path d="M2 10 8 2l6 8z" fill="currentColor" opacity=".9"/><rect x="24" y="2" width="16" height="8" rx="2" fill="none" stroke="currentColor"/><rect x="26" y="4" width="10" height="4" rx=".8" fill="currentColor"/><rect x="41" y="4.5" width="1.6" height="3" rx=".5" fill="currentColor"/></svg></div>';
+
+  // ---- Metronome: meters and accents as ClickTrack (5/4 = 3 + 2, 6/8 = 3 + 3, 7/8 = 2 + 2 + 3) ----
+  const METERS = [{ id: '2/4', n: 2, g: [] }, { id: '3/4', n: 3, g: [] }, { id: '4/4', n: 4, g: [] }, { id: '5/4', n: 5, g: [3] }, { id: '6/8', n: 6, g: [3] }, { id: '7/8', n: 7, g: [2, 4] }];
+  const tierOf = (m, i) => (i === 0 ? 2 : m.g.includes(i) ? 1 : 0);
+  const TEMPO_NAMES = [[40, 'Grave'], [60, 'Largo'], [66, 'Larghetto'], [76, 'Adagio'], [108, 'Andante'], [120, 'Moderato'], [168, 'Allegro'], [200, 'Presto'], [999, 'Prestissimo']];
+  const tempoName = (b) => TEMPO_NAMES.find(([lim]) => b < lim)[1];
+  const BPM_MIN = 30, BPM_MAX = 250;
+
+  // ---- The pretend songs: what plays nearby, what the detector shows when, and what it finds -------
+  // est: [seconds after Listen, the number shown]; found: seconds after Listen; heard: the tempo it hears.
+  const SCEN = {
+    steady: { song: 96, kind: 'beat', heard: 96, est: [[3.75, 94], [6.5, 96]], found: 10.5, pick: 1,
+      text: 'A song at 96 BPM', note: ' · it finds 96' },
+    half: { song: 168, kind: 'beat', heard: 84, est: [[3.5, 86], [6.0, 84]], found: 10.0, pick: 2,
+      text: 'A fast song at 168 BPM', note: ' · it hears half: 84' },
+    none: { song: 0, kind: 'loose', heard: 0, est: [], found: 0, pick: 1,
+      text: 'Soft music, no clear beat', note: ' · it finds nothing' },
+  };
+  // Timings as OnsetTempoDetector: LISTENING for 3 s, the first tempo at 3-5 s, STEADY after 4 s within ±1 BPM.
+  const LISTEN_MAX = 15000, LEAD_IN = 1600, START_BPM = 80;
+  const SHOWN = ['contemporary', 'futuristic', 'ancient'];
+
+  // ---- State -------------------------------------------------------------------------------------
+  let picked = store.get('twangle.listen1.style'); if (!SHOWN.includes(picked)) picked = 'contemporary';
+  let themePick = store.get('twangle.listen1.theme'); if (!['auto', 'light', 'dark'].includes(themePick)) themePick = 'auto';
+  let lang = store.get('twangle.listen1.lang'); if (!['en', 'nl'].includes(lang)) lang = 'en';
+  let scenPick = store.get('twangle.listen1.scen'); if (!SCEN[scenPick]) scenPick = 'steady';
+  let phoneW = +store.get('twangle.listen1.pw'); if (phoneW !== 360) phoneW = 393;
+  let animOff = reduceMotion; // Android's "Remove animations": the press light without motion
+  let soundPick = 'off'; // never remembered: the page never starts sound by itself
+  let actx = null, clickBufs = null, master = null, noiseBuf = null, quietAt = 0;
+  let DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const style = () => STY[picked];
+  const isDark = () => (themePick === 'auto' ? mqDark.matches : themePick === 'dark');
+
+  function freshState() {
+    return { bpm: START_BPM, shown: START_BPM, clickBpm: START_BPM, playing: false, meter: 2, beat: -1, nextAt: 0, lastAt: -1e9, lastTier: 2,
+      vib: false, taps: [], schedFor: -1, mode: 'idle', listenAt: 0, est: null, ghost: null, heard: -1, heardK: -1, heardAt: -1e9,
+      wasPlaying: false, glide: null, resumeAfterGlide: false, glowAt: -1e9, line: null, lineUntil: 0, offer: null, prevBpm: START_BPM, events: [] };
+  }
+  // One phone, as approved.
+  const SCREENS = [{ el: $('scrA'), id: 'A', tap: 'crisp' }];
+  SCREENS.forEach((s) => { s.st = freshState(); s.visible = true; s.num = -1; });
+  let SONG = null; // the pretend song now playing: { bpm, kind, heard, t0, until, j8 }
+
+  // ---- Copied unchanged from docs/design/metronome-nav-preview.html: the dial's arc, the beat marks, the clicks ----
+  const dialDeg = (b) => -150 + (clamp(b, BPM_MIN, BPM_MAX) - BPM_MIN) / (BPM_MAX - BPM_MIN) * 300;
+  const onDial = (cx, cy, r, b) => { const a = dialDeg(b) * Math.PI / 180; return [cx + r * Math.sin(a), cy - r * Math.cos(a)]; };
+  function trackArc(ctx, u, cx, cy, R, b1, c, lit) {
+    if (b1 <= BPM_MIN) return;
+    const a0 = (dialDeg(BPM_MIN) - 90) * Math.PI / 180, a1 = (dialDeg(b1) - 90) * Math.PI / 180;
+    const arc = (rad, col, w, dash, cap) => { ctx.save(); if (dash) ctx.setLineDash(dash); ctx.beginPath(); ctx.arc(cx, cy, rad, a0, a1); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap || 'butt'; ctx.stroke(); ctx.restore(); };
+    switch (c.fin.track) {
+      case 'rail': if (lit) { arc(R, rgba(c.accent), 1.5 * u); arc(R - 6 * u, rgba(c.accent), 1.5 * u); } else { arc(R, rgba(c.ink, 0.4), 0.8 * u); arc(R - 6 * u, rgba(c.ink, 0.4), 0.8 * u); } break;
+      case 'band': arc(R - 2 * u, lit ? rgba(c.accent, 0.9) : rgba(c.track), 6 * u); break;
+      case 'dashed': arc(R, lit ? rgba(c.accent) : rgba(c.accent, 0.3), 2 * u, [5 * u, 3.5 * u]); break;
+      case 'dots': for (let b = BPM_MIN; b <= b1 + 1e-6; b += 2.5) { const [x, y] = onDial(cx, cy, R, b); dot(ctx, x, y, (lit ? 1.9 : 1.4) * u, lit ? rgba(c.accent) : rgba(c.accent, 0.35)); } break;
+      default: arc(R, lit ? rgba(c.accent) : rgba(c.track), lit ? 2.6 * u : 1.8 * u, null, lit ? 'round' : 'butt');
+    }
+  }
+  function drawMark(ctx, s, c, x, y, d, k, L) {
+    const lit = L > 0, colr = lit ? c.accent : c.ink, A = lit ? 0.5 + 0.5 * L : (c.dark ? 0.26 : 0.2) + 0.06 * k, col = (a) => rgba(colr, A * a);
+    const sz = [0.62, 0.8, 1][k], mk = s.mark;
+    if (lit) glow(ctx, x, y, 24 * d * sz, c.accent, L * (c.dark ? 0.34 : 0.2));
+    if (mk.type === 'dots') {
+      const r = 9 * d * sz * (1 + 0.08 * L);
+      if (mk.smudge) dot(ctx, x + r * 0.18, y + r * 0.14, r * 1.08, col(0.35));
+      dot(ctx, x, y, r, col(1));
+    } else if (mk.type === 'band') {
+      const w = 13 * d * sz, h = 38 * d * sz, rr = s.shape.kind === 'soft' ? w / 2 : 3 * d;
+      ctx.beginPath(); rrAdd(ctx, x - w / 2, y - h / 2, w, h, rr);
+      if (mk.halo && lit) { ctx.strokeStyle = col(mk.halo + 0.3 * L); ctx.lineWidth = mk.outline * d * 4; ctx.stroke(); }
+      ctx.fillStyle = col(Math.min(1, mk.fill + 0.6 * L)); ctx.fill();
+      ctx.strokeStyle = col(1); ctx.lineWidth = mk.outline * d; ctx.stroke();
+      if (mk.centre) seg(ctx, x, y - h / 2 + 3 * d, x, y + h / 2 - 3 * d, col(0.45), 0.8 * d, 'butt');
+    } else if (mk.type === 'bars') {
+      const w = (mk.cap === 'round' ? 7 : 3.5) * d * Math.max(0.8, sz), h = 40 * d * sz;
+      if (mk.halo) seg(ctx, x, y - h / 2, x, y + h / 2, col(mk.halo + 0.3 * L), w * 3, 'round');
+      seg(ctx, x, y - h / 2 + (mk.cap === 'round' ? w / 2 : 0), x, y + h / 2 - (mk.cap === 'round' ? w / 2 : 0), col(1), w, mk.cap);
+    } else {
+      const r = 13 * d * sz * (1 + 0.2 * L), star = (sx, sy, rr, a) => { const pts = []; for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 - Math.PI / 2, q = i % 2 ? rr * 0.28 : rr; pts.push([sx + Math.cos(an) * q, sy + Math.sin(an) * q]); } poly(ctx, pts); ctx.fillStyle = col(a); ctx.fill(); };
+      star(x, y, r, 1); star(x + r * 0.95, y - r * 0.85, r * 0.36, 0.7);
+    }
+  }
+  function makeClicks() {
+    const sr = actx.sampleRate, n = Math.round(sr * 0.04), att = sr * 0.0008, fade = sr * 0.008;
+    return [[880, 0.45], [1318.5, 0.6], [1760, 0.8]].map(([f, peak]) => {
+      const b = actx.createBuffer(1, n, sr), x = b.getChannelData(0); let mx = 0;
+      for (let i = 0; i < n; i++) { const t = i / sr; x[i] = Math.exp(-t / 0.010) * Math.sin(TAU * f * t) + 0.5 * Math.exp(-t / 0.005) * Math.sin(TAU * f * 2.756 * t); mx = Math.max(mx, Math.abs(x[i])); }
+      for (let i = 0; i < n; i++) { let g = peak / mx; if (i < att) g *= 0.5 - 0.5 * Math.cos(Math.PI * i / att); if (i > n - 1 - fade) g *= (n - 1 - i) / fade; x[i] *= g; }
+      return b;
+    });
+  }
+
+  // ---- The tempo dial, as built, plus the listening ring and the found glow -------------------------
+  const ease = (x) => { x = clamp(x, 0, 1); return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; };
+  /** The found glow: eases in over 300 ms, holds 400 ms, fades over 900 ms. */
+  const foundGlow = (dt) => (dt < 0 ? 0 : dt < 300 ? smooth(dt / 300) : dt < 700 ? 1 : dt < 1600 ? 1 - smooth((dt - 700) / 900) : 0);
+  function ghostValue(g, now) { return lerp(g.from, g.to, ease((now - g.t0) / 500)); }
+  function drawDial(scr, now) {
+    const cv = scr.dial; if (!cv || !cv.width) return;
+    const st = scr.st, S = cv.width, s = style(), dark = isDark(), c = roles(s, dark), u = S / 288, cx = S / 2, cy = S / 2, R = 94 * u;
+    const key = [s.id, dark, S, fontsVersion].join('|');
+    if (scr.dialKey !== key) {
+      scr.dialKey = key;
+      const cache = scr.dialCache || document.createElement('canvas'); cache.width = S; cache.height = S; scr.dialCache = cache;
+      const k = cache.getContext('2d'); k.clearRect(0, 0, S, S);
+      field(k, c, cx, cy, 142 * u, 142 * u, 0.72);
+      trackArc(k, u, cx, cy, R, BPM_MAX, c, false);
+      k.font = `${c.numW} ${12.5 * c.numScale * u}px ${c.num}`; k.textAlign = 'center'; k.textBaseline = 'middle';
+      for (let b = BPM_MIN; b <= BPM_MAX; b += 10) {
+        const major = b === BPM_MIN || b % 50 === 0, a = dialDeg(b) * Math.PI / 180, dx = Math.sin(a), dy = -Math.cos(a), j = c.fin.jitter ? hash(b) : 0;
+        const [x, y] = onDial(cx, cy, R + 6 * u, b), len = (major ? 13 : 7) * u * (1 + 0.12 * j), w = (major ? 2.1 : 1.3) * u * (1 + 0.2 * j);
+        seg(k, x, y, x + dx * len, y + dy * len, rgba(c.ink, major ? 1 : 0.5), w, c.fin.caps);
+        if (major) { k.fillStyle = rgba(c.ink, 0.8); k.fillText(String(b), x + dx * 24 * u, y + dy * 24 * u); }
+      }
+    }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, S, S); ctx.globalAlpha = 1; ctx.shadowColor = 'transparent';
+    ctx.drawImage(scr.dialCache, 0, 0);
+    if (st.playing) {
+      const lv = Math.exp(-(now - st.lastAt) / 220) * [0.55, 0.75, 1][st.lastTier];
+      glow(ctx, cx, cy, 90 * u, c.accent, lv * (dark ? 0.30 : 0.16));
+    }
+    const fg = foundGlow(now - st.glowAt);
+    if (fg > 0) glow(ctx, cx, cy, 100 * u, c.accent, fg * (dark ? 0.32 : 0.18));
+    trackArc(ctx, u, cx, cy, R, st.shown, c, true);
+    const [px, py] = onDial(cx, cy, R - 16 * u, st.shown);
+    needle(ctx, { u }, c, px, py, dialDeg(st.shown) * Math.PI / 180, 22 * u, 0);
+    // While listening: a small hollow ring on the arc at the tempo it is settling on.
+    if (st.mode === 'listen' && st.ghost) {
+      const a = smooth((now - st.ghost.born) / 400), [gx, gy] = onDial(cx, cy, R, ghostValue(st.ghost, now));
+      ctx.shadowColor = 'transparent';
+      dot(ctx, gx, gy, 6 * u, rgba(c.bg, a));
+      ctx.beginPath(); ctx.arc(gx, gy, 5.5 * u, 0, TAU); ctx.strokeStyle = rgba(c.ink, 0.75 * a); ctx.lineWidth = 1.8 * u; ctx.stroke();
+    }
+  }
+
+  // ---- Beat lights, as built; while listening they follow the heard beats, more softly -------------
+  function drawLights(scr, now) {
+    const cv = scr.lights; if (!cv || !cv.width) return;
+    const st = scr.st, ctx = cv.getContext('2d'), W = cv.width, H = cv.height, d = H / 64, s = style(), c = roles(s, isDark()), m = METERS[st.meter];
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H); ctx.shadowColor = 'transparent'; ctx.globalAlpha = 1;
+    const sp = Math.min(48 * d, (W - 16 * d) / m.n), cy = H * 0.4;
+    ctx.font = `${c.numW} ${11 * c.numScale * d}px ${c.num}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < m.n; i++) {
+      const x = W / 2 + (i - (m.n - 1) / 2) * sp;
+      let L = 0;
+      if (st.playing && i === st.beat) L = 0.4 + 0.6 * Math.exp(-(now - st.lastAt) / 200);
+      else if (st.mode === 'listen' && i === st.heard) L = 0.25 + 0.45 * Math.exp(-(now - st.heardAt) / 200);
+      drawMark(ctx, s, c, x, cy, d, tierOf(m, i), L);
+      ctx.fillStyle = rgba(L > 0 ? c.ink : c.muted, L > 0 ? 1 : 0.85); ctx.fillText(String(i + 1), x, H * 0.88);
+    }
+  }
+
+  // ---- Screens -----------------------------------------------------------------------------------
+  function navHTML() {
+    const t = TX[lang];
+    const items = ['tuner', 'tuning', 'metro', 'settings'].map((k) => {
+      const on = k === 'metro';
+      return `<button type="button" class="ni${on ? ' on' : ''}" aria-label="${t[k]}"${on ? ' aria-current="page"' : ''}><span class="ind">${ICON[k]}</span><span class="nl">${t[k]}</span><i class="mk"></i></button>`;
+    }).join('');
+    return `<nav class="nb vB" aria-label="${t.nav}">${items}</nav>`;
+  }
+  function bodyHTML(scr) {
+    const t = TX[lang], st = scr.st, b = Math.round(st.shown);
+    const meters = `<div class="msel" role="radiogroup" aria-label="${t.beats}">${METERS.map((m, i) => `<button type="button" class="mbtn${i === st.meter ? ' on' : ''}" role="radio" aria-checked="${i === st.meter}" data-meter="${i}">${m.id}</button>`).join('')}</div>`;
+    const dialH = `<div class="dialbox"><canvas class="dialc" role="slider" aria-label="${t.tempo}" aria-valuemin="${BPM_MIN}" aria-valuemax="${BPM_MAX}" aria-valuenow="${b}"></canvas><div class="dread"><b class="bpmn">${b}</b><span class="bpml">BPM</span><span class="tname">${tempoName(b)}</span></div>`
+      + `<button type="button" class="pm minus" aria-label="${t.slower}">${ICON.minus}</button><button type="button" class="pm plus" aria-label="${t.faster}">${ICON.plus}</button></div>`;
+    const row = `<div class="prow"><button type="button" class="tapb">${t.tap}</button>`
+      + `<button type="button" class="listb"><i class="pt"></i><span class="ic"></span><span class="lt"></span></button></div>`;
+    const go = `<button type="button" class="go"></button>`;
+    const vib = `<button type="button" class="vib${st.vib ? ' on' : ''}" role="switch" aria-checked="${st.vib}">${ICON.vib}<span>${t.vib}</span><span class="switch"></span></button>`;
+    return `<div class="body">${meters}<div class="grow half"></div><canvas class="lights"></canvas><div class="lline" aria-live="polite"></div><div class="grow half"></div>${dialH}<div class="grow half"></div>${row}${go}${vib}<div class="grow half"></div></div>`;
+  }
+  const balloonShell = () => `<div class="lball" role="dialog"><div class="bin"></div><svg class="ptr" viewBox="0 0 14 9" aria-hidden="true"><polygon points="0,0 14,0 7,9"/></svg></div>`;
+
+  function build(scr) {
+    scr.el.dataset.var = 'B'; // the bar as built: variant B, Frameless
+    scr.el.dataset.press = 'new'; scr.el.dataset.tap = scr.tap; scr.el.dataset.anim = animOff ? 'off' : 'on';
+    scr.el.dataset.w = String(phoneW); scr.el.parentElement.classList.toggle('w360', phoneW === 360);
+    scr.el.innerHTML = `<canvas class="backdrop" aria-hidden="true"></canvas>${STATUS}${bodyHTML(scr)}${balloonShell()}${navHTML()}<div class="gesture"></div>`;
+    scr.bd = scr.el.querySelector('canvas.backdrop');
+    scr.dial = scr.el.querySelector('.dialc'); scr.dialKey = ''; scr.dialCache = null;
+    scr.lights = scr.el.querySelector('.lights');
+    scr.lineEl = scr.el.querySelector('.lline'); scr.lineEl.dataset.html = '';
+    scr.listenEl = scr.el.querySelector('.listb');
+    scr.balloon = scr.el.querySelector('.lball');
+    scr.num = -1;
+    updateControls(scr); swapLine(scr, true);
+    if (scr.st.offer) { fillOffer(scr); scr.balloon.classList.add('show'); }
+    sizeScreen(scr);
+  }
+  function sizeScreen(scr) {
+    const w = scr.el.clientWidth, h = scr.el.clientHeight; if (!w || !h) return;
+    const s = style(), dark = isDark();
+    scr.bd.width = Math.round(w * DPR); scr.bd.height = Math.round(h * DPR);
+    drawBackdrop(scr.bd.getContext('2d'), scr.bd.width, scr.bd.height, s, dark, true, w / phoneW * DPR);
+    if (scr.dial) { const d = scr.dial.clientWidth; scr.dial.width = scr.dial.height = Math.round(d * DPR); scr.dialKey = ''; drawDial(scr, performance.now()); }
+    if (scr.lights) { scr.lights.width = Math.round(scr.lights.clientWidth * DPR); scr.lights.height = Math.round(scr.lights.clientHeight * DPR); drawLights(scr, performance.now()); }
+    if (scr.st.offer) placeOffer(scr);
+  }
+
+  /** The Listen button, Start / Stop and their labels, from the state. */
+  function updateControls(scr) {
+    const t = TX[lang], st = scr.st, on = st.mode === 'listen';
+    const lb = scr.listenEl; if (!lb) return;
+    lb.classList.toggle('on', on);
+    lb.querySelector('.lt').textContent = on ? t.listenStop : t.listen;
+    lb.querySelector('.ic').innerHTML = on ? ICON.stopLine : ICON.mic;
+    lb.setAttribute('aria-label', on ? t.listenStopSpoken : t.listen);
+    // Ending: the progress fades out where it is (CSS, 300 ms), then resets.
+    if (!on) { clearTimeout(scr.pReset); scr.pReset = setTimeout(() => { if (scr.st.mode !== 'listen') lb.style.setProperty('--p', '0'); }, 320); }
+    scr.el.querySelectorAll('.go').forEach((el) => {
+      el.innerHTML = st.playing || (on && st.wasPlaying) ? ICON.stop + t.stop : ICON.play + t.start;
+      el.classList.toggle('wait', on);
+      el.toggleAttribute('disabled', on);
+    });
+  }
+
+  // ---- The status line under the beat lights: one line, crossfaded, its room always kept -------------
+  function lineHTML(scr) {
+    const t = TX[lang], L = scr.st.line; if (!L) return '';
+    if (L.kind === 'listening') return scr.st.est == null ? `<span>${t.listening}</span>` : `<span>${t.listening} <b>${scr.st.est}</b> BPM</span>`;
+    if (L.kind === 'nobeat') return `<span>${t.noBeat}</span><button type="button" class="act" data-act="again">${t.again}</button>`;
+    return '';
+  }
+  function setLine(scr, line, until) { scr.st.line = line; scr.st.lineUntil = until || 0; swapLine(scr); }
+  function swapLine(scr, instant) {
+    const el = scr.lineEl; if (!el) return;
+    const html = lineHTML(scr); if (el.dataset.html === html) return;
+    el.dataset.html = html; clearTimeout(scr.lineTimer);
+    if (instant || !el.innerHTML) { el.innerHTML = html; el.classList.add('fade'); void el.offsetWidth; el.classList.toggle('fade', !html); return; }
+    el.classList.add('fade');
+    scr.lineTimer = setTimeout(() => { el.innerHTML = html; void el.offsetWidth; el.classList.toggle('fade', !html); }, 160);
+  }
+
+  // ---- Variant B's balloon -----------------------------------------------------------------------
+  const MULS = [0.5, 1, 2];
+  const mulLabel = (m) => (m === 0.5 ? '½×' : m + '×');
+  function fillOffer(scr) {
+    const t = TX[lang], o = scr.st.offer, n = Math.round(o.base * o.mult);
+    const muls = MULS.filter((m) => { const v = Math.round(o.base * m); return v >= BPM_MIN && v <= BPM_MAX; });
+    const spoken = { 0.5: t.half, 1: t.asHeard, 2: t.double };
+    scr.balloon.setAttribute('aria-label', t.heard);
+    scr.balloon.querySelector('.bin').innerHTML =
+      `<div class="bhead"><i class="mk"></i><p class="bcount">${t.heard}</p></div>`
+      + `<div class="bnum"><b>${n}</b><span>BPM</span><em>${tempoName(n)}</em></div>`
+      + `<div class="bmul" role="radiogroup" aria-label="${t.speed}">${muls.map((m) => `<button type="button" role="radio" aria-checked="${m === o.mult}" aria-label="${spoken[m]}" class="${m === o.mult ? 'on' : ''}" data-mul="${m}">${mulLabel(m)}</button>`).join('')}</div>`
+      + `<div class="bact"><button type="button" class="bskip" data-act="notnow">${t.notNow}</button><button type="button" class="buse" data-act="use">${t.use}</button></div>`;
+  }
+  function placeOffer(scr) {
+    const b = scr.balloon, sr = scr.el.getBoundingClientRect(), r = scr.listenEl.getBoundingClientRect(), dp = sr.width / phoneW;
+    const bw = b.offsetWidth, bh = b.offsetHeight, cx = r.left - sr.left + r.width / 2;
+    const left = clamp(cx - bw / 2, 16 * dp, sr.width - 16 * dp - bw), top = r.top - sr.top - 11 * dp - bh;
+    b.style.left = left + 'px'; b.style.top = top + 'px';
+    b.querySelector('.ptr').style.left = clamp(cx - left - 7 * dp, 20 * dp, bw - 34 * dp) + 'px';
+  }
+  function showOffer(scr) { fillOffer(scr); placeOffer(scr); scr.balloon.classList.add('show'); }
+  function hideOffer(scr) { scr.st.offer = null; if (scr.balloon) scr.balloon.classList.remove('show'); }
+  function setMult(scr, m) { if (!scr.st.offer) return; scr.st.offer.mult = m; fillOffer(scr); placeOffer(scr); }
+  function useOffer(scr, now) {
+    const o = scr.st.offer; if (!o) return;
+    hideOffer(scr); glideTo(scr, now, Math.round(o.base * o.mult), scr.st.wasPlaying);
+  }
+  function notNow(scr, now) { if (!scr.st.offer) return; hideOffer(scr); if (scr.st.wasPlaying) resume(scr, now); }
+
+  // ---- Tempo, clicks and the glide -----------------------------------------------------------------
+  /** A tempo set by hand: at once, from the next beat (as ClickTrack). */
+  function setBpm(scr, b) {
+    const st = scr.st; b = clamp(Math.round(b), BPM_MIN, BPM_MAX);
+    st.glide = null; st.bpm = st.shown = b;
+    if (st.playing && b !== st.clickBpm) st.nextAt = Math.max(performance.now(), st.lastAt + 60000 / b);
+    st.clickBpm = b;
+    drawDial(scr, performance.now());
+  }
+  /** A found tempo: the dial glides there in 700 ms; the clicks take it (or come back) when it lands. */
+  function glideTo(scr, now, b, resumeAfter) {
+    const st = scr.st;
+    st.prevBpm = st.bpm; st.glide = { from: st.shown, to: b, t0: now, dur: 700 }; st.bpm = b;
+    st.resumeAfterGlide = !!resumeAfter; st.glowAt = now + 250;
+  }
+  function endGlide(scr, now) {
+    const st = scr.st; st.glide = null; st.shown = st.bpm;
+    if (st.playing && st.bpm !== st.clickBpm) st.nextAt = Math.max(now, st.lastAt + 60000 / st.bpm);
+    st.clickBpm = st.bpm;
+    if (st.resumeAfterGlide && !st.playing && st.mode !== 'listen') resume(scr, now);
+    st.resumeAfterGlide = false;
+  }
+  function resume(scr, now) { const st = scr.st; st.playing = true; st.beat = -1; st.nextAt = now + 20; st.schedFor = -1; updateControls(scr); }
+  function setPlaying(scr, on) {
+    const st = scr.st, now = performance.now();
+    if (on) resume(scr, now); else { st.playing = false; updateControls(scr); }
+    if (on && soundPick !== 'off') quietAt = Math.max(quietAt, now + 20000);
+    drawDial(scr, now); drawLights(scr, now);
+  }
+  function scheduleClick(inMs, tier) {
+    if (!actx || !clickBufs) return;
+    const src = actx.createBufferSource(); src.buffer = clickBufs[tier]; src.connect(master); src.start(actx.currentTime + Math.max(0, inMs) / 1000);
+  }
+  function stepMetronome(scr, now) {
+    const st = scr.st; if (!st.playing) return;
+    if (now - st.nextAt > 1000) st.nextAt = now; // back from a hidden tab: start again cleanly
+    const m = METERS[st.meter];
+    if (soundPick === scr.id && actx && st.nextAt - now < 90 && st.schedFor !== st.nextAt) { st.schedFor = st.nextAt; scheduleClick(st.nextAt - now, tierOf(m, (st.beat + 1) % m.n)); }
+    let beat = false;
+    while (now >= st.nextAt) { st.beat = (st.beat + 1) % m.n; st.lastAt = st.nextAt; st.lastTier = tierOf(m, st.beat); st.nextAt += 60000 / st.clickBpm; beat = true; }
+    if (beat && st.vib) { try { if (navigator.vibrate) navigator.vibrate(st.lastTier === 2 ? 35 : 18); } catch (e) { /* not allowed */ } }
+  }
+  function tapTempo(scr, now) {
+    const T = scr.st.taps; if (T.length && now - T[T.length - 1] > 2000) T.length = 0;
+    T.push(now); if (T.length > 6) T.shift();
+    if (T.length >= 2) setBpm(scr, 60000 / ((T[T.length - 1] - T[0]) / (T.length - 1)));
+  }
+
+  // ---- Listening -----------------------------------------------------------------------------------
+  function startListening(scr, now) {
+    const st = scr.st; hideOffer(scr);
+    st.wasPlaying = st.playing; st.playing = false; st.mode = 'listen'; st.listenAt = now;
+    st.est = null; st.ghost = null; st.heard = -1; st.heardK = -1; st.heardAt = -1e9;
+    setLine(scr, { kind: 'listening' }); updateControls(scr);
+  }
+  function setEst(scr, now, v) {
+    const st = scr.st; if (st.mode !== 'listen') return;
+    st.est = v;
+    st.ghost = st.ghost ? { from: ghostValue(st.ghost, now), to: v, t0: now, born: st.ghost.born } : { from: v, to: v, t0: now, born: now };
+    swapLine(scr);
+  }
+  /** Listening ends: by Stop, by touching another control, or by leaving. */
+  function stopListening(scr, now) {
+    const st = scr.st; if (st.mode !== 'listen') return;
+    cancelEvents(scr); st.mode = 'idle'; st.est = null; setLine(scr, null);
+    if (st.wasPlaying) resume(scr, now); else updateControls(scr);
+  }
+  function found(scr, now, bpm) {
+    const st = scr.st; if (st.mode !== 'listen') return;
+    st.mode = 'idle'; st.est = null; updateControls(scr);
+    setLine(scr, null); st.offer = { base: bpm, mult: 1 }; showOffer(scr);
+  }
+  function noBeat(scr, now) {
+    const st = scr.st; if (st.mode !== 'listen') return;
+    st.mode = 'idle'; st.est = null;
+    setLine(scr, { kind: 'nobeat' }, now + 8000);
+    if (st.wasPlaying) resume(scr, now); else updateControls(scr);
+  }
+  /** The heard beats light the beat lights once the detector has a tempo (about 3 s in). */
+  function stepListening(scr, now) {
+    const st = scr.st; if (st.mode !== 'listen') return;
+    scr.listenEl.style.setProperty('--p', String(clamp((now - st.listenAt) / LISTEN_MAX, 0, 1)));
+    if (!SONG || SONG.kind !== 'beat' || now - st.listenAt < 3000 || now < SONG.t0) return;
+    const hp = 60000 / SONG.heard, k = Math.floor((now - SONG.t0) / hp);
+    if (k !== st.heardK) { st.heardK = k; st.heard = (st.heard + 1) % METERS[st.meter].n; st.heardAt = SONG.t0 + k * hp; }
+  }
+
+  // ---- The pretend run: timed steps per phone, and a finger that shows the taps ----------------------
+  function cancelEvents(scr) { scr.st.events.length = 0; }
+  function at(scr, time, fn) { scr.st.events.push({ at: time, fn }); }
+  function finger(scr, time, sel, fn) {
+    at(scr, time, () => {
+      // The pretend finger shows only as the button's own press effect: no circle of its own.
+      const el = scr.el.querySelector(sel); if (!el) return;
+      pressDown(el);
+      at(scr, performance.now() + 180, () => pressUp(el));
+    });
+    at(scr, time + 220, fn);
+  }
+  function runEvents(scr, now) {
+    const E = scr.st.events; if (!E.length) return;
+    E.sort((a, b) => a.at - b.at);
+    while (E.length && now >= E[0].at) E.shift().fn(now);
+  }
+  function runScenario() {
+    const sc = SCEN[scenPick], now = performance.now(), t0 = now + LEAD_IN;
+    SONG = { bpm: sc.song, kind: sc.kind, heard: sc.heard, t0, until: t0 + (sc.found ? sc.found * 1000 : LISTEN_MAX), j8: 0, padDone: false };
+    $('songText').textContent = sc.text; $('songNote').textContent = sc.note;
+    for (const scr of SCREENS) {
+      const st = scr.st;
+      cancelEvents(scr); hideOffer(scr); setLine(scr, null);
+      st.mode = 'idle'; st.est = null; st.ghost = null; st.glide = null; st.glowAt = -1e9;
+      setBpm(scr, START_BPM); resume(scr, now);
+      finger(scr, t0 - 220, '.listb', (n) => startListening(scr, n));
+      for (const [sec, v] of sc.est) at(scr, t0 + sec * 1000, (n) => setEst(scr, n, v));
+      if (sc.found) {
+        const tf = t0 + sc.found * 1000;
+        at(scr, tf, (n) => found(scr, n, sc.heard));
+        if (sc.pick !== 1) { finger(scr, tf + 2200, `.bmul [data-mul="${sc.pick}"]`, () => setMult(scr, sc.pick)); finger(scr, tf + 4200, '.buse', (n) => useOffer(scr, n)); }
+        else finger(scr, tf + 3000, '.buse', (n) => useOffer(scr, n));
+      } else at(scr, t0 + LISTEN_MAX, (n) => noBeat(scr, n));
+    }
+    quietAt = SONG.until + 10000;
+  }
+
+  // ---- Sound: off unless picked; a short pretend song, and one phone's clicks ------------------------
+  function ensureAudio() {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      master = actx.createGain(); master.gain.value = 0.7; master.connect(actx.destination);
+      clickBufs = makeClicks();
+      noiseBuf = actx.createBuffer(1, actx.sampleRate, actx.sampleRate); const x = noiseBuf.getChannelData(0), r = rng(5); for (let i = 0; i < x.length; i++) x[i] = r() * 2 - 1;
+    }
+    actx.resume();
+  }
+  const audioAt = (ms, now) => actx.currentTime + Math.max(0, ms - now) / 1000;
+  function kick(t) {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.3);
+  }
+  function hiss(t, dur, freq, type, peak) {
+    const s = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+    s.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+  }
+  function pad(from, to) {
+    // Soft music with no beat: two slow chords that swell and fade, ending by themselves.
+    [[220, 277.2, 329.6], [196, 246.9, 293.7]].forEach((ch, k) => {
+      const a = from + k * (to - from) / 2, b = a + (to - from) / 2;
+      ch.forEach((fq) => {
+        const o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.value = fq; o.detune.value = (Math.random() - 0.5) * 8;
+        g.gain.setValueAtTime(0.0001, a); g.gain.exponentialRampToValueAtTime(0.05, a + 2.5); g.gain.setValueAtTime(0.05, b - 2.2); g.gain.exponentialRampToValueAtTime(0.0001, b);
+        o.connect(g); g.connect(master); o.start(a); o.stop(b + 0.05);
+      });
+    });
+  }
+  function stepSong(now) {
+    if (!SONG || !actx || soundPick === 'off' || now > SONG.until) return;
+    if (SONG.kind === 'loose') {
+      if (!SONG.padDone && now >= SONG.t0 - 50) { SONG.padDone = true; pad(audioAt(now, now), audioAt(SONG.until, now)); }
+      return;
+    }
+    const e8 = 30000 / SONG.bpm;
+    for (;;) {
+      const tm = SONG.t0 + SONG.j8 * e8; if (tm > now + 120 || tm > SONG.until) break;
+      if (tm >= now - 20) {
+        const t = audioAt(tm, now), j = SONG.j8;
+        if (j % 2 === 0) { const b = (j / 2) % 4; if (b === 0 || b === 2) kick(t); else hiss(t, 0.14, 1800, 'bandpass', 0.35); }
+        hiss(t, 0.04, 7000, 'highpass', j % 2 ? 0.08 : 0.12);
+      }
+      SONG.j8++;
+    }
+  }
+
+  // ---- Page controls -----------------------------------------------------------------------------
+  function buildChips() {
+    const dark = isDark();
+    $('chips').innerHTML = SHOWN.map((id) => { const t = STY[id], p = palette(t, dark); return `<button type="button" class="chip" data-id="${id}" aria-pressed="${id === picked}"><span class="sw" style="background: linear-gradient(135deg, ${css(p.bg)} 50%, ${css(p.accent)} 50%)"></span>${t.name}</button>`; }).join('');
+  }
+  function applyAll() {
+    const s = style(), dark = isDark(), p = palette(s, dark), sh = s.shape;
+    const set = (k, v) => root.style.setProperty(k, v);
+    set('--bg', css(p.bg)); set('--surface', css(p.surface)); set('--fg', css(p.ink)); set('--muted', css(p.muted)); set('--line', css(p.track));
+    set('--accent', css(p.accent)); set('--on-accent', css(p.onAccent)); set('--intune', css(p.inTune)); set('--on-intune', css(p.onInTune));
+    set('--container', css(p.container)); set('--second', css(p.second)); set('--third', css(p.third)); set('--shadow-a', dark ? '.5' : '.16');
+    set('--b-sh', dark ? '.55' : '.22');
+    set('--display', stack(s.font, s.fb)); set('--display-weight', String(s.w)); set('--display-track', s.track + 'em');
+    set('--num', stack(s.num, s.numFb)); set('--num-w', String(s.numW || 400)); set('--num-scale', String(s.numScale || 1));
+    set('--pbody', s.body === 'serif' ? 'Georgia, "Noto Serif", serif' : 'Roboto, system-ui, sans-serif');
+    set('--btn-r', String(sh.btn)); set('--pill-r', String(sh.pill)); set('--card-r', String(sh.card)); set('--str-w', String(sh.strW)); set('--str-h', String(sh.strH));
+    root.dataset.shape = sh.kind;
+    root.style.colorScheme = dark ? 'dark' : 'light';
+    if (themePick === 'auto') delete root.dataset.theme; else root.dataset.theme = themePick;
+    if (document.fonts && document.fonts.load) Promise.all([s.font, s.num].map((f) => document.fonts.load(`16px "${f}"`))).then(() => { fontsVersion++; SCREENS.forEach(sizeScreen); }, () => {});
+  }
+  function refresh() { applyAll(); buildChips(); SCREENS.forEach(build); }
+
+  $('chips').addEventListener('click', (ev) => { const b = ev.target.closest('.chip'); if (!b) return; picked = b.dataset.id; store.set('twangle.listen1.style', picked); refresh(); });
+  const bindSeg = (name, get, setv) => {
+    document.querySelectorAll(`input[name="${name}"]`).forEach((inp) => { inp.checked = inp.value === get(); inp.addEventListener('change', () => { if (inp.checked) setv(inp.value); }); });
+  };
+  bindSeg('theme', () => themePick, (v) => { themePick = v; store.set('twangle.listen1.theme', v); refresh(); });
+  bindSeg('lang', () => lang, (v) => { lang = v; store.set('twangle.listen1.lang', v); refresh(); });
+  bindSeg('scen', () => scenPick, (v) => { scenPick = v; store.set('twangle.listen1.scen', v); runScenario(); });
+  bindSeg('sound', () => soundPick, (v) => {
+    soundPick = v;
+    if (v !== 'off') { try { ensureAudio(); quietAt = Math.max(quietAt, performance.now() + 20000); } catch (e) { soundPick = 'off'; $('sound-off').checked = true; } }
+  });
+  bindSeg('anim', () => (animOff ? 'off' : 'on'), (v) => { animOff = v === 'off'; SCREENS.forEach((scr) => { scr.el.dataset.anim = v; }); });
+  bindSeg('pw', () => String(phoneW), (v) => { phoneW = +v; store.set('twangle.listen1.pw', v); refresh(); });
+  $('replay').addEventListener('click', runScenario);
+  mqDark.addEventListener && mqDark.addEventListener('change', () => { if (themePick === 'auto') refresh(); });
+
+  // ---- Phone interactions (everything also works by hand) -----------------------------------------
+  const screenOf = (el) => SCREENS.find((s) => s.el === el.closest('.screen'));
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest || !ev.target.closest('.screen')) return;
+    const scr = screenOf(ev.target); if (!scr) return;
+    const st = scr.st, now = performance.now();
+    if (ev.target.closest('.listb')) { if (st.mode === 'listen') stopListening(scr, now); else runScenario(); return; }
+    const act = ev.target.closest('[data-act]');
+    if (act) {
+      cancelEvents(scr);
+      if (act.dataset.act === 'use') useOffer(scr, now);
+      else if (act.dataset.act === 'notnow') notNow(scr, now);
+      else if (act.dataset.act === 'again') runScenario();
+      return;
+    }
+    const mu = ev.target.closest('[data-mul]'); if (mu) { cancelEvents(scr); setMult(scr, +mu.dataset.mul); return; }
+    if (ev.target.closest('.lball')) return;
+    const control = ev.target.closest('.mbtn, .minus, .plus, .go, .vib, .tapb');
+    if (control && st.mode === 'listen') stopListening(scr, now); // the player took over
+    if (control && st.offer) { // the player took over: the balloon goes, nothing changes (Start / Stop then does its own job)
+      cancelEvents(scr); hideOffer(scr);
+      if (st.wasPlaying && !ev.target.closest('.go')) resume(scr, now);
+    }
+    const mb = ev.target.closest('[data-meter]');
+    if (mb) {
+      st.meter = +mb.dataset.meter; st.beat = METERS[st.meter].n - 1;
+      scr.el.querySelectorAll('.mbtn').forEach((el) => { const on = +el.dataset.meter === st.meter; el.classList.toggle('on', on); el.setAttribute('aria-checked', on); });
+      drawLights(scr, now); return;
+    }
+    if (ev.target.closest('.minus')) { setBpm(scr, st.bpm - 1); return; }
+    if (ev.target.closest('.plus')) { setBpm(scr, st.bpm + 1); return; }
+    if (ev.target.closest('.go')) { setPlaying(scr, !st.playing); return; }
+    if (ev.target.closest('.vib')) {
+      st.vib = !st.vib;
+      scr.el.querySelectorAll('.vib').forEach((el) => { el.classList.toggle('on', st.vib); el.setAttribute('aria-checked', st.vib); });
+      return;
+    }
+  });
+  let drag = null;
+  function dialTo(ev) {
+    const r = drag.el.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+    let deg = Math.atan2(dx, -dy) * 180 / Math.PI;
+    if (Math.abs(deg) > 150) deg = drag.scr.st.bpm > (BPM_MIN + BPM_MAX) / 2 ? 150 : -150; // no jump across the gap at the bottom
+    setBpm(drag.scr, BPM_MIN + (deg + 150) / 300 * (BPM_MAX - BPM_MIN));
+  }
+  document.addEventListener('pointerdown', (ev) => {
+    if (!ev.target.closest) return;
+    const pe = ev.target.closest(PRESSABLE);
+    if (pe && pe.closest('.screen') && !pe.disabled) pressDown(pe);
+    const tb = ev.target.closest('.tapb');
+    if (tb) { const scr = screenOf(tb); if (scr.st.mode === 'listen') stopListening(scr, performance.now()); tapTempo(scr, performance.now()); return; }
+    const dc = ev.target.closest('.dialc');
+    if (dc) {
+      const scr = screenOf(dc), r = dc.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+      if (Math.hypot(dx, dy) < r.width * 74 / 288) return; // only the ring reacts, as built
+      if (scr.st.mode === 'listen') stopListening(scr, performance.now());
+      if (scr.st.offer) { cancelEvents(scr); notNow(scr, performance.now()); }
+      drag = { el: dc, scr }; try { dc.setPointerCapture(ev.pointerId); } catch (e) { /* fine */ } dialTo(ev); ev.preventDefault();
+    }
+  });
+  document.addEventListener('pointermove', (ev) => { if (drag) dialTo(ev); });
+  const endDrag = () => { drag = null; for (const el of pressedEls) pressUp(el); };
+  document.addEventListener('pointerup', endDrag); document.addEventListener('pointercancel', endDrag);
+
+
+  // ---- Press feedback: round 3's for every button; Tap tempo's crisp flash on the right phone ---------
+  const PRESSABLE = '.pm, .tapb, .listb, .go, .mbtn, .vib, .bmul button, .lball .bact button, .lline .act';
+  const PRESS_FADE = 280, PRESS_MIN_HELD = 100, SINK_SMOOTH = 35;
+  const CRISP_ON = 70, CRISP_FADE = 40; // Tap tempo: full for 70 ms from touch-down, then a 40 ms fade
+  const pressedEls = new Set();
+  /** Touch-down on a button: the light at full at once. */
+  function pressDown(el) {
+    const scr = screenOf(el); if (!scr) return;
+    const now = performance.now(), crisp = scr.tap === 'crisp' && el.classList.contains('tapb');
+    el._pr = { held: !crisp, crisp, p: 1, s: crisp ? 0 : (el._pr ? el._pr.s : 0), downAt: now, upAt: 0 };
+    el.style.setProperty('--pr', '1'); if (crisp) el.style.setProperty('--ps', '0');
+    pressedEls.add(el);
+  }
+  function pressUp(el) { const P = el._pr; if (P && P.held) { P.held = false; P.upAt = performance.now(); } }
+  /** The crisp flash's level, t ms after touch-down. */
+  const crispLevel = (t) => (t < CRISP_ON ? 1 : animOff || t >= CRISP_ON + CRISP_FADE ? 0 : 1 - (t - CRISP_ON) / CRISP_FADE);
+  /** Each frame: round 3's level fades as (1 - t/280 ms)^3 after release, the sink following it over 35 ms;
+   *  Tap tempo's crisp one follows the clock from touch-down only, with no sink. */
+  function stepPress(now, dt) {
+    for (const el of pressedEls) {
+      const P = el._pr;
+      if (!P || !el.isConnected) { pressedEls.delete(el); continue; }
+      if (P.crisp) {
+        P.p = crispLevel(now - P.downAt);
+        el.style.setProperty('--pr', P.p.toFixed(3));
+        if (P.p === 0) pressedEls.delete(el);
+        continue;
+      }
+      if (P.held) P.p = 1;
+      else if (animOff) P.p = now - P.downAt < PRESS_MIN_HELD ? 1 : 0;
+      else { const t = (now - P.upAt) / PRESS_FADE; P.p = t >= 1 ? 0 : Math.pow(1 - t, 3); }
+      P.s = animOff ? 0 : P.s + (P.p - P.s) * (1 - Math.exp(-dt / SINK_SMOOTH));
+      el.style.setProperty('--pr', P.p.toFixed(3)); el.style.setProperty('--ps', P.s.toFixed(3));
+      if (!P.held && P.p === 0 && P.s < 0.003) { el.style.setProperty('--ps', '0'); pressedEls.delete(el); }
+    }
+  }
+
+  // ---- Frame loop --------------------------------------------------------------------------------
+  let lastFrame = 0;
+  function frame(now) {
+    stepPress(now, lastFrame ? Math.min(100, now - lastFrame) : 16); lastFrame = now;
+    stepSong(now);
+    if (soundPick !== 'off' && quietAt && now > quietAt) { quietAt = 0; SCREENS.forEach((scr) => { if (scr.st.playing) setPlaying(scr, false); }); }
+    for (const scr of SCREENS) {
+      const st = scr.st;
+      runEvents(scr, now);
+      stepMetronome(scr, now);
+      stepListening(scr, now);
+      if (st.glide) { if (now >= st.glide.t0 + st.glide.dur) endGlide(scr, now); else st.shown = lerp(st.glide.from, st.glide.to, ease((now - st.glide.t0) / st.glide.dur)); }
+      if (st.lineUntil && now > st.lineUntil) setLine(scr, null);
+      if (!scr.visible) continue;
+      const b = Math.round(st.shown);
+      if (b !== scr.num) {
+        scr.num = b;
+        scr.el.querySelectorAll('.bpmn').forEach((el) => { el.textContent = b; });
+        scr.el.querySelectorAll('.tname').forEach((el) => { el.textContent = tempoName(b); });
+        scr.dial && scr.dial.setAttribute('aria-valuenow', b);
+      }
+      const moving = st.playing || st.mode === 'listen' || st.glide || now - st.glowAt < 1700 || scr.wasMoving;
+      scr.wasMoving = st.playing || st.mode === 'listen' || !!st.glide || now - st.glowAt < 1700;
+      if (moving) { drawDial(scr, now); drawLights(scr, now); }
+    }
+    // The song strip above the phones: a dot on each of the song's beats.
+    const dot = $('songDot');
+    if (SONG && now >= SONG.t0 && now <= SONG.until) {
+      if (SONG.kind === 'beat') { const p = 60000 / SONG.bpm, k = Math.floor((now - SONG.t0) / p); dot.style.opacity = String(0.2 + 0.8 * Math.exp(-(now - SONG.t0 - k * p) / 160)); }
+      else dot.style.opacity = String(0.35 + 0.25 * Math.sin((now - SONG.t0) / 1400));
+    } else {
+      dot.style.opacity = '0.18';
+      if (SONG && now > SONG.until) { $('songText').textContent = 'Quiet'; $('songNote').textContent = ' · the song has ended'; SONG = null; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Start: the pretend run plays by itself (not with "reduce motion"; then use Play again) -------
+  refresh();
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => { const scr = SCREENS.find((s) => s.el === e.target); if (scr) { scr.visible = e.isIntersecting; if (scr.visible) scr.wasMoving = true; } }));
+    SCREENS.forEach((s) => io.observe(s.el));
+  }
+  if ('ResizeObserver' in window) { const ro = new ResizeObserver((es) => es.forEach((e) => { const scr = SCREENS.find((s) => s.el === e.target); if (scr) sizeScreen(scr); })); SCREENS.forEach((s) => ro.observe(s.el)); }
+  window.addEventListener('resize', () => { DPR = Math.min(window.devicePixelRatio || 1, 2); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fontsVersion++; SCREENS.forEach(sizeScreen); });
+  if (!reduceMotion) runScenario();
+  requestAnimationFrame(frame);
+})();
+</script>
