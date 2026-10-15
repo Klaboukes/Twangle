@@ -1,33 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Twangle "untangle" mark: a string comes in at an angle, makes one loop and leaves straight,
-     passing under itself where it crosses. Drawn on a 96-unit grid, then scaled into the 108dp
-     canvas so it stays inside the 66dp safe zone that every launcher mask keeps. -->
+<!-- Twangle "twang to tune" mark: a plucked string's wobble dies away into a straight line that ends in a
+     dot (the string in tune). The wobble is a damped sine, y = 54 − 17·e^(−0.075t)·sin(2πt/13), drawn as
+     cubic Béziers a quarter period long (Hermite form, within 0.25 units of the curve), then straight once it
+     is under a unit. Drawn straight on the 108dp canvas; every bit of ink stays within 33dp of the centre,
+     the safe zone that every launcher mask keeps. One colour, so it is also the themed (monochrome) icon. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <group
-        android:scaleX="0.82"
-        android:scaleY="0.82"
-        android:translateX="8.9"
-        android:translateY="9.72">
+    <!-- The string: the twang settling -->
+    <path
+        android:pathData="M24.4,54 C25.48,45.1 26.57,39.59 27.65,40.68 C28.73,41.76 29.82,48.53 30.9,54 C31.98,59.47 33.07,62.85 34.15,62.18 C35.23,61.52 36.32,57.36 37.4,54 C38.48,50.64 39.57,48.57 40.65,48.97 C41.73,49.38 42.82,51.94 43.9,54 C44.98,56.06 46.07,57.34 47.15,57.09 C48.23,56.84 49.32,55.27 50.4,54 C51.48,52.73 52.57,51.95 53.65,52.1 C54.73,52.26 55.82,53.22 56.9,54 C57.98,54.78 59.07,55.26 60.15,55.16 C61.23,55.07 62.32,54.48 63.4,54 L82,54"
+        android:strokeWidth="5.5"
+        android:strokeColor="#24260F"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
 
-        <!-- Incoming string, cut flat where it goes under the outgoing line -->
-        <path
-            android:fillColor="#412402"
-            android:pathData="M28.82,76.82 L39.14,66.5 L51.86,66.5 L35.18,83.18 Z" />
-        <path
-            android:fillColor="#412402"
-            android:pathData="M32,80 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" />
-
-        <!-- The loop, then the straight outgoing string -->
-        <path
-            android:pathData="M61.3,50.7 A17,17 0 1,0 49,56 L84,56"
-            android:strokeWidth="9"
-            android:strokeColor="#412402"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
-    </group>
+    <!-- In tune -->
+    <path
+        android:fillColor="#24260F"
+        android:pathData="M82,54 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
 </vector>

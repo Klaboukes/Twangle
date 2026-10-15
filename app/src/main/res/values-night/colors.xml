@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Opening screen in dark mode: the dark background of the Ribbon style, so the gold icon stands out. -->
+    <!-- Opening screen in dark mode: a dark warm brown, so the mustard icon stands out. -->
     <color name="splash_background">#1C1510</color>
 </resources>

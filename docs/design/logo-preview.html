@@ -1,0 +1,274 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Logo Preview</title>
+<!--
+TWANGLE LOGO, ROUND 1 (2026-10-15). The owner asked for a new launcher icon that fits the name.
+Twangle = "twang" (a plucked string ringing) + "angle" / "tangle". Five ideas, plus today's loop for comparison.
+Rules every option keeps (so it can replace ic_launcher_foreground.xml as it is):
+  - drawn on the adaptive icon's 108-unit canvas, all artwork within 33 units of the centre (the safe zone
+    every launcher mask keeps), so no shape (circle, squircle, MIUI's rounded square) clips it;
+  - ONE colour for the mark (parts may be see-through), so the same drawing works as the monochrome layer
+    for Android 13+ themed icons;
+  - readable at 32 px; same gold / dark-brown colours as today unless the owner picks otherwise.
+-->
+<style>
+  :root {
+    --bg: #f6f1e8; --card: #fffaf2; --ink: #2a1d0e; --muted: #7a6a55; --line: #e6dccb; --accent: #b0731a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17120d; --card: #221a12; --ink: #f2e6d3; --muted: #b3a38c; --line: #3a2e21; --accent: #f0b85a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17120d; --card: #221a12; --ink: #f2e6d3; --muted: #b3a38c; --line: #3a2e21; --accent: #f0b85a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 32px 0 12px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; max-width: 680px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-bottom: 20px; }
+  .controls fieldset { border: 0; padding: 0; margin: 0; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .controls legend { float: left; margin-right: 8px; color: var(--muted); font-size: 14px; }
+  .chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px;
+          padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; min-width: 92px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 2px solid transparent; border-radius: 20px; padding: 18px;
+          cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: border-color .15s; }
+  .card:hover { border-color: var(--line); }
+  .card.picked { border-color: var(--accent); }
+  .card .row { display: flex; align-items: flex-end; gap: 14px; }
+  .card .letter { font-weight: 700; color: var(--accent); font-size: 14px; letter-spacing: .04em; }
+  .card h3 { margin: 2px 0 4px; font-size: 18px; }
+  .card p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .card.current { opacity: .85; }
+  svg.icon { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
+  .home-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .phone { width: 300px; border-radius: 34px; padding: 22px 18px 30px; position: relative; overflow: hidden;
+           background: linear-gradient(160deg, #3d5a73 0%, #6b7f8e 45%, #c9a27a 100%); }
+  .phone.splash { display: flex; align-items: center; justify-content: center; height: 420px; padding: 0; }
+  .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 6px; }
+  .app { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font-size: 12px;
+         text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  .dummy { width: 52px; height: 52px; }
+  .caption { color: var(--muted); font-size: 14px; margin-top: 8px; text-align: center; }
+  .sizes { display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; background: var(--card);
+           border-radius: 20px; padding: 18px; }
+  .sizes div { text-align: center; color: var(--muted); font-size: 12px; }
+</style>
+
+<main>
+  <h1>A new Twangle icon</h1>
+  <p class="lead">Twangle is a <b>twang</b> (a plucked string ringing) and an <b>angle</b> / <b>tangle</b>.
+    Five ideas below, with today's loop at the end to compare. Tap a card to try it on the home screen and the
+    opening screen. Use the buttons to see each phone's icon shape and colours.</p>
+
+  <div class="controls">
+    <fieldset id="shapeSet"><legend>Shape</legend></fieldset>
+    <fieldset id="colourSet"><legend>Colours</legend></fieldset>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <h2>On the home screen and the opening screen</h2>
+  <div class="home-wrap">
+    <div>
+      <div class="phone"><div class="apps" id="apps"></div></div>
+      <div class="caption">Home screen (the other icons are blank stand-ins)</div>
+    </div>
+    <div>
+      <div class="phone splash" id="splash"></div>
+      <div class="caption">Opening screen</div>
+    </div>
+  </div>
+
+  <h2>Small sizes</h2>
+  <div class="sizes" id="sizes"></div>
+</main>
+
+<script>
+(() => {
+  let uid = 0;
+
+  // ---- Masks, in the visible 72-unit window (18..90) of the 108-unit adaptive canvas ----
+  function squirclePath() {
+    // Superellipse |x|^4 + |y|^4 = r^4, close to the Pixel / MIUI "squircle".
+    const r = 36, c = 54, pts = [];
+    for (let i = 0; i < 96; i++) {
+      const t = (i / 96) * 2 * Math.PI, cs = Math.cos(t), sn = Math.sin(t);
+      const x = c + r * Math.sign(cs) * Math.sqrt(Math.abs(cs));
+      const y = c + r * Math.sign(sn) * Math.sqrt(Math.abs(sn));
+      pts.push(x.toFixed(2) + ',' + y.toFixed(2));
+    }
+    return 'M' + pts.join(' L') + ' Z';
+  }
+  const SHAPES = {
+    circle:   { label: 'Circle',         d: 'M18,54 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0 Z' },
+    squircle: { label: 'Squircle',       d: squirclePath() },
+    rounded:  { label: 'Rounded square', d: 'M34,18 H74 Q90,18 90,34 V74 Q90,90 74,90 H34 Q18,90 18,74 V34 Q18,18 34,18 Z' },
+  };
+
+  const COLOURS = {
+    gold:   { label: 'Gold (today)', bg: '#FAC775', mark: '#412402' },
+    night:  { label: 'Night',        bg: '#1C1510', mark: '#FAC775' },
+    themed: { label: 'Themed icon',  bg: '#DCE3F7', mark: '#27375F' },
+  };
+
+  // ---- Helpers for generated paths ----
+  function dampedWave() {
+    // A plucked string's sound: a sine whose size dies away until the line is flat (in tune).
+    let d = 'M24,54';
+    for (let x = 24.5; x <= 82; x += 0.5) {
+      const t = x - 24;
+      const y = 54 - 17 * Math.exp(-0.075 * t) * Math.sin((2 * Math.PI * t) / 13);
+      d += ' L' + x.toFixed(1) + ',' + y.toFixed(2);
+    }
+    return d;
+  }
+  function sineAcross(y0, amp, period, x0, x1) {
+    let d = 'M' + x0 + ',' + y0;
+    for (let x = x0 + 0.5; x <= x1; x += 0.5) {
+      d += ' L' + x.toFixed(1) + ',' + (y0 + amp * Math.sin((2 * Math.PI * (x - x0)) / period)).toFixed(2);
+    }
+    return d;
+  }
+  const WAVE = dampedWave();
+  const PICK = 'M54,85 C46,85 25,60 25,44 C25,31 40,26 54,26 C68,26 83,31 83,44 C83,60 62,85 54,85 Z';
+  const PICK_CUT = sineAcross(50, 5, 24, 18, 90);
+
+  // ---- The designs. Each returns SVG elements on the 108-unit canvas, in one colour `m`. ----
+  const DESIGNS = [
+    {
+      id: 'pluck', letter: 'A', name: 'The pluck',
+      idea: 'A string pulled into an angle by a pick, the moment before the twang. "Twang" and "angle" in one picture.',
+      draw: m => `
+        <path d="M28,42 L46,60 L80,42" fill="none" stroke="${m}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="28" cy="42" r="4.2" fill="${m}"/><circle cx="80" cy="42" r="4.2" fill="${m}"/>
+        <path d="M46,65.5 C49,65.5 57.5,74 57.5,78.5 C57.5,82.5 52,84.5 46,84.5 C40,84.5 34.5,82.5 34.5,78.5 C34.5,74 43,65.5 46,65.5 Z" fill="${m}"/>`,
+    },
+    {
+      id: 'twang', letter: 'B', name: 'The twang',
+      idea: 'One string, slanted like on a guitar neck, ringing: the soft blur of a vibrating string around it.',
+      draw: m => `
+        <path d="M35,73 Q71,73 73,35" fill="none" stroke="${m}" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+        <path d="M35,73 Q37,37 73,35" fill="none" stroke="${m}" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+        <path d="M35,73 L73,35" stroke="${m}" stroke-width="5.5" stroke-linecap="round"/>
+        <circle cx="35" cy="73" r="4.6" fill="${m}"/><circle cx="73" cy="35" r="4.6" fill="${m}"/>`,
+    },
+    {
+      id: 'settle', letter: 'C', name: 'Twang to tune',
+      idea: 'A wobbly line that settles into a straight one with a dot: the twang dies away and the string is in tune. What the app does.',
+      draw: m => `
+        <path d="${WAVE}" fill="none" stroke="${m}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="82" cy="54" r="5" fill="${m}"/>`,
+    },
+    {
+      id: 'pick', letter: 'D', name: 'The pick',
+      idea: 'A guitar pick, the most recognisable guitar shape, with a sound wave cut through it.',
+      draw: m => {
+        const id = 'pk' + (uid++);
+        return `
+        <mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="108" height="108">
+          <path d="${PICK}" fill="#fff"/>
+          <path d="${PICK_CUT}" fill="none" stroke="#000" stroke-width="5.5" stroke-linecap="round"/>
+        </mask>
+        <rect width="108" height="108" fill="${m}" mask="url(#${id})"/>`;
+      },
+    },
+    {
+      id: 'tee', letter: 'E', name: 'The T',
+      idea: 'A bold T for Twangle. Its top bar is a ringing string with its two pins; reads even at the smallest size.',
+      draw: m => `
+        <path d="M31,41 Q54,27 77,41" fill="none" stroke="${m}" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+        <path d="M31,41 Q54,55 77,41" fill="none" stroke="${m}" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+        <path d="M31,41 L77,41" stroke="${m}" stroke-width="5.5" stroke-linecap="round"/>
+        <circle cx="31" cy="41" r="4.4" fill="${m}"/><circle cx="77" cy="41" r="4.4" fill="${m}"/>
+        <path d="M54,57 L54,81" stroke="${m}" stroke-width="10" stroke-linecap="round"/>`,
+    },
+    {
+      id: 'current', letter: 'TODAY', name: 'The loop (today)', current: true,
+      idea: 'Today\'s icon, to compare: a string that makes one loop and leaves straight.',
+      draw: m => `
+        <g transform="translate(8.9 9.72) scale(0.82)">
+          <path fill="${m}" d="M28.82,76.82 L39.14,66.5 L51.86,66.5 L35.18,83.18 Z"/>
+          <circle cx="32" cy="80" r="4.5" fill="${m}"/>
+          <path d="M61.3,50.7 A17,17 0 1,0 49,56 L84,56" fill="none" stroke="${m}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>`,
+    },
+  ];
+
+  let state = { shape: 'squircle', colour: 'gold', picked: 'pluck' };
+  try { Object.assign(state, JSON.parse(localStorage.getItem('twangle-logo') || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem('twangle-logo', JSON.stringify(state)); } catch (e) {} };
+
+  function icon(design, size, opts = {}) {
+    const c = COLOURS[opts.colour || state.colour];
+    const shape = SHAPES[opts.shape || state.shape];
+    const id = 'clip' + (uid++);
+    return `<svg class="icon" width="${size}" height="${size}" viewBox="18 18 72 72" role="img" aria-label="${design.name}">
+      <defs><clipPath id="${id}"><path d="${shape.d}"/></clipPath></defs>
+      <g clip-path="url(#${id})"><rect width="108" height="108" fill="${c.bg}"/>${design.draw(c.mark)}</g></svg>`;
+  }
+
+  function chips(setId, options, key) {
+    const set = document.getElementById(setId);
+    set.querySelectorAll('button').forEach(b => b.remove());
+    for (const [k, v] of Object.entries(options)) {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = v.label;
+      b.setAttribute('aria-pressed', String(state[key] === k));
+      b.onclick = () => { state[key] = k; save(); render(); };
+      set.appendChild(b);
+    }
+  }
+
+  function render() {
+    chips('shapeSet', SHAPES, 'shape');
+    chips('colourSet', COLOURS, 'colour');
+
+    document.getElementById('grid').innerHTML = DESIGNS.map(d => `
+      <div class="card${d.current ? ' current' : ''}${state.picked === d.id ? ' picked' : ''}" data-id="${d.id}" tabindex="0" role="button">
+        <div class="row">${icon(d, 132)}${icon(d, 56)}${icon(d, 36)}</div>
+        <div class="letter" style="margin-top:12px">${d.letter}</div>
+        <h3>${d.name}</h3>
+        <p>${d.idea}</p>
+      </div>`).join('');
+    document.querySelectorAll('.card').forEach(el => {
+      el.onclick = () => { state.picked = el.dataset.id; save(); render(); };
+      el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } };
+    });
+
+    const picked = DESIGNS.find(d => d.id === state.picked) || DESIGNS[0];
+    const blanks = ['#e9edf2', '#4f8a6b', '#e07a5f', '#3d405b', '#f2cc8f', '#81b29a', '#5e6ad2', '#d8d8d8', '#c06c84', '#355c7d', '#f8b195'];
+    const blankShape = SHAPES[state.shape].d;
+    const blank = colour => {
+      const id = 'b' + (uid++);
+      return `<svg class="icon dummy" viewBox="18 18 72 72"><defs><clipPath id="${id}"><path d="${blankShape}"/></clipPath></defs>
+        <rect width="108" height="108" fill="${colour}" clip-path="url(#${id})"/></svg>`;
+    };
+    let apps = '';
+    for (let i = 0; i < 12; i++) {
+      apps += i === 5
+        ? `<div class="app">${icon(picked, 52)}<span>Twangle</span></div>`
+        : `<div class="app">${blank(blanks[i % blanks.length])}<span>&nbsp;</span></div>`;
+    }
+    document.getElementById('apps').innerHTML = apps;
+
+    // Opening screen: today's rule (gold screen in light mode, dark brown in dark mode), the icon on a round tile.
+    const night = state.colour === 'night';
+    const splash = document.getElementById('splash');
+    splash.style.background = night ? '#1C1510' : COLOURS[state.colour].bg;
+    splash.innerHTML = icon(picked, 150, { shape: 'circle', colour: state.colour === 'themed' ? 'gold' : state.colour });
+    if (state.colour === 'themed') splash.style.background = COLOURS.gold.bg;
+
+    document.getElementById('sizes').innerHTML = [128, 72, 48, 32, 24]
+      .map(s => `<div>${icon(picked, s)}<br>${s} px</div>`).join('');
+  }
+
+  render();
+})();
+</script>

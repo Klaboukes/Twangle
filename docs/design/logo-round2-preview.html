@@ -1,0 +1,190 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Logo Colours</title>
+<!--
+TWANGLE LOGO, ROUND 2 (2026-10-15). Round 1 (logo-preview.html): the owner picked C, "Twang to tune" (a wobbly
+line that settles into a straight one with a dot), and asked for colour variations.
+FINAL (owner, 2026-10-15): 9, Mustard, "but black dot, squircle": the dot in the line's near-black #24260F, so
+the whole mark is one colour. The outline (squircle on the Xiaomi) is the launcher's choice for an adaptive icon.
+Built in app/ and wear/ res/drawable/ic_launcher_foreground.xml, background #E3B23C.
+Same drawing in every card; only the colours change. Several palettes come from the app's six styles
+(StylePalettes.kt), so the icon can feel like the app.
+Two-colour marks (a different dot, a colour-shifting line) are fine for the normal icon: the themed-icon
+(monochrome) layer would be its own one-colour drawable, shown last.
+-->
+<style>
+  :root { --bg: #f6f1e8; --card: #fffaf2; --ink: #2a1d0e; --muted: #7a6a55; --line: #e6dccb; --accent: #b0731a; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #17120d; --card: #221a12; --ink: #f2e6d3; --muted: #b3a38c; --line: #3a2e21; --accent: #f0b85a; }
+  }
+  :root[data-theme="dark"] { --bg: #17120d; --card: #221a12; --ink: #f2e6d3; --muted: #b3a38c; --line: #3a2e21; --accent: #f0b85a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 32px 0 12px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; max-width: 700px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 20px; }
+  .controls span { color: var(--muted); font-size: 14px; margin-right: 8px; }
+  .chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px;
+          padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; min-width: 92px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 2px solid transparent; border-radius: 20px; padding: 16px;
+          cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: border-color .15s; }
+  .card:hover { border-color: var(--line); }
+  .card.picked { border-color: var(--accent); }
+  .card .row { display: flex; align-items: flex-end; gap: 12px; }
+  .card .num { font-weight: 700; color: var(--accent); font-size: 13px; margin-top: 10px; }
+  .card h3 { margin: 0 0 2px; font-size: 16px; }
+  .card p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  svg.icon { display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
+  .home-wrap { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .phone { width: 300px; border-radius: 34px; padding: 22px 18px 30px; overflow: hidden; }
+  .phone.wall1 { background: linear-gradient(160deg, #3d5a73 0%, #6b7f8e 45%, #c9a27a 100%); }
+  .phone.wall2 { background: linear-gradient(160deg, #f4efe6 0%, #e3e8ee 100%); }
+  .phone.wall2 .app { color: #222; text-shadow: none; }
+  .phone.splash { display: flex; align-items: center; justify-content: center; height: 420px; padding: 0; }
+  .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 6px; }
+  .app { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font-size: 12px;
+         text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  .caption { color: var(--muted); font-size: 14px; margin-top: 8px; text-align: center; }
+</style>
+
+<main>
+  <h1>Twang to tune, in colour</h1>
+  <p class="lead">Your pick, C, in thirteen colour schemes. Some come from the app's own styles. Tap a card to
+    see it on a dark and a light home screen and on the opening screen.</p>
+
+  <div class="controls" id="shapes"><span>Shape</span></div>
+
+  <div class="grid" id="grid"></div>
+
+  <h2>On the home screen and the opening screen</h2>
+  <div class="home-wrap">
+    <div><div class="phone wall1"><div class="apps" id="apps1"></div></div><div class="caption">Dark wallpaper</div></div>
+    <div><div class="phone wall2"><div class="apps" id="apps2"></div></div><div class="caption">Light wallpaper</div></div>
+    <div><div class="phone splash" id="splash"></div><div class="caption">Opening screen</div></div>
+  </div>
+
+  <h2>Themed icons (Android 13+)</h2>
+  <p class="lead" style="margin-bottom:12px">With "Themed icons" turned on, the phone ignores the icon's own
+    colours and paints the line in its wallpaper colours. It looks like this whatever you pick above.</p>
+  <div class="row" id="themed" style="display:flex;gap:14px"></div>
+</main>
+
+<script>
+(() => {
+  let uid = 0;
+
+  function squirclePath() {
+    const r = 36, c = 54, pts = [];
+    for (let i = 0; i < 96; i++) {
+      const t = (i / 96) * 2 * Math.PI, cs = Math.cos(t), sn = Math.sin(t);
+      pts.push((c + r * Math.sign(cs) * Math.sqrt(Math.abs(cs))).toFixed(2) + ',' +
+               (c + r * Math.sign(sn) * Math.sqrt(Math.abs(sn))).toFixed(2));
+    }
+    return 'M' + pts.join(' L') + ' Z';
+  }
+  const SHAPES = {
+    circle:   { label: 'Circle',         d: 'M18,54 a36,36 0 1,0 72,0 a36,36 0 1,0 -72,0 Z' },
+    squircle: { label: 'Squircle',       d: squirclePath() },
+    rounded:  { label: 'Rounded square', d: 'M34,18 H74 Q90,18 90,34 V74 Q90,90 74,90 H34 Q18,90 18,74 V34 Q18,18 34,18 Z' },
+  };
+
+  let WAVE = 'M24,54';
+  for (let x = 24.5; x <= 82; x += 0.5) {
+    const t = x - 24;
+    WAVE += ' L' + x.toFixed(1) + ',' + (54 - 17 * Math.exp(-0.075 * t) * Math.sin((2 * Math.PI * t) / 13)).toFixed(2);
+  }
+
+  // bg: a colour or [top-left, bottom-right]; line: a colour or [start, middle, end] along the line; dot: a colour.
+  const SCHEMES = [
+    { name: 'Gold (today)',       note: 'Today\'s colours: dark brown on gold.', bg: '#FAC775', line: '#412402', dot: '#412402' },
+    { name: 'Gold, green dot',    note: 'The dot in the tuner\'s in-tune green.', bg: '#FAC775', line: '#412402', dot: '#2F6A2A' },
+    { name: 'Night gold',         note: 'Gold on dark brown, like the dark opening screen.', bg: '#1C1510', line: '#FAC775', dot: '#FAC775' },
+    { name: 'Night, green dot',   note: 'Gold line, in-tune green dot.', bg: '#1C1510', line: '#FAC775', dot: '#6DD58C' },
+    { name: 'Out to in',          note: 'The line turns from out-of-tune orange to in-tune green as it settles.', bg: '#1C1510', line: ['#F0957A', '#FAC775', '#6DD58C'], dot: '#6DD58C' },
+    { name: 'Sunset',             note: 'Gold fading into orange, dark-brown line.', bg: ['#FBD48A', '#E8783A'], line: '#3A1A06', dot: '#3A1A06' },
+    { name: 'Terracotta',         note: 'From the Ancient style: terracotta and cream.', bg: '#A8431F', line: '#FFF4EE', dot: '#FFF4EE' },
+    { name: 'Burgundy and gold',  note: 'From the Classic style: a concert hall.', bg: '#7A1F45', line: '#E2C27A', dot: '#E2C27A' },
+    { name: 'Mustard',            note: 'From the Retro style: mustard, avocado line, orange dot.', bg: '#E3B23C', line: '#24260F', dot: '#C8561A' },
+    { name: 'Indigo',             note: 'From the Contemporary style: calm and clean.', bg: '#3A4FD6', line: '#FFFFFF', dot: '#6DD58C' },
+    { name: 'Neon',               note: 'From the Futuristic style: cyan line, magenta dot.', bg: '#03070A', line: '#22E5FF', dot: '#FF4FD0' },
+    { name: 'Violet night',       note: 'From the Space Age style: violet sky, silver line, rocket-orange dot.', bg: ['#2A1A55', '#120C26'], line: '#F1EDFA', dot: '#FF8A4C' },
+    { name: 'Cream',              note: 'Light and quiet: near-black line, terracotta dot.', bg: '#F7F2E8', line: '#1C1518', dot: '#A8431F' },
+  ];
+
+  let state = { shape: 'squircle', picked: 0 };
+  try { Object.assign(state, JSON.parse(localStorage.getItem('twangle-logo-2') || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem('twangle-logo-2', JSON.stringify(state)); } catch (e) {} };
+
+  function icon(s, size, shapeKey) {
+    const shape = SHAPES[shapeKey || state.shape];
+    const n = uid++;
+    let defs = `<clipPath id="c${n}"><path d="${shape.d}"/></clipPath>`;
+    let bg = s.bg, line = s.line;
+    if (Array.isArray(s.bg)) {
+      defs += `<linearGradient id="g${n}" x1="18" y1="18" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${s.bg[0]}"/><stop offset="1" stop-color="${s.bg[1]}"/></linearGradient>`;
+      bg = `url(#g${n})`;
+    }
+    if (Array.isArray(s.line)) {
+      defs += `<linearGradient id="l${n}" x1="24" y1="0" x2="82" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="${s.line[0]}"/><stop offset=".45" stop-color="${s.line[1]}"/><stop offset="1" stop-color="${s.line[2]}"/></linearGradient>`;
+      line = `url(#l${n})`;
+    }
+    return `<svg class="icon" width="${size}" height="${size}" viewBox="18 18 72 72" role="img" aria-label="${s.name}">
+      <defs>${defs}</defs>
+      <g clip-path="url(#c${n})"><rect width="108" height="108" fill="${bg}"/>
+        <path d="${WAVE}" fill="none" stroke="${line}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="82" cy="54" r="5" fill="${s.dot}"/></g></svg>`;
+  }
+
+  function render() {
+    const shapes = document.getElementById('shapes');
+    shapes.querySelectorAll('button').forEach(b => b.remove());
+    for (const [k, v] of Object.entries(SHAPES)) {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = v.label;
+      b.setAttribute('aria-pressed', String(state.shape === k));
+      b.onclick = () => { state.shape = k; save(); render(); };
+      shapes.appendChild(b);
+    }
+
+    document.getElementById('grid').innerHTML = SCHEMES.map((s, i) => `
+      <div class="card${state.picked === i ? ' picked' : ''}" data-i="${i}" tabindex="0" role="button">
+        <div class="row">${icon(s, 110)}${icon(s, 48)}${icon(s, 30)}</div>
+        <div class="num">${i + 1}</div>
+        <h3>${s.name}</h3>
+        <p>${s.note}</p>
+      </div>`).join('');
+    document.querySelectorAll('.card').forEach(el => {
+      el.onclick = () => { state.picked = +el.dataset.i; save(); render(); };
+      el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); } };
+    });
+
+    const s = SCHEMES[state.picked] || SCHEMES[0];
+    const blanks = ['#e9edf2', '#4f8a6b', '#e07a5f', '#3d405b', '#f2cc8f', '#81b29a', '#5e6ad2', '#d8d8d8', '#c06c84', '#355c7d', '#f8b195'];
+    const blank = c => { const n = uid++; return `<svg class="icon" width="52" height="52" viewBox="18 18 72 72"><defs><clipPath id="b${n}"><path d="${SHAPES[state.shape].d}"/></clipPath></defs><rect width="108" height="108" fill="${c}" clip-path="url(#b${n})"/></svg>`; };
+    let apps = '';
+    for (let i = 0; i < 12; i++) {
+      apps += i === 5 ? `<div class="app">${icon(s, 52)}<span>Twangle</span></div>`
+                      : `<div class="app">${blank(blanks[i % blanks.length])}<span>&nbsp;</span></div>`;
+    }
+    document.getElementById('apps1').innerHTML = apps;
+    document.getElementById('apps2').innerHTML = apps.replace(/id="([cglb])(\d+)"/g, 'id="$1x$2"').replace(/url\(#([cglb])(\d+)\)/g, 'url(#$1x$2)');
+
+    const splash = document.getElementById('splash');
+    splash.style.background = Array.isArray(s.bg) ? `linear-gradient(160deg, ${s.bg[0]}, ${s.bg[1]})` : s.bg;
+    splash.innerHTML = icon(s, 150, 'circle');
+
+    const themed = [{ bg: '#DCE3F7', ink: '#27375F' }, { bg: '#2A2F3F', ink: '#C9D3F5' }, { bg: '#F3DCD3', ink: '#5A2E20' }];
+    document.getElementById('themed').innerHTML = themed.map(t =>
+      icon({ name: 'Themed', bg: t.bg, line: t.ink, dot: t.ink }, 72)).join('');
+  }
+
+  render();
+})();
+</script>
