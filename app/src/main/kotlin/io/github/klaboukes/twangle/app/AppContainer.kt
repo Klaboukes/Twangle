@@ -26,6 +26,15 @@ class AppContainer(private val appContext: Context) {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
 
+    /**
+     * The microphone for the metronome's Listen (Phase 27), open only while it listens. Its own
+     * recorder, so it never waits on the tuner's: that one keeps the microphone 5 s after the tuner
+     * leaves (for a turning phone), and one recorder reads on a single thread.
+     */
+    val listenRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
 

@@ -6,14 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -58,15 +59,27 @@ import kotlin.math.roundToInt
  * (to save it). For TalkBack it is one slider ("Tempo, drag to change", "96 beats per minute,
  * Andante") that steps one BPM at a time. [beatGlow] lights the soft glow behind the tempo on each
  * beat, read in the draw phase only. [size] is the dial's width and height.
+ *
+ * − and + ([onStep]) stand in the dial's bottom corners (Phase 27): their centres 8 units in from
+ * its sides and 26 units up from its bottom, so they reach up to 18 dp outside it (the caller leaves
+ * that room); slower on the left, faster on the right in every language; never part of its ring.
+ * [shown] is the tempo the arc, needle and figures show (gliding to a used tempo), [ringBpm] and
+ * [ringAlpha] the listening ring, [foundGlow] the glow when a found tempo is used.
  */
 @Composable
 fun TempoDial(
     bpm: Int,
     onBpmChange: (Int) -> Unit,
     onBpmChangeFinished: () -> Unit,
+    onStep: (Int) -> Unit,
     beatGlow: () -> Float,
     size: Dp,
     modifier: Modifier = Modifier,
+    shown: () -> Float = { bpm.toFloat() },
+    shownBpm: Int = bpm,
+    ringBpm: () -> Float = { 0f },
+    ringAlpha: () -> Float = { 0f },
+    foundGlow: () -> Float = { 0f },
 ) {
     val currentBpm by rememberUpdatedState(bpm)
     val currentOnChange by rememberUpdatedState(onBpmChange)
@@ -74,58 +87,80 @@ fun TempoDial(
     val marking = markingName(TempoMarking.of(bpm))
     val description = stringResource(R.string.metronome_tempo)
     val value = pluralStringResource(R.plurals.metronome_tempo_value, bpm, bpm, marking)
-    val bpmOf = remember { { currentBpm } }
-    Box(
-        modifier = modifier
-            .size(size)
-            .testTag(MetronomeTestTags.DIAL)
-            .semantics {
-                contentDescription = description
-                stateDescription = value
-                progressBarRangeInfo = ProgressBarRangeInfo(
-                    bpm.toFloat(),
-                    ClickTrack.MIN_BPM.toFloat()..ClickTrack.MAX_BPM.toFloat(),
-                    steps = ClickTrack.MAX_BPM - ClickTrack.MIN_BPM - 1,
-                )
-                setProgress { target ->
-                    currentOnChange(target.roundToInt())
-                    currentOnFinished()
-                    true
-                }
-            }
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    val down = awaitFirstDown()
-                    val width = this.size.width.toFloat()
-                    val centre = androidx.compose.ui.geometry.Offset(width / 2f, this.size.height / 2f)
-                    // A touch on the tempo in the middle does nothing: only the ring turns the dial.
-                    if (!isOnDialRing(down.position.x - centre.x, down.position.y - centre.y, width)) return@awaitEachGesture
-                    fun follow(at: androidx.compose.ui.geometry.Offset) {
-                        val dx = at.x - centre.x
-                        val dy = at.y - centre.y
-                        if (!isClearOfDialMiddle(dx, dy, width)) return
-                        val to = bpmAtTouch(dx, dy, currentBpm)
-                        if (to != currentBpm) currentOnChange(to)
+    Box(modifier.size(size)) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .testTag(MetronomeTestTags.DIAL)
+                .semantics {
+                    contentDescription = description
+                    stateDescription = value
+                    progressBarRangeInfo = ProgressBarRangeInfo(
+                        bpm.toFloat(),
+                        ClickTrack.MIN_BPM.toFloat()..ClickTrack.MAX_BPM.toFloat(),
+                        steps = ClickTrack.MAX_BPM - ClickTrack.MIN_BPM - 1,
+                    )
+                    setProgress { target ->
+                        currentOnChange(target.roundToInt())
+                        currentOnFinished()
+                        true
                     }
-                    follow(down.position)
-                    down.consume()
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                        if (!change.pressed) {
-                            change.consume()
-                            break
+                }
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        val width = this.size.width.toFloat()
+                        val centre = androidx.compose.ui.geometry.Offset(width / 2f, this.size.height / 2f)
+                        // A touch on the tempo in the middle does nothing: only the ring turns the dial.
+                        if (!isOnDialRing(down.position.x - centre.x, down.position.y - centre.y, width)) return@awaitEachGesture
+                        fun follow(at: androidx.compose.ui.geometry.Offset) {
+                            val dx = at.x - centre.x
+                            val dy = at.y - centre.y
+                            if (!isClearOfDialMiddle(dx, dy, width)) return
+                            val to = bpmAtTouch(dx, dy, currentBpm)
+                            if (to != currentBpm) currentOnChange(to)
                         }
-                        follow(change.position)
-                        change.consume()
+                        follow(down.position)
+                        down.consume()
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) {
+                                change.consume()
+                                break
+                            }
+                            follow(change.position)
+                            change.consume()
+                        }
+                        currentOnFinished()
                     }
-                    currentOnFinished()
-                }
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        TempoDialArt(bpm = bpmOf, beatGlow = beatGlow, modifier = Modifier.size(size))
-        TempoReadout(bpm, marking, size)
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            TempoDialArt(
+                bpm = shown,
+                beatGlow = beatGlow,
+                ringBpm = ringBpm,
+                ringAlpha = ringAlpha,
+                foundGlow = foundGlow,
+                modifier = Modifier.size(size),
+            )
+            TempoReadout(shownBpm, markingName(TempoMarking.of(shownBpm)), size)
+        }
+        // After the dial, so TalkBack hears "Slower", "Faster" after it; placed by absolute left and right.
+        val u = size.value / DIAL_UNITS
+        val half = STEP_BUTTON_SIZE.value / 2f
+        val top = (size.value - STEP_UP_UNITS * u - half).dp
+        StepButton(
+            faster = false,
+            onClick = { onStep(-1) },
+            modifier = Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset(x = (STEP_INSET_UNITS * u - half).dp, y = top),
+        )
+        StepButton(
+            faster = true,
+            onClick = { onStep(+1) },
+            modifier = Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset(x = (size.value - STEP_INSET_UNITS * u - half).dp, y = top),
+        )
     }
 }
 
@@ -197,7 +232,7 @@ internal fun markingName(marking: TempoMarking): String = stringResource(
 )
 
 /** The dial's design size: its units are dp at this size. */
-private const val DIAL_DP = 288f
+private const val DIAL_DP = DIAL_UNITS
 
 /** The tempo's figures are this many units high (times the number face's scale). */
 private const val BPM_UNITS = 58f

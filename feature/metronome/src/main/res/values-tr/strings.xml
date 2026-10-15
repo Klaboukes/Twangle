@@ -18,4 +18,20 @@
     <string name="metronome_meter_5_4_spoken">Beş dörtlük ölçü</string>
     <string name="metronome_meter_6_8_spoken">Altı sekizlik ölçü</string>
     <string name="metronome_meter_7_8_spoken">Yedi sekizlik ölçü</string>
+
+    <string name="metronome_listen">Dinle</string>
+    <string name="metronome_listen_stop">Durdur</string>
+    <string name="metronome_listen_stop_spoken">Dinlemeyi durdur</string>
+    <string name="metronome_listening">Dinleniyor…</string>
+    <string name="metronome_heard">Duyulan</string>
+    <string name="metronome_use">Kullan</string>
+    <string name="metronome_not_now">Şimdi değil</string>
+    <string name="metronome_listen_speed">Hız</string>
+    <string name="metronome_pick_half">Yarım</string>
+    <string name="metronome_pick_as_heard">Duyulduğu gibi</string>
+    <string name="metronome_pick_double">İki kat</string>
+    <string name="metronome_no_beat">Belirgin bir ritim duyulmadı</string>
+    <string name="metronome_try_again">Tekrar dene</string>
+    <string name="metronome_mic_off">Mikrofon kapalı</string>
+    <string name="metronome_open_settings">Ayarları aç</string>
 </resources>

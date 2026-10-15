@@ -20,4 +20,20 @@
     <string name="metronome_meter_5_4_spoken">Metrum pięć czwartych</string>
     <string name="metronome_meter_6_8_spoken">Metrum sześć ósmych</string>
     <string name="metronome_meter_7_8_spoken">Metrum siedem ósmych</string>
+
+    <string name="metronome_listen">Słuchaj</string>
+    <string name="metronome_listen_stop">Stop</string>
+    <string name="metronome_listen_stop_spoken">Przestań słuchać</string>
+    <string name="metronome_listening">Słucham…</string>
+    <string name="metronome_heard">Usłyszane</string>
+    <string name="metronome_use">Użyj</string>
+    <string name="metronome_not_now">Nie teraz</string>
+    <string name="metronome_listen_speed">Prędkość</string>
+    <string name="metronome_pick_half">Połowa</string>
+    <string name="metronome_pick_as_heard">Jak usłyszane</string>
+    <string name="metronome_pick_double">Podwójnie</string>
+    <string name="metronome_no_beat">Brak wyraźnego rytmu</string>
+    <string name="metronome_try_again">Spróbuj ponownie</string>
+    <string name="metronome_mic_off">Mikrofon wyłączony</string>
+    <string name="metronome_open_settings">Otwórz ustawienia</string>
 </resources>

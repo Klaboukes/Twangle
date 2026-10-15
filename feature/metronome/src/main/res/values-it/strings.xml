@@ -19,4 +19,20 @@
     <string name="metronome_meter_5_4_spoken">Tempo in cinque quarti</string>
     <string name="metronome_meter_6_8_spoken">Tempo in sei ottavi</string>
     <string name="metronome_meter_7_8_spoken">Tempo in sette ottavi</string>
+
+    <string name="metronome_listen">Ascolta</string>
+    <string name="metronome_listen_stop">Ferma</string>
+    <string name="metronome_listen_stop_spoken">Smetti di ascoltare</string>
+    <string name="metronome_listening">In ascolto…</string>
+    <string name="metronome_heard">Sentito</string>
+    <string name="metronome_use">Usa</string>
+    <string name="metronome_not_now">Non ora</string>
+    <string name="metronome_listen_speed">Velocità</string>
+    <string name="metronome_pick_half">Metà</string>
+    <string name="metronome_pick_as_heard">Come sentito</string>
+    <string name="metronome_pick_double">Doppio</string>
+    <string name="metronome_no_beat">Nessun ritmo chiaro</string>
+    <string name="metronome_try_again">Riprova</string>
+    <string name="metronome_mic_off">Microfono disattivato</string>
+    <string name="metronome_open_settings">Apri impostazioni</string>
 </resources>

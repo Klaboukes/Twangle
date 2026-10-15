@@ -19,4 +19,20 @@
     <string name="metronome_meter_5_4_spoken">Mesure à cinq-quatre</string>
     <string name="metronome_meter_6_8_spoken">Mesure à six-huit</string>
     <string name="metronome_meter_7_8_spoken">Mesure à sept-huit</string>
+
+    <string name="metronome_listen">Écouter</string>
+    <string name="metronome_listen_stop">Arrêter</string>
+    <string name="metronome_listen_stop_spoken">Arrêter l\'écoute</string>
+    <string name="metronome_listening">Écoute…</string>
+    <string name="metronome_heard">Entendu</string>
+    <string name="metronome_use">Utiliser</string>
+    <string name="metronome_not_now">Plus tard</string>
+    <string name="metronome_listen_speed">Vitesse</string>
+    <string name="metronome_pick_half">Moitié</string>
+    <string name="metronome_pick_as_heard">Tel quel</string>
+    <string name="metronome_pick_double">Double</string>
+    <string name="metronome_no_beat">Aucun rythme clair</string>
+    <string name="metronome_try_again">Réessayer</string>
+    <string name="metronome_mic_off">Micro désactivé</string>
+    <string name="metronome_open_settings">Ouvrir les paramètres</string>
 </resources>

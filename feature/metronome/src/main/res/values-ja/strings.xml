@@ -17,4 +17,20 @@
     <string name="metronome_meter_5_4_spoken">4分の5拍子</string>
     <string name="metronome_meter_6_8_spoken">8分の6拍子</string>
     <string name="metronome_meter_7_8_spoken">8分の7拍子</string>
+
+    <string name="metronome_listen">聞き取る</string>
+    <string name="metronome_listen_stop">ストップ</string>
+    <string name="metronome_listen_stop_spoken">聞き取りを停止</string>
+    <string name="metronome_listening">聞き取り中…</string>
+    <string name="metronome_heard">聞き取った速さ</string>
+    <string name="metronome_use">使う</string>
+    <string name="metronome_not_now">今はしない</string>
+    <string name="metronome_listen_speed">速さ</string>
+    <string name="metronome_pick_half">半分</string>
+    <string name="metronome_pick_as_heard">そのまま</string>
+    <string name="metronome_pick_double">倍</string>
+    <string name="metronome_no_beat">はっきりした拍が聞こえません</string>
+    <string name="metronome_try_again">もう一度</string>
+    <string name="metronome_mic_off">マイクがオフです</string>
+    <string name="metronome_open_settings">設定を開く</string>
 </resources>

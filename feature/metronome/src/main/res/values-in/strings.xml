@@ -17,4 +17,20 @@
     <string name="metronome_meter_5_4_spoken">Birama lima per empat</string>
     <string name="metronome_meter_6_8_spoken">Birama enam per delapan</string>
     <string name="metronome_meter_7_8_spoken">Birama tujuh per delapan</string>
+
+    <string name="metronome_listen">Dengarkan</string>
+    <string name="metronome_listen_stop">Berhenti</string>
+    <string name="metronome_listen_stop_spoken">Berhenti mendengarkan</string>
+    <string name="metronome_listening">Mendengarkan…</string>
+    <string name="metronome_heard">Terdengar</string>
+    <string name="metronome_use">Gunakan</string>
+    <string name="metronome_not_now">Nanti saja</string>
+    <string name="metronome_listen_speed">Kecepatan</string>
+    <string name="metronome_pick_half">Setengah</string>
+    <string name="metronome_pick_as_heard">Seperti terdengar</string>
+    <string name="metronome_pick_double">Dua kali</string>
+    <string name="metronome_no_beat">Tak ada ketukan yang jelas</string>
+    <string name="metronome_try_again">Coba lagi</string>
+    <string name="metronome_mic_off">Mikrofon mati</string>
+    <string name="metronome_open_settings">Buka setelan</string>
 </resources>

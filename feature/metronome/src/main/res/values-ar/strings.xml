@@ -23,4 +23,20 @@
     <string name="metronome_meter_5_4_spoken">ميزان خمسة على أربعة</string>
     <string name="metronome_meter_6_8_spoken">ميزان ستة على ثمانية</string>
     <string name="metronome_meter_7_8_spoken">ميزان سبعة على ثمانية</string>
+
+    <string name="metronome_listen">استمع</string>
+    <string name="metronome_listen_stop">أوقف</string>
+    <string name="metronome_listen_stop_spoken">أوقف الاستماع</string>
+    <string name="metronome_listening">يستمع…</string>
+    <string name="metronome_heard">ما سُمع</string>
+    <string name="metronome_use">استخدم</string>
+    <string name="metronome_not_now">ليس الآن</string>
+    <string name="metronome_listen_speed">السرعة</string>
+    <string name="metronome_pick_half">النصف</string>
+    <string name="metronome_pick_as_heard">كما سُمع</string>
+    <string name="metronome_pick_double">الضعف</string>
+    <string name="metronome_no_beat">لم يُسمع إيقاع ثابت</string>
+    <string name="metronome_try_again">أعد المحاولة</string>
+    <string name="metronome_mic_off">الميكروفون متوقف</string>
+    <string name="metronome_open_settings">افتح الإعدادات</string>
 </resources>

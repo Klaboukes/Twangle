@@ -1,9 +1,11 @@
 package io.github.klaboukes.twangle.feature.metronome
 
+import android.Manifest
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
@@ -13,10 +15,13 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,6 +33,10 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
+import androidx.test.rule.GrantPermissionRule
+import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -62,7 +71,11 @@ class MetronomeScreenTest {
 
     private val player = FakeMetronomePlayer()
     private val settings = FakeSettingsRepository()
+    private val recorder = FakeAudioRecorder.silence()
     private val shown = mutableStateOf(true)
+
+    @get:Rule
+    val microphone: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
     private fun show(locale: String? = null, fontScale: Float = 1f, size: DpSize = PHONE) {
         compose.setContent {
@@ -71,7 +84,7 @@ class MetronomeScreenTest {
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     if (shown.value) {
-                        MetronomeScreen(player, settings, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
+                        MetronomeScreen(player, settings, recorder, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
                     }
                 }
             }
@@ -218,7 +231,7 @@ class MetronomeScreenTest {
     @Test
     fun dutchAtTwiceTheTextSizeOnItsSideIsWhollyShown() {
         show(locale = "nl", fontScale = 2f, size = PHONE_LANDSCAPE)
-        for (text in listOf("Tempo tikken", "Start", "Trillen op de tel")) {
+        for (text in listOf("Tempo tikken", "Luisteren", "Start", "Trillen op de tel")) {
             assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), text)
         }
         compose.onNodeWithContentDescription("Langzamer").assertExists()
@@ -227,8 +240,147 @@ class MetronomeScreenTest {
         dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 slagen per minuut, Andante"))
     }
 
+    @Test
+    fun theStepButtonsSitInTheDialsCornersAndNeverTurnIt() {
+        show()
+        val dialBounds = dial.getBoundsInRoot()
+        val slower = compose.onNodeWithTag(MetronomeTestTags.SLOWER)
+        val faster = compose.onNodeWithTag(MetronomeTestTags.FASTER)
+        assertTrue("slower at the dial's bottom left", slower.getBoundsInRoot().let { it.right < dialBounds.left + dialBounds.width / 3 && it.bottom > dialBounds.bottom - 60.dp })
+        assertTrue("faster at the dial's bottom right", faster.getBoundsInRoot().let { it.left > dialBounds.right - dialBounds.width / 3 && it.bottom > dialBounds.bottom - 60.dp })
+        slower.performClick()
+        slower.performClick()
+        faster.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("95"))
+        assertEquals(95, settings.current.metronomeBpm)
+    }
+
+    @Test
+    fun listenHoldsTheMicrophoneOnlyWhileListeningAndRestsStartStop() {
+        show()
+        start.performClick()
+        compose.waitForIdle()
+        val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN)
+        listen.assertContentDescriptionEquals("Listen").assertHasClickAction()
+        assertFalse(recorder.isRecording.value)
+
+        listen.performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        listen.assertContentDescriptionEquals("Stop listening")
+        assertFalse("the clicks pause while listening", player.isPlaying.value)
+        start.assertIsNotEnabled()
+        compose.onNodeWithTag(MetronomeTestTags.LINE).assert(hasText("Listening…", substring = true))
+
+        listen.performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
+        listen.assertContentDescriptionEquals("Listen")
+        start.assertIsEnabled()
+        assertTrue("the clicks come back", player.isPlaying.value)
+    }
+
+    @Test
+    fun anotherControlEndsListening() {
+        show()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        compose.onNodeWithTag(MetronomeTestTags.FASTER).performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("97"))
+        assertFalse("it was stopped, so it stays stopped", player.isPlaying.value)
+    }
+
+    @Test
+    fun leavingTheScreenWhileListeningReleasesTheMicrophone() {
+        show()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        shown.value = false
+        compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
+    }
+
+    @Test
+    fun theSuggestionChangesNothingUntilUse() {
+        val listen = mutableStateOf(ListenUi(ListenPhase.FOUND, wasPlaying = false, found = 84, half = 42, double = 168))
+        var used: TempoPick? = null
+        var notNow = 0
+        compose.setContent {
+            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE)) {
+                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                    MetronomeContent(
+                        bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,
+                        onBpmChange = {}, onBpmChangeFinished = {}, onStep = {}, onTap = {}, onMeterChange = {},
+                        onToggle = {}, onVibrateChange = {},
+                        listen = listen.value,
+                        onUse = { pick, _ -> used = pick },
+                        onNotNow = { notNow++ },
+                    )
+                }
+            }
+        }
+        compose.onNodeWithTag(MetronomeTestTags.BALLOON).assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Heard"))
+        compose.onNodeWithTag(MetronomeTestTags.BALLOON_BPM).assert(hasText("84", substring = true)).assert(hasText("Andante", substring = true))
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("96"))
+        val asHeard = compose.onNodeWithTag(MetronomeTestTags.pick(TempoPick.AS_HEARD))
+        asHeard.assertContentDescriptionEquals("As heard").assertIsSelected()
+        compose.onNodeWithContentDescription("Speed").assertExists()
+        compose.onNodeWithTag(MetronomeTestTags.pick(TempoPick.HALF)).assertContentDescriptionEquals("Half")
+        val double = compose.onNodeWithTag(MetronomeTestTags.pick(TempoPick.DOUBLE))
+        double.assertContentDescriptionEquals("Double").performClick()
+        compose.waitForIdle()
+        double.assertIsSelected()
+        compose.onNodeWithTag(MetronomeTestTags.BALLOON_BPM).assert(hasText("168", substring = true)).assert(hasText("Presto", substring = true))
+        compose.onNodeWithTag(MetronomeTestTags.NOT_NOW).assert(hasText("Not now")).performClick()
+        assertEquals(1, notNow)
+        compose.onNodeWithTag(MetronomeTestTags.USE).assert(hasText("Use")).performClick()
+        assertEquals(TempoPick.DOUBLE, used)
+
+        // Only the choices within 30-250 BPM.
+        listen.value = ListenUi(ListenPhase.FOUND, found = 160, half = 80, double = 0)
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.pick(TempoPick.DOUBLE)).assertDoesNotExist()
+        listen.value = ListenUi()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertDoesNotExist()
+    }
+
+    @Test
+    fun theStatusLineSaysWhatListenHeard() {
+        val listen = mutableStateOf(ListenUi(ListenPhase.LISTENING, startedAtNanos = 1L))
+        var again = 0
+        compose.setContent {
+            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE)) {
+                TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
+                    MetronomeContent(
+                        bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,
+                        onBpmChange = {}, onBpmChangeFinished = {}, onStep = {}, onTap = {}, onMeterChange = {},
+                        onToggle = {}, onVibrateChange = {},
+                        listen = listen.value,
+                        onTryAgain = { again++ },
+                    )
+                }
+            }
+        }
+        val line = compose.onNodeWithTag(MetronomeTestTags.LINE)
+        line.assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+        line.assert(hasText("Listening…"))
+        listen.value = listen.value.copy(estimate = 96)
+        compose.waitForIdle()
+        line.assert(hasText("Listening… 96 BPM"))
+        listen.value = ListenUi(ListenPhase.NO_BEAT)
+        compose.waitForIdle()
+        line.assert(hasText("No steady beat heard", substring = true))
+        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assert(hasText("Try again")).performClick()
+        assertEquals(1, again)
+        listen.value = ListenUi(ListenPhase.MIC_OFF_SETTINGS)
+        compose.waitForIdle()
+        line.assert(hasText("Microphone is off", substring = true))
+        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assert(hasText("Open settings"))
+    }
+
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 15L
+        const val TIMEOUT_MILLIS = 3_000L
         val PHONE = DpSize(393.dp, 793.dp)
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
     }

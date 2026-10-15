@@ -230,9 +230,11 @@ class MainActivity : AppCompatActivity() {
                                     MetronomeScreen(
                                         player = container.metronomePlayer,
                                         settingsRepository = container.settingsRepository,
+                                        recorder = container.listenRecorder,
                                         savedBpm = settings.metronomeBpm,
                                         savedMeter = settings.metronomeMeter,
                                         savedVibrate = settings.metronomeVibrate,
+                                        savedMicRefused = settings.micRefused,
                                     )
                                 }
                                 Screen.SETTINGS -> SettingsScreen(

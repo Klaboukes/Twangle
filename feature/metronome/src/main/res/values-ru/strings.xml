@@ -20,4 +20,20 @@
     <string name="metronome_meter_5_4_spoken">Размер пять четвертей</string>
     <string name="metronome_meter_6_8_spoken">Размер шесть восьмых</string>
     <string name="metronome_meter_7_8_spoken">Размер семь восьмых</string>
+
+    <string name="metronome_listen">Слушать</string>
+    <string name="metronome_listen_stop">Стоп</string>
+    <string name="metronome_listen_stop_spoken">Перестать слушать</string>
+    <string name="metronome_listening">Слушаю…</string>
+    <string name="metronome_heard">Услышано</string>
+    <string name="metronome_use">Применить</string>
+    <string name="metronome_not_now">Не сейчас</string>
+    <string name="metronome_listen_speed">Скорость</string>
+    <string name="metronome_pick_half">Вдвое медленнее</string>
+    <string name="metronome_pick_as_heard">Как услышано</string>
+    <string name="metronome_pick_double">Вдвое быстрее</string>
+    <string name="metronome_no_beat">Чёткого ритма не слышно</string>
+    <string name="metronome_try_again">Ещё раз</string>
+    <string name="metronome_mic_off">Микрофон выключен</string>
+    <string name="metronome_open_settings">Открыть настройки</string>
 </resources>

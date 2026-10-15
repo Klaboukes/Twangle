@@ -19,4 +19,20 @@
     <string name="metronome_meter_5_4_spoken">Compás de cinco por cuatro</string>
     <string name="metronome_meter_6_8_spoken">Compás de seis por ocho</string>
     <string name="metronome_meter_7_8_spoken">Compás de siete por ocho</string>
+
+    <string name="metronome_listen">Escuchar</string>
+    <string name="metronome_listen_stop">Detener</string>
+    <string name="metronome_listen_stop_spoken">Dejar de escuchar</string>
+    <string name="metronome_listening">Escuchando…</string>
+    <string name="metronome_heard">Oído</string>
+    <string name="metronome_use">Usar</string>
+    <string name="metronome_not_now">Ahora no</string>
+    <string name="metronome_listen_speed">Velocidad</string>
+    <string name="metronome_pick_half">Mitad</string>
+    <string name="metronome_pick_as_heard">Tal cual</string>
+    <string name="metronome_pick_double">Doble</string>
+    <string name="metronome_no_beat">No se oye un ritmo claro</string>
+    <string name="metronome_try_again">Reintentar</string>
+    <string name="metronome_mic_off">Micrófono desactivado</string>
+    <string name="metronome_open_settings">Abrir ajustes</string>
 </resources>

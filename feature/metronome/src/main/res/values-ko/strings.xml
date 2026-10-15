@@ -17,4 +17,20 @@
     <string name="metronome_meter_5_4_spoken">4분의 5박자</string>
     <string name="metronome_meter_6_8_spoken">8분의 6박자</string>
     <string name="metronome_meter_7_8_spoken">8분의 7박자</string>
+
+    <string name="metronome_listen">듣기</string>
+    <string name="metronome_listen_stop">정지</string>
+    <string name="metronome_listen_stop_spoken">듣기 중지</string>
+    <string name="metronome_listening">듣는 중…</string>
+    <string name="metronome_heard">들은 템포</string>
+    <string name="metronome_use">사용</string>
+    <string name="metronome_not_now">나중에</string>
+    <string name="metronome_listen_speed">속도</string>
+    <string name="metronome_pick_half">절반</string>
+    <string name="metronome_pick_as_heard">들은 그대로</string>
+    <string name="metronome_pick_double">두 배</string>
+    <string name="metronome_no_beat">뚜렷한 박자가 없어요</string>
+    <string name="metronome_try_again">다시 시도</string>
+    <string name="metronome_mic_off">마이크가 꺼져 있어요</string>
+    <string name="metronome_open_settings">설정 열기</string>
 </resources>

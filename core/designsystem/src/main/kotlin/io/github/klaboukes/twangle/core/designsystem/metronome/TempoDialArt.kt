@@ -58,13 +58,24 @@ import kotlin.math.sin
  */
 
 /**
- * The tempo dial's art at [bpm], with the beat's glow behind its middle at [beatGlow] (0..1; the
- * caller eases it out after each beat). Both are read in the draw phase only, so a moving tempo or
- * glow redraws the dynamic layer without recomposing. Square; the field fades out at its edge. The
- * tempo's figures go over its middle (the caller's), and the dial says nothing to TalkBack itself.
+ * The tempo dial's art at [bpm] (a whole tempo, or one in between while it glides to a new one),
+ * with the beat's glow behind its middle at [beatGlow] (0..1; the caller eases it out after each
+ * beat). While Listen listens, [ringBpm] (0 for none) puts a small hollow ring on the arc at the
+ * tempo it is settling on, at [ringAlpha]; [foundGlow] (0..1) is the one soft glow behind the tempo
+ * when a found tempo is used (Phase 27, docs/design/metronome-listen-preview.html). All are read in
+ * the draw phase only, so a moving tempo or glow redraws the dynamic layer without recomposing.
+ * Square; the field fades out at its edge. The tempo's figures go over its middle (the caller's),
+ * and the dial says nothing to TalkBack itself.
  */
 @Composable
-fun TempoDialArt(bpm: () -> Int, beatGlow: () -> Float, modifier: Modifier = Modifier) {
+fun TempoDialArt(
+    bpm: () -> Float,
+    beatGlow: () -> Float,
+    modifier: Modifier = Modifier,
+    ringBpm: () -> Float = { 0f },
+    ringAlpha: () -> Float = { 0f },
+    foundGlow: () -> Float = { 0f },
+) {
     val roles = meterRoles()
     val measurer = rememberTextMeasurer()
     Box(modifier) {
@@ -88,6 +99,9 @@ fun TempoDialArt(bpm: () -> Int, beatGlow: () -> Float, modifier: Modifier = Mod
                 val dial = DialShape(size)
                 val glow = GlowArt(GLOW_UNITS * dial.u, roles.accent)
                 val glowPeak = if (roles.dark) GLOW_DARK_ALPHA else GLOW_LIGHT_ALPHA
+                val found = GlowArt(FOUND_GLOW_UNITS * dial.u, roles.accent)
+                val foundPeak = if (roles.dark) FOUND_GLOW_DARK_ALPHA else FOUND_GLOW_LIGHT_ALPHA
+                val ring = ListenRing(dial, roles)
                 val track = DialTrack(dial, roles)
                 val needle = NeedleArt(dial.cx, dial.cy - (dial.r - NEEDLE_IN_UNITS * dial.u), NEEDLE_UNITS * dial.u, dial.u, roles)
                 val needleColor = roles.marker(0f)
@@ -97,12 +111,15 @@ fun TempoDialArt(bpm: () -> Int, beatGlow: () -> Float, modifier: Modifier = Mod
                 val centre = Offset(dial.cx, dial.cy)
                 onDrawBehind {
                     glow.draw(this, dial.cx, dial.cy, beatGlow().coerceIn(0f, 1f) * glowPeak)
+                    found.draw(this, dial.cx, dial.cy, foundGlow().coerceIn(0f, 1f) * foundPeak)
                     val tempo = bpm()
                     track.drawLit(this, tempo)
                     val degrees = dialDegrees(tempo)
                     // The shadow always falls down and to the right, however the needle turns.
                     translate(shadowX, shadowY) { rotate(degrees, centre) { needle.drawShadow(this) } }
                     rotate(degrees, centre) { needle.draw(this, needleColor, tipColor) }
+                    val listening = ringBpm()
+                    if (listening > 0f) ring.draw(this, listening, ringAlpha().coerceIn(0f, 1f))
                 }
             },
         )
@@ -113,9 +130,12 @@ fun TempoDialArt(bpm: () -> Int, beatGlow: () -> Float, modifier: Modifier = Mod
  * Where [bpm] sits on the dial, in degrees clockwise from straight up: −150 at 30 BPM, +150 at 250.
  * Tempos outside 30–250 are kept at the ends.
  */
-fun dialDegrees(bpm: Int): Float {
-    val clamped = ClickTrack.clampBpm(bpm)
-    return -DIAL_HALF_SWEEP + (clamped - ClickTrack.MIN_BPM).toFloat() / BPM_SPAN * 2f * DIAL_HALF_SWEEP
+fun dialDegrees(bpm: Int): Float = dialDegrees(bpm.toFloat())
+
+/** [dialDegrees] for a tempo between whole ones (the dial gliding to a new tempo). */
+fun dialDegrees(bpm: Float): Float {
+    val clamped = bpm.coerceIn(ClickTrack.MIN_BPM.toFloat(), ClickTrack.MAX_BPM.toFloat())
+    return -DIAL_HALF_SWEEP + (clamped - ClickTrack.MIN_BPM) / BPM_SPAN * 2f * DIAL_HALF_SWEEP
 }
 
 /**
@@ -185,6 +205,17 @@ private const val GLOW_UNITS = 90f
 private const val GLOW_DARK_ALPHA = 0.30f
 private const val GLOW_LIGHT_ALPHA = 0.16f
 
+/** The found tempo's glow (Phase 27): a little wider than the beat's, and this opacity at its peak. */
+private const val FOUND_GLOW_UNITS = 100f
+private const val FOUND_GLOW_DARK_ALPHA = 0.32f
+private const val FOUND_GLOW_LIGHT_ALPHA = 0.18f
+
+/** The listening ring: 5.5 units across its line's middle, a 1.8 unit line in ink at 75 % over a 6 unit disc of the background. */
+private const val RING_UNITS = 5.5f
+private const val RING_LINE_UNITS = 1.8f
+private const val RING_DISC_UNITS = 6f
+private const val RING_INK = 0.75f
+
 /** A tick every 10 BPM; major ticks (and numbers) at 30 and every 50. */
 private const val TICK_STEP = 10
 private const val MAJOR_STEP = 50
@@ -205,6 +236,25 @@ internal class DialShape(size: Size) {
         out[3] = -cos(a)
         out[0] = cx + radius * out[2]
         out[1] = cy + radius * out[3]
+    }
+}
+
+/**
+ * While listening: a small hollow ring on the arc at the tempo the detector is settling on, quiet
+ * beside the needle, which keeps the current tempo until a found one is used. Allocates nothing to draw.
+ */
+private class ListenRing(private val dial: DialShape, roles: MeterRoles) {
+    private val at = FloatArray(4)
+    private val disc = roles.background
+    private val ink = roles.ink
+    private val line = Stroke(RING_LINE_UNITS * dial.u)
+
+    fun draw(scope: DrawScope, bpm: Float, alpha: Float) = with(scope) {
+        if (alpha <= 0f) return@with
+        dial.at(bpm.coerceIn(ClickTrack.MIN_BPM.toFloat(), ClickTrack.MAX_BPM.toFloat()), dial.r, at)
+        val centre = Offset(at[0], at[1])
+        drawCircle(disc, RING_DISC_UNITS * dial.u, centre, alpha = alpha)
+        drawCircle(ink, RING_UNITS * dial.u, centre, alpha = RING_INK * alpha, style = line)
     }
 }
 
@@ -259,8 +309,8 @@ private class DialTrack(private val dial: DialShape, roles: MeterRoles) {
         }
     }
 
-    fun drawLit(scope: DrawScope, bpm: Int) = with(scope) {
-        val clamped = ClickTrack.clampBpm(bpm)
+    fun drawLit(scope: DrawScope, bpm: Float) = with(scope) {
+        val clamped = bpm.coerceIn(ClickTrack.MIN_BPM.toFloat(), ClickTrack.MAX_BPM.toFloat())
         if (clamped <= ClickTrack.MIN_BPM) return@with
         val sweep = dialDegrees(clamped) + DIAL_HALF_SWEEP
         when (kind) {

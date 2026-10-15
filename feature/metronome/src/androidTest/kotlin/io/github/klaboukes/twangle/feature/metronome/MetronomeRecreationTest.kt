@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -28,7 +29,7 @@ class MetronomeRecreationTest {
         val player = FakeMetronomePlayer()
         compose.setContent {
             TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
-                MetronomeScreen(player, FakeSettingsRepository())
+                MetronomeScreen(player, FakeSettingsRepository(), FakeAudioRecorder.silence())
             }
         }
         compose.onNodeWithTag(MetronomeTestTags.START).performClick()

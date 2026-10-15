@@ -34,4 +34,31 @@
     <string name="metronome_marking_allegro" translatable="false">Allegro</string>
     <string name="metronome_marking_presto" translatable="false">Presto</string>
     <string name="metronome_marking_prestissimo" translatable="false">Prestissimo</string>
+
+    <!-- Listen (Phase 27): the button beside Tap tempo that listens to music nearby and suggests its tempo. Same fixed width as Tap tempo. -->
+    <string name="metronome_listen">Listen</string>
+    <!-- The Listen button's label while it listens (a tap stops listening). -->
+    <string name="metronome_listen_stop">Stop</string>
+    <!-- TalkBack's name for the Listen button while it listens. -->
+    <string name="metronome_listen_stop_spoken">Stop listening</string>
+    <!-- The status line while listening; the tempo it is settling on may follow ("Listening… 96 BPM"). -->
+    <string name="metronome_listening">Listening…</string>
+    <!-- The suggestion balloon's heading over the tempo heard; also its TalkBack title. -->
+    <string name="metronome_heard">Heard</string>
+    <!-- The balloon's button that sets the suggested tempo. -->
+    <string name="metronome_use">Use</string>
+    <!-- The balloon's button that closes it without changing anything. -->
+    <string name="metronome_not_now">Not now</string>
+    <!-- TalkBack's name for the balloon's ½× 1× 2× choice. -->
+    <string name="metronome_listen_speed">Speed</string>
+    <!-- TalkBack's names for ½×, 1× and 2× in the balloon. -->
+    <string name="metronome_pick_half">Half</string>
+    <string name="metronome_pick_as_heard">As heard</string>
+    <string name="metronome_pick_double">Double</string>
+    <!-- The status line when listening heard no steady beat; Try again follows it on the same line. -->
+    <string name="metronome_no_beat">No steady beat heard</string>
+    <string name="metronome_try_again">Try again</string>
+    <!-- The status line when the microphone was refused; Open settings may follow it on the same line. -->
+    <string name="metronome_mic_off">Microphone is off</string>
+    <string name="metronome_open_settings">Open settings</string>
 </resources>
