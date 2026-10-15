@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -28,6 +30,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,8 +65,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonGlow
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipShading
@@ -225,6 +231,8 @@ private fun StringChip(
     val neon = style == VisualStyle.FUTURISTIC
     val keyLabel = style == VisualStyle.CLASSIC && !small
     val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
+    // The press effect: the whole button sinks, and the light lies over its fill, under its name.
+    val press = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .then(
@@ -241,19 +249,28 @@ private fun StringChip(
             .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             // Outside the clip, so the rings reach past the button without taking room.
             .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
+            .pressSink(press)
             .clip(shape)
             .then(
                 when {
                     onClick == null -> Modifier
                     // A long-press gives Android's long-press haptic tick by itself.
                     onLongClick != null -> Modifier.combinedClickable(
+                        interactionSource = press,
+                        indication = null,
                         onClickLabel = clickLabel,
                         role = Role.Button,
                         onLongClickLabel = longClickLabel,
                         onLongClick = onLongClick,
-                        onClick = onClick,
+                        onClick = {
+                            press.pressFlash()
+                            onClick()
+                        },
                     )
-                    else -> Modifier.clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
+                    else -> Modifier.clickable(press, indication = null, onClickLabel = clickLabel, role = Role.Button) {
+                        press.pressFlash()
+                        onClick()
+                    }
                 },
             )
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
@@ -272,6 +289,7 @@ private fun StringChip(
                 },
                 shape,
             )
+            .indication(press, PressIndication(shape, face = true))
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
                 selected = highlighted

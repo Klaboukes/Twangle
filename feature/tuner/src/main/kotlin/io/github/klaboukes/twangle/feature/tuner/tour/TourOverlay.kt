@@ -24,11 +24,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -89,6 +87,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.NavMark
+import io.github.klaboukes.twangle.core.designsystem.PressTone
+import io.github.klaboukes.twangle.core.designsystem.TwangleButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -486,17 +487,19 @@ private fun TourBalloon(
             // The last step has nothing left to skip: Done alone ends it.
             skip = if (last) null else {
                 {
-                    TextButton(
+                    TwangleTextButton(
                         onClick = onSkip,
                         shape = tourButtonShape(style),
                         colors = ButtonDefaults.textButtonColors(contentColor = onFill),
                         contentPadding = PaddingValues(horizontal = SKIP_SHIFT, vertical = 6.dp),
+                        // On the accent-filled balloon: the on-accent colour lights it.
+                        tone = PressTone.IN_ACCENT,
                         modifier = Modifier.testTag(TourTestTags.SKIP),
                     ) { Text(stringResource(R.string.tour_skip), style = buttonText(body)) }
                 }
             },
             next = {
-                Button(
+                TwangleButton(
                     onClick = onNext,
                     shape = tourButtonShape(style),
                     colors = if (neon) {
@@ -506,6 +509,8 @@ private fun TourBalloon(
                     },
                     border = if (neon) BorderStroke(1.5.dp, onFill) else null,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    // Filled with the on-accent colour, the accent lights it (Futuristic's faint fill: as Skip).
+                    tone = if (neon) PressTone.IN_ACCENT else PressTone.IN_ACCENT_FILLED,
                     modifier = Modifier.testTag(TourTestTags.NEXT),
                 ) {
                     Text(stringResource(if (last) R.string.tour_done else R.string.tour_next), style = buttonText(body))

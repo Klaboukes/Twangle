@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.stringChipShading
 import io.github.klaboukes.twangle.core.designsystem.stringChipShape
@@ -306,15 +310,21 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
         neon -> scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA)
         else -> scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
     }
+    // The press effect: the chip sinks, and the light lies over its fill, under its name.
+    val press = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .heightIn(min = CHIP_HEIGHT)
+            .pressSink(press)
             .clip(shape)
             .background(fill, shape)
             .then(if (style == VisualStyle.RETRO) Modifier.stringChipShading(style, shape, scheme.onSurface) else Modifier)
             .border(if (selected) PICKED_BORDER else BORDER, outline, shape)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, face = true), role = Role.RadioButton) {
+                press.pressFlash()
+                onClick()
+            }
             .padding(horizontal = CHIP_PADDING),
         contentAlignment = Alignment.Center,
     ) {

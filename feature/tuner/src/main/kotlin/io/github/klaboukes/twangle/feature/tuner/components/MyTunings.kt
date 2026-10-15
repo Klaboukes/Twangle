@@ -6,12 +6,9 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +26,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.CustomTuning
@@ -111,7 +111,7 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
     var open by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
     Box {
-        IconButton(onClick = { open = true }, modifier = Modifier.testTag(TunerTestTags.customTuningMenu(tuning.id))) {
+        TwangleIconButton(onClick = { open = true }, modifier = Modifier.testTag(TunerTestTags.customTuningMenu(tuning.id))) {
             Icon(
                 painterResource(R.drawable.ic_more_vert),
                 contentDescription = stringResource(R.string.tuner_tuning_options, tuning.name),
@@ -120,7 +120,7 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             if (onEdit != null) {
-                DropdownMenuItem(
+                TwangleMenuItem(
                     text = { Text(stringResource(R.string.tuner_edit_tuning)) },
                     onClick = {
                         open = false
@@ -129,7 +129,7 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
                 )
             }
             if (onDelete != null) {
-                DropdownMenuItem(
+                TwangleMenuItem(
                     text = { Text(stringResource(R.string.tuner_delete_tuning)) },
                     onClick = {
                         open = false
@@ -155,10 +155,10 @@ private fun DeleteTuningDialog(name: String, onConfirm: () -> Unit, onDismiss: (
         },
         text = { Text(stringResource(R.string.tuner_delete_tuning_text, name)) },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.tuner_delete_tuning_cancel)) }
+            TwangleTextButton(onClick = onDismiss) { Text(stringResource(R.string.tuner_delete_tuning_cancel)) }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TwangleTextButton(onClick = onConfirm) {
                 Text(stringResource(R.string.tuner_delete_tuning), color = MaterialTheme.colorScheme.error)
             }
         },

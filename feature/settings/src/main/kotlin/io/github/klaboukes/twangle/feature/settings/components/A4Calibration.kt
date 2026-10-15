@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +29,8 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.feature.settings.R
@@ -76,7 +76,7 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
         // keyboard: a pitch scale is not mirrored in right-to-left languages.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) }, enabled = shown > MIN_HZ) {
+                TwangleIconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) }, enabled = shown > MIN_HZ) {
                     Icon(painterResource(R.drawable.ic_remove), contentDescription = stringResource(R.string.settings_a4_lower))
                 }
                 Slider(
@@ -96,12 +96,12 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
                             stateDescription = a4Value
                         },
                 )
-                IconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
+                TwangleIconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
                     Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.settings_a4_raise))
                 }
             }
         }
-        TextButton(
+        TwangleTextButton(
             onClick = { onA4Change(NoteMapper.DEFAULT_A4_HZ) },
             enabled = shown != NoteMapper.DEFAULT_A4_HZ,
             modifier = Modifier.align(Alignment.End),

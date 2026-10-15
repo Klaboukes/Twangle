@@ -77,9 +77,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
@@ -453,6 +456,8 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
         tooltip = { PlainTooltip(Modifier.testTag(TunerTestTags.STRUM_TOOLTIP)) { Text(label) } },
         state = rememberTooltipState(),
     ) {
+        // The press effect: the button sinks, and the light lies over its fill, under its icon.
+        val press = remember { MutableInteractionSource() }
         Box(
             modifier
                 .minimumInteractiveComponentSize()
@@ -460,10 +465,14 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
                 .size(TOGGLE_SIZE)
                 // The tour lights up the outline, not the touch target round it.
                 .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
+                .pressSink(press)
                 .clip(shape)
                 .background(fill, shape)
                 .border(if (checked) 2.dp else 1.dp, outline, shape)
-                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+                .toggleable(value = checked, interactionSource = press, indication = PressIndication(shape, face = true), role = Role.Switch) {
+                    press.pressFlash()
+                    onCheckedChange(it)
+                }
                 .semantics { contentDescription = label },
             contentAlignment = Alignment.Center,
         ) {

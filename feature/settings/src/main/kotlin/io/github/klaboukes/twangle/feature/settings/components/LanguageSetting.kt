@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +40,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
 
 /**
@@ -83,7 +83,7 @@ fun LanguageSetting(
         AlertDialog(
             onDismissRequest = { open = false },
             confirmButton = {
-                TextButton(onClick = { open = false }) { Text(stringResource(R.string.settings_language_cancel)) }
+                TwangleTextButton(onClick = { open = false }) { Text(stringResource(R.string.settings_language_cancel)) }
             },
             title = { Text(stringResource(R.string.settings_language_title)) },
             text = {

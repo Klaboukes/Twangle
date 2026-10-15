@@ -19,14 +19,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -66,6 +63,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.designsystem.TwangleFilledTonalIconButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -199,12 +199,12 @@ internal fun TuningEditor(
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 navigationIcon = {
-                    IconButton(onClick = onClose, modifier = Modifier.testTag(TuningEditorTestTags.CLOSE)) {
+                    TwangleIconButton(onClick = onClose, modifier = Modifier.testTag(TuningEditorTestTags.CLOSE)) {
                         Icon(painterResource(R.drawable.ic_close), contentDescription = stringResource(R.string.tuning_editor_close))
                     }
                 },
                 actions = {
-                    TextButton(onClick = onSave, modifier = Modifier.testTag(TuningEditorTestTags.SAVE)) {
+                    TwangleTextButton(onClick = onSave, modifier = Modifier.testTag(TuningEditorTestTags.SAVE)) {
                         Text(stringResource(R.string.tuning_editor_save))
                     }
                 },
@@ -277,12 +277,12 @@ private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Uni
             Text(stringResource(R.string.tuning_editor_discard_title), style = title.copy(fontSize = title.fontSize * DIALOG_TITLE_SCALE))
         },
         dismissButton = {
-            TextButton(onClick = onKeepEditing, modifier = Modifier.testTag(TuningEditorTestTags.KEEP_EDITING)) {
+            TwangleTextButton(onClick = onKeepEditing, modifier = Modifier.testTag(TuningEditorTestTags.KEEP_EDITING)) {
                 Text(stringResource(R.string.tuning_editor_keep_editing))
             }
         },
         confirmButton = {
-            TextButton(onClick = onDiscard, modifier = Modifier.testTag(TuningEditorTestTags.DISCARD)) {
+            TwangleTextButton(onClick = onDiscard, modifier = Modifier.testTag(TuningEditorTestTags.DISCARD)) {
                 Text(stringResource(R.string.tuning_editor_discard), color = MaterialTheme.colorScheme.error)
             }
         },
@@ -391,7 +391,7 @@ private fun StringStepper(
 /** A − or + button in the style's button shape, turned off at the end of the range. */
 @Composable
 private fun StepButton(icon: Int, label: String, enabled: Boolean, onClick: () -> Unit) {
-    FilledTonalIconButton(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small) {
+    TwangleFilledTonalIconButton(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small) {
         Icon(painterResource(icon), contentDescription = label)
     }
 }

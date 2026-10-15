@@ -5,10 +5,12 @@ import android.os.Build
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -82,7 +84,8 @@ fun colorSchemeFor(context: Context, style: VisualStyle, dark: Boolean, dynamicC
  * The app's theme: the colours, lettering and shapes of [style] in light or [darkTheme]. With
  * [dynamicColor] (Android 12+) the contemporary style takes its colours from the wallpaper; the
  * other styles keep their own. A change of style or brightness fades the colours over
- * [COLOR_FADE_MS] rather than jumping.
+ * [COLOR_FADE_MS] rather than jumping. A press lights a button up in the style's own way
+ * ([PressIndication], [pressFeedback]) instead of Material's ripple.
  */
 @Composable
 fun TwangleTheme(
@@ -107,8 +110,17 @@ fun TwangleTheme(
             colorScheme = colorScheme,
             typography = remember(style) { typographyFor(style) },
             shapes = shapesFor(style),
-            content = content,
-        )
+        ) {
+            // Twangle's press effect in place of Material's ripple everywhere (Phase 27): plain
+            // clickables and rows take the press light from LocalIndication; Material's own
+            // components draw no ripple and get the light through the Twangle buttons
+            // (TwangleTextButton, TwangleButton ...), which add it themselves.
+            CompositionLocalProvider(
+                LocalIndication provides PressIndication.Row,
+                LocalRippleConfiguration provides null,
+                content = content,
+            )
+        }
     }
 }
 

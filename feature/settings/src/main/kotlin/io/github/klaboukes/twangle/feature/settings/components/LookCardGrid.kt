@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.settings.components
 
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -30,6 +31,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 
 /**
@@ -114,16 +118,24 @@ private fun LookCard(
     preview: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.medium
+    // The press effect, as the metronome's meter cards: the card sinks and lights up, the light over
+    // its preview (which fills most of it).
+    val press = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
             .heightIn(min = 48.dp)
-            .clip(MaterialTheme.shapes.medium)
+            .pressSink(press)
+            .clip(shape)
             .border(
                 width = if (selected) 2.dp else 1.dp,
                 color = if (selected) colors.primary else colors.outlineVariant,
-                shape = MaterialTheme.shapes.medium,
+                shape = shape,
             )
-            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
+            .selectable(selected = selected, interactionSource = press, indication = PressIndication(shape, face = true, above = true), role = Role.RadioButton) {
+                press.pressFlash()
+                onClick()
+            }
             .padding(horizontal = 6.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),

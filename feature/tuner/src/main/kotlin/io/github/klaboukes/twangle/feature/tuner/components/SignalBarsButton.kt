@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +36,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.SignalBars
 import io.github.klaboukes.twangle.feature.tuner.SignalFigures
@@ -65,6 +69,7 @@ fun SignalBarsButton(
     val shown by remember { derivedStateOf { counter.update(currentReception()) to counter.hasNote } }
     val (bars, hasNote) = shown
     var open by remember { mutableStateOf(false) }
+    val press = remember { MutableInteractionSource() }
     val description = if (hasNote || bars > 0) {
         stringResource(R.string.tuner_signal_bars, bars, SignalBars.MAX_BARS)
     } else {
@@ -94,7 +99,11 @@ fun SignalBarsButton(
             Modifier
                 .touchArea(MIN_TOUCH)
                 .testTag(TunerTestTags.SIGNAL_BARS)
-                .clickable(onClickLabel = showFigures, role = Role.Button) { open = true }
+                // Lit round the bars like an icon button.
+                .clickable(press, PressIndication(CircleShape, face = true), onClickLabel = showFigures, role = Role.Button) {
+                    press.pressFlash()
+                    open = true
+                }
                 .semantics { contentDescription = description },
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {

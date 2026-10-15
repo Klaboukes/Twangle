@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.designsystem
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.asAndroidPath
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.currentValueOf
@@ -88,6 +91,9 @@ enum class PressTone {
  * - **Remove animations** (Android's setting): no sink and no fade; lit while held, at least 100 ms
  *   (crisp: the 70 ms flash, cut off).
  *
+ * - **[above]:** the light over the content instead of under it, for a Material button that draws its
+ *   own filled face as content (Next, Allow microphone); the light's colour never hides its text.
+ *
  * TalkBack's double tap sends no touch: call [MutableInteractionSource.pressFlash] from the button's
  * click so it flashes too (a click that follows a touch is ignored, so a touch never flashes twice).
  */
@@ -101,7 +107,47 @@ fun Modifier.pressFeedback(
     lightShape: Shape? = null,
     lightInset: Dp = 0.dp,
     sink: Float = Float.NaN,
-): Modifier = this then PressFeedbackElement(interactionSource, shape, fill, outline, tone, crisp, lightShape, lightInset, sink)
+    above: Boolean = false,
+): Modifier = this then PressFeedbackElement(interactionSource, shape, fill, outline, tone, crisp, lightShape, lightInset, sink, above)
+
+/**
+ * Only [pressFeedback]'s sink: everything drawn after this sinks while [interactionSource] is pressed.
+ * For a face that draws its own fill and outline after this and takes the light from a
+ * [PressIndication] on its `clickable` (the string buttons, the instrument chips, the look cards).
+ */
+fun Modifier.pressSink(interactionSource: InteractionSource, sink: Float = Float.NaN): Modifier =
+    this then PressFeedbackElement(interactionSource, RectangleShape, sink = sink, light = false)
+
+/**
+ * [pressFeedback]'s light as an [androidx.compose.foundation.Indication], for a `clickable`,
+ * `selectable` or `toggleable`: lit on touch-down, held while pressed, faded over 280 ms, in the
+ * style's own finish, inside [shape] (inset [lightInset] from the top and bottom), with no sink (add
+ * [pressSink] before the face for that). The light lies over what was drawn before the clickable (a
+ * fill, a border) and under what comes after (the text), or over everything with [above].
+ *
+ * - **[face]** true: a button's face, as [pressFeedback] (Futuristic lights its outline and glows round
+ *   it). False, the default: a row, a list or menu item, a navigation item; only the tint, so a long
+ *   row never gets a neon frame or a glow over its neighbours.
+ *
+ * [TwangleTheme] gives every `clickable` without an indication of its own [PressIndication.Row] and
+ * turns Material's ripple off.
+ */
+data class PressIndication(
+    val shape: Shape = RectangleShape,
+    val tone: PressTone = PressTone.PLAIN,
+    val face: Boolean = false,
+    val above: Boolean = false,
+    val lightInset: Dp = 0.dp,
+) : IndicationNodeFactory {
+    override fun create(interactionSource: InteractionSource): DelegatableNode = PressFeedbackNode(
+        PressFeedbackElement(interactionSource, shape, tone = tone, lightInset = lightInset, sink = 0f, above = above, face = face),
+    )
+
+    companion object {
+        /** The theme's light for rows and list items: the whole bounds (clipped by the row's own clip), tint only. */
+        val Row = PressIndication()
+    }
+}
 
 /**
  * A click that came without a touch (TalkBack's double tap): [pressFeedback] flashes as for a quick
@@ -152,20 +198,25 @@ private const val FLASH_AFTER_TOUCH_NANOS = 1_000 * MILLI
 private data class PressFeedbackElement(
     val source: InteractionSource,
     val shape: Shape,
-    val fill: Color,
-    val outline: BorderStroke?,
-    val tone: PressTone,
-    val crisp: Boolean,
-    val lightShape: Shape?,
-    val lightInset: Dp,
-    val sink: Float,
+    val fill: Color = Color.Transparent,
+    val outline: BorderStroke? = null,
+    val tone: PressTone = PressTone.PLAIN,
+    val crisp: Boolean = false,
+    val lightShape: Shape? = null,
+    val lightInset: Dp = 0.dp,
+    val sink: Float = Float.NaN,
+    val above: Boolean = false,
+    /** A button's face: Futuristic's lit outline and glow (see [PressIndication.face]). */
+    val face: Boolean = true,
+    /** False: only the sink ([pressSink]). */
+    val light: Boolean = true,
 ) : ModifierNodeElement<PressFeedbackNode>() {
     override fun create() = PressFeedbackNode(this)
 
     override fun update(node: PressFeedbackNode) = node.update(this)
 
     override fun InspectorInfo.inspectableProperties() {
-        name = "pressFeedback"
+        name = if (light) "pressFeedback" else "pressSink"
         properties["crisp"] = crisp
         properties["tone"] = tone
     }
@@ -290,16 +341,21 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
         val l = level.floatValue
         val sinkAmount = if (spec.sink.isNaN()) sinkFor(style) else spec.sink
         val s = 1f - sinkAmount * sunk.floatValue
+        if (!spec.light) {
+            if (s == 1f) drawContent() else scale(s) { this@draw.drawContent() }
+            return
+        }
         makePaths()
         scale(s) {
             val neon = style == VisualStyle.FUTURISTIC
-            if (l > 0f && neon && (spec.tone == PressTone.PLAIN || spec.tone == PressTone.ACCENT_FILL)) {
+            if (l > 0f && neon && spec.face && (spec.tone == PressTone.PLAIN || spec.tone == PressTone.ACCENT_FILL)) {
                 drawNeonGlow(tokens.scheme.primary, l)
             }
             if (spec.fill.alpha > 0f) drawPath(shapePath, spec.fill)
             spec.outline?.let { drawPath(outlinePath, it.brush, style = Stroke(it.width.toPx())) }
+            if (spec.above) this@draw.drawContent()
             if (l > 0f) clipPath(lightPath) { drawLight(tokens, l) }
-            this@draw.drawContent()
+            if (!spec.above) this@draw.drawContent()
         }
     }
 
@@ -379,10 +435,10 @@ private class PressFeedbackNode(private var spec: PressFeedbackElement) :
         }
     }
 
-    /** Futuristic: the accent at 14 % inside and the outline lit to the full accent (a 1 dp inner line). */
+    /** Futuristic: the accent at 14 % inside and, on a button's face, the outline lit to the full accent (a 1 dp inner line). */
     private fun DrawScope.drawNeonLight(accent: Color, l: Float) {
         drawRect(accent, alpha = NEON_TINT * l)
-        drawPath(lightPath, accent, alpha = l, style = Stroke(2f * 1.dp.toPx()))
+        if (spec.face) drawPath(lightPath, accent, alpha = l, style = Stroke(2f * 1.dp.toPx()))
     }
 
     /** Futuristic: a glow round the button, the accent at up to 70 % × level, 8 dp blur (Android 9+ draws it in hardware). */

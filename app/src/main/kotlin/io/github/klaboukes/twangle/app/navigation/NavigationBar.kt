@@ -37,7 +37,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -65,6 +64,7 @@ import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
@@ -274,7 +274,7 @@ private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> 
                 onClick = { if (!selected) onClick() },
                 role = Role.Tab,
                 interactionSource = null,
-                indication = ripple(bounded = false, radius = RIPPLE_RADIUS),
+                indication = PressIndication(MaterialTheme.shapes.medium),
             ),
     )
 }
@@ -297,7 +297,7 @@ private fun TuningItem(onClick: () -> Unit, current: String?, modifier: Modifier
             .tourTarget(TourPart.PICKER)
             .clickable(
                 interactionSource = null,
-                indication = ripple(bounded = false, radius = RIPPLE_RADIUS),
+                indication = PressIndication(MaterialTheme.shapes.medium),
                 onClickLabel = clickLabel,
                 role = Role.Button,
                 onClick = onClick,
@@ -389,6 +389,5 @@ private val ICON_LABEL_GAP = 2.dp
 private val LABEL_MARK_GAP = 3.dp
 private val ITEM_SIDE_PADDING = 4.dp
 private val MIN_TOUCH = 48.dp
-private val RIPPLE_RADIUS = 32.dp
 private const val MAX_LABEL_FONT_SCALE = 1.3f
 private val MIN_LABEL_SIZE = 8.sp

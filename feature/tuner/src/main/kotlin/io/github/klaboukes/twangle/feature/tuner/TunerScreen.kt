@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -25,7 +26,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -76,7 +76,11 @@ import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
@@ -1122,11 +1126,19 @@ private fun GuitarControls(
         if (names != null) {
             val spoken = names.labelFor(tuning, spoken = true)
             val clickLabel = stringResource(R.string.tuner_change_instrument_or_tuning)
+            // Pressed, the name sinks and lights up; a quiet label, so only the tint, never
+            // Futuristic's neon frame tight round its text.
+            val press = remember { MutableInteractionSource() }
+            val nameShape = MaterialTheme.shapes.small
             Box(
                 Modifier
                     .heightIn(min = LABEL_MIN_HEIGHT)
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = names.onClick)
+                    .pressSink(press)
+                    .clip(nameShape)
+                    .clickable(press, PressIndication(nameShape), onClickLabel = clickLabel, role = Role.Button) {
+                        press.pressFlash()
+                        names.onClick()
+                    }
                     .testTag(TunerTestTags.TUNING_NAME)
                     .clearAndSetSemantics {
                         contentDescription = spoken
@@ -1306,7 +1318,7 @@ private fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
     )
-    Button(onClick = onRetry) { Text(stringResource(R.string.error_retry)) }
+    TwangleButton(onClick = onRetry) { Text(stringResource(R.string.error_retry)) }
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)

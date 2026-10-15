@@ -1,7 +1,11 @@
 package io.github.klaboukes.twangle.core.designsystem
 
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 /** The press effect's timing (docs/design/metronome-listen-preview.html, "Press" and "Tap tempo's press"). */
@@ -56,5 +60,31 @@ class PressFeedbackTest {
         assertEquals(0.02f, sinkFor(VisualStyle.ANCIENT), 0f)
         assertEquals(0.02f, sinkFor(VisualStyle.RETRO), 0f)
         assertEquals(0.015f, sinkFor(VisualStyle.CLASSIC), 0f)
+    }
+
+    @Test
+    fun `a small button's touch area is 48 dp each way round it, a big one's its own size`() {
+        // Material's IconButton: 40 dp in 48; a TextButton 40 dp tall and wider than 48.
+        assertEquals(48 to 48, touchAreaSize(40, 40, min = 48))
+        assertEquals(120 to 48, touchAreaSize(120, 40, min = 48))
+        // At 2x text a button is taller than 48 dp: nothing added.
+        assertEquals(120 to 64, touchAreaSize(120, 64, min = 48))
+        // Touch areas turned off (a test, or a screen that sets its own).
+        assertEquals(40 to 40, touchAreaSize(40, 40, min = 0))
+    }
+
+    @Test
+    fun `equal press lights are one light, so Compose keeps its node, and a row's is calm`() {
+        assertEquals(PressIndication(), PressIndication.Row)
+        assertEquals(PressIndication(CircleShape, face = true), PressIndication(CircleShape, face = true))
+        assertNotEquals(PressIndication(CircleShape, face = true), PressIndication(CircleShape))
+        assertNotEquals(PressIndication(above = true), PressIndication.Row)
+        // A row lights up flat: no neon frame, no glow, under its text, across its whole bounds.
+        with(PressIndication.Row) {
+            assertFalse(face)
+            assertFalse(above)
+            assertEquals(RectangleShape, shape)
+            assertEquals(PressTone.PLAIN, tone)
+        }
     }
 }
