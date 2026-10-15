@@ -34,8 +34,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -51,6 +53,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.constrainHeight
@@ -65,8 +68,8 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.R
-import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
+import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
 import io.github.klaboukes.twangle.feature.tuner.SteadyHint
 import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -273,6 +276,8 @@ fun NoteDisplay(
             }
             val tipInPill = tipText != null && (readout == null || pictured)
             val pillLine = rememberLineHeight(pillStyle)
+            // As wide as the widest cents text, so the pill keeps its size while the cents change.
+            val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
             Text(
                 text = when {
                     // The hint can name a note: "Play the C♯ string".
@@ -292,6 +297,7 @@ fun NoteDisplay(
                 autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
                 modifier = Modifier
                     .weight(1f, fill = false)
+                    .widthIn(min = centsWidth)
                     .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
                     .hiddenFromTalkBack(),
             )
@@ -360,6 +366,36 @@ private fun rememberLineHeight(style: TextStyle): Int {
     val merged = LocalTextStyle.current.merge(style)
     return remember(measurer, merged) { measurer.measure(" ", merged, maxLines = 1).size.height }
 }
+
+/**
+ * The width of the widest cents text ([centsText]) from 0 to 99 cents, flat or sharp, in [style] and
+ * the current language. The pill takes this width while it shows cents: sized to each reading, it
+ * grew and shrank with every change ("9 cents flat", "12 cents sharp"), which looked like flicker.
+ * Measured once per language, style and font size; a reading of 100 cents or more may widen it.
+ */
+@Composable
+private fun rememberCentsTextWidth(style: TextStyle): Dp {
+    val measurer = rememberTextMeasurer(cacheSize = 1)
+    val merged = LocalTextStyle.current.merge(style)
+    val resources = LocalResources.current
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+    return remember(measurer, merged, resources, configuration, density) {
+        fun width(text: String) = measurer.measure(text, merged, maxLines = 1).size.width
+        var widest = width(resources.getString(R.string.tuner_cents_zero))
+        for (amount in 1..MAX_STEADY_CENTS) {
+            widest = maxOf(
+                widest,
+                width(resources.getQuantityString(R.plurals.tuner_cents_flat, amount, amount)),
+                width(resources.getQuantityString(R.plurals.tuner_cents_sharp, amount, amount)),
+            )
+        }
+        with(density) { widest.toDp() }
+    }
+}
+
+/** Cents up to this keep the pill at one width; more (a string far off) may widen it. */
+private const val MAX_STEADY_CENTS = 99
 
 /**
  * Keeps a text exactly [height] px tall (the line it replaces, from [rememberLineHeight]), with the
