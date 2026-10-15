@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Background Tones</title>
+<!--
+TWANGLE BACKGROUND TONES, ROUND 1: is light mode too white and dark mode too black?
+Now      The palettes in StylePalettes.kt. Lightness (CIELAB L*, 0 black .. 100 white) of background / panels:
+         light 91-97 / 95-100 (Contemporary's panels pure white), dark 2-8 / 5-13 (Futuristic nearly black).
+Softer   Background lightness set per mode (light 91.5, dark 11; Futuristic dark 3 lower for its neon),
+         panels 4 (light) or 5 (dark) above it. Each style keeps its own hue; its tint is raised 25 % and never
+         less than 5 (light) or 7 (dark), so no style turns plain grey. Panels carry 80 % of the tint.
+Text     Ink, muted, accent and inTune keep 4.5:1 on the background, the panels and the panel tint; if one falls
+         short it is nudged darker (light) or lighter (dark) until it passes, and the page lists it.
+Art      The style backgrounds are the approved ones from theme-styles-preview.html, drawn on these colours.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    --page: #55565b; --ink: #f4f4f6; --muted: #d2d3d8; --line: rgba(255,255,255,.18); --chip: rgba(255,255,255,.10);
+    --accent: #ffd27a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 Roboto, system-ui, sans-serif; }
+  header, .controls, main { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 28px; }
+  h1 { font-weight: 500; font-size: 26px; margin: 0 0 6px; }
+  header p { margin: 0 0 4px; color: var(--muted); max-width: 820px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 32px; align-items: center; padding-top: 18px; padding-bottom: 18px;
+    position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--line); }
+  .slider { display: flex; align-items: center; gap: 10px; }
+  .slider label { min-width: 150px; }
+  .slider input { width: 200px; accent-color: var(--accent); }
+  .slider output { font-variant-numeric: tabular-nums; min-width: 9ch; color: var(--muted); }
+  button { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+  button:hover { background: rgba(255,255,255,.18); }
+  section.style { padding: 26px 0 8px; border-bottom: 1px solid var(--line); }
+  section.style h2 { font-weight: 500; font-size: 20px; margin: 0; }
+  section.style .tag { color: var(--muted); margin: 0 0 14px; }
+  .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  .pair { display: contents; }
+  figure { margin: 0; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; min-height: 2.6em; }
+  figcaption b { color: var(--ink); font-weight: 500; }
+  .phone { width: 100%; aspect-ratio: 393 / 873; border-radius: 22px; overflow: hidden; cursor: zoom-in;
+    box-shadow: 0 0 0 6px #1b1b1d, 0 10px 30px rgba(0,0,0,.35); background: #000; }
+  .phone canvas { width: 100%; height: 100%; display: block; }
+  .nudged { color: var(--accent); }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,22,.94); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; }
+  .overlay.open { display: flex; }
+  .overlay .phone { height: min(82vh, 860px); width: auto; cursor: pointer; }
+  .overlay .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .overlay .bar .which { min-width: 210px; text-align: center; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; }
+  .seg button[aria-pressed="true"] { background: rgba(255,255,255,.22); }
+  footer { max-width: 1180px; margin: 0 auto; padding: 22px 16px 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 760px) {
+    .row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .slider label { min-width: 0; }
+    .slider input { width: 140px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Background tones: now and softer</h1>
+  <p>Each style in light and dark mode, as it is now and with a softer background: light mode a little less white, dark mode a little less black. The colours of the text, the needle and the "in tune" green stay the same.</p>
+  <p>Tap a phone to see it big, then tap it (or press the space bar) to flip between <b>now</b> and <b>softer</b> in the same spot. That shows the difference best.</p>
+</header>
+<div class="controls">
+  <div class="slider"><label for="lightL">Light mode background</label><input id="lightL" type="range" min="86" max="97" step="0.5" value="91.5"><output id="lightOut"></output></div>
+  <div class="slider"><label for="darkL">Dark mode background</label><input id="darkL" type="range" min="3" max="18" step="0.5" value="11"><output id="darkOut"></output></div>
+  <button id="reset" type="button">Back to the suggestion</button>
+</div>
+<main id="styles"></main>
+<footer>
+  The sliders show how light the background is, from 0 (black) to 100 (white). Now: light mode sits at 91 to 97, dark mode at 2 to 8. Suggested: light 91.5, dark 11 (Futuristic 3 lower, to keep its neon look). A computer screen is not the phone's screen: the phone's dark mode looks darker still.
+</footer>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Big view">
+  <div class="phone" id="bigPhone"><canvas></canvas></div>
+  <div class="bar">
+    <button type="button" id="prev" aria-label="Previous">‹</button>
+    <span class="which" id="which"></span>
+    <button type="button" id="next" aria-label="Next">›</button>
+    <span class="seg"><button type="button" id="showNow" aria-pressed="false">Now</button><button type="button" id="showSoft" aria-pressed="true">Softer</button></span>
+    <button type="button" id="close">Close</button>
+  </div>
+</div>
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],
+"styles":{
+ "ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone","font":"Caesar Dressing","fb":"serif","w":400,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"motif":"ancient",
+  "shape":{"pill":18,"card":14,"strW":48,"strH":46,"strR":20},
+  "light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+  "dark":{"bg":"#1B1715","surface":"#25201D","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"}},
+ "classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"motif":"velvet",
+  "shape":{"pill":4,"card":4,"strW":44,"strH":58,"strR":5},
+  "light":{"bg":"#F7F2E8","surface":"#FCF9F2","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+  "dark":{"bg":"#170C11","surface":"#22131A","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"}},
+ "retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"motif":"seventies",
+  "shape":{"pill":22,"card":18,"strW":50,"strH":44,"strR":14},
+  "light":{"bg":"#F1EDD8","surface":"#F8F5E6","ink":"#24260F","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+  "dark":{"bg":"#15160B","surface":"#1F2113","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"}},
+ "contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"motif":"wash",
+  "shape":{"pill":18,"card":12,"strW":46,"strH":46,"strR":23},
+  "light":{"bg":"#F5F7FC","surface":"#FFFFFF","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#1B7A3E","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+  "dark":{"bg":"#0E1220","surface":"#151A2B","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"}},
+ "futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"motif":"hud",
+  "shape":{"pill":10,"card":8,"strW":50,"strH":40,"strR":10},
+  "light":{"bg":"#EDF3F6","surface":"#F8FCFE","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#007482","onAccent":"#FFFFFF","inTune":"#007A46","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+  "dark":{"bg":"#03070A","surface":"#08121A","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"}},
+ "spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver","font":"Michroma","fb":"sans-serif","w":400,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"motif":"space",
+  "shape":{"pill":999,"card":20,"strW":44,"strH":52,"strR":22},
+  "light":{"bg":"#F3F0F8","surface":"#FBF9FE","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+  "dark":{"bg":"#120C26","surface":"#1C1536","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"}}
+}}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  for (const id in STY) STY[id].id = id;
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+
+  // ---- Colour maths: sRGB <-> CIELAB (D65), WCAG contrast ------------------------------------------
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const toHex = (c) => '#' + c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+  const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const unlin = (v) => { v = Math.max(0, Math.min(1, v)); return 255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055); };
+  const WN = [0.95047, 1, 1.08883];
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const finv = (t) => (t * t * t > 0.008856 ? t * t * t : (t - 16 / 116) / 7.787);
+  function lab(h) {
+    const [r, g, b] = hex(h).map(lin);
+    const X = 0.4124 * r + 0.3576 * g + 0.1805 * b, Y = 0.2126 * r + 0.7152 * g + 0.0722 * b, Z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+    const fx = f(X / WN[0]), fy = f(Y / WN[1]), fz = f(Z / WN[2]);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+  function fromLab(L, a, b) {
+    const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+    const X = finv(fx) * WN[0], Y = finv(fy) * WN[1], Z = finv(fz) * WN[2];
+    return toHex([3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.2040 * Y + 1.0570 * Z].map(unlin));
+  }
+  const lum = (h) => { const [r, g, b] = hex(h).map(lin); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const contrast = (x, y) => { const a = lum(x), b = lum(y); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const overHex = (top, alpha, under) => { const t = hex(top), u = hex(under); return toHex(t.map((v, i) => v * alpha + u[i] * (1 - alpha))); };
+
+  // ---- The softer palette ---------------------------------------------------------------------------
+  const STEP = { light: 4, dark: 5 }, MIN_TINT = { light: 5, dark: 7 };
+  function softer(s, dark, target) {
+    const mode = dark ? 'dark' : 'light', p = { ...s[mode] }, nudged = [];
+    const bgL = target - (s.id === 'futuristic' && dark ? 3 : 0), surfL = bgL + STEP[mode];
+    const [, a0, b0] = lab(p.bg), hue = Math.atan2(b0, a0), tint = Math.max(Math.hypot(a0, b0) * 1.25, MIN_TINT[mode]);
+    const a = tint * Math.cos(hue), b = tint * Math.sin(hue);
+    p.bg = fromLab(bgL, a, b); p.surface = fromLab(surfL, a * 0.8, b * 0.8);
+    const tintHex = overHex(p.ink, 0.06, p.surface);
+    for (const k of ['ink', 'muted', 'accent', 'inTune']) {
+      const before = p[k]; let [L, ka, kb] = lab(p[k]);
+      for (let i = 0; i < 80 && Math.min(contrast(p[k], p.bg), contrast(p[k], p.surface), contrast(p[k], tintHex)) < 4.5; i++) {
+        L += dark ? 0.5 : -0.5; p[k] = fromLab(L, ka, kb);
+      }
+      if (p[k] !== before) nudged.push(k);
+    }
+    return { pal: p, nudged };
+  }
+  const NAMES = { ink: 'text', muted: 'grey text', accent: 'accent', inTune: '"in tune" green' };
+
+  // ---- Drawing helpers (from theme-styles-preview.html) --------------------------------------------
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0], TAU = Math.PI * 2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const stack = (fnt, fb) => `"${fnt}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function sparkle(ctx, x, y, r, col, u) { seg(ctx, x - r, y, x + r, y, col, 0.9 * u); seg(ctx, x, y - r, x, y + r, col, 0.9 * u); dot(ctx, x, y, 1.4 * u, col); }
+  function starburst(ctx, x, y, r, col, u) { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, l = i % 2 ? r * 0.55 : r; seg(ctx, x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, col, 1.4 * u); } dot(ctx, x, y, r * 0.16, col); }
+  function hand(ctx, cx, cy, size, deg, col) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(0, size * 0.25, size * 0.32, size * 0.31, 0, 0, TAU); ctx.fill();
+    const fw = size * 0.13;
+    [[-0.235, 0.40], [-0.08, 0.50], [0.075, 0.48], [0.225, 0.38]].forEach(([fx, fl]) => { ctx.beginPath(); rrAdd(ctx, fx * size - fw / 2, -fl * size, fw, fl * size + size * 0.12, fw / 2); ctx.fill(); });
+    ctx.translate(-size * 0.26, size * 0.26); ctx.rotate(-52 * Math.PI / 180); ctx.beginPath(); rrAdd(ctx, -fw / 2, -size * 0.44, fw, size * 0.44, fw / 2); ctx.fill();
+    ctx.restore();
+  }
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  function stone(B) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    for (let i = 0; i < 520; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  const MOTIFS = {
+    ancient(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B);
+      hand(ctx, W * 0.84, H * 0.66, 54 * u, 22, rgba(p.accent, dark ? 0.16 : 0.13));
+      const tc = rgba(p.ink, dark ? 0.12 : 0.11);
+      for (const [fx, fy] of [[0.18, 0.07], [0.26, 0.92], [0.62, 0.95]]) { let x = W * fx; const y = H * fy; for (let gI = 0; gI < 3; gI++) { for (let k = 0; k < 4; k++) { const j = r() * 1.5 * u; seg(ctx, x + k * 4 * u + j, y - 7 * u, x + k * 4 * u - j, y + 7 * u, tc, 1.4 * u); } seg(ctx, x - 3 * u, y + 5 * u, x + 15 * u, y - 5 * u, tc, 1.4 * u); x += 26 * u; } }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    velvet(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      const folds = ctx.createLinearGradient(0, 0, W, 0), n = 9;
+      for (let k = 0; k <= n * 2; k++) folds.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : (dark ? 0.22 : 0.05)));
+      ctx.fillStyle = folds; ctx.fillRect(0, 0, W, H);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      const cy = H * 0.36;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, dark ? 0.16 : 0.22); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.10);
+    },
+    seventies(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      const cx = -W * 0.08, cy = H * 0.62, band = 15 * u, a = dark ? 0.2 : 0.26;
+      [p.accent, p.second, p.third, p.accent, p.second].forEach((col, k) => {
+        ctx.beginPath(); ctx.arc(cx, cy, W * 0.22 + k * band, -Math.PI / 2, Math.PI / 2); ctx.strokeStyle = rgba(col, a * (1 - k * 0.12)); ctx.lineWidth = band - 1.5 * u; ctx.lineCap = 'butt'; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    wash(B) { const { W, H, p } = B; radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.10); radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, p.third, 0.07); },
+    hud(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const gc = rgba(p.accent, dark ? 0.14 : 0.10), hz = H * 0.74, vy = hz - H * 0.1;
+      radial(B, W * 0.5, hz, W * 0.6, p.second, dark ? 0.14 : 0.07);
+      for (let i = -14; i <= 14; i++) { const bx = W * 0.5 + i * W * 0.14, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, gc, u, 'butt'); }
+      for (let k = 0; k <= 10; k++) { const fk = k / 10, y = hz + (H - hz) * fk * fk; seg(ctx, 0, y, W, y, gc, u, 'butt'); }
+      const g = ctx.createLinearGradient(0, hz - u, 0, hz + H * 0.06); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz - u, W, H * 0.06 + u);
+      seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      if (dark) for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, 0.16), u, 'butt');
+    },
+    space(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) {
+        vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.16)]]);
+        radial(B, W * 0.85, H * 0.18, W * 0.7, p.accent, 0.10); radial(B, W * 0.1, H * 0.55, W * 0.6, p.second, 0.06);
+        for (const [rx, ry, rot] of [[0.7, 0.16, -0.25], [0.55, 0.12, 0.35]]) { ctx.save(); ctx.translate(W * 0.5, H * 0.3); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, W * rx, W * ry, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.10); ctx.lineWidth = 0.8 * u; ctx.stroke(); ctx.restore(); }
+        for (let i = 0; i < 200; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, 0.25 + r() * 0.6)); }
+        for (let i = 0; i < 6; i++) sparkle(ctx, sideX(r(), W), (0.4 + r() * 0.5) * H, (5 + r() * 5) * u, rgba(p.ink, 0.75), u);
+        const cx = 0, cy = H * 1.05, rad = W * 0.3;
+        const g = ctx.createRadialGradient(cx + rad * 0.3, cy - rad * 0.4, 0, cx + rad * 0.3, cy - rad * 0.4, rad * 1.3); g.addColorStop(0, rgba(p.second, 0.55)); g.addColorStop(1, rgba(mix(p.second, p.bg, 0.6), 0.45));
+        dot(ctx, cx, cy, rad, g);
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(-14 * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, rad * 1.55, rad * 0.32, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.45); ctx.lineWidth = 2 * u; ctx.stroke(); ctx.restore();
+      } else {
+        const nx = W * 0.5, ny = H * 0.25;
+        for (const a of [0, 60, 120]) { ctx.save(); ctx.translate(nx, ny); ctx.rotate(a * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, W * 0.55, W * 0.18, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.22); ctx.lineWidth = 1.2 * u; ctx.stroke(); ctx.restore(); }
+        radial(B, W * 0.5, H * 0.9, W * 0.8, p.accent, 0.08);
+        for (let i = 0; i < 8; i++) starburst(ctx, sideX(r(), W), (0.35 + r() * 0.55) * H, (7 + r() * 8) * u, rgba(i % 2 ? p.second : p.accent, 0.3), u);
+        for (let i = 0; i < 36; i++) dot(ctx, r() * W, r() * H, 2 * u, rgba(p.accent, 0.10));
+      }
+    },
+  };
+
+  // ---- One phone: the style's background with a simple tuner screen on top -------------------------
+  function drawPhone(canvas, s, palHex, dark) {
+    const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height, u = W / 393;
+    const p = {}; for (const k in palHex) p[k] = hex(palHex[k]);
+    const tint = mix(p.surface, p.ink, 0.06), container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    const sh = s.shape, num = stack(s.num, s.numFb), disp = stack(s.font, s.fb), body = 'Roboto, system-ui, sans-serif';
+
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u, p, dark, s, r: rng(7 + s.id.length * 31) };
+    try { (MOTIFS[s.motif] || MOTIFS.wash)(B); } catch (err) { console.error(err); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    // Top line and the note.
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${15 * u}px ${body}`; ctx.fillText('Guitar · Standard', W / 2, 74 * u);
+    ctx.fillStyle = rgba(p.ink); ctx.font = `${s.w} ${118 * u}px ${disp}`; ctx.fillText('A', W / 2, 190 * u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${22 * s.numScale * u}px ${num}`; ctx.fillText('110.2 Hz', W / 2, 270 * u);
+
+    // The meter: a calm field, the track, ticks, the needle near the middle with a soft "in tune" glow.
+    const cx = W / 2, cy = 520 * u, R = 160 * u, a0 = -Math.PI / 2 - 0.95, a1 = -Math.PI / 2 + 0.95;
+    const fg = ctx.createRadialGradient(cx, cy - 70 * u, 0, cx, cy - 70 * u, R * 1.2); fg.addColorStop(0, rgba(p.bg, 0.75)); fg.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = fg; ctx.fillRect(0, cy - R * 1.4, W, R * 1.6);
+    ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.strokeStyle = rgba(p.track); ctx.lineWidth = 7 * u; ctx.lineCap = 'round'; ctx.stroke();
+    for (let v = -50; v <= 50; v += 5) {
+      if (v === 0) continue; const major = v % 10 === 0, a = -Math.PI / 2 + v / 50 * 0.95, len = (major ? 13 : 7) * u;
+      const x1 = cx + Math.cos(a) * (R - 12 * u), y1 = cy + Math.sin(a) * (R - 12 * u);
+      seg(ctx, x1, y1, x1 - Math.cos(a) * len, y1 - Math.sin(a) * len, rgba(p.ink, major ? 1 : 0.5), (major ? 2.1 : 1.3) * u);
+    }
+    seg(ctx, cx, cy - R - 10 * u, cx, cy - R + 10 * u, rgba(p.inTune), 3 * u);
+    const na = -Math.PI / 2 + 2 / 50 * 0.95, tipX = cx + Math.cos(na) * (R - 4 * u), tipY = cy + Math.sin(na) * (R - 4 * u);
+    const gl = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 46 * u); gl.addColorStop(0, rgba(p.inTune, dark ? 0.32 : 0.16)); gl.addColorStop(1, rgba(p.inTune, 0));
+    ctx.fillStyle = gl; ctx.fillRect(tipX - 46 * u, tipY - 46 * u, 92 * u, 92 * u);
+    seg(ctx, cx, cy, tipX, tipY, rgba(p.accent), 3.2 * u);
+    dot(ctx, cx, cy, 9 * u, rgba(p.accent));
+
+    // The "in tune" pill and the cents.
+    const pw = 132 * u, ph = 40 * u, py = 560 * u;
+    ctx.beginPath(); rrAdd(ctx, cx - pw / 2, py, pw, ph, Math.min(sh.pill, 999) * u); ctx.fillStyle = rgba(p.inTune); ctx.fill();
+    ctx.fillStyle = rgba(p.onInTune); ctx.font = `500 ${16 * u}px ${body}`; ctx.fillText('In tune', cx, py + ph / 2 + 1 * u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${15 * s.numScale * u}px ${num}`; ctx.fillText('+2 cents', cx, py + ph + 22 * u);
+
+    // A panel with the strings, one picked.
+    const cardX = 16 * u, cardY = 648 * u, cardW = W - 32 * u, cardH = 112 * u;
+    ctx.save(); ctx.shadowColor = rgba(BLACK, dark ? 0.35 : 0.10); ctx.shadowBlur = 10 * u; ctx.shadowOffsetY = 2 * u;
+    ctx.beginPath(); rrAdd(ctx, cardX, cardY, cardW, cardH, sh.card * u); ctx.fillStyle = rgba(p.surface); ctx.fill(); ctx.restore();
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${13 * u}px ${body}`; ctx.textAlign = 'left'; ctx.fillText('Pick a string', cardX + 16 * u, cardY + 20 * u); ctx.textAlign = 'center';
+    const names = ['E', 'A', 'D', 'G', 'B', 'E'], sw = Math.min(sh.strW, 50) * u, shh = Math.min(sh.strH, 52) * u, gap = (cardW - 32 * u - sw * 6) / 5;
+    names.forEach((n, i) => {
+      const x = cardX + 16 * u + i * (sw + gap), y = cardY + 36 * u + (64 * u - shh) / 2;
+      ctx.beginPath(); rrAdd(ctx, x, y, sw, shh, sh.strR * u); ctx.fillStyle = rgba(i === 1 ? container : tint); ctx.fill();
+      ctx.fillStyle = rgba(p.ink); ctx.font = `${s.numW} ${18 * s.numScale * u}px ${num}`; ctx.fillText(n, x + sw / 2, y + shh / 2 + 1 * u);
+    });
+
+    // The navigation bar.
+    const navY = H - 84 * u;
+    ctx.fillStyle = rgba(mix(p.surface, p.ink, 0.03)); ctx.fillRect(0, navY, W, H - navY);
+    ['Tuner', 'Metronome', 'Settings'].forEach((label, i) => {
+      const x = W * (0.2 + i * 0.3), iy = navY + 26 * u;
+      if (i === 0) { ctx.beginPath(); rrAdd(ctx, x - 30 * u, iy - 15 * u, 60 * u, 30 * u, 15 * u); ctx.fillStyle = rgba(container); ctx.fill(); }
+      ctx.beginPath(); ctx.arc(x, iy, 8 * u, 0, TAU); ctx.strokeStyle = rgba(i === 0 ? p.ink : p.muted); ctx.lineWidth = 2 * u; ctx.stroke();
+      ctx.fillStyle = rgba(i === 0 ? p.ink : p.muted); ctx.font = `500 ${12 * u}px ${body}`; ctx.fillText(label, x, iy + 30 * u);
+    });
+  }
+
+  // ---- Page --------------------------------------------------------------------------------------------
+  const lightIn = $('lightL'), darkIn = $('darkL'), DEFAULTS = { light: 91.5, dark: 11 };
+  const saved = { light: parseFloat(store.get('twangle.tones.light')), dark: parseFloat(store.get('twangle.tones.dark')) };
+  if (saved.light >= 86 && saved.light <= 97) lightIn.value = saved.light;
+  if (saved.dark >= 3 && saved.dark <= 18) darkIn.value = saved.dark;
+  const VIEWS = [];   // {s, dark, soft}
+  const main = $('styles');
+  for (const id of ORDER) {
+    const s = STY[id];
+    const sec = document.createElement('section'); sec.className = 'style';
+    sec.innerHTML = `<h2>${s.name}</h2><p class="tag">${s.tag}</p><div class="row"></div>`;
+    const row = sec.querySelector('.row');
+    for (const dark of [false, true]) for (const soft of [false, true]) {
+      const fig = document.createElement('figure');
+      fig.innerHTML = `<div class="phone" tabindex="0" role="button"><canvas></canvas></div><figcaption></figcaption>`;
+      row.appendChild(fig);
+      const v = { s, dark, soft, canvas: fig.querySelector('canvas'), cap: fig.querySelector('figcaption'), index: VIEWS.length };
+      fig.querySelector('.phone').addEventListener('click', () => openBig(v.index));
+      fig.querySelector('.phone').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBig(v.index); } });
+      VIEWS.push(v);
+    }
+    main.appendChild(sec);
+  }
+  const target = (dark) => parseFloat((dark ? darkIn : lightIn).value);
+  function paletteOf(v) { return v.soft ? softer(v.s, v.dark, target(v.dark)) : { pal: v.s[v.dark ? 'dark' : 'light'], nudged: [] }; }
+  const L1 = (h) => lab(h)[0].toFixed(0);
+  function caption(v, r) {
+    const mode = v.dark ? 'Dark' : 'Light', which = v.soft ? 'softer' : 'now';
+    let t = `<b>${mode} · ${which}</b><br>background ${L1(r.pal.bg)} · panels ${L1(r.pal.surface)}`;
+    if (v.soft && r.nudged.length) t += `<br><span class="nudged">${r.nudged.map((k) => NAMES[k]).join(', ')} a touch ${v.dark ? 'lighter' : 'darker'} to stay readable</span>`;
+    return t;
+  }
+  function renderAll() {
+    $('lightOut').textContent = `${lightIn.value} (now 91–97)`; $('darkOut').textContent = `${darkIn.value} (now 2–8)`;
+    for (const v of VIEWS) { const r = paletteOf(v); drawPhone(v.canvas, v.s, r.pal, v.dark); v.cap.innerHTML = caption(v, r); }
+    if (big.open) drawBig();
+  }
+  lightIn.addEventListener('input', () => { store.set('twangle.tones.light', lightIn.value); renderAll(); });
+  darkIn.addEventListener('input', () => { store.set('twangle.tones.dark', darkIn.value); renderAll(); });
+  $('reset').addEventListener('click', () => { lightIn.value = DEFAULTS.light; darkIn.value = DEFAULTS.dark; store.set('twangle.tones.light', ''); store.set('twangle.tones.dark', ''); renderAll(); });
+
+  // ---- Big view: flip now <-> softer in the same spot -----------------------------------------------
+  const big = { open: false, index: 0 }, overlay = $('overlay'), bigCanvas = $('bigPhone').querySelector('canvas');
+  function drawBig() {
+    const v = VIEWS[big.index], r = paletteOf(v);
+    drawPhone(bigCanvas, v.s, r.pal, v.dark);
+    $('which').textContent = `${v.s.name} · ${v.dark ? 'dark' : 'light'} · ${v.soft ? 'softer' : 'now'}`;
+    $('showNow').setAttribute('aria-pressed', String(!v.soft)); $('showSoft').setAttribute('aria-pressed', String(v.soft));
+  }
+  function openBig(i) { big.index = i; big.open = true; overlay.classList.add('open'); requestAnimationFrame(drawBig); }
+  function closeBig() { big.open = false; overlay.classList.remove('open'); }
+  const flip = () => { big.index ^= 1; drawBig(); };
+  const step = (d) => { const pairs = VIEWS.length / 2, soft = big.index & 1; big.index = (((big.index >> 1) + d + pairs) % pairs) * 2 + soft; drawBig(); };
+  $('bigPhone').addEventListener('click', flip);
+  $('showNow').addEventListener('click', () => { if (big.index & 1) flip(); });
+  $('showSoft').addEventListener('click', () => { if (!(big.index & 1)) flip(); });
+  $('prev').addEventListener('click', () => step(-1)); $('next').addEventListener('click', () => step(1));
+  $('close').addEventListener('click', closeBig);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeBig(); });
+  document.addEventListener('keydown', (e) => {
+    if (!big.open) return;
+    if (e.key === 'Escape') closeBig();
+    else if (e.key === ' ') { e.preventDefault(); flip(); }
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'ArrowRight') step(1);
+  });
+
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderAll, 120); });
+  renderAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderAll);
+})();
+</script>
+</body>
+</html>

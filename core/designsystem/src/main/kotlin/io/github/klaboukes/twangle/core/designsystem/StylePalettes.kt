@@ -19,6 +19,11 @@ import kotlin.math.min
  * ([inTune], [onInTune]; Material 3 has no success role) and two colours for the background art only
  * ([second], [third]), which never carry text. [toColorScheme] turns it into a Material 3 scheme.
  *
+ * Soft grounds (owner, October 2026, docs/design/background-tones-preview.html): light mode is not
+ * paper white and dark mode not black. In CIELAB lightness the background sits at about 91.5 in light
+ * and 11 in dark (Futuristic's dark 8, for its neon), the surface 4 (light) or 5 (dark) above it, each in
+ * its style's own hue so no style turns grey. Ancient's light stone was already there and is unchanged.
+ *
  * Readable by rule (checked in StylePaletteTest): ink, muted, accent and inTune at least 4.5:1 on the
  * background, the surface and the surface container; onAccent and onInTune 4.5:1 on their fills; ink
  * 4.5:1 on the selected container.
@@ -135,8 +140,8 @@ private val AncientLight = Palette(
 )
 
 private val AncientDark = Palette(
-    background = Color(0xFF1B1715),
-    surface = Color(0xFF25201D),
+    background = Color(0xFF261B16),
+    surface = Color(0xFF2F2622),
     ink = Color(0xFFEFE4DD),
     muted = Color(0xFFC2ADA3),
     track = Color(0xFF4A3D37),
@@ -150,8 +155,8 @@ private val AncientDark = Palette(
 
 // Classic: Burgundy velvet, ivory and gold in a concert hall.
 private val ClassicLight = Palette(
-    background = Color(0xFFF7F2E8),
-    surface = Color(0xFFFCF9F2),
+    background = Color(0xFFECE6DA),
+    surface = Color(0xFFF7F2E8),
     ink = Color(0xFF1C1518),
     muted = Color(0xFF5A4A50),
     track = Color(0xFFDCCFC4),
@@ -164,8 +169,8 @@ private val ClassicLight = Palette(
 )
 
 private val ClassicDark = Palette(
-    background = Color(0xFF170C11),
-    surface = Color(0xFF22131A),
+    background = Color(0xFF261A1F),
+    surface = Color(0xFF2F2529),
     ink = Color(0xFFF2E6EA),
     muted = Color(0xFFC4AAB5),
     track = Color(0xFF45303A),
@@ -179,9 +184,9 @@ private val ClassicDark = Palette(
 
 // Retro: Avocado, mustard and orange: a 70s living room.
 private val RetroLight = Palette(
-    background = Color(0xFFF1EDD8),
-    surface = Color(0xFFF8F5E6),
-    ink = Color(0xFF24260F),
+    background = Color(0xFFECE7CD),
+    surface = Color(0xFFF7F3DD),
+    ink = Color(0xFF21220A),
     muted = Color(0xFF55573A),
     track = Color(0xFFD5D2AE),
     accent = Color(0xFF5F6E0E),
@@ -193,8 +198,8 @@ private val RetroLight = Palette(
 )
 
 private val RetroDark = Palette(
-    background = Color(0xFF15160B),
-    surface = Color(0xFF1F2113),
+    background = Color(0xFF1D1E14),
+    surface = Color(0xFF272920),
     ink = Color(0xFFEEF0D2),
     muted = Color(0xFFB9BC92),
     track = Color(0xFF3E412A),
@@ -208,22 +213,22 @@ private val RetroDark = Palette(
 
 // Contemporary: Calm and clean, like the phone itself.
 private val ContemporaryLight = Palette(
-    background = Color(0xFFF5F7FC),
-    surface = Color(0xFFFFFFFF),
+    background = Color(0xFFE3E7F0),
+    surface = Color(0xFFEFF2FA),
     ink = Color(0xFF10141F),
     muted = Color(0xFF4A5268),
     track = Color(0xFFCDD3E3),
     accent = Color(0xFF3A4FD6),
     onAccent = Color(0xFFFFFFFF),
-    inTune = Color(0xFF1B7A3E),
+    inTune = Color(0xFF15763B),
     onInTune = Color(0xFFFFFFFF),
     second = Color(0xFF8FA0F0),
     third = Color(0xFFB9C4EA),
 )
 
 private val ContemporaryDark = Palette(
-    background = Color(0xFF0E1220),
-    surface = Color(0xFF151A2B),
+    background = Color(0xFF171D2E),
+    surface = Color(0xFF232736),
     ink = Color(0xFFE6E9F4),
     muted = Color(0xFFA6AECB),
     track = Color(0xFF2B3350),
@@ -237,22 +242,22 @@ private val ContemporaryDark = Palette(
 
 // Futuristic: Neon cyan and magenta on a heads-up display.
 private val FuturisticLight = Palette(
-    background = Color(0xFFEDF3F6),
-    surface = Color(0xFFF8FCFE),
+    background = Color(0xFFDDE9EE),
+    surface = Color(0xFFEAF4F8),
     ink = Color(0xFF061822),
     muted = Color(0xFF3A5463),
     track = Color(0xFFBFD2DC),
-    accent = Color(0xFF007482),
+    accent = Color(0xFF00717F),
     onAccent = Color(0xFFFFFFFF),
-    inTune = Color(0xFF007A46),
+    inTune = Color(0xFF007642),
     onInTune = Color(0xFFFFFFFF),
     second = Color(0xFFC2187F),
     third = Color(0xFF4FD2EA),
 )
 
 private val FuturisticDark = Palette(
-    background = Color(0xFF03070A),
-    surface = Color(0xFF08121A),
+    background = Color(0xFF0D1920),
+    surface = Color(0xFF1A2329),
     ink = Color(0xFFDDF8FF),
     muted = Color(0xFF84B3C4),
     track = Color(0xFF143040),
@@ -266,8 +271,8 @@ private val FuturisticDark = Palette(
 
 // Space Age: Violet night, rocket orange and silver: the future as the 60s saw it.
 private val SpaceAgeLight = Palette(
-    background = Color(0xFFF3F0F8),
-    surface = Color(0xFFFBF9FE),
+    background = Color(0xFFE9E5EF),
+    surface = Color(0xFFF4F1F9),
     ink = Color(0xFF1A1530),
     muted = Color(0xFF4E4766),
     track = Color(0xFFD6D0E4),
@@ -280,8 +285,8 @@ private val SpaceAgeLight = Palette(
 )
 
 private val SpaceAgeDark = Palette(
-    background = Color(0xFF120C26),
-    surface = Color(0xFF1C1536),
+    background = Color(0xFF1D1939),
+    surface = Color(0xFF29243E),
     ink = Color(0xFFF1EDFA),
     muted = Color(0xFFB3A9D2),
     track = Color(0xFF352C5A),

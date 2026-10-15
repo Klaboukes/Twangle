@@ -57,9 +57,10 @@ class StylePaletteTest {
 
     @Test
     fun `the palettes are the approved mock-up's`() {
-        // Spot checks, one per style; the rest were copied from the same data block.
+        // Spot checks, one per style; the rest were copied from the same data blocks (backgrounds and
+        // surfaces from background-tones-preview.html).
         assertEquals(Color(0xFFA8431F), paletteFor(VisualStyle.ANCIENT, dark = false).accent)
-        assertEquals(Color(0xFF170C11), paletteFor(VisualStyle.CLASSIC, dark = true).background)
+        assertEquals(Color(0xFF261A1F), paletteFor(VisualStyle.CLASSIC, dark = true).background)
         assertEquals(Color(0xFF5F6E0E), paletteFor(VisualStyle.RETRO, dark = false).accent)
         assertEquals(Color(0xFFA6ADFF), paletteFor(VisualStyle.CONTEMPORARY, dark = true).accent)
         assertEquals(Color(0xFF22E5FF), paletteFor(VisualStyle.FUTURISTIC, dark = true).accent)

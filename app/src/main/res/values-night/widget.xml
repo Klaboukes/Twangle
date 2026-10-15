@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- The widget picker's preview colours in dark mode: Contemporary dark. -->
-    <color name="widget_background">#0E1220</color>
+    <color name="widget_background">#171D2E</color>
     <color name="widget_ink">#E6E9F4</color>
     <color name="widget_muted">#A6AECB</color>
     <color name="widget_accent">#A6ADFF</color>
