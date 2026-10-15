@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // The Wear OS watch app: a standalone tuner that listens with the watch's own microphone.
 // It shares the phone app's application ID (Wear OS and Play pair the two by it) and reuses
 // :core:dsp for the pitch engine and :core:audio for the microphone.
@@ -5,6 +7,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Version and upload key: the same as the phone app's, see the root build.gradle.kts.
+val keystoreProperties = rootProject.extra["twangleKeystoreProperties"] as Properties?
 
 android {
     namespace = "io.github.klaboukes.twangle.wear"
@@ -16,15 +21,30 @@ android {
         minSdk = 30
         targetSdk = 37
         // Play needs a different versionCode for the watch build: the phone's code plus 1,000,000
-        // (the phone's own codes stay below that up to version 99.99.99). Bump with :app.
-        versionCode = 1_000_900
-        versionName = "0.9.0-beta"
+        // (the phone's own codes stay below that up to version 99.99.99). Both come from
+        // twangle.version in gradle.properties.
+        versionCode = rootProject.extra["twangleWatchVersionCode"] as Int
+        versionName = rootProject.extra["twangleVersionName"] as String
         // UI tests run on the Wear OS emulator, not the phone (scripts/ui-tests.sh leaves :wear out).
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("upload") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // The phone's upload key: Play rejects an unsigned upload and only accepts the key
+            // registered for the app ID, which the phone and watch builds share.
+            signingConfig = signingConfigs.findByName("upload")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))

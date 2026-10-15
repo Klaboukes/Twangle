@@ -60,7 +60,7 @@ You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundl
 ./gradlew test            # run the unit tests
 ```
 
-`./gradlew assembleRelease` builds the shrunk release APK. It is signed only on a machine that has the upload key (see [ARCHITECTURE.md](ARCHITECTURE.md), *Release build*); elsewhere it comes out unsigned.
+`./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [ARCHITECTURE.md](ARCHITECTURE.md), *Release build*); elsewhere it comes out unsigned.
 
 Every push to `main` is built by GitHub Actions, and the debug APK is attached to each run as `twangle-debug-apk`.
 

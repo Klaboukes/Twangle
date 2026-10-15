@@ -7,15 +7,8 @@ plugins {
     alias(libs.plugins.baselineprofile)
 }
 
-// Release signing. The upload key and its password live outside the repo, by default in
-// ~/.twangle-keys/keystore.properties (storeFile, storePassword, keyAlias, keyPassword); the Gradle
-// property twangle.keystoreProperties (absolute path, e.g. in ~/.gradle/gradle.properties) points
-// elsewhere. Without the file (CI, other machines) the release build is left unsigned.
-val keystoreProperties: Properties? = providers.gradleProperty("twangle.keystoreProperties")
-    .orElse(providers.systemProperty("user.home").map { "$it/.twangle-keys/keystore.properties" })
-    .flatMap { path -> providers.fileContents(rootProject.layout.projectDirectory.file(path)).asText }
-    .map { text -> Properties().apply { load(text.reader()) } }
-    .orNull
+// Version and upload key: shared with the watch app, see the root build.gradle.kts.
+val keystoreProperties = rootProject.extra["twangleKeystoreProperties"] as Properties?
 
 android {
     namespace = "io.github.klaboukes.twangle.app"
@@ -25,10 +18,9 @@ android {
         applicationId = "io.github.klaboukes.twangle"
         minSdk = 26
         targetSdk = 37
-        // Beta 0.9 (Phase 5 onwards). versionCode = major * 10000 + minor * 100 + patch, so 1.0.0 is 10000.
-        // Every build that leaves this PC (Play Store or sideloaded) needs a higher versionCode than the last.
-        versionCode = 900
-        versionName = "0.9.0-beta"
+        // twangle.version in gradle.properties; the watch app gets the same version.
+        versionCode = rootProject.extra["twangleVersionCode"] as Int
+        versionName = rootProject.extra["twangleVersionName"] as String
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // The languages of the Language setting: the same list as localeFilters below, as resource
         // qualifiers (e.g. "pt-rBR"), comma-separated.

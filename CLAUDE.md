@@ -62,7 +62,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
-`.github/workflows/android.yml` runs `test`, `lint` and `assembleDebug` on every PR and push to `main` (the watch app included), and uploads the phone's and the watch's debug APKs as the `twangle-debug-apk` artifact.
+`.github/workflows/android.yml` runs `test`, `lint`, `assembleDebug` and an unsigned `assembleRelease bundleRelease` on every PR and push to `main` (the watch app included), and uploads the phone's and the watch's debug APKs as the `twangle-debug-apk` artifact.
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.

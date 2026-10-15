@@ -39,6 +39,11 @@ jobs:
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --console=plain
 
+      # Unsigned here (the upload key never leaves the owner's PCs), but R8, resource shrinking and
+      # the bundle are checked on every change, for the phone and the watch.
+      - name: Assemble release APK and bundle
+        run: ./gradlew assembleRelease bundleRelease --console=plain
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
