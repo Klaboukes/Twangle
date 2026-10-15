@@ -29,7 +29,7 @@ data class MetronomeBeat(
  */
 interface MetronomePlayer {
 
-    /** True from [start] until [stop] (or a failure, or another app taking the audio for good). */
+    /** True from [start] until [stop] (or a failure, a call, or headphones coming unplugged). */
     val isPlaying: StateFlow<Boolean>
 
     /** Every click, emitted as it is heard. Nothing is replayed to a new collector. */

@@ -1,13 +1,14 @@
 package io.github.klaboukes.twangle.core.audio
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.AudioTimestamp
 import android.media.AudioTrack
-import android.os.Handler
-import android.os.Looper
+import android.os.Build
 import android.util.Log
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatListener
@@ -47,15 +48,19 @@ import kotlinx.coroutines.launch
  * (`AudioTrack.getTimestamp`) when it will be heard, and emits it then from a timer; before the
  * first timestamp, when the playback head reaches it.
  *
- * Each session holds audio focus (`AUDIOFOCUS_GAIN`: the metronome runs for minutes, so music from
- * another app stops); losing it for good or for a while (a call) stops the metronome, and when focus
- * is refused (during a call) nothing plays. A failing track ends the session quietly (logged).
+ * No audio focus: the clicks play over another app's music (a backing track to play along with),
+ * which keeps playing at its own volume, and another app taking the audio doesn't stop them. A call
+ * does: the session checks the phone's audio mode ([isCallMode]: ringing, in a call or a voice chat)
+ * every [MODE_CHECK_CHUNKS] chunks and stops, and doesn't start during one. Headphones coming
+ * unplugged (`ACTION_AUDIO_BECOMING_NOISY`, Bluetooth ones too) stop it, so it never carries on out
+ * of the speaker. A failing track ends the session quietly (logged).
  *
  * A [stop] directly followed by [start], before the session has seen the stop, keeps the clicks
  * going with the new tempo and meter rather than starting over.
  */
 class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
+    private val appContext = context.applicationContext
     private val audioManager = context.getSystemService(AudioManager::class.java)
 
     /** Sample rate of the clicks: the phone's native output rate, 48 kHz if it reports nothing usable. */
@@ -110,16 +115,12 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
         .build()
 
-    // A loss that lets us duck (a notification) is left to the system; any other loss stops the clicks.
-    private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-        .setAudioAttributes(attributes)
-        .setOnAudioFocusChangeListener(
-            { change ->
-                if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) stop()
-            },
-            Handler(Looper.getMainLooper()),
-        )
-        .build()
+    // Headphones unplugged (or a Bluetooth headset gone): stop rather than click out of the speaker.
+    private val noisyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) stop()
+        }
+    }
 
     override fun start(bpm: Int, meter: Meter) {
         synchronized(lock) {
@@ -169,16 +170,23 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
     private suspend fun session() {
         var track: AudioTrack? = null
-        var focused = false
+        var listening = false
         var ended = false
         // Timers that emit beats at the moment they are heard; cancelled with the session.
         val beatScope = CoroutineScope(Dispatchers.Default + Job())
         try {
-            if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                Log.i(TAG, "No audio focus (a call?): the metronome stays silent")
+            if (isCallMode(audioManager.mode)) {
+                Log.i(TAG, "A call: the metronome stays silent")
                 return
             }
-            focused = true
+            // Only the system sends it (a protected broadcast), which reaches a not-exported receiver too.
+            val noisy = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                appContext.registerReceiver(noisyReceiver, noisy, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                appContext.registerReceiver(noisyReceiver, noisy)
+            }
+            listening = true
             AudioOutput.showVolumeIfSilent(audioManager)
             clickTrack.reset()
             pendingCount = 0
@@ -186,8 +194,13 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             track = opened
             opened.play()
             val buffer = FloatArray(chunkFrames)
+            var chunk = 0
             while (true) {
                 currentCoroutineContext().ensureActive()
+                if (++chunk % MODE_CHECK_CHUNKS == 0 && isCallMode(audioManager.mode)) {
+                    Log.i(TAG, "A call: the metronome stops")
+                    stop()
+                }
                 if (takeRequests()) {
                     ended = true
                     break
@@ -208,7 +221,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
                 if (underruns > 0) Log.w(TAG, "The speaker ran dry $underruns times: the beat may have stumbled")
                 AudioOutput.close(it)
             }
-            if (focused) audioManager.abandonAudioFocusRequest(focusRequest)
+            if (listening) runCatching { appContext.unregisterReceiver(noisyReceiver) }
             if (!ended) {
                 synchronized(lock) {
                     active = false
@@ -281,5 +294,15 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
         /** A beat due within half a chunk is emitted at once. */
         const val EARLY_NANOS = NANOS_PER_SECOND / CHUNKS_PER_SECOND / 2
+
+        /** How often the session looks for a call: every 25 chunks, 4 times a second. */
+        const val MODE_CHECK_CHUNKS = 25
     }
 }
+
+/**
+ * Whether the phone's audio [mode] (`AudioManager.getMode()`) means a call: ringing, in a phone call,
+ * in a voice or video chat (`MODE_IN_COMMUNICATION`), or any call mode newer Android adds. Only
+ * `MODE_NORMAL` is free for the metronome.
+ */
+internal fun isCallMode(mode: Int): Boolean = mode != AudioManager.MODE_NORMAL

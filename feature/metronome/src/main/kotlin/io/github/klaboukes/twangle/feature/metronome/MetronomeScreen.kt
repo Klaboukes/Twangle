@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.feature.metronome
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -70,8 +72,8 @@ import kotlin.math.max
  * It opens stopped, at the tempo, meter and vibration saved last ([savedBpm], [savedMeter],
  * [savedVibrate], from the settings already read, so the first frame is right), and plays through
  * [player]. The clicks stop when it leaves the screen: another screen takes its place, or the app
- * goes to the background (no foreground service). While it plays the screen stays on, so the
- * phone's screen timeout doesn't stop it.
+ * goes to the background (no foreground service); they play on when the phone turns or dark mode
+ * switches. While it plays the screen stays on, so the phone's screen timeout doesn't stop it.
  */
 @Composable
 fun MetronomeScreen(
@@ -307,20 +309,33 @@ private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**
  * Stops the clicks when the metronome leaves the screen: the app goes to the background, or another
- * screen takes its place. The metronome never plays unseen.
+ * screen takes its place. The metronome never plays unseen. A configuration change (the phone turns,
+ * dark mode or the font size changes) recreates the activity, which stops it and takes this screen
+ * away too; then the clicks play on, and the new activity's screen (the ViewModel survives) shows them.
  */
 @Composable
 private fun StopWhenHidden(stop: () -> Unit) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val activity = LocalContext.current.findActivity()
     val currentStop by rememberUpdatedState(stop)
-    DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) currentStop() }
+    DisposableEffect(lifecycle, activity) {
+        fun stopUnlessRecreated() {
+            if (activity?.isChangingConfigurations != true) currentStop()
+        }
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) stopUnlessRecreated() }
         lifecycle.addObserver(observer)
         onDispose {
             lifecycle.removeObserver(observer)
-            currentStop()
+            stopUnlessRecreated()
         }
     }
+}
+
+/** The activity this context belongs to, through any wrappers (a locale or theme), or null. */
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 /** Keeps the screen from dimming and locking while this is in the composition (while it plays). */

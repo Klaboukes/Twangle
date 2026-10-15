@@ -39,6 +39,8 @@ import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.TempoDialArt
 import io.github.klaboukes.twangle.core.designsystem.metronome.bpmAtTouch
+import io.github.klaboukes.twangle.core.designsystem.metronome.isClearOfDialMiddle
+import io.github.klaboukes.twangle.core.designsystem.metronome.isOnDialRing
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
@@ -50,8 +52,9 @@ import kotlin.math.roundToInt
 
 /**
  * The tempo dial ([TempoDialArt]) with the tempo over its middle: the figures in the style's number
- * face, "BPM" and the Italian marking under them. A touch on the dial sets the tempo it points to and
- * a drag round it follows the finger ([onBpmChange]); lifting the finger calls [onBpmChangeFinished]
+ * face, "BPM" and the Italian marking under them. A touch on the dial's ring sets the tempo it points
+ * to and a drag round it follows the finger ([onBpmChange]); a touch on the tempo in the middle does
+ * nothing ([isOnDialRing]). Lifting the finger calls [onBpmChangeFinished]
  * (to save it). For TalkBack it is one slider ("Tempo, drag to change", "96 beats per minute,
  * Andante") that steps one BPM at a time. [beatGlow] lights the soft glow behind the tempo on each
  * beat, read in the draw phase only. [size] is the dial's width and height.
@@ -93,9 +96,15 @@ fun TempoDial(
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
-                    val centre = androidx.compose.ui.geometry.Offset(this.size.width / 2f, this.size.height / 2f)
+                    val width = this.size.width.toFloat()
+                    val centre = androidx.compose.ui.geometry.Offset(width / 2f, this.size.height / 2f)
+                    // A touch on the tempo in the middle does nothing: only the ring turns the dial.
+                    if (!isOnDialRing(down.position.x - centre.x, down.position.y - centre.y, width)) return@awaitEachGesture
                     fun follow(at: androidx.compose.ui.geometry.Offset) {
-                        val to = bpmAtTouch(at.x - centre.x, at.y - centre.y, currentBpm)
+                        val dx = at.x - centre.x
+                        val dy = at.y - centre.y
+                        if (!isClearOfDialMiddle(dx, dy, width)) return
+                        val to = bpmAtTouch(dx, dy, currentBpm)
                         if (to != currentBpm) currentOnChange(to)
                     }
                     follow(down.position)

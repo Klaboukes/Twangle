@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.metronome
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -45,8 +46,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The metronome screen with a fake player and settings, in the default style: it opens stopped at
- * the saved tempo and meter, Start / Stop, − and +, the meter picker, the dial (a touch and
- * TalkBack's slider) and the vibration switch work and are saved, and the clicks stop when the screen
+ * the saved tempo and meter, Start / Stop, − and +, the meter picker, the dial (a touch on its ring,
+ * none on its middle, and TalkBack's slider) and the vibration switch work and are saved, and the clicks stop when the screen
  * leaves the composition. TalkBack hears every control by name. [MetronomeStylesTest] covers the
  * layout in every style.
  */
@@ -140,6 +141,23 @@ class MetronomeScreenTest {
         compose.waitForIdle()
         compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("140"))
         assertEquals(140, settings.current.metronomeBpm)
+    }
+
+    @Test
+    fun aTouchOnTheTempoInTheDialsMiddleLeavesItAlone() {
+        show()
+        // The middle, then "BPM" under the figures: only the ring turns the dial.
+        dial.performTouchInput {
+            down(center)
+            up()
+        }
+        dial.performTouchInput {
+            down(center.copy(y = center.y + width / 16f))
+            moveBy(Offset(width / 20f, 0f))
+            up()
+        }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("96"))
     }
 
     @Test

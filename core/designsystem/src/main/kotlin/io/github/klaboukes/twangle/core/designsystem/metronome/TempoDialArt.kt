@@ -132,6 +132,35 @@ fun bpmAtTouch(dx: Float, dy: Float, current: Int): Int {
     return ClickTrack.clampBpm(bpm.roundToInt())
 }
 
+/**
+ * Whether a touch at ([dx], [dy]) from the middle of a dial [width] wide lands on its ring: from
+ * [RING_INNER_UNITS] out to the dial's edge, so the arc, its ticks and numbers and a finger's width
+ * inside them, but not the tempo in the middle. Only such a touch starts a drag.
+ */
+fun isOnDialRing(dx: Float, dy: Float, width: Float): Boolean {
+    val u = width / DIAL_UNITS
+    val squared = dx * dx + dy * dy
+    val inner = RING_INNER_UNITS * u
+    val outer = DIAL_UNITS / 2f * u
+    return squared >= inner * inner && squared <= outer * outer
+}
+
+/**
+ * Whether a drag that began on the ring follows a finger at ([dx], [dy]) from the middle of a dial
+ * [width] wide: anywhere but the middle ([RING_INNER_UNITS]), where the angle swings wildly with
+ * every pixel. Past the dial's edge it still follows, as a knob does.
+ */
+fun isClearOfDialMiddle(dx: Float, dy: Float, width: Float): Boolean {
+    val inner = RING_INNER_UNITS * width / DIAL_UNITS
+    return dx * dx + dy * dy >= inner * inner
+}
+
+/**
+ * Touches this far from the middle and further out are on the ring: 20 units inside the arc, just
+ * clear of the tempo's figures and marking at their widest (≈ 52u across and 53u up or down).
+ */
+private const val RING_INNER_UNITS = 74f
+
 /** The dial reaches this many degrees each way from straight up. */
 private const val DIAL_HALF_SWEEP = 150f
 private const val BPM_SPAN = (ClickTrack.MAX_BPM - ClickTrack.MIN_BPM).toFloat()

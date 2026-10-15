@@ -29,7 +29,7 @@ class AppContainer(private val appContext: Context) {
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
     val tonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
 
-    /** The metronome's clicks (Phase 19). Holds the speaker and audio focus only while it plays. */
+    /** The metronome's clicks (Phase 19). Holds the speaker only while it plays, over other apps' music. */
     val metronomePlayer: MetronomePlayer by lazy { AndroidMetronomePlayer(appContext) }
 
     /** The user's saved settings. One instance per process, as DataStore requires. */

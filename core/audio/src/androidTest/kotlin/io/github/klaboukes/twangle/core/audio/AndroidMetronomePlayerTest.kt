@@ -108,9 +108,12 @@ class AndroidMetronomePlayerTest {
         assertEquals(BeatAccent.DOWNBEAT, first.accent)
     }
 
-    /** Another app taking audio focus for good (here: the test, as another focus owner) stops the clicks. */
+    /**
+     * The clicks play over other apps' music: another app taking audio focus for good (here: the
+     * test, as another focus owner, like a music app starting a backing track) doesn't stop them.
+     */
     @Test
-    fun losingAudioFocusStopsTheClicks() = runBlocking<Unit> {
+    fun anotherAppTakingAudioFocusLeavesTheClicksPlaying() = runBlocking<Unit> {
         player.start(120, Meter.FOUR_FOUR)
         delay(300)
         assertTrue(player.isPlaying.value)
@@ -121,11 +124,11 @@ class AndroidMetronomePlayerTest {
             .build()
         try {
             assertEquals(AudioManager.AUDIOFOCUS_REQUEST_GRANTED, audioManager.requestAudioFocus(other))
-            withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+            assertNull("still playing", withTimeoutOrNull(SLACK_MILLIS) { player.isPlaying.first { !it } })
         } finally {
             audioManager.abandonAudioFocusRequest(other)
         }
-        assertFalse(player.isPlaying.value)
+        assertTrue(player.isPlaying.value)
     }
 
     @Test
