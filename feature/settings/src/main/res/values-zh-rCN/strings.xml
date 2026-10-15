@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">设置</string>
+    <string name="settings_back">返回</string>
+
+    <string name="settings_group_tuning">调音</string>
+    <string name="settings_group_look">外观</string>
+    <string name="settings_group_while_tuning">调音时</string>
+
+    <string name="settings_a4_title">标准音高 (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">大多数音乐使用 440 Hz。管弦乐团常调到 442 Hz，巴洛克乐团调到 415 Hz。</string>
+    <string name="settings_a4_lower">A4 降低 1 Hz</string>
+    <string name="settings_a4_raise">A4 升高 1 Hz</string>
+    <string name="settings_a4_reset">重置为 %1$d Hz</string>
+
+    <string name="settings_notation_title">音名</string>
+    <string name="settings_notation_sharps">升号：C, C♯, D …</string>
+    <string name="settings_notation_flats">降号：C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi：Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">音准精度</string>
+    <string name="settings_in_tune_precision_relaxed">宽松：5 音分以内</string>
+    <string name="settings_in_tune_precision_precise">精确：2 音分以内</string>
+
+    <string name="settings_style_title">风格</string>
+    <string name="settings_theme_title">浅色或深色</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_light">浅色</string>
+    <string name="settings_theme_dark">深色</string>
+    <string name="settings_dynamic_color_title">壁纸配色</string>
+    <string name="settings_dynamic_color_summary">使用壁纸中的颜色</string>
+
+    <string name="settings_meter_look_title">表盘</string>
+    <string name="settings_meter_look_classic">经典</string>
+    <string name="settings_meter_look_light_arc">光弧</string>
+    <string name="settings_meter_look_spirit_level">水平仪</string>
+    <string name="settings_meter_look_rolling_scale">滚动刻度</string>
+    <string name="settings_meter_look_comet">彗星</string>
+    <string name="settings_meter_look_studio_meter">录音棚表头</string>
+    <string name="settings_in_tune_effect_title">调准效果</string>
+    <string name="settings_in_tune_effect_calm">柔和</string>
+    <string name="settings_in_tune_effect_bold">醒目</string>
+
+    <string name="settings_display_title">显示方式</string>
+    <string name="settings_display_needle">指针：显示音分数</string>
+    <string name="settings_display_wave">波形：动态画面，样式由你选</string>
+    <string name="settings_wave_look_title">波形样式</string>
+    <string name="settings_wave_look_strobe">频闪</string>
+    <string name="settings_wave_look_ribbon">丝带</string>
+    <string name="settings_wave_look_dots">圆点</string>
+    <string name="settings_wave_look_fireflies">萤火虫</string>
+    <string name="settings_wave_look_loop">环形</string>
+    <string name="settings_wave_in_tune_title">调准时</string>
+    <string name="settings_wave_in_tune_breathe">轻柔呼吸</string>
+    <string name="settings_wave_in_tune_hold_still">完全静止</string>
+    <string name="settings_wave_look_ripples">涟漪</string>
+    <string name="settings_keep_two_pane_landscape_title">横屏时完整布局</string>
+    <string name="settings_keep_two_pane_landscape_summary">手机横放时，在调音器旁显示控件，而不是只显示一个大表盘</string>
+
+    <string name="settings_keep_screen_on_title">屏幕常亮</string>
+    <string name="settings_keep_screen_on_summary">调音器打开时屏幕保持常亮</string>
+    <string name="settings_vibrate_in_tune_title">调准时振动</string>
+    <string name="settings_vibrate_in_tune_summary">音准到位时短促振动一下</string>
+    <string name="settings_show_tune_hint_title">显示调高/调低提示</string>
+    <string name="settings_show_tune_hint_summary">音不准时，提示弦钮该往哪边拧</string>
+    <string name="settings_show_signal_bars_title">显示信号条</string>
+    <string name="settings_show_signal_bars_summary">给好奇的你：音名旁的小信号条显示调音器听得有多清楚。点按可查看数值</string>
+
+    <string name="settings_show_tour_title">带我看看</string>
+    <string name="settings_show_tour_summary">调音器简短导览</string>
+    <string name="about_title">关于 Twangle</string>
+    <string name="settings_about_link_summary">版本 %1$s、隐私和许可</string>
+    <string name="settings_about_version">版本 %1$s</string>
+    <string name="settings_about_free_title">永久免费</string>
+    <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>
+    <string name="settings_about_privacy_title">隐私</string>
+    <string name="settings_about_privacy_summary">Twangle 不收集任何关于你的数据。麦克风只在调音器界面打开时开启。声音只做实时分析，从不录制、保存或发送。Twangle 没有联网权限，因此无法向任何地方发送任何内容。你的设置只保存在你的手机上。</string>
+    <string name="settings_about_credits_title">字体和开源软件</string>
+    <string name="settings_about_credits_summary">Twangle 用到了以下这些。点按一项即可阅读其许可。</string>
+    <string name="settings_about_licence_open">阅读许可</string>
+    <string name="settings_about_licence_close">关闭</string>
+</resources>

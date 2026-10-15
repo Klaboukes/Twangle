@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -42,7 +44,17 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
                 ),
                 modifier = Modifier.testTag(TunerTestTags.mode(option)),
             ) {
-                Text(stringResource(label(option)))
+                // One line, its whole width counted as its minimum: the row sizes both segments by
+                // the larger minimum width, and Chinese, Japanese and Korean text may break between
+                // any two characters, so otherwise "クロマチック" stood one character wide, three
+                // lines tall (softWrap alone doesn't change the minimum width). Every language's
+                // labels are single words, so Latin labels measure the same as before.
+                Text(
+                    stringResource(label(option)),
+                    modifier = Modifier.width(IntrinsicSize.Max),
+                    maxLines = 1,
+                    softWrap = false,
+                )
             }
         }
     }

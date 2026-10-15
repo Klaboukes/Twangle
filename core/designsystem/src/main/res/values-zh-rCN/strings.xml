@@ -1,0 +1,14 @@
+<resources>
+    <string name="style_ancient">远古</string>
+    <string name="style_classic">经典</string>
+    <string name="style_retro">复古</string>
+    <string name="style_contemporary">当代</string>
+    <string name="style_futuristic">未来</string>
+    <string name="style_space_age">太空时代</string>
+
+    <!-- 中文说“升 C”“降 D”，变音记号在前。 -->
+    <string name="spoken_sharp">升%1$s</string>
+    <string name="spoken_flat">降%1$s</string>
+
+    <string name="meter_studio_unit">音分</string>
+</resources>

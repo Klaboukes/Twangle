@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_back">वापस</string>
+
+    <string name="settings_group_tuning">ट्यूनिंग</string>
+    <string name="settings_group_look">दिखावट</string>
+    <string name="settings_group_while_tuning">ट्यून करते समय</string>
+
+    <string name="settings_a4_title">संदर्भ पिच (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">ज़्यादातर संगीत 440 Hz पर होता है। ऑर्केस्ट्रा अक्सर 442 Hz पर और बारोक समूह 415 Hz पर ट्यून करते हैं।</string>
+    <string name="settings_a4_lower">A4 को 1 Hz घटाएँ</string>
+    <string name="settings_a4_raise">A4 को 1 Hz बढ़ाएँ</string>
+    <string name="settings_a4_reset">%1$d Hz पर रीसेट करें</string>
+
+    <string name="settings_notation_title">नोट के नाम</string>
+    <string name="settings_notation_sharps">शार्प: C, C♯, D …</string>
+    <string name="settings_notation_flats">फ़्लैट: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">सुर में होने की सटीकता</string>
+    <string name="settings_in_tune_precision_relaxed">आसान: 5 सेंट के अंदर</string>
+    <string name="settings_in_tune_precision_precise">सटीक: 2 सेंट के अंदर</string>
+
+    <string name="settings_style_title">स्टाइल</string>
+    <string name="settings_theme_title">लाइट या डार्क</string>
+    <string name="settings_theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="settings_theme_light">लाइट</string>
+    <string name="settings_theme_dark">डार्क</string>
+    <string name="settings_dynamic_color_title">वॉलपेपर के रंग</string>
+    <string name="settings_dynamic_color_summary">अपने वॉलपेपर के रंग इस्तेमाल करें</string>
+
+    <string name="settings_meter_look_title">मीटर</string>
+    <string name="settings_meter_look_classic">क्लासिक</string>
+    <string name="settings_meter_look_light_arc">रोशनी का चाप</string>
+    <string name="settings_meter_look_spirit_level">स्पिरिट लेवल</string>
+    <string name="settings_meter_look_rolling_scale">घूमता स्केल</string>
+    <string name="settings_meter_look_comet">धूमकेतु</string>
+    <string name="settings_meter_look_studio_meter">स्टूडियो मीटर</string>
+    <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
+    <string name="settings_in_tune_effect_calm">शांत</string>
+    <string name="settings_in_tune_effect_bold">ज़ोरदार</string>
+
+    <string name="settings_display_title">डिस्प्ले</string>
+    <string name="settings_display_needle">सुई: सेंट की संख्या</string>
+    <string name="settings_display_wave">तरंग: आपकी चुनी शैली में चलती तस्वीर</string>
+    <string name="settings_wave_look_title">तरंग का रूप</string>
+    <string name="settings_wave_look_strobe">स्ट्रोब</string>
+    <string name="settings_wave_look_ribbon">रिबन</string>
+    <string name="settings_wave_look_dots">बिंदु</string>
+    <string name="settings_wave_look_fireflies">जुगनू</string>
+    <string name="settings_wave_look_loop">लूप</string>
+    <string name="settings_wave_in_tune_title">सुर में होने पर</string>
+    <string name="settings_wave_in_tune_breathe">धीरे-धीरे साँस ले</string>
+    <string name="settings_wave_in_tune_hold_still">पूरी तरह स्थिर रहे</string>
+    <string name="settings_wave_look_ripples">लहरें</string>
+    <string name="settings_keep_two_pane_landscape_title">फ़ोन आड़ा होने पर पूरा लेआउट</string>
+    <string name="settings_keep_two_pane_landscape_summary">फ़ोन घुमाने पर एक बड़े मीटर की जगह ट्यूनर के बगल में कंट्रोल दिखाएँ</string>
+
+    <string name="settings_keep_screen_on_title">स्क्रीन चालू रखें</string>
+    <string name="settings_keep_screen_on_summary">ट्यूनर खुला रहने तक स्क्रीन चालू रहती है</string>
+    <string name="settings_vibrate_in_tune_title">सुर में आने पर वाइब्रेट करें</string>
+    <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
+    <string name="settings_show_tune_hint_title">ऊपर/नीचे ट्यून करने का संकेत दिखाएँ</string>
+    <string name="settings_show_tune_hint_summary">नोट बेसुरा होने पर बताता है कि खूँटी किस ओर घुमानी है</string>
+    <string name="settings_show_signal_bars_title">सिग्नल बार दिखाएँ</string>
+    <string name="settings_show_signal_bars_summary">जिज्ञासुओं के लिए: नोट के पास छोटे बार दिखाते हैं कि ट्यूनर आपको कितनी अच्छी तरह सुन रहा है। आँकड़े देखने के लिए उन पर टैप करें</string>
+
+    <string name="settings_show_tour_title">ऐप का टूर</string>
+    <string name="settings_show_tour_summary">ट्यूनर का छोटा-सा टूर</string>
+    <string name="about_title">Twangle के बारे में</string>
+    <string name="settings_about_link_summary">वर्शन %1$s, निजता और लाइसेंस</string>
+    <string name="settings_about_version">वर्शन %1$s</string>
+    <string name="settings_about_free_title">हमेशा के लिए मुफ़्त</string>
+    <string name="settings_about_free_summary">न विज्ञापन, न अकाउंट, न इन-ऐप खरीदारी और न ट्रैकिंग। न अभी, न बाद में।</string>
+    <string name="settings_about_privacy_title">निजता</string>
+    <string name="settings_about_privacy_summary">Twangle आपके बारे में कोई डेटा इकट्ठा नहीं करता। माइक्रोफ़ोन सिर्फ़ तभी चालू रहता है जब ट्यूनर स्क्रीन खुली हो। आवाज़ का विश्लेषण उसी समय होता है, उसे कभी रिकॉर्ड, सेव या कहीं भेजा नहीं जाता। Twangle के पास इंटरनेट की अनुमति नहीं है, इसलिए वह कहीं कुछ नहीं भेज सकता। आपकी सेटिंग्स सिर्फ़ आपके फ़ोन पर सेव रहती हैं।</string>
+    <string name="settings_about_credits_title">फ़ॉन्ट और ओपन-सोर्स सॉफ़्टवेयर</string>
+    <string name="settings_about_credits_summary">Twangle इनसे बना है। किसी का लाइसेंस पढ़ने के लिए उस पर टैप करें।</string>
+    <string name="settings_about_licence_open">लाइसेंस पढ़ें</string>
+    <string name="settings_about_licence_close">बंद करें</string>
+</resources>

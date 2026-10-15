@@ -1,0 +1,82 @@
+<resources>
+    <string name="settings_title">Setelan</string>
+    <string name="settings_back">Kembali</string>
+
+    <string name="settings_group_tuning">Stem</string>
+    <string name="settings_group_look">Tampilan</string>
+    <string name="settings_group_while_tuning">Saat menyetem</string>
+
+    <string name="settings_a4_title">Nada acuan (A4)</string>
+    <string name="settings_a4_value">%1$d Hz</string>
+    <string name="settings_a4_summary">Sebagian besar musik memakai 440 Hz. Orkestra sering menyetem ke 442 Hz, ansambel barok ke 415 Hz.</string>
+    <string name="settings_a4_lower">Turunkan A4 1 Hz</string>
+    <string name="settings_a4_raise">Naikkan A4 1 Hz</string>
+    <string name="settings_a4_reset">Kembalikan ke %1$d Hz</string>
+
+    <string name="settings_notation_title">Nama nada</string>
+    <string name="settings_notation_sharps">Kres: C, C♯, D …</string>
+    <string name="settings_notation_flats">Mol: C, D♭, D …</string>
+    <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+
+    <string name="settings_in_tune_precision_title">Ketelitian nada pas</string>
+    <string name="settings_in_tune_precision_relaxed">Longgar: dalam 5 sen</string>
+    <string name="settings_in_tune_precision_precise">Teliti: dalam 2 sen</string>
+
+    <string name="settings_style_title">Gaya</string>
+    <string name="settings_theme_title">Terang atau gelap</string>
+    <string name="settings_theme_system">Default sistem</string>
+    <string name="settings_theme_light">Terang</string>
+    <string name="settings_theme_dark">Gelap</string>
+    <string name="settings_dynamic_color_title">Warna wallpaper</string>
+    <string name="settings_dynamic_color_summary">Gunakan warna dari wallpaper Anda</string>
+
+    <string name="settings_meter_look_title">Meter</string>
+    <string name="settings_meter_look_classic">Klasik</string>
+    <string name="settings_meter_look_light_arc">Busur cahaya</string>
+    <string name="settings_meter_look_spirit_level">Waterpas</string>
+    <string name="settings_meter_look_rolling_scale">Skala bergulir</string>
+    <string name="settings_meter_look_comet">Komet</string>
+    <string name="settings_meter_look_studio_meter">Meter studio</string>
+    <string name="settings_in_tune_effect_title">Efek saat pas</string>
+    <string name="settings_in_tune_effect_calm">Tenang</string>
+    <string name="settings_in_tune_effect_bold">Mencolok</string>
+
+    <string name="settings_display_title">Penunjuk</string>
+    <string name="settings_display_needle">Jarum: jumlah sen</string>
+    <string name="settings_display_wave">Gelombang: gambar bergerak, dengan gaya pilihan Anda</string>
+    <string name="settings_wave_look_title">Gaya gelombang</string>
+    <string name="settings_wave_look_strobe">Strobo</string>
+    <string name="settings_wave_look_ribbon">Pita</string>
+    <string name="settings_wave_look_dots">Titik</string>
+    <string name="settings_wave_look_fireflies">Kunang-kunang</string>
+    <string name="settings_wave_look_loop">Lingkaran</string>
+    <string name="settings_wave_in_tune_title">Saat pas</string>
+    <string name="settings_wave_in_tune_breathe">Bernapas pelan</string>
+    <string name="settings_wave_in_tune_hold_still">Diam sempurna</string>
+    <string name="settings_wave_look_ripples">Riak</string>
+    <string name="settings_keep_two_pane_landscape_title">Tata letak penuh saat miring</string>
+    <string name="settings_keep_two_pane_landscape_summary">Saat ponsel diputar, tampilkan kontrol di samping tuner, bukan satu meter besar</string>
+
+    <string name="settings_keep_screen_on_title">Layar tetap menyala</string>
+    <string name="settings_keep_screen_on_summary">Layar tetap menyala selama tuner terbuka</string>
+    <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
+    <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah tepat</string>
+    <string name="settings_show_tune_hint_title">Tampilkan petunjuk naik/turun</string>
+    <string name="settings_show_tune_hint_summary">Menunjukkan arah memutar pasak saat nada belum pas</string>
+    <string name="settings_show_signal_bars_title">Tampilkan bar sinyal</string>
+    <string name="settings_show_signal_bars_summary">Bagi yang penasaran: bar kecil di samping nada menunjukkan seberapa baik tuner mendengar Anda. Ketuk untuk melihat angkanya</string>
+
+    <string name="settings_show_tour_title">Tur aplikasi</string>
+    <string name="settings_show_tour_summary">Tur singkat tuner</string>
+    <string name="about_title">Tentang Twangle</string>
+    <string name="settings_about_link_summary">Versi %1$s, privasi, dan lisensi</string>
+    <string name="settings_about_version">Versi %1$s</string>
+    <string name="settings_about_free_title">Gratis selamanya</string>
+    <string name="settings_about_free_summary">Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Tidak sekarang, tidak nanti.</string>
+    <string name="settings_about_privacy_title">Privasi</string>
+    <string name="settings_about_privacy_summary">Twangle tidak mengumpulkan data apa pun tentang Anda. Mikrofon hanya aktif saat layar tuner terbuka. Suara dianalisis langsung dan tidak pernah direkam, disimpan, atau dikirim. Twangle tidak punya izin internet, jadi tidak bisa mengirim apa pun ke mana pun. Setelan Anda hanya disimpan di ponsel Anda.</string>
+    <string name="settings_about_credits_title">Font dan perangkat lunak open source</string>
+    <string name="settings_about_credits_summary">Twangle dibuat dengan semua ini. Ketuk salah satunya untuk membaca lisensinya.</string>
+    <string name="settings_about_licence_open">Baca lisensi</string>
+    <string name="settings_about_licence_close">Tutup</string>
+</resources>

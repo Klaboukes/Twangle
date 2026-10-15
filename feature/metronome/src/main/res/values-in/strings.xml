@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Ketukan per birama</string>
+    <string name="metronome_tempo">Tempo, seret untuk mengubah</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">%1$d ketukan per menit, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Lebih lambat</string>
+    <string name="metronome_faster">Lebih cepat</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Mulai</string>
+    <string name="metronome_stop">Berhenti</string>
+    <string name="metronome_vibrate">Bergetar mengikuti ketukan</string>
+    <string name="metronome_meter_2_4_spoken">Birama dua per empat</string>
+    <string name="metronome_meter_3_4_spoken">Birama tiga per empat</string>
+    <string name="metronome_meter_4_4_spoken">Birama empat per empat</string>
+    <string name="metronome_meter_5_4_spoken">Birama lima per empat</string>
+    <string name="metronome_meter_6_8_spoken">Birama enam per delapan</string>
+    <string name="metronome_meter_7_8_spoken">Birama tujuh per delapan</string>
+</resources>

@@ -1,0 +1,130 @@
+<resources>
+    <string name="mic_permission_title">Twangle memerlukan mikrofon Anda</string>
+    <string name="mic_permission_intro">Untuk menyetem, Twangle mendengarkan instrumen Anda. Suara dianalisis di ponsel Anda dan tidak pernah direkam atau dikirim ke mana pun.</string>
+    <string name="mic_permission_rationale">Tanpa mikrofon, Twangle tidak bisa mendengar senar Anda, jadi tidak bisa tahu apakah senarnya sudah pas. Suara tidak pernah keluar dari ponsel Anda.</string>
+    <string name="mic_permission_settings_hint">Akses mikrofon untuk Twangle dinonaktifkan. Buka Setelan, ketuk Izin, lalu Mikrofon, dan pilih Izinkan.</string>
+    <string name="mic_permission_allow">Izinkan mikrofon</string>
+    <string name="mic_permission_open_settings">Buka setelan</string>
+
+    <string name="error_mic_permission">Akses mikrofon dinonaktifkan. Izinkan lagi untuk terus menyetem.</string>
+    <string name="error_mic_busy">Aplikasi lain sedang memakai mikrofon. Tutup aplikasi itu, lalu coba lagi.</string>
+    <string name="error_mic_unavailable">Mikrofon tidak dapat dibuka di ponsel ini.</string>
+    <string name="error_mic_stopped">Mikrofon berhenti tiba-tiba.</string>
+    <string name="error_retry">Coba lagi</string>
+
+    <string name="tuner_mode_strings">Senar</string>
+    <string name="tuner_mode_chromatic">Kromatik</string>
+    <string name="tuner_show_controls">Tampilkan kontrol</string>
+
+    <string name="tuning_standard">Standar</string>
+    <string name="tuning_drop_d">Drop D</string>
+    <string name="tuning_half_step_down">Turun setengah nada</string>
+    <string name="tuning_full_step_down">Turun satu nada</string>
+    <string name="tuning_open_g">Open G</string>
+    <string name="tuning_open_d">Open D</string>
+    <string name="tuning_open_e">Open E</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">Gitar</string>
+    <string name="instrument_guitar_7">Gitar 7 senar</string>
+    <string name="instrument_guitar_8">Gitar 8 senar</string>
+    <string name="instrument_bass_4">Bass</string>
+    <string name="instrument_bass_5">Bass 5 senar</string>
+    <string name="instrument_ukulele">Ukulele</string>
+    <string name="instrument_violin">Biola</string>
+    <string name="instrument_viola">Viola</string>
+    <string name="instrument_cello">Selo</string>
+    <string name="instrument_mandolin">Mandolin</string>
+    <string name="tuner_hint_play_string">Petik satu senar</string>
+    <string name="tuner_hint_play_note">Mainkan nada</string>
+    <string name="tuner_hint_play_locked_string">Petik senar %1$s</string>
+    <string name="tuner_string_lock">Kunci ke senar ini</string>
+    <string name="tuner_string_unlock">Pilih senar otomatis</string>
+    <string name="tuner_string_locked">Terkunci</string>
+    <string name="tuner_string_play">Putar %1$s</string>
+    <string name="tuner_string_stop_tone">Hentikan nada</string>
+    <string name="tuner_string_sounding">Sedang diputar</string>
+    <string name="tuner_string_locked_sounding">Terkunci, sedang diputar</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_cents_zero">0 sen</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="other">%1$d sen terlalu rendah</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="other">%1$d sen terlalu tinggi</item>
+    </plurals>
+    <string name="tuner_in_tune">pas</string>
+    <string name="tuner_tune_up">Naikkan ↑</string>
+    <string name="tuner_tune_down">Turunkan ↓</string>
+    <string name="tuner_tip_too_soft">Main sedikit lebih keras</string>
+    <string name="tuner_tip_too_noisy">Terlalu bising di sini</string>
+    <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
+    <string name="tuner_signal_bars">Bar sinyal: %1$d dari %2$d</string>
+    <string name="tuner_signal_no_note">Sinyal: belum ada nada</string>
+    <string name="tuner_signal_show_figures">tampilkan angka</string>
+    <string name="tuner_signal_title">Seberapa baik Twangle mendengar Anda</string>
+    <string name="tuner_signal_volume">Volume</string>
+    <string name="tuner_signal_background">Latar</string>
+    <string name="tuner_signal_clarity">Kejernihan</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <string name="tuner_spoken_tune_up">naikkan</string>
+    <string name="tuner_spoken_tune_down">turunkan</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s, %2$s</string>
+    <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <string name="tuner_change_instrument_or_tuning">Ganti instrumen atau stem</string>
+    <string name="tuner_picker_title">Instrumen dan stem</string>
+
+    <string name="tuner_new_tuning">Stem baru</string>
+
+    <string name="tuning_editor_title_edit">Edit stem</string>
+    <string name="tuning_editor_close">Tutup tanpa menyimpan</string>
+    <string name="tuning_editor_save">Simpan</string>
+    <string name="tuning_editor_instrument">Instrumen: %1$s</string>
+    <string name="tuning_editor_name">Nama</string>
+    <string name="tuning_editor_name_empty">Beri nama stem ini</string>
+    <string name="tuning_editor_name_taken">Sudah ada stem dengan nama ini</string>
+    <string name="tuning_editor_strings">Senar</string>
+    <string name="tuning_editor_string">Senar %1$s</string>
+    <string name="tuning_editor_lower">%1$s, setengah nada lebih rendah</string>
+    <string name="tuning_editor_raise">%1$s, setengah nada lebih tinggi</string>
+
+    <string name="tuner_my_tunings">Stem saya</string>
+    <string name="tuner_tuning_options">Opsi untuk %1$s</string>
+    <string name="tuner_edit_tuning">Edit</string>
+    <string name="tuner_delete_tuning">Hapus</string>
+    <string name="tuner_delete_tuning_title">Hapus stem ini?</string>
+    <string name="tuner_delete_tuning_text">“%1$s” akan hilang selamanya.</string>
+    <string name="tuner_delete_tuning_cancel">Batal</string>
+    <string name="tuner_strum_check">Cek genjreng</string>
+    <string name="tuner_strum_waiting">Genjreng semua senar lepas</string>
+    <string name="tuner_strum_waiting_detail">Setiap senar menunjukkan rendah, pas, atau tinggi</string>
+    <string name="tuner_strum_hearing">Mendengarkan…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="other">%1$d senar perlu disetem</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">Tidak semua senar terdengar</string>
+    <string name="tuner_strum_all_in_tune">Semua senar sudah pas</string>
+    <string name="tuner_strum_tap_to_tune">Ketuk senar untuk menyetemnya</string>
+    <string name="tuner_strum_again">Genjreng lagi, atau ketuk senar untuk menyetemnya</string>
+    <string name="tuner_strum_tune_string">Setem %1$s</string>
+    <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s, tidak terdengar</string>
+    <string name="tuner_strum_spoken_waiting">%1$s, belum digenjreng</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, kurang pasti</string>
+    <string name="tour_title">Tur aplikasi</string>
+    <string name="tour_step_count">%1$d dari %2$d</string>
+    <string name="tour_step_spoken">Langkah %1$d dari %2$d. %3$s.</string>
+    <string name="tour_meter">Seberapa meleset nada Anda</string>
+    <string name="tour_note">Nada yang Anda mainkan</string>
+    <string name="tour_strum">Genjreng untuk cek semua senar</string>
+    <string name="tour_strings">Kunci satu senar</string>
+    <string name="tour_picker">Pilih instrumen dan stem</string>
+    <string name="tour_mode">Setem senar atau nada apa pun</string>
+    <string name="tour_navigation">Metronom dan setelan</string>
+    <string name="tour_skip">Lewati tur</string>
+    <string name="tour_next">Berikutnya</string>
+    <string name="tour_done">Selesai</string>
+</resources>

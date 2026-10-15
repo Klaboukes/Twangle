@@ -1,0 +1,13 @@
+<resources>
+    <string name="style_ancient">प्राचीन</string>
+    <string name="style_classic">क्लासिक</string>
+    <string name="style_retro">रेट्रो</string>
+    <string name="style_contemporary">समकालीन</string>
+    <string name="style_futuristic">भविष्य</string>
+    <string name="style_space_age">अंतरिक्ष युग</string>
+
+    <string name="spoken_sharp">%1$s शार्प</string>
+    <string name="spoken_flat">%1$s फ़्लैट</string>
+
+    <string name="meter_studio_unit">सेंट</string>
+</resources>

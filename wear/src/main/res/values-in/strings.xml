@@ -1,0 +1,14 @@
+<resources>
+    <string name="wear_play_note">Mainkan nada</string>
+    <!-- Bahasa Indonesia tidak punya bentuk jamak di sini, jadi hanya other. -->
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s sen</item>
+    </plurals>
+    <string name="wear_in_tune">pas</string>
+    <string name="wear_mic_needed">Twangle mendengarkan instrumen Anda lewat mikrofon jam tangan.</string>
+    <string name="wear_allow_mic">Izinkan mikrofon</string>
+    <string name="wear_open_settings">Buka setelan</string>
+    <string name="wear_mic_busy">Aplikasi lain sedang memakai mikrofon.</string>
+    <string name="wear_mic_unavailable">Mikrofon tidak dapat dibuka.</string>
+    <string name="wear_try_again">Coba lagi</string>
+</resources>

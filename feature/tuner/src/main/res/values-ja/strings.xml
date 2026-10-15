@@ -1,0 +1,130 @@
+<resources>
+    <string name="mic_permission_title">Twangle にはマイクが必要です</string>
+    <string name="mic_permission_intro">チューニングのため、Twangle は楽器の音を聞き取ります。音はスマートフォン上で解析され、録音や送信は一切されません。</string>
+    <string name="mic_permission_rationale">マイクがないと Twangle は弦の音を聞き取れず、合っているかどうかを判断できません。音がスマートフォンの外に出ることはありません。</string>
+    <string name="mic_permission_settings_hint">Twangle のマイクへのアクセスがオフになっています。設定を開き、「権限」→「マイク」の順にタップして「許可」を選んでください。</string>
+    <string name="mic_permission_allow">マイクを許可</string>
+    <string name="mic_permission_open_settings">設定を開く</string>
+
+    <string name="error_mic_permission">マイクへのアクセスがオフになりました。チューニングを続けるには、もう一度許可してください。</string>
+    <string name="error_mic_busy">別のアプリがマイクを使用中です。そのアプリを閉じてから、もう一度お試しください。</string>
+    <string name="error_mic_unavailable">このスマートフォンではマイクを開けませんでした。</string>
+    <string name="error_mic_stopped">マイクが予期せず停止しました。</string>
+    <string name="error_retry">再試行</string>
+
+    <string name="tuner_mode_strings">弦</string>
+    <string name="tuner_mode_chromatic">クロマチック</string>
+    <string name="tuner_show_controls">操作を表示</string>
+
+    <string name="tuning_standard">スタンダード</string>
+    <string name="tuning_drop_d">ドロップD</string>
+    <string name="tuning_half_step_down">半音下げ</string>
+    <string name="tuning_full_step_down">全音下げ</string>
+    <string name="tuning_open_g">オープンG</string>
+    <string name="tuning_open_d">オープンD</string>
+    <string name="tuning_open_e">オープンE</string>
+    <string name="tuning_low_g">Low G</string>
+
+    <string name="instrument_guitar">ギター</string>
+    <string name="instrument_guitar_7">7弦ギター</string>
+    <string name="instrument_guitar_8">8弦ギター</string>
+    <string name="instrument_bass_4">ベース</string>
+    <string name="instrument_bass_5">5弦ベース</string>
+    <string name="instrument_ukulele">ウクレレ</string>
+    <string name="instrument_violin">バイオリン</string>
+    <string name="instrument_viola">ビオラ</string>
+    <string name="instrument_cello">チェロ</string>
+    <string name="instrument_mandolin">マンドリン</string>
+    <string name="tuner_hint_play_string">弦を弾いてください</string>
+    <string name="tuner_hint_play_note">音を鳴らしてください</string>
+    <string name="tuner_hint_play_locked_string">%1$s 弦を弾いてください</string>
+    <string name="tuner_string_lock">この弦に固定</string>
+    <string name="tuner_string_unlock">弦を自動で選ぶ</string>
+    <string name="tuner_string_locked">固定中</string>
+    <string name="tuner_string_play">%1$s を鳴らす</string>
+    <string name="tuner_string_stop_tone">音を止める</string>
+    <string name="tuner_string_sounding">再生中</string>
+    <string name="tuner_string_locked_sounding">固定中、再生中</string>
+    <string name="tuner_frequency">%1$.1f Hz</string>
+    <string name="tuner_cents_zero">0 セント</string>
+    <plurals name="tuner_cents_flat">
+        <item quantity="other">%1$d セント低い</item>
+    </plurals>
+    <plurals name="tuner_cents_sharp">
+        <item quantity="other">%1$d セント高い</item>
+    </plurals>
+    <string name="tuner_in_tune">合っています</string>
+    <string name="tuner_tune_up">上げる ↑</string>
+    <string name="tuner_tune_down">下げる ↓</string>
+    <string name="tuner_tip_too_soft">強めに弾いてください</string>
+    <string name="tuner_tip_too_noisy">周りがうるさすぎます</string>
+    <string name="tuner_tip_too_loud">音が大きすぎます。スマホを離してください</string>
+    <string name="tuner_signal_bars">信号バー：%2$d 本中 %1$d 本</string>
+    <string name="tuner_signal_no_note">信号：まだ音がありません</string>
+    <string name="tuner_signal_show_figures">数値を表示</string>
+    <string name="tuner_signal_title">Twangle の聞き取り具合</string>
+    <string name="tuner_signal_volume">音量</string>
+    <string name="tuner_signal_background">周囲の雑音</string>
+    <string name="tuner_signal_clarity">明瞭さ</string>
+
+    <string name="tuner_spoken_reading">%1$s %2$d、%3$s</string>
+    <string name="tuner_spoken_reading_hint">%1$s %2$d、%3$s、%4$s</string>
+    <string name="tuner_spoken_tune_up">上げる</string>
+    <string name="tuner_spoken_tune_down">下げる</string>
+    <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_tuning">%1$s、%2$s</string>
+    <string name="tuner_spoken_picker">%1$s、%2$s</string>
+    <string name="tuner_change_instrument_or_tuning">楽器またはチューニングを変更</string>
+    <string name="tuner_picker_title">楽器とチューニング</string>
+
+    <string name="tuner_new_tuning">新しいチューニング</string>
+
+    <string name="tuning_editor_title_edit">チューニングを編集</string>
+    <string name="tuning_editor_close">保存せずに閉じる</string>
+    <string name="tuning_editor_save">保存</string>
+    <string name="tuning_editor_instrument">楽器：%1$s</string>
+    <string name="tuning_editor_name">名前</string>
+    <string name="tuning_editor_name_empty">チューニングに名前を付けてください</string>
+    <string name="tuning_editor_name_taken">同じ名前のチューニングがすでにあります</string>
+    <string name="tuning_editor_strings">弦</string>
+    <string name="tuning_editor_string">%1$s 弦</string>
+    <string name="tuning_editor_lower">%1$s、半音下げる</string>
+    <string name="tuning_editor_raise">%1$s、半音上げる</string>
+
+    <string name="tuner_my_tunings">マイチューニング</string>
+    <string name="tuner_tuning_options">%1$s のオプション</string>
+    <string name="tuner_edit_tuning">編集</string>
+    <string name="tuner_delete_tuning">削除</string>
+    <string name="tuner_delete_tuning_title">このチューニングを削除しますか？</string>
+    <string name="tuner_delete_tuning_text">「%1$s」は完全に削除されます。</string>
+    <string name="tuner_delete_tuning_cancel">キャンセル</string>
+    <string name="tuner_strum_check">ストロークチェック</string>
+    <string name="tuner_strum_waiting">開放弦を全部まとめて弾いてください</string>
+    <string name="tuner_strum_waiting_detail">弦ごとに低い・合っている・高いを表示します</string>
+    <string name="tuner_strum_hearing">聞き取り中…</string>
+    <plurals name="tuner_strum_to_tune">
+        <item quantity="other">合わせる弦：%1$d 本</item>
+    </plurals>
+    <string name="tuner_strum_not_all_heard">聞き取れなかった弦があります</string>
+    <string name="tuner_strum_all_in_tune">すべての弦が合っています</string>
+    <string name="tuner_strum_tap_to_tune">弦をタップしてチューニング</string>
+    <string name="tuner_strum_again">もう一度弾くか、弦をタップしてチューニング</string>
+    <string name="tuner_strum_tune_string">%1$s をチューニング</string>
+    <string name="tuner_strum_spoken_string">%1$s、%2$s</string>
+    <string name="tuner_strum_spoken_not_heard">%1$s、聞き取れず</string>
+    <string name="tuner_strum_spoken_waiting">%1$s、まだ弾いていません</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s、やや不確か</string>
+    <string name="tour_title">使い方を見る</string>
+    <string name="tour_step_count">%1$d / %2$d</string>
+    <string name="tour_step_spoken">ステップ %1$d / %2$d。%3$s。</string>
+    <string name="tour_meter">どれだけずれているか</string>
+    <string name="tour_note">弾いている音</string>
+    <string name="tour_strum">まとめて弾いて全弦をチェック</string>
+    <string name="tour_strings">弦を固定</string>
+    <string name="tour_picker">楽器とチューニングを選ぶ</string>
+    <string name="tour_mode">弦か、どの音でもチューニング</string>
+    <string name="tour_navigation">メトロノームと設定</string>
+    <string name="tour_skip">ツアーをスキップ</string>
+    <string name="tour_next">次へ</string>
+    <string name="tour_done">完了</string>
+</resources>

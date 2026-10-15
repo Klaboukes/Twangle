@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">ट्यूनर</string>
+    <string name="nav_metronome">मेट्रोनोम</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="widget_name">ट्यूनर</string>
+    <string name="widget_description">आपका वाद्य और ट्यूनिंग दिखाता है। एक टैप से ट्यूनर खुलता है।</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">ट्यूनर खोलें</string>
+    <string name="widget_preview_title">गिटार · स्टैंडर्ड</string>
+</resources>

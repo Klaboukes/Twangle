@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">एक बार में बीट</string>
+    <string name="metronome_tempo">टेम्पो, बदलने के लिए खींचें</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d बीट प्रति मिनट, %2$s</item>
+        <item quantity="other">%1$d बीट प्रति मिनट, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">धीमा</string>
+    <string name="metronome_faster">तेज़</string>
+    <string name="metronome_tap">टैप टेम्पो</string>
+    <string name="metronome_start">शुरू करें</string>
+    <string name="metronome_stop">रोकें</string>
+    <string name="metronome_vibrate">बीट पर वाइब्रेट करें</string>
+    <!-- भिन्न की तरह पढ़ा जाता है: 3/4 = "तीन बटा चार"। -->
+    <string name="metronome_meter_2_4_spoken">दो बटा चार ताल</string>
+    <string name="metronome_meter_3_4_spoken">तीन बटा चार ताल</string>
+    <string name="metronome_meter_4_4_spoken">चार बटा चार ताल</string>
+    <string name="metronome_meter_5_4_spoken">पाँच बटा चार ताल</string>
+    <string name="metronome_meter_6_8_spoken">छह बटा आठ ताल</string>
+    <string name="metronome_meter_7_8_spoken">सात बटा आठ ताल</string>
+</resources>

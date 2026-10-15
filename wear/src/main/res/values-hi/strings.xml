@@ -1,0 +1,15 @@
+<resources>
+    <string name="wear_play_note">कोई नोट बजाएँ</string>
+    <!-- संख्या के बाद "सेंट" एक जैसा रहता है। -->
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s सेंट</item>
+        <item quantity="other">%1$s सेंट</item>
+    </plurals>
+    <string name="wear_in_tune">सुर में</string>
+    <string name="wear_mic_needed">Twangle घड़ी के माइक्रोफ़ोन से आपका वाद्य सुनता है।</string>
+    <string name="wear_allow_mic">माइक्रोफ़ोन की अनुमति दें</string>
+    <string name="wear_open_settings">सेटिंग्स खोलें</string>
+    <string name="wear_mic_busy">कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है।</string>
+    <string name="wear_mic_unavailable">माइक्रोफ़ोन नहीं खुल सका।</string>
+    <string name="wear_try_again">फिर से कोशिश करें</string>
+</resources>

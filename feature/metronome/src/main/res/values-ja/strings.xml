@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">1小節の拍数</string>
+    <string name="metronome_tempo">テンポ、ドラッグで変更</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">1分間に%1$d拍、%2$s</item>
+    </plurals>
+    <string name="metronome_slower">遅く</string>
+    <string name="metronome_faster">速く</string>
+    <string name="metronome_tap">タップテンポ</string>
+    <string name="metronome_start">スタート</string>
+    <string name="metronome_stop">ストップ</string>
+    <string name="metronome_vibrate">拍に合わせて振動</string>
+    <string name="metronome_meter_2_4_spoken">4分の2拍子</string>
+    <string name="metronome_meter_3_4_spoken">4分の3拍子</string>
+    <string name="metronome_meter_4_4_spoken">4分の4拍子</string>
+    <string name="metronome_meter_5_4_spoken">4分の5拍子</string>
+    <string name="metronome_meter_6_8_spoken">8分の6拍子</string>
+    <string name="metronome_meter_7_8_spoken">8分の7拍子</string>
+</resources>

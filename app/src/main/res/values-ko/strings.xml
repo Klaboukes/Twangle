@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_tuner">튜너</string>
+    <string name="nav_metronome">메트로놈</string>
+    <string name="nav_settings">설정</string>
+    <string name="widget_name">튜너</string>
+    <string name="widget_description">악기와 튜닝을 보여줘요. 한 번 탭하면 튜너가 열려요.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">튜너 열기</string>
+    <string name="widget_preview_title">기타 · 표준</string>
+</resources>
