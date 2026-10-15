@@ -91,6 +91,9 @@
     <string name="tuning_editor_name">名前</string>
     <string name="tuning_editor_name_empty">チューニングに名前を付けてください</string>
     <string name="tuning_editor_name_taken">同じ名前のチューニングがすでにあります</string>
+    <string name="tuning_editor_discard_title">変更を破棄しますか？</string>
+    <string name="tuning_editor_discard">破棄</string>
+    <string name="tuning_editor_keep_editing">編集を続ける</string>
     <string name="tuning_editor_strings">弦</string>
     <string name="tuning_editor_string">%1$s 弦</string>
     <string name="tuning_editor_lower">%1$s、半音下げる</string>

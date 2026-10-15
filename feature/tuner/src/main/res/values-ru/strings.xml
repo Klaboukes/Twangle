@@ -98,6 +98,9 @@
     <string name="tuning_editor_name">Название</string>
     <string name="tuning_editor_name_empty">Дай строю название</string>
     <string name="tuning_editor_name_taken">Строй с таким названием уже есть</string>
+    <string name="tuning_editor_discard_title">Сбросить изменения?</string>
+    <string name="tuning_editor_discard">Сбросить</string>
+    <string name="tuning_editor_keep_editing">Продолжить</string>
     <string name="tuning_editor_strings">Струны</string>
     <string name="tuning_editor_string">Струна %1$s</string>
     <string name="tuning_editor_lower">%1$s, на полутон ниже</string>

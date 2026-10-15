@@ -34,17 +34,19 @@ interface SettingsRepository {
     /**
      * Saves a new custom tuning after the player's others and returns it with its new, lasting id.
      * [name] is normalized ([CustomTuning.normalizeName]) and must not come out empty; [notes] has
-     * one note per string of [instrument]. It is not picked: call [setTuning] with its tuning for that.
-     * Checking for a name that is already taken is up to the editor.
+     * one note per string of [instrument]. With [pick] it is also picked (with its instrument) in the
+     * same write, so nothing can stop the save half way; else call [setTuning] for that. Checking for
+     * a name that is already taken is up to the editor.
      */
-    suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>): CustomTuning
+    suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean = false): CustomTuning
 
     /**
      * Gives the custom tuning [id] a new [name] (normalized, not empty) and [notes] (one per string
      * of its instrument, which stays), in the same place in the list. When it is picked it stays
-     * picked, with the new notes. Returns the changed tuning, or null if no custom tuning has [id].
+     * picked, with the new notes; with [pick] it is picked (with its instrument) in the same write.
+     * Returns the changed tuning, or null if no custom tuning has [id] (then nothing changes).
      */
-    suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>): CustomTuning?
+    suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>, pick: Boolean = false): CustomTuning?
 
     /**
      * Removes the custom tuning [id]; an unknown id changes nothing. When it is picked, its

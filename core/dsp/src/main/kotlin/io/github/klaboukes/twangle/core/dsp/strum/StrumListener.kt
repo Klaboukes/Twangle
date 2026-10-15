@@ -54,7 +54,7 @@ class StrumListener(
     // Levels of the last RECENT_HOPS hops (ring), the reference a strum rises from.
     private val recentDb = FloatArray(RECENT_HOPS) { SignalGate.SILENCE_DBFS }
     private var recentPos = 0
-    private var nextReadingAt = 0
+    private var nextReadingAt = 0L
 
     // False until the first hop after construction or reset: that hop sets the level a strum rises from.
     private var heardAny = false
@@ -70,8 +70,11 @@ class StrumListener(
     var frameLevelDbfs: Float = SignalGate.SILENCE_DBFS
         private set
 
-    /** Samples since the latest strum was noticed (counted in hops), or −1 before the first strum. */
-    var samplesSinceStrum: Int = NO_STRUM
+    /**
+     * Samples since the latest strum was noticed (counted in hops), or −1 before the first strum.
+     * A Long: an Int would overflow after ≈ 12 hours at 48 kHz and stop strums being noticed.
+     */
+    var samplesSinceStrum: Long = NO_STRUM
         private set
 
     /** True while the latest strum still rings (above [GATE_DBFS]): readings keep coming. */
@@ -155,10 +158,10 @@ class StrumListener(
         if (db >= GATE_DBFS && db - quiet >= ONSET_RISE_DB && gapOk) {
             // A strum began within this hop; count from its end, so the first frame starts at
             // least ATTACK_SECONDS after the strum.
-            samplesSinceStrum = 0
+            samplesSinceStrum = 0L
             strumCount++
             readingsSinceStrum = 0
-            nextReadingAt = firstReadingAt
+            nextReadingAt = firstReadingAt.toLong()
             isRinging = true
             return
         }
@@ -224,6 +227,6 @@ class StrumListener(
         const val MIN_GAP_SECONDS = 0.15
 
         /** [samplesSinceStrum] before the first strum. */
-        const val NO_STRUM = -1
+        const val NO_STRUM = -1L
     }
 }

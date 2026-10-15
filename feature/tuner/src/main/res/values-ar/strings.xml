@@ -102,6 +102,9 @@
     <string name="tuning_editor_name">الاسم</string>
     <string name="tuning_editor_name_empty">أعطِ الدوزان اسمًا</string>
     <string name="tuning_editor_name_taken">يوجد دوزان بهذا الاسم بالفعل</string>
+    <string name="tuning_editor_discard_title">هل تريد تجاهل التغييرات؟</string>
+    <string name="tuning_editor_discard">تجاهل</string>
+    <string name="tuning_editor_keep_editing">متابعة التعديل</string>
     <string name="tuning_editor_strings">الأوتار</string>
     <string name="tuning_editor_string">وتر %1$s</string>
     <string name="tuning_editor_lower">%1$s، نصف درجة أخفض</string>

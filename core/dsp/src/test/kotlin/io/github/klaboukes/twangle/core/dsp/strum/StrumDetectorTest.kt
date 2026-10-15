@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.dsp.strum
 import io.github.klaboukes.twangle.core.dsp.allocatedBytes
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.music.tuningOf
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import org.junit.Assert.assertEquals
@@ -209,6 +210,31 @@ class StrumDetectorTest {
             val result = detect(StrumChords.pluckSynthStrum(StrumChords.detuned(expected, cents), length), expected, StrumDetector(rate, length))
             assertReadings(result, cents, tuning.id)
         }
+    }
+
+    @Test
+    fun `unison strings share one reading`() {
+        // A custom tuning with two G3 strings, as on a 12-string's unison pairs: their partials all
+        // coincide, so the pair is read as one and both strings get its reading.
+        val unison = tuningOf("unison", "E2 A2 D3 G3 G3 E4")
+        val expected = StrumChords.expectedHz(unison)
+        for (pairCents in floatArrayOf(0f, 15f, -20f)) {
+            val cents = floatArrayOf(0f, 0f, 0f, pairCents, pairCents, 0f)
+            val result = detect(StrumChords.pluckSynthStrum(StrumChords.detuned(expected, cents), n), expected)
+            assertReadings(result, cents, "G3 pair at $pairCents")
+            assertEquals(result.cents[3], result.cents[4], 0f)
+            assertEquals(result.present[3], result.present[4])
+            assertEquals(result.levelDb[3], result.levelDb[4], 0f)
+        }
+        // One string of the pair left out: the other still sounds the note, so the pair is heard.
+        val gains = floatArrayOf(1f, 1f, 1f, 1f, 0f, 1f)
+        val result = detect(StrumChords.pluckSynthStrum(expected, n, gains = gains), expected)
+        assertReadings(result, FloatArray(6), "one G3 left out")
+        // A pair on the top strings (E4 E4) and the unison first in the list read alike.
+        val top = StrumChords.expectedHz(tuningOf("top_pair", "E4 E2 A2 D3 G3 E4"))
+        val topResult = detect(StrumChords.pluckSynthStrum(top, n), top)
+        assertReadings(topResult, FloatArray(6), "E4 pair")
+        assertEquals(topResult.cents[0], topResult.cents[5], 0f)
     }
 
     @Test

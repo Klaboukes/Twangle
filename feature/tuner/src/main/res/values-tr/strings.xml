@@ -94,6 +94,9 @@
     <string name="tuning_editor_name">Ad</string>
     <string name="tuning_editor_name_empty">Akorda bir ad ver</string>
     <string name="tuning_editor_name_taken">Bu adda bir akort zaten var</string>
+    <string name="tuning_editor_discard_title">Değişiklikler silinsin mi?</string>
+    <string name="tuning_editor_discard">Sil</string>
+    <string name="tuning_editor_keep_editing">Düzenlemeye devam et</string>
     <string name="tuning_editor_strings">Teller</string>
     <string name="tuning_editor_string">%1$s teli</string>
     <string name="tuning_editor_lower">%1$s, yarım ses aşağı</string>

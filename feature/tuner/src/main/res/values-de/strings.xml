@@ -94,6 +94,9 @@
     <string name="tuning_editor_name">Name</string>
     <string name="tuning_editor_name_empty">Gib der Stimmung einen Namen</string>
     <string name="tuning_editor_name_taken">Es gibt schon eine Stimmung mit diesem Namen</string>
+    <string name="tuning_editor_discard_title">Änderungen verwerfen?</string>
+    <string name="tuning_editor_discard">Verwerfen</string>
+    <string name="tuning_editor_keep_editing">Weiter bearbeiten</string>
     <string name="tuning_editor_strings">Saiten</string>
     <string name="tuning_editor_string">%1$s-Saite</string>
     <string name="tuning_editor_lower">%1$s, einen Halbton tiefer</string>

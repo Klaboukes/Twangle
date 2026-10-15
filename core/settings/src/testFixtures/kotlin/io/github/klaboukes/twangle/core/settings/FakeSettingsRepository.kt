@@ -45,21 +45,26 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     private var lastCustomId = 0
 
-    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>): CustomTuning {
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning {
         val added = CustomTuning(
             "${CustomTuning.ID_PREFIX}${++lastCustomId}", CustomTuning.normalizeName(name), instrument, notes,
         )
-        state.update { it.copy(customTunings = it.customTunings + added) }
+        state.update {
+            val withIt = it.copy(customTunings = it.customTunings + added)
+            if (pick) withIt.copy(instrument = instrument, tuning = added.tuning) else withIt
+        }
         return added
     }
 
-    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>): CustomTuning? {
+    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>, pick: Boolean): CustomTuning? {
         val old = state.value.customTunings.firstOrNull { it.id == id } ?: return null
         val changed = CustomTuning(id, CustomTuning.normalizeName(name), old.instrument, notes)
         state.update { settings ->
+            val picked = pick || settings.tuning.id == id
             settings.copy(
                 customTunings = settings.customTunings.map { if (it.id == id) changed else it },
-                tuning = if (settings.tuning.id == id) changed.tuning else settings.tuning,
+                instrument = if (picked) changed.instrument else settings.instrument,
+                tuning = if (picked) changed.tuning else settings.tuning,
             )
         }
         return changed

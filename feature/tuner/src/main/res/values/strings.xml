@@ -129,6 +129,10 @@
     <!-- Shown under the name only after Save is tapped, until the name is changed. -->
     <string name="tuning_editor_name_empty">Give the tuning a name</string>
     <string name="tuning_editor_name_taken">There is already a tuning with this name</string>
+    <!-- Asks before the editor is closed (close button, Back) with edits that are not saved. -->
+    <string name="tuning_editor_discard_title">Discard changes?</string>
+    <string name="tuning_editor_discard">Discard</string>
+    <string name="tuning_editor_keep_editing">Keep editing</string>
     <string name="tuning_editor_strings">Strings</string>
     <!-- A string by its note in the standard tuning, e.g. "E2 string"; as TalkBack says it, "E 2 string". -->
     <string name="tuning_editor_string">%1$s string</string>

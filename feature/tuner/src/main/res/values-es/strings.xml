@@ -95,6 +95,9 @@
     <string name="tuning_editor_name">Nombre</string>
     <string name="tuning_editor_name_empty">Ponle un nombre a la afinación</string>
     <string name="tuning_editor_name_taken">Ya hay una afinación con este nombre</string>
+    <string name="tuning_editor_discard_title">¿Descartar los cambios?</string>
+    <string name="tuning_editor_discard">Descartar</string>
+    <string name="tuning_editor_keep_editing">Seguir editando</string>
     <string name="tuning_editor_strings">Cuerdas</string>
     <string name="tuning_editor_string">Cuerda %1$s</string>
     <string name="tuning_editor_lower">%1$s, un semitono más bajo</string>

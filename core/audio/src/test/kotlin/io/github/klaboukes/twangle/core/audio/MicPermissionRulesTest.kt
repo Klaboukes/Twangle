@@ -1,9 +1,9 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.audio
 
-import io.github.klaboukes.twangle.feature.tuner.MicPermissionStatus.DENIED
-import io.github.klaboukes.twangle.feature.tuner.MicPermissionStatus.GRANTED
-import io.github.klaboukes.twangle.feature.tuner.MicPermissionStatus.NOT_REQUESTED
-import io.github.klaboukes.twangle.feature.tuner.MicPermissionStatus.PERMANENTLY_DENIED
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus.DENIED
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus.GRANTED
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus.NOT_REQUESTED
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus.PERMANENTLY_DENIED
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

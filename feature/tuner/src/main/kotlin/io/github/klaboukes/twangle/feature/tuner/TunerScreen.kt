@@ -72,6 +72,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.MicPermissionRules
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.appLanguage

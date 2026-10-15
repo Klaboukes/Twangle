@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.tuner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation

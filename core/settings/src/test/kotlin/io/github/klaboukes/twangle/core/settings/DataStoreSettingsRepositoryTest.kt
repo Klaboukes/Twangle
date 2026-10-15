@@ -19,7 +19,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -34,6 +40,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.IOException
 
 class DataStoreSettingsRepositoryTest {
 
@@ -507,6 +514,81 @@ class DataStoreSettingsRepositoryTest {
         file.writeText("this is not a preferences file")
 
         assertEquals(AppSettings(), repository().settings.first())
+    }
+
+    /** [real] for saving, while each read runs [read] with its number (from 0), to make reads fail. */
+    private class FlakyDataStore(
+        private val real: DataStore<Preferences>,
+        private val read: suspend FlowCollector<Preferences>.(n: Int) -> Unit,
+    ) : DataStore<Preferences> {
+        private var reads = 0
+
+        /** How many writes went through. */
+        var writes = 0
+            private set
+
+        override val data: Flow<Preferences> = flow { read(reads++) }
+        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
+            writes++
+            return real.updateData(transform)
+        }
+    }
+
+    @Test
+    fun `a custom tuning saved and picked is one write, so nothing can stop it half way`() = runTest {
+        val real = dataStore()
+        val counted = FlakyDataStore(real) { emitAll(real.data) }
+        val repo = repository(counted)
+        val fifths = repo.addCustomTuning("Fifths", Instruments.BASS_4, fifthsBass, pick = true)
+        assertEquals(1, counted.writes)
+        assertEquals(fifths.tuning, repo.settings.first().tuning)
+        assertEquals(Instruments.BASS_4, repo.settings.first().instrument)
+
+        repo.setInstrument(Instruments.GUITAR)
+        val changed = repo.updateCustomTuning(fifths.id, "Fourths", fifthsBass, pick = true)!!
+        assertEquals(3, counted.writes)
+        assertEquals(changed.tuning, repo.settings.first().tuning)
+        assertEquals(Instruments.BASS_4, repo.settings.first().instrument)
+        assertEquals("Fourths", repo.settings.first().customTunings.single().name)
+
+        assertNull("an unknown id picks nothing", repo.updateCustomTuning("custom_gone", "X", fifthsBass, pick = true))
+        assertEquals(changed.tuning, repo.settings.first().tuning)
+    }
+
+    @Test
+    fun `a failed read shows the defaults, then the saved settings once a read works`() = runTest {
+        val real = dataStore()
+        repository(real).setA4(442f)
+        val flaky = FlakyDataStore(real) { n -> if (n == 0) throw IOException("read failed") else emitAll(real.data) }
+
+        val seen = repository(flaky).settings.take(2).toList()
+
+        assertEquals(listOf(440f, 442f), seen.map { it.a4Hz })
+    }
+
+    @Test
+    fun `a read failing after the settings were shown never shows the defaults, and later changes still arrive`() = runTest {
+        val real = dataStore()
+        repository(real).setA4(442f)
+        val flaky = FlakyDataStore(real) { n ->
+            if (n == 0) {
+                emit(real.data.first())
+                // Saved while reading was broken: the next read must bring it.
+                real.edit { it[floatPreferencesKey("a4_hz")] = 445f }
+                throw IOException("read failed")
+            }
+            emitAll(real.data)
+        }
+
+        val seen = repository(flaky).settings.take(2).toList()
+
+        assertEquals(listOf(442f, 445f), seen.map { it.a4Hz })
+    }
+
+    @Test
+    fun `a failed read is tried again after half a second, then less and less often`() {
+        assertEquals(listOf(500L, 1_000L, 2_000L, 4_000L, 8_000L, 16_000L, 30_000L, 30_000L), (0L..7L).map(DataStoreSettingsRepository::readRetryMillis))
+        assertEquals(30_000L, DataStoreSettingsRepository.readRetryMillis(Long.MAX_VALUE))
     }
 
     @Test

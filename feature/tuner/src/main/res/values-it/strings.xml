@@ -96,6 +96,9 @@
     <string name="tuning_editor_name">Nome</string>
     <string name="tuning_editor_name_empty">Dai un nome all\'accordatura</string>
     <string name="tuning_editor_name_taken">Esiste già un\'accordatura con questo nome</string>
+    <string name="tuning_editor_discard_title">Ignorare le modifiche?</string>
+    <string name="tuning_editor_discard">Ignora</string>
+    <string name="tuning_editor_keep_editing">Continua a modificare</string>
     <string name="tuning_editor_strings">Corde</string>
     <string name="tuning_editor_string">Corda %1$s</string>
     <string name="tuning_editor_lower">%1$s, un semitono sotto</string>

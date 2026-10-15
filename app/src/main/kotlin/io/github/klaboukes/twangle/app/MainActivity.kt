@@ -101,7 +101,8 @@ class MainActivity : AppCompatActivity() {
      * Settings) at the bottom, or the rail at the start edge on its side. Tuning shows the tuner with
      * the instrument and tuning panel open over it. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
-     * (the home-screen widget) shows the tuner, as Back does.
+     * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
+     * asking before it drops edits.
      *
      * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
      * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
@@ -164,14 +165,15 @@ class MainActivity : AppCompatActivity() {
                     saveableState.removeState(Screen.TUNING_EDITOR.name)
                     screen = Screen.TUNER
                 }
-                // A tap on the home-screen widget: back to the tuner (an open editor's draft is dropped, as with Back).
+                // A tap on the home-screen widget: back to the tuner. The tuning editor handles it itself,
+                // as it does Back: it asks before dropping a draft with edits.
                 LaunchedEffect(openTunerRequest) {
-                    if (openTunerRequest == 0) return@LaunchedEffect
-                    if (screen == Screen.TUNING_EDITOR) closeEditor() else screen = Screen.TUNER
+                    if (openTunerRequest == 0 || screen == Screen.TUNING_EDITOR) return@LaunchedEffect
+                    screen = Screen.TUNER
                 }
                 // From the tuner, Back is Android's own: it leaves the app.
-                screen.back?.let { target ->
-                    BackHandler { if (screen == Screen.TUNING_EDITOR) closeEditor() else screen = target }
+                if (screen != Screen.TUNING_EDITOR) {
+                    screen.back?.let { target -> BackHandler { screen = target } }
                 }
                 TourHost(
                     open = tourOpen,
@@ -252,6 +254,7 @@ class MainActivity : AppCompatActivity() {
                                     instrument = Instruments.byId(editorInstrumentId) ?: Instruments.DEFAULT,
                                     editingId = editorTuningId,
                                     onClose = closeEditor,
+                                    closeRequest = openTunerRequest,
                                 )
                             }
                         }

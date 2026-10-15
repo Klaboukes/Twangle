@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -55,6 +56,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -98,8 +100,9 @@ fun AppNavigationFrame(
     if (selected != null) lastSelected[0] = selected
     val tab = selected ?: lastSelected[0]
     BoxWithConstraints(modifier.fillMaxSize()) {
-        if (useRail(maxWidth.value, maxHeight.value)) {
-            Row(Modifier.fillMaxSize()) {
+        val rail = useRail(maxWidth.value, maxHeight.value)
+        val navigation = @Composable {
+            if (rail) {
                 AnimatedVisibility(
                     visible = shown,
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
@@ -107,19 +110,46 @@ fun AppNavigationFrame(
                 ) {
                     AppNavigationRail(tab, onSelect, onTuning, tuningState)
                 }
-                val taken = if (shown) Modifier.consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Start)) else Modifier
-                Box(Modifier.weight(1f).fillMaxHeight().then(taken)) { content() }
-            }
-        } else {
-            Column(Modifier.fillMaxSize()) {
-                val taken = if (shown) Modifier.consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)) else Modifier
-                Box(Modifier.weight(1f).fillMaxWidth().then(taken)) { content() }
+            } else {
                 AnimatedVisibility(
                     visible = shown,
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 ) {
                     AppNavigationBar(tab, onSelect, onTuning, tuningState)
+                }
+            }
+        }
+        val taken = when {
+            !shown -> Modifier
+            rail -> Modifier.consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Start))
+            else -> Modifier.consumeWindowInsets(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+        }
+        // [content] sits at the same place in the composition upright and on its side: rememberSaveable
+        // keys follow that place, so a different place (a Row for the rail, a Column for the bar) lost
+        // every screen's saved state on turning the phone, and brought back the state from the last time
+        // in the other orientation on turning back.
+        val body = @Composable { Box(taken) { content() } }
+        Layout(contents = listOf(navigation, body), modifier = Modifier.fillMaxSize()) { (navs, bodies), constraints ->
+            val width = constraints.maxWidth
+            val height = constraints.maxHeight
+            val navPlaceables = navs.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+            val navWidth = navPlaceables.maxOfOrNull { it.width } ?: 0
+            val navHeight = navPlaceables.maxOfOrNull { it.height } ?: 0
+            val bodyConstraints = if (rail) {
+                Constraints.fixed((width - navWidth).coerceAtLeast(0), height)
+            } else {
+                Constraints.fixed(width, (height - navHeight).coerceAtLeast(0))
+            }
+            val bodyPlaceables = bodies.map { it.measure(bodyConstraints) }
+            layout(width, height) {
+                // Relative placement mirrors in right-to-left languages, as a Row puts the rail at the start.
+                if (rail) {
+                    navPlaceables.forEach { it.placeRelative(0, 0) }
+                    bodyPlaceables.forEach { it.placeRelative(navWidth, 0) }
+                } else {
+                    bodyPlaceables.forEach { it.placeRelative(0, 0) }
+                    navPlaceables.forEach { it.placeRelative(0, height - it.height) }
                 }
             }
         }

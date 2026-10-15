@@ -21,9 +21,11 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import java.io.IOException
 import java.util.UUID
 
@@ -32,17 +34,33 @@ import java.util.UUID
  *
  * Reading is forgiving: a missing, unknown or out-of-range value (e.g. a tuning removed in a later
  * version) falls back to its default, and an unreadable file gives all defaults instead of crashing
- * the tuner. Damaged custom tunings are skipped (see [CustomTuningCodec]), and a picked one that is
- * gone gives its instrument's standard tuning. Create it once per process with [create]: DataStore
- * allows only one instance per file. [newId] makes the ids of new custom tunings.
+ * the tuner, while a failed read is tried again ([readRetryMillis]). Damaged custom tunings are
+ * skipped (see [CustomTuningCodec]), and a picked one that is gone gives its instrument's standard
+ * tuning. Create it once per process with [create]: DataStore allows only one instance per file.
+ * [newId] makes the ids of new custom tunings.
  */
 class DataStoreSettingsRepository internal constructor(
     private val dataStore: DataStore<Preferences>,
     private val newId: () -> String = { CustomTuning.ID_PREFIX + UUID.randomUUID() },
 ) : SettingsRepository {
 
-    override val settings: Flow<AppSettings> = dataStore.data
-        .catch { if (it is IOException) emit(emptyPreferences()) else throw it }
+    override val settings: Flow<AppSettings> = flow {
+        var shown = false
+        dataStore.data
+            // A read that fails (an I/O error, not a damaged file: that is replaced, see create)
+            // shows the defaults if nothing was shown yet, then tries again, so one failed read
+            // doesn't keep the settings at their defaults, or stop later changes, for the session.
+            .retryWhen { cause, attempt ->
+                if (cause !is IOException) return@retryWhen false
+                if (!shown) emit(emptyPreferences())
+                delay(readRetryMillis(attempt))
+                true
+            }
+            .collect {
+                shown = true
+                emit(it)
+            }
+    }
         .map(::toSettings)
         .distinctUntilChanged()
 
@@ -71,13 +89,16 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>): CustomTuning {
+    override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning {
         val added = CustomTuning(newId(), CustomTuning.normalizeName(name), instrument, notes)
-        dataStore.edit { saveCustomTunings(it, customTunings(it) + added) }
+        dataStore.edit {
+            saveCustomTunings(it, customTunings(it) + added)
+            if (pick) pickCustomTuning(it, added)
+        }
         return added
     }
 
-    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>): CustomTuning? {
+    override suspend fun updateCustomTuning(id: String, name: String, notes: List<Note>, pick: Boolean): CustomTuning? {
         var updated: CustomTuning? = null
         dataStore.edit {
             val tunings = customTunings(it)
@@ -85,6 +106,7 @@ class DataStoreSettingsRepository internal constructor(
             if (index < 0) return@edit
             val changed = CustomTuning(id, CustomTuning.normalizeName(name), tunings[index].instrument, notes)
             saveCustomTunings(it, tunings.toMutableList().apply { set(index, changed) })
+            if (pick) pickCustomTuning(it, changed)
             updated = changed
         }
         return updated
@@ -287,8 +309,16 @@ class DataStoreSettingsRepository internal constructor(
             ) { context.applicationContext.preferencesDataStoreFile(FILE_NAME) },
         )
 
+        /** The wait after failed read number [attempt] + 1 before trying again: 0.5 s, doubling up to 30 s. */
+        internal fun readRetryMillis(attempt: Long): Long = (500L shl attempt.coerceAtMost(6).toInt()).coerceAtMost(30_000L)
+
         private fun customTunings(prefs: Preferences): List<CustomTuning> =
             CustomTuningCodec.decode(prefs[CUSTOM_TUNINGS])
+
+        private fun pickCustomTuning(prefs: MutablePreferences, tuning: CustomTuning) {
+            prefs[TUNING_ID] = tuning.id
+            prefs[INSTRUMENT_ID] = tuning.instrument.id
+        }
 
         private fun saveCustomTunings(prefs: MutablePreferences, tunings: List<CustomTuning>) {
             if (tunings.isEmpty()) prefs.remove(CUSTOM_TUNINGS) else prefs[CUSTOM_TUNINGS] = CustomTuningCodec.encode(tunings)

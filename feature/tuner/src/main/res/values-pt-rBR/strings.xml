@@ -96,6 +96,9 @@
     <string name="tuning_editor_name">Nome</string>
     <string name="tuning_editor_name_empty">Dê um nome à afinação</string>
     <string name="tuning_editor_name_taken">Já existe uma afinação com este nome</string>
+    <string name="tuning_editor_discard_title">Descartar as alterações?</string>
+    <string name="tuning_editor_discard">Descartar</string>
+    <string name="tuning_editor_keep_editing">Continuar editando</string>
     <string name="tuning_editor_strings">Cordas</string>
     <string name="tuning_editor_string">Corda %1$s</string>
     <string name="tuning_editor_lower">%1$s, um semitom abaixo</string>

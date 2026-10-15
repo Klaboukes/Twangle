@@ -4,6 +4,7 @@ import android.os.LocaleList
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
@@ -87,6 +88,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     private val shownHidden = mutableStateOf(false)
     private val picked = mutableListOf<Destination>()
     private var tuningTaps = 0
+    private var contentStarts = 0
 
     private fun show() {
         compose.setContent {
@@ -103,6 +105,8 @@ class NavigationBarTest(private val style: VisualStyle) {
                         hidden = shownHidden.value,
                         modifier = Modifier.testTag(WINDOW),
                     ) {
+                        // Counts how often the content starts afresh.
+                        remember { contentStarts++ }
                         Box(Modifier.fillMaxSize().testTag(CONTENT))
                     }
                 }
@@ -270,6 +274,21 @@ class NavigationBarTest(private val style: VisualStyle) {
             for (y in 0 until pixels.height) for (x in 0 until pixels.width) if (near(pixels[x, y].toArgb(), accent)) lit++
             if (lit > 0) fail("$style ${if (dark) "dark" else "light"} Tuning: $lit accent pixels")
         }
+    }
+
+    @Test
+    fun turningBetweenBarAndRailKeepsTheContentAndItsSavedState() {
+        // The content sits at the same place in the composition either way, so its remembered and
+        // saved state (keyed by that place) carries over when the phone turns.
+        show()
+        compose.waitForIdle()
+        assertEquals(1, contentStarts)
+        for (size in listOf(PHONE_LANDSCAPE, PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            compose.waitForIdle()
+        }
+        compose.onNodeWithTag(NavigationTestTags.RAIL).assertExists()
+        assertEquals(1, contentStarts)
     }
 
     /** The tuning editor has no bar, and the compact tuner hides the rail: the content takes the whole window. */

@@ -91,6 +91,9 @@
     <string name="tuning_editor_name">이름</string>
     <string name="tuning_editor_name_empty">튜닝 이름을 입력하세요</string>
     <string name="tuning_editor_name_taken">같은 이름의 튜닝이 이미 있어요</string>
+    <string name="tuning_editor_discard_title">변경사항을 버릴까요?</string>
+    <string name="tuning_editor_discard">버리기</string>
+    <string name="tuning_editor_keep_editing">계속 수정</string>
     <string name="tuning_editor_strings">줄</string>
     <string name="tuning_editor_string">%1$s 줄</string>
     <string name="tuning_editor_lower">%1$s, 반음 낮게</string>

@@ -98,6 +98,9 @@
     <string name="tuning_editor_name">Nazwa</string>
     <string name="tuning_editor_name_empty">Nadaj strojowi nazwę</string>
     <string name="tuning_editor_name_taken">Strój o tej nazwie już istnieje</string>
+    <string name="tuning_editor_discard_title">Odrzucić zmiany?</string>
+    <string name="tuning_editor_discard">Odrzuć</string>
+    <string name="tuning_editor_keep_editing">Edytuj dalej</string>
     <string name="tuning_editor_strings">Struny</string>
     <string name="tuning_editor_string">Struna %1$s</string>
     <string name="tuning_editor_lower">%1$s, pół tonu niżej</string>

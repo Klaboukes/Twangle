@@ -211,6 +211,25 @@ class StrumListenerTest {
     }
 
     @Test
+    fun `a strum is still noticed after more than 12 hours open`() {
+        // 2^31 samples (12.4 h at 48 kHz) after the first strum the count used to overflow an Int,
+        // and no strum counted again. Silence in big chunks, so the 13 hours take a few seconds.
+        listen(take(2.5, 0.5 to standard))
+        assertEquals(1, listener.strumCount)
+        val silence = FloatArray(1 shl 22)
+        val chunks = (13L * 3600 * rate / silence.size).toInt()
+        repeat(chunks) {
+            var pos = 0
+            while (pos < silence.size) pos += listener.push(silence, pos, silence.size - pos)
+        }
+        assertTrue(listener.samplesSinceStrum > Int.MAX_VALUE)
+        val frames = listen(take(2.5, 0.5 to standard))
+        assertEquals(2, listener.strumCount)
+        assertTrue(frames.isNotEmpty())
+        assertTrue(frames.all { it.strum == 2 })
+    }
+
+    @Test
     fun `reset forgets the strum`() {
         listen(take(1.2, 0.5 to standard))
         assertEquals(1, listener.strumCount)

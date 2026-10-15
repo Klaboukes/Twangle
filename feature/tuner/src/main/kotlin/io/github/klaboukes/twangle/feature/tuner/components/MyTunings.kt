@@ -151,7 +151,7 @@ private fun DeleteTuningDialog(name: String, onConfirm: () -> Unit, onDismiss: (
         // take a line per word at large text.
         title = {
             val title = MaterialTheme.typography.titleMedium
-            Text(stringResource(R.string.tuner_delete_tuning_title), style = title.copy(fontSize = title.fontSize * TITLE_SCALE))
+            Text(stringResource(R.string.tuner_delete_tuning_title), style = title.copy(fontSize = title.fontSize * DIALOG_TITLE_SCALE))
         },
         text = { Text(stringResource(R.string.tuner_delete_tuning_text, name)) },
         dismissButton = {
@@ -166,7 +166,8 @@ private fun DeleteTuningDialog(name: String, onConfirm: () -> Unit, onDismiss: (
 }
 
 /**
- * The question is set in the style's title face a little larger than the panel's list (the dialog's
- * own headline size leaves "verwijderen?" no room on a line at 2× text in the wider faces).
+ * A question dialog's title (this one, and the tuning editor's "Discard changes?") is set in the
+ * style's title face a little larger than the panel's list (the dialog's own headline size leaves
+ * "verwijderen?" no room on a line at 2× text in the wider faces).
  */
-private const val TITLE_SCALE = 1.15f
+internal const val DIALOG_TITLE_SCALE = 1.15f

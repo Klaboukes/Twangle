@@ -61,6 +61,14 @@ internal data class TuningDraft(val name: String, val midi: List<Int>) {
         }
     }
 
+    /**
+     * Whether this draft holds edits that [opened] (the draft the editor opened with) doesn't: another
+     * name, as it would be saved ([CustomTuning.normalizeName], so spaces alone are no edit), or
+     * another note. Closing the editor asks first then.
+     */
+    fun hasChangesFrom(opened: TuningDraft): Boolean =
+        midi != opened.midi || CustomTuning.normalizeName(name) != CustomTuning.normalizeName(opened.name)
+
     companion object {
         /** A new tuning for [instrument]: no name yet, its standard tuning's notes. */
         fun forNew(instrument: Instrument) = TuningDraft("", instrument.defaultTuning.strings.map { it.midi })
@@ -72,17 +80,15 @@ internal data class TuningDraft(val name: String, val midi: List<Int>) {
 }
 
 /**
- * Saves [draft] and picks it, so the tuner uses the tuning just saved: a new tuning for [instrument]
- * when [editingId] is null, else the changes to that custom tuning (whose instrument stays). Returns
- * the saved tuning, or null when [editingId] is gone (deleted meanwhile); then nothing is saved.
- * Check [TuningDraft.nameProblem] first: an empty name throws.
+ * Saves [draft] and picks it in one write, so the tuner uses the tuning just saved and nothing can
+ * stop the save half way: a new tuning for [instrument] when [editingId] is null, else the changes to
+ * that custom tuning (whose instrument stays). Returns the saved tuning, or null when [editingId] is
+ * gone (deleted meanwhile); then nothing is saved. Check [TuningDraft.nameProblem] first: an empty
+ * name throws.
  */
-internal suspend fun SettingsRepository.saveDraft(draft: TuningDraft, instrument: Instrument, editingId: String?): CustomTuning? {
-    val saved = if (editingId == null) {
-        addCustomTuning(draft.name, instrument, draft.notes)
+internal suspend fun SettingsRepository.saveDraft(draft: TuningDraft, instrument: Instrument, editingId: String?): CustomTuning? =
+    if (editingId == null) {
+        addCustomTuning(draft.name, instrument, draft.notes, pick = true)
     } else {
-        updateCustomTuning(editingId, draft.name, draft.notes)
-    } ?: return null
-    setTuning(saved.tuning)
-    return saved
-}
+        updateCustomTuning(editingId, draft.name, draft.notes, pick = true)
+    }

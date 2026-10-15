@@ -206,15 +206,56 @@ class TuningEditorTest {
         assertEquals(1, closed)
     }
 
+    private val close get() = compose.onNodeWithTag(TuningEditorTestTags.CLOSE)
+    private val discardDialog get() = compose.onNodeWithTag(TuningEditorTestTags.DISCARD_DIALOG)
+
     @Test
-    fun closingSavesNothing() {
+    fun closingWithEditsAsksFirstAndSavesNothing() {
         show()
         name.performTextReplacement("Something")
-        compose.onNodeWithTag(TuningEditorTestTags.CLOSE)
-            .assert(hasContentDescription(string(R.string.tuning_editor_close)))
+        close.assert(hasContentDescription(string(R.string.tuning_editor_close))).performClick()
+        discardDialog.assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.tuning_editor_discard_title)).assertIsDisplayed()
+        assertEquals(0, closed)
+        compose.onNodeWithTag(TuningEditorTestTags.DISCARD)
+            .assert(hasText(string(R.string.tuning_editor_discard)))
             .performClick()
+        discardDialog.assertDoesNotExist()
         assertEquals(1, closed)
         assertTrue(repository.current.customTunings.isEmpty())
+    }
+
+    @Test
+    fun keepEditingStaysWithTheEdits() {
+        show()
+        val lowE = spokenString("E", 2)
+        lower(lowE).performClick()
+        lower(lowE).performClick()
+        close.performClick()
+        compose.onNodeWithTag(TuningEditorTestTags.KEEP_EDITING)
+            .assert(hasText(string(R.string.tuning_editor_keep_editing)))
+            .performClick()
+        discardDialog.assertDoesNotExist()
+        assertEquals(0, closed)
+        noteOf(lowE, "D 2").assertIsDisplayed()
+        // Back the note goes: nothing is changed any more, so closing doesn't ask.
+        raise(lowE).performClick()
+        raise(lowE).performClick()
+        close.performClick()
+        discardDialog.assertDoesNotExist()
+        assertEquals(1, closed)
+    }
+
+    @Test
+    fun closingWithoutEditsDoesNotAsk() {
+        val mine = CustomTuning("custom_1", "Open C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
+        show(settings = AppSettings(customTunings = listOf(mine)), editingId = mine.id)
+        // Spaces alone change nothing that would be saved.
+        name.performTextReplacement(" Open C ")
+        close.performClick()
+        discardDialog.assertDoesNotExist()
+        assertEquals(1, closed)
+        assertEquals(listOf(mine), repository.current.customTunings)
     }
 
     @Test
@@ -261,6 +302,19 @@ class TuningEditorTest {
         for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
             shownStyle.value = style
             checkWhollyShown(instrument, style)
+        }
+    }
+
+    @Test
+    fun theDiscardQuestionShowsWhollyAtTwiceTheTextSize() {
+        show(fontScale = 2f, locale = "nl")
+        name.performTextReplacement("Iets")
+        close.performClick()
+        for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
+            shownStyle.value = style
+            assertWhollyShown(compose.onNodeWithText("Wijzigingen weggooien?"), "question in $style", scroll = false)
+            assertWhollyShown(compose.onNodeWithText("Weggooien"), "discard in $style", scroll = false)
+            assertWhollyShown(compose.onNodeWithText("Verder bewerken"), "keep editing in $style", scroll = false)
         }
     }
 

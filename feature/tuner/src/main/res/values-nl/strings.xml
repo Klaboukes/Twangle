@@ -102,6 +102,9 @@
     <string name="tuning_editor_name">Naam</string>
     <string name="tuning_editor_name_empty">Geef de stemming een naam</string>
     <string name="tuning_editor_name_taken">Er is al een stemming met deze naam</string>
+    <string name="tuning_editor_discard_title">Wijzigingen weggooien?</string>
+    <string name="tuning_editor_discard">Weggooien</string>
+    <string name="tuning_editor_keep_editing">Verder bewerken</string>
     <string name="tuning_editor_strings">Snaren</string>
     <string name="tuning_editor_string">%1$s-snaar</string>
     <string name="tuning_editor_lower">%1$s, halve toon lager</string>

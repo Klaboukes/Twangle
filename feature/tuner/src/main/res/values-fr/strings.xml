@@ -96,6 +96,9 @@
     <string name="tuning_editor_name">Nom</string>
     <string name="tuning_editor_name_empty">Donnez un nom à l\'accordage</string>
     <string name="tuning_editor_name_taken">Un accordage porte déjà ce nom</string>
+    <string name="tuning_editor_discard_title">Abandonner les modifications ?</string>
+    <string name="tuning_editor_discard">Abandonner</string>
+    <string name="tuning_editor_keep_editing">Continuer</string>
     <string name="tuning_editor_strings">Cordes</string>
     <string name="tuning_editor_string">Corde %1$s</string>
     <string name="tuning_editor_lower">%1$s, un demi-ton plus bas</string>

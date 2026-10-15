@@ -91,6 +91,9 @@
     <string name="tuning_editor_name">Nama</string>
     <string name="tuning_editor_name_empty">Beri nama stem ini</string>
     <string name="tuning_editor_name_taken">Sudah ada stem dengan nama ini</string>
+    <string name="tuning_editor_discard_title">Buang perubahan?</string>
+    <string name="tuning_editor_discard">Buang</string>
+    <string name="tuning_editor_keep_editing">Lanjutkan mengedit</string>
     <string name="tuning_editor_strings">Senar</string>
     <string name="tuning_editor_string">Senar %1$s</string>
     <string name="tuning_editor_lower">%1$s, setengah nada lebih rendah</string>

@@ -91,6 +91,9 @@
     <string name="tuning_editor_name">名称</string>
     <string name="tuning_editor_name_empty">给定弦起个名字</string>
     <string name="tuning_editor_name_taken">已有同名的定弦</string>
+    <string name="tuning_editor_discard_title">放弃更改？</string>
+    <string name="tuning_editor_discard">放弃</string>
+    <string name="tuning_editor_keep_editing">继续编辑</string>
     <string name="tuning_editor_strings">琴弦</string>
     <string name="tuning_editor_string">%1$s 弦</string>
     <string name="tuning_editor_lower">%1$s，降低一个半音</string>

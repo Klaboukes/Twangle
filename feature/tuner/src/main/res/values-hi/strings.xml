@@ -93,6 +93,9 @@
     <string name="tuning_editor_name">नाम</string>
     <string name="tuning_editor_name_empty">ट्यूनिंग को नाम दें</string>
     <string name="tuning_editor_name_taken">इस नाम की ट्यूनिंग पहले से है</string>
+    <string name="tuning_editor_discard_title">बदलाव छोड़ दें?</string>
+    <string name="tuning_editor_discard">छोड़ दें</string>
+    <string name="tuning_editor_keep_editing">बदलाव जारी रखें</string>
     <string name="tuning_editor_strings">तार</string>
     <string name="tuning_editor_string">%1$s तार</string>
     <string name="tuning_editor_lower">%1$s, एक सेमीटोन नीचे</string>

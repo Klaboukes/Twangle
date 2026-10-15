@@ -115,6 +115,19 @@ class TuningDraftTest {
     }
 
     @Test
+    fun onlyAnotherNameOrNoteCountsAsAnEdit() {
+        val opened = TuningDraft.forNew(Instruments.GUITAR)
+        assertFalse(opened.hasChangesFrom(opened))
+        assertFalse("spaces alone", opened.copy(name = "   ").hasChangesFrom(opened))
+        assertTrue(opened.copy(name = "Drop C").hasChangesFrom(opened))
+        assertTrue(opened.lowered(0).hasChangesFrom(opened))
+        assertFalse("lowered and raised back", opened.lowered(0).raised(0).hasChangesFrom(opened))
+        val mine = TuningDraft("Open C", listOf(36, 43, 48, 55, 60, 64))
+        assertFalse(mine.copy(name = " Open   C ").hasChangesFrom(mine))
+        assertTrue("case is kept when saved", mine.copy(name = "open c").hasChangesFrom(mine))
+    }
+
+    @Test
     fun aNewTuningIsSavedAndPicked() = runTest {
         val repository = FakeSettingsRepository()
         val draft = TuningDraft("  Drop   C ", listOf(36, 43, 48, 53, 57, 62))

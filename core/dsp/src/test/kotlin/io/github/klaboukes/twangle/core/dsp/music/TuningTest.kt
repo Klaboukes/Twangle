@@ -145,6 +145,16 @@ class TuningTest {
         assertTrue(single.centsFromString(60f, 0) > 0f)
     }
 
+    @Test
+    fun `unison strings are allowed and both read the same note`() {
+        val unison = tuningOf("unison", "E2 A2 D3 G3 G3 E4")
+        assertEquals(6, unison.stringCount)
+        val g3 = unison.strings[3].midi.toFloat()
+        // The first of the pair is the nearest; a lock on the second reads the same cents.
+        assertEquals(3, unison.nearestStringIndex(g3 + 0.1f))
+        assertEquals(unison.centsFromString(g3 + 0.1f, 3), unison.centsFromString(g3 + 0.1f, 4), 0f)
+    }
+
     private fun detune(hz: Float, cents: Float): Float = (hz * 2.0.pow(cents / 1200.0)).toFloat()
 
     private companion object {

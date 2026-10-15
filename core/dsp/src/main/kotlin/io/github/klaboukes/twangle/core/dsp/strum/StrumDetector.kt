@@ -106,9 +106,14 @@ class StrumDetector(
     private val partialFit = PartialFit(frameLength, fftSize, sampleRate, maxStrings)
     private val othersHz = DoubleArray(maxStrings)
 
+    // Distinct expected frequencies (unison strings share one) and each string's index in them.
+    private val courseHz = FloatArray(maxStrings)
+    private val courseOf = IntArray(maxStrings)
+
     /**
      * Finds each of the first [stringCount] strings of [expectedHz] (Hz, any order) in the last
-     * [frameLength] samples of [frame] (−1..1) and writes the readings to [result].
+     * [frameLength] samples of [frame] (−1..1) and writes the readings to [result]. Strings tuned
+     * to the same note (a unison) can't be told apart, so they share one reading: the pair's.
      */
     fun detect(frame: FloatArray, expectedHz: FloatArray, stringCount: Int, result: StrumResult) {
         require(frame.size >= frameLength) { "frame holds ${frame.size} samples, needs $frameLength" }
@@ -116,8 +121,9 @@ class StrumDetector(
         val start = frame.size - frameLength
         spectrum(frame, start)
 
-        for (s in 0 until stringCount) {
-            val f = expectedHz[s].toDouble()
+        val courses = groupUnisons(expectedHz, stringCount)
+        for (s in 0 until courses) {
+            val f = courseHz[s].toDouble()
             require(f > 0 && f * maxSearchRatio < sampleRate / 2.0) { "expected frequency out of range: $f" }
             partialCount[s] = floor(MAX_PARTIAL_HZ / f).toInt().coerceIn(1, MAX_PARTIALS)
             lowestHz[s] = f / maxSearchRatio
@@ -125,14 +131,46 @@ class StrumDetector(
             estimate[s] = coarse(f, partialCount[s])
             heard[s] = true
         }
-        sortByFrequency(expectedHz, stringCount)
-        for (s in 0 until stringCount) level[s] = 0.0
+        sortByFrequency(courseHz, courses)
+        for (s in 0 until courses) level[s] = 0.0
         for (pass in 0 until REFINE_PASSES) {
-            for (s in 0 until stringCount) measurePartials(s, stringCount)
-            for (s in 0 until stringCount) refine(s, stringCount)
-            decidePresence(stringCount)
+            for (s in 0 until courses) measurePartials(s, courses)
+            for (s in 0 until courses) refine(s, courses)
+            decidePresence(courses)
         }
-        writeResult(expectedHz, stringCount, result)
+        writeResult(courseHz, courses, result)
+        spreadToUnisons(stringCount, result)
+    }
+
+    // Unison strings (one note on two strings, as on a 12-string's high pairs or in a custom
+    // tuning) have every partial in common, so one frame can't tell them apart: they are read as
+    // one course. Fills courseHz with the distinct expected frequencies (first appearance first)
+    // and courseOf with each string's course; returns how many courses there are.
+    private fun groupUnisons(expectedHz: FloatArray, stringCount: Int): Int {
+        var courses = 0
+        for (s in 0 until stringCount) {
+            val f = expectedHz[s]
+            var c = 0
+            while (c < courses && abs(f / courseHz[c] - 1f) > UNISON_RATIO) c++
+            if (c == courses) courseHz[courses++] = f
+            courseOf[s] = c
+        }
+        return courses
+    }
+
+    // result holds one reading per course; gives each string its course's reading. A string's course
+    // is never after the string (courseOf[s] <= s), so going down reads courses not yet overwritten.
+    private fun spreadToUnisons(stringCount: Int, result: StrumResult) {
+        result.stringCount = stringCount
+        for (s in stringCount - 1 downTo 0) {
+            val c = courseOf[s]
+            if (c == s) continue
+            result.frequencyHz[s] = result.frequencyHz[c]
+            result.cents[s] = result.cents[c]
+            result.levelDb[s] = result.levelDb[c]
+            result.present[s] = result.present[c]
+            result.shadowed[s] = result.shadowed[c]
+        }
     }
 
     private fun spectrum(frame: FloatArray, start: Int) {
@@ -420,6 +458,9 @@ class StrumDetector(
         const val REFINE_PASSES = 4
 
         private const val ZERO_PAD = 2
+
+        // Expected frequencies this close (1 cent) are one note: a unison.
+        private const val UNISON_RATIO = 0.000578f
         private const val CENTS_PER_OCTAVE = 1200.0
         private const val TINY = 1e-12
         // Shadowed: the isolation-weighted power is at most this share of the partials' power.

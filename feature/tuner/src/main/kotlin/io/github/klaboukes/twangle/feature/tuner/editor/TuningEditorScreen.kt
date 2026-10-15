@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.editor
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -29,10 +31,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -62,6 +64,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -73,9 +77,9 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.feature.tuner.R
+import io.github.klaboukes.twangle.feature.tuner.components.DIALOG_TITLE_SCALE
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
-import kotlinx.coroutines.launch
 
 /**
  * The tuning editor, a screen of its own (the tuner and its microphone rest meanwhile): a name, then
@@ -83,8 +87,10 @@ import kotlinx.coroutines.launch
  * within [EDITOR_NOTE_RANGE]. With [editingId] null it makes a new tuning for [instrument], starting
  * from its standard notes; with the id of one of [settings]' custom tunings it changes that one (its
  * instrument stays). Save checks the name first (not empty, not already one of the instrument's
- * tunings), then saves, picks the tuning and calls [onClose]; the close button leaves without saving.
- * [settings] are the saved settings, followed live.
+ * tunings), then saves, picks the tuning and calls [onClose]; the save runs in [TuningEditorSaver],
+ * so turning the phone can't cut it off. The close button, Back and each new [closeRequest] (a tap
+ * on the home-screen widget) leave without saving, after asking "Discard changes?" when the draft has
+ * edits. [settings] are the saved settings, followed live.
  */
 @Composable
 fun TuningEditorScreen(
@@ -94,18 +100,46 @@ fun TuningEditorScreen(
     editingId: String?,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    closeRequest: Int = 0,
 ) {
     // Found once: a tuning deleted meanwhile still saves nothing (saveDraft), but the screen stays as it was.
     val editing: CustomTuning? = remember { editingId?.let { id -> settings.customTunings.firstOrNull { it.id == id } } }
     val forInstrument = editing?.instrument ?: instrument
-    var draft by rememberSaveable(stateSaver = DraftSaver) {
-        mutableStateOf(editing?.let(TuningDraft::forEdit) ?: TuningDraft.forNew(forInstrument))
-    }
+    // What the editor opened with: closing asks first once the draft differs from it.
+    val opened = remember { editing?.let(TuningDraft::forEdit) ?: TuningDraft.forNew(forInstrument) }
+    var draft by rememberSaveable(stateSaver = DraftSaver) { mutableStateOf(opened) }
     var problem by rememberSaveable { mutableStateOf<NameProblem?>(null) }
-    var saving by remember { mutableStateOf(false) }
+    var askingDiscard by rememberSaveable { mutableStateOf(false) }
+    val saver: TuningEditorSaver = viewModel { TuningEditorSaver(settingsRepository) }
+    val phase by saver.phase.collectAsStateWithLifecycle()
+    // Also after turning the phone mid-save: the new screen closes once the save is done.
+    LaunchedEffect(phase) {
+        if (phase == SavePhase.SAVED) {
+            saver.closed()
+            onClose()
+        }
+    }
     val presetNames = forInstrument.tunings.map { tuningLabel(it) }
     val takenNames = presetNames + settings.customTuningsFor(forInstrument).filter { it.id != editing?.id }.map { it.name }
-    val scope = rememberCoroutineScope()
+    val requestClose = {
+        // While the save runs (a moment) nothing else closes the editor: it closes when the save is done.
+        if (phase == SavePhase.IDLE) {
+            if (draft.hasChangesFrom(opened)) askingDiscard = true else onClose()
+        }
+    }
+    BackHandler(onBack = requestClose)
+    // Only requests made while the editor is open: the count may have grown before it opened.
+    val openedAtRequest = remember { closeRequest }
+    LaunchedEffect(closeRequest) { if (closeRequest != openedAtRequest) requestClose() }
+    if (askingDiscard) {
+        DiscardChangesDialog(
+            onDiscard = {
+                askingDiscard = false
+                onClose()
+            },
+            onKeepEditing = { askingDiscard = false },
+        )
+    }
     TuningEditor(
         draft = draft,
         instrument = forInstrument,
@@ -120,19 +154,12 @@ fun TuningEditorScreen(
         onLower = { draft = draft.lowered(it) },
         onRaise = { draft = draft.raised(it) },
         onSave = {
-            if (!saving) {
+            if (phase == SavePhase.IDLE) {
                 problem = draft.nameProblem(takenNames)
-                if (problem == null) {
-                    saving = true
-                    val saved = draft
-                    scope.launch {
-                        settingsRepository.saveDraft(saved, forInstrument, editing?.id)
-                        onClose()
-                    }
-                }
+                if (problem == null) saver.save(draft, forInstrument, editing?.id)
             }
         },
-        onClose = onClose,
+        onClose = requestClose,
         modifier = modifier,
     )
 }
@@ -233,6 +260,33 @@ internal fun TuningEditor(
             }
         }
     }
+}
+
+/**
+ * Asks before the editor drops its edits: Discard leaves, Keep editing (and Back, or a tap outside)
+ * stays.
+ */
+@Composable
+private fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onKeepEditing,
+        modifier = Modifier.testTag(TuningEditorTestTags.DISCARD_DIALOG),
+        title = {
+            // As the delete question's: the dialog's own headline size is too big at 2× text in the wider faces.
+            val title = MaterialTheme.typography.titleMedium
+            Text(stringResource(R.string.tuning_editor_discard_title), style = title.copy(fontSize = title.fontSize * DIALOG_TITLE_SCALE))
+        },
+        dismissButton = {
+            TextButton(onClick = onKeepEditing, modifier = Modifier.testTag(TuningEditorTestTags.KEEP_EDITING)) {
+                Text(stringResource(R.string.tuning_editor_keep_editing))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDiscard, modifier = Modifier.testTag(TuningEditorTestTags.DISCARD)) {
+                Text(stringResource(R.string.tuning_editor_discard), color = MaterialTheme.colorScheme.error)
+            }
+        },
+    )
 }
 
 /**
@@ -359,6 +413,9 @@ object TuningEditorTestTags {
     const val CLOSE = "tuning_editor_close"
     const val SAVE = "tuning_editor_save"
     const val NAME = "tuning_editor_name"
+    const val DISCARD_DIALOG = "tuning_editor_discard_dialog"
+    const val DISCARD = "tuning_editor_discard"
+    const val KEEP_EDITING = "tuning_editor_keep_editing"
 
     /** The row of string [index], thickest first. */
     fun string(index: Int): String = "tuning_editor_string_$index"
