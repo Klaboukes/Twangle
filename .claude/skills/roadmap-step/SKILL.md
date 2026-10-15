@@ -26,6 +26,7 @@ gh run list --branch main --limit 1   # did CI pass on the last merge?
 ```
 - **An open PR from an unfinished step:** finish and land it instead of starting something new. Check out its branch and continue from step 4.
 - **The last CI run on `main` failed:** fixing it is this iteration. Read `gh run view <id> --log-failed`, branch `fix/<topic>`, then go to step 4.
+- **ROADMAP.md *Waiting on the owner* has ☐ items:** remind the owner of them in one line each before carrying on.
 - These are one-shot reads. Never poll CI.
 
 ## 1. Pick the increment

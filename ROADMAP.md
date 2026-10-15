@@ -8,6 +8,11 @@ Phases 0–20 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCH
 
 ---
 
+## Waiting on the owner
+Things only the owner can start. Claude mentions these at the start of a session while they're open.
+- ☐ **Overnight run for Phase 22's fit check:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, fixes what it finds, and runs the full UI tests, which takes a few hours
+- ☐ **Note names:** decide whether Polish and Russian should call B "H" (as German does) and whether Turkish and Arabic should use Do-Re-Mi. Until then they use letters with sharps
+
 ## Owner checks (live tests)
 Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
 
@@ -40,7 +45,7 @@ Goal: Twangle speaks the world's major languages before it goes public.
 - ☑ Russian, Turkish and Polish (phone and watch apps, all texts; Cyrillic falls back to the phone font in four styles, and Ancient and Futuristic mix faces in Turkish and Polish titles, see the fit-check item below)
 - ☑ Arabic, with the screens mirrored right-to-left (string row, settings, wave and dial checked in RTL): texts, settings and panels mirror; meter, wave, strum check, string row, tempo dial, beat lights and the A4 slider stay low-left/high-right; Arabic-Indic digits everywhere except octaves in note names (phone checked in Arabic; UI tests in Arabic still to run, in the fit-check item below)
 - ☑ Note names that match local habit: German uses H for B, and French, Italian, Spanish and Portuguese start on Do-Re-Mi (only the default; the notation setting still lets players choose). Settings has *Automatic* (follows the language) plus a German option; German TalkBack says Cis/Des/H; the watch follows its own language (phone checked in German and French; watch not checked on a device)
-- ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages
+- ☐ Long words and other scripts fit at 2× font in every style (UI tests); phone check in a few languages. **Runs overnight, started by the owner** (see *Waiting on the owner*); also fix the Turkish/Polish letters missing from Ancient's and Futuristic's title fonts (words mix two fonts) and check Futuristic's and Space Age's letter spacing on Chinese and Japanese
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
