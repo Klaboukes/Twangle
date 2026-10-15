@@ -755,10 +755,18 @@ Phase 20 (`:wear`). A standalone Wear OS app (`com.google.android.wearable.stand
 - **Large fonts:** the tuner body scrolls when taller than the screen (each pane on its own in two-pane). The 112-unit note name is in dp, so it doesn't grow further; string labels follow the font scale up to 1.3× (fixed 48 dp circles), and shrink further where a name would not fit its button. Squeezed 8-string rows give each button a touch area narrower than 48 dp (41 dp on a 360 dp phone), the only touch targets below 48 dp. A UI test checks every control is reachable at 2× font.
 
 ### Languages
-- **English (default) and Dutch.** Each module keeps its texts in `res/values/strings.xml` with a Dutch copy in `res/values-nl/strings.xml`; brand and symbols (`app_name`, `DADGAD`, ♯/♭, ♪) are `translatable="false"`. Font and library names are proper names and stay in English.
-- **Per-app language (Android 13+):** `:app` sets `androidResources.generateLocaleConfig = true` with `res/resources.properties` (`unqualifiedResLocale=en`); `localeFilters` keeps only `en` and `nl`, so library texts never appear in a third language.
+- **English (default) and Dutch.** Each module keeps its texts in `res/values/strings.xml` with a copy per language in `res/values-<language>/strings.xml`; brand and symbols (`app_name`, `DADGAD`, ♯/♭, ♪) are `translatable="false"`. Font and library names are proper names and stay in English.
+- **One language list:** `twangle.languages` in the root `gradle.properties` (`en,nl`), as Android resource qualifiers (`de`, `pt-rBR`, `zh-rCN`, `b+sr+Latn`). The first is the default, whose texts are in `res/values/`.
+- **Per-app language (Android 13+):** `:app` sets `androidResources.generateLocaleConfig = true` with `res/resources.properties` (`unqualifiedResLocale=en`). Both `:app` and `:wear` set `localeFilters` from `twangle.languages`, so the generated locale config (the in-app language list) holds exactly the listed languages, and library texts never appear in an unlisted one. The locale config takes a language from any resource, libraries included (Compose and AndroidX ship most languages), so a listed language shows up in the list even before Twangle's own texts exist; the guard below is what keeps the list honest.
 - **Formatting:** plurals for counts (`tuner_cents_flat/sharp`) and placeholders for numbers (`%1$.1f Hz`), so Dutch shows "440,0 Hz". Note names are not translated; they follow the notation setting.
-- **Guard:** `LocalizationTest` (JVM, `:app`) fails when an English string has no Dutch copy or different placeholders, and when Kotlin passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar. Lint's `MissingTranslation` and `StringFormat*` back it up.
+- **Guard:** `LocalizationTest` (JVM, `:app`) reads `twangle.languages` and fails when:
+  - a module's English string has no copy in a listed language, or the copy's placeholders differ (for plurals: the "other" item must match, every other item may only use placeholders of "other", and only Android's quantities are allowed);
+  - a `values-<x>/strings.xml` exists for a language that isn't listed;
+  - the first language isn't `unqualifiedResLocale`, or an app module doesn't take `localeFilters` from the list;
+  - Kotlin passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar.
+
+  Every module's `res` and Kotlin sources, the build files and `gradle.properties` are declared inputs of `:app`'s unit tests, so changing any of them reruns the test. Lint's `MissingTranslation` and `StringFormat*` back it up.
+- **Adding a language:** append its qualifier to `twangle.languages`, then add `res/values-<language>/strings.xml` to every module that has a `res/values/strings.xml` (today `:app`, `:wear`, the three features and `:core:designsystem`), translating every translatable string and plural. `LocalizationTest` names what is missing. Nothing else changes: the language list on the phone and the watch's texts follow.
 
 ## 7. Package layout (per module)
 

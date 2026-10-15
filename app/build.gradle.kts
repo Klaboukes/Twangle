@@ -60,9 +60,10 @@ android {
     }
 
     androidResources {
-        // English (default, see res/resources.properties) and Dutch. Library translations for other
-        // languages are dropped, so the UI never mixes languages.
-        localeFilters += listOf("en", "nl")
+        // The languages in gradle.properties (twangle.languages; the first is the default, see
+        // res/resources.properties). Library translations for other languages are dropped, so the UI
+        // never mixes languages.
+        localeFilters += providers.gradleProperty("twangle.languages").get().split(",")
         // Writes the locale config Android 13+ uses for the per-app language setting.
         generateLocaleConfig = true
     }
@@ -82,6 +83,20 @@ androidComponents {
             BuildConfigField("boolean", (variant.buildType == "benchmarkRelease").toString(), "Synthetic tone instead of the mic"),
         )
     }
+}
+
+// LocalizationTest reads every module's texts and Kotlin code, the build files and the language list
+// in gradle.properties. Declaring them as inputs makes a change there rerun the unit tests instead of
+// reusing an earlier result.
+tasks.withType<Test>().configureEach {
+    inputs.files(
+        fileTree(rootDir) {
+            include("gradle.properties")
+            listOf("app", "wear", "feature/*", "core/*").forEach { module ->
+                include("$module/build.gradle.kts", "$module/src/main/res/**", "$module/src/main/kotlin/**")
+            }
+        },
+    ).withPropertyName("localizationSources").withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 dependencies {

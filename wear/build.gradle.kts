@@ -36,8 +36,9 @@ android {
     }
 
     androidResources {
-        // English (default) and Dutch, as on the phone; library texts in other languages are dropped.
-        localeFilters += listOf("en", "nl")
+        // The same languages as the phone (twangle.languages in gradle.properties); library texts in
+        // other languages are dropped.
+        localeFilters += providers.gradleProperty("twangle.languages").get().split(",")
     }
 }
 

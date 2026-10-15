@@ -34,7 +34,7 @@ Goal: a C++ (NDK/Oboe) detector, built only if profiling shows the Kotlin one is
 
 ## Phase 22 — More languages
 Goal: Twangle speaks the world's major languages before it goes public.
-- ☐ `LocalizationTest` checks every supported language, not only Dutch; the in-app language list (Android 13+) shows them all
+- ☑ `LocalizationTest` checks every supported language, not only Dutch; the in-app language list (Android 13+) shows them all (one list, `twangle.languages` in gradle.properties, feeds both apps' `localeFilters` and the test)
 - ☐ Western European: German, French, Spanish, Italian, Portuguese (Brazil)
 - ☐ Asian: Chinese (Simplified), Japanese, Korean, Hindi, Indonesian
 - ☐ Russian, Turkish and Polish
