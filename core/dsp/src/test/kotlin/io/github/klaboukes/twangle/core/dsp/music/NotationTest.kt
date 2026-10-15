@@ -24,6 +24,26 @@ class NotationTest {
     }
 
     @Test
+    fun `german letters call B H and B flat B`() {
+        assertEquals("C C♯ D D♯ E F F♯ G G♯ A A♯ H", names(Notation.GERMAN))
+        val flats = PitchClass.entries.joinToString(" ") { Notation.GERMAN.nameOf(it, Accidental.FLAT) }
+        assertEquals("C D♭ D E♭ E F G♭ G A♭ A B H", flats)
+        assertEquals("E♭ A♭ D♭ G♭ B E♭", strings(Tunings.HALF_STEP_DOWN, Notation.GERMAN))
+        assertEquals("E A D G H E", strings(Tunings.STANDARD, Notation.GERMAN))
+        assertEquals("H0", Notation.GERMAN.nameOf(Note.of(PitchClass.B, 0)))
+    }
+
+    @Test
+    fun `each language gets the notation its players usually write`() {
+        assertEquals(Notation.GERMAN, Notation.forLanguage("de"))
+        for (language in listOf("fr", "it", "es", "pt")) assertEquals(language, Notation.SOLFEGE, Notation.forLanguage(language))
+        for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "ru", "tr", "pl", "ar", "")) {
+            assertEquals(language, Notation.SHARPS, Notation.forLanguage(language))
+        }
+        assertEquals(Notation.DEFAULT, Notation.forLanguage("xx"))
+    }
+
+    @Test
     fun `sharps and flats name the same pitch as enharmonic equivalents`() {
         // C♯ = D♭: a semitone above the natural before it, a semitone below the one after.
         for (pitchClass in PitchClass.entries) {
@@ -56,6 +76,7 @@ class NotationTest {
         assertEquals(Accidental.SHARP, Notation.SHARPS.spelling)
         assertEquals(Accidental.FLAT, Notation.FLATS.spelling)
         assertEquals(Accidental.SHARP, Notation.SOLFEGE.spelling)
+        assertEquals(Accidental.SHARP, Notation.GERMAN.spelling)
     }
 
     private fun strings(tuning: Tuning, notation: Notation) =

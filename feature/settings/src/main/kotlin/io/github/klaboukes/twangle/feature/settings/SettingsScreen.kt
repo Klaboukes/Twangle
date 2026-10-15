@@ -38,7 +38,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -109,7 +111,7 @@ fun SettingsContent(
     appVersion: String,
     onOpenAbout: () -> Unit,
     onA4Change: (Float) -> Unit,
-    onNotationChange: (Notation) -> Unit,
+    onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
     onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
@@ -226,7 +228,7 @@ private fun SettingsGroups(
     onOpenAbout: () -> Unit,
     onShowTour: (() -> Unit)?,
     onA4Change: (Float) -> Unit,
-    onNotationChange: (Notation) -> Unit,
+    onNotationChange: (Notation?) -> Unit,
     onInTunePrecisionChange: (InTunePrecision) -> Unit,
     onStyleChange: (VisualStyle) -> Unit,
     onThemeChange: (ThemeMode) -> Unit,
@@ -249,12 +251,20 @@ private fun SettingsGroups(
             Rows {
                 A4Calibration(a4Hz = settings.a4Hz, onA4Change = onA4Change)
                 HorizontalDivider()
+                // Automatic (null) follows the app's language and shows what that gives.
+                val languageNotation = Notation.forLanguage(appLanguage())
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_notation_title),
-                    options = Notation.entries,
-                    selected = settings.notation,
+                    options = listOf(null) + Notation.entries,
+                    selected = settings.notationChoice,
                     onSelect = onNotationChange,
-                ) { stringResource(notationLabel(it)) }
+                ) {
+                    if (it == null) {
+                        stringResource(R.string.settings_notation_automatic, notationSample(languageNotation))
+                    } else {
+                        stringResource(notationLabel(it))
+                    }
+                }
                 HorizontalDivider()
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_in_tune_precision_title),
@@ -425,7 +435,18 @@ private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SHARPS -> R.string.settings_notation_sharps
     Notation.FLATS -> R.string.settings_notation_flats
     Notation.SOLFEGE -> R.string.settings_notation_solfege
+    Notation.GERMAN -> R.string.settings_notation_german
 }
+
+/** A few names in [notation] to tell it apart, B's last: "C, C♯, D … B", "Do, Do♯, Re … Si", "C, C♯, D … H". */
+@Composable
+private fun notationSample(notation: Notation): String = stringResource(
+    R.string.settings_notation_sample,
+    notation.nameOf(PitchClass.C),
+    notation.nameOf(PitchClass.C_SHARP),
+    notation.nameOf(PitchClass.D),
+    notation.nameOf(PitchClass.B),
+)
 
 private fun inTunePrecisionLabel(precision: InTunePrecision): Int = when (precision) {
     InTunePrecision.RELAXED -> R.string.settings_in_tune_precision_relaxed

@@ -75,7 +75,9 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Instruments.GUITAR, settings.instrument)
         assertEquals(Tunings.STANDARD, settings.tuning)
-        assertEquals(Notation.SHARPS, settings.notation)
+        assertEquals("a fresh install follows the app's language", null, settings.notationChoice)
+        assertEquals(Notation.SHARPS, settings.notationFor("en"))
+        assertEquals(Notation.GERMAN, settings.notationFor("de"))
         assertEquals(InTunePrecision.RELAXED, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.CONTEMPORARY, settings.style)
@@ -126,7 +128,7 @@ class DataStoreSettingsRepositoryTest {
             a4Hz = 432f,
             mode = TunerMode.CHROMATIC,
             tuning = Tunings.DADGAD,
-            notation = Notation.SOLFEGE,
+            notationChoice = Notation.SOLFEGE,
             inTunePrecision = InTunePrecision.PRECISE,
             theme = ThemeMode.DARK,
             style = VisualStyle.SPACE_AGE,
@@ -147,6 +149,16 @@ class DataStoreSettingsRepositoryTest {
             metronomeVibrate = true,
         )
         assertEquals(expected, repo.settings.first())
+    }
+
+    @Test
+    fun `a picked notation can go back to automatic`() = runTest {
+        val repo = repository()
+        repo.setNotation(Notation.GERMAN)
+        assertEquals(Notation.GERMAN, repo.settings.first().notationChoice)
+        repo.setNotation(null)
+        assertEquals(null, repo.settings.first().notationChoice)
+        assertEquals(Notation.SOLFEGE, repo.settings.first().notationFor("it"))
     }
 
     @Test
@@ -172,7 +184,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(442f, settings.a4Hz)
         assertEquals(TunerMode.CHROMATIC, settings.mode)
         assertEquals(Tunings.DROP_D, settings.tuning)
-        assertEquals(Notation.FLATS, settings.notation)
+        assertEquals(Notation.FLATS, settings.notationChoice)
+        assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
         assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
@@ -307,7 +320,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("tuner_mode")] = "BASS"
             it[stringPreferencesKey("tuning_id")] = "removed_in_v2"
             it[stringPreferencesKey("instrument_id")] = "theremin"
-            it[stringPreferencesKey("notation")] = "GERMAN"
+            it[stringPreferencesKey("notation")] = "SHAPE_NOTES"
             it[stringPreferencesKey("in_tune_precision")] = "PERFECT"
             it[stringPreferencesKey("theme")] = "SEPIA"
             it[stringPreferencesKey("visual_style")] = "BAROQUE"
@@ -323,7 +336,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerMode.AUTO, settings.mode)
         assertEquals(Instruments.DEFAULT, settings.instrument)
         assertEquals(Tunings.DEFAULT, settings.tuning)
-        assertEquals(Notation.DEFAULT, settings.notation)
+        assertEquals("an unknown notation counts as never picked", null, settings.notationChoice)
         assertEquals(InTunePrecision.DEFAULT, settings.inTunePrecision)
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(VisualStyle.DEFAULT, settings.style)

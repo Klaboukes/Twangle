@@ -178,15 +178,22 @@ private fun Reading(reading: WatchTunerState.Detected, dial: Dp, glow: () -> Flo
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        val locale = LocalConfiguration.current.locales[0]
+        // Written as players of the watch's language usually write notes (Do Re Mi in French, H in
+        // German); the watch has no notation setting.
+        val name = WatchNoteName.letter(reading.note, Notation.forLanguage(locale.language))
         // A note name reads "A4" in every language, so the octave stays right of the letter in
         // right-to-left languages too.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row {
                 Text(
-                    noteNameText(WatchNoteName.letter(reading.note)),
+                    noteNameText(name),
                     modifier = Modifier.alignByBaseline(),
                     color = noteColor,
-                    style = TextStyle(fontSize = (dial * WatchDial.NOTE_SIZE).fixedSp(), fontWeight = FontWeight.Light),
+                    style = TextStyle(
+                        fontSize = (dial * WatchDial.NOTE_SIZE * WatchNoteName.sizeFor(name)).fixedSp(),
+                        fontWeight = FontWeight.Light,
+                    ),
                 )
                 Text(
                     WatchNoteName.octave(reading.note),
@@ -196,7 +203,6 @@ private fun Reading(reading: WatchTunerState.Detected, dial: Dp, glow: () -> Flo
                 )
             }
         }
-        val locale = LocalConfiguration.current.locales[0]
         Text(
             pluralStringResource(R.plurals.wear_cents, abs(reading.cents), WatchNoteName.signedCents(reading.cents, locale)),
             color = WatchColors.muted,
@@ -323,9 +329,19 @@ private fun Message(text: String, action: String? = null, onAction: () -> Unit =
     }
 }
 
-/** How the watch writes a note: letter names with sharps (A♯), the octave apart, cents with a sign. */
+/** How the watch writes a note: its name in a notation (A♯, La♯, H), the octave apart, cents with a sign. */
 object WatchNoteName {
-    fun letter(note: Note): String = Notation.SHARPS.nameOf(note.pitchClass)
+    fun letter(note: Note, notation: Notation = Notation.DEFAULT): String = notation.nameOf(note.pitchClass)
+
+    /**
+     * How large [name] is drawn, as a share of the full note size: a one-letter name in full, a
+     * solfège syllable smaller, so "Sol♯4" fits the ring as well as "G♯4" does.
+     */
+    fun sizeFor(name: String): Float = when (name.count { it != '♯' && it != '♭' }) {
+        1 -> 1f
+        2 -> 0.8f
+        else -> 0.65f
+    }
 
     fun octave(note: Note): String = note.octave.toString()
 

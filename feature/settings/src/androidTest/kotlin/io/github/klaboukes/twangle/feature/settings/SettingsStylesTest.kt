@@ -138,6 +138,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
             R.string.settings_notation_sharps,
             R.string.settings_notation_flats,
             R.string.settings_notation_solfege,
+            R.string.settings_notation_german,
             R.string.settings_in_tune_precision_title,
             R.string.settings_in_tune_precision_relaxed,
             R.string.settings_in_tune_precision_precise,

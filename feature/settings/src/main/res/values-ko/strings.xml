@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">샵: C, C♯, D …</string>
     <string name="settings_notation_flats">플랫: C, D♭, D …</string>
     <string name="settings_notation_solfege">도레미: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">자동: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">독일식: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">튜닝 정밀도</string>
     <string name="settings_in_tune_precision_relaxed">여유: 5센트 이내</string>

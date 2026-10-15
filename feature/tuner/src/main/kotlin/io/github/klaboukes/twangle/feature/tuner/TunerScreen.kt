@@ -66,6 +66,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -136,6 +137,7 @@ fun TunerScreen(
     onMicGrantedChange: (Boolean) -> Unit = {},
 ) {
     val mic = rememberMicPermissionState()
+    val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
         TunerViewModel(
             audioRecorder,
@@ -145,8 +147,10 @@ fun TunerScreen(
             savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
             savedInstrument = savedInstrument,
             savedCustomTunings = savedCustomTunings,
+            language = language,
         )
     }
+    LaunchedEffect(language) { viewModel.setLanguage(language) }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the

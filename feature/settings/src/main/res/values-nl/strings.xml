@@ -20,6 +20,9 @@
     <string name="settings_notation_sharps">Kruisen: C, C♯, D …</string>
     <string name="settings_notation_flats">Mollen: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatisch: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Duits: C, C♯, D … H</string>
 
     <!-- In-tune precision: how close a note has to be to count as in tune. -->
     <string name="settings_in_tune_precision_title">Marge voor zuiver</string>

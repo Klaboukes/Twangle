@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">シャープ：C, C♯, D …</string>
     <string name="settings_notation_flats">フラット：C, D♭, D …</string>
     <string name="settings_notation_solfege">ドレミ：Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">自動：%1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">ドイツ式：C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">チューニングの精度</string>
     <string name="settings_in_tune_precision_relaxed">ゆるめ：5 セント以内</string>

@@ -174,7 +174,11 @@ data class AppSettings(
     val tuning: Tuning = Tunings.DEFAULT,
     /** The tunings the player made, for every instrument, in the order they were made. */
     val customTunings: List<CustomTuning> = emptyList(),
-    val notation: Notation = Notation.DEFAULT,
+    /**
+     * The notation the player picked in Settings, or null (Automatic) to follow the app's language
+     * ([Notation.forLanguage]). Read the one to show with [notationFor].
+     */
+    val notationChoice: Notation? = null,
     /** How close a note has to be to count as "in tune". */
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     val theme: ThemeMode = ThemeMode.SYSTEM,
@@ -220,6 +224,9 @@ data class AppSettings(
     /** One short vibration on every metronome beat (off until the player turns it on). */
     val metronomeVibrate: Boolean = false,
 ) {
+    /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
+    fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)
+
     /** The custom tuning that is picked, or null when [tuning] is a preset. */
     val pickedCustomTuning: CustomTuning? get() = customTunings.firstOrNull { it.id == tuning.id }
 

@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Диезы: C, C♯, D …</string>
     <string name="settings_notation_flats">Бемоли: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Автоматически: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Немецкие: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Точность настройки</string>
     <string name="settings_in_tune_precision_relaxed">Свободно: до 5 центов</string>

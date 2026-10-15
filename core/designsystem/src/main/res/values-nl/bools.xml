@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Nederlandse nootnamen: cis, des, es, as, bes … -->
-    <bool name="spoken_dutch_letter_names">true</bool>
-</resources>

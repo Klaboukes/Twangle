@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">升号：C, C♯, D …</string>
     <string name="settings_notation_flats">降号：C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi：Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">自动：%1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">德式：C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">音准精度</string>
     <string name="settings_in_tune_precision_relaxed">宽松：5 音分以内</string>

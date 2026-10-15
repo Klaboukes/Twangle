@@ -102,8 +102,9 @@ class DataStoreSettingsRepository internal constructor(
         }
     }
 
-    override suspend fun setNotation(notation: Notation) {
-        dataStore.edit { it[NOTATION] = notation.name }
+    override suspend fun setNotation(notation: Notation?) {
+        // No saved notation means Automatic, as on an install that never picked one.
+        dataStore.edit { if (notation == null) it.remove(NOTATION) else it[NOTATION] = notation.name }
     }
 
     override suspend fun setInTunePrecision(precision: InTunePrecision) {
@@ -204,7 +205,7 @@ class DataStoreSettingsRepository internal constructor(
             instrument = instrument,
             tuning = tuning,
             customTunings = customTunings,
-            notation = enumOrNull<Notation>(prefs[NOTATION]) ?: defaults.notation,
+            notationChoice = enumOrNull<Notation>(prefs[NOTATION]),
             inTunePrecision = enumOrNull<InTunePrecision>(prefs[IN_TUNE_PRECISION]) ?: defaults.inTunePrecision,
             theme = enumOrNull<ThemeMode>(prefs[THEME]) ?: defaults.theme,
             style = styleOrNull(prefs[STYLE]) ?: defaults.style,

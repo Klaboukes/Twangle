@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Krzyżyki: C, C♯, D …</string>
     <string name="settings_notation_flats">Bemole: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatycznie: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Niemieckie: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Precyzja strojenia</string>
     <string name="settings_in_tune_precision_relaxed">Swobodna: do 5 centów</string>

@@ -62,6 +62,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -108,7 +109,7 @@ fun TuningEditorScreen(
     TuningEditor(
         draft = draft,
         instrument = forInstrument,
-        notation = settings.notation,
+        notation = settings.notationFor(appLanguage()),
         isNew = editing == null,
         problem = problem,
         onNameChange = {

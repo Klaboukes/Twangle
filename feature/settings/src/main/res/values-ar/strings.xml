@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">دييز: C، C♯، D …</string>
     <string name="settings_notation_flats">بيمول: C، D♭، D …</string>
     <string name="settings_notation_solfege">دو ري مي: Do، Do♯، Re …</string>
+    <string name="settings_notation_automatic">تلقائي: %1$s</string>
+    <string name="settings_notation_sample">%1$s، %2$s، %3$s … %4$s</string>
+    <string name="settings_notation_german">ألماني: C، C♯، D … H</string>
 
     <string name="settings_in_tune_precision_title">دقة الضبط</string>
     <string name="settings_in_tune_precision_relaxed">مرنة: في حدود ٥ سنتات</string>

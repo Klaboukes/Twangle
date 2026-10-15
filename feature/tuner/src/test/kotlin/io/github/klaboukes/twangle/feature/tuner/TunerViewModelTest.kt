@@ -394,6 +394,30 @@ class TunerViewModelTest {
     }
 
     @Test
+    fun `note names follow the app's language until the player picks a notation`() = runTest(dispatcher) {
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), language = "fr")
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(500)
+        assertEquals("French players get Do Re Mi", "La", vm.detected().noteName)
+
+        vm.setLanguage("de")
+        advanceTimeBy(100)
+        assertEquals(Notation.GERMAN, vm.detected().notation)
+
+        settings.setNotation(Notation.FLATS)
+        advanceTimeBy(100)
+        assertEquals("the player's own pick wins", Notation.FLATS, vm.detected().notation)
+        vm.setLanguage("it")
+        advanceTimeBy(100)
+        assertEquals("and keeps winning", Notation.FLATS, vm.detected().notation)
+
+        settings.setNotation(null)
+        advanceTimeBy(100)
+        assertEquals("Automatic follows the language again", Notation.SOLFEGE, vm.detected().notation)
+    }
+
+    @Test
     fun `the in-tune precision applies while listening, and the hint follows it`() = runTest(dispatcher) {
         // 110 Hz is 3.9 cents flat of A2 once A4 is 441 Hz: in tune when relaxed, not when precise.
         settings.setA4(441f)

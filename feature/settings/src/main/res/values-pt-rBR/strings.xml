@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Sustenidos: C, C♯, D …</string>
     <string name="settings_notation_flats">Bemóis: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automático: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Alemão: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Precisão da afinação</string>
     <string name="settings_in_tune_precision_relaxed">Tolerante: até 5 cents</string>

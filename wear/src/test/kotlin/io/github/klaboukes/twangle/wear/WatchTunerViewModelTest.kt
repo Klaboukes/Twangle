@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.wear
 
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
+import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
@@ -141,6 +142,11 @@ class WatchTunerViewModelTest {
     fun `note names and signed cents`() {
         val aSharp = Note.of(PitchClass.A_SHARP, 2)
         assertEquals("A♯", WatchNoteName.letter(aSharp))
+        assertEquals("La♯", WatchNoteName.letter(aSharp, Notation.forLanguage("fr")))
+        assertEquals("H", WatchNoteName.letter(Note.of(PitchClass.B, 3), Notation.forLanguage("de")))
+        assertEquals(1f, WatchNoteName.sizeFor("A♯"))
+        assertEquals(0.8f, WatchNoteName.sizeFor("La♯"))
+        assertEquals(0.65f, WatchNoteName.sizeFor("Sol♯"))
         assertEquals("2", WatchNoteName.octave(aSharp))
         assertEquals("+12", WatchNoteName.signedCents(12))
         assertEquals("−3", WatchNoteName.signedCents(-3))

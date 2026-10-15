@@ -64,7 +64,10 @@ class SettingsViewModelTest {
         val vm = SettingsViewModel(repository)
         vm.setNotation(Notation.SOLFEGE)
         runCurrent()
-        assertEquals(Notation.SOLFEGE, repository.current.notation)
+        assertEquals(Notation.SOLFEGE, repository.current.notationChoice)
+        vm.setNotation(null)
+        runCurrent()
+        assertEquals("Automatic", null, repository.current.notationChoice)
     }
 
     @Test

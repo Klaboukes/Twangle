@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Diesis: C, C♯, D …</string>
     <string name="settings_notation_flats">Bemolle: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatico: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Tedesco: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Precisione d\'intonazione</string>
     <string name="settings_in_tune_precision_relaxed">Morbida: entro 5 cent</string>

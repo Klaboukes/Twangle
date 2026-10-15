@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
+import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -49,7 +50,8 @@ import kotlin.math.ceil
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
  * [savedInstrument] and [savedCustomTunings] do the same for the instrument-and-tuning button, and [savedKeepTwoPaneLandscape] for the
- * layout on its side.
+ * layout on its side. [language] is the app's language (e.g. "de"): note names follow its habit
+ * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *
  * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
  * sounds, and for [TONE_TAIL_SECONDS] after, the microphone stays open but its readings are set
@@ -65,7 +67,11 @@ class TunerViewModel(
     savedKeepTwoPaneLandscape: Boolean = AppSettings().keepTwoPaneLandscape,
     savedInstrument: Instrument = AppSettings().instrument,
     savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
+    language: String = "",
 ) : ViewModel() {
+
+    /** The app's language, whose usual notation is used while the player hasn't picked one. */
+    private val appLanguage = MutableStateFlow(language)
 
     private val pipeline = PitchPipeline(recorder, dspDispatcher)
     private val permissionGranted = MutableStateFlow(false)
@@ -170,13 +176,13 @@ class TunerViewModel(
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, pickedMode, lockedString, strumCheckOn) { settings, picked, locked, strum ->
+        combine(settingsRepository.settings, pickedMode, lockedString, strumCheckOn, appLanguage) { settings, picked, locked, strum, language ->
             TunerOptions(
                 mode = picked ?: settings.mode,
                 tuning = settings.tuning,
                 a4Hz = settings.a4Hz,
                 lockedString = locked,
-                notation = settings.notation,
+                notation = settings.notationFor(language),
                 inTunePrecision = settings.inTunePrecision,
                 strumCheck = strum,
             )
@@ -214,6 +220,11 @@ class TunerViewModel(
     }
 
     /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
+    /** The app's language changed (e.g. to "fr"): note names follow its habit unless the player picked a notation. */
+    fun setLanguage(language: String) {
+        appLanguage.value = language
+    }
+
     fun setMode(mode: TunerMode) {
         // Chromatic mode has no strings to show which one sounds.
         if (mode != this.mode.value) stopTone()

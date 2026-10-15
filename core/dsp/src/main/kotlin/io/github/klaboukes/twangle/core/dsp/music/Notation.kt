@@ -7,7 +7,8 @@ enum class Accidental { SHARP, FLAT }
  * How note names are written. Saved in settings by [name], so don't rename the entries.
  *
  * Names use the real accidental signs ♯ (U+266F) and ♭ (U+266D). Solfège is fixed-do as taught in
- * most of Europe: Do is always C, and B is Si. Each entry holds its 12 names in both spellings,
+ * most of Europe: Do is always C, and B is Si. German letters call B "H" and B♭ "B"; other sharps and
+ * flats keep their signs (C♯, E♭), the way German players write them, though they say Cis and Es. Each entry holds its 12 names in both spellings,
  * indexed by [PitchClass.ordinal], so [nameOf] doesn't allocate. [spelling] is the entry's own
  * choice of sign; a preset tuning can override it (see [nameIn]).
  */
@@ -24,6 +25,9 @@ enum class Notation(
 
     /** Fixed-do solfège: Do, Do♯, Re … (Re♭, Mi♭ … where a tuning is spelled with flats). */
     SOLFEGE(SOLFEGE_SHARPS, SOLFEGE_FLATS, Accidental.SHARP),
+
+    /** German letter names: C, C♯, D … A, A♯, H (B♭ is B where a tuning is spelled with flats). */
+    GERMAN(GERMAN_SHARPS, GERMAN_FLATS, Accidental.SHARP),
     ;
 
     /** The name of [pitchClass] in this notation, e.g. D♭ for [PitchClass.C_SHARP] in [FLATS]. */
@@ -50,7 +54,20 @@ enum class Notation(
     fun nameIn(tuning: Tuning, note: Note): String = nameIn(tuning, note.pitchClass) + note.octave
 
     companion object {
+        /** For a language without a habit of its own (see [forLanguage]). */
         val DEFAULT = SHARPS
+
+        /**
+         * How players who speak [language] (an ISO 639 code, e.g. "de", as `Locale.getLanguage`
+         * gives it) usually write note names: German letters in German, fixed-do solfège in French,
+         * Italian, Spanish and Portuguese, [DEFAULT] otherwise. Only the default: a notation the
+         * player picks always wins. A new language that has a habit of its own is added here.
+         */
+        fun forLanguage(language: String): Notation = when (language) {
+            "de" -> GERMAN
+            "fr", "it", "es", "pt" -> SOLFEGE
+            else -> DEFAULT
+        }
     }
 }
 
@@ -58,3 +75,5 @@ private val LETTER_SHARPS = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", 
 private val LETTER_FLATS = arrayOf("C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B")
 private val SOLFEGE_SHARPS = arrayOf("Do", "Do♯", "Re", "Re♯", "Mi", "Fa", "Fa♯", "Sol", "Sol♯", "La", "La♯", "Si")
 private val SOLFEGE_FLATS = arrayOf("Do", "Re♭", "Re", "Mi♭", "Mi", "Fa", "Sol♭", "Sol", "La♭", "La", "Si♭", "Si")
+private val GERMAN_SHARPS = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "H")
+private val GERMAN_FLATS = arrayOf("C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B", "H")

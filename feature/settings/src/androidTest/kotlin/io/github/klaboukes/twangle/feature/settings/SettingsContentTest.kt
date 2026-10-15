@@ -84,7 +84,7 @@ class SettingsContentTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val a4Changes = mutableListOf<Float>()
-    private val notationChanges = mutableListOf<Notation>()
+    private val notationChanges = mutableListOf<Notation?>()
     private val precisionChanges = mutableListOf<InTunePrecision>()
     private val styleChanges = mutableListOf<VisualStyle>()
     private val themeChanges = mutableListOf<ThemeMode>()
@@ -239,11 +239,28 @@ class SettingsContentTest {
         compose.onNode(hasContentDescription("Sharps: C, C sharp, D …")).assertExists()
         compose.onNode(hasContentDescription("Flats: C, D flat, D …")).assertExists()
         compose.onNode(hasContentDescription("Do Re Mi: Do, Do sharp, Re …")).assertExists()
+        compose.onNode(hasContentDescription("German: C, C sharp, D … H")).assertExists()
+        // Never picked: Automatic, which in English is sharps.
+        compose.onNode(hasContentDescription("Automatic: C, C sharp, D … B")).assertExists().assertIsSelected()
+    }
+
+    @Test
+    fun germanAutomaticIsTheGermanNotationAndTalkBackSaysItTheGermanWay() {
+        show(AppSettings(), locale = "de")
+        compose.onNode(hasContentDescription("Automatisch: C, Cis, D … H")).assertExists().assertIsSelected()
+        compose.onNode(hasContentDescription("Deutsch: C, Cis, D … H")).assertExists().assertIsNotSelected()
+        compose.onNodeWithText("Automatisch: C, C♯, D … H").assertIsDisplayed()
+    }
+
+    @Test
+    fun frenchAutomaticIsDoReMi() {
+        show(AppSettings(), locale = "fr")
+        compose.onNodeWithText("Automatique : Do, Do♯, Re … Si").assertIsSelected()
     }
 
     @Test
     fun dutchTalkBackSaysTheNotationChoicesTheDutchWay() {
-        show(AppSettings(notation = Notation.FLATS), locale = "nl")
+        show(AppSettings(notationChoice = Notation.FLATS), locale = "nl")
         compose.onNode(hasContentDescription("Kruisen: c, cis, d …")).assertExists()
         compose.onNode(hasContentDescription("Mollen: c, des, d …")).assertExists().assertIsSelected()
         compose.onNode(hasContentDescription("Do Re Mi: Do, Do kruis, Re …")).assertExists()
@@ -253,11 +270,13 @@ class SettingsContentTest {
 
     @Test
     fun notationShowsTheChoiceAndReportsANewOne() {
-        show(AppSettings(notation = Notation.FLATS))
+        show(AppSettings(notationChoice = Notation.FLATS))
         compose.onNodeWithText(context.getString(R.string.settings_notation_flats)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.settings_notation_sharps)).assertIsNotSelected()
         compose.onNodeWithText(context.getString(R.string.settings_notation_solfege)).performClick()
-        assertEquals(listOf(Notation.SOLFEGE), notationChanges)
+        compose.onNodeWithText(context.getString(R.string.settings_notation_german)).performClick()
+        compose.onNodeWithText("Automatic", substring = true).performClick()
+        assertEquals(listOf(Notation.SOLFEGE, Notation.GERMAN, null), notationChanges)
     }
 
     @Test
@@ -929,6 +948,7 @@ class SettingsContentTest {
             R.string.settings_notation_sharps,
             R.string.settings_notation_flats,
             R.string.settings_notation_solfege,
+            R.string.settings_notation_german,
             R.string.settings_group_look,
             R.string.settings_group_while_tuning,
             R.string.about_title,

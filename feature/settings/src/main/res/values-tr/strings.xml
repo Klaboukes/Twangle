@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Diyezler: C, C♯, D …</string>
     <string name="settings_notation_flats">Bemoller: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Otomatik: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Almanca: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Akort hassasiyeti</string>
     <string name="settings_in_tune_precision_relaxed">Rahat: 5 sent içinde</string>

@@ -28,7 +28,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         viewModelScope.launch { repository.setA4(hz) }
     }
 
-    fun setNotation(notation: Notation) {
+    /** The player's pick, or null for Automatic (the app's language decides). */
+    fun setNotation(notation: Notation?) {
         viewModelScope.launch { repository.setNotation(notation) }
     }
 

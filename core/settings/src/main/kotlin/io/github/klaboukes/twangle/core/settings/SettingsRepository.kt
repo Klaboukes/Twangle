@@ -52,7 +52,8 @@ interface SettingsRepository {
      */
     suspend fun deleteCustomTuning(id: String)
 
-    suspend fun setNotation(notation: Notation)
+    /** Saves the player's pick, or null for Automatic: follow the app's language (see [AppSettings.notationChoice]). */
+    suspend fun setNotation(notation: Notation?)
 
     suspend fun setInTunePrecision(precision: InTunePrecision)
 

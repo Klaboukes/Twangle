@@ -17,6 +17,9 @@
     <string name="settings_notation_sharps">Mit Kreuz: C, C♯, D …</string>
     <string name="settings_notation_flats">Mit b: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatisch: %1$s</string>
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">Deutsch: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Stimmgenauigkeit</string>
     <string name="settings_in_tune_precision_relaxed">Locker: bis 5 Cent</string>

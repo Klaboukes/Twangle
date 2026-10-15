@@ -20,6 +20,10 @@
     <string name="settings_notation_sharps">Sharps: C, C♯, D …</string>
     <string name="settings_notation_flats">Flats: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
+    <string name="settings_notation_automatic">Automatic: %1$s</string>
+    <!-- A few note names to show a notation by, B's last: "C, C♯, D … B". -->
+    <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
+    <string name="settings_notation_german">German: C, C♯, D … H</string>
 
     <!-- In-tune precision: how close a note has to be to count as in tune. -->
     <string name="settings_in_tune_precision_title">In-tune precision</string>

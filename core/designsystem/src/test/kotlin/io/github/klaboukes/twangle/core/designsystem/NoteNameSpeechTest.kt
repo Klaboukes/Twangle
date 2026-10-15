@@ -10,8 +10,11 @@ import org.junit.Test
 
 class NoteNameSpeechTest {
 
-    private val english = NoteNameSpeech("%1\$s sharp", "%1\$s flat", dutchLetters = false)
-    private val dutch = NoteNameSpeech("%1\$s kruis", "%1\$s mol", dutchLetters = true)
+    private val english = NoteNameSpeech("%1\$s sharp", "%1\$s flat")
+    private val dutch = NoteNameSpeech("%1\$s kruis", "%1\$s mol", LetterNames.DUTCH)
+    private val german = NoteNameSpeech("%1\$s erhöht", "%1\$s erniedrigt", LetterNames.GERMAN)
+    private val french = NoteNameSpeech("%1\$s dièse", "%1\$s bémol", solfege = "Do Ré Mi Fa Sol La Si".split(' '))
+    private val portuguese = NoteNameSpeech("%1\$s sustenido", "%1\$s bemol", solfege = "Dó Ré Mi Fá Sol Lá Si".split(' '))
 
     @Test
     fun `english says every letter name the app can show in words`() {
@@ -41,6 +44,47 @@ class NoteNameSpeechTest {
         assertEquals("bis", dutch.name("B♯"))
         assertEquals("ces", dutch.name("C♭"))
         assertEquals("fes", dutch.name("F♭"))
+    }
+
+    @Test
+    fun `german says every name the german notation can show the way German musicians do`() {
+        val expected = mapOf(
+            "C" to "C", "C♯" to "Cis", "D♭" to "Des", "D" to "D", "D♯" to "Dis", "E♭" to "Es",
+            "E" to "E", "F" to "F", "F♯" to "Fis", "G♭" to "Ges", "G" to "G", "G♯" to "Gis",
+            "A♭" to "As", "A" to "A", "A♯" to "Ais", "B" to "B", "H" to "H",
+        )
+        assertEquals(expected.keys, namesShown(Notation.GERMAN))
+        expected.forEach { (name, spoken) -> assertEquals(name, spoken, german.name(name)) }
+    }
+
+    @Test
+    fun `german says english letters with their German names, B as written`() {
+        assertEquals("B", german.name("B♭"))
+        assertEquals("His", german.name("B♯"))
+        assertEquals("Ces", german.name("C♭"))
+        assertEquals("B", german.name("B"))
+        assertEquals("E Es As Des Ges B Es", german.text("E E♭ A♭ D♭ G♭ B E♭"))
+        assertEquals("Deutsch: C, Cis, D … H", german.text("Deutsch: C, C♯, D … H"))
+        assertEquals("Do erhöht", german.name("Do♯"))
+    }
+
+    @Test
+    fun `solfege is said as the language writes it`() {
+        assertEquals("Ré", french.name("Re"))
+        assertEquals("Ré dièse", french.name("Re♯"))
+        assertEquals("Mi bémol", french.name("Mi♭"))
+        assertEquals("Dó sustenido", portuguese.name("Do♯"))
+        assertEquals("Lá", portuguese.name("La"))
+        assertEquals("Sol", portuguese.name("Sol"))
+        assertEquals("Re", english.name("Re"))
+        // A bare syllable in a text may be a word, so only one with a sign is changed there.
+        assertEquals("Do Re Mi : Do, Dó sustenido, Re …", portuguese.text("Do Re Mi : Do, Do♯, Re …"))
+    }
+
+    @Test
+    fun `a solfege list of the wrong length falls back to the written syllables`() {
+        val broken = NoteNameSpeech("%1\$s sharp", "%1\$s flat", solfege = listOf("Do", "Re"))
+        assertEquals("Si", broken.name("Si"))
     }
 
     @Test
@@ -89,8 +133,10 @@ class NoteNameSpeechTest {
         assertEquals("Bes is geen woord hier", dutch.text("Bes is geen woord hier"))
     }
 
-    /** Every letter name, with either sign, that [Notation] can put on screen. */
-    private fun letterNamesShown(): Set<String> = listOf(Notation.SHARPS, Notation.FLATS).flatMap { notation ->
-        PitchClass.entries.flatMap { listOf(notation.nameOf(it, Accidental.SHARP), notation.nameOf(it, Accidental.FLAT)) }
-    }.toSet()
+    /** Every letter name, with either sign, that the English letter notations can put on screen. */
+    private fun letterNamesShown(): Set<String> = namesShown(Notation.SHARPS) + namesShown(Notation.FLATS)
+
+    /** Every name, with either sign, that [notation] can put on screen. */
+    private fun namesShown(notation: Notation): Set<String> =
+        PitchClass.entries.flatMap { listOf(notation.nameOf(it, Accidental.SHARP), notation.nameOf(it, Accidental.FLAT)) }.toSet()
 }
