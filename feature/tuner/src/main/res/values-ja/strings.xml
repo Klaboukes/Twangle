@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">弦を弾いてください</string>
     <string name="tuner_hint_play_note">音を鳴らしてください</string>
     <string name="tuner_hint_play_locked_string">%1$s 弦を弾いてください</string>
+    <string name="tuner_hint_playing">%1$s を再生中</string>
     <string name="tuner_string_lock">この弦に固定</string>
     <string name="tuner_string_unlock">弦を自動で選ぶ</string>
     <string name="tuner_string_locked">固定中</string>
@@ -122,7 +123,7 @@
     <string name="tour_meter">どれだけずれているか</string>
     <string name="tour_note">弾いている音</string>
     <string name="tour_strum">まとめて弾いて全弦をチェック</string>
-    <string name="tour_strings">弦を固定</string>
+    <string name="tour_strings">タップで固定、長押しで試聴</string>
     <string name="tour_picker">楽器とチューニングを選ぶ</string>
     <string name="tour_mode">弦か、どの音でもチューニング</string>
     <string name="tour_navigation">メトロノームと設定</string>

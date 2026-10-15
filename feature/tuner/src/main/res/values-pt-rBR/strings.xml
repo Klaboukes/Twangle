@@ -40,6 +40,7 @@
     <string name="tuner_hint_play_string">Toque uma corda</string>
     <string name="tuner_hint_play_note">Toque uma nota</string>
     <string name="tuner_hint_play_locked_string">Toque a corda %1$s</string>
+    <string name="tuner_hint_playing">Tocando %1$s</string>
     <string name="tuner_string_lock">Travar nesta corda</string>
     <string name="tuner_string_unlock">Escolher cordas automaticamente</string>
     <string name="tuner_string_locked">Travada</string>
@@ -129,7 +130,7 @@
     <string name="tour_meter">Quanto você está fora</string>
     <string name="tour_note">A nota que você toca</string>
     <string name="tour_strum">Toque todas e confira cada corda</string>
-    <string name="tour_strings">Trave uma corda</string>
+    <string name="tour_strings">Toque para travar, segure para ouvir</string>
     <string name="tour_picker">Escolha instrumento e afinação</string>
     <string name="tour_mode">Afine cordas ou qualquer nota</string>
     <string name="tour_navigation">Metrônomo e configurações</string>

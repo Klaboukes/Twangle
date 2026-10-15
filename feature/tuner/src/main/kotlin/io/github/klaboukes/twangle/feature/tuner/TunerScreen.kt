@@ -72,6 +72,7 @@ import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -372,6 +373,9 @@ object TunerTestTags {
     const val STRUM_PANEL = "tuner_strum_panel"
     const val STRUM_STATUS = "tuner_strum_status"
 
+    /** The switch's name in a tooltip, shown on a long-press. */
+    const val STRUM_TOOLTIP = "tuner_strum_tooltip"
+
     /** String [index]'s column in the strum check's panel. */
     fun strumString(index: Int): String = "tuner_strum_string_$index"
 
@@ -543,14 +547,15 @@ fun TunerContent(
             is TunerUiState.Listening ->
                 NoteDisplay(
                     readout = null,
-                    hint = listeningHint(mode, state),
-                    spokenHint = listeningHint(mode, state, rememberNoteNameSpeech()),
+                    hint = listeningHint(mode, state, soundingString),
+                    spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
                     display = display,
                     compact = compact,
                     waveLook = waveLook,
                     showTuneHint = showTuneHint,
-                    tip = state.tip,
-                signalBars = signalBars,
+                    // While a reference tone sounds its line says which, not a tip about the mic.
+                    tip = state.tip.takeIf { soundingString == null },
+                    signalBars = signalBars,
                 )
             else -> NoteDisplay(
                 readout = null,
@@ -1203,23 +1208,27 @@ private val GUITAR_SLOT_HEIGHT = 104.dp
 
 /** The hint while listening; with [speech], as TalkBack says it ("Play the E flat 2 string"). */
 @Composable
-private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening, speech: NoteNameSpeech? = null): String {
+private fun listeningHint(mode: TunerMode, state: TunerUiState.Listening, sounding: Int? = null, speech: NoteNameSpeech? = null): String {
     val locked = state.lockedString
+    // The string whose reference tone sounds now: "Playing D3", in the player's note names.
+    val playing = sounding?.let { state.tuning.strings.getOrNull(it) }
     return when {
+        playing != null -> stringResource(R.string.tuner_hint_playing, stringName(state, playing, speech))
         mode == TunerMode.CHROMATIC -> stringResource(R.string.tuner_hint_play_note)
-        locked != null -> {
-            val string = state.tuning.strings[locked]
-            val name = if (speech == null) {
-                state.notation.nameIn(state.tuning, string)
-            } else {
-                val spokenName = speech.name(state.notation.nameIn(state.tuning, string.pitchClass))
-                stringResource(R.string.tuner_spoken_string, spokenName, string.octave)
-            }
-            stringResource(R.string.tuner_hint_play_locked_string, name)
-        }
+        locked != null -> stringResource(R.string.tuner_hint_play_locked_string, stringName(state, state.tuning.strings[locked], speech))
         else -> stringResource(R.string.tuner_hint_play_string)
     }
 }
+
+/** [string] of [state]'s tuning named in the player's notation: "D3", or with [speech] as TalkBack says it ("D 3"). */
+@Composable
+private fun stringName(state: TunerUiState.Listening, string: Note, speech: NoteNameSpeech?): String =
+    if (speech == null) {
+        state.notation.nameIn(state.tuning, string)
+    } else {
+        val spokenName = speech.name(state.notation.nameIn(state.tuning, string.pitchClass))
+        stringResource(R.string.tuner_spoken_string, spokenName, string.octave)
+    }
 
 @Composable
 private fun TunerErrorMessage(error: TunerError, onRetry: () -> Unit) {

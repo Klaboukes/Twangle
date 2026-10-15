@@ -51,6 +51,8 @@
     <string name="tuner_hint_play_note">Play a note</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
     <string name="tuner_hint_play_locked_string">Play the %1$s string</string>
+    <!-- While a string's reference tone sounds (a long-press on the string). %1$s is its note and octave, e.g. "D3". -->
+    <string name="tuner_hint_playing">Playing %1$s</string>
     <string name="tuner_string_lock">Lock to this string</string>
     <string name="tuner_string_unlock">Pick strings automatically</string>
     <string name="tuner_string_locked">Locked</string>
@@ -174,7 +176,7 @@
     <string name="tour_meter">How far off you are</string>
     <string name="tour_note">The note you play</string>
     <string name="tour_strum">Strum to check every string</string>
-    <string name="tour_strings">Lock a string</string>
+    <string name="tour_strings">Tap to lock, hold to hear</string>
     <string name="tour_picker">Pick instrument and tuning</string>
     <string name="tour_mode">Tune strings or any note</string>
     <string name="tour_navigation">Metronome and settings</string>

@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Сыграй струну</string>
     <string name="tuner_hint_play_note">Сыграй ноту</string>
     <string name="tuner_hint_play_locked_string">Сыграй струну %1$s</string>
+    <string name="tuner_hint_playing">Звучит %1$s</string>
     <string name="tuner_string_lock">Закрепить эту струну</string>
     <string name="tuner_string_unlock">Выбирать струны автоматически</string>
     <string name="tuner_string_locked">Закреплена</string>
@@ -132,7 +133,7 @@
     <string name="tour_meter">Отклонение от ноты</string>
     <string name="tour_note">Нота, которую ты играешь</string>
     <string name="tour_strum">Проведи по струнам, чтобы проверить все</string>
-    <string name="tour_strings">Закрепи струну</string>
+    <string name="tour_strings">Нажми, чтобы закрепить, удерживай, чтобы послушать</string>
     <string name="tour_picker">Выбери инструмент и строй</string>
     <string name="tour_mode">Струны или любая нота</string>
     <string name="tour_navigation">Метроном и настройки</string>

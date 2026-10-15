@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Suona una corda</string>
     <string name="tuner_hint_play_note">Suona una nota</string>
     <string name="tuner_hint_play_locked_string">Suona la corda %1$s</string>
+    <string name="tuner_hint_playing">In riproduzione: %1$s</string>
     <string name="tuner_string_lock">Blocca su questa corda</string>
     <string name="tuner_string_unlock">Scegli le corde in automatico</string>
     <string name="tuner_string_locked">Bloccata</string>
@@ -129,7 +130,7 @@
     <string name="tour_meter">Di quanto sei fuori</string>
     <string name="tour_note">La nota che suoni</string>
     <string name="tour_strum">Una pennata per controllare tutte le corde</string>
-    <string name="tour_strings">Blocca una corda</string>
+    <string name="tour_strings">Tocca per bloccare, tieni premuto per ascoltare</string>
     <string name="tour_picker">Scegli strumento e accordatura</string>
     <string name="tour_mode">Accorda corde o qualsiasi nota</string>
     <string name="tour_navigation">Metronomo e impostazioni</string>

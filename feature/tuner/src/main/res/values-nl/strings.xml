@@ -45,6 +45,7 @@
     <string name="tuner_hint_play_note">Speel een noot</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
     <string name="tuner_hint_play_locked_string">Speel de %1$s-snaar</string>
+    <string name="tuner_hint_playing">%1$s klinkt</string>
     <string name="tuner_string_lock">Vastzetten op deze snaar</string>
     <string name="tuner_string_unlock">Snaren automatisch kiezen</string>
     <string name="tuner_string_locked">Vastgezet</string>
@@ -135,7 +136,7 @@
     <string name="tour_meter">Hoe ver je ernaast zit</string>
     <string name="tour_note">De noot die je speelt</string>
     <string name="tour_strum">Sla aan en check alle snaren</string>
-    <string name="tour_strings">Zet een snaar vast</string>
+    <string name="tour_strings">Kies om vast te zetten, houd vast om te horen</string>
     <string name="tour_picker">Kies instrument en stemming</string>
     <string name="tour_mode">Stem snaren of elke noot</string>
     <string name="tour_navigation">Metronoom en instellingen</string>

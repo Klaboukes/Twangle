@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Bir tel çal</string>
     <string name="tuner_hint_play_note">Bir nota çal</string>
     <string name="tuner_hint_play_locked_string">%1$s telini çal</string>
+    <string name="tuner_hint_playing">%1$s çalıyor</string>
     <string name="tuner_string_lock">Bu tele sabitle</string>
     <string name="tuner_string_unlock">Telleri otomatik seç</string>
     <string name="tuner_string_locked">Sabit</string>
@@ -126,7 +127,7 @@
     <string name="tour_meter">Ne kadar sapma var</string>
     <string name="tour_note">Çaldığın nota</string>
     <string name="tour_strum">Tüm telleri kontrol etmek için vur</string>
-    <string name="tour_strings">Bir teli sabitle</string>
+    <string name="tour_strings">Sabitlemek için dokun, dinlemek için basılı tut</string>
     <string name="tour_picker">Enstrüman ve akort seç</string>
     <string name="tour_mode">Teller ya da herhangi bir nota</string>
     <string name="tour_navigation">Metronom ve ayarlar</string>

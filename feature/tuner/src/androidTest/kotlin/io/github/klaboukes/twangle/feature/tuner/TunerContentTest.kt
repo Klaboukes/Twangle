@@ -598,6 +598,47 @@ class TunerContentTest {
     }
 
     @Test
+    fun aSoundingToneIsNamedInTheHintUntilItStops() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
+        shownSounding.value = 2
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "D3")).assertIsDisplayed()
+        compose.onNode(hasContentDescription(context.getString(R.string.tuner_hint_playing, "D 3"))).assertExists()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertDoesNotExist()
+        shownSounding.value = null
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "D3")).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed()
+    }
+
+    @Test
+    fun aSoundingToneIsNamedInThePlayersNotation() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.HALF_STEP_DOWN, notation = Notation.SHARPS))
+        shownSounding.value = 0
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "E♭2")).assertIsDisplayed()
+        compose.onNode(hasContentDescription(context.getString(R.string.tuner_hint_playing, "E flat 2"))).assertExists()
+    }
+
+    @Test
+    fun aSoundingToneTakesATipsPlace() {
+        show(listening.copy(tip = ReceptionTip.TOO_NOISY))
+        shownSounding.value = 1
+        compose.waitForIdle()
+        compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "A2")).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_tip_too_noisy)).assertDoesNotExist()
+    }
+
+    @Test
+    fun aLongPressOnTheStrumCheckSwitchShowsItsName() {
+        show(listening)
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOOLTIP).assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).performTouchInput { longClick() }
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOOLTIP).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuner_strum_check)).assertIsDisplayed()
+    }
+
+    @Test
     fun stringsAndHintFollowTheNotation() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1, notation = Notation.SOLFEGE))
         stringChip("La2").assertIsSelected()

@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">اعزف وترًا</string>
     <string name="tuner_hint_play_note">اعزف نغمة</string>
     <string name="tuner_hint_play_locked_string">اعزف وتر %1$s</string>
+    <string name="tuner_hint_playing">قيد التشغيل: %1$s</string>
     <string name="tuner_string_lock">ثبّت هذا الوتر</string>
     <string name="tuner_string_unlock">اختر الأوتار تلقائيًا</string>
     <string name="tuner_string_locked">مثبّت</string>
@@ -139,7 +140,7 @@
     <string name="tour_meter">كم تبعد عن النغمة</string>
     <string name="tour_note">النغمة التي تعزفها</string>
     <string name="tour_strum">اضرب لفحص كل الأوتار</string>
-    <string name="tour_strings">ثبّت وترًا</string>
+    <string name="tour_strings">انقر للتثبيت، واضغط مطولًا للاستماع</string>
     <string name="tour_picker">اختر الآلة والدوزان</string>
     <string name="tour_mode">اضبط الأوتار أو أي نغمة</string>
     <string name="tour_navigation">المترونوم والإعدادات</string>

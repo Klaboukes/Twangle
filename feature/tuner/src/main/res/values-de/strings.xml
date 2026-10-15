@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Spiel eine Saite</string>
     <string name="tuner_hint_play_note">Spiel einen Ton</string>
     <string name="tuner_hint_play_locked_string">Spiel die %1$s-Saite</string>
+    <string name="tuner_hint_playing">Spielt %1$s</string>
     <string name="tuner_string_lock">Auf diese Saite festlegen</string>
     <string name="tuner_string_unlock">Saiten automatisch wählen</string>
     <string name="tuner_string_locked">Festgelegt</string>
@@ -126,7 +127,7 @@
     <string name="tour_meter">Wie weit du daneben liegst</string>
     <string name="tour_note">Der Ton, den du spielst</string>
     <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
-    <string name="tour_strings">Eine Saite festlegen</string>
+    <string name="tour_strings">Tippen zum Festlegen, halten zum Anhören</string>
     <string name="tour_picker">Instrument und Stimmung wählen</string>
     <string name="tour_mode">Saiten oder jeden Ton stimmen</string>
     <string name="tour_navigation">Metronom und Einstellungen</string>

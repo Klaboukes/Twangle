@@ -40,6 +40,7 @@
     <string name="tuner_hint_play_string">Jouez une corde</string>
     <string name="tuner_hint_play_note">Jouez une note</string>
     <string name="tuner_hint_play_locked_string">Jouez la corde %1$s</string>
+    <string name="tuner_hint_playing">Lecture de %1$s</string>
     <string name="tuner_string_lock">Verrouiller sur cette corde</string>
     <string name="tuner_string_unlock">Choisir les cordes automatiquement</string>
     <string name="tuner_string_locked">Verrouillée</string>
@@ -129,7 +130,7 @@
     <string name="tour_meter">Votre écart de justesse</string>
     <string name="tour_note">La note que vous jouez</string>
     <string name="tour_strum">Grattez pour tester toutes les cordes</string>
-    <string name="tour_strings">Verrouillez une corde</string>
+    <string name="tour_strings">Touchez pour verrouiller, maintenez pour écouter</string>
     <string name="tour_picker">Choisissez instrument et accordage</string>
     <string name="tour_mode">Accordez des cordes ou toute note</string>
     <string name="tour_navigation">Métronome et paramètres</string>

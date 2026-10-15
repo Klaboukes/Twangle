@@ -18,10 +18,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -418,8 +424,11 @@ private fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String
 /**
  * The strum check's switch above the strings: an icon of strings with a sweep
  * across them, in the style's button outline and shape; filled with the accent's container while on.
- * TalkBack: "Strum check, switch, on/off". With [inTour] its outline is the tour's strum check step.
+ * TalkBack: "Strum check, switch, on/off". A long-press (or a mouse resting on it) shows its name,
+ * "Strum check", in a small tooltip above it, which goes by itself. With [inTour] its outline is the
+ * tour's strum check step.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, inTour: Boolean = false) {
     val scheme = MaterialTheme.colorScheme
@@ -437,26 +446,32 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
         neon -> Color.Transparent
         else -> scheme.surface.copy(alpha = BACKING_ALPHA)
     }
-    Box(
-        modifier
-            .minimumInteractiveComponentSize()
-            .testTag(TunerTestTags.STRUM_TOGGLE)
-            .size(TOGGLE_SIZE)
-            // The tour lights up the outline, not the touch target round it.
-            .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
-            .clip(shape)
-            .background(fill, shape)
-            .border(if (checked) 2.dp else 1.dp, outline, shape)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip(Modifier.testTag(TunerTestTags.STRUM_TOOLTIP)) { Text(label) } },
+        state = rememberTooltipState(),
     ) {
-        Icon(
-            painterResource(R.drawable.ic_strum),
-            contentDescription = null,
-            tint = if (checked) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
-            modifier = Modifier.size(ICON_SIZE),
-        )
+        Box(
+            modifier
+                .minimumInteractiveComponentSize()
+                .testTag(TunerTestTags.STRUM_TOGGLE)
+                .size(TOGGLE_SIZE)
+                // The tour lights up the outline, not the touch target round it.
+                .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
+                .clip(shape)
+                .background(fill, shape)
+                .border(if (checked) 2.dp else 1.dp, outline, shape)
+                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+                .semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_strum),
+                contentDescription = null,
+                tint = if (checked) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
+                modifier = Modifier.size(ICON_SIZE),
+            )
+        }
     }
 }
 

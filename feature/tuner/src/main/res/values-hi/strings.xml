@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">कोई तार बजाएँ</string>
     <string name="tuner_hint_play_note">कोई नोट बजाएँ</string>
     <string name="tuner_hint_play_locked_string">%1$s तार बजाएँ</string>
+    <string name="tuner_hint_playing">%1$s बज रहा है</string>
     <string name="tuner_string_lock">इसी तार पर लॉक करें</string>
     <string name="tuner_string_unlock">तार अपने-आप चुनें</string>
     <string name="tuner_string_locked">लॉक है</string>
@@ -125,7 +126,7 @@
     <string name="tour_meter">आप कितना हटकर हैं</string>
     <string name="tour_note">आप जो नोट बजा रहे हैं</string>
     <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
-    <string name="tour_strings">कोई तार लॉक करें</string>
+    <string name="tour_strings">लॉक करने के लिए टैप करें, सुनने के लिए दबाए रखें</string>
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
     <string name="tour_mode">तार या कोई भी नोट ट्यून करें</string>
     <string name="tour_navigation">मेट्रोनोम और सेटिंग्स</string>

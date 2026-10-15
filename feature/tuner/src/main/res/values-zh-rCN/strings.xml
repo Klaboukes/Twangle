@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">弹一根弦</string>
     <string name="tuner_hint_play_note">弹一个音</string>
     <string name="tuner_hint_play_locked_string">弹 %1$s 弦</string>
+    <string name="tuner_hint_playing">正在播放 %1$s</string>
     <string name="tuner_string_lock">锁定这根弦</string>
     <string name="tuner_string_unlock">自动识别琴弦</string>
     <string name="tuner_string_locked">已锁定</string>
@@ -122,7 +123,7 @@
     <string name="tour_meter">偏了多少</string>
     <string name="tour_note">你弹的音</string>
     <string name="tour_strum">扫弦，检查每根弦</string>
-    <string name="tour_strings">锁定一根弦</string>
+    <string name="tour_strings">轻触锁定，长按试听</string>
     <string name="tour_picker">选择乐器和定弦</string>
     <string name="tour_mode">调琴弦或任意音</string>
     <string name="tour_navigation">节拍器和设置</string>

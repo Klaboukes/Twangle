@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Petik satu senar</string>
     <string name="tuner_hint_play_note">Mainkan nada</string>
     <string name="tuner_hint_play_locked_string">Petik senar %1$s</string>
+    <string name="tuner_hint_playing">Memutar %1$s</string>
     <string name="tuner_string_lock">Kunci ke senar ini</string>
     <string name="tuner_string_unlock">Pilih senar otomatis</string>
     <string name="tuner_string_locked">Terkunci</string>
@@ -122,7 +123,7 @@
     <string name="tour_meter">Seberapa meleset nada Anda</string>
     <string name="tour_note">Nada yang Anda mainkan</string>
     <string name="tour_strum">Genjreng untuk cek semua senar</string>
-    <string name="tour_strings">Kunci satu senar</string>
+    <string name="tour_strings">Ketuk untuk mengunci, tahan untuk mendengar</string>
     <string name="tour_picker">Pilih instrumen dan stem</string>
     <string name="tour_mode">Setem senar atau nada apa pun</string>
     <string name="tour_navigation">Metronom dan setelan</string>

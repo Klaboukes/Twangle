@@ -39,6 +39,7 @@
     <string name="tuner_hint_play_string">Toca una cuerda</string>
     <string name="tuner_hint_play_note">Toca una nota</string>
     <string name="tuner_hint_play_locked_string">Toca la cuerda %1$s</string>
+    <string name="tuner_hint_playing">Sonando %1$s</string>
     <string name="tuner_string_lock">Fijar esta cuerda</string>
     <string name="tuner_string_unlock">Elegir cuerdas automáticamente</string>
     <string name="tuner_string_locked">Fijada</string>
@@ -128,7 +129,7 @@
     <string name="tour_meter">Cuánto te desvías</string>
     <string name="tour_note">La nota que tocas</string>
     <string name="tour_strum">Rasguea para revisar todas las cuerdas</string>
-    <string name="tour_strings">Fija una cuerda</string>
+    <string name="tour_strings">Toca para fijar, mantén para escuchar</string>
     <string name="tour_picker">Elige instrumento y afinación</string>
     <string name="tour_mode">Afina cuerdas o cualquier nota</string>
     <string name="tour_navigation">Metrónomo y ajustes</string>
