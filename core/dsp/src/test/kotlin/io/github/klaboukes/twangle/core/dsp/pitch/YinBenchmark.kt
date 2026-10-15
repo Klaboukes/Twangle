@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import io.github.klaboukes.twangle.core.dsp.buffer.FrameAssembler
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
@@ -63,12 +64,13 @@ class YinBenchmark {
     fun `whole per-frame chain takes under 2 ms per frame`() {
         val yin = YinPitchDetector()
         val gate = SignalGate()
+        val sustain = SustainCheck(FrameAssembler.DEFAULT_HOP_SIZE)
         val mapper = NoteMapper()
         val smoother = PitchSmoother()
         val window = FloatArray(yin.windowSize)
         val stats = time { i ->
             frames[i % frames.size].copyInto(window)
-            if (gate.process(window)) {
+            if (gate.process(window) && sustain.isSustained(window)) {
                 val result = yin.detect(window)
                 if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz), result.confidence) else smoother.noReading()
             } else {
@@ -76,7 +78,7 @@ class YinBenchmark {
             }
             smoother.hasReading
         }
-        report("gate + detect + smoother", stats)
+        report("gate + sustain + detect + smoother", stats)
         assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS)
     }
 

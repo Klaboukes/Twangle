@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.dsp.strobe
 import io.github.klaboukes.twangle.core.dsp.allocatedBytes
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.pitch.TunerChain
+import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion.Companion.MAX_STRIPES_PER_SECOND
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion.Companion.STILL_CENTS
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion.Companion.driftSpeed
@@ -180,7 +181,8 @@ class StrobeMotionTest {
         var seconds = 0f
         var steady = 0
         var still = 0
-        for (frame in frames) {
+        // The first frames only confirm the note's onset (PitchSmoother.onsetFrames).
+        for (frame in frames.drop(PitchSmoother.DEFAULT_ONSET_FRAMES - 1)) {
             assertTrue("$played Hz: nothing shown", frame.isShown)
             val before = strobe.phase
             strobe.advance(dt, NoteMapper.centsBetween(frame.shownHz, targetHz))

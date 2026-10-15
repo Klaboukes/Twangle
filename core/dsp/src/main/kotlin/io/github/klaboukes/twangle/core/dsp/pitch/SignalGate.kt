@@ -39,6 +39,9 @@ class SignalGate(
     var isOpen: Boolean = false
         private set
 
+    /** Whether the most recent frame was loud enough to open the gate by itself, not only to keep it open. */
+    val isAboveThreshold: Boolean get() = levelDbfs >= thresholdDbfs
+
     /**
      * Removes the DC offset from the first [length] samples of [frame] (in place), measures their
      * level and updates the gate.

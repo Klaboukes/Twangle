@@ -45,6 +45,13 @@ data class AnalysisSettings(
     /** A [NoiseFloorTracker] for frames this far apart ([hopSeconds]). */
     fun newNoiseFloorTracker(): NoiseFloorTracker = NoiseFloorTracker(hopSeconds)
 
+    /**
+     * A [SustainCheck] in blocks of one hop, so a tick has left the newest block one hop after it, or
+     * of one period of [minFrequencyHz] where that is longer (the low range: 1715 samples at 48 kHz),
+     * so every block holds a whole cycle of any note in range.
+     */
+    fun newSustainCheck(): SustainCheck = SustainCheck(maxOf(hopSize, ceil(sampleRate / minFrequencyHz).toInt()))
+
     /** A pitch detector for frames of [windowSize] samples at [sampleRate]: YIN, upsampled if needed. */
     fun newPitchDetector(): PitchDetector {
         if (upsampleFactor == 1) return yin(windowSize)

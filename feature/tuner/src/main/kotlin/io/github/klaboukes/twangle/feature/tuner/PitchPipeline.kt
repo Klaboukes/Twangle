@@ -9,6 +9,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.Clarity
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
+import io.github.klaboukes.twangle.core.dsp.pitch.SustainCheck
 import io.github.klaboukes.twangle.core.dsp.pitch.YinPitchDetector
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -35,12 +36,17 @@ data class PitchReading(
     val clarity: Float = 0f,
     /** Peak of the frame before DC removal, in dBFS ([SignalGate.peakDbfs]); near 0 the input clips. */
     val peakDbfs: Float = SignalGate.SILENCE_DBFS,
+    /**
+     * False when the frame's sound had died away by its end ([SustainCheck]: a tick that has passed).
+     * Such a frame isn't analysed, so it has no pitch, but it doesn't mean a shown note is gone.
+     */
+    val sustained: Boolean = true,
 ) : PipelineReading {
     val isPitched: Boolean get() = frequencyHz > 0f
 }
 
 /**
- * Microphone → [FrameAssembler] → [SignalGate] → [YinPitchDetector], one [PitchReading] per hop
+ * Microphone → [FrameAssembler] → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
  * clarity ([Clarity]). See ARCHITECTURE §3.
  *
@@ -123,14 +129,17 @@ class PitchPipeline(
                     }
                     val frame = analysis.frame
                     val detector = analysis.detector
+                    val sustain = analysis.sustain
                     assembler.readFrame(frame, analysis.windowSize)
                     val open = gate.process(frame)
-                    val pitch = if (open) detector.detect(frame) else PitchResult.NONE
+                    // A tick that has already died away is not a note (see SustainCheck).
+                    val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
+                    val pitch = if (open && sustained) detector.detect(frame) else PitchResult.NONE
                     noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
                     emit(
                         PitchReading(
                             pitch.frequencyHz, pitch.confidence, gate.levelDbfs, open,
-                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence), gate.peakDbfs,
+                            noise.floorDbfs, noise.snrDb, Clarity.of(pitch.confidence), gate.peakDbfs, sustained,
                         ),
                     )
                 }
@@ -143,6 +152,7 @@ class PitchPipeline(
         val windowSize: Int = settings.windowSize
         val frame = FloatArray(windowSize)
         val detector = settings.newPitchDetector()
+        val sustain = settings.newSustainCheck()
     }
 
     private companion object {

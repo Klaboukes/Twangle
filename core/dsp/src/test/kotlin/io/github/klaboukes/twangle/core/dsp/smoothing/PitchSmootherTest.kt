@@ -16,12 +16,80 @@ class PitchSmootherTest {
     private val smoother = PitchSmoother()
 
     @Test
-    fun `first reading is shown as is`() {
+    fun `a new reading starts once three readings agree, at their median`() {
         assertFalse(smoother.hasReading)
+        assertTrue(smoother.update(E2 + 0.30f))
         assertTrue(smoother.update(E2 + 0.12f))
+        assertFalse(smoother.hasReading)
+        assertTrue(smoother.update(E2 + 0.10f))
         assertTrue(smoother.hasReading)
         assertEquals(Note(40), smoother.note)
         assertEquals(12f, smoother.cents, 0.01f)
+    }
+
+    @Test
+    fun `one or two readings on their own, like a tick, show nothing`() {
+        repeat(5) {
+            repeat(2) { smoother.update(E4 + 7f) }
+            repeat(3) { smoother.noReading() }
+            assertFalse(smoother.hasReading)
+        }
+    }
+
+    @Test
+    fun `a gap or a reading far from the last starts the onset over`() {
+        repeat(2) { smoother.update(E2) }
+        smoother.noReading()
+        repeat(2) { smoother.update(E2) }
+        assertFalse(smoother.hasReading)
+        // More than 50 cents from the last: these two don't count with the ones before.
+        repeat(2) { smoother.update(A2) }
+        assertFalse(smoother.hasReading)
+        smoother.update(A2 + 0.05f)
+        assertEquals(Note(45), smoother.note)
+        assertEquals(0f, smoother.cents, 0.01f)
+    }
+
+    @Test
+    fun `a passed tick neither starts a reading nor ends one`() {
+        // Before a reading: a tick's frame, then the frames after it has died away.
+        repeat(5) {
+            smoother.update(E4 + 7f)
+            repeat(3) { smoother.noReading(sustained = false) }
+        }
+        assertFalse(smoother.hasReading)
+        // While one is shown: frames hiding the string under a tick, for longer than a dropout may
+        // last, and it is still there.
+        repeat(5) { smoother.update(E2) }
+        smoother.noReading()
+        repeat(2 * PitchSmoother.DEFAULT_MAX_MISSED_FRAMES) { smoother.noReading(sustained = false) }
+        assertTrue(smoother.hasReading)
+        assertEquals(Note(40), smoother.note)
+        // Sustained frames without a pitch are a dropout as usual.
+        repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES) { smoother.noReading() }
+        assertFalse(smoother.hasReading)
+    }
+
+    @Test
+    fun `frames too quiet to open the gate keep a reading going but cannot start one`() {
+        repeat(10) { assertFalse(smoother.update(E4 + 7f, loudEnough = false)) }
+        assertFalse(smoother.hasReading)
+        repeat(2) { smoother.update(E2) }
+        smoother.update(E2, loudEnough = false)
+        smoother.update(E2)
+        assertFalse("the quiet frame broke the onset", smoother.hasReading)
+        repeat(2) { smoother.update(E2) }
+        assertTrue(smoother.hasReading)
+        repeat(20) { assertTrue(smoother.update(E2 + 0.1f, loudEnough = false)) }
+        assertEquals(10f, smoother.cents, 0.5f)
+    }
+
+    @Test
+    fun `with an onset of one frame the first reading is shown as is`() {
+        val immediate = PitchSmoother(onsetFrames = 1)
+        immediate.update(E2 + 0.12f)
+        assertTrue(immediate.hasReading)
+        assertEquals(12f, immediate.cents, 0.01f)
     }
 
     @Test
@@ -142,14 +210,15 @@ class PitchSmootherTest {
         smoother.update(E2)
         repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES + 1) { smoother.noReading() }
         assertFalse(smoother.hasReading)
-        // After clearing, the next note is shown right away with no octave check against the old one.
-        assertTrue(smoother.update(E2 + 12f))
+        // After clearing, the next note starts afresh with no octave check against the old one.
+        repeat(PitchSmoother.DEFAULT_ONSET_FRAMES) { assertTrue(smoother.update(E2 + 12f)) }
         assertEquals(Note(52), smoother.note)
     }
 
     @Test
     fun `reset clears the reading`() {
-        smoother.update(E2)
+        repeat(PitchSmoother.DEFAULT_ONSET_FRAMES) { smoother.update(E2) }
+        assertTrue(smoother.hasReading)
         smoother.reset()
         assertFalse(smoother.hasReading)
         assertTrue(smoother.midi.isNaN())
@@ -173,6 +242,8 @@ class PitchSmootherTest {
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(emaAlpha = 0f) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(hysteresisCents = 60f) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(octaveConfirmFrames = 0) }
+        assertThrows(IllegalArgumentException::class.java) { PitchSmoother(onsetFrames = 0) }
+        assertThrows(IllegalArgumentException::class.java) { PitchSmoother(onsetFrames = 6) }
         assertThrows(IllegalArgumentException::class.java) { smoother.update(Float.NaN) }
     }
 
@@ -184,5 +255,6 @@ class PitchSmootherTest {
     private companion object {
         const val E2 = 40f
         const val A2 = 45f
+        const val E4 = 64f
     }
 }

@@ -41,14 +41,15 @@ object DspPhoneBenchmark {
             report("$range detect ($n)", time { i -> detector.detect(frames[i % frames.size]).isPitched })
 
             val gate = SignalGate()
+            val sustain = settings.newSustainCheck()
             val mapper = NoteMapper()
             val smoother = PitchSmoother()
             val window = FloatArray(n)
             report(
-                "$range gate+detect+smoother",
+                "$range gate+sustain+detect+smoother",
                 time { i ->
                     frames[i % frames.size].copyInto(window)
-                    val result = if (gate.process(window)) detector.detect(window) else PitchResult.NONE
+                    val result = if (gate.process(window) && sustain.isSustained(window)) detector.detect(window) else PitchResult.NONE
                     if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz), result.confidence) else smoother.noReading()
                     smoother.hasReading
                 },

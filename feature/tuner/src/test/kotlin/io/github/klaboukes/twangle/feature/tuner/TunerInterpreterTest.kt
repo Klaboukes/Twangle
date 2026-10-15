@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.level.ReceptionLimit
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import org.junit.Assert.assertEquals
@@ -66,7 +67,7 @@ class TunerInterpreterTest {
         play(noisy, frames = 200)
         assertTrue(play(silent) is TunerUiState.Listening)
         val clean = noisy.copy(snrDb = 40f, clarity = 1f)
-        assertEquals("not eased from the noisy note", 1f, play(clean, frames = 1).detected().reception, 1e-4f)
+        assertEquals("not eased from the noisy note", 1f, play(clean, frames = ONSET).detected().reception, 1e-4f)
     }
 
     @Test
@@ -148,7 +149,8 @@ class TunerInterpreterTest {
     @Test
     fun `a steady note close to the string becomes in tune after 300 ms`() {
         val reading = pitched(hz(40.03f)) // E2, 3 cents sharp
-        // The smoother snaps on the first frame, so the 300 ms count starts right away.
+        // The reading starts on the onset's last frame, and the 300 ms count with it.
+        assertTrue(play(reading, frames = ONSET - 1) is TunerUiState.Listening)
         assertFalse(play(reading, frames = 14).detected().inTune) // 14 × 21.3 ms ≈ 299 ms
         assertTrue(play(reading, frames = 1).detected().inTune)
     }
@@ -161,7 +163,14 @@ class TunerInterpreterTest {
         for (i in 0 until 188) {
             val t = i * frameSeconds
             val midi = if (i < 47) 44.88f else 45f + 0.03f * kotlin.math.sin(2 * Math.PI * 4 * t).toFloat()
-            val state = interpreter.interpret(pitched(hz(midi)), options).detected()
+            val shown = interpreter.interpret(pitched(hz(midi)), options)
+            if (i < ONSET - 1) {
+                // Still confirming the onset.
+                assertTrue(shown is TunerUiState.Listening)
+                hints += null
+                continue
+            }
+            val state = shown.detected()
             assertEquals(state.hint == TunerHint.IN_TUNE, state.inTune)
             hints += state.hint
         }
@@ -253,10 +262,25 @@ class TunerInterpreterTest {
     }
 
     @Test
+    fun `a tick's frames neither show a note nor end the one shown`() {
+        // A tick ringing at 1000 Hz for one frame, then the frames in which it has died away.
+        val tick = pitched(1000f)
+        val passed = PitchReading(0f, confidence = 0f, levelDbfs = -40f, gateOpen = true, sustained = false)
+        repeat(3) {
+            assertTrue(play(tick, frames = 1) is TunerUiState.Listening)
+            assertTrue(play(passed, frames = 3) is TunerUiState.Listening)
+        }
+        // Over a ringing E2: hidden under the tick for longer than a dropout may last, still shown.
+        play(pitched(hz(40f)))
+        val hidden = PitchReading(0f, confidence = 0f, levelDbfs = -30f, gateOpen = true, sustained = false)
+        assertEquals("E", play(hidden, frames = 8).detected().noteName)
+    }
+
+    @Test
     fun `silence ends in tune`() {
         play(pitched(hz(45f)))
         play(silent, frames = 5)
-        assertFalse(interpreter.interpret(pitched(hz(45f)), TunerOptions(TunerMode.AUTO, standard)).detected().inTune)
+        assertFalse(play(pitched(hz(45f)), frames = ONSET).detected().inTune)
     }
 
     @Test
@@ -359,5 +383,10 @@ class TunerInterpreterTest {
         assertEquals("D♯", nameOf(TunerMode.CHROMATIC, Notation.SHARPS))
         assertEquals("Re♯", nameOf(TunerMode.CHROMATIC, Notation.SOLFEGE))
         assertEquals("E♭", nameOf(TunerMode.CHROMATIC, Notation.FLATS))
+    }
+
+    private companion object {
+        /** Frames before a new note shows. */
+        const val ONSET = PitchSmoother.DEFAULT_ONSET_FRAMES
     }
 }

@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
@@ -19,12 +20,16 @@ import kotlin.math.sqrt
  *    local minimum. Taking the *first* dip, not the deepest, is what avoids octave-too-low errors.
  *    A dip that is still falling at the longest lag lies outside the range and is ignored (e.g.
  *    60 Hz mains hum just below [minFrequencyHz]). Two checks then guard against the remaining
- *    whole-number period errors (see [checkShorterPeriods] and [checkLongerPeriods]):
+ *    whole-number period errors (see [checkShorterPeriods] and [checkLongerPeriods]), and a third
+ *    ([isAboveRange]) drops tones above the range:
  *    - in heavy noise the dip at the true period can miss the threshold, because `d'` is inflated
  *      at short lags, so the first accepted dip is at 2 or 3 periods. If `d` at τ/k is about as low
  *      as at τ, τ/k is the period.
  *    - a high note with a strong 2nd harmonic and weak odd harmonics dips below the threshold at
  *      half its period. If `d` at 2τ or 3τ is far lower than at τ, that is the period.
+ *    - if the period found is a whole number of periods shorter than the shortest lag searched,
+ *      the tone is above [maxFrequencyHz] and the frame has no pitch: a 2 kHz whistle or a tick
+ *      ringing at 3 kHz would otherwise read as 1000 or 1500 Hz, a multiple of its period in range.
  * 5. sub-sample period from the raw `d(τ)` around that minimum (the paper notes `d` gives an
  *    unbiased abscissa where `d'` does not). This is a least-squares fit over the lags `τ ± k`
  *    whose `d` stays within [FIT_LEVEL] of the way from the dip to the mean of `d`. A sharp dip
@@ -95,6 +100,7 @@ class YinPitchDetector(
         val firstDip = findFirstDip()
         if (firstDip < 0) return PitchResult.NONE
         val tau = checkLongerPeriods(checkShorterPeriods(firstDip))
+        if (isAboveRange(tau)) return PitchResult.NONE
         val period = tau + refineOffset(tau)
         val confidence = (1.0 - normalized[tau]).coerceIn(0.0, 1.0)
         return PitchResult.of((sampleRate / period).toFloat(), confidence.toFloat())
@@ -137,6 +143,47 @@ class YinPitchDetector(
             }
         }
         return tau
+    }
+
+    // True when the period found, τ, is really a whole number of periods of a tone above
+    // maxFrequencyHz, so the frame has no pitch in range:
+    // - the dip at τ = tauMin is still falling towards shorter lags, so its minimum lies below, or
+    // - the test of checkShorterPeriods holds for a dip of d below tauMin that divides τ a whole
+    //   number of times: about as deep as d(τ). A period of only 10–30 lags falls well between two
+    //   whole lags, which alone can make d there several times d(τ) on a clean tone, so this
+    //   compares the parabola-interpolated floors of the two dips, allowing CLEAN_DIP of the mean
+    //   of d on top. Lags below MIN_PERIOD_LAG are not tried: the low-pass leaves nothing that
+    //   repeats that fast.
+    // Runs after checkLongerPeriods, which may have taken such a tone's 2nd period for its first
+    // (a 1600 Hz sine dips at 30 and 60 lags), and which takes a note an octave lower with a strong
+    // 2nd harmonic back down to its own period.
+    private fun isAboveRange(tau: Int): Boolean {
+        if (tau == tauMin && normalized[tauMin - 1] < normalized[tauMin]) return true
+        var limit = -1.0
+        for (lag in MIN_PERIOD_LAG until tauMin) {
+            val isDip = difference[lag] < difference[lag - 1] && difference[lag] <= difference[lag + 1]
+            if (!isDip || normalized[lag] >= MAX_SHORTER_PERIOD_DIP) continue
+            // τ is k periods of about `lag` each, every one off by at most half a lag either way.
+            val k = (tau + lag / 2) / lag
+            if (k < 2 || abs(tau - k * lag) > k) continue
+            if (limit < 0.0) {
+                var sum = 0.0
+                for (i in 1..tau) sum += difference[i]
+                limit = SHORTER_PERIOD_TOLERANCE * dipFloor(tau) + CLEAN_DIP * sum / tau
+            }
+            if (dipFloor(lag) <= limit) return true
+        }
+        return false
+    }
+
+    // Lowest value of the parabola through d at tau − 1, tau, tau + 1 (d itself if it isn't a dip).
+    private fun dipFloor(tau: Int): Double {
+        val left = difference[tau - 1]
+        val mid = difference[tau]
+        val right = difference[tau + 1]
+        val curvature = left - 2 * mid + right
+        if (curvature <= 0.0) return mid
+        return (mid - (left - right) * (left - right) / (8 * curvature)).coerceAtLeast(0.0)
     }
 
     // Strong 2nd (or 3rd) harmonic with weak neighbours: the first accepted dip may be a fraction
@@ -249,6 +296,12 @@ class YinPitchDetector(
         // sums at different lags differ by a few per cent), and it is still a fairly clear dip.
         private const val SHORTER_PERIOD_TOLERANCE = 1.15
         private const val MAX_SHORTER_PERIOD_DIP = 0.5
+
+        // Shortest lag isAboveRange tries as a period: 12 kHz at 48 kHz.
+        private const val MIN_PERIOD_LAG = 4
+
+        // A dip whose floor is within 1 % of the mean of d (d' ≈ 0.01) is clean, whatever d(τ).
+        private const val CLEAN_DIP = 0.01
 
         // 2τ or 3τ replaces τ if its d is under a quarter of d(τ), and only when d'(τ) is not
         // already near zero.

@@ -97,6 +97,23 @@ class YinPitchDetectorTest {
     }
 
     @Test
+    fun `tones above the detection range are not reported as a lower note`() {
+        // They used to read as the first multiple of their period in range: 2 kHz as 1000 Hz,
+        // 3 kHz as 1500 Hz, 5 kHz as 1250 Hz. A whistle, a beep or a tick's ring is not a note.
+        for (f in listOf(1600f, 2000f, 2500f, 3000f, 3500f, 5000f)) {
+            assertFalse("sine $f Hz", yin.detect(TestSignals.sine(f)).isPitched)
+            assertFalse("sine $f Hz, 20 dB SNR", yin.detect(TestSignals.withNoise(TestSignals.sine(f), 20f, seed = 5)).isPitched)
+            val bright = TestSignals.harmonics(f, floatArrayOf(1f, 0.5f, 0.3f), maxHarmonicHz = 20_000f)
+            assertFalse("bright tone $f Hz", yin.detect(bright).isPitched)
+        }
+        // The top of the range still reads.
+        for (f in listOf(1318.5f, 1450f, 1500f)) {
+            assertWithinCents("sine $f Hz", f, yin.detect(TestSignals.sine(f)), ACCURACY_CENTS)
+            assertWithinCents("weak fundamental $f Hz", f, yin.detect(TestSignals.weakFundamental(f)), ACCURACY_CENTS)
+        }
+    }
+
+    @Test
     fun `detect leaves the caller's frame untouched`() {
         val frame = TestSignals.sawtooth(220f)
         val copy = frame.copyOf()

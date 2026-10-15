@@ -9,7 +9,13 @@ import kotlin.math.roundToInt
  * Turns the raw per-frame pitch estimates (~47 per second) into a calm reading for the display.
  *
  * Input is a fractional MIDI note number (from `NoteMapper.midiOf`, so A4 calibration is already
- * applied). Each [update] runs four stages:
+ * applied). Each [update] runs five stages:
+ * 0. **Onset confirmation.** Without a reading, a new one only starts once [onsetFrames] readings
+ *    in a row agree to within [snapCents], each from a frame loud enough to open the signal gate
+ *    on its own (`loudEnough`, not merely kept open by its hysteresis). A click or tick that rings
+ *    at a pitch gives one or two such frames before `SustainCheck` sees it has died away; a string
+ *    gives one every frame. The first reading shown is then already the median of those frames,
+ *    rather than the attack's single estimate.
  * 1. **Octave-jump rejection.** A reading a whole number of octaves (±[octaveToleranceCents]) away
  *    from the recent median is dropped. That is the classic detector glitch on decaying or
  *    weak-fundamental notes. If it repeats for [octaveConfirmFrames] frames in a row it's a real
@@ -24,7 +30,9 @@ import kotlin.math.roundToInt
  *    As a result [cents] can reach ±(50 + [hysteresisCents]).
  *
  * Call [noReading] for frames without a pitch. Short dropouts keep the last reading, and more than
- * [maxMissedFrames] in a row clear it. Nothing allocates after construction.
+ * [maxMissedFrames] in a row clear it, except frames whose sound had died away by their end (a tick
+ * that has passed, see [noReading]): they can't start a reading, nor count as a dropout of one.
+ * Nothing allocates after construction.
  */
 class PitchSmoother(
     val medianSize: Int = DEFAULT_MEDIAN_SIZE,
@@ -34,6 +42,7 @@ class PitchSmoother(
     val octaveToleranceCents: Float = DEFAULT_OCTAVE_TOLERANCE_CENTS,
     val octaveConfirmFrames: Int = DEFAULT_OCTAVE_CONFIRM_FRAMES,
     val maxMissedFrames: Int = DEFAULT_MAX_MISSED_FRAMES,
+    val onsetFrames: Int = DEFAULT_ONSET_FRAMES,
 ) {
 
     init {
@@ -42,6 +51,7 @@ class PitchSmoother(
         require(octaveToleranceCents in 0f..100f) { "octaveToleranceCents must be in 0..100, was $octaveToleranceCents" }
         require(octaveConfirmFrames >= 1) { "octaveConfirmFrames must be at least 1, was $octaveConfirmFrames" }
         require(maxMissedFrames >= 0) { "maxMissedFrames must not be negative, was $maxMissedFrames" }
+        require(onsetFrames in 1..medianSize) { "onsetFrames must be in 1..$medianSize, was $onsetFrames" }
     }
 
     private val medianFilter = MedianFilter(medianSize)
@@ -50,6 +60,8 @@ class PitchSmoother(
     private var hasNote = false
     private var pendingOctaveFrames = 0
     private var missedFrames = 0
+    private var onsetCount = 0
+    private var lastOnsetMidi = 0f
 
     /** True when there is a reading to show. [midi], [note] and [cents] are only meaningful then. */
     val hasReading: Boolean get() = !ema.value.isNaN()
@@ -65,13 +77,26 @@ class PitchSmoother(
 
     /**
      * Feeds one pitch estimate as a fractional MIDI note number, with the detector's [confidence]
-     * (0..1, see `PitchResult.confidence`).
+     * (0..1, see `PitchResult.confidence`). [loudEnough] says whether the frame's level would open
+     * the signal gate by itself (`SignalGate.thresholdDbfs`); a frame that isn't can keep a reading
+     * going but not start one. The gate's hysteresis is there so a fading note doesn't flicker; on
+     * the phone it also kept the gate open for a laptop speaker ringing on after a tick.
      *
-     * @return false if it was rejected as an octave glitch, true if it was used.
+     * @return false if it was rejected as an octave glitch or too quiet to start a reading, true if
+     * it was used (which, before a reading starts, may only count towards [onsetFrames]).
      */
-    fun update(midi: Float, confidence: Float = 1f): Boolean {
+    fun update(midi: Float, confidence: Float = 1f, loudEnough: Boolean = true): Boolean {
         require(midi.isFinite()) { "midi must be finite, was $midi" }
         missedFrames = 0
+        if (!hasReading) {
+            if (!loudEnough) {
+                medianFilter.reset()
+                onsetCount = 0
+                return false
+            }
+            confirmOnset(midi)
+            return true
+        }
         if (medianFilter.count > 0 && isOctaveJump(midi - medianFilter.median)) {
             pendingOctaveFrames++
             if (pendingOctaveFrames < octaveConfirmFrames) return false
@@ -93,8 +118,20 @@ class PitchSmoother(
         return true
     }
 
-    /** Records a frame with no pitch (gate closed or detector found nothing). */
-    fun noReading() {
+    /**
+     * Records a frame with no pitch: gate closed, detector found nothing, or, when not [sustained],
+     * not analysed because its sound had died away by its end (`SustainCheck`). Before a reading
+     * starts, any such frame starts the onset over. While one is shown, a frame that isn't sustained
+     * doesn't count as a dropout: a tick louder than the string is in its window, hiding the string
+     * until it leaves the window a few frames later.
+     */
+    fun noReading(sustained: Boolean = true) {
+        if (!hasReading) {
+            medianFilter.reset()
+            onsetCount = 0
+            return
+        }
+        if (!sustained) return
         missedFrames++
         if (missedFrames > maxMissedFrames) reset()
     }
@@ -106,6 +143,23 @@ class PitchSmoother(
         hasNote = false
         pendingOctaveFrames = 0
         missedFrames = 0
+        onsetCount = 0
+    }
+
+    // Stage 0: collects agreeing readings in the median filter and starts the reading once there
+    // are onsetFrames of them in a row. One that disagrees with the last starts the count afresh.
+    private fun confirmOnset(midi: Float) {
+        if (onsetCount > 0 && CENTS_PER_SEMITONE * abs(midi - lastOnsetMidi) > snapCents) {
+            medianFilter.reset()
+            onsetCount = 0
+        }
+        lastOnsetMidi = midi
+        val median = medianFilter.add(midi)
+        if (++onsetCount < onsetFrames) return
+        onsetCount = 0
+        pendingOctaveFrames = 0
+        ema.snapTo(median)
+        updateNote(median)
     }
 
     // 1 at CONFIDENT and above, falling linearly to MIN_WEIGHT at UNSURE and below. A clean tone
@@ -140,6 +194,12 @@ class PitchSmoother(
 
         /** 4 frames ≈ 85 ms of dropout before the reading is cleared. */
         const val DEFAULT_MAX_MISSED_FRAMES = 4
+
+        /**
+         * 3 frames: a new note shows ≈ 43 ms later than its first estimate. A tick gives at most 2
+         * agreeing frames once `SustainCheck` has dropped the ones after it has died away.
+         */
+        const val DEFAULT_ONSET_FRAMES = 3
 
         /** Confidence from which a reading gets the full EMA step. */
         const val CONFIDENT = 0.97f

@@ -135,6 +135,29 @@ object TestSignals {
         return FloatArray(length) { raw[it] * scale }
     }
 
+    /**
+     * A tick, knock or click: damped resonances at [frequenciesHz], each dying away with time
+     * constant [decaySeconds] (a clock's tick a few ms, a knock on wood 10–30 ms), summed and scaled
+     * so the peak is [amplitude]. Starts at full strength on the first sample; the rest of the
+     * [length] samples ring out to silence. Rings like these fooled the tuner into showing a note.
+     */
+    fun tick(
+        frequenciesHz: FloatArray,
+        decaySeconds: Double,
+        length: Int = DEFAULT_LENGTH,
+        sampleRate: Int = SAMPLE_RATE,
+        amplitude: Float = DEFAULT_AMPLITUDE,
+    ): FloatArray {
+        val raw = DoubleArray(length) { i ->
+            val t = i.toDouble() / sampleRate
+            var s = 0.0
+            for ((k, f) in frequenciesHz.withIndex()) s += sin(2 * PI * f * t + PI / 2 * k)
+            s * exp(-t / decaySeconds)
+        }
+        val peak = raw.maxOf { abs(it) }
+        return FloatArray(length) { (amplitude * raw[it] / peak).toFloat() }
+    }
+
     /** [signal] plus [interference] scaled so that the signal-to-interference ratio is [snrDb] (RMS based). */
     fun mix(signal: FloatArray, interference: FloatArray, snrDb: Float): FloatArray {
         require(interference.size >= signal.size) { "interference is shorter than the signal" }

@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 
 /**
  * The watch's chromatic tuner chain, the phone's pitch engine from `:core:dsp` without the phone's
- * extras (reception, tips, strum check): microphone → `FrameAssembler` → [SignalGate] → YIN
+ * extras (reception, tips, strum check): microphone → `FrameAssembler` → [SignalGate] → `SustainCheck` → YIN
  * (`AnalysisSettings.newPitchDetector`) → [PitchSmoother] → note and cents (ARCHITECTURE §3), and
  * the phone's [InTuneDetector] (within 5 cents for 300 ms, released past 7) for the in-tune ring.
  *
@@ -49,6 +49,9 @@ class WatchPitchPipeline(
         val assembler = settings.newFrameAssembler()
         val frame = FloatArray(settings.windowSize)
         val gate = SignalGate()
+        val sustain = settings.newSustainCheck()
+        // Only for SustainCheck: what the room sounds like between notes.
+        val noise = settings.newNoiseFloorTracker()
         val detector = settings.newPitchDetector()
         val smoother = PitchSmoother()
         val mapper = NoteMapper(a4Hz)
@@ -67,11 +70,15 @@ class WatchPitchPipeline(
                 pos += assembler.push(chunk, pos, chunk.size - pos)
                 if (!assembler.isFrameReady) continue
                 assembler.readFrame(frame)
-                val pitch = if (gate.process(frame)) detector.detect(frame) else PitchResult.NONE
+                val open = gate.process(frame)
+                // A tick that has already died away is not a note, nor the end of one (SustainCheck).
+                val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
+                val pitch = if (open && sustained) detector.detect(frame) else PitchResult.NONE
+                noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
                 if (pitch.isPitched) {
-                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence)
+                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold)
                 } else {
-                    smoother.noReading()
+                    smoother.noReading(sustained)
                 }
                 if (!smoother.hasReading && shownMidi != NO_NOTE && lostFrames < holdFrames) {
                     // The note is lost for a moment: keep showing it, glow and all, so a brief

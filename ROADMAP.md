@@ -29,6 +29,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears
 - ☐ Phase 22: native speakers look over the new translations where possible
 - ☐ Phase 25: tune a real guitar with each of the six meter looks, light and dark, and say if any feels hard to read or too busy
+- ☐ Ticks and clicks: with no string ringing, tap the desk, click a pen and let a clock tick next to the phone: the needle stays still. Then tune a real guitar and check a plucked string still shows promptly and holds steady while you tap
 
 ---
 

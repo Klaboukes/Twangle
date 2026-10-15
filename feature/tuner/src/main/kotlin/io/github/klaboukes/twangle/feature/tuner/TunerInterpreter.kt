@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
@@ -64,10 +65,12 @@ class TunerInterpreter(
             tuningCue = TuningCue(InTuneDetector.forPrecision(inTunePrecision))
         }
         if (reading.isPitched) {
-            smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence)
+            val loudEnough = reading.levelDbfs >= SignalGate.DEFAULT_THRESHOLD_DBFS
+            smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence, loudEnough)
             reception.update(reading.levelDbfs, reading.snrDb, reading.clarity)
         } else {
-            smoother.noReading()
+            // A tick that has passed can't start a note, nor end the one shown.
+            smoother.noReading(reading.sustained)
         }
         val tip = tipLine.update(tipCue.update(reading, smoother.hasReading, frameSeconds), frameSeconds)
         if (!smoother.hasReading) {

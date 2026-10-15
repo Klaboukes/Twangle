@@ -100,9 +100,12 @@ Rules:
     ▼
  SignalGate            RMS level check (< ~-50 dBFS → "no signal"), DC offset removal
     ▼
+ SustainCheck          newest hop vs the window's loudest (energy and peak): a tick that has
+    │                  died away (> 12 dB down, or > 4 dB and back at the room) is not analysed
+    ▼
  PitchDetector (YIN)   [upsample to ≥ 32 kHz if the rate is lower] → 4 kHz low-pass → difference fn
-    │                  → CMNDF → absolute threshold → whole-period checks → least-squares
-    │                  refinement → PitchResult(frequencyHz, confidence), or PitchResult.NONE
+    │                  → CMNDF → absolute threshold → whole-period checks → above-range check
+    │                  → least-squares refinement → PitchResult(frequencyHz, confidence), or NONE
     ▼
  NoiseFloorTracker     note-free frames' levels → median of 5 → minimum over 2 s = room's floor;
  + Clarity             with a pitch: SNR over that floor, clarity 0..1 from YIN's confidence
@@ -110,9 +113,10 @@ Rules:
  ReceptionTracker      level, SNR and clarity scored 0..1, each smoothed (fast up, slow down);
                        reception = the lowest of the three (needle and wave crisp ↔ faint)
     ▼
- PitchSmoother         Hz → fractional MIDI (NoteMapper.midiOf, honours A4) → octave-jump rejection
-    │                  → median of 5 → EMA (snaps on a new note, smaller steps when unsure)
-    │                  → note with ±15-cent hysteresis
+ PitchSmoother         Hz → fractional MIDI (NoteMapper.midiOf, honours A4) → onset: 3 agreeing
+    │                  frames → octave-jump rejection → median of 5 → EMA (snaps on a new note,
+    │                  smaller steps when unsure) → note with ±15-cent hysteresis; a passed
+    │                  tick's frames neither start a note nor count as its dropout
     ▼
  NoteMapper / Tuning   note name + octave; in Auto mode → nearest string in tuning, cents from it
     ▼
@@ -152,6 +156,16 @@ The cost: twice the window, about 2.3× the CPU per frame (bigger FFT), and a re
 ### Signal gate
 `SignalGate.process(frame)` first measures the **peak** as the mic delivered it (`peakDbfs`, to detect clipping), then removes the DC offset in place and measures the RMS level as `20 · log10(rms)` dBFS (full-scale square 0 dBFS, sine ≈ −3; silence floored at −120). It opens at **−50 dBFS** and closes below **−56 dBFS** (6 dB hysteresis), so a decaying note doesn't flicker. Only frames with the gate open reach the detector.
 
+### Sustain check (ticks and clicks)
+A tap on the desk, a clock's tick or a mouse click often rings at a pitch for a few milliseconds. YIN reads that ring, and it stays in the 85 ms window for four hops, so each tick used to show a note for ≈ 0.1 s (a 1–1.5 kHz ring sits nearest the high E string, far sharp: "the needle jumps to E4"). A string sustains; a tick dies away. `pitch/SustainCheck` cuts the window from its newest end into blocks of one hop, or one period of the lowest note where that is longer (the low range: 1715 samples, 36 ms, since a bass note's 32 ms cycle doesn't fit in a 21 ms hop and its energy per hop swings by up to 12 dB), and `dropDb` is how far the newest block is below the loudest. It measures both energy and peak and takes the larger drop: energy sees a 30 ms ping fade 12 dB within three hops; the peak sees a 2 ms tick louder than the string by its full height, where in energy it is only ≈ 6 dB. Every block holds a whole cycle, so a steady note reads ≈ 0 dB (up to 2.5 dB of energy on bass notes). The idea is energy-envelope onset detection (Bello et al. 2005) turned around: a pitch is only trusted while the envelope says the sound is still there.
+A frame is **not sustained**, so it isn't analysed (`PitchReading.sustained` = false), when its sound had died away by its end:
+- **more than 12 dB down** (`SustainCheck.DEFAULT_MAX_DROP_DB`): a loud tick has passed. A note that starts in the newest block is the loudest block, so new notes pass at once; on the phone a played E4 never dropped more than 1.8 dB across a window, a synthetic 24th-fret E fading fast about 7.
+- **more than 4 dB down and the newest block within 6 dB of the room's background** (`ROOM_DROP_DB`, `ROOM_MARGIN_DB`, the floor from `NoiseFloorTracker`): a quiet tick has passed. A tick just above the room can't drop further than the room's level (6.6–8 dB on the phone, as little as that fast high note), but a note is still well above the room. Room noise alone varies by 1–2 dB, so it is sustained and ends a reading as usual.
+
+While a note shows, a frame that isn't sustained doesn't count as a dropout (`PitchSmoother.noReading(sustained = false)`): a tick louder than the string hides it until the tick leaves the window. With the smoother's onset (*Smoothing*) a tick can't start a reading: it gives at most 2 analysed frames, and a new reading also needs frames loud enough to open the gate by themselves. On the phone the laptop speaker rang on at 1400 Hz for ≈ 70 ms after a tick, −48 to −55 dBFS: the gate stayed open on its hysteresis after the tick and three sustained frames read 1400 Hz, "E4 +25 semitones".
+
+Measured (`EdgeCaseTest`, `SustainCheckTest`, 48 kHz): ticks (2 ms rings at 330 Hz–5 kHz, a knock, a clock tick, a digital click, a noise burst) and pings (the same rings lasting 8 or 30 ms), at peak −1 dBFS over a −70 or −55 dBFS room: **nothing shown**. Before, most rang at a pitch and showed for 5–36 frames per three of them. **On the Xiaomi 12X** (2026-10-15), 45 ticks of seven kinds from the laptop speaker: none shown; a played E4 shows on its third frame, on pitch. Ticks every 0.4 s over a ringing string, 12 dB quieter or 13 dB louder (peak): the reading is never lost and stays **within 0.26 cents**; ticks as loud as the string move it up to 3.5 cents for a frame or two. *Known limits:* a ping ringing 8–30 ms over a string is a pitched sound of its own (like a glass clink) and can pull the reading off, even onto its own note, for a moment, as before; and in the low range a ping ringing ≈ 30 ms fades too little within a 36 ms block, so on its own it may show briefly. Cost: under 0.01 ms per frame.
+
 ### Noise floor, SNR and clarity
 How well the tuner hears the guitar. Every `PitchReading` carries these besides the level; *Reception* turns them into what the display shows.
 - **Noise floor** (`level/NoiseFloorTracker`): the room's background in dBFS. Only frames without a pitch count, gate open or not. Their levels pass a running median of 5 (ignores a glitch), and the floor is the lowest of those over the last **2 s of note-free frames** (scaled with the hop by `AnalysisSettings.newNoiseFloorTracker()`). This is Martin's (2001) minimum statistics on one band, with a median in place of his recursive smoothing (which took ~0.6 s to follow a 20 dB drop). The floor drops within a few frames, rises only once a louder room lasts 2 s, and notes never move it. NaN until the first note-free frame; reads a little low on fluctuating noise.
@@ -190,25 +204,28 @@ Behind "Show signal bars" (off by default). Four bars in the free slot at the ri
 1. **Low-pass pre-filter:** 4th-order Butterworth at 4 kHz (two RBJ biquads), skipping its ~92-sample start-up transient. Without it very bright tones near 1.4 kHz give a V-shaped dip that parabolic interpolation misjudges by ~2.5 cents. Also removes hiss.
 2. **Adaptive least-squares refinement:** a cubic fitted to raw `d` over the lags `τ ± k` within 5 % of the way from the dip to the mean (`k` ≤ τ/16). Sharp dips use k = 1 (the classic parabola); broad dips (low pure notes) average dozens of lags. At 20 dB SNR this cut the worst low-E error from ~23 cents to under 1; the cubic term removes a ~0.3-cent bias.
 
-**Range edge and whole-period checks.** The first dip is followed to its minimum; if it is still falling at τ_max, the pitch is below 62 Hz and the frame has none (this keeps 60 Hz hum out). Two checks then catch a period off by a whole factor, on raw `d`:
+**Range edges and whole-period checks.** The first dip is followed to its minimum; if it is still falling at τ_max, the pitch is below 62 Hz and the frame has none (this keeps 60 Hz hum out). Two checks then catch a period off by a whole factor, on raw `d`, and a third drops tones above the range:
 - *Too long (noise):* heavy noise inflates `d′` at short lags, so the first accepted dip can be 2–3 periods. If `d` at a local minimum near τ/k is at most 15 % above `d(τ)` (and `d′` < 0.5), τ/k is taken.
 - *Too short (harmonics):* a high note with a strong 2nd and weak odd harmonics nearly repeats every half period. If `d′(τ) ≥ 0.05` and `d` at 2τ or 3τ is below a quarter of `d(τ)`, that lag is the period.
+- *Above the range:* a tone above 1500 Hz has no dip in range at its own period, but one at 2, 3 or 4 periods, so a 2 kHz whistle or a tick ringing at 3 or 5 kHz read as 1000, 1500 or 1250 Hz. After the two checks above, the frame has no pitch if the dip at τ_min is still falling towards shorter lags, or a dip of `d` below τ_min (from lag 4) divides τ a whole number of times and is about as deep. That is the *too long* test, on parabola-interpolated dip floors (a period of 10–30 lags falls well between whole lags, which alone makes `d` there several times `d(τ)` on a clean tone) plus 1 % of the mean of `d`. A note with a strong 2nd harmonic keeps its odd harmonics at the half period, ≥ 4 % of the mean of `d` in every test tone, so it still reads. Measured: sines and bright tones 1.6–5 kHz give nothing, also at 20 dB SNR; 1318–1500 Hz still within 1 cent.
 
 Search range τ = 32…775 (1500…62 Hz) plus 50 lags for the fit; integration window `W = 4096 − 92 − 825 = 3179`. In the low-note range τ = 32…1715 (1500…28 Hz) plus 109 lags, `W = 8192 − 92 − 1824 = 6276`, FFT size 8192. Confidence = 1 − d′(τ). `PitchResult` is a value class packing two floats into a `Long`, with `PitchResult.NONE` instead of null, so it never boxes. Measured: ≈ 0.1 cent for sines, ≈ 0.5 for saw/square/pluck/weak fundamental, < 1 at 20 dB SNR, < 5 at 10 dB; no octave errors. `detect()` is allocation-free (byte-counting test).
 
 ### Smoothing
 `PitchSmoother` works in fractional MIDI, so cents are ×100 and A4 is already applied:
+0. **Onset:** without a reading, a new one starts only once **3 readings in a row** agree within 50 cents, each from a frame loud enough to open the gate by itself (≥ −50 dBFS; the gate's hysteresis keeps a fading note, it doesn't start one); a frame without a pitch, one too quiet, or one far from the last starts the count over. A tick gives at most 2 such frames (see *Sustain check*). The reading starts at the median of the three, so a new note shows ≈ 43 ms later than before (76 ms after the pluck instead of 33; 119 instead of 76 for the low strings, whose first frames have no pitch yet) and its first value is closer (worst 0.59 cents instead of 1.28 on a C6 pluck).
 1. **Octave-jump rejection:** a reading a whole number of octaves (±30 cents) from the running median is dropped; if it holds 3 frames (~64 ms), the filters restart there.
 2. **Median of 5** (~107 ms) removes other outliers.
 3. **EMA, α = 0.3,** snapping when the median is > 50 cents away (a new string). Steps are weighted by confidence: 1 from 0.97 up, falling linearly to 0.2 at 0.88 and below. This roughly halves needle wobble in a noisy room and at the end of a decay without slowing clean notes.
 4. **Note hysteresis:** the shown note changes only past 65 cents (50 + 15), so displayed cents can reach ±65.
 
-`noReading()` keeps the last reading for up to 4 missed frames (~85 ms), then clears it. Allocation-free.
+`noReading()` keeps the last reading for up to 4 missed frames (~85 ms), then clears it; frames that aren't sustained (*Sustain check*) don't count. Allocation-free.
 
 ### Edge cases (measured, `EdgeCaseTest`)
 What the user sees after the whole chain on synthetic signals:
 - **White noise:** always the right note; worst error 0.8 cents at 10 dB SNR, 1.7 at 6, 2.5 at 3, ≈ 10 at 0 dB (low notes; high notes stay under 2).
 - **Mains hum 10 dB below the string:** within 3 cents; hum alone shows nothing. *Known limit:* hum within ~6 dB of the string can lock YIN onto a shared period or hide low strings. A notch filter would fix it if real rooms need it.
+- **Ticks, knocks and clicks:** alone, never shown; over a ringing string, within 0.26 cents (see *Sustain check*).
 - **High strings with strong 2nd/3rd harmonics** (B3–C6): within 1 cent, no octave flips while decaying.
 - **Sustain decay:** stays within 1 cent until the gate closes (once); over −60 dBFS room noise the last frames wobble up to 6 cents, never another note.
 - **Bluetooth-like audio** (300–3400 Hz or 100–7000 Hz band, native 8 or 16 kHz): within 1 cent.
@@ -727,7 +744,7 @@ Phase 20 (`:app` `widget/`). A tile for the home screen, three cells by one (res
 ### Watch app (Wear OS)
 Phase 20 (`:wear`). A standalone Wear OS app (`com.google.android.wearable.standalone`): it listens with the watch's own microphone and needs nothing from the phone. Compose for Wear OS (`androidx.wear.compose` Material 3, `AppScaffold` with the time at the top), minSdk 30 (Wear OS 3).
 - **Same application ID as the phone** (`io.github.klaboukes.twangle`), as Wear OS and Play expect for a phone app and its watch app; namespace `…twangle.wear`. **`versionCode` = the phone's + 1,000,000** (1,000,900 now), because Play needs a different code for each build; bump it with `:app`'s. The launcher icon is the phone's adaptive icon (copied into `wear/src/main/res`).
-- **The pitch engine is the phone's**: `WatchPitchPipeline` runs `:core:dsp`'s `FrameAssembler` → `SignalGate` → YIN (`AnalysisSettings.newPitchDetector`) → `PitchSmoother` → `InTuneDetector` (the phone's default window: within 5 cents for 300 ms, released past 7), with frame sizes from the recorder's rate, so a 16 kHz watch mic gets the same window and hop as 48 kHz. It leaves out the phone's extras (noise floor, reception, tips, strum check, low-note window, precision setting): chromatic, A4 = 440 Hz, sharps. It allocates nothing per frame and sends a new `WatchTunerState` (`Listening`, `Detected(note, cents, inTune)`, `Failed`) only when the note, the whole cents or "in tune" change. A note lost for a moment stays on screen 0.6 s beyond the smoother's own hold (as long as the phone's glow bridges a dropout) and keeps "in tune" if the same note comes back, so the watch never flickers between a reading and "Play a note".
+- **The pitch engine is the phone's**: `WatchPitchPipeline` runs `:core:dsp`'s `FrameAssembler` → `SignalGate` → `SustainCheck` (with its own noise floor for the room rule) → YIN (`AnalysisSettings.newPitchDetector`) → `PitchSmoother` → `InTuneDetector` (the phone's default window: within 5 cents for 300 ms, released past 7), with frame sizes from the recorder's rate, so a 16 kHz watch mic gets the same window and hop as 48 kHz. It leaves out the phone's extras (SNR, reception, tips, strum check, low-note window, precision setting): chromatic, A4 = 440 Hz, sharps. It allocates nothing per frame and sends a new `WatchTunerState` (`Listening`, `Detected(note, cents, inTune)`, `Failed`) only when the note, the whole cents or "in tune" change. A note lost for a moment stays on screen 0.6 s beyond the smoother's own hold (as long as the phone's glow bridges a dropout) and keeps "in tune" if the same note comes back, so the watch never flickers between a reading and "Play a note".
 - **The microphone is `:core:audio`'s `AndroidAudioRecorder`**, unchanged: unprocessed source, then voice recognition, the watch's native rate, the built-in mic while a Bluetooth headset is connected.
 - **Microphone lifetime** as on the phone: `WatchTunerViewModel.state` is `stateIn(WhileSubscribed(5_000))` and the screen collects it with `collectAsStateWithLifecycle()`, only once `RECORD_AUDIO` is granted. The permission is asked for when the app first opens; afterwards a button asks again, or opens the app's page in the watch's settings once Android stops showing its dialog. A busy or broken mic shows a message with "Try again".
 - **Screen off and ambient let go of the mic at once.** On Wear OS the activity stays *resumed* when the screen dims to ambient (always-on) or goes off (seen on the emulator: display `DOZE`, Twangle still the top resumed activity), so the lifecycle alone would keep the mic open. `ScreenOnEffect` listens for `ACTION_SCREEN_OFF` / `ACTION_SCREEN_ON` (sent when the display leaves or enters interactive mode, ambient included) and checks `PowerManager.isInteractive` on start; the view model then switches its upstream to a plain `Listening`, without the 5 s grace, and opens the mic again when the screen comes back. The app doesn't declare ambient support, so the watch shows the system's ambient view. Measured on the emulator: the mic is released within 0.9 s of `KEYCODE_SLEEP` (most of it adb) and reopened on wake; Home still keeps the 5 s grace.
@@ -777,7 +794,8 @@ Phase 20 (`:wear`). A standalone Wear OS app (`com.google.android.wearable.stand
 ```
 core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     pitch/      PitchDetector (interface), PitchResult, YinPitchDetector, UpsamplingPitchDetector,
-                AnalysisSettings, PitchRange, LowPassFilter, SignalGate, FftDifference, Fft, Clarity
+                AnalysisSettings, PitchRange, LowPassFilter, SignalGate, SustainCheck, FftDifference,
+                Fft, Clarity
     level/      NoiseFloorTracker, ReceptionTracker
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector
