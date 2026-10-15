@@ -22,10 +22,10 @@ import kotlin.math.sqrt
  *   ([depth]) and more of them fit across ([beats]) the further off. Close to the note they smooth
  *   out, and within half a cent, where the drift stands still, the band is perfectly even. The
  *   shape follows the reading more slowly than the drift, so it changes smoothly.
- * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle. With
- *   [breathesInTune] off, it eases to a stop while the drift stands still ([stir] falls to 0), so
- *   on the note the wave holds perfectly still in its calm shape, like a strobe. (Temporary
- *   choice: the owner compares both on the phone and the other one goes.)
+ * - A slow clock ([breath], [swell]) lets the band breathe and the fireflies twinkle while the
+ *   wave is off the note. It eases to a stop while the drift stands still ([stir] falls to 0), so
+ *   on the note the wave holds perfectly still in its calm shape, like a strobe (the owner's pick,
+ *   October 2026, over breathing on gently).
  *
  * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and
  * the previews in Settings both use it.
@@ -49,15 +49,9 @@ class WaveMotion {
         private set
 
     /**
-     * Whether the wave keeps breathing while it stands still on the note (the default). False makes
-     * it hold perfectly still there: no drift, no breathing, no twinkle.
-     */
-    var breathesInTune = true
-
-    /**
-     * How much the wave breathes now (0..1): 1 while it drifts or [breathesInTune] is on. With
-     * [breathesInTune] off it eases to exactly 0 while the drift stands still, which slows the
-     * [breath] clock to a stop and lets the [swell] settle at full height.
+     * How much the wave breathes now (0..1): 1 while it drifts. It eases to exactly 0 while the
+     * drift stands still, which slows the [breath] clock to a stop and lets the [swell] settle at
+     * full height, so on the note nothing moves: no drift, no breathing, no twinkle.
      */
     var stir = 1f
         private set
@@ -88,8 +82,7 @@ class WaveMotion {
         shownCents = ease(shownCents, goal, follow)
         depth = ease(depth, depthFor(goal), follow)
         beats = ease(beats, beatsFor(goal), follow)
-        val calm = !breathesInTune && drift.isStill
-        stir += ((if (calm) 0f else 1f) - stir) * (1f - exp(-dt * SETTLE_RATE))
+        stir += ((if (drift.isStill) 0f else 1f) - stir) * (1f - exp(-dt * SETTLE_RATE))
         // Snapped to its end, so "holding still" is exact rather than an ever slower creep.
         if (stir < SETTLED) stir = 0f else if (stir > 1f - SETTLED) stir = 1f
         breath = wrap(breath + dt * BREATHS_PER_SECOND * stir)
@@ -116,7 +109,7 @@ class WaveMotion {
         const val MIN_BEATS = 1.5f
         const val MAX_BEATS = 4.5f
 
-        /** How much the in-tune ribbon breathes. */
+        /** How much the ribbon breathes off the note. */
         const val BREATH_DEPTH = 0.1f
 
         /**

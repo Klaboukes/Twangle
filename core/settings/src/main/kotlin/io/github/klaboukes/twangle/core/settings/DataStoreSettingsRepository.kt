@@ -165,10 +165,6 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[IN_TUNE_EFFECT] = effect.name }
     }
 
-    override suspend fun setWaveBreathesInTune(enabled: Boolean) {
-        dataStore.edit { it[WAVE_BREATHES_IN_TUNE] = enabled }
-    }
-
     override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) {
         dataStore.edit { it[KEEP_TWO_PANE_LANDSCAPE] = enabled }
     }
@@ -222,7 +218,6 @@ class DataStoreSettingsRepository internal constructor(
             waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
             meterLook = enumOrNull<MeterLook>(prefs[METER_LOOK]) ?: defaults.meterLook,
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
-            waveBreathesInTune = prefs[WAVE_BREATHES_IN_TUNE] ?: defaults.waveBreathesInTune,
             keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
             tourSeen = tourSeen(prefs),
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
@@ -262,7 +257,6 @@ class DataStoreSettingsRepository internal constructor(
         /** The wave-view switch of versions before the display picker: read once, to carry it over. */
         private val SHOW_WAVES = booleanPreferencesKey("show_waves")
         private val WAVE_LOOK = stringPreferencesKey("wave_look")
-        private val WAVE_BREATHES_IN_TUNE = booleanPreferencesKey("wave_breathes_in_tune")
         private val METER_LOOK = stringPreferencesKey("meter_look")
         private val IN_TUNE_EFFECT = stringPreferencesKey("in_tune_effect")
         /** Whether the first-start tour was skipped or finished; see [tourSeen] for an install without it. */
@@ -316,8 +310,9 @@ class DataStoreSettingsRepository internal constructor(
          * The saved tour flag; without one (before [decideTourOnce] has run on this install), any other
          * saved setting means an install from before the tour, which counts as having seen it. That
          * includes keys no longer read, such as `string_lock_tip_seen` (the string-lock tip the tour's
-         * strings step replaced): they stay in the file, so an install that only dismissed that tip
-         * still counts as used.
+         * strings step replaced) and `wave_breathes_in_tune` (the temporary "when in tune" choice; the
+         * wave now always holds still on the note): they stay in the file, so an install that only
+         * dismissed that tip still counts as used.
          */
         private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
 

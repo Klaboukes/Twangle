@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">圆点</string>
     <string name="settings_wave_look_fireflies">萤火虫</string>
     <string name="settings_wave_look_loop">环形</string>
-    <string name="settings_wave_in_tune_title">调准时</string>
-    <string name="settings_wave_in_tune_breathe">轻柔呼吸</string>
-    <string name="settings_wave_in_tune_hold_still">完全静止</string>
     <string name="settings_wave_look_ripples">涟漪</string>
     <string name="settings_keep_two_pane_landscape_title">横屏时完整布局</string>
     <string name="settings_keep_two_pane_landscape_summary">手机横放时，在调音器旁显示控件，而不是只显示一个大表盘</string>

@@ -20,8 +20,7 @@ import kotlin.math.abs
 class WaveLooksTest {
 
     /** A wave stepped at 60 frames per second for [seconds] at [cents]. */
-    private fun settled(cents: Float, seconds: Float = 3f, holdsStill: Boolean = false) = WaveMotion().apply {
-        breathesInTune = !holdsStill
+    private fun settled(cents: Float, seconds: Float = 3f) = WaveMotion().apply {
         repeat((seconds * 60).toInt()) { advance(1f / 60f, cents) }
     }
 
@@ -120,11 +119,14 @@ class WaveLooksTest {
     }
 
     @Test
-    fun `in tune the fireflies keep still even while the wave breathes`() {
-        val motion = settled(0.3f)
+    fun `in tune the fireflies keep still, even while the breathing is still settling`() {
+        // A fifth of a second on the note: the shape is calm but the breath clock still runs down.
+        val motion = settled(0.3f, seconds = 0.2f)
         val spread = unrest(motion.depth)
         val now = fireflyAt(0, 5, motion.phase, motion.beats, spread, motion.breath)
-        motion.advance(0.7f, 0.3f)
+        val breath = motion.breath
+        motion.advance(0.1f, 0.3f)
+        assertTrue("the breath clock still moves", motion.breath != breath)
         val later = fireflyAt(0, 5, motion.phase, motion.beats, unrest(motion.depth), motion.breath)
         assertEquals(now.x, later.x, 0f)
         assertEquals(now.y, later.y, 0f)
@@ -229,7 +231,7 @@ class WaveLooksTest {
 
     @Test
     fun `in tune the ripples stand still`() {
-        val motion = settled(-0.4f, holdsStill = false)
+        val motion = settled(-0.4f)
         val now = rippleAt(2, 5, motion.phase)
         motion.advance(1f, -0.4f)
         assertEquals(now, rippleAt(2, 5, motion.phase), 0f)

@@ -521,18 +521,6 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `waveBreathesInTune follows the setting`() = runTest(dispatcher) {
-        val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.waveBreathesInTune.collect {} }
-        runCurrent()
-        assertEquals(true, vm.waveBreathesInTune.value)
-
-        settings.setWaveBreathesInTune(false)
-        runCurrent()
-        assertEquals(false, vm.waveBreathesInTune.value)
-    }
-
-    @Test
     fun `showTuneHint follows the setting`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
         backgroundScope.launch { vm.showTuneHint.collect {} }

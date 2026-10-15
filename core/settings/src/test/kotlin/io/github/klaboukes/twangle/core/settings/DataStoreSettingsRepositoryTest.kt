@@ -90,7 +90,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(WaveLook.RIBBON, settings.waveLook)
         assertEquals(MeterLook.CLASSIC, settings.meterLook)
         assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
-        assertEquals(true, settings.waveBreathesInTune)
         assertEquals("a fresh install is due the tour", false, settings.tourSeen)
         assertEquals(false, settings.keepTwoPaneLandscape)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
@@ -117,7 +116,6 @@ class DataStoreSettingsRepositoryTest {
         repo.setWaveLook(WaveLook.FIREFLIES)
         repo.setMeterLook(MeterLook.LIGHT_ARC)
         repo.setInTuneEffect(InTuneEffect.BOLD)
-        repo.setWaveBreathesInTune(false)
         repo.setTourSeen(true)
         repo.setKeepTwoPaneLandscape(true)
         repo.setMetronomeBpm(96)
@@ -141,7 +139,6 @@ class DataStoreSettingsRepositoryTest {
             waveLook = WaveLook.FIREFLIES,
             meterLook = MeterLook.LIGHT_ARC,
             inTuneEffect = InTuneEffect.BOLD,
-            waveBreathesInTune = false,
             tourSeen = true,
             keepTwoPaneLandscape = true,
             metronomeBpm = 96,
@@ -171,7 +168,6 @@ class DataStoreSettingsRepositoryTest {
             setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
             setKeepTwoPaneLandscape(true)
-            setWaveBreathesInTune(false)
             setMeterLook(MeterLook.SPIRIT_LEVEL)
             setInTuneEffect(InTuneEffect.BOLD)
             setMetronomeBpm(72)
@@ -189,7 +185,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
-        assertEquals("the wave keeps holding still", false, settings.waveBreathesInTune)
         assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
         assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
@@ -548,6 +543,19 @@ class DataStoreSettingsRepositoryTest {
         for (gone in listOf("ROLLING_SCALE", "COMET", "STUDIO_METER")) {
             store.edit { it[stringPreferencesKey("meter_look")] = gone }
             assertEquals(gone, MeterLook.CLASSIC, repo.settings.first().meterLook)
+        }
+    }
+
+    @Test
+    fun `the old when-in-tune choice is ignored, whichever way it was saved`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (breathes in listOf(true, false)) {
+            store.edit {
+                it[booleanPreferencesKey("wave_breathes_in_tune")] = breathes
+                it[booleanPreferencesKey("tour_seen")] = true
+            }
+            assertEquals("saved $breathes", AppSettings(tourSeen = true), repo.settings.first())
         }
     }
 

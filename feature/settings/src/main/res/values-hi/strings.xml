@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">बिंदु</string>
     <string name="settings_wave_look_fireflies">जुगनू</string>
     <string name="settings_wave_look_loop">लूप</string>
-    <string name="settings_wave_in_tune_title">सुर में होने पर</string>
-    <string name="settings_wave_in_tune_breathe">धीरे-धीरे साँस ले</string>
-    <string name="settings_wave_in_tune_hold_still">पूरी तरह स्थिर रहे</string>
     <string name="settings_wave_look_ripples">लहरें</string>
     <string name="settings_keep_two_pane_landscape_title">फ़ोन आड़ा होने पर पूरा लेआउट</string>
     <string name="settings_keep_two_pane_landscape_summary">फ़ोन घुमाने पर एक बड़े मीटर की जगह ट्यूनर के बगल में कंट्रोल दिखाएँ</string>

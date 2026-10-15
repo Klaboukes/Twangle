@@ -116,11 +116,11 @@ class WaveMotionTest {
     }
 
     @Test
-    fun `it breathes gently`() {
+    fun `off the note it breathes gently`() {
         val motion = WaveMotion()
         var lowest = 1f
         repeat(300) {
-            motion.advance(1f / 60f, 0f)
+            motion.advance(1f / 60f, 10f)
             lowest = minOf(lowest, motion.swell)
             assertTrue(motion.swell <= 1f)
         }
@@ -128,17 +128,8 @@ class WaveMotionTest {
     }
 
     @Test
-    fun `by default it keeps breathing on the note`() {
-        val motion = WaveMotion().also { run(it, 2f, 0f) }
-        val before = motion.breath
-        run(motion, 1f, 0f)
-        assertTrue(motion.breath != before)
-        assertEquals(1f, motion.stir, 0f)
-    }
-
-    @Test
-    fun `holding still, it freezes completely on the note`() {
-        val motion = WaveMotion().apply { breathesInTune = false }
+    fun `on the note it holds perfectly still`() {
+        val motion = WaveMotion()
         run(motion, 1f, 12f)
         run(motion, 3f, 0.3f)
         assertEquals(0f, motion.stir, 0f)
@@ -156,8 +147,8 @@ class WaveMotionTest {
     }
 
     @Test
-    fun `holding still, it still breathes while off the note`() {
-        val motion = WaveMotion().apply { breathesInTune = false }
+    fun `after holding still, it breathes again once off the note`() {
+        val motion = WaveMotion()
         run(motion, 3f, 0f)
         run(motion, 2f, 4f)
         assertEquals(1f, motion.stir, 0f)
@@ -168,8 +159,8 @@ class WaveMotionTest {
 
     @Test
     fun `holding still settles and wakes smoothly`() {
-        val motion = WaveMotion().apply { breathesInTune = false }
-        run(motion, 1.3f, 0f) // Mid-breath, so the swell has somewhere to settle from.
+        val motion = WaveMotion()
+        run(motion, 1.3f, 10f) // Mid-breath, so the swell has somewhere to settle from.
         var last = motion.swell
         repeat(180) {
             motion.advance(1f / 60f, if (it < 90) 0f else 10f)

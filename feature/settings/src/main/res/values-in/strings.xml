@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Titik</string>
     <string name="settings_wave_look_fireflies">Kunang-kunang</string>
     <string name="settings_wave_look_loop">Lingkaran</string>
-    <string name="settings_wave_in_tune_title">Saat pas</string>
-    <string name="settings_wave_in_tune_breathe">Bernapas pelan</string>
-    <string name="settings_wave_in_tune_hold_still">Diam sempurna</string>
     <string name="settings_wave_look_ripples">Riak</string>
     <string name="settings_keep_two_pane_landscape_title">Tata letak penuh saat miring</string>
     <string name="settings_keep_two_pane_landscape_summary">Saat ponsel diputar, tampilkan kontrol di samping tuner, bukan satu meter besar</string>

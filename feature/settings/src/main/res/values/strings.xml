@@ -61,10 +61,6 @@
     <string name="settings_wave_look_dots">Dots</string>
     <string name="settings_wave_look_fireflies">Fireflies</string>
     <string name="settings_wave_look_loop">Loop</string>
-    <!-- Temporary: the owner compares both on the phone, then the switch goes. -->
-    <string name="settings_wave_in_tune_title">When in tune</string>
-    <string name="settings_wave_in_tune_breathe">Breathe gently</string>
-    <string name="settings_wave_in_tune_hold_still">Hold perfectly still</string>
     <string name="settings_wave_look_ripples">Ripples</string>
     <string name="settings_keep_two_pane_landscape_title">Full layout on its side</string>
     <string name="settings_keep_two_pane_landscape_summary">With the phone turned, show the controls beside the tuner instead of one big meter</string>

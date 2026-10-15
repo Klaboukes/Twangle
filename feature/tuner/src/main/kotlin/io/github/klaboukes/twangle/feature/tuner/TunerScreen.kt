@@ -168,7 +168,6 @@ fun TunerScreen(
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
     val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
-    val waveBreathesInTune by viewModel.waveBreathesInTune.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
@@ -246,7 +245,6 @@ fun TunerScreen(
                     inTuneEffect = inTuneEffect,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
-                    waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
@@ -344,8 +342,8 @@ private fun KeepScreenOn() {
  * [needleCents] gives the needle's position, by default the cents of [state]. [TunerScreen] passes the
  * exact cents there and a [state] rounded to what the text shows ([asShown]). [reception] likewise
  * gives how well the note is heard (null without one), which the needle and the wave read while drawing. [display] picks how
- * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (breathing
- * on the note or, without [waveBreathesInTune], holding still there); the meter above the note is drawn in
+ * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (holding
+ * perfectly still on the note); the meter above the note is drawn in
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
  * tune; as strong as [inTuneEffect]; with [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
@@ -389,7 +387,6 @@ fun TunerContent(
     inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
-    waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     showSignalBars: Boolean = false,
     signalFigures: Flow<SignalFigures?> = emptyFlow(),
@@ -462,7 +459,6 @@ fun TunerContent(
                 display = display,
                 compact = compact,
                 waveLook = waveLook,
-                waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
                 reception = reception,
                 tip = state.tip,
@@ -477,7 +473,6 @@ fun TunerContent(
                     display = display,
                     compact = compact,
                     waveLook = waveLook,
-                    waveBreathesInTune = waveBreathesInTune,
                     showTuneHint = showTuneHint,
                     tip = state.tip,
                 signalBars = signalBars,
@@ -488,7 +483,6 @@ fun TunerContent(
                 display = display,
                 compact = compact,
                 waveLook = waveLook,
-                waveBreathesInTune = waveBreathesInTune,
                 showTuneHint = showTuneHint,
                 signalBars = signalBars,
             )

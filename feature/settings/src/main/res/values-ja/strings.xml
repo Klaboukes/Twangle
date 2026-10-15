@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">ドット</string>
     <string name="settings_wave_look_fireflies">ホタル</string>
     <string name="settings_wave_look_loop">ループ</string>
-    <string name="settings_wave_in_tune_title">合ったとき</string>
-    <string name="settings_wave_in_tune_breathe">ゆっくり呼吸する</string>
-    <string name="settings_wave_in_tune_hold_still">ぴたりと止まる</string>
     <string name="settings_wave_look_ripples">波紋</string>
     <string name="settings_keep_two_pane_landscape_title">横向きでもフル表示</string>
     <string name="settings_keep_two_pane_landscape_summary">スマートフォンを横にしたとき、大きなメーターだけでなく、チューナーの横に操作ボタンを表示します</string>

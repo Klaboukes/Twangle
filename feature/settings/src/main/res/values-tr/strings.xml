@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Noktalar</string>
     <string name="settings_wave_look_fireflies">Ateş böcekleri</string>
     <string name="settings_wave_look_loop">Döngü</string>
-    <string name="settings_wave_in_tune_title">Akortlu olunca</string>
-    <string name="settings_wave_in_tune_breathe">Hafifçe nefes alsın</string>
-    <string name="settings_wave_in_tune_hold_still">Tamamen sabit dursun</string>
     <string name="settings_wave_look_ripples">Halkalar</string>
     <string name="settings_keep_two_pane_landscape_title">Yatayda tam düzen</string>
     <string name="settings_keep_two_pane_landscape_summary">Telefon yan çevrildiğinde tek büyük gösterge yerine kontrolleri akort ekranının yanında göster</string>

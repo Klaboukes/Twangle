@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Puntos</string>
     <string name="settings_wave_look_fireflies">Luciérnagas</string>
     <string name="settings_wave_look_loop">Bucle</string>
-    <string name="settings_wave_in_tune_title">Al estar afinado</string>
-    <string name="settings_wave_in_tune_breathe">Respirar suavemente</string>
-    <string name="settings_wave_in_tune_hold_still">Quedarse totalmente quieta</string>
     <string name="settings_wave_look_ripples">Ondas</string>
     <string name="settings_keep_two_pane_landscape_title">Diseño completo en horizontal</string>
     <string name="settings_keep_two_pane_landscape_summary">Con el teléfono girado, mostrar los controles junto al afinador en vez de un gran indicador</string>

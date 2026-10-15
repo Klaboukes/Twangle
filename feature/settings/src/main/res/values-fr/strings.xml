@@ -54,9 +54,6 @@
     <string name="settings_wave_look_dots">Points</string>
     <string name="settings_wave_look_fireflies">Lucioles</string>
     <string name="settings_wave_look_loop">Boucle</string>
-    <string name="settings_wave_in_tune_title">Une fois juste</string>
-    <string name="settings_wave_in_tune_breathe">Respirer doucement</string>
-    <string name="settings_wave_in_tune_hold_still">Rester parfaitement immobile</string>
     <string name="settings_wave_look_ripples">Ondulations</string>
     <string name="settings_keep_two_pane_landscape_title">Affichage complet à l\'horizontale</string>
     <string name="settings_keep_two_pane_landscape_summary">Téléphone tourné, afficher les commandes à côté de l\'accordeur plutôt qu\'un grand cadran</string>

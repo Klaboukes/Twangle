@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -29,7 +28,7 @@ import kotlin.math.exp
  * look moving, drawn in the current style, with its [label] under it. All cards play the same short
  * loop ([WaveDemo]): flat, in tune, sharp, in tune. A name too long for its card gets smaller
  * rather than breaking in the middle of a word (Dutch "Vuurvliegjes" at 2× font). On the note they
- * breathe, or hold still without [breathesInTune], as the tuner's wave does.
+ * hold perfectly still, as the tuner's wave does.
  *
  * The loop only runs while some of the cards are on screen, and each frame only redraws the cards'
  * previews: nothing is recomposed.
@@ -40,11 +39,9 @@ fun WaveLookPicker(
     selected: WaveLook,
     onSelect: (WaveLook) -> Unit,
     modifier: Modifier = Modifier,
-    breathesInTune: Boolean = true,
     label: @Composable (WaveLook) -> String,
 ) {
     val demo = remember { WaveDemo() }
-    SideEffect { demo.motion.breathesInTune = breathesInTune }
     LookCardGrid(
         title = title,
         looks = WaveLook.entries,

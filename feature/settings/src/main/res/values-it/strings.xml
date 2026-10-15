@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Punti</string>
     <string name="settings_wave_look_fireflies">Lucciole</string>
     <string name="settings_wave_look_loop">Anello</string>
-    <string name="settings_wave_in_tune_title">Quando è intonato</string>
-    <string name="settings_wave_in_tune_breathe">Respira dolcemente</string>
-    <string name="settings_wave_in_tune_hold_still">Resta perfettamente ferma</string>
     <string name="settings_wave_look_ripples">Increspature</string>
     <string name="settings_keep_two_pane_landscape_title">Layout completo in orizzontale</string>
     <string name="settings_keep_two_pane_landscape_summary">Con il telefono ruotato, mostra i comandi accanto all\'accordatore invece di un grande indicatore</string>

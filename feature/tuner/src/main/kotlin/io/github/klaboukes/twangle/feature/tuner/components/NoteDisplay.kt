@@ -143,7 +143,6 @@ fun NoteDisplay(
     display: TunerDisplay = TunerDisplay.NEEDLE,
     compact: Boolean = false,
     waveLook: WaveLook = WaveLook.DEFAULT,
-    waveBreathesInTune: Boolean = true,
     showTuneHint: Boolean = false,
     reception: () -> Float? = { null },
     tip: ReceptionTip? = null,
@@ -296,7 +295,6 @@ fun NoteDisplay(
                 inTune = inTune,
                 modifier = pictureSize.testTag(TunerTestTags.WAVE),
                 look = waveLook,
-                breathesInTune = waveBreathesInTune,
                 reception = reception,
             )
             TunerDisplay.NEEDLE -> Unit

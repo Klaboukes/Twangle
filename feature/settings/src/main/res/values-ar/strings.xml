@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">نقاط</string>
     <string name="settings_wave_look_fireflies">يراعات</string>
     <string name="settings_wave_look_loop">حلقة</string>
-    <string name="settings_wave_in_tune_title">عند الضبط</string>
-    <string name="settings_wave_in_tune_breathe">تنفّس بهدوء</string>
-    <string name="settings_wave_in_tune_hold_still">ثبات تام</string>
     <string name="settings_wave_look_ripples">تموّجات</string>
     <string name="settings_keep_two_pane_landscape_title">التخطيط الكامل في الوضع الأفقي</string>
     <string name="settings_keep_two_pane_landscape_summary">عند تدوير الهاتف، اعرض عناصر التحكم بجانب الموالف بدلًا من مقياس واحد كبير</string>

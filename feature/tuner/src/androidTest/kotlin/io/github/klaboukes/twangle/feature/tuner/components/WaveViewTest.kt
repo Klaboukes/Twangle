@@ -151,8 +151,8 @@ class WaveViewTest {
     }
 
     /**
-     * Every look gives the strobe's cue: a few cents off it visibly moves, and on the note, set to
-     * hold still, not a pixel changes. The test drives the frames itself (with the clock on manual,
+     * Every look gives the strobe's cue: a few cents off it visibly moves, and on the note not a
+     * pixel changes. The test drives the frames itself (with the clock on manual,
      * the wave's "infinite" animation runs).
      */
     @Test
@@ -168,7 +168,6 @@ class WaveViewTest {
                                     cents = if (onNote) 0.3f else -3f,
                                     inTune = onNote,
                                     look = look,
-                                    breathesInTune = false,
                                     modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(lookTag(look, onNote)),
                                 )
                             }
@@ -311,7 +310,6 @@ class WaveViewTest {
                 WaveView(
                     cents = 0f,
                     inTune = false,
-                    breathesInTune = false,
                     modifier = Modifier.background(BACKGROUND).size(170.dp, 40.dp).testTag(STROBE_TAG),
                     reception = { heard.floatValue },
                 )

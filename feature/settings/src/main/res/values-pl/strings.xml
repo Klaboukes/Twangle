@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Kropki</string>
     <string name="settings_wave_look_fireflies">Świetliki</string>
     <string name="settings_wave_look_loop">Pętla</string>
-    <string name="settings_wave_in_tune_title">Po nastrojeniu</string>
-    <string name="settings_wave_in_tune_breathe">Łagodnie oddychaj</string>
-    <string name="settings_wave_in_tune_hold_still">Zastygnij w bezruchu</string>
     <string name="settings_wave_look_ripples">Kręgi</string>
     <string name="settings_keep_two_pane_landscape_title">Pełny układ w poziomie</string>
     <string name="settings_keep_two_pane_landscape_summary">Po obróceniu telefonu pokazuj sterowanie obok stroika zamiast jednego dużego wskaźnika</string>

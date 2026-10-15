@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Точки</string>
     <string name="settings_wave_look_fireflies">Светлячки</string>
     <string name="settings_wave_look_loop">Петля</string>
-    <string name="settings_wave_in_tune_title">Когда настроено</string>
-    <string name="settings_wave_in_tune_breathe">Мягко дышать</string>
-    <string name="settings_wave_in_tune_hold_still">Замереть</string>
     <string name="settings_wave_look_ripples">Рябь</string>
     <string name="settings_keep_two_pane_landscape_title">Полный вид горизонтально</string>
     <string name="settings_keep_two_pane_landscape_summary">Когда телефон повёрнут, показывать управление рядом с тюнером, а не один большой индикатор</string>

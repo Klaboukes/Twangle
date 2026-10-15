@@ -102,9 +102,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setInTuneEffect(effect: InTuneEffect) = state.update { it.copy(inTuneEffect = effect) }
 
-    override suspend fun setWaveBreathesInTune(enabled: Boolean) =
-        state.update { it.copy(waveBreathesInTune = enabled) }
-
     override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) =
         state.update { it.copy(keepTwoPaneLandscape = enabled) }
 

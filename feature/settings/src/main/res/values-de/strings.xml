@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Punkte</string>
     <string name="settings_wave_look_fireflies">Glühwürmchen</string>
     <string name="settings_wave_look_loop">Schleife</string>
-    <string name="settings_wave_in_tune_title">Wenn gestimmt</string>
-    <string name="settings_wave_in_tune_breathe">Sanft atmen</string>
-    <string name="settings_wave_in_tune_hold_still">Ganz still stehen</string>
     <string name="settings_wave_look_ripples">Kreise</string>
     <string name="settings_keep_two_pane_landscape_title">Volles Layout im Querformat</string>
     <string name="settings_keep_two_pane_landscape_summary">Im Querformat die Bedienelemente neben dem Stimmgerät zeigen statt einer großen Anzeige</string>

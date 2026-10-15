@@ -114,14 +114,6 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `saves whether the wave breathes in tune`() = runTest(dispatcher) {
-        val vm = SettingsViewModel(repository)
-        vm.setWaveBreathesInTune(false)
-        runCurrent()
-        assertEquals(false, repository.current.waveBreathesInTune)
-    }
-
-    @Test
     fun `saves theme, wallpaper colours, display, layout, keep screen on, vibration and tune hint and signal bars`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
         vm.setTheme(ThemeMode.LIGHT)

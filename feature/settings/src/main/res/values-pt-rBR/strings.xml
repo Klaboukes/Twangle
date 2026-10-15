@@ -53,9 +53,6 @@
     <string name="settings_wave_look_dots">Pontos</string>
     <string name="settings_wave_look_fireflies">Vaga-lumes</string>
     <string name="settings_wave_look_loop">Laço</string>
-    <string name="settings_wave_in_tune_title">Quando afinado</string>
-    <string name="settings_wave_in_tune_breathe">Respirar suavemente</string>
-    <string name="settings_wave_in_tune_hold_still">Ficar totalmente parada</string>
     <string name="settings_wave_look_ripples">Ondulações</string>
     <string name="settings_keep_two_pane_landscape_title">Layout completo na horizontal</string>
     <string name="settings_keep_two_pane_landscape_summary">Com o celular deitado, mostrar os controles ao lado do afinador em vez de um medidor grande</string>
