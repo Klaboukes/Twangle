@@ -108,7 +108,7 @@ fun InstrumentTuningPanel(
  * The panel from the bottom (a Material 3 modal bottom sheet over the dimmed tuner): its title, the
  * instruments in one row that scrolls sideways ([instrument] picked), then [instrument]'s tunings
  * with their strings ([tuning] ticked): the presets, then the player's own ([mine]). The list scrolls
- * when it is taller than the room.
+ * when it is taller than the room, and opens scrolled to the ticked tuning.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,6 +137,14 @@ private fun PickerPanel(
                 then()
             }
         }
+    }
+    // The ticked tuning, scrolled into view when the panel opens: a bass's or a long list of the
+    // player's own tunings can put it below the fold.
+    val ticked = remember { BringIntoViewRequester() }
+    LaunchedEffect(Unit) {
+        // Once it has been laid out.
+        withFrameNanos { }
+        ticked.bringIntoView()
     }
     val pick: (Tuning) -> Unit = { picked ->
         onTuningChange(picked)
@@ -167,7 +175,7 @@ private fun PickerPanel(
                     .padding(start = LIST_PADDING, end = LIST_PADDING, top = 2.dp, bottom = 22.dp),
             ) {
                 Column(Modifier.selectableGroup()) {
-                    PresetTunings(instrument, tuning, notation, onSelect = pick)
+                    PresetTunings(instrument, tuning, notation, onSelect = pick, ticked = ticked)
                     if (mine.tunings.isNotEmpty() || mine.onNew != null) {
                         MyTunings(
                             mine.tunings,
@@ -176,6 +184,7 @@ private fun PickerPanel(
                             onSelect = pick,
                             onEdit = mine.onEdit?.let { edit -> { picked: CustomTuning -> close { edit(picked) } } },
                             onDelete = mine.onDelete,
+                            ticked = ticked,
                         )
                     }
                 }
@@ -196,11 +205,25 @@ private data class TuningActions(
     val onDelete: ((CustomTuning) -> Unit)?,
 )
 
-/** [instrument]'s preset tunings, each a [TuningRow]; [selected] is ticked. */
+/** [instrument]'s preset tunings, each a [TuningRow]; [selected] is ticked, and brought into view by [ticked]. */
 @Composable
-private fun PresetTunings(instrument: Instrument, selected: Tuning, notation: Notation, onSelect: (Tuning) -> Unit) {
+private fun PresetTunings(
+    instrument: Instrument,
+    selected: Tuning,
+    notation: Notation,
+    onSelect: (Tuning) -> Unit,
+    ticked: BringIntoViewRequester? = null,
+) {
     for (preset in instrument.tunings) {
-        TuningRow(tuningLabel(preset), preset, notation, selected = preset == selected, onClick = { onSelect(preset) })
+        val isSelected = preset == selected
+        TuningRow(
+            tuningLabel(preset),
+            preset,
+            notation,
+            selected = isSelected,
+            onClick = { onSelect(preset) },
+            modifier = if (isSelected && ticked != null) Modifier.bringIntoViewRequester(ticked) else Modifier,
+        )
     }
 }
 

@@ -108,7 +108,7 @@ internal fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect)
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val art = FanLightsArt(FanGeometry(size), roles)
-            onDrawBehind { art.drawCentre(this, reading.tuned) }
+            onDrawBehind { art.drawCentre(this, reading.tuned, reading.presence) }
         },
     )
     Spacer(
@@ -181,8 +181,9 @@ private class FanLightsArt(fan: FanGeometry, private val roles: MeterRoles) {
         }
     }
 
-    fun drawCentre(scope: DrawScope, tuned: Float) = with(scope) {
-        val color = roles.centre(tuned)
+    /** The middle ray, [tuned] of the way to "in tune" and muted at rest ([presence], see [MeterRoles.centre]). */
+    fun drawCentre(scope: DrawScope, tuned: Float, presence: Float = 1f) = with(scope) {
+        val color = roles.centre(tuned, presence)
         for (dot in 0 until LIGHT_ARC_DOTS) {
             val i = LIGHT_ARC_CENTRE_RAY * LIGHT_ARC_DOTS + dot
             val resting = if (dot < 2) CENTRE_INNER else CENTRE_OUTER

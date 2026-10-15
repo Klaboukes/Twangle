@@ -274,6 +274,42 @@ class TunerContentTest {
     }
 
     @Test
+    fun theTuningsNameShowsAboveTheStringsAndOpensThePanel() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
+        val spoken = context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_d))
+        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
+            .assertIsDisplayed()
+            .assert(hasContentDescription(spoken))
+            .performClick()
+        assertTrue(shownPickerOpen.value)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+    }
+
+    @Test
+    fun anOwnTuningIsNamedByItsOwnName() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning))
+        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
+            .assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), "Low C")))
+    }
+
+    @Test
+    fun chromaticModeHasNoTuningsName() {
+        show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
+        compose.onNodeWithTag(TunerTestTags.TUNING_NAME).assertDoesNotExist()
+    }
+
+    @Test
+    fun thePanelOpensScrolledToTheTickedTuning() {
+        // Enough own tunings to push the last one below the panel's fold on any phone.
+        val many = (1..16).map { CustomTuning("custom_many_$it", "Mine $it", Instruments.GUITAR, Tunings.STANDARD.strings) }
+        shownCustomTunings = many
+        show(TunerUiState.Listening(TunerMode.AUTO, many.last().tuning))
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.customTuning(many.last().id)).assertIsDisplayed().assertIsSelected()
+    }
+
+    @Test
     fun modeSwitchReportsTheChoice() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
         compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertIsSelected()

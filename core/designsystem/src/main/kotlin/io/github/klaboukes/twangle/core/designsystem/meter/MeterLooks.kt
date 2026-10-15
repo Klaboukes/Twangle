@@ -141,8 +141,8 @@ internal fun BoxScope.DialUnder(roles: MeterRoles, measurer: TextMeasurer, extra
 }
 
 /**
- * The dial's centre mark: one 3.5u rounded bar in the accent, across the top of the arc, fading to
- * "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else. Under
+ * The dial's centre mark: one 3.5u rounded bar in the accent (muted at rest, [MeterRoles.centre]),
+ * across the top of the arc, fading to "in tune" with [MeterReading.tuned]. It has its own layer, so its fade redraws nothing else. Under
  * it the in-tune glow ([TuneGlow], 80u) is centred 14u below the top of the arc.
  */
 @Composable
@@ -157,7 +157,8 @@ internal fun BoxScope.DialCentre(roles: MeterRoles, reading: MeterReading) {
             val top = Offset(dial.cx, dial.cy - dial.r - 2f * dial.u)
             val bottom = Offset(dial.cx, dial.cy - dial.r + 16f * dial.u)
             val width = 3.5f * dial.u
-            onDrawBehind { drawLine(roles.centre(reading.tuned), bottom, top, width, StrokeCap.Round) }
+            // Muted at rest: the needle rests on it, and an accent there (green in some styles) looked in tune.
+            onDrawBehind { drawLine(roles.centre(reading.tuned, reading.presence), bottom, top, width, StrokeCap.Round) }
         },
     )
 }
@@ -206,7 +207,7 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
             val needle = classicNeedle(size, roles)
             onDrawBehind {
                 val tuned = reading.tuned
-                needle.draw(this, roles.marker(tuned), roles.centre(tuned))
+                needle.draw(this, roles.marker(tuned), roles.centre(tuned, reading.presence))
             }
         },
     )
@@ -214,7 +215,7 @@ private fun BoxScope.ClassicMeter(reading: MeterReading, effect: InTuneEffect) {
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val dial = DialGeometry(size)
             val hub = HubArt(dial.cx, dial.cy, dial.u, roles)
-            onDrawBehind { hub.draw(this, reading.tuned) }
+            onDrawBehind { hub.draw(this, reading.tuned, reading.presence) }
         },
     )
 }

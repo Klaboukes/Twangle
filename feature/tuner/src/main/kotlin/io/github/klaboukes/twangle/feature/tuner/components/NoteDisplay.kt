@@ -105,9 +105,10 @@ data class NoteReadout(
  * that picture replaces both: the dial already shows how far off the note is, so the pill only shows
  * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
- * colour, a soft glow lights up behind it with a small pop, and (with the needle's cents) the pill fills
- * with that colour and shows a check mark, so the state doesn't rely on colour alone; in the wave
- * view the wave settling into its calm shape and standing still does that. Without a [readout] it shows a
+ * colour, a soft glow lights up behind it with a small pop, and a small check mark shows at the pill's
+ * start, so the state doesn't rely on colour alone (colour-blind players see it too). With the needle's
+ * cents the pill also fills with that colour; in the wave view the pill stays clear, the check is
+ * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] it shows a
  * faint ♪ and [hint], e.g. "Play a string". [reception] (read while drawing) makes the wave crisp or
  * faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
@@ -157,7 +158,8 @@ fun NoteDisplay(
     val colors = MaterialTheme.colorScheme
     val tuneColor = inTuneColor()
     val noteColor by animateInTuneColor(inTune, colors.onSurface, "noteColor")
-    val checkShown by animateFloatAsState(if (inTune && !pictured) 1f else 0f, label = "check")
+    // In the wave view too: the wave holding still says it as well, but a mark says it to everyone.
+    val checkShown by animateFloatAsState(if (inTune) 1f else 0f, label = "check")
     val glow = animateFloatAsState(if (inTune) 1f else 0f, tween(GLOW_MS), label = "glow")
     val pop = remember { Animatable(1f) }
     LaunchedEffect(inTune) {
@@ -299,66 +301,81 @@ fun NoteDisplay(
             )
             TunerDisplay.NEEDLE -> Unit
         }
-        Row(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .drawBehind {
-                    drawRect(pillBase.value)
-                    drawPillBloom(tuneColor, pillFill.value)
-                    drawPillSheen(sheen.value)
-                }
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // The check mark's slot is mirrored on the right, so the text stays centred.
+        // In the wave view the pill is empty in tune (unless a tip shows): there the check mark sits in
+        // its middle, under the wave, instead of at its start. Where it sat in tune it stays while it
+        // fades out, so it doesn't jump aside as the direction hint comes back.
+        val centredInTune = pictured && (tipText ?: directionText).isEmpty()
+        var checkCentred by remember { mutableStateOf(centredInTune) }
+        if (inTune && checkCentred != centredInTune) checkCentred = centredInTune
+        if (!pictured && checkCentred) checkCentred = false
+        val check = @Composable { shown: Boolean ->
             Icon(
                 painter = painterResource(R.drawable.ic_check_circle),
                 contentDescription = null,
-                tint = pillText,
+                // Over the clear pill of the wave view, in the "in tune" colour; over the filled pill, in its text colour.
+                tint = if (pictured) tuneColor else pillText,
                 modifier = Modifier
                     .size(CHECK_SIZE)
                     .graphicsLayer {
-                        alpha = checkShown
-                        scaleX = 0.5f + 0.5f * checkShown
-                        scaleY = 0.5f + 0.5f * checkShown
+                        val amount = if (shown) checkShown else 0f
+                        alpha = amount
+                        scaleX = 0.5f + 0.5f * amount
+                        scaleY = 0.5f + 0.5f * amount
                     },
             )
-            val pillStyle = when {
-                pictured -> MaterialTheme.typography.titleMedium
-                readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
-                else -> MaterialTheme.typography.titleLarge
-            }
-            val tipInPill = tipText != null && (readout == null || pictured)
-            val pillLine = rememberLineHeight(pillStyle)
-            // As wide as the widest cents text, so the pill keeps its size while the cents change.
-            val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
-            Text(
-                text = when {
-                    // The hint can name a note: "Play the C♯ string".
-                    readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
-                    // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
-                    pictured -> AnnotatedString(tipText ?: directionText)
-                    else -> AnnotatedString(centsText(readout.cents))
-                },
-                style = pillStyle,
-                color = when {
-                    readout == null -> colors.onSurface
-                    pictured -> colors.primary
-                    else -> pillText
-                },
-                textAlign = TextAlign.Center,
-                maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
-                autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
+        }
+        Box(contentAlignment = Alignment.Center) {
+            Row(
                 modifier = Modifier
-                    .weight(1f, fill = false)
-                    .widthIn(min = centsWidth)
-                    .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
-                    .hiddenFromTalkBack(),
-            )
-            Box(Modifier.size(CHECK_SIZE)) {
-                signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
+                    .clip(MaterialTheme.shapes.small)
+                    .drawBehind {
+                        drawRect(pillBase.value)
+                        drawPillBloom(tuneColor, pillFill.value)
+                        drawPillSheen(sheen.value)
+                    }
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // The check mark's slot is mirrored on the right, so the text stays centred.
+                check(!checkCentred)
+                val pillStyle = when {
+                    pictured -> MaterialTheme.typography.titleMedium
+                    readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
+                    else -> MaterialTheme.typography.titleLarge
+                }
+                val tipInPill = tipText != null && (readout == null || pictured)
+                val pillLine = rememberLineHeight(pillStyle)
+                // As wide as the widest cents text, so the pill keeps its size while the cents change.
+                val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
+                Text(
+                    text = when {
+                        // The hint can name a note: "Play the C♯ string".
+                        readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
+                        // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
+                        pictured -> AnnotatedString(tipText ?: directionText)
+                        else -> AnnotatedString(centsText(readout.cents))
+                    },
+                    style = pillStyle,
+                    color = when {
+                        readout == null -> colors.onSurface
+                        pictured -> colors.primary
+                        else -> pillText
+                    },
+                    textAlign = TextAlign.Center,
+                    maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
+                    autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .widthIn(min = centsWidth)
+                        .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
+                        .hiddenFromTalkBack(),
+                )
+                Box(Modifier.size(CHECK_SIZE)) {
+                    signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
+                }
             }
+            if (pictured) check(checkCentred)
         }
         if (!pictured && showTuneHint) {
             // Always there (empty without a hint), so the frequency below doesn't move.

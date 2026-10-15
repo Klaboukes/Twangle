@@ -133,7 +133,8 @@ internal fun BoxScope.ArrowsMeter(reading: MeterReading, effect: InTuneEffect) {
             val corner = CornerRadius(arrows.barWidth / 2f)
             val outline = Stroke(1.8f * arrows.u)
             onDrawBehind {
-                val color = roles.centre(reading.tuned)
+                // Muted at rest, like every look's centre ([MeterRoles.centre]).
+                val color = roles.centre(reading.tuned, reading.presence)
                 drawRoundRect(color.copy(alpha = BAR_FILL + (1f - BAR_FILL) * reading.tuned), topLeft, barSize, corner)
                 drawRoundRect(color, topLeft, barSize, corner, style = outline)
             }

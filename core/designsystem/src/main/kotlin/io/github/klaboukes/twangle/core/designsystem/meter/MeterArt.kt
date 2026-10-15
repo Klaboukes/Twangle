@@ -108,8 +108,13 @@ internal data class MeterRoles(
     /** A glass window's face: the surface sunk toward the stage. */
     val face: Color = if (dark) mix(background, Color.Black, 0.3f) else mix(plate, background, 0.7f)
 
-    /** The centre mark's colour, [tuned] (0..1) of the way to "in tune". */
-    fun centre(tuned: Float): Color = mix(accent, inTune, tuned)
+    /**
+     * The centre mark's colour, [tuned] (0..1) of the way to "in tune". With [presence] (0 without a
+     * note, [MeterReading.presence]) below 1 it fades toward the muted text colour, so a meter at
+     * rest has no colour in its middle: in some styles, and with wallpaper colours, the accent is
+     * green, and a resting meter must never look in tune.
+     */
+    fun centre(tuned: Float, presence: Float = 1f): Color = mix(mix(muted, accent, presence), inTune, tuned)
 
     /** The marker's colour, [tuned] (0..1) of the way to "in tune". */
     fun marker(tuned: Float): Color = mix(ink, inTune, tuned * 0.9f)
@@ -603,23 +608,24 @@ internal class HubArt(private val x: Float, private val y: Float, private val u:
         close()
     }
 
-    fun draw(scope: DrawScope, tuned: Float) = with(scope) {
+    /** Draws the hub, its centre [tuned] of the way to "in tune" and muted at rest ([presence], see [MeterRoles.centre]). */
+    fun draw(scope: DrawScope, tuned: Float, presence: Float = 1f) = with(scope) {
         val ink = roles.ink
         when (kind) {
             HubKind.STONE -> {
                 drawIntoCanvas { it.nativeCanvas.drawPath(stoneShadow!!, shadow) }
                 drawPath(stone!!, ink)
-                drawCircle(roles.centre(tuned), 2.2f * u, centre)
+                drawCircle(roles.centre(tuned, presence), 2.2f * u, centre)
             }
             HubKind.CAP -> {
                 castShadow(7.5f)
-                drawCircle(roles.centre(tuned * 0.5f), 7.5f * u, centre)
+                drawCircle(roles.centre(tuned * 0.5f, presence), 7.5f * u, centre)
                 drawCircle(ink, 3.4f * u, centre)
             }
             HubKind.DISC -> {
                 castShadow(7f)
                 drawCircle(ink, 7f * u, centre)
-                drawCircle(roles.centre(tuned), 2.4f * u, centre)
+                drawCircle(roles.centre(tuned, presence), 2.4f * u, centre)
             }
             HubKind.DOT -> {
                 castShadow(5f)
@@ -627,13 +633,13 @@ internal class HubArt(private val x: Float, private val y: Float, private val u:
             }
             HubKind.RING -> {
                 drawCircle(ink, 6.5f * u, centre, style = ringStroke)
-                drawCircle(roles.centre(tuned), 2.4f * u, centre)
+                drawCircle(roles.centre(tuned, presence), 2.4f * u, centre)
             }
             HubKind.SATURN -> {
                 castShadow(5.5f)
                 drawCircle(ink, 5.5f * u, centre)
                 rotate(PLANET_RING_DEGREES, centre) {
-                    drawOval(roles.centre(tuned), planetRingTopLeft, planetRingSize, style = planetRing)
+                    drawOval(roles.centre(tuned, presence), planetRingTopLeft, planetRingSize, style = planetRing)
                 }
             }
         }

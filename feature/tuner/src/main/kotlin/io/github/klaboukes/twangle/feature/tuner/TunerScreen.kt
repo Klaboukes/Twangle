@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -53,6 +55,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -95,6 +98,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckToggle
 import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
+import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
+import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
@@ -356,6 +361,9 @@ object TunerTestTags {
     fun customTuning(id: String): String = "tuner_custom_tuning_$id"
     fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
 
+    /** The instrument and tuning's name above the strings ("Guitar · Drop D"), which opens the panel. */
+    const val TUNING_NAME = "tuner_tuning_name"
+
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
@@ -424,7 +432,8 @@ private fun KeepScreenOn() {
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
  * sounds a tap on any string calls [onStringClick], which stops the tone. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
- * is whether it is on); a [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
+ * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
+ * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
@@ -491,7 +500,7 @@ fun TunerContent(
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
         val strum = onStrumCheckChange?.let { StrumToggleState(strumCheck, it) }
-        GuitarSlotFor(state, mode, pictured, strings, strum)
+        GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
     }
     val gauge = @Composable {
         // Strum check takes the meter's place, at its shape.
@@ -917,6 +926,7 @@ private fun GuitarSlotFor(
     pictured: Boolean,
     strings: StringActions,
     strum: StrumToggleState? = null,
+    names: TuningNames? = null,
 ) {
     val chromatic:(@Composable () -> Unit)? = if (pictured) {
         when (state) {
@@ -951,6 +961,7 @@ private fun GuitarSlotFor(
                 controls.tuning, controls.notation, strings,
                 controls.targetString, controls.lockedString, controls.inTune,
                 strum,
+                names = names,
                 // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
                 inTour = mode == TunerMode.AUTO,
             )
@@ -990,14 +1001,32 @@ private fun instrumentOf(state: TunerUiState): Instrument {
     return tuning?.let { Instruments.ofTuning(it.id) } ?: Instruments.DEFAULT
 }
 
+/**
+ * What the name over the string row is made of: the [instrument] picked and the player's own
+ * [customTunings], whose names are their own (the presets' come from the string resources). A tap
+ * on it calls [onClick] (opens the instrument and tuning panel, as the navigation bar's Tuning item).
+ */
+private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>, val onClick: () -> Unit)
+
+/** "Guitar · Drop D" for [tuning], or the player's own tuning's name after the instrument's. */
+@Composable
+private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
+    val tuningName = customTunings.firstOrNull { it.id == tuning.id }?.name ?: tuningLabel(tuning)
+    return stringResource(if (spoken) R.string.tuner_spoken_picker else R.string.tuner_tuning_name, instrumentLabel(instrument), tuningName)
+}
+
 /** Whether strum check is [on], and what its switch calls when tapped. */
 private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> Unit)
 
 /**
  * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch sits
- * in a row of its own above the strings, at its end, in line with the row's last string. [inTour]: the
- * switch and the strings are the tour's steps. (The instrument and tuning are picked from the
- * navigation bar's Tuning item.)
+ * in a row of its own above the strings, at its end, in line with the row's last string. With [names]
+ * that row starts with the instrument and tuning ("Guitar · Drop D"), in line with the row's first
+ * string, quiet in the muted text colour; a long name (a large font, a long language) takes up to two
+ * lines and widens the row rather than run under the switch. A tap on it opens the instrument and
+ * tuning panel; TalkBack says it as "Guitar, Drop D".
+ * [inTour]: the switch and the strings are the tour's steps. (The instrument and tuning are picked
+ * from the navigation bar's Tuning item.)
  */
 @Composable
 private fun GuitarControls(
@@ -1009,6 +1038,7 @@ private fun GuitarControls(
     inTune: Boolean = false,
     strum: StrumToggleState? = null,
     inTour: Boolean = true,
+    names: TuningNames? = null,
 ) {
     val strings = @Composable {
         StringSelector(
@@ -1024,16 +1054,58 @@ private fun GuitarControls(
         )
     }
     val toggle = @Composable { if (strum != null) StrumCheckToggle(strum.on, strum.onChange, inTour = inTour) }
-    Layout(contents = listOf(strings, toggle)) { (stringMeasurables, toggleMeasurables), constraints ->
+    val label = @Composable {
+        if (names != null) {
+            val spoken = names.labelFor(tuning, spoken = true)
+            val clickLabel = stringResource(R.string.tuner_change_instrument_or_tuning)
+            Box(
+                Modifier
+                    .heightIn(min = LABEL_MIN_HEIGHT)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = names.onClick)
+                    .testTag(TunerTestTags.TUNING_NAME)
+                    .clearAndSetSemantics {
+                        contentDescription = spoken
+                        role = Role.Button
+                        onClick(label = clickLabel) {
+                            names.onClick()
+                            true
+                        }
+                    },
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(
+                    names.labelFor(tuning, spoken = false),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+    Layout(contents = listOf(strings, toggle, label)) { (stringMeasurables, toggleMeasurables, labelMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
         val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
-        val width = max(stringsPlaceable.width, togglePlaceable?.width ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val stringsY = togglePlaceable?.let { it.height + TOGGLE_STRINGS_GAP.roundToPx() } ?: 0
+        val gap = LABEL_TOGGLE_GAP.roundToPx()
+        val toggleRoom = togglePlaceable?.let { it.width + gap } ?: 0
+        val labelPlaceable = labelMeasurables.firstOrNull()
+            ?.measure(partConstraints.copy(maxWidth = (constraints.maxWidth - toggleRoom).coerceAtLeast(0)))
+        val labelRoom = labelPlaceable?.let { it.width + toggleRoom } ?: (togglePlaceable?.width ?: 0)
+        val width = max(stringsPlaceable.width, labelRoom).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val rowHeight = max(togglePlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
+        val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
         layout(width, height) {
             val stringsX = (width - stringsPlaceable.width) / 2
-            togglePlaceable?.placeRelative((stringsX + stringsPlaceable.width - togglePlaceable.width).coerceAtLeast(0), 0)
+            val toggleX = togglePlaceable?.let { (stringsX + stringsPlaceable.width - it.width).coerceIn(0, width - it.width) } ?: width
+            togglePlaceable?.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
+            // From the first string, unless that would run under the switch.
+            labelPlaceable?.placeRelative(
+                min(stringsX, toggleX - (if (togglePlaceable != null) gap else 0) - labelPlaceable.width).coerceAtLeast(0),
+                (rowHeight - labelPlaceable.height) / 2,
+            )
             stringsPlaceable.placeRelative(stringsX, stringsY)
         }
     }
@@ -1080,6 +1152,12 @@ private fun SlotPart(shown: Boolean, content: @Composable () -> Unit) {
 }
 
 private val SECTION_SPACING = 24.dp
+
+/** The tuning's name is a touch target this high at least, like the switch beside it. */
+private val LABEL_MIN_HEIGHT = 48.dp
+
+/** At least this much room between the tuning's name and the strum check's switch. */
+private val LABEL_TOGGLE_GAP = 12.dp
 
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp

@@ -2,6 +2,8 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -36,7 +38,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 /**
  * The player's own tunings in the panel, under the presets: the small heading "My tunings" (as the
  * approved mock-up), then each of [tunings] as a [TuningRow] ([selected] ticked; a tap calls
- * [onSelect]) with a ⋮ button at its end. Its menu has Edit ([onEdit]) and Delete ([onDelete]); Delete
+ * [onSelect]; [ticked] brings it into view) with a ⋮ button at its end. Its menu has Edit ([onEdit]) and Delete ([onDelete]); Delete
  * first asks in a dialog, so a stray tap deletes nothing. The heading also stands alone over "New tuning".
  */
 @Composable
@@ -47,6 +49,7 @@ internal fun MyTunings(
     onSelect: (Tuning) -> Unit,
     onEdit: ((CustomTuning) -> Unit)?,
     onDelete: ((CustomTuning) -> Unit)?,
+    ticked: BringIntoViewRequester? = null,
 ) {
     // The tuning asked about, by id, so the question survives turning the phone.
     var deletingId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -72,7 +75,9 @@ internal fun MyTunings(
             notation = notation,
             selected = isSelected,
             onClick = { onSelect(mine.tuning) },
-            modifier = Modifier.testTag(TunerTestTags.customTuning(mine.id)),
+            modifier = Modifier
+                .testTag(TunerTestTags.customTuning(mine.id))
+                .then(if (isSelected && ticked != null) Modifier.bringIntoViewRequester(ticked) else Modifier),
             trailing = if (onEdit == null && onDelete == null) {
                 null
             } else {

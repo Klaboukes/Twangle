@@ -92,7 +92,8 @@ import kotlin.math.roundToInt
 /**
  * The strum check's readout, in the meter's place and at its 2:1 shape: one column per string of
  * the tuning, in the string row's order. Each shows the string's name, a short upright scale (sharp
- * up, flat down, ±50 cents, the in-tune band round its centre) with a marker at the string's
+ * up, flat down, ±50 cents, the in-tune band round its centre, neutral until the string reads in
+ * tune, then in the style's "in tune" colour; its centre mark muted until the string is heard) with a marker at the string's
  * reading, and under it a check mark in the style's "in tune" colour, or the cents off in its
  * accent ("−12", "+8"), or "–" for a string that wasn't heard. A less sure string (read from peaks
  * merged with another string's, see [StrumString.sure]) gets a hollow marker and paler figures.
@@ -253,6 +254,12 @@ private fun StrumCell(
     val sure = string?.sure != false
     val dim = if (faded) FADED_ALPHA else 1f
     val markerColour = if (inTune) colours.inTune else colours.accent
+    // Green only ever means in tune: the band round the centre is neutral until this string reads in
+    // tune, so a panel still waiting for its strum doesn't look like six strings in tune.
+    val bandColour = if (inTune) colours.inTune else colours.muted
+    // Its centre mark is muted until the string is heard: an accent there (green in some styles) read
+    // as a marker resting in tune.
+    val centreColour = if (heard) colours.accent else colours.muted
     Box(
         modifier.drawWithCache {
             val u = size.height / UNITS_HIGH
@@ -284,7 +291,7 @@ private fun StrumCell(
                 drawText(nameLayout, topLeft = Offset(x - nameLayout.size.width / 2f, NAME_CENTRE * u - nameLayout.size.height / 2f), alpha = dim)
                 // The in-tune band, the scale and its centre mark.
                 drawRect(
-                    colours.inTune.copy(alpha = BAND_ALPHA * dim * trackAlpha),
+                    bandColour.copy(alpha = (if (inTune) BAND_ALPHA else NEUTRAL_BAND_ALPHA) * dim * trackAlpha),
                     topLeft = Offset(x - BAND_WIDTH * u / 2f, mid - band),
                     size = Size(BAND_WIDTH * u, band * 2f),
                 )
@@ -295,7 +302,7 @@ private fun StrumCell(
                     val half = (if (step % 2 == 0) MAJOR_TICK else MINOR_TICK) * u / 2f
                     drawLine(colours.track, Offset(x - half, y), Offset(x + half, y), TICK_WIDTH * u, alpha = dim * trackAlpha)
                 }
-                drawLine(colours.accent, Offset(x - CENTRE_MARK * u / 2f, mid), Offset(x + CENTRE_MARK * u / 2f, mid), CENTRE_WIDTH * u, StrokeCap.Round, alpha = dim * trackAlpha)
+                drawLine(centreColour, Offset(x - CENTRE_MARK * u / 2f, mid), Offset(x + CENTRE_MARK * u / 2f, mid), CENTRE_WIDTH * u, StrokeCap.Round, alpha = dim * trackAlpha)
                 // The string's reading.
                 if (markerAlpha > 0f) {
                     val y = mid - markerCents * perCent
@@ -521,6 +528,9 @@ private const val CENTRE_MARK = 20f
 private const val CENTRE_WIDTH = 3.5f
 private const val BAND_WIDTH = 24f
 private const val BAND_ALPHA = 0.22f
+
+/** The band in the muted text colour, before the string reads in tune: fainter, a quiet target. */
+private const val NEUTRAL_BAND_ALPHA = 0.12f
 private const val MARKER_WIDTH = 30f
 private const val MARKER_HEIGHT = 9f
 private const val HOLLOW_STROKE = 2.2f

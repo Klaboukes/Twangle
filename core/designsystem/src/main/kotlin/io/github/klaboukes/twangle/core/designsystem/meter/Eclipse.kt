@@ -63,7 +63,8 @@ internal class EclipseGeometry(width: Float, height: Float) {
  * Eclipse: the calm field, the dotted path (muted at 50 %) and the ♭ and ♯ under its ends (static);
  * the sun, a disc of the accent lit from its upper left with a soft halo, both blending part of the way
  * to "in tune" as the note is reached (its own layer); the corona; and the moon, a disc of the
- * background colour with a faint rim, drawn once and moved by its layer. The corona is the in-tune
+ * background colour with a faint rim, drawn once and moved by its layer. At rest (no note) the moon
+ * is hidden and the sun muted, so a resting meter never looks like a total eclipse. The corona is the in-tune
  * glow: a soft ring round the moon in the "in tune" colour, under it, at [MeterReading.glow] (the
  * same strength rules as every look's glow, stronger and larger in Bold).
  */
@@ -98,7 +99,7 @@ internal fun BoxScope.EclipseMeter(reading: MeterReading, effect: InTuneEffect) 
     Spacer(
         modifier = Modifier.matchParentSize().graphicsLayer {}.drawWithCache {
             val sun = SunArt(EclipseGeometry(size.width, size.height), roles)
-            onDrawBehind { sun.draw(this, reading.tuned) }
+            onDrawBehind { sun.draw(this, reading.tuned, reading.presence) }
         },
     )
     // The corona: the in-tune glow, a ring round the moon, drawn at rest and carried with it.
@@ -131,6 +132,8 @@ internal fun BoxScope.EclipseMeter(reading: MeterReading, effect: InTuneEffect) 
             val eclipse = EclipseGeometry(size.width, size.height)
             translationX = eclipse.moonX(reading.cents) - eclipse.cx
             reading.applyMarkerLook(this)
+            // Gone at rest: resting in the middle it covered the sun, a total eclipse, which is "in tune".
+            alpha *= reading.presence
         }.drawWithCache {
             val moon = MoonArt(EclipseGeometry(size.width, size.height), roles)
             onDrawBehind { moon.draw(this, reading.tuned) }
@@ -139,7 +142,8 @@ internal fun BoxScope.EclipseMeter(reading: MeterReading, effect: InTuneEffect) 
 }
 
 /**
- * The sun: a disc of the accent, lit from its upper left (half way to white in dark, 30 % in light)
+ * The sun: a disc of the accent (of the muted text colour at rest, so a meter without a note never
+ * shows colour in its middle), lit from its upper left (half way to white in dark, 30 % in light)
  * and a little darker at its edge, in a soft halo of itself 2.4 times its radius (24 % dark, 15 %
  * light). As the note is reached it blends 60 % of the way to "in tune", and its halo dims to 40 %, so
  * the corona takes over.
@@ -148,14 +152,21 @@ private class SunArt(private val eclipse: EclipseGeometry, private val roles: Me
     private val centre = Offset(eclipse.cx, eclipse.centreY)
     private val haloRadius = SUN_HALO * eclipse.sunRadius
     private val haloAlpha = if (roles.dark) 0.24f else 0.15f
+    // Dimmed toward the background, so the resting sun is quiet, not a bright pearl.
+    private val rest = SunColours(mix(roles.muted, roles.background, SUN_REST_DIM), roles)
     private val off = SunColours(roles.accent, roles)
     private val on = SunColours(mix(roles.accent, roles.inTune, SUN_TO_IN_TUNE), roles)
 
-    fun draw(scope: DrawScope, tuned: Float) = with(scope) {
-        // Two sets of brushes made once, faded across, so the blend allocates nothing.
+    /** Draws the sun [tuned] of the way to "in tune", and in the muted colour at rest ([presence] 0). */
+    fun draw(scope: DrawScope, tuned: Float, presence: Float = 1f) = with(scope) {
+        // Three sets of brushes made once, each laid over the one before at its share, so the blend
+        // allocates nothing: the muted sun at rest, the accent with a note, and "in tune".
         val t = tuned.coerceIn(0f, 1f)
-        if (t < 1f) off.draw(this, centre, eclipse.sunRadius, haloRadius, haloAlpha * (1f - SUN_HALO_DIM * t), 1f - t)
-        if (t > 0f) on.draw(this, centre, eclipse.sunRadius, haloRadius, haloAlpha * (1f - SUN_HALO_DIM * t), t, under = t < 1f)
+        val p = presence.coerceIn(0f, 1f)
+        val halo = haloAlpha * (1f - SUN_HALO_DIM * t)
+        if (p < 1f && t < 1f) rest.draw(this, centre, eclipse.sunRadius, haloRadius, halo * (1f - p) * (1f - t), 1f)
+        if (p > 0f && t < 1f) off.draw(this, centre, eclipse.sunRadius, haloRadius, halo * p * (1f - t), p, under = p < 1f)
+        if (t > 0f) on.draw(this, centre, eclipse.sunRadius, haloRadius, halo * t, t, under = t < 1f)
     }
 
     /** The sun's halo and disc in one colour. */
@@ -169,9 +180,10 @@ private class SunArt(private val eclipse: EclipseGeometry, private val roles: Me
             radius = eclipse.sunRadius,
         )
 
+        /** The halo at [haloAlpha]; the disc at [share] when [under] another, else whole. */
         fun draw(scope: DrawScope, centre: Offset, radius: Float, haloRadius: Float, haloAlpha: Float, share: Float, under: Boolean = false) =
             with(scope) {
-                halo.draw(this, centre.x, centre.y, haloAlpha * share)
+                halo.draw(this, centre.x, centre.y, haloAlpha)
                 // Over the other colour's disc, this one is laid on at its share; alone, it is whole.
                 drawCircle(disc, radius, centre, alpha = if (under) share else 1f)
             }
@@ -220,3 +232,6 @@ private const val CORONA_REACH = 2.1f
 
 /** … and is this many times the look's usual glow strength at the moon's edge. */
 private const val CORONA_STRENGTH = 1.9f
+
+/** At rest the sun is the muted text colour this far toward the background. */
+private const val SUN_REST_DIM = 0.45f
