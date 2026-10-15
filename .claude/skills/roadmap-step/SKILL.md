@@ -31,7 +31,7 @@ gh run list --branch main --limit 1   # did CI pass on the last merge?
 
 ## 1. Pick the increment
 
-- Take the named item, or else the first ☐ item in the earliest phase that still has one. Skip *Owner checks*, which are the owner's hand-run tests. Phases in ROADMAP-ARCHIVE.md are done.
+- Take the named item, or else the first ☐ item in the earliest phase that still has one, in the order ROADMAP.md lists them (not by phase number). Skip *Owner checks*, which are the owner's hand-run tests. Phases in ROADMAP-ARCHIVE.md are done.
 - One increment is one item. You may bundle 2–3 small, tightly linked items from the same phase, but never items from two phases.
 - Read the ARCHITECTURE.md sections that cover the item before designing anything.
 - If it can't be done without the owner (a decision, a real guitar, another device, a Play account), say so, offer what you *can* do instead, and wait.

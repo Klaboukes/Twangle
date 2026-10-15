@@ -2,7 +2,7 @@
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
-Each phase ends in a state that builds and can be demoed. See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
+Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number: Phase 26 (pre-launch fixes) comes before Phase 23 (go live). See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
 
 Phases 0–21 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑ (owner checks stay below).
 
@@ -11,6 +11,9 @@ Phases 0–21 and 24 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCH
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
 - ☐ **Overnight run for Phase 22's fit check and Phase 25's meter looks:** at bedtime, plug the phone in by USB (on the charger, somewhere cool) and tell Claude "start the overnight run". It checks that every language fits at 2× text in every style, runs the on-device UI tests of the new meter looks (`MeterLooksTest`, `SettingsContentTest`, `SettingsStylesTest`, `CompactLandscapeStylesTest`, `TunerContentTest`), the tests of the Tuning item in the navigation bar (`NavigationBarTest`, `TourFlowTest`, `TourStylesTest`, `StringRowStylesTest`, `StrumCheckStylesTest`, `TunerStylesTest`), fixes what it finds, and runs the full UI tests, which takes a few hours
+- ☐ **Pre-launch decisions (Phase 26):** (1) wave on the note: breathe gently or hold still (also closes the Phase 11 owner check); (2) wallpaper colours on or off on a fresh install; (3) watch app at launch or in a later update (never tried on a real watch); (4) metronome: pause other music as now, or click over a backing track; (5) the contact email for Play and the privacy policy, and where the policy is hosted publicly (GitHub Pages doesn't work for a private repo on the free plan)
+- ☐ **Upload key backed up:** copy the upload key and its password file (`~/.twangle-keys`) to two safe places off this PC. Losing it means asking Google for a key reset
+- ☐ **Find 12+ testers for the closed test (Phase 23):** Google requires new personal developer accounts to run a closed test with at least 12 testers who stay opted in for 14 days in a row before the app can go public. Gather their Google account emails (or a Google Group) early
 - ☑ **Note names:** owner chose "what is most common in those countries" (2026-10-15): Polish and Russian call B "H" as German does, Turkish and Arabic use Do-Re-Mi
 
 ## Owner checks (live tests)
@@ -51,10 +54,31 @@ Goal: every meter look shows the note its own way, so they no longer look alike 
 - ☑ New looks Eclipse, Arrows and Light bars, with their names in every language (the arrows' shimmer from the mock-up left out, so a steady note draws nothing new)
 - ☐ The on-device UI tests of the six looks pass (`MeterLooksTest` and the settings and tuner layout tests). **Runs overnight, started by the owner** (see *Waiting on the owner*)
 
+## Phase 26 — Pre-launch fixes
+Goal: fix what the full pre-launch review (2026-10-15: code, UX and wording, release readiness, and a walkthrough on the phone) found, so v1.0 ships without known bugs or loose ends. Items that wait on the owner's pre-launch decisions say so (see *Waiting on the owner*). Visible changes get a quick phone screenshot; their UI tests join the overnight run.
+- ☐ Release basics: the watch's release build is signed with the same upload key as the phone (it comes out unsigned today, and Play rejects that); version 1.0.0 (phone versionCode 10000, watch 1_010_000), set in one place for both apps; CI also builds the release (`assembleRelease bundleRelease`, unsigned there) so R8 or signing breakage shows up
+- ☐ Licences: About credits Okio (Apache 2.0), Protocol Buffers (BSD 3-Clause, which needs its licence text in `assets/licenses`), JSpecify and Guava's listenablefuture, which ship inside the app via DataStore and AndroidX; the licence dialog no longer shows build details (script names, file paths)
+- ☐ Remove the temporary "When in tune: breathe gently / hold perfectly still" setting, keeping the owner's pick (**waits on decision 1**), with its saved key, strings and tests
+- ☐ Metronome: the tempo dial only reacts to touches on its ring, not its middle (tapping "BPM" now jumps to 30 or 250; JVM tests for `bpmAtTouch` and `dialDegrees`); it keeps playing when the phone turns or dark mode switches (it stops on any configuration change today); it stops when headphones are unplugged; audio focus as decided (**waits on decision 4**)
+- ☐ Microphone robustness: notice when the mic is silenced mid-session (a call, another app, the privacy switch) and show the "microphone busy" message instead of "Play a note" forever; a run of empty reads or writes fails instead of spinning; opening the mic tries the next sample rate if the first fails; JVM tests with a fake recorder for these paths
+- ☐ Microphone permission: dismissing the first prompt keeps "Allow microphone" (Settings only after a real "don't ask again"); losing the permission while the app is open falls back to the prompt; the Settings path text matches Android 11+; the Tuning item opens or is disabled while the mic is denied (today it does nothing)
+- ☐ Light themes: no white strip behind the gesture bar at the bottom (MIUI draws the navigation-bar scrim; make it transparent with gesture navigation)
+- ☐ Tuner clarity: show the current tuning's name (e.g. "Guitar · Drop D"); resting states no longer look in tune (strum-check markers green on the centre line, Classic's green centre, Eclipse's full disc); a small check mark when in tune with the wave display too, so colour-blind players see it; the tuning panel opens scrolled to the selected tuning
+- ☐ Discoverable reference tone: the tour's strings step says "Tap to lock, hold to hear" (NL "Kies om vast te zetten, houd vast om te horen"); "Playing D3" shows while it sounds; the strum-check button gets a label or tooltip
+- ☐ Settings tidy-up: clearer Display options ("Below the note: numbers / wave" instead of "Needle"), the in-tune effect explained in one line, the "Tuning" group renamed "Pitch and notes" so it doesn't clash with the bar's Tuning item; a less crowded Look section; wallpaper colours on or off for a fresh install (**waits on decision 2**); the language list fits on screen ("Bahasa Indonesia"; Language row gets a chevron like its neighbours); "442 Hz" never breaks across lines; the style, meter and wave preview cards honour "Remove animations"
+- ☐ Wording and small UX: Dutch strum texts say "Kies een snaar" (not "Tik op een snaar"), "Rondleiding" for the tour, "Effect bij zuiver", "Tempo tikken"; German "Effekt, wenn gestimmt"; About's privacy line mentions the phone's own backup; "on this device" instead of "on this phone"; TalkBack separators come from string resources (Arabic comma); the tour's last step drops "Skip tour"; the compact landscape layout hints that a tap shows the controls; the signal-bars button gets a 48 dp touch area
+- ☐ Small robustness: strum check keeps working after 12+ hours open (counter overflow); unison strings in a custom tuning (or the editor refuses duplicate notes); one settings read error no longer freezes settings at the defaults for the session; the tuning editor's save can't be cut off halfway by a rotation; the editor asks before throwing away unsaved edits
+- ☐ Cleanup: remove dead code (`NoteMapper` helpers only tests use, stale comments, orphaned doc comments); R8 keep rules also cover `MeterLook`, `InTuneEffect` and `Meter`; prune the four stale worktrees under `.claude/worktrees`; README brought up to date (status, metronome, strum check, custom tunings, reference tone, widget, watch, 16 languages), as the base for the store text
+
 ## Phase 23 — Go live on the Play Store → **v1.0**
-Goal: Twangle is public on Google Play. Needs the owner's Play developer account.
+Goal: Twangle is public on Google Play. Needs the owner's Play developer account. Plan at least 3 weeks of calendar time: Google's closed test alone takes 14 days.
 - ☐ The look is final: run `scripts/ui-tests.sh --all --thorough`, fix what it finds, and make those double checks part of every run again (every style, and the `@Thorough` tests; until then a normal run leaves them out so restyling stays quick)
-- ☐ Play data-safety form (no data collected or shared)
-- ☐ Privacy policy published at a public URL (the repo is private), and that URL plus a contact email entered in the Play Console
-- ☐ Play Store listing: screenshots, description in every supported language
-- ☐ Internal → closed → production tracks
+- ☐ Baseline Profile regenerated once the look is final (`./gradlew :app:generateBaselineProfile`; the current one predates the metronome and the navigation bar), with the metronome and settings screens added to the generator
+- ☐ Developer account ready (owner, with Claude's help): identity and Android-device verification, and a public developer contact email (**decision 5**)
+- ☐ Privacy policy brought up to date (every stored setting: instrument, own tunings, metronome, app language, landscape layout; the tour instead of the string-lock tip; a contact email) in English and Dutch, and published at a public URL (the repo is private; **decision 5**); that URL and the contact email entered in the Play Console
+- ☐ Play Console *App content*: privacy policy, ads (none), app access (no login), content rating questionnaire, target audience (13+), data safety (no data collected or shared), category Music & Audio
+- ☐ Play Store listing: 512×512 icon, 1024×500 feature graphic, phone screenshots, title (e.g. "Twangle: Guitar Tuner"), short and full description in every supported language
+- ☐ Watch app as decided (**decision 3**): if it launches now, a real-watch check, the Wear OS form factor opted in, Wear screenshots and its own track; otherwise it follows in an update
+- ☐ Internal track: install the Play-signed build on the Xiaomi from Play and check the mic, widget and language switch
+- ☐ Closed track with 12+ testers for 14 days in a row (see *Waiting on the owner*), collecting their feedback
+- ☐ Apply for production access, then a staged rollout to production
