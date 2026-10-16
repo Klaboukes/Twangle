@@ -75,3 +75,8 @@ Tools the owner picked from a brainstorm, beyond the tuner and metronome. **Cond
 3. ☐ **Pitch trail:** a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists. Drawn in the draw phase only, like the strobe, with preallocated history
 4. ☐ **Chord and scale charts:** finger diagrams for the chosen instrument and tuning, own tunings included (a DADGAD player sees DADGAD shapes), and scales on a fretboard; no microphone needed
 5. ☐ **Capo helper:** "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on; pairs with the chord charts
+
+**Where they go in the app** (owner agreed, 2026-10-16; the direction, decided for real when the first of these tools is picked): the Metronome keeps its own place in the bar, since it's used often and stays open through practice, and is not tucked into a "Tools" page.
+- The three tools that listen (1–3) become modes inside the tuner, next to strings, chromatic and strum check; the bar doesn't change for them.
+- The two reference tools (4–5) share one new tab, **Chords**, which follows the instrument picked in the Instrument item. The bar becomes Tuner · Instrument · Metronome · Chords · Settings, five items, the most Android's guidelines allow; every name must still fit wholly in every language at 2× text (Dutch "Instellingen" already shrinks with four).
+- Only if still more tools come after these (ear training, a drone, a practice timer) does a **Tools** tab take the Metronome's place, with the Metronome as its first tool, because a sixth item won't fit.
