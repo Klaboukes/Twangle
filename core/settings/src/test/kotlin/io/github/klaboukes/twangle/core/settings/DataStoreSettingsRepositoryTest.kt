@@ -10,10 +10,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -103,6 +105,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
         assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
+        assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
     }
 
     @Test
@@ -130,6 +133,8 @@ class DataStoreSettingsRepositoryTest {
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
         repo.setPracticeTool(PracticeTool.CHORDS)
+        repo.setPracticeRoot(PitchClass.A_SHARP)
+        repo.setPracticeChordQuality(ChordQuality.MINOR_SEVENTH)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -154,6 +159,8 @@ class DataStoreSettingsRepositoryTest {
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
             practiceTool = PracticeTool.CHORDS,
+            practiceRoot = PitchClass.A_SHARP,
+            practiceChordQuality = ChordQuality.MINOR_SEVENTH,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -184,6 +191,8 @@ class DataStoreSettingsRepositoryTest {
             setMetronomeMeter(Meter.SIX_EIGHT)
             setMetronomeVibrate(true)
             setPracticeTool(PracticeTool.CHORDS)
+            setPracticeRoot(PitchClass.F_SHARP)
+            setPracticeChordQuality(ChordQuality.SUS4)
         }
         close()
 
@@ -202,6 +211,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
         assertEquals("the Practice tool used last is kept", PracticeTool.CHORDS, settings.practiceTool)
+        assertEquals("the chord picked last is kept", PitchClass.F_SHARP to ChordQuality.SUS4, settings.practiceRoot to settings.practiceChordQuality)
     }
 
     @Test

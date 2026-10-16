@@ -1,9 +1,11 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.Flow
 
@@ -113,4 +115,10 @@ interface SettingsRepository {
 
     /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
     suspend fun setPracticeTool(tool: PracticeTool)
+
+    /** The root picked last in the chord charts ([AppSettings.practiceRoot]). */
+    suspend fun setPracticeRoot(root: PitchClass)
+
+    /** The chord type picked last in the chord charts ([AppSettings.practiceChordQuality]). */
+    suspend fun setPracticeChordQuality(quality: ChordQuality)
 }

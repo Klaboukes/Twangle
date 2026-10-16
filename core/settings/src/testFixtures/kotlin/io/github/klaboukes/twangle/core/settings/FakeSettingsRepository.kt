@@ -1,11 +1,13 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -124,4 +126,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setMetronomeVibrate(enabled: Boolean) = state.update { it.copy(metronomeVibrate = enabled) }
 
     override suspend fun setPracticeTool(tool: PracticeTool) = state.update { it.copy(practiceTool = tool) }
+
+    override suspend fun setPracticeRoot(root: PitchClass) = state.update { it.copy(practiceRoot = root) }
+
+    override suspend fun setPracticeChordQuality(quality: ChordQuality) = state.update { it.copy(practiceChordQuality = quality) }
 }

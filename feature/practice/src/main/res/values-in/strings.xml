@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akor</string>
-    <string name="practice_chords_coming">Diagram akor dan tangga nada segera hadir di sini.</string>
+    <string name="practice_root">Nada dasar</string>
+    <string name="practice_chord_type">Jenis akor</string>
+    <string name="practice_chord_major">%1$s mayor</string>
+    <string name="practice_chord_minor">%1$s minor</string>
+    <string name="practice_chord_seventh">%1$s septim</string>
+    <string name="practice_chord_major_seventh">%1$s mayor septim</string>
+    <string name="practice_chord_minor_seventh">%1$s minor septim</string>
+    <string name="practice_chord_sus2">%1$s sus 2</string>
+    <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_shape_count">%1$d dari %2$d</string>
+    <string name="practice_shape_previous">Bentuk sebelumnya</string>
+    <string name="practice_shape_next">Bentuk berikutnya</string>
+    <string name="practice_chart_fret">%1$dfr</string>
+    <string name="practice_chord_none">Tidak ada bentuk yang terjangkau di stelan ini</string>
+    <string name="practice_spoken_separator">", "</string>
+    <string name="practice_spoken_shape">%1$s, bentuk %2$d dari %3$d</string>
+    <string name="practice_spoken_string">Senar %1$s</string>
+    <string name="practice_spoken_muted">%1$s, tidak dibunyikan</string>
+    <string name="practice_spoken_open">%1$s, terbuka</string>
+    <string name="practice_spoken_fret">%1$s, fret %2$d, jari %3$d, %4$s</string>
+    <string name="practice_spoken_barre">barre, jari %1$d di fret %2$d, senar %3$s sampai %4$s</string>
 </resources>

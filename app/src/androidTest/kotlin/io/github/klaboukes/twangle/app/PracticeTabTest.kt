@@ -11,11 +11,14 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -31,7 +34,8 @@ import org.junit.rules.Timeout
 /**
  * The Practice tab (Phase 32) in the real app, with its switch on (every debug build): the bar's
  * Metronome tab is called Practice, the tool switch at its top picks the metronome or chords, the
- * pick is saved at once, and the tab opens on the tool used last, also after the app starts again.
+ * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
+ * the Chords tool's chord picked is saved too and comes back with it.
  */
 class PracticeTabTest {
 
@@ -53,13 +57,19 @@ class PracticeTabTest {
             // The tour would cover the tuner and the bar.
             container.settingsRepository.setTourSeen(true)
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
+            container.settingsRepository.setPracticeRoot(PitchClass.C)
+            container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
         }
     }
 
     @After
     fun tearDown() {
         switchesBefore?.let { container.toolSwitches = it }
-        runBlocking { container.settingsRepository.setPracticeTool(PracticeTool.METRONOME) }
+        runBlocking {
+            container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
+            container.settingsRepository.setPracticeRoot(PitchClass.C)
+            container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
+        }
     }
 
     private fun shown(tag: String): Boolean = device.wait(Until.hasObject(By.res(tag)), WAIT_MS)
@@ -74,6 +84,16 @@ class PracticeTabTest {
         while (savedTool() != tool && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
         return savedTool()
     }
+
+    /** Waits up to [WAIT_MS] for the saved chord to become [root] and [quality]. */
+    private fun waitForSavedChord(root: PitchClass, quality: ChordQuality): Pair<PitchClass, ChordQuality> {
+        fun saved() = runBlocking { container.settingsRepository.settings.first().let { it.practiceRoot to it.practiceChordQuality } }
+        val end = SystemClock.uptimeMillis() + WAIT_MS
+        while (saved() != root to quality && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+        return saved()
+    }
+
+    private fun checked(tag: String): Boolean = device.findObject(By.res(tag)).isChecked
 
     private fun openPractice() {
         val tab = NavigationTestTags.tab(Destination.METRONOME)
@@ -98,6 +118,12 @@ class PracticeTabTest {
             assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
+            // A chord picked is saved too.
+            assertTrue("a fresh install shows C major", shown(PracticeTestTags.CHART) && checked(PracticeTestTags.root(PitchClass.C)))
+            click(PracticeTestTags.root(PitchClass.A))
+            click(PracticeTestTags.type(ChordQuality.MINOR))
+            assertEquals("the chord is saved", PitchClass.A to ChordQuality.MINOR, waitForSavedChord(PitchClass.A, ChordQuality.MINOR))
+
             // Another tab and back: still chords.
             click(NavigationTestTags.tab(Destination.SETTINGS))
             assertTrue(gone(PracticeTestTags.SWITCH))
@@ -108,6 +134,9 @@ class PracticeTabTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             assertTrue("opens on chords", shown(PracticeTestTags.CHORDS))
+            assertTrue("on the chord picked last", checked(PracticeTestTags.root(PitchClass.A)) && checked(PracticeTestTags.type(ChordQuality.MINOR)))
+            // "A minor", or "La minor" where an earlier test left solfège picked.
+            assertTrue("its chart in words", device.wait(Until.hasObject(By.res(PracticeTestTags.CHART).desc(Pattern.compile("(A|La) minor, shape 1 of .*"))), WAIT_MS))
             assertFalse("not on the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
             click(PracticeTestTags.tool(PracticeTool.METRONOME))
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))

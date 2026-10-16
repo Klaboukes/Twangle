@@ -13,12 +13,14 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.delay
@@ -219,6 +221,14 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[PRACTICE_TOOL] = tool.name }
     }
 
+    override suspend fun setPracticeRoot(root: PitchClass) {
+        dataStore.edit { it[PRACTICE_ROOT] = root.name }
+    }
+
+    override suspend fun setPracticeChordQuality(quality: ChordQuality) {
+        dataStore.edit { it[PRACTICE_CHORD_QUALITY] = quality.name }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -255,6 +265,8 @@ class DataStoreSettingsRepository internal constructor(
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
             practiceTool = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL]) ?: defaults.practiceTool,
+            practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
+            practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
         )
     }
 
@@ -305,6 +317,10 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The Practice tab's [PracticeTool] used last, by its name. */
         private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")
+
+        /** The chord charts' root ([PitchClass]) and chord type ([ChordQuality]) picked last, by their names. */
+        private val PRACTICE_ROOT = stringPreferencesKey("practice_root")
+        private val PRACTICE_CHORD_QUALITY = stringPreferencesKey("practice_chord_quality")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">Metrónomo</string>
     <string name="practice_tool_chords">Acordes</string>
-    <string name="practice_chords_coming">Pronto verás aquí diagramas de acordes y escalas.</string>
+    <string name="practice_root">Nota fundamental</string>
+    <string name="practice_chord_type">Tipo de acorde</string>
+    <string name="practice_chord_major">%1$s mayor</string>
+    <string name="practice_chord_minor">%1$s menor</string>
+    <string name="practice_chord_seventh">%1$s séptima</string>
+    <string name="practice_chord_major_seventh">%1$s séptima mayor</string>
+    <string name="practice_chord_minor_seventh">%1$s menor séptima</string>
+    <string name="practice_chord_sus2">%1$s sus 2</string>
+    <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_shape_count">%1$d de %2$d</string>
+    <string name="practice_shape_previous">Forma anterior</string>
+    <string name="practice_shape_next">Forma siguiente</string>
+    <string name="practice_chart_fret">%1$dfr</string>
+    <string name="practice_chord_none">No hay ninguna forma al alcance en esta afinación</string>
+    <string name="practice_spoken_separator">", "</string>
+    <string name="practice_spoken_shape">%1$s, forma %2$d de %3$d</string>
+    <string name="practice_spoken_string">Cuerda %1$s</string>
+    <string name="practice_spoken_muted">%1$s, no se toca</string>
+    <string name="practice_spoken_open">%1$s, al aire</string>
+    <string name="practice_spoken_fret">%1$s, traste %2$d, dedo %3$d, %4$s</string>
+    <string name="practice_spoken_barre">cejilla, dedo %1$d sobre el traste %2$d, cuerdas %3$s a %4$s</string>
 </resources>

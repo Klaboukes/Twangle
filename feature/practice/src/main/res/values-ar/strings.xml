@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">المترونوم</string>
     <string name="practice_tool_chords">الكوردات</string>
-    <string name="practice_chords_coming">قريبًا هنا: مخططات الكوردات والسلالم الموسيقية.</string>
+    <string name="practice_root">النغمة الأساسية</string>
+    <string name="practice_chord_type">نوع الكورد</string>
+    <string name="practice_chord_major">%1$s ماجور</string>
+    <string name="practice_chord_minor">%1$s مينور</string>
+    <string name="practice_chord_seventh">%1$s سابعة</string>
+    <string name="practice_chord_major_seventh">%1$s ماجور سابعة</string>
+    <string name="practice_chord_minor_seventh">%1$s مينور سابعة</string>
+    <string name="practice_chord_sus2">%1$s sus 2</string>
+    <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_shape_count">%1$d من %2$d</string>
+    <string name="practice_shape_previous">الشكل السابق</string>
+    <string name="practice_shape_next">الشكل التالي</string>
+    <string name="practice_chart_fret">%1$d</string>
+    <string name="practice_chord_none">لا يوجد شكل في المتناول بهذا الضبط</string>
+    <string name="practice_spoken_separator">"، "</string>
+    <string name="practice_spoken_shape">%1$s، الشكل %2$d من %3$d</string>
+    <string name="practice_spoken_string">وتر %1$s</string>
+    <string name="practice_spoken_muted">%1$s، لا يُعزف</string>
+    <string name="practice_spoken_open">%1$s، مفتوح</string>
+    <string name="practice_spoken_fret">%1$s، الدستان %2$d، الإصبع %3$d، %4$s</string>
+    <string name="practice_spoken_barre">باريه، الإصبع %1$d على الدستان %2$d، الأوتار من %3$s إلى %4$s</string>
 </resources>

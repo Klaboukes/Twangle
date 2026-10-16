@@ -1,11 +1,13 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import kotlin.math.roundToInt
@@ -246,6 +248,10 @@ data class AppSettings(
     val metronomeVibrate: Boolean = false,
     /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
     val practiceTool: PracticeTool = PracticeTool.DEFAULT,
+    /** The root picked last in the Practice tab's chord charts (C on a fresh install). */
+    val practiceRoot: PitchClass = PitchClass.C,
+    /** The chord type picked last in the Practice tab's chord charts (major on a fresh install). */
+    val practiceChordQuality: ChordQuality = ChordQuality.MAJOR,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

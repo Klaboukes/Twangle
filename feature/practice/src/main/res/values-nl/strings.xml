@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">Metronoom</string>
     <string name="practice_tool_chords">Akkoorden</string>
-    <string name="practice_chords_coming">Akkoordschema\'s en toonladders komen hier binnenkort.</string>
+    <string name="practice_root">Grondtoon</string>
+    <string name="practice_chord_type">Akkoordsoort</string>
+    <string name="practice_chord_major">%1$s majeur</string>
+    <string name="practice_chord_minor">%1$s mineur</string>
+    <string name="practice_chord_seventh">%1$s septiem</string>
+    <string name="practice_chord_major_seventh">%1$s groot septiem</string>
+    <string name="practice_chord_minor_seventh">%1$s mineur septiem</string>
+    <string name="practice_chord_sus2">%1$s sus 2</string>
+    <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_shape_count">%1$d van %2$d</string>
+    <string name="practice_shape_previous">Vorige greep</string>
+    <string name="practice_shape_next">Volgende greep</string>
+    <string name="practice_chart_fret">%1$dfr</string>
+    <string name="practice_chord_none">Geen greep binnen bereik in deze stemming</string>
+    <string name="practice_spoken_separator">", "</string>
+    <string name="practice_spoken_shape">%1$s, greep %2$d van %3$d</string>
+    <string name="practice_spoken_string">%1$s-snaar</string>
+    <string name="practice_spoken_muted">%1$s, niet gespeeld</string>
+    <string name="practice_spoken_open">%1$s, open</string>
+    <string name="practice_spoken_fret">%1$s, fret %2$d, vinger %3$d, %4$s</string>
+    <string name="practice_spoken_barre">barré, fret %2$d, vinger %1$d, snaren %3$s tot %4$s</string>
 </resources>

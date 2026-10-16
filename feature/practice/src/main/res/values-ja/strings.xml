@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">メトロノーム</string>
     <string name="practice_tool_chords">コード</string>
-    <string name="practice_chords_coming">コード表とスケールはまもなくここに表示されます。</string>
+    <string name="practice_root">ルート</string>
+    <string name="practice_chord_type">コードの種類</string>
+    <string name="practice_chord_major">%1$s メジャー</string>
+    <string name="practice_chord_minor">%1$s マイナー</string>
+    <string name="practice_chord_seventh">%1$s セブンス</string>
+    <string name="practice_chord_major_seventh">%1$s メジャーセブンス</string>
+    <string name="practice_chord_minor_seventh">%1$s マイナーセブンス</string>
+    <string name="practice_chord_sus2">%1$s サスツー</string>
+    <string name="practice_chord_sus4">%1$s サスフォー</string>
+    <string name="practice_shape_count">%1$d / %2$d</string>
+    <string name="practice_shape_previous">前の押さえ方</string>
+    <string name="practice_shape_next">次の押さえ方</string>
+    <string name="practice_chart_fret">%1$dF</string>
+    <string name="practice_chord_none">このチューニングでは押さえられる形がありません</string>
+    <string name="practice_spoken_separator">、</string>
+    <string name="practice_spoken_shape">%1$s、押さえ方 %2$d / %3$d</string>
+    <string name="practice_spoken_string">%1$s 弦</string>
+    <string name="practice_spoken_muted">%1$s、弾かない</string>
+    <string name="practice_spoken_open">%1$s、開放</string>
+    <string name="practice_spoken_fret">%1$s、%2$d フレット、%3$d 指、%4$s</string>
+    <string name="practice_spoken_barre">セーハ、%1$d 指で %2$d フレット、%3$s 弦から %4$s 弦まで</string>
 </resources>

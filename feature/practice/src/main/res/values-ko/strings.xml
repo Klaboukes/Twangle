@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">메트로놈</string>
     <string name="practice_tool_chords">코드</string>
-    <string name="practice_chords_coming">코드 차트와 스케일이 곧 여기에 표시됩니다.</string>
+    <string name="practice_root">근음</string>
+    <string name="practice_chord_type">코드 종류</string>
+    <string name="practice_chord_major">%1$s 메이저</string>
+    <string name="practice_chord_minor">%1$s 마이너</string>
+    <string name="practice_chord_seventh">%1$s 세븐스</string>
+    <string name="practice_chord_major_seventh">%1$s 메이저 세븐스</string>
+    <string name="practice_chord_minor_seventh">%1$s 마이너 세븐스</string>
+    <string name="practice_chord_sus2">%1$s 서스 2</string>
+    <string name="practice_chord_sus4">%1$s 서스 4</string>
+    <string name="practice_shape_count">%1$d / %2$d</string>
+    <string name="practice_shape_previous">이전 운지</string>
+    <string name="practice_shape_next">다음 운지</string>
+    <string name="practice_chart_fret">%1$dfr</string>
+    <string name="practice_chord_none">이 튜닝에서는 칠 수 있는 운지가 없습니다</string>
+    <string name="practice_spoken_separator">", "</string>
+    <string name="practice_spoken_shape">%1$s, 운지 %2$d / %3$d</string>
+    <string name="practice_spoken_string">%1$s 줄</string>
+    <string name="practice_spoken_muted">%1$s, 치지 않음</string>
+    <string name="practice_spoken_open">%1$s, 개방</string>
+    <string name="practice_spoken_fret">%1$s, %2$d 프렛, %3$d번 손가락, %4$s</string>
+    <string name="practice_spoken_barre">바레, %1$d번 손가락으로 %2$d 프렛, %3$s 줄부터 %4$s 줄까지</string>
 </resources>

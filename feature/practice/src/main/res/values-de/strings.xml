@@ -2,5 +2,25 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akkorde</string>
-    <string name="practice_chords_coming">Akkordgriffe und Tonleitern kommen bald hierher.</string>
+    <string name="practice_root">Grundton</string>
+    <string name="practice_chord_type">Akkordart</string>
+    <string name="practice_chord_major">%1$s-Dur</string>
+    <string name="practice_chord_minor">%1$s-Moll</string>
+    <string name="practice_chord_seventh">%1$s-Septakkord</string>
+    <string name="practice_chord_major_seventh">%1$s-Dur mit großer Septime</string>
+    <string name="practice_chord_minor_seventh">%1$s-Moll-Septakkord</string>
+    <string name="practice_chord_sus2">%1$s sus 2</string>
+    <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_shape_count">%1$d von %2$d</string>
+    <string name="practice_shape_previous">Vorheriger Griff</string>
+    <string name="practice_shape_next">Nächster Griff</string>
+    <string name="practice_chart_fret">%1$dfr</string>
+    <string name="practice_chord_none">Kein greifbarer Griff in dieser Stimmung</string>
+    <string name="practice_spoken_separator">", "</string>
+    <string name="practice_spoken_shape">%1$s, Griff %2$d von %3$d</string>
+    <string name="practice_spoken_string">%1$s-Saite</string>
+    <string name="practice_spoken_muted">%1$s, nicht gespielt</string>
+    <string name="practice_spoken_open">%1$s, leer</string>
+    <string name="practice_spoken_fret">%1$s, Bund %2$d, Finger %3$d, %4$s</string>
+    <string name="practice_spoken_barre">Barré, Finger %1$d über Bund %2$d, Saiten %3$s bis %4$s</string>
 </resources>

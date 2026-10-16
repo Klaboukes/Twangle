@@ -23,6 +23,10 @@ import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
@@ -46,7 +50,7 @@ import org.junit.runners.Parameterized
  * The Practice tab's tool switch over the Chords tool (Phase 32), in each style, light and dark:
  * TalkBack hears its segments as radio buttons by name, the picked one selected; a tap picks a
  * tool; it stands at the top, centred upright and in the start half on its side; at 2× text in
- * Dutch, on a narrow phone and on its side, the switch and the Chords placeholder are wholly shown.
+ * Dutch, on a narrow phone and on its side, the switch and the Chords tool are wholly shown.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -75,6 +79,14 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     ChordsScreen(
+                        tuning = Tunings.STANDARD,
+                        tuningName = "Guitar · Standard",
+                        spokenTuningName = "Guitar, Standard",
+                        notation = Notation.SHARPS,
+                        savedRoot = PitchClass.C,
+                        savedQuality = ChordQuality.MAJOR,
+                        onRootChange = {},
+                        onQualityChange = {},
                         header = { PracticeToolSwitch(shownTool.value, { shownTool.value = it }, tools) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                     )

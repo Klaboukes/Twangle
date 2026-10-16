@@ -3,6 +3,36 @@
     <!-- Practice tab (Phase 32): the tool switch at its top, one segment per tool. -->
     <string name="practice_tool_metronome">Metronome</string>
     <string name="practice_tool_chords">Chords</string>
-    <!-- The Chords tool until its charts come (the next step of Phase 32). -->
-    <string name="practice_chords_coming">Chord charts and scales are coming here soon.</string>
+    <!-- Chords (Phase 32): TalkBack, the group of root buttons (C, C♯, D …) the chord is built on. -->
+    <string name="practice_root">Root</string>
+    <!-- TalkBack, the group of chord type buttons (C, Cm, C7 …). -->
+    <string name="practice_chord_type">Chord type</string>
+    <!-- A chord in words: the chart's title, and how TalkBack says a chord type button. %1$s is the root ("A", "B♭", "La"). As the tuner's chord name. -->
+    <string name="practice_chord_major">%1$s major</string>
+    <string name="practice_chord_minor">%1$s minor</string>
+    <string name="practice_chord_seventh">%1$s seventh</string>
+    <string name="practice_chord_major_seventh">%1$s major seventh</string>
+    <string name="practice_chord_minor_seventh">%1$s minor seventh</string>
+    <string name="practice_chord_sus2">%1$s suspended second</string>
+    <string name="practice_chord_sus4">%1$s suspended fourth</string>
+    <!-- Between the ‹ › buttons under the chart: shape %1$d of the %2$d found. -->
+    <string name="practice_shape_count">%1$d of %2$d</string>
+    <!-- TalkBack, the ‹ and › buttons that step through the shapes of the chord. -->
+    <string name="practice_shape_previous">Previous shape</string>
+    <string name="practice_shape_next">Next shape</string>
+    <!-- Beside the first fret row of a chart that starts higher up the neck, as songbooks write it ("5fr"). -->
+    <string name="practice_chart_fret">%1$dfr</string>
+    <!-- In the chart's place when the chord has no comfortable shape in the picked tuning. -->
+    <string name="practice_chord_none">No shape within reach in this tuning</string>
+    <!-- TalkBack: between the parts of a spoken chart. -->
+    <string name="practice_spoken_separator">", "</string>
+    <!-- TalkBack, a chart: %1$s the chord in words ("C major"), then which shape of how many. -->
+    <string name="practice_spoken_shape">%1$s, shape %2$d of %3$d</string>
+    <!-- TalkBack: a string by its open note, %1$s e.g. "E 2", as the tuning editor says it. -->
+    <string name="practice_spoken_string">%1$s string</string>
+    <!-- TalkBack, each string of the shape: %1$s the string ("E 2 string"); played strings add the fret, the finger and the note sounded. A barre: its finger, its fret and the first and last string's notes ("A 2", "E 4"). -->
+    <string name="practice_spoken_muted">%1$s, not played</string>
+    <string name="practice_spoken_open">%1$s, open</string>
+    <string name="practice_spoken_fret">%1$s, fret %2$d, finger %3$d, %4$s</string>
+    <string name="practice_spoken_barre">barre, fret %2$d, finger %1$d, strings %3$s to %4$s</string>
 </resources>

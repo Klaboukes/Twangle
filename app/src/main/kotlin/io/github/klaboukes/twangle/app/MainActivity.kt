@@ -42,6 +42,7 @@ import io.github.klaboukes.twangle.app.navigation.destination
 import io.github.klaboukes.twangle.app.navigation.screen
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -314,17 +315,30 @@ class MainActivity : AppCompatActivity() {
                         header = header,
                     )
                 }
-                PracticeTool.CHORDS -> ChordsScreen(header = header ?: {})
+                PracticeTool.CHORDS -> ChordsScreen(
+                    tuning = settings.tuning,
+                    tuningName = stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings)),
+                    spokenTuningName = spokenTuning(settings),
+                    notation = settings.notationFor(appLanguage()),
+                    savedRoot = settings.practiceRoot,
+                    savedQuality = settings.practiceChordQuality,
+                    onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
+                    onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
+                    header = header ?: {},
+                )
             }
         }
     }
 
     /** The picked instrument and tuning as TalkBack says them on the bar's Instrument item, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
-    private fun spokenTuning(settings: AppSettings): String {
-        val tuningName = settings.customTunings.firstOrNull { it.id == settings.tuning.id }?.name ?: tuningLabel(settings.tuning)
-        return stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), tuningName)
-    }
+    private fun spokenTuning(settings: AppSettings): String =
+        stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), tuningName(settings))
+
+    /** The picked tuning's name: a custom tuning's own, else the preset's ("Standard", "Drop D"). */
+    @Composable
+    private fun tuningName(settings: AppSettings): String =
+        settings.pickedCustomTuning?.name ?: tuningLabel(settings.tuning)
 
     /** While this is in the composition, the volume keys set the media volume (the tone's and the clicks' loudness). */
     @Composable
