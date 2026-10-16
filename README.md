@@ -75,9 +75,9 @@ The full design is in [ARCHITECTURE.md](ARCHITECTURE.md) and the topic files it 
 You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundled with Android Studio.
 
 ```bash
-./gradlew assembleDebug   # build the debug APK
-./gradlew installDebug    # install it on a connected phone
-./gradlew test            # run the unit tests
+./gradlew assembleDebug        # build the debug APK
+./gradlew :app:installDebug    # install it on a connected phone
+./gradlew test                 # run the unit tests
 ```
 
 `./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [docs/architecture/performance.md](docs/architecture/performance.md), *Release build*); elsewhere it comes out unsigned.

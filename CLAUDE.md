@@ -35,7 +35,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash.
 ```bash
 ./gradlew assembleDebug                 # build debug APK
-./gradlew installDebug                  # install on connected device/emulator
+./gradlew :app:installDebug             # install the phone app on the connected phone (plain installDebug also puts the watch app on it)
 ./gradlew test                          # all JVM unit tests
 ./gradlew :core:dsp:test                # DSP tests only (fast, no Android)
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
@@ -57,7 +57,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
 - Wear OS emulator: AVD `Wear_OS_Large_Round` (Wear OS 6, API 36, `system-images;android-36;android-wear-signed;x86_64`). Start it with `<sdk>/emulator/emulator.exe -avd Wear_OS_Large_Round`, then `./gradlew :wear:installDebug`. `<sdk>/cmdline-tools/latest` has `sdkmanager` and `avdmanager`; from Git Bash, write package paths with `/` instead of `;`.
 - **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in the architecture docs and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
-  - MIUI needs *Developer options → Install via USB* for `installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
+  - MIUI needs *Developer options → Install via USB* for `:app:installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
   - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
   - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing the phone's settings and own tunings is fine.
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.

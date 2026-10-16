@@ -57,7 +57,7 @@ Then carry on without waiting for approval, unless step 1 found something that n
 3. **Phone check** for anything the owner can see or hear (UI, audio, permissions, startup):
    ```bash
    ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
-   ./gradlew installDebug
+   ./gradlew :app:installDebug    # not plain installDebug: that also puts the watch app on the phone
    "$ADB" shell am start -W -n io.github.klaboukes.twangle/io.github.klaboukes.twangle.app.MainActivity
    "$ADB" exec-out screencap -p > <scratchpad>/shot.png   # then look at it
    "$ADB" logcat -d -b crash                               # must be empty for our app
