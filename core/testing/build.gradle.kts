@@ -10,10 +10,13 @@ android {
 
     defaultConfig {
         minSdk = 26
+        // The languages Twangle ships (gradle.properties), for the tests that check every one.
+        buildConfigField("String", "LANGUAGES", "\"${providers.gradleProperty("twangle.languages").get()}\"")
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

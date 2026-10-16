@@ -86,12 +86,44 @@ internal data class StyleFaces(
 )
 
 /**
+ * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Caesar Dressing and
+ * Orbitron lack Polish and Turkish letters (ą ę ś ż, ğ ş İ), so a word there would mix two faces:
+ * Ancient's display and titles take its numbers face, Alegreya Sans, and Futuristic's take Space
+ * Age's Michroma. Scripts the display faces don't have ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in
+ * the phone's own font; the extra letter spacing meant for the display face is left out there, so
+ * Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks both lists
+ * against the bundled fonts and every language's texts.
+ */
+internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
+    val own = ownFacesFor(style)
+    return when {
+        language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.ANCIENT ->
+            own.copy(display = StyleFonts.Humanist, title = StyleFonts.Humanist, titleSpacing = TextUnit.Unspecified)
+        language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.FUTURISTIC ->
+            own.copy(display = StyleFonts.JetAge, title = StyleFonts.JetAge, displayWeight = null, titleSpacing = SPACE_AGE_SPACING)
+        language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified)
+        else -> own
+    }
+}
+
+/** Languages with Latin letters that Caesar Dressing (Ancient) and Orbitron (Futuristic) lack. */
+internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr")
+
+/**
+ * Languages in a script none of the display faces has (Arabic, Devanagari, Chinese, Japanese,
+ * Korean, and Cyrillic, which only Classic's Playfair Display has; Android says "ru").
+ */
+internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "hi", "ja", "ko", "ru", "zh")
+
+private val SPACE_AGE_SPACING = 0.02.em
+
+/**
  * The faces of each style, from the approved mock-up: Caesar Dressing with Alegreya Sans numbers
  * (Caesar Dressing's 0 looks like a diamond), Playfair Display with Bodoni Moda numbers and serif
  * reading text, Righteous, the phone's own font in light, Orbitron and Michroma (wide faces, numbers
  * at 82 %, see `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise.
  */
-internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
+private fun ownFacesFor(style: VisualStyle): StyleFaces = when (style) {
     VisualStyle.ANCIENT -> StyleFaces(
         StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif,
         numbers = StyleFonts.Humanist, titleSpacing = 0.01.em,
@@ -106,7 +138,7 @@ internal fun facesFor(style: VisualStyle): StyleFaces = when (style) {
         StyleFonts.Hud, StyleFonts.Hud, FontFamily.SansSerif,
         numbers = StyleFonts.HudNumbers, displayWeight = FontWeight.Medium, titleSpacing = 0.06.em,
     )
-    VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = 0.02.em)
+    VisualStyle.SPACE_AGE -> StyleFaces(StyleFonts.JetAge, StyleFonts.JetAge, FontFamily.SansSerif, titleSpacing = SPACE_AGE_SPACING)
 }
 
 /** The face for number readouts in [style] (see [StyleFaces.numbers]). */
@@ -119,9 +151,12 @@ fun numberFontFor(style: VisualStyle): FontFamily = facesFor(style).numbers
  */
 const val LINING_FIGURES = "lnum"
 
-/** Material 3's type scale set in the faces of [style], every style with [LINING_FIGURES]. */
-fun typographyFor(style: VisualStyle): Typography {
-    val faces = facesFor(style)
+/**
+ * Material 3's type scale set in the faces of [style] for text in [language] (see
+ * [facesFor]), every style with [LINING_FIGURES].
+ */
+fun typographyFor(style: VisualStyle, language: String = ""): Typography {
+    val faces = facesFor(style, language)
     val base = Typography()
     fun TextStyle.display() = copy(fontFamily = faces.display, fontWeight = faces.displayWeight ?: fontWeight, fontFeatureSettings = LINING_FIGURES)
     fun TextStyle.title() = copy(

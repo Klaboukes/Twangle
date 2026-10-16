@@ -462,7 +462,7 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
             modifier
                 .minimumInteractiveComponentSize()
                 .testTag(TunerTestTags.STRUM_TOGGLE)
-                .size(TOGGLE_SIZE)
+                .size(STRUM_TOGGLE_SIZE)
                 // The tour lights up the outline, not the touch target round it.
                 .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
                 .pressSink(press)
@@ -487,7 +487,7 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
 }
 
 /** The toggle's outline: 44 dp like the style's buttons, in a 48 dp touch target. */
-private val TOGGLE_SIZE = 44.dp
+internal val STRUM_TOGGLE_SIZE = 44.dp
 private val ICON_SIZE = 26.dp
 private const val OUTLINE_ALPHA = 0.6f
 private const val NEON_OUTLINE_ALPHA = 0.55f

@@ -306,7 +306,9 @@ class TunerContentTest {
         shownCustomTunings = many
         show(TunerUiState.Listening(TunerMode.AUTO, many.last().tuning))
         openPanel()
-        compose.onNodeWithTag(TunerTestTags.customTuning(many.last().id)).assertIsDisplayed().assertIsSelected()
+        compose.onNodeWithTag(TunerTestTags.customTuning(many.last().id)).assertIsDisplayed()
+        // The part of the row that picks it (the ⋮ button beside it is not).
+        compose.onNodeWithText("Mine 16").assertIsDisplayed().assertIsSelected()
     }
 
     @Test
@@ -603,7 +605,7 @@ class TunerContentTest {
         shownSounding.value = 2
         compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "D3")).assertIsDisplayed()
-        compose.onNode(hasContentDescription(context.getString(R.string.tuner_hint_playing, "D 3"))).assertExists()
+        assertSpokenSoon(context.getString(R.string.tuner_hint_playing, "D 3"))
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "A2")).assertDoesNotExist()
         shownSounding.value = null
         compose.waitForIdle()
@@ -617,7 +619,17 @@ class TunerContentTest {
         shownSounding.value = 0
         compose.waitForIdle()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_playing, "E♭2")).assertIsDisplayed()
-        compose.onNode(hasContentDescription(context.getString(R.string.tuner_hint_playing, "E flat 2"))).assertExists()
+        assertSpokenSoon(context.getString(R.string.tuner_hint_playing, "E flat 2"))
+    }
+
+    /**
+     * TalkBack is given [spoken] within [SpokenReadingThrottle]'s wait: a new hint right after
+     * another is held back up to 2 s, so the reader isn't talked over.
+     */
+    private fun assertSpokenSoon(spoken: String) {
+        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) {
+            compose.onAllNodes(hasContentDescription(spoken)).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -926,8 +938,9 @@ class TunerContentTest {
         show(detected(-12.3f), signalBars = true)
         val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        assertTrue("button ${button.width} wide", button.width >= 48.dp)
-        assertTrue("button ${button.height} tall", button.height >= 48.dp)
+        // A hair of slack: px back to dp can come out at 47.99997.
+        assertTrue("button ${button.width} wide", button.width >= 47.9.dp)
+        assertTrue("button ${button.height} tall", button.height >= 47.9.dp)
         assertEquals("centred across the bars", (bars.left + bars.right).value / 2, (button.left + button.right).value / 2, 1f)
         assertEquals("centred on the bars", (bars.top + bars.bottom).value / 2, (button.top + button.bottom).value / 2, 1f)
     }

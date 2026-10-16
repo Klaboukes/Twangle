@@ -7,12 +7,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -21,9 +23,14 @@ import androidx.compose.ui.unit.width
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -33,7 +40,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 
 /**
  * The metronome in each of the six styles, light and dark (ARCHITECTURE.md §8, Every screen in every
@@ -51,18 +57,20 @@ class MetronomeStylesTest(private val style: VisualStyle) {
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
+    private val shownLocale = mutableStateOf<String?>(null)
     private val shownListen = mutableStateOf(ListenUi())
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
+            val sized = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
                 DeviceConfigurationOverride.FontScale(shownFontScale.value)
+            val override = shownLocale.value?.let { sized then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: sized
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     MetronomeContent(
@@ -207,6 +215,34 @@ class MetronomeStylesTest(private val style: VisualStyle) {
 
     private fun DpRect.overlaps(other: DpRect) =
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
+
+    /**
+     * Every language at 2× text, upright and on its side, with each of Listen's status lines:
+     * every text wholly shown (every style in a thorough run). Only with `--languages`.
+     */
+    @EveryLanguage
+    @Test
+    fun everyLanguageFitsAtTwiceTheTextSize() {
+        shownFontScale.value = 2f
+        show()
+        for (language in shippedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                val lines = listOf(
+                    ListenUi(),
+                    ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96),
+                    ListenUi(ListenPhase.NO_BEAT),
+                    ListenUi(ListenPhase.MIC_OFF_SETTINGS),
+                )
+                for (listen in lines) {
+                    shownListen.value = listen
+                    compose.waitForIdle()
+                    compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} ${listen.phase} at 2x:")
+                }
+            }
+        }
+    }
 
     companion object {
         @JvmStatic

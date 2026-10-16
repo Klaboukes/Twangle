@@ -28,7 +28,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/vibration |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, pluck synthesis, metronome click track and tap tempo |
-| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks left out of normal runs until Phase 23), `assertWhollyShown` (nothing clipped or cut off) |
+| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, left out only by `--quick`), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
@@ -41,6 +41,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
+scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language (~2–3 h, see /overnight-run)
 scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
@@ -89,6 +90,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the test phone (the Xiaomi 12X).
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
+- **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update ARCHITECTURE.md in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.

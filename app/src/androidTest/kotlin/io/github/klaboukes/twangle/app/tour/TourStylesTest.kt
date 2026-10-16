@@ -36,10 +36,13 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerContent
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -51,6 +54,8 @@ import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import io.github.klaboukes.twangle.feature.tuner.tour.TourShown
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTargets
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTestTags
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -62,8 +67,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 /**
  * The first-start tour over the tuner and its navigation bar (or rail), as the app puts them
@@ -81,7 +84,7 @@ class TourStylesTest(private val style: VisualStyle) {
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -137,8 +140,8 @@ class TourStylesTest(private val style: VisualStyle) {
         compose.waitForIdle()
     }
 
+    /** In the window's language ([shownLocale]), whatever language the phone gives the app. */
     private fun string(id: Int, vararg args: Any): String {
-        if (shownLocale.value == "en") return context.getString(id, *args)
         val configuration = android.content.res.Configuration(context.resources.configuration)
         configuration.setLocales(LocaleList(Locale.forLanguageTag(shownLocale.value)))
         return context.createConfigurationContext(configuration).getString(id, *args)
@@ -232,6 +235,23 @@ class TourStylesTest(private val style: VisualStyle) {
         shownLocale.value = "nl"
         show()
         stepThroughWhollyShown("$style nl 2x 360 dp", UPRIGHT)
+    }
+
+    /**
+     * Every language at 2× text on a 360 dp phone: each balloon, its text and buttons wholly shown,
+     * pointing at its part (every style in a thorough run). Only with `--languages`.
+     */
+    @EveryLanguage
+    @Test
+    fun everyLanguageAtTwiceTheTextOnANarrowPhoneShowsEveryBalloonWhole() {
+        shownSize.value = NARROW
+        shownFontScale.value = 2f
+        show()
+        for (language in shippedLanguages) {
+            shownLocale.value = language
+            restart()
+            stepThroughWhollyShown("$style $language 2x 360 dp", UPRIGHT)
+        }
     }
 
     /** On its side the compact tuner shows its controls and rail for the tour; Dutch at 2× text. */

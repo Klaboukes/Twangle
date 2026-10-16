@@ -95,7 +95,10 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
+import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
+import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
@@ -1088,9 +1091,9 @@ private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> 
 
 /**
  * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch sits
- * in a row of its own above the strings, at its end, in line with the row's last string. With [names]
- * that row starts with the instrument and tuning ("Guitar · Drop D"), in line with the row's first
- * string, quiet in the muted text colour; a long name (a large font, a long language) takes up to two
+ * in a row of its own above the strings, at its end, its outline ending in line with the last
+ * string's button ([stringFaceInsetFor]). With [names] that row starts with the instrument and tuning
+ * ("Guitar · Drop D"), in line with the first string's button, quiet in the muted text colour; a long name (a large font, a long language) takes up to two
  * lines and widens the row rather than run under the switch. A tap on it opens the instrument and
  * tuning panel; TalkBack says it as "Guitar, Drop D".
  * [inTour]: the switch and the strings are the tour's steps. (The instrument and tuning are picked
@@ -1160,6 +1163,7 @@ private fun GuitarControls(
             }
         }
     }
+    val style = MaterialTheme.styleTokens.style
     Layout(contents = listOf(strings, toggle, label)) { (stringMeasurables, toggleMeasurables, labelMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
@@ -1173,13 +1177,21 @@ private fun GuitarControls(
         val rowHeight = max(togglePlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
         val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+        // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
+        val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning.strings.size).dp.roundToPx().coerceAtLeast(0)
+        val facesStart = faceInset
+        val facesEnd = stringsPlaceable.width - faceInset
         layout(width, height) {
             val stringsX = (width - stringsPlaceable.width) / 2
-            val toggleX = togglePlaceable?.let { (stringsX + stringsPlaceable.width - it.width).coerceIn(0, width - it.width) } ?: width
+            // The switch's outline (inside its touch target) ends where the last button's face does.
+            val toggleX = togglePlaceable?.let {
+                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+                (stringsX + facesEnd - it.width + outlineInset).coerceIn(0, width - it.width)
+            } ?: width
             togglePlaceable?.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
-            // From the first string, unless that would run under the switch.
+            // From the first button's face, unless that would run under the switch.
             labelPlaceable?.placeRelative(
-                min(stringsX, toggleX - (if (togglePlaceable != null) gap else 0) - labelPlaceable.width).coerceAtLeast(0),
+                min(stringsX + facesStart, toggleX - (if (togglePlaceable != null) gap else 0) - labelPlaceable.width).coerceAtLeast(0),
                 (rowHeight - labelPlaceable.height) / 2,
             )
             stringsPlaceable.placeRelative(stringsX, stringsY)

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <!-- An empty screen that keeps the test in the foreground while it records (ForegroundActivity). -->
+        <activity android:name="io.github.klaboukes.twangle.core.audio.ForegroundActivity" android:exported="false" />
+    </application>
+</manifest>

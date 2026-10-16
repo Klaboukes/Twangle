@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
@@ -335,13 +336,16 @@ private fun NavEntry(icon: ImageVector, label: String, selected: Boolean, modifi
 
 /**
  * A tab's name on one line: it grows with the font up to [MAX_LABEL_FONT_SCALE] and, where it would not
- * fit its tab (Dutch "Instellingen" in a wide face), is set smaller just enough.
+ * fit its tab (Dutch "Instellingen" in a wide face, German "Einstellungen"), is set smaller just enough.
  */
 @Composable
 private fun NavLabel(text: String, color: Color) {
     val density = LocalDensity.current
     CompositionLocalProvider(LocalDensity provides Density(density.density, min(density.fontScale, MAX_LABEL_FONT_SCALE))) {
-        val style = MaterialTheme.typography.labelMedium
+        // The letter spacing relative to the size, so a name set smaller is set tighter too.
+        val style = MaterialTheme.typography.labelMedium.let { base ->
+            if (base.letterSpacing.isSp && base.fontSize.isSp) base.copy(letterSpacing = (base.letterSpacing.value / base.fontSize.value).em) else base
+        }
         Text(
             text,
             color = color,
@@ -390,4 +394,5 @@ private val LABEL_MARK_GAP = 3.dp
 private val ITEM_SIDE_PADDING = 4.dp
 private val MIN_TOUCH = 48.dp
 private const val MAX_LABEL_FONT_SCALE = 1.3f
-private val MIN_LABEL_SIZE = 8.sp
+/** German "Einstellungen" in the 80 dp rail at 2× text needs this. */
+private val MIN_LABEL_SIZE = 7.sp

@@ -305,16 +305,20 @@ class TuningEditorTest {
         }
     }
 
+    /**
+     * The dialog is a window of its own, which takes the phone's language and text size rather than
+     * the test's (as the delete question's): Dutch at 2× is checked on the phone.
+     */
     @Test
-    fun theDiscardQuestionShowsWhollyAtTwiceTheTextSize() {
-        show(fontScale = 2f, locale = "nl")
+    fun theDiscardQuestionShowsWhollyInEveryStyle() {
+        show()
         name.performTextReplacement("Iets")
         close.performClick()
         for (style in allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)) {
             shownStyle.value = style
-            assertWhollyShown(compose.onNodeWithText("Wijzigingen weggooien?"), "question in $style", scroll = false)
-            assertWhollyShown(compose.onNodeWithText("Weggooien"), "discard in $style", scroll = false)
-            assertWhollyShown(compose.onNodeWithText("Verder bewerken"), "keep editing in $style", scroll = false)
+            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard_title)), "question in $style", scroll = false)
+            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_discard)), "discard in $style", scroll = false)
+            assertWhollyShown(compose.onNodeWithText(string(R.string.tuning_editor_keep_editing)), "keep editing in $style", scroll = false)
         }
     }
 

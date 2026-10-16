@@ -4,14 +4,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 
 /**
  * Marks a UI test that checks again what a quicker test already covers, in another font size,
- * language, orientation or view. While the look of the app is still changing, `scripts/ui-tests.sh`
- * leaves these out unless it is run with `--thorough`.
+ * language, orientation or view. `scripts/ui-tests.sh` runs these (since Phase 23, the look final)
+ * unless it is run with `--quick`.
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 annotation class Thorough
 
-/** True when the run checks everything: `scripts/ui-tests.sh --thorough` passes `-e thorough true`. */
+/** True when the run checks everything: `scripts/ui-tests.sh` passes `-e thorough true` unless `--quick`. */
 val isThoroughRun: Boolean
     get() = InstrumentationRegistry.getArguments().getString("thorough") == "true"
 

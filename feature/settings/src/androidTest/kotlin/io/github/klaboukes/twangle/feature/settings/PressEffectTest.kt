@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.settings
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,9 +68,17 @@ class PressEffectTest(private val style: VisualStyle) {
         compose.setContent {
             TwangleTheme(style = style, darkTheme = dark.value, animate = false) {
                 Column(Modifier.padding(16.dp)) {
-                    TwangleTextButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(TEXT)) { Text("Cancel") }
-                    TwangleButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(FILLED)) { Text("Next") }
-                    TwangleIconButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(ICON)) { Text("+") }
+                    // Each button in a slot of its own: the room it takes, its touch area round it. (The
+                    // button's own node is its face, as with Material's buttons.)
+                    Box(Modifier.testTag(slot(TEXT))) {
+                        TwangleTextButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(TEXT)) { Text("Cancel") }
+                    }
+                    Box(Modifier.testTag(slot(FILLED))) {
+                        TwangleButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(FILLED)) { Text("Next") }
+                    }
+                    Box(Modifier.testTag(slot(ICON))) {
+                        TwangleIconButton(onClick = { clicks.intValue++ }, modifier = Modifier.testTag(ICON)) { Text("+") }
+                    }
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -90,6 +99,8 @@ class PressEffectTest(private val style: VisualStyle) {
             for (tag in listOf(TEXT, FILLED, ICON, ROW)) check(tag, "$style ${if (isDark) "dark" else "light"} $tag:")
         }
     }
+
+    private fun slot(tag: String) = "$tag-slot"
 
     private fun shot(tag: String): ImageBitmap = compose.onNodeWithTag(tag).captureToImage()
 
@@ -132,11 +143,11 @@ class PressEffectTest(private val style: VisualStyle) {
     fun theButtonsKeepMaterialsTouchArea() {
         show()
         for (tag in listOf(TEXT, FILLED, ICON)) {
-            val bounds = compose.onNodeWithTag(tag).getUnclippedBoundsInRoot()
+            val bounds = compose.onNodeWithTag(slot(tag)).getUnclippedBoundsInRoot()
             assertTrue("$style $tag: ${bounds.height} tall", bounds.height >= 48.dp - 0.5.dp)
             assertTrue("$style $tag: ${bounds.width} wide", bounds.width >= 48.dp - 0.5.dp)
         }
-        val icon = compose.onNodeWithTag(ICON).getUnclippedBoundsInRoot()
+        val icon = compose.onNodeWithTag(slot(ICON)).getUnclippedBoundsInRoot()
         assertEquals("$style icon button's height", 48f, icon.height.value, 0.5f)
     }
 
@@ -147,10 +158,10 @@ class PressEffectTest(private val style: VisualStyle) {
         show()
         compose.mainClock.autoAdvance = false
         try {
-            val idle = shot(TEXT).toPixelMap()
+            val idle = shot(slot(TEXT)).toPixelMap()
             compose.onNodeWithTag(TEXT).performTouchInput { down(center) }
             compose.mainClock.advanceTimeBy(HELD_MS)
-            val held = shot(TEXT).toPixelMap()
+            val held = shot(slot(TEXT)).toPixelMap()
             compose.onNodeWithTag(TEXT).performTouchInput { up() }
             compose.mainClock.advanceTimeBy(FADED_MS)
             // The top 2 dp of the touch area stay as they were.

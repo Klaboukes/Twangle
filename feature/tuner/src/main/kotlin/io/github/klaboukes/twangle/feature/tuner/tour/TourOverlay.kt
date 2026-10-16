@@ -170,11 +170,13 @@ private fun TourOverlay(
     val scope = rememberCoroutineScope()
     val moving = remember { arrayOfNulls<Job>(1) }
     val currentOnEnd by rememberUpdatedState(onEnd)
+    val currentOpen by rememberUpdatedState(open)
     // In the current layout's reading order (a turned phone reads its own, Arabic right to left), the
     // bar or rail last.
     val rightToLeft = LocalLayoutDirection.current == LayoutDirection.Rtl
     val order by remember(steps, rightToLeft) { derivedStateOf { tourOrder(steps, rightToLeft) { targets.boundsOf(it) } } }
     val last = steps.lastIndex
+    val currentLast by rememberUpdatedState(last)
     val atStep = step.coerceIn(0, last)
     val balloonStep = shownStep.coerceIn(0, last)
 
@@ -193,8 +195,11 @@ private fun TourOverlay(
     }
 
     fun next() {
-        if (moving[0]?.isActive == true || !open) return
-        if (atStep >= last) {
+        // Read now, not when this was composed: the buttons may hold an earlier `::next`, which
+        // Compose takes for the same function (function references to a local fun are equal).
+        val atStep = step.coerceIn(0, currentLast)
+        if (moving[0]?.isActive == true || !currentOpen) return
+        if (atStep >= currentLast) {
             finish()
             return
         }
@@ -302,22 +307,50 @@ private fun TourOverlay(
             bottom = max(TourMeasures.BOTTOM.dp.toPx(), insets.getBottom(this).toFloat()),
         )
         val maxWidth = min(width - margins.left - margins.right, TourMeasures.MAX_WIDTH.dp.toPx() * fontScale).toInt().coerceAtLeast(0)
-        val balloon = measurables.single().measure(Constraints(maxWidth = maxWidth, maxHeight = height))
+        val measurable = measurables.single()
         val part = order[balloonStep]
         val element = targets.boundsOf(part)?.let(::local)
         val reach = (TourMeasures.POINTER_GAP + TourMeasures.POINTER_HEIGHT).dp.toPx()
-        val place = placeBalloon(
+        val avoid = targets.controlsBesides(part).map(::local)
+        // Where it fits nowhere within the usual margins, the screen's edges up to the system bars
+        // before lying over the part (the note's step at 2× text on a small phone).
+        val nearMargins = TourMargins(
+            left = margins.left,
+            top = max(TourMeasures.NEAR_EDGE.dp.toPx(), insets.getTop(this).toFloat()),
+            right = margins.right,
+            bottom = max(TourMeasures.NEAR_EDGE.dp.toPx(), insets.getBottom(this).toFloat()),
+        )
+        fun placeAt(balloonWidth: Int, balloonHeight: Int, within: TourMargins = margins) = placeBalloon(
             element,
-            balloon.width.toFloat(),
-            balloon.height.toFloat(),
+            balloonWidth.toFloat(),
+            balloonHeight.toFloat(),
             width.toFloat(),
             height.toFloat(),
-            margins,
+            within,
             part.preferredSide,
             reach,
             TourMeasures.POINTER_END.dp.toPx(),
-            avoid = targets.controlsBesides(part).map(::local),
+            avoid = avoid,
         )
+        // Where it fits nowhere at its full width (a large font on a phone on its side), a narrower,
+        // taller balloon beside the part, rather than one over it.
+        var balloonWidth = maxWidth
+        if (element != null && placeAt(maxWidth, measurable.maxIntrinsicHeight(maxWidth)).side == BalloonSide.OVER) {
+            val besideRoom = max(element.left - reach - margins.left, width - margins.right - element.right - reach).toInt()
+            if (besideRoom in TourMeasures.MIN_BESIDE_WIDTH.dp.roundToPx() until maxWidth &&
+                measurable.maxIntrinsicHeight(besideRoom) <= height - margins.top - margins.bottom
+            ) {
+                balloonWidth = besideRoom
+            }
+        }
+        val balloon = measurable.measure(Constraints(maxWidth = balloonWidth, maxHeight = height))
+        val place = placeAt(balloon.width, balloon.height).let { usual ->
+            if (usual.side == BalloonSide.OVER && element != null) {
+                placeAt(balloon.width, balloon.height, nearMargins).takeIf { it.side != BalloonSide.OVER } ?: usual
+            } else {
+                usual
+            }
+        }
         placement.value = place
         if (open) {
             // Where the step on screen is, in the window's pixels, for tests.

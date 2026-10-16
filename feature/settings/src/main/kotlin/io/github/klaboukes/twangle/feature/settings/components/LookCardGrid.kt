@@ -179,5 +179,8 @@ private const val PER_ROW = 3
 private const val LARGE_FONT_SCALE = 1.3f
 private const val PER_ROW_LARGE_FONT = 2
 
-/** The smallest a card's name gets to fit its card. */
-private val LABEL_MIN_SIZE = 8.sp
+/**
+ * The smallest a card's name gets to fit its card: at 2× text that is 12 sp's size, which French
+ * "Barres lumineuses" needs in Classic's serif.
+ */
+private val LABEL_MIN_SIZE = 6.sp

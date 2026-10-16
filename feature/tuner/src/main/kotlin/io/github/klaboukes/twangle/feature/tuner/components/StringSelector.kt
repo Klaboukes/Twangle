@@ -176,6 +176,10 @@ fun StringSelector(
     }
 }
 
+/** How far in from each end of a full-size string row [width] wide the [count] buttons' faces are, in dp ([stringFaceInset]). */
+internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, count: Int): Float =
+    stringFaceInset(width.value, count, stringChipSize(style).width.value, stringRowFitFor(style, width, count, small = false))
+
 /** How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size buttons). */
 internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean): StringRowFit {
     val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value

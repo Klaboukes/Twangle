@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
@@ -40,9 +40,16 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.tokensFor
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
+import java.util.Locale
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -52,9 +59,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.Locale
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 /**
  * The navigation bar (upright) and rail (on its side) in each style, light and dark: three tabs that
@@ -74,7 +78,7 @@ class NavigationBarTest(private val style: VisualStyle) {
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -123,12 +127,17 @@ class NavigationBarTest(private val style: VisualStyle) {
             Destination.METRONOME -> R.string.nav_metronome
             Destination.SETTINGS -> R.string.nav_settings
         }
-        return if (dutch) dutch(id) else context.getString(id)
+        return if (dutch) dutch(id) else english(id)
     }
 
-    private fun dutch(id: Int): String {
+    private fun dutch(id: Int): String = inLanguage(id, "nl")
+
+    /** The bar's own language in most tests ([shownLocale]), whatever language the phone gives the app. */
+    private fun english(id: Int): String = inLanguage(id, "en")
+
+    private fun inLanguage(id: Int, tag: String): String {
         val configuration = android.content.res.Configuration(context.resources.configuration)
-        configuration.setLocales(LocaleList(Locale.forLanguageTag("nl")))
+        configuration.setLocales(LocaleList(Locale.forLanguageTag(tag)))
         return context.createConfigurationContext(configuration).getString(id)
     }
 
@@ -160,14 +169,14 @@ class NavigationBarTest(private val style: VisualStyle) {
     @Test
     fun theTuningItemIsAButtonAfterTheTunerTab() {
         show()
-        val change = context.getString(io.github.klaboukes.twangle.feature.tuner.R.string.tuner_change_instrument_or_tuning)
+        val change = english(io.github.klaboukes.twangle.feature.tuner.R.string.tuner_change_instrument_or_tuning)
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             for (open in Destination.entries) {
                 shownSelected.value = open
                 compose.waitForIdle()
                 tuning.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-                    .assert(hasText(context.getString(R.string.nav_tuning)))
+                    .assert(hasText(english(R.string.nav_tuning)))
                     .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, TUNING_STATE))
                     .assert(SemanticsMatcher("click label is \"$change\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == change })
                     .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
@@ -246,6 +255,22 @@ class NavigationBarTest(private val style: VisualStyle) {
             val name = dutch(R.string.nav_tuning)
             tuning.assert(hasText(name))
             assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
+        }
+    }
+
+    /** Every language's names at 2× text, in the bar and in the rail. Only with `--languages`. */
+    @EveryLanguage
+    @Test
+    fun everyLanguagesNamesAtTwiceTheTextSizeAreWhollyShown() {
+        shownFontScale.value = 2f
+        show()
+        for (language in shippedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                compose.waitForIdle()
+                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+            }
         }
     }
 

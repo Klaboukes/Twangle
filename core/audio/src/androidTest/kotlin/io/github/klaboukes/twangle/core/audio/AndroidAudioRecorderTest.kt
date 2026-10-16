@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -23,12 +24,16 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Records from the real microphone, so it needs a device. */
+/** Records from the real microphone, so it needs a device (and a screen in the foreground). */
 @RunWith(AndroidJUnit4::class)
 class AndroidAudioRecorderTest {
 
     @get:Rule
     val micPermission: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+
+    /** A screen in the foreground: in the background Android silences the microphone. */
+    @get:Rule
+    val foreground = ActivityScenarioRule(ForegroundActivity::class.java)
 
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
     private val recorder = AndroidAudioRecorder(context)

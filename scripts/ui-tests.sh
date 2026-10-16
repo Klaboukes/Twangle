@@ -9,11 +9,16 @@
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
-#   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
-#                                                tests (other font sizes, languages, orientations)
+#   scripts/ui-tests.sh --quick ...              without the double checks: the style tests in the
+#                                                default style only, no @Thorough tests (iterating)
+#   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
+#                                                warmer than COOL_BELOW (default 37 °C): long runs
+#   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests: screens in every
+#                                                language Twangle ships (long; the overnight run)
 #
-# While the look of the app is still changing, a normal run leaves out the double checks: the style
-# tests run in the default style only, and tests marked @Thorough (:core:testing) are skipped.
+# Since Phase 23 (the look final) every run has the double checks: the style tests in every style,
+# and the tests marked @Thorough (:core:testing: other font sizes, languages, orientations).
+# --thorough is still accepted and changes nothing.
 #
 # One Gradle call builds every test APK (and the app, for :app). Each module's tests are then
 # installed and run straight on the phone with `am instrument`: Gradle's own test task costs 15-25 s
@@ -26,10 +31,11 @@ cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
+COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:feature:tuner :feature:settings :feature:metronome :core:audio :app)
 
-usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -70,11 +76,14 @@ affected_modules() {
     [ $app = 1 ] && echo :app
 }
 
-modules=() filter="" class="" extra=() thorough=0
+modules=() filter="" class="" extra=() thorough=1 cool=0 languages=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
         --thorough) thorough=1 ;;
+        --quick) thorough=0 ;;
+        --cool) cool=1 ;;
+        --languages) languages=1 ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
         -a | --arg) extra+=("$2"); shift ;;
@@ -173,6 +182,10 @@ if time:
     t = re.sub(r'[.,]', '', t[:dec]) + '.' + t[dec + 1:] if dec >= 0 else t
     secs = f", {float(t):.0f}s on the phone"
 if tests == 0 and running is None:
+    # A class whose tests all wait for an argument (MeterLookScreenshots) runs none.
+    if re.search(r'^OK \(0 tests\)', text, re.M):
+        print('0 tests')
+        sys.exit(0)
     sys.exit(1)
 print(f"{tests} tests, {fails} failed{f', {skipped} skipped' if skipped else ''}{secs}")
 if running is not None:
@@ -271,6 +284,58 @@ install_apk() {
     return 1
 }
 
+# Runs one `am instrument` call (arguments after the first four) and prints its time and summary.
+run_tests() {
+    local module="$1" package="$2" runner="$3" log="$4" start=$SECONDS code summary
+    shift 4
+    timeout "$MODULE_TIMEOUT" env MSYS_NO_PATHCONV=1 "$ADB_EXE" shell am instrument -w -r "$@" "$runner" > "$log" 2>&1
+    code=$?
+    printf '%3ds  ' $((SECONDS - start))
+    if [ $code = 124 ]; then
+        adb shell am force-stop "$package" > /dev/null 2>&1
+        echo "TIMED OUT after ${MODULE_TIMEOUT}s (log: $log)"
+        return 1
+    fi
+    summary="$(summarize "$log")"
+    code=$?
+    if [ -n "$summary" ]; then
+        echo "$summary"
+    else
+        echo "no results (log: $log)"
+        if [ $thorough = 0 ] && [ -n "$filter$class" ]; then
+            echo "  (a test marked @Thorough doesn't run with --quick)"
+        fi
+        tail -5 "$log"
+    fi
+    return $code
+}
+
+# The module's test classes (files with a @Test), by short name.
+test_classes() {
+    grep -rl --include='*.kt' '@Test' "$(dir_of "$1")/src/androidTest" 2>/dev/null | sed 's|.*/||; s|\.kt$||' | sort
+}
+
+# The battery's temperature in whole degrees (the phone reports tenths).
+phone_temp() {
+    local tenths
+    tenths="$(adb shell dumpsys battery 2>/dev/null | tr -d '\r' | sed -n 's/^ *temperature: \([0-9]*\)/\1/p' | head -1)"
+    echo $(( ${tenths:-0} / 10 ))
+}
+
+# Waits, at most 30 minutes, while the phone is warmer than COOL_BELOW. The screen stays on: turned
+# off it could lock, and a locked phone stops the run.
+wait_cool() {
+    local t waited=0
+    t="$(phone_temp)"
+    [ "$t" -lt "$COOL_BELOW" ] && return 0
+    printf '  (phone at %s °C, cooling' "$t"
+    while [ "$t" -ge "$COOL_BELOW" ] && [ $waited -lt 1800 ]; do
+        sleep 30; waited=$((waited + 30)); t="$(phone_temp)"
+    done
+    printf ' %ds to %s °C)\n' $waited "$t"
+    wake_phone
+}
+
 status=0
 for module in "${modules[@]}"; do
     start=$SECONDS
@@ -291,38 +356,35 @@ for module in "${modules[@]}"; do
     wake_phone
     runner="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:\($package/[^ ]*\) .*|\1|p" | head -1)"
 
-    # Extra files a test writes (MeterLookScreenshots' pictures) go where Gradle's own run would
-    # put them, so scripts that read them work either way.
-    outdir="/sdcard/Android/media/$package/additional_test_output"
+    # Extra files a test writes (MeterLookScreenshots' pictures, a language check's failing screen) go
+    # where Gradle's own run would put them, so scripts that read them work either way: the media
+    # folder of the package the tests run in (:app's tests run in the app itself).
+    target="$(adb shell pm list instrumentation | tr -d '\r' | sed -n "s|^instrumentation:$package/.*(target=\(.*\))|\1|p" | head -1)"
+    outdir="/sdcard/Android/media/${target:-$package}/additional_test_output"
     adb shell "rm -rf $outdir && mkdir -p $outdir" > /dev/null 2>&1
     args=(-e additionalTestOutputDir "$outdir")
     [ -n "$filter" ] && args+=(-e tests_regex "$(quote ".*($filter).*")")
     [ -n "$class" ] && args+=(-e class "$(qualify "$module" "$class")")
-    if [ $thorough = 1 ]; then
-        args+=(-e thorough true)
-    elif grep -q '":core:testing"' "$dir/build.gradle.kts"; then
-        args+=(-e notAnnotation io.github.klaboukes.twangle.core.testing.Thorough)
+    # The annotations in :core:testing a run leaves out (a comma-separated list for the runner).
+    skip=()
+    if [ $thorough = 1 ]; then args+=(-e thorough true); else skip+=(io.github.klaboukes.twangle.core.testing.Thorough); fi
+    if [ $languages = 1 ]; then args+=(-e everyLanguage true); else skip+=(io.github.klaboukes.twangle.core.testing.EveryLanguage); fi
+    if [ ${#skip[@]} -gt 0 ] && grep -q '":core:testing"' "$dir/build.gradle.kts"; then
+        args+=(-e notAnnotation "$(IFS=,; echo "${skip[*]}")")
     fi
     for pair in "${extra[@]}"; do args+=(-e "${pair%%=*}" "$(quote "${pair#*=}")"); done
 
-    timeout "$MODULE_TIMEOUT" env MSYS_NO_PATHCONV=1 "$ADB_EXE" shell am instrument -w -r "${args[@]}" "$runner" > "$log" 2>&1
-    code=$?
-    printf '%3ds  ' $((SECONDS - start))
-    if [ $code = 124 ]; then
-        adb shell am force-stop "$package" > /dev/null 2>&1
-        echo "TIMED OUT after ${MODULE_TIMEOUT}s (log: $log)"
-        status=1
+    if [ $cool = 1 ] && [ -z "$filter$class" ]; then
+        # One class at a time, so the phone can cool down between them (it waits only when warm).
+        echo
+        for name in $(test_classes "$module"); do
+            wait_cool
+            printf '  %-28s ' "$name"
+            run_tests "$module" "$package" "$runner" "build/ui-tests${module//:/-}-$name.log" \
+                "${args[@]}" -e class "$(qualify "$module" "$name")" || status=1
+        done
     else
-        summary="$(summarize "$log")" || status=1
-        if [ -n "$summary" ]; then
-            echo "$summary"
-        else
-            echo "no results (log: $log)"
-            if [ $thorough = 0 ] && [ -n "$filter$class" ]; then
-                echo "  (a test marked @Thorough only runs with --thorough)"
-            fi
-            tail -5 "$log"
-        fi
+        run_tests "$module" "$package" "$runner" "$log" "${args[@]}" || status=1
     fi
     off="$(ms_since_screen_off)"
     if [ -n "$off" ] && [ "$off" -lt $(((SECONDS - start) * 1000)) ]; then

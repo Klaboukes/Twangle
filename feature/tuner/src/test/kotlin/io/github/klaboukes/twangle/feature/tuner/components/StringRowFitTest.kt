@@ -56,4 +56,20 @@ class StringRowFitTest {
         assertFalse(stringRowFit(availableDp = 7 * 54f, count = 7, buttonWidthDp = 46f, ringGapDp = 4f, minSlotDp = 48f).squeezed)
         assertTrue(stringRowFit(availableDp = 7 * 54f - 1f, count = 7, buttonWidthDp = 46f, ringGapDp = 4f, minSlotDp = 48f).squeezed)
     }
+
+    /** Spread evenly, the faces start a gap plus the touch slot's margin and the ring's room in. */
+    @Test
+    fun faceInsetSpreadEvenly() {
+        // Classic's 38 dp keys in 48 dp slots, six on a 328 dp row: gaps of (328 - 288) / 7.
+        val fit = stringRowFit(availableDp = 328f, count = 6, buttonWidthDp = 38f, ringGapDp = 4f, minSlotDp = 48f)
+        assertEquals(40f / 7f + 1f + 4f, stringFaceInset(328f, 6, 38f, fit), 0.001f)
+    }
+
+    /** Squeezed, each face sits in the middle of its share, inside its ring's room. */
+    @Test
+    fun faceInsetSqueezed() {
+        val fit = stringRowFit(availableDp = 328f, count = 8, buttonWidthDp = 40f, ringGapDp = 4f, minSlotDp = 48f)
+        val outer = 40f * fit.buttonScale + fit.ringGapDp * 2f
+        assertEquals((41f - outer) / 2f + fit.ringGapDp, stringFaceInset(328f, 8, 40f, fit), 0.001f)
+    }
 }

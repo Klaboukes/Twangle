@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,6 +21,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -30,9 +32,14 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -42,7 +49,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 
 /**
  * The tuner upright and in its full layout on its side, in each of the six styles, light and dark:
@@ -64,7 +70,7 @@ class TunerStylesTest(private val style: VisualStyle) {
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -75,11 +81,13 @@ class TunerStylesTest(private val style: VisualStyle) {
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
+    private val shownLocale = mutableStateOf<String?>(null)
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
+            val sized = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
                 DeviceConfigurationOverride.FontScale(shownFontScale.value)
+            val override = shownLocale.value?.let { sized then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: sized
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     TunerContent(
@@ -275,6 +283,29 @@ class TunerStylesTest(private val style: VisualStyle) {
 
     private fun DpRect.overlaps(other: DpRect) =
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
+
+    /**
+     * Every language at 2× text, upright and on its side, a note with the meter and listening with the
+     * wave: every text wholly shown (every style in a thorough run). Only with `--languages`.
+     */
+    @EveryLanguage
+    @Test
+    fun everyLanguageFitsAtTwiceTheTextSize() {
+        shownFontScale.value = 2f
+        show()
+        for (language in shippedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                for ((state, display) in listOf(detected() to TunerDisplay.NEEDLE, TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD) to TunerDisplay.WAVE)) {
+                    shownState.value = state
+                    shownDisplay.value = display
+                    compose.waitForIdle()
+                    compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} $display at 2x:")
+                }
+            }
+        }
+    }
 
     companion object {
         @JvmStatic

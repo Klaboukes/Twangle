@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,13 +22,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,10 +64,12 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
@@ -91,6 +94,8 @@ import io.github.klaboukes.twangle.feature.metronome.ListenUi
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
 import io.github.klaboukes.twangle.feature.metronome.TempoPick
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /*
@@ -133,17 +138,22 @@ fun ListenLine(listen: ListenUi, onTryAgain: () -> Unit, onOpenSettings: () -> U
             .fillMaxWidth()
             .heightIn(min = LINE_HEIGHT)
             .testTag(MetronomeTestTags.LINE)
-            .semantics { liveRegion = LiveRegionMode.Polite },
+            // The line holds its text, so the live region itself changes and TalkBack says it.
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         contentAlignment = Alignment.Center,
     ) {
         // Keeps one line's room at any font size.
         Text(" ", style = body, modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+        val shown = lineFor(listen)
         AnimatedContent(
-            targetState = lineFor(listen),
+            targetState = shown,
             transitionSpec = { fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)) togetherWith fadeOut(tween(LINE_FADE_MILLIS)) },
             contentAlignment = Alignment.Center,
             label = "listen line",
-        ) { line -> LineContent(line, body, onTryAgain, onOpenSettings) }
+        ) { line ->
+            // The words fading out are not heard again.
+            Box(if (line == shown) Modifier else Modifier.clearAndSetSemantics {}) { LineContent(line, body, onTryAgain, onOpenSettings) }
+        }
     }
 }
 
@@ -173,7 +183,7 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
                 style = body,
                 color = scheme.onSurfaceVariant,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                autoSize = TextAutoSize.StepBased(minFontSize = MIN_LINE_TEXT, maxFontSize = body.fontSize, stepSize = 0.5.sp),
             )
         }
         LineText.NoBeat -> LineWithAction(stringResource(R.string.metronome_no_beat), stringResource(R.string.metronome_try_again), body, onTryAgain)
@@ -186,35 +196,76 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
     }
 }
 
-/** The line's words and, after them, an action in the accent with a 48 dp touch area. */
+/**
+ * The line's words and, after them, an action in the accent with a 48 dp touch area. Both keep their
+ * size while they fit side by side; where they don't (large text, long languages) both are set
+ * smaller by the same factor, measured from their full widths, to stay on one line.
+ */
 @Composable
 private fun LineWithAction(text: String, action: String?, body: TextStyle, onAction: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(text, style = body, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-        if (action != null) {
-            val source = remember { MutableInteractionSource() }
-            Box(
-                Modifier
-                    .testTag(MetronomeTestTags.LINE_ACTION)
-                    // As tall as the line, so it never moves anything; Compose widens its touch area to 48 dp.
-                    .height(LINE_HEIGHT)
-                    // The light: a 32 dp pill, as in a 48 dp touch area.
-                    .pressFeedback(source, PILL, lightInset = (LINE_HEIGHT - PILL_HEIGHT) / 2)
-                    .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                        source.pressFlash()
-                        onAction()
-                    }
-                    .padding(horizontal = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(action, style = body.copy(fontWeight = FontWeight.Medium), color = scheme.primary, maxLines = 1)
+    val actionStyle = body.copy(fontWeight = FontWeight.Medium)
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(contentAlignment = Alignment.Center) {
+        val room = with(density) {
+            constraints.maxWidth - if (action != null) (ACTION_GAP + ACTION_PADDING * 2).roundToPx() else 0
+        }.coerceAtLeast(1)
+        val full = remember(text, action, body, measurer) {
+            measurer.measure(text, body, maxLines = 1, softWrap = false).size.width +
+                (action?.let { measurer.measure(it, actionStyle, maxLines = 1, softWrap = false).size.width } ?: 0)
+        }
+        // A little smaller than the widths say, and smaller again while either still runs over (text
+        // doesn't scale exactly); no smaller than MIN_LINE_TEXT.
+        val smallest = MIN_LINE_TEXT.value / body.fontSize.value
+        var tighter by remember(text, action, room, full) { mutableFloatStateOf(1f) }
+        val scale = if (full <= room && tighter == 1f) 1f else max(min(1f, room * FIT_MARGIN / full) * tighter, smallest)
+        val fit: (TextLayoutResult) -> Unit = { if (it.didOverflowWidth && scale > smallest) tighter *= TIGHTER_STEP }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ACTION_GAP)) {
+            Text(text, style = body.copy(fontSize = body.fontSize * scale), color = scheme.onSurfaceVariant, maxLines = 1, softWrap = false, onTextLayout = fit)
+            if (action != null) {
+                val source = remember { MutableInteractionSource() }
+                Box(
+                    Modifier
+                        .testTag(MetronomeTestTags.LINE_ACTION)
+                        // As tall as the line (taller with large text, as the line is), so it never
+                        // moves anything; Compose widens its touch area to 48 dp.
+                        .heightIn(min = LINE_HEIGHT)
+                        // The light: a 32 dp pill, as in a 48 dp touch area.
+                        .pressFeedback(source, PILL, lightInset = (LINE_HEIGHT - PILL_HEIGHT) / 2)
+                        .clickable(interactionSource = source, indication = null, role = Role.Button) {
+                            source.pressFlash()
+                            onAction()
+                        }
+                        .padding(horizontal = ACTION_PADDING),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(action, style = actionStyle.copy(fontSize = actionStyle.fontSize * scale), color = scheme.primary, maxLines = 1, softWrap = false, onTextLayout = fit)
+                }
             }
         }
     }
 }
 
+/** Set smaller to fit, the line's texts take this share of the room their full widths say … */
+private const val FIT_MARGIN = 0.96f
+
+/** … and this much less again each time one still runs over. */
+private const val TIGHTER_STEP = 0.95f
+
+/** Each side of the line's action, inside its touch area. */
+private val ACTION_PADDING = 6.dp
+
+/** Between the line's words and its action. */
+private val ACTION_GAP = 4.dp
+
 private val LINE_HEIGHT = 24.dp
+
+/**
+ * The line's words are set no smaller than this: at 2× text that is 12 sp's size, which Dutch
+ * ("Geen duidelijk ritme gehoord" beside "Opnieuw") needs on a 360 dp phone.
+ */
+private val MIN_LINE_TEXT = 6.sp
 private val PILL_HEIGHT = 32.dp
 private const val LINE_FADE_MILLIS = 160
 

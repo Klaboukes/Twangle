@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.settings.ThemeMode
@@ -104,11 +105,13 @@ fun TwangleTheme(
     }
     val target = tokens.scheme
     val colorScheme = if (animate) animatedColorScheme(target) else target
+    // The app's language: Polish and Turkish words need other faces in some styles (facesFor).
+    val language = LocalConfiguration.current.locales[0].language
 
     CompositionLocalProvider(LocalStyleTokens provides tokens) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = remember(style) { typographyFor(style) },
+            typography = remember(style, language) { typographyFor(style, language) },
             shapes = shapesFor(style),
         ) {
             // Twangle's press effect in place of Material's ripple everywhere (Phase 27): plain

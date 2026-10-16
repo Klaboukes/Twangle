@@ -8,6 +8,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
@@ -21,6 +22,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
+import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,14 +33,19 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
 import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -46,7 +53,6 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.util.concurrent.TimeUnit
 
 /**
  * Settings and About in each of the six styles, with that style picked: each style brings its own
@@ -65,7 +71,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
 
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -74,12 +80,14 @@ class SettingsStylesTest(private val style: VisualStyle) {
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
+    private val shownLocale = mutableStateOf<String?>(null)
 
     /** Settings (with the wave display, so its rows show too) or, with [about], the About page. */
     private fun show(about: Boolean = false) {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
+            val sized = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
                 DeviceConfigurationOverride.FontScale(shownFontScale.value)
+            val override = shownLocale.value?.let { sized then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: sized
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     if (about) {
@@ -254,6 +262,31 @@ class SettingsStylesTest(private val style: VisualStyle) {
         WaveLook.LOOP to R.string.settings_wave_look_loop,
         WaveLook.RIPPLES to R.string.settings_wave_look_ripples,
     )
+
+    /**
+     * Every language at 2× text, upright and on its side: every text of Settings, and of About, wholly
+     * shown (every style in a thorough run). Only with `--languages`.
+     */
+    @EveryLanguage
+    @Test
+    fun everyLanguageFitsInSettingsAtTwiceTheTextSize() = everyLanguageFits(about = false)
+
+    @EveryLanguage
+    @Test
+    fun everyLanguageFitsInAboutAtTwiceTheTextSize() = everyLanguageFits(about = true)
+
+    private fun everyLanguageFits(about: Boolean) {
+        shownFontScale.value = 2f
+        show(about)
+        for (language in shippedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(PHONE_UPRIGHT, PHONE_ON_ITS_SIDE)) {
+                shownSize.value = size
+                compose.waitForIdle()
+                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+            }
+        }
+    }
 
     companion object {
         @JvmStatic

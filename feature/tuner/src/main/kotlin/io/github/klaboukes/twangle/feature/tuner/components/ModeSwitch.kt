@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.feature.tuner.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -14,7 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -63,12 +67,17 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
                     // the larger minimum width, and Chinese, Japanese and Korean text may break between
                     // any two characters, so otherwise "クロマチック" stood one character wide, three
                     // lines tall (softWrap alone doesn't change the minimum width). Every language's
-                    // labels are single words, so Latin labels measure the same as before.
+                    // labels are single words, so Latin labels measure the same as before. Where half the
+                    // row is too narrow (Dutch "Chromatisch" at 2× text on a 360 dp phone) it shrinks
+                    // as far as it must to fit, rather than be cut off. One line needs no line spacing
+                    // above and below it, which at 2× text is taller than the button (the letters fit).
                     Text(
                         stringResource(label(option)),
+                        style = LocalTextStyle.current.copy(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)),
                         modifier = Modifier.width(IntrinsicSize.Max),
+                        // Wrapping on, so a word too wide for one line counts as not fitting and shrinks.
                         maxLines = 1,
-                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LocalTextStyle.current.fontSize, stepSize = 0.5.sp),
                     )
                 }
             }
@@ -76,6 +85,9 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
     }
 
 }
+
+/** The labels shrink to fit no smaller than this, as the string buttons' names. */
+private val MIN_LABEL_SIZE = 8.sp
 
 /** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
 private const val NEON_OUTLINE_ALPHA = 0.55f

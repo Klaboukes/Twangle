@@ -310,7 +310,8 @@ class SettingsContentTest {
     @Test
     fun frenchAutomaticIsDoReMi() {
         show(AppSettings(), locale = "fr")
-        compose.onNodeWithText("Automatique : Do, Do♯, Re … Si").assertIsSelected()
+        // French sets a no-break space before the colon.
+        compose.onNodeWithText("Automatique : Do, Do♯, Re … Si").assertIsSelected()
     }
 
     @Test

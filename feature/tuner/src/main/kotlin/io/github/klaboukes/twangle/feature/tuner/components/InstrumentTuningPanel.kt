@@ -145,11 +145,6 @@ private fun PickerPanel(
     // The ticked tuning, scrolled into view when the panel opens: a bass's or a long list of the
     // player's own tunings can put it below the fold.
     val ticked = remember { BringIntoViewRequester() }
-    LaunchedEffect(Unit) {
-        // Once it has been laid out.
-        withFrameNanos { }
-        ticked.bringIntoView()
-    }
     val pick: (Tuning) -> Unit = { picked ->
         onTuningChange(picked)
         close {}
@@ -162,6 +157,13 @@ private fun PickerPanel(
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(TunerTestTags.PICKER_PANEL),
     ) {
+        // In the panel's own content, which the sheet composes in its own window, later than the
+        // code round it: asked from outside, the rows might not be there yet.
+        LaunchedEffect(Unit) {
+            // Once they have been laid out.
+            withFrameNanos { }
+            ticked.bringIntoView()
+        }
         Column(Modifier.heightIn(max = maxHeight)) {
             Text(
                 stringResource(R.string.tuner_picker_title),

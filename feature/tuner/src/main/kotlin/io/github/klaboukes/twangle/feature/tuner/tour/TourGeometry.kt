@@ -79,6 +79,15 @@ object TourMeasures {
     const val MAX_WIDTH = 260f
 
     /**
+     * Where a balloon fits on no side at full width, it may narrow to the room beside its part, down
+     * to this (dp): taller, but pointing at the part instead of lying over it.
+     */
+    const val MIN_BESIDE_WIDTH = 200f
+
+    /** Where a balloon fits on no side within [TOP] and [BOTTOM], it may come this close (dp) to the screen's edges. */
+    const val NEAR_EDGE = 8f
+
+    /**
      * The dim layer (stronger since 2026-10-15, owner: the lit part hardly stood out): dark themes the
      * background mixed with this much black at this strength, so it keeps the style's hue; light
      * themes the background mixed with this much ink at this strength, a clear grey in the hue.

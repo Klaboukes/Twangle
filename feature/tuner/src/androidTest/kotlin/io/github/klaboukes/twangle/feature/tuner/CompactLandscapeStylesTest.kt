@@ -295,7 +295,8 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
     /**
      * Shows each meter look in turn, against Classic: every other part of the screen keeps its place
-     * and looks exactly as it did (nothing moved, nothing drawn outside the meter's 2:1 box), the box
+     * and looks as it did (nothing moved, nothing drawn outside the meter's 2:1 box but a look's soft
+     * glow fading out round it, which `MeterLooksTest` checks), the box
      * is covered by the look with clear marks on it (Classic too, and Retro's backlit panel must show
      * its scale and marker on it), and TalkBack finds nothing in the meter.
      */
@@ -398,8 +399,9 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                 if (boxRow && x in left..right) continue
                 val pa = a[rowA + x]
                 val pb = b[rowB + x]
-                if (pa != pb && channelDistance(pa, pb) > PIXEL_STEP) {
-                    throw AssertionError("$case drew outside its box ($left..$right x $top..$bottom), or moved something, at $x, $y")
+                val distance = if (pa == pb) 0 else channelDistance(pa, pb)
+                if (distance > GLOW_STEP) {
+                    throw AssertionError("$case drew outside its box ($left..$right x $top..$bottom), or moved something, at $x, $y (by $distance)")
                 }
             }
         }
@@ -462,8 +464,11 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L
 
-        /** Two captures of the same screen differ by at most this much (of 255) in any channel. */
-        private const val PIXEL_STEP = 4
+        /**
+         * Outside the meter's box a look may differ from Classic by this much (of 255) at most: a soft
+         * glow (Eclipse's sun halo reaches past the box), not a drawn mark or a moved part.
+         */
+        private const val GLOW_STEP = 24
 
         /** Behind the tuner, a colour none of the styles uses. */
         private val BACKGROUND = Color(0xFF7F00FF)
