@@ -7,6 +7,7 @@ Part of §6 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Strum check view](#strum-check-view)
 - [More tools](#more-tools)
 - [12th-fret check view](#12th-fret-check-view)
+- [Chord mode (planned)](#chord-mode-planned)
 - [Tour](#tour)
 - [Display](#display)
 
@@ -53,6 +54,14 @@ Phase 29, behind `ToolSwitches.intonationCheck` (hidden in release builds until 
 - **Compact layout on its side:** the panel and the line beside each other like the meter and the note, the small string row under it with the string being checked.
 - **Tests:** `IntonationInterpreterTest` and `IntonationFlowTest` (JVM: every step, the open string ringing on, an octave misread, tune first, not the octave, results kept, one tool at a time, the violin, the switch off, a new tuning; synthetic plucks through the pipeline and the ViewModel: A2, then A3 8 cents sharp, says back). UI: `IntonationCheckStylesTest` (every style in a thorough run: upright on a narrow phone and on the Xiaomi at 1.25×, every step in view and the line not moving; Dutch at 2× upright and on its side wholly shown, the buttons too; every language at 2× overnight; the buttons the same size; the menu; the v1.0 switch with one tool; TalkBack; and the real `TunerScreen` and ViewModel with a fake microphone playing synthetic plucks: menu, A string, open, fret, verdict "about 3 mm" and the A string's badge; `-a intonationScreens=true` saves a picture of each step).
 - **Phone check** (Xiaomi 12X, 2026-10-16): the ^ button, its menu, choosing a string and the open step on the installed debug app; the verdict through the fake microphone (synthetic plucks, `IntonationCheckStylesTest`). The laptop's speaker didn't reach the phone that day (the tuner itself heard nothing either), so a real guitar is the owner's check (ROADMAP *Owner checks*).
+
+## Chord mode (planned)
+Phase 30, behind its switch (Phase 28, hidden in release builds until 1.1). The detector: `ChordDetector` in `:core:dsp` (`chord/`), one `Chord?` (root and type) and `ChordResult.bass` per `StrumListener` reading. Decided by the owner on 2026-10-16, option B of `docs/design/chord-mode-preview.html`:
+- **Entry:** a third tool in the ^ more-tools menu, "Chord name" / "Akkoordnaam", like the strum check and the 12th-fret check (guitar mode, one tool at a time, not saved, the microphone kept open); a tap on a string leaves it and tunes that string.
+- **Panel** (in the meter's place): the chord's symbol big ("Am"), its name in words small under it ("A minor" / "A mineur"), then the chord's notes as small circles (A · C · E) with the bass note filled, and the last three chords faint along the panel's bottom ("G · C · **Am**"). Waiting: a faint ♪; a strum heard but not settled: soft dots, no name.
+- **Slash chords:** shown when the bass isn't the root: big "C/E", under it "C major, E in the bass" / "C majeur, E in de bas".
+- **Spelling:** the symbol in the player's note-name system (letters, German H/B, solfège: "Lam"), with the usual chord spelling for sharps and flats (B♭, E♭, F♯m) whatever the sharps/flats setting. Dutch types: majeur, mineur, septiem, groot septiem, mineur septiem ("C groot septiem"). TalkBack reads the words.
+- **Settling** (each reading is named on its own): a name shows once it wins 4 of the last 6 readings (about a second after the strum), stays at least 1.5 s, and is replaced only when another chord wins 4 of 6; the bass joins it only when it agrees in that majority too. Readings without a chord don't erase it: as the strum dies away it stays, faded. A strum that names nothing for 1.5 s shows "Not a clear chord" (at least 2 s), never a guess. Line under it (in the note's place): "Strum a chord" / "Strum again for the next", "Listening…" / "Let it ring".
 
 ## Tour
 On first start a short tour points out the tuner's main parts, one at a time, as the approved mock-up [docs/design/tour-preview.html](../design/tour-preview.html) (its top comment is the design; owner decided 2026-10-14). Code: `:feature:tuner` `tour/` (`TourHost` and the overlay in `TourOverlay.kt`, the pure `TourGeometry.kt`, `TourPart`, `TourTargets`), wired in `MainActivity` (its rules in `FirstStartTour.kt`). Its strings step ("Tap to lock, hold to hear") is how people find the string lock.

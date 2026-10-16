@@ -1,0 +1,338 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Chord Preview</title>
+<!--
+TWANGLE CHORD NAMING, ROUND 1 (Phase 30 preview). ROUGH.
+OWNER'S PICK, 2026-10-16: option B (A plus the chord's notes and the last chords). Tool name "Chord name" /
+         "Akkoordnaam". Big symbol ("Am") with the words under it. Dutch types mineur / majeur ("A mineur", "C majeur",
+         "G septiem", "C groot septiem"). Slash chords shown: big "C/E", "C major, E in the bass" under it. Sharps
+         and flats: the usual chord spelling (B♭, F♯m), written in the player's note-name system. Settling as
+         proposed (4 of the last 6, 1.5 s minimum, faded hold, "Not a clear chord" after 1.5 s).
+Goal     Strum a chord and the tuner names it, e.g. "A minor". Built on the strum check's listening.
+Detector core:dsp chord/ChordDetector (Phase 30, step 1): on every StrumListener frame (one reading each 0.1 s, the
+         first about 0.4 s after the strum) it gives a Chord (root + type: major, minor, 7, maj7, m7, sus2, sus4) or
+         nothing when the strum isn't clearly a chord, plus ChordResult.bass, the lowest note heard (slash chords).
+         Each reading stands alone, so the view settles over several readings (rules below, the same in every option).
+Look     Rough: flat colours of the default style (Contemporary, core/designsystem StylePalettes.kt), light and dark
+         from the system setting. The real build takes each style's colours, faces and shapes.
+Options  A  a tool in the ^ "more tools" menu; big chord symbol in the meter's place, its name in words under it;
+         B  as A, plus the chord's notes and the last few chords;
+         C  a third mode in the mode switch: Strings / Chromatic / Chords, the whole screen for the name.
+Rules    Hidden in release builds until 1.1 (ToolSwitches.chordNaming), like every after-v1.0 tool.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF; --intune: #15763B; --container: #D0D6F8; --bezel: #0E0F11;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --bezel: #000000;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --bezel: #000000;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1320px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(28px, 7vw, 42px); line-height: 1.12; margin: 0; }
+h2 { font-weight: 500; font-size: 22px; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 72ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+section { margin-top: 40px; display: grid; gap: 14px; }
+section > p { color: var(--muted); max-width: 80ch; }
+.tag { display: inline-block; font: 500 12px/1 var(--ui); padding: 5px 9px; border-radius: 999px; background: var(--container); color: var(--ink); vertical-align: middle; margin-left: 8px; }
+.row { display: flex; gap: 22px; overflow-x: auto; padding: 10px 8px 16px; scrollbar-width: thin; }
+figure { margin: 0; display: grid; gap: 10px; justify-items: center; align-content: start; flex: none; width: 236px; }
+figcaption { font: 400 13px/1.35 var(--ui); color: var(--muted); text-align: center; max-width: 230px; }
+figcaption b { color: var(--ink); font-weight: 500; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 24px; }
+.notes h3 { font: 500 13px/1.3 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+.notes li + li { margin-top: 4px; }
+
+/* ---- Phone (393 x 873 dp, the Xiaomi 12X, at 230 px wide: 1 dp = 0.585 px) ---- */
+.phone {
+  width: 230px; height: 511px; border-radius: 26px; background: var(--bg); color: var(--ink);
+  box-shadow: 0 0 0 6px var(--bezel), 0 10px 28px rgba(0, 0, 0, .18);
+  display: flex; flex-direction: column; overflow: hidden; position: relative; font-family: var(--ui);
+}
+.status { height: 16px; flex: none; }
+.modes { margin: 4px auto 0; display: flex; height: 24px; width: 196px; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none; }
+.modes span { flex: 1 1 0; display: grid; place-items: center; font: 500 8.5px/1 var(--ui); color: var(--ink); white-space: nowrap; }
+.modes span + span { border-left: 1px solid var(--line); }
+.modes span.on { background: var(--container); }
+.modes span.on::before { content: "✓ "; white-space: pre; }
+.panel {
+  flex: 1; margin: 10px 6px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--surface) 85%, transparent), transparent);
+  position: relative; min-height: 0;
+}
+.line { height: 58px; flex: none; display: grid; align-content: center; justify-items: center; gap: 3px; text-align: center; padding: 0 14px; }
+.big { font: 500 13.5px/1.2 var(--ui); }
+.small { font: 400 9.5px/1.25 var(--ui); color: var(--muted); }
+.ctl { display: flex; align-items: center; justify-content: space-between; margin: 0 14px; height: 28px; flex: none; gap: 6px; }
+.ctl .name { font: 500 9.5px/1 var(--ui); color: var(--muted); }
+.tg { width: 30px; height: 24px; border-radius: 999px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); font: 600 11px/1 var(--ui); }
+.tg.on { background: var(--container); border-color: var(--accent); color: var(--ink); }
+.strs { display: flex; justify-content: space-around; margin: 4px 10px 0; height: 32px; flex: none; }
+.ch {
+  width: 24px; height: 24px; border-radius: 50%; border: 1.2px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  display: grid; place-items: center; font: 500 10px/1 var(--ui);
+}
+.ch sub { font-size: 6.5px; vertical-align: -1px; }
+.nav { height: 46px; display: flex; justify-content: space-around; align-items: center; margin-top: 6px; flex: none; padding-bottom: 4px; }
+.nav div { display: grid; justify-items: center; gap: 2px; font: 500 7px/1 var(--ui); color: var(--muted); width: 50px; }
+.nav div.on { color: var(--accent); }
+.nav div.on::after { content: ""; width: 14px; height: 2px; border-radius: 2px; background: var(--accent); }
+.nav div:not(.on)::after { content: ""; height: 2px; }
+.nav svg { width: 15px; height: 15px; }
+
+/* The chord itself. */
+.sym { font: 300 64px/1 var(--ui); letter-spacing: -.01em; transition: opacity .3s; }
+.sym.xl { font-size: 84px; }
+.sym .sl { font-size: .55em; color: var(--muted); }
+.sym.faded { opacity: .38; }
+.sym.wait { font-size: 40px; color: var(--muted); opacity: .45; }
+.words { font: 400 11px/1.25 var(--ui); color: var(--muted); text-align: center; }
+.words.faded { opacity: .55; }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .35; }
+.dots i:nth-child(2) { opacity: .6; } .dots i:nth-child(3) { opacity: .9; }
+
+/* Option B: the chord's notes and the last chords. */
+.tones { display: flex; gap: 8px; margin-top: 4px; }
+.tone { display: grid; justify-items: center; gap: 3px; font: 500 10px/1 var(--ui); }
+.tone span { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.tone.bass span { background: var(--accent); color: var(--on-accent); }
+.tone small { font: 400 7px/1 var(--ui); color: var(--muted); height: 7px; }
+.hist { position: absolute; bottom: 4px; display: flex; gap: 8px; font: 400 10px/1 var(--ui); color: var(--muted); }
+.hist b { font-weight: 500; color: var(--ink); }
+
+/* The ^ menu, lifted softly (no outline). */
+.menu { position: absolute; right: 12px; bottom: 116px; width: 150px; background: var(--surface); border-radius: 12px; padding: 5px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .22), 0 1px 4px rgba(0, 0, 0, .12); }
+.menu div { display: grid; grid-template-columns: 18px 1fr 10px; align-items: center; gap: 8px; padding: 7px 10px; font: 500 9.5px/1 var(--ui); }
+.menu div.on { color: var(--accent); }
+.menu svg { width: 16px; height: 16px; }
+
+/* Settling sketch. */
+.tl { display: grid; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+.tl .r { display: grid; grid-template-columns: 92px repeat(26, 30px); gap: 3px; align-items: center; font: 400 12px/1 var(--ui); }
+.tl .r > span:first-child { color: var(--muted); font-size: 12px; }
+.tl .c { height: 26px; border-radius: 6px; display: grid; place-items: center; background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--muted); font-size: 11px; }
+.tl .c.am { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); }
+.tl .c.cc { background: color-mix(in srgb, var(--intune) 22%, transparent); color: var(--ink); }
+.tl .c.show { background: var(--container); color: var(--ink); font-weight: 500; }
+.tl .c.dim { background: color-mix(in srgb, var(--container) 45%, transparent); color: var(--muted); }
+.tl .c.ev { background: none; color: var(--accent); font-size: 10px; }
+
+table.sp { border-collapse: collapse; font-size: 14px; min-width: 640px; }
+.scroll { overflow-x: auto; }
+table.sp th, table.sp td { text-align: left; padding: 7px 12px; }
+table.sp th { font: 500 12px/1.2 var(--ui); color: var(--muted); letter-spacing: .04em; }
+table.sp tr + tr td { border-top: 1px solid var(--line); }
+table.sp td:first-child { font-size: 18px; font-weight: 500; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.card .h { font: 500 15px/1.25 var(--ui); }
+.card .d { font: 400 13px/1.4 var(--ui); color: var(--muted); }
+footer { margin-top: 44px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 80ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 30 · rough mock-up</p>
+  <p class="lede"><strong>Owner picked B on 2026-10-16</strong>, with the tool named "Chord name" / "Akkoordnaam", Dutch "mineur / majeur", slash chords shown, and the usual chord spelling (B♭, F♯m).</p>
+  <h1>What chord is this?</h1>
+  <p class="lede">Strum a chord and the tuner names it. <strong>Three ways it could look</strong> on the tuner,
+    on a phone the size of the Xiaomi 12X. Rough on purpose: flat colours of the default style; the real build
+    takes each style's colours and faces. Pick a letter, and answer the wording questions at the end.</p>
+</header>
+
+<section id="a">
+  <h2>A · A tool in the ^ menu, the chord big <span class="tag">recommended</span></h2>
+  <p>Like the strum check and the 12th-fret check: picked from the ^ "more tools" menu above the strings, in guitar
+    mode. The chord's symbol takes the meter's place, big and calm; its name in words sits under it. The line in the
+    note's place says what to do. Tapping a string leaves it and tunes that string, as in the strum check.</p>
+  <div class="row" id="rowA"></div>
+  <div class="notes">
+    <div><h3>Good</h3><ul><li>Same place and habits as the other two tools: nothing new to learn.</li>
+      <li>The calmest screen: one big name, nothing else moving.</li>
+      <li>The symbol is what song books print; the words help beginners and TalkBack.</li></ul></div>
+    <div><h3>Less good</h3><ul><li>Two taps to reach (^, then the tool).</li>
+      <li>Shows only the last chord, not a sequence.</li></ul></div>
+  </div>
+</section>
+
+<section id="b">
+  <h2>B · As A, plus the chord's notes and the last chords</h2>
+  <p>Same entry and place as A. Under the name: the chord's notes (A · C · E) with the bass note filled. Along the
+    bottom of the panel, faint, the last three chords, so a chord change can be checked.</p>
+  <div class="row" id="rowB"></div>
+  <div class="notes">
+    <div><h3>Good</h3><ul><li>Teaches what a chord is made of.</li><li>The slash chord explains itself: the filled note is the bass.</li>
+      <li>The history helps to work out a song's chords.</li></ul></div>
+    <div><h3>Less good</h3><ul><li>Busier: three kinds of thing in one panel.</li>
+      <li>The note circles look a bit like the string buttons below.</li>
+      <li>The history keeps changing while you play: more movement on screen.</li></ul></div>
+  </div>
+</section>
+
+<section id="c">
+  <h2>C · Its own mode: Strings / Chromatic / Chords</h2>
+  <p>A third part in the mode switch at the top. The whole tuner becomes the chord view: a very big name, no strings
+    row (no tuning needed), in any instrument.</p>
+  <div class="row" id="rowC"></div>
+  <div class="notes">
+    <div><h3>Good</h3><ul><li>Found at a glance, one tap.</li><li>The biggest name; also for players who use chromatic mode.</li></ul></div>
+    <div><h3>Less good</h3><ul><li>Goes against the "tools in the ^ menu" choice of 2026-10-16.</li>
+      <li>Three parts in the switch get tight ("Chromatisch", Russian, at 2× text).</li>
+      <li>Changes a v1.0 control: the third part must vanish in release builds until 1.1.</li></ul></div>
+  </div>
+</section>
+
+<section id="settle">
+  <h2>How the name settles (every option)</h2>
+  <p>The detector names each reading (every 0.1 s) on its own, and a ringing chord gives a few odd readings. So the
+    screen never shows one reading: a name appears once it wins <b>4 of the last 6</b> readings (about a second after
+    the strum), stays at least <b>1.5 s</b>, and is replaced only when another chord wins 4 of 6. Readings with no chord
+    don't erase it: as the strum dies away it stays, faded. A strum that names nothing for 1.5 s says "Not a clear
+    chord" (for at least 2 s), never a guess. The bass note joins the name ("C/E") only when it, too, agrees in that
+    majority, and only when it isn't the root.</p>
+  <div class="tl" id="tl"></div>
+</section>
+
+<section id="spell">
+  <h2>How the chord is written</h2>
+  <p>Big: the symbol, in the player's note names (letters, German H/B or solfège, with ♯/♭ as the note-name setting
+    says; German letters write Bm as Hm and B♭ as B). Small under it: the name in words in the app's language. TalkBack reads the words.</p>
+  <div class="scroll"><table class="sp" id="spTable"></table></div>
+</section>
+
+<section id="q">
+  <h2>Questions for you</h2>
+  <div class="cards">
+    <div class="card"><div class="h">1. Big symbol, or big words?</div><div class="d">"Am" big with "A minor" small under it
+      (recommended: short, fits every language and style face), or "A minor" big on its own.</div></div>
+    <div class="card"><div class="h">2. The tool's name in the menu</div><div class="d">"Chord name" / "Akkoordnaam" (recommended),
+      "What chord?" / "Welk akkoord?", or "Chord finder" / "Akkoordzoeker".</div></div>
+    <div class="card"><div class="h">3. Dutch words for the chord types</div><div class="d">"A mineur", "C majeur", "G septiem",
+      "C groot septiem", "A mineur septiem" (recommended), or "A klein", "C groot"…? And is a plain major just "C"
+      big with "C majeur" under it?</div></div>
+    <div class="card"><div class="h">4. Slash chords</div><div class="d">"C/E" with "C major, E in the bass" (Dutch "C majeur, E in de
+      bas") as drawn, or leave the bass out and just say "C major"?</div></div>
+    <div class="card"><div class="h">5. Sharps and flats</div><div class="d">Follow the note-name setting (A♯ with sharps, B♭ with flats;
+      recommended, like the rest of the screen), or always the usual chord spelling (B♭, E♭, F♯m) whatever the setting?</div></div>
+  </div>
+</section>
+
+<footer>
+  <p>Not in this round: the 12 languages beyond English and Dutch (translated in the build), every style's face,
+    the phone on its side (the panel and the line beside each other, like the strum check).</p>
+</footer>
+</div>
+
+<script>
+const STRINGS = [["E", 2], ["A", 2], ["D", 3], ["G", 3], ["B", 3], ["E", 4]];
+const NAV_ICONS = {
+  Tuner: `<path d="M6 2v7a2 2 0 0 0 4 0V2M8 11v4"/>`,
+  Instrument: `<rect x="5" y="1.5" width="6" height="7" rx="1.5"/><path d="M8 8.5v6M3.5 3.5h1.5M3.5 6.5h1.5M11 3.5h1.5M11 6.5h1.5"/>`,
+  Metronome: `<path d="M5 2h6l2.5 12h-11zM8 11l3-7"/>`,
+  Settings: `<circle cx="8" cy="8" r="2.4"/><circle cx="8" cy="8" r="5.6" stroke-dasharray="2.2 1.6"/>`,
+};
+const svg = (p, sw = 1.3) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON = {
+  strum: svg(`<path d="M2 4h12M2 7h12M2 10h12M2 13h12"/><path d="M4 15 12 1" stroke-width="1.6"/>`),
+  twelfth: svg(`<path d="M1.5 8h13M8 3.5v9M1.5 5.5v5M14.5 5.5v5"/>`),
+  chord: svg(`<path d="M3 2.5h10M3 2.5v11M6.7 2.5v11M10.3 2.5v11M13 2.5v11M3 6.5h10M3 10h10"/><circle cx="6.7" cy="4.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="10.3" cy="8.2" r="1.3" fill="currentColor" stroke="none"/>`),
+};
+const nav = () => `<div class="nav">${Object.entries(NAV_ICONS).map(([k, p]) =>
+  `<div class="${k === "Tuner" ? "on" : ""}">${svg(p)}${k}</div>`).join("")}</div>`;
+const modes = (labels, on) => `<div class="modes">${labels.map(l => `<span class="${l === on ? "on" : ""}">${l}</span>`).join("")}</div>`;
+const strings = () => `<div class="strs">${STRINGS.map(([n, o]) => `<div class="ch">${n}<sub>${o}</sub></div>`).join("")}</div>`;
+const ctl = (on = true) => `<div class="ctl"><span class="name">Guitar · Standard</span><span class="tg ${on ? "on" : ""}">^</span></div>`;
+const line = (big, small, cls = "") => `<div class="line"><div class="big ${cls}">${big}</div><div class="small">${small}</div></div>`;
+const menu = () => `<div class="menu">
+  <div>${ICON.strum}<span>Strum check</span><span></span></div>
+  <div>${ICON.twelfth}<span>12th-fret check</span><span></span></div>
+  <div class="on">${ICON.chord}<span>Chord name</span><span>✓</span></div></div>`;
+const listening = `<div class="sym wait">♪</div><div class="dots"><i></i><i></i><i></i></div>`;
+
+function phone({ panel, ln, mode = ["Strings", "Chromatic"], strs = true, extra = "", ctlOn = true }) {
+  return `<div class="phone"><div class="status"></div>${modes(mode, mode[mode.length - 1] === "Chords" ? "Chords" : "Strings")}
+    <div class="panel">${panel}</div>${ln}${strs ? ctl(ctlOn) + strings() : `<div style="height:64px"></div>`}${nav()}${extra}</div>`;
+}
+const fig = (n, cap, html) => `<figure>${html}<figcaption><b>${n}.</b> ${cap}</figcaption></figure>`;
+const named = (sym, words, cls = "") => `<div class="sym ${cls}">${sym}</div><div class="words ${cls}">${words}</div>`;
+
+document.getElementById("rowA").innerHTML = [
+  fig("A1", "Reached from ^ above the strings: a third row, Chord name, ticked while on.",
+    phone({ panel: named("Am", "A minor"), ln: line("Strum a chord", "Strum again for the next"), extra: menu() })),
+  fig("A2", "Waiting: a faint ♪, as the tuner does.", phone({ panel: `<div class="sym wait">♪</div>`, ln: line("Strum a chord", "All the strings of it") })),
+  fig("A3", "Strum heard, not settled yet (under a second): soft dots, no name.", phone({ panel: listening, ln: line("Listening…", "Let it ring") })),
+  fig("A4", "Named once 4 of 6 readings agree.", phone({ panel: named("Am", "A minor"), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("A5", "Slash chord: the bass after a slash, smaller.", phone({ panel: named(`C<span class="sl">/E</span>`, "C major, E in the bass"), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("A6", "Rung out: the last chord stays, faded, until the next strum.", phone({ panel: named("Am", "A minor", "faded"), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("A7", "No clear chord after 1.5 s: says so, no guess.", phone({ panel: `<div class="sym wait">?</div>`, ln: line("Not a clear chord", "Strum all the strings of it") })),
+].join("");
+
+const tones = (list) => `<div class="tones">${list.map(([n, bass]) =>
+  `<div class="tone ${bass ? "bass" : ""}"><span>${n}</span><small>${bass ? "bass" : ""}</small></div>`).join("")}</div>`;
+const hist = (list) => `<div class="hist">${list.map((c, i) => i === list.length - 1 ? `<b>${c}</b>` : c).join(" ·")}</div>`;
+document.getElementById("rowB").innerHTML = [
+  fig("B1", "The name, its notes (the bass filled) and the last chords along the bottom.",
+    phone({ panel: named("Am", "A minor") + tones([["A", 1], ["C"], ["E"]]) + hist(["G", "C", "Am"]), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("B2", "Slash chord: E is filled as the bass.",
+    phone({ panel: named(`C<span class="sl">/E</span>`, "C major, E in the bass") + tones([["C"], ["E", 1], ["G"]]) + hist(["Am", "G", "C/E"]), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("B3", "A seventh: four notes.",
+    phone({ panel: named("G7", "G seventh") + tones([["G", 1], ["B"], ["D"], ["F"]]) + hist(["C", "C/E", "G7"]), ln: line("Strum a chord", "Strum again for the next") })),
+].join("");
+
+const M3 = ["Strings", "Chromatic", "Chords"];
+document.getElementById("rowC").innerHTML = [
+  fig("C1", "Chords as a third mode; no strings row, the name very big.",
+    phone({ mode: M3, strs: false, panel: named("Am", "A minor", "") .replace('class="sym "', 'class="sym xl"'), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("C2", "Slash chord.", phone({ mode: M3, strs: false, panel: named(`C<span class="sl">/E</span>`, "C major, E in the bass").replace('class="sym "', 'class="sym xl"'), ln: line("Strum a chord", "Strum again for the next") })),
+  fig("C3", "Listening.", phone({ mode: M3, strs: false, panel: listening, ln: line("Listening…", "Let it ring") })),
+].join("");
+
+// Settling sketch: one cell per 0.1 s reading.
+const R = ["", "", "", "", "Am", "Am", "C", "Am", "Am", "Am", "–", "Am", "–", "–", "–", "C", "C", "C", "Am", "C", "C", "–", "–", "–", "–", "–"];
+const S = R.map((_, i) => i < 4 ? "" : i < 8 ? "…" : i < 19 ? "Am" : "C");
+const SC = S.map((s, i) => s === "…" ? "" : i >= 23 ? "dim" : s ? "show" : "");
+const EV = R.map((_, i) => ({ 0: "strum", 8: "named", 15: "strum", 19: "C wins", 23: "fades" })[i] || "");
+const cell = (t, cls) => `<span class="c ${cls}">${t}</span>`;
+document.getElementById("tl").innerHTML =
+  `<div class="r"><span></span>${EV.map(e => cell(e, "ev")).join("")}</div>` +
+  `<div class="r"><span>Each reading</span>${R.map(r => cell(r, r === "Am" ? "am" : r === "C" ? "cc" : "")).join("")}</div>` +
+  `<div class="r"><span>On screen</span>${S.map((s, i) => cell(s, SC[i])).join("")}</div>`;
+
+const SP = [
+  ["Am", "A minor", "A mineur", "Lam", "A minor"],
+  ["C", "C major", "C majeur", "Do", "C major"],
+  ["G7", "G seventh", "G septiem", "Sol7", "G seventh"],
+  ["Cmaj7", "C major seventh", "C groot septiem", "Domaj7", "C major seventh"],
+  ["Em7", "E minor seventh", "E mineur septiem", "Mim7", "E minor seventh"],
+  ["Dsus4", "D sus 4", "D sus 4", "Resus4", "D suspended fourth"],
+  ["C/E", "C major, E in the bass", "C majeur, E in de bas", "Do/Mi", "C major, E in the bass"],
+  ["B♭", "B flat major", "B♭ majeur", "Si♭", "B flat major"],
+  ["Bm", "B minor", "B mineur", "Sim", "B minor"],
+];
+document.getElementById("spTable").innerHTML =
+  `<tr><th>Big symbol</th><th>Words (English)</th><th>Words (Dutch)</th><th>In solfège</th><th>TalkBack (English)</th></tr>` +
+  SP.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+</script>

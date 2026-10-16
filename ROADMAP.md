@@ -60,7 +60,7 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 ## Phase 30 — What chord is this?
 Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum check's six-strings-at-once detection, pointed at chords instead of tuning.
 - ☑ `:core:dsp`: chord naming from a strum, the common chords first (major, minor, 7th, major 7th, minor 7th, sus2, sus4), with synthetic chord tests like the strum check's, open and barre shapes, and no name when the strum isn't a clear chord (`ChordDetector`: 41 shapes, no wrong name in 1,640 synthetic strums, no name for 483 of 484 sounds that are no chord)
-- ☐ Rough mock-up of the mode for the owner to pick from
+- ☑ Rough mock-up of the mode for the owner to pick from (`docs/design/chord-mode-preview.html`; owner picked B on 2026-10-16: the ^ menu's "Chord name", big symbol with words, the chord's notes with the bass filled, the last three chords; design in docs/architecture/ui-tuner.md, *Chord mode (planned)*)
 - ☐ The mode inside the tuner behind its switch (Phase 28): the chord's name in the player's note names, translated, TalkBack and 2× text; JVM and UI tests; phone check with synthetic chords
 - ☐ Owner check added: strum a dozen real chords and check the names
 
