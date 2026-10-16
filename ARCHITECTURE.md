@@ -29,7 +29,7 @@ This file holds the design decisions, the numbers that define behaviour and the 
 | Persistence | **DataStore (Preferences)** (`:core:settings`) | Saved settings (see §5). |
 | Build | **Gradle 9 + AGP 9 (built-in Kotlin), Kotlin DSL + version catalog** | Versions live only in `gradle/libs.versions.toml`. |
 | Testing | JUnit 4, kotlinx-coroutines-test, Compose UI test | DSP checked with synthesized signals (see §8). |
-| CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug + unsigned assembleRelease/bundleRelease; debug APK uploaded as an artifact. |
+| CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug + unsigned assembleRelease/bundleRelease, on pushes to `main` only (every change is checked locally first, so PR runs only duplicated it). No APK upload: nobody downloaded it, and it filled the free plan's artifact storage (2026-10-16). |
 | Min / target SDK | **26** (Android 8.0) / 37 | `ENCODING_PCM_FLOAT` and `UNPROCESSED` work from API 24+; 26 covers ~97 % of devices and needs no PNG icon fallbacks. |
 
 ### Name, app ID and icon
