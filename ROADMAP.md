@@ -35,8 +35,8 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 
 ## Phase 35 — An easier-to-find "more tools" button
 Goal: players notice that the tuner has more tools. The small ^ above the strings doesn't say "there are tools in here".
-- ☐ Rough mock-up for the owner to pick from: a clearer icon (a toolbox, for one), perhaps with a short word, keeping the string row calm and the button's size steady whatever the language
-- ☐ Built from the owner's pick in every style, light and dark, upright and on its side, 2× text, translated, TalkBack; the tour's step points at it; UI tests; phone check
+- ☑ Rough mock-up for the owner to pick from (docs/design/more-tools-preview.html): owner picked (2026-10-16, round 2) the hammer and screwdriver icon (Material Symbols `handyman`), icon only, no word
+- ☐ The `handyman` icon in place of ^, same 44 dp button, in every style, light and dark, upright and on its side, 2× text, TalkBack (still "More tools"); the tour's step points at it; UI tests; phone check
 - ☐ docs/architecture/ui-tuner.md (*More tools*) updated
 
 ## Phase 31 — Pitch trail

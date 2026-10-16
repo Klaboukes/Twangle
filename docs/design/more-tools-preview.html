@@ -1,0 +1,117 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Tools Button</title>
+<!--
+TWANGLE "MORE TOOLS" BUTTON, ROUND 2 (Phase 35 preview). ROUGH, plain on purpose.
+OWNER'S PICK, 2026-10-16: icon 1, hammer and screwdriver (Material Symbols Outlined "handyman"), icon only, no word.
+ROUND 1, OWNER'S PICK, 2026-10-16: option A, an icon alone, no word in any language ("good icons don't need a word to
+         explain what they are"), but a better, more recognisable icon than round 1's drawn toolbox. Round 1 was
+         too fancy; this round shows only the core idea, in the Contemporary style.
+The row  As built (GuitarControls, TunerScreen.kt): "Guitar · Standard" at the start, the button at the end in line
+         with the last string. The button stays today's: a 44 dp outline in a 48 dp touch target, the icon 24 dp;
+         off it is outlined and muted, with a tool on it is filled with primaryContainer and a 2 dp accent outline.
+         Long-press tooltip and TalkBack stay "More tools". The tour's step points at the same outline.
+Icons    Material Symbols, Outlined, weight 400, 24 px (Apache 2.0), paths copied from google/material-design-icons
+         (symbols/web/<name>/materialsymbolsoutlined/<name>_24px.svg): handyman, construction, build,
+         home_repair_service, widgets, apps. Not offered: tune (reads as settings sliders), more_horiz (⋯, "options"),
+         expand_less (today's ^).
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 28px; display: grid; gap: 22px; }
+.cand { display: grid; gap: 8px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand h2 small { font: 400 13px/1 var(--ui); color: var(--muted); margin-left: 6px; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.rows { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+/* The row: 393 dp (the Xiaomi 12X) at 0.8 px per dp; 16 dp side margins, the button a 44 dp square. */
+.row { width: 314px; height: 48px; padding: 0 13px; border-radius: 10px; background: var(--bg);
+  display: flex; align-items: center; justify-content: space-between; }
+.row .lbl { font: 500 11.2px/1 var(--ui); color: var(--muted); }
+.row .lbl em { font-style: normal; opacity: .7; margin-left: 6px; font-weight: 400; }
+.btn { width: 35px; height: 35px; border-radius: 14px; display: grid; place-items: center; color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.btn.on { background: var(--container); border: 2px solid var(--accent); color: var(--ink); }
+.btn svg { width: 19px; height: 19px; fill: currentColor; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 35 · rough mock-up · round 2</p>
+  <h1>Which icon says "tools"?</h1>
+  <p class="lede"><strong>Owner picked icon 1, hammer and screwdriver (handyman), on 2026-10-16</strong>: an icon alone, no word.</p>
+  <p class="lede"><strong>Your pick from round 1: A, an icon alone, no word.</strong> Here are six standard icons from
+    Google's Material set, each in the real row ("Guitar · Standard", the button at the end), with no tool on and with a
+    tool on. The button keeps today's size. Pick one.</p>
+</header>
+
+<div class="list" id="list"></div>
+
+<footer>
+  <p>Left out on purpose: <b>tune</b> (three sliders) reads as settings or filters; <b>⋯</b> means "more options" in
+    most apps; today's <b>^</b> says nothing about tools.</p>
+  <p>The tour's step stays as it is: its spotlight is the button's outline, and its text says "More tools, like strum
+    check".</p>
+</footer>
+</div>
+
+<script>
+// Material Symbols Outlined, weight 400, viewBox 0 -960 960 960 (Apache 2.0), unchanged.
+const P = {
+  handyman: "M754-81q-8 0-15-2.5T726-92L522-296q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l85-85q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l204 204q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13l-85 85q-6 6-13 8.5T754-81Zm0-95 29-29-147-147-29 29 147 147ZM205-80q-8 0-15.5-3T176-92l-84-84q-6-6-9-13.5T80-205q0-8 3-15t9-13l212-212h85l34-34-165-165h-57L80-765l113-113 121 121v57l165 165 116-116-43-43 56-56H495l-28-28 142-142 28 28v113l56-56 142 142q17 17 26 38.5t9 45.5q0 24-9 46t-26 39l-85-85-56 56-42-42-207 207v84L233-92q-6 6-13 9t-15 3Zm0-96 170-170v-29h-29L176-205l29 29Zm0 0-29-29 15 14 14 15Zm549 0 29-29-29 29Z",
+  construction: "M756-120 537-339l84-84 219 219-84 84Zm-552 0-84-84 276-276-68-68-28 28-51-51v82l-28 28-121-121 28-28h82l-50-50 142-142q20-20 43-29t47-9q24 0 47 9t43 29l-92 92 50 50-28 28 68 68 90-90q-4-11-6.5-23t-2.5-24q0-59 40.5-99.5T701-841q15 0 28.5 3t27.5 9l-99 99 72 72 99-99q7 14 9.5 27.5T841-701q0 59-40.5 99.5T701-561q-12 0-24-2t-23-7L204-120Z",
+  build: "M686-132 444-376q-20 8-40.5 12t-43.5 4q-100 0-170-70t-70-170q0-36 10-68.5t28-61.5l146 146 72-72-146-146q29-18 61.5-28t68.5-10q100 0 170 70t70 170q0 23-4 43.5T584-516l244 242q12 12 12 29t-12 29l-84 84q-12 12-29 12t-29-12Zm29-85 27-27-256-256q18-20 26-46.5t8-53.5q0-60-38.5-104.5T386-758l74 74q12 12 12 28t-12 28L332-500q-12 12-28 12t-28-12l-74-74q9 57 53.5 95.5T360-440q26 0 52-8t47-25l256 256ZM472-488Z",
+  home_repair_service: "M480-400ZM80-160v-400q0-33 23.5-56.5T160-640h120v-80q0-33 23.5-56.5T360-800h240q33 0 56.5 23.5T680-720v80h120q33 0 56.5 23.5T880-560v400H80Zm240-200v40h-80v-40h-80v120h640v-120h-80v40h-80v-40H320ZM160-560v120h80v-40h80v40h320v-40h80v40h80v-120H160Zm200-80h240v-80H360v80Z",
+  widgets: "M666-440 440-666l226-226 226 226-226 226Zm-546-80v-320h320v320H120Zm400 400v-320h320v320H520Zm-400 0v-320h320v320H120Zm80-480h160v-160H200v160Zm467 48 113-113-113-113-113 113 113 113Zm-67 352h160v-160H600v160Zm-400 0h160v-160H200v160Zm160-400Zm194-65ZM360-360Zm240 0Z",
+  apps: "M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z",
+};
+const CANDIDATES = [
+  ["1", "Hammer and screwdriver", "handyman", true,
+    "The usual sign for \"tools\": two crossed tools read at a glance. No other meaning in the app."],
+  ["2", "Hammer and wrench", "construction", false,
+    "Also clearly tools, but often means \"under construction\" or \"work in progress\"."],
+  ["3", "Wrench", "build", false,
+    "Well known, but on phones it often means settings, repair or developer options, close to the gear in the bar."],
+  ["4", "Toolbox", "home_repair_service", false,
+    "A real toolbox, but at this size it looks like a briefcase or a bag (\"work\", \"jobs\")."],
+  ["5", "Blocks", "widgets", false,
+    "Means \"add-ons\" or \"widgets\"; tidy, but few people would think of tools."],
+  ["6", "Grid of dots", "apps", false,
+    "Known as \"all apps\" or \"more\"; says there is more, not that it is tools."],
+];
+const icon = name => `<svg viewBox="0 -960 960 960" aria-hidden="true"><path d="${P[name]}"/></svg>`;
+const row = (name, on) => `<div class="row"><span class="lbl">Guitar · Standard<em>${on ? "a tool on" : "no tool on"}</em></span>
+  <span class="btn ${on ? "on" : ""}">${icon(name)}</span></div>`;
+document.getElementById("list").innerHTML = CANDIDATES.map(([n, title, name, rec, note]) => `<div class="cand">
+  <h2>${n}. ${title}<small>${name}</small>${rec ? `<span class="tag">recommended</span>` : ""}</h2>
+  <div class="rows">${row(name, false)}${row(name, true)}</div>
+  <p class="note">${note}</p></div>`).join("");
+</script>
