@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22 and 25–27 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28 and 29 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -34,6 +34,8 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 25 — Meter looks, round 2](#phase-25--meter-looks-round-2)
 - [Phase 26 — Pre-launch fixes](#phase-26--pre-launch-fixes)
 - [Phase 27 — Tempo from music](#phase-27--tempo-from-music)
+- [Phase 28 — Hidden until 1.1](#phase-28--hidden-until-11)
+- [Phase 29 — Intonation check](#phase-29--intonation-check)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -306,6 +308,22 @@ Goal: the metronome can listen to music playing nearby (from a speaker, a band, 
 - ☑ Listen on the metronome screen: asks for the microphone the same way the tuner does, holds it only while listening (stops on its own once the tempo is steady, after about 15 s, or when the screen is left), pauses the metronome's own clicks while listening, and sets the tempo as the mock-up says; with the mock-up's new layout (− / + at the dial's bottom corners, Tap tempo and Listen as two equal fixed-size buttons) and its new press effect on every metronome button, built as one shared Modifier in `:core:designsystem`, with Tap tempo's crisp flash; translated in every language; JVM tests with a fake recorder, UI tests in the overnight run (built 2026-10-15: `MetronomeViewModel` listens through its own `AudioRecorder` with `OnsetTempoDetector` on `Dispatchers.Default`, the clicks paused; the shared press effect is `Modifier.pressFeedback` in `:core:designsystem`; 15 new strings in all 16 languages; `MetronomeListenTest` (12 JVM cases with a fake microphone and the real detector) and `PressFeedbackTest`; UI tests deferred to the overnight run)
 - ☑ The same press effect on every other button of the app (tuner, tuning panel and editor, settings, About, tour balloons, dialogs), replacing Material's ripple; each style, light and dark; UI tests in the overnight run (owner asked for this, 2026-10-15) (built 2026-10-15: `TwangleTheme` turns Material's ripple off and gives every row and plain clickable the press light (`PressIndication`, tint only, no sink); Material's buttons became `TwangleTextButton`, `TwangleButton`, `TwangleIconButton` and `TwangleFilledTonalIconButton`, same look and 48 dp touch area, with `pressFeedback`; the string buttons, instrument chips, strum switch, tuning name and look cards also sink (`pressSink`); the navigation items light without a sink; watch and widget unchanged; `PressFeedbackTest` on the JVM, the new `PressEffectTest`; phone: held presses in two styles, light and dark; UI tests deferred to the overnight run)
 - ☑ Phone check with real music from a speaker at a few tempos; the owner's live check is under *Owner checks* (2026-10-15 on the Xiaomi 12X, drum grooves of 14 s from the laptop speaker: 120 BPM found as 120, 160 as 160, a swung 100 as 100, 80 as 160 with eighth-note hi-hats (½× gives 80); a quiet room gave "No steady beat heard"; Use, Not now and the clicks coming back checked in Futuristic dark, Contemporary light and Ancient dark)
+
+---
+
+## Phase 28 — Hidden until 1.1
+Goal: new tools can land on `main` without changing what v1.0 users see.
+- ☑ One switch per after-v1.0 tool (intonation check, chord naming, pitch trail, Practice tab with chords, capo helper), on in debug builds and off in release builds, decided in one place in `:app` and passed down (through `AppContainer`), so a hidden tool leaves no trace in a release build: no mode, tab, setting, tour step or text on screen
+- ☑ Tests: a release-variant unit test checks every switch is off there; a debug test checks they are on; a UI test can turn one off to see the v1.0 screen
+- ☑ Phase 23's store screenshots and the Baseline Profile see the v1.0 app (switches off), whatever the debug build shows: `ToolSwitchesOffRule` for the screenshot test; the profile's builds are non-debug, which `ReleaseToolSwitchesTest` now checks in them too
+- ☑ docs/architecture/performance.md (*Release build*) describes the switches and how a tool goes live: its switch turns on for release (or goes), in Phase 34
+
+## Phase 29 — Intonation check
+Goal: tells whether a guitar plays in tune up the neck. Play the open string, then the same string at the 12th fret; Twangle compares the two and says to move that string's saddle back (12th fret sharp) or forward (flat), or that it's fine. One string at a time, with the existing pitch detector.
+- ☑ `:core:dsp`: the comparison (the 12th fret should sound exactly one octave, 1200 cents, above the open string) with a tolerance of a few cents worked out in the phase, and a verdict per string; synthetic tests for sharp, flat, fine and a wrong note at the fret (`intonation/Intonation`: 3-cent tolerance, about 1 mm of saddle; over 50 cents is not the octave; every verdict right on every instrument's strings, offset within 0.38 cents)
+- ☑ Rough mock-up of the mode (choosing a string, the two steps, the verdict) for the owner to pick from (`docs/design/intonation-preview.html`; owner picked option A on 2026-10-16: a switch like the strum check, with the small icon switches gathered behind one "more options" (^) button so the tuner doesn't fill up with icons as tools are added; millimetres shown only where their accuracy can be guaranteed)
+- ☑ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones (a "more tools" (^) button gathers the strum check and the 12th-fret check where the build has more than one tool, v1.0's strum switch otherwise; millimetres on guitars only, to 0.5 mm; synthetic plucks through a fake microphone on the Xiaomi: A3 8 cents sharp says "move the saddle back, about 3 mm"; the laptop speaker didn't reach the phone that day; every style and every language run overnight)
+- ☑ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say
 
 ---
 

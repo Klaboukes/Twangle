@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22 and 24–27 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22 and 24–29 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -56,20 +56,6 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 - Later tools that don't listen (ear training, a drone, a practice timer) go into Practice too, so the bar doesn't change again.
 
 ---
-
-## Phase 28 — Hidden until 1.1
-Goal: new tools can land on `main` without changing what v1.0 users see.
-- ☑ One switch per after-v1.0 tool (intonation check, chord naming, pitch trail, Practice tab with chords, capo helper), on in debug builds and off in release builds, decided in one place in `:app` and passed down (through `AppContainer`), so a hidden tool leaves no trace in a release build: no mode, tab, setting, tour step or text on screen
-- ☑ Tests: a release-variant unit test checks every switch is off there; a debug test checks they are on; a UI test can turn one off to see the v1.0 screen
-- ☑ Phase 23's store screenshots and the Baseline Profile see the v1.0 app (switches off), whatever the debug build shows: `ToolSwitchesOffRule` for the screenshot test; the profile's builds are non-debug, which `ReleaseToolSwitchesTest` now checks in them too
-- ☑ docs/architecture/performance.md (*Release build*) describes the switches and how a tool goes live: its switch turns on for release (or goes), in Phase 34
-
-## Phase 29 — Intonation check
-Goal: tells whether a guitar plays in tune up the neck. Play the open string, then the same string at the 12th fret; Twangle compares the two and says to move that string's saddle back (12th fret sharp) or forward (flat), or that it's fine. One string at a time, with the existing pitch detector.
-- ☑ `:core:dsp`: the comparison (the 12th fret should sound exactly one octave, 1200 cents, above the open string) with a tolerance of a few cents worked out in the phase, and a verdict per string; synthetic tests for sharp, flat, fine and a wrong note at the fret (`intonation/Intonation`: 3-cent tolerance, about 1 mm of saddle; over 50 cents is not the octave; every verdict right on every instrument's strings, offset within 0.38 cents)
-- ☑ Rough mock-up of the mode (choosing a string, the two steps, the verdict) for the owner to pick from (`docs/design/intonation-preview.html`; owner picked option A on 2026-10-16: a switch like the strum check, with the small icon switches gathered behind one "more options" (^) button so the tuner doesn't fill up with icons as tools are added; millimetres shown only where their accuracy can be guaranteed)
-- ☑ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones (a "more tools" (^) button gathers the strum check and the 12th-fret check where the build has more than one tool, v1.0's strum switch otherwise; millimetres on guitars only, to 0.5 mm; synthetic plucks through a fake microphone on the Xiaomi: A3 8 cents sharp says "move the saddle back, about 3 mm"; the laptop speaker didn't reach the phone that day; every style and every language run overnight)
-- ☑ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say
 
 ## Phase 30 — What chord is this?
 Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum check's six-strings-at-once detection, pointed at chords instead of tuning.
