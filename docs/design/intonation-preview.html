@@ -1,0 +1,505 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Intonation Preview</title>
+<!--
+TWANGLE INTONATION CHECK, ROUND 1 (Phase 29 preview). ROUGH.
+OWNER'S PICK, 2026-10-16: option A, with one change: the small icon switches (strum check, the 12th-fret check and
+         the tools still to come) are gathered behind one "more options" (^) button, so the tuner doesn't fill up
+         with icons as tools are added. No second mock-up; built straight from this one.
+         Millimetres: shown only where their accuracy can be guaranteed (decided and documented in the build).
+Goal     Tell whether a guitar plays in tune up the neck. Play a string open, then the same string pressed at the
+         12th fret. The 12th fret should sound exactly one octave higher. If it is sharp, move that string's saddle
+         back (away from the neck); if flat, forward (towards the neck). One string at a time.
+Rules    The same in every option (core:dsp intonation/Intonation, docs/architecture/notes-and-audio.md):
+         - the open note must be near the chosen string (Tuning.centsFromString), else "Tune it first";
+         - each step waits until the note is steady, then takes the median of about one second of readings;
+         - within 3 cents is fine; more than 50 cents off is "not the octave" (another fret, or a harmonic is fine
+           too, so the tip asks for a pressed note);
+         - hidden in release builds until 1.1 (ToolSwitches.intonationCheck), like every after-v1.0 tool.
+Look     Rough: flat colours of the default style (Contemporary, core/designsystem StylePalettes.kt), light and dark
+         from the system setting. The real build takes each style's own colours, faces and shapes.
+Options  A  a switch beside the strum check (like it: a panel in the meter's place, a line in the note's place);
+         B  a third mode in the mode switch (Strings / Chromatic / Intonation), with a checklist;
+         C  nothing on the tuner: a "Check intonation" row in the Instrument panel opens a screen of its own,
+            with a drawing of the bridge.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --line: #CDD3E3;
+  --accent: #3A4FD6; --on-accent: #FFFFFF; --intune: #15763B; --container: #D0D6F8; --bezel: #0E0F11;
+  --scrim: rgba(16, 20, 31, .38);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+    --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --bezel: #000000;
+    --scrim: rgba(0, 0, 0, .5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --line: #2B3350;
+  --accent: #A6ADFF; --on-accent: #121A5A; --intune: #6DD58C; --container: #3B427A; --bezel: #000000;
+  --scrim: rgba(0, 0, 0, .5); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1320px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(28px, 7vw, 42px); line-height: 1.12; margin: 0; }
+h2 { font-weight: 500; font-size: 22px; margin: 0; }
+h3 { font: 500 13px/1.3 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 72ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+section { margin-top: 40px; display: grid; gap: 14px; }
+section > p { color: var(--muted); max-width: 80ch; }
+.tag { display: inline-block; font: 500 12px/1 var(--ui); padding: 5px 9px; border-radius: 999px; background: var(--container); color: var(--ink); vertical-align: middle; margin-left: 8px; }
+
+/* Frames scroll sideways on a narrow screen. */
+.row { display: flex; gap: 22px; overflow-x: auto; padding: 10px 8px 16px; scrollbar-width: thin; }
+figure { margin: 0; display: grid; gap: 10px; justify-items: center; flex: none; width: 236px; }
+figcaption { font: 400 13px/1.35 var(--ui); color: var(--muted); text-align: center; max-width: 230px; }
+figcaption b { color: var(--ink); font-weight: 500; }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 24px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+.notes li + li { margin-top: 4px; }
+
+/* ---- Phone (393 x 873 dp, the Xiaomi 12X, at 230 px wide: 1 dp = 0.585 px) ---- */
+.phone {
+  width: 230px; height: 511px; border-radius: 26px; background: var(--bg); color: var(--ink);
+  box-shadow: 0 0 0 6px var(--bezel), 0 10px 28px rgba(0, 0, 0, .18);
+  display: flex; flex-direction: column; overflow: hidden; position: relative; font-family: var(--ui);
+}
+.status { height: 16px; flex: none; }
+.modes { margin: 4px auto 0; display: flex; height: 24px; width: 196px; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none; }
+.modes span { flex: 1 1 0; display: grid; place-items: center; font: 500 8.5px/1 var(--ui); color: var(--ink); white-space: nowrap; }
+.modes span + span { border-left: 1px solid var(--line); }
+.modes span.on { background: var(--container); }
+.modes span.on::before { content: "✓ "; white-space: pre; }
+.panel {
+  flex: 1; margin: 10px 6px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--surface) 85%, transparent), transparent);
+  position: relative; min-height: 0;
+}
+.line { height: 66px; flex: none; display: grid; align-content: center; justify-items: center; gap: 3px; text-align: center; padding: 0 14px; }
+.big { font: 500 13.5px/1.2 var(--ui); }
+.small { font: 400 9.5px/1.25 var(--ui); color: var(--muted); }
+.accent { color: var(--accent); }
+.good { color: var(--intune); }
+.ctl { display: flex; align-items: center; justify-content: space-between; margin: 0 14px; height: 28px; flex: none; gap: 6px; }
+.ctl .name { font: 500 9.5px/1 var(--ui); color: var(--muted); }
+.ctl .sw { display: flex; gap: 6px; }
+.tg { width: 30px; height: 24px; border-radius: 999px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.tg.on { background: var(--container); border-color: var(--accent); color: var(--ink); }
+.tg svg { width: 16px; height: 16px; }
+.strs { display: flex; justify-content: space-around; margin: 4px 10px 0; height: 40px; flex: none; }
+.str { display: grid; justify-items: center; gap: 3px; align-content: start; }
+.ch {
+  width: 24px; height: 24px; border-radius: 50%; border: 1.2px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  display: grid; place-items: center; font: 500 10px/1 var(--ui);
+}
+.ch sub { font-size: 6.5px; vertical-align: -1px; }
+.ch.sel { background: var(--container); border-color: var(--accent); }
+.ch.lock { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.2px var(--accent); }
+.mk { font: 600 8.5px/1 var(--ui); height: 9px; color: var(--muted); }
+.mk.fine { color: var(--intune); }
+.mk.move { color: var(--accent); }
+.nav { height: 46px; display: flex; justify-content: space-around; align-items: center; margin-top: 6px; flex: none; padding-bottom: 4px; }
+.nav div { display: grid; justify-items: center; gap: 2px; font: 500 7px/1 var(--ui); color: var(--muted); width: 50px; }
+.nav div.on { color: var(--accent); }
+.nav div.on::after { content: ""; width: 14px; height: 2px; border-radius: 2px; background: var(--accent); }
+.nav div:not(.on)::after { content: ""; height: 2px; }
+.nav svg { width: 15px; height: 15px; }
+
+/* Step dots: Open, then 12th fret. */
+.steps { display: flex; align-items: center; gap: 6px; font: 500 8.5px/1 var(--ui); color: var(--muted); }
+.steps i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: inline-block; margin-right: 4px; vertical-align: -1px; }
+.steps .on { color: var(--ink); } .steps .on i { background: var(--accent); }
+.steps .done { color: var(--intune); } .steps .done i { background: var(--intune); }
+.steps .dash { width: 14px; height: 1px; background: var(--line); }
+
+.ring { position: relative; width: 112px; height: 112px; display: grid; place-items: center; }
+.ring svg { position: absolute; inset: 0; }
+.ring .n { font: 300 30px/1 var(--ui); }
+.ring .n sub { font-size: 13px; }
+.ring .hz { font: 400 9px/1 var(--ui); color: var(--muted); margin-top: 4px; }
+.ring > div { display: grid; justify-items: center; }
+
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 186px; }
+.btn { height: 26px; border-radius: 999px; display: grid; place-items: center; font: 500 9px/1 var(--ui); border: 1px solid var(--line); color: var(--ink); white-space: nowrap; }
+.btn.fill { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* Option A summary: one column per string, like the strum check's panel. */
+.cols { display: flex; justify-content: space-around; width: 100%; padding: 0 10px; }
+.col { display: grid; justify-items: center; gap: 4px; font: 500 9px/1 var(--ui); }
+.col .sc { position: relative; width: 14px; height: 86px; }
+.col .sc::before { content: ""; position: absolute; left: 6.5px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.col .sc .band { position: absolute; left: 2px; right: 2px; top: 37px; height: 12px; border-radius: 3px; background: color-mix(in srgb, var(--intune) 22%, transparent); }
+.col .sc .dot { position: absolute; left: 2px; width: 10px; height: 10px; border-radius: 50%; }
+.col .v { font: 400 8.5px/1 var(--ui); color: var(--muted); height: 9px; }
+
+/* Option B checklist and table. */
+.list { width: 190px; display: grid; gap: 10px; }
+.it { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 8px; font: 400 10px/1.25 var(--ui); color: var(--muted); }
+.it .k { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font: 600 9px/1 var(--ui); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.it.on { color: var(--ink); } .it.on .k { background: var(--accent); color: var(--on-accent); }
+.it.done .k { background: var(--intune); color: var(--on-accent); }
+.it .r { font-size: 9px; color: var(--muted); }
+.bar { grid-column: 2 / 4; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.bar b { display: block; height: 100%; background: var(--accent); }
+table { border-collapse: collapse; width: 196px; font: 400 9.5px/1 var(--ui); }
+td { padding: 5px 4px; }
+tr + tr td { border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+td.s { font-weight: 500; width: 30px; } td.c { color: var(--muted); width: 44px; text-align: right; }
+td.s sub { font-size: 6.5px; }
+
+/* Option C: its own screen, with the bridge. */
+.top { height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 14px; font: 500 11px/1 var(--ui); flex: none; }
+.top span:first-child { font-size: 14px; color: var(--muted); }
+.bridge { width: 200px; height: 190px; }
+.pbar { width: 150px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.pbar b { display: block; height: 100%; background: var(--accent); }
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; height: 66%; background: var(--surface); border-radius: 16px 16px 0 0; padding: 8px 14px; display: grid; align-content: start; gap: 8px; }
+.sheet .handle { width: 28px; height: 3px; border-radius: 2px; background: var(--line); justify-self: center; }
+.sheet .t { font: 500 12px/1.2 var(--ui); }
+.inst { display: flex; gap: 5px; overflow: hidden; }
+.inst span { flex: none; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); font: 500 8.5px/1 var(--ui); }
+.inst span.on { background: var(--container); border-color: var(--accent); }
+.tun { display: grid; gap: 2px; padding: 6px 8px; border-radius: 10px; font: 500 9.5px/1.2 var(--ui); }
+.tun small { font: 400 8px/1.2 var(--ui); color: var(--muted); }
+.tun.on { background: var(--container); }
+.div { height: 1px; background: var(--line); }
+.entry { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; font: 500 9.5px/1.2 var(--ui); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.entry svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+.entry span:last-child { margin-left: auto; color: var(--muted); }
+
+/* Shared verdict cards. */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.card .ic { height: 34px; display: flex; align-items: center; }
+.card .ic svg { height: 34px; width: 120px; }
+.card .h { font: 500 15px/1.25 var(--ui); }
+.card .d { font: 400 13px/1.35 var(--ui); color: var(--muted); }
+.card .w { font: 400 12px/1.3 var(--ui); color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
+footer { margin-top: 44px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 80ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 29 · rough mock-up · round 1</p>
+  <p class="lede"><strong>Owner's pick, 2026-10-16: option A</strong>, with the small icons (strum check, 12th-fret
+  check and later tools) gathered behind one "more options" (^) button, so the tuner doesn't fill up with icons.
+  Millimetres only where their accuracy can be guaranteed.</p>
+  <h1>Intonation check</h1>
+  <p class="lede">Play a string <strong>open</strong>, then the same string <strong>pressed at the 12th fret</strong>.
+  The 12th fret should sound exactly one octave higher. If it's sharp, that string's saddle moves <strong>back</strong>
+  (away from the neck); if it's flat, <strong>forward</strong> (towards the neck). Three ways to fit it into Twangle are
+  below, each as a few phone screens in the default style. <strong>Pick A, B or C</strong> (or mix parts of them).</p>
+</header>
+
+<section>
+  <h2>What it says (the same in every option)</h2>
+  <p>Short words, calm colours: green only for "fine", the accent colour for a saddle to move, never red.</p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section>
+  <h2>A · A switch beside the strum check <span class="tag">recommended</span></h2>
+  <p>Works like the strum check: a second small switch on the same row turns it on, a panel takes the meter's place
+  and a line takes the note's place. You choose the string on the string row you already know.</p>
+  <div class="row" id="optA"></div>
+  <div class="notes">
+    <div><h3>Next to the other modes</h3><ul>
+      <li>Strings and Chromatic stay as they are. The row above the strings gets one more small icon: "Guitar · Standard … [12th fret] [strum]".</li>
+      <li>Only one of the two switches can be on. Chromatic turns it off, as it does the strum check.</li>
+      <li>With the switch off, nothing on the tuner changes. Release builds don't show the icon.</li>
+    </ul></div>
+    <div><h3>Good</h3><ul>
+      <li>Nothing new to learn: the same pattern as the strum check.</li>
+      <li>The results stay on the string row (✓, ← or → under each string), so you see what's left.</li>
+      <li>Two icon switches, never a crowded row of buttons.</li>
+    </ul></div>
+    <div><h3>Watch out</h3><ul>
+      <li>An icon without words: found by its long-press name and a tour step, like the strum check.</li>
+      <li>A long tuning name has a little less room on that row.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>B · A third mode: Strings · Chromatic · Intonation</h2>
+  <p>A third button in the mode switch at the top. The meter's place shows a short checklist of the steps, then a
+  table of all six strings.</p>
+  <div class="row" id="optB"></div>
+  <div class="notes">
+    <div><h3>Next to the other modes</h3><ul>
+      <li>The mode switch at the top gets a third part; the strum check's switch hides in this mode.</li>
+      <li>Release builds show the two parts they show today.</li>
+    </ul></div>
+    <div><h3>Good</h3><ul>
+      <li>Easy to find: it says "Intonation" in words.</li>
+      <li>The checklist spells out each step; the table gives every string's number.</li>
+    </ul></div>
+    <div><h3>Watch out</h3><ul>
+      <li>Each part of the switch gets a third of the width: Dutch "Chromatisch" and longer languages shrink more.</li>
+      <li>A check you do now and then gets the same weight as tuning, which you do every day.</li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>C · Its own screen, from the Instrument panel</h2>
+  <p>Nothing changes on the tuner. The Instrument panel (bottom bar) gets a last row, "Check intonation", which opens
+  a screen of its own with a drawing of the bridge: the arrows show which way each saddle moves.</p>
+  <div class="row" id="optC"></div>
+  <div class="notes">
+    <div><h3>Next to the other modes</h3><ul>
+      <li>The tuner screen stays exactly as it is; the row sits under the tunings, after "New tuning".</li>
+      <li>Its screen has its own close button (like the tuning editor) and no bottom bar.</li>
+    </ul></div>
+    <div><h3>Good</h3><ul>
+      <li>The bridge drawing shows where each saddle goes, at a glance.</li>
+      <li>The tuner stays the calmest of the three.</li>
+    </ul></div>
+    <div><h3>Watch out</h3><ul>
+      <li>Hardest to find: tucked away in a panel about tunings.</li>
+      <li>One more screen to build and test; a bridge drawing per instrument (4 to 8 strings, ukulele, bass).</li>
+    </ul></div>
+  </div>
+</section>
+
+<footer>
+  <h3>Under the hood (every option)</h3>
+  <p>Each step waits until the note is steady, then takes the middle value of about a second of readings, so the
+  pluck and the dying end don't count. The open note must be near the chosen string, or Twangle asks to tune it first.
+  Within 3 cents (about 1 mm of saddle) counts as fine. More than half a semitone off is "not the octave". A light touch
+  at the 12th fret (a harmonic) always sounds perfect, so the tip asks for a pressed note.</p>
+  <p>The millimetres in the verdict ("about 3 mm") assume a guitar's usual scale length; they could be left out.</p>
+</footer>
+</div>
+
+<script>
+const STRINGS = [["E", 2], ["A", 2], ["D", 3], ["G", 3], ["B", 3], ["E", 4]];
+const sn = ([n, o]) => `${n}<sub>${o}</sub>`;
+
+const ICON_TWELFTH = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+  <path d="M1.5 8h13"/><path d="M8 3.5v9"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/><path d="M1.5 5.5v5M14.5 5.5v5"/></svg>`;
+const ICON_STRUM = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+  <path d="M2 4h12M2 7h12M2 10h12M2 13h12"/><path d="M4 15 12 1" stroke-width="1.6"/></svg>`;
+const NAV_ICONS = {
+  Tuner: `<path d="M6 2v7a2 2 0 0 0 4 0V2M8 11v4"/>`,
+  Instrument: `<rect x="5" y="1.5" width="6" height="7" rx="1.5"/><path d="M8 8.5v6M3.5 3.5h1.5M3.5 6.5h1.5M11 3.5h1.5M11 6.5h1.5"/>`,
+  Metronome: `<path d="M5 2h6l2.5 12h-11zM8 11l3-7"/>`,
+  Settings: `<circle cx="8" cy="8" r="2.4"/><circle cx="8" cy="8" r="5.6" stroke-dasharray="2.2 1.6"/>`,
+};
+const nav = () => `<div class="nav">${Object.entries(NAV_ICONS).map(([k, p]) =>
+  `<div class="${k === "Tuner" ? "on" : ""}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${p}</svg>${k}</div>`).join("")}</div>`;
+
+const modes = (labels, on) => `<div class="modes">${labels.map(l => `<span class="${l === on ? "on" : ""}">${l}</span>`).join("")}</div>`;
+
+// marks: per string "", "fine", "back", "fwd", "none"
+const MARK = { fine: ["fine", "✓"], back: ["move", "←"], fwd: ["move", "→"], none: ["", "–"], "": ["", ""] };
+function strings({ sel = -1, marks = [] } = {}) {
+  return `<div class="strs">${STRINGS.map((s, i) => {
+    const [cls, txt] = MARK[marks[i] || ""];
+    return `<div class="str"><div class="ch ${i === sel ? "sel lock" : ""}">${sn(s)}</div><div class="mk ${cls}">${txt}</div></div>`;
+  }).join("")}</div>`;
+}
+function controls({ twelfth = null, strum = true } = {}) {
+  const sw = [];
+  if (twelfth !== null) sw.push(`<span class="tg ${twelfth ? "on" : ""}" title="Intonation check">${ICON_TWELFTH}</span>`);
+  if (strum) sw.push(`<span class="tg" title="Strum check">${ICON_STRUM}</span>`);
+  return `<div class="ctl"><span class="name">Guitar · Standard</span><span class="sw">${sw.join("")}</span></div>`;
+}
+const steps = (stage) => {
+  const a = stage > 1 ? "done" : stage === 1 ? "on" : "";
+  const b = stage > 2 ? "done" : stage === 2 ? "on" : "";
+  return `<div class="steps"><span class="${a}"><i></i>Open</span><span class="dash"></span><span class="${b}"><i></i>12th fret</span></div>`;
+};
+const ring = (frac, inner) => {
+  const c = 2 * Math.PI * 50;
+  return `<div class="ring"><svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="50" fill="none" stroke="var(--line)" stroke-width="4"/>
+    <circle cx="56" cy="56" r="50" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"
+      stroke-dasharray="${c * frac} ${c}" transform="rotate(-90 56 56)"/></svg><div>${inner}</div></div>`;
+};
+// A small side view: neck on the left, the string, the saddle on the right, an arrow for the move.
+function saddle(dir, w = 120, h = 34) {
+  const arrow = dir === "back"
+    ? `<path d="M88 27h22m-5-4 5 4-5 4" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+    : dir === "fwd"
+      ? `<path d="M110 27H88m5-4-5 4 5 4" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+      : "";
+  const col = dir === "fine" ? "var(--intune)" : dir ? "var(--accent)" : "var(--muted)";
+  return `<svg viewBox="0 0 120 34" width="${w}" height="${h}">
+    <rect x="2" y="9" width="14" height="10" rx="2" fill="var(--line)"/>
+    <text x="9" y="31" font-size="7" text-anchor="middle" fill="var(--muted)" font-family="var(--ui)">neck</text>
+    <path d="M16 13h82" stroke="var(--muted)" stroke-width="1"/>
+    <path d="M94 19l4-8 4 8z" fill="${col}"/>
+    <text x="98" y="7" font-size="7" text-anchor="middle" fill="var(--muted)" font-family="var(--ui)">saddle</text>
+    ${dir === "fine" ? `<path d="M90 27l4 4 8-8" stroke="var(--intune)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` : arrow}
+  </svg>`;
+}
+function phone({ top = "", panel = "", line = "", ctl = "", strs = "", bar = true, overlay = "" }) {
+  return `<div class="phone"><div class="status"></div>${top}<div class="panel">${panel}</div>
+    <div class="line">${line}</div>${ctl}${strs}${bar ? nav() : `<div style="height:20px;flex:none"></div>`}${overlay}</div>`;
+}
+const fig = (n, cap, html) => `<figure>${html}<figcaption><b>${n}.</b> ${cap}</figcaption></figure>`;
+const L = (big, small, cls = "") => `<div class="big ${cls}">${big}</div>${small ? `<div class="small">${small}</div>` : ""}`;
+
+/* ---- Shared verdict cards ---- */
+document.getElementById("cards").innerHTML = [
+  [saddle("fine"), "Fine", "The 12th fret is within 3 cents of the octave. Leave the saddle.", "Shown in green."],
+  [saddle("back"), "Move the saddle back", "The 12th fret is 8 cents sharp. Move the saddle away from the neck, about 3 mm.", "Then tune the string again and check once more."],
+  [saddle("fwd"), "Move the saddle forward", "The 12th fret is 6 cents flat. Move the saddle towards the neck, about 2 mm.", "Then tune the string again and check once more."],
+  [`<svg viewBox="0 0 120 34" width="120" height="34"><circle cx="17" cy="17" r="13" fill="none" stroke="var(--muted)" stroke-width="1.6"/><text x="17" y="21.5" font-size="13" text-anchor="middle" fill="var(--muted)" font-family="var(--ui)">?</text></svg>`,
+    "Not the octave", "Press the string at the 12th fret, not a light touch, and play it again.", "More than half a semitone off: another fret, another string, or a harmonic."],
+  [`<svg viewBox="0 0 120 34" width="120" height="34"><circle cx="17" cy="17" r="13" fill="none" stroke="var(--accent)" stroke-width="1.6"/><path d="M17 9v9" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="23.5" r="1.4" fill="var(--accent)"/></svg>`,
+    "Tune the A string first", "The open note is too far from A. Tune it, then check.", "Before step 1 counts: the open note must be near the chosen string."],
+].map(([ic, h, d, w]) => `<div class="card"><div class="ic">${ic}</div><div class="h">${h}</div><div class="d">${d}</div><div class="w">${w}</div></div>`).join("");
+
+/* ---- Option A ---- */
+const AM = ["Strings", "Chromatic"];
+const aTop = modes(AM, "Strings");
+const summaryCols = [[1, "fine"], [8, "back"], [-6, "fwd"], [2, "fine"], [null, "none"], [0, "fine"]];
+function colsA() {
+  return `<div class="cols">${STRINGS.map((s, i) => {
+    const [c, m] = summaryCols[i];
+    const y = c === null ? null : 43 - c * 2.2 - 5;
+    const dot = y === null ? "" : `<span class="dot" style="top:${y}px;background:${m === "fine" ? "var(--intune)" : "var(--accent)"}"></span>`;
+    const v = c === null ? "–" : m === "fine" ? "✓" : (c > 0 ? "+" : "−") + Math.abs(c);
+    return `<div class="col"><span>${sn(s)}</span><div class="sc"><span class="band"></span>${dot}</div><span class="v ${m === "fine" ? "good" : m === "none" ? "" : "accent"}">${v}</span></div>`;
+  }).join("")}</div>`;
+}
+document.getElementById("optA").innerHTML = [
+  fig(1, "Turn on the <b>12th-fret switch</b> beside the strum check, then choose a string.", phone({
+    top: aTop,
+    panel: `${steps(0)}<div style="font:300 22px/1.2 var(--ui);color:var(--muted);text-align:center">Which string?</div>`,
+    line: L("Choose a string", "Tune it first, then check it"),
+    ctl: controls({ twelfth: true }), strs: strings(),
+  })),
+  fig(2, "<b>Open string.</b> The ring fills once the note is steady (about a second).", phone({
+    top: aTop,
+    panel: `${steps(1)}${ring(0.6, `<span class="n">A<sub>2</sub></span><span class="hz">110.0 Hz</span>`)}`,
+    line: L("Play the open A string", "Let it ring"),
+    ctl: controls({ twelfth: true }), strs: strings({ sel: 1 }),
+  })),
+  fig(3, "<b>12th fret.</b> Pressed down, not the light-touch harmonic.", phone({
+    top: aTop,
+    panel: `${steps(2)}${ring(0.35, `<span class="n">A<sub>3</sub></span><span class="hz">220.3 Hz</span>`)}`,
+    line: L("Now press it at the 12th fret", "Press it down, not a light touch"),
+    ctl: controls({ twelfth: true }), strs: strings({ sel: 1 }),
+  })),
+  fig(4, "<b>Verdict</b> in the meter's place; two buttons of the same size.", phone({
+    top: aTop,
+    panel: `${steps(3)}${saddle("back", 170, 48)}<div style="font:300 24px/1 var(--ui)" class="accent">+8 cents</div>
+      <div class="btns"><span class="btn">Check again</span><span class="btn fill">Next string</span></div>`,
+    line: L("Move the saddle back", "Away from the neck, about 3 mm", "accent"),
+    ctl: controls({ twelfth: true }), strs: strings({ sel: 1, marks: ["fine", "back"] }),
+  })),
+  fig(5, "<b>All six:</b> columns like the strum check; marks stay under the strings.", phone({
+    top: aTop,
+    panel: colsA(),
+    line: L("2 saddles to move", "Tap a string to check it again"),
+    ctl: controls({ twelfth: true }), strs: strings({ marks: summaryCols.map(x => x[1]) }),
+  })),
+].join("");
+
+/* ---- Option B ---- */
+const BM = ["Strings", "Chromatic", "Intonation"];
+const bTop = modes(BM, "Intonation");
+const item = (k, txt, r = "", cls = "", bar = null) => `<div class="it ${cls}"><span class="k">${cls === "done" ? "✓" : k}</span><span>${txt}</span><span class="r">${r || ""}</span>${bar != null ? `<span class="bar"><b style="width:${bar * 100}%"></b></span>` : ""}</div>`;
+const bCtl = `<div class="ctl"><span class="name">Guitar · Standard</span></div>`;
+const tableB = `<table>${STRINGS.map((s, i) => {
+  const [c, m] = summaryCols[i];
+  const txt = { fine: `<span class="good">✓ Fine</span>`, back: `<span class="accent">← Move back</span>`, fwd: `<span class="accent">→ Move forward</span>`, none: `<span>Not checked</span>` }[m];
+  return `<tr><td class="s">${sn(s)}</td><td>${txt}</td><td class="c">${c === null ? "–" : (c > 0 ? "+" : c < 0 ? "−" : "") + Math.abs(c) + " ¢"}</td></tr>`;
+}).join("")}</table>`;
+document.getElementById("optB").innerHTML = [
+  fig(1, "<b>Intonation</b> is a third mode; step 1 asks for a string.", phone({
+    top: bTop,
+    panel: `<div class="list">${item(1, "Choose a string", "", "on")}${item(2, "Play it open")}${item(3, "Press it at the 12th fret")}</div>`,
+    line: L("Choose a string", "Tune it first, then check it"),
+    ctl: bCtl, strs: strings(),
+  })),
+  fig(2, "<b>Open string</b>, with a thin bar while it settles.", phone({
+    top: bTop,
+    panel: `<div class="list">${item(1, "A string", "", "done")}${item(2, "Play it open", "110.0 Hz", "on", 0.6)}${item(3, "Press it at the 12th fret")}</div>`,
+    line: L("Play the open A string", "Let it ring"),
+    ctl: bCtl, strs: strings({ sel: 1 }),
+  })),
+  fig(3, "<b>12th fret.</b> Steps already done stay ticked.", phone({
+    top: bTop,
+    panel: `<div class="list">${item(1, "A string", "", "done")}${item(2, "Open", "110.0 Hz", "done")}${item(3, "Press it at the 12th fret", "219.2 Hz", "on", 0.35)}</div>`,
+    line: L("Now press it at the 12th fret", "Press it down, not a light touch"),
+    ctl: bCtl, strs: strings({ sel: 1 }),
+  })),
+  fig(4, "<b>Verdict</b> (here: flat) in place of the list.", phone({
+    top: bTop,
+    panel: `${saddle("fwd", 170, 48)}<div style="font:300 24px/1 var(--ui)" class="accent">−6 cents</div>
+      <div class="btns"><span class="btn">Check again</span><span class="btn fill">Next string</span></div>`,
+    line: L("Move the saddle forward", "Towards the neck, about 2 mm", "accent"),
+    ctl: bCtl, strs: strings({ sel: 2 }),
+  })),
+  fig(5, "<b>All six</b> as a table with each string's number.", phone({
+    top: bTop,
+    panel: tableB,
+    line: L("2 saddles to move", "Tap a string to check it again"),
+    ctl: bCtl, strs: strings(),
+  })),
+].join("");
+
+/* ---- Option C ---- */
+// The bridge seen from above: neck at the top, six strings down to their saddles.
+function bridge({ sel = -1, marks = [] } = {}) {
+  const xs = STRINGS.map((_, i) => 32 + i * 27);
+  const sy = [146, 140, 143, 137, 141, 136];
+  let g = `<text x="100" y="12" font-size="8" text-anchor="middle" fill="var(--muted)" font-family="var(--ui)">↑ towards the neck</text>`;
+  g += `<rect x="16" y="128" width="168" height="26" rx="6" fill="color-mix(in srgb, var(--ink) 8%, transparent)"/>`;
+  xs.forEach((x, i) => {
+    const on = i === sel;
+    const m = marks[i] || "";
+    const col = m === "fine" ? "var(--intune)" : m === "back" || m === "fwd" || on ? "var(--accent)" : "var(--muted)";
+    g += `<path d="M${x} 20V${sy[i]}" stroke="${on ? "var(--accent)" : "var(--muted)"}" stroke-width="${on ? 2 : 1 + (5 - i) * 0.25}" opacity="${sel >= 0 && !on ? 0.45 : 1}"/>`;
+    g += `<rect x="${x - 7}" y="${sy[i] - 2}" width="14" height="5" rx="2.5" fill="${col}"/>`;
+    const label = `<text x="${x}" y="186" font-size="9" text-anchor="middle" fill="${on ? "var(--ink)" : "var(--muted)"}" font-family="var(--ui)" font-weight="500">${STRINGS[i][0]}</text>`;
+    g += label;
+    if (m === "back") g += `<path d="M${x} 158v12m-4-4 4 4 4-4" stroke="var(--accent)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (m === "fwd") g += `<path d="M${x} 170v-12m-4 4 4-4 4 4" stroke="var(--accent)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (m === "fine") g += `<path d="M${x - 4} 164l3 3 6-6" stroke="var(--intune)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (m === "none") g += `<path d="M${x - 3} 165h6" stroke="var(--muted)" stroke-width="1.5"/>`;
+  });
+  return `<svg class="bridge" viewBox="0 0 200 190">${g}</svg>`;
+}
+const cTop = `<div class="top"><span>✕</span><span>Intonation check</span></div>`;
+const cPhone = (panel, line, extra = "") => phone({ top: cTop, panel, line, ctl: "", strs: extra, bar: false });
+const sheet = `<div class="scrim"></div><div class="sheet"><span class="handle"></span><span class="t">Instrument and tuning</span>
+  <div class="inst"><span class="on">Guitar</span><span>Bass</span><span>Ukulele</span><span>7-string</span></div><div class="div"></div>
+  <div class="tun on">Standard ✓<small>E A D G B E</small></div><div class="tun">Drop D<small>D A D G B E</small></div>
+  <div class="tun">Half step down<small>E♭ A♭ D♭ G♭ B♭ E♭</small></div><div class="div"></div>
+  <div class="tun" style="color:var(--accent)">+ New tuning</div>
+  <div class="entry">${ICON_TWELFTH}<span>Check intonation</span><span>›</span></div></div>`;
+document.getElementById("optC").innerHTML = [
+  fig(1, "The tuner is unchanged. The <b>Instrument</b> panel ends in \"Check intonation\".", phone({
+    top: aTop, panel: `<div style="font:300 46px/1 var(--ui)">A<sub style="font-size:18px">2</sub></div>`,
+    line: L("+2 cents", ""), ctl: controls(), strs: strings(), overlay: sheet,
+  })),
+  fig(2, "Its own screen: <b>tap a string</b> on the bridge.", cPhone(
+    bridge(), L("Tap a string to check", "Tune it first, then check it"))),
+  fig(3, "<b>Open string</b>: the chosen string lights up; a bar fills while it settles.", cPhone(
+    `${bridge({ sel: 1 })}${steps(1)}<div class="pbar"><b style="width:60%"></b></div>`, L("Play the open A string", "Let it ring"))),
+  fig(4, "<b>12th fret.</b>", cPhone(
+    `${bridge({ sel: 1 })}${steps(2)}<div class="pbar"><b style="width:35%"></b></div>`, L("Now press it at the 12th fret", "Press it down, not a light touch"))),
+  fig(5, "<b>Verdict:</b> an arrow on that saddle.", cPhone(
+    `${bridge({ sel: 1, marks: ["", "back"] })}<div class="btns"><span class="btn">Check again</span><span class="btn fill">Next string</span></div>`,
+    L("Move the A saddle back", "8 cents sharp · about 3 mm", "accent"))),
+  fig(6, "<b>All six</b> on the bridge: arrows where a saddle moves.", cPhone(
+    bridge({ marks: summaryCols.map(x => x[1]) }), L("2 saddles to move", "A back · D forward · B not checked"))),
+].join("");
+</script>
