@@ -179,4 +179,23 @@
     <string name="tuner_intonation_mark_forward">Saitenreiter nach vorn</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, noch nicht geprüft</string>
     <string name="tour_more_tools">Weitere Werkzeuge, etwa der Anschlag-Check</string>
+    <string name="tuner_chord_name">Akkordname</string>
+    <string name="tuner_chord_major">%1$s-Dur</string>
+    <string name="tuner_chord_minor">%1$s-Moll</string>
+    <string name="tuner_chord_seventh">%1$s-Septakkord</string>
+    <string name="tuner_chord_major_seventh">%1$s-Dur mit großer Septime</string>
+    <string name="tuner_chord_minor_seventh">%1$s-Moll-Septakkord</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, %2$s im Bass</string>
+    <string name="tuner_chord_bass">Bass</string>
+    <string name="tuner_chord_strum">Schlag einen Akkord an</string>
+    <string name="tuner_chord_strum_detail">Mit allen seinen Saiten</string>
+    <string name="tuner_chord_next">Schlag den nächsten an</string>
+    <string name="tuner_chord_let_ring">Lass ihn klingen</string>
+    <string name="tuner_chord_unclear">Kein klarer Akkord</string>
+    <string name="tuner_chord_unclear_detail">Schlag alle seine Saiten an</string>
+    <string name="tuner_chord_none">Noch kein Akkord</string>
+    <string name="tuner_chord_spoken_notes">Töne %1$s</string>
+    <string name="tuner_chord_spoken_recent">davor %1$s</string>
 </resources>

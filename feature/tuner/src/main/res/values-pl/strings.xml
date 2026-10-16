@@ -187,4 +187,23 @@
     <string name="tuner_intonation_mark_forward">siodełko do przodu</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, jeszcze nie sprawdzona</string>
     <string name="tour_more_tools">Więcej narzędzi, np. test strun</string>
+    <string name="tuner_chord_name">Nazwa akordu</string>
+    <string name="tuner_chord_major">%1$s-dur</string>
+    <string name="tuner_chord_minor">%1$s-moll</string>
+    <string name="tuner_chord_seventh">%1$s septymowy</string>
+    <string name="tuner_chord_major_seventh">%1$s-dur z septymą wielką</string>
+    <string name="tuner_chord_minor_seventh">%1$s-moll septymowy</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, w basie %2$s</string>
+    <string name="tuner_chord_bass">bas</string>
+    <string name="tuner_chord_strum">Zagraj akord</string>
+    <string name="tuner_chord_strum_detail">Wszystkimi jego strunami</string>
+    <string name="tuner_chord_next">Zagraj znowu, aby zobaczyć następny</string>
+    <string name="tuner_chord_let_ring">Niech wybrzmi</string>
+    <string name="tuner_chord_unclear">To nie jest wyraźny akord</string>
+    <string name="tuner_chord_unclear_detail">Uderz we wszystkie jego struny</string>
+    <string name="tuner_chord_none">Jeszcze brak akordu</string>
+    <string name="tuner_chord_spoken_notes">dźwięki %1$s</string>
+    <string name="tuner_chord_spoken_recent">wcześniej %1$s</string>
 </resources>

@@ -182,4 +182,23 @@
     <string name="tuner_intonation_mark_forward">selleta hacia delante</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, sin revisar</string>
     <string name="tour_more_tools">Más herramientas, como la prueba de rasgueo</string>
+    <string name="tuner_chord_name">Nombre del acorde</string>
+    <string name="tuner_chord_major">%1$s mayor</string>
+    <string name="tuner_chord_minor">%1$s menor</string>
+    <string name="tuner_chord_seventh">%1$s séptima</string>
+    <string name="tuner_chord_major_seventh">%1$s séptima mayor</string>
+    <string name="tuner_chord_minor_seventh">%1$s menor séptima</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, %2$s en el bajo</string>
+    <string name="tuner_chord_bass">bajo</string>
+    <string name="tuner_chord_strum">Rasguea un acorde</string>
+    <string name="tuner_chord_strum_detail">Con todas sus cuerdas</string>
+    <string name="tuner_chord_next">Rasguea otra vez para el siguiente</string>
+    <string name="tuner_chord_let_ring">Déjalo sonar</string>
+    <string name="tuner_chord_unclear">No es un acorde claro</string>
+    <string name="tuner_chord_unclear_detail">Rasguea todas sus cuerdas</string>
+    <string name="tuner_chord_none">Aún no hay acorde</string>
+    <string name="tuner_chord_spoken_notes">notas %1$s</string>
+    <string name="tuner_chord_spoken_recent">antes %1$s</string>
 </resources>

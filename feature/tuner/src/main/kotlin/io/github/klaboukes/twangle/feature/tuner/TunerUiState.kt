@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
+import io.github.klaboukes.twangle.core.dsp.chord.SettledChord
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
 import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -115,6 +116,22 @@ sealed interface TunerUiState {
         val result: IntonationResult? = null,
         val results: List<IntonationResult?> = emptyList(),
         val scaleLengthMm: Float? = null,
+    ) : TunerUiState
+
+    /**
+     * The chord name (Phase 30, guitar mode, switched on from the "more tools" menu): strum a chord
+     * and its name shows, settled over several readings ([ChordNameInterpreter]). [chord] is the one
+     * shown (null: none yet, or [ChordPhase.UNCLEAR]), [faded] once its strum has died away or while a
+     * new strum is heard; [recent] the last three chords shown, the latest last. [tuning] is only for
+     * the string row and the panel's names; [notation] writes the chord ("Am", "Lam", "Hm").
+     */
+    data class ChordName(
+        val tuning: Tuning,
+        val notation: Notation = Notation.DEFAULT,
+        val phase: ChordPhase = ChordPhase.WAITING,
+        val chord: SettledChord? = null,
+        val faded: Boolean = false,
+        val recent: List<SettledChord> = emptyList(),
     ) : TunerUiState
 }
 

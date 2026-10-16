@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordInstruments
 import io.github.klaboukes.twangle.core.dsp.intonation.Intonation
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationInstruments
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
@@ -24,17 +25,22 @@ enum class TunerTool {
 
     /** Phase 29: the 12th-fret check, string by string. */
     INTONATION_CHECK,
+
+    /** Phase 30: strum a chord and its name shows. */
+    CHORD_NAME,
 }
 
 /**
  * The tools the tuner offers for [instrument] in a build with [tools] switched on, in the menu's
  * order: the strum check always, the 12th-fret check where its switch is on and the instrument has
- * frets and a saddle ([IntonationInstruments.offers]). With one tool the tuner shows its switch as in
- * v1.0; with more, one "more tools" button opens a menu of them.
+ * frets and a saddle ([IntonationInstruments.offers]), the chord name where its switch is on and the
+ * instrument is strummed in chords ([ChordInstruments.offers]). With one tool the tuner shows its
+ * switch as in v1.0; with more, one "more tools" button opens a menu of them.
  */
 fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
     add(TunerTool.STRUM_CHECK)
     if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
+    if (tools.chordNaming && ChordInstruments.offers(instrument)) add(TunerTool.CHORD_NAME)
 }
 
 /** Where the 12th-fret check is: see [TunerUiState.IntonationCheck]. */

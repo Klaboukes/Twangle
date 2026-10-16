@@ -19,6 +19,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 15: with a real bass (or a 7-string guitar or cello), check the lowest strings read correctly (B0, E1, B1, C2), and that the tuner shows no note while the amp only hums (postponed 2026-10-16: the owner has no other instrument yet)
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears (postponed 2026-10-16: the owner has no Wear OS watch yet, and the watch app follows in an update, decision 3)
 - ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the ^ button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
+- ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the ^ button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
 
 ---
 
@@ -60,9 +61,9 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 ## Phase 30 — What chord is this?
 Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum check's six-strings-at-once detection, pointed at chords instead of tuning.
 - ☑ `:core:dsp`: chord naming from a strum, the common chords first (major, minor, 7th, major 7th, minor 7th, sus2, sus4), with synthetic chord tests like the strum check's, open and barre shapes, and no name when the strum isn't a clear chord (`ChordDetector`: 41 shapes, no wrong name in 1,640 synthetic strums, no name for 483 of 484 sounds that are no chord)
-- ☑ Rough mock-up of the mode for the owner to pick from (`docs/design/chord-mode-preview.html`; owner picked B on 2026-10-16: the ^ menu's "Chord name", big symbol with words, the chord's notes with the bass filled, the last three chords; design in docs/architecture/ui-tuner.md, *Chord mode (planned)*)
-- ☐ The mode inside the tuner behind its switch (Phase 28): the chord's name in the player's note names, translated, TalkBack and 2× text; JVM and UI tests; phone check with synthetic chords
-- ☐ Owner check added: strum a dozen real chords and check the names
+- ☑ Rough mock-up of the mode for the owner to pick from (`docs/design/chord-mode-preview.html`; owner picked B on 2026-10-16: the ^ menu's "Chord name", big symbol with words, the chord's notes with the bass filled, the last three chords; design in docs/architecture/ui-tuner.md, *Chord name view*)
+- ☑ The mode inside the tuner behind its switch (Phase 28): the chord's name in the player's note names, translated, TalkBack and 2× text; JVM and UI tests; phone check with synthetic chords ("Chord name" in the ^ menu for guitars, ukulele and mandolin; settled by `ChordSettler`: 4 of 6 readings, 1.5 s hold, faded, "Not a clear chord"; synthetic Am and C/E named on the Xiaomi through the fake microphone)
+- ☑ Owner check added: strum a dozen real chords and check the names
 
 ## Phase 31 — Pitch trail
 Goal: a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists.

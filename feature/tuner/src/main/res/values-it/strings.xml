@@ -183,4 +183,23 @@
     <string name="tuner_intonation_mark_forward">selletta in avanti</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, non ancora controllata</string>
     <string name="tour_more_tools">Altre funzioni, come il controllo a pennata</string>
+    <string name="tuner_chord_name">Nome dell\'accordo</string>
+    <string name="tuner_chord_major">%1$s maggiore</string>
+    <string name="tuner_chord_minor">%1$s minore</string>
+    <string name="tuner_chord_seventh">%1$s settima</string>
+    <string name="tuner_chord_major_seventh">%1$s settima maggiore</string>
+    <string name="tuner_chord_minor_seventh">%1$s minore settima</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, %2$s al basso</string>
+    <string name="tuner_chord_bass">basso</string>
+    <string name="tuner_chord_strum">Fai una pennata su un accordo</string>
+    <string name="tuner_chord_strum_detail">Con tutte le sue corde</string>
+    <string name="tuner_chord_next">Un\'altra pennata per il prossimo</string>
+    <string name="tuner_chord_let_ring">Lascialo suonare</string>
+    <string name="tuner_chord_unclear">Non è un accordo chiaro</string>
+    <string name="tuner_chord_unclear_detail">Fai una pennata su tutte le sue corde</string>
+    <string name="tuner_chord_none">Ancora nessun accordo</string>
+    <string name="tuner_chord_spoken_notes">note %1$s</string>
+    <string name="tuner_chord_spoken_recent">prima %1$s</string>
 </resources>

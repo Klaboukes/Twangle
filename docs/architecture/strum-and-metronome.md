@@ -76,7 +76,7 @@ The readings behind it (a temporary log of every reading): over the first ≈ 0.
 **Not modelled yet:** pick noise and buzz, sympathetic strings, the body's resonances, and the phone mic's weak response at 82 Hz beyond the weak-fundamental case; the owner's check with a real guitar (*Owner checks* in ROADMAP.md) will tell. Inharmonicity bends partial k sharp by ≈ 866·B·(k² − 1) cents; the low-partial weighting keeps it to +0.6 cents with weak fundamentals (+1 at three times those B values); fitting B per string would remove it. Higher partials decay first, so a late frame has fewer clear partials (fine 1.5 s after the strum in synthetic strums).
 
 ## Chord naming
-Phase 30. `:core:dsp` `chord/`, allocation-free (byte-counting tests). Not shown in the app yet: the tuner mode that uses it comes later in Phase 30, behind its switch (Phase 28).
+Phase 30. `:core:dsp` `chord/`, allocation-free (byte-counting tests). Shown by the tuner's chord name, behind its switch (Phase 28): [Tuner screen and tour](ui-tuner.md), *Chord name view*, which also covers `ChordSettler` (readings settled into what shows), `ChordSpelling` (symbols and the usual chord spelling) and `ChordInstruments` (which instruments get it).
 - **`ChordDetector(sampleRate, frameLength, lowestMidi, highestMidi)`** names the chord in one frame: `detect(frame, result, a4Hz)` fills a `ChordResult` and returns its `chord`, or null. Frames come from `StrumListener`, the same as strum check's (341 ms, a new one every 0.1 s while the strings ring); notes are looked for from B1 to E6.
 - **`Chord`** is a root `PitchClass` and a `ChordQuality`: major, minor, 7th, major 7th, minor 7th, sus2, sus4. Every chord exists once (`Chord.of`), so naming allocates nothing. The UI names it in the player's notation (A minor, La minore, a-Moll …). `ChordResult` also holds the `bass` (lowest note's pitch class, for a slash chord such as C/E), the notes heard with their strengths, each pitch class's strength, the strum's `tuningOffsetCents`, and `crowded`.
 - **`ChordNamer.name(pitchClasses, bass)`** is the template match on its own, pure and tested chord by chord.
@@ -108,7 +108,7 @@ No name for: 37 single notes (E2–E5), 18 fifths, 18 power chords, 21 thirds, 2
 
 **CPU.** One detection: 1.4 ms on the JVM, most of it the 32 768-point FFT; strum check's takes 2.6 ms at the same pace of one every 0.1 s.
 
-**Not modelled yet:** real guitars (body resonances, pick noise, sympathetic strings, harmonics that don't fall as 1/k), chords beyond the seven types, and readings combined over a strum (each frame is named on its own; the view will settle on a name over several, like strum check's readings). The owner's check with a real guitar (*Owner checks* in ROADMAP.md, later in Phase 30) will tell.
+**Not modelled yet:** real guitars (body resonances, pick noise, sympathetic strings, harmonics that don't fall as 1/k), chords beyond the seven types, and readings combined in the detector (each frame is named on its own; `ChordSettler` settles the view on a name over several). The owner's check with a real guitar (*Owner checks* in ROADMAP.md, later in Phase 30) will tell.
 
 ## Metronome
 The engine, the screen ([Metronome, widget and watch](ui-other-screens.md), *Metronome screen*) and the navigation bar ([UI basics](ui.md), *Navigation bar*).

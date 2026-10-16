@@ -34,12 +34,17 @@ data class TunerOptions(
     val intonationAttempt: Int = 0,
     /** The scale length the saddle's millimetres assume, or null where they aren't shown (not a guitar). */
     val intonationScaleMm: Float? = null,
+    /** Whether the chord name is switched on (Phase 30); it only runs in guitar mode ([chordNaming]). */
+    val chordName: Boolean = false,
 ) {
     /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
     val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO
 
     /** The 12th-fret check runs: switched on, and in guitar mode. */
     val intonationChecking: Boolean get() = intonationCheck && mode == TunerMode.AUTO
+
+    /** The chord name runs: switched on, and in guitar mode. */
+    val chordNaming: Boolean get() = chordName && mode == TunerMode.AUTO
 
     /**
      * The open strings' frequencies at [a4Hz], in the tuning's order: what the strum check listens

@@ -80,14 +80,23 @@ class PitchPipeline(
      * tuning's order) the microphone's chunks go to the strum check instead: a [StrumReading] when
      * it starts, when a strum is heard or stops ringing, and with each reading of the strings
      * (about every 0.1 s while they ring). It starts over whenever the frequencies change. The
-     * microphone stays open through every switch. [strumStrings] and [range] are asked for every
-     * chunk and must not allocate.
+     * microphone stays open through every switch. Likewise, while [chordA4Hz] gives a concert pitch
+     * (not NaN) the chunks go to the chord name: a [ChordReading] when it starts, when a strum is heard
+     * or stops ringing, with each reading of a strum named at that A4, and about every 0.1 s between.
+     * [strumStrings], [chordA4Hz] and [range] are asked for every chunk and must not allocate.
      */
-    fun listen(range: () -> PitchRange = { PitchRange.STANDARD }, strumStrings: () -> FloatArray?): Flow<PipelineReading> = flow {
+    fun listen(
+        range: () -> PitchRange = { PitchRange.STANDARD },
+        chordA4Hz: () -> Float = { Float.NaN },
+        strumStrings: () -> FloatArray?,
+    ): Flow<PipelineReading> = flow {
         var tuner = TunerAnalysis(supportedRate())
         // Made the first time strum check starts: its buffers are large.
         var strum: StrumAnalysis? = null
         var strumming = false
+        // Made the first time the chord name starts: its buffers are large too.
+        var chords: ChordAnalysis? = null
+        var naming = false
         var first = true
 
         recorder.chunks().collect { chunk ->
@@ -104,7 +113,23 @@ class PitchPipeline(
             val gate = tuner.gate
             val noise = tuner.noise
             val strings = strumStrings()
+            val chordA4 = if (strings == null) chordA4Hz() else Float.NaN
+            if (!chordA4.isNaN()) {
+                val analysis = chords ?: ChordAnalysis(rate).also { chords = it }
+                if (!naming) {
+                    emit(analysis.start())
+                    naming = true
+                }
+                strumming = false
+                var pos = 0
+                while (pos < chunk.size) {
+                    pos += analysis.push(chunk, pos, chunk.size - pos)
+                    analysis.next(chordA4)?.let { emit(it) }
+                }
+                return@collect
+            }
             if (strings != null) {
+                naming = false
                 val analysis = strum ?: StrumAnalysis(rate).also { strum = it }
                 val expected = analysis.expected
                 if (!strumming || (strings !== expected && !strings.contentEquals(expected))) {
@@ -118,9 +143,10 @@ class PitchPipeline(
                 }
                 return@collect
             }
-            if (strumming) {
+            if (strumming || naming) {
                 // Back to the tuner: its window starts afresh rather than joining audio from before.
                 strumming = false
+                naming = false
                 assembler.reset()
             }
             var pos = 0

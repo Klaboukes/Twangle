@@ -187,4 +187,23 @@
     <string name="tuner_intonation_mark_forward">седло вперёд</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, ещё не проверена</string>
     <string name="tour_more_tools">Ещё функции, например проверка струн</string>
+    <string name="tuner_chord_name">Название аккорда</string>
+    <string name="tuner_chord_major">%1$s мажор</string>
+    <string name="tuner_chord_minor">%1$s минор</string>
+    <string name="tuner_chord_seventh">%1$s септаккорд</string>
+    <string name="tuner_chord_major_seventh">%1$s большой мажорный септаккорд</string>
+    <string name="tuner_chord_minor_seventh">%1$s минорный септаккорд</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, в басу %2$s</string>
+    <string name="tuner_chord_bass">бас</string>
+    <string name="tuner_chord_strum">Сыграй аккорд</string>
+    <string name="tuner_chord_strum_detail">Всеми его струнами</string>
+    <string name="tuner_chord_next">Сыграй ещё раз для следующего</string>
+    <string name="tuner_chord_let_ring">Дай ему прозвучать</string>
+    <string name="tuner_chord_unclear">Аккорд неясен</string>
+    <string name="tuner_chord_unclear_detail">Проведи по всем его струнам</string>
+    <string name="tuner_chord_none">Пока нет аккорда</string>
+    <string name="tuner_chord_spoken_notes">ноты %1$s</string>
+    <string name="tuner_chord_spoken_recent">до этого %1$s</string>
 </resources>

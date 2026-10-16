@@ -174,4 +174,23 @@
     <string name="tuner_intonation_mark_forward">sadel ke depan</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, belum dicek</string>
     <string name="tour_more_tools">Alat lainnya, seperti cek genjreng</string>
+    <string name="tuner_chord_name">Nama akor</string>
+    <string name="tuner_chord_major">%1$s mayor</string>
+    <string name="tuner_chord_minor">%1$s minor</string>
+    <string name="tuner_chord_seventh">%1$s septim</string>
+    <string name="tuner_chord_major_seventh">%1$s mayor septim</string>
+    <string name="tuner_chord_minor_seventh">%1$s minor septim</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, bas %2$s</string>
+    <string name="tuner_chord_bass">bas</string>
+    <string name="tuner_chord_strum">Genjreng sebuah akor</string>
+    <string name="tuner_chord_strum_detail">Dengan semua senarnya</string>
+    <string name="tuner_chord_next">Genjreng lagi untuk berikutnya</string>
+    <string name="tuner_chord_let_ring">Biarkan berbunyi</string>
+    <string name="tuner_chord_unclear">Bukan akor yang jelas</string>
+    <string name="tuner_chord_unclear_detail">Genjreng semua senarnya</string>
+    <string name="tuner_chord_none">Belum ada akor</string>
+    <string name="tuner_chord_spoken_notes">nada %1$s</string>
+    <string name="tuner_chord_spoken_recent">sebelumnya %1$s</string>
 </resources>

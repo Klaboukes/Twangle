@@ -178,4 +178,23 @@
     <string name="tuner_intonation_mark_forward">सैडल आगे करें</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, अभी जाँचा नहीं</string>
     <string name="tour_more_tools">स्ट्रम चेक जैसे और टूल</string>
+    <string name="tuner_chord_name">कॉर्ड का नाम</string>
+    <string name="tuner_chord_major">%1$s मेजर</string>
+    <string name="tuner_chord_minor">%1$s माइनर</string>
+    <string name="tuner_chord_seventh">%1$s सेवन्थ</string>
+    <string name="tuner_chord_major_seventh">%1$s मेजर सेवन्थ</string>
+    <string name="tuner_chord_minor_seventh">%1$s माइनर सेवन्थ</string>
+    <string name="tuner_chord_sus2">%1$s सस 2</string>
+    <string name="tuner_chord_sus4">%1$s सस 4</string>
+    <string name="tuner_chord_slash">%1$s, बेस में %2$s</string>
+    <string name="tuner_chord_bass">बेस</string>
+    <string name="tuner_chord_strum">एक कॉर्ड स्ट्रम करें</string>
+    <string name="tuner_chord_strum_detail">उसके सभी तार</string>
+    <string name="tuner_chord_next">अगले के लिए फिर स्ट्रम करें</string>
+    <string name="tuner_chord_let_ring">उसे बजने दें</string>
+    <string name="tuner_chord_unclear">साफ़ कॉर्ड नहीं</string>
+    <string name="tuner_chord_unclear_detail">उसके सभी तार स्ट्रम करें</string>
+    <string name="tuner_chord_none">अभी कोई कॉर्ड नहीं</string>
+    <string name="tuner_chord_spoken_notes">सुर %1$s</string>
+    <string name="tuner_chord_spoken_recent">उससे पहले %1$s</string>
 </resources>

@@ -183,4 +183,23 @@
     <string name="tuner_intonation_mark_forward">avancer le pontet</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, pas encore testée</string>
     <string name="tour_more_tools">Plus d\'outils, comme le test en grattant</string>
+    <string name="tuner_chord_name">Nom d\'accord</string>
+    <string name="tuner_chord_major">%1$s majeur</string>
+    <string name="tuner_chord_minor">%1$s mineur</string>
+    <string name="tuner_chord_seventh">%1$s septième</string>
+    <string name="tuner_chord_major_seventh">%1$s septième majeure</string>
+    <string name="tuner_chord_minor_seventh">%1$s mineur septième</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, %2$s à la basse</string>
+    <string name="tuner_chord_bass">basse</string>
+    <string name="tuner_chord_strum">Grattez un accord</string>
+    <string name="tuner_chord_strum_detail">Avec toutes ses cordes</string>
+    <string name="tuner_chord_next">Grattez à nouveau pour le suivant</string>
+    <string name="tuner_chord_let_ring">Laissez-le sonner</string>
+    <string name="tuner_chord_unclear">Pas un accord clair</string>
+    <string name="tuner_chord_unclear_detail">Grattez toutes ses cordes</string>
+    <string name="tuner_chord_none">Pas encore d\'accord</string>
+    <string name="tuner_chord_spoken_notes">notes %1$s</string>
+    <string name="tuner_chord_spoken_recent">avant %1$s</string>
 </resources>

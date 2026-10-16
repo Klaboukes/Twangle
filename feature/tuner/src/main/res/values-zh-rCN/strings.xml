@@ -174,4 +174,23 @@
     <string name="tuner_intonation_mark_forward">弦鞍往前移</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s，尚未检查</string>
     <string name="tour_more_tools">更多工具，比如扫弦检查</string>
+    <string name="tuner_chord_name">和弦名称</string>
+    <string name="tuner_chord_major">%1$s 大三和弦</string>
+    <string name="tuner_chord_minor">%1$s 小三和弦</string>
+    <string name="tuner_chord_seventh">%1$s 属七和弦</string>
+    <string name="tuner_chord_major_seventh">%1$s 大七和弦</string>
+    <string name="tuner_chord_minor_seventh">%1$s 小七和弦</string>
+    <string name="tuner_chord_sus2">%1$s 挂二和弦</string>
+    <string name="tuner_chord_sus4">%1$s 挂四和弦</string>
+    <string name="tuner_chord_slash">%1$s，低音 %2$s</string>
+    <string name="tuner_chord_bass">低音</string>
+    <string name="tuner_chord_strum">扫一个和弦</string>
+    <string name="tuner_chord_strum_detail">扫到它的所有弦</string>
+    <string name="tuner_chord_next">再扫一次，看下一个</string>
+    <string name="tuner_chord_let_ring">让它持续发声</string>
+    <string name="tuner_chord_unclear">不是清晰的和弦</string>
+    <string name="tuner_chord_unclear_detail">把它的所有弦都扫到</string>
+    <string name="tuner_chord_none">还没有和弦</string>
+    <string name="tuner_chord_spoken_notes">音符 %1$s</string>
+    <string name="tuner_chord_spoken_recent">之前 %1$s</string>
 </resources>

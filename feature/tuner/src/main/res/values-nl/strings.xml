@@ -188,4 +188,23 @@
     <string name="tuner_intonation_mark_forward">zadel naar voren</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s, nog niet gecheckt</string>
     <string name="tour_more_tools">Meer functies, zoals de strumcheck</string>
+    <string name="tuner_chord_name">Akkoordnaam</string>
+    <string name="tuner_chord_major">%1$s majeur</string>
+    <string name="tuner_chord_minor">%1$s mineur</string>
+    <string name="tuner_chord_seventh">%1$s septiem</string>
+    <string name="tuner_chord_major_seventh">%1$s groot septiem</string>
+    <string name="tuner_chord_minor_seventh">%1$s mineur septiem</string>
+    <string name="tuner_chord_sus2">%1$s sus 2</string>
+    <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_slash">%1$s, %2$s in de bas</string>
+    <string name="tuner_chord_bass">bas</string>
+    <string name="tuner_chord_strum">Strum een akkoord</string>
+    <string name="tuner_chord_strum_detail">Met alle snaren ervan</string>
+    <string name="tuner_chord_next">Strum opnieuw voor het volgende</string>
+    <string name="tuner_chord_let_ring">Laat het doorklinken</string>
+    <string name="tuner_chord_unclear">Geen duidelijk akkoord</string>
+    <string name="tuner_chord_unclear_detail">Strum alle snaren ervan</string>
+    <string name="tuner_chord_none">Nog geen akkoord</string>
+    <string name="tuner_chord_spoken_notes">noten %1$s</string>
+    <string name="tuner_chord_spoken_recent">daarvoor %1$s</string>
 </resources>

@@ -174,4 +174,23 @@
     <string name="tuner_intonation_mark_forward">サドルを前へ</string>
     <string name="tuner_intonation_spoken_not_checked">%1$s、未チェック</string>
     <string name="tour_more_tools">ストロークチェックなどのツール</string>
+    <string name="tuner_chord_name">コード名</string>
+    <string name="tuner_chord_major">%1$s メジャー</string>
+    <string name="tuner_chord_minor">%1$s マイナー</string>
+    <string name="tuner_chord_seventh">%1$s セブンス</string>
+    <string name="tuner_chord_major_seventh">%1$s メジャーセブンス</string>
+    <string name="tuner_chord_minor_seventh">%1$s マイナーセブンス</string>
+    <string name="tuner_chord_sus2">%1$s サスツー</string>
+    <string name="tuner_chord_sus4">%1$s サスフォー</string>
+    <string name="tuner_chord_slash">%1$s、ベースは %2$s</string>
+    <string name="tuner_chord_bass">ベース</string>
+    <string name="tuner_chord_strum">コードを弾いてください</string>
+    <string name="tuner_chord_strum_detail">全部の弦を鳴らして</string>
+    <string name="tuner_chord_next">次のコードも弾いてください</string>
+    <string name="tuner_chord_let_ring">そのまま鳴らしてください</string>
+    <string name="tuner_chord_unclear">はっきりしたコードではありません</string>
+    <string name="tuner_chord_unclear_detail">全部の弦を弾いてください</string>
+    <string name="tuner_chord_none">まだコードはありません</string>
+    <string name="tuner_chord_spoken_notes">音 %1$s</string>
+    <string name="tuner_chord_spoken_recent">その前 %1$s</string>
 </resources>
