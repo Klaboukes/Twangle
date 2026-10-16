@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">Metronom</string>
+    <string name="practice_tool_chords">Akor</string>
+    <string name="practice_chords_coming">Diagram akor dan tangga nada segera hadir di sini.</string>
+</resources>

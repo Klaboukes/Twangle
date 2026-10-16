@@ -17,7 +17,7 @@ Same as the roadmap-step skill's step 0: clean tree, `git switch main && git pul
 Android resource qualifier form, which is also what `twangle.languages` uses: `sv`, `pt-rBR`, `zh-rTW`, `b+sr+Latn`. Old codes still apply: Indonesian is `in` (a phone set to `id` finds it), Hebrew `iw`, Yiddish `ji`. Add a region only when it really differs (Brazilian vs European Portuguese).
 
 ## 2. Translate every text
-- The modules with texts are those with a `res/values/strings.xml`. Find them with a glob (today: `app`, `wear`, `feature/tuner`, `feature/settings`, `feature/metronome`, `core/designsystem`). Create `res/values-<code>/strings.xml` in each, with every translatable string and plural.
+- The modules with texts are those with a `res/values/strings.xml`. Find them with a glob (today: `app`, `wear`, `feature/tuner`, `feature/settings`, `feature/metronome`, `feature/practice`, `core/designsystem`). Create `res/values-<code>/strings.xml` in each, with every translatable string and plural.
 - Translate from the English source and use the existing languages as reference. Keep texts as short as the English. Use the words local guitarists and tuner apps use. Tips are short imperatives, "Pick a string" style (never "Tap a string").
 - Pick one register (informal or formal you) as modern apps in that language do, keep it consistent, and add it to the register line in docs/architecture/languages.md.
 - Leave placeholders exactly as in English. Give plurals every quantity Android defines for the language (e.g. `one/few/many/other` for Slavic languages, only `other` for Chinese, Japanese, Korean, Vietnamese). Skip `translatable="false"` items.

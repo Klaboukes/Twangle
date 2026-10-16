@@ -122,4 +122,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setMetronomeMeter(meter: Meter) = state.update { it.copy(metronomeMeter = meter) }
 
     override suspend fun setMetronomeVibrate(enabled: Boolean) = state.update { it.copy(metronomeVibrate = enabled) }
+
+    override suspend fun setPracticeTool(tool: PracticeTool) = state.update { it.copy(practiceTool = tool) }
 }

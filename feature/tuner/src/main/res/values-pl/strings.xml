@@ -142,6 +142,7 @@
     <string name="tour_picker">Wybierz instrument i strój</string>
     <string name="tour_mode">Struny lub dowolny dźwięk</string>
     <string name="tour_navigation">Metronom i ustawienia</string>
+    <string name="tour_navigation_practice">Ćwiczenia i ustawienia</string>
     <string name="tour_skip">Pomiń</string>
     <string name="tour_next">Dalej</string>
     <string name="tour_done">Gotowe</string>

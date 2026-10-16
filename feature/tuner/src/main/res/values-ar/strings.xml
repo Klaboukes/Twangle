@@ -149,6 +149,7 @@
     <string name="tour_picker">اختر الآلة والدوزان</string>
     <string name="tour_mode">اضبط الأوتار أو أي نغمة</string>
     <string name="tour_navigation">المترونوم والإعدادات</string>
+    <string name="tour_navigation_practice">التدريب والإعدادات</string>
     <string name="tour_skip">تخطَّ الجولة</string>
     <string name="tour_next">التالي</string>
     <string name="tour_done">تم</string>

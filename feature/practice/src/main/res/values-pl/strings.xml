@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">Metronom</string>
+    <string name="practice_tool_chords">Akordy</string>
+    <string name="practice_chords_coming">Wkrótce pojawią się tu diagramy akordów i skale.</string>
+</resources>

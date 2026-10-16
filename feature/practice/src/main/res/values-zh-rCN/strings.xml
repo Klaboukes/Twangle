@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">节拍器</string>
+    <string name="practice_tool_chords">和弦</string>
+    <string name="practice_chords_coming">和弦图和音阶即将在这里推出。</string>
+</resources>

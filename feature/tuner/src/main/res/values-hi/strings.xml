@@ -135,6 +135,7 @@
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
     <string name="tour_mode">तार या कोई भी नोट ट्यून करें</string>
     <string name="tour_navigation">मेट्रोनोम और सेटिंग्स</string>
+    <string name="tour_navigation_practice">अभ्यास और सेटिंग्स</string>
     <string name="tour_skip">टूर छोड़ें</string>
     <string name="tour_next">आगे</string>
     <string name="tour_done">हो गया</string>

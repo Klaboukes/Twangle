@@ -2,6 +2,7 @@
     <string name="nav_tuner">Stimmgerät</string>
     <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Üben</string>
     <string name="nav_settings">Einstellungen</string>
     <string name="widget_name">Stimmgerät</string>
     <string name="widget_description">Zeigt dein Instrument und deine Stimmung. Ein Tippen öffnet das Stimmgerät.</string>

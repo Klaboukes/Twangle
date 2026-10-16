@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Practice tab (Phase 32): the tool switch at its top, one segment per tool. -->
+    <string name="practice_tool_metronome">Metronome</string>
+    <string name="practice_tool_chords">Chords</string>
+    <!-- The Chords tool until its charts come (the next step of Phase 32). -->
+    <string name="practice_chords_coming">Chord charts and scales are coming here soon.</string>
+</resources>

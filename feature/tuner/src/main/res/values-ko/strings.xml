@@ -132,6 +132,7 @@
     <string name="tour_picker">악기와 튜닝 선택</string>
     <string name="tour_mode">줄 또는 아무 음이나 튜닝</string>
     <string name="tour_navigation">메트로놈과 설정</string>
+    <string name="tour_navigation_practice">연습과 설정</string>
     <string name="tour_skip">둘러보기 건너뛰기</string>
     <string name="tour_next">다음</string>
     <string name="tour_done">완료</string>

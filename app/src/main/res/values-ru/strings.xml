@@ -2,6 +2,7 @@
     <string name="nav_tuner">Тюнер</string>
     <string name="nav_instrument">Инструмент</string>
     <string name="nav_metronome">Метроном</string>
+    <string name="nav_practice">Практика</string>
     <string name="nav_settings">Настройки</string>
     <string name="widget_name">Тюнер</string>
     <string name="widget_description">Показывает инструмент и строй. Одно касание открывает тюнер.</string>

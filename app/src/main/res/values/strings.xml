@@ -4,6 +4,8 @@
     <string name="nav_tuner">Tuner</string>
     <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronome</string>
+    <!-- The Metronome tab's name with the Practice tab's switch on (Phase 32): it holds the metronome and the chord charts. -->
+    <string name="nav_practice">Practice</string>
     <string name="nav_settings">Settings</string>
     <!-- The home-screen widget: its name and description in the widget picker, its line (instrument ·
          tuning), the line under it, and the picker's preview text. -->

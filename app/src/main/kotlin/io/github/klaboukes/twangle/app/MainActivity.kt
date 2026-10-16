@@ -46,7 +46,13 @@ import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.PracticeTool
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
+import io.github.klaboukes.twangle.feature.practice.ChordsScreen
+import io.github.klaboukes.twangle.feature.practice.PracticeToolSwitch
+import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
+import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
@@ -183,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                     open = tourOpen,
                     steps = TourPart.stepsFor(settings.mode),
                     // Where the tuner offers more than the strum check, its "more tools" button stands in the switch's place.
-                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1) },
+                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1, practice = tools.practiceTab) },
                     onEnd = {
                         tourEnded = true
                         tourRequested = false
@@ -202,6 +208,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         tuningState = spokenTuning(settings),
                         hidden = screen == Screen.TUNER && tunerCompact,
+                        practice = tools.practiceTab,
                     ) {
                         saveableState.SaveableStateProvider(screen.name) {
                             when (screen) {
@@ -231,20 +238,7 @@ class MainActivity : AppCompatActivity() {
                                         savedMicRefused = settings.micRefused,
                                     )
                                 }
-                                Screen.METRONOME -> {
-                                    // The volume keys set the clicks' loudness (the media volume).
-                                    MediaVolumeKeys()
-                                    MetronomeScreen(
-                                        player = container.metronomePlayer,
-                                        settingsRepository = container.settingsRepository,
-                                        recorder = container.listenRecorder,
-                                        tools = tools,
-                                        savedBpm = settings.metronomeBpm,
-                                        savedMeter = settings.metronomeMeter,
-                                        savedVibrate = settings.metronomeVibrate,
-                                        savedMicRefused = settings.micRefused,
-                                    )
-                                }
+                                Screen.METRONOME -> PracticeTab(container, settings, tools)
                                 Screen.SETTINGS -> SettingsScreen(
                                     settingsRepository = container.settingsRepository,
                                     appVersion = BuildConfig.VERSION_NAME,
@@ -270,6 +264,57 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab], the
+     * Play build until it goes live) it is the metronome as in v1.0. With it on it is Practice
+     * (Phase 32): the tool switch at the top of each tool picks the metronome or chords, and the tab
+     * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
+     * tool keeps its own saved UI state while the other shows; leaving the metronome stops it, as
+     * leaving the tab does.
+     */
+    @Composable
+    private fun PracticeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches) {
+        val offered = practiceToolsFor(tools)
+        var tool by rememberSaveable { mutableStateOf(practiceToolToOpen(settings.practiceTool, offered)) }
+        val header: (@Composable () -> Unit)? = if (offered.isEmpty()) {
+            null
+        } else {
+            {
+                PracticeToolSwitch(
+                    tool = tool,
+                    onToolChange = { picked ->
+                        if (picked != tool) {
+                            tool = picked
+                            lifecycleScope.launch { container.settingsRepository.setPracticeTool(picked) }
+                        }
+                    },
+                    tools = offered,
+                )
+            }
+        }
+        val toolState = rememberSaveableStateHolder()
+        toolState.SaveableStateProvider(tool.name) {
+            when (if (header == null) PracticeTool.METRONOME else tool) {
+                PracticeTool.METRONOME -> {
+                    // The volume keys set the clicks' loudness (the media volume).
+                    MediaVolumeKeys()
+                    MetronomeScreen(
+                        player = container.metronomePlayer,
+                        settingsRepository = container.settingsRepository,
+                        recorder = container.listenRecorder,
+                        tools = tools,
+                        savedBpm = settings.metronomeBpm,
+                        savedMeter = settings.metronomeMeter,
+                        savedVibrate = settings.metronomeVibrate,
+                        savedMicRefused = settings.micRefused,
+                        header = header,
+                    )
+                }
+                PracticeTool.CHORDS -> ChordsScreen(header = header ?: {})
             }
         }
     }

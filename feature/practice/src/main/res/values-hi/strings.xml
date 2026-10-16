@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">मेट्रोनोम</string>
+    <string name="practice_tool_chords">कॉर्ड</string>
+    <string name="practice_chords_coming">कॉर्ड चार्ट और स्केल जल्द ही यहाँ आएँगे।</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">Metronoom</string>
+    <string name="practice_tool_chords">Akkoorden</string>
+    <string name="practice_chords_coming">Akkoordschema\'s en toonladders komen hier binnenkort.</string>
+</resources>

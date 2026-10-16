@@ -164,6 +164,24 @@ enum class InTuneEffect {
     }
 }
 
+/**
+ * The tool the Practice tab shows (Phase 32, with its switch on, [ToolSwitches.practiceTab]): it
+ * opens on the one used last. Saved in settings by [name], so don't rename the entries.
+ */
+enum class PracticeTool {
+    /** The metronome, the Metronome tab's screen. */
+    METRONOME,
+
+    /** Chord charts and scales for the picked instrument and tuning. */
+    CHORDS,
+    ;
+
+    companion object {
+        /** A fresh install opens Practice on the metronome, the tab it used to be. */
+        val DEFAULT = METRONOME
+    }
+}
+
 /** Everything the user can change, with the defaults a fresh install starts from. */
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
@@ -226,6 +244,8 @@ data class AppSettings(
     val metronomeMeter: Meter = Meter.DEFAULT,
     /** One short vibration on every metronome beat (off until the player turns it on). */
     val metronomeVibrate: Boolean = false,
+    /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
+    val practiceTool: PracticeTool = PracticeTool.DEFAULT,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

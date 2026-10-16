@@ -59,8 +59,12 @@ enum class TourCorner { BUTTON, STRING, CARD }
 /**
  * [part]'s balloon text. Where the tuner offers more than one tool ([moreTools], see
  * `tunerToolsFor`), the "more tools" button stands in the strum check's switch's place, so that step
- * names it ("More tools, like strum check"); otherwise every step's own [TourPart.text].
+ * names it ("More tools, like strum check"); where the bar's Metronome tab is Practice ([practice],
+ * Phase 32), the last step says "Practice and settings"; otherwise every step's own [TourPart.text].
  */
 @StringRes
-fun tourTextOf(part: TourPart, moreTools: Boolean): Int =
-    if (moreTools && part == TourPart.STRUM) R.string.tour_more_tools else part.text
+fun tourTextOf(part: TourPart, moreTools: Boolean, practice: Boolean = false): Int = when {
+    moreTools && part == TourPart.STRUM -> R.string.tour_more_tools
+    practice && part == TourPart.NAVIGATION -> R.string.tour_navigation_practice
+    else -> part.text
+}

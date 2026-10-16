@@ -188,6 +188,8 @@
     <string name="tour_picker">Pick instrument and tuning</string>
     <string name="tour_mode">Tune strings or any note</string>
     <string name="tour_navigation">Metronome and settings</string>
+    <!-- The tour's last step with the Practice tab (Phase 32) in the bar. -->
+    <string name="tour_navigation_practice">Practice and settings</string>
     <string name="tour_skip">Skip tour</string>
     <string name="tour_next">Next</string>
     <string name="tour_done">Done</string>

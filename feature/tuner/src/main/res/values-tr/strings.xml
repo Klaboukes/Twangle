@@ -136,6 +136,7 @@
     <string name="tour_picker">Enstrüman ve akort seç</string>
     <string name="tour_mode">Teller ya da herhangi bir nota</string>
     <string name="tour_navigation">Metronom ve ayarlar</string>
+    <string name="tour_navigation_practice">Pratik ve ayarlar</string>
     <string name="tour_skip">Turu atla</string>
     <string name="tour_next">İleri</string>
     <string name="tour_done">Bitti</string>

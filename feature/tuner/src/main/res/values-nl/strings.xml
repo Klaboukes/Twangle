@@ -145,6 +145,7 @@
     <string name="tour_picker">Kies instrument en stemming</string>
     <string name="tour_mode">Stem snaren of elke noot</string>
     <string name="tour_navigation">Metronoom en instellingen</string>
+    <string name="tour_navigation_practice">Oefenen en instellingen</string>
     <string name="tour_skip">Overslaan</string>
     <string name="tour_next">Volgende</string>
     <string name="tour_done">Klaar</string>

@@ -138,6 +138,7 @@
     <string name="tour_picker">Elige instrumento y afinación</string>
     <string name="tour_mode">Afina cuerdas o cualquier nota</string>
     <string name="tour_navigation">Metrónomo y ajustes</string>
+    <string name="tour_navigation_practice">Práctica y ajustes</string>
     <string name="tour_skip">Saltar</string>
     <string name="tour_next">Siguiente</string>
     <string name="tour_done">Listo</string>

@@ -215,6 +215,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[METRONOME_VIBRATE] = enabled }
     }
 
+    override suspend fun setPracticeTool(tool: PracticeTool) {
+        dataStore.edit { it[PRACTICE_TOOL] = tool.name }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -250,6 +254,7 @@ class DataStoreSettingsRepository internal constructor(
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
+            practiceTool = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL]) ?: defaults.practiceTool,
         )
     }
 
@@ -297,6 +302,9 @@ class DataStoreSettingsRepository internal constructor(
         /** The metronome's [Meter], by its name. */
         private val METRONOME_METER = stringPreferencesKey("metronome_meter")
         private val METRONOME_VIBRATE = booleanPreferencesKey("metronome_vibrate")
+
+        /** The Practice tab's [PracticeTool] used last, by its name. */
+        private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

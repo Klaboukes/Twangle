@@ -67,7 +67,7 @@ import org.junit.runners.Parameterized
  * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
  * wholly shown. The frame hides the bar for the tuning editor and the compact tuner, and the content
- * never reaches under it.
+ * never reaches under it. With the Practice tab's switch on (Phase 32) the Metronome tab is called Practice.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -90,6 +90,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val shownSelected = mutableStateOf<Destination?>(Destination.TUNER)
     private val shownHidden = mutableStateOf(false)
+    private val shownPractice = mutableStateOf(false)
     private val picked = mutableListOf<Destination>()
     private var tuningTaps = 0
     private var contentStarts = 0
@@ -107,6 +108,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                         onTuning = { tuningTaps++ },
                         tuningState = TUNING_STATE,
                         hidden = shownHidden.value,
+                        practice = shownPractice.value,
                         modifier = Modifier.testTag(WINDOW),
                     ) {
                         // Counts how often the content starts afresh.
@@ -121,12 +123,8 @@ class NavigationBarTest(private val style: VisualStyle) {
     private fun tab(destination: Destination) = compose.onNodeWithTag(NavigationTestTags.tab(destination))
     private val tuning get() = compose.onNodeWithTag(NavigationTestTags.INSTRUMENT)
 
-    private fun label(destination: Destination, dutch: Boolean = false): String {
-        val id = when (destination) {
-            Destination.TUNER -> R.string.nav_tuner
-            Destination.METRONOME -> R.string.nav_metronome
-            Destination.SETTINGS -> R.string.nav_settings
-        }
+    private fun label(destination: Destination, dutch: Boolean = false, practice: Boolean = false): String {
+        val id = destination.label(practice)
         return if (dutch) dutch(id) else english(id)
     }
 
@@ -199,6 +197,23 @@ class NavigationBarTest(private val style: VisualStyle) {
         shownSelected.value = Destination.TUNER
     }
 
+    /** With the Practice tab's switch on, the Metronome tab is heard and shown as "Practice", in the bar and the rail. */
+    @Test
+    fun withThePracticeSwitchTheMetronomeTabIsPractice() {
+        show()
+        for (practice in listOf(true, false)) {
+            shownPractice.value = practice
+            for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                compose.waitForIdle()
+                val name = english(if (practice) R.string.nav_practice else R.string.nav_metronome)
+                tab(Destination.METRONOME)
+                    .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+                    .assert(hasText(name))
+            }
+        }
+    }
+
     @Test
     fun aTapOnAnotherTabOpensItAndOnTheOpenOneDoesNothing() {
         show()
@@ -238,17 +253,18 @@ class NavigationBarTest(private val style: VisualStyle) {
         }
     }
 
-    /** The longest names, Dutch at 2× text, are wholly shown in the bar and in the rail (set smaller where they must). */
+    /** The longest names, Dutch at 2× text (Practice "Oefenen" too), are wholly shown in the bar and in the rail (set smaller where they must). */
     @Test
     fun dutchNamesAtTwiceTheTextSizeAreWhollyShown() {
         shownLocale.value = "nl"
         shownFontScale.value = 2f
         show()
-        for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+        for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) for (practice in listOf(false, true)) {
             shownSize.value = size
+            shownPractice.value = practice
             compose.waitForIdle()
             for (destination in Destination.entries) {
-                val name = label(destination, dutch = true)
+                val name = label(destination, dutch = true, practice = practice)
                 tab(destination).assert(hasText(name))
                 assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
             }
@@ -266,10 +282,11 @@ class NavigationBarTest(private val style: VisualStyle) {
         show()
         for (language in shippedLanguages) {
             shownLocale.value = language
-            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) for (practice in listOf(false, true)) {
                 shownSize.value = size
+                shownPractice.value = practice
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x:")
+                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} at 2x${if (practice) " with Practice" else ""}:")
             }
         }
     }

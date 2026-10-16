@@ -2,6 +2,7 @@
     <string name="nav_tuner">ट्यूनर</string>
     <string name="nav_instrument">वाद्य</string>
     <string name="nav_metronome">मेट्रोनोम</string>
+    <string name="nav_practice">अभ्यास</string>
     <string name="nav_settings">सेटिंग्स</string>
     <string name="widget_name">ट्यूनर</string>
     <string name="widget_description">आपका वाद्य और ट्यूनिंग दिखाता है। एक टैप से ट्यूनर खुलता है।</string>

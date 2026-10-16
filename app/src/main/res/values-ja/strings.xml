@@ -2,6 +2,7 @@
     <string name="nav_tuner">チューナー</string>
     <string name="nav_instrument">楽器</string>
     <string name="nav_metronome">メトロノーム</string>
+    <string name="nav_practice">練習</string>
     <string name="nav_settings">設定</string>
     <string name="widget_name">チューナー</string>
     <string name="widget_description">楽器とチューニングを表示します。タップするとチューナーが開きます。</string>

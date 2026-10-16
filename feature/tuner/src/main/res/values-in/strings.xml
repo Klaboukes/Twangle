@@ -132,6 +132,7 @@
     <string name="tour_picker">Pilih instrumen dan stem</string>
     <string name="tour_mode">Setem senar atau nada apa pun</string>
     <string name="tour_navigation">Metronom dan setelan</string>
+    <string name="tour_navigation_practice">Latihan dan setelan</string>
     <string name="tour_skip">Lewati tur</string>
     <string name="tour_next">Berikutnya</string>
     <string name="tour_done">Selesai</string>

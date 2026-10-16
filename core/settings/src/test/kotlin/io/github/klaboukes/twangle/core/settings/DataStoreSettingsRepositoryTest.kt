@@ -102,6 +102,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
+        assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
     }
 
     @Test
@@ -128,6 +129,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
+        repo.setPracticeTool(PracticeTool.CHORDS)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -151,6 +153,7 @@ class DataStoreSettingsRepositoryTest {
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
+            practiceTool = PracticeTool.CHORDS,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -180,6 +183,7 @@ class DataStoreSettingsRepositoryTest {
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
             setMetronomeVibrate(true)
+            setPracticeTool(PracticeTool.CHORDS)
         }
         close()
 
@@ -197,6 +201,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
+        assertEquals("the Practice tool used last is kept", PracticeTool.CHORDS, settings.practiceTool)
     }
 
     @Test

@@ -110,4 +110,7 @@ interface SettingsRepository {
     suspend fun setMetronomeMeter(meter: Meter)
 
     suspend fun setMetronomeVibrate(enabled: Boolean)
+
+    /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
+    suspend fun setPracticeTool(tool: PracticeTool)
 }

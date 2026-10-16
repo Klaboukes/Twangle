@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="practice_tool_metronome">메트로놈</string>
+    <string name="practice_tool_chords">코드</string>
+    <string name="practice_chords_coming">코드 차트와 스케일이 곧 여기에 표시됩니다.</string>
+</resources>

@@ -136,6 +136,7 @@
     <string name="tour_picker">Instrument und Stimmung wählen</string>
     <string name="tour_mode">Saiten oder jeden Ton stimmen</string>
     <string name="tour_navigation">Metronom und Einstellungen</string>
+    <string name="tour_navigation_practice">Üben und Einstellungen</string>
     <string name="tour_skip">Überspringen</string>
     <string name="tour_next">Weiter</string>
     <string name="tour_done">Fertig</string>

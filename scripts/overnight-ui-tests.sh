@@ -17,7 +17,7 @@ ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 COOL_BELOW="${COOL_BELOW:-37}"
 OUT="$ROOT/build/overnight"
 # The modules with @EveryLanguage tests, and the styles (VisualStyle) they are parameterized by.
-LANGUAGE_MODULES=(:feature:tuner :feature:settings :feature:metronome :app)
+LANGUAGE_MODULES=(:feature:tuner :feature:settings :feature:metronome :feature:practice :app)
 STYLES=(ANCIENT CLASSIC RETRO CONTEMPORARY FUTURISTIC SPACE_AGE)
 
 sweep=1 languages=1

@@ -83,7 +83,8 @@ import kotlin.math.min
  * and [tuningState] ("Guitar, Standard") is what TalkBack hears it holds. Without a [selected] tab (the tuning
  * editor), or while [hidden] (the compact tuner on its side), the bar or rail is away and [content]
  * takes the whole window. The bar or rail keeps clear of the system bars; [content] is told those
- * insets are taken, so it doesn't leave room for them twice.
+ * insets are taken, so it doesn't leave room for them twice. With [practice] (the Practice tab's
+ * switch on, Phase 32) the Metronome tab is called Practice.
  */
 @Composable
 fun AppNavigationFrame(
@@ -93,6 +94,7 @@ fun AppNavigationFrame(
     onTuning: () -> Unit = {},
     tuningState: String? = null,
     hidden: Boolean = false,
+    practice: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val shown = selected != null && !hidden
@@ -109,7 +111,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
-                    AppNavigationRail(tab, onSelect, onTuning, tuningState)
+                    AppNavigationRail(tab, onSelect, onTuning, tuningState, practice = practice)
                 }
             } else {
                 AnimatedVisibility(
@@ -117,7 +119,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 ) {
-                    AppNavigationBar(tab, onSelect, onTuning, tuningState)
+                    AppNavigationBar(tab, onSelect, onTuning, tuningState, practice = practice)
                 }
             }
         }
@@ -170,6 +172,7 @@ fun AppNavigationBar(
     onTuning: () -> Unit,
     tuningState: String?,
     modifier: Modifier = Modifier,
+    practice: Boolean = false,
 ) {
     val field = MaterialTheme.colorScheme.background
     Row(
@@ -197,7 +200,7 @@ fun AppNavigationBar(
         verticalAlignment = Alignment.Top,
     ) {
         for (destination in Destination.entries) {
-            NavItem(destination, destination == selected, { onSelect(destination) }, Modifier.weight(1f))
+            NavItem(destination, destination == selected, { onSelect(destination) }, practice, Modifier.weight(1f))
             if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.weight(1f))
         }
     }
@@ -214,6 +217,7 @@ fun AppNavigationRail(
     onTuning: () -> Unit,
     tuningState: String?,
     modifier: Modifier = Modifier,
+    practice: Boolean = false,
 ) {
     val field = MaterialTheme.colorScheme.background
     Box(
@@ -247,7 +251,7 @@ fun AppNavigationRail(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             for (destination in Destination.entries) {
-                NavItem(destination, destination == selected, { onSelect(destination) }, Modifier.fillMaxWidth())
+                NavItem(destination, destination == selected, { onSelect(destination) }, practice, Modifier.fillMaxWidth())
                 if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.fillMaxWidth())
             }
         }
@@ -258,13 +262,14 @@ fun AppNavigationRail(
  * One tab: its icon, its name under it and, while it is the open one, the style's wave mark under
  * that (the room for the mark is kept either way, so nothing moves). The open tab is in the accent,
  * the others in the muted colour. TalkBack hears its name, "tab" and whether it is selected, like a
- * Material 3 navigation bar item; the icon says nothing more.
+ * Material 3 navigation bar item; the icon says nothing more. With [practice] the Metronome tab is
+ * called Practice (it keeps the metronome's icon: the metronome is still what it holds first).
  */
 @Composable
-private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> Unit, practice: Boolean, modifier: Modifier = Modifier) {
     NavEntry(
         icon = navIcon(destination, selected),
-        label = stringResource(destination.label),
+        label = stringResource(destination.label(practice)),
         selected = selected,
         modifier = modifier
             .testTag(NavigationTestTags.tab(destination))
@@ -357,12 +362,12 @@ private fun NavLabel(text: String, color: Color) {
     }
 }
 
-private val Destination.label: Int
-    get() = when (this) {
-        Destination.TUNER -> R.string.nav_tuner
-        Destination.METRONOME -> R.string.nav_metronome
-        Destination.SETTINGS -> R.string.nav_settings
-    }
+/** The tab's name: the Metronome tab is Practice with [practice] (Phase 32). */
+internal fun Destination.label(practice: Boolean): Int = when (this) {
+    Destination.TUNER -> R.string.nav_tuner
+    Destination.METRONOME -> if (practice) R.string.nav_practice else R.string.nav_metronome
+    Destination.SETTINGS -> R.string.nav_settings
+}
 
 /** Test tags for UI tests and the Baseline Profile generator (as resource ids, see `MainActivity`). */
 object NavigationTestTags {

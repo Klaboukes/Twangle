@@ -76,7 +76,9 @@ import io.github.klaboukes.twangle.feature.metronome.components.StartStopButton
 import io.github.klaboukes.twangle.feature.metronome.components.DIAL_UNITS
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
+import io.github.klaboukes.twangle.feature.metronome.components.STEP_BUTTON_SIZE
 import io.github.klaboukes.twangle.feature.metronome.components.STEP_INSET_UNITS
+import io.github.klaboukes.twangle.feature.metronome.components.STEP_UP_UNITS
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
@@ -99,7 +101,8 @@ import kotlin.math.roundToInt
  * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
  *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
- * [ToolSwitches.ALL_OFF] this is the v1.0 Metronome tab.
+ * [ToolSwitches.ALL_OFF] this is the v1.0 Metronome tab. In the Practice tab (Phase 32) [header] is
+ * its tool switch, at the top ([MetronomeContent]).
  */
 @Composable
 fun MetronomeScreen(
@@ -112,6 +115,7 @@ fun MetronomeScreen(
     savedMeter: Meter = Meter.DEFAULT,
     savedVibrate: Boolean = false,
     savedMicRefused: Boolean = false,
+    header: (@Composable () -> Unit)? = null,
 ) {
     val viewModel: MetronomeViewModel = viewModel {
         MetronomeViewModel(
@@ -172,6 +176,7 @@ fun MetronomeScreen(
         onTryAgain = permission::listen,
         onOpenSettings = permission::openSettings,
         modifier = modifier,
+        header = header,
     )
 }
 
@@ -258,6 +263,10 @@ class BeatClock {
  * large font the column scrolls. Only the beat lights and the dial's glow move, and only while
  * playing or listening. [listen] says where Listen stands; a found tempo shows in a balloon over
  * the screen, pointing at Listen ([onUse], [onNotNow]; Back is Not now).
+ *
+ * A [header] (the Practice tab's tool switch, Phase 32) stands at the very top, 8 dp down as the
+ * tuner's mode switch, with the meter picker under it; on its side it stands at the top of the
+ * dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
  */
 @Composable
 fun MetronomeContent(
@@ -281,6 +290,7 @@ fun MetronomeContent(
     onNotNow: () -> Unit = {},
     onTryAgain: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    header: (@Composable () -> Unit)? = null,
 ) {
     val listening = listen.listening
     val currentHeard by rememberUpdatedState(heard)
@@ -363,8 +373,14 @@ fun MetronomeContent(
             }
             if (wide) {
                 Row(Modifier.fillMaxSize().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
-                    BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                        tempoDial(minOf(DIAL_WIDE, height, dialFitting(maxWidth)))
+                    Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (header != null) {
+                            Spacer(Modifier.height(HEADER_TOP))
+                            header()
+                        }
+                        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            tempoDial(minOf(DIAL_WIDE, maxHeight, dialFittingHeight(maxHeight), dialFitting(maxWidth)))
+                        }
                     }
                     Column(
                         modifier = Modifier
@@ -396,6 +412,10 @@ fun MetronomeContent(
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    if (header != null) {
+                        Spacer(Modifier.height(HEADER_TOP))
+                        header()
+                    }
                     Spacer(Modifier.height(12.dp))
                     MeterPicker(meter, onMeterChange)
                     Spacer(Modifier.weight(1f))
@@ -431,6 +451,17 @@ fun MetronomeContent(
  * 26 − 8u dp past the dial, u = dial / 288.
  */
 private fun dialFitting(room: Dp): Dp = ((room.value / 2f - STEP_REACH_DP) * DIAL_UNITS / (DIAL_UNITS / 2f - STEP_INSET_UNITS)).dp
+
+/**
+ * The largest dial, centred in a pane [room] tall (on its side, under the Practice tab's tool
+ * switch), whose − and + stay inside it: below a dial smaller than 288 dp they reach
+ * 26 − 26u dp past its bottom, u = dial / 288, into the room under it. Any dial up to [room]
+ * fits from about 290 dp.
+ */
+private fun dialFittingHeight(room: Dp): Dp {
+    val half = STEP_BUTTON_SIZE.value / 2f
+    return ((room.value - 2f * half) / (1f - 2f * STEP_UP_UNITS / DIAL_UNITS)).dp
+}
 
 /** Half a step button plus 2 dp to spare. */
 private const val STEP_REACH_DP = 28f
@@ -532,6 +563,9 @@ object MetronomeTestTags {
 
 /** Side by side from this width, when wider than tall. */
 private val WIDE_MIN_WIDTH = 600.dp
+
+/** A [MetronomeContent] header stands this far down from the top, as the tuner's mode switch. */
+private val HEADER_TOP = 8.dp
 
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp

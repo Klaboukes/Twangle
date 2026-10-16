@@ -132,6 +132,7 @@
     <string name="tour_picker">楽器とチューニングを選ぶ</string>
     <string name="tour_mode">弦か、どの音でもチューニング</string>
     <string name="tour_navigation">メトロノームと設定</string>
+    <string name="tour_navigation_practice">練習と設定</string>
     <string name="tour_skip">ツアーをスキップ</string>
     <string name="tour_next">次へ</string>
     <string name="tour_done">完了</string>

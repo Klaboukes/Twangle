@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
+import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -46,7 +47,9 @@ import org.junit.runners.Parameterized
  * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
- * then wholly shown. Playing, in 7/8, so every mark size and the Stop label show.
+ * then wholly shown. Playing, in 7/8, so every mark size and the Stop label show. With the Practice
+ * tab's tool switch over it (Phase 32, a stand-in with the same switch and English labels), as the
+ * debug build shows it, and without, as the v1.0 Metronome tab.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -65,6 +68,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
     private val shownListen = mutableStateOf(ListenUi())
+    private val shownHeader = mutableStateOf(true)
 
     private fun show() {
         compose.setContent {
@@ -87,6 +91,11 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         onVibrateChange = {},
                         listen = shownListen.value,
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                        header = if (shownHeader.value) {
+                            { PracticeSwitchStandIn() }
+                        } else {
+                            null
+                        },
                     )
                 }
             }
@@ -94,7 +103,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> =
-        Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
+        (if (shownHeader.value) listOf("tool switch" to compose.onNodeWithTag(HEADER)) else emptyList()) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
             "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
             "dial" to compose.onNodeWithTag(MetronomeTestTags.DIAL),
             "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
@@ -109,15 +118,20 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     @Test
     fun everythingFitsWithoutScrollingAndNothingOverlaps() {
         show()
-        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
-            shownSize.value = size
-            shownFontScale.value = scale
-            for (dark in listOf(false, true)) {
-                shownDark.value = dark
-                compose.waitForIdle()
-                assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x:")
+        for (header in listOf(true, false)) {
+            shownHeader.value = header
+            for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
+                shownSize.value = size
+                shownFontScale.value = scale
+                for (dark in listOf(false, true)) {
+                    shownDark.value = dark
+                    compose.waitForIdle()
+                    val practice = if (header) " with the tool switch" else ""
+                    assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x$practice:")
+                }
             }
         }
+        shownHeader.value = true
     }
 
     @Test
@@ -177,8 +191,13 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
                 for (tag in listOf(MetronomeTestTags.SLOWER, MetronomeTestTags.FASTER)) {
                     val step = compose.onNodeWithTag(tag).getBoundsInRoot()
-                    assertTrue("$case $tag $step inside the window $window", step.left >= window.left - SLACK && step.right <= window.right + SLACK)
-                    assertTrue("$case $tag $step at the dial's bottom $dial", step.bottom <= dial.bottom + 1.dp && step.bottom >= dial.bottom - 8.dp)
+                    assertTrue(
+                        "$case $tag $step inside the window $window",
+                        step.left >= window.left - SLACK && step.right <= window.right + SLACK && step.bottom <= window.bottom + SLACK,
+                    )
+                    // A dial smaller than 288 dp (on its side under the tool switch) has them reach 26 − 26u dp below it, u = dial / 288.
+                    val below = (26f - 26f * dial.height.value / 288f).coerceAtLeast(0f).dp
+                    assertTrue("$case $tag $step at the dial's bottom $dial", step.bottom <= dial.bottom + below + 1.dp && step.bottom >= dial.bottom - 8.dp)
                 }
                 assertTrue("$case slower on the left", compose.onNodeWithTag(MetronomeTestTags.SLOWER).getBoundsInRoot().right < dial.left + dial.width / 2)
             }
@@ -211,6 +230,19 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             }
         }
         shownListen.value = ListenUi()
+    }
+
+    /** The Practice tab's tool switch as it stands over the metronome: the same switch, two tools. */
+    @androidx.compose.runtime.Composable
+    private fun PracticeSwitchStandIn() {
+        SegmentedSwitch(
+            options = listOf("Metronome", "Chords"),
+            selected = "Metronome",
+            onSelect = {},
+            label = { it },
+            tag = { "header_$it" },
+            modifier = Modifier.testTag(HEADER),
+        )
     }
 
     private fun DpRect.overlaps(other: DpRect) =
@@ -250,6 +282,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
         private const val WINDOW = "window"
+        private const val HEADER = "header"
         private const val TEST_TIMEOUT_SECONDS = 20L
 
         /**

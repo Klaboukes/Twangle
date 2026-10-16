@@ -120,6 +120,7 @@ dependencies {
     implementation(project(":feature:tuner"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:metronome"))
+    implementation(project(":feature:practice"))
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))
     implementation(project(":core:settings"))

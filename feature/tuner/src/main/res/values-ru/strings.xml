@@ -142,6 +142,7 @@
     <string name="tour_picker">Выбери инструмент и строй</string>
     <string name="tour_mode">Струны или любая нота</string>
     <string name="tour_navigation">Метроном и настройки</string>
+    <string name="tour_navigation_practice">Практика и настройки</string>
     <string name="tour_skip">Пропустить</string>
     <string name="tour_next">Далее</string>
     <string name="tour_done">Готово</string>

@@ -2,6 +2,7 @@
     <string name="nav_tuner">Tuner</string>
     <string name="nav_instrument">Instrumen</string>
     <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Latihan</string>
     <string name="nav_settings">Setelan</string>
     <string name="widget_name">Tuner</string>
     <string name="widget_description">Menampilkan instrumen dan stem Anda. Ketuk sekali untuk membuka tuner.</string>

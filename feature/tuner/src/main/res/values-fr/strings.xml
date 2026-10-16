@@ -139,6 +139,7 @@
     <string name="tour_picker">Choisissez instrument et accordage</string>
     <string name="tour_mode">Accordez des cordes ou toute note</string>
     <string name="tour_navigation">Métronome et paramètres</string>
+    <string name="tour_navigation_practice">Pratique et paramètres</string>
     <string name="tour_skip">Passer</string>
     <string name="tour_next">Suivant</string>
     <string name="tour_done">Terminé</string>

@@ -2,6 +2,7 @@
     <string name="nav_tuner">Afinador</string>
     <string name="nav_instrument">Instrumento</string>
     <string name="nav_metronome">Metrônomo</string>
+    <string name="nav_practice">Prática</string>
     <string name="nav_settings">Configurações</string>
     <string name="widget_name">Afinador</string>
     <string name="widget_description">Mostra seu instrumento e sua afinação. Um toque abre o afinador.</string>

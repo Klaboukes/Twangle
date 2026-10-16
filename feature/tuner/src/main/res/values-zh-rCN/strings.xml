@@ -132,6 +132,7 @@
     <string name="tour_picker">选择乐器和定弦</string>
     <string name="tour_mode">调琴弦或任意音</string>
     <string name="tour_navigation">节拍器和设置</string>
+    <string name="tour_navigation_practice">练习和设置</string>
     <string name="tour_skip">跳过导览</string>
     <string name="tour_next">下一步</string>
     <string name="tour_done">完成</string>

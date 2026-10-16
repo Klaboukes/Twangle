@@ -2,6 +2,7 @@
     <string name="nav_tuner">Accordatore</string>
     <string name="nav_instrument">Strumento</string>
     <string name="nav_metronome">Metronomo</string>
+    <string name="nav_practice">Pratica</string>
     <string name="nav_settings">Impostazioni</string>
     <string name="widget_name">Accordatore</string>
     <string name="widget_description">Mostra il tuo strumento e l\'accordatura. Un tocco apre l\'accordatore.</string>

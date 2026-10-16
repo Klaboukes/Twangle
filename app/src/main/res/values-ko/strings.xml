@@ -2,6 +2,7 @@
     <string name="nav_tuner">튜너</string>
     <string name="nav_instrument">악기</string>
     <string name="nav_metronome">메트로놈</string>
+    <string name="nav_practice">연습</string>
     <string name="nav_settings">설정</string>
     <string name="widget_name">튜너</string>
     <string name="widget_description">악기와 튜닝을 보여줘요. 한 번 탭하면 튜너가 열려요.</string>

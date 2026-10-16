@@ -11,6 +11,7 @@ import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -25,7 +26,8 @@ import org.junit.rules.Timeout
 /**
  * With every music tool switched off (Phase 28, [ToolSwitchesOffRule]), the debug app is the app
  * the Play build shows until the tools go live: the tuner's two modes and the bar's Tuner ·
- * Instrument · Metronome · Settings, nothing more. A later phase adds what its tool must not show here.
+ * Instrument · Metronome · Settings, and the Metronome tab the metronome alone (no Practice, no tool
+ * switch, no chords), nothing more. A later phase adds what its tool must not show here.
  */
 class ToolSwitchesOffTest {
 
@@ -37,6 +39,7 @@ class ToolSwitchesOffTest {
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun shown(tag: String): Boolean = device.wait(Until.hasObject(By.res(tag)), WAIT_MS)
     private fun tagsLike(pattern: String): Set<String> =
@@ -62,6 +65,13 @@ class ToolSwitchesOffTest {
                 (listOf(Destination.TUNER, Destination.METRONOME, Destination.SETTINGS).map(NavigationTestTags::tab) + NavigationTestTags.INSTRUMENT).toSet(),
                 tagsLike("nav_(?!bar$|rail$).*"),
             )
+            // Phase 32: the Metronome tab is called Metronome and shows the metronome alone.
+            val metronomeTab = device.findObject(By.res(NavigationTestTags.tab(Destination.METRONOME)))
+            assertTrue("the tab is called Metronome", metronomeTab.hasObject(By.text(context.getString(R.string.nav_metronome))))
+            metronomeTab.click()
+            assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
+            assertEquals("no Practice", emptySet<String>(), tagsLike("practice_.*"))
+            assertTrue("no Practice name", device.findObjects(By.text(context.getString(R.string.nav_practice))).isEmpty())
         }
     }
 

@@ -24,7 +24,7 @@ Topic files:
   - **[UI basics](docs/architecture/ui.md)**: UI state model · Navigation bar · Landscape and wide screens · Accessibility
   - **[Tuner screen and tour](docs/architecture/ui-tuner.md)**: Tuner screen · Strum check view · More tools · 12th-fret check view · Chord name view · Tour · Display
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Wave view · Strobe look · Wave looks · Visual styles
-  - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab (planned) · Home-screen widget · Watch app (Wear OS)
+  - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
 - §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Every screen in every style · Every language · Quick and thorough UI runs
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
@@ -66,6 +66,7 @@ Topic files:
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
+:feature:practice  Practice tab (Phase 32, behind its switch): the tool switch, the Chords tool (chord charts, scales)
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones and metronome clicks (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
@@ -84,6 +85,7 @@ Dependencies ("→" = depends on):
 :feature:tuner     → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :feature:metronome → :core:audio, :core:settings, :core:designsystem, :core:dsp
+:feature:practice  → :core:settings, :core:designsystem, :core:dsp (no microphone, no audio)
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: PluckSynth makes the reference tone's samples, ClickTrack the metronome's;
@@ -167,13 +169,17 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     components/ TempoDial (with − / + in its corners), MetronomeControls (MeterPicker, StepButton, TempoRow with
     Tap tempo and Listen, StartStopButton, VibrateSwitch), ListenParts (ListenLine, ListenBalloon)
 
+feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
+    PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolSwitch,
+    ChordsScreen (a placeholder until the chord charts and scales come)
+
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel
     components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
                 LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity, BuildToolSwitches (toolSwitchesFor),
+    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), BuildToolSwitches (toolSwitchesFor),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState
