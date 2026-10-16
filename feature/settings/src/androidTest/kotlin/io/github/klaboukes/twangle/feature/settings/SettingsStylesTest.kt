@@ -56,7 +56,7 @@ import org.junit.runners.Parameterized
 
 /**
  * Settings and About in each of the six styles, with that style picked: each style brings its own
- * fonts (Michroma and Orbitron are wide, Caesar Dressing tall), so rows differ in size. At 2× text,
+ * fonts (Michroma and Orbitron are wide, Forum narrow), so rows differ in size. At 2× text,
  * upright (light) and on its side (dark), every title, choice and card name can be scrolled to and
  * is then wholly shown; About's titles, version and credits too. TalkBack, light and dark, hears every
  * style, meter and wave card and every light-or-dark choice as a radio button with its name and which

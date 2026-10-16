@@ -16,8 +16,11 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * and ♭; [musicText] sets those in [MusicSignsFont] in every style.
  */
 internal object StyleFonts {
-    /** Ancient: rough, hewn capitals. Caesar Dressing by Open Window. */
-    val Hewn = FontFamily(Font(R.font.caesar_dressing))
+    /**
+     * Ancient: antique Roman letters, calm and a little narrow, with Polish, Turkish and Russian letters.
+     * Forum by Denis Masharov (October 2026, replacing Caesar Dressing, which the owner found too gimmicky).
+     */
+    val Roman = FontFamily(Font(R.font.forum))
 
     /**
      * Ancient's numbers: a calm humanist sans whose 0 reads as a 0, at its medium weight (the only cut
@@ -86,19 +89,16 @@ internal data class StyleFaces(
 )
 
 /**
- * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Caesar Dressing and
- * Orbitron lack Polish and Turkish letters (ą ę ś ż, ğ ş İ), so a word there would mix two faces:
- * Ancient's display and titles take its numbers face, Alegreya Sans, and Futuristic's take Space
- * Age's Michroma. Scripts the display faces don't have ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in
- * the phone's own font; the extra letter spacing meant for the display face is left out there, so
- * Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks both lists
+ * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Orbitron lacks
+ * Polish and Turkish letters (ą ę ś ż, ł, ğ ş İ), so a word there would mix two faces: Futuristic's
+ * display and titles take Space Age's Michroma. Scripts the display faces don't have
+ * ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in the phone's own font; the extra letter spacing meant
+ * for the display face is left out there, so Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks both lists
  * against the bundled fonts and every language's texts.
  */
 internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
     val own = ownFacesFor(style)
     return when {
-        language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.ANCIENT ->
-            own.copy(display = StyleFonts.Humanist, title = StyleFonts.Humanist, titleSpacing = TextUnit.Unspecified)
         language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.FUTURISTIC ->
             own.copy(display = StyleFonts.JetAge, title = StyleFonts.JetAge, displayWeight = null, titleSpacing = SPACE_AGE_SPACING)
         language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified)
@@ -106,26 +106,27 @@ internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
     }
 }
 
-/** Languages with Latin letters that Caesar Dressing (Ancient) and Orbitron (Futuristic) lack. */
+/** Languages with Latin letters that Orbitron (Futuristic) lacks. */
 internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr")
 
 /**
  * Languages in a script none of the display faces has (Arabic, Devanagari, Chinese, Japanese,
- * Korean, and Cyrillic, which only Classic's Playfair Display has; Android says "ru").
+ * Korean, and Cyrillic, which only Classic's Playfair Display and Ancient's Forum have; Android says
+ * "ru").
  */
 internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "hi", "ja", "ko", "ru", "zh")
 
 private val SPACE_AGE_SPACING = 0.02.em
 
 /**
- * The faces of each style, from the approved mock-up: Caesar Dressing with Alegreya Sans numbers
- * (Caesar Dressing's 0 looks like a diamond), Playfair Display with Bodoni Moda numbers and serif
+ * The faces of each style, from the approved mock-ups: Forum with Alegreya Sans numbers (the
+ * readouts kept the face they were approved in), Playfair Display with Bodoni Moda numbers and serif
  * reading text, Righteous, the phone's own font in light, Orbitron and Michroma (wide faces, numbers
  * at 82 %, see `numberScaleFor`). Reading text is the phone's sans serif unless said otherwise.
  */
 private fun ownFacesFor(style: VisualStyle): StyleFaces = when (style) {
     VisualStyle.ANCIENT -> StyleFaces(
-        StyleFonts.Hewn, StyleFonts.Hewn, FontFamily.SansSerif,
+        StyleFonts.Roman, StyleFonts.Roman, FontFamily.SansSerif,
         numbers = StyleFonts.Humanist, titleSpacing = 0.01.em,
     )
     VisualStyle.CLASSIC -> StyleFaces(

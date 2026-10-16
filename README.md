@@ -90,4 +90,4 @@ Contributor guidelines and project rules are in [CLAUDE.md](CLAUDE.md).
 
 ## Fonts
 
-The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Caesar Dressing (Open Window), Alegreya Sans (Juan Pablo del Peral, Huerta Tipográfica), Playfair Display (Claus Eggers Sørensen), Bodoni Moda (Owen Earl, indestructible type*), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google).
+The styles use these typefaces, bundled with the app under the [SIL Open Font License 1.1](core/designsystem/src/main/assets/licenses): Forum (Denis Masharov), Alegreya Sans (Juan Pablo del Peral, Huerta Tipográfica), Playfair Display (Claus Eggers Sørensen), Bodoni Moda (Owen Earl, indestructible type*), Righteous (Astigmatic), Orbitron (Matt McInerney) and Michroma (Vernon Adams). The ♯ and ♭ signs come from a small cut of Noto Sans Symbols (Google).

@@ -23,7 +23,7 @@ class StyleFontCoverageTest {
         .first { File(it, "settings.gradle.kts").isFile }
 
     private val fontFiles: Map<FontFamily, String> = mapOf(
-        StyleFonts.Hewn to "caesar_dressing",
+        StyleFonts.Roman to "forum",
         StyleFonts.Humanist to "alegreya_sans_medium",
         StyleFonts.Didone to "playfair_display",
         StyleFonts.Bodoni to "bodoni_moda",
