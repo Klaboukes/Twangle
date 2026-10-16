@@ -153,7 +153,7 @@ import kotlin.math.min
  * instead, and [pickerOpen] opens the panel over it all the same. [savedMicRefused] is the saved
  * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
  * from one Android no longer shows ([MicPermissionRules]).
- * [tools] says which after-v1.0 tools show (Phase 28, decided in `:app`): a mode whose switch is off
+ * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the v1.0 tuner.
  */
 @Composable

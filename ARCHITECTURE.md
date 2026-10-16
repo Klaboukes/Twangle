@@ -132,7 +132,7 @@ core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer,
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
-    SettingsRepository (interface), DataStoreSettingsRepository, ToolSwitches (after-v1.0 tools shown)
+    SettingsRepository (interface), DataStoreSettingsRepository, ToolSwitches (music tools shown)
 core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/

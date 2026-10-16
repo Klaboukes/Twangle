@@ -23,9 +23,9 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 
 /**
- * With every after-v1.0 tool switched off (Phase 28, [ToolSwitchesOffRule]), the debug app is the
- * v1.0 app the Play build shows: the tuner's two modes and the bar's Tuner · Instrument · Metronome ·
- * Settings, nothing more. A later phase adds what its tool must not show here.
+ * With every music tool switched off (Phase 28, [ToolSwitchesOffRule]), the debug app is the app
+ * the Play build shows until the tools go live: the tuner's two modes and the bar's Tuner ·
+ * Instrument · Metronome · Settings, nothing more. A later phase adds what its tool must not show here.
  */
 class ToolSwitchesOffTest {
 

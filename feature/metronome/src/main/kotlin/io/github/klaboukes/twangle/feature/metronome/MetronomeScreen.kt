@@ -98,7 +98,7 @@ import kotlin.math.roundToInt
  * Listen (Phase 27) hears music nearby through [recorder], only while listening, after asking for the
  * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
  *
- * [tools] says which after-v1.0 tools show (Phase 28, decided in `:app`): with
+ * [tools] says which music tools show (Phase 28, decided in `:app`): with
  * [ToolSwitches.ALL_OFF] this is the v1.0 Metronome tab.
  */
 @Composable

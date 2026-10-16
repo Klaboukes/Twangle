@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             onDispose {}
         }
 
-        // Which after-v1.0 tools show (Phase 28): all in debug builds, none in release builds.
+        // Which music tools show (Phase 28): all in debug builds, none in release builds.
         val tools = container.toolSwitches
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.

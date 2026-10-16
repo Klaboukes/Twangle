@@ -4,10 +4,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * The release build (the Play build) is the v1.0 app: every after-v1.0 tool is hidden (Phase 28)
- * until the owner releases it in 1.1 (Phase 34), when its switch turns on here or goes. It runs in
+ * The release build (the Play build) hides every music tool (Phase 28) until the owner lets it go
+ * live (Phase 34, before v1.0), when its switch turns on here or goes. It runs in
  * the Baseline Profile plugin's `nonMinifiedRelease` and `benchmarkRelease` builds too (app/build.gradle.kts),
- * so the profile generator and the frame-time and startup runs see the v1.0 app as well.
+ * so the profile generator and the frame-time and startup runs see the release build's app as well.
  */
 class ReleaseToolSwitchesTest {
 

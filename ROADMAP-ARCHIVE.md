@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28 and 29 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29 and 30 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -36,6 +36,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 27 — Tempo from music](#phase-27--tempo-from-music)
 - [Phase 28 — Hidden until 1.1](#phase-28--hidden-until-11)
 - [Phase 29 — Intonation check](#phase-29--intonation-check)
+- [Phase 30 — What chord is this?](#phase-30--what-chord-is-this)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -324,6 +325,15 @@ Goal: tells whether a guitar plays in tune up the neck. Play the open string, th
 - ☑ Rough mock-up of the mode (choosing a string, the two steps, the verdict) for the owner to pick from (`docs/design/intonation-preview.html`; owner picked option A on 2026-10-16: a switch like the strum check, with the small icon switches gathered behind one "more options" (^) button so the tuner doesn't fill up with icons as tools are added; millimetres shown only where their accuracy can be guaranteed)
 - ☑ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones (a "more tools" (^) button gathers the strum check and the 12th-fret check where the build has more than one tool, v1.0's strum switch otherwise; millimetres on guitars only, to 0.5 mm; synthetic plucks through a fake microphone on the Xiaomi: A3 8 cents sharp says "move the saddle back, about 3 mm"; the laptop speaker didn't reach the phone that day; every style and every language run overnight)
 - ☑ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say
+
+---
+
+## Phase 30 — What chord is this?
+Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum check's six-strings-at-once detection, pointed at chords instead of tuning.
+- ☑ `:core:dsp`: chord naming from a strum, the common chords first (major, minor, 7th, major 7th, minor 7th, sus2, sus4), with synthetic chord tests like the strum check's, open and barre shapes, and no name when the strum isn't a clear chord (`ChordDetector`: 41 shapes, no wrong name in 1,640 synthetic strums, no name for 483 of 484 sounds that are no chord)
+- ☑ Rough mock-up of the mode for the owner to pick from (`docs/design/chord-mode-preview.html`; owner picked B on 2026-10-16: the ^ menu's "Chord name", big symbol with words, the chord's notes with the bass filled, the last three chords; design in docs/architecture/ui-tuner.md, *Chord name view*)
+- ☑ The mode inside the tuner behind its switch (Phase 28): the chord's name in the player's note names, translated, TalkBack and 2× text; JVM and UI tests; phone check with synthetic chords ("Chord name" in the ^ menu for guitars, ukulele and mandolin; settled by `ChordSettler`: 4 of 6 readings, 1.5 s hold, faded, "Not a clear chord"; synthetic Am and C/E named on the Xiaomi through the fake microphone)
+- ☑ Owner check added: strum a dozen real chords and check the names
 
 ---
 

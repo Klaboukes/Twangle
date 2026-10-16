@@ -48,7 +48,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * suggested ([ListenPhase.FOUND]): nothing changes until [use]. The clicks come back afterwards only
  * if they were playing before.
  *
- * [tools] says which after-v1.0 tools show (Phase 28): Practice (Phase 32) and the capo helper
+ * [tools] says which music tools show (Phase 28): Practice (Phase 32) and the capo helper
  * (Phase 33) come only with their switches. Tests get every tool unless they say otherwise; the app
  * passes its build's.
  */

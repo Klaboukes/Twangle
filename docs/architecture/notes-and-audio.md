@@ -53,7 +53,7 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 **Names** (`PickerNames.kt`, `instrumentNameRes` / `tuningNameRes`, JVM-tested: every instrument and preset has one, none shared within an instrument): English and Dutch — Guitar/Gitaar, 7-string guitar/7-snarige gitaar, 8-string guitar/8-snarige gitaar, Bass/Bas, 5-string bass/5-snarige bas, Ukulele/Ukelele, Violin/Viool, Viola/Altviool, Cello, Mandolin/Mandoline. Every instrument's first preset is "Standard"; the ukulele's other is "Low G"/"Lage G".
 
 ## Intonation check
-Phase 29 (after v1.0, hidden in release builds until 1.1). The 12th fret halves the string, so it should sound exactly one octave (1200 cents) above the open string. If it is sharp, the sounding length from the fret to the saddle is too short and the saddle moves back, away from the neck; if flat, forward. `intonation/Intonation` in `:core:dsp` is the comparison, pure and JVM-tested:
+Phase 29 (hidden in release builds until it goes live, Phase 34). The 12th fret halves the string, so it should sound exactly one octave (1200 cents) above the open string. If it is sharp, the sounding length from the fret to the saddle is too short and the saddle moves back, away from the neck; if flat, forward. `intonation/Intonation` in `:core:dsp` is the comparison, pure and JVM-tested:
 - `offsetCents(openHz, fretHz) = 1200 · log2(fret / open) − 1200` (positive = sharp).
 - `verdictOf(offsetCents, toleranceCents)` gives `FINE`, `MOVE_SADDLE_BACK` (sharp), `MOVE_SADDLE_FORWARD` (flat) or `NOT_THE_OCTAVE`; `check(openHz, fretHz)` returns both as an `IntonationResult`.
 

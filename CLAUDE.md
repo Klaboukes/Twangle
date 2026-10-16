@@ -83,7 +83,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
 - Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
-- **Until version 1.1 is released, every after-v1.0 tool (ROADMAP Phases 29–33) stays hidden in release builds** behind its own switch (Phase 28, [docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). Debug builds and UI tests show it. v1.0 work and fixes land on `main` as usual.
+- **Until it goes live (ROADMAP Phase 34), every music tool (Phases 29–33) stays hidden in release builds** behind its own switch (Phase 28, [docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). Debug builds and UI tests show it. The owner decided (2026-10-16) the tools go into v1.0, so the release (Phase 23) comes after them; fixes land on `main` as usual.
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow

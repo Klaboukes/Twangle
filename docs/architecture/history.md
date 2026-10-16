@@ -17,6 +17,7 @@ Designs and measurements that have been superseded, kept for the record and take
 - [Testing](#testing)
 
 ## Overview
+- **Music tools in 1.1:** on 2026-10-16 the owner first planned v1.0 as it was and the music tools (Phases 29–33) for a version 1.1 after it (Phase 34, "Version 1.1 on the Play Store", once v1.0 was live; the store screenshots under `ToolSwitchesOffRule`). Later that day, in no hurry to release, the owner moved the tools into v1.0: Phase 34 turns them on before the release.
 - **CI trigger:** until 2026-10-16 GitHub Actions built `main` after every merge (and before that, every PR too). About 200 merges in a week used up the free plan's 2,000 minutes a month, so it now runs once a night.
 - **Launcher icon:** until 2026-10-15 the icon was the October loop: a string that came in at an angle, made one loop and left straight.
 

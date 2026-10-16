@@ -61,7 +61,7 @@ import kotlin.math.ceil
  * sounds, and for [TONE_TAIL_SECONDS] after, the microphone stays open but its readings are set
  * aside, so the tuner shows the listening state instead of measuring its own tone.
  *
- * [tools] says which after-v1.0 tools show (Phase 28): the tuner modes of Phases 29–31 come only
+ * [tools] says which music tools show (Phase 28): the tuner modes of Phases 29–31 come only
  * with their switches. Tests get every tool unless they say otherwise; the app passes its build's.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
