@@ -40,4 +40,4 @@ Twangle verzamelt van niemand persoonsgegevens, ook niet van kinderen.
 Als dit beleid verandert, wordt de nieuwe versie hier gepubliceerd met een nieuwe ingangsdatum.
 
 ## Contact
-Vragen? Neem contact op met de ontwikkelaar, Klaboukes. Het contactadres staat op de Google Play-pagina van Twangle.
+Vragen? Neem contact op met de ontwikkelaar, Klaboukes, via [twangle.tuner@proton.me](mailto:twangle.tuner@proton.me).
