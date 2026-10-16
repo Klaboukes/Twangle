@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.app
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
@@ -9,6 +10,7 @@ import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -43,4 +45,13 @@ class AppContainer(private val appContext: Context) {
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }
+
+    /**
+     * Which after-v1.0 tools show (Phase 28): this build's, [buildToolSwitches], all on in debug
+     * builds and all off in release builds. `MainActivity` hands them to the screens. A UI test may
+     * set them before it starts the activity, e.g. [ToolSwitches.ALL_OFF] to see the v1.0 app in a
+     * debug build (ToolSwitchesOffTest), and puts them back after.
+     */
+    @set:VisibleForTesting
+    var toolSwitches: ToolSwitches = buildToolSwitches
 }

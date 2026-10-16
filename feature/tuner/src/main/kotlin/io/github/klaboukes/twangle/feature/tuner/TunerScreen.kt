@@ -93,6 +93,7 @@ import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
@@ -145,12 +146,15 @@ import kotlin.math.min
  * instead, and [pickerOpen] opens the panel over it all the same. [savedMicRefused] is the saved
  * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
  * from one Android no longer shows ([MicPermissionRules]).
+ * [tools] says which after-v1.0 tools show (Phase 28, decided in `:app`): a mode whose switch is off
+ * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the v1.0 tuner.
  */
 @Composable
 fun TunerScreen(
     audioRecorder: AudioRecorder,
     settingsRepository: SettingsRepository,
     tonePlayer: TonePlayer,
+    tools: ToolSwitches,
     modifier: Modifier = Modifier,
     onCompactChange: (Boolean) -> Unit = {},
     savedMode: TunerMode = TunerMode.AUTO,
@@ -176,6 +180,7 @@ fun TunerScreen(
             savedCustomTunings = savedCustomTunings,
             language = language,
             savedMicRefused = savedMicRefused,
+            tools = tools,
         )
     }
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()

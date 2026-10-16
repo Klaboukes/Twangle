@@ -58,10 +58,10 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 
 ## Phase 28 — Hidden until 1.1
 Goal: new tools can land on `main` without changing what v1.0 users see.
-- ☐ One switch per after-v1.0 tool (intonation check, chord naming, pitch trail, Practice tab with chords, capo helper), on in debug builds and off in release builds, decided in one place in `:app` and passed down (through `AppContainer`), so a hidden tool leaves no trace in a release build: no mode, tab, setting, tour step or text on screen
-- ☐ Tests: a release-variant unit test checks every switch is off there; a debug test checks they are on; a UI test can turn one off to see the v1.0 screen
+- ☑ One switch per after-v1.0 tool (intonation check, chord naming, pitch trail, Practice tab with chords, capo helper), on in debug builds and off in release builds, decided in one place in `:app` and passed down (through `AppContainer`), so a hidden tool leaves no trace in a release build: no mode, tab, setting, tour step or text on screen
+- ☑ Tests: a release-variant unit test checks every switch is off there; a debug test checks they are on; a UI test can turn one off to see the v1.0 screen
 - ☐ Phase 23's store screenshots and the Baseline Profile see the v1.0 app (switches off), whatever the debug build shows
-- ☐ docs/architecture/performance.md (*Release build*) describes the switches and how a tool goes live: its switch turns on for release (or goes), in Phase 34
+- ☑ docs/architecture/performance.md (*Release build*) describes the switches and how a tool goes live: its switch turns on for release (or goes), in Phase 34
 
 ## Phase 29 — Intonation check
 Goal: tells whether a guitar plays in tune up the neck. Play the open string, then the same string at the 12th fret; Twangle compares the two and says to move that string's saddle back (12th fret sharp) or forward (flat), or that it's fine. One string at a time, with the existing pitch detector.

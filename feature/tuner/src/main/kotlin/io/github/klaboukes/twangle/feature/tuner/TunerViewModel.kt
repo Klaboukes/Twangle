@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
@@ -57,6 +58,9 @@ import kotlin.math.ceil
  * A long-press on a string plays its note through [tonePlayer] ([playString]). While that tone
  * sounds, and for [TONE_TAIL_SECONDS] after, the microphone stays open but its readings are set
  * aside, so the tuner shows the listening state instead of measuring its own tone.
+ *
+ * [tools] says which after-v1.0 tools show (Phase 28): the tuner modes of Phases 29–31 come only
+ * with their switches. Tests get every tool unless they say otherwise; the app passes its build's.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -70,6 +74,7 @@ class TunerViewModel(
     savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
     language: String = "",
     savedMicRefused: Boolean = AppSettings().micRefused,
+    val tools: ToolSwitches = ToolSwitches.ALL_ON,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */

@@ -17,6 +17,7 @@ import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -56,6 +57,7 @@ class TunerScreenTest {
                         audioRecorder = silence,
                         settingsRepository = settings,
                         tonePlayer = FakeTonePlayer(),
+                        tools = ToolSwitches.ALL_ON,
                         onCompactChange = { compactReports += it },
                         savedKeepTwoPaneLandscape = settings.current.keepTwoPaneLandscape,
                     )

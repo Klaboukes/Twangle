@@ -8,6 +8,7 @@ import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -29,7 +30,7 @@ class MetronomeRecreationTest {
         val player = FakeMetronomePlayer()
         compose.setContent {
             TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
-                MetronomeScreen(player, FakeSettingsRepository(), FakeAudioRecorder.silence())
+                MetronomeScreen(player, FakeSettingsRepository(), FakeAudioRecorder.silence(), ToolSwitches.ALL_ON)
             }
         }
         compose.onNodeWithTag(MetronomeTestTags.START).performClick()

@@ -139,6 +139,8 @@ class MainActivity : AppCompatActivity() {
             onDispose {}
         }
 
+        // Which after-v1.0 tools show (Phase 28): all in debug builds, none in release builds.
+        val tools = container.toolSwitches
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
@@ -207,6 +209,7 @@ class MainActivity : AppCompatActivity() {
                                         audioRecorder = container.audioRecorder,
                                         settingsRepository = container.settingsRepository,
                                         tonePlayer = container.tonePlayer,
+                                        tools = tools,
                                         onCompactChange = { tunerCompact = it },
                                         savedMode = settings.mode,
                                         savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
@@ -231,6 +234,7 @@ class MainActivity : AppCompatActivity() {
                                         player = container.metronomePlayer,
                                         settingsRepository = container.settingsRepository,
                                         recorder = container.listenRecorder,
+                                        tools = tools,
                                         savedBpm = settings.metronomeBpm,
                                         savedMeter = settings.metronomeMeter,
                                         savedVibrate = settings.metronomeVibrate,

@@ -1,4 +1,5 @@
 import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.HostTestBuilder
 import java.util.Properties
 
 plugins {
@@ -80,6 +81,11 @@ kotlin {
 // hears a synthetic tone instead of the mic, so frame-time runs get identical input. Every other
 // build, release included, gets false, so R8 removes the synthetic recorder there.
 androidComponents {
+    // The release build gets unit tests of its own too (testReleaseUnitTest, part of `test`), so
+    // ReleaseToolSwitchesTest can check that the Play build hides every after-v1.0 tool (Phase 28).
+    beforeVariants(selector().withBuildType("release")) { variant ->
+        variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
+    }
     onVariants { variant ->
         variant.buildConfigFields?.put(
             "SYNTHETIC_AUDIO",

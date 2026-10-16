@@ -44,6 +44,7 @@ import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -87,7 +88,7 @@ class MetronomeScreenTest {
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     if (shown.value) {
-                        MetronomeScreen(player, settings, recorder, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
+                        MetronomeScreen(player, settings, recorder, ToolSwitches.ALL_ON, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
                     }
                 }
             }

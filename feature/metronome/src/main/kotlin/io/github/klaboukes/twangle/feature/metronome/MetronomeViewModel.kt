@@ -13,6 +13,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.TapTempo
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoDetector
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoStatus
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,10 @@ import kotlinx.coroutines.withTimeoutOrNull
  * took over), or when the screen leaves; the microphone is released then. A found tempo is only
  * suggested ([ListenPhase.FOUND]): nothing changes until [use]. The clicks come back afterwards only
  * if they were playing before.
+ *
+ * [tools] says which after-v1.0 tools show (Phase 28): Practice (Phase 32) and the capo helper
+ * (Phase 33) come only with their switches. Tests get every tool unless they say otherwise; the app
+ * passes its build's.
  */
 class MetronomeViewModel(
     private val player: MetronomePlayer,
@@ -58,6 +63,7 @@ class MetronomeViewModel(
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val nanoTime: () -> Long = System::nanoTime,
     private val detectorFor: (sampleRate: Int) -> TempoDetector = ::OnsetTempoDetector,
+    val tools: ToolSwitches = ToolSwitches.ALL_ON,
 ) : ViewModel() {
 
     private val _bpm = MutableStateFlow(ClickTrack.clampBpm(savedBpm))

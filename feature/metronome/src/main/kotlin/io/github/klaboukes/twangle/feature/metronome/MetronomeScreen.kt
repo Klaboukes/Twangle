@@ -70,6 +70,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
 import io.github.klaboukes.twangle.feature.metronome.components.StartStopButton
 import io.github.klaboukes.twangle.feature.metronome.components.DIAL_UNITS
@@ -96,12 +97,16 @@ import kotlin.math.roundToInt
  *
  * Listen (Phase 27) hears music nearby through [recorder], only while listening, after asking for the
  * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
+ *
+ * [tools] says which after-v1.0 tools show (Phase 28, decided in `:app`): with
+ * [ToolSwitches.ALL_OFF] this is the v1.0 Metronome tab.
  */
 @Composable
 fun MetronomeScreen(
     player: MetronomePlayer,
     settingsRepository: SettingsRepository,
     recorder: AudioRecorder,
+    tools: ToolSwitches,
     modifier: Modifier = Modifier,
     savedBpm: Int = ClickTrack.DEFAULT_BPM,
     savedMeter: Meter = Meter.DEFAULT,
@@ -117,6 +122,7 @@ fun MetronomeScreen(
             savedVibrate,
             recorder = recorder,
             savedMicRefused = savedMicRefused,
+            tools = tools,
         )
     }
     val bpm by viewModel.bpm.collectAsStateWithLifecycle()
