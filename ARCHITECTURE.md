@@ -506,6 +506,7 @@ Lists the classes and methods used at startup and on the tuner screen so Android
 - `./gradlew assembleRelease` (APK) or `bundleRelease` (AAB); check with `apksigner verify --print-certs`.
 - **Version:** one place for both apps, `twangle.version` in `gradle.properties` (`1.0.0` now; major.minor.patch, each 0–99, no suffix). The root `build.gradle.kts` makes it the `versionName` and `versionCode` = major × 10000 + minor × 100 + patch (10000 now); the watch's code adds 1,000,000 (1,010,000). Every build that leaves the PC needs a higher version. About shows `versionName`.
 - Release and debug APKs have different signatures: switching on a phone means uninstalling first, which clears saved settings.
+- **Hidden until 1.1** (owner, 2026-10-16): work on the after-v1.0 tools (ROADMAP Phases 29–33) lands on `main` while v1.0 is still going through Play. Each tool has its own switch, on in debug builds and off in release builds, so the Play build stays the v1.0 app; a tool goes live in 1.1 (Phase 34) when its switch turns on for release. Phase 28 builds the switches and describes them here.
 
 ## 5. Lifecycle & permissions
 - `RECORD_AUDIO` is requested at runtime from the tuner. `rememberMicPermissionState()` tracks a `MicPermissionStatus` (rules in the pure `MicPermissionRules`, in `:core:audio` so the watch follows them too), and `PermissionPrompt` shows one action per state:
