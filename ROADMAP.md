@@ -65,7 +65,7 @@ Goal: new tools can land on `main` without changing what v1.0 users see.
 
 ## Phase 29 — Intonation check
 Goal: tells whether a guitar plays in tune up the neck. Play the open string, then the same string at the 12th fret; Twangle compares the two and says to move that string's saddle back (12th fret sharp) or forward (flat), or that it's fine. One string at a time, with the existing pitch detector.
-- ☐ `:core:dsp`: the comparison (the 12th fret should sound exactly one octave, 1200 cents, above the open string) with a tolerance of a few cents worked out in the phase, and a verdict per string; synthetic tests for sharp, flat, fine and a wrong note at the fret
+- ☑ `:core:dsp`: the comparison (the 12th fret should sound exactly one octave, 1200 cents, above the open string) with a tolerance of a few cents worked out in the phase, and a verdict per string; synthetic tests for sharp, flat, fine and a wrong note at the fret (`intonation/Intonation`: 3-cent tolerance, about 1 mm of saddle; over 50 cents is not the octave; every verdict right on every instrument's strings, offset within 0.38 cents)
 - ☐ Rough mock-up of the mode (choosing a string, the two steps, the verdict) for the owner to pick from
 - ☐ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones
 - ☐ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say

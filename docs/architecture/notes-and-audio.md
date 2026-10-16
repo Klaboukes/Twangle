@@ -6,6 +6,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Note math](#note-math)
 - [Tunings](#tunings)
 - [Instruments](#instruments)
+- [Intonation check](#intonation-check)
 - [Strobe model](#strobe-model)
 - [Audio source selection](#audio-source-selection)
 - [Audio capture](#audio-capture)
@@ -50,6 +51,21 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 `lowestNote` / `highestNote` span all of an instrument's presets. Tunings whose lowest string goes below the guitar's range (B1, F♯1, E1, B0, and the cello's C2) switch the detector to the low-note window ([Signal pipeline](signal-pipeline.md), *Low notes*). Players pick the instrument and its tuning in one panel ([Tuner screen and tour](ui-tuner.md), **Instrument and tuning**); the instrument is saved with the tuning ([Lifecycle](lifecycle.md), *Saved settings*), and the panel lists only its presets.
 
 **Names** (`PickerNames.kt`, `instrumentNameRes` / `tuningNameRes`, JVM-tested: every instrument and preset has one, none shared within an instrument): English and Dutch — Guitar/Gitaar, 7-string guitar/7-snarige gitaar, 8-string guitar/8-snarige gitaar, Bass/Bas, 5-string bass/5-snarige bas, Ukulele/Ukelele, Violin/Viool, Viola/Altviool, Cello, Mandolin/Mandoline. Every instrument's first preset is "Standard"; the ukulele's other is "Low G"/"Lage G".
+
+## Intonation check
+Phase 29 (after v1.0, hidden in release builds until 1.1). The 12th fret halves the string, so it should sound exactly one octave (1200 cents) above the open string. If it is sharp, the sounding length from the fret to the saddle is too short and the saddle moves back, away from the neck; if flat, forward. `intonation/Intonation` in `:core:dsp` is the comparison, pure and JVM-tested:
+- `offsetCents(openHz, fretHz) = 1200 · log2(fret / open) − 1200` (positive = sharp).
+- `verdictOf(offsetCents, toleranceCents)` gives `FINE`, `MOVE_SADDLE_BACK` (sharp), `MOVE_SADDLE_FORWARD` (flat) or `NOT_THE_OCTAVE`; `check(openHz, fretHz)` returns both as an `IntonationResult`.
+
+**Tolerance: 3 cents** (`DEFAULT_TOLERANCE_CENTS`), its own number, not the tuner's Precise/Relaxed in-tune setting. Setup practice aims for the 12th fret within a few cents of the octave. Each reading is within ±1 cent, so a difference can be 2 cents off, and 3 keeps a well set-up guitar from being told to move. With the open string retuned, moving the saddle back by `d` on a scale of length `L` changes the 12th fret by `1200 · log2((L + d) / (L + 2d)) ≈ −1731 · d / L` cents (frequency ∝ 1 / length): **≈ 2.7 cents per mm** on a 648 mm (25.5″) scale, so 3 cents is about a millimetre of saddle.
+
+**Not the octave:** more than **50 cents** (half a semitone) from the octave, the fretted note is nearer another note: another fret, another string, the open string again, or a misread. Real intonation errors stay far below that (50 cents is a saddle ≈ 20 mm off). A light touch at the 12th fret (the harmonic) sounds the exact octave and reads `FINE`; no reading can tell it from a fretted note, so the mode should ask for a fretted note.
+
+**Relative.** Only the two readings are compared, so it works at any A4 and on any instrument's strings, and an open string a little out of tune still gets the right verdict. Players tune first anyway (the open string's tension sets the intonation); the mode should check the open reading is near the chosen string (`Tuning.centsFromString`) before taking it.
+
+**Readings.** One settled frequency per step, from the tuner's smoothed reading; collecting it is the mode's job: wait until the note is steady, then take the median of what the tuner shows for about a second (`MedianFilter`), so the attack and the dying end don't count.
+
+**Measured** (`IntonationTest`, synthetic plucks, 48 kHz): every string of every instrument's standard tuning (B0 to E5, the low window where the instrument needs it), the 12th fret ±4, ±8 and ±25 cents off and within ±1.5: every verdict right, the offset within **0.38 cents** from one frame each (0.19 for the guitar's strings from the median of 1.5 s through the tuner chain). The 11th and 13th frets, the 7th fret, the open string again, a fifth above the octave and an octave plus 55 cents: all `NOT_THE_OCTAVE`.
 
 ## Strobe model
 `StrobeMotion` (`strobe/`) is the drift of a strobe pattern, one animation frame at a time; every wave look runs one (via `WaveMotion`). A mechanical strobe drifts at the beat rate in Hz, so high strings move faster; here the drift comes from cents, so every string looks the same. `driftSpeed(cents)` in stripe periods per second: **0 within ±0.5 cent** (finer than the ±1 cent target, so an in-tune string stands perfectly still), then **0.4/s per cent beyond**, up to **4/s** from 10.5 cents; positive when sharp. It ignores the in-tune flag (2–5 cents wide) because the strobe exists to show the last cent. `advance(seconds, cents)` eases the shown cents towards the reading (rate 20/s) and moves `phase` (0..1, wrapping); a step is capped at 0.1 s. Without a reading the view stops calling it and the pattern freezes. Tests feed sines 0, ±1, ±3, ±5 and ±30 cents off every string through `TunerChain`.
