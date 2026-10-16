@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
@@ -244,7 +245,7 @@ private fun StringChip(
     val ringGap = fit.ringGapDp.dp
     val natural = if (small) smallChipSize(style) else stringChipSize(style)
     val button = DpSize(natural.width * fit.buttonScale, natural.height * fit.buttonScale)
-    // Futuristic's tiles are neon outlines: no fill until picked, then a soft glow round them.
+    // Futuristic's tiles are neon outlines on a solid tint, then a soft glow round the picked one.
     val neon = style == VisualStyle.FUTURISTIC
     val keyLabel = style == VisualStyle.CLASSIC && !small
     val glow by animateFloatAsState(if (neon && highlighted) 1f else 0f, label = "chipGlow")
@@ -301,7 +302,12 @@ private fun StringChip(
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
             .padding(ringGap)
-            .then(if (neon) Modifier else Modifier.background(colors.surfaceContainerHigh.copy(alpha = 0.85f), shape))
+            // Futuristic's tint lies on the background colour, not over the picture: the grid's lines
+            // would run through the name.
+            .background(
+                if (neon) colors.primary.copy(alpha = NEON_FILL_ALPHA).compositeOver(colors.background) else colors.surfaceContainerHigh.copy(alpha = 0.85f),
+                shape,
+            )
             .background(background, shape)
             // Classic's keys and Retro's push buttons get their shading over the fill.
             .stringChipShading(style, shape, colors.onSurface)
@@ -444,6 +450,9 @@ private val KEY_LABEL_PADDING = 6.dp
 
 /** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
 private const val NEON_OUTLINE_ALPHA = 0.55f
+
+/** Futuristic's tiles are filled with the accent at 10 % on the background colour, so the name reads over the picture. */
+private const val NEON_FILL_ALPHA = 0.10f
 private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
 

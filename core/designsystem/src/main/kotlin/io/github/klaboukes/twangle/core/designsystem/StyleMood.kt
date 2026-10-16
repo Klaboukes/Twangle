@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
@@ -125,7 +126,7 @@ fun StyleMood(
 /**
  * One string button of a mood picture, the [index]th of the row, in the style's shape, shading
  * ([stringChipShading]) and the mock-up's card size for it; a [picked] one has an accent ring.
- * Futuristic's are neon outlines: see-through, the picked one tinted and glowing ([neonGlow]).
+ * Futuristic's are neon outlines on a solid tint, the picked one tinted more and glowing ([neonGlow]).
  */
 @Composable
 private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
@@ -140,7 +141,7 @@ private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
         else -> colors.onSurfaceVariant.copy(alpha = 0.6f)
     }
     val fill = when {
-        neon -> if (picked) colors.primary.copy(alpha = 0.14f) else Color.Transparent
+        neon -> colors.primary.copy(alpha = if (picked) 0.14f else 0.10f).compositeOver(colors.background)
         picked -> lerp(colors.surface, colors.primary, 0.28f)
         else -> colors.surface.copy(alpha = 0.7f)
     }
