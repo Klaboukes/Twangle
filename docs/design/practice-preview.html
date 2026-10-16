@@ -1,0 +1,285 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Practice Tab</title>
+<!--
+TWANGLE PRACTICE TAB (Phase 32 preview). ROUGH, plain on purpose: Contemporary style only, the core ideas only.
+OWNER'S PICK, 2026-10-16: A, D, G, I (the recommended ones): segmented switch like the tuner's mode switch (room for
+         three tools only), upright chord box with finger numbers in the dots, one big shape at a time with ‹ ›, the
+         whole neck 0-12 with note names and the root in the accent.
+Asks     Three things, each with two or three options under its own letters, so a pick reads "A, D, G, I":
+         1. the tool switch at the top of Practice (A, B, C);
+         2. a chord's finger diagram (D, E, F) and how several shapes of one chord are shown (G, H);
+         3. a scale on the fretboard (I, J, K).
+Context  As agreed (ROADMAP, Music tools): the Metronome tab becomes Practice, the bar reads
+         Tuner · Instrument · Practice · Settings, Practice holds Metronome, Chords and Capo helper and opens on the tool
+         used last. Chords and scales follow the instrument and tuning picked in the Instrument item; here guitar in
+         standard tuning (E A D G B E). Examples: C major (three shapes) and A minor pentatonic.
+Sizes    Frames are 393 dp (the Xiaomi 12X) at 0.8 px per dp, as the other rough previews.
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting. Diagrams are
+         plain lines and dots; the styles' own finish comes when the screens are built.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --on-accent: #FFFFFF;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --on-accent: #10141F;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --on-accent: #10141F;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2.part { font: 400 22px/1.2 var(--ui); margin: 40px 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 18px; display: grid; gap: 26px; }
+.cand { display: grid; gap: 8px; }
+.cand h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+/* A frame: 393 dp at 0.8 px per dp. */
+.frame { width: 314px; max-width: 100%; border-radius: 10px; background: var(--bg); padding: 10px 13px 14px;
+  display: grid; gap: 10px; justify-items: center; }
+.frames { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-start; }
+.hint { font: 400 11px/1.3 var(--ui); color: var(--muted); text-align: center; }
+.title { font: 500 15px/1.2 var(--ui); }
+/* The bar. */
+.bar { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; text-align: center; font: 500 11px/1.2 var(--ui); color: var(--muted); }
+.bar .on { color: var(--accent); }
+.bar .on::after { content: ""; display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--accent); margin: 4px auto 0; }
+/* A: segmented buttons, like the tuner's mode switch. */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); border-radius: 999px; overflow: hidden; }
+.seg span { font: 500 11.5px/1 var(--ui); padding: 10px 2px; text-align: center; }
+.seg span + span { border-left: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.seg .on { background: var(--container); }
+/* B: frameless text tabs with the nav bar's mark. */
+.tabs { display: flex; justify-content: center; gap: 26px; width: 100%; font: 500 12.5px/1 var(--ui); color: var(--muted); padding-top: 4px; }
+.tabs .on { color: var(--accent); }
+.tabs .on::after { content: ""; display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--accent); margin: 6px auto 0; }
+/* C: one button that opens a short list. */
+.pick { display: inline-flex; align-items: center; gap: 8px; width: 150px; justify-content: center; font: 500 12.5px/1 var(--ui);
+  padding: 9px 0; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.menu { width: 150px; border-radius: 10px; background: var(--surface); box-shadow: 0 4px 14px rgb(0 0 0 / .14); font: 400 12.5px/1 var(--ui); overflow: hidden; }
+.menu div { padding: 10px 14px; }
+.menu .on { background: var(--container); font-weight: 500; }
+.ph { width: 100%; height: 64px; border-radius: 8px; border: 1px dashed color-mix(in srgb, var(--muted) 45%, var(--bg));
+  display: grid; place-items: center; font: 400 11px/1 var(--ui); color: var(--muted); }
+/* Paging row for one shape at a time. */
+.pager { display: flex; align-items: center; gap: 14px; font: 400 12px/1 var(--ui); color: var(--muted); }
+.arrow { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.small3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100%; justify-items: center; }
+.small3 figure { margin: 0; display: grid; gap: 2px; justify-items: center; }
+.small3 figcaption { font: 400 10px/1 var(--ui); color: var(--muted); }
+.scroll { width: 100%; overflow-x: auto; }
+/* Diagram parts. */
+svg text { font-family: var(--ui); }
+.str { stroke: var(--muted); stroke-width: 1; }
+.fret { stroke: color-mix(in srgb, var(--muted) 70%, var(--bg)); stroke-width: 1; }
+.nut { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+.dot { fill: var(--ink); }
+.dt { fill: var(--bg); font-size: 10.5px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+.root { fill: var(--accent); }
+.rt { fill: var(--on-accent); font-size: 9px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+.hollow { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.ht { fill: var(--ink); font-size: 9px; text-anchor: middle; dominant-baseline: central; }
+.mk { fill: var(--muted); font-size: 11px; text-anchor: middle; dominant-baseline: central; }
+.un { fill: var(--muted); font-size: 10px; text-anchor: middle; }
+.unf { fill: var(--ink); font-size: 10.5px; font-weight: 500; text-anchor: middle; }
+.fr { fill: var(--muted); font-size: 10px; dominant-baseline: central; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 32 · rough mock-up</p>
+  <h1>The Practice tab, chord charts and scales</h1>
+  <p class="lede"><strong>Owner picked A, D, G, I on 2026-10-16.</strong></p>
+  <p class="lede">The Metronome tab becomes <strong>Practice</strong>: the Metronome, Chords and the Capo helper, with a
+    small switch at the top. Three questions, each with its own letters. <strong>Pick one letter per question</strong>
+    (for example "A, D, G, I").</p>
+  <p class="lede">Shown on a guitar in standard tuning; with another instrument or your own tuning the charts follow it.</p>
+</header>
+
+<h2 class="part">1 · The switch at the top</h2>
+<p class="lede">The bar under it reads Tuner · Instrument · Practice · Settings. Practice opens on the tool you used last.</p>
+<div class="list" id="switch"></div>
+
+<h2 class="part">2 · A chord chart</h2>
+<p class="lede">C major as an example. First how one shape looks (D, E, F), then how several shapes of the same chord are
+  shown (G, H).</p>
+<div class="list" id="chord"></div>
+<div class="list" id="shapes"></div>
+
+<h2 class="part">3 · A scale on the fretboard</h2>
+<p class="lede">A minor pentatonic as an example. The root (A) is filled in the accent colour.</p>
+<div class="list" id="scale"></div>
+
+<footer>
+  <p>Not shown yet: how you pick the chord (root and type, such as "C" and "major") or the scale. That comes with the
+    screens, with buttons of the same steady size as the rest of the app.</p>
+  <p>TalkBack reads every chart in words, string by string: "A string, fret 3, finger 3".</p>
+</footer>
+</div>
+
+<script>
+const OPEN = [4, 9, 2, 7, 11, 4];   // E A D G B E, low to high, as pitch classes (C = 0)
+const NAME = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const noteAt = (s, f) => NAME[(OPEN[s] + f) % 12];
+
+// Chord shapes, low string first: frets ("x" = not played), fingers (0 = open), optional barre.
+const C_SHAPES = [
+  { label: "Open", frets: ["x", 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0], start: 1 },
+  { label: "3rd fret", frets: ["x", 3, 5, 5, 5, 3], fingers: [0, 1, 3, 3, 3, 1], start: 3, barre: { fret: 3, from: 1, to: 5, finger: 1 } },
+  { label: "8th fret", frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], start: 8, barre: { fret: 8, from: 0, to: 5, finger: 1 } },
+];
+const marks = sh => sh.frets.map(f => f === "x" ? "×" : f === 0 ? "o" : "");
+const names = sh => sh.frets.map((f, s) => f === "x" ? "" : noteAt(s, f));
+const chordDots = (sh, withFinger) => sh.frets.flatMap((f, s) => typeof f === "number" && f > 0
+  ? [{ s, f, t: withFinger ? sh.fingers[s] : "", kind: "dot" }] : []);
+
+const dotSvg = (cx, cy, d, r) => {
+  const cls = d.kind === "root" ? ["root", "rt"] : d.kind === "hollow" ? ["hollow", "ht"] : ["dot", "dt"];
+  return `<circle class="${cls[0]}" cx="${cx}" cy="${cy}" r="${r}"/>` + (d.t !== "" ? `<text class="${cls[1]}" x="${cx}" y="${cy}">${d.t}</text>` : "");
+};
+
+// Vertical box: strings top to bottom, nut at the top, low string on the left.
+function vert(o) {
+  const sp = 22, fh = 26, L = 28, rows = o.rows || 4, start = o.start || 1, T = o.marks ? 24 : 8;
+  const under = o.under || [];
+  const W = L + 5 * sp + 16, H = T + rows * fh + (under.length ? under.length * 15 + 8 : 6);
+  let g = "";
+  for (let r = 0; r <= rows; r++) g += `<line class="${r === 0 && start === 1 ? "nut" : "fret"}" x1="${L}" x2="${L + 5 * sp}" y1="${T + r * fh}" y2="${T + r * fh}"/>`;
+  for (let s = 0; s < 6; s++) g += `<line class="str" x1="${L + s * sp}" x2="${L + s * sp}" y1="${T}" y2="${T + rows * fh}"/>`;
+  if (start > 1) g += `<text class="fr" x="${L - 12}" y="${T + fh / 2}" text-anchor="end">${start}fr</text>`;
+  (o.marks || []).forEach((m, s) => { if (m) g += `<text class="mk" x="${L + s * sp}" y="${T - 11}">${m}</text>`; });
+  const b = o.barre;
+  if (b) {
+    const x1 = L + b.from * sp, x2 = L + b.to * sp, y = T + (b.fret - start + 0.5) * fh;
+    g += `<rect class="dot" x="${x1 - 9}" y="${y - 9}" width="${x2 - x1 + 18}" height="18" rx="9"/>`;
+    if (o.barreNum !== false) g += `<text class="dt" x="${x1}" y="${y}">${b.finger}</text>`;
+  }
+  for (const d of o.dots) {
+    if (b && d.f === b.fret && d.s >= b.from && d.s <= b.to) continue;
+    g += dotSvg(L + d.s * sp, T + (d.f - start + 0.5) * fh, d, 9);
+  }
+  under.forEach((row, k) => row.forEach((t, s) => { if (t !== "" && t !== 0) g += `<text class="${k === 0 && o.fingerRow ? "unf" : "un"}" x="${L + s * sp}" y="${T + rows * fh + 17 + k * 15}">${t}</text>`; }));
+  const z = o.zoom || 1;
+  return `<svg width="${W * z}" height="${H * z}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+
+// Sideways: frets left to right, nut on the left, low string at the bottom (as you see the neck on your lap).
+function horiz(o) {
+  const sp = o.sp || 20, fw = o.fw || 40, cols = o.cols || 4, start = o.start || 1, L = 30, T = 12;
+  const W = L + cols * fw + (o.right ? 26 : 8), H = T + 5 * sp + (o.fretNums ? 26 : 14);
+  const y = s => T + (5 - s) * sp;
+  let g = "";
+  for (let c = 0; c <= cols; c++) g += `<line class="${c === 0 && start === 1 ? "nut" : "fret"}" x1="${L + c * fw}" x2="${L + c * fw}" y1="${T}" y2="${T + 5 * sp}"/>`;
+  for (let s = 0; s < 6; s++) g += `<line class="str" x1="${L}" x2="${L + cols * fw}" y1="${y(s)}" y2="${y(s)}"/>`;
+  if (start > 1) g += `<text class="fr" x="${L + fw / 2}" y="${T + 5 * sp + 14}" text-anchor="middle">${start}fr</text>`;
+  (o.marks || []).forEach((m, s) => { if (m) g += `<text class="mk" x="${L - 14}" y="${y(s)}">${m}</text>`; });
+  (o.right || []).forEach((t, s) => { if (t) g += `<text class="un" x="${L + cols * fw + 14}" y="${y(s) + 3.5}">${t}</text>`; });
+  (o.fretNums || []).forEach(f => g += `<text class="un" x="${L + (f - start + 0.5) * fw}" y="${T + 5 * sp + 19}">${f}</text>`);
+  const b = o.barre;
+  if (b) {
+    const x = L + (b.fret - start + 0.5) * fw, y1 = y(b.to), y2 = y(b.from);
+    g += `<rect class="dot" x="${x - 9}" y="${y1 - 9}" width="18" height="${y2 - y1 + 18}" rx="9"/><text class="dt" x="${x}" y="${y2}">${b.finger}</text>`;
+  }
+  const r = o.r || 9;
+  for (const d of o.dots) {
+    if (b && d.f === b.fret && d.s >= b.from && d.s <= b.to) continue;
+    g += dotSvg(d.f === 0 ? L - 14 : L + (d.f - start + 0.5) * fw, y(d.s), d, r);
+  }
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+
+const vChord = (sh, z, opt = {}) => vert({ start: sh.start, marks: marks(sh), dots: chordDots(sh, opt.fingers !== false),
+  barre: sh.barre, barreNum: opt.fingers !== false, under: opt.under ? opt.under(sh) : [names(sh)], fingerRow: opt.fingerRow, zoom: z });
+
+const cand = (letter, title, rec, body, note) => `<div class="cand">
+  <h3>${letter}. ${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>
+  <div class="frames">${body}</div><p class="note">${note}</p></div>`;
+const bar = `<div class="bar"><span>Tuner</span><span>Instrument</span><span class="on">Practice</span><span>Settings</span></div>`;
+const screen = (top, extra = "") => `<div class="frame">${top}<div class="ph">the chosen tool (here Chords)</div>${extra}${bar}</div>`;
+
+// 1. The switch.
+document.getElementById("switch").innerHTML = [
+  cand("A", "Segmented buttons, like the tuner's mode switch", true,
+    screen(`<div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo helper</span></div>`),
+    "What was agreed: the same switch as the tuner's Strings / Chromatic, so it feels familiar. Three tools fit; if more come later (ear training, a drone, a timer) it would have to become B or C."),
+  cand("B", "Text tabs without a frame", false,
+    screen(`<div class="tabs"><span>Metronome</span><span class="on">Chords</span><span>Capo helper</span></div>`),
+    "The calmest look, the same mark as the bar under the chosen tool. Later tools would make the row slide sideways."),
+  cand("C", "One button that opens a short list", false,
+    `<div class="frame"><div class="pick">Chords <span>▾</span></div><div class="ph">the chosen tool (here Chords)</div>${bar}</div>
+     <div class="frame" style="align-content:start"><div class="hint">after a tap</div><div class="menu"><div>Metronome</div><div class="on">Chords</div><div>Capo helper</div></div></div>`,
+    "Room for any number of tools and only one button, but switching takes two taps and the other tools are out of sight."),
+].join("");
+
+// 2. A chord's diagram.
+const open = C_SHAPES[0];
+document.getElementById("chord").innerHTML = [
+  cand("D", "Upright box, finger numbers in the dots", true,
+    `<div class="frame"><div class="title">C major</div>${vChord(open, 1.25)}</div>`,
+    "The chart from songbooks: strings top to bottom, o = play open, × = don't play. The notes are under the strings."),
+  cand("E", "Sideways, like the neck in your lap", false,
+    `<div class="frame"><div class="title">C major</div>${horiz({ start: 1, cols: 4, marks: marks(open), dots: chordDots(open, true), right: names(open), sp: 24, fw: 46 })}</div>`,
+    "Uses the screen's width and matches the scale's fretboard below; the low string at the bottom. Less common in songbooks."),
+  cand("F", "Upright box, plain dots, finger numbers underneath", false,
+    `<div class="frame"><div class="title">C major</div>${vChord(open, 1.25, { fingers: false, fingerRow: true, under: sh => [sh.fingers, names(sh)] })}</div>`,
+    "Cleaner dots; the fingers in a row under the strings, the notes under them. One more line to read."),
+].join("");
+
+// Several shapes of one chord.
+document.getElementById("shapes").innerHTML = [
+  cand("G", "One big shape at a time, swipe for the next", true,
+    `<div class="frame"><div class="title">C major</div>${vChord(C_SHAPES[1], 1.25)}
+      <div class="pager"><span class="arrow">‹</span><span>2 of 3</span><span class="arrow">›</span></div></div>`,
+    "Calm and big enough to read on a music stand. Swipe, or tap the arrows (they also help TalkBack)."),
+  cand("H", "All shapes small, side by side", false,
+    `<div class="frame"><div class="title">C major</div><div class="small3">${C_SHAPES.map(sh =>
+      `<figure>${vChord(sh, 0.6, { under: () => [] })}<figcaption>${sh.label}</figcaption></figure>`).join("")}</div></div>`,
+    "Every shape at a glance, but the numbers get small; more than three would slide sideways."),
+].join("");
+
+// 3. A scale.
+const PENTA = { 0: "1", 3: "♭3", 5: "4", 7: "5", 10: "♭7" };   // A minor pentatonic: A C D E G
+const scaleDots = (label, from = 0, to = 12) => {
+  const out = [];
+  for (let s = 0; s < 6; s++) for (let f = from; f <= to; f++) {
+    const iv = ((OPEN[s] + f - 9) % 12 + 12) % 12;
+    if (iv in PENTA) out.push({ s, f, t: label === "name" ? noteAt(s, f) : PENTA[iv], kind: iv === 0 ? "root" : "hollow" });
+  }
+  return out;
+};
+const neck = label => horiz({ start: 1, cols: 12, fw: 20.5, sp: 19, r: 8.5, dots: scaleDots(label), fretNums: [3, 5, 7, 9, 12] });
+document.getElementById("scale").innerHTML = [
+  cand("I", "The whole neck, note names", true,
+    `<div class="frame"><div class="title">A minor pentatonic</div><div class="scroll">${neck("name")}</div></div>`,
+    "Frets 0 to 12 sideways, every note named. Shows how the scale runs along the neck."),
+  cand("J", "The whole neck, step numbers", false,
+    `<div class="frame"><div class="title">A minor pentatonic</div><div class="scroll">${neck("degree")}</div></div>`,
+    "The same neck with 1 ♭3 4 5 ♭7 instead of names: the same pattern works in every key. Could also be a small switch between I and J."),
+  cand("K", "One position at a time, an upright box", false,
+    `<div class="frame"><div class="title">A minor pentatonic</div>${vert({ start: 5, rows: 4, dots: scaleDots("name", 5, 8), zoom: 1.25 })}
+      <div class="pager"><span class="arrow">‹</span><span>Position 1 of 5</span><span class="arrow">›</span></div></div>`,
+    "Like the chord charts: one hand position to learn, then the next. Doesn't show how the positions join up."),
+].join("");
+</script>
