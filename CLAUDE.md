@@ -63,7 +63,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
-`.github/workflows/android.yml` runs `test`, `lint`, `assembleDebug` and an unsigned `assembleRelease bundleRelease` on every push to `main` (the watch app included), not on PRs: the local run is the gate, and a PR run would only duplicate the main run. It uploads no APK (nobody downloaded it, and the free plan's artifact storage is small), only build reports when it fails (kept 3 days).
+`.github/workflows/android.yml` runs `test`, `lint`, `assembleDebug` and an unsigned `assembleRelease bundleRelease` (the watch app included) **once a night** at 03:00 UTC on `main`, plus by hand through *Run workflow*, never per push or PR: the local run is the gate. A run per merge repeated that check and used up the free plan's 2,000 minutes a month in one week (2026-10-16). The nightly run covers everything merged since the last successful run and skips the build when only `*.md`, `docs/`, `.claude/` or `scripts/` changed. A run GitHub refused to start (spending limit, storage quota) is not a code failure. It uploads no APK (nobody downloaded it, and the free plan's artifact storage is small), only build reports when it fails (kept 3 days).
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.
@@ -106,6 +106,6 @@ Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default bra
 4. Tick the finished items in ROADMAP.md (☐ → ☑) in the same branch.
 5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
 6. `git push -u origin <branch>`, then `gh pr create --base main` (title = increment name, body = what changed + how it was verified).
-7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI still runs on `main`, and the next iteration checks the last `main` run first and fixes any failure before anything else.
+7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI checks `main` overnight, and the next iteration checks the last run first and fixes any failure before anything else.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.

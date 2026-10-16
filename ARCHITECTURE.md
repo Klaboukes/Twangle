@@ -43,7 +43,7 @@ Topic files:
 | Persistence | **DataStore (Preferences)** (`:core:settings`) | Saved settings (see [Lifecycle](docs/architecture/lifecycle.md)). |
 | Build | **Gradle 9 + AGP 9 (built-in Kotlin), Kotlin DSL + version catalog** | Versions live only in `gradle/libs.versions.toml`. |
 | Testing | JUnit 4, kotlinx-coroutines-test, Compose UI test | DSP checked with synthesized signals (see [Testing strategy](docs/architecture/testing.md)). |
-| CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug + unsigned assembleRelease/bundleRelease, on pushes to `main` only (every change is checked locally first, so PR runs only duplicated it). No APK upload: nobody downloaded it, and it filled the free plan's artifact storage (2026-10-16). |
+| CI | **GitHub Actions** (`.github/workflows/android.yml`) | test + lint + assembleDebug + unsigned assembleRelease/bundleRelease, once a night on `main` (03:00 UTC, skipped when only documentation changed) and by hand; every change is checked locally first, so per-PR and per-merge runs only duplicated it, and per-merge runs used up the free plan's minutes in a week (2026-10-16). No APK upload: nobody downloaded it, and it filled the free plan's artifact storage (2026-10-16). |
 | Min / target SDK | **26** (Android 8.0) / 37 | `ENCODING_PCM_FLOAT` and `UNPROCESSED` work from API 24+; 26 covers ~97 % of devices and needs no PNG icon fallbacks. |
 
 ### Name, app ID and icon

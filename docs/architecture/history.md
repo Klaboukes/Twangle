@@ -17,6 +17,7 @@ Designs and measurements that have been superseded, kept for the record and take
 - [Testing](#testing)
 
 ## Overview
+- **CI trigger:** until 2026-10-16 GitHub Actions built `main` after every merge (and before that, every PR too). About 200 merges in a week used up the free plan's 2,000 minutes a month, so it now runs once a night.
 - **Launcher icon:** until 2026-10-15 the icon was the October loop: a string that came in at an angle, made one loop and left straight.
 
 ## Threading and performance

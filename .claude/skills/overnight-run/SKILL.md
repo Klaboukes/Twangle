@@ -16,7 +16,7 @@ what the phone's failures mean.
 
 ```bash
 git status --short && git switch main && git pull
-gh run list --branch main --limit 3          # a failed main run is fixed first
+gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
 adb devices                                   # f813c98c, "device"
 adb shell dumpsys battery | grep -E "temp|AC" # charging, below ~35 °C
 adb shell settings get system font_scale      # 1.0

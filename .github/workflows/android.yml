@@ -1,10 +1,12 @@
 name: Android CI
 
-# Only after a merge: every change is checked locally before it lands (CLAUDE.md, Git & GitHub),
-# so a PR run would only duplicate this one.
+# Once a night, not after every merge: every change is checked locally before it lands (CLAUDE.md,
+# Git & GitHub), so a run per merge only repeated that check and used up the free plan's 2,000
+# minutes a month in one week (2026-10-16). The nightly run covers everything merged since the last
+# successful run, and skips itself when that was only documentation. "Run workflow" builds at once.
 on:
-  push:
-    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * *'   # 03:00 UTC
   workflow_dispatch:
 
 concurrency:
@@ -13,6 +15,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read   # to find the last successful run
 
 jobs:
   build:
@@ -22,9 +25,33 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # Build when anything but documentation, skills or scripts changed since the last successful
+      # run (or there is none, or it was started by hand).
+      - name: Anything to build?
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh run list --workflow android.yml --branch main --status success --limit 1 \
+            --json headSha --jq '.[0].headSha // ""')
+          if [ "${{ github.event_name }}" = workflow_dispatch ] || [ -z "$last" ] \
+            || ! git cat-file -e "$last^{commit}" 2>/dev/null; then
+            build=true
+          elif git diff --name-only "$last" HEAD \
+            | grep -qvE '\.md$|^docs/|^\.claude/|^scripts/'; then
+            build=true
+          else
+            build=false
+            echo "Only documentation changed since $last: nothing to build."
+          fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
 
       # JDK 17 is the compile toolchain (jvmToolchain(17)); JDK 21 (listed last = default) runs Gradle.
       - uses: actions/setup-java@v6
+        if: steps.changes.outputs.build == 'true'
         with:
           distribution: temurin
           java-version: |
@@ -32,24 +59,29 @@ jobs:
             21
 
       - uses: gradle/actions/setup-gradle@v6
+        if: steps.changes.outputs.build == 'true'
 
       - name: Unit tests
+        if: steps.changes.outputs.build == 'true'
         run: ./gradlew test --console=plain
 
       - name: Lint
+        if: steps.changes.outputs.build == 'true'
         run: ./gradlew lint --console=plain
 
       - name: Assemble debug APK
+        if: steps.changes.outputs.build == 'true'
         run: ./gradlew assembleDebug --console=plain
 
       # Unsigned here (the upload key never leaves the owner's PCs), but R8, resource shrinking and
-      # the bundle are checked on every change, for the phone and the watch.
+      # the bundle are checked every night, for the phone and the watch.
       - name: Assemble release APK and bundle
+        if: steps.changes.outputs.build == 'true'
         run: ./gradlew assembleRelease bundleRelease --console=plain
 
       # No debug APK upload: nobody downloads it, and the free plan's artifact storage is small.
       - name: Upload reports on failure
-        if: failure()
+        if: failure() && steps.changes.outputs.build == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: build-reports

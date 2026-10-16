@@ -82,7 +82,7 @@ You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundl
 
 `./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [docs/architecture/performance.md](docs/architecture/performance.md), *Release build*); elsewhere it comes out unsigned.
 
-Every push to `main` is built, tested and linted by GitHub Actions. It doesn't keep the APKs; build them locally with `./gradlew assembleDebug`.
+GitHub Actions builds, tests and lints `main` every night. It doesn't keep the APKs; build them locally with `./gradlew assembleDebug`.
 
 ## Contributing
 
