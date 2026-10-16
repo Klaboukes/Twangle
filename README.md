@@ -82,7 +82,7 @@ You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundl
 
 `./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [ARCHITECTURE.md](ARCHITECTURE.md), *Release build*); elsewhere it comes out unsigned.
 
-Every push to `main` is built by GitHub Actions, and the debug APK is attached to each run as `twangle-debug-apk`.
+Every push to `main` is built by GitHub Actions, and the newest run keeps the debug APKs as `twangle-debug-apk` for 7 days (older copies are deleted to stay within the free plan's storage).
 
 ## Contributing
 

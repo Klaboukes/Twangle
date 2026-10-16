@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# actions: write lets the job delete older debug APKs after uploading the new one.
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   build:
     name: Build, test & lint
@@ -44,14 +49,29 @@ jobs:
       - name: Assemble release APK and bundle
         run: ./gradlew assembleRelease bundleRelease --console=plain
 
+      # The free plan's artifact storage is small (each debug APK is ~25 MB), so only main keeps a
+      # downloadable APK, and only the newest one: older copies are deleted once it is uploaded.
       - name: Upload debug APK
+        id: upload-apk
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: twangle-debug-apk
           path: |
             app/build/outputs/apk/debug/*.apk
             wear/build/outputs/apk/debug/*.apk
-          retention-days: 14
+          retention-days: 7
+
+      - name: Delete older debug APKs
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP_ID: ${{ steps.upload-apk.outputs.artifact-id }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/actions/artifacts?name=twangle-debug-apk" \
+            -q ".artifacts[] | select(.id != $KEEP_ID) | .id" | while read -r id; do
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" || true
+          done
 
       - name: Upload reports on failure
         if: failure()
@@ -61,4 +81,4 @@ jobs:
           path: |
             **/build/reports/
             **/build/test-results/
-          retention-days: 7
+          retention-days: 3
