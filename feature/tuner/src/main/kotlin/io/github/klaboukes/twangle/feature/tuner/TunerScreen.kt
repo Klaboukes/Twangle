@@ -134,7 +134,7 @@ import kotlin.math.min
  * likewise keeps a turned phone from switching layout, and [savedInstrument] the instrument
  * and tuning panel from showing the guitar a moment first ([savedCustomTunings] likewise lists the
  * player's own tunings from the start). The panel shows while [pickerOpen] (the navigation bar's
- * Tuning item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used unless the "full layout on its side"
+ * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used unless the "full layout on its side"
  * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
@@ -285,7 +285,7 @@ fun TunerScreen(
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
-                // The navigation bar's Tuning item works without the microphone too: the panel opens
+                // The navigation bar's Instrument item works without the microphone too: the panel opens
                 // over the prompt, and the tuning picked is the one the tuner listens for once allowed.
                 val panelTuning by viewModel.panelTuning.collectAsStateWithLifecycle()
                 val shown = panelTuning
@@ -367,7 +367,7 @@ object TunerTestTags {
     /** The signal bars as drawn, in their small slot; [SIGNAL_BARS] is the 48 dp button around them. */
     const val SIGNAL_BARS_ICON = "tuner_signal_bars_icon"
 
-    /** The instrument and tuning panel, opened from the navigation bar's Tuning item. */
+    /** The instrument and tuning panel, opened from the navigation bar's Instrument item. */
     const val PICKER_PANEL = "tuner_picker_panel"
 
     /** The panel's "New tuning" row, which opens the tuning editor. */
@@ -1082,7 +1082,7 @@ private fun instrumentOf(state: TunerUiState): Instrument {
 /**
  * What the name over the string row is made of: the [instrument] picked and the player's own
  * [customTunings], whose names are their own (the presets' come from the string resources). A tap
- * on it calls [onClick] (opens the instrument and tuning panel, as the navigation bar's Tuning item).
+ * on it calls [onClick] (opens the instrument and tuning panel, as the navigation bar's Instrument item).
  */
 private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>, val onClick: () -> Unit)
 
@@ -1104,7 +1104,7 @@ private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> 
  * lines and widens the row rather than run under the switch. A tap on it opens the instrument and
  * tuning panel; TalkBack says it as "Guitar, Drop D".
  * [inTour]: the switch and the strings are the tour's steps. (The instrument and tuning are picked
- * from the navigation bar's Tuning item.)
+ * from the navigation bar's Instrument item.)
  */
 @Composable
 private fun GuitarControls(

@@ -26,7 +26,7 @@ enum class TourPart(
     /** The note under the meter: its name with the cents pill and frequency, or with the wave. */
     NOTE(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_note, interactive = false),
 
-    /** The navigation bar's Tuning item (the rail's on a phone on its side), which opens the instrument and tuning panel. */
+    /** The navigation bar's Instrument item (the rail's on a phone on its side), which opens the instrument and tuning panel. */
     PICKER(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_picker, interactive = true),
 
     /** The strum check's switch above the strings. */

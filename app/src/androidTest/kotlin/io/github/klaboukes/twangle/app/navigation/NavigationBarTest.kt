@@ -62,7 +62,7 @@ import org.junit.runners.Parameterized
 
 /**
  * The navigation bar (upright) and rail (on its side) in each style, light and dark: three tabs that
- * TalkBack hears as tabs by name with the open one selected, and the Tuning item after the Tuner tab,
+ * TalkBack hears as tabs by name with the open one selected, and the Instrument item after the Tuner tab,
  * a button that is never selected; a tap on another tab opens it; the open tab
  * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
@@ -119,7 +119,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     private fun tab(destination: Destination) = compose.onNodeWithTag(NavigationTestTags.tab(destination))
-    private val tuning get() = compose.onNodeWithTag(NavigationTestTags.TUNING)
+    private val tuning get() = compose.onNodeWithTag(NavigationTestTags.INSTRUMENT)
 
     private fun label(destination: Destination, dutch: Boolean = false): String {
         val id = when (destination) {
@@ -162,12 +162,12 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     /**
-     * The Tuning item, bar and rail: after the Tuner tab, before Metronome; TalkBack hears a button
-     * named "Tuning" holding the picked instrument and tuning, and what a double tap does; a tap
+     * The Instrument item, bar and rail: after the Tuner tab, before Metronome; TalkBack hears a button
+     * named "Instrument" holding the picked instrument and tuning, and what a double tap does; a tap
      * calls it, from every tab, and it is never selected.
      */
     @Test
-    fun theTuningItemIsAButtonAfterTheTunerTab() {
+    fun theInstrumentItemIsAButtonAfterTheTunerTab() {
         show()
         val change = english(io.github.klaboukes.twangle.feature.tuner.R.string.tuner_change_instrument_or_tuning)
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
@@ -176,7 +176,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                 shownSelected.value = open
                 compose.waitForIdle()
                 tuning.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-                    .assert(hasText(english(R.string.nav_tuning)))
+                    .assert(hasText(english(R.string.nav_instrument)))
                     .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, TUNING_STATE))
                     .assert(SemanticsMatcher("click label is \"$change\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == change })
                     .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
@@ -233,7 +233,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                     assertTrue("$case content above the bar", content.bottom <= bar.top + SLACK.dp)
                 }
                 for (destination in Destination.entries) assertWhollyShown(tab(destination), "$case $destination", scroll = false)
-                assertWhollyShown(tuning, "$case Tuning", scroll = false)
+                assertWhollyShown(tuning, "$case Instrument", scroll = false)
             }
         }
     }
@@ -252,7 +252,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                 tab(destination).assert(hasText(name))
                 assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
             }
-            val name = dutch(R.string.nav_tuning)
+            val name = dutch(R.string.nav_instrument)
             tuning.assert(hasText(name))
             assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
         }
@@ -293,7 +293,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                 if (destination == Destination.TUNER && lit < MIN_MARK_PIXELS) fail("$case: only $lit accent pixels in the mark")
                 if (destination != Destination.TUNER && lit > 0) fail("$case: $lit accent pixels under a tab that isn't open")
             }
-            // The Tuning item is never open: no accent at all.
+            // The Instrument item is never open: no accent at all.
             val pixels = tuning.captureToImage().toPixelMap()
             var lit = 0
             for (y in 0 until pixels.height) for (x in 0 until pixels.width) if (near(pixels[x, y].toArgb(), accent)) lit++

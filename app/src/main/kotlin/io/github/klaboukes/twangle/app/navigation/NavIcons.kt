@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 /**
  * The tabs' line icons, drawn for Twangle as on the approved mock-up (docs/design/metronome-nav-preview.html):
  * a tuning fork, a metronome and a gear, in 1.8 dp lines on a 24 dp grid; the open tab's in 2.2 dp.
- * The Tuning item's headstock ([TUNING_ICON]) is drawn the same way.
+ * The Instrument item's headstock ([INSTRUMENT_ICON]) is drawn the same way.
  */
 internal fun navIcon(destination: Destination, selected: Boolean): ImageVector =
     (if (selected) BOLD else REGULAR).getValue(destination)
@@ -19,9 +19,9 @@ internal fun navIcon(destination: Destination, selected: Boolean): ImageVector =
 private val REGULAR = Destination.entries.associateWith { icon(it, 1.8f) }
 private val BOLD = Destination.entries.associateWith { icon(it, 2.2f) }
 
-/** The Tuning item's icon: a guitar headstock with three tuning pegs at each side, in 1.8 dp lines. It is never selected. */
-internal val TUNING_ICON: ImageVector = icon(
-    "nav_tuning",
+/** The Instrument item's icon: a guitar headstock with three tuning pegs at each side, in 1.8 dp lines. It is never selected. */
+internal val INSTRUMENT_ICON: ImageVector = icon(
+    "nav_instrument",
     listOf(
         // The headstock, narrowing into the neck at the bottom.
         "M10.5,21.5V15.5L8.5,13.5V4a1.5,1.5 0,0 1,1.5,-1.5h4a1.5,1.5 0,0 1,1.5,1.5v9.5L13.5,15.5v6",

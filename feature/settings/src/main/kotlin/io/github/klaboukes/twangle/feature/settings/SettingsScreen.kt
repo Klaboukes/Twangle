@@ -246,7 +246,7 @@ internal fun SettingsPage(
 
 /**
  * Every setting, in four headed groups: Pitch and notes (which note it is and what counts as in
- * tune; not "Tuning", which the navigation bar's item for picking a tuning is called), Look (the
+ * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
  * style, light or dark and the wallpaper colours), Tuner screen (the meter's look and in-tune effect,
  * what shows below the note and the layout on its side) and While tuning (what the tuner does while
  * it listens), followed by the app's language,

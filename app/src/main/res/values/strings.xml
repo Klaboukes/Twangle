@@ -2,7 +2,7 @@
     <string name="app_name" translatable="false">Twangle</string>
     <!-- The navigation bar's three tabs and its Tuning item (instrument tuning, as in "Drop D"), which opens the instrument and tuning panel. -->
     <string name="nav_tuner">Tuner</string>
-    <string name="nav_tuning">Tuning</string>
+    <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronome</string>
     <string name="nav_settings">Settings</string>
     <!-- The home-screen widget: its name and description in the widget picker, its line (instrument ·

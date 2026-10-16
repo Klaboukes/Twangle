@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
-                // Whether the instrument and tuning panel shows over the tuner (the bar's Tuning item opens it).
+                // Whether the instrument and tuning panel shows over the tuner (the bar's Instrument item opens it).
                 var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
                 // Whether the tuner shows its compact layout on its side without the controls: the rail hides then.
                 var tunerCompact by remember { mutableStateOf(false) }
@@ -266,7 +266,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** The picked instrument and tuning as TalkBack says them on the bar's Tuning item, e.g. "Guitar, Standard" or a custom tuning's name. */
+    /** The picked instrument and tuning as TalkBack says them on the bar's Instrument item, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
     private fun spokenTuning(settings: AppSettings): String {
         val tuningName = settings.customTunings.firstOrNull { it.id == settings.tuning.id }?.name ?: tuningLabel(settings.tuning)

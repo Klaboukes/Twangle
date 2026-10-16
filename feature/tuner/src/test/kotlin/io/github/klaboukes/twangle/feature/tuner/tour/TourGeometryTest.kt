@@ -151,7 +151,7 @@ class TourGeometryTest {
     }
 
     // The Xiaomi 12X upright (dp): the strum check's switch above the strings, at their end; the bar's
-    // Tuning item (the instrument and tuning step), then its Metronome and Settings tabs (the bar step).
+    // Instrument item (the instrument and tuning step), then its Metronome and Settings tabs (the bar step).
     private val upright = mapOf(
         TourPart.MODE to TourBox(82f, 40f, 311f, 88f),
         TourPart.METER to TourBox(8f, 146f, 385f, 334f),
@@ -174,7 +174,7 @@ class TourGeometryTest {
     )
 
     @Test
-    fun `upright the tour reads top to bottom, left to right in a row, the bar's Tuning item and tabs last`() {
+    fun `upright the tour reads top to bottom, left to right in a row, the bar's Instrument item and tabs last`() {
         val order = tourOrder(TourPart.entries.shuffled(java.util.Random(4))) { upright[it] }
         assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
     }
@@ -292,7 +292,7 @@ class TourGeometryTest {
     fun `with no clear side the balloon takes the side that fits`() {
         // The strings: no room below (the bar), and above lies over the instrument button: above all the same.
         assertEquals(BalloonSide.ABOVE, placeStep(TourPart.STRINGS).side)
-        // The bar's Tuning item: nothing below it, and above lies over the strings: above all the same.
+        // The bar's Instrument item: nothing below it, and above lies over the strings: above all the same.
         assertEquals(BalloonSide.ABOVE, placeStep(TourPart.PICKER).side)
         val part = TourBox(100f, 400f, 300f, 440f)
         val above = TourBox(100f, 300f, 300f, 340f)

@@ -130,7 +130,7 @@ class TunerContentTest {
     private val shownMeterLook = mutableStateOf(MeterLook.DEFAULT)
     private val shownSignalBars = mutableStateOf(false)
 
-    /** Whether the instrument and tuning panel shows ([openPanel]; the navigation bar's Tuning item in the app). */
+    /** Whether the instrument and tuning panel shows ([openPanel]; the navigation bar's Instrument item in the app). */
     private val shownPickerOpen = mutableStateOf(false)
 
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
@@ -220,7 +220,7 @@ class TunerContentTest {
     /** String chips read e.g. "A2": note name plus subscript octave. */
     private fun stringChip(label: String) = compose.onNodeWithText(label)
 
-    /** Opens the instrument and tuning panel, as the navigation bar's Tuning item does in the app. */
+    /** Opens the instrument and tuning panel, as the navigation bar's Instrument item does in the app. */
     private fun openPanel() {
         compose.runOnIdle { shownPickerOpen.value = true }
         compose.waitForIdle()

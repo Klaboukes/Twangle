@@ -79,7 +79,7 @@ import kotlin.math.min
  * edge. Both are variant B of the approved mock-up (docs/design/metronome-nav-preview.html): icons and
  * names straight on the style's background over a calm field, the open tab ([selected]) in the accent
  * with the style's wave mark under its name. A tap on another tab calls [onSelect]. Tuning is no tab
- * but a button ([TuningItem]): a tap calls [onTuning], which opens the instrument and tuning panel,
+ * but a button ([InstrumentItem]): a tap calls [onTuning], which opens the instrument and tuning panel,
  * and [tuningState] ("Guitar, Standard") is what TalkBack hears it holds. Without a [selected] tab (the tuning
  * editor), or while [hidden] (the compact tuner on its side), the bar or rail is away and [content]
  * takes the whole window. The bar or rail keeps clear of the system bars; [content] is told those
@@ -158,7 +158,7 @@ fun AppNavigationFrame(
 }
 
 /**
- * The navigation bar at the bottom of an upright phone: the three tabs and the Tuning item ([onTuning],
+ * The navigation bar at the bottom of an upright phone: the three tabs and the Instrument item ([onTuning],
  * [tuningState]), four equal items over the gesture bar, on a calm field (a soft wash of the background
  * colour that starts [FIELD_REACH] above the bar, no edge) that keeps them readable over the style's
  * motifs and the screen's last rows.
@@ -198,7 +198,7 @@ fun AppNavigationBar(
     ) {
         for (destination in Destination.entries) {
             NavItem(destination, destination == selected, { onSelect(destination) }, Modifier.weight(1f))
-            if (destination == Destination.TUNER) TuningItem(onTuning, tuningState, Modifier.weight(1f))
+            if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.weight(1f))
         }
     }
 }
@@ -248,7 +248,7 @@ fun AppNavigationRail(
         ) {
             for (destination in Destination.entries) {
                 NavItem(destination, destination == selected, { onSelect(destination) }, Modifier.fillMaxWidth())
-                if (destination == Destination.TUNER) TuningItem(onTuning, tuningState, Modifier.fillMaxWidth())
+                if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.fillMaxWidth())
             }
         }
     }
@@ -281,20 +281,20 @@ private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> 
 }
 
 /**
- * The Tuning item, after the Tuner tab: a headstock and "Tuning", drawn like a tab that isn't open,
+ * The Instrument item, after the Tuner tab: a headstock and "Instrument", drawn like a tab that isn't open,
  * but a button rather than a tab, as it opens the instrument and tuning panel over the tuner
- * ([onClick]) instead of a screen of its own. TalkBack: "Tuning, Guitar, Standard ([current]), button,
+ * ([onClick]) instead of a screen of its own. TalkBack: "Instrument, Guitar, Standard ([current]), button,
  * double-tap to change instrument or tuning". The tour's instrument and tuning step lights it up.
  */
 @Composable
-private fun TuningItem(onClick: () -> Unit, current: String?, modifier: Modifier = Modifier) {
+private fun InstrumentItem(onClick: () -> Unit, current: String?, modifier: Modifier = Modifier) {
     val clickLabel = stringResource(TunerR.string.tuner_change_instrument_or_tuning)
     NavEntry(
-        icon = TUNING_ICON,
-        label = stringResource(R.string.nav_tuning),
+        icon = INSTRUMENT_ICON,
+        label = stringResource(R.string.nav_instrument),
         selected = false,
         modifier = modifier
-            .testTag(NavigationTestTags.TUNING)
+            .testTag(NavigationTestTags.INSTRUMENT)
             .tourTarget(TourPart.PICKER)
             .clickable(
                 interactionSource = null,
@@ -369,8 +369,8 @@ object NavigationTestTags {
     const val BAR = "nav_bar"
     const val RAIL = "nav_rail"
 
-    /** The Tuning item, which opens the instrument and tuning panel. */
-    const val TUNING = "nav_tuning"
+    /** The Instrument item, which opens the instrument and tuning panel. */
+    const val INSTRUMENT = "nav_instrument"
 
     /** A tab, e.g. "nav_settings". */
     fun tab(destination: Destination): String = "nav_" + destination.name.lowercase()

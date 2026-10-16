@@ -74,7 +74,7 @@ import kotlinx.coroutines.launch
 
 /**
  * The instrument and tuning panel, as the approved mock-up docs/design/combined-picker-preview.html,
- * opened from the navigation bar's Tuning item: a sheet from the bottom with the instruments along
+ * opened from the navigation bar's Instrument item: a sheet from the bottom with the instruments along
  * the top and [instrument]'s tunings below, [tuning] ticked. Picking an instrument calls
  * [onInstrumentChange] (the tuner switches to its standard tuning) and keeps the panel open; picking a
  * tuning calls [onTuningChange] and closes it. [onDismiss] is called once it has closed (a pick, a tap

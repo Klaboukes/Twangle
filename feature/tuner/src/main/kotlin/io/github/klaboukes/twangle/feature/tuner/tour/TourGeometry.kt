@@ -228,7 +228,7 @@ fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointer
 
 /**
  * The tour's order in the current layout: [steps] in reading order ([readingOrder]) by their
- * [bounds], with the navigation bar's or rail's parts (its Tuning item, then its Metronome and
+ * [bounds], with the navigation bar's or rail's parts (its Instrument item, then its Metronome and
  * Settings tabs) always last. Steps not laid out yet keep their place in [steps] after the others,
  * before the bar. Upright that is mode switch, meter, note, strum check, strings, then the bar; in the
  * two panes (a phone on its side, wide screens) the readout pane's meter and note, then the controls
