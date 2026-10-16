@@ -83,10 +83,17 @@ kotlin {
 androidComponents {
     // The release build gets unit tests of its own too (testReleaseUnitTest, part of `test`), so
     // ReleaseToolSwitchesTest can check that the Play build hides every after-v1.0 tool (Phase 28).
-    beforeVariants(selector().withBuildType("release")) { variant ->
-        variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
+    // So do the two builds the Baseline Profile plugin makes from it, which run the same test: the
+    // profile generator (nonMinifiedRelease) and the frame-time and startup runs (benchmarkRelease)
+    // must see the v1.0 app too.
+    val v10Builds = listOf("release", "nonMinifiedRelease", "benchmarkRelease")
+    beforeVariants { variant ->
+        if (variant.buildType in v10Builds) variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
     }
     onVariants { variant ->
+        if (variant.buildType in v10Builds && variant.buildType != "release") {
+            variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.sources?.kotlin?.addStaticSourceDirectory("src/testRelease/kotlin")
+        }
         variant.buildConfigFields?.put(
             "SYNTHETIC_AUDIO",
             BuildConfigField("boolean", (variant.buildType == "benchmarkRelease").toString(), "Synthetic tone instead of the mic"),

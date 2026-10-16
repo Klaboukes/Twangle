@@ -50,7 +50,7 @@ class AppContainer(private val appContext: Context) {
      * Which after-v1.0 tools show (Phase 28): this build's, [buildToolSwitches], all on in debug
      * builds and all off in release builds. `MainActivity` hands them to the screens. A UI test may
      * set them before it starts the activity, e.g. [ToolSwitches.ALL_OFF] to see the v1.0 app in a
-     * debug build (ToolSwitchesOffTest), and puts them back after.
+     * debug build (ToolSwitchesOffRule, which the store screenshots use), and puts them back after.
      */
     @set:VisibleForTesting
     var toolSwitches: ToolSwitches = buildToolSwitches

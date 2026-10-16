@@ -33,7 +33,7 @@ Goal: Twangle is public on Google Play. Needs the owner's Play developer account
 - ☐ The policy URL and the contact email entered in the Play Console (once the developer account is ready)
 - ☐ Play Console *App content*: privacy policy, ads (none), app access (no login), content rating questionnaire, target audience (13+), data safety (no data collected or shared), category Music & Audio
 - ☐ Play Store listing texts as planned in [docs/store-listing.md](docs/store-listing.md): title "Twangle: Guitar Tuner", short and full description (strong points first: accurate, many instruments, metronome, made for everyone with TalkBack and large text, no ads / account / tracking / internet), translated into every supported language; the owner picks one of the two short descriptions
-- ☐ Store screenshots made by an on-device test, not by hand: a fixed note through the fake recorder, the eight screens and styles of the plan, placed on a 1080×1920 canvas with a translated caption (the Xiaomi's 20:9 screen is too long for Play as it is), in every language; run in the overnight run
+- ☐ Store screenshots made by an on-device test, not by hand: a fixed note through the fake recorder, the eight screens and styles of the plan, placed on a 1080×1920 canvas with a translated caption (the Xiaomi's 20:9 screen is too long for Play as it is), in every language; under `ToolSwitchesOffRule`, so they show the v1.0 app (Phase 28); run in the overnight run
 - ☐ Store graphics: the 512×512 icon and the 1024×500 feature graphic (icon, name and an in-tune meter, no other words); no "free" or "no ads" in any picture or the title (Google's rules)
 - ☐ A calm "Rate Twangle" row in About that opens the Play page (no rating pop-up), in every language
 - ☐ Store settings: category Music & Audio, up to five tags, contact email and website (**decision 5**); after the internal-track upload, read Play's pre-launch report, its accessibility findings included
@@ -60,7 +60,7 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 Goal: new tools can land on `main` without changing what v1.0 users see.
 - ☑ One switch per after-v1.0 tool (intonation check, chord naming, pitch trail, Practice tab with chords, capo helper), on in debug builds and off in release builds, decided in one place in `:app` and passed down (through `AppContainer`), so a hidden tool leaves no trace in a release build: no mode, tab, setting, tour step or text on screen
 - ☑ Tests: a release-variant unit test checks every switch is off there; a debug test checks they are on; a UI test can turn one off to see the v1.0 screen
-- ☐ Phase 23's store screenshots and the Baseline Profile see the v1.0 app (switches off), whatever the debug build shows
+- ☑ Phase 23's store screenshots and the Baseline Profile see the v1.0 app (switches off), whatever the debug build shows: `ToolSwitchesOffRule` for the screenshot test; the profile's builds are non-debug, which `ReleaseToolSwitchesTest` now checks in them too
 - ☑ docs/architecture/performance.md (*Release build*) describes the switches and how a tool goes live: its switch turns on for release (or goes), in Phase 34
 
 ## Phase 29 — Intonation check

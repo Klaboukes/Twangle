@@ -10,7 +10,6 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
-import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import java.util.concurrent.TimeUnit
@@ -24,10 +23,9 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 
 /**
- * With every after-v1.0 tool switched off (Phase 28), the debug app is the v1.0 app the Play build
- * shows: the tuner's two modes and the bar's Tuner · Instrument · Metronome · Settings, nothing more.
- * The hook for any UI test that needs the v1.0 screen: set [AppContainer.toolSwitches] before the
- * activity starts, and put it back after. A later phase adds what its tool must not show here.
+ * With every after-v1.0 tool switched off (Phase 28, [ToolSwitchesOffRule]), the debug app is the
+ * v1.0 app the Play build shows: the tuner's two modes and the bar's Tuner · Instrument · Metronome ·
+ * Settings, nothing more. A later phase adds what its tool must not show here.
  */
 class ToolSwitchesOffTest {
 
@@ -35,6 +33,7 @@ class ToolSwitchesOffTest {
     val rules: RuleChain = RuleChain
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
+        .around(ToolSwitchesOffRule())
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -45,26 +44,20 @@ class ToolSwitchesOffTest {
 
     @Test
     fun everySwitchOffShowsTheV10App() {
-        val before = container.toolSwitches
         // The tour would cover the tuner.
         runBlocking { container.settingsRepository.setTourSeen(true) }
-        container.toolSwitches = ToolSwitches.ALL_OFF
-        try {
-            ActivityScenario.launch(MainActivity::class.java).use {
-                assertTrue("the tuner shows", shown(TunerTestTags.mode(TunerMode.CHROMATIC)))
-                assertEquals(
-                    "the tuner's v1.0 modes only",
-                    setOf(TunerTestTags.mode(TunerMode.AUTO), TunerTestTags.mode(TunerMode.CHROMATIC)),
-                    tagsLike("tuner_mode_.*"),
-                )
-                assertEquals(
-                    "the v1.0 bar only",
-                    (listOf(Destination.TUNER, Destination.METRONOME, Destination.SETTINGS).map(NavigationTestTags::tab) + NavigationTestTags.INSTRUMENT).toSet(),
-                    tagsLike("nav_(?!bar$|rail$).*"),
-                )
-            }
-        } finally {
-            container.toolSwitches = before
+        ActivityScenario.launch(MainActivity::class.java).use {
+            assertTrue("the tuner shows", shown(TunerTestTags.mode(TunerMode.CHROMATIC)))
+            assertEquals(
+                "the tuner's v1.0 modes only",
+                setOf(TunerTestTags.mode(TunerMode.AUTO), TunerTestTags.mode(TunerMode.CHROMATIC)),
+                tagsLike("tuner_mode_.*"),
+            )
+            assertEquals(
+                "the v1.0 bar only",
+                (listOf(Destination.TUNER, Destination.METRONOME, Destination.SETTINGS).map(NavigationTestTags::tab) + NavigationTestTags.INSTRUMENT).toSet(),
+                tagsLike("nav_(?!bar$|rail$).*"),
+            )
         }
     }
 
