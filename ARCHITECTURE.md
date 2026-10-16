@@ -17,7 +17,7 @@ Topic files:
 - §3 Signal pipeline:
   - **[Signal pipeline](docs/architecture/signal-pipeline.md)**: Pipeline · Key numbers · Other sample rates · Frame assembly · Low notes · Signal gate · Sustain check (ticks and clicks) · Noise floor, SNR and clarity · Reception · Tips · Signal bars (optional) · Pitch detection (YIN) · Smoothing · Edge cases (measured, EdgeCaseTest)
   - **[Notes, tunings and audio](docs/architecture/notes-and-audio.md)**: Note math · Tunings · Instruments · Intonation check · Strobe model · Audio source selection · Audio capture · Reference tone
-  - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Metronome · Tempo from music
+  - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Chord naming · Metronome · Tempo from music
 - §4 **[Threading and performance](docs/architecture/performance.md)**: Threads and the main thread · Measured on the Galaxy S26 · Low-note window on the Xiaomi 12X · Watch CPU and the native detector · Meter looks · Baseline Profile · Release build: shrinking and signing
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
 - §6 UI:
@@ -115,6 +115,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent), TapTempo (+ TempoMarking),
                 TempoDetector (+ TempoStatus), OnsetTempoDetector (tempo from music)
     strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check)
+    chord/      ChordDetector, ChordResult, ChordNamer, Chord, ChordQuality (chord naming from a strum)
     intonation/ Intonation (+ IntonationResult, IntonationVerdict): 12th fret against the open string
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/

@@ -4,6 +4,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 
 ## Contents
 - [Strum check (polyphonic)](#strum-check-polyphonic)
+- [Chord naming](#chord-naming)
 - [Metronome](#metronome)
 - [Tempo from music](#tempo-from-music)
 
@@ -73,6 +74,41 @@ The guitar rows were read with readings weighed together (below); the bass rows 
 The readings behind it (a temporary log of every reading): over the first ≈ 0.5 s every string was within 0.5 cent of what was played and a missing string was missing. As the strings died towards the gate (−50 to −56 dBFS, 1.5–2 s on) E2 wandered by up to ±7 cents, a 30-cent-flat B3 came and went, and once a missing A2 read +60 (probably the speaker's difference tone G3 − E2 = 113.6 Hz, 56 cents above A2). The panel showed the last reading, so it often ended on those: E2 played −10 showed −17, B3 played −30 "+99" or not heard. Weighing every reading by its frame's power fixed it: put together that way, the logged readings of every strum gave each string within 0.5 cent of what was played from the third reading on (0.6 s after the strum), and every missing string missing. The script also showed sounds taken for strums: the speaker's click as a strum stops at once, beating at the end of a strum, and, once the room got noisy (for the last half hour of the check), up to several "strums" a second, onsets at −28 to −49 dBFS over a −70 floor, as loud as the test strums or louder, some of them read. The first two are gone (the first-frame limit above). A first reading must now also hear half the strings, which keeps knocks off; other sounds as loud as a strum, such as a voice next to the phone, can still be read as one and start a strum over, so strum check wants a quiet room.
 
 **Not modelled yet:** pick noise and buzz, sympathetic strings, the body's resonances, and the phone mic's weak response at 82 Hz beyond the weak-fundamental case; the owner's check with a real guitar (*Owner checks* in ROADMAP.md) will tell. Inharmonicity bends partial k sharp by ≈ 866·B·(k² − 1) cents; the low-partial weighting keeps it to +0.6 cents with weak fundamentals (+1 at three times those B values); fitting B per string would remove it. Higher partials decay first, so a late frame has fewer clear partials (fine 1.5 s after the strum in synthetic strums).
+
+## Chord naming
+Phase 30. `:core:dsp` `chord/`, allocation-free (byte-counting tests). Not shown in the app yet: the tuner mode that uses it comes later in Phase 30, behind its switch (Phase 28).
+- **`ChordDetector(sampleRate, frameLength, lowestMidi, highestMidi)`** names the chord in one frame: `detect(frame, result, a4Hz)` fills a `ChordResult` and returns its `chord`, or null. Frames come from `StrumListener`, the same as strum check's (341 ms, a new one every 0.1 s while the strings ring); notes are looked for from B1 to E6.
+- **`Chord`** is a root `PitchClass` and a `ChordQuality`: major, minor, 7th, major 7th, minor 7th, sus2, sus4. Every chord exists once (`Chord.of`), so naming allocates nothing. The UI names it in the player's notation (A minor, La minore, a-Moll …). `ChordResult` also holds the `bass` (lowest note's pitch class, for a slash chord such as C/E), the notes heard with their strengths, each pitch class's strength, the strum's `tuningOffsetCents`, and `crowded`.
+- **`ChordNamer.name(pitchClasses, bass)`** is the template match on its own, pure and tested chord by chord.
+
+**Why not `StrumDetector`.** Strum check knows which note each string should be. A chord can put any note on any string, leave strings out and double notes, so this expects nothing and finds the notes itself. A plain chroma (the spectrum folded into 12 pitch classes, matched against templates) is not enough: every note's 3rd and 5th harmonics land on its fifth and major third, so an E5 power chord (E2 B2 E3) reads as E major, and the 3rd harmonic of a chord's third adds its seventh (C → Cmaj7). The notes have to be found first, with their harmonics accounted for.
+
+**Method** (`ChordDetector`):
+1. **Peaks:** a Hann window, a 2× zero-padded FFT, and its peaks up to 4 kHz: local maxima that are the highest within 0.75 main-lobe half-widths (a Hann sidelobe sits 1.25 away, so it is never one), within 50 dB of the loudest, above −74 dBFS; frequency and amplitude by quadratic interpolation of the log magnitude (Smith & Serra 1987).
+2. **Tuning:** the peaks' power-weighted circular mean distance from the semitone grid at the given A4. A guitar tuned to itself at A4 = 432 Hz reads −32 cents and is named against 440. Every string may also be ±10 cents off on its own.
+3. **Notes, by iterative estimation and cancellation** (Klapuri 2003 and 2006): every semitone gets a salience, `Σ_k r_k / √k` over its first 10 partials, where `r_k` is what is left of the strongest peak within ±30 cents of `k·f₀`. The strongest is a note; its partials are taken out of the peaks, and the search repeats until the best salience is under 8 % of the first note's. Then:
+   - *A note's fundamental must reach 15 % of its strongest partial.* Otherwise C2 would be found under C3 E3 G3, whose frequencies are its 4th, 5th and 6th harmonics. A low string heard through a phone mic, whose 2nd harmonic is three times its fundamental (`TestSignals.WEAK_FUNDAMENTAL_HARMONICS`), still counts.
+   - *Partial k is taken out only up to the geometric mean of the note's own partials k − 1 and k + 1, as first measured* (spectral smoothness, Klapuri 2003), so another note's partial on top of it stays. With the larger neighbour instead, a real G#4 went with E2's 5th partial because B4 sat on the 6th. With the smaller one, B2's 3rd partial (F#4) was left over strongly enough to turn G into Gmaj7.
+   - *1/√k weights, not 1/k:* with 1/k the octave above a weak-fundamental low string won, and the string's odd partials were left over as false notes.
+   - *More than 10 notes* is noise or a muddle (`crowded`), no chord.
+4. **Name:** a note under 30 % of the first note's salience that lies on a harmonic (2 to 16, within 35 cents) of another note found is taken for that note's leftover and doesn't count. When a note an octave up merges with a lower one, its own odd partials are left over: C#6 = 6 × F#3 in Bm. The rest go to `ChordNamer` as pitch classes, with the lowest note as the bass. Notes from 15 % of the first note's salience are sure. Weaker ones may be a string played softly or a leftover, so the chord is named only if it stays the same with and without each of them (every subset). A strum that is nearly two chords, or nearly none, gets no name.
+
+**Template match** (`ChordNamer`). The pitch classes must be exactly a chord's tones. The 7th chords may leave out their fifth, as guitar voicings often do (C7 as x32310). Two notes are never a chord: C and E could be C major or A minor. An extra note makes a chord this doesn't know yet (add9, 6, diminished, augmented), so no name. Inversions are named by their chord. Two chords share their tones only among the sus chords (Dsus2 = Asus4 = D E A, Dsus4 = Gsus2), and the bass tells them apart: xx0230 is Dsus2, x02230 Asus4, and with neither root in the bass there is no name. C6 has Am7's tones and is named Am7, since C6 isn't among the chords.
+
+**Measured** (`ChordAccuracyReport`, synthetic `PluckSynth` strums like strum check's, 41 shapes in standard tuning: 25 open (E, A, D, G, C, Em, Am, Dm, E7, A7, D7, G7, C7, B7, Cmaj7, Dmaj7, Fmaj7, Am7, Em7, Dm7, Dsus2, Asus2, Dsus4, Asus4, Esus4) and 16 barre (F, B♭, G#, C, Bm, F#m, Cm, Am, F#7, C7, B♭maj7, C#m7, Bm7, Gm7, Csus4, Csus2)). Right / no name / wrong:
+
+| Strums | Named |
+|---|---|
+| As played; upstroke; frame from the strum's start, 1 s or 2 s later | 41 / 0 / 0 each |
+| Each string ±10 cents and struck at 0.5–1 of full strength, strings 5–30 ms apart; or struck at 0.3–1 (410 each) | 410 / 0 / 0 each |
+| Same, struck at 0.2–1 (410) | 397 / 13 / 0 (a chord tone struck softly, or a leftover, under 15 %) |
+| Stiff strings (B = 10⁻⁴); weak fundamentals below G3; 20 and 10 dB SNR; tuned to A4 = 432 | 41 / 0 / 0 each |
+
+No name for: 37 single notes (E2–E5), 18 fifths, 18 power chords, 21 thirds, 21 minor thirds with the octave (0 of 115), 100 white-noise frames from −70 to −10 dBFS (0 of 100), two chords at once, a chord with a wrong note and random clusters (1 of 269). That one: a soft G#4 added to Esus4, on E2's 5th harmonic, was taken for E2's leftover. A wrong note on a harmonic of a chord note and under 30 % (a soft added 9th sits on the fifth's 3rd harmonic) is heard as that note's harmonic, so the triad is named. `ChordDetectorTest` holds every shape as played and through `StrumListener`, three random strums per shape, stiff, weak-fundamental, noisy and retuned strums, very uneven strums (right or none, at least 90 % named), and the no-chord cases.
+
+**CPU.** One detection: 1.4 ms on the JVM, most of it the 32 768-point FFT; strum check's takes 2.6 ms at the same pace of one every 0.1 s.
+
+**Not modelled yet:** real guitars (body resonances, pick noise, sympathetic strings, harmonics that don't fall as 1/k), chords beyond the seven types, and readings combined over a strum (each frame is named on its own; the view will settle on a name over several, like strum check's readings). The owner's check with a real guitar (*Owner checks* in ROADMAP.md, later in Phase 30) will tell.
 
 ## Metronome
 The engine, the screen ([Metronome, widget and watch](ui-other-screens.md), *Metronome screen*) and the navigation bar ([UI basics](ui.md), *Navigation bar*).
