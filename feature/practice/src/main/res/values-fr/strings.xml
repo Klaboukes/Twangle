@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, à vide</string>
     <string name="practice_spoken_fret">%1$s, case %2$d, doigt %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, doigt %1$d sur la case %2$d, cordes %3$s à %4$s</string>
+    <string name="practice_chart_choice">Accords ou gammes</string>
+    <string name="practice_chart_chords">Accords</string>
+    <string name="practice_chart_scales">Gammes</string>
+    <string name="practice_scale_type">Gamme</string>
+    <string name="practice_scale_type_major">Majeure</string>
+    <string name="practice_scale_type_natural_minor">Mineure naturelle</string>
+    <string name="practice_scale_type_major_pentatonic">Pentatonique majeure</string>
+    <string name="practice_scale_type_minor_pentatonic">Pentatonique mineure</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s majeur</string>
+    <string name="practice_scale_natural_minor">%1$s mineur naturel</string>
+    <string name="practice_scale_major_pentatonic">%1$s pentatonique majeure</string>
+    <string name="practice_scale_minor_pentatonic">%1$s pentatonique mineure</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, notes %2$s</string>
+    <string name="practice_spoken_scale_open">à vide %1$s</string>
+    <string name="practice_spoken_scale_fret">case %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, fondamentale</string>
 </resources>

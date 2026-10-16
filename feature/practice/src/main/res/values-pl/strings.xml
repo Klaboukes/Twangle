@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, pusta</string>
     <string name="practice_spoken_fret">%1$s, próg %2$d, palec %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, palec %1$d na progu %2$d, struny od %3$s do %4$s</string>
+    <string name="practice_chart_choice">Akordy lub skale</string>
+    <string name="practice_chart_chords">Akordy</string>
+    <string name="practice_chart_scales">Skale</string>
+    <string name="practice_scale_type">Skala</string>
+    <string name="practice_scale_type_major">Durowa</string>
+    <string name="practice_scale_type_natural_minor">Molowa naturalna</string>
+    <string name="practice_scale_type_major_pentatonic">Pentatonika durowa</string>
+    <string name="practice_scale_type_minor_pentatonic">Pentatonika molowa</string>
+    <string name="practice_scale_type_blues">Bluesowa</string>
+    <string name="practice_scale_major">%1$s-dur</string>
+    <string name="practice_scale_natural_minor">%1$s-moll naturalna</string>
+    <string name="practice_scale_major_pentatonic">%1$s pentatonika durowa</string>
+    <string name="practice_scale_minor_pentatonic">%1$s pentatonika molowa</string>
+    <string name="practice_scale_blues">%1$s bluesowa</string>
+    <string name="practice_spoken_scale_notes">%1$s, dźwięki %2$s</string>
+    <string name="practice_spoken_scale_open">pusta %1$s</string>
+    <string name="practice_spoken_scale_fret">próg %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, pryma</string>
 </resources>

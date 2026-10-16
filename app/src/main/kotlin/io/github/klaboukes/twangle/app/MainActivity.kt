@@ -272,7 +272,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab], the
      * Play build until it goes live) it is the metronome as in v1.0. With it on it is Practice
-     * (Phase 32): the tool switch at the top of each tool picks the metronome or chords, and the tab
+     * (Phase 32): the tool switch at the top of each tool picks the metronome or chords (and scales), and the tab
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
      * tool keeps its own saved UI state while the other shows; leaving the metronome stops it, as
      * leaving the tab does.
@@ -325,6 +325,10 @@ class MainActivity : AppCompatActivity() {
                     onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
                     onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
                     header = header ?: {},
+                    savedChart = settings.practiceChart,
+                    savedScaleType = settings.practiceScaleType,
+                    onChartChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChart(it) } },
+                    onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                 )
             }
         }

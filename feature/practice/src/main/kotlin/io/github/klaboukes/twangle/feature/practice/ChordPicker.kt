@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,10 +27,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonFill
@@ -42,20 +48,22 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.scale.Scale
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
- * The twelve roots in two rows of six, [root] picked. Each is written as the chord would be with the
- * [quality] picked, in the player's [notation] (B♭ for B♭ major, A♯… never: B♭m; but F♯ and C♯m), so
- * the buttons and the chart always agree. Buttons of one steady size whatever their names say: a
- * longer name (Sol♯ at 2× text) is set smaller to fit. TalkBack hears one radio group ("Root"),
- * each root by its spoken name ("B flat").
+ * The twelve roots in two rows of six, [root] picked, each written by [spell] as the chord or scale
+ * picked would write it in the player's notation (B♭ for B♭ major, A♯… never: B♭m; but F♯ and C♯m;
+ * see [chordRootSpelling] and [scaleRootSpelling]), so the buttons and the chart always agree.
+ * Buttons of one steady size whatever their names say: a longer name (Sol♯ at 2× text) is set
+ * smaller to fit. TalkBack hears one radio group ("Root"), each root by its spoken name ("B flat").
  */
 @Composable
 internal fun RootPicker(
     root: PitchClass,
-    quality: ChordQuality,
-    notation: Notation,
+    spell: (PitchClass) -> String,
     onRootChange: (PitchClass) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -66,13 +74,21 @@ internal fun RootPicker(
         perRow = ROOTS_PER_ROW,
         maxButtonWidth = ROOT_BUTTON_MAX_WIDTH,
         groupLabel = stringResource(R.string.practice_root),
-        label = { ChordSpelling.rootOf(Chord.of(it, quality), notation) },
-        spoken = { speech.name(ChordSpelling.rootOf(Chord.of(it, quality), notation)) },
+        label = spell,
+        spoken = { speech.name(spell(it)) },
         tag = PracticeTestTags::root,
         onPick = onRootChange,
         modifier = modifier,
     )
 }
+
+/** Each root as the chord on it with [quality] writes it in [notation]: B♭ for major, but C♯ for minor. */
+internal fun chordRootSpelling(quality: ChordQuality, notation: Notation): (PitchClass) -> String =
+    { ChordSpelling.rootOf(Chord.of(it, quality), notation) }
+
+/** Each root as the scale on it of [type] writes it in [notation]: B♭ major, but C♯ minor pentatonic. */
+internal fun scaleRootSpelling(type: ScaleType, notation: Notation): (PitchClass) -> String =
+    { Scale(it, type).nameOf(it, notation) }
 
 /**
  * The seven chord types, [quality] picked, each by its symbol on the picked [root] ("C", "Cm",
@@ -104,6 +120,63 @@ internal fun ChordTypePicker(
 }
 
 /**
+ * The five scales, [type] picked, by name ("Major", "Minor pentatonic"), [perRow] to a row: two
+ * upright, so long names (French "Pentatonique majeure") keep a fair size, three on its side, where
+ * the height is short (two there too at large text sizes); a long name takes two lines rather than getting small. TalkBack hears one
+ * radio group ("Scale"), each by its name.
+ */
+@Composable
+internal fun ScaleTypePicker(
+    type: ScaleType,
+    perRow: Int,
+    onTypeChange: (ScaleType) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val names = ScaleType.entries.associateWith { stringResource(scaleTypeLabel(it)) }
+    PickerGrid(
+        options = ScaleType.entries,
+        picked = type,
+        perRow = perRow,
+        maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
+        groupLabel = stringResource(R.string.practice_scale_type),
+        label = { names.getValue(it) },
+        spoken = { names.getValue(it) },
+        tag = PracticeTestTags::scale,
+        onPick = onTypeChange,
+        modifier = modifier,
+        lines = 2,
+    )
+}
+
+/**
+ * The small Chords · Scales choice under the tuning line: what the tool shows, [chart] picked, as
+ * two buttons of the pickers' kind. TalkBack hears one radio group ("Chords or scales").
+ */
+@Composable
+internal fun ChartChoice(
+    chart: PracticeChart,
+    onChartChange: (PracticeChart) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val names = mapOf(
+        PracticeChart.CHORDS to stringResource(R.string.practice_chart_chords),
+        PracticeChart.SCALES to stringResource(R.string.practice_chart_scales),
+    )
+    PickerGrid(
+        options = PracticeChart.entries,
+        picked = chart,
+        perRow = PracticeChart.entries.size,
+        maxButtonWidth = CHOICE_BUTTON_MAX_WIDTH,
+        groupLabel = stringResource(R.string.practice_chart_choice),
+        label = { names.getValue(it) },
+        spoken = { names.getValue(it) },
+        tag = PracticeTestTags::chart,
+        onPick = onChartChange,
+        modifier = modifier,
+    )
+}
+
+/**
  * [options] as see-through buttons [perRow] to a row (the last row centred), each as wide as the row
  * allows up to [maxButtonWidth] and 40 dp tall; the [picked] one in the accent's container with an
  * accent outline, as the metronome's meter buttons. Each touch area is its share of the row and 48 dp
@@ -122,6 +195,7 @@ private fun <T> PickerGrid(
     tag: (T) -> String,
     onPick: (T) -> Unit,
     modifier: Modifier = Modifier,
+    lines: Int = 1,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         // Whole pixels, rounded down, so a row of [perRow] never comes out a pixel too wide and wraps.
@@ -137,6 +211,7 @@ private fun <T> PickerGrid(
                     spoken = spoken(option),
                     picked = option == picked,
                     slot = slot,
+                    lines = lines,
                     onClick = { onPick(option) },
                     modifier = Modifier.testTag(tag(option)),
                 )
@@ -146,7 +221,7 @@ private fun <T> PickerGrid(
 }
 
 @Composable
-private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, lines: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val source = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.small
     Box(
@@ -177,14 +252,52 @@ private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, 
                 musicText(text),
                 style = style.copy(
                     textAlign = TextAlign.Center,
+                    // Two lines take the size the text is set at, so they fit the face as it shrinks.
+                    lineHeight = if (lines > 1) TWO_LINE_HEIGHT else style.lineHeight,
                     lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
                 ),
                 color = if (picked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp),
+                maxLines = lines,
+                autoSize = if (lines > 1) {
+                    WholeWordsAutoSize
+                } else {
+                    TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
+                },
             )
         }
     }
+}
+
+/**
+ * The largest label size from [LABEL_SIZE] down to [MIN_LABEL_SIZE] at which the label fits its face
+ * on its lines without breaking a word ("Pentatonique / majeure", never "Pentatoni / que"); Chinese
+ * and Japanese, written without spaces, may break between any two characters. Smallest if none.
+ */
+private object WholeWordsAutoSize : TextAutoSize {
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        var size = LABEL_SIZE.value
+        while (size > MIN_LABEL_SIZE.value) {
+            val layout = performLayout(constraints, text, size.sp)
+            if (!layout.didOverflowWidth && !layout.didOverflowHeight && breaksBetweenWords(layout, text)) return size.sp
+            size -= LABEL_STEP
+        }
+        return MIN_LABEL_SIZE
+    }
+
+    private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean =
+        (0 until layout.lineCount - 1).all { line ->
+            val end = layout.getLineEnd(line)
+            end <= 0 || end >= text.length || text[end - 1].isWhitespace() || text[end - 1] == '-' || text[end].isWhitespace() ||
+                (text[end - 1].breaksAnywhere() && text[end].breaksAnywhere())
+        }
+
+    private fun Char.breaksAnywhere(): Boolean = when (Character.UnicodeScript.of(code)) {
+        Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA -> true
+        else -> this == 'ー'
+    }
+
+    override fun equals(other: Any?): Boolean = other === this
+    override fun hashCode(): Int = System.identityHashCode(this)
 }
 
 /** A see-through button's backing; picked ones in the container colour (Futuristic: a faint accent). */
@@ -216,10 +329,14 @@ private const val ROOTS_PER_ROW = 6
 private const val TYPES_PER_ROW = 4
 private val ROOT_BUTTON_MAX_WIDTH = 56.dp
 private val TYPE_BUTTON_MAX_WIDTH = 84.dp
+private val SCALE_BUTTON_MAX_WIDTH = 180.dp
+private val CHOICE_BUTTON_MAX_WIDTH = 132.dp
 private val BUTTON_GAP = 6.dp
 private val BUTTON_HEIGHT = 40.dp
 private val TOUCH_HEIGHT = 48.dp
 private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp
+private const val LABEL_STEP = 0.5f
+private val TWO_LINE_HEIGHT = 1.15.em
 private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val MUTED_OUTLINE_ALPHA = 0.6f

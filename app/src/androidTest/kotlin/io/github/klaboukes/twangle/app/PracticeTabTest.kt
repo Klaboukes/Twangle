@@ -13,6 +13,8 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -35,7 +37,8 @@ import org.junit.rules.Timeout
  * The Practice tab (Phase 32) in the real app, with its switch on (every debug build): the bar's
  * Metronome tab is called Practice, the tool switch at its top picks the metronome or chords, the
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
- * the Chords tool's chord picked is saved too and comes back with it.
+ * the Chords tool's chord picked is saved too and comes back with it, and so are its Chords · Scales
+ * choice and the scale picked.
  */
 class PracticeTabTest {
 
@@ -59,6 +62,8 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
+            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
+            container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
         }
     }
 
@@ -69,6 +74,8 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
+            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
+            container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
         }
     }
 
@@ -90,6 +97,14 @@ class PracticeTabTest {
         fun saved() = runBlocking { container.settingsRepository.settings.first().let { it.practiceRoot to it.practiceChordQuality } }
         val end = SystemClock.uptimeMillis() + WAIT_MS
         while (saved() != root to quality && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+        return saved()
+    }
+
+    /** Waits up to [WAIT_MS] for the saved choice and scale to become [chart] and [type]. */
+    private fun waitForSavedScale(chart: PracticeChart, type: ScaleType): Pair<PracticeChart, ScaleType> {
+        fun saved() = runBlocking { container.settingsRepository.settings.first().let { it.practiceChart to it.practiceScaleType } }
+        val end = SystemClock.uptimeMillis() + WAIT_MS
+        while (saved() != chart to type && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
         return saved()
     }
 
@@ -138,6 +153,16 @@ class PracticeTabTest {
             // "A minor", or "La minor" where an earlier test left solfège picked.
             assertTrue("its chart in words", device.wait(Until.hasObject(By.res(PracticeTestTags.CHART).desc(Pattern.compile("(A|La) minor, shape 1 of .*"))), WAIT_MS))
             assertFalse("not on the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
+
+            // Scales: the choice and the scale are saved too, the root shared.
+            click(PracticeTestTags.chart(PracticeChart.SCALES))
+            assertTrue("the neck shows", shown(PracticeTestTags.NECK))
+            click(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
+            assertTrue(
+                "the neck in words, on the root picked for the chord",
+                device.wait(Until.hasObject(By.res(PracticeTestTags.NECK).desc(Pattern.compile("(A|La) minor pentatonic, notes .*"))), WAIT_MS),
+            )
+            assertEquals("scales saved", PracticeChart.SCALES to ScaleType.MINOR_PENTATONIC, waitForSavedScale(PracticeChart.SCALES, ScaleType.MINOR_PENTATONIC))
             click(PracticeTestTags.tool(PracticeTool.METRONOME))
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.METRONOME, waitForSaved(PracticeTool.METRONOME))

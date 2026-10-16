@@ -2,6 +2,8 @@ package io.github.klaboukes.twangle.feature.practice
 
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
@@ -37,7 +39,19 @@ object PracticeTestTags {
     /** A chord type button, e.g. "practice_type_minor". */
     fun type(quality: ChordQuality): String = "practice_type_" + quality.name.lowercase()
 
-    /** The chord's name over its chart ("C major"). */
+    /** A button of the Chords · Scales choice, e.g. "practice_chart_scales". */
+    fun chart(chart: PracticeChart): String = "practice_chart_" + chart.name.lowercase()
+
+    /** A scale type button, e.g. "practice_scale_minor_pentatonic". */
+    fun scale(type: ScaleType): String = "practice_scale_" + type.name.lowercase()
+
+    /** The scale on the neck (one item for TalkBack). */
+    const val NECK = "practice_scale_neck"
+
+    /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
+    internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()
+
+    /** The chord's or the scale's name over its chart ("C major", "A minor pentatonic"). */
     const val TITLE = "practice_chord_title"
 
     /** The chord chart (one item for TalkBack). */

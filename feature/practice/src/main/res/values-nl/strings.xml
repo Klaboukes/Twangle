@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, open</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, vinger %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, fret %2$d, vinger %1$d, snaren %3$s tot %4$s</string>
+    <string name="practice_chart_choice">Akkoorden of toonladders</string>
+    <string name="practice_chart_chords">Akkoorden</string>
+    <string name="practice_chart_scales">Toonladders</string>
+    <string name="practice_scale_type">Toonladder</string>
+    <string name="practice_scale_type_major">Majeur</string>
+    <string name="practice_scale_type_natural_minor">Natuurlijk mineur</string>
+    <string name="practice_scale_type_major_pentatonic">Majeur-pentatonisch</string>
+    <string name="practice_scale_type_minor_pentatonic">Mineur-pentatonisch</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s majeur</string>
+    <string name="practice_scale_natural_minor">%1$s natuurlijk mineur</string>
+    <string name="practice_scale_major_pentatonic">%1$s majeur-pentatonisch</string>
+    <string name="practice_scale_minor_pentatonic">%1$s mineur-pentatonisch</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, noten %2$s</string>
+    <string name="practice_spoken_scale_open">open %1$s</string>
+    <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, grondtoon</string>
 </resources>

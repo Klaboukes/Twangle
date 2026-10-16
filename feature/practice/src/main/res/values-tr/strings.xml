@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, açık</string>
     <string name="practice_spoken_fret">%1$s, %2$d. perde, %3$d. parmak, %4$s</string>
     <string name="practice_spoken_barre">barre, %1$d. parmak %2$d. perdede, teller %3$s ile %4$s arası</string>
+    <string name="practice_chart_choice">Akorlar veya gamlar</string>
+    <string name="practice_chart_chords">Akorlar</string>
+    <string name="practice_chart_scales">Gamlar</string>
+    <string name="practice_scale_type">Gam</string>
+    <string name="practice_scale_type_major">Majör</string>
+    <string name="practice_scale_type_natural_minor">Doğal minör</string>
+    <string name="practice_scale_type_major_pentatonic">Majör pentatonik</string>
+    <string name="practice_scale_type_minor_pentatonic">Minör pentatonik</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s majör</string>
+    <string name="practice_scale_natural_minor">%1$s doğal minör</string>
+    <string name="practice_scale_major_pentatonic">%1$s majör pentatonik</string>
+    <string name="practice_scale_minor_pentatonic">%1$s minör pentatonik</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, notalar %2$s</string>
+    <string name="practice_spoken_scale_open">açık %1$s</string>
+    <string name="practice_spoken_scale_fret">%1$d. perde %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, kök nota</string>
 </resources>

@@ -7,6 +7,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -121,4 +122,10 @@ interface SettingsRepository {
 
     /** The chord type picked last in the chord charts ([AppSettings.practiceChordQuality]). */
     suspend fun setPracticeChordQuality(quality: ChordQuality)
+
+    /** Chords or scales, picked last in the Chords tool ([AppSettings.practiceChart]). */
+    suspend fun setPracticeChart(chart: PracticeChart)
+
+    /** The scale picked last in the Chords tool ([AppSettings.practiceScaleType]). */
+    suspend fun setPracticeScaleType(type: ScaleType)
 }

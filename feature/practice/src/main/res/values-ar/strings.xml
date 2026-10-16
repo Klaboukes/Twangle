@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s، مفتوح</string>
     <string name="practice_spoken_fret">%1$s، الدستان %2$d، الإصبع %3$d، %4$s</string>
     <string name="practice_spoken_barre">باريه، الإصبع %1$d على الدستان %2$d، الأوتار من %3$s إلى %4$s</string>
+    <string name="practice_chart_choice">الكوردات أو السلالم</string>
+    <string name="practice_chart_chords">الكوردات</string>
+    <string name="practice_chart_scales">السلالم</string>
+    <string name="practice_scale_type">السلم</string>
+    <string name="practice_scale_type_major">ماجور</string>
+    <string name="practice_scale_type_natural_minor">مينور طبيعي</string>
+    <string name="practice_scale_type_major_pentatonic">خماسي ماجور</string>
+    <string name="practice_scale_type_minor_pentatonic">خماسي مينور</string>
+    <string name="practice_scale_type_blues">بلوز</string>
+    <string name="practice_scale_major">%1$s ماجور</string>
+    <string name="practice_scale_natural_minor">%1$s مينور طبيعي</string>
+    <string name="practice_scale_major_pentatonic">%1$s خماسي ماجور</string>
+    <string name="practice_scale_minor_pentatonic">%1$s خماسي مينور</string>
+    <string name="practice_scale_blues">%1$s بلوز</string>
+    <string name="practice_spoken_scale_notes">%1$s، النغمات %2$s</string>
+    <string name="practice_spoken_scale_open">مفتوح %1$s</string>
+    <string name="practice_spoken_scale_fret">الدستان %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s، النغمة الأساسية</string>
 </resources>

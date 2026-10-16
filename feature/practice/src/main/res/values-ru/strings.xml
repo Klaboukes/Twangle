@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, открытая</string>
     <string name="practice_spoken_fret">%1$s, лад %2$d, палец %3$d, %4$s</string>
     <string name="practice_spoken_barre">баррэ, палец %1$d на ладу %2$d, струны с %3$s по %4$s</string>
+    <string name="practice_chart_choice">Аккорды или гаммы</string>
+    <string name="practice_chart_chords">Аккорды</string>
+    <string name="practice_chart_scales">Гаммы</string>
+    <string name="practice_scale_type">Гамма</string>
+    <string name="practice_scale_type_major">Мажор</string>
+    <string name="practice_scale_type_natural_minor">Натуральный минор</string>
+    <string name="practice_scale_type_major_pentatonic">Мажорная пентатоника</string>
+    <string name="practice_scale_type_minor_pentatonic">Минорная пентатоника</string>
+    <string name="practice_scale_type_blues">Блюз</string>
+    <string name="practice_scale_major">%1$s мажор</string>
+    <string name="practice_scale_natural_minor">%1$s натуральный минор</string>
+    <string name="practice_scale_major_pentatonic">%1$s мажорная пентатоника</string>
+    <string name="practice_scale_minor_pentatonic">%1$s минорная пентатоника</string>
+    <string name="practice_scale_blues">%1$s блюз</string>
+    <string name="practice_spoken_scale_notes">%1$s, ноты %2$s</string>
+    <string name="practice_spoken_scale_open">открытая %1$s</string>
+    <string name="practice_spoken_scale_fret">лад %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, тоника</string>
 </resources>

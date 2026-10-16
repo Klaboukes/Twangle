@@ -89,10 +89,7 @@ internal fun spokenChart(
     sayNote: (String) -> String,
 ): String {
     fun format(pattern: String, vararg args: Any) = String.format(words.locale, pattern, *args)
-    fun stringNote(string: Int): String {
-        val open = tuning.strings[string]
-        return sayNote(notation.nameIn(tuning, open.pitchClass)) + " " + open.octave
-    }
+    fun stringNote(string: Int): String = spokenStringName(tuning, string, notation, sayNote)
     val parts = ArrayList<String>(shape.stringCount + 2)
     parts += format(words.shape, chordWords, index + 1, count)
     shape.barre?.let { parts += format(words.barre, it.finger, it.fret, stringNote(it.firstString), stringNote(it.lastString)) }
@@ -113,4 +110,13 @@ internal fun spokenChart(
         }
     }
     return parts.joinToString(words.separator)
+}
+
+/**
+ * String [string] of [tuning] by its open note as TalkBack says it, "E 2" ("B flat 1"): its name in
+ * the tuning's own spelling (as the tuner's string buttons) through [sayNote], then its octave.
+ */
+internal fun spokenStringName(tuning: Tuning, string: Int, notation: Notation, sayNote: (String) -> String): String {
+    val open = tuning.strings[string]
+    return sayNote(notation.nameIn(tuning, open.pitchClass)) + " " + open.octave
 }

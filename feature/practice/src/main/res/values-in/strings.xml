@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, terbuka</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, jari %3$d, %4$s</string>
     <string name="practice_spoken_barre">barre, jari %1$d di fret %2$d, senar %3$s sampai %4$s</string>
+    <string name="practice_chart_choice">Akor atau tangga nada</string>
+    <string name="practice_chart_chords">Akor</string>
+    <string name="practice_chart_scales">Tangga nada</string>
+    <string name="practice_scale_type">Tangga nada</string>
+    <string name="practice_scale_type_major">Mayor</string>
+    <string name="practice_scale_type_natural_minor">Minor natural</string>
+    <string name="practice_scale_type_major_pentatonic">Pentatonik mayor</string>
+    <string name="practice_scale_type_minor_pentatonic">Pentatonik minor</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s mayor</string>
+    <string name="practice_scale_natural_minor">%1$s minor natural</string>
+    <string name="practice_scale_major_pentatonic">%1$s pentatonik mayor</string>
+    <string name="practice_scale_minor_pentatonic">%1$s pentatonik minor</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, nada %2$s</string>
+    <string name="practice_spoken_scale_open">terbuka %1$s</string>
+    <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, nada dasar</string>
 </resources>

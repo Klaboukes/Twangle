@@ -149,7 +149,8 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
             for (picked in tools) {
                 shownTool.value = picked
                 compose.waitForIdle()
-                for (tool in tools) assertWhollyShown(segment(tool), "$style $size $tool", scroll = false)
+                // At 2× the tool's column scrolls (the check below scrolls it down), so the switch is scrolled back first.
+                for (tool in tools) assertWhollyShown(segment(tool), "$style $size $tool")
                 compose.assertEveryTextWhollyShown("$style nl $size $picked picked at 2x:")
             }
         }

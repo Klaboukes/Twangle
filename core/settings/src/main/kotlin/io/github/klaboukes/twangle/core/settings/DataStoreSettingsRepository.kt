@@ -22,6 +22,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -229,6 +230,14 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[PRACTICE_CHORD_QUALITY] = quality.name }
     }
 
+    override suspend fun setPracticeChart(chart: PracticeChart) {
+        dataStore.edit { it[PRACTICE_CHART] = chart.name }
+    }
+
+    override suspend fun setPracticeScaleType(type: ScaleType) {
+        dataStore.edit { it[PRACTICE_SCALE_TYPE] = type.name }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -267,6 +276,8 @@ class DataStoreSettingsRepository internal constructor(
             practiceTool = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL]) ?: defaults.practiceTool,
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
+            practiceChart = enumOrNull<PracticeChart>(prefs[PRACTICE_CHART]) ?: defaults.practiceChart,
+            practiceScaleType = enumOrNull<ScaleType>(prefs[PRACTICE_SCALE_TYPE]) ?: defaults.practiceScaleType,
         )
     }
 
@@ -321,6 +332,10 @@ class DataStoreSettingsRepository internal constructor(
         /** The chord charts' root ([PitchClass]) and chord type ([ChordQuality]) picked last, by their names. */
         private val PRACTICE_ROOT = stringPreferencesKey("practice_root")
         private val PRACTICE_CHORD_QUALITY = stringPreferencesKey("practice_chord_quality")
+
+        /** The Chords tool's [PracticeChart] and the scale ([ScaleType]) picked last, by their names (the root is [PRACTICE_ROOT]). */
+        private val PRACTICE_CHART = stringPreferencesKey("practice_chart")
+        private val PRACTICE_SCALE_TYPE = stringPreferencesKey("practice_scale_type")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, leer</string>
     <string name="practice_spoken_fret">%1$s, Bund %2$d, Finger %3$d, %4$s</string>
     <string name="practice_spoken_barre">Barré, Finger %1$d über Bund %2$d, Saiten %3$s bis %4$s</string>
+    <string name="practice_chart_choice">Akkorde oder Tonleitern</string>
+    <string name="practice_chart_chords">Akkorde</string>
+    <string name="practice_chart_scales">Tonleitern</string>
+    <string name="practice_scale_type">Tonleiter</string>
+    <string name="practice_scale_type_major">Dur</string>
+    <string name="practice_scale_type_natural_minor">Natürliches Moll</string>
+    <string name="practice_scale_type_major_pentatonic">Dur-Pentatonik</string>
+    <string name="practice_scale_type_minor_pentatonic">Moll-Pentatonik</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s-Dur</string>
+    <string name="practice_scale_natural_minor">%1$s natürliches Moll</string>
+    <string name="practice_scale_major_pentatonic">%1$s-Dur-Pentatonik</string>
+    <string name="practice_scale_minor_pentatonic">%1$s-Moll-Pentatonik</string>
+    <string name="practice_scale_blues">%1$s-Blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, Töne %2$s</string>
+    <string name="practice_spoken_scale_open">leer %1$s</string>
+    <string name="practice_spoken_scale_fret">Bund %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, Grundton</string>
 </resources>

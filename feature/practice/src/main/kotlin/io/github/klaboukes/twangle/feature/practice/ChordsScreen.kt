@@ -69,31 +69,38 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.scale.Scale
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
+import io.github.klaboukes.twangle.core.settings.PracticeChart
 import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * The Practice tab's Chords tool (Phase 32, the owner's picks D and G in
+ * The Practice tab's Chords tool (Phase 32, the owner's picks D, G and I in
  * docs/design/practice-preview.html): pick a root and a chord type, see its finger shapes on the
  * instrument and [tuning] picked in the Instrument item (the player's own tunings too), one big
  * chart at a time, easiest first, with ‹ "2 of 3" › under it and a swipe across the chart for the
- * others.
+ * others; or, with the small Chords · Scales choice, pick a root and a scale and see it on the
+ * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
  *
  * Upright, one column: the tool switch ([header]) 8 dp from the top, the instrument and tuning
- * ([tuningName], heard as [spokenTuningName]), the twelve roots, the seven chord types, the chord's
- * name, the chart in all the height left (scrolling only where even the smallest chart wouldn't
- * fit, at large text sizes) and the pager. On its side (≥ 600 dp wide and wider than tall) the
- * switch and the pickers fill the start half, the chord and its chart the end half.
+ * ([tuningName], heard as [spokenTuningName]), the Chords · Scales choice, the twelve roots (shared
+ * by both), the seven chord types or the five scales, the chord's or the scale's name, then the
+ * chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit, at
+ * large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall) the
+ * switch and the pickers fill the start half; the choice, the name and the chart or neck the end half.
  *
- * Names follow the player's [notation] with the usual chord spelling (B♭, F♯m). The root and type
- * open as [savedRoot] and [savedQuality] and each pick is passed to [onRootChange] /
- * [onQualityChange] to be saved. The shapes are worked out off the main thread
- * ([ChordShapeFinder.shapesOf], a few milliseconds); the last ones stay shown meanwhile.
+ * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
+ * sign). The tool opens on [savedChart], [savedRoot], [savedQuality] and [savedScaleType], and each
+ * pick is passed to [onChartChange], [onRootChange], [onQualityChange] or [onScaleTypeChange] to be
+ * saved. The shapes are worked out off the main thread ([ChordShapeFinder.shapesOf], a few
+ * milliseconds); the last ones stay shown meanwhile. A scale's notes take microseconds.
  *
- * TalkBack hears the pickers as two radio groups, the chord's name as a heading, and the chart in
- * words, string by string ([spokenChart]); the chart is a polite live region, so a new shape or chord
- * is said when it shows.
+ * TalkBack hears the choice and the pickers as radio groups, the name as a heading, and the chart or
+ * the neck in words ([spokenChart], [spokenScale]); the chord chart is a polite live region, so a new
+ * shape or chord is said when it shows, and so is a scale's name (not the whole neck: it is long).
  */
 @Composable
 fun ChordsScreen(
@@ -107,9 +114,17 @@ fun ChordsScreen(
     onQualityChange: (ChordQuality) -> Unit,
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    savedChart: PracticeChart = PracticeChart.DEFAULT,
+    savedScaleType: ScaleType = ScaleType.MAJOR,
+    onChartChange: (PracticeChart) -> Unit = {},
+    onScaleTypeChange: (ScaleType) -> Unit = {},
 ) {
+    var chart by rememberSaveable { mutableStateOf(savedChart) }
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
+    var scaleType by rememberSaveable { mutableStateOf(savedScaleType) }
+    val scales = chart == PracticeChart.SCALES
+    val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
     val found = rememberShapes(chord, tuning)
     var index by rememberSaveable(chord, tuning) { mutableIntStateOf(0) }
@@ -126,32 +141,66 @@ fun ChordsScreen(
             modifier = Modifier.testTag(PracticeTestTags.TUNING).clearAndSetSemantics { contentDescription = spokenTuningName },
         )
     }
-    val pickers = @Composable {
-        RootPicker(root, quality, notation, onRootChange = { picked ->
-            if (picked != root) {
-                root = picked
-                onRootChange(picked)
+    val choice = @Composable {
+        ChartChoice(chart, onChartChange = { picked ->
+            if (picked != chart) {
+                chart = picked
+                onChartChange(picked)
             }
         })
-        Spacer(Modifier.height(10.dp))
-        ChordTypePicker(root, quality, notation, onQualityChange = { picked ->
-            if (picked != quality) {
-                quality = picked
-                onQualityChange(picked)
-            }
-        })
+    }
+    val pickRoot: (PitchClass) -> Unit = { picked ->
+        if (picked != root) {
+            root = picked
+            onRootChange(picked)
+        }
+    }
+    // At large text sizes the side's scales go two to a row too: three would leave long names too small (Japanese at 2×).
+    val largeText = LocalDensity.current.fontScale >= LARGE_TEXT_SCALE
+    val pickers = @Composable { wide: Boolean ->
+        if (scales) {
+            RootPicker(root, scaleRootSpelling(scaleType, notation), onRootChange = pickRoot)
+            Spacer(Modifier.height(10.dp))
+            ScaleTypePicker(scaleType, perRow = if (wide && !largeText) SCALES_PER_ROW_WIDE else SCALES_PER_ROW, onTypeChange = { picked ->
+                if (picked != scaleType) {
+                    scaleType = picked
+                    onScaleTypeChange(picked)
+                }
+            })
+        } else {
+            RootPicker(root, chordRootSpelling(quality, notation), onRootChange = pickRoot)
+            Spacer(Modifier.height(10.dp))
+            ChordTypePicker(root, quality, notation, onQualityChange = { picked ->
+                if (picked != quality) {
+                    quality = picked
+                    onQualityChange(picked)
+                }
+            })
+        }
     }
     val title = @Composable {
         Text(
-            musicText(chordWords(chord, notation)),
+            musicText(if (scales) scaleWords(scale, notation) else chordWords(chord, notation)),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics { heading() },
+            modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics {
+                heading()
+                if (scales) liveRegion = LiveRegionMode.Polite
+            },
         )
     }
-    val chart = @Composable { ChartArea(found, shown, notation, step, Modifier.fillMaxSize()) }
-    val pager = @Composable { ShapePager(shown, count, step) }
+    val fill = @Composable {
+        if (scales) {
+            NeckArea(scale, tuning, notation, Modifier.fillMaxSize())
+        } else {
+            ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
+        }
+    }
+    val bottom: @Composable ColumnScope.() -> Unit = {
+        if (!scales) ShapePager(shown, count, step)
+        Spacer(Modifier.height(8.dp))
+    }
 
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CHORDS)) {
         val wide = maxWidth >= WIDE_MIN_WIDTH && maxWidth > maxHeight
@@ -167,30 +216,30 @@ fun ChordsScreen(
                     Spacer(Modifier.height(8.dp))
                     tuningLine()
                     Spacer(Modifier.height(12.dp))
-                    Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) { pickers() }
+                    Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) { pickers(true) }
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.width(16.dp))
                 FillColumn(
                     viewport = height,
-                    minFill = CHART_MIN_HEIGHT_WIDE,
+                    minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     top = {
-                        Spacer(Modifier.height(12.dp))
+                        // The choice at the top of the end half, about level with the tool switch: the start half has no room left.
+                        Spacer(Modifier.height(CHOICE_TOP_WIDE))
+                        choice()
+                        Spacer(Modifier.height(2.dp))
                         title()
                     },
-                    fill = chart,
-                    bottom = {
-                        pager()
-                        Spacer(Modifier.height(8.dp))
-                    },
+                    fill = fill,
+                    bottom = bottom,
                 )
             }
         } else {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 FillColumn(
                     viewport = height,
-                    minFill = CHART_MIN_HEIGHT,
+                    minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT,
                     modifier = Modifier
                         .widthIn(max = COLUMN_MAX_WIDTH)
                         .fillMaxWidth()
@@ -201,19 +250,40 @@ fun ChordsScreen(
                         header()
                         Spacer(Modifier.height(8.dp))
                         tuningLine()
-                        Spacer(Modifier.height(12.dp))
-                        pickers()
+                        Spacer(Modifier.height(4.dp))
+                        choice()
+                        Spacer(Modifier.height(6.dp))
+                        pickers(false)
                         Spacer(Modifier.height(10.dp))
                         title()
                     },
-                    fill = chart,
-                    bottom = {
-                        pager()
-                        Spacer(Modifier.height(8.dp))
-                    },
+                    fill = fill,
+                    bottom = bottom,
                 )
             }
         }
+    }
+}
+
+/**
+ * [scale] on the whole neck of [tuning] in all of its room ([ScaleNeck]); for TalkBack one item in
+ * words ([spokenScale]), string by string.
+ */
+@Composable
+private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier) {
+    val speech = rememberNoteNameSpeech()
+    val words = rememberScaleWords()
+    val notes = remember(scale, tuning) { ScaleFinder.notesOf(scale, tuning) }
+    val name = scaleWords(scale, notation, speech)
+    val spoken = remember(scale, tuning, notes, notation, name, words, speech) { spokenScale(scale, notes, tuning, notation, name, words, speech::name) }
+    Box(
+        modifier
+            .testTag(PracticeTestTags.NECK)
+            // Not cleared: the drawing's own tag stays for the tests; it has nothing TalkBack would say.
+            .semantics { contentDescription = spoken },
+        contentAlignment = Alignment.Center,
+    ) {
+        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize())
     }
 }
 
@@ -393,6 +463,17 @@ private val PICKERS_MAX_WIDTH = 400.dp
 /** The smallest chart's height (about a 6-string chart 1.2 dp a unit); below it the column scrolls. */
 private val CHART_MIN_HEIGHT = 190.dp
 private val CHART_MIN_HEIGHT_WIDE = 170.dp
+
+/** The smallest neck's room (a 6-string neck sideways about 1 dp a unit); below it the column scrolls. */
+private val NECK_MIN_HEIGHT = 140.dp
+
+/** The scales two to a row upright, three on its side, where the height is short. */
+private const val SCALES_PER_ROW = 2
+private const val SCALES_PER_ROW_WIDE = 3
+private const val LARGE_TEXT_SCALE = 1.5f
+
+/** On its side, the choice's 40 dp faces about level with the tool switch's (each in a 48 dp touch row). */
+private val CHOICE_TOP_WIDE = 4.dp
 
 private val PAGER_HEIGHT = 56.dp
 private val PAGER_BUTTON_SIZE = 48.dp

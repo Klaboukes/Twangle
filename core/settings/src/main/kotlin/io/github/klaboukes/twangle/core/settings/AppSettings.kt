@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlin.math.roundToInt
 
 /**
@@ -184,6 +185,25 @@ enum class PracticeTool {
     }
 }
 
+/**
+ * What the Practice tab's Chords tool shows (Phase 32): chord charts or a scale on the neck, picked
+ * with the small Chords · Scales choice under its tuning line. Saved in settings by [name], so don't
+ * rename the entries.
+ */
+enum class PracticeChart {
+    /** Finger charts of a chord. */
+    CHORDS,
+
+    /** A scale on the whole neck, frets 0 to 12. */
+    SCALES,
+    ;
+
+    companion object {
+        /** A fresh install shows chords, as the tool did before scales came. */
+        val DEFAULT = CHORDS
+    }
+}
+
 /** Everything the user can change, with the defaults a fresh install starts from. */
 data class AppSettings(
     /** Concert pitch in Hz, whole numbers from [NoteMapper.MIN_A4_HZ] to [NoteMapper.MAX_A4_HZ]. */
@@ -252,6 +272,10 @@ data class AppSettings(
     val practiceRoot: PitchClass = PitchClass.C,
     /** The chord type picked last in the Practice tab's chord charts (major on a fresh install). */
     val practiceChordQuality: ChordQuality = ChordQuality.MAJOR,
+    /** Chords or scales, as picked last in the Practice tab's Chords tool (chords on a fresh install). */
+    val practiceChart: PracticeChart = PracticeChart.DEFAULT,
+    /** The scale picked last in the Chords tool's scales, on [practiceRoot] (major on a fresh install). */
+    val practiceScaleType: ScaleType = ScaleType.MAJOR,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

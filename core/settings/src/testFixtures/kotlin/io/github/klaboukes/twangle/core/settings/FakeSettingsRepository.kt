@@ -9,6 +9,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -130,4 +131,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setPracticeRoot(root: PitchClass) = state.update { it.copy(practiceRoot = root) }
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) = state.update { it.copy(practiceChordQuality = quality) }
+
+    override suspend fun setPracticeChart(chart: PracticeChart) = state.update { it.copy(practiceChart = chart) }
+
+    override suspend fun setPracticeScaleType(type: ScaleType) = state.update { it.copy(practiceScaleType = type) }
 }

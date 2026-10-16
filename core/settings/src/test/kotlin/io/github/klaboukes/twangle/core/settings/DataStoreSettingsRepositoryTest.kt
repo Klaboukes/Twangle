@@ -17,6 +17,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -106,6 +107,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
         assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
+        assertEquals("the Chords tool opens on chords", PracticeChart.CHORDS, settings.practiceChart)
+        assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
     }
 
     @Test
@@ -135,6 +138,8 @@ class DataStoreSettingsRepositoryTest {
         repo.setPracticeTool(PracticeTool.CHORDS)
         repo.setPracticeRoot(PitchClass.A_SHARP)
         repo.setPracticeChordQuality(ChordQuality.MINOR_SEVENTH)
+        repo.setPracticeChart(PracticeChart.SCALES)
+        repo.setPracticeScaleType(ScaleType.BLUES)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -161,6 +166,8 @@ class DataStoreSettingsRepositoryTest {
             practiceTool = PracticeTool.CHORDS,
             practiceRoot = PitchClass.A_SHARP,
             practiceChordQuality = ChordQuality.MINOR_SEVENTH,
+            practiceChart = PracticeChart.SCALES,
+            practiceScaleType = ScaleType.BLUES,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -193,6 +200,8 @@ class DataStoreSettingsRepositoryTest {
             setPracticeTool(PracticeTool.CHORDS)
             setPracticeRoot(PitchClass.F_SHARP)
             setPracticeChordQuality(ChordQuality.SUS4)
+            setPracticeChart(PracticeChart.SCALES)
+            setPracticeScaleType(ScaleType.MINOR_PENTATONIC)
         }
         close()
 
@@ -212,6 +221,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
         assertEquals("the Practice tool used last is kept", PracticeTool.CHORDS, settings.practiceTool)
         assertEquals("the chord picked last is kept", PitchClass.F_SHARP to ChordQuality.SUS4, settings.practiceRoot to settings.practiceChordQuality)
+        assertEquals("chords or scales is kept", PracticeChart.SCALES, settings.practiceChart)
+        assertEquals("the scale picked last is kept", ScaleType.MINOR_PENTATONIC, settings.practiceScaleType)
     }
 
     @Test
@@ -347,6 +358,8 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
             it[stringPreferencesKey("metronome_meter")] = "THIRTEEN_EIGHT"
+            it[stringPreferencesKey("practice_chart")] = "ARPEGGIOS"
+            it[stringPreferencesKey("practice_scale_type")] = "HUNGARIAN_MINOR"
         }
 
         val settings = repository(store).settings.first()
@@ -363,6 +376,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
+        assertEquals("an unknown chart gives chords", PracticeChart.CHORDS, settings.practiceChart)
+        assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
     }
 
     @Test

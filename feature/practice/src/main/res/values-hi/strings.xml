@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, खुला</string>
     <string name="practice_spoken_fret">%1$s, फ़्रेट %2$d, उंगली %3$d, %4$s</string>
     <string name="practice_spoken_barre">बैरे, उंगली %1$d फ़्रेट %2$d पर, तार %3$s से %4$s तक</string>
+    <string name="practice_chart_choice">कॉर्ड या स्केल</string>
+    <string name="practice_chart_chords">कॉर्ड</string>
+    <string name="practice_chart_scales">स्केल</string>
+    <string name="practice_scale_type">स्केल</string>
+    <string name="practice_scale_type_major">मेजर</string>
+    <string name="practice_scale_type_natural_minor">नैचुरल माइनर</string>
+    <string name="practice_scale_type_major_pentatonic">मेजर पेंटाटोनिक</string>
+    <string name="practice_scale_type_minor_pentatonic">माइनर पेंटाटोनिक</string>
+    <string name="practice_scale_type_blues">ब्लूज़</string>
+    <string name="practice_scale_major">%1$s मेजर</string>
+    <string name="practice_scale_natural_minor">%1$s नैचुरल माइनर</string>
+    <string name="practice_scale_major_pentatonic">%1$s मेजर पेंटाटोनिक</string>
+    <string name="practice_scale_minor_pentatonic">%1$s माइनर पेंटाटोनिक</string>
+    <string name="practice_scale_blues">%1$s ब्लूज़</string>
+    <string name="practice_spoken_scale_notes">%1$s, स्वर %2$s</string>
+    <string name="practice_spoken_scale_open">खुला %1$s</string>
+    <string name="practice_spoken_scale_fret">फ़्रेट %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, मूल स्वर</string>
 </resources>

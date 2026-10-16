@@ -234,14 +234,14 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
     }
 }
 
-private fun DrawScope.centred(layout: TextLayoutResult, at: Offset) =
+internal fun DrawScope.centred(layout: TextLayoutResult, at: Offset) =
     drawText(layout, topLeft = Offset(at.x - layout.size.width / 2f, at.y - layout.size.height / 2f))
 
-/** [px] as a font size that the font setting doesn't scale again: the chart is sized already. */
-private fun spOf(px: Float, density: Density): TextUnit = TextUnit(px / (density.density * density.fontScale), TextUnitType.Sp)
+/** [px] as a font size that the font setting doesn't scale again: the chart (or the neck) is sized already. */
+internal fun spOf(px: Float, density: Density): TextUnit = TextUnit(px / (density.density * density.fontScale), TextUnitType.Sp)
 
 /** [text] in [style], set smaller where it would be wider than [maxWidth] px, on one line. */
-private fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
+internal fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
     val first = measure(text, style, maxLines = 1, softWrap = false)
     if (first.size.width <= maxWidth || maxWidth <= 0f) return first
     val shrunk = style.copy(fontSize = style.fontSize * (maxWidth / first.size.width))

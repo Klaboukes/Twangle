@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, solta</string>
     <string name="practice_spoken_fret">%1$s, casa %2$d, dedo %3$d, %4$s</string>
     <string name="practice_spoken_barre">pestana, dedo %1$d na casa %2$d, cordas %3$s a %4$s</string>
+    <string name="practice_chart_choice">Acordes ou escalas</string>
+    <string name="practice_chart_chords">Acordes</string>
+    <string name="practice_chart_scales">Escalas</string>
+    <string name="practice_scale_type">Escala</string>
+    <string name="practice_scale_type_major">Maior</string>
+    <string name="practice_scale_type_natural_minor">Menor natural</string>
+    <string name="practice_scale_type_major_pentatonic">Pentatônica maior</string>
+    <string name="practice_scale_type_minor_pentatonic">Pentatônica menor</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s maior</string>
+    <string name="practice_scale_natural_minor">%1$s menor natural</string>
+    <string name="practice_scale_major_pentatonic">%1$s pentatônica maior</string>
+    <string name="practice_scale_minor_pentatonic">%1$s pentatônica menor</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, notas %2$s</string>
+    <string name="practice_spoken_scale_open">solta %1$s</string>
+    <string name="practice_spoken_scale_fret">casa %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, tônica</string>
 </resources>

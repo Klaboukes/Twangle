@@ -23,4 +23,22 @@
     <string name="practice_spoken_open">%1$s, a vuoto</string>
     <string name="practice_spoken_fret">%1$s, tasto %2$d, dito %3$d, %4$s</string>
     <string name="practice_spoken_barre">barrè, dito %1$d sul tasto %2$d, corde da %3$s a %4$s</string>
+    <string name="practice_chart_choice">Accordi o scale</string>
+    <string name="practice_chart_chords">Accordi</string>
+    <string name="practice_chart_scales">Scale</string>
+    <string name="practice_scale_type">Scala</string>
+    <string name="practice_scale_type_major">Maggiore</string>
+    <string name="practice_scale_type_natural_minor">Minore naturale</string>
+    <string name="practice_scale_type_major_pentatonic">Pentatonica maggiore</string>
+    <string name="practice_scale_type_minor_pentatonic">Pentatonica minore</string>
+    <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_major">%1$s maggiore</string>
+    <string name="practice_scale_natural_minor">%1$s minore naturale</string>
+    <string name="practice_scale_major_pentatonic">%1$s pentatonica maggiore</string>
+    <string name="practice_scale_minor_pentatonic">%1$s pentatonica minore</string>
+    <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_spoken_scale_notes">%1$s, note %2$s</string>
+    <string name="practice_spoken_scale_open">a vuoto %1$s</string>
+    <string name="practice_spoken_scale_fret">tasto %1$d %2$s</string>
+    <string name="practice_spoken_scale_root">%1$s, fondamentale</string>
 </resources>
