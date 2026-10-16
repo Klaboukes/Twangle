@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.chord
 
 import io.github.klaboukes.twangle.core.dsp.music.Accidental
+import io.github.klaboukes.twangle.core.dsp.music.KeySpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 
@@ -20,9 +21,9 @@ object ChordSpelling {
 
     /** The sign [chord]'s root and tones are written with. */
     fun accidentalOf(chord: Chord): Accidental = if (minorFamily(chord.quality)) {
-        if (chord.root.ordinal in MINOR_FLAT_KEYS) Accidental.FLAT else Accidental.SHARP
+        KeySpelling.ofMinorKey(chord.root)
     } else {
-        if (chord.root.ordinal in MAJOR_FLAT_KEYS) Accidental.FLAT else Accidental.SHARP
+        KeySpelling.ofMajorKey(chord.root)
     }
 
     /**
@@ -69,13 +70,4 @@ object ChordSpelling {
         val quality = ChordQuality.entries[index % QUALITIES]
         (0 until 12).filter { quality.mask and (1 shl it) != 0 }.map { PitchClass.entries[(root + it) % 12] }
     }
-
-    /**
-     * Major keys written with flats (pitch-class numbers, C = 0): F, B♭, E♭, A♭, D♭, and C, which has
-     * no sign of its own; its 7th is B♭ (C7), so it goes with the flats.
-     */
-    private val MAJOR_FLAT_KEYS = setOf(0, 1, 3, 5, 8, 10)
-
-    /** Minor keys written with flats: D, G, C, F, B♭, E♭, and A (no sign; Am's tones need none). */
-    private val MINOR_FLAT_KEYS = setOf(0, 2, 3, 5, 7, 9, 10)
 }

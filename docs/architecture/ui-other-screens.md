@@ -27,6 +27,7 @@ Phase 32, after the approved rough mock-up [docs/design/practice-preview.html](.
 - **Several shapes (G):** one big shape at a time; swipe or ‹ › (steady-size round buttons, also for TalkBack) with "2 of 3" between them.
 - **Scale (I):** the whole neck sideways, frets 0 to 12 (low string at the bottom, open notes left of the nut, fret numbers 3 5 7 9 12 under it), every note a dot with its name, the root filled in the accent, the others outlined. Not picked: step numbers (J) and one position at a time (K).
 - Picking the chord (root and type) and the scale was not part of the mock-up; it uses buttons of the app's steady sizes.
+- **Engine (done):** the shapes, fingers, barres and scale notes come from `:core:dsp` for the tuning picked, the player's own included: `ChordShapeFinder.shapesOf` and `ScaleFinder.notesOf` ([Notes, tunings and audio](notes-and-audio.md), *Chord shapes and scales*).
 
 ## Home-screen widget
 `:app` `widget/`. A tile for the home screen, three cells by one (resizable across, down to two): the navigation bar's tuning fork in the accent, the instrument and tuning as the tuner names them ("Guitar · Standard", a custom tuning by its own name, "Chromatic" in chromatic mode) in ink, and "Open the tuner" ("Open de stemmer") in the muted colour under it, on a rounded tile in the style's background colour (corners: the launcher's own on Android 12+, 16 dp before). No border, no art: calm beside other widgets. A tap anywhere opens Twangle on the tuner.
