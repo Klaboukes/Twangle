@@ -85,7 +85,7 @@ Goal: a usable guitar tuner.
 - ☑ Auto (guitar) mode vs Chromatic mode toggle (segmented "Guitar / Chromatic"; switching keeps the mic open and the layout still)
 - ☑ "In tune" state: |cents| ≤ 5 for ≥ 300 ms → color change (green needle, note, text and string; released past 7 cents; S26: 110 Hz tone turns green, 111 Hz doesn't)
 - ☑ Mic is released whenever the screen is not visible (`MicLifecycleTest` on the S26: released ~5 s after leaving, reopened on return)
-- ☐ Tested on at least 2 physical devices with a real guitar
+- ☑ Tested on at least 2 physical devices with a real guitar (owner, 2026-10-16)
 
 ## Phase 4 — Settings & tunings → **v0.2**
 - ☑ DataStore-backed settings repository (`:core:settings`: A4, tuning, notation, theme, dynamic color, keep screen on; falls back to defaults on unknown or damaged data)
