@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.dsp.intonation.IntonationInstruments
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
@@ -173,12 +174,38 @@ class TunerViewModel(
      */
     val strumCheck: StateFlow<Boolean> = strumCheckOn
 
+    private val intonationOn = MutableStateFlow(false)
+
+    /**
+     * Whether the 12th-fret check is on (Phase 29): one string at a time, open then pressed at the
+     * 12th fret, and whether its saddle moves. Only in guitar mode, on an instrument it is offered for
+     * ([tunerTools]); like strum check (only one of the two is on at a time) kept in memory only.
+     */
+    val intonationCheck: StateFlow<Boolean> = intonationOn
+
+    /** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh. */
+    private val intonationChoice = MutableStateFlow(IntonationChoice(string = null, attempt = 0))
+
+    /** The 12th-fret check's results per string, kept while the tuning stays (also across listening sessions). */
+    private val intonationResults = IntonationResults()
+
+    /** The tools the tuner offers for the picked instrument ([tunerToolsFor]): one switch, or a "more tools" menu. */
+    val tunerTools: StateFlow<List<TunerTool>> = settingsRepository.settings
+        .map { tunerToolsFor(tools, it.instrument) }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, tunerToolsFor(tools, savedInstrument))
+
+    /** Strum check, the 12th-fret check and its string, in one flow, so the options combine stays small. */
+    private val toolChoice = combine(strumCheckOn, intonationOn, intonationChoice) { strum, intonation, choice ->
+        ToolChoice(strum, intonation, choice)
+    }
+
     /**
      * What readings are compared with; null until the saved settings have loaded. Rebuilt only
      * when an input changes, and read by the DSP loop on every frame.
      */
     private val options: StateFlow<TunerOptions?> =
-        combine(settingsRepository.settings, pickedMode, lockedString, strumCheckOn, appLanguage) { settings, picked, locked, strum, language ->
+        combine(settingsRepository.settings, pickedMode, lockedString, toolChoice, appLanguage) { settings, picked, locked, tool, language ->
             TunerOptions(
                 mode = picked ?: settings.mode,
                 tuning = settings.tuning,
@@ -186,7 +213,11 @@ class TunerViewModel(
                 lockedString = locked,
                 notation = settings.notationFor(language),
                 inTunePrecision = settings.inTunePrecision,
-                strumCheck = strum,
+                strumCheck = tool.strum,
+                intonationCheck = tool.intonation && tools.intonationCheck && IntonationInstruments.offers(settings.instrument),
+                intonationString = tool.choice.string,
+                intonationAttempt = tool.choice.attempt,
+                intonationScaleMm = IntonationInstruments.scaleLengthMm(settings.instrument),
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -220,8 +251,14 @@ class TunerViewModel(
         viewModelScope.launch {
             settingsRepository.settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
                 lockedString.value = null
+                // The 12th-fret check starts again at "choose a string" (its results go with the tuning).
+                intonationChoice.value = IntonationChoice(string = null, attempt = intonationChoice.value.attempt + 1)
                 stopTone()
             }
+        }
+        // An instrument without frets has no 12th-fret check: it turns off.
+        viewModelScope.launch {
+            tunerTools.collect { if (TunerTool.INTONATION_CHECK !in it) intonationOn.value = false }
         }
     }
 
@@ -248,7 +285,10 @@ class TunerViewModel(
     fun setMode(mode: TunerMode) {
         // Chromatic mode has no strings to show which one sounds.
         if (mode != this.mode.value) stopTone()
-        if (mode != TunerMode.AUTO) strumCheckOn.value = false
+        if (mode != TunerMode.AUTO) {
+            strumCheckOn.value = false
+            intonationOn.value = false
+        }
         pickedMode.value = mode
         viewModelScope.launch { settingsRepository.setMode(mode) }
     }
@@ -269,6 +309,9 @@ class TunerViewModel(
             // From strum check a string is tapped to tune it: back to the tuner, locked to that string.
             strumCheckOn.value = false
             lockedString.value = index
+        } else if (intonationOn.value) {
+            // In the 12th-fret check a string is tapped to check it (again).
+            checkIntonationOf(index)
         } else {
             lockedString.value = if (lockedString.value == index) null else index
         }
@@ -281,7 +324,41 @@ class TunerViewModel(
      */
     fun setStrumCheck(on: Boolean) {
         if (on && mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
+        if (on) intonationOn.value = false
         strumCheckOn.value = on
+    }
+
+    /**
+     * Switches the 12th-fret check [on] or off (only where [tunerTools] offers it). Like strum check
+     * it keeps the microphone open, switches to guitar mode and turns the other tool off; it starts
+     * at "choose a string".
+     */
+    fun setIntonationCheck(on: Boolean) {
+        if (on && TunerTool.INTONATION_CHECK !in tunerTools.value) return
+        if (on) {
+            if (mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
+            strumCheckOn.value = false
+            intonationChoice.value = IntonationChoice(string = null, attempt = intonationChoice.value.attempt + 1)
+        }
+        intonationOn.value = on
+    }
+
+    /** The 12th-fret check starts on string [index] (lowest = 0), from its open note. */
+    fun checkIntonationOf(index: Int) {
+        intonationChoice.value = IntonationChoice(string = index, attempt = intonationChoice.value.attempt + 1)
+    }
+
+    /** "Check again": the same string, from its open note. */
+    fun checkIntonationAgain() {
+        val choice = intonationChoice.value
+        intonationChoice.value = choice.copy(attempt = choice.attempt + 1)
+    }
+
+    /** "Next string": the next string of the tuning; after the last, back to choosing, with every string's result shown. */
+    fun checkNextString() {
+        val count = options.value?.tuning?.stringCount ?: return
+        val next = intonationChoice.value.string?.plus(1)?.takeIf { it < count }
+        intonationChoice.value = IntonationChoice(string = next, attempt = intonationChoice.value.attempt + 1)
     }
 
     /**
@@ -346,15 +423,22 @@ class TunerViewModel(
     private fun listen(): Flow<TunerUiState> = flow {
         var interpreter = TunerInterpreter(pipeline.frameSeconds)
         val strumInterpreter = StrumCheckInterpreter()
+        val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val initial = options.filterNotNull().first()
-        emit(if (initial.strumChecking) strumInterpreter.waiting(initial) else interpreter.listening(initial))
+        emit(
+            when {
+                initial.strumChecking -> strumInterpreter.waiting(initial)
+                initial.intonationChecking -> intonationInterpreter.shown(initial)
+                else -> interpreter.listening(initial)
+            },
+        )
         val framesPerFigure = (1f / (SIGNAL_UPDATES_PER_SECOND * pipeline.frameSeconds)).toInt().coerceAtLeast(1)
         val tailFrames = ceil(TONE_TAIL_SECONDS / pipeline.frameSeconds).toInt()
         var frame = 0
         // Frames still to set aside: the tone sounds, or its echo may still be in the room.
         var ignoredFrames = 0
-        // Whether the last reading was the strum check's: the tuner's smoothing starts afresh after it.
-        var strummed = false
+        // Whether the last reading was the strum check's or the 12th-fret check's: the tuner's smoothing starts afresh after it.
+        var elsewhere = false
         emitAll(
             pipeline.listen(
                 // The window follows the tuning's lowest string (bass notes need the longer one).
@@ -367,12 +451,16 @@ class TunerViewModel(
             ).map { reading ->
                 val current = options.value ?: initial
                 if (reading is StrumReading) {
-                    strummed = true
-                    return@map if (current.strumChecking) strumInterpreter.interpret(reading, current) else interpreter.listening(current)
+                    elsewhere = true
+                    return@map when {
+                        current.strumChecking -> strumInterpreter.interpret(reading, current)
+                        current.intonationChecking -> intonationInterpreter.shown(current)
+                        else -> interpreter.listening(current)
+                    }
                 }
                 reading as PitchReading
-                if (strummed) {
-                    strummed = false
+                if (elsewhere && !current.intonationChecking) {
+                    elsewhere = false
                     interpreter = TunerInterpreter(pipeline.frameSeconds)
                 }
                 if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
@@ -380,10 +468,18 @@ class TunerViewModel(
                     // The mic would hear the app's own tone: show the listening state instead, and
                     // start the smoothing afresh afterwards so nothing of the tone carries over.
                     if (--ignoredFrames == 0) interpreter = TunerInterpreter(pipeline.frameSeconds)
-                    return@map if (current.strumChecking) strumInterpreter.waiting(current) else interpreter.listening(current)
+                    return@map when {
+                        current.strumChecking -> strumInterpreter.waiting(current)
+                        current.intonationChecking -> intonationInterpreter.shown(current)
+                        else -> interpreter.listening(current)
+                    }
                 }
                 // Strum check was switched on between two chunks: its first reading comes with the next.
                 if (current.strumChecking) return@map strumInterpreter.shown(current)
+                if (current.intonationChecking) {
+                    elsewhere = true
+                    return@map intonationInterpreter.interpret(reading, current)
+                }
                 val state = interpreter.interpret(reading, current)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception
@@ -404,6 +500,12 @@ class TunerViewModel(
         .catch { emit(TunerUiState.Error(it.toTunerError())) }
         .flowOn(dspDispatcher)
 }
+
+/** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh when it goes up. */
+private data class IntonationChoice(val string: Int?, val attempt: Int)
+
+/** Which tool is on, and the 12th-fret check's [choice]; one value, so the options combine stays small. */
+private data class ToolChoice(val strum: Boolean, val intonation: Boolean, val choice: IntonationChoice)
 
 /** A tuning as the instrument and tuning panel shows it: its notes named in [notation]. */
 data class PanelTuning(val tuning: Tuning, val notation: Notation)

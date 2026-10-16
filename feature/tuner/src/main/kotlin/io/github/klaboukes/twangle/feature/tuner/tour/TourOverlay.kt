@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner.tour
 
+import androidx.annotation.StringRes
 import android.graphics.BlurMaskFilter
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
@@ -106,7 +107,9 @@ import kotlin.math.min
  * [tourTarget] somewhere in [content]; the tour lights them up one at a time, each with a balloon,
  * in the layout's reading order ([tourOrder]: the navigation bar or rail last). Skip tour, Done (the last step's Next) and Back call [onEnd], which should close it (make [open]
  * false); it then fades out. While it is open, taps outside the balloon do nothing and TalkBack
- * hears only the balloon. [targets] is where the parts' places are kept (tests read it).
+ * hears only the balloon. [targets] is where the parts' places are kept (tests read it). [textOf] gives
+ * a step's balloon text, by default its own ([TourPart.text]); where the "more tools" button stands in
+ * the strum check's switch's place, its step says so ([tourTextOf]).
  */
 @Composable
 fun TourHost(
@@ -114,6 +117,7 @@ fun TourHost(
     steps: List<TourPart>,
     onEnd: () -> Unit,
     modifier: Modifier = Modifier,
+    textOf: (TourPart) -> Int = { it.text },
     targets: TourTargets = remember { TourTargets() },
     content: @Composable () -> Unit,
 ) {
@@ -121,7 +125,7 @@ fun TourHost(
         Box(modifier, propagateMinConstraints = true) {
             // The screen below is hidden from TalkBack while the tour runs: only the balloon is heard.
             Box(if (open) Modifier.clearAndSetSemantics {} else Modifier, propagateMinConstraints = true) { content() }
-            if (steps.isNotEmpty()) TourOverlay(open, steps, targets, onEnd, Modifier.matchParentSize())
+            if (steps.isNotEmpty()) TourOverlay(open, steps, targets, onEnd, Modifier.matchParentSize(), textOf)
         }
     }
 }
@@ -153,6 +157,7 @@ private fun TourOverlay(
     targets: TourTargets,
     onEnd: () -> Unit,
     modifier: Modifier = Modifier,
+    textOf: (TourPart) -> Int = { it.text },
 ) {
     val animationsOff = rememberAnimationsOff()
     fun ms(duration: Int) = if (animationsOff) 0 else duration
@@ -261,7 +266,7 @@ private fun TourOverlay(
             TourBalloon(
                 index = balloonStep,
                 count = steps.size,
-                part = order[balloonStep],
+                text = textOf(order[balloonStep]),
                 placement = { placement.value },
                 onSkip = ::finish,
                 onNext = ::next,
@@ -455,7 +460,7 @@ private fun holePath(hole: Spotlight, cut: Float): Path = Path().apply {
 }
 
 /**
- * The balloon for step [index] of [count] ([part]): filled with the style's accent, no outline,
+ * The balloon for step [index] of [count] (its [text]): filled with the style's accent, no outline,
  * lifted by a soft shadow (Futuristic: an accent glow) that also falls under the pointer, which
  * points at the part from the side [placement] says. Above the text the style's mark and the step
  * count; under it Skip tour and Next (Done on the last step), side by side or on two rows. TalkBack
@@ -465,7 +470,7 @@ private fun holePath(hole: Spotlight, cut: Float): Path = Path().apply {
 private fun TourBalloon(
     index: Int,
     count: Int,
-    part: TourPart,
+    @StringRes text: Int,
     placement: () -> BalloonPlacement?,
     onSkip: () -> Unit,
     onNext: () -> Unit,
@@ -478,7 +483,7 @@ private fun TourBalloon(
     val fill = scheme.primary
     val onFill = scheme.onPrimary
     val shape = MaterialTheme.shapes.medium
-    val text = stringResource(part.text)
+    val text = stringResource(text)
     val spoken = stringResource(R.string.tour_step_spoken, index + 1, count, text)
     val title = stringResource(R.string.tour_title)
     val body = MaterialTheme.typography.bodyLarge

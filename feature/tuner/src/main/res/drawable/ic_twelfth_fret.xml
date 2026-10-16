@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The 12th-fret check: a string across the neck, the 12th fret at its middle with a finger's dot, the nut and saddle at its ends; drawn for Twangle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M3,12H21M12,6V18M3,8.5V15.5M21,8.5V15.5" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,12m-2.3,0a2.3,2.3 0,1 1,4.6 0a2.3,2.3 0,1 1,-4.6 0" />
+</vector>

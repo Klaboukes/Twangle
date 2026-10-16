@@ -53,6 +53,9 @@ class ToolSwitchesOffTest {
                 setOf(TunerTestTags.mode(TunerMode.AUTO), TunerTestTags.mode(TunerMode.CHROMATIC)),
                 tagsLike("tuner_mode_.*"),
             )
+            // Phase 29: the strum check keeps its own switch; no "more tools" button, no 12th-fret check.
+            assertTrue("the strum check's own switch", shown(TunerTestTags.STRUM_TOGGLE))
+            assertEquals("no more tools", emptySet<String>(), tagsLike("tuner_more_tools.*|tuner_tool_.*|tuner_intonation_.*"))
             assertEquals(
                 "the v1.0 bar only",
                 (listOf(Destination.TUNER, Destination.METRONOME, Destination.SETTINGS).map(NavigationTestTags::tab) + NavigationTestTags.INSTRUMENT).toSet(),

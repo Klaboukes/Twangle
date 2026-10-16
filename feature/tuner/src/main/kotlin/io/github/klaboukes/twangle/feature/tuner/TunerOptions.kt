@@ -26,9 +26,20 @@ data class TunerOptions(
     val inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     /** Whether strum check is switched on; it only runs in guitar mode ([strumChecking]). */
     val strumCheck: Boolean = false,
+    /** Whether the 12th-fret check is switched on (Phase 29); it only runs in guitar mode ([intonationChecking]). */
+    val intonationCheck: Boolean = false,
+    /** The string the 12th-fret check checks, or null while none is chosen. */
+    val intonationString: Int? = null,
+    /** Counted up to start the check of [intonationString] afresh ("Check again", another string). */
+    val intonationAttempt: Int = 0,
+    /** The scale length the saddle's millimetres assume, or null where they aren't shown (not a guitar). */
+    val intonationScaleMm: Float? = null,
 ) {
     /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
     val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO
+
+    /** The 12th-fret check runs: switched on, and in guitar mode. */
+    val intonationChecking: Boolean get() = intonationCheck && mode == TunerMode.AUTO
 
     /**
      * The open strings' frequencies at [a4Hz], in the tuning's order: what the strum check listens

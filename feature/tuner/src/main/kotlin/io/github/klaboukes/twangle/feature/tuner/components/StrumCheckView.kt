@@ -408,7 +408,7 @@ fun StrumStatus(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
  * line that changes its words never changes its size.
  */
 @Composable
-private fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String) -> Unit) {
+internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (String) -> Unit) {
     Layout(
         content = {
             texts.forEachIndexed { index, value ->
@@ -505,7 +505,7 @@ private class PanelColours(
 private class SignLabels(val sharp: AnnotatedString, val flat: AnnotatedString)
 
 /** [text] laid out on one line in [style], set smaller where it would be wider than [maxWidth] px. */
-private fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
+internal fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidth: Float): TextLayoutResult {
     val full = measure(text, style, maxLines = 1, softWrap = false)
     if (full.size.width <= maxWidth || full.size.width == 0) return full
     val scale = maxWidth / full.size.width
@@ -513,10 +513,10 @@ private fun TextMeasurer.fitted(text: AnnotatedString, style: TextStyle, maxWidt
 }
 
 /** [this] px as a font size that ignores the font scale: the panel is sized by its width, like the meter. */
-private fun Float.toSpNoScale(density: Density): TextUnit = (this / density.density).sp
+internal fun Float.toSpNoScale(density: Density): TextUnit = (this / density.density).sp
 
 /** A check mark centred on [centre], [size] px wide. */
-private fun checkPath(centre: Offset, size: Float): Path = Path().apply {
+internal fun checkPath(centre: Offset, size: Float): Path = Path().apply {
     moveTo(centre.x - size * 0.45f, centre.y + size * 0.02f)
     lineTo(centre.x - size * 0.12f, centre.y + size * 0.32f)
     lineTo(centre.x + size * 0.45f, centre.y - size * 0.3f)

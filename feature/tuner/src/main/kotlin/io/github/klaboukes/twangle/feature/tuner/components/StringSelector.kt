@@ -94,6 +94,10 @@ import io.github.klaboukes.twangle.feature.tuner.R
  * still ring with Android's animations off), drawn outside it so nothing moves. While a tone sounds
  * a tap on any string stops it, and TalkBack says so.
  *
+ * With [marks] (the 12th-fret check) each string with a result carries its [StringMark] as a small
+ * badge, and TalkBack says it after the string's name; [checking] makes a tap's TalkBack action
+ * "Check A 2" instead of locking.
+ *
  * [small] draws a narrow row of small chips, for the compact landscape layout: it only shows which
  * string is the target. It takes no more width than it needs and is hidden from TalkBack, since the
  * note's reading already names the string.
@@ -110,7 +114,11 @@ fun StringSelector(
     small: Boolean = false,
     onStringLongClick: ((Int) -> Unit)? = null,
     soundingString: Int? = null,
+    marks: List<StringMark?>? = null,
+    checking: Boolean = false,
 ) {
+    val checkLabel = stringResource(R.string.tuner_intonation_check_string)
+    val markLabels = StringMark.entries.associateWith { spokenMark(it) }
     val lockLabel = stringResource(R.string.tuner_string_lock)
     val unlockLabel = stringResource(R.string.tuner_string_unlock)
     val stopLabel = stringResource(R.string.tuner_string_stop_tone)
@@ -142,6 +150,7 @@ fun StringSelector(
                     val sounding = index == soundingString
                     val name = notation.nameIn(tuning, note.pitchClass)
                     val spokenName = spokenString.format(speech.name(name), note.octave)
+                    val mark = marks?.getOrNull(index)
                     StringChip(
                         name = name,
                         spokenName = spokenName,
@@ -152,6 +161,7 @@ fun StringSelector(
                         onClick = onStringClick?.let { click -> { click(index) } },
                         clickLabel = when {
                             soundingString != null -> stopLabel
+                            checking -> checkLabel.format(spokenName)
                             locked -> unlockLabel
                             else -> lockLabel
                         },
@@ -161,8 +171,10 @@ fun StringSelector(
                             locked && sounding -> lockedSoundingState
                             locked -> lockedState
                             sounding -> soundingState
+                            mark != null -> markLabels.getValue(mark)
                             else -> null
                         },
+                        mark = mark,
                         sounding = sounding,
                         animationsOff = animationsOff,
                         index = index,
@@ -206,6 +218,7 @@ private fun StringChip(
     onLongClick: (() -> Unit)?,
     longClickLabel: String,
     state: String?,
+    mark: StringMark?,
     sounding: Boolean,
     animationsOff: Boolean,
     index: Int,
@@ -253,6 +266,14 @@ private fun StringChip(
             .then(if (neon) Modifier.neonGlow(shape, ringGap, color = { accent.copy(alpha = NEON_GLOW_ALPHA) }, alpha = { glow }) else Modifier)
             // Outside the clip, so the rings reach past the button without taking room.
             .then(if (sounding) Modifier.soundingRings(shape, ringGap, colors.primary, animationsOff) else Modifier)
+            // Over the button and outside its clip, so the row doesn't move.
+            .stringMarkBadge(
+                mark,
+                ringGap,
+                fill = if (mark == StringMark.FINE) inTuneColor() else colors.primary,
+                on = if (mark == StringMark.FINE) onInTuneColor() else colors.onPrimary,
+                background = colors.background,
+            )
             .pressSink(press)
             .clip(shape)
             .then(

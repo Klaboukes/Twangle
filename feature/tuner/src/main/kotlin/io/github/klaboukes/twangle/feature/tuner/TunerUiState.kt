@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
+import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
 import io.github.klaboukes.twangle.core.dsp.level.ReceptionTracker
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
@@ -92,6 +93,28 @@ sealed interface TunerUiState {
         val phase: StrumPhase = StrumPhase.WAITING,
         val strings: List<StrumString> = emptyList(),
         val toleranceCents: Float = StrumVerdict.DEFAULT_TOLERANCE_CENTS,
+    ) : TunerUiState
+
+    /**
+     * The 12th-fret check (Phase 29, guitar mode, switched on from the "more tools" menu): one
+     * [string] of [tuning] at a time, played open, then pressed at the 12th fret, and the verdict.
+     * [step] says where it is; [progress] (0..1) how far the current step's second of steady note
+     * has got; [snag] what held the step up ([tuneFirstCents]: how far the open note was from the
+     * string). [result] is the verdict in [IntonationStep.VERDICT]; [results] every string's last
+     * one (null: not checked yet), in the tuning's order. [scaleLengthMm] is the scale the saddle's
+     * millimetres assume, null where they aren't shown (not a guitar).
+     */
+    data class IntonationCheck(
+        val tuning: Tuning,
+        val notation: Notation = Notation.DEFAULT,
+        val string: Int? = null,
+        val step: IntonationStep = IntonationStep.CHOOSE,
+        val progress: Float = 0f,
+        val snag: IntonationSnag = IntonationSnag.NONE,
+        val tuneFirstCents: Int = 0,
+        val result: IntonationResult? = null,
+        val results: List<IntonationResult?> = emptyList(),
+        val scaleLengthMm: Float? = null,
     ) : TunerUiState
 }
 

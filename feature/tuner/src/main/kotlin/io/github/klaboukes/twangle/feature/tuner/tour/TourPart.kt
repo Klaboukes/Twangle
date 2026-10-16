@@ -29,7 +29,7 @@ enum class TourPart(
     /** The navigation bar's Instrument item (the rail's on a phone on its side), which opens the instrument and tuning panel. */
     PICKER(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_picker, interactive = true),
 
-    /** The strum check's switch above the strings. */
+    /** The strum check's switch above the strings (or the "more tools" button in its place, [tourTextOf]). */
     STRUM(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_strum, interactive = true),
 
     /** The string buttons (tap one to lock it). */
@@ -55,3 +55,12 @@ enum class TourPart(
 
 /** Which of the style's corners a spotlight copies: its buttons', its string buttons' or its cards'. */
 enum class TourCorner { BUTTON, STRING, CARD }
+
+/**
+ * [part]'s balloon text. Where the tuner offers more than one tool ([moreTools], see
+ * `tunerToolsFor`), the "more tools" button stands in the strum check's switch's place, so that step
+ * names it ("More tools, like strum check"); otherwise every step's own [TourPart.text].
+ */
+@StringRes
+fun tourTextOf(part: TourPart, moreTools: Boolean): Int =
+    if (moreTools && part == TourPart.STRUM) R.string.tour_more_tools else part.text

@@ -56,6 +56,8 @@ import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
 import io.github.klaboukes.twangle.feature.tuner.tour.TourHost
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourTextOf
+import io.github.klaboukes.twangle.feature.tuner.tunerToolsFor
 import kotlinx.coroutines.launch
 
 /**
@@ -180,6 +182,8 @@ class MainActivity : AppCompatActivity() {
                 TourHost(
                     open = tourOpen,
                     steps = TourPart.stepsFor(settings.mode),
+                    // Where the tuner offers more than the strum check, its "more tools" button stands in the switch's place.
+                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1) },
                     onEnd = {
                         tourEnded = true
                         tourRequested = false

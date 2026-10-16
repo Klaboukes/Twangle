@@ -115,6 +115,11 @@ import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
 import io.github.klaboukes.twangle.feature.tuner.components.StrumCheckToggle
 import io.github.klaboukes.twangle.feature.tuner.components.StrumPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StrumStatus
+import io.github.klaboukes.twangle.feature.tuner.components.IntonationPanel
+import io.github.klaboukes.twangle.feature.tuner.components.IntonationStatus
+import io.github.klaboukes.twangle.feature.tuner.components.MoreToolsButton
+import io.github.klaboukes.twangle.feature.tuner.components.StringMark
+import io.github.klaboukes.twangle.feature.tuner.components.markOf
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
@@ -205,6 +210,8 @@ fun TunerScreen(
     val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
+    val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
+    val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
     LaunchedEffect(granted) { viewModel.onPermissionChanged(granted) }
@@ -286,6 +293,11 @@ fun TunerScreen(
                     controlsAlwaysShown = tourOpen,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,
+                    tunerTools = tunerTools,
+                    intonationCheck = intonationCheck,
+                    onIntonationCheckChange = viewModel::setIntonationCheck,
+                    onCheckAgain = viewModel::checkIntonationAgain,
+                    onNextString = viewModel::checkNextString,
                     onCompactShownChange = { compactShown = it },
                 )
             } else {
@@ -405,6 +417,20 @@ object TunerTestTags {
     /** String [index]'s column in the strum check's panel. */
     fun strumString(index: Int): String = "tuner_strum_string_$index"
 
+    /** The "more tools" button (^) above the strings, the menu it opens, and each tool's item in it. */
+    const val MORE_TOOLS = "tuner_more_tools"
+    const val MORE_TOOLS_MENU = "tuner_more_tools_menu"
+    fun tool(tool: TunerTool): String = "tuner_tool_" + tool.name.lowercase()
+
+    /** The 12th-fret check: its panel in the meter's place, the line under it, and the verdict's two buttons. */
+    const val INTONATION_PANEL = "tuner_intonation_panel"
+    const val INTONATION_STATUS = "tuner_intonation_status"
+    const val INTONATION_AGAIN = "tuner_intonation_again"
+    const val INTONATION_NEXT = "tuner_intonation_next"
+
+    /** String [index]'s column in the 12th-fret check's summary. */
+    fun intonationString(index: Int): String = "tuner_intonation_string_$index"
+
     /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
     fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
@@ -465,6 +491,11 @@ private fun KeepScreenOn() {
  * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
  * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
+ * Where [tunerTools] holds more than the strum check, one "more tools" button takes the switch's place
+ * and opens a menu of them ([MoreToolsButton]); the 12th-fret check is turned on and off with
+ * [onIntonationCheckChange] ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck]
+ * shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]), the verdict's
+ * buttons calling [onCheckAgain] and [onNextString], and each string's result on its button.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -507,6 +538,11 @@ fun TunerContent(
     onPickerOpenChange: (Boolean) -> Unit = {},
     strumCheck: Boolean = false,
     onStrumCheckChange: ((Boolean) -> Unit)? = null,
+    tunerTools: List<TunerTool> = listOf(TunerTool.STRUM_CHECK),
+    intonationCheck: Boolean = false,
+    onIntonationCheckChange: ((Boolean) -> Unit)? = null,
+    onCheckAgain: () -> Unit = {},
+    onNextString: () -> Unit = {},
     onCompactShownChange: (Boolean) -> Unit = {},
 ) {
     val currentOnCompactShownChange by rememberUpdatedState(onCompactShownChange)
@@ -529,15 +565,39 @@ fun TunerContent(
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
-        val strum = onStrumCheckChange?.let { StrumToggleState(strumCheck, it) }
+        val strum = onStrumCheckChange?.let { onStrum ->
+            // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
+            val offered = tunerTools.filter { it != TunerTool.INTONATION_CHECK || onIntonationCheckChange != null }
+            ToolsState(
+                tools = offered,
+                active = when {
+                    strumCheck -> TunerTool.STRUM_CHECK
+                    intonationCheck -> TunerTool.INTONATION_CHECK
+                    else -> null
+                },
+                onChange = { tool, on ->
+                    when (tool) {
+                        TunerTool.STRUM_CHECK -> onStrum(on)
+                        TunerTool.INTONATION_CHECK -> onIntonationCheckChange?.invoke(on)
+                    }
+                },
+            )
+        }
         GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
     }
     val gauge = @Composable {
-        // Strum check takes the meter's place, at its shape.
+        // Strum check and the 12th-fret check take the meter's place, at its shape.
         if (state is TunerUiState.StrumCheck) {
             StrumPanel(
                 state,
                 Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.METER),
+                onStringClick = onStringClick,
+                toneSounding = soundingString != null,
+            )
+        } else if (state is TunerUiState.IntonationCheck) {
+            IntonationPanel(
+                state,
+                Modifier.zIndex(-1f).tourTarget(TourPart.METER),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
@@ -561,6 +621,7 @@ fun TunerContent(
     val noteFor = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state)
+            is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString)
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
                 hint = "",
@@ -689,6 +750,7 @@ fun TunerContent(
         is TunerUiState.Detected -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.Listening -> PanelTuning(state.tuning, state.notation)
         is TunerUiState.StrumCheck -> PanelTuning(state.tuning, state.notation)
+        is TunerUiState.IntonationCheck -> PanelTuning(state.tuning, state.notation)
         else -> null
     }
     // Only over the tuner itself, not over an error (it closes then) or the moment before the microphone is heard.
@@ -931,6 +993,7 @@ private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, pictured: Bool
             lockedString = state.lockedString,
             small = true,
         )
+        state is TunerUiState.IntonationCheck -> StringSelector(state.tuning, state.string, notation = state.notation, small = true)
     }
 }
 
@@ -1008,7 +1071,7 @@ private fun GuitarSlotFor(
     mode: TunerMode,
     pictured: Boolean,
     strings: StringActions,
-    strum: StrumToggleState? = null,
+    strum: ToolsState? = null,
     names: TuningNames? = null,
 ) {
     val chromatic:(@Composable () -> Unit)? = if (pictured) {
@@ -1032,6 +1095,12 @@ private fun GuitarSlotFor(
         // Strum check reads every string at once: none is the target.
         is TunerUiState.StrumCheck ->
             GuitarControlsState(state.tuning, state.notation, targetString = null, lockedString = null, inTune = false)
+        // The 12th-fret check: the string being checked, and every string's result on its button.
+        is TunerUiState.IntonationCheck ->
+            GuitarControlsState(
+                state.tuning, state.notation, targetString = state.string, lockedString = null, inTune = false,
+                marks = state.results.map(::markOf), checking = true,
+            )
         // Errors, and PermissionRequired (only for a moment, until the ViewModel hears that the
         // permission is granted): empty space of the same height.
         else -> null
@@ -1045,6 +1114,8 @@ private fun GuitarSlotFor(
                 controls.targetString, controls.lockedString, controls.inTune,
                 strum,
                 names = names,
+                marks = controls.marks,
+                checking = controls.checking,
                 // Only where it shows: hidden in chromatic mode, it isn't laid out, so its old place mustn't count.
                 inTour = mode == TunerMode.AUTO,
             )
@@ -1062,6 +1133,8 @@ private data class GuitarControlsState(
     val targetString: Int?,
     val lockedString: Int?,
     val inTune: Boolean,
+    val marks: List<StringMark?>? = null,
+    val checking: Boolean = false,
 )
 
 /**
@@ -1098,8 +1171,11 @@ private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
     return stringResource(if (spoken) R.string.tuner_spoken_picker else R.string.tuner_tuning_name, instrumentLabel(instrument), tuningName)
 }
 
-/** Whether strum check is [on], and what its switch calls when tapped. */
-private data class StrumToggleState(val on: Boolean, val onChange: (Boolean) -> Unit)
+/**
+ * The tools the tuner offers ([tools]: the strum check, and in builds with its switch the 12th-fret
+ * check), the one that is [active] (null: none), and what turning one on or off calls ([onChange]).
+ */
+private data class ToolsState(val tools: List<TunerTool>, val active: TunerTool?, val onChange: (TunerTool, Boolean) -> Unit)
 
 /**
  * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch sits
@@ -1119,9 +1195,11 @@ private fun GuitarControls(
     targetString: Int?,
     lockedString: Int?,
     inTune: Boolean = false,
-    strum: StrumToggleState? = null,
+    strum: ToolsState? = null,
     inTour: Boolean = true,
     names: TuningNames? = null,
+    marks: List<StringMark?>? = null,
+    checking: Boolean = false,
 ) {
     val strings = @Composable {
         StringSelector(
@@ -1134,9 +1212,19 @@ private fun GuitarControls(
             onStringLongClick = stringActions.onLongClick,
             soundingString = stringActions.sounding,
             modifier = if (inTour) Modifier.tourTarget(TourPart.STRINGS) else Modifier,
+            marks = marks,
+            checking = checking,
         )
     }
-    val toggle = @Composable { if (strum != null) StrumCheckToggle(strum.on, strum.onChange, inTour = inTour) }
+    val toggle = @Composable {
+        when {
+            strum == null -> Unit
+            // More than one tool: one "more tools" button gathers them, in the switch's place.
+            strum.tools.size > 1 -> MoreToolsButton(strum.tools, strum.active, strum.onChange, inTour = inTour)
+            // The strum check alone keeps its own switch, exactly as in v1.0.
+            else -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
+        }
+    }
     val label = @Composable {
         if (names != null) {
             val spoken = names.labelFor(tuning, spoken = true)

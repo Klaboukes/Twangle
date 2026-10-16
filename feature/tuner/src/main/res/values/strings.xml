@@ -191,4 +191,56 @@
     <string name="tour_skip">Skip tour</string>
     <string name="tour_next">Next</string>
     <string name="tour_done">Done</string>
+    <!-- More tools: one small button above the strings opens a menu of the tuner's tools (strum check, the 12th-fret check). -->
+    <string name="tuner_more_tools">More tools</string>
+    <!-- The 12th-fret check (intonation): a string played open, then pressed at the 12th fret, says whether its saddle should move. -->
+    <string name="tuner_intonation_check">12th-fret check</string>
+    <!-- The check's two steps, at the top of its panel: the open string, then the 12th fret. -->
+    <string name="tuner_intonation_step_open">Open</string>
+    <string name="tuner_intonation_step_fret">12th fret</string>
+    <string name="tuner_intonation_which_string">Which string?</string>
+    <string name="tuner_intonation_choose">Choose a string</string>
+    <string name="tuner_intonation_choose_detail">Tune it first, then check it</string>
+    <!-- %1$s is the string with its octave, e.g. "A2". -->
+    <string name="tuner_intonation_play_open">Play the open %1$s string</string>
+    <string name="tuner_intonation_let_ring">Let it ring</string>
+    <string name="tuner_intonation_tune_first">Tune the %1$s string first</string>
+    <string name="tuner_intonation_press_fret">Now press it at the 12th fret</string>
+    <!-- A light touch at the 12th fret gives a harmonic, which always sounds the exact octave. -->
+    <string name="tuner_intonation_press_detail">Press it down, not a light touch</string>
+    <string name="tuner_intonation_not_octave">That wasn\'t the octave</string>
+    <string name="tuner_intonation_not_octave_detail">Press it at the 12th fret and play again</string>
+    <string name="tuner_intonation_fine">Fine</string>
+    <string name="tuner_intonation_fine_detail">Leave the saddle where it is</string>
+    <!-- The verdict. Back = away from the neck (the 12th fret is sharp), forward = towards the neck (flat). -->
+    <string name="tuner_intonation_back">Move the saddle back</string>
+    <string name="tuner_intonation_forward">Move the saddle forward</string>
+    <string name="tuner_intonation_back_detail">Away from the neck</string>
+    <string name="tuner_intonation_forward_detail">Towards the neck</string>
+    <!-- %1$s is a number of millimetres, e.g. "3" or "1.5" (guitars only). -->
+    <string name="tuner_intonation_back_mm">Away from the neck, about %1$s mm</string>
+    <string name="tuner_intonation_forward_mm">Towards the neck, about %1$s mm</string>
+    <string name="tuner_intonation_back_less">Away from the neck, less than %1$s mm</string>
+    <string name="tuner_intonation_forward_less">Towards the neck, less than %1$s mm</string>
+    <string name="tuner_intonation_check_again">Check again</string>
+    <string name="tuner_intonation_next_string">Next string</string>
+    <!-- After every string has been checked, or between strings: how many saddles should move. -->
+    <plurals name="tuner_intonation_to_move">
+        <item quantity="one">%1$d saddle to move</item>
+        <item quantity="other">%1$d saddles to move</item>
+    </plurals>
+    <string name="tuner_intonation_all_fine">Every string checked is fine</string>
+    <string name="tuner_intonation_tap_string">Tap a string to check it</string>
+    <!-- Small labels in the drawing of the string from the neck to the saddle. -->
+    <string name="tuner_intonation_neck">neck</string>
+    <string name="tuner_intonation_saddle">saddle</string>
+    <!-- TalkBack action on a string in the 12th-fret check. %1$s is the string as spoken ("A 2"). -->
+    <string name="tuner_intonation_check_string">Check %1$s</string>
+    <!-- TalkBack: a string's result in the 12th-fret check, said after its name. -->
+    <string name="tuner_intonation_mark_fine">saddle fine</string>
+    <string name="tuner_intonation_mark_back">move saddle back</string>
+    <string name="tuner_intonation_mark_forward">move saddle forward</string>
+    <string name="tuner_intonation_spoken_not_checked">%1$s, not checked yet</string>
+    <!-- The tour's step for the "more tools" button (instead of tour_strum, where the button replaces the strum check's switch). -->
+    <string name="tour_more_tools">More tools, like strum check</string>
 </resources>

@@ -18,6 +18,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly (postponed 2026-10-16: the owner has no Bluetooth headset yet)
 - ☐ Phase 15: with a real bass (or a 7-string guitar or cello), check the lowest strings read correctly (B0, E1, B1, C2), and that the tuner shows no note while the amp only hums (postponed 2026-10-16: the owner has no other instrument yet)
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears (postponed 2026-10-16: the owner has no Wear OS watch yet, and the watch app follows in an update, decision 3)
+- ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the ^ button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
 
 ---
 
@@ -67,8 +68,8 @@ Goal: new tools can land on `main` without changing what v1.0 users see.
 Goal: tells whether a guitar plays in tune up the neck. Play the open string, then the same string at the 12th fret; Twangle compares the two and says to move that string's saddle back (12th fret sharp) or forward (flat), or that it's fine. One string at a time, with the existing pitch detector.
 - ☑ `:core:dsp`: the comparison (the 12th fret should sound exactly one octave, 1200 cents, above the open string) with a tolerance of a few cents worked out in the phase, and a verdict per string; synthetic tests for sharp, flat, fine and a wrong note at the fret (`intonation/Intonation`: 3-cent tolerance, about 1 mm of saddle; over 50 cents is not the octave; every verdict right on every instrument's strings, offset within 0.38 cents)
 - ☑ Rough mock-up of the mode (choosing a string, the two steps, the verdict) for the owner to pick from (`docs/design/intonation-preview.html`; owner picked option A on 2026-10-16: a switch like the strum check, with the small icon switches gathered behind one "more options" (^) button so the tuner doesn't fill up with icons as tools are added; millimetres shown only where their accuracy can be guaranteed)
-- ☐ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones
-- ☐ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say
+- ☑ The mode inside the tuner, next to strings, chromatic and strum check, behind its switch (Phase 28); every text translated, TalkBack and 2× text; JVM and UI tests (UI tests overnight); phone check with synthetic tones (a "more tools" (^) button gathers the strum check and the 12th-fret check where the build has more than one tool, v1.0's strum switch otherwise; millimetres on guitars only, to 0.5 mm; synthetic plucks through a fake microphone on the Xiaomi: A3 8 cents sharp says "move the saddle back, about 3 mm"; the laptop speaker didn't reach the phone that day; every style and every language run overnight)
+- ☑ Owner check added: with a real guitar, check each string's verdict matches what a guitar shop would say
 
 ## Phase 30 — What chord is this?
 Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum check's six-strings-at-once detection, pointed at chords instead of tuning.
