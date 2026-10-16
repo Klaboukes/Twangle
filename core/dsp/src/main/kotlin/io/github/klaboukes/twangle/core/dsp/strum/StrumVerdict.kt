@@ -4,7 +4,7 @@ import kotlin.math.abs
 
 /**
  * What the strum check shows for one string: not heard, or flat, in tune or sharp of its expected
- * note. See ARCHITECTURE.md, *Strum check (polyphonic)*.
+ * note. See docs/architecture/strum-and-metronome.md, *Strum check (polyphonic)*.
  */
 enum class StrumVerdict {
     NOT_HEARD,
@@ -14,7 +14,10 @@ enum class StrumVerdict {
     ;
 
     companion object {
-        /** The tuner's Relaxed in-tune tolerance (§3, *Key numbers*); Precise is 2. */
+        /**
+         * The tuner's Relaxed in-tune tolerance (docs/architecture/signal-pipeline.md, *Key numbers*);
+         * Precise is 2.
+         */
         const val DEFAULT_TOLERANCE_CENTS = 5f
 
         /**

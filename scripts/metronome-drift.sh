@@ -3,7 +3,7 @@
 # :core:audio): the real player at 120 BPM for ten minutes at a low media volume (put back after),
 # then prints the summary: beats on the sample clock, the speaker clock against the system clock
 # (ppm, and how far the beats wander from a perfect wall-clock grid), jitter of the beat reports,
-# missed beats and underruns. See ARCHITECTURE.md §3, "Metronome".
+# missed beats and underruns. See docs/architecture/strum-and-metronome.md, "Metronome".
 #
 #   scripts/metronome-drift.sh        ten minutes (about 11 with the build)
 #   scripts/metronome-drift.sh 2      a quick two-minute try

@@ -42,8 +42,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * The metronome in each of the six styles, light and dark (ARCHITECTURE.md §8, Every screen in every
- * style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
+ * The metronome in each of the six styles, light and dark (docs/architecture/testing.md, Every screen in
+ * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
  * then wholly shown. Playing, in 7/8, so every mark size and the Stop label show.

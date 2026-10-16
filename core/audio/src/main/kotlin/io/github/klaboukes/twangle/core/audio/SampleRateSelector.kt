@@ -17,7 +17,7 @@ object SampleRateSelector {
     /**
      * Rates tried when the native one is unknown or unsupported, best first. The low ones are a
      * last resort for a device or route that refuses the usual rates; the DSP upsamples them
-     * internally (ARCHITECTURE §3, Key numbers).
+     * internally (docs/architecture/signal-pipeline.md, Key numbers).
      */
     val FALLBACK_RATES = listOf(AudioConfig.DEFAULT_SAMPLE_RATE, 44_100, 32_000, 16_000, 8_000)
 

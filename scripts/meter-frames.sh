@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Measures frame times and main-thread work of every meter look on the connected phone
-# (MeterFramesBenchmark in :baselineprofile) and prints the table. See ARCHITECTURE.md §4,
-# "Meter looks (Phase 13)".
+# (MeterFramesBenchmark in :baselineprofile) and prints the table. See
+# docs/architecture/performance.md, "Meter looks".
 #
 #   scripts/meter-frames.sh                      every look, 3 windows of 7 s each
 #   scripts/meter-frames.sh CLASSIC:LIGHT_ARC    only these looks (MeterLook names, colon-separated)

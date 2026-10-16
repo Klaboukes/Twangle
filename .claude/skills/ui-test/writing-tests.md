@@ -1,6 +1,6 @@
 # Writing UI tests that stay fast
 
-Background and measurements: ARCHITECTURE.md §8, *Fast UI tests* and *Quick and thorough UI runs*.
+Background and measurements: [docs/architecture/testing.md](../../../docs/architecture/testing.md), *Fast UI tests* and *Quick and thorough UI runs*.
 
 ## Rules
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Plays synthetic strums from this computer's speaker to the connected phone and shows what strum
 # check reads for each: all in tune, strings 10-30 cents flat or sharp, a string left out. See
-# ARCHITECTURE.md §3, "Strum check (polyphonic)", *Phone check*.
+# docs/architecture/strum-and-metronome.md, "Strum check (polyphonic)", *Phone check*.
 #
 #   scripts/strum-check.sh            guitar, standard tuning (the phone must show Guitar · Standard)
 #   scripts/strum-check.sh bass       4-string bass, standard tuning (Bass · Standard)

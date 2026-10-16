@@ -4,7 +4,8 @@ import kotlin.math.abs
 
 /**
  * Decides when a note counts as "in tune": within [enterCents] of the target, held for at least
- * [holdSeconds] (ARCHITECTURE §3: |cents| ≤ 5 for ≥ 300 ms, or ≤ 2 in the phone's Precise setting).
+ * [holdSeconds] (docs/architecture/signal-pipeline.md: |cents| ≤ 5 for ≥ 300 ms, or ≤ 2 in the phone's
+ * Precise setting).
  * Once in tune it stays in tune until the reading drifts past [exitCents], so a note hovering right
  * at the edge doesn't flicker between the two states. The phone's tuner and the watch both use it.
  *

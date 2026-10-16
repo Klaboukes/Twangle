@@ -18,7 +18,7 @@ import kotlin.math.sqrt
 /**
  * The strum detector on synthetic strums of [PluckSynth][io.github.klaboukes.twangle.core.dsp.synth.PluckSynth]
  * strings, at the default 341 ms frame. Limits are set a little above what was measured (see
- * [StrumAccuracyReport] and ARCHITECTURE.md, *Strum check*): strings with a clear partial within
+ * [StrumAccuracyReport] and docs/architecture/strum-and-metronome.md): strings with a clear partial within
  * [CLEAR_CENTS], shadowed ones (B3 and E4 in standard tuning, under E2's 3rd and 4th harmonic)
  * within [SHADOWED_CENTS]. Each string's [StrumVerdict] must match the truth wherever the reading's
  * error can't cross the verdict's limit.
@@ -159,7 +159,7 @@ class StrumDetectorTest {
                 val gains = FloatArray(6) { 1f }.also { it[missing] = 0f }
                 val result = detect(StrumChords.pluckSynthStrum(expected, n, gains = gains), expected)
                 assertReadings(result, FloatArray(6), "${tuning.id} without string $missing", skip = missing)
-                // Known limit (ARCHITECTURE.md, Strum check): D4 two octaves over D2 and one over D3
+                // Known limit (docs/architecture/strum-and-metronome.md): D4 two octaves over D2 and one over D3
                 // has every partial on theirs, and its absence can't be told from their harmonics.
                 val knownMiss = missing == 5 && (tuning == Tunings.DADGAD || tuning == Tunings.OPEN_D)
                 if (!knownMiss) assertFalse("${tuning.id}: missing string $missing heard", result.present[missing])

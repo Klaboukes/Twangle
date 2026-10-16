@@ -41,7 +41,7 @@ language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
 - **While it runs, don't edit code, tests or scripts**: each language run rebuilds from the working
-  tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md, ROADMAP.md, skills) are
+  tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
   safe to edit.
 - Don't poll; you are told when it finishes. Read the log in between only to start on failures
   early (the sweep prints each class as it finishes).
@@ -68,7 +68,7 @@ For each failure decide first: **app bug or outdated test?**
 ## 4. Land it
 
 - Small focused commits, `./gradlew test lint assembleDebug` again, tick ROADMAP.md (☐ → ☑) for
-  the items the run closed, with what was found in brackets, and update ARCHITECTURE.md where a
+  the items the run closed, with what was found in brackets, and update the architecture docs where a
   design changed.
 - Push, `gh pr create --base main`, `gh pr merge --squash --delete-branch`, `git switch main &&
   git pull` (the owner's policy: merge right away).

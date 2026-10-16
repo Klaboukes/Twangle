@@ -6,7 +6,7 @@ argument-hint: "<language, e.g. Swedish or sv>"
 
 # Add a language
 
-One language (or a few closely related ones) per branch and PR. CLAUDE.md's hard rules, environment notes and Git workflow apply; ARCHITECTURE.md §6 *Languages* is the design this follows. Read it before starting, because it holds the current language list, the register each language uses and the rules below in more detail.
+One language (or a few closely related ones) per branch and PR. CLAUDE.md's hard rules, environment notes and Git workflow apply; [docs/architecture/languages.md](../../../docs/architecture/languages.md) is the design this follows. Read it before starting, because it holds the current language list, the register each language uses and the rules below in more detail.
 
 The owner doesn't write code. Tell them in plain language what changed and what to try.
 
@@ -19,7 +19,7 @@ Android resource qualifier form, which is also what `twangle.languages` uses: `s
 ## 2. Translate every text
 - The modules with texts are those with a `res/values/strings.xml`. Find them with a glob (today: `app`, `wear`, `feature/tuner`, `feature/settings`, `feature/metronome`, `core/designsystem`). Create `res/values-<code>/strings.xml` in each, with every translatable string and plural.
 - Translate from the English source and use the existing languages as reference. Keep texts as short as the English. Use the words local guitarists and tuner apps use. Tips are short imperatives, "Pick a string" style (never "Tap a string").
-- Pick one register (informal or formal you) as modern apps in that language do, keep it consistent, and add it to the register line in ARCHITECTURE.md §6.
+- Pick one register (informal or formal you) as modern apps in that language do, keep it consistent, and add it to the register line in docs/architecture/languages.md.
 - Leave placeholders exactly as in English. Give plurals every quantity Android defines for the language (e.g. `one/few/many/other` for Slavic languages, only `other` for Chinese, Japanese, Korean, Vietnamese). Skip `translatable="false"` items.
 - Android escaping: `\'` for apostrophes, `\@` or `\?` at the start. Follow the local typography rules (French: a no-break space U+00A0 before `:` `?` `!` and inside « »).
 - If Android formats numbers in non-Latin digits for this language (Arabic ٠–٩, Persian ۰–۹), also write the literal numbers inside texts that way.
@@ -32,9 +32,9 @@ In the same change, append the qualifier to `twangle.languages` in the root `gra
 - **Spoken note names:** when TalkBack should say note names differently, add `core/designsystem/src/main/res/values-<code>/speech.xml` with `spoken_letter_names` (`words` by default, or `dutch`, `german`) and/or `spoken_solfege` in local spelling (e.g. `Dó Ré Mi Fá Sol Lá Si`), marked `translatable="false"` with `tools:ignore="ExtraTranslation"`, like the existing ones.
 
 ## 5. Script checks
-- **Fonts:** check that each bundled face in `core/designsystem/src/main/res/font` contains the language's letters (a short fontTools script that reads each font's cmap). If a face lacks the whole script, whole words fall back to the phone's font, which is fine. A face that has some letters of a word but not others mixes fonts inside one word; handle it the way ARCHITECTURE.md §6 describes. Note the gaps in the PR.
+- **Fonts:** check that each bundled face in `core/designsystem/src/main/res/font` contains the language's letters (a short fontTools script that reads each font's cmap). If a face lacks the whole script, whole words fall back to the phone's font, which is fine. A face that has some letters of a word but not others mixes fonts inside one word; handle it the way docs/architecture/ui-meter-and-styles.md describes (*Visual styles*, **Lettering**: `facesFor`). Note the gaps in the PR.
 - **Upper and lower case:** every `uppercase()`/`lowercase()` on shown text must use the app's locale (Turkish dotted İ). Grep for new ones.
-- **Right to left** (Arabic, Persian, Hebrew, Urdu): both manifests already set `supportsRtl`. Keep to the rule in §6. The layout mirrors, but the gauges stay low-left, high-right: meter, wave, strum check, string row, tempo dial with −/+, beat lights, A4 slider, the tuning editor's note group. Rows of note names get an LTR wrap. Look at every screen in step 6.
+- **Right to left** (Arabic, Persian, Hebrew, Urdu): both manifests already set `supportsRtl`. Keep to the rule in docs/architecture/languages.md (*Right to left*). The layout mirrors, but the gauges stay low-left, high-right: meter, wave, strum check, string row, tempo dial with −/+, beat lights, A4 slider, the tuning editor's note group. Rows of note names get an LTR wrap. Look at every screen in step 6.
 - **Digits the app draws** (meter scales, tempo dial, beat numbers, time signatures, the watch's cents) go through `localDigits` / `MeterRoles.digits`, so a language with its own digits needs no code. Check it on the screenshots.
 
 ## 6. Verify
@@ -43,7 +43,7 @@ In the same change, append the qualifier to `twangle.languages` in the root `gra
 3. UI tests, following the ui-test skill: the fit checks (long words at 2× text in every style) in the new language. If the owner asked to batch UI runs (e.g. overnight), leave them out and write "UI tests deferred to a batch run (owner's request)" in the PR.
 
 ## 7. Document and land
-- ARCHITECTURE.md §6: add the language to the list and its register to the register line, plus any quirk (an old qualifier, a font gap, a note-name habit).
+- docs/architecture/languages.md: add the language to the list and its register to the register line, plus any quirk (an old qualifier, a font gap, a note-name habit).
 - Push, then `gh pr create --base main --title "Add <Language>"`. The body has **What** (plain language first), **Verification** (commands, results, phone check yes/no) and the attribution footer. Then `gh pr merge --squash --delete-branch` and `git switch main && git pull`.
 
 ## 8. Report

@@ -45,7 +45,7 @@ import kotlin.math.sqrt
  *
  * The difference function used to be the direct O(W·τmax) sum. On the Galaxy S26 that took about
  * 7 ms of CPU per frame (a third of a core while a note sounds), so it now goes through the FFT,
- * O(N log N); see ARCHITECTURE §4. `FftDifferenceTest` checks it against the direct sum.
+ * O(N log N); see docs/architecture/performance.md. `FftDifferenceTest` checks it against the direct sum.
  */
 class YinPitchDetector(
     override val sampleRate: Int = DEFAULT_SAMPLE_RATE,

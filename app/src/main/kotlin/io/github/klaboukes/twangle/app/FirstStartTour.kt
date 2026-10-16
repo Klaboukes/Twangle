@@ -1,7 +1,7 @@
 package io.github.klaboukes.twangle.app
 
 /*
- * When the first-start tour ("Show me around", §6 Tour in ARCHITECTURE.md) shows. MainActivity
+ * When the first-start tour ("Show me around", docs/architecture/ui-tuner.md, Tour) shows. MainActivity
  * keeps the state; these rules are pure so JVM tests check them.
  */
 

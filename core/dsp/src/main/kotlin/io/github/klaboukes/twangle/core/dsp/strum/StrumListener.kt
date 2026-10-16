@@ -13,8 +13,8 @@ import kotlin.math.sqrt
  * by its sudden rise in level, waits until the strings have started ([ATTACK_SECONDS]) and one
  * whole frame of ringing has arrived, and then offers a frame every [REREAD_SECONDS] while the
  * strings ring. A strum whose first frame is quieter than [MIN_FIRST_FRAME_DBFS] (a knock, a click,
- * strings muted at once) is not read at all. A new strum starts over. See ARCHITECTURE.md, *Strum
- * check (polyphonic)*.
+ * strings muted at once) is not read at all. A new strum starts over. See
+ * docs/architecture/strum-and-metronome.md, *Strum check (polyphonic)*.
  *
  * The first frame after a strum is ready ≈ [ATTACK_SECONDS] + [frameLength] after it (0.39 s at the
  * standard range, 0.73 s at [PitchRange.LOW]), up to two hops (≈ 43 ms) more.

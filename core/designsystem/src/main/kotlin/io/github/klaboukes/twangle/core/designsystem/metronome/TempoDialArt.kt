@@ -338,7 +338,7 @@ private class DialTrack(private val dial: DialShape, roles: MeterRoles) {
 }
 
 /**
- * The dial's scale with the meter's rules (ARCHITECTURE.md, Meter art language): a tick every
+ * The dial's scale with the meter's rules (docs/architecture/ui-meter-and-styles.md, Meter art language): a tick every
  * 10 BPM starting [TICK_OUT_UNITS] outside the arc and pointing out, major ones (30 and every 50)
  * 13u × 2.1u in ink, minor ones 7u × 1.3u at 50 %, in the style's caps, drawn by hand in Ancient;
  * the major ticks' tempos in the style's number face at 12.5u, ink at 80 %, set

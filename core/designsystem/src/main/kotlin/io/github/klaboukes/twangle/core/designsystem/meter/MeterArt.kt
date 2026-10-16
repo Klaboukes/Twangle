@@ -56,8 +56,8 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /*
- * The shared art of the meter looks, "as if by the same artist" (ARCHITECTURE.md, Meter art
- * language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
+ * The shared art of the meter looks, "as if by the same artist" (docs/architecture/ui-meter-and-styles.md,
+ * Meter art language; the approved mock-ups docs/design/meter-looks-preview.html and, for the open face,
  * docs/design/theme-styles-preview.html are the reference, and the names here match their helpers).
  * The meter has no plate or frame: it sits straight on the screen's background, with a calm field
  * (FieldArt) under its scale. Every look is built from these pieces: the same recessed glass over a

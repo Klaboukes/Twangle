@@ -48,7 +48,7 @@ data class PitchReading(
 /**
  * Microphone → [FrameAssembler] → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
- * clarity ([Clarity]). See ARCHITECTURE §3.
+ * clarity ([Clarity]). See docs/architecture/signal-pipeline.md.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so 44.1 kHz,
  * 16 kHz or 8 kHz input gives the same ≈ 85 ms window and ≈ 21 ms hop as 48 kHz. A rate outside

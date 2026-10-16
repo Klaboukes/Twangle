@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 /**
  * Finds the pitch of every string of one strum at once, when the strings to expect are known (the
  * selected tuning's open strings, at the current A4). Method, measured accuracy and limits are in
- * ARCHITECTURE.md, *Strum check (polyphonic)*; [StrumListener] times the frames after a strum and
+ * docs/architecture/strum-and-metronome.md; [StrumListener] times the frames after a strum and
  * [StrumVerdict] turns the readings into flat / in tune / sharp / not heard.
  *
  * One long frame ([frameLength] samples, ≈ 341 ms at 48 kHz, see [frameLengthFor]) goes through a

@@ -20,7 +20,8 @@ import kotlin.math.roundToInt
 /**
  * The watch's chromatic tuner chain, the phone's pitch engine from `:core:dsp` without the phone's
  * extras (reception, tips, strum check): microphone → `FrameAssembler` → [SignalGate] → `SustainCheck` → YIN
- * (`AnalysisSettings.newPitchDetector`) → [PitchSmoother] → note and cents (ARCHITECTURE §3), and
+ * (`AnalysisSettings.newPitchDetector`) → [PitchSmoother] → note and cents
+ * (docs/architecture/signal-pipeline.md), and
  * the phone's [InTuneDetector] (within 5 cents for 300 ms, released past 7) for the in-tune ring.
  *
  * Frame sizes follow the recorder's sample rate ([AnalysisSettings.forSampleRate]), so a watch

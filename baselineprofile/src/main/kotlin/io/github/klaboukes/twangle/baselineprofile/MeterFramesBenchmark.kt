@@ -25,8 +25,8 @@ import java.util.regex.Pattern
  * For each look it picks the look in settings (below the note: numbers, so only the meter
  * moves), switches to chromatic and takes [RUNS] windows of [WINDOW_SECONDS]. Per window:
  * frames, janky frames and frame-time percentiles from `dumpsys gfxinfo`, and CPU time of the main
- * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in ARCHITECTURE §4.
- * No tracing runs meanwhile, so the numbers compare with the Phase 5 table.
+ * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
+ * No tracing runs meanwhile, so the numbers compare with the S26 table there.
  *
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.

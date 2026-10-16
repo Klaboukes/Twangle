@@ -11,7 +11,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** Everything the tuner screen shows, as one immutable value. See ARCHITECTURE §6. */
+/** Everything the tuner screen shows, as one immutable value. See docs/architecture/ui.md. */
 sealed interface TunerUiState {
 
     /** The microphone permission isn't granted, so the mic stays closed. */

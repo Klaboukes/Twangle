@@ -30,7 +30,7 @@ class StrumResult(val capacity: Int) {
     /**
      * True when every partial of the string sat on top of another string's partial, so the reading
      * comes from merged peaks: it is pulled towards that other string's harmonic, and the string
-     * could also be missing (see ARCHITECTURE.md, *Strum check*).
+     * could also be missing (see docs/architecture/strum-and-metronome.md).
      */
     val shadowed = BooleanArray(capacity)
 }

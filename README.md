@@ -68,7 +68,7 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:core:designsystem` | The six visual styles: colours, fonts, backgrounds, style cards, meter and wave looks |
 | `:core:dsp` | Pitch detection, strum check, note math, tunings, plucked-string tones, metronome timing (pure Kotlin, no Android) |
 
-The full design is in [ARCHITECTURE.md](ARCHITECTURE.md).
+The full design is in [ARCHITECTURE.md](ARCHITECTURE.md) and the topic files it lists.
 
 ## Building
 
@@ -80,7 +80,7 @@ You need the Android SDK (API 37) and JDK 17 or newer, for example the one bundl
 ./gradlew test            # run the unit tests
 ```
 
-`./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [ARCHITECTURE.md](ARCHITECTURE.md), *Release build*); elsewhere it comes out unsigned.
+`./gradlew assembleRelease` builds the shrunk release APKs (phone and watch), `bundleRelease` the bundles for the Play Store. They are signed only on a machine that has the upload key (see [docs/architecture/performance.md](docs/architecture/performance.md), *Release build*); elsewhere it comes out unsigned.
 
 Every push to `main` is built, tested and linted by GitHub Actions. It doesn't keep the APKs; build them locally with `./gradlew assembleDebug`.
 

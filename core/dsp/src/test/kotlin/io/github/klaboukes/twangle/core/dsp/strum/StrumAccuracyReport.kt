@@ -12,8 +12,9 @@ import kotlin.math.max
 import kotlin.math.sqrt
 
 /**
- * Accuracy tables of [StrumDetector] on synthetic strums, the numbers behind ARCHITECTURE.md,
- * *Strum check (polyphonic)*. Prints only, asserts nothing (that is [StrumDetectorTest]'s job).
+ * Accuracy tables of [StrumDetector] on synthetic strums, the numbers behind
+ * docs/architecture/strum-and-metronome.md, *Strum check (polyphonic)*. Prints only, asserts nothing
+ * (that is [StrumDetectorTest]'s job).
  * Not part of `test`; run with `./gradlew :core:dsp:benchmark`.
  *
  * Error = measured − true cents. Per string: `s` = shadowed, `-` = not heard.

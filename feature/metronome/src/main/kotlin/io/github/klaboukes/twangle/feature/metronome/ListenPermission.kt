@@ -36,7 +36,7 @@ class ListenPermission internal constructor(
 }
 
 /**
- * The microphone for Listen, by the tuner's rules ([MicPermissionRules], ARCHITECTURE.md §5): a tap
+ * The microphone for Listen, by the tuner's rules ([MicPermissionRules], docs/architecture/lifecycle.md): a tap
  * on Listen with the microphone allowed calls [onGranted] at once; otherwise it shows Android's
  * dialog, and [onGranted] follows if the player allows it. A refusal calls [onRefused] (saved, so a
  * later refusal Android answers without a dialog is told apart, [refusedBefore]) and [onMicOff],

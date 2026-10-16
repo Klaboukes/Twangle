@@ -7,7 +7,7 @@ Guidance for Claude Code (and humans) working in this repository.
 
 The app was called InTune until October 2026. The app ID is `io.github.klaboukes.twangle`, and code packages live under it. Classes named `InTune*` (`InTuneDetector`, `InTuneColor`, `InTuneHaptic`, `InTuneTickRule`) are about being *in tune*, not the old name. Keep them.
 
-- Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md). Before a structural change, read its Contents and the sections the change touches.
+- Design and rationale: [ARCHITECTURE.md](ARCHITECTURE.md), a short overview whose Contents lists the topic files in `docs/architecture/` (signal pipeline, UI, settings, performance, testing and more), each small enough to read whole. Before a structural change, read that Contents and the topic files the change touches. Superseded designs go to `docs/architecture/history.md`, not into the live text.
 - Plan and progress: [ROADMAP.md](ROADMAP.md). Tick items (☐ → ☑) as you finish them. Finished phases move to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md); the owner's hand-run live tests are listed under *Owner checks*. Ideas not planned yet go in [IDEAS.md](IDEAS.md), and become a ROADMAP phase once the owner picks one.
 
 ## Tech stack
@@ -56,7 +56,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
 - Wear OS emulator: AVD `Wear_OS_Large_Round` (Wear OS 6, API 36, `system-images;android-36;android-wear-signed;x86_64`). Start it with `<sdk>/emulator/emulator.exe -avd Wear_OS_Large_Round`, then `./gradlew :wear:installDebug`. `<sdk>/cmdline-tools/latest` has `sdkmanager` and `avdmanager`; from Git Bash, write package paths with `/` instead of `;`.
-- **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in ARCHITECTURE.md and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
+- **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in the architecture docs and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
   - MIUI needs *Developer options → Install via USB* for `installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
   - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
   - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing the phone's settings and own tunings is fine.
@@ -82,8 +82,8 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - UI state: one immutable `TunerUiState` sealed interface exposed as `StateFlow` from the ViewModel. Composables are stateless and take state plus lambdas.
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
-- Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: ARCHITECTURE.md §6 *Languages*.
-- **Until version 1.1 is released, every after-v1.0 tool (ROADMAP Phases 29–33) stays hidden in release builds** behind its own switch (Phase 28, ARCHITECTURE.md *Release build*). Debug builds and UI tests show it. v1.0 work and fixes land on `main` as usual.
+- Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
+- **Until version 1.1 is released, every after-v1.0 tool (ROADMAP Phases 29–33) stays hidden in release builds** behind its own switch (Phase 28, [docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). Debug builds and UI tests show it. v1.0 work and fixes land on `main` as usual.
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow
@@ -93,7 +93,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
-- When a design decision changes, update ARCHITECTURE.md in the same change.
+- When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
 
 ## Git & GitHub

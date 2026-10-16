@@ -24,7 +24,7 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
- * The metronome's long-run steadiness on the phone (ARCHITECTURE.md §3, *Metronome*): plays the real
+ * The metronome's long-run steadiness on the phone (docs/architecture/strum-and-metronome.md): plays the real
  * [AndroidMetronomePlayer] at 120 BPM for ten minutes, quietly, and measures
  * - the beats on the sample clock: every click of ten minutes rendered at the phone's rate in the
  *   player's chunks lands within half a sample of its ideal moment (no drift, by construction);

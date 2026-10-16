@@ -13,7 +13,7 @@ import android.media.AudioManager
  * Bluetooth input is present, the recorder pins the phone's built-in mic as its preferred device.
  * Wired headsets and USB audio interfaces keep Android's normal routing, so a guitarist can still
  * plug in a better mic. If there is no built-in mic, routing is left to Android; the DSP handles a
- * narrowband, low-rate stream without crashing (ARCHITECTURE §3, Audio source selection).
+ * narrowband, low-rate stream without crashing (docs/architecture/notes-and-audio.md, Audio source selection).
  */
 object InputDeviceSelector {
 
