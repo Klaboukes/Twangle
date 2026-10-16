@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Style Backgrounds</title>
+<!--
+TWANGLE STYLE BACKGROUNDS (October 2026): abstract options per style beside the old background, in four rounds.
+Round 1 (drawn objects: bison, lyre, drapes, daisies, Sputnik) was turned down; round 2 went abstract; rounds 3-4
+took Futuristic's horizon line out and let the grid fade away instead.
+Picked by the owner (built in StyleBackdrop.kt): Ancient A rock layers, Classic unchanged ("now"), Retro A supergraphic,
+Contemporary B silk lines, Futuristic G glowing grid with a long fade and no horizon line, Space Age A halftone.
+On the phone Retro keeps only its top right turn: the lower one ran through the string buttons and style cards.
+Rules kept: one calm picture per style, never animated, low in contrast, nothing framing the screen's edges, the
+middle (note, meter, pill) kept quiet. Colours are the palettes of StylePalettes.kt. The page draws with canvas
+blur filters; the app stands in for them with wide faint strokes.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Caesar+Dressing&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+  :root { --page: #55565b; --ink: #f4f4f6; --muted: #d2d3d8; --line: rgba(255,255,255,.18); --chip: rgba(255,255,255,.10); --accent: #ffd27a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 Roboto, system-ui, sans-serif; }
+  header, .controls, main, footer { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 28px; }
+  h1 { font-weight: 500; font-size: 26px; margin: 0 0 6px; }
+  header p { margin: 0 0 4px; color: var(--muted); max-width: 820px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding-top: 14px; padding-bottom: 14px;
+    position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--line); }
+  .picks { flex: 1 1 420px; color: var(--muted); font-size: 13px; }
+  .picks b { color: var(--accent); font-weight: 500; }
+  button { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+  button:hover { background: rgba(255,255,255,.18); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; }
+  .seg button[aria-pressed="true"] { background: rgba(255,255,255,.22); }
+  section.style { padding: 26px 0 14px; border-bottom: 1px solid var(--line); }
+  section.style h2 { font-weight: 500; font-size: 20px; margin: 0; }
+  section.style .tag { color: var(--muted); margin: 0 0 14px; }
+  .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  figure { margin: 0; border-radius: 26px; padding: 8px; border: 2px solid transparent; }
+  figure.picked { border-color: var(--accent); background: rgba(255,210,122,.08); }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 4.2em; }
+  figcaption b { color: var(--ink); font-weight: 500; display: block; }
+  .pick { margin-top: 6px; width: 100%; }
+  figure.picked .pick { background: var(--accent); color: #2a2208; border-color: var(--accent); }
+  .phone { width: 100%; aspect-ratio: 393 / 873; border-radius: 22px; overflow: hidden; cursor: zoom-in;
+    box-shadow: 0 0 0 6px #1b1b1d, 0 10px 30px rgba(0,0,0,.35); background: #000; }
+  .phone canvas { width: 100%; height: 100%; display: block; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,22,.94); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; }
+  .overlay.open { display: flex; }
+  .overlay .phone { height: min(82vh, 860px); width: auto; cursor: pointer; }
+  .overlay .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .overlay .which { min-width: 230px; text-align: center; }
+  footer { padding-top: 22px; padding-bottom: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 760px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Style backgrounds</h1>
+  <p>Each style: the background before October 2026, then the abstract options. Picked: Ancient A, Classic before, Retro A, Contemporary B, Futuristic G, Space Age A.</p>
+  <p>Tap a phone to see it big. Use <b>Pick</b> under the one you like (today's is fine too). Switch light and dark mode at the top. Your picks are listed at the top. Just tell me them, e.g. "Ancient B, Classic now".</p>
+</header>
+<div class="controls">
+  <span class="seg"><button type="button" id="modeLight" aria-pressed="true">Light</button><button type="button" id="modeDark" aria-pressed="false">Dark</button></span>
+  <span class="picks" id="picks"></span>
+</div>
+<main id="styles"></main>
+<footer>Static sketches: the real backgrounds are drawn by the app and never move. A computer screen is not the phone's screen, so the final check happens on the phone.</footer>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Big view">
+  <div class="phone" id="bigPhone"><canvas></canvas></div>
+  <div class="bar">
+    <button type="button" id="prev" aria-label="Previous">‹</button>
+    <span class="which" id="which"></span>
+    <button type="button" id="next" aria-label="Next">›</button>
+    <button type="button" id="bigPick">Pick</button>
+    <button type="button" id="bigMode">Dark</button>
+    <button type="button" id="close">Close</button>
+  </div>
+</div>
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],"styles":{"ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone","font":"Caesar Dressing","fb":"serif","w":400,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"shape":{"pill":18,"card":14,"strW":48,"strH":46,"strR":20},
+"light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+"dark":{"bg":"#261B16","surface":"#2F2622","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"},
+"options":[{"key":"now","name":"Before","desc":"Stone wall, a hand stencil and tally marks."},{"key":"A","name":"A · Rock layers","desc":"Wavy bands of earth colours at the top and bottom, like layers in a cliff."},{"key":"B","name":"B · Earth pigment","desc":"Soft, rough-edged washes of ochre and charcoal soaked into the stone."},{"key":"C","name":"C · Mosaic","desc":"Loose stone tiles in earth tones at the edges, thinning out towards the middle."}]},
+"classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"shape":{"pill":4,"card":4,"strW":44,"strH":58,"strR":5},
+"light":{"bg":"#ECE6DA","surface":"#F7F2E8","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+"dark":{"bg":"#261A1F","surface":"#2F2529","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"},
+"options":[{"key":"now","name":"Before","desc":"Faint velvet folds, a spotlight and the gold lines of a concert-hall shell."},{"key":"A","name":"A · Satin","desc":"Soft, wide folds of light and shade sweeping down, like satin."},{"key":"B","name":"B · Gold lines","desc":"Fine gold lines sweeping round the top corner and the right side."},{"key":"C","name":"C · Marble","desc":"Ivory (or deep burgundy) marble with thin gold veins."}]},
+"retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"shape":{"pill":22,"card":18,"strW":50,"strH":44,"strR":14},
+"light":{"bg":"#ECE7CD","surface":"#F7F3DD","ink":"#21220A","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+"dark":{"bg":"#1D1E14","surface":"#272920","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"},
+"options":[{"key":"now","name":"Before","desc":"Rainbow bands curving in from the left side."},{"key":"A","name":"A · Supergraphic","desc":"Three thick stripes with a rounded 70s corner, top right and lower left."},{"key":"B","name":"B · Bold circles","desc":"Big overlapping see-through circles in avocado, mustard and orange."},{"key":"C","name":"C · Lava lamp","desc":"Soft, glowing lava-lamp blobs rising at both sides."}]},
+"contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"shape":{"pill":18,"card":12,"strW":46,"strH":46,"strR":23},
+"light":{"bg":"#E3E7F0","surface":"#EFF2FA","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#15763B","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+"dark":{"bg":"#171D2E","surface":"#232736","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"},
+"options":[{"key":"now","name":"Before","desc":"Two soft colour washes, nothing else."},{"key":"A","name":"A · Aurora","desc":"Wide, very soft bands of blue light, like the phone's own wallpapers."},{"key":"B","name":"B · Silk lines","desc":"Fine flowing lines at the top and lower down, like silk."},{"key":"C","name":"C · Glass","desc":"A few frosted-glass circles with a light edge, at the corners."}]},
+"futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"shape":{"pill":10,"card":8,"strW":50,"strH":40,"strR":10},
+"light":{"bg":"#DDE9EE","surface":"#EAF4F8","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#00717F","onAccent":"#FFFFFF","inTune":"#007642","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+"dark":{"bg":"#0D1920","surface":"#1A2329","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"},
+"options":[{"key":"now","name":"Before","desc":"A neon perspective grid low on the screen, a magenta horizon, scan lines."},{"key":"A","name":"A · Glowing grid","desc":"The glowing grid with a neon horizon line (round 2; the owner asked for no line)."},{"key":"B","name":"B · Tunnel","desc":"The grid as a floor, ceiling and side walls: you look down a neon tunnel."},{"key":"G","name":"G · Glowing grid, long fade","desc":"The picked version: the glowing grid with no horizon line, fading away slowly upwards, rising sparks."}]},
+"spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver","font":"Michroma","fb":"sans-serif","w":400,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"shape":{"pill":999,"card":20,"strW":44,"strH":52,"strR":22},
+"light":{"bg":"#E9E5EF","surface":"#F4F1F9","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+"dark":{"bg":"#1D1939","surface":"#29243E","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"},
+"options":[{"key":"now","name":"Before","desc":"Stars and a ringed planet by night; atomic orbits and starbursts by day."},{"key":"A","name":"A · Halftone","desc":"1960s print dots, big in two corners, shrinking to nothing."},{"key":"B","name":"B · Nebula","desc":"Soft violet and orange clouds of light with star dust; no planets."},{"key":"C","name":"C · Eclipse","desc":"An eclipse in the top corner with a glowing rim and faint rings spreading out."}]}}}
+</script>
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  for (const id in STY) STY[id].id = id;
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+
+  // ---- Small helpers -------------------------------------------------------------------------------
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0], TAU = Math.PI * 2;
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const stack = (fnt, fb) => `"${fnt}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function sparkle(ctx, x, y, r, col, u) { seg(ctx, x - r, y, x + r, y, col, 0.9 * u); seg(ctx, x, y - r, x, y + r, col, 0.9 * u); dot(ctx, x, y, 1.4 * u, col); }
+  function starburst(ctx, x, y, r, col, u) { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, l = i % 2 ? r * 0.55 : r; seg(ctx, x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, col, 1.4 * u); } dot(ctx, x, y, r * 0.16, col); }
+  function hand(ctx, cx, cy, size, deg, col) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(deg * Math.PI / 180); ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(0, size * 0.25, size * 0.32, size * 0.31, 0, 0, TAU); ctx.fill();
+    const fw = size * 0.13;
+    [[-0.235, 0.40], [-0.08, 0.50], [0.075, 0.48], [0.225, 0.38]].forEach(([fx, fl]) => { ctx.beginPath(); rrAdd(ctx, fx * size - fw / 2, -fl * size, fw, fl * size + size * 0.12, fw / 2); ctx.fill(); });
+    ctx.translate(-size * 0.26, size * 0.26); ctx.rotate(-52 * Math.PI / 180); ctx.beginPath(); rrAdd(ctx, -fw / 2, -size * 0.44, fw, size * 0.44, fw / 2); ctx.fill();
+    ctx.restore();
+  }
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  /** Lays the background colour back over the middle (note and meter), so a pattern fades out there. */
+  function calm(B, a = 0.9) {
+    const { ctx, W, H, u, p } = B, cy = 400 * u, r = 300 * u;
+    const g = ctx.createRadialGradient(W / 2, cy, 0, W / 2, cy, r);
+    g.addColorStop(0, rgba(p.bg, a)); g.addColorStop(0.45, rgba(p.bg, a * 0.85)); g.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function stone(B, grit = 520) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    for (let i = 0; i < grit; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  function stars(B, n, aMin, aMax) { const { ctx, W, H, u, p, r } = B; for (let i = 0; i < n; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, aMin + r() * (aMax - aMin))); } }
+  function scanlines(B) { const { ctx, W, H, u } = B; for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, 0.16), u, 'butt'); }
+
+  // ---- The backgrounds: today's and the three new options per style ------------------------------
+  const MOTIFS = {
+    // Ancient -----------------------------------------------------------------------------------------
+    ancient_now(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B);
+      hand(ctx, W * 0.84, H * 0.66, 54 * u, 22, rgba(p.accent, dark ? 0.16 : 0.13));
+      const tc = rgba(p.ink, dark ? 0.12 : 0.11);
+      for (const [fx, fy] of [[0.18, 0.07], [0.26, 0.92], [0.62, 0.95]]) { let x = W * fx; const y = H * fy; for (let gI = 0; gI < 3; gI++) { for (let k = 0; k < 4; k++) { const j = r() * 1.5 * u; seg(ctx, x + k * 4 * u + j, y - 7 * u, x + k * 4 * u - j, y + 7 * u, tc, 1.4 * u); } seg(ctx, x - 3 * u, y + 5 * u, x + 15 * u, y - 5 * u, tc, 1.4 * u); x += 26 * u; } }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    // Classic -----------------------------------------------------------------------------------------
+    classic_now(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      const folds = ctx.createLinearGradient(0, 0, W, 0), n = 9;
+      for (let k = 0; k <= n * 2; k++) folds.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : (dark ? 0.22 : 0.05)));
+      ctx.fillStyle = folds; ctx.fillRect(0, 0, W, H);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      const cy = H * 0.36;
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, dark ? 0.16 : 0.22); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.10);
+    },
+    // Retro -------------------------------------------------------------------------------------------
+    retro_now(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      const cx = -W * 0.08, cy = H * 0.62, band = 15 * u, a = dark ? 0.2 : 0.26;
+      [p.accent, p.second, p.third, p.accent, p.second].forEach((col, k) => {
+        ctx.beginPath(); ctx.arc(cx, cy, W * 0.22 + k * band, -Math.PI / 2, Math.PI / 2); ctx.strokeStyle = rgba(col, a * (1 - k * 0.12)); ctx.lineWidth = band - 1.5 * u; ctx.lineCap = 'butt'; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    // Contemporary ------------------------------------------------------------------------------------
+    contemporary_now(B) { const { W, H, p } = B; radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.10); radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, p.third, 0.07); },
+    // Futuristic --------------------------------------------------------------------------------------
+    futuristic_now(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const gc = rgba(p.accent, dark ? 0.14 : 0.10), hz = H * 0.74, vy = hz - H * 0.1;
+      radial(B, W * 0.5, hz, W * 0.6, p.second, dark ? 0.14 : 0.07);
+      for (let i = -14; i <= 14; i++) { const bx = W * 0.5 + i * W * 0.14, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, gc, u, 'butt'); }
+      for (let k = 0; k <= 10; k++) { const fk = k / 10, y = hz + (H - hz) * fk * fk; seg(ctx, 0, y, W, y, gc, u, 'butt'); }
+      const g = ctx.createLinearGradient(0, hz - u, 0, hz + H * 0.06); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz - u, W, H * 0.06 + u);
+      seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      if (dark) scanlines(B);
+    },
+    // Space Age ---------------------------------------------------------------------------------------
+    spaceage_now(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) {
+        vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.16)]]);
+        radial(B, W * 0.85, H * 0.18, W * 0.7, p.accent, 0.10); radial(B, W * 0.1, H * 0.55, W * 0.6, p.second, 0.06);
+        for (const [rx, ry, rot] of [[0.7, 0.16, -0.25], [0.55, 0.12, 0.35]]) { ctx.save(); ctx.translate(W * 0.5, H * 0.3); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, W * rx, W * ry, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.10); ctx.lineWidth = 0.8 * u; ctx.stroke(); ctx.restore(); }
+        stars(B, 200, 0.25, 0.85);
+        for (let i = 0; i < 6; i++) sparkle(ctx, sideX(r(), W), (0.4 + r() * 0.5) * H, (5 + r() * 5) * u, rgba(p.ink, 0.75), u);
+        const cx = 0, cy = H * 1.05, rad = W * 0.3;
+        const g = ctx.createRadialGradient(cx + rad * 0.3, cy - rad * 0.4, 0, cx + rad * 0.3, cy - rad * 0.4, rad * 1.3); g.addColorStop(0, rgba(p.second, 0.55)); g.addColorStop(1, rgba(mix(p.second, p.bg, 0.6), 0.45));
+        dot(ctx, cx, cy, rad, g);
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(-14 * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, rad * 1.55, rad * 0.32, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.45); ctx.lineWidth = 2 * u; ctx.stroke(); ctx.restore();
+      } else {
+        const nx = W * 0.5, ny = H * 0.25;
+        for (const a of [0, 60, 120]) { ctx.save(); ctx.translate(nx, ny); ctx.rotate(a * Math.PI / 180); ctx.beginPath(); ctx.ellipse(0, 0, W * 0.55, W * 0.18, 0, 0, TAU); ctx.strokeStyle = rgba(p.third, 0.22); ctx.lineWidth = 1.2 * u; ctx.stroke(); ctx.restore(); }
+        radial(B, W * 0.5, H * 0.9, W * 0.8, p.accent, 0.08);
+        for (let i = 0; i < 8; i++) starburst(ctx, sideX(r(), W), (0.35 + r() * 0.55) * H, (7 + r() * 8) * u, rgba(i % 2 ? p.second : p.accent, 0.3), u);
+        for (let i = 0; i < 36; i++) dot(ctx, r() * W, r() * H, 2 * u, rgba(p.accent, 0.10));
+      }
+    },
+  };
+
+  // ---- Round 2 helpers ----------------------------------------------------------------------------------
+  function blur(B, px) { B.ctx.filter = px ? `blur(${(px * B.u).toFixed(2)}px)` : 'none'; }
+  function blobPath(ctx, x, y, R, f) { ctx.beginPath(); for (let i = 0; i <= 180; i++) { const t = i / 180 * TAU, rr = R * f(t); const px = x + Math.cos(t) * rr, py = y + Math.sin(t) * rr; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); }
+  function noisyBlob(B, x, y, R, ph, rough) { blobPath(B.ctx, x, y, R, (t) => 1 + rough * (0.5 * Math.sin(3 * t + ph) + 0.3 * Math.sin(5 * t + ph * 1.7) + 0.2 * Math.sin(9 * t + ph * 2.3))); }
+  function grit(B, n) { const { ctx, W, H, u, p, r } = B; for (let i = 0; i < n; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08)); }
+  /** Futuristic's floor: the perspective grid below [hz], drawn twice (a blurred glow, then sharp lines). */
+  function glowGrid(B, hz, glowA, lineA) {
+    const { ctx, W, H, u, p } = B, vy = hz - H * 0.12;
+    const draw = (col, w) => {
+      for (let i = -16; i <= 16; i++) { const bx = W * 0.5 + i * W * 0.12, t = (hz - vy) / (H - vy); seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, col, w, 'butt'); }
+      for (let k = 0; k <= 12; k++) { const fk = k / 12, y = hz + (H - hz) * fk * fk; seg(ctx, 0, y, W, y, col, w, 'butt'); }
+    };
+    blur(B, 3); draw(rgba(p.accent, glowA), 3 * u); blur(B, 0);
+    draw(rgba(p.accent, lineA), 0.9 * u);
+    const g = ctx.createLinearGradient(0, hz, 0, hz + H * 0.05); g.addColorStop(0, rgba(p.bg, 0.9)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(0, hz, W, H * 0.05);
+  }
+  /** A glowing horizon line, cyan at the sides and magenta in the middle. */
+  function horizon(B, hz) {
+    const { ctx, W, u, p, dark } = B;
+    const hg = ctx.createLinearGradient(0, 0, W, 0);
+    hg.addColorStop(0, rgba(p.accent, 0)); hg.addColorStop(0.25, rgba(p.accent, dark ? 0.8 : 0.5)); hg.addColorStop(0.5, rgba(p.second, dark ? 0.9 : 0.55));
+    hg.addColorStop(0.75, rgba(p.accent, dark ? 0.8 : 0.5)); hg.addColorStop(1, rgba(p.accent, 0));
+    blur(B, 4); seg(ctx, 0, hz, W, hz, hg, 4 * u, 'butt'); blur(B, 0); seg(ctx, 0, hz, W, hz, hg, 1 * u, 'butt');
+  }
+
+  const ROUND2 = {
+    // Ancient -----------------------------------------------------------------------------------------
+    ancient_A(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B, 300);
+      const cols = [p.accent, p.third, p.second, p.third];
+      const layer = (y0, dir, n, base) => {
+        const ph = r() * 6, tilt = (r() - 0.5) * 0.14;
+        const yAt = (x, k) => y0 + dir * k * (9 + k * 1.2) * u + 6 * u * Math.sin(x / W * 5 + ph + k * 0.4) + 3 * u * Math.sin(x / W * 13 + ph * 2 + k) + tilt * (x - W / 2);
+        for (let k = 0; k < n; k++) {
+          ctx.beginPath();
+          for (let x = -4 * u; x <= W + 4 * u; x += 4 * u) { const y = yAt(x, k); x <= -4 * u ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+          for (let x = W + 4 * u; x >= -4 * u; x -= 4 * u) ctx.lineTo(x, yAt(x, k + 1));
+          ctx.closePath(); ctx.fillStyle = rgba(cols[k % 4], base * (1 - k / n)); ctx.fill();
+          ctx.beginPath(); for (let x = -4 * u; x <= W + 4 * u; x += 4 * u) { const y = yAt(x, k + 1); x <= -4 * u ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+          ctx.strokeStyle = rgba(p.ink, 0.07 * (1 - k / n)); ctx.lineWidth = 0.8 * u; ctx.stroke();
+        }
+      };
+      layer(-8 * u, 1, 7, dark ? 0.24 : 0.22);
+      layer(H * 0.80, -1, 6, dark ? 0.22 : 0.20);
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    ancient_B(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B, 0);
+      const spots = [[W * -0.02, 50 * u, 140 * u, p.accent], [W * 1.02, H * 0.47, 115 * u, p.third], [W * 0.0, H * 0.70, 120 * u, p.second], [W * 0.88, 10 * u, 70 * u, p.third], [W * 0.30, -24 * u, 64 * u, p.accent]];
+      for (const [x, y, R, c] of spots) {
+        const ph = r() * 6;
+        blur(B, 5);
+        for (let i = 0; i < 3; i++) { noisyBlob(B, x, y, R * (1 - i * 0.2), ph + i * 0.7, 0.18); ctx.fillStyle = rgba(c, dark ? 0.11 : 0.09); ctx.fill(); }
+        blur(B, 0);
+      }
+      grit(B, 620);
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    ancient_C(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B, 200);
+      const s = 12 * u, cols = [p.accent, p.third, p.second, mix(p.accent, p.third, 0.5)];
+      for (let y = 0; y < H; y += s) for (let x = 0; x < W; x += s) {
+        const dx = (x + s / 2 - W / 2) / (W * 0.5), dy = (y + s / 2 - 400 * u) / (H * 0.40), f = clamp((Math.hypot(dx, dy) - 0.85) / 0.35, 0, 1);
+        if (f <= 0 || r() > 0.25 + 0.75 * f) continue;
+        ctx.save(); ctx.translate(x + s / 2 + (r() - 0.5) * 1.5 * u, y + s / 2 + (r() - 0.5) * 1.5 * u); ctx.rotate((r() - 0.5) * 0.25);
+        ctx.fillStyle = rgba(cols[Math.floor(r() * 4)], (dark ? 0.05 : 0.05) + f * (dark ? 0.12 : 0.13) * r()); ctx.fillRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84); ctx.restore();
+      }
+      vignette(B, dark ? BLACK : [90, 58, 26], dark ? 0.45 : 0.16);
+    },
+    // Classic -----------------------------------------------------------------------------------------
+    classic_A(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.08 : 0.6);
+      const shade = dark ? BLACK : p.second, sheen = dark ? p.third : WHITE;
+      blur(B, 14);
+      for (let i = 0; i < 9; i++) {
+        const x0 = W * (-0.3 + i * 0.2);
+        ctx.beginPath(); ctx.moveTo(x0, -40 * u); ctx.bezierCurveTo(x0 + W * 0.25, H * 0.3, x0 - W * 0.15, H * 0.6, x0 + W * 0.2, H + 40 * u);
+        ctx.lineWidth = (30 + (i % 3) * 14) * u; ctx.strokeStyle = rgba(i % 2 ? shade : sheen, i % 2 ? (dark ? 0.35 : 0.08) : (dark ? 0.08 : 0.6)); ctx.stroke();
+      }
+      blur(B, 0);
+      calm(B, 0.5);
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.55 : 0.12);
+    },
+    classic_B(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.08 : 0.6);
+      const gold = (a) => rgba(p.third, a);
+      for (let k = 0; k < 14; k++) {
+        const o = k * 6 * u;
+        ctx.beginPath(); ctx.moveTo(-10 * u, H * 0.34 - o * 1.4); ctx.bezierCurveTo(W * 0.10 - o * 0.3, H * 0.14 - o, W * 0.30 - o, 40 * u - o * 0.6, W * 0.66 - o * 0.8, -10 * u);
+        ctx.strokeStyle = gold((dark ? 0.34 : 0.40) * (1 - k / 16)); ctx.lineWidth = (k % 4 === 0 ? 1.1 : 0.6) * u; ctx.stroke();
+      }
+      for (let k = 0; k < 12; k++) {
+        const o = k * 6 * u;
+        ctx.beginPath(); ctx.moveTo(W + 10 * u, H * 0.20 + o * 0.6); ctx.bezierCurveTo(W * 0.84 + o, H * 0.32, W * 0.84 + o, H * 0.58, W + 10 * u, H * 0.72 - o * 0.6);
+        ctx.strokeStyle = gold((dark ? 0.32 : 0.38) * (1 - k / 14)); ctx.lineWidth = (k % 4 === 0 ? 1.1 : 0.6) * u; ctx.stroke();
+      }
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.5 : 0.10);
+    },
+    classic_C(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.06 : 0.5);
+      blur(B, 20);
+      for (let i = 0; i < 10; i++) { noisyBlob(B, r() * W, r() * H, (60 + r() * 90) * u, r() * 6, 0.2); ctx.fillStyle = rgba(i % 2 ? p.ink : p.third, dark ? 0.05 : 0.035); ctx.fill(); }
+      blur(B, 0);
+      const vein = (x, y, a, len, w, depth, col) => {
+        const pts = [[x, y]];
+        for (let i = 0; i < len; i++) { a += (r() - 0.5) * 0.5; x += Math.cos(a) * 6 * u; y += Math.sin(a) * 6 * u; pts.push([x, y]); if (depth < 2 && r() < 0.03) vein(x, y, a + (r() < 0.5 ? -0.6 : 0.6), (len * 0.4) | 0, w * 0.6, depth + 1, col); }
+        for (const [bl, al, lw] of [[3, 0.12, w * 3], [0, 0.34, w]]) {
+          blur(B, bl); ctx.beginPath(); pts.forEach(([px, py], k) => (k ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+          ctx.strokeStyle = rgba(col, al); ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+        }
+        blur(B, 0);
+      };
+      vein(-10 * u, H * 0.08, 0.35, 90, 1.1 * u, 0, p.third);
+      vein(W * 0.6, -10 * u, 1.9, 80, 0.9 * u, 0, p.third);
+      vein(W + 10 * u, H * 0.45, 2.6, 70, 1.0 * u, 0, p.third);
+      vein(-10 * u, H * 0.62, -0.2, 60, 0.8 * u, 0, p.second);
+      vein(W * 0.2, -10 * u, 1.2, 50, 0.6 * u, 1, p.second);
+      calm(B, 0.6);
+      vignette(B, dark ? BLACK : [90, 30, 50], dark ? 0.5 : 0.10);
+    },
+    // Retro -------------------------------------------------------------------------------------------
+    retro_A(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      const cols = [p.third, p.second, p.accent], bw = 13 * u, a = dark ? 0.34 : 0.36;
+      ctx.lineCap = 'butt';
+      cols.forEach((c, k) => {
+        const R = 60 * u - k * bw, X = W * 0.70 + k * bw, Y = 150 * u - k * bw;
+        ctx.beginPath(); ctx.moveTo(X, -10 * u); ctx.lineTo(X, Y - R); ctx.arcTo(X, Y, X + R, Y, R); ctx.lineTo(W + 10 * u, Y);
+        ctx.strokeStyle = rgba(c, a); ctx.lineWidth = bw - 2 * u; ctx.stroke();
+      });
+      cols.forEach((c, k) => {
+        const R = 60 * u - k * bw, X = W * 0.22 + k * bw, Y = H * 0.61 + k * bw;
+        ctx.beginPath(); ctx.moveTo(-10 * u, Y); ctx.lineTo(X - R, Y); ctx.arcTo(X, Y, X, Y + R, R); ctx.lineTo(X, H + 10 * u);
+        ctx.strokeStyle = rgba(cols[2 - k], a); ctx.lineWidth = bw - 2 * u; ctx.stroke();
+      });
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    retro_B(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      ctx.globalCompositeOperation = dark ? 'screen' : 'multiply';
+      const a = dark ? 0.24 : 0.32, circ = (x, y, R, c) => dot(ctx, x, y, R, rgba(c, a));
+      circ(W * 0.98, 40 * u, 120 * u, p.second); circ(W * 0.74, -10 * u, 70 * u, p.third); circ(W * 1.02, 215 * u, 46 * u, p.accent);
+      circ(-W * 0.08, H * 0.53, 80 * u, p.accent); circ(W * 0.06, H * 0.61, 52 * u, p.third); circ(-W * 0.02, H * 0.67, 34 * u, p.second);
+      ctx.globalCompositeOperation = 'source-over';
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    retro_C(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      const a = dark ? 0.34 : 0.32;
+      const blobs = [[W * 0.02, H * 0.30, 46, p.third, 1.3], [W * 0.07, H * 0.42, 26, p.second, 1.1], [W * -0.03, H * 0.56, 58, p.third, 1.4], [W * 0.12, 70 * u, 20, p.second, 1],
+        [W * 0.97, H * 0.19, 40, p.second, 1.3], [W * 1.02, H * 0.37, 62, p.third, 1.4], [W * 0.95, H * 0.52, 24, p.second, 1.1]];
+      blur(B, 1.2);
+      for (const [x, y, R0, c, stretch] of blobs) {
+        const R = R0 * u;
+        ctx.save(); ctx.translate(x, y); ctx.scale(1, stretch);
+        const g = ctx.createRadialGradient(-R * 0.3, -R * 0.3, 0, 0, 0, R * 1.1); g.addColorStop(0, rgba(mix(c, WHITE, 0.35), a)); g.addColorStop(1, rgba(c, a * 0.85));
+        noisyBlob(B, 0, 0, R, r() * 6, 0.12); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+      }
+      blur(B, 0);
+      vignette(B, dark ? BLACK : [90, 80, 20], dark ? 0.5 : 0.10);
+    },
+    // Contemporary ------------------------------------------------------------------------------------
+    contemporary_A(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      const band = (pts, w, c, a) => { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.bezierCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1], pts[3][0], pts[3][1]); ctx.lineWidth = w * u; ctx.strokeStyle = rgba(c, a); ctx.lineCap = 'round'; ctx.stroke(); };
+      blur(B, 40);
+      band([[-40 * u, H * 0.25], [W * 0.3, -20 * u], [W * 0.7, H * 0.10], [W + 40 * u, -30 * u]], 110, p.accent, dark ? 0.30 : 0.24);
+      band([[W + 40 * u, H * 0.22], [W * 0.75, H * 0.42], [W * 1.1, H * 0.6], [W * 0.8, H + 40 * u]], 100, p.second, dark ? 0.50 : 0.40);
+      band([[-40 * u, H * 0.58], [W * 0.2, H * 0.75], [W * 0.5, H * 0.95], [W * 0.9, H + 60 * u]], 120, dark ? p.accent : p.third, dark ? 0.18 : 0.8);
+      blur(B, 0);
+    },
+    contemporary_B(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.07);
+      const field = (y0, n, amp, ph, dir) => {
+        for (let k = 0; k < n; k++) {
+          const t = k / (n - 1);
+          ctx.beginPath();
+          for (let x = -6 * u; x <= W + 6 * u; x += 4 * u) { const y = y0 + dir * k * 5 * u + amp * u * (1 - t * 0.5) * Math.sin(x / W * Math.PI * 1.6 + ph + t * 1.2) + 10 * u * t * Math.sin(x / W * Math.PI * 3.1 + ph * 0.7); x <= -6 * u ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+          ctx.strokeStyle = k % 6 === 0 ? rgba(p.accent, dark ? 0.30 : 0.26) : rgba(p.ink, (dark ? 0.11 : 0.10) * (1 - t * 0.6)); ctx.lineWidth = 0.8 * u; ctx.stroke();
+        }
+      };
+      field(-12 * u, 14, 18, 0.6, 1);
+      field(H * 0.80, 20, 26, 2.4, -1);
+    },
+    contemporary_C(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.5, p.accent, 0.06);
+      const glass = (x, y, R) => {
+        radial(B, x + R * 0.2, y + R * 0.3, R * 1.5, p.accent, dark ? 0.14 : 0.12);
+        const g = ctx.createLinearGradient(x - R, y - R, x + R, y + R); g.addColorStop(0, rgba(WHITE, dark ? 0.10 : 0.55)); g.addColorStop(1, rgba(WHITE, dark ? 0.02 : 0.10));
+        dot(ctx, x, y, R, g);
+        const e = ctx.createLinearGradient(x - R, y - R, x + R, y + R); e.addColorStop(0, rgba(WHITE, dark ? 0.35 : 0.95)); e.addColorStop(0.5, rgba(WHITE, 0)); e.addColorStop(1, rgba(p.accent, dark ? 0.30 : 0.18));
+        ctx.beginPath(); ctx.arc(x, y, R - 0.6 * u, 0, TAU); ctx.strokeStyle = e; ctx.lineWidth = 1.2 * u; ctx.stroke();
+      };
+      glass(W * 0.92, 70 * u, 96 * u); glass(W * 0.66, 18 * u, 34 * u);
+      glass(W * 0.03, H * 0.50, 70 * u); glass(W * 0.13, H * 0.63, 28 * u); glass(W * 0.99, H * 0.57, 44 * u);
+    },
+    // Futuristic: the perspective floor, three ways fancier --------------------------------------------
+    futuristic_A(B) {
+      const { ctx, W, H, u, p, dark, r } = B, hz = H * 0.665;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      radial(B, W * 0.5, hz, W * 0.9, p.second, dark ? 0.22 : 0.10);
+      glowGrid(B, hz, dark ? 0.30 : 0.16, dark ? 0.30 : 0.18);
+      horizon(B, hz);
+      for (let i = 0; i < 46; i++) { const x = sideX(r(), W), up = r(), y = hz - up * H * 0.36; dot(ctx, x, y, (0.6 + r() * 1.2) * u, rgba(r() < 0.3 ? p.second : p.accent, (dark ? 0.7 : 0.4) * (1 - up))); }
+      if (dark) scanlines(B);
+    },
+    futuristic_B(B) {
+      const { ctx, W, H, u, p, dark } = B, cx = W / 2, vy = 400 * u, floorY = H * 0.68, ceilY = 118 * u, wallX = W * 0.13;
+      radial(B, cx, vy, W * 0.8, p.accent, dark ? 0.10 : 0.07);
+      const pass = (w, a) => {
+        let col = rgba(p.accent, a);
+        ctx.save(); ctx.beginPath(); ctx.rect(0, floorY, W, H); ctx.clip();
+        for (let i = -16; i <= 16; i++) seg(ctx, cx, vy, cx + i * W * 0.13, H, col, w, 'butt');
+        for (let k = 0; k < 40; k++) { const y = vy + (H + 30 * u - vy) / Math.pow(1.13, k); if (y < floorY) break; seg(ctx, 0, y, W, y, col, w, 'butt'); }
+        ctx.restore();
+        col = rgba(p.accent, a * 0.6);
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, ceilY); ctx.clip();
+        for (let i = -16; i <= 16; i++) seg(ctx, cx, vy, cx + i * W * 0.13, 0, col, w, 'butt');
+        for (let k = 0; k < 40; k++) { const y = vy - (vy + 30 * u) / Math.pow(1.13, k); if (y > ceilY) break; seg(ctx, 0, y, W, y, col, w, 'butt'); }
+        ctx.restore();
+        col = rgba(p.accent, a * 0.45);
+        for (const s of [-1, 1]) {
+          ctx.save(); ctx.beginPath(); ctx.rect(s < 0 ? 0 : W - wallX, ceilY, wallX, floorY - ceilY); ctx.clip();
+          for (let k = 0; k < 40; k++) { const x = cx + s * (cx + 20 * u) / Math.pow(1.13, k); if (Math.abs(x - cx) < cx - wallX) break; seg(ctx, x, 0, x, H, col, w, 'butt'); }
+          for (let j = -10; j <= 10; j++) seg(ctx, cx, vy, s < 0 ? 0 : W, vy + j * H * 0.06, col, w, 'butt');
+          ctx.restore();
+        }
+      };
+      blur(B, 3); pass(3 * u, dark ? 0.24 : 0.12); blur(B, 0); pass(0.8 * u, dark ? 0.30 : 0.20);
+      const fade = (x0, y0, x1, y1, rx, ry, rw, rh) => { const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(p.bg, 0.95)); g.addColorStop(1, rgba(p.bg, 0)); ctx.fillStyle = g; ctx.fillRect(rx, ry, rw, rh); };
+      fade(0, floorY, 0, floorY + H * 0.05, 0, floorY, W, H * 0.05);
+      fade(0, ceilY, 0, ceilY - 70 * u, 0, ceilY - 70 * u, W, 70 * u);
+      fade(wallX, 0, wallX - 40 * u, 0, wallX - 40 * u, ceilY, 40 * u, floorY - ceilY);
+      fade(W - wallX, 0, W - wallX + 40 * u, 0, W - wallX, ceilY, 40 * u, floorY - ceilY);
+      radial(B, cx, H, W * 0.7, p.second, dark ? 0.16 : 0.08);
+      radial(B, cx, 0, W * 0.6, p.second, dark ? 0.10 : 0.05);
+      if (dark) scanlines(B);
+    },
+    futuristic_C(B) {
+      const { ctx, W, H, u, p, dark, r } = B, hz = H * 0.665;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.10 : 0.07);
+      radial(B, W * 0.5, hz, W * 0.9, p.second, dark ? 0.20 : 0.09);
+      if (dark) for (let i = 0; i < 50; i++) dot(ctx, r() * W, r() * hz * 0.9, (0.4 + r() * 0.8) * u, rgba(p.ink, 0.15 + r() * 0.4));
+      glowGrid(B, hz, dark ? 0.28 : 0.15, dark ? 0.28 : 0.17);
+      horizon(B, hz);
+      const ridge = (pts) => {
+        ctx.beginPath(); ctx.moveTo(pts[0][0], hz); pts.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(pts[pts.length - 1][0], hz); ctx.closePath();
+        const g = ctx.createLinearGradient(0, hz - 80 * u, 0, hz); g.addColorStop(0, rgba(p.bg)); g.addColorStop(1, rgba(mix(p.bg, p.second, dark ? 0.18 : 0.10))); ctx.fillStyle = g; ctx.fill();
+        for (let i = 1; i < pts.length - 1; i++) seg(ctx, pts[i][0], pts[i][1], (pts[i - 1][0] + pts[i + 1][0]) / 2, hz, rgba(p.accent, dark ? 0.30 : 0.22), 0.7 * u);
+        const line = () => { ctx.beginPath(); pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.lineJoin = 'round'; };
+        blur(B, 2.5); line(); ctx.strokeStyle = rgba(p.accent, dark ? 0.6 : 0.3); ctx.lineWidth = 2.5 * u; ctx.stroke(); blur(B, 0);
+        line(); ctx.strokeStyle = rgba(p.accent, dark ? 0.85 : 0.6); ctx.lineWidth = 1 * u; ctx.stroke();
+      };
+      const left = [[-10 * u, hz - 12 * u], [28 * u, hz - 60 * u], [56 * u, hz - 32 * u], [84 * u, hz - 74 * u], [116 * u, hz - 28 * u], [146 * u, hz]];
+      ridge(left); ridge(left.map(([x, y], i) => [W - x + (i % 2 ? 6 : -4) * u, hz - (hz - y) * (i === 3 ? 0.8 : 1.1)]));
+      if (dark) scanlines(B);
+    },
+    // Space Age ---------------------------------------------------------------------------------------
+    spaceage_A(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      if (dark) { vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.14)]]); stars(B, 60, 0.2, 0.6); }
+      const field = (ox, oy, R, c) => {
+        const s = 11 * u;
+        for (let row = 0, y = s / 2; y < H; row++, y += s * 0.87) for (let x = (row % 2 ? s / 2 : 0); x < W + s; x += s) {
+          const d = Math.hypot(x - ox, y - oy) / R; if (d >= 1) continue;
+          dot(ctx, x, y, (1 - d) * (1 - d) * 4.8 * u, rgba(c, dark ? 0.50 : 0.34));
+        }
+      };
+      radial(B, W, 0, 300 * u, p.second, dark ? 0.12 : 0.08);
+      field(W, 0, 300 * u, p.second);
+      field(0, H * 0.62, 250 * u, p.accent);
+    },
+    spaceage_B(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.10)]]);
+      const k = dark ? 1 : 0.6;
+      blur(B, 30);
+      const cloud = (x, y, R, c, a) => { noisyBlob(B, x, y, R * u, r() * 6, 0.25); ctx.fillStyle = rgba(c, a * k); ctx.fill(); };
+      cloud(W * 0.95, H * 0.08, 150, p.accent, 0.30); cloud(W * 0.72, -H * 0.02, 90, p.second, 0.30); cloud(W * 1.0, H * 0.30, 80, p.second, 0.22);
+      cloud(W * 0.0, H * 0.55, 130, p.accent, 0.28); cloud(W * 0.08, H * 0.70, 90, p.second, 0.26);
+      blur(B, 0);
+      if (dark) { stars(B, 170, 0.2, 0.8); for (let i = 0; i < 4; i++) sparkle(ctx, sideX(r(), W), (0.15 + r() * 0.6) * H, (5 + r() * 4) * u, rgba(p.ink, 0.7), u); }
+      else for (let i = 0; i < 90; i++) dot(ctx, r() * W, r() * H, (0.5 + r()) * u, rgba(p.accent, 0.10 + r() * 0.12));
+      calm(B, 0.45);
+    },
+    spaceage_C(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      if (dark) { vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.12)]]); stars(B, 120, 0.2, 0.7); }
+      const ex = W * 0.92, ey = 78 * u, R = 66 * u;
+      for (let k = 1; k < 9; k++) { ctx.beginPath(); ctx.arc(ex, ey, R + k * 22 * u + k * k * 3 * u, 0, TAU); ctx.strokeStyle = rgba(p.third, (dark ? 0.20 : 0.30) * (1 - k / 9)); ctx.lineWidth = 0.8 * u; ctx.stroke(); }
+      blur(B, 18); dot(ctx, ex, ey, R * 1.1, rgba(p.second, dark ? 0.75 : 0.45)); blur(B, 0);
+      dot(ctx, ex, ey, R, rgba(dark ? mix(p.bg, BLACK, 0.35) : mix(p.bg, p.third, 0.22)));
+      blur(B, 1); ctx.beginPath(); ctx.arc(ex, ey, R, Math.PI * 0.55, Math.PI * 1.05); ctx.strokeStyle = rgba(dark ? p.second : WHITE, 0.9); ctx.lineWidth = 2 * u; ctx.stroke(); blur(B, 0);
+    },
+  };
+  Object.assign(MOTIFS, ROUND2);
+
+
+  Object.assign(MOTIFS, {
+    // Round 3: the glowing grid without the neon horizon, or with a soft one as in today's background.
+    futuristic_D(B) {
+      const { ctx, W, H, u, p, dark, r } = B, hz = H * 0.665;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      radial(B, W * 0.5, hz, W * 0.8, p.second, dark ? 0.12 : 0.06);
+      glowGrid(B, hz, dark ? 0.30 : 0.16, dark ? 0.30 : 0.18);
+      for (let i = 0; i < 46; i++) { const x = sideX(r(), W), up = r(), y = hz - up * H * 0.36; dot(ctx, x, y, (0.6 + r() * 1.2) * u, rgba(r() < 0.3 ? p.second : p.accent, (dark ? 0.7 : 0.4) * (1 - up))); }
+      if (dark) scanlines(B);
+    },
+    futuristic_E(B) {
+      const { ctx, W, H, u, p, dark, r } = B, hz = H * 0.665;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      radial(B, W * 0.5, hz, W * 0.7, p.second, dark ? 0.14 : 0.07);
+      glowGrid(B, hz, dark ? 0.30 : 0.16, dark ? 0.30 : 0.18);
+      seg(ctx, W * 0.1, hz, W * 0.9, hz, rgba(p.accent, dark ? 0.35 : 0.25), 0.8 * u, 'butt');
+      for (let i = 0; i < 46; i++) { const x = sideX(r(), W), up = r(), y = hz - up * H * 0.36; dot(ctx, x, y, (0.6 + r() * 1.2) * u, rgba(r() < 0.3 ? p.second : p.accent, (dark ? 0.7 : 0.4) * (1 - up))); }
+      if (dark) scanlines(B);
+    },
+  });
+
+  /** Round 4: no horizon line; the grid itself fades away upwards over [fade] of the screen height. */
+  function fadingGrid(B, fade) {
+    const { ctx, W, H, u, p, dark, r } = B, hz = H * 0.62;
+    radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+    glowGrid(B, hz, dark ? 0.30 : 0.16, dark ? 0.32 : 0.19);
+    const top = hz - 12 * u, g = ctx.createLinearGradient(0, top, 0, hz + H * fade);
+    g.addColorStop(0, rgba(p.bg, 1)); g.addColorStop(0.12, rgba(p.bg, 1)); g.addColorStop(0.45, rgba(p.bg, 0.7)); g.addColorStop(0.75, rgba(p.bg, 0.28)); g.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, top, W, hz + H * fade - top);
+    radial(B, W * 0.5, hz + H * fade * 0.6, W * 0.8, p.second, dark ? 0.10 : 0.05);
+    for (let i = 0; i < 40; i++) { const x = sideX(r(), W), up = r(), y = hz + H * fade * 0.5 - up * H * 0.36; dot(ctx, x, y, (0.6 + r() * 1.2) * u, rgba(r() < 0.3 ? p.second : p.accent, (dark ? 0.6 : 0.35) * (1 - up))); }
+    if (dark) scanlines(B);
+  }
+  Object.assign(MOTIFS, { futuristic_F(B) { fadingGrid(B, 0.14); }, futuristic_G(B) { fadingGrid(B, 0.26); } });
+  // ---- One phone: the background with a simple tuner screen on top ---------------------------------
+  function drawPhone(canvas, s, opt, dark) {
+    const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height, u = W / 393;
+    const palHex = s[dark ? 'dark' : 'light'], p = {}; for (const k in palHex) p[k] = hex(palHex[k]);
+    const tint = mix(p.surface, p.ink, 0.06), container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    const sh = s.shape, num = stack(s.num, s.numFb), disp = stack(s.font, s.fb), body = 'Roboto, system-ui, sans-serif';
+
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u, p, dark, s, r: rng(7 + s.id.length * 31 + opt.key.charCodeAt(0)) };
+    ctx.save();
+    try { MOTIFS[`${s.id}_${opt.key}`](B); } catch (err) { console.error(err); }
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${15 * u}px ${body}`; ctx.fillText('Guitar · Standard', W / 2, 74 * u);
+    ctx.fillStyle = rgba(p.ink); ctx.font = `${s.w} ${118 * u}px ${disp}`; ctx.fillText('A', W / 2, 190 * u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${22 * s.numScale * u}px ${num}`; ctx.fillText('110.2 Hz', W / 2, 270 * u);
+
+    const cx = W / 2, cy = 520 * u, R = 160 * u, a0 = -Math.PI / 2 - 0.95, a1 = -Math.PI / 2 + 0.95;
+    const fg = ctx.createRadialGradient(cx, cy - 70 * u, 0, cx, cy - 70 * u, R * 1.2); fg.addColorStop(0, rgba(p.bg, 0.75)); fg.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = fg; ctx.fillRect(0, cy - R * 1.4, W, R * 1.6);
+    ctx.beginPath(); ctx.arc(cx, cy, R, a0, a1); ctx.strokeStyle = rgba(p.track); ctx.lineWidth = 7 * u; ctx.lineCap = 'round'; ctx.stroke();
+    for (let v = -50; v <= 50; v += 5) {
+      if (v === 0) continue; const major = v % 10 === 0, a = -Math.PI / 2 + v / 50 * 0.95, len = (major ? 13 : 7) * u;
+      const x1 = cx + Math.cos(a) * (R - 12 * u), y1 = cy + Math.sin(a) * (R - 12 * u);
+      seg(ctx, x1, y1, x1 - Math.cos(a) * len, y1 - Math.sin(a) * len, rgba(p.ink, major ? 1 : 0.5), (major ? 2.1 : 1.3) * u);
+    }
+    seg(ctx, cx, cy - R - 10 * u, cx, cy - R + 10 * u, rgba(p.inTune), 3 * u);
+    const na = -Math.PI / 2 + 2 / 50 * 0.95, tipX = cx + Math.cos(na) * (R - 4 * u), tipY = cy + Math.sin(na) * (R - 4 * u);
+    const gl = ctx.createRadialGradient(tipX, tipY, 0, tipX, tipY, 46 * u); gl.addColorStop(0, rgba(p.inTune, dark ? 0.32 : 0.16)); gl.addColorStop(1, rgba(p.inTune, 0));
+    ctx.fillStyle = gl; ctx.fillRect(tipX - 46 * u, tipY - 46 * u, 92 * u, 92 * u);
+    seg(ctx, cx, cy, tipX, tipY, rgba(p.accent), 3.2 * u);
+    dot(ctx, cx, cy, 9 * u, rgba(p.accent));
+
+    const pw = 132 * u, ph = 40 * u, py = 560 * u;
+    ctx.beginPath(); rrAdd(ctx, cx - pw / 2, py, pw, ph, Math.min(sh.pill, 999) * u); ctx.fillStyle = rgba(p.inTune); ctx.fill();
+    ctx.fillStyle = rgba(p.onInTune); ctx.font = `500 ${16 * u}px ${body}`; ctx.fillText('In tune', cx, py + ph / 2 + 1 * u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${15 * s.numScale * u}px ${num}`; ctx.fillText('+2 cents', cx, py + ph + 22 * u);
+
+    const cardX = 16 * u, cardY = 648 * u, cardW = W - 32 * u, cardH = 112 * u;
+    ctx.save(); ctx.shadowColor = rgba(BLACK, dark ? 0.35 : 0.10); ctx.shadowBlur = 10 * u; ctx.shadowOffsetY = 2 * u;
+    ctx.beginPath(); rrAdd(ctx, cardX, cardY, cardW, cardH, sh.card * u); ctx.fillStyle = rgba(p.surface); ctx.fill(); ctx.restore();
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${13 * u}px ${body}`; ctx.textAlign = 'left'; ctx.fillText('Pick a string', cardX + 16 * u, cardY + 20 * u); ctx.textAlign = 'center';
+    const names = ['E', 'A', 'D', 'G', 'B', 'E'], sw = Math.min(sh.strW, 50) * u, shh = Math.min(sh.strH, 52) * u, gap = (cardW - 32 * u - sw * 6) / 5;
+    names.forEach((n, i) => {
+      const x = cardX + 16 * u + i * (sw + gap), y = cardY + 36 * u + (64 * u - shh) / 2;
+      ctx.beginPath(); rrAdd(ctx, x, y, sw, shh, sh.strR * u); ctx.fillStyle = rgba(i === 1 ? container : tint); ctx.fill();
+      ctx.fillStyle = rgba(p.ink); ctx.font = `${s.numW} ${18 * s.numScale * u}px ${num}`; ctx.fillText(n, x + sw / 2, y + shh / 2 + 1 * u);
+    });
+
+    const navY = H - 84 * u;
+    ctx.fillStyle = rgba(mix(p.surface, p.ink, 0.03)); ctx.fillRect(0, navY, W, H - navY);
+    ['Tuner', 'Metronome', 'Settings'].forEach((label, i) => {
+      const x = W * (0.2 + i * 0.3), iy = navY + 26 * u;
+      if (i === 0) { ctx.beginPath(); rrAdd(ctx, x - 30 * u, iy - 15 * u, 60 * u, 30 * u, 15 * u); ctx.fillStyle = rgba(container); ctx.fill(); }
+      ctx.beginPath(); ctx.arc(x, iy, 8 * u, 0, TAU); ctx.strokeStyle = rgba(i === 0 ? p.ink : p.muted); ctx.lineWidth = 2 * u; ctx.stroke();
+      ctx.fillStyle = rgba(i === 0 ? p.ink : p.muted); ctx.font = `500 ${12 * u}px ${body}`; ctx.fillText(label, x, iy + 30 * u);
+    });
+  }
+
+  // ---- Page --------------------------------------------------------------------------------------------
+  let dark = store.get('twangle.bgm.dark') === '1';
+  let picks = {}; try { picks = JSON.parse(store.get('twangle.bgm.final.picks') || '{}') || {}; } catch (e) { picks = {}; }
+  const VIEWS = [];
+  const main = $('styles');
+  for (const id of ORDER) {
+    const s = STY[id];
+    const sec = document.createElement('section'); sec.className = 'style';
+    sec.innerHTML = `<h2>${s.name}</h2><p class="tag">${s.tag}</p><div class="row"></div>`;
+    const row = sec.querySelector('.row');
+    for (const opt of s.options) {
+      const fig = document.createElement('figure');
+      fig.innerHTML = `<div class="phone" tabindex="0" role="button" aria-label="${s.name}, ${opt.name}, see big"><canvas></canvas></div><figcaption><b>${opt.name}</b>${opt.desc}</figcaption><button type="button" class="pick">Pick</button>`;
+      row.appendChild(fig);
+      const v = { s, opt, fig, canvas: fig.querySelector('canvas'), index: VIEWS.length };
+      fig.querySelector('.phone').addEventListener('click', () => openBig(v.index));
+      fig.querySelector('.phone').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBig(v.index); } });
+      fig.querySelector('.pick').addEventListener('click', () => pick(v));
+      VIEWS.push(v);
+    }
+    main.appendChild(sec);
+  }
+  function pick(v) {
+    picks[v.s.id] = picks[v.s.id] === v.opt.key ? undefined : v.opt.key;
+    store.set('twangle.bgm.final.picks', JSON.stringify(picks)); showPicks();
+  }
+  function showPicks() {
+    for (const v of VIEWS) { const on = picks[v.s.id] === v.opt.key; v.fig.classList.toggle('picked', on); v.fig.querySelector('.pick').textContent = on ? 'Picked' : 'Pick'; }
+    const parts = ORDER.map((id) => `${STY[id].name} <b>${picks[id] ? (picks[id] === 'now' ? 'today' : picks[id]) : '–'}</b>`);
+    $('picks').innerHTML = 'Your picks: ' + parts.join(' · ');
+    if (big.open) syncBigBar();
+  }
+  function renderAll() { for (const v of VIEWS) drawPhone(v.canvas, v.s, v.opt, dark); if (big.open) drawBig(); }
+  function setMode(d) {
+    dark = d; store.set('twangle.bgm.dark', d ? '1' : '0');
+    $('modeLight').setAttribute('aria-pressed', String(!d)); $('modeDark').setAttribute('aria-pressed', String(d));
+    renderAll();
+  }
+  $('modeLight').addEventListener('click', () => setMode(false));
+  $('modeDark').addEventListener('click', () => setMode(true));
+
+  const overlay = $('overlay'), big = { index: 0, open: false };
+  function syncBigBar() {
+    const v = VIEWS[big.index];
+    $('which').textContent = `${v.s.name} · ${v.opt.name}`;
+    $('bigPick').textContent = picks[v.s.id] === v.opt.key ? 'Picked' : 'Pick';
+    $('bigMode').textContent = dark ? 'Light' : 'Dark';
+  }
+  function drawBig() { const v = VIEWS[big.index]; drawPhone($('bigPhone').querySelector('canvas'), v.s, v.opt, dark); syncBigBar(); }
+  function openBig(i) { big.index = i; big.open = true; overlay.classList.add('open'); requestAnimationFrame(drawBig); }
+  function closeBig() { big.open = false; overlay.classList.remove('open'); }
+  function step(d) { big.index = (big.index + d + VIEWS.length) % VIEWS.length; drawBig(); }
+  $('prev').addEventListener('click', () => step(-1));
+  $('next').addEventListener('click', () => step(1));
+  $('close').addEventListener('click', closeBig);
+  $('bigPhone').addEventListener('click', () => step(1));
+  $('bigPick').addEventListener('click', () => pick(VIEWS[big.index]));
+  $('bigMode').addEventListener('click', () => setMode(!dark));
+  document.addEventListener('keydown', (e) => {
+    if (!big.open) return;
+    if (e.key === 'Escape') closeBig(); else if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
+  });
+
+  setMode(dark); showPicks();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderAll);
+  let t = 0; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(renderAll, 120); });
+})();
+</script>
+</body>
+</html>

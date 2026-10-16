@@ -10,36 +10,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import kotlin.math.PI
-import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * The style's background, filling the whole window behind the screens, as in the approved mock-up
- * (docs/design/theme-styles-preview.html, "Ground"): Ancient's stone wall with a hand stencil and
- * tally marks, Classic's velvet curtains and concert-hall shell, Retro's 70s rainbow bands, a calm
- * wash for Contemporary, Futuristic's neon grid and Space Age's starfield or atomic orbits. One calm
- * picture per style, never animated, nothing fixed to the screen's edges, low in contrast.
+ * The style's background, filling the whole window behind the screens, as picked by the owner from the
+ * abstract mock-up (docs/design/style-backgrounds-preview.html, October 2026): Ancient's stone with
+ * wavy rock layers at the top and bottom, Classic's velvet curtains and concert-hall shell, Retro's
+ * three-stripe 70s supergraphic turning the top right corner, Contemporary's fine silk lines,
+ * Futuristic's glowing perspective grid that fades away upwards (no horizon line) and Space Age's
+ * halftone dots from two corners. One calm picture per style, never animated, nothing fixed to the
+ * screen's edges, the middle (note, meter) kept quiet, low in contrast.
  *
- * [quiet] is the Settings and About version: the same picture with its loudest motifs left out or
- * softened (no hand stencil, no Space Age stars or planet, quieter folds and bands).
+ * [quiet] is the Settings and About version: the same picture softened (Futuristic's grid at half
+ * strength, no sparks).
  *
  * It is drawn once into its own offscreen layer, so the tuner's readings, redrawn up to 120 times a
  * second, only reuse it. A change of style, brightness or screen cross-fades to the new picture.
@@ -91,12 +92,12 @@ internal fun DrawScope.drawBackdrop(tokens: StyleTokens, quiet: Boolean = false,
         third = c.tertiary,
     )
     when (tokens.style) {
-        VisualStyle.ANCIENT -> art.ancient()
+        VisualStyle.ANCIENT -> art.rockLayers()
         VisualStyle.CLASSIC -> art.velvet()
-        VisualStyle.RETRO -> art.seventies()
-        VisualStyle.CONTEMPORARY -> art.wash()
-        VisualStyle.FUTURISTIC -> art.hud()
-        VisualStyle.SPACE_AGE -> if (tokens.dark) art.spaceNight() else art.spaceDay()
+        VisualStyle.RETRO -> art.supergraphic()
+        VisualStyle.CONTEMPORARY -> art.silk()
+        VisualStyle.FUTURISTIC -> art.glowGrid()
+        VisualStyle.SPACE_AGE -> art.halftone()
     }
     if (mini) art.radial(art.w * 0.5f, art.h * 1.15f, art.w * 0.95f, c.primary, if (tokens.dark) 0.30f else 0.24f)
 }
@@ -104,10 +105,21 @@ internal fun DrawScope.drawBackdrop(tokens: StyleTokens, quiet: Boolean = false,
 /** The mock-up's phone width, in dp: the art's unit is 1/393 of it. */
 private const val REFERENCE_WIDTH_DP = 393f
 
+/** The mock-up's phone height, in dp: motifs sized for it shrink on a shorter screen or picture. */
+private const val REFERENCE_HEIGHT_DP = 873f
+
 /** A small picture's motifs are 2.2 times its share of the phone's width, as on the mock-up's cards. */
 private const val MINI_SCALE = 2.2f
 
 private const val SEED = 7
+
+/** How far Futuristic's grid takes to fade away above its horizon, as a share of the height. */
+private const val GRID_FADE = 0.26f
+
+/** Bézier handles for a quarter circle: 4/3·(√2 − 1). */
+private const val QUARTER_CIRCLE = 0.5523f
+
+private const val PI_F = PI.toFloat()
 
 /**
  * One background being drawn: its colours (the mock-up's roles), its unit [u] and seeded [random]
@@ -131,36 +143,23 @@ private class Art(
     val h = scope.size.height
     private val longest = max(w, h)
 
+    /** Motifs sized for the upright phone shrink with the height: on its side, or on a small card. */
+    private val fit = min(1f, h / (REFERENCE_HEIGHT_DP * u))
+
     private fun r() = random.nextFloat()
 
-    // ---- Ancient: a stone wall with a terracotta hand stencil and rows of scratched tally marks ----
+    // ---- Ancient: stone with wavy bands of earth colours at the top and bottom, like rock layers ----
 
-    fun ancient() = with(scope) {
-        stone()
-        // Upright (the mock-up) beside the wave; on its side that spot is the note column's, so the hand
-        // moves to the empty corner above the meter's left end.
-        val hand = if (w > h) Offset(w * 0.05f, h * 0.3f) else Offset(w * 0.84f, h * 0.66f)
-        if (!mini && !quiet) handStencil(hand, 54f * u, 22f, accent.copy(alpha = if (dark) 0.16f else 0.13f))
-        // Rows of tally marks, the first written numbers: four strokes and one across, three times.
-        val tally = ink.copy(alpha = if (dark) 0.12f else 0.11f)
-        val rows = if (mini) MINI_TALLY_ROWS else TALLY_ROWS
-        for (row in rows.indices step 2) {
-            var x = w * rows[row]
-            val y = h * rows[row + 1]
-            repeat(3) {
-                for (k in 0 until 4) {
-                    val j = r() * 1.5f * u
-                    line(tally, x + k * 4f * u + j, y - 7f * u, x + k * 4f * u - j, y + 7f * u, 1.4f * u)
-                }
-                line(tally, x - 3f * u, y + 5f * u, x + 15f * u, y - 5f * u, 1.4f * u)
-                x += 26f * u
-            }
-        }
+    fun rockLayers() = with(scope) {
+        stone(grit = if (mini) 40 else 300)
+        val alpha = (if (dark) 0.24f else 0.22f) * (if (quiet) 0.55f else 1f)
+        strata(start = -8f * u, down = true, count = 7, alpha = alpha)
+        strata(start = h * 0.8f, down = false, count = 6, alpha = alpha * 0.75f)
         vignette(if (dark) Color.Black else Color(0xFF5A3A1A), if (dark) 0.45f else 0.16f)
     }
 
     /** Stone: light from the top by day (from below at night), soft patches and fine grit. */
-    private fun stone() = with(scope) {
+    private fun stone(grit: Int) = with(scope) {
         radial(w * 0.5f, if (dark) h * 1.02f else -h * 0.05f, h * 0.8f, accent, if (dark) 0.22f else 0.16f)
         for (i in 0 until 16) {
             val x = r() * w
@@ -168,7 +167,7 @@ private class Art(
             val rr = r() * w * 0.3f
             drawOval((if (i % 2 == 1) second else ink).copy(alpha = 0.035f), Offset(x - rr, y - rr * 0.6f), Size(rr * 2f, rr * 1.2f))
         }
-        repeat(if (mini) 60 else 520) { i ->
+        repeat(grit) { i ->
             val x = r() * w
             val y = r() * h
             val radius = (0.6f + r() * 1.6f) * u
@@ -176,27 +175,43 @@ private class Art(
         }
     }
 
-    /** An open hand, palm at [centre], fingers up before turning by [degrees]. */
-    private fun handStencil(centre: Offset, size: Float, degrees: Float, color: Color) = scope.rotate(degrees, centre) {
-        drawOval(color, topLeft = Offset(centre.x - size * 0.32f, centre.y - size * 0.06f), size = Size(size * 0.64f, size * 0.62f))
-        val finger = size * 0.13f
-        for (i in FINGER_X.indices) {
-            val length = FINGER_LENGTH[i] * size
-            drawRoundRect(
-                color,
-                topLeft = Offset(centre.x + FINGER_X[i] * size - finger / 2f, centre.y - length),
-                size = Size(finger, length + size * 0.12f),
-                cornerRadius = CornerRadius(finger / 2f),
-            )
-        }
-        val thumbBase = Offset(centre.x - size * 0.26f, centre.y + size * 0.26f)
-        rotate(-52f, thumbBase) {
-            drawRoundRect(
-                color,
-                topLeft = Offset(thumbBase.x - finger / 2f, thumbBase.y - size * 0.44f),
-                size = Size(finger, size * 0.44f),
-                cornerRadius = CornerRadius(finger / 2f),
-            )
+    /**
+     * [count] wavy bands from [start], growing thicker [down] (or up), slightly tilted, each a little
+     * fainter towards the middle, with a faint seam between them.
+     */
+    private fun strata(start: Float, down: Boolean, count: Int, alpha: Float) = with(scope) {
+        val colors = arrayOf(accent, third, second, third)
+        val phase = r() * 6f
+        val tilt = (r() - 0.5f) * 0.14f * fit
+        val dir = if (down) 1f else -1f
+        fun edge(x: Float, k: Int) = start + dir * k * (9f + k * 1.2f) * u * fit +
+            6f * u * fit * sin(x / w * 5f + phase + k * 0.4f) +
+            3f * u * fit * sin(x / w * 13f + phase * 2f + k) +
+            tilt * (x - w / 2f)
+        val step = 4f * u
+        for (k in 0 until count) {
+            val fade = 1f - k.toFloat() / count
+            val band = Path()
+            var x = -step
+            band.moveTo(x, edge(x, k))
+            while (x <= w + step) {
+                x += step
+                band.lineTo(x, edge(x, k))
+            }
+            while (x >= -step) {
+                band.lineTo(x, edge(x, k + 1))
+                x -= step
+            }
+            band.close()
+            drawPath(band, colors[k % colors.size].copy(alpha = alpha * fade))
+            val seam = Path()
+            x = -step
+            seam.moveTo(x, edge(x, k + 1))
+            while (x <= w + step) {
+                x += step
+                seam.lineTo(x, edge(x, k + 1))
+            }
+            drawPath(seam, ink.copy(alpha = 0.07f * fade), style = Stroke(0.8f * u))
         }
     }
 
@@ -226,60 +241,123 @@ private class Art(
         vignette(if (dark) Color.Black else Color(0xFF5A1E32), if (dark) 0.55f else 0.10f)
     }
 
-    // ---- Retro: big rainbow bands curving in from the side, like 70s wallpaper ----------------------
+    // ---- Retro: a 70s supergraphic, three thick stripes turning a rounded corner ----------------------
 
-    fun seventies() = with(scope) {
+    fun supergraphic() = with(scope) {
         radial(w * 0.5f, h * 0.3f, longest * 0.6f, second, if (dark) 0.06f else 0.10f)
-        val centre = Offset(if (mini) -w * 0.05f else -w * 0.08f, if (mini) h * 1.05f else h * 0.62f)
-        val band = (if (mini) 10f else 15f) * u
-        val alpha = if (quiet) (if (dark) 0.08f else 0.10f) else (if (dark) 0.2f else 0.26f)
-        val inner = w * (if (mini) 0.2f else 0.22f)
-        listOf(accent, second, third, accent, second).forEachIndexed { k, color ->
-            val radius = inner + k * band
-            drawArc(
-                color.copy(alpha = alpha * (1f - k * 0.12f)),
-                startAngle = -90f, sweepAngle = 180f, useCenter = false,
-                topLeft = Offset(centre.x - radius, centre.y - radius), size = Size(radius * 2f, radius * 2f),
-                style = Stroke(band - 1.5f * u, cap = StrokeCap.Butt),
-            )
+        val alpha = (if (dark) 0.34f else 0.36f) * (if (quiet) 0.45f else 1f)
+        val colors = listOf(third, second, accent)
+        if (w > h) {
+            // On its side the right is the note column's: both turns stay in the strip left of the meter.
+            stripes(Offset(w * 0.09f, h * 0.32f), toRight = false, toBottom = false, colors, alpha)
+            stripes(Offset(w * 0.09f, h * 0.66f), toRight = false, toBottom = true, colors.reversed(), alpha)
+        } else {
+            // Upright only round the top right corner, clear of the mode switch: lower down, the mock-up's second
+            // turn ran through the string buttons and the style cards.
+            stripes(Offset(w * 0.81f, h * 0.172f), toRight = true, toBottom = false, colors, alpha)
         }
         vignette(if (dark) Color.Black else Color(0xFF5A5014), if (dark) 0.5f else 0.10f)
     }
 
-    // ---- Contemporary: two soft colour washes, nothing else ----------------------------------------
-
-    fun wash() {
-        radial(w * 0.1f, h * 0.08f, longest * 0.6f, accent, 0.10f)
-        radial(w * 0.95f, h * 0.92f, longest * 0.6f, third, 0.07f)
+    /**
+     * Three stripes that come in from the top or bottom edge, turn a rounded corner at [corner] and run
+     * out to the left or right edge; each next stripe sits one band nearer the screen's corner, round
+     * the same centre.
+     */
+    private fun stripes(corner: Offset, toRight: Boolean, toBottom: Boolean, colors: List<Color>, alpha: Float) = with(scope) {
+        val hx = if (toRight) 1f else -1f
+        val vy = if (toBottom) 1f else -1f
+        val band = 13f * u
+        colors.forEachIndexed { k, color ->
+            val radius = 60f * u - k * band
+            val x = corner.x + hx * k * band
+            val y = corner.y + vy * k * band
+            val path = Path().apply {
+                moveTo(x, if (toBottom) h + band else -band)
+                lineTo(x, y + vy * radius)
+                cubicTo(x, y + vy * radius * (1f - QUARTER_CIRCLE), x + hx * radius * (1f - QUARTER_CIRCLE), y, x + hx * radius, y)
+                lineTo(if (toRight) w + band else -band, y)
+            }
+            drawPath(path, color.copy(alpha = alpha), style = Stroke(band - 2f * u, cap = StrokeCap.Butt))
+        }
     }
 
-    // ---- Futuristic: a neon perspective grid low on the screen, a magenta horizon, scan lines -------
+    // ---- Contemporary: fine flowing lines at the top and lower down, like silk -----------------------
 
-    fun hud() = with(scope) {
-        radial(w * 0.5f, h * (if (mini) 0.8f else 0.3f), w * 0.9f, accent, if (dark) 0.12f else 0.08f)
-        val grid = accent.copy(alpha = if (dark) 0.14f else 0.10f)
-        val horizon = h * (if (mini) 0.6f else 0.74f)
-        val vanish = horizon - h * 0.1f
+    fun silk() {
+        radial(w * 0.1f, h * 0.08f, longest * 0.6f, accent, 0.07f)
+        val strength = if (quiet) 0.6f else 1f
+        silkLines(start = -12f * u, count = max(4, (14 * fit).roundToInt()), amplitude = 18f, phase = 0.6f, dir = 1f, strength)
+        silkLines(start = h * 0.8f, count = max(5, (20 * fit).roundToInt()), amplitude = 26f, phase = 2.4f, dir = -1f, strength)
+    }
+
+    /** [count] lines 5 units apart from [start], their waves drifting a little from line to line; every sixth in the accent. */
+    private fun silkLines(start: Float, count: Int, amplitude: Float, phase: Float, dir: Float, strength: Float) = with(scope) {
+        val step = 4f * u
+        for (k in 0 until count) {
+            val t = k / (count - 1f)
+            fun y(x: Float) = start + dir * k * 5f * u +
+                amplitude * u * fit * (1f - t * 0.5f) * sin(x / w * PI_F * 1.6f + phase + t * 1.2f) +
+                10f * u * fit * t * sin(x / w * PI_F * 3.1f + phase * 0.7f)
+            val path = Path()
+            var x = -6f * u
+            path.moveTo(x, y(x))
+            while (x < w + 6f * u) {
+                x += step
+                path.lineTo(x, y(x))
+            }
+            val color = if (k % 6 == 0) {
+                accent.copy(alpha = (if (dark) 0.30f else 0.26f) * strength)
+            } else {
+                ink.copy(alpha = (if (dark) 0.11f else 0.10f) * (1f - t * 0.6f) * strength)
+            }
+            drawPath(path, color, style = Stroke(0.8f * u))
+        }
+    }
+
+    // ---- Futuristic: a glowing perspective grid that fades away upwards, rising sparks, scan lines ---
+
+    fun glowGrid() = with(scope) {
+        radial(w * 0.5f, h * 0.3f, w * 0.9f, accent, if (dark) 0.12f else 0.08f)
+        val horizon = h * 0.62f
+        val vanish = horizon - h * 0.12f
         val t = (horizon - vanish) / (h - vanish)
-        for (i in -14..14) {
-            val bottomX = w * 0.5f + i * w * 0.14f
-            line(grid, w / 2f + (bottomX - w / 2f) * t, horizon, bottomX, h, u, StrokeCap.Butt)
+        // Half as strong behind the Settings list.
+        val strength = if (quiet) 0.5f else 1f
+        val glow = (if (dark) 0.30f else 0.16f) * strength
+        // A soft glow round each line (two wide faint strokes, for the mock-up's blur), then the line itself.
+        for ((width, alpha) in arrayOf(7f to glow * 0.35f, 3.5f to glow * 0.6f, 0.9f to (if (dark) 0.32f else 0.19f) * strength)) {
+            val color = accent.copy(alpha = alpha)
+            for (i in -16..16) {
+                val bottomX = w * 0.5f + i * w * 0.12f
+                line(color, w / 2f + (bottomX - w / 2f) * t, horizon, bottomX, h, width * u, StrokeCap.Butt)
+            }
+            for (k in 0..12) {
+                val f = k / 12f
+                val y = horizon + (h - horizon) * f * f
+                line(color, 0f, y, w, y, width * u, StrokeCap.Butt)
+            }
         }
-        for (k in 0..10) {
-            val f = k / 10f
-            val y = horizon + (h - horizon) * f * f
-            line(grid, 0f, y, w, y, u, StrokeCap.Butt)
-        }
-        // The grid fades in below the horizon.
+        // No horizon line: the grid fades away upwards (the owner's pick), hiding its top line and glow.
+        val top = horizon - 12f * u
+        val bottom = horizon + h * GRID_FADE
         drawRect(
-            Brush.verticalGradient(listOf(bg, bg.copy(alpha = 0f)), startY = horizon - u, endY = horizon + h * 0.06f),
-            topLeft = Offset(0f, horizon - u),
-            size = Size(w, h * 0.06f + u),
+            Brush.verticalGradient(
+                0f to bg, 0.12f to bg, 0.45f to bg.copy(alpha = 0.7f), 0.75f to bg.copy(alpha = 0.28f), 1f to bg.copy(alpha = 0f),
+                startY = top, endY = bottom,
+            ),
+            topLeft = Offset(0f, top),
+            size = Size(w, bottom - top),
         )
-        // The magenta horizon glow, over the fade so it has no hard edge. The quiet ground leaves out its
-        // line: on the metronome it ran through the see-through Start / Stop button.
-        radial(w * 0.5f, horizon, w * 0.6f, second, if (dark) 0.14f else 0.07f)
-        if (!quiet) line(accent.copy(alpha = if (dark) 0.35f else 0.25f), w * 0.1f, horizon, w * 0.9f, horizon, 0.8f * u, StrokeCap.Butt)
+        radial(w * 0.5f, horizon + h * GRID_FADE * 0.6f, w * 0.8f, second, if (dark) 0.10f else 0.05f)
+        // Sparks rising at the sides; none in Settings.
+        repeat(if (quiet) 0 else if (mini) 12 else 40) {
+            val x = sideX(r())
+            val up = r()
+            val y = horizon + h * GRID_FADE * 0.5f - up * h * 0.36f
+            val color = if (r() < 0.3f) second else accent
+            drawCircle(color.copy(alpha = (if (dark) 0.6f else 0.35f) * (1f - up)), (0.6f + r() * 1.2f) * u, Offset(x, y))
+        }
         if (dark) {
             val scan = Color.Black.copy(alpha = 0.16f)
             var y = 0f
@@ -290,75 +368,43 @@ private class Art(
         }
     }
 
-    // ---- Space Age: a violet starfield with an orange ringed planet by night ------------------------
+    // ---- Space Age: 1960s halftone print dots, big in two corners and shrinking to nothing ------------
 
-    fun spaceNight() = with(scope) {
-        drawRect(Brush.verticalGradient(listOf(bg, lerp(bg, accent, 0.16f))))
-        radial(w * 0.85f, h * 0.18f, w * 0.7f, accent, 0.10f)
-        radial(w * 0.1f, h * 0.55f, w * 0.6f, second, 0.06f)
-        // Two faint orbits round the meter.
-        for ((rx, ry, turn) in ORBITS) {
-            translate(w * 0.5f, h * 0.3f) {
-                rotate(turn, Offset.Zero) {
-                    drawOval(third.copy(alpha = 0.10f), Offset(-w * rx, -w * ry), Size(w * rx * 2f, w * ry * 2f), style = Stroke(0.8f * u))
-                }
+    fun halftone() = with(scope) {
+        if (dark) {
+            drawRect(Brush.verticalGradient(listOf(bg, lerp(bg, accent, 0.14f))))
+            repeat(if (mini) 15 else 60) {
+                val size = r()
+                val x = r() * w
+                val y = r() * h
+                drawCircle(ink.copy(alpha = 0.2f + r() * 0.4f), (0.4f + size * size * 1.4f) * u, Offset(x, y))
             }
         }
-        repeat(if (mini) 50 else 200) {
-            val size = r()
-            val x = r() * w
-            val y = r() * h
-            drawCircle(ink.copy(alpha = 0.25f + r() * 0.6f), (0.4f + size * size * 1.4f) * u, Offset(x, y))
-        }
-        // Bright twinkles at the sides only, away from the note and the pill; none in Settings.
-        repeat(if (quiet) 0 else if (mini) 2 else 6) {
-            val x = sideX(r())
-            val y = (0.4f + r() * 0.5f) * h
-            sparkle(Offset(x, y), (5f + r() * 5f) * u, ink.copy(alpha = 0.75f), u)
-        }
-        if (!mini && !quiet) {
-            // A ringed planet rising in the lower corner, as big on its side as upright.
-            val centre = Offset(0f, h * 1.05f)
-            val radius = min(w, h) * 0.3f
-            drawCircle(
-                Brush.radialGradient(
-                    listOf(second.copy(alpha = 0.55f), lerp(second, bg, 0.6f).copy(alpha = 0.45f)),
-                    center = Offset(centre.x + radius * 0.3f, centre.y - radius * 0.4f),
-                    radius = radius * 1.3f,
-                ),
-                radius = radius,
-                center = centre,
-            )
-            rotate(-14f, centre) {
-                drawOval(
-                    third.copy(alpha = 0.45f),
-                    topLeft = Offset(centre.x - radius * 1.55f, centre.y - radius * 0.32f),
-                    size = Size(radius * 3.1f, radius * 0.64f),
-                    style = Stroke(2f * u),
-                )
-            }
-        }
+        val strength = if (quiet) 0.55f else 1f
+        val reach = 300f * u * fit
+        val dotAlpha = if (dark) 0.5f else 0.34f
+        // Upright the top right corner and low on the left; on its side both corners on the left, beside the meter.
+        val first = if (w > h) Offset.Zero else Offset(w, 0f)
+        val other = if (w > h) Offset(0f, h) else Offset(0f, h * 0.62f)
+        radial(first.x, first.y, reach, second, (if (dark) 0.12f else 0.08f) * strength)
+        halftoneDots(first, reach, second.copy(alpha = dotAlpha * strength))
+        halftoneDots(other, reach * 0.83f, accent.copy(alpha = dotAlpha * strength))
     }
 
-    // ---- Space Age by day: silver atomic orbits, starbursts and dots ---------------------------------
-
-    fun spaceDay() = with(scope) {
-        val nucleus = Offset(w * 0.5f, h * (if (mini) 0.5f else 0.25f))
-        for (turn in floatArrayOf(0f, 60f, 120f)) {
-            rotate(turn, nucleus) {
-                drawOval(third.copy(alpha = 0.22f), Offset(nucleus.x - w * 0.55f, nucleus.y - w * 0.18f), Size(w * 1.1f, w * 0.36f), style = Stroke(1.2f * u))
+    /** Dots on an offset grid, largest at [origin] and gone at [reach]. */
+    private fun halftoneDots(origin: Offset, reach: Float, color: Color) = with(scope) {
+        val gap = 11f * u
+        var row = 0
+        var y = gap / 2f
+        while (y < h) {
+            var x = if (row % 2 == 1) gap / 2f else 0f
+            while (x < w + gap) {
+                val d = hypot(x - origin.x, y - origin.y) / reach
+                if (d < 1f) drawCircle(color, (1f - d) * (1f - d) * 4.8f * u, Offset(x, y))
+                x += gap
             }
-        }
-        radial(w * 0.5f, h * 0.9f, w * 0.8f, accent, 0.08f)
-        repeat(if (quiet) 0 else if (mini) 3 else 8) { i ->
-            val x = sideX(r())
-            val y = (0.35f + r() * 0.55f) * h
-            starburst(Offset(x, y), (7f + r() * 8f) * u, (if (i % 2 == 1) second else accent).copy(alpha = 0.3f), u)
-        }
-        repeat(36) {
-            val x = r() * w
-            val y = r() * h
-            drawCircle(accent.copy(alpha = 0.10f), 2f * u, Offset(x, y))
+            y += gap * 0.87f
+            row++
         }
     }
 
@@ -396,31 +442,4 @@ private class Art(
     private fun line(color: Color, x1: Float, y1: Float, x2: Float, y2: Float, width: Float, cap: StrokeCap = StrokeCap.Round) {
         scope.drawLine(color, Offset(x1, y1), Offset(x2, y2), strokeWidth = width, cap = cap)
     }
-}
-
-private val FINGER_X = floatArrayOf(-0.235f, -0.08f, 0.075f, 0.225f)
-private val FINGER_LENGTH = floatArrayOf(0.40f, 0.50f, 0.48f, 0.38f)
-
-/** Where the rows of tally marks start, as (x, y) fractions of the screen: two low, one high. */
-private val TALLY_ROWS = floatArrayOf(0.18f, 0.07f, 0.26f, 0.92f, 0.62f, 0.95f)
-private val MINI_TALLY_ROWS = floatArrayOf(0.2f, 0.12f)
-
-/** Space Age's night orbits: half-width and half-height as fractions of the width, and their turn in degrees. */
-private val ORBITS = listOf(Triple(0.7f, 0.16f, -14.3f), Triple(0.55f, 0.12f, 20.1f))
-
-/** A four-pointed twinkle. */
-internal fun DrawScope.sparkle(centre: Offset, r: Float, color: Color, unit: Float) {
-    drawLine(color, Offset(centre.x - r, centre.y), Offset(centre.x + r, centre.y), strokeWidth = 0.9f * unit, cap = StrokeCap.Round)
-    drawLine(color, Offset(centre.x, centre.y - r), Offset(centre.x, centre.y + r), strokeWidth = 0.9f * unit, cap = StrokeCap.Round)
-    drawCircle(color, radius = 1.4f * unit, center = centre)
-}
-
-/** An eight-pointed 1950s–60s starburst. */
-internal fun DrawScope.starburst(centre: Offset, r: Float, color: Color, unit: Float) {
-    for (i in 0 until 8) {
-        val a = i * PI.toFloat() / 4f
-        val len = if (i % 2 == 0) r else r * 0.55f
-        drawLine(color, centre, Offset(centre.x + cos(a) * len, centre.y + sin(a) * len), strokeWidth = 1.4f * unit, cap = StrokeCap.Round)
-    }
-    drawCircle(color, radius = r * 0.16f, center = centre)
 }
