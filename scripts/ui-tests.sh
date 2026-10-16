@@ -9,16 +9,17 @@
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
 #   scripts/ui-tests.sh :feature:tuner -c MeterLookScreenshots -a meterScreenshots=true
 #                                                another instrumentation argument (-a key=value, repeatable)
-#   scripts/ui-tests.sh --quick ...              without the double checks: the style tests in the
-#                                                default style only, no @Thorough tests (iterating)
+#   scripts/ui-tests.sh --thorough ...           also the double checks: every style, and the @Thorough
+#                                                tests (other font sizes, languages, orientations)
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests: screens in every
 #                                                language Twangle ships (long; the overnight run)
 #
-# Since Phase 23 (the look final) every run has the double checks: the style tests in every style,
-# and the tests marked @Thorough (:core:testing: other font sizes, languages, orientations).
-# --thorough is still accepted and changes nothing.
+# A normal run is quick and leaves out the double checks: the style tests run in the default style
+# only, and tests marked @Thorough (:core:testing) are skipped. The overnight run
+# (scripts/overnight-ui-tests.sh) passes --thorough and checks everything. --quick is accepted and
+# changes nothing.
 #
 # One Gradle call builds every test APK (and the app, for :app). Each module's tests are then
 # installed and run straight on the phone with `am instrument`: Gradle's own test task costs 15-25 s
@@ -76,7 +77,7 @@ affected_modules() {
     [ $app = 1 ] && echo :app
 }
 
-modules=() filter="" class="" extra=() thorough=1 cool=0 languages=0
+modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
@@ -303,7 +304,7 @@ run_tests() {
     else
         echo "no results (log: $log)"
         if [ $thorough = 0 ] && [ -n "$filter$class" ]; then
-            echo "  (a test marked @Thorough doesn't run with --quick)"
+            echo "  (a test marked @Thorough only runs with --thorough)"
         fi
         tail -5 "$log"
     fi

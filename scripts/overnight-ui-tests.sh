@@ -50,7 +50,7 @@ start=$SECONDS
 status=0
 if [ $sweep = 1 ]; then
     echo "== Thorough sweep of every module ($(date +%H:%M))" | tee "$OUT/sweep.txt"
-    MODULE_TIMEOUT=1200 scripts/ui-tests.sh --all --cool 2>&1 | tee -a "$OUT/sweep.txt"
+    MODULE_TIMEOUT=1200 scripts/ui-tests.sh --all --thorough --cool 2>&1 | tee -a "$OUT/sweep.txt"
     [ "${PIPESTATUS[0]}" = 0 ] || status=1
 fi
 if [ $languages = 1 ]; then
@@ -59,7 +59,7 @@ if [ $languages = 1 ]; then
         for style in "${STYLES[@]}"; do
             wait_cool | tee -a "$OUT/languages.txt"
             echo "-- $module $style" | tee -a "$OUT/languages.txt"
-            MODULE_TIMEOUT=1800 scripts/ui-tests.sh "$module" --languages -f "everyLanguage.*\[$style\]" 2>&1 | tee -a "$OUT/languages.txt"
+            MODULE_TIMEOUT=1800 scripts/ui-tests.sh "$module" --thorough --languages -f "everyLanguage.*\[$style\]" 2>&1 | tee -a "$OUT/languages.txt"
             [ "${PIPESTATUS[0]}" = 0 ] || status=1
         done
     done
