@@ -24,9 +24,8 @@ adb shell settings get global stay_on_while_plugged_in   # non-zero: the screen 
 ```
 - Check no other session or sub-agent holds the phone (ListAgents; `scripts/ui-tests.sh` also
   takes a lock on the phone and exits 5 if another run has it).
-- Read ROADMAP.md: the *Waiting on the owner* overnight item lists the tests that were left for the
-  night, and phases may have items marked "Runs overnight". The run below covers all of them;
-  note which items it closes.
+- Read ROADMAP.md: phases may have items marked "Runs overnight", and *Waiting on the owner* may
+  have an open overnight item. The run below covers all of them; note which items it closes.
 - Branch `chore/overnight-<date>` (or `phase-<N>/<topic>` when it closes a phase's item).
 - `./gradlew test lint assembleDebug` must pass before the phone run.
 
