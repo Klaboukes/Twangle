@@ -47,8 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
@@ -84,6 +84,7 @@ import io.github.klaboukes.twangle.core.designsystem.PressTone
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
+import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -98,7 +99,7 @@ import io.github.klaboukes.twangle.feature.metronome.R
  * since Phase 27, docs/design/metronome-listen-preview.html): see-through buttons on the background
  * (the surface at 45 % behind a thin outline in the muted colour) in the style's own shape, picked
  * ones in the container colour with an accent outline, and Start in the accent. Futuristic's are neon
- * outlines in the accent with nothing behind them, as its tuner's. Every one shows Twangle's press
+ * outlines in the accent on a solid tint ([neonFill]), as its tuner's. Every one shows Twangle's press
  * effect ([pressFeedback]) instead of Material's ripple; Tap tempo its own crisp flash.
  */
 
@@ -122,7 +123,7 @@ private fun faceFill(look: ButtonLook, picked: Boolean = false): Color {
     return when {
         picked && look.neon -> scheme.primary.copy(alpha = 0.12f)
         picked -> scheme.primaryContainer
-        look.neon -> Color.Transparent
+        look.neon -> neonFill(scheme)
         else -> scheme.surface.copy(alpha = 0.45f)
     }
 }

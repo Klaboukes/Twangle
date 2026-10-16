@@ -141,7 +141,7 @@ private fun MoodString(label: String, index: Int, picked: Boolean, unit: Dp) {
         else -> colors.onSurfaceVariant.copy(alpha = 0.6f)
     }
     val fill = when {
-        neon -> colors.primary.copy(alpha = if (picked) 0.14f else 0.10f).compositeOver(colors.background)
+        neon -> if (picked) colors.primary.copy(alpha = 0.14f).compositeOver(colors.background) else neonFill(colors)
         picked -> lerp(colors.surface, colors.primary, 0.28f)
         else -> colors.surface.copy(alpha = 0.7f)
     }

@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -448,7 +449,7 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
     }
     val fill = when {
         checked -> scheme.primaryContainer
-        neon -> Color.Transparent
+        neon -> neonFill(scheme)
         else -> scheme.surface.copy(alpha = BACKING_ALPHA)
     }
     TooltipBox(

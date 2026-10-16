@@ -13,13 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
+import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -34,7 +34,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Modifier = Modifier) {
     val modes = TunerMode.entries
     val scheme = MaterialTheme.colorScheme
-    // Futuristic's buttons are neon outlines in the accent, with nothing behind the unpicked one.
+    // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
     val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
     // touch area set round the light, as the Twangle buttons do (OwnTouchArea).
@@ -57,7 +57,7 @@ fun ModeSwitch(mode: TunerMode, onModeChange: (TunerMode) -> Unit, modifier: Mod
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = scheme.primaryContainer,
                         activeContentColor = scheme.onPrimaryContainer,
-                        inactiveContainerColor = if (neon) Color.Transparent else scheme.surface.copy(alpha = 0.6f),
+                        inactiveContainerColor = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.6f),
                         activeBorderColor = if (neon) scheme.primary else scheme.outline,
                         inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
                     ),

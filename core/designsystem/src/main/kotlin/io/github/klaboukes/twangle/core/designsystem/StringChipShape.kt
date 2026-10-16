@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.designsystem
 import android.graphics.BlurMaskFilter
 import android.os.Build
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -160,6 +162,14 @@ fun Modifier.stringChipShading(style: VisualStyle, shape: Shape, ink: Color): Mo
     }
     else -> this
 }
+
+/**
+ * Futuristic's fill for a neon button that isn't picked: the accent at 10 % on the background colour.
+ * Solid, not over the picture, so the grid's lines don't run through the button's name or icon.
+ */
+fun neonFill(scheme: ColorScheme): Color = scheme.primary.copy(alpha = NEON_FILL_ALPHA).compositeOver(scheme.background)
+
+private const val NEON_FILL_ALPHA = 0.10f
 
 /**
  * Futuristic's neon glow round a string button: [color] blurred 8 dp round [shape], drawn behind a
