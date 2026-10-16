@@ -688,8 +688,8 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 
 /**
  * The tuner's tools (strum check, the 12th-fret check, the chord name; later ones join) behind one small "more tools"
- * button (^) above the strings, where the strum check's switch sits when it is the only tool. Outlined
- * like the strum check's switch; filled with the accent's container while a tool is on. A tap opens a
+ * button above the strings (a hammer and screwdriver, Material Symbols `handyman`, no word), where the strum
+ * check's switch sits when it is the only tool. Outlined like the strum check's switch; filled with the accent's container while a tool is on. A tap opens a
  * small menu that lifts softly off the screen (no outline): each tool with its icon and name, the one
  * that is on ticked and in the accent; picking one turns it on (and the other off), picking the ticked
  * one turns it off. TalkBack: "More tools, button, Strum check" (the tool that is on); a long-press
@@ -891,7 +891,7 @@ private const val WIDE_FACE_SCALE = 0.82f
 private val BUTTON_WIDTH = 148.dp
 private val BUTTON_GAP = 12.dp
 private val BUTTON_ROW_TOP_GAP = 6.dp
-private val MORE_ICON_SIZE = 28.dp
+private val MORE_ICON_SIZE = 24.dp
 private val MENU_ICON_SIZE = 24.dp
 private val MENU_LIFT = 8.dp
 private val BADGE_RADIUS = 8.dp

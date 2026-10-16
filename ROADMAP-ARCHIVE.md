@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29 and 30 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -37,6 +37,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 28 — Hidden until 1.1](#phase-28--hidden-until-11)
 - [Phase 29 — Intonation check](#phase-29--intonation-check)
 - [Phase 30 — What chord is this?](#phase-30--what-chord-is-this)
+- [Phase 35 — An easier-to-find "more tools" button](#phase-35--an-easier-to-find-more-tools-button)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -334,6 +335,12 @@ Goal: strum a chord and Twangle names it (e.g. "A minor"), building on the strum
 - ☑ Rough mock-up of the mode for the owner to pick from (`docs/design/chord-mode-preview.html`; owner picked B on 2026-10-16: the ^ menu's "Chord name", big symbol with words, the chord's notes with the bass filled, the last three chords; design in docs/architecture/ui-tuner.md, *Chord name view*)
 - ☑ The mode inside the tuner behind its switch (Phase 28): the chord's name in the player's note names, translated, TalkBack and 2× text; JVM and UI tests; phone check with synthetic chords ("Chord name" in the ^ menu for guitars, ukulele and mandolin; settled by `ChordSettler`: 4 of 6 readings, 1.5 s hold, faded, "Not a clear chord"; synthetic Am and C/E named on the Xiaomi through the fake microphone)
 - ☑ Owner check added: strum a dozen real chords and check the names
+
+## Phase 35 — An easier-to-find "more tools" button
+Goal: players notice that the tuner has more tools. The small ^ above the strings doesn't say "there are tools in here".
+- ☑ Rough mock-up for the owner to pick from (docs/design/more-tools-preview.html): owner picked (2026-10-16, round 2) the hammer and screwdriver icon (Material Symbols `handyman`), icon only, no word
+- ☑ The `handyman` icon in place of ^, same 44 dp button, in every style, light and dark, upright and on its side, 2× text, TalkBack (still "More tools"); the tour's step points at it; UI tests; phone check (24 dp glyph in the 44 dp button; off and on, light and dark, and the menu checked on the Xiaomi)
+- ☑ docs/architecture/ui-tuner.md (*More tools*) updated
 
 ---
 

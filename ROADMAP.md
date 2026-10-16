@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22 and 24–30 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–30 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -18,26 +18,20 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 5: with a real Bluetooth headset connected, the tuner still listens through the phone's mic and reads a string correctly (postponed 2026-10-16: the owner has no Bluetooth headset yet)
 - ☐ Phase 15: with a real bass (or a 7-string guitar or cello), check the lowest strings read correctly (B0, E1, B1, C2), and that the tuner shows no note while the amp only hums (postponed 2026-10-16: the owner has no other instrument yet)
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears (postponed 2026-10-16: the owner has no Wear OS watch yet, and the watch app follows in an update, decision 3)
-- ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the ^ button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
-- ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the ^ button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
+- ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the hammer-and-screwdriver button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
+- ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the hammer-and-screwdriver button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
 
 ---
 
 ## Music tools, before v1.0
-**Owner decided (2026-10-16):** there is no hurry to release, so the music tools (Phases 29–33) are finished first and go into **v1.0**, not a later version 1.1 as planned earlier that day. Each tool stays hidden in the Play build behind its own switch (Phase 28) until it is finished and has passed the owner's check; then it goes live (Phase 34). The owner's debug builds and the UI tests show every tool. The owner picks the order among Phases 31–33 and 35 (`/roadmap-step <phase>`); Phase 33 needs Phase 32, and Phase 34 comes after the others. Phase 23 (the release) is listed last: its steps that show or ship the app (store texts, screenshots, the Baseline Profile, the Play tracks) wait for Phase 34, the others (developer account, Play Console forms, store graphics, the rate row) can be done any time.
+**Owner decided (2026-10-16):** there is no hurry to release, so the music tools (Phases 29–33) are finished first and go into **v1.0**, not a later version 1.1 as planned earlier that day. Each tool stays hidden in the Play build behind its own switch (Phase 28) until it is finished and has passed the owner's check; then it goes live (Phase 34). The owner's debug builds and the UI tests show every tool. The owner picks the order among Phases 31–33 (`/roadmap-step <phase>`); Phase 33 needs Phase 32, and Phase 34 comes after the others. Phase 23 (the release) is listed last: its steps that show or ship the app (store texts, screenshots, the Baseline Profile, the Play tracks) wait for Phase 34, the others (developer account, Play Console forms, store graphics, the rate row) can be done any time.
 
 Rules for every phase here: no internet, no account, audio never saved, every text translated, TalkBack and 2× text from the start, nothing added to the tuner screen's clutter. A rough mock-up for the owner comes before each new screen or mode. Each phase's live test goes under *Owner checks* when it lands.
 
 **Where they go in the app** (owner agreed, 2026-10-16, and again after asking whether every tool, the metronome included, could share one Tools item in the bar): the bar keeps four items. Five would leave each name about 78 dp on the Xiaomi instead of about 98, too little for long words in 16 languages at 2× text (Dutch "Instellingen" already shrinks with four), and would crowd a calm screen.
-- The tools that listen (strum check, 12th-fret check, chord name, pitch trail) stay modes inside the tuner, under the "more tools" button above the strings: they share the tuner's microphone, instrument, tuning and string row, and the 12th-fret check starts by tuning the string. The bar doesn't change for them. The button becomes easier to find (Phase 35).
+- The tools that listen (strum check, 12th-fret check, chord name, pitch trail) stay modes inside the tuner, under the "more tools" button above the strings: they share the tuner's microphone, instrument, tuning and string row, and the 12th-fret check starts by tuning the string. The bar doesn't change for them. The button shows a hammer and screwdriver so it is easy to find (Phase 35, done).
 - The Metronome tab becomes **Practice** (Phase 32), holding the Metronome, Chords and the Capo helper, with a small switch at the top like the tuner's mode switch. It opens on the tool used last (saved), so someone who mostly uses the metronome still reaches it in one tap. The bar becomes Tuner · Instrument · Practice · Settings. Chords and the Capo helper follow the instrument picked in the Instrument item. "Practice" rather than "Tools": it is short in every language ("Oefenen", "Üben"; "Gereedschap" and "Werkzeuge" would shrink like "Instellingen").
 - Later tools that don't listen (ear training, a drone, a practice timer) go into Practice too, so the bar doesn't change again.
-
-## Phase 35 — An easier-to-find "more tools" button
-Goal: players notice that the tuner has more tools. The small ^ above the strings doesn't say "there are tools in here".
-- ☑ Rough mock-up for the owner to pick from (docs/design/more-tools-preview.html): owner picked (2026-10-16, round 2) the hammer and screwdriver icon (Material Symbols `handyman`), icon only, no word
-- ☐ The `handyman` icon in place of ^, same 44 dp button, in every style, light and dark, upright and on its side, 2× text, TalkBack (still "More tools"); the tour's step points at it; UI tests; phone check
-- ☐ docs/architecture/ui-tuner.md (*More tools*) updated
 
 ## Phase 31 — Pitch trail
 Goal: a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists.
