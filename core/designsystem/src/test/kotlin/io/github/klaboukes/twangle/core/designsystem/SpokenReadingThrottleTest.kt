@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.designsystem
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

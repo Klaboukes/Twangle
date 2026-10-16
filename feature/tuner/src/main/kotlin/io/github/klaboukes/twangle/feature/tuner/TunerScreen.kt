@@ -82,6 +82,7 @@ import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -549,6 +550,9 @@ fun TunerContent(
             )
         }
     }
+    // Kept here, as the bars are: TalkBack's pacing carries over when the note's display is built
+    // afresh, so a note fading to "Play a string" (or a short drop-out) isn't said at once.
+    val speech = rememberPacedSpeech()
     val noteFor = @Composable { compact: Boolean ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state)
@@ -562,6 +566,7 @@ fun TunerContent(
                 reception = reception,
                 tip = state.tip,
                 signalBars = signalBars,
+                speech = speech,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
             is TunerUiState.Listening ->
@@ -576,6 +581,7 @@ fun TunerContent(
                     // While a reference tone sounds its line says which, not a tip about the mic.
                     tip = state.tip.takeIf { soundingString == null },
                     signalBars = signalBars,
+                    speech = speech,
                 )
             else -> NoteDisplay(
                 readout = null,
@@ -585,6 +591,7 @@ fun TunerContent(
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
                 signalBars = signalBars,
+                speech = speech,
             )
         }
     }

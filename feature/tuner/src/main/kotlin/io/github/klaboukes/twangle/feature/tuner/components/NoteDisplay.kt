@@ -69,7 +69,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.PacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.pacedSpeech
+import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -79,7 +82,6 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.tuner.InTuneTickRule
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
-import io.github.klaboukes.twangle.feature.tuner.SpokenReadingThrottle
 import io.github.klaboukes.twangle.feature.tuner.SteadyHint
 import io.github.klaboukes.twangle.feature.tuner.TunerHint
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -132,9 +134,12 @@ data class NoteReadout(
  *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
- * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), throttled by
- * [SpokenReadingThrottle] so it doesn't talk over itself. Note names are spoken through
+ * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), paced by [speech] so it
+ * doesn't talk over itself; pass the same [speech] to every [NoteDisplay] the screen switches between,
+ * so the pacing carries over from a note to "Play a string". Note names are spoken through
  * [rememberNoteNameSpeech] ("C sharp 4", in Dutch "cis 4"); without a readout it says [spokenHint].
+ * The live region is a layer of its own under the block, so nothing changing inside the block (the
+ * signal bars' "3 of 4") can make TalkBack read it again early.
  */
 @Composable
 fun NoteDisplay(
@@ -149,6 +154,7 @@ fun NoteDisplay(
     reception: () -> Float? = { null },
     tip: ReceptionTip? = null,
     signalBars: (@Composable (tint: Color) -> Unit)? = null,
+    speech: PacedSpeech = rememberPacedSpeech(),
 ) {
     val inTune = readout?.inTune == true
     // The wave shows how far off the note is in a picture instead of in cents.
@@ -221,9 +227,10 @@ fun NoteDisplay(
         }
     }
     val pillText by animateColorAsState(pillTextTarget, tween(PILL_TEXT_MS), label = "pillText")
-    val spoken = rememberSpokenReading(
+    val spoken = pacedSpeech(
         text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
         key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
+        speech = speech,
     )
     val density = LocalDensity.current
     val noteSize = if (compact) COMPACT_NOTE_SIZE else BIG_NOTE_SIZE
@@ -233,183 +240,192 @@ fun NoteDisplay(
         // nothing moves when a note comes in or goes.
         musicText(readout?.noteName ?: " $placeholder ")
     }
-    Column(
-        // The texts below are hidden from TalkBack; this block speaks for them.
-        modifier = modifier.semantics {
-            contentDescription = spoken
-            liveRegion = LiveRegionMode.Polite
-        },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        // The note reads "E2" in every language: the octave stays right of the letter in
-        // right-to-left languages too.
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Row(
-                modifier = Modifier
-                    .drawBehind {
-                        val strength = glow.value
-                        if (strength > 0f) {
-                            drawCircle(
-                                Brush.radialGradient(listOf(tuneColor.copy(alpha = 0.32f * strength), Color.Transparent)),
-                                radius = size.maxDimension * 0.75f,
-                            )
-                        }
-                    }
-                    .graphicsLayer {
-                        scaleX = pop.value
-                        scaleY = pop.value
-                    },
-            ) {
-                Text(
-                    text = noteText,
-                    // Already huge, so it doesn't grow further with the system font size; that would
-                    // push the rest of the tuner off the screen.
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = with(density) { noteSize.toSp() },
-                        lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
-                    ),
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
-                        maxFontSize = with(density) { noteSize.toSp() },
-                        stepSize = with(density) { 4.dp.toSp() },
-                    ),
-                    color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
-                    maxLines = 1,
+    // The block takes the size it is given, as it did before it had a layer under it.
+    Box(modifier, propagateMinConstraints = true) {
+        // The texts below are hidden from TalkBack; this layer speaks for them. It lies under the
+        // block, not around it, so the signal bars' button (on top, so a touch still finds it)
+        // changing its words isn't a change inside the live region.
+        Box(
+            Modifier
+                .matchParentSize()
+                .semantics {
+                    contentDescription = spoken
+                    liveRegion = LiveRegionMode.Polite
+                },
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            // The note reads "E2" in every language: the octave stays right of the letter in
+            // right-to-left languages too.
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(
                     modifier = Modifier
-                        .alignByBaseline()
-                        .widthIn(max = BIG_NOTE_MAX_WIDTH)
-                        .hiddenFromTalkBack(),
-                )
-                if (readout != null) {
+                        .drawBehind {
+                            val strength = glow.value
+                            if (strength > 0f) {
+                                drawCircle(
+                                    Brush.radialGradient(listOf(tuneColor.copy(alpha = 0.32f * strength), Color.Transparent)),
+                                    radius = size.maxDimension * 0.75f,
+                                )
+                            }
+                        }
+                        .graphicsLayer {
+                            scaleX = pop.value
+                            scaleY = pop.value
+                        },
+                ) {
                     Text(
-                        text = readout.octave.toString(),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = colors.onSurfaceVariant,
-                        modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                        text = noteText,
+                        // Already huge, so it doesn't grow further with the system font size; that would
+                        // push the rest of the tuner off the screen.
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            fontSize = with(density) { noteSize.toSp() },
+                            lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
+                        ),
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
+                            maxFontSize = with(density) { noteSize.toSp() },
+                            stepSize = with(density) { 4.dp.toSp() },
+                        ),
+                        color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
+                        maxLines = 1,
+                        modifier = Modifier
+                            .alignByBaseline()
+                            .widthIn(max = BIG_NOTE_MAX_WIDTH)
+                            .hiddenFromTalkBack(),
                     )
+                    if (readout != null) {
+                        Text(
+                            text = readout.octave.toString(),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                        )
+                    }
                 }
             }
-        }
-        val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
-        when (display) {
-            TunerDisplay.WAVE -> WaveView(
-                cents = readout?.cents,
-                inTune = inTune,
-                modifier = pictureSize.testTag(TunerTestTags.WAVE),
-                look = waveLook,
-                reception = reception,
-            )
-            TunerDisplay.NEEDLE -> Unit
-        }
-        // In the wave view the pill is empty in tune (unless a tip shows): there the check mark sits in
-        // its middle, under the wave, instead of at its start. Where it sat in tune it stays while it
-        // fades out, so it doesn't jump aside as the direction hint comes back.
-        val centredInTune = pictured && (tipText ?: directionText).isEmpty()
-        var checkCentred by remember { mutableStateOf(centredInTune) }
-        if (inTune && checkCentred != centredInTune) checkCentred = centredInTune
-        if (!pictured && checkCentred) checkCentred = false
-        val check = @Composable { shown: Boolean ->
-            Icon(
-                painter = painterResource(R.drawable.ic_check_circle),
-                contentDescription = null,
-                // Over the clear pill of the wave view, in the "in tune" colour; over the filled pill, in its text colour.
-                tint = if (pictured) tuneColor else pillText,
-                modifier = Modifier
-                    .size(CHECK_SIZE)
-                    .graphicsLayer {
-                        val amount = if (shown) checkShown else 0f
-                        alpha = amount
-                        scaleX = 0.5f + 0.5f * amount
-                        scaleY = 0.5f + 0.5f * amount
-                    },
-            )
-        }
-        Box(contentAlignment = Alignment.Center) {
-            // The pill's fill is clipped to its shape on a layer of its own, so the signal bars'
-            // 48 dp touch area can reach past the pill's edge.
-            Box(
-                Modifier
-                    .matchParentSize()
-                    .clip(MaterialTheme.shapes.small)
-                    .drawBehind {
-                        drawRect(pillBase.value)
-                        drawPillBloom(tuneColor, pillFill.value)
-                        drawPillSheen(sheen.value)
-                    },
-            )
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                // The check mark's slot is mirrored on the right, so the text stays centred.
-                check(!checkCentred)
-                val pillStyle = when {
-                    pictured -> MaterialTheme.typography.titleMedium
-                    readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
-                    else -> MaterialTheme.typography.titleLarge
+            val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
+            when (display) {
+                TunerDisplay.WAVE -> WaveView(
+                    cents = readout?.cents,
+                    inTune = inTune,
+                    modifier = pictureSize.testTag(TunerTestTags.WAVE),
+                    look = waveLook,
+                    reception = reception,
+                )
+                TunerDisplay.NEEDLE -> Unit
+            }
+            // In the wave view the pill is empty in tune (unless a tip shows): there the check mark sits in
+            // its middle, under the wave, instead of at its start. Where it sat in tune it stays while it
+            // fades out, so it doesn't jump aside as the direction hint comes back.
+            val centredInTune = pictured && (tipText ?: directionText).isEmpty()
+            var checkCentred by remember { mutableStateOf(centredInTune) }
+            if (inTune && checkCentred != centredInTune) checkCentred = centredInTune
+            if (!pictured && checkCentred) checkCentred = false
+            val check = @Composable { shown: Boolean ->
+                Icon(
+                    painter = painterResource(R.drawable.ic_check_circle),
+                    contentDescription = null,
+                    // Over the clear pill of the wave view, in the "in tune" colour; over the filled pill, in its text colour.
+                    tint = if (pictured) tuneColor else pillText,
+                    modifier = Modifier
+                        .size(CHECK_SIZE)
+                        .graphicsLayer {
+                            val amount = if (shown) checkShown else 0f
+                            alpha = amount
+                            scaleX = 0.5f + 0.5f * amount
+                            scaleY = 0.5f + 0.5f * amount
+                        },
+                )
+            }
+            Box(contentAlignment = Alignment.Center) {
+                // The pill's fill is clipped to its shape on a layer of its own, so the signal bars'
+                // 48 dp touch area can reach past the pill's edge.
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .clip(MaterialTheme.shapes.small)
+                        .drawBehind {
+                            drawRect(pillBase.value)
+                            drawPillBloom(tuneColor, pillFill.value)
+                            drawPillSheen(sheen.value)
+                        },
+                )
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // The check mark's slot is mirrored on the right, so the text stays centred.
+                    check(!checkCentred)
+                    val pillStyle = when {
+                        pictured -> MaterialTheme.typography.titleMedium
+                        readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
+                        else -> MaterialTheme.typography.titleLarge
+                    }
+                    val tipInPill = tipText != null && (readout == null || pictured)
+                    val pillLine = rememberLineHeight(pillStyle)
+                    // As wide as the widest cents text, so the pill keeps its size while the cents change.
+                    val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
+                    Text(
+                        text = when {
+                            // The hint can name a note: "Play the C♯ string".
+                            readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
+                            // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
+                            pictured -> AnnotatedString(tipText ?: directionText)
+                            else -> AnnotatedString(centsText(readout.cents))
+                        },
+                        style = pillStyle,
+                        color = when {
+                            readout == null -> colors.onSurface
+                            pictured -> colors.primary
+                            else -> pillText
+                        },
+                        textAlign = TextAlign.Center,
+                        maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
+                        autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .widthIn(min = centsWidth)
+                            .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
+                            .hiddenFromTalkBack(),
+                    )
+                    Box(Modifier.size(CHECK_SIZE)) {
+                        signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
+                    }
                 }
-                val tipInPill = tipText != null && (readout == null || pictured)
-                val pillLine = rememberLineHeight(pillStyle)
-                // As wide as the widest cents text, so the pill keeps its size while the cents change.
-                val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
+                if (pictured) check(checkCentred)
+            }
+            if (!pictured && showTuneHint) {
+                // Always there (empty without a hint), so the frequency below doesn't move.
+                Text(
+                    text = directionText,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.primary,
+                    modifier = Modifier.hiddenFromTalkBack(),
+                )
+            }
+            if (!pictured) {
+                val tipInLine = tipText != null && readout != null
+                val frequencyLine = rememberLineHeight(MaterialTheme.typography.bodyLarge)
                 Text(
                     text = when {
-                        // The hint can name a note: "Play the C♯ string".
-                        readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
-                        // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
-                        pictured -> AnnotatedString(tipText ?: directionText)
-                        else -> AnnotatedString(centsText(readout.cents))
+                        readout == null -> ""
+                        tipText != null -> tipText
+                        else -> stringResource(R.string.tuner_frequency, readout.frequencyHz)
                     },
-                    style = pillStyle,
-                    color = when {
-                        readout == null -> colors.onSurface
-                        pictured -> colors.primary
-                        else -> pillText
-                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (tipInLine) colors.primary else colors.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
-                    autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
+                    maxLines = 1,
+                    autoSize = if (tipInLine) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
                     modifier = Modifier
-                        .weight(1f, fill = false)
-                        .widthIn(min = centsWidth)
-                        .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
+                        .then(if (tipInLine) Modifier.keepLineHeight(frequencyLine) else Modifier)
                         .hiddenFromTalkBack(),
                 )
-                Box(Modifier.size(CHECK_SIZE)) {
-                    signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
-                }
             }
-            if (pictured) check(checkCentred)
-        }
-        if (!pictured && showTuneHint) {
-            // Always there (empty without a hint), so the frequency below doesn't move.
-            Text(
-                text = directionText,
-                style = MaterialTheme.typography.titleMedium,
-                color = colors.primary,
-                modifier = Modifier.hiddenFromTalkBack(),
-            )
-        }
-        if (!pictured) {
-            val tipInLine = tipText != null && readout != null
-            val frequencyLine = rememberLineHeight(MaterialTheme.typography.bodyLarge)
-            Text(
-                text = when {
-                    readout == null -> ""
-                    tipText != null -> tipText
-                    else -> stringResource(R.string.tuner_frequency, readout.frequencyHz)
-                },
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (tipInLine) colors.primary else colors.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                autoSize = if (tipInLine) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
-                modifier = Modifier
-                    .then(if (tipInLine) Modifier.keepLineHeight(frequencyLine) else Modifier)
-                    .hiddenFromTalkBack(),
-            )
         }
     }
 }
@@ -571,20 +587,6 @@ private fun spokenReading(readout: NoteReadout, direction: TunerHint?, tip: Stri
     } else {
         stringResource(R.string.tuner_spoken_reading_hint, note, readout.octave, state, extra)
     }
-}
-
-/** [text], passed on to TalkBack no faster than [SpokenReadingThrottle] allows. */
-@Composable
-private fun rememberSpokenReading(text: String, key: Any?): String {
-    val throttle = remember { SpokenReadingThrottle() }
-    var spoken by remember { mutableStateOf("") }
-    LaunchedEffect(text, key) {
-        val wait = throttle.delayFor(text, key, SystemClock.uptimeMillis()) ?: return@LaunchedEffect
-        if (wait > 0) delay(wait)
-        throttle.publish(text, key, SystemClock.uptimeMillis())
-        spoken = text
-    }
-    return spoken
 }
 
 @Preview(showBackground = true)

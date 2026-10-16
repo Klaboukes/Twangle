@@ -60,6 +60,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -84,8 +85,10 @@ import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
+import io.github.klaboukes.twangle.core.designsystem.pacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.rememberPacedSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoMarking
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -127,34 +130,63 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
  * larger fonts), so nothing moves when it shows or hides. 14 sp in the muted colour, centred; a
  * change crossfades (160 ms out, 160 ms in). "Listening…", then "Listening… 96 BPM" with the number
  * in ink; "No steady beat heard  Try again"; "Microphone is off" (with "Open settings" when only
- * Settings can allow it). TalkBack hears it as a polite live region.
+ * Settings can allow it). TalkBack hears it as a polite live region; the tempo, which can change many
+ * times a second while Listen settles, is passed on paced ([pacedSpeech]: at most every 2 s), and a
+ * new number takes the old one's place without the crossfade.
  */
 @Composable
 fun ListenLine(listen: ListenUi, onTryAgain: () -> Unit, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
     val text = TextStyle(fontSize = 14.sp, lineHeight = 1.2.em)
     val body = MaterialTheme.typography.bodyMedium.merge(text)
+    val shown = lineFor(listen)
+    // Each listening starts its pacing afresh, so its "Listening…" is said at once.
+    val speech = rememberPacedSpeech(listen.startedAtNanos)
+    val spokenTempo = (shown as? LineText.Listening)?.let { line ->
+        pacedSpeech(listeningText(line.estimate), key = line.estimate > 0, speech = speech)
+    }
     Box(
         modifier
             .fillMaxWidth()
             .heightIn(min = LINE_HEIGHT)
             .testTag(MetronomeTestTags.LINE)
-            // The line holds its text, so the live region itself changes and TalkBack says it.
-            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+            // The line holds its text, so the live region itself changes and TalkBack says it. While
+            // listening it says the paced words instead of the ones shown.
+            .semantics(mergeDescendants = true) {
+                liveRegion = LiveRegionMode.Polite
+                if (spokenTempo != null) contentDescription = spokenTempo
+            },
         contentAlignment = Alignment.Center,
     ) {
         // Keeps one line's room at any font size.
         Text(" ", style = body, modifier = Modifier.alpha(0f).clearAndSetSemantics {})
-        val shown = lineFor(listen)
         AnimatedContent(
             targetState = shown,
+            // A new tempo while listening is the same line: the number changes in place, without the
+            // crossfade, and TalkBack hears it paced (above).
+            contentKey = { line -> (line as? LineText.Listening)?.let { it.estimate > 0 } ?: line },
             transitionSpec = { fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)) togetherWith fadeOut(tween(LINE_FADE_MILLIS)) },
             contentAlignment = Alignment.Center,
             label = "listen line",
         ) { line ->
-            // The words fading out are not heard again.
-            Box(if (line == shown) Modifier else Modifier.clearAndSetSemantics {}) { LineContent(line, body, onTryAgain, onOpenSettings) }
+            val semantics = when {
+                // The words fading out are not heard again.
+                line != shown -> Modifier.clearAndSetSemantics {}
+                // The tempo shown is left to the line's paced words; hidden, not cleared, so the
+                // language checks still find it.
+                line is LineText.Listening -> Modifier.semantics(mergeDescendants = true) { hideFromAccessibility() }
+                else -> Modifier
+            }
+            Box(semantics) { LineContent(line, body, onTryAgain, onOpenSettings) }
         }
     }
+}
+
+/** "Listening…", or "Listening… 96 BPM" once there is an [estimate]: the words the line shows. */
+@Composable
+private fun listeningText(estimate: Int): String {
+    val listening = stringResource(R.string.metronome_listening)
+    if (estimate <= 0) return listening
+    return "$listening ${localDigits(estimate, appLocale())} ${stringResource(R.string.metronome_bpm)}"
 }
 
 @Composable

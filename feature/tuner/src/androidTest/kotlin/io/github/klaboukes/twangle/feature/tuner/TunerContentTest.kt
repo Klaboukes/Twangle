@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -925,6 +928,32 @@ class TunerContentTest {
         // Between notes the last count stays (dimmed).
         shownState.value = listening
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assert(hasContentDescription(context.getString(R.string.tuner_signal_bars, 4, 4)))
+    }
+
+    @Test
+    fun signalBarsAreNotInsideTheReadingsLiveRegion() {
+        show(detected(-12.3f).copy(reception = 0.7f), signalBars = true)
+        // A change inside a live region could make TalkBack read the whole reading again, early.
+        var node: SemanticsNode? = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).fetchSemanticsNode()
+        while (node != null) {
+            assertFalse(node.config.contains(SemanticsProperties.LiveRegion))
+            node = node.parent
+        }
+        // The reading is still one live region.
+        compose.onNode(hasContentDescription("E 2, 12 cents flat"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+    }
+
+    @Test
+    fun theReadingIsNotDroppedTheMomentTheNoteFades() {
+        show(detected(-12.3f))
+        assertSpokenSoon("E 2, 12 cents flat")
+        // The display is built afresh for "Play a string", but the pacing carries over: the
+        // reading stays until the note has been gone a while, then the hint is said.
+        shownState.value = listening
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("E 2, 12 cents flat")).assertExists()
+        assertSpokenSoon(context.getString(R.string.tuner_hint_play_string))
     }
 
     @Test

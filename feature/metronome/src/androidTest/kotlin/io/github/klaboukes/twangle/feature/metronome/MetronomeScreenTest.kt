@@ -22,6 +22,8 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.width
 import androidx.test.rule.GrantPermissionRule
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
+import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -270,7 +273,7 @@ class MetronomeScreenTest {
         listen.assertContentDescriptionEquals("Stop listening")
         assertFalse("the clicks pause while listening", player.isPlaying.value)
         start.assertIsNotEnabled()
-        compose.onNodeWithTag(MetronomeTestTags.LINE).assert(hasText("Listening…", substring = true))
+        lineSaysSoon("Listening…")
 
         listen.performClick()
         compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
@@ -363,10 +366,15 @@ class MetronomeScreenTest {
         }
         val line = compose.onNodeWithTag(MetronomeTestTags.LINE)
         line.assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
-        line.assert(hasText("Listening…"))
+        lineSaysSoon("Listening…")
         listen.value = listen.value.copy(estimate = 96)
+        lineSaysSoon("Listening… 96 BPM")
+        // A tempo still settling is passed on to TalkBack at most every 2 s, not with every change.
+        listen.value = listen.value.copy(estimate = 97)
         compose.waitForIdle()
-        line.assert(hasText("Listening… 96 BPM"))
+        line.assert(hasContentDescription("Listening… 96 BPM"))
+        listen.value = listen.value.copy(estimate = 98)
+        lineSaysSoon("Listening… 98 BPM")
         listen.value = ListenUi(ListenPhase.NO_BEAT)
         compose.waitForIdle()
         line.assert(hasText("No steady beat heard", substring = true))
@@ -376,6 +384,13 @@ class MetronomeScreenTest {
         compose.waitForIdle()
         line.assert(hasText("Microphone is off", substring = true))
         compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assert(hasText("Open settings"))
+    }
+
+    /** TalkBack is given [words] for the status line within the pacing's longest wait. */
+    private fun lineSaysSoon(words: String) {
+        compose.waitUntil(SpokenReadingThrottle.DEFAULT_REPEAT_MILLIS + 1_000) {
+            compose.onAllNodes(hasTestTag(MetronomeTestTags.LINE) and hasContentDescription(words)).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     private companion object {
