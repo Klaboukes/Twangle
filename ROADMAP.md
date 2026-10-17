@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22, 24–32 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–33, 35 and 36 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -27,7 +27,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ---
 
 ## Music tools, before v1.0
-**Owner decided (2026-10-16):** there is no hurry to release, so the music tools (Phases 29–33) are finished first and go into **v1.0**, not a later version 1.1 as planned earlier that day. Each tool stays hidden in the Play build behind its own switch (Phase 28) until it is finished and has passed the owner's check; then it goes live (Phase 34). The owner's debug builds and the UI tests show every tool. The owner picks the order among Phases 31–33 (`/roadmap-step <phase>`); Phase 33 needs Phase 32, and Phase 34 comes after the others. Phase 36 (focus mode, no music tool) is done. Phase 23 (the release) is listed last: its steps that show or ship the app (store texts, screenshots, the Baseline Profile, the Play tracks) wait for Phase 34, the others (developer account, Play Console forms, store graphics, the rate row) can be done any time.
+**Owner decided (2026-10-16):** there is no hurry to release, so the music tools (Phases 29–33) are finished first and go into **v1.0**, not a later version 1.1 as planned earlier that day. Each tool stays hidden in the Play build behind its own switch (Phase 28) until it is finished and has passed the owner's check; then it goes live (Phase 34). The owner's debug builds and the UI tests show every tool. Phases 29–33 are done, so Phase 34 (the tools go live) is next. Phase 36 (focus mode, no music tool) is done. Phase 23 (the release) is listed last: its steps that show or ship the app (store texts, screenshots, the Baseline Profile, the Play tracks) wait for Phase 34, the others (developer account, Play Console forms, store graphics, the rate row) can be done any time.
 
 Rules for every phase here: no internet, no account, audio never saved, every text translated, TalkBack and 2× text from the start, nothing added to the tuner screen's clutter. A rough mock-up for the owner comes before each new screen or mode. Each phase's live test goes under *Owner checks* when it lands.
 
@@ -35,13 +35,6 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 - The tools that listen (strum check, 12th-fret check, chord name, pitch trail) stay modes inside the tuner, under the "more tools" button above the strings: they share the tuner's microphone, instrument, tuning and string row, and the 12th-fret check starts by tuning the string. The bar doesn't change for them. The button shows a hammer and screwdriver so it is easy to find (Phase 35, done).
 - The Metronome tab becomes **Practice** (Phase 32), holding the Metronome, Chords and the Capo helper, with a small switch at the top like the tuner's mode switch. It opens on the tool used last (saved), so someone who mostly uses the metronome still reaches it in one tap. The bar becomes Tuner · Instrument · Practice · Settings. Chords and the Capo helper follow the instrument picked in the Instrument item. "Practice" rather than "Tools": it is short in every language ("Oefenen", "Üben"; "Gereedschap" and "Werkzeuge" would shrink like "Instellingen").
 - Later tools that don't listen (ear training, a drone, a practice timer) go into Practice too, so the bar doesn't change again.
-
-## Phase 33 — Capo helper
-Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.
-- ☑ `:core:dsp`: capo maths (the fret for a key and a set of shapes, and what a shape sounds like with the capo on, in the player's note names); pure and tested (`capo/Capo`, `CapoPlan`, `SongKey`; 16 tests in `CapoTest`)
-- ☑ Rough mock-up for the owner to pick from ([docs/design/capo-helper-preview.html](docs/design/capo-helper-preview.html); owner picked B on 2026-10-17: pick your shapes, step the capo with ‹ ›, a table shows what each shape sounds)
-- ☑ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check (`CapoScreen`, the third segment Metronome · Chords · Capo; a row opens its shape in Chords; shapes and fret saved; `CapoTableTest`, `CapoScreenTest`, `PracticeTabTest`)
-- ☑ Owner check added: work out the capo for two songs you know and play them (*Owner checks*)
 
 ## Phase 34 — The tools go live in v1.0
 Goal: the finished tools reach users in v1.0. Comes after the other tool phases and before Phase 23's store steps.

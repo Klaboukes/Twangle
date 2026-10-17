@@ -376,6 +376,15 @@ Goal: the full layout by default, upright and on its side, and one big meter as 
 
 ---
 
+## Phase 33 — Capo helper
+Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.
+- ☑ `:core:dsp`: capo maths (the fret for a key and a set of shapes, and what a shape sounds like with the capo on, in the player's note names); pure and tested (`capo/Capo`, `CapoPlan`, `SongKey`; 16 tests in `CapoTest`)
+- ☑ Rough mock-up for the owner to pick from ([docs/design/capo-helper-preview.html](docs/design/capo-helper-preview.html); owner picked B on 2026-10-17: pick your shapes, step the capo with ‹ ›, a table shows what each shape sounds)
+- ☑ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check (`CapoScreen`, the third segment Metronome · Chords · Capo; a row opens its shape in Chords; shapes and fret saved; `CapoTableTest`, `CapoScreenTest`, `PracticeTabTest`)
+- ☑ Owner check added: work out the capo for two songs you know and play them (*Owner checks*)
+
+---
+
 ## Finished owner items
 Moved from ROADMAP.md's *Waiting on the owner* and *Owner checks* once done.
 
