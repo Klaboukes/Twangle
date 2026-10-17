@@ -388,6 +388,23 @@ class TunerViewModel(
         chordNameOn.value = on
     }
 
+    /** The last [closeToolsOnRequest] count acted on. */
+    private var closedToolsRequest = 0
+
+    /**
+     * The navigation bar's Tuner tab was tapped: [request] goes up with every tap (0 before the first).
+     * Any tool that is on turns off, so the tab always leads to the plain tuner, also from another tab.
+     * A count already acted on changes nothing, so the tuner shown again another way (back from the
+     * tuning editor, the phone turned) keeps its tool.
+     */
+    fun closeToolsOnRequest(request: Int) {
+        if (request == closedToolsRequest) return
+        closedToolsRequest = request
+        strumCheckOn.value = false
+        intonationOn.value = false
+        chordNameOn.value = false
+    }
+
     /** The 12th-fret check starts on string [index] (lowest = 0), from its open note. */
     fun checkIntonationOf(index: Int) {
         intonationChoice.value = IntonationChoice(string = index, attempt = intonationChoice.value.attempt + 1)

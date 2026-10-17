@@ -78,7 +78,8 @@ import kotlin.math.min
  * bottom, or, in a window wider than tall (a phone on its side, [useRail]), the rail along the start
  * edge. Both are variant B of the approved mock-up (docs/design/metronome-nav-preview.html): icons and
  * names straight on the style's background over a calm field, the open tab ([selected]) in the accent
- * with the style's wave mark under its name. A tap on another tab calls [onSelect]. Tuning is no tab
+ * with the style's wave mark under its name. A tap on another tab calls [onSelect], and one on the open
+ * tab [onReselect] (the Tuner tab's closes the tuner's tools). Tuning is no tab
  * but a button ([InstrumentItem]): a tap calls [onTuning], which opens the instrument and tuning panel,
  * and [tuningState] ("Guitar, Standard") is what TalkBack hears it holds. Without a [selected] tab (the tuning
  * editor), or while [hidden] (the compact tuner on its side), the bar or rail is away and [content]
@@ -91,6 +92,7 @@ fun AppNavigationFrame(
     selected: Destination?,
     onSelect: (Destination) -> Unit,
     modifier: Modifier = Modifier,
+    onReselect: (Destination) -> Unit = {},
     onTuning: () -> Unit = {},
     tuningState: String? = null,
     hidden: Boolean = false,
@@ -111,7 +113,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
-                    AppNavigationRail(tab, onSelect, onTuning, tuningState, practice = practice)
+                    AppNavigationRail(tab, onSelect, onTuning, tuningState, practice = practice, onReselect = onReselect)
                 }
             } else {
                 AnimatedVisibility(
@@ -119,7 +121,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 ) {
-                    AppNavigationBar(tab, onSelect, onTuning, tuningState, practice = practice)
+                    AppNavigationBar(tab, onSelect, onTuning, tuningState, practice = practice, onReselect = onReselect)
                 }
             }
         }
@@ -173,6 +175,7 @@ fun AppNavigationBar(
     tuningState: String?,
     modifier: Modifier = Modifier,
     practice: Boolean = false,
+    onReselect: (Destination) -> Unit = {},
 ) {
     val field = MaterialTheme.colorScheme.background
     Row(
@@ -200,7 +203,7 @@ fun AppNavigationBar(
         verticalAlignment = Alignment.Top,
     ) {
         for (destination in Destination.entries) {
-            NavItem(destination, destination == selected, { onSelect(destination) }, practice, Modifier.weight(1f))
+            NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.weight(1f))
             if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.weight(1f))
         }
     }
@@ -218,6 +221,7 @@ fun AppNavigationRail(
     tuningState: String?,
     modifier: Modifier = Modifier,
     practice: Boolean = false,
+    onReselect: (Destination) -> Unit = {},
 ) {
     val field = MaterialTheme.colorScheme.background
     Box(
@@ -251,7 +255,7 @@ fun AppNavigationRail(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             for (destination in Destination.entries) {
-                NavItem(destination, destination == selected, { onSelect(destination) }, practice, Modifier.fillMaxWidth())
+                NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.fillMaxWidth())
                 if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.fillMaxWidth())
             }
         }
@@ -266,7 +270,14 @@ fun AppNavigationRail(
  * called Practice (it keeps the metronome's icon: the metronome is still what it holds first).
  */
 @Composable
-private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> Unit, practice: Boolean, modifier: Modifier = Modifier) {
+private fun NavItem(
+    destination: Destination,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onReselect: () -> Unit,
+    practice: Boolean,
+    modifier: Modifier = Modifier,
+) {
     NavEntry(
         icon = navIcon(destination, selected),
         label = stringResource(destination.label(practice)),
@@ -277,7 +288,7 @@ private fun NavItem(destination: Destination, selected: Boolean, onClick: () -> 
             .then(if (destination == Destination.TUNER) Modifier.tourControl() else Modifier.tourTarget(TourPart.NAVIGATION))
             .selectable(
                 selected = selected,
-                onClick = { if (!selected) onClick() },
+                onClick = { if (selected) onReselect() else onClick() },
                 role = Role.Tab,
                 interactionSource = null,
                 indication = PressIndication(MaterialTheme.shapes.medium),

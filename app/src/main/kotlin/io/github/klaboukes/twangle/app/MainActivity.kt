@@ -36,6 +36,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
+import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.Screen
 import io.github.klaboukes.twangle.app.navigation.back
 import io.github.klaboukes.twangle.app.navigation.destination
@@ -111,7 +112,8 @@ class MainActivity : AppCompatActivity() {
      * the instrument and tuning panel open over it. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
-     * asking before it drops edits.
+     * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
+     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
      *
      * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
      * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
@@ -165,6 +167,8 @@ class MainActivity : AppCompatActivity() {
                 var tourRequested by rememberSaveable { mutableStateOf(false) }
                 var tourEnded by rememberSaveable { mutableStateOf(false) }
                 var tunerShown by remember { mutableStateOf(false) }
+                // Taps on the bar's Tuner tab, also while the tuner shows: each closes the tuner's tools.
+                var tunerTabTaps by rememberSaveable { mutableIntStateOf(0) }
                 val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
                 val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
                 // Every screen but the tuner gets the quiet version of the style's background.
@@ -201,7 +205,11 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     AppNavigationFrame(
                         selected = screen.destination,
-                        onSelect = { screen = it.screen },
+                        onSelect = {
+                            if (it == Destination.TUNER) tunerTabTaps++
+                            screen = it.screen
+                        },
+                        onReselect = { if (it == Destination.TUNER) tunerTabTaps++ },
                         // The panel opens over the tuner, so its tunings can be tried on the strings at once.
                         onTuning = {
                             screen = Screen.TUNER
@@ -237,6 +245,7 @@ class MainActivity : AppCompatActivity() {
                                         tourOpen = tourOpen,
                                         onMicGrantedChange = { tunerShown = it },
                                         savedMicRefused = settings.micRefused,
+                                        closeToolsRequest = tunerTabTaps,
                                     )
                                 }
                                 Screen.METRONOME -> PracticeTab(container, settings, tools)

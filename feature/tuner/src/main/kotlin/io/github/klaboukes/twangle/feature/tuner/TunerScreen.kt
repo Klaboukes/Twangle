@@ -154,7 +154,8 @@ import kotlin.math.min
  * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
  * from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
- * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the v1.0 tuner.
+ * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the v1.0 tuner. Each new
+ * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
  */
 @Composable
 fun TunerScreen(
@@ -174,6 +175,7 @@ fun TunerScreen(
     tourOpen: Boolean = false,
     onMicGrantedChange: (Boolean) -> Unit = {},
     savedMicRefused: Boolean = false,
+    closeToolsRequest: Int = 0,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -190,6 +192,7 @@ fun TunerScreen(
             tools = tools,
         )
     }
+    LaunchedEffect(closeToolsRequest) { viewModel.closeToolsOnRequest(closeToolsRequest) }
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
     val mic = rememberMicPermissionState(refusedBefore = micRefused, onRefused = viewModel::onMicRefused)
     LaunchedEffect(language) { viewModel.setLanguage(language) }

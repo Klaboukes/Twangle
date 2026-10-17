@@ -63,7 +63,8 @@ import org.junit.runners.Parameterized
 /**
  * The navigation bar (upright) and rail (on its side) in each style, light and dark: three tabs that
  * TalkBack hears as tabs by name with the open one selected, and the Instrument item after the Tuner tab,
- * a button that is never selected; a tap on another tab opens it; the open tab
+ * a button that is never selected; a tap on another tab opens it, and one on the open tab only says so
+ * (the app's Tuner tab closes the tuner's tools then); the open tab
  * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
  * wholly shown. The frame hides the bar for the tuning editor and the compact tuner, and the content
@@ -92,6 +93,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     private val shownHidden = mutableStateOf(false)
     private val shownPractice = mutableStateOf(false)
     private val picked = mutableListOf<Destination>()
+    private val reselected = mutableListOf<Destination>()
     private var tuningTaps = 0
     private var contentStarts = 0
 
@@ -105,6 +107,7 @@ class NavigationBarTest(private val style: VisualStyle) {
                     AppNavigationFrame(
                         selected = shownSelected.value,
                         onSelect = { picked += it; shownSelected.value = it },
+                        onReselect = { reselected += it },
                         onTuning = { tuningTaps++ },
                         tuningState = TUNING_STATE,
                         hidden = shownHidden.value,
@@ -215,12 +218,14 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun aTapOnAnotherTabOpensItAndOnTheOpenOneDoesNothing() {
+    fun aTapOnAnotherTabOpensItAndOnTheOpenOneReselectsIt() {
         show()
+        tab(Destination.TUNER).performClick()
         tab(Destination.METRONOME).performClick()
         tab(Destination.SETTINGS).performClick()
         tab(Destination.SETTINGS).performClick()
         assertEquals(listOf(Destination.METRONOME, Destination.SETTINGS), picked)
+        assertEquals(listOf(Destination.TUNER, Destination.SETTINGS), reselected)
         tab(Destination.SETTINGS).assertIsSelected()
     }
 
