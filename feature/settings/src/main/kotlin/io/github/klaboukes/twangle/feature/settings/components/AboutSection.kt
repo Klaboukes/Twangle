@@ -31,11 +31,12 @@ import kotlinx.coroutines.withContext
 
 /**
  * The About rows: the app's name and [appVersion], the free-forever promise, the privacy statement,
- * and a credit for every bundled font and open-source library. Tapping a credit shows its licence
- * text, read from the app's own assets (the app has no internet permission).
+ * a quiet "Rate Twangle" row ([onRate] opens the Play page; never a rating pop-up), and a credit for
+ * every bundled font and open-source library. Tapping a credit shows its licence text, read from
+ * the app's own assets (the app has no internet permission).
  */
 @Composable
-fun AboutSection(appVersion: String, modifier: Modifier = Modifier) {
+fun AboutSection(appVersion: String, onRate: () -> Unit, modifier: Modifier = Modifier) {
     // The open licence is remembered by credit name, so it stays open when the phone is turned.
     var shown by rememberSaveable { mutableStateOf<String?>(null) }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -50,6 +51,12 @@ fun AboutSection(appVersion: String, modifier: Modifier = Modifier) {
         AboutText(
             title = stringResource(R.string.settings_about_privacy_title),
             body = stringResource(R.string.settings_about_privacy_summary),
+        )
+        LinkSetting(
+            title = stringResource(R.string.settings_about_rate_title),
+            summary = stringResource(R.string.settings_about_rate_summary),
+            onClick = onRate,
+            modifier = Modifier.testTag(RATE_TAG),
         )
         HorizontalDivider()
         Column {
@@ -120,6 +127,9 @@ private fun LicenceDialog(credit: Credit, onDismiss: () -> Unit) {
 
 /** Test tag of a credit's row. */
 fun creditTag(name: String): String = "credit:$name"
+
+/** Test tag of the "Rate Twangle" row. */
+const val RATE_TAG = "rateTwangle"
 
 /** Test tag of the scrolling licence text in the licence dialog. */
 const val LICENCE_TEXT_TAG = "licenceText"

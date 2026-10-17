@@ -81,6 +81,8 @@
     <string name="settings_about_free_summary">Pas de pub, pas de compte, pas d\'achats intégrés, pas de pistage. Ni maintenant, ni plus tard.</string>
     <string name="settings_about_privacy_title">Confidentialité</string>
     <string name="settings_about_privacy_summary">Twangle ne collecte aucune donnée sur vous. Le micro n\'est actif que lorsque l\'écran de l\'accordeur est ouvert. Le son est analysé en direct, jamais enregistré, sauvegardé ni envoyé. Twangle n\'a pas l\'autorisation d\'accéder à Internet, il ne peut donc rien envoyer nulle part. Vos réglages restent sur cet appareil (et dans la sauvegarde d\'Android, si vous l\'avez activée).</string>
+    <string name="settings_about_rate_title">Noter Twangle</string>
+    <string name="settings_about_rate_summary">Twangle sur Google Play</string>
     <string name="settings_about_credits_title">Polices et logiciels libres</string>
     <string name="settings_about_credits_summary">Twangle est fait avec eux. Touchez-en un pour lire sa licence.</string>
     <string name="settings_about_licence_open">Lire la licence</string>

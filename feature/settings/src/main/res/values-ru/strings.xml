@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>
     <string name="settings_about_privacy_title">Конфиденциальность</string>
     <string name="settings_about_privacy_summary">Twangle не собирает о тебе никаких данных. Микрофон включён, только пока открыт экран тюнера. Звук анализируется на лету и никогда не записывается, не сохраняется и не отправляется. У Twangle нет разрешения на доступ к интернету, поэтому он ничего не может никуда отправить. Твои настройки хранятся на этом устройстве (и в резервной копии самого Android, если она у тебя включена).</string>
+    <string name="settings_about_rate_title">Оценить Twangle</string>
+    <string name="settings_about_rate_summary">Twangle в Google Play</string>
     <string name="settings_about_credits_title">Шрифты и открытое ПО</string>
     <string name="settings_about_credits_summary">Twangle сделан с их помощью. Нажми на любой пункт, чтобы прочитать лицензию.</string>
     <string name="settings_about_licence_open">Прочитать лицензию</string>

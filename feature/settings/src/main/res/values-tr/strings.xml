@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Ne şimdi ne de sonra.</string>
     <string name="settings_about_privacy_title">Gizlilik</string>
     <string name="settings_about_privacy_summary">Twangle seninle ilgili hiçbir veri toplamaz. Mikrofon yalnızca akort ekranı açıkken çalışır. Ses anlık olarak analiz edilir; asla kaydedilmez, saklanmaz veya gönderilmez. Twangle\'ın internet izni yoktur, bu yüzden hiçbir yere hiçbir şey gönderemez. Ayarların bu cihazda kalır (Android\'in kendi yedeklemesini açtıysan onun içinde de).</string>
+    <string name="settings_about_rate_title">Twangle\'ı değerlendir</string>
+    <string name="settings_about_rate_summary">Google Play\'de Twangle</string>
     <string name="settings_about_credits_title">Yazı tipleri ve açık kaynak yazılımlar</string>
     <string name="settings_about_credits_summary">Twangle bunlarla yapıldı. Lisansını okumak için birine dokun.</string>
     <string name="settings_about_licence_open">Lisansı oku</string>

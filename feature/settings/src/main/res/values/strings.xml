@@ -91,6 +91,8 @@
     <string name="settings_about_free_summary">No ads, no account, no in-app purchases and no tracking. Not now, not later.</string>
     <string name="settings_about_privacy_title">Privacy</string>
     <string name="settings_about_privacy_summary">Twangle collects no data about you. The microphone is only on while the tuner screen is open. The sound is analysed live and never recorded, saved or sent. Twangle has no internet permission, so it cannot send anything anywhere. Your settings stay on this device (and in Android\'s own backup, if you have turned it on).</string>
+    <string name="settings_about_rate_title">Rate Twangle</string>
+    <string name="settings_about_rate_summary">Twangle on Google Play</string>
     <string name="settings_about_credits_title">Fonts and open-source software</string>
     <string name="settings_about_credits_summary">Twangle is made with these. Tap one to read its licence.</string>
     <string name="settings_about_licence_open">Read the licence</string>

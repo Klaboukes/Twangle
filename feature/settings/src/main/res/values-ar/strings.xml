@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">بلا إعلانات ولا حساب ولا مشتريات داخل التطبيق ولا تتبّع. لا الآن ولا لاحقًا.</string>
     <string name="settings_about_privacy_title">الخصوصية</string>
     <string name="settings_about_privacy_summary">لا يجمع Twangle أي بيانات عنك. لا يعمل الميكروفون إلا وشاشة الموالف مفتوحة. يُحلَّل الصوت مباشرةً ولا يُسجَّل أو يُحفَظ أو يُرسَل أبدًا. ليس لدى Twangle إذن الوصول إلى الإنترنت، فلا يمكنه إرسال أي شيء إلى أي مكان. تبقى إعداداتك على هذا الجهاز (وفي نسخة Android الاحتياطية، إن كنت قد فعّلتها).</string>
+    <string name="settings_about_rate_title">قيّم Twangle</string>
+    <string name="settings_about_rate_summary">Twangle على Google Play</string>
     <string name="settings_about_credits_title">الخطوط والبرمجيات مفتوحة المصدر</string>
     <string name="settings_about_credits_summary">صُنع Twangle بهذه الأعمال. اختر أحدها لقراءة ترخيصه.</string>
     <string name="settings_about_licence_open">اقرأ الترخيص</string>

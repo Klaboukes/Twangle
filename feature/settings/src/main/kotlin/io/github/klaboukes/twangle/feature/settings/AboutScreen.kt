@@ -9,11 +9,12 @@ import io.github.klaboukes.twangle.feature.settings.components.AboutSection
 
 /**
  * The About page, opened from the last row of settings: the app's [appVersion], the free-forever
- * promise, the privacy statement and the credits with their licences. [onBack] returns to settings.
+ * promise, the privacy statement, "Rate Twangle" and the credits with their licences. [onRate] opens
+ * Twangle's Play page ([openPlayPage]); [onBack] returns to settings.
  */
 @Composable
-fun AboutScreen(appVersion: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun AboutScreen(appVersion: String, onRate: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
     SettingsPage(title = stringResource(R.string.about_title), onBack = onBack, modifier = modifier) {
-        AboutSection(appVersion = appVersion, modifier = Modifier.padding(horizontal = 16.dp))
+        AboutSection(appVersion = appVersion, onRate = onRate, modifier = Modifier.padding(horizontal = 16.dp))
     }
 }

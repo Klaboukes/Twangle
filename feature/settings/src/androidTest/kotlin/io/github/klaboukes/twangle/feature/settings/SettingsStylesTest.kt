@@ -91,7 +91,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
             DeviceConfigurationOverride(override) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     if (about) {
-                        AboutScreen(appVersion = VERSION, onBack = {}, modifier = Modifier.testTag(WINDOW))
+                        AboutScreen(appVersion = VERSION, onRate = {}, onBack = {}, modifier = Modifier.testTag(WINDOW))
                     } else {
                         SettingsContent(
                             AppSettings(style = style, display = TunerDisplay.WAVE, meterLook = MeterLook.SPIRIT_LEVEL, waveLook = WaveLook.LOOP),

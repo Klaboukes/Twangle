@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>
     <string name="settings_about_privacy_title">隐私</string>
     <string name="settings_about_privacy_summary">Twangle 不收集任何关于你的数据。麦克风只在调音器界面打开时开启。声音只做实时分析，从不录制、保存或发送。Twangle 没有联网权限，因此无法向任何地方发送任何内容。你的设置保存在这台设备上（如果你开启了 Android 自带的备份，也会包含在备份中）。</string>
+    <string name="settings_about_rate_title">为 Twangle 评分</string>
+    <string name="settings_about_rate_summary">Google Play 上的 Twangle</string>
     <string name="settings_about_credits_title">字体和开源软件</string>
     <string name="settings_about_credits_summary">Twangle 用到了以下这些。点按一项即可阅读其许可。</string>
     <string name="settings_about_licence_open">阅读许可</string>

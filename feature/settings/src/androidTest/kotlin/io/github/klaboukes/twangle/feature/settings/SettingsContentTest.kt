@@ -15,6 +15,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -58,6 +59,7 @@ import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.settings.components.LANGUAGE_SETTING_TAG
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
+import io.github.klaboukes.twangle.feature.settings.components.RATE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
@@ -102,6 +104,7 @@ class SettingsContentTest {
     private val focusModeChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
+    private var rates = 0
     private var toursAsked = 0
     private val languageChanges = mutableListOf<String?>()
 
@@ -125,7 +128,7 @@ class SettingsContentTest {
             val content = @Composable {
                 Themed(style) {
                     if (about) {
-                        AboutScreen(appVersion = VERSION, onBack = { backs++ }, modifier = Modifier.testTag(WINDOW))
+                        AboutScreen(appVersion = VERSION, onRate = { rates++ }, onBack = { backs++ }, modifier = Modifier.testTag(WINDOW))
                     } else SettingsContent(
                         settings,
                         appVersion = VERSION,
@@ -848,6 +851,20 @@ class SettingsContentTest {
             context.getString(R.string.settings_about_privacy_title),
             context.getString(R.string.settings_about_privacy_summary),
         ).forEach { compose.onNodeWithText(it).performScrollTo().assertIsDisplayed() }
+    }
+
+    /** A quiet "Rate Twangle" row: a button that says where it leads, and one tap asks to open the Play page once. */
+    @Test
+    fun rateTwangleIsAQuietRowThatOpensThePlayPage() {
+        show(AppSettings(), about = true)
+        compose.onNodeWithTag(RATE_TAG).performScrollTo().assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(hasText(context.getString(R.string.settings_about_rate_title)))
+            .assert(hasText(context.getString(R.string.settings_about_rate_summary)))
+            .assertHeightIsAtLeast(48.dp)
+        assertEquals(0, rates)
+        compose.onNodeWithTag(RATE_TAG).performClick()
+        assertEquals(1, rates)
     }
 
     @Test

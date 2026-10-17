@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">न विज्ञापन, न अकाउंट, न इन-ऐप खरीदारी और न ट्रैकिंग। न अभी, न बाद में।</string>
     <string name="settings_about_privacy_title">निजता</string>
     <string name="settings_about_privacy_summary">Twangle आपके बारे में कोई डेटा इकट्ठा नहीं करता। माइक्रोफ़ोन सिर्फ़ तभी चालू रहता है जब ट्यूनर स्क्रीन खुली हो। आवाज़ का विश्लेषण उसी समय होता है, उसे कभी रिकॉर्ड, सेव या कहीं भेजा नहीं जाता। Twangle के पास इंटरनेट की अनुमति नहीं है, इसलिए वह कहीं कुछ नहीं भेज सकता। आपकी सेटिंग्स इसी डिवाइस पर रहती हैं (और अगर आपने Android का अपना बैकअप चालू किया है, तो उसमें भी)।</string>
+    <string name="settings_about_rate_title">Twangle को रेटिंग दें</string>
+    <string name="settings_about_rate_summary">Google Play पर Twangle</string>
     <string name="settings_about_credits_title">फ़ॉन्ट और ओपन-सोर्स सॉफ़्टवेयर</string>
     <string name="settings_about_credits_summary">Twangle इनसे बना है। किसी का लाइसेंस पढ़ने के लिए उस पर टैप करें।</string>
     <string name="settings_about_licence_open">लाइसेंस पढ़ें</string>

@@ -80,6 +80,8 @@
     <string name="settings_about_free_summary">Sem anúncios, sem conta, sem compras no app e sem rastreamento. Nem agora, nem depois.</string>
     <string name="settings_about_privacy_title">Privacidade</string>
     <string name="settings_about_privacy_summary">O Twangle não coleta nenhum dado sobre você. O microfone só fica ligado enquanto a tela do afinador está aberta. O som é analisado ao vivo e nunca é gravado, salvo ou enviado. O Twangle não tem permissão de internet, então não pode enviar nada para lugar nenhum. Suas configurações ficam neste dispositivo (e no backup do próprio Android, se você o ativou).</string>
+    <string name="settings_about_rate_title">Avaliar o Twangle</string>
+    <string name="settings_about_rate_summary">Twangle no Google Play</string>
     <string name="settings_about_credits_title">Fontes e software de código aberto</string>
     <string name="settings_about_credits_summary">O Twangle é feito com eles. Toque em um para ler a licença.</string>
     <string name="settings_about_licence_open">Ler a licença</string>

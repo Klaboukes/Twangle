@@ -25,7 +25,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 ## Phase 37 — Store-ready app
 Goal: the build that goes to Play is final. Claude can do this alone.
 - ☐ Baseline Profile regenerated now that the look is final and the tools are live (`./gradlew :app:generateBaselineProfile`; the current one predates the metronome and the navigation bar), with the metronome (or Practice), settings and the live tools' screens added to the generator
-- ☐ A calm "Rate Twangle" row in About that opens the Play page (no rating pop-up), in every language
+- ☑ A calm "Rate Twangle" row in About that opens the Play page (no rating pop-up), in every language (the Play Store app, else the browser; no Play library, no internet permission)
 
 ## Phase 38 — Store listing
 Goal: everything Play shows about Twangle is ready to upload: texts, screenshots and graphics, in every language. Claude builds it; the owner picks where the plan offers a choice.
