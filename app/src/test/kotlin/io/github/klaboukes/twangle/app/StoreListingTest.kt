@@ -11,7 +11,10 @@ import java.util.Properties
  * layout, which F-Droid reads too): every language in `twangle.languages` has exactly one folder with a
  * title, a short and a full description, no folder is for an unlisted language, and each text keeps
  * within Google Play's limits, counted in Unicode code points as Play counts characters. The title
- * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md).
+ * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md). Each
+ * folder also has the eight captions of the phone screenshots (`screenshot_captions.txt`, one a line,
+ * in the order of the plan), which the store-screenshot test draws above each screen: short, and
+ * without those words either, since Google bans them in screenshots too.
  */
 class StoreListingTest {
 
@@ -102,6 +105,25 @@ class StoreListingTest {
         }
     }
 
+    @Test
+    fun `every language has the eight screenshot captions, short and without promotion words`() {
+        folderOf.forEach { (language, folder) ->
+            val lines = text(folder, CAPTIONS).orEmpty().lines()
+            assertEquals("$folder/$CAPTIONS (language $language) needs one caption a line, one for each screenshot", SCREENSHOTS, lines.size)
+            lines.forEachIndexed { i, caption ->
+                val where = "$folder/$CAPTIONS line ${i + 1}"
+                assertTrue("$where is empty", caption.isNotBlank())
+                val length = caption.codePointCount(0, caption.length)
+                assertTrue("$where has $length characters, more than $CAPTION_LIMIT fit above the screen: $caption", length <= CAPTION_LIMIT)
+                BANNED_IN_TITLE.forEach { banned ->
+                    assertTrue("$where has \"${banned.pattern}\", which Google bans in screenshots: $caption", !banned.containsMatchIn(caption))
+                }
+                val emoji = caption.codePoints().filter { it in 0x1F000..0x1FAFF || it == 0xFE0F }.toArray()
+                assertTrue("Emoji in $where", emoji.isEmpty())
+            }
+        }
+    }
+
     /** The file's text as it is pasted into the Play Console: line endings as \n, no trailing newline. */
     private fun text(folder: String, name: String): String? =
         File(listings, "$folder/$name").takeIf { it.isFile }?.readText()?.replace("\r\n", "\n")?.trimEnd()
@@ -109,6 +131,13 @@ class StoreListingTest {
     private companion object {
         /** Google Play's limits, in characters. */
         val FILES = mapOf("title.txt" to 30, "short_description.txt" to 80, "full_description.txt" to 4000)
+
+        /** The screenshots' captions, one a line (docs/store-listing.md, *Phone screenshots*). */
+        const val CAPTIONS = "screenshot_captions.txt"
+        const val SCREENSHOTS = 8
+
+        /** At most this many characters, so a caption fits in three lines of large type above the screen. */
+        const val CAPTION_LIMIT = 80
 
         val BANNED_IN_TITLE = listOf("""\bfree\b""", """\bno ads\b""", """\bbest\b""", """#1\b""")
             .map { Regex(it, RegexOption.IGNORE_CASE) }

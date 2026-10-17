@@ -133,6 +133,8 @@ dependencies {
 
     testImplementation(libs.junit)
     androidTestImplementation(project(":core:testing"))
+    // The store screenshots (StoreScreenshots) keep the metronome silent with its fake player.
+    androidTestImplementation(testFixtures(project(":core:audio")))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.test.rules)

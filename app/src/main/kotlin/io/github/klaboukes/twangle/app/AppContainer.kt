@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.app
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
@@ -23,9 +24,19 @@ class AppContainer(private val appContext: Context) {
      * instead, so every run gets the same input; `SYNTHETIC_AUDIO` is a constant false in every
      * other build, so R8 drops [SyntheticAudioRecorder] from release builds.
      */
-    val audioRecorder: AudioRecorder by lazy {
+    val audioRecorder: AudioRecorder
+        get() = testAudioRecorder ?: micRecorder
+
+    private val micRecorder: AudioRecorder by lazy {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
+
+    /**
+     * A test's stand-in for the tuner's microphone, set before the activity starts, or null for the
+     * real one: the store screenshots (`StoreScreenshots`) feed the tuner a fixed sound this way.
+     */
+    @VisibleForTesting
+    var testAudioRecorder: AudioRecorder? = null
 
     /**
      * The microphone for the metronome's Listen (Phase 27), open only while it listens. Its own
@@ -40,7 +51,14 @@ class AppContainer(private val appContext: Context) {
     val tonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
 
     /** The metronome's clicks (Phase 19). Holds the speaker only while it plays, over other apps' music. */
-    val metronomePlayer: MetronomePlayer by lazy { AndroidMetronomePlayer(appContext) }
+    val metronomePlayer: MetronomePlayer
+        get() = testMetronomePlayer ?: clickPlayer
+
+    private val clickPlayer: MetronomePlayer by lazy { AndroidMetronomePlayer(appContext) }
+
+    /** A test's silent stand-in for the metronome's clicks, or null for the real ones (see [testAudioRecorder]). */
+    @VisibleForTesting
+    var testMetronomePlayer: MetronomePlayer? = null
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

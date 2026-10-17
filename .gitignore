@@ -24,3 +24,6 @@ keystore.properties
 
 # Claude Code per-user settings (shared skills in .claude/skills ARE committed)
 .claude/settings.local.json
+
+# Play Store screenshots: made on the phone by scripts/store-screenshots.sh, uploaded by hand
+fastlane/metadata/android/*/images/

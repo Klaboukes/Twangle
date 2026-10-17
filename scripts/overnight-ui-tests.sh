@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# The overnight run: every on-device UI test in every style, then every language at 2× text, kept
-# cool, with one summary at the end. Takes a few hours; run it while nobody needs the phone. See
+# The overnight run: every on-device UI test in every style, then every language at 2× text, then the
+# Play Store screenshots in every language (scripts/store-screenshots.sh), kept cool, with one
+# summary at the end. Takes a few hours; run it while nobody needs the phone. See
 # .claude/skills/overnight-run/SKILL.md.
 #
-#   scripts/overnight-ui-tests.sh            both parts
+#   scripts/overnight-ui-tests.sh            all three parts
 #   scripts/overnight-ui-tests.sh --sweep    only the thorough sweep of every module
 #   scripts/overnight-ui-tests.sh --languages only the every-language checks
+#   scripts/overnight-ui-tests.sh --store    only the store screenshots
 #
-# Logs go to build/overnight/ (sweep.txt, languages.txt, summary.txt); pictures of screens where a
-# language didn't fit go to each module's build/outputs/connected_android_test_additional_output.
+# Logs go to build/overnight/ (sweep.txt, languages.txt, store.txt, summary.txt); pictures of screens
+# where a language didn't fit go to each module's build/outputs/connected_android_test_additional_output,
+# the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -20,12 +23,13 @@ OUT="$ROOT/build/overnight"
 LANGUAGE_MODULES=(:feature:tuner :feature:settings :feature:metronome :feature:practice :app)
 STYLES=(ANCIENT CLASSIC RETRO CONTEMPORARY FUTURISTIC SPACE_AGE)
 
-sweep=1 languages=1
+sweep=1 languages=1 store=1
 case "${1:-}" in
-    --sweep) languages=0 ;;
-    --languages) sweep=0 ;;
+    --sweep) languages=0 store=0 ;;
+    --languages) sweep=0 store=0 ;;
+    --store) sweep=0 languages=0 ;;
     "") ;;
-    *) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    *) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
 mkdir -p "$OUT"
 
@@ -64,10 +68,16 @@ if [ $languages = 1 ]; then
         done
     done
 fi
+if [ $store = 1 ]; then
+    wait_cool | tee -a "$OUT/store.txt"
+    echo "== Store screenshots in every language ($(date +%H:%M))" | tee "$OUT/store.txt"
+    scripts/store-screenshots.sh 2>&1 | tee -a "$OUT/store.txt"
+    [ "${PIPESTATUS[0]}" = 0 ] || status=1
+fi
 
 {
     echo "Overnight run: $(( (SECONDS - start) / 60 )) min, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
-    cat "$OUT"/sweep.txt "$OUT"/languages.txt 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
+    cat "$OUT"/sweep.txt "$OUT"/languages.txt "$OUT"/store.txt 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
 } > "$OUT/summary.txt"
 cat "$OUT/summary.txt"
 exit $status

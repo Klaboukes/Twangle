@@ -36,7 +36,8 @@ scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the backgrou
 ```
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, every style, one class at a
 time, waiting while the phone is 37 °C or warmer), then the `@EveryLanguage` checks one module and
-style at a time with cooling pauses, and writes `build/overnight/summary.txt`. A screen where a
+style at a time with cooling pauses, then the Play Store screenshots in every language
+(`scripts/store-screenshots.sh`, about 2 minutes a language), and writes `build/overnight/summary.txt`. A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
 
@@ -46,6 +47,14 @@ language didn't fit is saved as a picture under the module's
 - Don't poll; you are told when it finishes. Read the log in between only to start on failures
   early (the sweep prints each class as it finishes).
 - Never play test tones, never loop a tone, and never re-run the whole sweep for a fix.
+
+**The store screenshots:** look at every language's eight pictures in
+`fastlane/metadata/android/<locale>/images/phoneScreenshots/` (a contact sheet per language with
+`magick 1.png 2.png 3.png 4.png +append -resize 50% sheet.png` is quickest): a caption cut off or set in
+the wrong script, a screen without its note or chord, a bubble in the wrong language. Fix and make
+only those languages again (`scripts/store-screenshots.sh <locale> …`). The pictures are git-ignored
+(docs/store-listing.md, *Phone screenshots*); put the en-US and one other language in the morning
+summary.
 
 ## 3. Fix what it finds
 
