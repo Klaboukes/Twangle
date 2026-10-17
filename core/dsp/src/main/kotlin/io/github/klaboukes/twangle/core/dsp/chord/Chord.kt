@@ -9,6 +9,9 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
  */
 data class Chord private constructor(val root: PitchClass, val quality: ChordQuality) {
 
+    /** The same chord type [semitones] higher (lower when negative): G moved up 3 is B♭. */
+    fun transposed(semitones: Int): Chord = of(root.transposed(semitones), quality)
+
     companion object {
         private val all = Array(PitchClass.entries.size * ChordQuality.entries.size) {
             Chord(PitchClass.entries[it / ChordQuality.entries.size], ChordQuality.entries[it % ChordQuality.entries.size])

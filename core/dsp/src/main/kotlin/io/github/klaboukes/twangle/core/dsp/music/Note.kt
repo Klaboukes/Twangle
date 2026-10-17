@@ -14,6 +14,10 @@ enum class PitchClass(val symbol: String) {
     A("A"),
     A_SHARP("A#"),
     B("B"),
+    ;
+
+    /** The pitch class [semitones] above this one (below when negative), wrapping round the octave: E + 3 = G. */
+    fun transposed(semitones: Int): PitchClass = entries[(ordinal + semitones).mod(entries.size)]
 }
 
 /**

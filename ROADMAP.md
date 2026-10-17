@@ -37,7 +37,7 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 
 ## Phase 33 — Capo helper
 Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.
-- ☐ `:core:dsp`: capo maths (the fret for a key and a set of shapes, and what a shape sounds like with the capo on, in the player's note names); pure and tested
+- ☑ `:core:dsp`: capo maths (the fret for a key and a set of shapes, and what a shape sounds like with the capo on, in the player's note names); pure and tested (`capo/Capo`, `CapoPlan`, `SongKey`; 16 tests in `CapoTest`)
 - ☐ Rough mock-up for the owner to pick from
 - ☐ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check
 - ☐ Owner check added: work out the capo for two songs you know and play them
