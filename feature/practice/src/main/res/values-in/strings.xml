@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">terbuka %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, nada dasar</string>
+    <string name="practice_tool_capo">Kapo</string>
+    <string name="practice_capo_shapes">Bentuk yang saya mainkan</string>
+    <string name="practice_capo_shapes_spoken">Bentuk yang saya mainkan: %1$s</string>
+    <string name="practice_capo_label">Kapo</string>
+    <string name="practice_capo_none">Tanpa kapo</string>
+    <string name="practice_capo_on_fret">Kapo di fret %1$d</string>
+    <string name="practice_capo_lower">Kapo turun satu fret</string>
+    <string name="practice_capo_higher">Kapo naik satu fret</string>
+    <string name="practice_capo_shape_column">Bentuk</string>
+    <string name="practice_capo_sounds_column">Berbunyi</string>
+    <string name="practice_capo_sounds_in">Berbunyi dalam %1$s</string>
+    <string name="practice_capo_row_spoken">Bentuk %1$s, berbunyi %2$s</string>
+    <string name="practice_capo_open_chord">buka di Akor</string>
 </resources>

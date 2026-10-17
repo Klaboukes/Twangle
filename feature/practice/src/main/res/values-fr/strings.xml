@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">à vide %1$s</string>
     <string name="practice_spoken_scale_fret">case %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, fondamentale</string>
+    <string name="practice_tool_capo">Capo</string>
+    <string name="practice_capo_shapes">Doigtés que je joue</string>
+    <string name="practice_capo_shapes_spoken">Doigtés que je joue : %1$s</string>
+    <string name="practice_capo_label">Capo</string>
+    <string name="practice_capo_none">Sans capo</string>
+    <string name="practice_capo_on_fret">Capo en case %1$d</string>
+    <string name="practice_capo_lower">Capo une case plus bas</string>
+    <string name="practice_capo_higher">Capo une case plus haut</string>
+    <string name="practice_capo_shape_column">Doigté</string>
+    <string name="practice_capo_sounds_column">Sonne</string>
+    <string name="practice_capo_sounds_in">Sonne en %1$s</string>
+    <string name="practice_capo_row_spoken">Doigté de %1$s, sonne %2$s</string>
+    <string name="practice_capo_open_chord">ouvrir dans Accords</string>
 </resources>

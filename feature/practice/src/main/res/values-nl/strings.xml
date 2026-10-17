@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">open %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, grondtoon</string>
+    <string name="practice_tool_capo">Capo</string>
+    <string name="practice_capo_shapes">Grepen die ik speel</string>
+    <string name="practice_capo_shapes_spoken">Grepen die ik speel: %1$s</string>
+    <string name="practice_capo_label">Capo</string>
+    <string name="practice_capo_none">Geen capo</string>
+    <string name="practice_capo_on_fret">Capo op fret %1$d</string>
+    <string name="practice_capo_lower">Capo een fret omlaag</string>
+    <string name="practice_capo_higher">Capo een fret omhoog</string>
+    <string name="practice_capo_shape_column">Greep</string>
+    <string name="practice_capo_sounds_column">Klinkt</string>
+    <string name="practice_capo_sounds_in">Klinkt in %1$s</string>
+    <string name="practice_capo_row_spoken">Greep %1$s, klinkt als %2$s</string>
+    <string name="practice_capo_open_chord">openen in Akkoorden</string>
 </resources>

@@ -1,0 +1,155 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Capo Helper</title>
+<!--
+TWANGLE CAPO HELPER (Phase 33 preview). ROUGH, plain on purpose: Contemporary style only, the core idea only.
+Asks     How the Capo helper looks in Practice, the third segment of the tool switch (Metronome · Chords · Capo).
+         Three ways, A, B, C; one pick.
+Context  The question it answers: "the song is in E♭, where does the capo go to play C shapes?", and which shape
+         sounds which chord with the capo on. Maths as built (:core:dsp capo/Capo, CapoPlan, SongKey): frets 0 to 11,
+         shapes only move up, options lowest fret first (E♭: D at 1, C at 3, A at 6, G at 8, E at 11). Follows the
+         instrument and tuning picked in the Instrument item; here guitar in standard tuning. A chord tapped opens in
+         the Chords tool (the link to the chord charts).
+Sizes    Frames are 393 dp (the Xiaomi 12X) at 0.8 px per dp, as the other rough previews. Buttons keep one size
+         whatever their label; at most three controls in a row (the twelve keys reuse the Chords tool's root rows).
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1100px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 28px 24px; }
+.cand { display: grid; gap: 8px; align-content: start; width: 314px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+
+/* The phone: 393 dp at 0.8 px per dp, 16 dp side margins. */
+.phone { width: 314px; height: 540px; border-radius: 18px; background: var(--bg); padding: 6px 13px 13px;
+  display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.sw { align-self: center; display: flex; border-radius: 999px; background: var(--surface); padding: 3px; margin-top: 2px; }
+.sw span { width: 82px; height: 30px; display: grid; place-items: center; font: 500 11px/1 var(--ui); color: var(--muted); border-radius: 999px; }
+.sw span.on { background: var(--container); color: var(--ink); }
+.tun { text-align: center; font: 400 11px/1 var(--ui); color: var(--muted); }
+.cap { font: 400 10.5px/1 var(--ui); color: var(--muted); margin-bottom: 4px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pick { height: 38px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; font: 500 15px/1 var(--ui); }
+.pick i { font-style: normal; color: var(--muted); font-size: 11px; }
+.big { text-align: center; padding: 6px 0 2px; }
+.big b { display: block; font: 300 46px/1 var(--ui); color: var(--accent); }
+.big span { font: 400 12px/1.2 var(--ui); color: var(--muted); }
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip { height: 40px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; gap: 8px;
+  font: 400 13px/1 var(--ui); color: var(--muted); }
+.chip b { font: 500 16px/1 var(--ui); color: var(--ink); }
+.step { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; height: 40px; }
+.round { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font: 400 20px/1 var(--ui); color: var(--muted); }
+.step .mid { text-align: center; font: 400 12px/1 var(--ui); color: var(--muted); }
+.step .mid b { font: 400 26px/1 var(--ui); color: var(--ink); margin-left: 4px; }
+.table { display: grid; gap: 2px; }
+.tr { display: grid; grid-template-columns: 1fr 24px 1fr; align-items: center; height: 31px; border-radius: 6px; padding: 0 22px; }
+.tr:nth-child(odd) { background: color-mix(in srgb, var(--surface) 60%, var(--bg)); }
+.tr .s { font: 500 15px/1 var(--ui); color: var(--muted); }
+.tr .a { text-align: center; color: var(--muted); font-size: 12px; }
+.tr .d { font: 500 16px/1 var(--ui); text-align: right; }
+.th { display: grid; grid-template-columns: 1fr 1fr; padding: 0 22px; font: 400 10.5px/1 var(--ui); color: var(--muted); }
+.th span:last-child { text-align: right; }
+.roots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.roots span { height: 32px; border-radius: 7px; background: var(--surface); display: grid; place-items: center; font: 500 13px/1 var(--ui); }
+.roots span.on, .mm span.on { background: var(--container); outline: 2px solid var(--accent); outline-offset: -2px; }
+.mm { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 70%; margin: 0 auto; }
+.mm span { height: 32px; border-radius: 7px; background: var(--surface); display: grid; place-items: center; font: 500 12px/1 var(--ui); }
+.opts { display: grid; gap: 6px; }
+.opt { height: 44px; border-radius: 8px; background: var(--surface); display: grid; grid-template-columns: 74px 1fr; align-items: center; padding: 0 12px; }
+.opt.first { background: var(--container); }
+.opt b { font: 500 15px/1 var(--ui); }
+.opt span { font: 400 13px/1.2 var(--ui); color: var(--muted); }
+.opt span em { font-style: normal; color: var(--ink); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 33 · rough mock-up</p>
+  <h1>How should the Capo helper look?</h1>
+  <p class="lede">The third tool in Practice. It answers <strong>"the song is in E♭, where does the capo go?"</strong>
+    and shows which chord each shape sounds with the capo on. Guitar in standard tuning; it follows the Instrument
+    item. Tapping a chord opens it in Chords. <strong>Pick one letter.</strong></p>
+</header>
+
+<div class="list" id="list"></div>
+
+<footer>
+  <p>All three work for minor songs too (Cm uses Am shapes at fret 3) and use your note names (letters, solfège,
+    German B and H).</p>
+</footer>
+</div>
+
+<script>
+const bar = `<div class="sw"><span>Metronome</span><span>Chords</span><span class="on">Capo</span></div>
+  <div class="tun">Guitar · Standard</div>`;
+
+const A = `${bar}
+  <div class="pair"><div><div class="cap">Song key</div><div class="pick">E♭<i>▾</i></div></div>
+    <div><div class="cap">Shapes I play</div><div class="pick">C<i>▾</i></div></div></div>
+  <div class="big"><b>Capo 3</b><span>C shapes sound in E♭</span></div>
+  <div class="cap">The song's main chords · shape → sounds</div>
+  <div class="chips">
+    <div class="chip"><b>C</b>→<b>E♭</b></div><div class="chip"><b>F</b>→<b>A♭</b></div>
+    <div class="chip"><b>G</b>→<b>B♭</b></div><div class="chip"><b>Am</b>→<b>Cm</b></div>
+  </div>`;
+
+const rows = [["C","E♭"],["Dm","Fm"],["Em","Gm"],["F","A♭"],["G","B♭"],["Am","Cm"]];
+const B = `${bar}
+  <div class="pair"><div><div class="cap">Shapes I play</div><div class="pick">C<i>▾</i></div></div><div></div></div>
+  <div class="step"><span class="round">‹</span><span class="mid">Capo<b>3</b></span><span class="round">›</span></div>
+  <div class="th"><span>Shape</span><span>Sounds</span></div>
+  <div class="table">${rows.map(([s, d]) => `<div class="tr"><span class="s">${s}</span><span class="a">→</span><span class="d">${d}</span></div>`).join("")}</div>
+  <div class="tun">Sounds in E♭</div>`;
+
+const keys = ["C","D♭","D","E♭","E","F","F♯","G","A♭","A","B♭","B"];
+const opts = [["Fret 1","D","D G A Bm"],["Fret 3","C","C F G Am"],["Fret 6","A","A D E F♯m"],["Fret 8","G","G C D Em"],["Fret 11","E","E A B C♯m"]];
+const C = `${bar}
+  <div class="cap">Song key</div>
+  <div class="roots">${keys.map(k => `<span class="${k === "E♭" ? "on" : ""}">${k}</span>`).join("")}</div>
+  <div class="mm"><span class="on">Major</span><span>Minor</span></div>
+  <div class="cap" style="margin-top:4px">Where the capo can go</div>
+  <div class="opts">${opts.map(([f, k, ch], i) => `<div class="opt ${i ? "" : "first"}"><b>${f}</b><span><em>${k} shapes</em> · ${ch}</span></div>`).join("")}</div>`;
+
+const CANDIDATES = [
+  ["A", "Two pickers, one big answer", true, A,
+    "Pick the song's key and the shapes you like; the capo fret shows big, with the song's four main chords as shape → sounds. Shapes start on the easiest choice (capo nearest the nut)."],
+  ["B", "Capo stepper with a chord table", false, B,
+    "Pick your shapes and move the capo with ‹ ›; the table shows what each shape sounds. Good for \"my capo is on 3, what am I playing?\", less direct for finding the fret."],
+  ["C", "Every option for a key", false, C,
+    "Pick the song's key (the same key rows as Chords); every capo place is listed, nearest the nut first and lit. Tap one to see its chords."],
+];
+document.getElementById("list").innerHTML = CANDIDATES.map(([n, title, rec, body, note]) => `<div class="cand">
+  <h2>${n}. ${title}${rec ? `<span class="tag">recommended</span>` : ""}</h2>
+  <div class="phone">${body}</div>
+  <p class="note">${note}</p></div>`).join("");
+</script>

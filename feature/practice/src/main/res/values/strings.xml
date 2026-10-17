@@ -60,4 +60,28 @@
     <string name="practice_spoken_scale_open">open %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, root</string>
+    <!-- Capo helper (Phase 33): its segment of the Practice tool switch. -->
+    <string name="practice_tool_capo">Capo</string>
+    <!-- Over the button that picks the chord shapes the player knows (C, D, E, G, A, Dm, Em, Am). -->
+    <string name="practice_capo_shapes">Shapes I play</string>
+    <!-- TalkBack, that button: %1$s the shapes picked in words ("C major"). -->
+    <string name="practice_capo_shapes_spoken">Shapes I play: %1$s</string>
+    <!-- Before the capo's fret number between the ‹ › buttons ("Capo 3"). -->
+    <string name="practice_capo_label">Capo</string>
+    <!-- TalkBack, the capo's fret: at 0, no capo on. -->
+    <string name="practice_capo_none">No capo</string>
+    <!-- TalkBack, the capo's fret: %1$d the fret (1 to 11). -->
+    <string name="practice_capo_on_fret">Capo on fret %1$d</string>
+    <!-- TalkBack, the ‹ and › buttons that move the capo one fret towards the nut or the body. -->
+    <string name="practice_capo_lower">Capo one fret down</string>
+    <string name="practice_capo_higher">Capo one fret up</string>
+    <!-- The table's two column heads: the shape the player fingers, and the chord it sounds with the capo on. -->
+    <string name="practice_capo_shape_column">Shape</string>
+    <string name="practice_capo_sounds_column">Sounds</string>
+    <!-- Under the table: %1$s the key the song then sounds in ("E♭", "Cm"; TalkBack hears "E flat major"). -->
+    <string name="practice_capo_sounds_in">Sounds in %1$s</string>
+    <!-- TalkBack, a row of the table: %1$s the shape in words ("C major"), %2$s the chord it sounds ("E flat major"). -->
+    <string name="practice_capo_row_spoken">%1$s shape, sounds %2$s</string>
+    <!-- TalkBack, what a tap on a row does: it opens the shape in the Chords tool ("Double-tap to open in Chords"). -->
+    <string name="practice_capo_open_chord">open in Chords</string>
 </resources>

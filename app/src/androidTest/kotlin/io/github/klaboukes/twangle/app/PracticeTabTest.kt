@@ -11,6 +11,8 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
+import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
@@ -19,6 +21,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
+import io.github.klaboukes.twangle.feature.practice.R as PracticeR
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlinx.coroutines.flow.first
@@ -38,7 +41,8 @@ import org.junit.rules.Timeout
  * Metronome tab is called Practice, the tool switch at its top picks the metronome or chords, the
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
  * the Chords tool's chord picked is saved too and comes back with it, and so are its Chords · Scales
- * choice and the scale picked.
+ * choice and the scale picked. The capo helper (Phase 33) saves its shapes and fret, and a row
+ * tapped opens its shape in Chords.
  */
 class PracticeTabTest {
 
@@ -64,6 +68,8 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
             container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
+            container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
+            container.settingsRepository.setPracticeCapoFret(0)
         }
     }
 
@@ -76,6 +82,8 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
             container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
+            container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
+            container.settingsRepository.setPracticeCapoFret(0)
         }
     }
 
@@ -167,6 +175,51 @@ class PracticeTabTest {
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.METRONOME, waitForSaved(PracticeTool.METRONOME))
         }
+    }
+
+    @Test
+    fun theCapoHelperSavesItsPicksAndOpensAShapeInChords() {
+        runBlocking { container.settingsRepository.setPracticeChart(PracticeChart.SCALES) }
+        ActivityScenario.launch(MainActivity::class.java).use {
+            openPractice()
+            // Chords first, on scales, so it has state of its own to be replaced.
+            click(PracticeTestTags.tool(PracticeTool.CHORDS))
+            assertTrue("scales show", shown(PracticeTestTags.NECK))
+
+            click(PracticeTestTags.tool(PracticeTool.CAPO))
+            assertTrue("the capo helper shows", shown(PracticeTestTags.CAPO))
+            assertEquals("the pick is saved", PracticeTool.CAPO, waitForSaved(PracticeTool.CAPO))
+            val noCapo = device.findObject(By.res(PracticeTestTags.CAPO_SOUNDS_IN)).contentDescription
+            repeat(3) { click(PracticeTestTags.CAPO_HIGHER) }
+            assertTrue("the capo on 3", device.wait(Until.hasObject(By.res(PracticeTestTags.CAPO_FRET).desc(Pattern.compile(Pattern.quote(onFret(3)) + ".*"))), WAIT_MS))
+            assertTrue("the shapes sound in another key", device.findObject(By.res(PracticeTestTags.CAPO_SOUNDS_IN)).contentDescription != noCapo)
+            assertEquals("the fret is saved", 3, waitForSavedFret(3))
+
+            click(PracticeTestTags.capoRow(Chord.of(PitchClass.F, ChordQuality.MAJOR)))
+            assertTrue("Chords shows", shown(PracticeTestTags.CHART))
+            assertTrue("on the shape tapped", checked(PracticeTestTags.root(PitchClass.F)) && checked(PracticeTestTags.type(ChordQuality.MAJOR)))
+            assertTrue("the switch on Chords", checked(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertEquals("the chord is saved", PitchClass.F to ChordQuality.MAJOR, waitForSavedChord(PitchClass.F, ChordQuality.MAJOR))
+            assertEquals("chords, not scales", PracticeChart.CHORDS to ScaleType.MAJOR, waitForSavedScale(PracticeChart.CHORDS, ScaleType.MAJOR))
+            assertEquals("the tool is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
+
+            click(PracticeTestTags.tool(PracticeTool.CAPO))
+            assertTrue(
+                "the capo helper kept its fret",
+                device.wait(Until.hasObject(By.res(PracticeTestTags.CAPO_FRET).desc(Pattern.compile(Pattern.quote(onFret(3)) + ".*"))), WAIT_MS),
+            )
+        }
+    }
+
+    /** "Capo on fret 3", in the app's language. */
+    private fun onFret(fret: Int): String = context.getString(PracticeR.string.practice_capo_on_fret, fret)
+
+    /** Waits up to [WAIT_MS] for the capo's saved fret to become [fret]. */
+    private fun waitForSavedFret(fret: Int): Int {
+        fun saved() = runBlocking { container.settingsRepository.settings.first().practiceCapoFret }
+        val end = SystemClock.uptimeMillis() + WAIT_MS
+        while (saved() != fret && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+        return saved()
     }
 
     private companion object {

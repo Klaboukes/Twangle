@@ -13,6 +13,8 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import io.github.klaboukes.twangle.core.dsp.capo.Capo
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -238,6 +240,17 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[PRACTICE_SCALE_TYPE] = type.name }
     }
 
+    override suspend fun setPracticeCapoShapes(shapes: SongKey) {
+        dataStore.edit {
+            it[PRACTICE_CAPO_SHAPES] = shapes.tonic.name
+            it[PRACTICE_CAPO_MINOR] = shapes.minor
+        }
+    }
+
+    override suspend fun setPracticeCapoFret(fret: Int) {
+        dataStore.edit { it[PRACTICE_CAPO_FRET] = fret.coerceIn(0, Capo.HIGHEST_FRET) }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -278,6 +291,9 @@ class DataStoreSettingsRepository internal constructor(
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
             practiceChart = enumOrNull<PracticeChart>(prefs[PRACTICE_CHART]) ?: defaults.practiceChart,
             practiceScaleType = enumOrNull<ScaleType>(prefs[PRACTICE_SCALE_TYPE]) ?: defaults.practiceScaleType,
+            practiceCapoShapes = enumOrNull<PitchClass>(prefs[PRACTICE_CAPO_SHAPES])
+                ?.let { SongKey(it, prefs[PRACTICE_CAPO_MINOR] ?: false) } ?: defaults.practiceCapoShapes,
+            practiceCapoFret = prefs[PRACTICE_CAPO_FRET]?.takeIf { it in 0..Capo.HIGHEST_FRET } ?: defaults.practiceCapoFret,
         )
     }
 
@@ -336,6 +352,11 @@ class DataStoreSettingsRepository internal constructor(
         /** The Chords tool's [PracticeChart] and the scale ([ScaleType]) picked last, by their names (the root is [PRACTICE_ROOT]). */
         private val PRACTICE_CHART = stringPreferencesKey("practice_chart")
         private val PRACTICE_SCALE_TYPE = stringPreferencesKey("practice_scale_type")
+
+        /** The Capo helper's shapes picked last: their key's tonic ([PitchClass]) by its name, and whether it is minor; and the capo's fret. */
+        private val PRACTICE_CAPO_SHAPES = stringPreferencesKey("practice_capo_shapes")
+        private val PRACTICE_CAPO_MINOR = booleanPreferencesKey("practice_capo_minor")
+        private val PRACTICE_CAPO_FRET = intPreferencesKey("practice_capo_fret")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

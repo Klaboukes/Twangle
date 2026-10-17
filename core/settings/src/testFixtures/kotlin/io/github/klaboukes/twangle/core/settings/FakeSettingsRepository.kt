@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.capo.Capo
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -135,4 +137,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setPracticeChart(chart: PracticeChart) = state.update { it.copy(practiceChart = chart) }
 
     override suspend fun setPracticeScaleType(type: ScaleType) = state.update { it.copy(practiceScaleType = type) }
+
+    override suspend fun setPracticeCapoShapes(shapes: SongKey) = state.update { it.copy(practiceCapoShapes = shapes) }
+
+    override suspend fun setPracticeCapoFret(fret: Int) = state.update { it.copy(practiceCapoFret = fret.coerceIn(0, Capo.HIGHEST_FRET)) }
 }

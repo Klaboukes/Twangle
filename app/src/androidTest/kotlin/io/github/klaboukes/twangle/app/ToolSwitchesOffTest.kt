@@ -72,6 +72,7 @@ class ToolSwitchesOffTest {
             assertTrue("the tab is called Metronome", metronomeTab.hasObject(By.text(context.getString(R.string.nav_metronome))))
             metronomeTab.click()
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
+            // Phase 33: nor the capo helper (its tags start with practice_ too).
             assertEquals("no Practice", emptySet<String>(), tagsLike("practice_.*"))
             assertTrue("no Practice name", device.findObjects(By.text(context.getString(R.string.nav_practice))).isEmpty())
         }

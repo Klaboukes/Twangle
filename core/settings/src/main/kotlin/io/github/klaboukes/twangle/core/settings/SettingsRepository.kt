@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.capo.Capo
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -128,4 +130,10 @@ interface SettingsRepository {
 
     /** The scale picked last in the Chords tool ([AppSettings.practiceScaleType]). */
     suspend fun setPracticeScaleType(type: ScaleType)
+
+    /** The shapes picked last in the Capo helper ([AppSettings.practiceCapoShapes]). */
+    suspend fun setPracticeCapoShapes(shapes: SongKey)
+
+    /** The capo's fret picked last in the Capo helper, kept within 0..[Capo.HIGHEST_FRET] ([AppSettings.practiceCapoFret]). */
+    suspend fun setPracticeCapoFret(fret: Int)
 }

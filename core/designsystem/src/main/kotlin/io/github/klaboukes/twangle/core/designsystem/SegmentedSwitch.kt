@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.layout.IntrinsicMeasurable
 import androidx.compose.ui.layout.IntrinsicMeasureScope
@@ -30,7 +32,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 /**
  * Twangle's segmented switch: one of [options], [selected] in the style's main accent container, a
  * tap on another calls [onSelect]. The tuner's mode switch (Strings · Chromatic) and the Practice
- * tab's tool switch (Metronome · Chords) are this one switch, so they look and behave alike. Each
+ * tab's tool switch (Metronome · Chords · Capo) are this one switch, so they look and behave alike. Each
  * segment shows [label] on one line, shrinking to fit where it must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected.
  */
@@ -46,6 +48,10 @@ fun <T> SegmentedSwitch(
     val scheme = MaterialTheme.colorScheme
     // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
     val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
+    // Three segments at large text leave no room for the check mark beside a long label (a picked Dutch
+    // "Metronoom" at 2× text on a 320 dp phone): the picked one is told by its fill alone there.
+    val crowded = options.size >= CROWDED_SEGMENTS
+    val marks = !crowded || LocalDensity.current.fontScale < LARGE_TEXT_SCALE
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
     // touch area set round the light, as the Twangle buttons do (OwnTouchArea).
     OwnTouchArea { touch ->
@@ -71,6 +77,10 @@ fun <T> SegmentedSwitch(
                         activeBorderColor = if (neon) scheme.primary else scheme.outline,
                         inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
                     ),
+                    // Three segments (Practice's Metronome · Chords · Capo) keep less padding, so Dutch
+                    // "Metronoom" still fits a 320 dp phone at 2× text.
+                    contentPadding = if (crowded) CROWDED_PADDING else SegmentedButtonDefaults.ContentPadding,
+                    icon = { if (marks) SegmentedButtonDefaults.Icon(option == selected) },
                     modifier = Modifier.testTag(tag(option)).touchArea(touch).pressFeedback(press, shape, above = true),
                 ) {
                     // One line, its whole width counted as its minimum ([segmentLabel]): the row sizes every
@@ -84,10 +94,11 @@ fun <T> SegmentedSwitch(
                     Text(
                         label(option),
                         style = LocalTextStyle.current.copy(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)),
-                        modifier = Modifier.segmentLabel(checked = option == selected),
+                        modifier = Modifier.segmentLabel(checked = marks && option == selected),
                         // Wrapping on, so a word too wide for one line counts as not fitting and shrinks.
                         maxLines = 1,
-                        autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LocalTextStyle.current.fontSize, stepSize = 0.5.sp),
+                        // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE).
+                        autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LocalTextStyle.current.fontSize, stepSize = 0.5.sp),
                     )
                 }
             }
@@ -139,8 +150,19 @@ private class SegmentLabelNode(var checked: Boolean) : Modifier.Node(), LayoutMo
 /** Material's space between a segment's check mark and its label. */
 private val CHECK_MARK_SPACING = 8.dp
 
-/** The labels shrink to fit no smaller than this, as the string buttons' names. */
-private val MIN_LABEL_SIZE = 8.sp
+/**
+ * The labels shrink only as far as they must to fit: no smaller than 8 sp in every case measured
+ * (as the string buttons' names), down to this only where one would otherwise be cut off (as the
+ * Practice pickers' buttons): three segments at 2× text on a 320 dp phone.
+ */
+private val LAST_RESORT_LABEL_SIZE = 6.sp
+
+/** From this many segments, each keeps [CROWDED_PADDING] at its sides instead of Material's 12 dp. */
+private const val CROWDED_SEGMENTS = 3
+private val CROWDED_PADDING = PaddingValues(horizontal = 6.dp)
+
+/** From this text size a crowded switch shows no check marks. */
+private const val LARGE_TEXT_SCALE = 1.5f
 
 /** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
 private const val NEON_OUTLINE_ALPHA = 0.55f

@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">leer %1$s</string>
     <string name="practice_spoken_scale_fret">Bund %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, Grundton</string>
+    <string name="practice_tool_capo">Kapo</string>
+    <string name="practice_capo_shapes">Meine Griffe</string>
+    <string name="practice_capo_shapes_spoken">Meine Griffe: %1$s</string>
+    <string name="practice_capo_label">Kapo</string>
+    <string name="practice_capo_none">Kein Kapo</string>
+    <string name="practice_capo_on_fret">Kapo im %1$d. Bund</string>
+    <string name="practice_capo_lower">Kapo einen Bund tiefer</string>
+    <string name="practice_capo_higher">Kapo einen Bund höher</string>
+    <string name="practice_capo_shape_column">Griff</string>
+    <string name="practice_capo_sounds_column">Klingt</string>
+    <string name="practice_capo_sounds_in">Klingt in %1$s</string>
+    <string name="practice_capo_row_spoken">Griff %1$s, klingt als %2$s</string>
+    <string name="practice_capo_open_chord">in Akkorde öffnen</string>
 </resources>

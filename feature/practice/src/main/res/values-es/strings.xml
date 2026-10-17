@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">al aire %1$s</string>
     <string name="practice_spoken_scale_fret">traste %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, fundamental</string>
+    <string name="practice_tool_capo">Cejilla</string>
+    <string name="practice_capo_shapes">Formas que toco</string>
+    <string name="practice_capo_shapes_spoken">Formas que toco: %1$s</string>
+    <string name="practice_capo_label">Cejilla</string>
+    <string name="practice_capo_none">Sin cejilla</string>
+    <string name="practice_capo_on_fret">Cejilla en el traste %1$d</string>
+    <string name="practice_capo_lower">Cejilla un traste más abajo</string>
+    <string name="practice_capo_higher">Cejilla un traste más arriba</string>
+    <string name="practice_capo_shape_column">Forma</string>
+    <string name="practice_capo_sounds_column">Suena</string>
+    <string name="practice_capo_sounds_in">Suena en %1$s</string>
+    <string name="practice_capo_row_spoken">Forma de %1$s, suena %2$s</string>
+    <string name="practice_capo_open_chord">abrir en Acordes</string>
 </resources>

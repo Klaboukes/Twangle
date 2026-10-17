@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">開放 %1$s</string>
     <string name="practice_spoken_scale_fret">%1$d フレット %2$s</string>
     <string name="practice_spoken_scale_root">%1$s、ルート</string>
+    <string name="practice_tool_capo">カポ</string>
+    <string name="practice_capo_shapes">弾く押さえ方</string>
+    <string name="practice_capo_shapes_spoken">弾く押さえ方：%1$s</string>
+    <string name="practice_capo_label">カポ</string>
+    <string name="practice_capo_none">カポなし</string>
+    <string name="practice_capo_on_fret">カポは %1$d フレット</string>
+    <string name="practice_capo_lower">カポを1フレット下げる</string>
+    <string name="practice_capo_higher">カポを1フレット上げる</string>
+    <string name="practice_capo_shape_column">押さえ方</string>
+    <string name="practice_capo_sounds_column">鳴る音</string>
+    <string name="practice_capo_sounds_in">%1$s で鳴る</string>
+    <string name="practice_capo_row_spoken">%1$s の押さえ方、鳴るのは %2$s</string>
+    <string name="practice_capo_open_chord">コードで開く</string>
 </resources>

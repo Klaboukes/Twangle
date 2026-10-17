@@ -21,6 +21,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the hammer-and-screwdriver button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
 - ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the hammer-and-screwdriver button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
 - ☐ Phase 32: with a real guitar (a debug build), open Practice and pick Chords at the top. In standard tuning look up a dozen chords you know (for example C, G, D, A, E, Am, Em, Dm, F, B7, Cmaj7, Dsus4) and play the first shape of each, then step through a few others with ‹ ›: each is comfortable to hold and sounds the chord named, and the notes under the chart are the ones you play. Switch to Scales and play A minor pentatonic, G major and E blues along the neck: every dot is a note of the scale and the root dots are where you expect. Then pick a tuning of your own (or DADGAD) in the Instrument item and look up a few chords and a scale again: the shapes and the neck follow that tuning
+- ☐ Phase 33: with a real guitar (a debug build), open Practice and pick Capo at the top. Work out the capo for two songs you know that are played with a capo: pick the shapes you play under "Shapes I play" and move the capo with ‹ › until "Sounds in" shows the song's key; the table should list the chords you finger and what they sound. Put the capo there and play both songs along with a recording: they sound in the right key. Tap a chord in the table: it opens in Chords with its shape on your tuning
 - ☐ Phase 36: with auto-rotate off and the phone upright, turn on Settings → Focus mode: the whole app turns on its side by itself. Play a string and read the big meter from a few steps away; the tabs and the Instrument item stay at the side. Switch to another tab and back: the screen doesn't turn. Turn the phone the other way round: the app follows. Then switch Focus mode off: the app turns back upright and stays upright
 
 ---
@@ -38,9 +39,9 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 ## Phase 33 — Capo helper
 Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.
 - ☑ `:core:dsp`: capo maths (the fret for a key and a set of shapes, and what a shape sounds like with the capo on, in the player's note names); pure and tested (`capo/Capo`, `CapoPlan`, `SongKey`; 16 tests in `CapoTest`)
-- ☐ Rough mock-up for the owner to pick from
-- ☐ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check
-- ☐ Owner check added: work out the capo for two songs you know and play them
+- ☑ Rough mock-up for the owner to pick from ([docs/design/capo-helper-preview.html](docs/design/capo-helper-preview.html); owner picked B on 2026-10-17: pick your shapes, step the capo with ‹ ›, a table shows what each shape sounds)
+- ☑ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check (`CapoScreen`, the third segment Metronome · Chords · Capo; a row opens its shape in Chords; shapes and fret saved; `CapoTableTest`, `CapoScreenTest`, `PracticeTabTest`)
+- ☑ Owner check added: work out the capo for two songs you know and play them (*Owner checks*)
 
 ## Phase 34 — The tools go live in v1.0
 Goal: the finished tools reach users in v1.0. Comes after the other tool phases and before Phase 23's store steps.

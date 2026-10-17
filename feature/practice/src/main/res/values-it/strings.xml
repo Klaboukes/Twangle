@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">a vuoto %1$s</string>
     <string name="practice_spoken_scale_fret">tasto %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, fondamentale</string>
+    <string name="practice_tool_capo">Capotasto</string>
+    <string name="practice_capo_shapes">Le mie diteggiature</string>
+    <string name="practice_capo_shapes_spoken">Le mie diteggiature: %1$s</string>
+    <string name="practice_capo_label">Capotasto</string>
+    <string name="practice_capo_none">Senza capotasto</string>
+    <string name="practice_capo_on_fret">Capotasto al tasto %1$d</string>
+    <string name="practice_capo_lower">Capotasto un tasto più giù</string>
+    <string name="practice_capo_higher">Capotasto un tasto più su</string>
+    <string name="practice_capo_shape_column">Diteggiatura</string>
+    <string name="practice_capo_sounds_column">Suona</string>
+    <string name="practice_capo_sounds_in">Suona in %1$s</string>
+    <string name="practice_capo_row_spoken">Diteggiatura di %1$s, suona %2$s</string>
+    <string name="practice_capo_open_chord">apri in Accordi</string>
 </resources>

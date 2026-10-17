@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">مفتوح %1$s</string>
     <string name="practice_spoken_scale_fret">الدستان %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s، النغمة الأساسية</string>
+    <string name="practice_tool_capo">الكابو</string>
+    <string name="practice_capo_shapes">الأشكال التي أعزفها</string>
+    <string name="practice_capo_shapes_spoken">الأشكال التي أعزفها: %1$s</string>
+    <string name="practice_capo_label">الكابو</string>
+    <string name="practice_capo_none">بدون كابو</string>
+    <string name="practice_capo_on_fret">الكابو على الدستان %1$d</string>
+    <string name="practice_capo_lower">الكابو دستانًا إلى الأسفل</string>
+    <string name="practice_capo_higher">الكابو دستانًا إلى الأعلى</string>
+    <string name="practice_capo_shape_column">الشكل</string>
+    <string name="practice_capo_sounds_column">الصوت</string>
+    <string name="practice_capo_sounds_in">يُسمَع في %1$s</string>
+    <string name="practice_capo_row_spoken">شكل %1$s، يُسمَع %2$s</string>
+    <string name="practice_capo_open_chord">افتح في الكوردات</string>
 </resources>

@@ -69,7 +69,7 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownTool = mutableStateOf(PracticeTool.CHORDS)
-    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)
+    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
 
     private fun show() {
         compose.setContent {
@@ -108,7 +108,7 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
                 for (tool in tools) {
                     val node = segment(tool)
                         .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-                        .assert(hasText(if (tool == PracticeTool.METRONOME) "Metronome" else "Chords"))
+                        .assert(hasText(LABELS.getValue(tool)))
                     if (tool == picked) node.assertIsSelected() else node.assertIsNotSelected()
                 }
             }
@@ -117,6 +117,8 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
         assertEquals(PracticeTool.METRONOME, shownTool.value)
         segment(PracticeTool.CHORDS).performClick()
         assertEquals(PracticeTool.CHORDS, shownTool.value)
+        segment(PracticeTool.CAPO).performClick()
+        assertEquals(PracticeTool.CAPO, shownTool.value)
     }
 
     @Test
@@ -182,6 +184,8 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
+
+        private val LABELS = mapOf(PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.CAPO to "Capo")
 
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 20L

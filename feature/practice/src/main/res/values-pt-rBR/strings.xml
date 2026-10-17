@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">solta %1$s</string>
     <string name="practice_spoken_scale_fret">casa %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, tônica</string>
+    <string name="practice_tool_capo">Capotraste</string>
+    <string name="practice_capo_shapes">Posições que eu toco</string>
+    <string name="practice_capo_shapes_spoken">Posições que eu toco: %1$s</string>
+    <string name="practice_capo_label">Capotraste</string>
+    <string name="practice_capo_none">Sem capotraste</string>
+    <string name="practice_capo_on_fret">Capotraste na casa %1$d</string>
+    <string name="practice_capo_lower">Capotraste uma casa abaixo</string>
+    <string name="practice_capo_higher">Capotraste uma casa acima</string>
+    <string name="practice_capo_shape_column">Posição</string>
+    <string name="practice_capo_sounds_column">Soa</string>
+    <string name="practice_capo_sounds_in">Soa em %1$s</string>
+    <string name="practice_capo_row_spoken">Posição de %1$s, soa %2$s</string>
+    <string name="practice_capo_open_chord">abrir em Acordes</string>
 </resources>

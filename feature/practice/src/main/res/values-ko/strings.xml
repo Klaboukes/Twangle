@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">개방 %1$s</string>
     <string name="practice_spoken_scale_fret">%1$d 프렛 %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, 근음</string>
+    <string name="practice_tool_capo">카포</string>
+    <string name="practice_capo_shapes">내가 치는 운지</string>
+    <string name="practice_capo_shapes_spoken">내가 치는 운지: %1$s</string>
+    <string name="practice_capo_label">카포</string>
+    <string name="practice_capo_none">카포 없음</string>
+    <string name="practice_capo_on_fret">카포 %1$d프렛</string>
+    <string name="practice_capo_lower">카포 한 프렛 내리기</string>
+    <string name="practice_capo_higher">카포 한 프렛 올리기</string>
+    <string name="practice_capo_shape_column">운지</string>
+    <string name="practice_capo_sounds_column">소리</string>
+    <string name="practice_capo_sounds_in">%1$s(으)로 소리 남</string>
+    <string name="practice_capo_row_spoken">%1$s 운지, 소리는 %2$s</string>
+    <string name="practice_capo_open_chord">코드에서 열기</string>
 </resources>

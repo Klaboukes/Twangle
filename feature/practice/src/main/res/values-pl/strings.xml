@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">pusta %1$s</string>
     <string name="practice_spoken_scale_fret">próg %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, pryma</string>
+    <string name="practice_tool_capo">Kapodaster</string>
+    <string name="practice_capo_shapes">Moje chwyty</string>
+    <string name="practice_capo_shapes_spoken">Moje chwyty: %1$s</string>
+    <string name="practice_capo_label">Kapodaster</string>
+    <string name="practice_capo_none">Bez kapodastra</string>
+    <string name="practice_capo_on_fret">Kapodaster na %1$d. progu</string>
+    <string name="practice_capo_lower">Kapodaster o próg niżej</string>
+    <string name="practice_capo_higher">Kapodaster o próg wyżej</string>
+    <string name="practice_capo_shape_column">Chwyt</string>
+    <string name="practice_capo_sounds_column">Brzmi</string>
+    <string name="practice_capo_sounds_in">Brzmi w %1$s</string>
+    <string name="practice_capo_row_spoken">Chwyt %1$s, brzmi jak %2$s</string>
+    <string name="practice_capo_open_chord">otwórz w Akordach</string>
 </resources>

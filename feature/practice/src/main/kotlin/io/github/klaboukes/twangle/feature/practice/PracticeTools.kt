@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.practice
 
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
+import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
@@ -8,12 +10,15 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
- * The tools the Practice tab (Phase 32) offers with [tools], in its switch's order: the metronome
- * and chords. None while the Practice tab's switch is off: the tab is then the v1.0 Metronome tab,
- * with no switch. The capo helper (Phase 33) joins with its own switch.
+ * The tools the Practice tab (Phase 32) offers with [tools], in its switch's order: the metronome,
+ * chords and, with its own switch, the capo helper (Phase 33). None while the Practice tab's switch
+ * is off: the tab is then the v1.0 Metronome tab, with no switch.
  */
-fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> =
-    if (tools.practiceTab) listOf(PracticeTool.METRONOME, PracticeTool.CHORDS) else emptyList()
+fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> = when {
+    !tools.practiceTab -> emptyList()
+    tools.capoHelper -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
+    else -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)
+}
 
 /** The tool Practice opens on: the one used last ([saved]) while it is [offered], else the metronome. */
 fun practiceToolToOpen(saved: PracticeTool, offered: List<PracticeTool>): PracticeTool =
@@ -61,4 +66,24 @@ object PracticeTestTags {
     const val COUNT = "practice_shape_count"
     const val PREVIOUS = "practice_shape_previous"
     const val NEXT = "practice_shape_next"
+
+    /** The Capo helper's screen. */
+    const val CAPO = "practice_capo"
+
+    /** The Capo helper's "Shapes I play" button, which opens the list of shapes. */
+    const val CAPO_SHAPES = "practice_capo_shapes"
+
+    /** An entry of the shapes' list, e.g. "practice_capo_shapes_a_minor". */
+    fun capoShapes(shapes: SongKey): String = CAPO_SHAPES + "_" + shapes.tonic.name.lowercase() + if (shapes.minor) "_minor" else ""
+
+    /** The capo's fret between its ‹ › buttons, and the buttons. */
+    const val CAPO_FRET = "practice_capo_fret"
+    const val CAPO_LOWER = "practice_capo_lower"
+    const val CAPO_HIGHER = "practice_capo_higher"
+
+    /** A row of the table by the shape it starts with, e.g. "practice_capo_row_d_minor". */
+    fun capoRow(shape: Chord): String = "practice_capo_row_" + shape.root.name.lowercase() + "_" + shape.quality.name.lowercase()
+
+    /** "Sounds in E♭" under the table. */
+    const val CAPO_SOUNDS_IN = "practice_capo_sounds_in"
 }

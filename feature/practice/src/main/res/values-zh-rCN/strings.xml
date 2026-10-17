@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">空弦 %1$s</string>
     <string name="practice_spoken_scale_fret">%1$d 品 %2$s</string>
     <string name="practice_spoken_scale_root">%1$s，根音</string>
+    <string name="practice_tool_capo">变调夹</string>
+    <string name="practice_capo_shapes">我弹的指法</string>
+    <string name="practice_capo_shapes_spoken">我弹的指法：%1$s</string>
+    <string name="practice_capo_label">变调夹</string>
+    <string name="practice_capo_none">不用变调夹</string>
+    <string name="practice_capo_on_fret">变调夹在第 %1$d 品</string>
+    <string name="practice_capo_lower">变调夹降低一品</string>
+    <string name="practice_capo_higher">变调夹升高一品</string>
+    <string name="practice_capo_shape_column">指法</string>
+    <string name="practice_capo_sounds_column">实际发声</string>
+    <string name="practice_capo_sounds_in">听起来是 %1$s</string>
+    <string name="practice_capo_row_spoken">%1$s 指法，发声为 %2$s</string>
+    <string name="practice_capo_open_chord">在和弦中打开</string>
 </resources>

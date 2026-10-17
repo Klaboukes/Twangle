@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">açık %1$s</string>
     <string name="practice_spoken_scale_fret">%1$d. perde %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, kök nota</string>
+    <string name="practice_tool_capo">Kapo</string>
+    <string name="practice_capo_shapes">Çaldığım basışlar</string>
+    <string name="practice_capo_shapes_spoken">Çaldığım basışlar: %1$s</string>
+    <string name="practice_capo_label">Kapo</string>
+    <string name="practice_capo_none">Kapo yok</string>
+    <string name="practice_capo_on_fret">Kapo %1$d. perdede</string>
+    <string name="practice_capo_lower">Kapoyu bir perde aşağı</string>
+    <string name="practice_capo_higher">Kapoyu bir perde yukarı</string>
+    <string name="practice_capo_shape_column">Basış</string>
+    <string name="practice_capo_sounds_column">Duyulan</string>
+    <string name="practice_capo_sounds_in">%1$s tonunda duyulur</string>
+    <string name="practice_capo_row_spoken">%1$s basışı, %2$s olarak duyulur</string>
+    <string name="practice_capo_open_chord">Akorlar\'da aç</string>
 </resources>

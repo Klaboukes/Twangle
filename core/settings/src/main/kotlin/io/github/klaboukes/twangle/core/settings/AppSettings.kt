@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.core.settings
 
+import io.github.klaboukes.twangle.core.dsp.capo.Capo
+import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -177,6 +179,9 @@ enum class PracticeTool {
 
     /** Chord charts and scales for the picked instrument and tuning. */
     CHORDS,
+
+    /** The capo helper (Phase 33, with its own switch, [ToolSwitches.capoHelper]). */
+    CAPO,
     ;
 
     companion object {
@@ -276,6 +281,10 @@ data class AppSettings(
     val practiceChart: PracticeChart = PracticeChart.DEFAULT,
     /** The scale picked last in the Chords tool's scales, on [practiceRoot] (major on a fresh install). */
     val practiceScaleType: ScaleType = ScaleType.MAJOR,
+    /** The shapes picked last in the Practice tab's Capo helper, by their key (C shapes on a fresh install). */
+    val practiceCapoShapes: SongKey = SongKey(PitchClass.C),
+    /** The capo's fret picked last in the Capo helper, 0 (no capo) to [Capo.HIGHEST_FRET] (0 on a fresh install). */
+    val practiceCapoFret: Int = 0,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

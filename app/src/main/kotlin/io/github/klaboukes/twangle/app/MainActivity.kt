@@ -49,11 +49,14 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
+import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
+import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
 import io.github.klaboukes.twangle.feature.practice.PracticeToolSwitch
 import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
@@ -303,30 +306,29 @@ class MainActivity : AppCompatActivity() {
     /**
      * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab], the
      * Play build until it goes live) it is the metronome as in v1.0. With it on it is Practice
-     * (Phase 32): the tool switch at the top of each tool picks the metronome or chords (and scales), and the tab
+     * (Phase 32): the tool switch at the top of each tool picks the metronome, chords (and scales)
+     * or, with its own switch ([ToolSwitches.capoHelper]), the capo helper (Phase 33), and the tab
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
-     * tool keeps its own saved UI state while the other shows; leaving the metronome stops it, as
-     * leaving the tab does.
+     * tool keeps its own saved UI state while another shows; leaving the metronome stops it, as
+     * leaving the tab does. A chord tapped in the capo helper opens in Chords: its saved state is
+     * dropped, so Chords opens afresh on that chord (saved too, as if picked there).
      */
     @Composable
     private fun PracticeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches) {
         val offered = practiceToolsFor(tools)
         var tool by rememberSaveable { mutableStateOf(practiceToolToOpen(settings.practiceTool, offered)) }
+        // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
+        var opened by remember { mutableStateOf<Chord?>(null) }
+        val pickTool: (PracticeTool) -> Unit = { picked ->
+            if (picked != tool) {
+                tool = picked
+                lifecycleScope.launch { container.settingsRepository.setPracticeTool(picked) }
+            }
+        }
         val header: (@Composable () -> Unit)? = if (offered.isEmpty()) {
             null
         } else {
-            {
-                PracticeToolSwitch(
-                    tool = tool,
-                    onToolChange = { picked ->
-                        if (picked != tool) {
-                            tool = picked
-                            lifecycleScope.launch { container.settingsRepository.setPracticeTool(picked) }
-                        }
-                    },
-                    tools = offered,
-                )
-            }
+            { PracticeToolSwitch(tool = tool, onToolChange = pickTool, tools = offered) }
         }
         val toolState = rememberSaveableStateHolder()
         toolState.SaveableStateProvider(tool.name) {
@@ -348,22 +350,47 @@ class MainActivity : AppCompatActivity() {
                 }
                 PracticeTool.CHORDS -> ChordsScreen(
                     tuning = settings.tuning,
-                    tuningName = stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings)),
+                    tuningName = practiceTuningName(settings),
                     spokenTuningName = spokenTuning(settings),
                     notation = settings.notationFor(appLanguage()),
-                    savedRoot = settings.practiceRoot,
-                    savedQuality = settings.practiceChordQuality,
+                    savedRoot = opened?.root ?: settings.practiceRoot,
+                    savedQuality = opened?.quality ?: settings.practiceChordQuality,
                     onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
                     onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
                     header = header ?: {},
-                    savedChart = settings.practiceChart,
+                    savedChart = if (opened != null) PracticeChart.CHORDS else settings.practiceChart,
                     savedScaleType = settings.practiceScaleType,
                     onChartChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChart(it) } },
                     onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                 )
+                PracticeTool.CAPO -> CapoScreen(
+                    tuningName = practiceTuningName(settings),
+                    spokenTuningName = spokenTuning(settings),
+                    notation = settings.notationFor(appLanguage()),
+                    savedShapes = settings.practiceCapoShapes,
+                    savedFret = settings.practiceCapoFret,
+                    onShapesChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoShapes(it) } },
+                    onFretChange = { lifecycleScope.launch { container.settingsRepository.setPracticeCapoFret(it) } },
+                    onOpenChord = { chord ->
+                        opened = chord
+                        toolState.removeState(PracticeTool.CHORDS.name)
+                        lifecycleScope.launch {
+                            container.settingsRepository.setPracticeRoot(chord.root)
+                            container.settingsRepository.setPracticeChordQuality(chord.quality)
+                            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
+                        }
+                        pickTool(PracticeTool.CHORDS)
+                    },
+                    header = header ?: {},
+                )
             }
         }
     }
+
+    /** The picked instrument and tuning as the Practice tools show them, e.g. "Guitar · Standard". */
+    @Composable
+    private fun practiceTuningName(settings: AppSettings): String =
+        stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings))
 
     /** The picked instrument and tuning as TalkBack says them on the bar's Instrument item, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable

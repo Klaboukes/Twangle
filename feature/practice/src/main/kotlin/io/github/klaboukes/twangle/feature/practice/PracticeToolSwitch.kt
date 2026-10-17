@@ -10,7 +10,7 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 /**
  * The Practice tab's tool switch (Phase 32, the owner's pick A in docs/design/practice-preview.html):
  * the app's segmented switch, the same as the tuner's mode switch, one segment per tool in [tools]
- * ("Metronome · Chords"), [tool] picked. Each tool shows it at its top. It has room for three tools.
+ * ("Metronome · Chords · Capo"), [tool] picked. Each tool shows it at its top. It has room for three tools.
  */
 @Composable
 fun PracticeToolSwitch(
@@ -33,4 +33,5 @@ private val PracticeTool.label: Int
     get() = when (this) {
         PracticeTool.METRONOME -> R.string.practice_tool_metronome
         PracticeTool.CHORDS -> R.string.practice_tool_chords
+        PracticeTool.CAPO -> R.string.practice_tool_capo
     }

@@ -174,7 +174,8 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolSwitch,
     ChordsScreen (root and type pickers, chart, ‹ › pager), ChordPicker (RootPicker, ChordTypePicker),
-    ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart)
+    ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart),
+    CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel

@@ -41,4 +41,17 @@
     <string name="practice_spoken_scale_open">открытая %1$s</string>
     <string name="practice_spoken_scale_fret">лад %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, тоника</string>
+    <string name="practice_tool_capo">Каподастр</string>
+    <string name="practice_capo_shapes">Мои аппликатуры</string>
+    <string name="practice_capo_shapes_spoken">Мои аппликатуры: %1$s</string>
+    <string name="practice_capo_label">Каподастр</string>
+    <string name="practice_capo_none">Без каподастра</string>
+    <string name="practice_capo_on_fret">Каподастр на %1$d-м ладу</string>
+    <string name="practice_capo_lower">Каподастр на лад ниже</string>
+    <string name="practice_capo_higher">Каподастр на лад выше</string>
+    <string name="practice_capo_shape_column">Аппликатура</string>
+    <string name="practice_capo_sounds_column">Звучит</string>
+    <string name="practice_capo_sounds_in">Звучит в %1$s</string>
+    <string name="practice_capo_row_spoken">Аппликатура %1$s, звучит %2$s</string>
+    <string name="practice_capo_open_chord">открыть в Аккордах</string>
 </resources>
