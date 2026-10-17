@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 16 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 17 oktober 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer en metronoom voor Android, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -21,7 +21,7 @@ De app van Twangle voor Wear OS-horloges werkt zelfstandig, zonder de telefoon. 
 ## Instellingen blijven op je telefoon
 Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:
 - **Stemmen:** het instrument en de stemming, stemmingen die je zelf hebt gemaakt, snaar- of chromatische modus, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
-- **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf, de indeling als je telefoon op zijn kant ligt, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
+- **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf, of de focusmodus aan staat, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
 - **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
 - **Metronoom:** het tempo, de maatsoort en of hij trilt op de tel.
 - Of je de rondleiding al hebt gezien, zodat die niet opnieuw verschijnt, en of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.

@@ -1,6 +1,6 @@
 # Twangle privacy policy
 
-*Effective date: 16 October 2026* · [Nederlands](PRIVACY.nl.md)
+*Effective date: 17 October 2026* · [Nederlands](PRIVACY.nl.md)
 
 Twangle is a guitar tuner and metronome for Android, made by the developer Klaboukes. In short: **Twangle collects no data about you.** Nothing you play and nothing about you leaves your phone.
 
@@ -21,7 +21,7 @@ Twangle's Wear OS watch app works on its own, without the phone. It follows the 
 ## Settings stay on your phone
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:
 - **Tuning:** the instrument and its tuning, tunings you made yourself, string or chromatic mode, the A4 reference pitch, how note names are written and how precise "in tune" is.
-- **Look:** the visual style, light or dark mode, wallpaper colours, the meter look and in-tune effect, the display (needle or wave), the wave's look, the layout on its side, whether signal bars are shown, and the app's language if you picked one.
+- **Look:** the visual style, light or dark mode, wallpaper colours, the meter look and in-tune effect, the display (needle or wave), the wave's look, whether focus mode is on, whether signal bars are shown, and the app's language if you picked one.
 - **While tuning:** keep screen on, vibrate when in tune and the tune up/down hint.
 - **Metronome:** the tempo, the meter and whether it vibrates on the beat.
 - Whether you have already seen the welcome tour, so it isn't shown again, and whether you once said no to the microphone, so Twangle knows whether Android can still ask you.

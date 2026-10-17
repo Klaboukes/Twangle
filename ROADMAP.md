@@ -21,6 +21,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the hammer-and-screwdriver button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
 - ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the hammer-and-screwdriver button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
 - ☐ Phase 32: with a real guitar (a debug build), open Practice and pick Chords at the top. In standard tuning look up a dozen chords you know (for example C, G, D, A, E, Am, Em, Dm, F, B7, Cmaj7, Dsus4) and play the first shape of each, then step through a few others with ‹ ›: each is comfortable to hold and sounds the chord named, and the notes under the chart are the ones you play. Switch to Scales and play A minor pentatonic, G major and E blues along the neck: every dot is a note of the scale and the root dots are where you expect. Then pick a tuning of your own (or DADGAD) in the Instrument item and look up a few chords and a scale again: the shapes and the neck follow that tuning
+- ☐ Phase 36: with auto-rotate off and the phone upright, turn on Settings → Focus mode: the whole app turns on its side by itself. Play a string and read the big meter from a few steps away; the tabs and the Instrument item stay at the side. Switch to another tab and back: the screen doesn't turn. Turn the phone the other way round: the app follows. Then switch Focus mode off: the app turns back upright and stays upright
 
 ---
 
@@ -55,7 +56,7 @@ Goal: the full layout by default, upright and on its side, and one big meter as 
 - ☑ Focus mode off (the default): the full two-pane layout on its side, the single column upright, as with "Full layout on its side" on today
 - ☑ The setting: `keepTwoPaneLandscape` replaced by `focusMode` (default off; the app isn't released, so no carrying over of old values), "Focus mode" with a summary like "Turns Twangle on its side with one big meter, easy to read from a distance", in every language; TalkBack and 2× text
 - ☑ Tests: `TunerLayoutTest`, `TunerScreenTest` and `CompactLandscapeStylesTest` (the rail now shown) and the Settings tests updated; a test that focus mode asks for the side orientation and lets go when switched off; phone check upright with auto-rotate off
-- ☐ Docs: docs/architecture/ui.md (*Navigation*, *Landscape and wide screens*), the old design to history.md; README.md, PRIVACY.md (the setting's name, then `scripts/publish-privacy.sh`) and docs/store-listing.md (the big meter is now a setting, screenshot 8)
+- ☑ Docs: docs/architecture/ui.md (*Navigation*, *Landscape and wide screens*), the old design to history.md; README.md, PRIVACY.md (the setting's name, then `scripts/publish-privacy.sh`) and docs/store-listing.md (the big meter is now a setting, screenshot 8) (policy not yet published)
 
 ---
 

@@ -41,7 +41,7 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 - Light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Note names:** C, C♯, D (or with flats), German style with H for B, or Do Re Mi. By default they follow what is usual in your language.
 - **16 languages:** English, Dutch, German, French, Spanish, Italian, Portuguese (Brazil), Chinese (Simplified), Japanese, Korean, Hindi, Indonesian, Russian, Turkish, Polish and Arabic (right to left). Pick one in the app or follow the phone.
-- A compact layout with a big meter when the phone is on its side.
+- **Focus mode** (off by default): turns the whole app on its side with one big meter, easy to read from a distance, also with auto-rotate off. The tabs stay beside it.
 - Works with TalkBack and large text.
 
 ### Widget and watch

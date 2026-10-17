@@ -64,7 +64,7 @@ Checked against the Play Console when entering the listing, since Google changes
 > • Six styles, from Ancient to Space Age, each with its own colours, lettering and background
 > • Six meter looks and six wave looks, a strobe among them
 > • Light, dark, or following your phone, with your wallpaper's colours on Android 12 and newer
-> • A big meter when you turn your phone on its side
+> • Focus mode: one big meter on a phone on its side, easy to read from a distance
 >
 > ALSO
 > • A home-screen widget that opens the tuner with one tap
@@ -93,9 +93,9 @@ Eight screenshots, the first three the strongest, because search results show on
 | 5 | Strum check after a strum, one string flat, one not heard | Futuristic, dark | Check every string in one strum |
 | 6 | Metronome at 120 BPM in 4/4, beat 1 lit | Space Age, dark | A metronome that keeps steady time |
 | 7 | Settings, the style cards | Ancient, light | Six styles. Make it yours. |
-| 8 | Tuner with the phone on its side (landscape, cropped to fit) | Classic, light | Your sound never leaves your phone |
+| 8 | Tuner in focus mode (switched on in Settings; the phone on its side with one big meter and the rail, landscape, cropped to fit) | Classic, light | Your sound never leaves your phone |
 
-- The screenshots are made by an on-device test, not by hand: a store-screenshot test feeds the tuner a fixed note through the fake recorder, opens each screen in the chosen style, saves the picture, and a script places it on the canvas with the caption in each language. That way all 16 languages get their own screenshots, and they're easy to make again after a change. It runs in the overnight run.
+- The screenshots are made by an on-device test, not by hand: a store-screenshot test feeds the tuner a fixed note through the fake recorder, opens each screen in the chosen style, saves the picture (for screenshot 8 it switches focus mode on first, since the phone on its side shows the full layout by default), and a script places it on the canvas with the caption in each language. That way all 16 languages get their own screenshots, and they're easy to make again after a change. It runs in the overnight run.
 - The speech bubble in screenshot 4 is drawn by the script, not real TalkBack, since screenshots can't show speech.
 
 ### Watch screenshots (only if the watch launches now)
