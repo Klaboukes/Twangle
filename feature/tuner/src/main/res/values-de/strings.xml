@@ -199,4 +199,11 @@
     <string name="tuner_chord_none">Noch kein Akkord</string>
     <string name="tuner_chord_spoken_notes">Töne %1$s</string>
     <string name="tuner_chord_spoken_recent">davor %1$s</string>
+    <string name="tuner_pitch_trail">Tonspur</string>
+    <string name="tuner_trail_spoken">Tonspur, %1$s</string>
+    <string name="tuner_trail_no_note">kein Ton</string>
+    <string name="tuner_trail_steady">stabil, %1$s</string>
+    <string name="tuner_trail_wavering">schwankend, %1$s</string>
+    <string name="tuner_trail_bending_up">zieht nach oben</string>
+    <string name="tuner_trail_bending_down">zieht nach unten</string>
 </resources>

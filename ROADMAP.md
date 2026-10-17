@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22, 24–30, 32 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–32 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -20,6 +20,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears (postponed 2026-10-16: the owner has no Wear OS watch yet, and the watch app follows in an update, decision 3)
 - ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the hammer-and-screwdriver button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
 - ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the hammer-and-screwdriver button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
+- ☐ Phase 31: with a real guitar (a debug build), pick "Pitch trail" from the hammer-and-screwdriver button above the strings. Hold a note for a few seconds, then bend a string up and let it back, then play vibrato: the line runs flat along the middle, in the "in tune" colour, while the held note is in tune, rises and falls with the bend, and wavers with the vibrato, clearly enough to see how steady your hand is; it breaks when the note stops. Switch to Chromatic and sing or hum a note: the line stays and follows it
 - ☐ Phase 32: with a real guitar (a debug build), open Practice and pick Chords at the top. In standard tuning look up a dozen chords you know (for example C, G, D, A, E, Am, Em, Dm, F, B7, Cmaj7, Dsus4) and play the first shape of each, then step through a few others with ‹ ›: each is comfortable to hold and sounds the chord named, and the notes under the chart are the ones you play. Switch to Scales and play A minor pentatonic, G major and E blues along the neck: every dot is a note of the scale and the root dots are where you expect. Then pick a tuning of your own (or DADGAD) in the Instrument item and look up a few chords and a scale again: the shapes and the neck follow that tuning
 
 ---
@@ -33,13 +34,6 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 - The tools that listen (strum check, 12th-fret check, chord name, pitch trail) stay modes inside the tuner, under the "more tools" button above the strings: they share the tuner's microphone, instrument, tuning and string row, and the 12th-fret check starts by tuning the string. The bar doesn't change for them. The button shows a hammer and screwdriver so it is easy to find (Phase 35, done).
 - The Metronome tab becomes **Practice** (Phase 32), holding the Metronome, Chords and the Capo helper, with a small switch at the top like the tuner's mode switch. It opens on the tool used last (saved), so someone who mostly uses the metronome still reaches it in one tap. The bar becomes Tuner · Instrument · Practice · Settings. Chords and the Capo helper follow the instrument picked in the Instrument item. "Practice" rather than "Tools": it is short in every language ("Oefenen", "Üben"; "Gereedschap" and "Werkzeuge" would shrink like "Instellingen").
 - Later tools that don't listen (ear training, a drone, a practice timer) go into Practice too, so the bar doesn't change again.
-
-## Phase 31 — Pitch trail
-Goal: a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists.
-- ☑ Preallocated history of readings (no allocation per frame), drawn in the draw phase only, like the strobe (`PitchHistory`, 5 s by default, fed by `TunerViewModel` on the DSP thread; the drawing comes with the mode)
-- ☑ Rough mock-up of the trail in two or three styles for the owner to pick from (owner, 2026-10-17: option A of [docs/design/pitch-trail-preview.html](docs/design/pitch-trail-preview.html), a band in the meter's place, the line scrolling right to left over 4 s, sharp up, flat down)
-- ☐ The mode inside the tuner behind its switch (Phase 28), in every style, light and dark; TalkBack describes it in words; JVM and UI tests; frame times measured on the phone, like the meter looks (`scripts/meter-frames.sh`)
-- ☐ Owner check added: hold a note, bend a string and play vibrato, and check the line shows it clearly
 
 ## Phase 33 — Capo helper
 Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.

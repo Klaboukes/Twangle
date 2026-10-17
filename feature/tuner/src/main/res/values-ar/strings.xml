@@ -216,4 +216,11 @@
     <string name="tuner_chord_none">لا كورد بعد</string>
     <string name="tuner_chord_spoken_notes">النوتات %1$s</string>
     <string name="tuner_chord_spoken_recent">قبل ذلك %1$s</string>
+    <string name="tuner_pitch_trail">أثر النغمة</string>
+    <string name="tuner_trail_spoken">أثر النغمة، %1$s</string>
+    <string name="tuner_trail_no_note">لا نغمة</string>
+    <string name="tuner_trail_steady">ثابتة، %1$s</string>
+    <string name="tuner_trail_wavering">متذبذبة، %1$s</string>
+    <string name="tuner_trail_bending_up">ترتفع</string>
+    <string name="tuner_trail_bending_down">تنخفض</string>
 </resources>

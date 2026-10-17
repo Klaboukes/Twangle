@@ -199,4 +199,11 @@
     <string name="tuner_chord_none">Henüz akor yok</string>
     <string name="tuner_chord_spoken_notes">notalar %1$s</string>
     <string name="tuner_chord_spoken_recent">önceki %1$s</string>
+    <string name="tuner_pitch_trail">Perde izi</string>
+    <string name="tuner_trail_spoken">Perde izi, %1$s</string>
+    <string name="tuner_trail_no_note">nota yok</string>
+    <string name="tuner_trail_steady">sabit, %1$s</string>
+    <string name="tuner_trail_wavering">dalgalı, %1$s</string>
+    <string name="tuner_trail_bending_up">yükseliyor</string>
+    <string name="tuner_trail_bending_down">alçalıyor</string>
 </resources>

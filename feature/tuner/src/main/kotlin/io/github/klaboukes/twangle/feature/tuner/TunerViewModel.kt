@@ -203,6 +203,16 @@ class TunerViewModel(
      */
     val chordName: StateFlow<Boolean> = chordNameOn
 
+    private val pitchTrailOn = MutableStateFlow(false)
+
+    /**
+     * Whether the pitch trail is on (Phase 31): a line of the last seconds of readings in the meter's
+     * place ([pitchHistory]). Only where [tunerTools] offers it; one tool at a time like the others and
+     * kept in memory only. It is a way of showing the tuner's own readings, so it keeps the tuner
+     * listening as it is and stays on in chromatic mode.
+     */
+    val pitchTrail: StateFlow<Boolean> = pitchTrailOn
+
     /** The string the 12th-fret check checks (null: none chosen), and a count that starts it afresh. */
     private val intonationChoice = MutableStateFlow(IntonationChoice(string = null, attempt = 0))
 
@@ -282,6 +292,7 @@ class TunerViewModel(
             tunerTools.collect {
                 if (TunerTool.INTONATION_CHECK !in it) intonationOn.value = false
                 if (TunerTool.CHORD_NAME !in it) chordNameOn.value = false
+                if (TunerTool.PITCH_TRAIL !in it) pitchTrailOn.value = false
             }
         }
     }
@@ -353,6 +364,7 @@ class TunerViewModel(
         if (on) {
             intonationOn.value = false
             chordNameOn.value = false
+            pitchTrailOn.value = false
         }
         strumCheckOn.value = on
     }
@@ -368,6 +380,7 @@ class TunerViewModel(
             if (mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
             strumCheckOn.value = false
             chordNameOn.value = false
+            pitchTrailOn.value = false
             intonationChoice.value = IntonationChoice(string = null, attempt = intonationChoice.value.attempt + 1)
         }
         intonationOn.value = on
@@ -384,8 +397,23 @@ class TunerViewModel(
             if (mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
             strumCheckOn.value = false
             intonationOn.value = false
+            pitchTrailOn.value = false
         }
         chordNameOn.value = on
+    }
+
+    /**
+     * Switches the pitch trail [on] or off (only where [tunerTools] offers it). It turns the other
+     * tools off, but leaves the mode as it is: the trail draws chromatic mode's notes too.
+     */
+    fun setPitchTrail(on: Boolean) {
+        if (on && TunerTool.PITCH_TRAIL !in tunerTools.value) return
+        if (on) {
+            strumCheckOn.value = false
+            intonationOn.value = false
+            chordNameOn.value = false
+        }
+        pitchTrailOn.value = on
     }
 
     /** The last [closeToolsOnRequest] count acted on. */
@@ -403,6 +431,7 @@ class TunerViewModel(
         strumCheckOn.value = false
         intonationOn.value = false
         chordNameOn.value = false
+        pitchTrailOn.value = false
     }
 
     /** The 12th-fret check starts on string [index] (lowest = 0), from its open note. */

@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -129,5 +130,61 @@ class PitchTrailFeedTest {
 
         assertTrue(vm.state.value is TunerUiState.Detected)
         assertEquals(0L, vm.pitchHistory.end)
+    }
+
+    // ---- The trail as a tool ----
+
+    @Test
+    fun `the trail is one tool at a time and stays on in chromatic mode`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder.silence())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(100)
+        assertTrue(TunerTool.PITCH_TRAIL in vm.tunerTools.value)
+        vm.setChordName(true)
+        vm.setPitchTrail(true)
+        advanceTimeBy(100)
+        assertTrue(vm.pitchTrail.value)
+        assertFalse(vm.chordName.value)
+        // The tuner keeps listening as it is: no tool state.
+        assertTrue(vm.state.value is TunerUiState.Listening)
+        // Chromatic mode keeps it (singers, violins); the other tools turn it off.
+        vm.setMode(TunerMode.CHROMATIC)
+        advanceTimeBy(100)
+        assertTrue(vm.pitchTrail.value)
+        vm.setStrumCheck(true)
+        assertFalse(vm.pitchTrail.value)
+        vm.setPitchTrail(true)
+        assertFalse(vm.strumCheck.value)
+        vm.setIntonationCheck(true)
+        assertFalse(vm.pitchTrail.value)
+        vm.setPitchTrail(true)
+        assertFalse(vm.intonationCheck.value)
+        vm.setPitchTrail(false)
+        assertFalse(vm.pitchTrail.value)
+    }
+
+    @Test
+    fun `a string tapped with the trail on locks it as usual`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder.silence())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setPitchTrail(true)
+        advanceTimeBy(100)
+        vm.toggleString(2)
+        advanceTimeBy(100)
+        assertTrue(vm.pitchTrail.value)
+        assertEquals(2, (vm.state.value as TunerUiState.Listening).lockedString)
+    }
+
+    @Test
+    fun `with its switch off the trail is not offered`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder.silence(), ToolSwitches.ALL_OFF)
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(100)
+        assertFalse(TunerTool.PITCH_TRAIL in vm.tunerTools.value)
+        vm.setPitchTrail(true)
+        assertFalse(vm.pitchTrail.value)
     }
 }

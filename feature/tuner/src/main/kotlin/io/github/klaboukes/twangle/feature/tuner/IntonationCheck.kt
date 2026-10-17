@@ -28,19 +28,28 @@ enum class TunerTool {
 
     /** Phase 30: strum a chord and its name shows. */
     CHORD_NAME,
+
+    /**
+     * Phase 31: the pitch trail, a line of the last seconds in the meter's place. Unlike the others it
+     * doesn't take the microphone from the tuner: the note, its cents and the strings stay, and it
+     * stays on in chromatic mode (singers, violins).
+     */
+    PITCH_TRAIL,
 }
 
 /**
  * The tools the tuner offers for [instrument] in a build with [tools] switched on, in the menu's
  * order: the strum check always, the 12th-fret check where its switch is on and the instrument has
  * frets and a saddle ([IntonationInstruments.offers]), the chord name where its switch is on and the
- * instrument is strummed in chords ([ChordInstruments.offers]). With one tool the tuner shows its
+ * instrument is strummed in chords ([ChordInstruments.offers]), and the pitch trail where its switch is on
+ * (every instrument: it draws any note). With one tool the tuner shows its
  * switch as in v1.0; with more, one "more tools" button opens a menu of them.
  */
 fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
     add(TunerTool.STRUM_CHECK)
     if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
     if (tools.chordNaming && ChordInstruments.offers(instrument)) add(TunerTool.CHORD_NAME)
+    if (tools.pitchTrail) add(TunerTool.PITCH_TRAIL)
 }
 
 /** Where the 12th-fret check is: see [TunerUiState.IntonationCheck]. */

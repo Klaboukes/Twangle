@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 32 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31 and 32 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -39,6 +39,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 30 — What chord is this?](#phase-30--what-chord-is-this)
 - [Phase 35 — An easier-to-find "more tools" button](#phase-35--an-easier-to-find-more-tools-button)
 - [Phase 32 — Practice tab with chord and scale charts](#phase-32--practice-tab-with-chord-and-scale-charts)
+- [Phase 31 — Pitch trail](#phase-31--pitch-trail)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -352,6 +353,13 @@ Goal: finger diagrams for the chosen instrument and tuning, own tunings included
 - ☑ Scales: pick a root and a scale, see it on a fretboard; TalkBack reads it in words (a Chords · Scales choice inside the Chords tool, the root shared; five scales; the whole neck 0–12 sideways as the mock-up, every note named, the root in the accent, upright only where that is clearly bigger such as a tablet; the instrument's tuning, own tunings included; choice and scale saved; read string by string; translated into all 16 languages, fits at 2× text and on its side)
 - ☑ Every text translated, 2× text, every style light and dark; JVM and UI tests; phone check (2026-10-17: every Practice, Chords and Scales text checked in all 16 languages, chord types, scale names and TalkBack phrases included; the real app on the Xiaomi in all six styles, light and dark, upright and on its side, Chords and Scales; two-line scale names kept 3 dp clear of their outline, which Classic's and Retro's letters touched; at 2× text on its side the scales' start half scrolls by about half a button row, accepted and explained in docs/architecture/ui-other-screens.md; overnight run 2026-10-17: Dutch scale names broke inside a word at 2× text, now broken at the hyphen, and Classic's La♭maj7 was cut off on a 320 dp phone, now set a little smaller)
 - ☑ Owner check added: look up chords and scales in standard tuning and in a tuning of your own, and play them
+
+## Phase 31 — Pitch trail
+Goal: a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists.
+- ☑ Preallocated history of readings (no allocation per frame), drawn in the draw phase only, like the strobe (`PitchHistory`, 5 s by default, fed by `TunerViewModel` on the DSP thread; the drawing comes with the mode)
+- ☑ Rough mock-up of the trail in two or three styles for the owner to pick from (owner, 2026-10-17: option A of [docs/design/pitch-trail-preview.html](docs/design/pitch-trail-preview.html), a band in the meter's place, the line scrolling right to left over 4 s, sharp up, flat down)
+- ☑ The mode inside the tuner behind its switch (Phase 28), in every style, light and dark; TalkBack describes it in words; JVM and UI tests; frame times measured on the phone, like the meter looks (`scripts/meter-frames.sh`) (2026-10-17: "Pitch trail" / "Toonlijn" in the more-tools menu, for every instrument, staying on in chromatic mode; the line in the meter's place in each style's colours; TalkBack says "steady, in tune", "wavering, 10 cents sharp", "bending up"; on the Xiaomi 120 frames a second with no late frame and less main-thread work than the Classic needle in the same run, `scripts/meter-frames.sh PITCH_TRAIL`; phone check with the synthetic sweep in the real app and the real microphone in the debug build; the other styles in the overnight run)
+- ☑ Owner check added: hold a note, bend a string and play vibrato, and check the line shows it clearly
 
 ---
 

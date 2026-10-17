@@ -80,12 +80,21 @@ class MainActivity : AppCompatActivity() {
     /** Counts the home-screen widget's taps while the app was already open; each one shows the tuner. */
     private var openTunerRequests by mutableIntStateOf(0)
 
+    /**
+     * The frame-time build (`benchmarkRelease`) shows every music tool when `MeterFramesBenchmark` starts
+     * it asking for them ([EXTRA_MEASURE_TOOLS]), to measure the pitch trail; otherwise it shows the
+     * release build's app, as the startup run and the meter looks need. Every other build ignores the
+     * extra: `SYNTHETIC_AUDIO` is a constant false there, so R8 removes this.
+     */
+    private var measuringTools = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // The opening screen (Theme.Twangle.Starting): the icon on gold, or on dark brown in dark mode.
         installSplashScreen().setKeepOnScreenCondition { !ready }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
+        measuringTools = BuildConfig.SYNTHETIC_AUDIO && intent.getBooleanExtra(EXTRA_MEASURE_TOOLS, false)
         // A fresh install is due the first-start tour; an update from before the tour is not. Decided once.
         lifecycleScope.launch { container.settingsRepository.decideTourOnce() }
         setContent {
@@ -151,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Which music tools show (Phase 28): all in debug builds, none in release builds.
-        val tools = container.toolSwitches
+        val tools = if (measuringTools) ToolSwitches.ALL_ON else container.toolSwitches
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
             // Lets UI Automator (the Baseline Profile generator, the meter frame-time benchmark) find test tags.
             Box(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
@@ -363,6 +372,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private companion object {
+        /** Asks the frame-time build for every music tool (see [measuringTools]); `MeterFramesBenchmark` sends it. */
+        const val EXTRA_MEASURE_TOOLS = "io.github.klaboukes.twangle.MEASURE_TOOLS"
+
         // The scrims enableEdgeToEdge() uses by default behind 3-button navigation.
         val LIGHT_SCRIM = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
         val DARK_SCRIM = Color.argb(0x80, 0x1b, 0x1b, 0x1b)

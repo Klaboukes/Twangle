@@ -207,4 +207,11 @@
     <string name="tuner_chord_none">Jeszcze brak akordu</string>
     <string name="tuner_chord_spoken_notes">dźwięki %1$s</string>
     <string name="tuner_chord_spoken_recent">wcześniej %1$s</string>
+    <string name="tuner_pitch_trail">Ślad wysokości</string>
+    <string name="tuner_trail_spoken">Ślad wysokości, %1$s</string>
+    <string name="tuner_trail_no_note">brak dźwięku</string>
+    <string name="tuner_trail_steady">stabilnie, %1$s</string>
+    <string name="tuner_trail_wavering">faluje, %1$s</string>
+    <string name="tuner_trail_bending_up">podciąga w górę</string>
+    <string name="tuner_trail_bending_down">opada w dół</string>
 </resources>

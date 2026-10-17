@@ -207,4 +207,11 @@
     <string name="tuner_chord_none">Пока нет аккорда</string>
     <string name="tuner_chord_spoken_notes">ноты %1$s</string>
     <string name="tuner_chord_spoken_recent">до этого %1$s</string>
+    <string name="tuner_pitch_trail">След высоты</string>
+    <string name="tuner_trail_spoken">След высоты, %1$s</string>
+    <string name="tuner_trail_no_note">нет ноты</string>
+    <string name="tuner_trail_steady">ровно, %1$s</string>
+    <string name="tuner_trail_wavering">колеблется, %1$s</string>
+    <string name="tuner_trail_bending_up">идёт вверх</string>
+    <string name="tuner_trail_bending_down">идёт вниз</string>
 </resources>

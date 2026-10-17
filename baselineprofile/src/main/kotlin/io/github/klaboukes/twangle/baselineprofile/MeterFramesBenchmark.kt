@@ -28,11 +28,17 @@ import java.util.regex.Pattern
  * thread, the RenderThread and the whole app from `/proc/<pid>/…/stat`, as in docs/architecture/performance.md.
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
  *
+ * The pitch trail (Phase 31) is measured the same way, as one more "look", [PITCH_TRAIL], always
+ * last: the app is started afresh asking for the music tools (the frame-time build otherwise hides
+ * them like the release build, see `MainActivity.measuringTools`), the trail is picked from the
+ * "more tools" menu above the strings, and the tuner switched to chromatic mode (the trail stays on),
+ * so the line follows the sweep in the meter's place.
+ *
  * Run with the phone connected, unlocked and upright: `scripts/meter-frames.sh`. Results go to
  * logcat (tag `MeterFrames`) and `meter-frames.tsv` in the test's additional output.
  * Instrumentation arguments: `meterLooks` (`MeterLook` names separated by colons, as Gradle cuts
  * arguments at commas; `CURRENT` keeps the look set in the app, e.g. an older build without
- * looks), `runs`, `seconds`.
+ * looks; `PITCH_TRAIL` the pitch trail), `runs`, `seconds`.
  */
 @RunWith(AndroidJUnit4::class)
 class MeterFramesBenchmark {
@@ -43,6 +49,7 @@ class MeterFramesBenchmark {
     private val runs = args.getString("runs")?.toInt() ?: RUNS
     private val windowSeconds = args.getString("seconds")?.toInt() ?: WINDOW_SECONDS
     private val looks = (args.getString("meterLooks") ?: ALL_LOOKS).split(':').map { it.trim().uppercase(Locale.ROOT) }
+        .sortedBy { it == PITCH_TRAIL }
 
     @Test
     fun meterLooksInChromaticMode() {
@@ -63,19 +70,39 @@ class MeterFramesBenchmark {
         device.pressBack()
         waitFor(By.res(MODE_CHROMATIC_TAG), "Tuner screen")
 
-        val pid = shell("pidof $TARGET_PACKAGE").trim().split(' ').first()
-        check(pid.isNotEmpty()) { "Twangle isn't running" }
-        val renderTid = renderThreadOf(pid)
+        var pid = pidOfApp()
+        var renderTid = renderThreadOf(pid)
         val rows = mutableListOf<Window>()
         log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()} pid=$pid renderThread=$renderTid")
         for (look in looks) {
-            if (look != CURRENT) {
+            if (look == PITCH_TRAIL) {
+                // Afresh, with the music tools shown; the trail in chromatic mode.
+                shell("am force-stop $TARGET_PACKAGE")
+                shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY --ez $EXTRA_MEASURE_TOOLS true")
+                // The menu sits above the strings, so it is picked in guitar mode; the trail stays on in chromatic.
+                waitFor(By.res(MODE_GUITAR_TAG), "Guitar button")
+                // A tap while the opening screen still covers the tuner is lost: tap until the button shows.
+                var moreTools: UiObject2? = null
+                repeat(TAP_TRIES) {
+                    if (moreTools == null) {
+                        click(waitFor(By.res(MODE_GUITAR_TAG), "Guitar button"))
+                        moreTools = device.wait(Until.findObject(By.res(MORE_TOOLS_TAG)), SETTLE_MS)
+                    }
+                }
+                click(moreTools ?: error("More tools button didn't appear"))
+                click(waitFor(By.res(PITCH_TRAIL_TOOL_TAG), "Pitch trail in the more-tools menu"))
+                click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
+                waitFor(By.res(TRAIL_PANEL_TAG), "Pitch trail")
+                pid = pidOfApp()
+                renderTid = renderThreadOf(pid)
+                log("pitch trail: pid=$pid renderThread=$renderTid")
+            } else if (look != CURRENT) {
                 openSettings()
                 val card = findInSettings(By.res(CARD_TAG_PREFIX + look.lowercase(Locale.ROOT)))
                 click(card)
                 device.pressBack()
             }
-            click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
+            if (look != PITCH_TRAIL) click(waitFor(By.res(MODE_CHROMATIC_TAG), "Chromatic button"))
             SystemClock.sleep(SETTLE_MS)
             repeat(runs) { run -> rows += measure(look, run + 1, pid, renderTid).also { log(it.row()) } }
         }
@@ -121,6 +148,9 @@ class MeterFramesBenchmark {
             fields[11].toLong() + fields[12].toLong()
         }
     }
+
+    private fun pidOfApp(): String =
+        shell("pidof $TARGET_PACKAGE").trim().split(' ').first().also { check(it.isNotEmpty()) { "Twangle isn't running" } }
 
     private fun renderThreadOf(pid: String): String {
         val tids = shell("ls /proc/$pid/task").split(Regex("\\s+")).filter { it.isNotEmpty() }
@@ -216,9 +246,17 @@ class MeterFramesBenchmark {
         const val ACTIVITY = "io.github.klaboukes.twangle.app.MainActivity"
         const val SETTINGS_TAB_TAG = "nav_settings"
         const val MODE_CHROMATIC_TAG = "tuner_mode_chromatic"
+        const val MODE_GUITAR_TAG = "tuner_mode_auto"
         const val CARD_TAG_PREFIX = "meter_look_card_"
         const val CURRENT = "CURRENT"
-        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:SPIRIT_LEVEL:ECLIPSE:ARROWS:LIGHT_BARS"
+        const val PITCH_TRAIL = "PITCH_TRAIL"
+        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:SPIRIT_LEVEL:ECLIPSE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
+
+        /** `MainActivity.EXTRA_MEASURE_TOOLS`: the frame-time build then shows the music tools. */
+        const val EXTRA_MEASURE_TOOLS = "io.github.klaboukes.twangle.MEASURE_TOOLS"
+        const val MORE_TOOLS_TAG = "tuner_more_tools"
+        const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"
+        const val TRAIL_PANEL_TAG = "tuner_trail_panel"
         const val SUMMARY_HEADER = "look\tfps\tjanky\tdeadlineMissed\tworst p50/p90/p95/p99 ms\tmain%\tmainMs/frame\trender%\tapp%"
 
         /** The gfxinfo lines that say why frames were late ("Number Slow UI thread: 2", GPU percentiles). */
@@ -232,6 +270,7 @@ class MeterFramesBenchmark {
         const val WINDOW_SECONDS = 7
         const val SETTLE_MS = 3_000L
         const val TAP_SETTLE_MS = 700L
+        const val TAP_TRIES = 3
         const val TIMEOUT_MS = 10_000L
         const val SHORT_WAIT_MS = 1_000L
         const val IDLE_TIMEOUT_MS = 100L

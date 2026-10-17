@@ -88,6 +88,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -109,6 +110,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.rememberInTuneGlow
 import io.github.klaboukes.twangle.feature.tuner.components.NoteDisplay
 import io.github.klaboukes.twangle.feature.tuner.components.NoteReadout
 import io.github.klaboukes.twangle.feature.tuner.components.PermissionPrompt
+import io.github.klaboukes.twangle.feature.tuner.components.PitchTrailPanel
 import io.github.klaboukes.twangle.feature.tuner.components.SignalBarsButton
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.StringSelector
@@ -217,6 +219,7 @@ fun TunerScreen(
     val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
     val chordName by viewModel.chordName.collectAsStateWithLifecycle()
+    val pitchTrail by viewModel.pitchTrail.collectAsStateWithLifecycle()
     val tunerTools by viewModel.tunerTools.collectAsStateWithLifecycle()
     StopToneWhenHidden(viewModel::stopTone)
     val granted = mic.status == MicPermissionStatus.GRANTED
@@ -306,6 +309,9 @@ fun TunerScreen(
                     onNextString = viewModel::checkNextString,
                     chordName = chordName,
                     onChordNameChange = viewModel::setChordName,
+                    pitchTrail = pitchTrail,
+                    onPitchTrailChange = viewModel::setPitchTrail,
+                    pitchHistory = viewModel.pitchHistory,
                     onCompactShownChange = { compactShown = it },
                 )
             } else {
@@ -440,6 +446,9 @@ object TunerTestTags {
     const val CHORD_PANEL = "tuner_chord_panel"
     const val CHORD_STATUS = "tuner_chord_status"
 
+    /** The pitch trail's panel in the meter's place. */
+    const val TRAIL_PANEL = "tuner_trail_panel"
+
     /** String [index]'s column in the 12th-fret check's summary. */
     fun intonationString(index: Int): String = "tuner_intonation_string_$index"
 
@@ -509,7 +518,10 @@ private fun KeepScreenOn() {
  * shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]), the verdict's
  * buttons calling [onCheckAgain] and [onNextString], and each string's result on its button. The chord
  * name is turned on and off with [onChordNameChange] ([chordName] is whether it is on); a
- * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]).
+ * [TunerUiState.ChordName] shows its panel and line there too ([ChordPanel], [ChordStatus]). The pitch
+ * trail is turned on and off with [onPitchTrailChange] ([pitchTrail] is whether it is on): while it is
+ * on, [pitchHistory] is drawn as a line in the meter's place ([PitchTrailPanel]); the note and the
+ * strings stay the tuner's.
  *
  * It picks its arrangement from the space it gets ([tunerLayoutFor]): one centred column when held
  * upright; on a phone turned sideways and on wide screens, with [compactLandscape], the compact layout
@@ -559,6 +571,9 @@ fun TunerContent(
     onNextString: () -> Unit = {},
     chordName: Boolean = false,
     onChordNameChange: ((Boolean) -> Unit)? = null,
+    pitchTrail: Boolean = false,
+    onPitchTrailChange: ((Boolean) -> Unit)? = null,
+    pitchHistory: PitchHistory? = null,
     onCompactShownChange: (Boolean) -> Unit = {},
 ) {
     val currentOnCompactShownChange by rememberUpdatedState(onCompactShownChange)
@@ -588,6 +603,7 @@ fun TunerContent(
                     TunerTool.STRUM_CHECK -> true
                     TunerTool.INTONATION_CHECK -> onIntonationCheckChange != null
                     TunerTool.CHORD_NAME -> onChordNameChange != null
+                    TunerTool.PITCH_TRAIL -> onPitchTrailChange != null && pitchHistory != null
                 }
             }
             ToolsState(
@@ -596,6 +612,7 @@ fun TunerContent(
                     strumCheck -> TunerTool.STRUM_CHECK
                     intonationCheck -> TunerTool.INTONATION_CHECK
                     chordName -> TunerTool.CHORD_NAME
+                    pitchTrail -> TunerTool.PITCH_TRAIL
                     else -> null
                 },
                 onChange = { tool, on ->
@@ -603,6 +620,7 @@ fun TunerContent(
                         TunerTool.STRUM_CHECK -> onStrum(on)
                         TunerTool.INTONATION_CHECK -> onIntonationCheckChange?.invoke(on)
                         TunerTool.CHORD_NAME -> onChordNameChange?.invoke(on)
+                        TunerTool.PITCH_TRAIL -> onPitchTrailChange?.invoke(on)
                     }
                 },
             )
@@ -610,7 +628,7 @@ fun TunerContent(
         GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
     }
     val gauge = @Composable {
-        // Strum check, the 12th-fret check and the chord name take the meter's place, at its shape.
+        // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
         if (state is TunerUiState.ChordName) {
             ChordPanel(state, Modifier.zIndex(-1f).tourTarget(TourPart.METER))
         } else if (state is TunerUiState.StrumCheck) {
@@ -626,6 +644,13 @@ fun TunerContent(
                 Modifier.zIndex(-1f).tourTarget(TourPart.METER),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
+            )
+        } else if (pitchTrail && pitchHistory != null) {
+            // The pitch trail takes the needle's place; the note under it stays the tuner's.
+            PitchTrailPanel(
+                pitchHistory,
+                Modifier.zIndex(-1f).tourTarget(TourPart.METER),
+                animationsOff = animationsOff,
             )
         } else {
             MeterFrame(

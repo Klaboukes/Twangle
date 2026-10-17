@@ -3,9 +3,10 @@
 # (MeterFramesBenchmark in :baselineprofile) and prints the table. See
 # docs/architecture/performance.md, "Meter looks".
 #
-#   scripts/meter-frames.sh                      every look, 3 windows of 7 s each
+#   scripts/meter-frames.sh                      every look and the pitch trail, 3 windows of 7 s each
 #   scripts/meter-frames.sh CLASSIC:LIGHT_ARC    only these looks (MeterLook names, colon-separated)
 #   scripts/meter-frames.sh CURRENT              keep the look the app has (e.g. an older build)
+#   scripts/meter-frames.sh PITCH_TRAIL          only the pitch trail (Phase 31; always measured last)
 #
 # Needs the phone connected, unlocked and upright, about 4 minutes. It installs the minified
 # benchmarkRelease build, which hears a synthetic sweeping tone instead of the mic (no test tones

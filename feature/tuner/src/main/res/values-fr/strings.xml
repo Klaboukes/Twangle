@@ -203,4 +203,11 @@
     <string name="tuner_chord_none">Pas encore d\'accord</string>
     <string name="tuner_chord_spoken_notes">notes %1$s</string>
     <string name="tuner_chord_spoken_recent">avant %1$s</string>
+    <string name="tuner_pitch_trail">Trace de hauteur</string>
+    <string name="tuner_trail_spoken">Trace de hauteur, %1$s</string>
+    <string name="tuner_trail_no_note">pas de note</string>
+    <string name="tuner_trail_steady">stable, %1$s</string>
+    <string name="tuner_trail_wavering">instable, %1$s</string>
+    <string name="tuner_trail_bending_up">monte</string>
+    <string name="tuner_trail_bending_down">descend</string>
 </resources>

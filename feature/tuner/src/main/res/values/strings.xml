@@ -274,4 +274,14 @@
     <string name="tuner_chord_spoken_notes">notes %1$s</string>
     <!-- TalkBack, after the chord: the chords before it, %1$s e.g. "G major, C major". -->
     <string name="tuner_chord_spoken_recent">before that %1$s</string>
+    <!-- Phase 31: the pitch trail, a tool in the tuner's "more tools" menu: a line of the last seconds of the note in the meter's place. -->
+    <string name="tuner_pitch_trail">Pitch trail</string>
+    <!-- TalkBack: the pitch trail in words. %1$s is one of the next lines, e.g. "steady, in tune" or "bending up". -->
+    <string name="tuner_trail_spoken">Pitch trail, %1$s</string>
+    <!-- How the line runs over the last moments. %1$s is where the note sits: "in tune" or "10 cents sharp". -->
+    <string name="tuner_trail_no_note">no note</string>
+    <string name="tuner_trail_steady">steady, %1$s</string>
+    <string name="tuner_trail_wavering">wavering, %1$s</string>
+    <string name="tuner_trail_bending_up">bending up</string>
+    <string name="tuner_trail_bending_down">bending down</string>
 </resources>
