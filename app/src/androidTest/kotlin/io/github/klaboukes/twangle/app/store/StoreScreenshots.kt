@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.res.Configuration
 import android.app.LocaleManager
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.Build
 import android.os.LocaleList
 import android.os.SystemClock
@@ -220,28 +221,32 @@ class StoreScreenshots(private val shot: Shot) {
             }
             Shot.PITCH_TRAIL -> {
                 save(
-                    capture(
-                        after = { scenario ->
-                            // Upright again before the activity goes, as focus mode off does with auto-rotate off.
-                            runBlocking { settings.setFocusMode(false) }
-                            waitUntil { !scenario.landscape() }
+                    // Shown as the phone lies on its side, so it is as tall as the others and the trail
+                    // and the note are about twice as large as a sideways frame across the width.
+                    turned(
+                        capture(
+                            after = { scenario ->
+                                // Upright again before the activity goes, as focus mode off does with auto-rotate off.
+                                runBlocking { settings.setFocusMode(false) }
+                                waitUntil { !scenario.landscape() }
+                            },
+                        ) { scenario ->
+                            click(TunerTestTags.MORE_TOOLS)
+                            click(TunerTestTags.tool(TunerTool.PITCH_TRAIL))
+                            // A held A4, as sung or played high up the neck: any note, so chromatic. The last
+                            // step through UI Automator: once the trail moves, it waits for a still screen
+                            // before each step, up to its time-out.
+                            click(TunerTestTags.mode(TunerMode.CHROMATIC))
+                            // Focus mode turns the phone on its side, the trail in the big meter's place.
+                            runBlocking { settings.setFocusMode(true) }
+                            check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
+                            measureCrop(scenario)
+                            // "Tap to show the controls" shows for its first few seconds.
+                            settle(TAP_HINT_MS)
+                            recorder.play(StoreSounds.vibratoNote(StoreSounds.hz(StoreSounds.A4), NOTE_SECONDS, VIBRATO_STEADY_SECONDS))
+                            settle(TRAIL_SETTLE_MS)
                         },
-                    ) { scenario ->
-                        click(TunerTestTags.MORE_TOOLS)
-                        click(TunerTestTags.tool(TunerTool.PITCH_TRAIL))
-                        // A held A4, as sung or played high up the neck: any note, so chromatic. The last
-                        // step through UI Automator: once the trail moves, it waits for a still screen
-                        // before each step, up to its time-out.
-                        click(TunerTestTags.mode(TunerMode.CHROMATIC))
-                        // Focus mode turns the phone on its side, the trail in the big meter's place.
-                        runBlocking { settings.setFocusMode(true) }
-                        check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
-                        measureCrop(scenario)
-                        // "Tap to show the controls" shows for its first few seconds.
-                        settle(TAP_HINT_MS)
-                        recorder.play(StoreSounds.vibratoNote(StoreSounds.hz(StoreSounds.A4), NOTE_SECONDS, VIBRATO_STEADY_SECONDS))
-                        settle(TRAIL_SETTLE_MS)
-                    },
+                    ),
                 )
             }
         }
@@ -303,6 +308,10 @@ class StoreScreenshots(private val shot: Shot) {
         crop = measured
         return measured
     }
+
+    /** [screen] turned a quarter to the left, as a phone turned to the left lies: its top edge to the left. */
+    private fun turned(screen: Bitmap): Bitmap =
+        Bitmap.createBitmap(screen, 0, 0, screen.width, screen.height, Matrix().apply { postRotate(-90f) }, true)
 
     /** Places [screens] on the canvas with this shot's caption and saves it as `store-<n>.png`. */
     private fun compose(screens: List<Bitmap>, bubble: SpeechBubble? = null) {

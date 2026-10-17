@@ -67,7 +67,7 @@ import java.util.concurrent.TimeUnit
  * One store screenshot as Play shows it: [CANVAS_WIDTH] × [CANVAS_HEIGHT] pixels in the style's
  * (quiet) background, the caption in large type above, and below it the app's screens in a slim
  * phone frame. One screen upright fills the space under the caption; two stand side by side, each at
- * about half width; a screen on its side spans the width.
+ * about half width. A screen on its side (screenshot 8) comes already turned upright, as the phone lies.
  *
  * Drawn with the app's own theme ([TwangleTheme]), so the caption is set in the style's display face
  * with its fallbacks for other scripts (`StyleTypography`: Arabic, Devanagari, CJK and Cyrillic get the
@@ -94,13 +94,7 @@ fun StoreCanvas(
             ) {
                 StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
                 val first = screens.first()
-                val onItsSide = screens.size == 1 && first.width > first.height
-                // A screen on its side is short: it and its caption stand together in the middle.
-                Column(
-                    Modifier.fillMaxSize(),
-                    verticalArrangement = if (onItsSide) Arrangement.Center else Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Caption(
                         caption,
                         Modifier
@@ -109,11 +103,7 @@ fun StoreCanvas(
                             .height(if (bubble == null) CAPTION_HEIGHT else CAPTION_HEIGHT_OVER_BUBBLE),
                     )
                     if (bubble != null) Bubble(bubble.text)
-                    if (onItsSide) {
-                        Spacer(Modifier.height(SIDE_GAP))
-                        BoxWithConstraints(Modifier.padding(horizontal = SIDE_MARGIN).fillMaxWidth()) { Phone(first, maxWidth) }
-                        Spacer(Modifier.height(SIDE_GAP + BOTTOM_MARGIN))
-                    } else BoxWithConstraints(
+                    BoxWithConstraints(
                         Modifier
                             .weight(1f)
                             .padding(bottom = BOTTOM_MARGIN, start = SIDE_MARGIN, end = SIDE_MARGIN)
@@ -319,8 +309,6 @@ private val CAPTION_HEIGHT_OVER_BUBBLE = 128.dp
 private val SIDE_MARGIN = 24.dp
 private val BOTTOM_MARGIN = 26.dp
 
-/** Between the caption and a screen on its side. */
-private val SIDE_GAP = 24.dp
 private val PHONE_GAP = 14.dp
 
 /** Two phones stand this share of their free height apart. */
