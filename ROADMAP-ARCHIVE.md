@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31 and 32 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32 and 36 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -40,6 +40,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 35 — An easier-to-find "more tools" button](#phase-35--an-easier-to-find-more-tools-button)
 - [Phase 32 — Practice tab with chord and scale charts](#phase-32--practice-tab-with-chord-and-scale-charts)
 - [Phase 31 — Pitch trail](#phase-31--pitch-trail)
+- [Phase 36 — Focus mode](#phase-36--focus-mode)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -360,6 +361,18 @@ Goal: a line that draws the note over the last few seconds, so a held note, a be
 - ☑ Rough mock-up of the trail in two or three styles for the owner to pick from (owner, 2026-10-17: option A of [docs/design/pitch-trail-preview.html](docs/design/pitch-trail-preview.html), a band in the meter's place, the line scrolling right to left over 4 s, sharp up, flat down)
 - ☑ The mode inside the tuner behind its switch (Phase 28), in every style, light and dark; TalkBack describes it in words; JVM and UI tests; frame times measured on the phone, like the meter looks (`scripts/meter-frames.sh`) (2026-10-17: "Pitch trail" / "Toonlijn" in the more-tools menu, for every instrument, staying on in chromatic mode; the line in the meter's place in each style's colours; TalkBack says "steady, in tune", "wavering, 10 cents sharp", "bending up"; on the Xiaomi 120 frames a second with no late frame and less main-thread work than the Classic needle in the same run, `scripts/meter-frames.sh PITCH_TRAIL`; phone check with the synthetic sweep in the real app and the real microphone in the debug build; the other styles in the overnight run)
 - ☑ Owner check added: hold a note, bend a string and play vibrato, and check the line shows it clearly
+
+---
+
+## Phase 36 — Focus mode
+Goal: the full layout by default, upright and on its side, and one big meter as a choice the player makes. **Owner decided (2026-10-17):** the setting "Full layout on its side" turns around into **Focus mode**, off by default. Today a phone turned on its side goes compact on its own, which surprises anyone who turned it by accident, and people with auto-rotate off never see the big meter at all. Not a music tool, so no tool switch: it ships in v1.0. No mock-up: the owner found the plan clear enough.
+- ☑ Focus mode on: the whole app stays on its side (`SENSOR_LANDSCAPE`, so it works with auto-rotate off and still flips with the phone), not only the tuner, so the screen doesn't turn on every tab switch; the metronome, Practice and Settings use their side layouts. Large screens may ignore the request (Android 16+), where the window's shape decides as before (switched off with auto-rotate off, it first turns back upright: the Xiaomi otherwise stayed on its side)
+- ☑ In focus mode the tuner shows today's compact layout (big meter and note), but the navigation rail with its Instrument item **stays**, so the meter is a little narrower (about 80 dp less); a tap still brings the tuner's own controls (mode switch, strum check switch, strings, more tools) for 5 s, and the "Tap to show the controls" hint stays
+- ☑ Focus mode off (the default): the full two-pane layout on its side, the single column upright, as with "Full layout on its side" on today
+- ☑ The setting: `keepTwoPaneLandscape` replaced by `focusMode` (default off; the app isn't released, so no carrying over of old values), "Focus mode" with a summary like "Turns Twangle on its side with one big meter, easy to read from a distance", in every language; TalkBack and 2× text
+- ☑ Tests: `TunerLayoutTest`, `TunerScreenTest` and `CompactLandscapeStylesTest` (the rail now shown) and the Settings tests updated; a test that focus mode asks for the side orientation and lets go when switched off; phone check upright with auto-rotate off
+- ☑ Docs: docs/architecture/ui.md (*Navigation*, *Landscape and wide screens*), the old design to history.md; README.md, PRIVACY.md (the setting's name, then `scripts/publish-privacy.sh`) and docs/store-listing.md (the big meter is now a setting, screenshot 8) (the policy published on 2026-10-17)
+- ☑ Owner check added: turn Focus mode on with auto-rotate off, read the meter from a distance, switch tabs, then switch it off
 
 ---
 
