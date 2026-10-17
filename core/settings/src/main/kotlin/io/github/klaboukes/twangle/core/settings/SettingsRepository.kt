@@ -90,8 +90,8 @@ interface SettingsRepository {
     /** Calm (the soft glow) or Bold (a stronger, larger one) when the note is reached. */
     suspend fun setInTuneEffect(effect: InTuneEffect)
 
-    /** True keeps the two-pane layout on its side; false (the default) uses the compact one. */
-    suspend fun setKeepTwoPaneLandscape(enabled: Boolean)
+    /** Focus mode: true shows the compact layout (one big meter) on its side; false (the default) the full one. */
+    suspend fun setFocusMode(enabled: Boolean)
 
     /** Remembers that the first-start tour was skipped or finished (or brings it back with false). */
     suspend fun setTourSeen(seen: Boolean)

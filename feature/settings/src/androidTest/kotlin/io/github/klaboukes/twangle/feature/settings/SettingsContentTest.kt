@@ -99,7 +99,7 @@ class SettingsContentTest {
     private val meterLookChanges = mutableListOf<MeterLook>()
     private val effectChanges = mutableListOf<InTuneEffect>()
     private val waveLookChanges = mutableListOf<WaveLook>()
-    private val twoPaneChanges = mutableListOf<Boolean>()
+    private val focusModeChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
     private var toursAsked = 0
@@ -144,7 +144,7 @@ class SettingsContentTest {
                         onMeterLookChange = { meterLookChanges += it },
                         onInTuneEffectChange = { effectChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
-                        onKeepTwoPaneLandscapeChange = { twoPaneChanges += it },
+                        onFocusModeChange = { focusModeChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                         onShowTour = { toursAsked++ },
@@ -378,19 +378,19 @@ class SettingsContentTest {
     }
 
     @Test
-    fun twoPaneLandscapeSwitchIsOffByDefaultAndToggles() {
+    fun focusModeSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())
-        val twoPane = compose.onNodeWithText(context.getString(R.string.settings_keep_two_pane_landscape_title))
-        twoPane.performScrollTo().assertIsOff().performClick()
-        assertEquals(listOf(true), twoPaneChanges)
+        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
+        focusMode.performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), focusModeChanges)
     }
 
     @Test
-    fun twoPaneLandscapeSwitchShowsItIsOn() {
-        show(AppSettings(keepTwoPaneLandscape = true))
-        val twoPane = compose.onNodeWithText(context.getString(R.string.settings_keep_two_pane_landscape_title))
-        twoPane.performScrollTo().assertIsOn().performClick()
-        assertEquals(listOf(false), twoPaneChanges)
+    fun focusModeSwitchShowsItIsOn() {
+        show(AppSettings(focusMode = true))
+        val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
+        focusMode.performScrollTo().assertIsOn().performClick()
+        assertEquals(listOf(false), focusModeChanges)
     }
 
     @Test

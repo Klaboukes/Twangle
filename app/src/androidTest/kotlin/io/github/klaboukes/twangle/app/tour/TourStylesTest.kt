@@ -93,7 +93,7 @@ class TourStylesTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val shownMode = mutableStateOf(TunerMode.AUTO)
     private val shownOpen = mutableStateOf(true)
-    private val keepTwoPane = mutableStateOf(false)
+    private val focusMode = mutableStateOf(true)
     private val ends = mutableIntStateOf(0)
     private val targets = TourTargets()
 
@@ -128,7 +128,7 @@ class TourStylesTest(private val style: VisualStyle) {
                                 onStringClick = {},
                                 onRetry = {},
                                 onStrumCheckChange = {},
-                                compactLandscape = !keepTwoPane.value,
+                                compactLandscape = focusMode.value,
                                 controlsAlwaysShown = shownOpen.value,
                                 modifier = Modifier.fillMaxSize(),
                             )
@@ -267,12 +267,12 @@ class TourStylesTest(private val style: VisualStyle) {
         stepThroughWhollyShown("$style nl 2x on its side", SIDEWAYS)
     }
 
-    /** The full two-pane layout on its side ("Full layout on its side"), in English at 1.25×. */
+    /** The full two-pane layout on its side (focus mode off), in English at 1.25×. */
     @Test
     fun theTwoPaneLayoutShowsEveryBalloonWhole() {
         shownSize.value = LANDSCAPE
         shownFontScale.value = OWNER_FONT_SCALE
-        keepTwoPane.value = true
+        focusMode.value = false
         show()
         stepThroughWhollyShown("$style two-pane", SIDEWAYS)
     }
@@ -387,7 +387,7 @@ class TourStylesTest(private val style: VisualStyle) {
     @Test
     fun nothingMovesWhenTheTourComes() {
         shownOpen.value = false
-        keepTwoPane.value = true
+        focusMode.value = false
         show()
         for (size in listOf(XIAOMI, LANDSCAPE)) {
             shownSize.value = size

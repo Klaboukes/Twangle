@@ -29,7 +29,7 @@ Settings (`:feature:settings`) is one of the three tabs of the navigation bar ([
 Four groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), then Language, Show me around and About, each with an arrow (they open something). Groups are 32 dp apart; rows, including the card grids, keep 16 dp from the edges. No group holds more than two card grids.
 - **Pitch and notes:** A4 calibration, note names, in-tune precision. (The instrument and tuning are picked on the tuner itself, from the navigation bar's Instrument item.)
 - **Look:** style, light or dark, wallpaper colours.
-- **Tuner screen:** meter look, in-tune effect (with a one-line explanation), "Below the note" (numbers or wave; the saved value for numbers is `TunerDisplay.NEEDLE`), wave look, full layout on its side.
+- **Tuner screen:** meter look, in-tune effect (with a one-line explanation), "Below the note" (numbers or wave; the saved value for numbers is `TunerDisplay.NEEDLE`), wave look, focus mode.
 - **While tuning:** keep screen on, vibrate when in tune, tune up/down hint, signal bars.
 
 What each does:
@@ -66,7 +66,7 @@ What each does:
 | `meterLook` | `CLASSIC` | `MeterLook`: `CLASSIC`, `LIGHT_ARC`, `SPIRIT_LEVEL`, `ECLIPSE`, `ARROWS`, `LIGHT_BARS`; key `meter_look` (a saved `ROLLING_SCALE`, `COMET` or `STUDIO_METER` reads as `CLASSIC`) |
 | `inTuneEffect` | `CALM` | `BOLD`; key `in_tune_effect` |
 | `waveLook` | `RIBBON` | `WaveLook`: `STROBE`, `RIBBON`, `DOTS`, `FIREFLIES`, `LOOP`, `RIPPLES`; key `wave_look` |
-| `keepTwoPaneLandscape` | false | "Full layout on its side" |
+| `focusMode` | false | Key `focus_mode`: "Focus mode", the compact layout (one big meter) on its side ([UI](ui.md), *Landscape and wide screens*) |
 | `tourSeen` | false | Key `tour_seen`: the first-start tour was skipped or finished; no switch ("Show me around" starts it without touching it). Without the key, any other saved key reads as seen (also `string_lock_tip_seen` and `wave_breathes_in_tune`, left in older installs' files and no longer read); `decideTourOnce` saves the decision at the app's start ([Tuner screen and tour](ui-tuner.md), *Tour*) |
 | `metronomeBpm` | 120 | Key `metronome_bpm` (int); clamped to 30–250 in the setter and when read |
 | `metronomeMeter` | `FOUR_FOUR` | `Meter` (`:core:dsp`) by name; key `metronome_meter`; unknown gives 4/4 |

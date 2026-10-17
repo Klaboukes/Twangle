@@ -101,7 +101,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(MeterLook.CLASSIC, settings.meterLook)
         assertEquals("a fresh install has the calm glow", InTuneEffect.CALM, settings.inTuneEffect)
         assertEquals("a fresh install is due the tour", false, settings.tourSeen)
-        assertEquals(false, settings.keepTwoPaneLandscape)
+        assertEquals(false, settings.focusMode)
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
@@ -131,7 +131,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setMeterLook(MeterLook.LIGHT_ARC)
         repo.setInTuneEffect(InTuneEffect.BOLD)
         repo.setTourSeen(true)
-        repo.setKeepTwoPaneLandscape(true)
+        repo.setFocusMode(true)
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
@@ -159,7 +159,7 @@ class DataStoreSettingsRepositoryTest {
             meterLook = MeterLook.LIGHT_ARC,
             inTuneEffect = InTuneEffect.BOLD,
             tourSeen = true,
-            keepTwoPaneLandscape = true,
+            focusMode = true,
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
@@ -191,7 +191,7 @@ class DataStoreSettingsRepositoryTest {
             setNotation(Notation.FLATS)
             setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
-            setKeepTwoPaneLandscape(true)
+            setFocusMode(true)
             setMeterLook(MeterLook.SPIRIT_LEVEL)
             setInTuneEffect(InTuneEffect.BOLD)
             setMetronomeBpm(72)
@@ -213,7 +213,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("a picked notation wins over the language", Notation.FLATS, settings.notationFor("fr"))
         assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
-        assertEquals("the two-pane landscape choice is kept", true, settings.keepTwoPaneLandscape)
+        assertEquals("the focus mode choice is kept", true, settings.focusMode)
         assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
         assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
@@ -894,7 +894,7 @@ class DataStoreSettingsRepositoryTest {
         repo.decideTourOnce()
         // E.g. the microphone was refused at first and the style picked in Settings first.
         repo.setStyle(VisualStyle.FUTURISTIC)
-        repo.setKeepTwoPaneLandscape(true)
+        repo.setFocusMode(true)
         repo.decideTourOnce()
         close()
 

@@ -57,8 +57,8 @@
     <string name="settings_wave_look_fireflies">Lucioles</string>
     <string name="settings_wave_look_loop">Boucle</string>
     <string name="settings_wave_look_ripples">Ondulations</string>
-    <string name="settings_keep_two_pane_landscape_title">Affichage complet à l\'horizontale</string>
-    <string name="settings_keep_two_pane_landscape_summary">Téléphone tourné, afficher les commandes à côté de l\'accordeur plutôt qu\'un grand cadran</string>
+    <string name="settings_focus_mode_title">Mode concentration</string>
+    <string name="settings_focus_mode_summary">Met Twangle à l\'horizontale avec un grand cadran, facile à lire de loin</string>
 
     <string name="settings_keep_screen_on_title">Garder l\'écran allumé</string>
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé tant que l\'accordeur est ouvert</string>

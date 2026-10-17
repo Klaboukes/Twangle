@@ -111,7 +111,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
                             onMeterLookChange = {},
                             onInTuneEffectChange = {},
                             onWaveLookChange = {},
-                            onKeepTwoPaneLandscapeChange = {},
+                            onFocusModeChange = {},
                             modifier = Modifier.testTag(WINDOW),
                             dynamicColorAvailable = true,
                         )
@@ -170,7 +170,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
             R.string.settings_vibrate_in_tune_title,
             R.string.settings_show_tune_hint_title,
             R.string.settings_show_signal_bars_title,
-            R.string.settings_keep_two_pane_landscape_title,
+            R.string.settings_focus_mode_title,
             R.string.about_title,
         ).map { context.getString(it) } +
             context.getString(R.string.settings_a4_value, 440) +

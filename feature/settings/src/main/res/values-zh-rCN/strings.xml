@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">萤火虫</string>
     <string name="settings_wave_look_loop">环形</string>
     <string name="settings_wave_look_ripples">涟漪</string>
-    <string name="settings_keep_two_pane_landscape_title">横屏时完整布局</string>
-    <string name="settings_keep_two_pane_landscape_summary">手机横放时，在调音器旁显示控件，而不是只显示一个大表盘</string>
+    <string name="settings_focus_mode_title">专注模式</string>
+    <string name="settings_focus_mode_summary">将 Twangle 横过来，只显示一个大表盘，远处也能看清</string>
 
     <string name="settings_keep_screen_on_title">屏幕常亮</string>
     <string name="settings_keep_screen_on_summary">调音器打开时屏幕保持常亮</string>

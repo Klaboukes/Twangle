@@ -484,25 +484,25 @@ class TunerViewModelTest {
     }
 
     @Test
-    fun `keepTwoPaneLandscape starts from the saved value and follows the setting`() = runTest(dispatcher) {
-        settings.current = AppSettings(keepTwoPaneLandscape = true)
-        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), savedKeepTwoPaneLandscape = true)
-        assertTrue("before the settings arrive", vm.keepTwoPaneLandscape.value)
-        backgroundScope.launch { vm.keepTwoPaneLandscape.collect {} }
+    fun `focusMode starts from the saved value and follows the setting`() = runTest(dispatcher) {
+        settings.current = AppSettings(focusMode = true)
+        val vm = TunerViewModel(a2Recorder(), settings, tones, StandardTestDispatcher(testScheduler), savedFocusMode = true)
+        assertTrue("before the settings arrive", vm.focusMode.value)
+        backgroundScope.launch { vm.focusMode.collect {} }
         runCurrent()
-        assertTrue(vm.keepTwoPaneLandscape.value)
+        assertTrue(vm.focusMode.value)
 
-        settings.setKeepTwoPaneLandscape(false)
+        settings.setFocusMode(false)
         runCurrent()
-        assertFalse("back to compact", vm.keepTwoPaneLandscape.value)
+        assertFalse("back to the full layout", vm.focusMode.value)
     }
 
     @Test
-    fun `keepTwoPaneLandscape is off by default`() = runTest(dispatcher) {
+    fun `focusMode is off by default`() = runTest(dispatcher) {
         val vm = viewModel(a2Recorder())
-        backgroundScope.launch { vm.keepTwoPaneLandscape.collect {} }
+        backgroundScope.launch { vm.focusMode.collect {} }
         runCurrent()
-        assertFalse(vm.keepTwoPaneLandscape.value)
+        assertFalse(vm.focusMode.value)
     }
 
     @Test

@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity() {
                                         tools = tools,
                                         onCompactChange = { tunerCompact = it },
                                         savedMode = settings.mode,
-                                        savedKeepTwoPaneLandscape = settings.keepTwoPaneLandscape,
+                                        savedFocusMode = settings.focusMode,
                                         savedInstrument = settings.instrument,
                                         savedCustomTunings = settings.customTunings,
                                         onOpenTuningEditor = { instrument, customTuningId ->

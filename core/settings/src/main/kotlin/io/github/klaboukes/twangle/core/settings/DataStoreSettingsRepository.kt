@@ -190,8 +190,8 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[IN_TUNE_EFFECT] = effect.name }
     }
 
-    override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) {
-        dataStore.edit { it[KEEP_TWO_PANE_LANDSCAPE] = enabled }
+    override suspend fun setFocusMode(enabled: Boolean) {
+        dataStore.edit { it[FOCUS_MODE] = enabled }
     }
 
     override suspend fun setTourSeen(seen: Boolean) {
@@ -267,7 +267,7 @@ class DataStoreSettingsRepository internal constructor(
             waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
             meterLook = enumOrNull<MeterLook>(prefs[METER_LOOK]) ?: defaults.meterLook,
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
-            keepTwoPaneLandscape = prefs[KEEP_TWO_PANE_LANDSCAPE] ?: defaults.keepTwoPaneLandscape,
+            focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             tourSeen = tourSeen(prefs),
             micRefused = prefs[MIC_REFUSED] ?: defaults.micRefused,
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
@@ -319,7 +319,7 @@ class DataStoreSettingsRepository internal constructor(
 
         /** Whether the microphone was ever refused in Android's dialog ([AppSettings.micRefused]). */
         private val MIC_REFUSED = booleanPreferencesKey("mic_refused")
-        private val KEEP_TWO_PANE_LANDSCAPE = booleanPreferencesKey("keep_two_pane_landscape")
+        private val FOCUS_MODE = booleanPreferencesKey("focus_mode")
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 
         /** The metronome's [Meter], by its name. */

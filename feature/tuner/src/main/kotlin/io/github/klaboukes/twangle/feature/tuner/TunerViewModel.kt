@@ -54,7 +54,7 @@ import kotlin.math.ceil
  * followed live, also while listening.
  * Smoothing runs on [dspDispatcher] together with the pitch detection. [savedMode] is the mode
  * shown until the saved settings arrive, so a screen that already read them starts in the right one;
- * [savedInstrument] and [savedCustomTunings] do the same for the instrument and tuning panel, and [savedKeepTwoPaneLandscape] for the
+ * [savedInstrument] and [savedCustomTunings] do the same for the instrument and tuning panel, and [savedFocusMode] for the
  * layout on its side, and [savedMicRefused] for [micRefused]. [language] is the app's language (e.g. "de"): note names follow its habit
  * ([Notation.forLanguage]) until the player picks a notation; the screen passes a new one with [setLanguage].
  *
@@ -72,7 +72,7 @@ class TunerViewModel(
     private val tonePlayer: TonePlayer,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     savedMode: TunerMode = AppSettings().mode,
-    savedKeepTwoPaneLandscape: Boolean = AppSettings().keepTwoPaneLandscape,
+    savedFocusMode: Boolean = AppSettings().focusMode,
     savedInstrument: Instrument = AppSettings().instrument,
     savedCustomTunings: List<CustomTuning> = AppSettings().customTunings,
     language: String = "",
@@ -166,12 +166,13 @@ class TunerViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InTuneEffect.DEFAULT)
 
     /**
-     * Whether a phone on its side keeps the two-pane layout instead of the compact one (a saved
-     * setting). Starts from the saved value, so a turned phone doesn't switch layout a moment after opening.
+     * Whether focus mode is on, so a phone on its side shows the compact layout instead of the
+     * two-pane one (a saved setting). Starts from the saved value, so a turned phone doesn't switch
+     * layout a moment after opening.
      */
-    val keepTwoPaneLandscape: StateFlow<Boolean> = settingsRepository.settings
-        .map { it.keepTwoPaneLandscape }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), savedKeepTwoPaneLandscape)
+    val focusMode: StateFlow<Boolean> = settingsRepository.settings
+        .map { it.focusMode }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), savedFocusMode)
 
     /** The string locked in guitar mode, or null for automatic. Cleared when the tuning changes. */
     private val lockedString = MutableStateFlow<Int?>(null)

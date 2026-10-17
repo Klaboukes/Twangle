@@ -110,8 +110,8 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setInTuneEffect(effect: InTuneEffect) = state.update { it.copy(inTuneEffect = effect) }
 
-    override suspend fun setKeepTwoPaneLandscape(enabled: Boolean) =
-        state.update { it.copy(keepTwoPaneLandscape = enabled) }
+    override suspend fun setFocusMode(enabled: Boolean) =
+        state.update { it.copy(focusMode = enabled) }
 
     override suspend fun setTourSeen(seen: Boolean) = state.update { it.copy(tourSeen = seen) }
 

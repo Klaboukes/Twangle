@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">Светлячки</string>
     <string name="settings_wave_look_loop">Петля</string>
     <string name="settings_wave_look_ripples">Рябь</string>
-    <string name="settings_keep_two_pane_landscape_title">Полный вид горизонтально</string>
-    <string name="settings_keep_two_pane_landscape_summary">Когда телефон повёрнут, показывать управление рядом с тюнером, а не один большой индикатор</string>
+    <string name="settings_focus_mode_title">Режим фокуса</string>
+    <string name="settings_focus_mode_summary">Поворачивает Twangle горизонтально с одним большим индикатором, который легко читать издалека</string>
 
     <string name="settings_keep_screen_on_title">Не выключать экран</string>
     <string name="settings_keep_screen_on_summary">Экран не гаснет, пока открыт тюнер</string>

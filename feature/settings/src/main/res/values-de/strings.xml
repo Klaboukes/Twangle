@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">Glühwürmchen</string>
     <string name="settings_wave_look_loop">Schleife</string>
     <string name="settings_wave_look_ripples">Kreise</string>
-    <string name="settings_keep_two_pane_landscape_title">Volles Layout im Querformat</string>
-    <string name="settings_keep_two_pane_landscape_summary">Im Querformat die Bedienelemente neben dem Stimmgerät zeigen statt einer großen Anzeige</string>
+    <string name="settings_focus_mode_title">Fokusmodus</string>
+    <string name="settings_focus_mode_summary">Dreht Twangle ins Querformat mit einer großen Anzeige, gut aus der Ferne lesbar</string>
 
     <string name="settings_keep_screen_on_title">Bildschirm anlassen</string>
     <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt an, solange das Stimmgerät offen ist</string>

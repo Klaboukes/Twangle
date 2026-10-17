@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">반딧불이</string>
     <string name="settings_wave_look_loop">루프</string>
     <string name="settings_wave_look_ripples">잔물결</string>
-    <string name="settings_keep_two_pane_landscape_title">가로 화면에서도 전체 레이아웃</string>
-    <string name="settings_keep_two_pane_landscape_summary">휴대폰을 가로로 돌리면 큰 미터 하나 대신 튜너 옆에 컨트롤을 보여줘요</string>
+    <string name="settings_focus_mode_title">집중 모드</string>
+    <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
 
     <string name="settings_keep_screen_on_title">화면 켜짐 유지</string>
     <string name="settings_keep_screen_on_summary">튜너가 열려 있는 동안 화면이 꺼지지 않아요</string>

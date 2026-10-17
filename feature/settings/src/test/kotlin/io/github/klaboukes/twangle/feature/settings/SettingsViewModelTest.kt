@@ -123,7 +123,7 @@ class SettingsViewModelTest {
         vm.setVibrateInTune(false)
         vm.setShowTuneHint(false)
         vm.setShowSignalBars(true)
-        vm.setKeepTwoPaneLandscape(true)
+        vm.setFocusMode(true)
         runCurrent()
 
         assertEquals(TunerDisplay.NEEDLE, repository.current.display)
@@ -134,6 +134,6 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.vibrateInTune)
         assertEquals(false, repository.current.showTuneHint)
         assertEquals(true, repository.current.showSignalBars)
-        assertEquals(true, repository.current.keepTwoPaneLandscape)
+        assertEquals(true, repository.current.focusMode)
     }
 }

@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">Świetliki</string>
     <string name="settings_wave_look_loop">Pętla</string>
     <string name="settings_wave_look_ripples">Kręgi</string>
-    <string name="settings_keep_two_pane_landscape_title">Pełny układ w poziomie</string>
-    <string name="settings_keep_two_pane_landscape_summary">Po obróceniu telefonu pokazuj sterowanie obok stroika zamiast jednego dużego wskaźnika</string>
+    <string name="settings_focus_mode_title">Tryb skupienia</string>
+    <string name="settings_focus_mode_summary">Obraca Twangle poziomo z jednym dużym wskaźnikiem, łatwym do odczytania z daleka</string>
 
     <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie, gdy stroik jest otwarty</string>

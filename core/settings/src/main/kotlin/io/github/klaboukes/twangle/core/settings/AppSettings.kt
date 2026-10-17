@@ -244,10 +244,10 @@ data class AppSettings(
     /** How strong the meter's glow is when the note is reached. */
     val inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
     /**
-     * On its side, show the full two-pane layout (tuner beside its controls) instead of the compact
-     * one where the meter fills the screen.
+     * Focus mode: on its side the tuner shows the compact layout, one big meter that fills the
+     * screen. Off (the default), it keeps the full two-pane layout (tuner beside its controls).
      */
-    val keepTwoPaneLandscape: Boolean = false,
+    val focusMode: Boolean = false,
     /**
      * The first-start tour ("Show me around") was skipped or finished, so it doesn't come back by
      * itself. An install that already had saved settings before the tour came (an update) counts as

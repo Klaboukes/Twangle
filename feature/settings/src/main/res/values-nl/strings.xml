@@ -62,8 +62,8 @@
     <string name="settings_wave_look_fireflies">Vuurvliegjes</string>
     <string name="settings_wave_look_loop">Lus</string>
     <string name="settings_wave_look_ripples">Rimpels</string>
-    <string name="settings_keep_two_pane_landscape_title">Volledige indeling liggend</string>
-    <string name="settings_keep_two_pane_landscape_summary">Met de telefoon gedraaid staan de knoppen naast de stemmer, in plaats van één grote meter</string>
+    <string name="settings_focus_mode_title">Focusmodus</string>
+    <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen van een afstand</string>
 
     <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>

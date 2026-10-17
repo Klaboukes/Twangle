@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">Vaga-lumes</string>
     <string name="settings_wave_look_loop">Laço</string>
     <string name="settings_wave_look_ripples">Ondulações</string>
-    <string name="settings_keep_two_pane_landscape_title">Layout completo na horizontal</string>
-    <string name="settings_keep_two_pane_landscape_summary">Com o celular deitado, mostrar os controles ao lado do afinador em vez de um medidor grande</string>
+    <string name="settings_focus_mode_title">Modo foco</string>
+    <string name="settings_focus_mode_summary">Deixa o Twangle na horizontal com um medidor grande, fácil de ler de longe</string>
 
     <string name="settings_keep_screen_on_title">Manter a tela ligada</string>
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto o afinador está aberto</string>

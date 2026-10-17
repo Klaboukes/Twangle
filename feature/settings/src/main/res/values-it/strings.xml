@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">Lucciole</string>
     <string name="settings_wave_look_loop">Anello</string>
     <string name="settings_wave_look_ripples">Increspature</string>
-    <string name="settings_keep_two_pane_landscape_title">Layout completo in orizzontale</string>
-    <string name="settings_keep_two_pane_landscape_summary">Con il telefono ruotato, mostra i comandi accanto all\'accordatore invece di un grande indicatore</string>
+    <string name="settings_focus_mode_title">Modalità concentrazione</string>
+    <string name="settings_focus_mode_summary">Mette Twangle in orizzontale con un grande indicatore, facile da leggere a distanza</string>
 
     <string name="settings_keep_screen_on_title">Schermo sempre acceso</string>
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso finché l\'accordatore è aperto</string>

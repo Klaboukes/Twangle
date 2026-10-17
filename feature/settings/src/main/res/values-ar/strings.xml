@@ -56,8 +56,8 @@
     <string name="settings_wave_look_fireflies">يراعات</string>
     <string name="settings_wave_look_loop">حلقة</string>
     <string name="settings_wave_look_ripples">تموّجات</string>
-    <string name="settings_keep_two_pane_landscape_title">التخطيط الكامل في الوضع الأفقي</string>
-    <string name="settings_keep_two_pane_landscape_summary">عند تدوير الهاتف، اعرض عناصر التحكم بجانب الموالف بدلًا من مقياس واحد كبير</string>
+    <string name="settings_focus_mode_title">وضع التركيز</string>
+    <string name="settings_focus_mode_summary">يُدير Twangle أفقيًا مع مقياس واحد كبير، تسهل قراءته من بعيد</string>
 
     <string name="settings_keep_screen_on_title">إبقاء الشاشة مضاءة</string>
     <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة ما دام الموالف مفتوحًا</string>

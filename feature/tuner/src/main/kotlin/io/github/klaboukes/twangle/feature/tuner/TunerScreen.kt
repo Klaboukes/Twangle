@@ -140,12 +140,12 @@ import kotlin.math.min
  * reached from the app's navigation bar, which hides while the compact layout on its side shows
  * without its controls: [onCompactChange] says when that starts (true) and ends (false).
  * [savedMode] is the mode in the settings already read, so the
- * first frame shows the right mode instead of switching a moment later; [savedKeepTwoPaneLandscape]
+ * first frame shows the right mode instead of switching a moment later; [savedFocusMode]
  * likewise keeps a turned phone from switching layout, and [savedInstrument] the instrument
  * and tuning panel from showing the guitar a moment first ([savedCustomTunings] likewise lists the
  * player's own tunings from the start). The panel shows while [pickerOpen] (the navigation bar's
- * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used unless the "full layout on its side"
- * setting is on. The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
+ * Instrument item opens it) and calls [onPickerOpenChange] with false once it has closed. The compact layout on its side is used only in focus mode
+ * (the "Focus mode" setting). The panel's "New tuning" calls [onOpenTuningEditor] with the instrument and no tuning,
  * and Edit on one of the player's own tunings with that tuning's id; the tuner rests (and lets go of the microphone) while the editor is shown in its place.
  * A long-press on a string plays its note through [tonePlayer]; the tone stops when the tuner leaves
  * the screen (another screen, or the app in the background).
@@ -168,7 +168,7 @@ fun TunerScreen(
     modifier: Modifier = Modifier,
     onCompactChange: (Boolean) -> Unit = {},
     savedMode: TunerMode = TunerMode.AUTO,
-    savedKeepTwoPaneLandscape: Boolean = false,
+    savedFocusMode: Boolean = false,
     savedInstrument: Instrument = Instruments.DEFAULT,
     savedCustomTunings: List<CustomTuning> = emptyList(),
     onOpenTuningEditor: (instrument: Instrument, customTuningId: String?) -> Unit = { _, _ -> },
@@ -186,7 +186,7 @@ fun TunerScreen(
             settingsRepository,
             tonePlayer,
             savedMode = savedMode,
-            savedKeepTwoPaneLandscape = savedKeepTwoPaneLandscape,
+            savedFocusMode = savedFocusMode,
             savedInstrument = savedInstrument,
             savedCustomTunings = savedCustomTunings,
             language = language,
@@ -214,7 +214,7 @@ fun TunerScreen(
     val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
-    val keepTwoPaneLandscape by viewModel.keepTwoPaneLandscape.collectAsStateWithLifecycle()
+    val focusMode by viewModel.focusMode.collectAsStateWithLifecycle()
     val soundingString by viewModel.soundingString.collectAsStateWithLifecycle()
     val strumCheck by viewModel.strumCheck.collectAsStateWithLifecycle()
     val intonationCheck by viewModel.intonationCheck.collectAsStateWithLifecycle()
@@ -298,7 +298,7 @@ fun TunerScreen(
                     showTuneHint = showTuneHint,
                     showSignalBars = showSignalBars,
                     signalFigures = viewModel.signalFigures,
-                    compactLandscape = !keepTwoPaneLandscape,
+                    compactLandscape = focusMode,
                     controlsAlwaysShown = tourOpen,
                     strumCheck = strumCheck,
                     onStrumCheckChange = viewModel::setStrumCheck,

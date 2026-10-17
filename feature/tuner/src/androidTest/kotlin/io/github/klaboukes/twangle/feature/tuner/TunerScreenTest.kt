@@ -59,7 +59,7 @@ class TunerScreenTest {
                         tonePlayer = FakeTonePlayer(),
                         tools = ToolSwitches.ALL_ON,
                         onCompactChange = { compactReports += it },
-                        savedKeepTwoPaneLandscape = settings.current.keepTwoPaneLandscape,
+                        savedFocusMode = settings.current.focusMode,
                     )
                 }
             }
@@ -69,39 +69,39 @@ class TunerScreenTest {
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     @Test
-    fun onItsSideTheScreenIsCompactByDefault() {
+    fun onItsSideTheScreenKeepsTheTwoPaneLayoutByDefault() {
         show(FakeSettingsRepository())
         compose.onNodeWithTag(TunerTestTags.GAUGE).assertExists()
-        modeSwitch.assertDoesNotExist()
+        modeSwitch.assertExists()
     }
 
     @Test
-    fun onItsSideTheFullLayoutSettingKeepsTheTwoPaneLayout() {
-        show(FakeSettingsRepository(AppSettings(keepTwoPaneLandscape = true)))
+    fun onItsSideFocusModeShowsTheCompactLayout() {
+        show(FakeSettingsRepository(AppSettings(focusMode = true)))
         compose.onNodeWithTag(TunerTestTags.GAUGE).assertExists()
-        modeSwitch.assertExists()
+        modeSwitch.assertDoesNotExist()
     }
 
     @Test
     fun onItsSideTheLayoutFollowsTheSettingWhenItChanges() {
         val settings = FakeSettingsRepository()
         show(settings)
-        modeSwitch.assertDoesNotExist()
-
-        settings.current = settings.current.copy(keepTwoPaneLandscape = true)
-        compose.waitForIdle()
         modeSwitch.assertExists()
 
-        settings.current = settings.current.copy(keepTwoPaneLandscape = false)
+        settings.current = settings.current.copy(focusMode = true)
         compose.waitForIdle()
         modeSwitch.assertDoesNotExist()
+
+        settings.current = settings.current.copy(focusMode = false)
+        compose.waitForIdle()
+        modeSwitch.assertExists()
     }
 
     /** The compact layout tells the app to hide the rail; a tap shows the controls and the rail for 5 s. */
     @Test
     fun theCompactLayoutHidesTheRailUntilTapped() {
         compose.mainClock.autoAdvance = false
-        show(FakeSettingsRepository())
+        show(FakeSettingsRepository(AppSettings(focusMode = true)))
         compose.mainClock.advanceTimeByFrame()
         compose.waitForIdle()
         assertEquals(true, compactReports.last())
@@ -116,7 +116,7 @@ class TunerScreenTest {
 
     @Test
     fun theFullLayoutOnItsSideKeepsTheRail() {
-        show(FakeSettingsRepository(AppSettings(keepTwoPaneLandscape = true)))
+        show(FakeSettingsRepository())
         compose.waitForIdle()
         assertEquals(false, compactReports.last())
     }

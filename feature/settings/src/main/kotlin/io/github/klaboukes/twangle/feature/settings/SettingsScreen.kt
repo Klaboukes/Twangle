@@ -108,7 +108,7 @@ fun SettingsScreen(
         onMeterLookChange = viewModel::setMeterLook,
         onInTuneEffectChange = viewModel::setInTuneEffect,
         onWaveLookChange = viewModel::setWaveLook,
-        onKeepTwoPaneLandscapeChange = viewModel::setKeepTwoPaneLandscape,
+        onFocusModeChange = viewModel::setFocusMode,
         modifier = modifier,
         onShowTour = onShowTour,
         languages = languageTags,
@@ -150,7 +150,7 @@ fun SettingsContent(
     onMeterLookChange: (MeterLook) -> Unit,
     onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
-    onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
+    onFocusModeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     onShowTour: (() -> Unit)? = null,
@@ -182,7 +182,7 @@ fun SettingsContent(
                 onMeterLookChange = onMeterLookChange,
                 onInTuneEffectChange = onInTuneEffectChange,
                 onWaveLookChange = onWaveLookChange,
-                onKeepTwoPaneLandscapeChange = onKeepTwoPaneLandscapeChange,
+                onFocusModeChange = onFocusModeChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -276,7 +276,7 @@ private fun SettingsGroups(
     onMeterLookChange: (MeterLook) -> Unit,
     onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
-    onKeepTwoPaneLandscapeChange: (Boolean) -> Unit,
+    onFocusModeChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -364,10 +364,10 @@ private fun SettingsGroups(
                 }
                 HorizontalDivider()
                 SwitchSetting(
-                    title = stringResource(R.string.settings_keep_two_pane_landscape_title),
-                    summary = stringResource(R.string.settings_keep_two_pane_landscape_summary),
-                    checked = settings.keepTwoPaneLandscape,
-                    onCheckedChange = onKeepTwoPaneLandscapeChange,
+                    title = stringResource(R.string.settings_focus_mode_title),
+                    summary = stringResource(R.string.settings_focus_mode_summary),
+                    checked = settings.focusMode,
+                    onCheckedChange = onFocusModeChange,
                 )
             }
         }
@@ -546,7 +546,7 @@ private fun SettingsContentPreview() {
             onMeterLookChange = {},
             onInTuneEffectChange = {},
             onWaveLookChange = {},
-            onKeepTwoPaneLandscapeChange = {},
+            onFocusModeChange = {},
         )
     }
 }
