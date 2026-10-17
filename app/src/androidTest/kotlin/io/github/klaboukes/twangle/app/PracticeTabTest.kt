@@ -18,7 +18,6 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
-import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.practice.R as PracticeR
@@ -37,7 +36,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 
 /**
- * The Practice tab (Phase 32) in the real app, with its switch on (every debug build): the bar's
+ * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): the bar's
  * Metronome tab is called Practice, the tool switch at its top picks the metronome or chords, the
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
  * the Chords tool's chord picked is saved too and comes back with it, and so are its Chords · Scales
@@ -54,12 +53,9 @@ class PracticeTabTest {
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private var switchesBefore: ToolSwitches? = null
 
     @Before
     fun setUp() {
-        switchesBefore = container.toolSwitches
-        container.toolSwitches = ToolSwitches.ALL_ON
         runBlocking {
             // The tour would cover the tuner and the bar.
             container.settingsRepository.setTourSeen(true)
@@ -75,7 +71,6 @@ class PracticeTabTest {
 
     @After
     fun tearDown() {
-        switchesBefore?.let { container.toolSwitches = it }
         runBlocking {
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)

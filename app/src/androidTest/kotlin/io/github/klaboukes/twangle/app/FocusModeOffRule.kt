@@ -8,8 +8,8 @@ import org.junit.rules.ExternalResource
 /**
  * Shows the app with focus mode off (Phase 36), the default, whatever the phone's Twangle was left
  * with, and puts the saved choice back after. In focus mode the whole app turns on its side and the
- * tuner hides its controls until tapped, which a test of the full tuner can't work with. Like
- * [ToolSwitchesOffRule], it must start before the activity does.
+ * tuner hides its controls until tapped, which a test of the full tuner can't work with. It must
+ * start before the activity does: put it around any rule that launches `MainActivity`.
  */
 class FocusModeOffRule : ExternalResource() {
 

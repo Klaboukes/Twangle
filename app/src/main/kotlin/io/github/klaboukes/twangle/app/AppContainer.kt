@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.app
 
 import android.content.Context
-import androidx.annotation.VisibleForTesting
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
@@ -47,11 +46,9 @@ class AppContainer(private val appContext: Context) {
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }
 
     /**
-     * Which music tools show (Phase 28): this build's, [buildToolSwitches], all on in debug
-     * builds and all off in release builds. `MainActivity` hands them to the screens. A UI test may
-     * set them before it starts the activity, e.g. [ToolSwitches.ALL_OFF] to see the app without them
-     * in a debug build (ToolSwitchesOffRule), and puts them back after.
+     * Which music tools show (Phase 28): every one, in every build, since they went live in v1.0
+     * (Phase 34). `MainActivity` hands them to the screens. A tool still being built would stay
+     * hidden in release builds here (docs/architecture/performance.md, *Release build*).
      */
-    @set:VisibleForTesting
-    var toolSwitches: ToolSwitches = buildToolSwitches
+    val toolSwitches: ToolSwitches = ToolSwitches.ALL_ON
 }

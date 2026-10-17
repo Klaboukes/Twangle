@@ -49,7 +49,7 @@ import org.junit.runners.Parameterized
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
  * then wholly shown. Playing, in 7/8, so every mark size and the Stop label show. With the Practice
  * tab's tool switch over it (Phase 32, a stand-in with the same switch and English labels), as the
- * debug build shows it, and without, as the v1.0 Metronome tab.
+ * app shows it, and without, as the plain Metronome tab.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */

@@ -1,5 +1,4 @@
 import com.android.build.api.variant.BuildConfigField
-import com.android.build.api.variant.HostTestBuilder
 import java.util.Properties
 
 plugins {
@@ -81,20 +80,7 @@ kotlin {
 // hears a synthetic tone instead of the mic, so frame-time runs get identical input. Every other
 // build, release included, gets false, so R8 removes the synthetic recorder there.
 androidComponents {
-    // The release build gets unit tests of its own too (testReleaseUnitTest, part of `test`), so
-    // ReleaseToolSwitchesTest can check that the Play build hides every music tool until it goes
-    // live (Phase 28).
-    // So do the two builds the Baseline Profile plugin makes from it, which run the same test: the
-    // profile generator (nonMinifiedRelease) and the frame-time and startup runs (benchmarkRelease)
-    // must see the release build's app too.
-    val v10Builds = listOf("release", "nonMinifiedRelease", "benchmarkRelease")
-    beforeVariants { variant ->
-        if (variant.buildType in v10Builds) variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.enable = true
-    }
     onVariants { variant ->
-        if (variant.buildType in v10Builds && variant.buildType != "release") {
-            variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]?.sources?.kotlin?.addStaticSourceDirectory("src/testRelease/kotlin")
-        }
         variant.buildConfigFields?.put(
             "SYNTHETIC_AUDIO",
             BuildConfigField("boolean", (variant.buildType == "benchmarkRelease").toString(), "Synthetic tone instead of the mic"),

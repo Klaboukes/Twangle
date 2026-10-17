@@ -12,7 +12,6 @@ import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
-import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
@@ -44,13 +43,10 @@ class TunerTabTest {
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-    private var switchesBefore: ToolSwitches? = null
     private var instrumentBefore: Instrument? = null
 
     @Before
     fun setUp() {
-        switchesBefore = container.toolSwitches
-        container.toolSwitches = ToolSwitches.ALL_ON
         runBlocking {
             instrumentBefore = container.settingsRepository.settings.first().instrument
             // The tour would cover the tuner and the bar; the guitar offers every tool, so its "more tools" button shows.
@@ -62,7 +58,6 @@ class TunerTabTest {
 
     @After
     fun tearDown() {
-        switchesBefore?.let { container.toolSwitches = it }
         instrumentBefore?.let { runBlocking { container.settingsRepository.setInstrument(it) } }
     }
 

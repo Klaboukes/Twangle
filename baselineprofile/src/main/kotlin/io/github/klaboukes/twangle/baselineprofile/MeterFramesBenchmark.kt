@@ -29,8 +29,7 @@ import java.util.regex.Pattern
  * No tracing runs meanwhile, so the numbers compare with the S26 table there.
  *
  * The pitch trail (Phase 31) is measured the same way, as one more "look", [PITCH_TRAIL], always
- * last: the app is started afresh asking for the music tools (the frame-time build otherwise hides
- * them like the release build, see `MainActivity.measuringTools`), the trail is picked from the
+ * last: the app is started afresh, the trail is picked from the
  * "more tools" menu above the strings, and the tuner switched to chromatic mode (the trail stays on),
  * so the line follows the sweep in the meter's place.
  *
@@ -76,9 +75,9 @@ class MeterFramesBenchmark {
         log("refresh_rate_mode=${shell("settings get secure refresh_rate_mode").trim()} pid=$pid renderThread=$renderTid")
         for (look in looks) {
             if (look == PITCH_TRAIL) {
-                // Afresh, with the music tools shown; the trail in chromatic mode.
+                // Afresh; the trail in chromatic mode.
                 shell("am force-stop $TARGET_PACKAGE")
-                shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY --ez $EXTRA_MEASURE_TOOLS true")
+                shell("am start -W -n $TARGET_PACKAGE/$ACTIVITY")
                 // The menu sits above the strings, so it is picked in guitar mode; the trail stays on in chromatic.
                 waitFor(By.res(MODE_GUITAR_TAG), "Guitar button")
                 // A tap while the opening screen still covers the tuner is lost: tap until the button shows.
@@ -252,8 +251,6 @@ class MeterFramesBenchmark {
         const val PITCH_TRAIL = "PITCH_TRAIL"
         const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:SPIRIT_LEVEL:ECLIPSE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
 
-        /** `MainActivity.EXTRA_MEASURE_TOOLS`: the frame-time build then shows the music tools. */
-        const val EXTRA_MEASURE_TOOLS = "io.github.klaboukes.twangle.MEASURE_TOOLS"
         const val MORE_TOOLS_TAG = "tuner_more_tools"
         const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"
         const val TRAIL_PANEL_TAG = "tuner_trail_panel"

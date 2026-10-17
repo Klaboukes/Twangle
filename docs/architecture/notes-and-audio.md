@@ -76,7 +76,7 @@ Pure `:core:dsp` maths for the Practice tab's Capo helper (Phase 33; its screen:
 - **Tests** (`CapoTest`): the frets and options for major and minor songs, every key with every shape key, spelling in the key and outside it, the bass, every notation (Mi♭, German B and H), and that `shapeOf` undoes `soundingOf` for every chord at every fret.
 
 ## Intonation check
-Phase 29 (hidden in release builds until it goes live, Phase 34). The 12th fret halves the string, so it should sound exactly one octave (1200 cents) above the open string. If it is sharp, the sounding length from the fret to the saddle is too short and the saddle moves back, away from the neck; if flat, forward. `intonation/Intonation` in `:core:dsp` is the comparison, pure and JVM-tested:
+Phase 29 (live in v1.0 since Phase 34). The 12th fret halves the string, so it should sound exactly one octave (1200 cents) above the open string. If it is sharp, the sounding length from the fret to the saddle is too short and the saddle moves back, away from the neck; if flat, forward. `intonation/Intonation` in `:core:dsp` is the comparison, pure and JVM-tested:
 - `offsetCents(openHz, fretHz) = 1200 · log2(fret / open) − 1200` (positive = sharp).
 - `verdictOf(offsetCents, toleranceCents)` gives `FINE`, `MOVE_SADDLE_BACK` (sharp), `MOVE_SADDLE_FORWARD` (flat) or `NOT_THE_OCTAVE`; `check(openHz, fretHz)` returns both as an `IntonationResult`.
 

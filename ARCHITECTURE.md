@@ -183,7 +183,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
                 LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), BuildToolSwitches (toolSwitchesFor),
+    TwangleApplication, AppContainer, MainActivity (+ PracticeTab),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState

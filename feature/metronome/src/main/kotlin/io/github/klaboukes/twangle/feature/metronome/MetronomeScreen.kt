@@ -101,7 +101,7 @@ import kotlin.math.roundToInt
  * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
  *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
- * [ToolSwitches.ALL_OFF] this is the v1.0 Metronome tab. In the Practice tab (Phase 32) [header] is
+ * [ToolSwitches.ALL_OFF] this is the metronome alone. In the Practice tab (Phase 32) [header] is
  * its tool switch, at the top ([MetronomeContent]).
  */
 @Composable

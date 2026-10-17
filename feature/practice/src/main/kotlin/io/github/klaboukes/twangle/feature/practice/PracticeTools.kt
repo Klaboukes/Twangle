@@ -12,7 +12,7 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 /**
  * The tools the Practice tab (Phase 32) offers with [tools], in its switch's order: the metronome,
  * chords and, with its own switch, the capo helper (Phase 33). None while the Practice tab's switch
- * is off: the tab is then the v1.0 Metronome tab, with no switch.
+ * is off: the tab is then the plain Metronome tab, with no switch.
  */
 fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> = when {
     !tools.practiceTab -> emptyList()

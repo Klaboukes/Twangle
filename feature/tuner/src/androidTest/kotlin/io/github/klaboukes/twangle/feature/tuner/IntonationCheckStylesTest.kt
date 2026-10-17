@@ -70,7 +70,7 @@ import kotlin.math.pow
  * the meter's place, the line (and the verdict's buttons) under it, the button above the strings.
  * Upright every step fits without scrolling and nothing moves between steps; at 2× text in Dutch every
  * part is wholly shown (every language overnight). The menu lists both tools and turns one on; with the
- * strum check alone the v1.0 switch shows. TalkBack hears the steps, the verdict, each string's result
+ * strum check alone its own switch shows. TalkBack hears the steps, the verdict, each string's result
  * and the button's state. Synthetic plucks through a fake microphone give a verdict on the real screen.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -243,7 +243,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         assertEquals(listOf("strum" to true, "intonation" to false), toolChanges)
     }
 
-    /** With the strum check as the only tool (a release build, a violin), the v1.0 switch shows and no "more tools". */
+    /** With the strum check as the only tool (a violin), its own switch shows and no "more tools". */
     @Test
     fun withOneToolTheStrumSwitchShowsAsInVersionOne() {
         shownTools.value = listOf(TunerTool.STRUM_CHECK)

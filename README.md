@@ -63,7 +63,7 @@ Twangle listens to the microphone, finds the pitch of the note with the [YIN alg
 | `:feature:tuner` | The tuner screen |
 | `:feature:settings` | The settings screen |
 | `:feature:metronome` | The metronome screen |
-| `:feature:practice` | The Practice tab: chord charts and scales (in progress, hidden in the Play build) |
+| `:feature:practice` | The Practice tab: chord charts, scales and the capo helper |
 | `:core:audio` | Microphone capture, reference tones and metronome clicks |
 | `:core:settings` | Saved settings |
 | `:core:designsystem` | The six visual styles: colours, fonts, backgrounds, style cards, meter and wave looks |

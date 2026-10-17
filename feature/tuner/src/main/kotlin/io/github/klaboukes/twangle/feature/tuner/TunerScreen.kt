@@ -155,7 +155,7 @@ import kotlin.math.min
  * [io.github.klaboukes.twangle.core.settings.AppSettings.micRefused], which tells a dismissed dialog
  * from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
- * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the v1.0 tuner. Each new
+ * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
  * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
  */
 @Composable
