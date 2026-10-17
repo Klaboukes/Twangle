@@ -9,6 +9,7 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import io.github.klaboukes.twangle.app.FocusModeOffRule
 import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.navigation.Destination
@@ -40,6 +41,7 @@ class TourFlowTest {
     val rules: RuleChain = RuleChain
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
+        .around(FocusModeOffRule())
 
     private val repository = ApplicationProvider.getApplicationContext<TwangleApplication>().container.settingsRepository
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

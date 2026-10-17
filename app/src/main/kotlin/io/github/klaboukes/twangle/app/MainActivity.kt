@@ -1,10 +1,12 @@
 package io.github.klaboukes.twangle.app
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -27,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -159,6 +162,20 @@ class MainActivity : AppCompatActivity() {
             onDispose {}
         }
 
+        // Focus mode keeps the whole app on its side, every tab (Phase 36); off, the screen follows the
+        // phone again, turned back upright first where auto-rotate is off (see FocusTurn).
+        val upright = LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE
+        var focusTurn by rememberSaveable(stateSaver = FocusTurn.Saver) {
+            mutableStateOf(FocusTurn(focusMode = settings.focusMode, uprightBefore = upright))
+        }
+        val nextTurn = focusTurn.next(settings.focusMode, upright, autoRotate = ::autoRotateOn)
+        SideEffect { if (nextTurn != focusTurn) focusTurn = nextTurn }
+        val orientation = nextTurn.orientation
+        DisposableEffect(orientation) {
+            requestedOrientation = orientation
+            onDispose {}
+        }
+
         // Which music tools show (Phase 28): all in debug builds, none in release builds.
         val tools = if (measuringTools) ToolSwitches.ALL_ON else container.toolSwitches
         TwangleTheme(style = settings.style, darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
@@ -170,8 +187,6 @@ class MainActivity : AppCompatActivity() {
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
                 // Whether the instrument and tuning panel shows over the tuner (the bar's Instrument item opens it).
                 var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
-                // Whether the tuner shows its compact layout on its side without the controls: the rail hides then.
-                var tunerCompact by remember { mutableStateOf(false) }
                 // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
                 var tourRequested by rememberSaveable { mutableStateOf(false) }
                 var tourEnded by rememberSaveable { mutableStateOf(false) }
@@ -225,7 +240,6 @@ class MainActivity : AppCompatActivity() {
                             tuningPanelOpen = true
                         },
                         tuningState = spokenTuning(settings),
-                        hidden = screen == Screen.TUNER && tunerCompact,
                         practice = tools.practiceTab,
                     ) {
                         saveableState.SaveableStateProvider(screen.name) {
@@ -239,7 +253,6 @@ class MainActivity : AppCompatActivity() {
                                         settingsRepository = container.settingsRepository,
                                         tonePlayer = container.tonePlayer,
                                         tools = tools,
-                                        onCompactChange = { tunerCompact = it },
                                         savedMode = settings.mode,
                                         savedFocusMode = settings.focusMode,
                                         savedInstrument = settings.instrument,
@@ -361,6 +374,10 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun tuningName(settings: AppSettings): String =
         settings.pickedCustomTuning?.name ?: tuningLabel(settings.tuning)
+
+    /** Whether the phone's auto-rotate is on (Android's own setting, readable without a permission). */
+    private fun autoRotateOn(): Boolean =
+        Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
 
     /** While this is in the composition, the volume keys set the media volume (the tone's and the clicks' loudness). */
     @Composable

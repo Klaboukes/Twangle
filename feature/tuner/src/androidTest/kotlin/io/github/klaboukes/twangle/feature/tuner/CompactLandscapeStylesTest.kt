@@ -55,7 +55,7 @@ import kotlin.math.abs
 /**
  * The compact landscape layout in each of the six styles: each style brings its own fonts and
  * dial, so the note column and the meter differ in size. On a phone and a tablet on their side
- * everything fits beside a big meter (the navigation rail is hidden here, so it has the whole width); with
+ * everything fits beside a big meter (beside the app's 80 dp navigation rail, which stays in focus mode); with
  * 2× font it can still be reached; a tap (light) or TalkBack (dark) brings back the controls. Every
  * meter look, at its biggest here, is clearly drawn inside its box in the style's colours, light and
  * dark, skipped by TalkBack, and moves nothing else on the screen, also at 2× font.
@@ -455,9 +455,12 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
          */
         private const val TEST_TIMEOUT_SECONDS = 10L
 
-        /** A Galaxy S26 on its side (360 dp tall), without the status bar, and a tablet on its side. */
-        private val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
-        private val TABLET_LANDSCAPE = DpSize(1280.dp, 760.dp)
+        /**
+         * A Galaxy S26 on its side (360 dp tall), without the status bar, and a tablet on its side, each
+         * less the app's 80 dp navigation rail.
+         */
+        private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
+        private val TABLET_LANDSCAPE = DpSize(1200.dp, 760.dp)
 
         private val SLACK = 0.5.dp
 

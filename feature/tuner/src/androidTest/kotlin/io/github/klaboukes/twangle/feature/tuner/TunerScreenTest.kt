@@ -19,7 +19,6 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -28,9 +27,10 @@ import org.junit.runner.RunWith
 import java.util.concurrent.TimeUnit
 
 /**
- * The whole tuner screen (permission, ViewModel and settings) on a phone on its side: the "full
- * layout on its side" setting picks the two-pane layout, otherwise the compact one shows. Plays
- * silence from a fake recorder, so the real microphone stays closed.
+ * The whole tuner screen (permission, ViewModel and settings) on a phone on its side, beside the app's
+ * navigation rail (which stays in focus mode too): the two-pane layout by default, the compact one in
+ * focus mode, where a tap brings the controls for 5 s. Plays silence from a fake recorder, so the real
+ * microphone stays closed.
  */
 @RunWith(AndroidJUnit4::class)
 class TunerScreenTest {
@@ -46,9 +46,6 @@ class TunerScreenTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val silence = FakeAudioRecorder(signal = FloatArray(AudioConfig().chunkSize), loop = true)
 
-    /** What the screen told the app about its compact layout, in order (the navigation rail hides while true). */
-    private val compactReports = mutableListOf<Boolean>()
-
     private fun show(settings: FakeSettingsRepository) {
         compose.setContent {
             DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE_LANDSCAPE)) {
@@ -58,7 +55,6 @@ class TunerScreenTest {
                         settingsRepository = settings,
                         tonePlayer = FakeTonePlayer(),
                         tools = ToolSwitches.ALL_ON,
-                        onCompactChange = { compactReports += it },
                         savedFocusMode = settings.current.focusMode,
                     )
                 }
@@ -97,34 +93,28 @@ class TunerScreenTest {
         modeSwitch.assertExists()
     }
 
-    /** The compact layout tells the app to hide the rail; a tap shows the controls and the rail for 5 s. */
+    /** In focus mode a tap brings the tuner's own controls for 5 s, with the "tap" hint before it. */
     @Test
-    fun theCompactLayoutHidesTheRailUntilTapped() {
+    fun inFocusModeATapShowsTheControlsFor5Seconds() {
         compose.mainClock.autoAdvance = false
         show(FakeSettingsRepository(AppSettings(focusMode = true)))
         compose.mainClock.advanceTimeByFrame()
         compose.waitForIdle()
-        assertEquals(true, compactReports.last())
+        compose.onNodeWithText(context.getString(R.string.tuner_compact_tap_hint)).assertExists()
+        modeSwitch.assertDoesNotExist()
 
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(1_000)
-        assertEquals(false, compactReports.last())
+        modeSwitch.assertExists()
 
-        compose.mainClock.advanceTimeBy(6_000)
-        assertEquals(true, compactReports.last())
-    }
-
-    @Test
-    fun theFullLayoutOnItsSideKeepsTheRail() {
-        show(FakeSettingsRepository())
-        compose.waitForIdle()
-        assertEquals(false, compactReports.last())
+        compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS + 1_000)
+        modeSwitch.assertDoesNotExist()
     }
 
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 10L
 
-        /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
-        val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+        /** A Galaxy S26 on its side (360 dp tall), without the status bar and the app's 80 dp navigation rail. */
+        val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
     }
 }

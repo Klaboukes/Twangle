@@ -137,8 +137,7 @@ import kotlin.math.min
 /**
  * Tuner entry point: asks for the microphone first, then shows the tuner. Collecting the state
  * with the lifecycle releases the mic when the screen isn't visible. Settings and the metronome are
- * reached from the app's navigation bar, which hides while the compact layout on its side shows
- * without its controls: [onCompactChange] says when that starts (true) and ends (false).
+ * reached from the app's navigation bar or rail, which stays in every layout, the compact one too.
  * [savedMode] is the mode in the settings already read, so the
  * first frame shows the right mode instead of switching a moment later; [savedFocusMode]
  * likewise keeps a turned phone from switching layout, and [savedInstrument] the instrument
@@ -166,7 +165,6 @@ fun TunerScreen(
     tonePlayer: TonePlayer,
     tools: ToolSwitches,
     modifier: Modifier = Modifier,
-    onCompactChange: (Boolean) -> Unit = {},
     savedMode: TunerMode = TunerMode.AUTO,
     savedFocusMode: Boolean = false,
     savedInstrument: Instrument = Instruments.DEFAULT,
@@ -248,11 +246,6 @@ fun TunerScreen(
         retuning = detected?.hint?.isDirection == true,
     )
     val animationsOff = rememberAnimationsOff()
-    // Whether the compact layout (on its side, controls hidden) is showing: the navigation bar hides then.
-    var compactShown by remember { mutableStateOf(false) }
-    val compact = granted && compactShown
-    val currentOnCompactChange by rememberUpdatedState(onCompactChange)
-    LaunchedEffect(compact) { currentOnCompactChange(compact) }
 
     // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
     // See-through, so the style's background (drawn behind every screen) shows.
@@ -312,7 +305,6 @@ fun TunerScreen(
                     pitchTrail = pitchTrail,
                     onPitchTrailChange = viewModel::setPitchTrail,
                     pitchHistory = viewModel.pitchHistory,
-                    onCompactShownChange = { compactShown = it },
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -574,9 +566,7 @@ fun TunerContent(
     pitchTrail: Boolean = false,
     onPitchTrailChange: ((Boolean) -> Unit)? = null,
     pitchHistory: PitchHistory? = null,
-    onCompactShownChange: (Boolean) -> Unit = {},
 ) {
-    val currentOnCompactShownChange by rememberUpdatedState(onCompactShownChange)
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
     // Movable, so the bars keep their count (and an open figures panel stays open) when a note
@@ -730,7 +720,6 @@ fun TunerContent(
             )
         }
         val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
-        if (layout != TunerLayout.COMPACT) LaunchedEffect(Unit) { currentOnCompactShownChange(false) }
         when (layout) {
             TunerLayout.SINGLE_COLUMN -> SingleColumnLayout(
                 height = maxHeight,
@@ -768,7 +757,6 @@ fun TunerContent(
                 }
                 // While the tour runs the controls stay, so it can point at them.
                 val showing = controlsShown || controlsAlwaysShown
-                LaunchedEffect(showing) { currentOnCompactShownChange(!showing) }
                 LaunchedEffect(controlsShown, touches, pickerOpen) {
                     if (controlsShown && !pickerOpen) {
                         delay(shownMillis)

@@ -1553,7 +1553,7 @@ class TunerContentTest {
 
     @Test
     fun compactPhoneOnItsSideShowsABigMeterBesideTheNoteAndCents() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val gauge = compose.onNodeWithTag(TunerTestTags.GAUGE).assertIsDisplayed().getBoundsInRoot()
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
@@ -1581,7 +1581,7 @@ class TunerContentTest {
 
     @Test
     fun compactShowsTheTargetStringSmallInGuitarMode() {
-        show(detected(3f, targetString = 1, noteName = "A"), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(3f, targetString = 1, noteName = "A"), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         val note = compose.onNodeWithText("A").getBoundsInRoot()
         val chip = stringChip("A2").assertIsDisplayed().assertIsSelected().getBoundsInRoot()
         stringChip("E2").assertIsDisplayed().assertIsNotSelected()
@@ -1594,14 +1594,14 @@ class TunerContentTest {
 
     @Test
     fun compactShowsTheLockedStringWhileListening() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 2), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 2), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         stringChip("D3").assertIsDisplayed().assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_locked_string, "D3")).assertIsDisplayed()
     }
 
     @Test
     fun compactChromaticModeHasNoStrings() {
-        show(chromatic(-12.3f), mode = TunerMode.CHROMATIC, size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(chromatic(-12.3f), mode = TunerMode.CHROMATIC, size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         compose.onNodeWithText(centsFlat(12)).assertIsDisplayed()
         stringChip("E2").assertDoesNotExist()
         stringChip("A2").assertDoesNotExist()
@@ -1609,7 +1609,7 @@ class TunerContentTest {
 
     @Test
     fun compactChromaticWaveViewShowsTheCentsUnderTheNote() {
-        show(chromatic(-12.3f), mode = TunerMode.CHROMATIC, size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, compactLandscape = true)
+        show(chromatic(-12.3f), mode = TunerMode.CHROMATIC, size = PHONE_LANDSCAPE_BESIDE_RAIL, display = TunerDisplay.WAVE, compactLandscape = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val cents = compose.onNodeWithText(centsFlat(12)).assertIsDisplayed().getBoundsInRoot()
         val frequency = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertIsDisplayed().getBoundsInRoot()
@@ -1619,10 +1619,10 @@ class TunerContentTest {
 
     @Test
     fun compactFitsTheWaveViewAndTheStrings() {
-        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE, display = TunerDisplay.WAVE, showTuneHint = true, compactLandscape = true)
+        show(detected(-0.4f, inTune = true), size = PHONE_LANDSCAPE_BESIDE_RAIL, display = TunerDisplay.WAVE, showTuneHint = true, compactLandscape = true)
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val shown = wave.assertIsDisplayed().getBoundsInRoot()
-        assertWaveSize(shown, PHONE_LANDSCAPE)
+        assertWaveSize(shown, PHONE_LANDSCAPE_BESIDE_RAIL)
         val chip = stringChip("E2").assertIsDisplayed().getBoundsInRoot()
         assertTrue("chips end at ${chip.bottom}, window at ${window.bottom}", chip.bottom <= window.bottom)
         assertTrue(chip.top >= shown.bottom)
@@ -1640,7 +1640,7 @@ class TunerContentTest {
 
     @Test
     fun compactWithTheLargestFontEverythingCanStillBeReached() {
-        show(detected(-12.3f, targetString = 1), fontScale = 2f, size = PHONE_LANDSCAPE, showTuneHint = true, compactLandscape = true)
+        show(detected(-12.3f, targetString = 1), fontScale = 2f, size = PHONE_LANDSCAPE_BESIDE_RAIL, showTuneHint = true, compactLandscape = true)
         compose.onNodeWithText("E").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(centsFlat(12)).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).performScrollTo().assertIsDisplayed()
@@ -1649,7 +1649,7 @@ class TunerContentTest {
 
     @Test
     fun compactShowsAnErrorWithRetry() {
-        show(TunerUiState.Error(TunerError.MIC_BUSY), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(TunerUiState.Error(TunerError.MIC_BUSY), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         compose.onNodeWithText(context.getString(R.string.error_mic_busy)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.error_retry)).performClick()
         assertEquals(1, retries)
@@ -1664,7 +1664,7 @@ class TunerContentTest {
 
     @Test
     fun tappingTheCompactScreenBringsBackTheControlsForAFewSeconds() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
@@ -1680,7 +1680,7 @@ class TunerContentTest {
 
     @Test
     fun touchingTheShownControlsKeepsThemLonger() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(COMPACT_CONTROLS_SHOWN_MS - 1_000)
@@ -1695,7 +1695,7 @@ class TunerContentTest {
 
     @Test
     fun anOpenPanelKeepsTheControls() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
         compose.mainClock.advanceTimeBy(FADE_MS)
@@ -1717,7 +1717,7 @@ class TunerContentTest {
 
     @Test
     fun talkBackCanShowTheControlsInTheCompactLayout() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true)
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true)
         // The reading is still one sentence, and the screen is a "Show controls" button.
         compose.onNode(hasContentDescription("E 2, 12 cents flat")).assertExists()
         compose.onNode(hasContentDescription(context.getString(R.string.tuner_show_controls)))
@@ -1728,7 +1728,7 @@ class TunerContentTest {
 
     @Test
     fun dutchTalkBackHearsShowControlsInDutch() {
-        show(detected(-12.3f), size = PHONE_LANDSCAPE, compactLandscape = true, locale = "nl")
+        show(detected(-12.3f), size = PHONE_LANDSCAPE_BESIDE_RAIL, compactLandscape = true, locale = "nl")
         compose.onNode(hasContentDescription("Bediening tonen")).assertExists()
         val cents = dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12)
         compose.onNode(hasContentDescription("e 2, $cents")).assertExists()
@@ -1742,6 +1742,9 @@ class TunerContentTest {
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)
+
+        /** The same beside the app's 80 dp navigation rail, as the compact layout shows in focus mode. */
+        val PHONE_LANDSCAPE_BESIDE_RAIL = DpSize(700.dp, 330.dp)
 
         /**
          * A narrow phone held upright (a Galaxy S26, without the status and navigation bars), for

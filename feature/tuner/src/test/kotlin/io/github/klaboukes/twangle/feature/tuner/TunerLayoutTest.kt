@@ -52,6 +52,13 @@ class TunerLayoutTest {
     }
 
     @Test
+    fun phonesOnTheirSideBesideTheRailAreCompactInFocusMode() {
+        // The navigation rail (80 dp) stays in focus mode: the Xiaomi 12X and the Galaxy S26 beside it.
+        assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 760f, heightDp = 360f, compactLandscape = true))
+        assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 700f, heightDp = 330f, compactLandscape = true))
+    }
+
+    @Test
     fun tabletInLandscapeIsCompactWhenAsked() {
         assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 1280f, heightDp = 760f, compactLandscape = true))
     }

@@ -67,7 +67,7 @@ import org.junit.runners.Parameterized
  * (the app's Tuner tab closes the tuner's tools then); the open tab
  * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
- * wholly shown. The frame hides the bar for the tuning editor and the compact tuner, and the content
+ * wholly shown. The frame hides the bar for the tuning editor, and the content
  * never reaches under it. With the Practice tab's switch on (Phase 32) the Metronome tab is called Practice.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -90,7 +90,6 @@ class NavigationBarTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownSelected = mutableStateOf<Destination?>(Destination.TUNER)
-    private val shownHidden = mutableStateOf(false)
     private val shownPractice = mutableStateOf(false)
     private val picked = mutableListOf<Destination>()
     private val reselected = mutableListOf<Destination>()
@@ -110,7 +109,6 @@ class NavigationBarTest(private val style: VisualStyle) {
                         onReselect = { reselected += it },
                         onTuning = { tuningTaps++ },
                         tuningState = TUNING_STATE,
-                        hidden = shownHidden.value,
                         practice = shownPractice.value,
                         modifier = Modifier.testTag(WINDOW),
                     ) {
@@ -338,25 +336,21 @@ class NavigationBarTest(private val style: VisualStyle) {
         assertEquals(1, contentStarts)
     }
 
-    /** The tuning editor has no bar, and the compact tuner hides the rail: the content takes the whole window. */
+    /** The tuning editor has no bar or rail: the content takes the whole window. */
     @Test
-    fun withoutATabOrWhileHiddenTheContentTakesTheWholeWindow() {
+    fun withoutATabTheContentTakesTheWholeWindow() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
-            for ((selected, hidden) in listOf(null to false, Destination.TUNER to true)) {
-                shownSelected.value = selected
-                shownHidden.value = hidden
-                compose.waitForIdle()
-                compose.onAllNodesWithTag(NavigationTestTags.BAR).assertCountEquals(0)
-                compose.onAllNodesWithTag(NavigationTestTags.RAIL).assertCountEquals(0)
-                val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-                val content = compose.onNodeWithTag(CONTENT).getBoundsInRoot()
-                assertEquals("$size: content width", window.width.value, content.width.value, SLACK)
-                assertEquals("$size: content height", window.height.value, content.height.value, SLACK)
-            }
+            shownSelected.value = null
+            compose.waitForIdle()
+            compose.onAllNodesWithTag(NavigationTestTags.BAR).assertCountEquals(0)
+            compose.onAllNodesWithTag(NavigationTestTags.RAIL).assertCountEquals(0)
+            val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+            val content = compose.onNodeWithTag(CONTENT).getBoundsInRoot()
+            assertEquals("$size: content width", window.width.value, content.width.value, SLACK)
+            assertEquals("$size: content height", window.height.value, content.height.value, SLACK)
             shownSelected.value = Destination.TUNER
-            shownHidden.value = false
         }
     }
 

@@ -167,7 +167,6 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         show()
         for (compact in listOf(false, true)) {
             shownCompact.value = compact
-            shownSize.value = if (compact) PHONE_LANDSCAPE_COMPACT else PHONE_LANDSCAPE
             compose.waitForIdle()
             val case = "$style on its side ${if (compact) "compact" else "full"}:"
             assertAllInView(case, parts(controls = !compact))
@@ -252,7 +251,7 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
     @Test
     fun everyColumnIsBigEnoughToTouch() {
         show()
-        for ((size, compact) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to false, PHONE_LANDSCAPE_COMPACT to true)) {
+        for ((size, compact) in listOf(PHONE_UPRIGHT to false, PHONE_LANDSCAPE to false, PHONE_LANDSCAPE to true)) {
             shownSize.value = size
             shownCompact.value = compact
             compose.waitForIdle()
@@ -390,13 +389,10 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
 
         /**
          * A narrow phone (a Galaxy S26, 360 x 730 dp without the status and navigation bars): upright
-         * less the app's navigation bar (at most 80 dp), on its side in the full layout less the 80 dp rail.
+         * less the app's navigation bar (at most 80 dp), on its side less the 80 dp rail (it stays in focus mode too).
          */
         private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
-
-        /** The compact layout hides the rail, so it has the whole width. */
-        private val PHONE_LANDSCAPE_COMPACT = DpSize(780.dp, 330.dp)
 
         /** The owner's Xiaomi 12X upright (393 x 873 dp) without the status bar, the button bar and the app's navigation bar. */
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)

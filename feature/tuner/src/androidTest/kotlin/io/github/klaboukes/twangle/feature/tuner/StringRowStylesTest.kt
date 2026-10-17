@@ -78,7 +78,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
     private enum class Layout(val size: DpSize, val compact: Boolean) {
         UPRIGHT(DpSize(360.dp, 730.dp), compact = false),
         FULL_ON_ITS_SIDE(DpSize(780.dp, 330.dp), compact = false),
-        COMPACT_ON_ITS_SIDE(DpSize(780.dp, 330.dp), compact = true),
+        COMPACT_ON_ITS_SIDE(DpSize(700.dp, 330.dp), compact = true),
     }
 
     private fun show(listening: Boolean = false) {
