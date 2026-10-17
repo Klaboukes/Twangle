@@ -37,7 +37,9 @@ both manifests set `android:supportsRtl="true"`, so Compose mirrors the layout: 
 - the first language isn't `unqualifiedResLocale`, or an app module doesn't take `localeFilters` from the list;
 - Kotlin passes a hard-coded literal to `Text(...)`, `contentDescription`, `stateDescription`, `onClickLabel` and similar.
 
-Every module's `res` and Kotlin sources, the build files and `gradle.properties` are declared inputs of `:app`'s unit tests, so changing any of them reruns the test. Lint's `MissingTranslation` and `StringFormat*` back it up.
+`StoreListingTest` (JVM, `:app`) holds the Play Store texts in `fastlane/metadata/android/<Play locale>/` to the same list: one folder per language, each with a title, short and full description within Play's limits ([store listing](../store-listing.md), *The texts, ready to paste*).
+
+Every module's `res` and Kotlin sources, the build files, `gradle.properties` and the store texts are declared inputs of `:app`'s unit tests, so changing any of them reruns the test. Lint's `MissingTranslation` and `StringFormat*` back it up.
 
 ## Adding a language
-append its qualifier to `twangle.languages`, then add `res/values-<language>/strings.xml` to every module that has a `res/values/strings.xml` (today `:app`, `:wear`, the three features and `:core:designsystem`), translating every translatable string and plural. `LocalizationTest` names what is missing. Nothing else changes: the language list on the phone and the watch's texts follow. The `/add-language` skill walks through it, including the note-name default, TalkBack names, fonts and right-to-left checks.
+append its qualifier to `twangle.languages`, then add `res/values-<language>/strings.xml` to every module that has a `res/values/strings.xml` (today `:app`, `:wear`, the three features and `:core:designsystem`), translating every translatable string and plural. `LocalizationTest` names what is missing. Add its Play Store texts too, `fastlane/metadata/android/<Play locale>/` with `title.txt`, `short_description.txt` and `full_description.txt` translated from `en-US`; `StoreListingTest` names a missing folder. Nothing else changes: the language list on the phone and the watch's texts follow. The `/add-language` skill walks through it, including the note-name default, TalkBack names, fonts and right-to-left checks.

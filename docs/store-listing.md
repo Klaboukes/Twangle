@@ -1,6 +1,6 @@
 # Twangle on Google Play: the store listing
 
-The plan for how Twangle is presented on Google Play: the texts, the pictures, and how people find it. Phase 38 of the [roadmap](../ROADMAP.md) builds it, and Phase 23 puts it on Play. The English texts below are the source; every language in `twangle.languages` gets its own translation.
+The plan for how Twangle is presented on Google Play: the texts, the pictures, and how people find it. Phase 38 of the [roadmap](../ROADMAP.md) builds it, and Phase 23 puts it on Play. The English texts are the source; every language in `twangle.languages` has its own translation (see *The texts, ready to paste*).
 
 ## What makes Twangle stand out
 Most tuners in the store are free to download but show ads, sell a subscription, ask for an account or track their users. Twangle's strong points, in the order the listing tells them:
@@ -26,62 +26,21 @@ Checked against the Play Console when entering the listing, since Google changes
 
 **App name in the store (30):** `Twangle: Guitar Tuner` (21). "Guitar tuner" is by far the most searched phrase in this category and the title weighs most in Play search. The launcher label stays "Twangle". In other languages the part after the colon is translated ("Twangle: Gitaarstemmer", "Twangle: Gitarrenstimmgerät"), as long as it fits in 30.
 
-**Short description (80):** shown under the title, and the second strongest place for search words.
+**Short description (80):** shown under the title, and the second strongest place for search words. The owner picked this one (2026-10-17):
 > Accurate tuner for guitar, bass, ukulele and violin, with a metronome. No ads.
 
-(78 characters.) Alternative if the accessibility point should lead:
+(78 characters.) The alternative, which leads with accessibility, stays a candidate for a Play *store listing experiment* after launch (see *Being found*):
 > Guitar tuner and metronome that speaks with TalkBack. No ads, no account.
 
 (73 characters.)
 
-**Full description (4000):** plain text, short paragraphs, a few bullet lines; no emoji rows.
+**Full description (4000):** plain text, short paragraphs, a few bullet lines; no emoji rows. It opens with what Twangle does and that nothing is paid, signed or sent, then six capitalised sections in the order of the strong points above: tune any instrument, listening tools, practice, made for everyone, make it yours, also. It closes with "works fully offline and will stay free". The English text is [fastlane/metadata/android/en-US/full_description.txt](../fastlane/metadata/android/en-US/full_description.txt) (about 3,000 characters); the longest translation, German, is about 3,600. The Wear OS line comes back with the update that brings the watch app (**decision 3**). The words people search for (guitar tuner, bass tuner, ukulele tuner, violin tuner, cello tuner, chromatic tuner, metronome, chord chart, chord name, scales, capo, Drop D, strobe) each appear in a real sentence; none is repeated just for search.
 
-> Twangle is a guitar tuner that is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo and keeps time.
->
-> No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
->
-> TUNE ANY INSTRUMENT
-> • Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele, violin, viola, cello and mandolin
-> • Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D and Open E
-> • Make your own tunings for any instrument
-> • Chromatic tuner for any other instrument or your voice
-> • Hold a string to hear its note and tune by ear
-> • Set A4 from 415 to 466 Hz, for example 442 Hz to play with an orchestra
->
-> LISTENING TOOLS
-> • Strum check: strum all strings at once and see which ones are flat, sharp or in tune
-> • Chord name: strum a chord on guitar, ukulele or mandolin and see its name
-> • Pitch trail: see how steady a held note, a bend or your vibrato is, for singers too
-> • 12th-fret check: play a string open and at the 12th fret to learn if its saddle should move
->
-> PRACTICE
-> • Chord charts for your instrument and tuning, your own tunings included
-> • Scales on the fretboard: major, minor, pentatonic and blues, every note named
-> • Capo helper: pick the song's key and the shapes you like, and see where the capo goes
-> • Metronome: 30 to 250 beats per minute on a round tempo dial, with tap tempo
-> • 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on the first beat and lights to follow along
-> • Clicks over your own music or backing track, and can vibrate on the beat
->
-> MADE FOR EVERYONE
-> • Works with TalkBack: Twangle says the note and how far off it is ("E 2, 12 cents flat, tune up"), reads chord charts and scales string by string, every button has a clear name, and it never floods you with speech
-> • Every screen works with large text, up to twice the normal size
-> • A short vibration when a string is in tune, so you can feel it too
-> • In 16 languages: English, Arabic, Chinese, Dutch, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish and Turkish
-> • Note names the way you learned them: C D E, with H for B, or Do Re Mi
->
-> MAKE IT YOURS
-> • Six styles, from Ancient to Space Age, each with its own colours, lettering and background
-> • Six meter looks and six wave looks, a strobe among them
-> • Light, dark, or following your phone, with your wallpaper's colours on Android 12 and newer
-> • Focus mode: one big meter on a phone on its side, easy to read from a distance
->
-> ALSO
-> • A home-screen widget that opens the tuner with one tap
-> • Keeps the screen on while you tune
->
-> Twangle works fully offline and will stay free: no ads, no account, no purchases, ever.
-
-(About 3,000 characters, so each translation can grow by about a third; the longest languages, such as German and Russian, get checked against the 4,000 limit when they are entered.) The Wear OS line comes back with the update that brings the watch app (**decision 3**). The words people search for (guitar tuner, bass tuner, ukulele tuner, violin tuner, cello tuner, chromatic tuner, metronome, chord chart, chord name, scales, capo, Drop D, strobe) each appear in a real sentence; none is repeated just for search.
+### The texts, ready to paste
+Every language's title, short and full description are plain-text files in `fastlane/metadata/android/<Play locale>/` (`title.txt`, `short_description.txt`, `full_description.txt`): the layout fastlane and the Gradle Play Publisher read, and F-Droid too once the repo is public. For now the owner pastes them into the Play Console by hand (Phase 23), one language at a time; the trailing newline doesn't count.
+- **Folders** use Play's locale codes, derived from the Android qualifier in `twangle.languages`: `pt-rBR` → `pt-BR`, `zh-rCN` → `zh-CN`, `in` → `id`, and a plain language takes Play's folder for it with its region (`en` → `en-US`, `nl` → `nl-NL`, `de` → `de-DE`, `fr` → `fr-FR`, `es` → `es-ES`, `it` → `it-IT`, `ja` → `ja-JP`, `ko` → `ko-KR`, `hi` → `hi-IN`, `ru` → `ru-RU`, `tr` → `tr-TR`, `pl` → `pl-PL`), or without one where Play has none (`ar`, `id`).
+- **Words** follow each language's app texts (`res/values-<language>/strings.xml`): the tab, tool and style names, "Tune up"/"Tune down", the register (du, tu, vous, ты …), and the TalkBack example is what Twangle says in that language, with its note names (Mi 2 in the Do Re Mi languages). In the title only the part after the colon is translated; French puts a no-break space before the colon, like the app.
+- **Guard:** `StoreListingTest` (JVM, `:app`, part of `./gradlew test`) fails when a language in `twangle.languages` has no folder (or two), a folder is for a language that isn't listed, a file is missing or empty, a text is over Play's limit (counted in Unicode code points), the title doesn't start with "Twangle" or has "free", "no ads", "best" or "#1", or a text has emoji. Adding a language therefore needs its store texts too.
 
 ## Pictures
 
@@ -119,5 +78,5 @@ None for v1.0. Maybe later: a 30-second screen recording of tuning a real guitar
 - **Ratings:** good ratings early help search more than anything else. Ask the closed-test testers to rate it once it is public. In Twangle, a calm "Rate Twangle" row in About that opens the Play page; no pop-up asking for a rating.
 - **Translations:** every language's title, short and full description and captions, translated by Claude and checked by a native speaker where possible (the Phase 22 owner check covers this).
 - **Accessibility communities:** once live, submit Twangle to the app directories and forums of blind and low-vision Android users (for example *Accessible Android*), where a tuner that speaks is rare. Ask the closed-test testers whether one of them uses TalkBack.
-- **After launch:** Play's *store listing experiments* can compare the two short descriptions or the first screenshot; *custom store listings* can give e.g. bass players their own listing later.
+- **After launch:** Play's *store listing experiments* can compare the chosen short description with the TalkBack one or the first screenshot; *custom store listings* can give e.g. bass players their own listing later.
 - **"What's new":** short release notes in every language with each update, in the same plain style.

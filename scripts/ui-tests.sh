@@ -43,7 +43,8 @@ usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
 # Maps changed paths to the UI test modules that can see the change (a module's own sources, or
-# anything it depends on). Docs, CI files and JVM unit tests need no device run.
+# anything it depends on). Docs, CI files, the Play Store texts (fastlane/) and JVM unit tests need no
+# device run.
 affected_modules() {
     local base changed
     base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
@@ -52,7 +53,7 @@ affected_modules() {
     while IFS= read -r path; do
         [ -z "$path" ] && continue
         case "$path" in
-            *.md | .github/* | .claude/* | scripts/* | docs/* | */src/test/* | core/dsp/src/benchmark/*) ;;
+            *.md | .github/* | .claude/* | scripts/* | docs/* | fastlane/* | */src/test/* | core/dsp/src/benchmark/*) ;;
             feature/tuner/src/androidTest/*) tuner=1 ;;
             feature/settings/src/androidTest/*) settings=1 ;;
             feature/metronome/src/androidTest/*) metronome=1 ;;

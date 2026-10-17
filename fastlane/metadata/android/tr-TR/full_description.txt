@@ -1,0 +1,44 @@
+Twangle, kullanımı kolay ve bir sente kadar hassas bir gitar akort cihazıdır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar ve tempoyu tutar.
+
+Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
+
+HER ENSTRÜMANI AKORT ET
+• Gitar (6, 7 veya 8 tel), bas (4 veya 5 tel), ukulele, keman, viyola, çello ve mandolin
+• Gitar akortları: Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D ve Open E
+• Her enstrüman için kendi akortlarını oluştur
+• Diğer tüm enstrümanlar ya da sesin için kromatik akort cihazı
+• Ekrandaki bir teli basılı tutarak notasını duy ve kulaktan akort et
+• Referans sesi A4'ü 415 ile 466 Hz arasında ayarla, örneğin orkestrayla çalmak için 442 Hz
+
+DİNLEYEN ARAÇLAR
+• Tel kontrolü: tüm telleri aynı anda çal ve hangilerinin düşük, yüksek ya da akortlu olduğunu gör
+• Akor adı: gitar, ukulele veya mandolinde bir akor çal ve adını gör
+• Perde izi: uzun tutulan bir notanın, bir bend'in ya da vibratonun ne kadar sabit olduğunu gör; şarkıcılar için de
+• 12. perde kontrolü: bir teli boş ve 12. perdede çal, alt eşiğin kaydırılması gerekip gerekmediğini öğren
+
+PRATİK
+• Enstrümanına ve akorduna uygun akor şemaları, kendi akortların dahil
+• Klavye üzerinde gamlar: majör, minör, pentatonik ve blues, her notanın adıyla
+• Kapo: şarkının tonunu ve sevdiğin basışları seç, kaponun nereye takılacağını gör
+• Metronom: yuvarlak tempo kadranında dakikada 30 ile 250 vuruş, dokunarak tempo ile
+• 2/4, 3/4, 4/4, 5/4, 6/8 ve 7/8, ilk vuruşta vurgu ve takip etmek için ışıklar
+• Kendi müziğinin ya da altyapının üzerinden duyulur ve vuruşta titreşebilir
+
+HERKES İÇİN
+• TalkBack ile çalışır: Twangle notayı ve ne kadar saptığını söyler ("Mi 2, 12 sent düşük, yükselt"), akor şemalarını ve gamları tel tel okur, her düğmenin anlaşılır bir adı vardır ve seni asla konuşmaya boğmaz
+• Her ekran, normal boyutun iki katına kadar büyük yazıyla çalışır
+• Bir tel akortlu olduğunda kısa bir titreşim, böylece bunu hissedebilirsin de
+• 16 dilde: Türkçe, Almanca, Arapça, Çince, Endonezce, Felemenkçe, Fransızca, Hintçe, İngilizce, İspanyolca, İtalyanca, Japonca, Korece, Lehçe, Portekizce ve Rusça
+• Nota adları öğrendiğin gibi: Do Re Mi ya da C D E harfleri, Alman usulü H ile de
+
+SANA GÖRE
+• Antik'ten Uzay Çağı'na altı stil, her birinin kendi renkleri, yazıları ve arka planı var
+• Altı gösterge ve altı dalga görünümü, aralarında bir stroboskop
+• Açık, koyu ya da telefonuna göre; Android 12 ve sonrasında duvar kâğıdının renkleriyle
+• Odak modu: yana çevrilmiş telefonda tek büyük gösterge, uzaktan kolayca okunur
+
+AYRICA
+• Akort ekranını tek dokunuşla açan bir ana ekran widget'ı
+• Akort ederken ekranı açık tutar
+
+Twangle tamamen çevrimdışı çalışır ve ücretsiz kalacak: reklam yok, hesap yok, satın alma yok, asla.

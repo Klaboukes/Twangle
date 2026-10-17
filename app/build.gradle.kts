@@ -89,12 +89,12 @@ androidComponents {
 }
 
 // LocalizationTest reads every module's texts and Kotlin code, the build files and the language list
-// in gradle.properties. Declaring them as inputs makes a change there rerun the unit tests instead of
-// reusing an earlier result.
+// in gradle.properties; StoreListingTest reads the Play Store texts in fastlane/. Declaring them as
+// inputs makes a change there rerun the unit tests instead of reusing an earlier result.
 tasks.withType<Test>().configureEach {
     inputs.files(
         fileTree(rootDir) {
-            include("gradle.properties")
+            include("gradle.properties", "fastlane/metadata/**")
             listOf("app", "wear", "feature/*", "core/*").forEach { module ->
                 include("$module/build.gradle.kts", "$module/src/main/res/**", "$module/src/main/kotlin/**")
             }

@@ -1,0 +1,44 @@
+Twangle is a guitar tuner that is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo and keeps time.
+
+No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
+
+TUNE ANY INSTRUMENT
+• Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele, violin, viola, cello and mandolin
+• Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D and Open E
+• Make your own tunings for any instrument
+• Chromatic tuner for any other instrument or your voice
+• Hold a string to hear its note and tune by ear
+• Set A4 from 415 to 466 Hz, for example 442 Hz to play with an orchestra
+
+LISTENING TOOLS
+• Strum check: strum all strings at once and see which ones are flat, sharp or in tune
+• Chord name: strum a chord on guitar, ukulele or mandolin and see its name
+• Pitch trail: see how steady a held note, a bend or your vibrato is, for singers too
+• 12th-fret check: play a string open and at the 12th fret to learn if its saddle should move
+
+PRACTICE
+• Chord charts for your instrument and tuning, your own tunings included
+• Scales on the fretboard: major, minor, pentatonic and blues, every note named
+• Capo helper: pick the song's key and the shapes you like, and see where the capo goes
+• Metronome: 30 to 250 beats per minute on a round tempo dial, with tap tempo
+• 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on the first beat and lights to follow along
+• Clicks over your own music or backing track, and can vibrate on the beat
+
+MADE FOR EVERYONE
+• Works with TalkBack: Twangle says the note and how far off it is ("E 2, 12 cents flat, tune up"), reads chord charts and scales string by string, every button has a clear name, and it never floods you with speech
+• Every screen works with large text, up to twice the normal size
+• A short vibration when a string is in tune, so you can feel it too
+• In 16 languages: English, Arabic, Chinese, Dutch, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish and Turkish
+• Note names the way you learned them: C D E, with H for B, or Do Re Mi
+
+MAKE IT YOURS
+• Six styles, from Ancient to Space Age, each with its own colours, lettering and background
+• Six meter looks and six wave looks, a strobe among them
+• Light, dark, or following your phone, with your wallpaper's colours on Android 12 and newer
+• Focus mode: one big meter on a phone on its side, easy to read from a distance
+
+ALSO
+• A home-screen widget that opens the tuner with one tap
+• Keeps the screen on while you tune
+
+Twangle works fully offline and will stay free: no ads, no account, no purchases, ever.

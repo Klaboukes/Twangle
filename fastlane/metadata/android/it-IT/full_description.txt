@@ -1,0 +1,44 @@
+Twangle è un accordatore per chitarra semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Alza» o «Abbassa» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto e tiene il tempo.
+
+Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
+
+ACCORDA OGNI STRUMENTO
+• Chitarra (6, 7 o 8 corde), basso (4 o 5 corde), ukulele, violino, viola, violoncello e mandolino
+• Accordature per chitarra: Standard, Drop D, mezzo tono sotto, un tono sotto, DADGAD, Open G, Open D e Open E
+• Crea le tue accordature per qualsiasi strumento
+• Accordatore cromatico per ogni altro strumento o per la voce
+• Tieni premuta una corda sullo schermo per sentirne la nota e accordare a orecchio
+• Imposta il diapason (A4) da 415 a 466 Hz, per esempio 442 Hz per suonare con un'orchestra
+
+STRUMENTI CHE ASCOLTANO
+• Controllo a pennata: suona tutte le corde insieme e vedi quali sono calanti, crescenti o intonate
+• Nome dell'accordo: suona un accordo su chitarra, ukulele o mandolino e vedi come si chiama
+• Traccia dell'intonazione: vedi quanto è stabile una nota tenuta, un bending o il tuo vibrato, anche per chi canta
+• Controllo al 12° tasto: suona una corda a vuoto e al 12° tasto per sapere se la selletta va spostata
+
+PRATICA
+• Diagrammi degli accordi per il tuo strumento e la tua accordatura, anche per quelle create da te
+• Scale sulla tastiera: maggiore, minore, pentatonica e blues, con il nome di ogni nota
+• Capotasto: scegli la tonalità del brano e le diteggiature che preferisci, e vedi dove va il capotasto
+• Metronomo: da 30 a 250 battiti al minuto su una manopola del tempo rotonda, con tap tempo
+• 2/4, 3/4, 4/4, 5/4, 6/8 e 7/8, con l'accento sul primo battito e luci da seguire
+• Si sente sopra la tua musica o la tua base, e può vibrare a tempo
+
+PER TUTTI
+• Funziona con TalkBack: Twangle dice la nota e quanto è lontana («Mi 2, 12 cent calante, alza»), legge diagrammi degli accordi e scale corda per corda, ogni pulsante ha un nome chiaro e non ti sommerge mai di parole
+• Ogni schermata funziona con il testo grande, fino al doppio della dimensione normale
+• Una breve vibrazione quando una corda è intonata, per sentirlo anche al tatto
+• In 16 lingue: italiano, arabo, cinese, coreano, francese, giapponese, hindi, indonesiano, inglese, olandese, polacco, portoghese, russo, spagnolo, tedesco e turco
+• I nomi delle note come li hai imparati: Do Re Mi, oppure le lettere C D E, anche con la H alla tedesca
+
+A MODO TUO
+• Sei stili, da Antico a Era spaziale, ognuno con i suoi colori, i suoi caratteri e il suo sfondo
+• Sei indicatori e sei stili dell'onda, tra cui uno stroboscopio
+• Chiaro, scuro o come il telefono, con i colori dello sfondo da Android 12 in poi
+• Modalità concentrazione: un unico grande indicatore con il telefono in orizzontale, facile da leggere a distanza
+
+INOLTRE
+• Un widget per la schermata Home che apre l'accordatore con un tocco
+• Tiene lo schermo acceso mentre accordi
+
+Twangle funziona completamente offline e resterà gratis: niente pubblicità, niente account, niente acquisti, mai.
