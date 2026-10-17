@@ -37,7 +37,7 @@ Rules for every phase here: no internet, no account, audio never saved, every te
 ## Phase 31 — Pitch trail
 Goal: a line that draws the note over the last few seconds, so a held note, a bend or vibrato shows how steady it is; also for singers and violinists.
 - ☑ Preallocated history of readings (no allocation per frame), drawn in the draw phase only, like the strobe (`PitchHistory`, 5 s by default, fed by `TunerViewModel` on the DSP thread; the drawing comes with the mode)
-- ☐ Rough mock-up of the trail in two or three styles for the owner to pick from
+- ☑ Rough mock-up of the trail in two or three styles for the owner to pick from (owner, 2026-10-17: option A of [docs/design/pitch-trail-preview.html](docs/design/pitch-trail-preview.html), a band in the meter's place, the line scrolling right to left over 4 s, sharp up, flat down)
 - ☐ The mode inside the tuner behind its switch (Phase 28), in every style, light and dark; TalkBack describes it in words; JVM and UI tests; frame times measured on the phone, like the meter looks (`scripts/meter-frames.sh`)
 - ☐ Owner check added: hold a note, bend a string and play vibrato, and check the line shows it clearly
 

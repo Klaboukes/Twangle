@@ -8,6 +8,7 @@ Part of §6 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [More tools](#more-tools)
 - [12th-fret check view](#12th-fret-check-view)
 - [Chord name view](#chord-name-view)
+- [Pitch trail view](#pitch-trail-view)
 - [Tour](#tour)
 - [Display](#display)
 
@@ -68,6 +69,15 @@ Phase 30, behind `ToolSwitches.chordNaming` (hidden in release builds until it g
 - **Compact layout on its side:** the panel and the line beside each other like the meter and the note; no string row under them.
 - **Tests:** `ChordSettlerTest` and `ChordSpellingTest` (`:core:dsp`); `ChordNameFlowTest` (JVM: synthetic `PluckSynth` strums through the pipeline and the ViewModel: Am named and faded as it dies away, never another name; G, C and C/E one after the other; a single note is not a clear chord; one tool at a time, chromatic, a tapped string, basses, the switch off). UI: `ChordNameStylesTest` (every style in a thorough run, light and dark: upright on a narrow phone and on the Xiaomi at 1.25×, every phase in view and the line not moving; Dutch at 2× upright and on its side wholly shown; every language at 2× overnight; the menu; TalkBack in English and Dutch, solfège; and the real `TunerScreen` and ViewModel with a fake microphone playing a synthetic Am and C/E strum; `-a chordScreens=true` saves a picture of each). `ToolSwitchesOffTest` checks the release app shows none of it.
 - **Phone check** (Xiaomi 12X, 2026-10-16): every phase light and dark, and the real screen naming the synthetic Am and C/E strums through the fake microphone. Real chords on a real guitar are the owner's check (ROADMAP *Owner checks*).
+
+## Pitch trail view
+Phase 31, behind `ToolSwitches.pitchTrail` (hidden in release builds until it goes live, Phase 34); its data is `PitchHistory` ([Notes, tunings and audio](notes-and-audio.md), *Pitch history*). **Owner's pick, 2026-10-17: option A of [pitch-trail-preview.html](../design/pitch-trail-preview.html)** (over a small trail under the needle, and a line falling down from the needle's spot). To be built as follows:
+- **Entry:** a tool in the more-tools menu, "Pitch trail", one tool at a time like the others.
+- **Panel** in the meter's place at its 2:1 shape (the needle gives way to it, so every layout places it like the meter), on the calm field like the strum panel, sized by its width, no frame or hard edge. The note name, the cents pill and the string row stay as they are.
+- **The line:** time runs from right to left, the newest reading at the right (a little in from the edge) with a dot and a soft glow round it; **4 s** shown. Up is sharp, down is flat, ±50 cents over the panel's height (clamped there), with faint hairlines at ±25 and small ♯ / ♭ marks at the right end. The oldest third fades out to the left.
+- **In tune:** the centre line is in tune, drawn as a soft band of ±5 cents (the tuner's tolerance) in the "in tune" colour, faint, glowing a little brighter while the note is in tune now (eased, no flash). The parts of the line that were in tune take the "in tune" colour, the rest the accent; the head dot likewise.
+- **Gaps** (`NO_NOTE`: silence, a reference tone, another tool) break the line, and the gap scrolls away with it.
+- The mock-up's line is about 2.4 dp at 0.8 px per dp (≈ 3 dp on the phone); the exact sizes and the other styles' marks are decided when it is built.
 
 ## Tour
 On first start a short tour points out the tuner's main parts, one at a time, as the approved mock-up [docs/design/tour-preview.html](../design/tour-preview.html) (its top comment is the design; owner decided 2026-10-14). Code: `:feature:tuner` `tour/` (`TourHost` and the overlay in `TourOverlay.kt`, the pure `TourGeometry.kt`, `TourPart`, `TourTargets`), wired in `MainActivity` (its rules in `FirstStartTour.kt`). Its strings step ("Tap to lock, hold to hear") is how people find the string lock.

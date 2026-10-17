@@ -1,0 +1,284 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Pitch Trail</title>
+<!--
+TWANGLE PITCH TRAIL (Phase 31 preview). ROUGH, plain on purpose: one style (Contemporary), the bare idea per option.
+OWNER'S PICK, 2026-10-17: option A, the band in the needle meter's place (right to left, sharp up, flat down, 4 s).
+The tool  Turned on from the more-tools menu (hammer and screwdriver) as "Pitch trail", like the strum check, the
+          12th-fret check and the chord name. Data: PitchHistory (time, target note, cents, in tune; a gap = NO_NOTE).
+The note  Every canvas plays the same synthetic A2, looping (about 11 s): a pluck settling into tune and held 3 s,
+          a slow bend up to +40 cents and back, a short gap, vibrato +/-15 cents at 5 per second, a gap.
+          A reading every 21.3 ms (the tuner's hop), with a little jitter, like the real feed.
+In tune   Within 5 cents (Relaxed): that part of the line takes the "in tune" colour, and the soft band round the
+          centre line glows a little brighter while the note is in tune now. No hard borders, no flashes.
+Sizes     The Xiaomi 12X's 393 dp at 0.8 px per dp. The meter's place is the screen less 8 dp each side, at 2:1.
+Look      Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting;
+          the phone's own font, light, as Contemporary uses.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --track: #CDD3E3;
+  --accent: #3A4FD6; --intune: #15763B; --onintune: #FFFFFF;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #2B3350;
+    --accent: #A6ADFF; --intune: #6DD58C; --onintune: #00391A;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #2B3350;
+  --accent: #A6ADFF; --intune: #6DD58C; --onintune: #00391A;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1060px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 72ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 28px 24px; }
+.cand { display: grid; gap: 8px; width: 314px; align-content: start; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; }
+/* The phone: 393 dp wide at 0.8 px per dp, the tuner's column from the mode switch down to the strings. */
+.phone { width: 314px; height: 600px; border-radius: 22px; background: var(--bg); position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; padding: 6px 0 14px; }
+.seg { display: flex; border-radius: 999px; overflow: hidden; margin-top: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 55%, var(--bg)); }
+.seg span { font: 500 11px/1 var(--ui); padding: 9px 18px; color: var(--ink); }
+.seg span.on { background: var(--container); }
+.gapTop { flex: 1; min-height: 19px; }
+.gapLow { flex: 2; min-height: 19px; }
+canvas { display: block; }
+.noteName { font: 300 62px/1 var(--ui); margin-top: 4px; transition: color .4s; }
+.noteName sub { font-size: .42em; vertical-align: baseline; margin-left: 1px; }
+.pill { font: 400 12px/1 var(--ui); padding: 7px 14px; border-radius: 999px; margin-top: 8px;
+  background: var(--surface); color: var(--ink); transition: background .5s, color .3s; min-width: 128px; text-align: center; }
+.pill.ok { background: var(--intune); color: var(--onintune); }
+.ctrl { width: 314px; padding: 0 13px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.ctrl .lbl { font: 500 11.2px/1 var(--ui); color: var(--muted); }
+.tools { width: 35px; height: 35px; border-radius: 14px; display: grid; place-items: center; background: var(--container);
+  border: 2px solid var(--accent); color: var(--ink); }
+.tools svg { width: 19px; height: 19px; fill: currentColor; }
+.strings { width: 314px; display: flex; justify-content: space-evenly; }
+.str { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 400 12px/1 var(--ui);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 55%, var(--bg)); color: var(--ink); }
+.str sub { font-size: .7em; }
+.str.on { background: var(--container); box-shadow: inset 0 0 0 2px var(--accent); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 31 · rough mock-up</p>
+  <h1>How should the pitch trail look?</h1>
+  <p class="lede"><strong>Owner picked A, 2026-10-17</strong>: the band in the meter's place.</p>
+  <p class="lede">The pitch trail is a new tool in the more-tools menu: a line that draws the note over the last few
+    seconds. Each phone below plays the same sample on repeat: a held note, a slow <strong>bend</strong> up and back,
+    a short pause, then <strong>vibrato</strong>. Green means in tune. Pick one.</p>
+</header>
+
+<div class="list" id="list"></div>
+
+<footer>
+  <p>All three keep the note name, the cents pill and the strings as they are; only where the line goes differs.
+    Colours, sizes and the length of the line can still be tuned once you pick the idea.</p>
+</footer>
+</div>
+
+<script>
+const OPTIONS = [
+  { id: "A", title: "A · The line takes the meter's place",
+    note: "The needle gives way to a band: the line scrolls from right to left, the centre line is in tune, sharp is up, flat is down (4 s)." },
+  { id: "B", title: "B · A small line under the needle",
+    note: "The needle meter stays; a thin trail of the last 5 s sits under the note, in the room above the strings." },
+  { id: "C", title: "C · The line falls down from the needle's spot",
+    note: "In the meter's place: flat left, sharp right like the needle; the newest reading is at the top and the line runs down and fades (3 s)." },
+];
+
+const HANDYMAN = "M754-81q-8 0-15-2.5T726-92L522-296q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l85-85q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l204 204q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13l-85 85q-6 6-13 8.5T754-81Zm0-95 29-29-147-147-29 29 147 147ZM205-80q-8 0-15.5-3T176-92l-84-84q-6-6-9-13.5T80-205q0-8 3-15t9-13l212-212h85l34-34-165-165h-57L80-765l113-113 121 121v57l165 165 116-116-43-43 56-56H495l-28-28 142-142 28 28v113l56-56 142 142q17 17 26 38.5t9 45.5q0 24-9 46t-26 39l-85-85-56 56-42-42-207 207v84L233-92q-6 6-13 9t-15 3Zm0-96 170-170v-29h-29L176-205l29 29Zm0 0-29-29 15 14 14 15Zm549 0 29-29-29 29Z";
+
+// The synthetic note: cents off A2 at time t (s), or NaN in a gap. One loop is 11 s.
+const LOOP = 11, HOP = 0.0213, TOL = 5;
+function jitter(i) { const x = Math.sin(i * 12.9898) * 43758.5453; return (x - Math.floor(x)) * 2 - 1; }
+function centsAt(t) {
+  const i = Math.floor(t / HOP), q = i * HOP, u = ((q % LOOP) + LOOP) % LOOP, j = jitter(i) * 1.2;
+  if (u < 0.15) return NaN;                                            // before the pluck
+  if (u < 3.4) return -14 * Math.exp(-(u - 0.15) / 0.25) + j;           // pluck settles, then held in tune
+  if (u < 6.9) { const p = (u - 3.4) / 3.5; return 40 * Math.sin(Math.PI * p) ** 2 + j; } // bend up and back
+  if (u < 7.4) return NaN;                                             // short gap
+  if (u < 10.2) { const v = u - 7.4; return 15 * Math.min(1, v / 0.4) * Math.sin(2 * Math.PI * 5 * v) + 2 + j; } // vibrato
+  return NaN;                                                          // gap before the loop starts again
+}
+
+let C = {};
+function readColours() {
+  const s = getComputedStyle(document.documentElement);
+  for (const k of ["bg", "surface", "ink", "muted", "track", "accent", "intune"]) C[k] = s.getPropertyValue("--" + k).trim();
+}
+readColours();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColours);
+function alpha(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+
+function phoneHtml(o) {
+  const strings = ["E", "A", "D", "G", "B", "E"].map((n, k) =>
+    `<div class="str${k === 1 ? " on" : ""}">${n}<sub>${[2, 2, 3, 3, 3, 4][k]}</sub></div>`).join("");
+  return `
+  <div class="cand">
+    <h2>${o.title}</h2>
+    <p class="note">${o.note}</p>
+    <div class="phone">
+      <div class="seg"><span class="on">Strings</span><span>Chromatic</span></div>
+      <div class="gapTop"></div>
+      <canvas id="main${o.id}"></canvas>
+      <div class="noteName" id="name${o.id}">A<sub>2</sub></div>
+      <div class="pill" id="pill${o.id}">in tune</div>
+      <div class="gapLow"></div>
+      ${o.id === "B" ? `<canvas id="strip${o.id}"></canvas><div style="height:14px"></div>` : ""}
+      <div class="ctrl"><span class="lbl">Guitar · Standard</span>
+        <div class="tools"><svg viewBox="0 -960 960 960"><path d="${HANDYMAN}"/></svg></div></div>
+      <div class="strings">${strings}</div>
+    </div>
+  </div>`;
+}
+document.getElementById("list").innerHTML = OPTIONS.map(phoneHtml).join("");
+
+function setup(id, w, h) {
+  const c = document.getElementById(id), d = devicePixelRatio || 1;
+  c.width = w * d; c.height = h * d; c.style.width = w + "px"; c.style.height = h + "px";
+  const g = c.getContext("2d"); g.scale(d, d); return { g, w, h };
+}
+const MW = 302, MH = 151;                     // the meter's place: 377 dp at 2:1
+const A = setup("mainA", MW, MH), B = setup("mainB", MW, MH), Bs = setup("stripB", MW, 64), Cc = setup("mainC", MW, MH);
+
+// A soft field behind a panel (no edge): the surface colour fading out at its rim.
+function field(g, w, h) {
+  g.save(); g.translate(w / 2, h / 2); g.scale(1, h / w);    // an oval that fades to nothing inside the box
+  const r = g.createRadialGradient(0, 0, 0, 0, 0, w / 2);
+  r.addColorStop(0, alpha(C.surface, 0.9)); r.addColorStop(0.6, alpha(C.surface, 0.55)); r.addColorStop(1, alpha(C.surface, 0));
+  g.fillStyle = r; g.fillRect(-w / 2, -w / 2, w, w); g.restore();
+}
+
+// The trail: points (x, y) from time; along = 0 (oldest) .. 1 (newest). Old end fades out.
+// span: seconds shown; map(along, cents) -> [x, y].
+function trail(g, now, span, map, width) {
+  const n = Math.round(span / HOP);
+  let prev = null;
+  g.lineCap = "round"; g.lineJoin = "round"; g.lineWidth = width;
+  for (let k = n; k >= 0; k--) {
+    const t = now - k * HOP, c = centsAt(t), along = 1 - k / n;
+    if (Number.isNaN(c)) { prev = null; continue; }
+    const p = map(along, Math.max(-50, Math.min(50, c)));
+    if (prev) {
+      const fade = Math.min(1, along / 0.35);
+      g.strokeStyle = alpha(Math.abs(c) <= TOL ? C.intune : C.accent, 0.95 * fade);
+      g.beginPath(); g.moveTo(prev[0], prev[1]); g.lineTo(p[0], p[1]); g.stroke();
+    }
+    prev = p;
+  }
+  return prev; // the newest point, or null in a gap
+}
+
+let glow = 0;  // eased 0..1: how in tune the note is now
+function inTuneBand(g, x, y, w, h, vertical) {
+  g.fillStyle = alpha(C.intune, 0.08 + 0.14 * glow);
+  if (vertical) g.fillRect(x - w / 2, y, w, h); else g.fillRect(x, y - h / 2, w, h);
+}
+function headDot(g, p, c) {
+  if (!p) return;
+  const col = Math.abs(c) <= TOL ? C.intune : C.accent;
+  const r = g.createRadialGradient(p[0], p[1], 0, p[0], p[1], 14);
+  r.addColorStop(0, alpha(col, 0.35 * (0.4 + 0.6 * glow))); r.addColorStop(1, alpha(col, 0));
+  g.fillStyle = r; g.beginPath(); g.arc(p[0], p[1], 14, 0, 7); g.fill();
+  g.fillStyle = col; g.beginPath(); g.arc(p[0], p[1], 3.6, 0, 7); g.fill();
+}
+
+// A: band in the meter's place; time right to left, cents up (sharp) / down (flat).
+function drawA(now, c) {
+  const { g, w, h } = A; g.clearRect(0, 0, w, h); field(g, w, h);
+  const top = 12, bot = h - 12, mid = (top + bot) / 2, perCent = (bot - top) / 100, xNow = w - 22, x0 = 14;
+  inTuneBand(g, x0, mid, xNow - x0 + 10, TOL * 2 * perCent, false);
+  g.strokeStyle = alpha(C.muted, 0.18); g.lineWidth = 1;
+  for (const k of [-25, 25]) { g.beginPath(); g.moveTo(x0, mid - k * perCent); g.lineTo(xNow, mid - k * perCent); g.stroke(); }
+  g.fillStyle = alpha(C.muted, 0.8); g.font = "300 11px " + getComputedStyle(document.body).fontFamily;
+  g.fillText("♯", w - 13, top + 9); g.fillText("♭", w - 13, bot - 1);
+  const p = trail(g, now, 4, (a, cc) => [x0 + a * (xNow - x0), mid - cc * perCent], 2.4);
+  headDot(g, p, c);
+}
+
+// B: the needle meter as today (Contemporary: a line arc, ticks, a plain bar, an ink dot), plus a small strip.
+function drawB(now, c) {
+  const { g, w, h } = B; g.clearRect(0, 0, w, h); field(g, w, h);
+  const cx = w / 2, cy = h - 10, R = h - 26, span = 1.0;  // +/-50 cents over +/-1 rad
+  inTuneArc(g, cx, cy, R, span);
+  g.strokeStyle = alpha(C.ink, 0.5); g.lineWidth = 1.2; g.lineCap = "round";
+  g.beginPath(); g.arc(cx, cy, R, -Math.PI / 2 - span, -Math.PI / 2 + span); g.stroke();
+  for (let k = -50; k <= 50; k += 10) {
+    const a = -Math.PI / 2 + (k / 50) * span, l = k % 50 === 0 || k === 0 ? 12 : 7;
+    g.strokeStyle = alpha(k === 0 ? C.ink : C.ink, k === 0 ? 0.9 : 0.5); g.lineWidth = k === 0 ? 2 : 1.4;
+    g.beginPath(); g.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+    g.lineTo(cx + Math.cos(a) * (R - l), cy + Math.sin(a) * (R - l)); g.stroke();
+  }
+  if (!Number.isNaN(c)) {
+    const a = -Math.PI / 2 + (Math.max(-50, Math.min(50, c)) / 50) * span;
+    g.strokeStyle = Math.abs(c) <= TOL ? C.intune : C.accent; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * (R - 4), cy + Math.sin(a) * (R - 4)); g.stroke();
+  }
+  g.fillStyle = C.ink; g.beginPath(); g.arc(cx, cy, 4, 0, 7); g.fill();
+
+  const s = Bs; s.g.clearRect(0, 0, s.w, s.h); field(s.g, s.w, s.h);
+  const top = 6, bot = s.h - 6, mid = (top + bot) / 2, perCent = (bot - top) / 100, xNow = s.w - 16, x0 = 14;
+  inTuneBand(s.g, x0, mid, xNow - x0 + 8, Math.max(3, TOL * 2 * perCent), false);
+  const p = trail(s.g, now, 5, (a2, cc) => [x0 + a2 * (xNow - x0), mid - cc * perCent], 1.8);
+  if (p) { s.g.fillStyle = Math.abs(c) <= TOL ? C.intune : C.accent; s.g.beginPath(); s.g.arc(p[0], p[1], 2.6, 0, 7); s.g.fill(); }
+}
+function inTuneArc(g, cx, cy, R, span) {
+  const d = (TOL / 50) * span;
+  g.strokeStyle = alpha(C.intune, 0.12 + 0.2 * glow); g.lineWidth = 16; g.lineCap = "butt";
+  g.beginPath(); g.arc(cx, cy, R - 6, -Math.PI / 2 - d, -Math.PI / 2 + d); g.stroke();
+}
+
+// C: cents across (flat left, sharp right), newest at the top, falling down and fading.
+function drawC(now, c) {
+  const { g, w, h } = Cc; g.clearRect(0, 0, w, h); field(g, w, h);
+  const left = 18, right = w - 18, mid = w / 2, perCent = (right - left) / 100, yNow = 16, y1 = h - 6;
+  inTuneBand(g, mid, yNow - 10, TOL * 2 * perCent, y1 - yNow + 10, true);
+  g.strokeStyle = alpha(C.muted, 0.18); g.lineWidth = 1;
+  for (const k of [-25, 25]) { g.beginPath(); g.moveTo(mid + k * perCent, yNow); g.lineTo(mid + k * perCent, y1); g.stroke(); }
+  g.fillStyle = alpha(C.muted, 0.8); g.font = "300 11px " + getComputedStyle(document.body).fontFamily;
+  g.fillText("♭", left - 12, yNow + 4); g.fillText("♯", right + 4, yNow + 4);
+  const p = trail(g, now, 3, (a, cc) => [mid + cc * perCent, y1 - a * (y1 - yNow)], 2.4);
+  headDot(g, p, c);
+}
+
+const start = performance.now();
+let lastText = 0;
+function frame(ms) {
+  const now = (ms - start) / 1000 + 0.2, c = centsAt(now), ok = !Number.isNaN(c) && Math.abs(c) <= TOL;
+  glow += ((ok ? 1 : 0) - glow) * 0.06;
+  drawA(now, c); drawB(now, c); drawC(now, c);
+  if (ms - lastText > 120) {           // the pill's words change a few times a second, like the app's
+    lastText = ms;
+    for (const o of OPTIONS) {
+      const pill = document.getElementById("pill" + o.id), name = document.getElementById("name" + o.id);
+      if (Number.isNaN(c)) { pill.textContent = "Play the A2 string"; pill.className = "pill"; name.style.opacity = .35; continue; }
+      name.style.opacity = 1;
+      const r = Math.round(c);
+      pill.textContent = ok ? "✓ in tune" : `${Math.abs(r)} cents ${r > 0 ? "sharp" : "flat"}`;
+      pill.className = ok ? "pill ok" : "pill";
+      name.style.color = ok ? C.intune : C.ink;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
