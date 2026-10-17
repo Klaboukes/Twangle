@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17, with the *Music tools* overview; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -34,6 +34,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 25 — Meter looks, round 2](#phase-25--meter-looks-round-2)
 - [Phase 26 — Pre-launch fixes](#phase-26--pre-launch-fixes)
 - [Phase 27 — Tempo from music](#phase-27--tempo-from-music)
+- [Music tools, before v1.0](#music-tools-before-v10)
 - [Phase 28 — Hidden until 1.1](#phase-28--hidden-until-11)
 - [Phase 29 — Intonation check](#phase-29--intonation-check)
 - [Phase 30 — What chord is this?](#phase-30--what-chord-is-this)
@@ -315,6 +316,15 @@ Goal: the metronome can listen to music playing nearby (from a speaker, a band, 
 - ☑ Listen on the metronome screen: asks for the microphone the same way the tuner does, holds it only while listening (stops on its own once the tempo is steady, after about 15 s, or when the screen is left), pauses the metronome's own clicks while listening, and sets the tempo as the mock-up says; with the mock-up's new layout (− / + at the dial's bottom corners, Tap tempo and Listen as two equal fixed-size buttons) and its new press effect on every metronome button, built as one shared Modifier in `:core:designsystem`, with Tap tempo's crisp flash; translated in every language; JVM tests with a fake recorder, UI tests in the overnight run (built 2026-10-15: `MetronomeViewModel` listens through its own `AudioRecorder` with `OnsetTempoDetector` on `Dispatchers.Default`, the clicks paused; the shared press effect is `Modifier.pressFeedback` in `:core:designsystem`; 15 new strings in all 16 languages; `MetronomeListenTest` (12 JVM cases with a fake microphone and the real detector) and `PressFeedbackTest`; UI tests deferred to the overnight run)
 - ☑ The same press effect on every other button of the app (tuner, tuning panel and editor, settings, About, tour balloons, dialogs), replacing Material's ripple; each style, light and dark; UI tests in the overnight run (owner asked for this, 2026-10-15) (built 2026-10-15: `TwangleTheme` turns Material's ripple off and gives every row and plain clickable the press light (`PressIndication`, tint only, no sink); Material's buttons became `TwangleTextButton`, `TwangleButton`, `TwangleIconButton` and `TwangleFilledTonalIconButton`, same look and 48 dp touch area, with `pressFeedback`; the string buttons, instrument chips, strum switch, tuning name and look cards also sink (`pressSink`); the navigation items light without a sink; watch and widget unchanged; `PressFeedbackTest` on the JVM, the new `PressEffectTest`; phone: held presses in two styles, light and dark; UI tests deferred to the overnight run)
 - ☑ Phone check with real music from a speaker at a few tempos; the owner's live check is under *Owner checks* (2026-10-15 on the Xiaomi 12X, drum grooves of 14 s from the laptop speaker: 120 BPM found as 120, 160 as 160, a swung 100 as 100, 80 as 160 with eighth-note hi-hats (½× gives 80); a quiet room gave "No steady beat heard"; Use, Not now and the clicks coming back checked in Futuristic dark, Contemporary light and Ancient dark)
+
+---
+
+## Music tools, before v1.0
+**Owner decided (2026-10-16):** there is no hurry to release, so the music tools (Phases 29–33) are finished first and go into **v1.0**, not a later version 1.1 as planned earlier that day. Each tool stayed hidden in the Play build behind its own switch (Phase 28) until it was finished and had passed the owner's check; then it went live (Phase 34, 2026-10-17), with the privacy policy and the store-listing plan updated to match. Phase 35 (the "more tools" button) and Phase 36 (focus mode) were done alongside.
+
+Rules for every phase here: no internet, no account, audio never saved, every text translated, TalkBack and 2× text from the start, nothing added to the tuner screen's clutter. A rough mock-up for the owner comes before each new screen or mode. Each phase's live test goes under *Owner checks* when it lands.
+
+**Where they go in the app** (owner agreed, 2026-10-16): the tools that listen stay modes inside the tuner, under the "more tools" button; the Metronome tab becomes **Practice**, holding the Metronome, Chords and the Capo helper; the bar keeps four items. The reasons are in [docs/architecture/ui.md](docs/architecture/ui.md) (*Navigation bar*, *Practice*).
 
 ---
 
