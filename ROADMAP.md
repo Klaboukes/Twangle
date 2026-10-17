@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22 and 24–37 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 38 (Claude), then Phase 23 (the owner, in the Play Console). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22 and 24–37 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 38 (Claude), then Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -38,3 +38,11 @@ Goal: Twangle is public on Google Play. Done by the owner in the Play Console, w
 - ☐ Internal track: install the Play-signed build on the Xiaomi from Play and check the mic, widget and language switch
 - ☐ Closed track with 12+ testers for 14 days in a row (see *Waiting on the owner*), collecting their feedback
 - ☐ Apply for production access, then a staged rollout to production
+
+## Phase 39 — Open the code after v1.0
+Goal: the Twangle repository goes public as open source, once v1.0 is live on Play. The licence is the **GPL version 3** (owner, 2026-10-17): anyone may copy, change and share the code, but what they build from it stays open under the same licence, so nobody can turn Twangle into a closed app with ads. The bundled fonts keep their own SIL Open Font License, and the AndroidX and Kotlin libraries' Apache 2.0 fits inside GPL 3.
+- ☐ `LICENSE` with the full GPL 3 text, and a *Licence* section in README.md naming it
+- ☐ README.md says the name "Twangle" and its icon are not covered by the licence, so copies must use their own name and icon
+- ☐ Before opening: check the history for anything that shouldn't be public (the owner's personal email in old commits, `local.properties`, keys); the owner decides whether to keep the history or start the public repository fresh
+- ☐ The owner makes the repository public; later commits use the GitHub no-reply email
+- ☐ While the owner is the only author, the licence can still change; once others contribute, it can't without them, so settle any change before accepting outside code
