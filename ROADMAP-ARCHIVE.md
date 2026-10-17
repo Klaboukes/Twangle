@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32 and 36 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -41,6 +41,8 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 32 — Practice tab with chord and scale charts](#phase-32--practice-tab-with-chord-and-scale-charts)
 - [Phase 31 — Pitch trail](#phase-31--pitch-trail)
 - [Phase 36 — Focus mode](#phase-36--focus-mode)
+- [Phase 33 — Capo helper](#phase-33--capo-helper)
+- [Phase 34 — The tools go live in v1.0](#phase-34--the-tools-go-live-in-v10)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -382,6 +384,15 @@ Goal: "the song is in E♭, where does the capo go to play G shapes?", and which
 - ☑ Rough mock-up for the owner to pick from ([docs/design/capo-helper-preview.html](docs/design/capo-helper-preview.html); owner picked B on 2026-10-17: pick your shapes, step the capo with ‹ ›, a table shows what each shape sounds)
 - ☑ The Capo helper in Practice, behind its switch (Phase 28), linked to the chord charts; translated, TalkBack and 2× text; JVM and UI tests; phone check (`CapoScreen`, the third segment Metronome · Chords · Capo; a row opens its shape in Chords; shapes and fret saved; `CapoTableTest`, `CapoScreenTest`, `PracticeTabTest`)
 - ☑ Owner check added: work out the capo for two songs you know and play them (*Owner checks*)
+
+---
+
+## Phase 34 — The tools go live in v1.0
+Goal: the finished tools reach users in v1.0. Comes after the other tool phases and before Phase 23's store steps.
+- ☑ Each tool's owner check passed (*Owner checks*); the owner picks which go live, and a tool that isn't ready stays hidden (it can follow in an update) (owner, 2026-10-17: every check passed; all five tools go live: the 12th-fret check, chord name, pitch trail, Practice with Chords and Scales, and the Capo helper)
+- ☑ Their switches turn on for release, or the switch and its checks go altogether; `ReleaseToolSwitchesTest` and `ToolSwitchesOffTest` updated to match, and docs/architecture/performance.md (*Release build*) (2026-10-17: every switch is on in every build, `AppContainer.toolSwitches` = `ALL_ON`; the debug/release split went: `toolSwitchesFor`, `DebugToolSwitchesTest`, `ReleaseToolSwitchesTest`, the release builds' unit tests, `ToolSwitchesOffTest` and its rule, and the frame-time build's tools extra; `ToolSwitches` stays so a future tool can be hidden the same way)
+- ☑ Privacy policy checked for the new tools (they listen only like the tuner; new saved choices such as the Practice tool used last) in English and Dutch, and published with `scripts/publish-privacy.sh` (2026-10-17: the tuner's four tools listen only as part of the tuner screen, and Chords, Scales and the Capo helper never listen; the Metronome line became Practice: the tool used last, the chord or scale looked at last, the Capo helper's key and fret)
+- ☑ docs/store-listing.md updated: the tools that go live among the strong points, and a tool or two in the screenshot plan (the owner picks) (owner, 2026-10-17: Practice and the tuner's listening tools among the strong points and in the full description; screenshot 5 becomes the chord name, 7 Chords and the Capo helper as a two-phone picture in Ancient, 8 the pitch trail in focus mode; the strum check and style cards shots dropped; the watch line out, since it follows in an update)
 
 ---
 
