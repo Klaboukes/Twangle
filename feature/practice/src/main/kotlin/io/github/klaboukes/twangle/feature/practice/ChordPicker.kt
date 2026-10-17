@@ -249,7 +249,7 @@ private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, 
         ) {
             val style = MaterialTheme.typography.labelLarge
             Text(
-                musicText(text),
+                musicText(breakableAtHyphens(text)),
                 style = style.copy(
                     textAlign = TextAlign.Center,
                     // Two lines take the size the text is set at, so they fit the face as it shrinks.
@@ -261,7 +261,9 @@ private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, 
                 autoSize = if (lines > 1) {
                     WholeWordsAutoSize
                 } else {
-                    TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
+                    // The largest size that fits: below MIN_LABEL_SIZE only where the label would otherwise be cut
+                    // off (Classic's La♭maj7 at 2× text on a 320 dp phone fits at 7.5 sp).
+                    TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
                 },
             )
         }
@@ -296,7 +298,8 @@ private object WholeWordsAutoSize : TextAutoSize {
     private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean =
         (0 until layout.lineCount - 1).all { line ->
             val end = layout.getLineEnd(line)
-            end <= 0 || end >= text.length || text[end - 1].isWhitespace() || text[end - 1] == '-' || text[end].isWhitespace() ||
+            end <= 0 || end >= text.length || text[end - 1].isWhitespace() || text[end - 1] == '-' || text[end - 1] == ZERO_WIDTH_SPACE ||
+                text[end].isWhitespace() ||
                 (text[end - 1].breaksAnywhere() && text[end].breaksAnywhere())
         }
 
@@ -308,6 +311,17 @@ private object WholeWordsAutoSize : TextAutoSize {
     override fun equals(other: Any?): Boolean = other === this
     override fun hashCode(): Int = System.identityHashCode(this)
 }
+
+/**
+ * [text] with a line break allowed after each hyphen between two letters (a zero-width space). Android
+ * breaks a compound such as "majeur-pentatonisch" at its hyphen only when hyphenation is on, which
+ * it isn't, so a long one (Dutch "A♭ majeur-pentatonisch" at 2× text in Futuristic) was broken in
+ * the middle of a word instead.
+ */
+internal fun breakableAtHyphens(text: String): String = text.replace(HYPHEN_BETWEEN_LETTERS, "-$ZERO_WIDTH_SPACE")
+
+private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=\\p{L})-(?=\\p{L})")
+private const val ZERO_WIDTH_SPACE = '\u200B'
 
 /** A see-through button's backing; picked ones in the container colour (Futuristic: a faint accent). */
 @Composable
@@ -345,6 +359,7 @@ private val BUTTON_HEIGHT = 40.dp
 private val TOUCH_HEIGHT = 48.dp
 private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp
+private val LAST_RESORT_LABEL_SIZE = 6.sp
 private const val LABEL_STEP = 0.5f
 private val TWO_LINE_HEIGHT = 1.15.em
 private val TWO_LINE_MARGIN = 3.dp

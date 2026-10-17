@@ -180,7 +180,7 @@ fun ChordsScreen(
     }
     val title = @Composable {
         Text(
-            musicText(if (scales) scaleWords(scale, notation) else chordWords(chord, notation)),
+            musicText(breakableAtHyphens(if (scales) scaleWords(scale, notation) else chordWords(chord, notation))),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,

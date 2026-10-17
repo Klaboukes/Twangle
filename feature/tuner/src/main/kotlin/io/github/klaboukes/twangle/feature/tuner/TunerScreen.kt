@@ -963,28 +963,33 @@ private fun CompactRow(
     note: @Composable () -> Unit,
     below: @Composable () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterHorizontally),
-    ) {
-        if (error != null) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
-                TunerErrorMessage(error, onRetry)
-            }
-        } else {
-            // The note column is measured first; the meter takes all the room that is left.
-            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
-            }
-            Column(
-                // With a very large system font the note column can be taller than the screen; then it scrolls.
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
-            ) {
-                note()
-                below()
+    BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+        // The note column never takes the meter's last GAUGE_MIN_WIDTH: long lines in a wide face at 2× text
+        // (Space Age's 12th-fret check in Dutch) would otherwise leave the meter no width at all.
+        val noteMaxWidth = (maxWidth - SECTION_SPACING - GAUGE_MIN_WIDTH).coerceAtLeast(0.dp)
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SECTION_SPACING, Alignment.CenterHorizontally),
+        ) {
+            if (error != null) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
+                    TunerErrorMessage(error, onRetry)
+                }
+            } else {
+                // The note column is measured first; the meter takes all the room that is left.
+                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
+                }
+                Column(
+                    // With a very large system font the note column can be taller than the screen; then it scrolls.
+                    modifier = Modifier.widthIn(max = noteMaxWidth).verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
+                ) {
+                    note()
+                    below()
+                }
             }
         }
     }

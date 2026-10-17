@@ -49,6 +49,7 @@ import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.shippedLanguages
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -83,7 +84,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)).around(compose)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext

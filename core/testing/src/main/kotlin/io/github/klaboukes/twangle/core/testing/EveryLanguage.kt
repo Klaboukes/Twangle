@@ -2,11 +2,14 @@ package io.github.klaboukes.twangle.core.testing
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.layout.LayoutInfo
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.io.FileOutputStream
@@ -29,19 +32,23 @@ val isEveryLanguageRun: Boolean
     get() = InstrumentationRegistry.getArguments().getString("everyLanguage") == "true"
 
 /**
- * Every text on screen that TalkBack can find is, scrolled to in turn, wholly shown ([assertWhollyShown]):
+ * Every text on screen that TalkBack can find (placed, not only measured) is, scrolled to in turn, wholly shown ([assertWhollyShown]):
  * no letter cut off, no line lost, no ellipsis. [case] names the screen in a failure, and a picture
  * of the screen goes to the run's extra output (`scripts/ui-tests.sh` copies it to the module's
  * `build/outputs/connected_android_test_additional_output`).
  */
 fun SemanticsNodeInteractionsProvider.assertEveryTextWhollyShown(case: String) {
     val hasText = SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)
-    val count = onAllNodes(hasText, useUnmergedTree = true).fetchSemanticsNodes().size
-    if (count == 0) throw AssertionError("$case: no text on screen")
-    for (index in 0 until count) {
-        val node = onAllNodes(hasText, useUnmergedTree = true)[index]
-        val text = node.fetchSemanticsNode().config[SemanticsProperties.Text].joinToString(" ")
-        if (text.isBlank()) continue
+    fun count() = onAllNodes(hasText, useUnmergedTree = true).fetchSemanticsNodes().size
+    if (count() == 0) throw AssertionError("$case: no text on screen")
+    // Counted again each time: a text may go meanwhile (the compact layout's tap hint fades out after a few seconds).
+    var index = 0
+    while (index < count()) {
+        val node = onAllNodes(hasText, useUnmergedTree = true)[index++]
+        val semantics = node.fetchSemanticsNode()
+        val text = semantics.config[SemanticsProperties.Text].joinToString(" ")
+        // A text only measured, never placed (a line keeping the room of its longest wording), is not on screen.
+        if (text.isBlank() || !semantics.layoutInfo.isPlacedInTree()) continue
         try {
             assertWhollyShown(node, "$case \"$text\"")
         } catch (e: AssertionError) {
@@ -50,6 +57,42 @@ fun SemanticsNodeInteractionsProvider.assertEveryTextWhollyShown(case: String) {
         }
     }
 }
+
+/**
+ * No text on screen breaks a word across two lines ("Majeur-pentatonisc / h"): every line but the
+ * last ends at a space, a hyphen or a zero-width space, or between two Chinese or Japanese
+ * characters, which may break anywhere. [case] names the screen in a failure.
+ */
+fun SemanticsNodeInteractionsProvider.assertNoWordBroken(case: String) {
+    val hasLayout = SemanticsMatcher.keyIsDefined(SemanticsActions.GetTextLayoutResult)
+    for (node in onAllNodes(hasLayout, useUnmergedTree = true).fetchSemanticsNodes()) {
+        if (!node.layoutInfo.isPlacedInTree()) continue
+        val layouts = mutableListOf<TextLayoutResult>()
+        node.config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        for (layout in layouts) {
+            val text = layout.layoutInput.text
+            for (line in 0 until layout.lineCount - 1) {
+                val end = layout.getLineEnd(line)
+                if (end <= 0 || end >= text.length) continue
+                val before = text[end - 1]
+                val after = text[end]
+                if (before.isLetterOrDigit() && after.isLetterOrDigit() && !(before.breaksAnywhere() && after.breaksAnywhere())) {
+                    saveScreen(case)
+                    throw AssertionError("$case \"$text\" is broken inside a word: \"${text.substring(0, end)}\", line ${line + 1}")
+                }
+            }
+        }
+    }
+}
+
+/** Chinese and Japanese, written without spaces, may break between any two characters. */
+private fun Char.breaksAnywhere(): Boolean = when (Character.UnicodeScript.of(code)) {
+    Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA -> true
+    else -> this == 'ー'
+}
+
+/** Placed, and so is every layout around it: an unplaced parent leaves its content off the screen. */
+private fun LayoutInfo.isPlacedInTree(): Boolean = isPlaced && (parentInfo?.isPlacedInTree() ?: true)
 
 /** A picture of the first window, named after [case], in the run's extra output, if it has one. */
 private fun SemanticsNodeInteractionsProvider.saveScreen(case: String) {

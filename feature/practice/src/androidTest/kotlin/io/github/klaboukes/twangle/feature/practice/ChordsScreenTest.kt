@@ -42,6 +42,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
+import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.shippedLanguages
@@ -265,6 +266,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
+                compose.assertNoWordBroken("$style $language $size at 2x:")
             }
         }
     }
