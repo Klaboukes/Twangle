@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22, 24–30 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–30, 32 and 35 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -20,6 +20,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 20: when you have a Wear OS watch, install Twangle on it and tune a real guitar with it: the note and cents follow the string, the ring glows softly when a string is in tune, and when the watch screen goes dark (or dims to always-on) the microphone icon disappears (postponed 2026-10-16: the owner has no Wear OS watch yet, and the watch app follows in an update, decision 3)
 - ☐ Phase 29: with a real guitar (a debug build), turn on the 12th-fret check from the hammer-and-screwdriver button above the strings and check every string: tune it, play it open, then pressed at the 12th fret; check each verdict (fine, or move the saddle back / forward, about how many mm) matches what a guitar shop would say
 - ☐ Phase 30: with a real guitar (a debug build), pick "Chord name" from the hammer-and-screwdriver button above the strings and strum a dozen chords you know, open and barre (for example E, A, D, G, C, Am, Em, Dm, E7, G7, Cmaj7, Am7, Dsus4, F and Bm as barre chords, and C with E in the bass): each shows its right name about a second after the strum and stays while it rings, the name doesn't flicker, and a muddled strum says "Not a clear chord" instead of a wrong name
+- ☐ Phase 32: with a real guitar (a debug build), open Practice and pick Chords at the top. In standard tuning look up a dozen chords you know (for example C, G, D, A, E, Am, Em, Dm, F, B7, Cmaj7, Dsus4) and play the first shape of each, then step through a few others with ‹ ›: each is comfortable to hold and sounds the chord named, and the notes under the chart are the ones you play. Switch to Scales and play A minor pentatonic, G major and E blues along the neck: every dot is a note of the scale and the root dots are where you expect. Then pick a tuning of your own (or DADGAD) in the Instrument item and look up a few chords and a scale again: the shapes and the neck follow that tuning
 
 ---
 
@@ -39,16 +40,6 @@ Goal: a line that draws the note over the last few seconds, so a held note, a be
 - ☐ Rough mock-up of the trail in two or three styles for the owner to pick from
 - ☐ The mode inside the tuner behind its switch (Phase 28), in every style, light and dark; TalkBack describes it in words; JVM and UI tests; frame times measured on the phone, like the meter looks (`scripts/meter-frames.sh`)
 - ☐ Owner check added: hold a note, bend a string and play vibrato, and check the line shows it clearly
-
-## Phase 32 — Practice tab with chord and scale charts
-Goal: finger diagrams for the chosen instrument and tuning, own tunings included (a DADGAD player sees DADGAD shapes), and scales on a fretboard; no microphone needed. The Metronome tab becomes Practice.
-- ☑ Rough mock-up of the Practice tab, a chord chart and a scale on the fretboard, for the owner to pick from (`docs/design/practice-preview.html`; owner picked A, D, G, I on 2026-10-16: a segmented switch like the tuner's, an upright chord box with fingers in the dots, one shape at a time, the whole neck with note names; design in docs/architecture/ui-other-screens.md, *Practice tab*)
-- ☑ The Metronome tab becomes Practice behind its switch (Phase 28): the bar reads Tuner · Instrument · Practice · Settings, a small switch at the top picks the tool, and it opens on the tool used last (saved); with the switch off it stays the Metronome tab as now (`:feature:practice`; Metronome · Chords, the Chords side a placeholder until the next item)
-- ☑ `:core:dsp`: playable chord shapes for any instrument and tuning (within a comfortable fret span, open strings where they fit), and scales (major, minor, pentatonic, blues) on any tuning; pure and tested (`ChordShapeFinder.shapesOf`, `ScaleFinder.notesOf`; the first shape is the chord books' first for every common chord in standard tuning, ukulele and mandolin; every chord on every preset checked)
-- ☑ Chords: pick a root and a chord type, see one or more finger diagrams; TalkBack reads a shape in words (string by string, fret and finger) (`ChordsScreen`: twelve roots and seven types in the player's note names, the upright chart with fingers in the dots, ‹ 1 of 6 › and a swipe, following the Instrument item's tuning, own tunings included; root and type saved; translated into all 16 languages, fits at 2× text and on its side; scales come as a Chords · Scales choice inside the tool)
-- ☑ Scales: pick a root and a scale, see it on a fretboard; TalkBack reads it in words (a Chords · Scales choice inside the Chords tool, the root shared; five scales; the whole neck 0–12 sideways as the mock-up, every note named, the root in the accent, upright only where that is clearly bigger such as a tablet; the instrument's tuning, own tunings included; choice and scale saved; read string by string; translated into all 16 languages, fits at 2× text and on its side)
-- ☐ Every text translated, 2× text, every style light and dark; JVM and UI tests; phone check
-- ☐ Owner check added: look up chords and scales in standard tuning and in a tuning of your own, and play them
 
 ## Phase 33 — Capo helper
 Goal: "the song is in E♭, where does the capo go to play G shapes?", and which shapes sound which chord with the capo on. Needs Phase 32.

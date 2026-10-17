@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 32 on 2026-10-17; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -38,6 +38,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 29 — Intonation check](#phase-29--intonation-check)
 - [Phase 30 — What chord is this?](#phase-30--what-chord-is-this)
 - [Phase 35 — An easier-to-find "more tools" button](#phase-35--an-easier-to-find-more-tools-button)
+- [Phase 32 — Practice tab with chord and scale charts](#phase-32--practice-tab-with-chord-and-scale-charts)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -341,6 +342,16 @@ Goal: players notice that the tuner has more tools. The small ^ above the string
 - ☑ Rough mock-up for the owner to pick from (docs/design/more-tools-preview.html): owner picked (2026-10-16, round 2) the hammer and screwdriver icon (Material Symbols `handyman`), icon only, no word
 - ☑ The `handyman` icon in place of ^, same 44 dp button, in every style, light and dark, upright and on its side, 2× text, TalkBack (still "More tools"); the tour's step points at it; UI tests; phone check (24 dp glyph in the 44 dp button; off and on, light and dark, and the menu checked on the Xiaomi)
 - ☑ docs/architecture/ui-tuner.md (*More tools*) updated
+
+## Phase 32 — Practice tab with chord and scale charts
+Goal: finger diagrams for the chosen instrument and tuning, own tunings included (a DADGAD player sees DADGAD shapes), and scales on a fretboard; no microphone needed. The Metronome tab becomes Practice.
+- ☑ Rough mock-up of the Practice tab, a chord chart and a scale on the fretboard, for the owner to pick from (`docs/design/practice-preview.html`; owner picked A, D, G, I on 2026-10-16: a segmented switch like the tuner's, an upright chord box with fingers in the dots, one shape at a time, the whole neck with note names; design in docs/architecture/ui-other-screens.md, *Practice tab*)
+- ☑ The Metronome tab becomes Practice behind its switch (Phase 28): the bar reads Tuner · Instrument · Practice · Settings, a small switch at the top picks the tool, and it opens on the tool used last (saved); with the switch off it stays the Metronome tab as now (`:feature:practice`; Metronome · Chords, the Chords side a placeholder until the next item)
+- ☑ `:core:dsp`: playable chord shapes for any instrument and tuning (within a comfortable fret span, open strings where they fit), and scales (major, minor, pentatonic, blues) on any tuning; pure and tested (`ChordShapeFinder.shapesOf`, `ScaleFinder.notesOf`; the first shape is the chord books' first for every common chord in standard tuning, ukulele and mandolin; every chord on every preset checked)
+- ☑ Chords: pick a root and a chord type, see one or more finger diagrams; TalkBack reads a shape in words (string by string, fret and finger) (`ChordsScreen`: twelve roots and seven types in the player's note names, the upright chart with fingers in the dots, ‹ 1 of 6 › and a swipe, following the Instrument item's tuning, own tunings included; root and type saved; translated into all 16 languages, fits at 2× text and on its side; scales come as a Chords · Scales choice inside the tool)
+- ☑ Scales: pick a root and a scale, see it on a fretboard; TalkBack reads it in words (a Chords · Scales choice inside the Chords tool, the root shared; five scales; the whole neck 0–12 sideways as the mock-up, every note named, the root in the accent, upright only where that is clearly bigger such as a tablet; the instrument's tuning, own tunings included; choice and scale saved; read string by string; translated into all 16 languages, fits at 2× text and on its side)
+- ☑ Every text translated, 2× text, every style light and dark; JVM and UI tests; phone check (2026-10-17: every Practice, Chords and Scales text checked in all 16 languages, chord types, scale names and TalkBack phrases included; the real app on the Xiaomi in all six styles, light and dark, upright and on its side, Chords and Scales; two-line scale names kept 3 dp clear of their outline, which Classic's and Retro's letters touched; at 2× text on its side the scales' start half scrolls by about half a button row, accepted and explained in docs/architecture/ui-other-screens.md)
+- ☑ Owner check added: look up chords and scales in standard tuning and in a tuning of your own, and play them
 
 ---
 
