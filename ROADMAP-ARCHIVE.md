@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17, with the *Music tools* overview; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17, with the *Music tools* overview and the finished part of Phase 23; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -44,6 +44,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 36 — Focus mode](#phase-36--focus-mode)
 - [Phase 33 — Capo helper](#phase-33--capo-helper)
 - [Phase 34 — The tools go live in v1.0](#phase-34--the-tools-go-live-in-v10)
+- [Phase 23 — Release preparation, the finished part](#phase-23--release-preparation-the-finished-part)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -403,6 +404,17 @@ Goal: the finished tools reach users in v1.0. Comes after the other tool phases 
 - ☑ Their switches turn on for release, or the switch and its checks go altogether; `ReleaseToolSwitchesTest` and `ToolSwitchesOffTest` updated to match, and docs/architecture/performance.md (*Release build*) (2026-10-17: every switch is on in every build, `AppContainer.toolSwitches` = `ALL_ON`; the debug/release split went: `toolSwitchesFor`, `DebugToolSwitchesTest`, `ReleaseToolSwitchesTest`, the release builds' unit tests, `ToolSwitchesOffTest` and its rule, and the frame-time build's tools extra; `ToolSwitches` stays so a future tool can be hidden the same way)
 - ☑ Privacy policy checked for the new tools (they listen only like the tuner; new saved choices such as the Practice tool used last) in English and Dutch, and published with `scripts/publish-privacy.sh` (2026-10-17: the tuner's four tools listen only as part of the tuner screen, and Chords, Scales and the Capo helper never listen; the Metronome line became Practice: the tool used last, the chord or scale looked at last, the Capo helper's key and fret)
 - ☑ docs/store-listing.md updated: the tools that go live among the strong points, and a tool or two in the screenshot plan (the owner picks) (owner, 2026-10-17: Practice and the tuner's listening tools among the strong points and in the full description; screenshot 5 becomes the chord name, 7 Chords and the Capo helper as a two-phone picture in Ancient, 8 the pitch trail in focus mode; the strum check and style cards shots dropped; the watch line out, since it follows in an update)
+
+---
+
+## Phase 23 — Release preparation, the finished part
+Phase 23 was split on 2026-10-17: its open steps became Phase 37 (store-ready app), Phase 38 (store listing) and the Play Console steps that stay Phase 23 in [ROADMAP.md](ROADMAP.md). These were done before the split.
+- ☑ The look is final: run `scripts/ui-tests.sh --all --thorough`, fix what it finds, and make those double checks part of every run again (every style, and the `@Thorough` tests; until then a normal run leaves them out so restyling stays quick) (2026-10-16: `--all --thorough` passed after the fixes above; the double checks run in every overnight run; owner, 2026-10-16: normal work keeps the quick runs, so they are not part of every run)
+- ☑ Style backgrounds reworked to abstract patterns, picked by the owner from [docs/design/style-backgrounds-preview.html](docs/design/style-backgrounds-preview.html): Ancient rock layers, Retro supergraphic, Contemporary silk lines, Futuristic glowing grid fading away (no horizon line), Space Age halftone; Classic unchanged
+- ☑ Ancient's lettering calmer: Forum (antique Roman letters, with Polish, Turkish and Russian) instead of Caesar Dressing, picked by the owner from [docs/design/ancient-font-preview.html](docs/design/ancient-font-preview.html)
+- ☑ Privacy policy brought up to date (every stored setting: instrument, own tunings, metronome, app language, landscape layout; the tour instead of the string-lock tip; the remembered microphone refusal, on the phone and in the watch's own small file, so "stores no settings" no longer holds for the watch; the wave's "when in tune" choice is gone; also the metronome's Listen and the widget) in English and Dutch, and published at a public URL (**decision 5**, owner 2026-10-16: a small separate public repo just for the policy, the code stays private until after release): https://klaboukes.github.io/twangle-privacy/, kept up to date with `scripts/publish-privacy.sh`
+- ☑ The contact email (owner, **decision 5**: twangle.tuner@proton.me) in the policy's *Contact* section (English and Dutch, then `scripts/publish-privacy.sh`)
+- ☑ Watch app as decided (**decision 3**): if it launches now, a real-watch check, the Wear OS form factor opted in, Wear screenshots and its own track; otherwise it follows in an update (owner, 2026-10-16: it follows in an update after v1.0; v1.0 ships the phone app only)
 
 ---
 

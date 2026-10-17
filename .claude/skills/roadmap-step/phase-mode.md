@@ -2,7 +2,7 @@
 
 Finish every remaining ☐ item of phase N in this session. This session is the orchestrator: it does pre-flight (SKILL.md step 0), the announcements, progress notes and the final report. Each increment's real work runs in a fresh sub-agent, so code dumps and build logs never fill this session.
 
-1. **Check earlier phases first.** If a phase before N still has ☐ items (*Owner checks* don't count), name them in plain language. Ask whether to finish those first or start phase N anyway, and wait for the answer. Exceptions, chosen by the owner (2026-10-16): among the music tools (Phases 31–33 and 35) the owner picks the order, so only Phase 28 (the switches) and, for Phase 33, Phase 32 count as earlier; Phase 34 (the tools go live) waits for the other tool phases. Phase 23 (v1.0 on Play) is listed last, but its steps that don't show or ship the app (developer account, Play Console forms, store graphics, the rate row) may be done any time.
+1. **Check earlier phases first.** If a phase before N still has ☐ items (*Owner checks* don't count), name them in plain language. Ask whether to finish those first or start phase N anyway, and wait for the answer. Exception: Phase 23 (v1.0 on Play, the owner's Play Console steps) is listed after Phases 37 and 38, but its steps that don't need their results (developer account, Play Console forms) may be done any time.
 2. **Announce the whole phase once.** List the remaining items in plain language, grouped into the planned increments, plus anything the owner must do along the way (e.g. "keep the phone connected for the last two").
 3. **For each increment, one after another:**
    - Post the SKILL.md step-2 announcement.
