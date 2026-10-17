@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22 and 24–36 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phases 37 and 38 (Claude), then Phase 23 (the owner, in the Play Console). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22 and 24–37 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 38 (Claude), then Phase 23 (the owner, in the Play Console). Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -21,11 +21,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 36: with auto-rotate off and the phone upright, turn on Settings → Focus mode: the whole app turns on its side by itself. Play a string and read the big meter from a few steps away; the tabs and the Instrument item stay at the side. Switch to another tab and back: the screen doesn't turn. Turn the phone the other way round: the app follows. Then switch Focus mode off: the app turns back upright and stays upright
 
 ---
-
-## Phase 37 — Store-ready app
-Goal: the build that goes to Play is final. Claude can do this alone.
-- ☐ Baseline Profile regenerated now that the look is final and the tools are live (`./gradlew :app:generateBaselineProfile`; the current one predates the metronome and the navigation bar), with the metronome (or Practice), settings and the live tools' screens added to the generator
-- ☑ A calm "Rate Twangle" row in About that opens the Play page (no rating pop-up), in every language (the Play Store app, else the browser; no Play library, no internet permission)
 
 ## Phase 38 — Store listing
 Goal: everything Play shows about Twangle is ready to upload: texts, screenshots and graphics, in every language. Claude builds it; the owner picks where the plan offers a choice.

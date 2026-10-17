@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33 and 34 on 2026-10-17, with the *Music tools* overview and the finished part of Phase 23; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33, 34 and 37 on 2026-10-17, with the *Music tools* overview and the finished part of Phase 23; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -45,6 +45,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 33 — Capo helper](#phase-33--capo-helper)
 - [Phase 34 — The tools go live in v1.0](#phase-34--the-tools-go-live-in-v10)
 - [Phase 23 — Release preparation, the finished part](#phase-23--release-preparation-the-finished-part)
+- [Phase 37 — Store-ready app](#phase-37--store-ready-app)
 - [Finished owner items](#finished-owner-items)
 
 ---
@@ -415,6 +416,13 @@ Phase 23 was split on 2026-10-17: its open steps became Phase 37 (store-ready ap
 - ☑ Privacy policy brought up to date (every stored setting: instrument, own tunings, metronome, app language, landscape layout; the tour instead of the string-lock tip; the remembered microphone refusal, on the phone and in the watch's own small file, so "stores no settings" no longer holds for the watch; the wave's "when in tune" choice is gone; also the metronome's Listen and the widget) in English and Dutch, and published at a public URL (**decision 5**, owner 2026-10-16: a small separate public repo just for the policy, the code stays private until after release): https://klaboukes.github.io/twangle-privacy/, kept up to date with `scripts/publish-privacy.sh`
 - ☑ The contact email (owner, **decision 5**: twangle.tuner@proton.me) in the policy's *Contact* section (English and Dutch, then `scripts/publish-privacy.sh`)
 - ☑ Watch app as decided (**decision 3**): if it launches now, a real-watch check, the Wear OS form factor opted in, Wear screenshots and its own track; otherwise it follows in an update (owner, 2026-10-16: it follows in an update after v1.0; v1.0 ships the phone app only)
+
+---
+
+## Phase 37 — Store-ready app
+Goal: the build that goes to Play is final. Claude can do this alone.
+- ☑ Baseline Profile regenerated now that the look is final and the tools are live (`./gradlew :app:generateBaselineProfile`; the current one predates the metronome and the navigation bar), with the metronome (or Practice), settings and the live tools' screens added to the generator (2026-10-17: four journeys, startup, the tuner and its four tools, Practice with the metronome, Chords and the Capo helper, settings and About; 14 min on the Xiaomi 12X, all passed)
+- ☑ A calm "Rate Twangle" row in About that opens the Play page (no rating pop-up), in every language (the Play Store app, else the browser; no Play library, no internet permission)
 
 ---
 

@@ -422,6 +422,7 @@ private fun SettingsGroups(
                 title = stringResource(R.string.about_title),
                 summary = stringResource(R.string.settings_about_link_summary, appVersion),
                 onClick = onOpenAbout,
+                modifier = Modifier.testTag(ABOUT_LINK_TAG),
             )
         }
     }
@@ -461,6 +462,9 @@ private val GROUP_GAP = 32.dp
 
 /** Test tag of the "Show me around" row, which starts the first-start tour again. */
 const val SHOW_TOUR_TAG = "settings_show_tour"
+
+/** Test tag of the row that opens the About page (the Baseline Profile generator opens it). */
+const val ABOUT_LINK_TAG = "settings_about"
 
 /** Rows and headings keep this far from the column's edges. */
 private val ROW_INSET = 16.dp
