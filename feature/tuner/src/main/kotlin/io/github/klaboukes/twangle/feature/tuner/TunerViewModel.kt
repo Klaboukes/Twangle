@@ -11,6 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
@@ -133,6 +134,15 @@ class TunerViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings().showSignalBars)
 
     private val signal = MutableStateFlow<SignalFigures?>(null)
+
+    private val trailFeed = PitchTrailFeed(PitchHistory())
+
+    /**
+     * The last few seconds of the tuner's readings, for the pitch trail (Phase 31): written on the
+     * DSP thread with every reading while [tools] has the pitch trail, read in the draw phase
+     * without recomposing (see [PitchHistory]). Stays empty while the switch is off.
+     */
+    val pitchHistory: PitchHistory get() = trailFeed.history
 
     /**
      * What the tuner hears now, for the signal bars' figures: updated about [SIGNAL_UPDATES_PER_SECOND]
@@ -476,6 +486,8 @@ class TunerViewModel(
         var ignoredFrames = 0
         // Whether the last reading was a tool's (strum check, 12th-fret check, chord name): the tuner's smoothing starts afresh after it.
         var elsewhere = false
+        val frameSeconds = pipeline.frameSeconds
+        if (tools.pitchTrail) trailFeed.start()
         emitAll(
             pipeline.listen(
                 // The window follows the tuning's lowest string (bass notes need the longer one).
@@ -516,6 +528,10 @@ class TunerViewModel(
                     interpreter = TunerInterpreter(pipeline.frameSeconds)
                 }
                 if (tonePlayer.isPlaying.value) ignoredFrames = tailFrames + 1
+                // The pitch trail follows the tuner's own readings; a tone or a tool leaves a gap in its line.
+                if (tools.pitchTrail && (ignoredFrames > 0 || current.strumChecking || current.chordNaming || current.intonationChecking)) {
+                    trailFeed.gap(frameSeconds)
+                }
                 if (ignoredFrames > 0) {
                     // The mic would hear the app's own tone: show the listening state instead, and
                     // start the smoothing afresh afterwards so nothing of the tone carries over.
@@ -535,6 +551,7 @@ class TunerViewModel(
                     return@map intonationInterpreter.interpret(reading, current)
                 }
                 val state = interpreter.interpret(reading, current)
+                if (tools.pitchTrail) trailFeed.record(state, frameSeconds)
                 if (showSignalBars.value && frame++ % framesPerFigure == 0) {
                     val reception = interpreter.reception
                     signal.value = SignalFigures(

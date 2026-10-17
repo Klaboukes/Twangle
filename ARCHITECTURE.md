@@ -16,7 +16,7 @@ In this file:
 Topic files:
 - §3 Signal pipeline:
   - **[Signal pipeline](docs/architecture/signal-pipeline.md)**: Pipeline · Key numbers · Other sample rates · Frame assembly · Low notes · Signal gate · Sustain check (ticks and clicks) · Noise floor, SNR and clarity · Reception · Tips · Signal bars (optional) · Pitch detection (YIN) · Smoothing · Edge cases (measured, EdgeCaseTest)
-  - **[Notes, tunings and audio](docs/architecture/notes-and-audio.md)**: Note math · Tunings · Instruments · Chord shapes and scales · Intonation check · Strobe model · Audio source selection · Audio capture · Reference tone
+  - **[Notes, tunings and audio](docs/architecture/notes-and-audio.md)**: Note math · Tunings · Instruments · Chord shapes and scales · Intonation check · Strobe model · Pitch history · Audio source selection · Audio capture · Reference tone
   - **[Strum check and metronome](docs/architecture/strum-and-metronome.md)**: Strum check (polyphonic) · Chord naming · Metronome · Tempo from music
 - §4 **[Threading and performance](docs/architecture/performance.md)**: Threads and the main thread · Measured on the Galaxy S26 · Low-note window on the Xiaomi 12X · Watch CPU and the native detector · Meter looks · Baseline Profile · Release build: shrinking and signing
 - §5 **[Lifecycle, permissions and settings](docs/architecture/lifecycle.md)**: Microphone, permission and lifetime · Settings · Saved settings · Custom tunings
@@ -113,6 +113,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector
     strobe/     StrobeMotion
+    trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      PluckSynth (reference tone samples)
     metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent), TapTempo (+ TempoMarking),
                 TempoDetector (+ TempoStatus), OnsetTempoDetector (tempo from music)
