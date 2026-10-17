@@ -281,10 +281,10 @@ private fun SpeakerMark(color: Color, mirrored: Boolean) {
 private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f * blue
 
 /**
- * Draws [content] in a fresh activity of its own and returns the [CANVAS_WIDTH] × [CANVAS_HEIGHT]
- * pixels it drew, read back from the window as the screen shows them (PixelCopy).
+ * Draws [content] in a fresh activity of its own and returns the [width] × [height] pixels it drew
+ * (by default a screenshot's canvas), read back from the window as the screen shows them (PixelCopy).
  */
-fun renderCanvas(content: @Composable () -> Unit): Bitmap {
+fun renderCanvas(width: Int = CANVAS_WIDTH, height: Int = CANVAS_HEIGHT, content: @Composable () -> Unit): Bitmap {
     ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
         val placed = CountDownLatch(1)
         var origin = Offset.Zero
@@ -296,13 +296,13 @@ fun renderCanvas(content: @Composable () -> Unit): Bitmap {
         check(placed.await(WAIT_SECONDS, TimeUnit.SECONDS)) { "the store canvas was never laid out" }
         // Fonts, the backdrop's offscreen layer and the screen pictures settle in a few frames.
         Thread.sleep(SETTLE_MS)
-        val bitmap = Bitmap.createBitmap(CANVAS_WIDTH, CANVAS_HEIGHT, Bitmap.Config.ARGB_8888)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         var result = -1
         val copied = CountDownLatch(1)
         scenario.onActivity { activity ->
             val x = origin.x.toInt()
             val y = origin.y.toInt()
-            PixelCopy.request(activity.window, Rect(x, y, x + CANVAS_WIDTH, y + CANVAS_HEIGHT), bitmap, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
+            PixelCopy.request(activity.window, Rect(x, y, x + width, y + height), bitmap, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
         }
         check(copied.await(WAIT_SECONDS, TimeUnit.SECONDS) && result == PixelCopy.SUCCESS) { "could not read the store canvas back ($result)" }
         return bitmap
@@ -312,7 +312,7 @@ fun renderCanvas(content: @Composable () -> Unit): Bitmap {
 /** Play's portrait screenshot, 9:16 (docs/store-listing.md, *Phone screenshots*). */
 const val CANVAS_WIDTH = 1080
 const val CANVAS_HEIGHT = 1920
-private const val CANVAS_WIDTH_DP = 400f
+const val CANVAS_WIDTH_DP = 400f
 
 private val CAPTION_HEIGHT = 170.dp
 private val CAPTION_HEIGHT_OVER_BUBBLE = 128.dp

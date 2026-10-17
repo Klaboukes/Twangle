@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.nio.ByteBuffer
 import java.util.Properties
 
 /**
@@ -14,7 +15,9 @@ import java.util.Properties
  * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md). Each
  * folder also has the eight captions of the phone screenshots (`screenshot_captions.txt`, one a line,
  * in the order of the plan), which the store-screenshot test draws above each screen: short, and
- * without those words either, since Google bans them in screenshots too.
+ * without those words either, since Google bans them in screenshots too. The icon and the feature
+ * graphic, one pair for every language (`en-US/images/`, made by `scripts/store-graphics.sh`), have
+ * Play's exact sizes and formats.
  */
 class StoreListingTest {
 
@@ -124,6 +127,39 @@ class StoreListingTest {
         }
     }
 
+    @Test
+    fun `the icon and the feature graphic have Play's sizes and formats`() {
+        PICTURES.forEach { picture ->
+            val file = File(listings, "$PICTURE_FOLDER/${picture.name}")
+            val where = file.relativeTo(root).invariantSeparatorsPath
+            assertTrue("$where is missing: make it with scripts/store-graphics.sh", file.isFile)
+            assertTrue("$where is ${file.length()} bytes, Play takes at most ${picture.maxBytes}", file.length() <= picture.maxBytes)
+            val png = Png.read(file)
+            assertEquals("$where must be ${picture.width} × ${picture.height} pixels", picture.width to picture.height, png.width to png.height)
+            assertEquals("$where must have 8 bits a channel", 8, png.bitDepth)
+            assertEquals("$where must be ${picture.format}", picture.colorType, png.colorType)
+        }
+    }
+
+    /** The size and pixel format from a PNG file's header (its IHDR chunk). */
+    private data class Png(val width: Int, val height: Int, val bitDepth: Int, val colorType: Int) {
+        companion object {
+            private val SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+
+            fun read(file: File): Png {
+                val head = file.inputStream().use { it.readNBytes(IHDR_END) }
+                val isPng = head.size == IHDR_END && head.copyOf(SIGNATURE.size).contentEquals(SIGNATURE) &&
+                    String(head, 12, 4, Charsets.US_ASCII) == "IHDR"
+                assertTrue("${file.name} is not a PNG", isPng)
+                val buffer = ByteBuffer.wrap(head)
+                return Png(width = buffer.getInt(16), height = buffer.getInt(20), bitDepth = head[24].toInt(), colorType = head[25].toInt())
+            }
+
+            /** The signature, the IHDR chunk's length and type, then width, height, bit depth and colour type. */
+            private const val IHDR_END = 26
+        }
+    }
+
     /** The file's text as it is pasted into the Play Console: line endings as \n, no trailing newline. */
     private fun text(folder: String, name: String): String? =
         File(listings, "$folder/$name").takeIf { it.isFile }?.readText()?.replace("\r\n", "\n")?.trimEnd()
@@ -138,6 +174,21 @@ class StoreListingTest {
 
         /** At most this many characters, so a caption fits in three lines of large type above the screen. */
         const val CAPTION_LIMIT = 80
+
+        /** One icon and feature graphic for every language, in the default listing's folder. */
+        const val PICTURE_FOLDER = "en-US/images"
+
+        /** A PNG's colour types: red, green and blue (24-bit), and with alpha (32-bit). */
+        const val RGB = 2
+        const val RGBA = 6
+
+        class Picture(val name: String, val width: Int, val height: Int, val colorType: Int, val format: String, val maxBytes: Long)
+
+        /** Play's rules: the icon a 32-bit PNG up to 1 MB, the feature graphic a 24-bit PNG (no alpha) up to 15 MB. */
+        val PICTURES = listOf(
+            Picture("icon.png", 512, 512, RGBA, "a 32-bit PNG (with alpha)", 1L shl 20),
+            Picture("featureGraphic.png", 1024, 500, RGB, "a 24-bit PNG (without alpha)", 15L shl 20),
+        )
 
         val BANNED_IN_TITLE = listOf("""\bfree\b""", """\bno ads\b""", """\bbest\b""", """#1\b""")
             .map { Regex(it, RegexOption.IGNORE_CASE) }
