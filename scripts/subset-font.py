@@ -3,11 +3,15 @@
 Made core/designsystem/src/main/res/font/music_signs.ttf from Noto Sans Symbols (SIL OFL 1.1), as
 found in Android's /system/fonts/NotoSansSymbols-Regular-Subsetted.ttf:
 
-    python scripts/subset-font.py NotoSansSymbols-Regular-Subsetted.ttf music_signs.ttf 2669,266A,266D,266E,266F 1300 500
+    python scripts/subset-font.py NotoSansSymbols-Regular-Subsetted.ttf music_signs.ttf 2669,266A,266D,266E,266F 1300 500 "Twangle Music Signs"
 
-The optional last two numbers set the line ascent and descent (font units; hhea and OS/2 typo/win
+The optional numbers set the line ascent and descent (font units; hhea and OS/2 typo/win
 metrics). Noto's own (2189/600) are taller than most letter faces, so a sign would make a line
 taller than its letters; 1300/500 just covers these glyphs (-477..1209).
+
+The optional last argument renames the font (family, full, unique and PostScript names) and drops
+the source's trademark line. A cut is a Modified Version under the OFL, and "Noto" is Google's
+trademark, so the cut carries its own name; the copyright and licence records stay.
 
 Drops layout tables (GSUB/GPOS/GDEF) and glyph names; keeps name and OS/2. Standard library only.
 """
@@ -85,8 +89,25 @@ sub += struct.pack('>%dH' % sc, *[s[2] for s in segs])
 sub += struct.pack('>%dH' % sc, *([0]*sc))
 sub = sub[:2] + struct.pack('>H', len(sub)) + sub[4:]
 cmap = struct.pack('>HH', 0, 2) + struct.pack('>HHI', 0, 3, 20) + struct.pack('>HHI', 3, 1, 20) + sub
+def renamed(name, family):
+    # name table format 0: drop the family (1), unique ID (3), full (4), PostScript (6), trademark (7)
+    # and typographic family (16, 17) records, add the new names for Windows (3/1, US English).
+    cnt, so = struct.unpack('>HH', name[2:6])
+    recs = []
+    for i in range(cnt):
+        pid, eid, lid, nid, ln, off = struct.unpack('>6H', name[6+12*i:18+12*i])
+        if nid not in (1, 3, 4, 6, 7, 16, 17): recs.append((pid, eid, lid, nid, name[so+off:so+off+ln]))
+    ps = family.replace(' ', '') + '-Regular'
+    for nid, text in ((1, family), (3, ps), (4, family), (6, ps)):
+        recs.append((3, 1, 0x409, nid, text.encode('utf-16-be')))
+    recs.sort(key=lambda r: r[:4])
+    so = 6 + 12*len(recs); hdr = struct.pack('>HHH', 0, len(recs), so); strs = b''
+    for pid, eid, lid, nid, b in recs:
+        hdr += struct.pack('>6H', pid, eid, lid, nid, len(b), len(strs)); strs += b
+    return hdr + strs
+name = renamed(tbl('name'), sys.argv[6]) if len(sys.argv) > 6 else tbl('name')
 out = {'OS/2': bytes(os2), 'cmap': cmap, 'glyf': glyf, 'head': bytes(head), 'hhea': bytes(hhea), 'hmtx': hmtx,
-       'loca': locab, 'maxp': bytes(maxp), 'name': tbl('name'), 'post': bytes(post)}
+       'loca': locab, 'maxp': bytes(maxp), 'name': name, 'post': bytes(post)}
 def csum(b):
     b += b'\0' * ((4 - len(b) % 4) % 4); return sum(struct.unpack('>%dI' % (len(b)//4), b)) & 0xFFFFFFFF
 tags = sorted(out); nt = len(tags)

@@ -24,15 +24,18 @@ private const val APACHE_ASSET = "licenses/Apache-2.0.txt"
 private const val PROTOBUF_ASSET = "licenses/BSD-3-Clause-protobuf.txt"
 
 /**
- * The bundled fonts, then the open-source libraries in the app. Besides AndroidX and Kotlin, these
- * ship inside it: Okio and a copy of Protocol Buffers with DataStore (the settings store), JSpecify
- * and Guava's ListenableFuture with AndroidX. A new library needs a credit here, and its licence
- * text in assets if it is not one of these.
+ * The bundled fonts, then the open-source libraries and icons in the app. Besides AndroidX and Kotlin,
+ * these ship inside it: kotlinx.serialization, JSpecify and Guava's ListenableFuture with AndroidX,
+ * Okio and a copy of Protocol Buffers with DataStore (the settings store), and Google's Material
+ * icons (copied into the app's drawables). A new library needs a credit here, and its licence text in
+ * assets if it is not one of these.
  */
 val credits: List<Credit> =
     bundledFontCredits.map { Credit(it.name, it.designer, OFL, it.licenceAsset) } + listOf(
         Credit("Jetpack Compose & AndroidX", "Google", APACHE, APACHE_ASSET),
         Credit("Kotlin & kotlinx.coroutines", "JetBrains", APACHE, APACHE_ASSET),
+        Credit("kotlinx.serialization", "JetBrains", APACHE, APACHE_ASSET),
+        Credit("Material Symbols", "Google", APACHE, APACHE_ASSET),
         Credit("Okio", "Square, Inc.", APACHE, APACHE_ASSET),
         Credit("Protocol Buffers", "Google Inc.", BSD_3, PROTOBUF_ASSET),
         Credit("JSpecify", "The JSpecify Authors", APACHE, APACHE_ASSET),

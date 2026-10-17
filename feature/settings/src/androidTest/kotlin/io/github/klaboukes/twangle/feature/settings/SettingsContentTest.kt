@@ -870,7 +870,7 @@ class SettingsContentTest {
     @Test
     fun everyFontAndLibraryIsCredited() {
         show(AppSettings(), about = true)
-        assertEquals(bundledFontCredits.size + 6, credits.size)
+        assertEquals(bundledFontCredits.size + 8, credits.size)
         bundledFontCredits.forEach { font ->
             compose.onNodeWithTag(creditTag(font.name)).performScrollTo().assertIsDisplayed()
             compose.onNodeWithText(font.name).assertIsDisplayed()
@@ -878,8 +878,9 @@ class SettingsContentTest {
         }
         compose.onNodeWithTag(creditTag("Jetpack Compose & AndroidX")).performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag(creditTag("Kotlin & kotlinx.coroutines")).performScrollTo().assertIsDisplayed()
-        compose.onAllNodesWithText("Google · Apache License 2.0").assertCountEquals(1)
-        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture").forEach {
+        // Compose & AndroidX and Material Symbols.
+        compose.onAllNodesWithText("Google · Apache License 2.0").assertCountEquals(2)
+        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture", "kotlinx.serialization", "Material Symbols").forEach {
             compose.onNodeWithTag(creditTag(it)).performScrollTo().assertIsDisplayed()
         }
         compose.onNodeWithText("Google Inc. · BSD 3-Clause License").assertIsDisplayed()

@@ -72,7 +72,7 @@ class CreditsTest {
 
     @Test
     fun theLibrariesShippedThroughDataStoreAndAndroidXAreCredited() {
-        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture").forEach { name ->
+        listOf("Okio", "Protocol Buffers", "JSpecify", "Guava: ListenableFuture", "kotlinx.serialization", "Material Symbols").forEach { name ->
             assertTrue("$name not credited", credits.any { it.name == name })
         }
     }
