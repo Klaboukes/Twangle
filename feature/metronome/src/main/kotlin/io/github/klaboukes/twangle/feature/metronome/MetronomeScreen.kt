@@ -373,7 +373,12 @@ fun MetronomeContent(
                 StartStopButton(playing || (listening && listen.wasPlaying), onToggle, resting = listening)
             }
             if (wide) {
-                Row(Modifier.fillMaxSize().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
+                // The halves 16 dp apart, as the other Practice tools: the meter buttons kept clear of the tool switch.
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                         if (header != null) {
                             Spacer(Modifier.height(HEADER_TOP))
@@ -383,18 +388,18 @@ fun MetronomeContent(
                             tempoDial(minOf(DIAL_WIDE, maxHeight, dialFittingHeight(maxHeight), dialFitting(maxWidth)))
                         }
                     }
-                    Column(
+                    FitColumn(
+                        height = height - 16.dp,
                         modifier = Modifier
                             .weight(1f)
                             .verticalScroll(rememberScrollState())
-                            .heightIn(min = height)
                             .padding(vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
                     ) {
+                        Spacer(Modifier.gap(1f))
                         MeterPicker(meter, onMeterChange)
                         Spacer(Modifier.height(4.dp))
-                        lights(LIGHTS_HEIGHT_WIDE)
+                        // A short window (a phone's status bar above) gets lower beat lights, so the rest stays in view.
+                        Shrinking { room -> lights(room.coerceIn(LIGHTS_HEIGHT_WIDE_SMALLEST, LIGHTS_HEIGHT_WIDE)) }
                         line()
                         Spacer(Modifier.height(4.dp))
                         row()
@@ -402,6 +407,7 @@ fun MetronomeContent(
                         startStop()
                         Spacer(Modifier.height(4.dp))
                         VibrateSwitch(vibrate, onVibrateChange)
+                        Spacer(Modifier.gap(1f))
                     }
                 }
             } else {
@@ -596,6 +602,7 @@ private val DIAL_WIDE = 300.dp
 /** The beat lights' row: 64 dp upright, 56 dp on its side, at most 360 dp wide. */
 private val LIGHTS_HEIGHT = 64.dp
 private val LIGHTS_HEIGHT_WIDE = 56.dp
+private val LIGHTS_HEIGHT_WIDE_SMALLEST = 40.dp
 private val LIGHTS_MAX_WIDTH = 360.dp
 
 /**

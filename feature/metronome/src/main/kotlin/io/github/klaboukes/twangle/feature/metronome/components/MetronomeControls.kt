@@ -32,6 +32,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -165,8 +166,11 @@ internal fun meterSpoken(meter: Meter): String = stringResource(
 
 /**
  * The meter picker at the top: 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8 in a row, one radio group for
- * TalkBack ("Beats in a bar", each meter by its spoken name). With a very large font they wrap onto
- * a second row.
+ * TalkBack ("Beats in a bar", each meter by its spoken name). Where six 50 dp buttons don't fit the
+ * width (a phone on its side beside navigation buttons) each button's touch area is its share of the
+ * row (whole pixels, so the row never wraps) and 48 dp tall, as the chord buttons, its face 4 dp
+ * narrower and its label set smaller where it must. Otherwise, with a very large font, they wrap
+ * onto a second row.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -181,39 +185,50 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
         fontFeatureSettings = LINING_FIGURES,
         textAlign = TextAlign.Center,
     )
-    FlowRow(
-        modifier = modifier.selectableGroup().semantics { contentDescription = label },
-        horizontalArrangement = Arrangement.spacedBy(METER_GAP, Alignment.CenterHorizontally),
-    ) {
-        for (option in Meter.entries) {
-            val picked = option == meter
-            val spoken = meterSpoken(option)
-            val source = remember { MutableInteractionSource() }
-            Box(
-                modifier = Modifier
-                    .testTag(MetronomeTestTags.meter(option))
-                    .selectable(
-                        selected = picked,
-                        interactionSource = source,
-                        indication = null,
-                        role = Role.RadioButton,
-                        onClick = {
-                            source.pressFlash()
-                            onMeterChange(option)
-                        },
-                    )
-                    .semantics { contentDescription = spoken }
-                    .minimumInteractiveComponentSize(),
-                contentAlignment = Alignment.Center,
-            ) {
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+        val count = Meter.entries.size
+        val tight = maxWidth < METER_BUTTON_WIDTH * count + METER_GAP * (count - 1)
+        val share = with(LocalDensity.current) { (constraints.maxWidth / count).toDp() }
+        val faceWidth = if (tight) share - METER_GAP else METER_BUTTON_WIDTH
+        val touch = if (tight) Modifier.width(share).heightIn(min = MIN_TOUCH) else Modifier.minimumInteractiveComponentSize()
+        FlowRow(
+            modifier = Modifier.selectableGroup().semantics { contentDescription = label },
+            horizontalArrangement = Arrangement.spacedBy(if (tight) 0.dp else METER_GAP, Alignment.CenterHorizontally),
+        ) {
+            for (option in Meter.entries) {
+                val picked = option == meter
+                val spoken = meterSpoken(option)
+                val source = remember { MutableInteractionSource() }
                 Box(
                     modifier = Modifier
-                        .defaultMinSize(minWidth = METER_BUTTON_WIDTH, minHeight = 40.dp)
-                        .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked))
-                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                        .testTag(MetronomeTestTags.meter(option))
+                        .selectable(
+                            selected = picked,
+                            interactionSource = source,
+                            indication = null,
+                            role = Role.RadioButton,
+                            onClick = {
+                                source.pressFlash()
+                                onMeterChange(option)
+                            },
+                        )
+                        .semantics { contentDescription = spoken }
+                        .then(touch),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(meterLabel(option), style = numbers)
+                    Box(
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = faceWidth, minHeight = 40.dp)
+                            .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked))
+                            .padding(horizontal = 6.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (tight) {
+                            Text(meterLabel(option), style = numbers, maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = numbers.fontSize, stepSize = 0.5.sp))
+                        } else {
+                            Text(meterLabel(option), style = numbers)
+                        }
+                    }
                 }
             }
         }
@@ -221,6 +236,8 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
 }
 
 private val METER_GAP = 4.dp
+private val MIN_TOUCH = 48.dp
+private val MIN_LABEL_SIZE = 9.sp
 
 /** The mock-up's 52 dp, less 2, so all six fit in a row on a 360 dp phone. */
 private val METER_BUTTON_WIDTH = 50.dp
@@ -267,7 +284,9 @@ fun TempoRow(
     onListenPlaced: (Rect) -> Unit = {},
 ) {
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        val width = min(ROW_BUTTON_MAX_WIDTH, (maxWidth - ROW_GAP) / 2)
+        // Halved in whole pixels: both buttons rounded up could leave Listen a pixel short.
+        val half = with(LocalDensity.current) { ((constraints.maxWidth - ROW_GAP.roundToPx()) / 2).toDp() }
+        val width = min(ROW_BUTTON_MAX_WIDTH, half)
         Row(
             Modifier.height(IntrinsicSize.Min),
             horizontalArrangement = Arrangement.spacedBy(ROW_GAP),

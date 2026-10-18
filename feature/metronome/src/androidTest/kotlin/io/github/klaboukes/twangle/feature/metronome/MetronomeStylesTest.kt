@@ -287,10 +287,12 @@ class MetronomeStylesTest(private val style: VisualStyle) {
 
         /**
          * A short narrow phone (360 x 720 dp with navigation buttons: 650 dp without the status bar and
-         * the buttons; a Galaxy S26 has more): upright less the app's navigation bar (at most 80 dp up to 1.25× text), on its side less the 80 dp rail.
+         * the buttons; a Galaxy S26 has more): upright less the app's navigation bar (at most 80 dp up to
+         * 1.25× text). On its side a Galaxy S26 (780 x 360 dp) with navigation buttons: less the buttons
+         * (48 dp, at the side), the 80 dp rail and the status bar.
          */
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
-        private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
+        private val PHONE_LANDSCAPE = DpSize(650.dp, 325.dp)
 
         /** A small, narrow phone (320 dp wide): the dial shrinks so − and + still fit beside it. */
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
