@@ -1,0 +1,239 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calmer Chords Screen</title>
+<!--
+TWANGLE CHORDS & SCALES, CALMER (preview, 2026-10-18). ROUGH, plain on purpose.
+OWNER'S PICK, 2026-10-18: C, two pickers side by side ("it provides more room to add additional/advanced chords/scales
+          shapes later"). As built, the right picker says the chord in words ("C major", a major chord's symbol alone
+          would be "C" twice) or the scale by its name; see docs/architecture/ui-other-screens.md, Chords, Picking.
+The ask   The owner: "redesign the chords and scales pages, it is too cluttered with buttons now."
+Today     Tool switch · "Guitar · Standard" · Chords | Scales · 12 framed root buttons in two rows · 7 framed chord
+          types (or 5 framed scales, two to a row) · the name · the chart or neck · ‹ 1 of 6 ›. About 22 framed buttons.
+Options   A: the name is the only button, it opens a sheet with roots and types.
+          B: no frames: one row of plain root letters, one row of plain type words, the picked one marked.
+          C: two equal pickers side by side ("C ⌄" "major ⌄"), each opens a small grid.
+Look      Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA); --line: color-mix(in srgb, #4A5268 45%, #E3E7F0);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 40%, #171D2E); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 40%, #171D2E); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1100px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.list { margin-top: 28px; display: grid; gap: 34px; }
+.cand { display: grid; gap: 10px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.phones { display: flex; flex-wrap: wrap; gap: 16px; }
+.cap { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+/* A phone: 393 × 873 dp (the Xiaomi 12X) at 0.66 px per dp, without the system bars and the navigation bar. */
+.phone { width: 260px; height: 500px; border-radius: 18px; background: var(--bg); padding: 8px 11px;
+  display: flex; flex-direction: column; align-items: center; gap: 7px; position: relative; overflow: hidden; font-size: 11px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; width: 100%; }
+.seg span { flex: 1; text-align: center; padding: 5px 0; color: var(--muted); font-weight: 500; }
+.seg span.on { background: var(--container); color: var(--ink); }
+.seg.small { width: 62%; }
+.seg.small span { padding: 3px 0; font-size: 10px; }
+.tun { color: var(--muted); font-size: 10px; }
+.name { font-size: 17px; }
+.chart { flex: 1; width: 78%; display: grid; place-items: center; }
+.chart svg { width: 100%; height: 100%; }
+.neck { width: 100%; height: 110px; margin: auto 0; }
+.pager { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.pager b { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-weight: 400; color: var(--ink); }
+
+/* A: the name as a button */
+.namebtn { font-size: 17px; padding: 5px 16px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.namebtn i { font-style: normal; color: var(--muted); font-size: 12px; margin-left: 6px; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 16px 16px 0 0;
+  padding: 10px 11px 14px; display: grid; gap: 8px; box-shadow: 0 -6px 24px rgb(0 0 0 / .18); }
+.sheet .grab { width: 32px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 2px; }
+.sheet .lbl { font-size: 10px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.grid span, .chips span { text-align: center; padding: 4px 0; border-radius: 8px; }
+.grid span.on, .chips span.on { background: var(--container); color: var(--ink); font-weight: 500; }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.dim { position: absolute; inset: 0; background: rgb(0 0 0 / .28); }
+
+/* B: plain rows, no frames */
+.letters { display: flex; justify-content: space-between; width: 100%; font-size: 12px; }
+.letters span { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); }
+.letters span.on { background: var(--accent); color: var(--page); font-weight: 500; }
+.words { display: flex; justify-content: space-between; width: 100%; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; }
+.words span { padding-bottom: 2px; }
+.words span.on { color: var(--ink); font-weight: 500; border-bottom: 2px solid var(--accent); }
+.words.scroll { justify-content: flex-start; gap: 14px; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+
+/* C: two pickers */
+.pickers { display: flex; gap: 8px; width: 100%; }
+.pick { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+.pick i { font-style: normal; color: var(--muted); font-size: 11px; }
+.pop { position: absolute; left: 11px; width: 116px; top: 108px; background: var(--surface); border-radius: 12px; padding: 6px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / .22); display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.pop span { text-align: center; padding: 5px 0; border-radius: 7px; font-size: 12px; }
+.pop span.on { background: var(--container); font-weight: 500; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute">
+  <!-- A rough C major chart: 6 strings, 4 frets, three dots. -->
+  <symbol id="chart" viewBox="0 0 100 120">
+    <g stroke="currentColor" stroke-width="1.2" fill="none" opacity=".75">
+      <path d="M10 14H90" stroke-width="3"/>
+      <path d="M10 14V110M26 14V110M42 14V110M58 14V110M74 14V110M90 14V110"/>
+      <path d="M10 38H90M10 62H90M10 86H90M10 110H90"/>
+    </g>
+    <g fill="var(--accent)"><circle cx="74" cy="26" r="6"/><circle cx="42" cy="50" r="6"/><circle cx="26" cy="74" r="6"/></g>
+    <g fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="58" cy="5" r="3.5"/><circle cx="90" cy="5" r="3.5"/></g>
+    <path d="M7 2l6 6M13 2l-6 6" stroke="currentColor" stroke-width="1.2"/>
+  </symbol>
+  <!-- A rough neck: 6 strings, 12 frets, a few dots. -->
+  <symbol id="neck" viewBox="0 0 240 100" preserveAspectRatio="none">
+    <g stroke="currentColor" stroke-width="1" opacity=".6">
+      <path d="M6 10H236M6 26H236M6 42H236M6 58H236M6 74H236M6 90H236"/>
+      <path d="M6 10V90" stroke-width="3"/>
+      <path d="M25 10V90M44 10V90M63 10V90M82 10V90M101 10V90M120 10V90M139 10V90M158 10V90M177 10V90M196 10V90M215 10V90M236 10V90"/>
+    </g>
+    <g fill="var(--accent)"><circle cx="15" cy="26" r="5"/><circle cx="111" cy="42" r="5"/><circle cx="54" cy="74" r="5"/><circle cx="148" cy="90" r="5"/><circle cx="148" cy="10" r="5"/><circle cx="186" cy="58" r="5"/></g>
+    <g fill="none" stroke="currentColor" stroke-width="1" opacity=".7">
+      <circle cx="34" cy="10" r="5"/><circle cx="72" cy="10" r="5"/><circle cx="92" cy="26" r="5"/><circle cx="34" cy="42" r="5"/>
+      <circle cx="72" cy="58" r="5"/><circle cx="130" cy="58" r="5"/><circle cx="34" cy="74" r="5"/><circle cx="92" cy="90" r="5"/>
+      <circle cx="205" cy="26" r="5"/><circle cx="167" cy="42" r="5"/><circle cx="225" cy="74" r="5"/><circle cx="111" cy="90" r="5"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Practice · Chords and Scales</p>
+    <h1>Fewer buttons above the chart</h1>
+    <p class="lede">Today's screen has about 22 framed buttons above the chart. Here are three calmer ways to pick a chord or a scale. In all three the chart or neck gets more room. The tool switch, the tuning line and the ‹ 1 of 6 › pager stay as they are.</p>
+  </header>
+
+  <div class="list">
+    <section class="cand">
+      <h2>A · The name is the button <span class="tag">calmest</span></h2>
+      <p class="note">Only the chord's name shows ("C major ⌄"). Tap it and a sheet slides up with the 12 roots and the types. Tap a type and the sheet closes. Changing chord takes two taps instead of one.</p>
+      <div class="phones">
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span class="on">Chords</span><span>Scales</span></div>
+            <div class="namebtn">C major<i>⌄</i></div>
+            <div class="chart"><svg><use href="#chart"/></svg></div>
+            <div class="pager"><b>‹</b>1 of 6<b>›</b></div>
+          </div>
+          <div class="cap">The screen</div>
+        </div>
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span class="on">Chords</span><span>Scales</span></div>
+            <div class="namebtn">C major<i>⌄</i></div>
+            <div class="chart"><svg><use href="#chart"/></svg></div>
+            <div class="dim"></div>
+            <div class="sheet">
+              <div class="grab"></div>
+              <div class="lbl">Root</div>
+              <div class="grid"><span class="on">C</span><span>D♭</span><span>D</span><span>E♭</span><span>E</span><span>F</span><span>F♯</span><span>G</span><span>A♭</span><span>A</span><span>B♭</span><span>B</span></div>
+              <div class="lbl">Type</div>
+              <div class="chips"><span class="on">C</span><span>Cm</span><span>C7</span><span>Cmaj7</span><span>Cm7</span><span>Csus2</span><span>Csus4</span></div>
+            </div>
+          </div>
+          <div class="cap">After tapping the name</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cand">
+      <h2>B · Plain rows, no frames <span class="tag">my pick</span></h2>
+      <p class="note">The roots become one line of plain letters, the picked one in a filled circle. The types become one line of plain words, the picked one underlined. Still one tap per change, but no boxes at all. The five scale names are longer, so their line slides sideways.</p>
+      <div class="phones">
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span class="on">Chords</span><span>Scales</span></div>
+            <div class="letters"><span class="on">C</span><span>D♭</span><span>D</span><span>E♭</span><span>E</span><span>F</span><span>F♯</span><span>G</span><span>A♭</span><span>A</span><span>B♭</span><span>B</span></div>
+            <div class="words"><span class="on">C</span><span>Cm</span><span>C7</span><span>Cmaj7</span><span>Cm7</span><span>Csus2</span><span>Csus4</span></div>
+            <div class="name">C major</div>
+            <div class="chart"><svg><use href="#chart"/></svg></div>
+            <div class="pager"><b>‹</b>1 of 6<b>›</b></div>
+          </div>
+          <div class="cap">Chords</div>
+        </div>
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span>Chords</span><span class="on">Scales</span></div>
+            <div class="letters"><span>C</span><span>D♭</span><span>D</span><span>E♭</span><span>E</span><span>F</span><span>F♯</span><span>G</span><span>A♭</span><span class="on">A</span><span>B♭</span><span>B</span></div>
+            <div class="words scroll"><span>Major</span><span>Natural minor</span><span>Major pentatonic</span><span class="on">Minor pentatonic</span><span>Blues</span></div>
+            <div class="name">A minor pentatonic</div>
+            <svg class="neck"><use href="#neck"/></svg>
+          </div>
+          <div class="cap">Scales</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cand">
+      <h2>C · Two pickers side by side</h2>
+      <p class="note">One row with two equal pickers: the root and the type. Tap one and a small grid opens right under it. Two taps per change, like A, but you always see both parts. The pickers say the name, so the separate name line goes.</p>
+      <div class="phones">
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span class="on">Chords</span><span>Scales</span></div>
+            <div class="pickers"><div class="pick">C<i>⌄</i></div><div class="pick">major<i>⌄</i></div></div>
+            <div class="chart"><svg><use href="#chart"/></svg></div>
+            <div class="pager"><b>‹</b>1 of 6<b>›</b></div>
+          </div>
+          <div class="cap">The screen</div>
+        </div>
+        <div>
+          <div class="phone">
+            <div class="seg"><span>Metronome</span><span class="on">Chords</span><span>Capo</span></div>
+            <div class="tun">Guitar · Standard</div>
+            <div class="seg small"><span class="on">Chords</span><span>Scales</span></div>
+            <div class="pickers"><div class="pick">C<i>⌄</i></div><div class="pick">major<i>⌄</i></div></div>
+            <div class="chart"><svg><use href="#chart"/></svg></div>
+            <div class="pager"><b>‹</b>1 of 6<b>›</b></div>
+            <div class="pop"><span class="on">C</span><span>D♭</span><span>D</span><span>E♭</span><span>E</span><span>F</span><span>F♯</span><span>G</span><span>A♭</span><span>A</span><span>B♭</span><span>B</span></div>
+          </div>
+          <div class="cap">After tapping "C"</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>All three keep each style's own colours and fonts, TalkBack and large text, and the sideways layout.</p>
+  </footer>
+</div>

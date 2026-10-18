@@ -50,7 +50,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -86,11 +85,12 @@ import kotlinx.coroutines.withContext
  * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
  *
  * Upright, one column: the tool switch ([header]) 8 dp from the top, the instrument and tuning
- * ([tuningName], heard as [spokenTuningName]), the Chords · Scales choice, the twelve roots (shared
- * by both), the seven chord types or the five scales, the chord's or the scale's name, then the
- * chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit, at
- * large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall) the
- * switch and the pickers fill the start half; the choice, the name and the chart or neck the end half.
+ * ([tuningName], heard as [spokenTuningName]), the Chords · Scales choice, the root and the chord
+ * type or scale as two buttons that each open a grid ([ChordPickers], the owner's pick C in
+ * docs/design/chords-calm-preview.html: fewer buttons in sight, and room for more types later), then
+ * the chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit,
+ * at large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall)
+ * the switch, the choice and the pickers fill the start half; the chart or neck the end half.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
  * sign). The tool opens on [savedChart], [savedRoot], [savedQuality] and [savedScaleType], and each
@@ -98,9 +98,10 @@ import kotlinx.coroutines.withContext
  * saved. The shapes are worked out off the main thread ([ChordShapeFinder.shapesOf], a few
  * milliseconds); the last ones stay shown meanwhile. A scale's notes take microseconds.
  *
- * TalkBack hears the choice and the pickers as radio groups, the name as a heading, and the chart or
- * the neck in words ([spokenChart], [spokenScale]); the chord chart is a polite live region, so a new
- * shape or chord is said when it shows, and so is a scale's name (not the whole neck: it is long).
+ * TalkBack hears the choice as a radio group, the pickers as lists with what is picked, and the
+ * chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a polite live region,
+ * so a new shape or chord is said when it shows, and so is the scale's picker (not the whole neck:
+ * it is long).
  */
 @Composable
 fun ChordsScreen(
@@ -149,44 +150,30 @@ fun ChordsScreen(
             }
         })
     }
-    val pickRoot: (PitchClass) -> Unit = { picked ->
-        if (picked != root) {
-            root = picked
-            onRootChange(picked)
-        }
-    }
-    // At large text sizes the side's scales go two to a row too: three would leave long names too small (Japanese at 2×).
-    val largeText = LocalDensity.current.fontScale >= LARGE_TEXT_SCALE
-    val pickers = @Composable { wide: Boolean ->
-        if (scales) {
-            RootPicker(root, scaleRootSpelling(scaleType, notation), onRootChange = pickRoot)
-            Spacer(Modifier.height(10.dp))
-            ScaleTypePicker(scaleType, perRow = if (wide && !largeText) SCALES_PER_ROW_WIDE else SCALES_PER_ROW, onTypeChange = { picked ->
-                if (picked != scaleType) {
-                    scaleType = picked
-                    onScaleTypeChange(picked)
+    val pickers = @Composable {
+        ChordPickers(
+            scales = scales,
+            root = root,
+            quality = quality,
+            scaleType = scaleType,
+            notation = notation,
+            onRootChange = { picked ->
+                if (picked != root) {
+                    root = picked
+                    onRootChange(picked)
                 }
-            })
-        } else {
-            RootPicker(root, chordRootSpelling(quality, notation), onRootChange = pickRoot)
-            Spacer(Modifier.height(10.dp))
-            ChordTypePicker(root, quality, notation, onQualityChange = { picked ->
+            },
+            onQualityChange = { picked ->
                 if (picked != quality) {
                     quality = picked
                     onQualityChange(picked)
                 }
-            })
-        }
-    }
-    val title = @Composable {
-        Text(
-            musicText(breakableAtHyphens(if (scales) scaleWords(scale, notation) else chordWords(chord, notation))),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics {
-                heading()
-                if (scales) liveRegion = LiveRegionMode.Polite
+            },
+            onScaleTypeChange = { picked ->
+                if (picked != scaleType) {
+                    scaleType = picked
+                    onScaleTypeChange(picked)
+                }
             },
         )
     }
@@ -219,7 +206,11 @@ fun ChordsScreen(
                     Spacer(Modifier.height(8.dp))
                     tuningLine()
                     Spacer(Modifier.height(12.dp))
-                    Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) { pickers(true) }
+                    Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
+                        choice()
+                        Spacer(Modifier.height(8.dp))
+                        pickers()
+                    }
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.width(16.dp))
@@ -227,13 +218,7 @@ fun ChordsScreen(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    top = {
-                        // The choice at the top of the end half, about level with the tool switch: the start half has no room left.
-                        Spacer(Modifier.height(CHOICE_TOP_WIDE))
-                        choice()
-                        Spacer(Modifier.height(2.dp))
-                        title()
-                    },
+                    top = { Spacer(Modifier.height(HEADER_TOP)) },
                     fill = fill,
                     bottom = bottom(1f),
                 )
@@ -257,10 +242,9 @@ fun ChordsScreen(
                         tuningLine()
                         Spacer(Modifier.height(4.dp * gap))
                         choice()
-                        Spacer(Modifier.height(6.dp * gap))
-                        pickers(false)
-                        Spacer(Modifier.height(10.dp * gap))
-                        title()
+                        Spacer(Modifier.height(8.dp * gap))
+                        pickers()
+                        Spacer(Modifier.height(12.dp * gap))
                     },
                     fill = fill,
                     bottom = bottom(gap),
@@ -478,14 +462,6 @@ private val CHART_MIN_HEIGHT_WIDE = 170.dp
 
 /** The smallest neck's room (a 6-string neck sideways about 1 dp a unit); below it the column scrolls. */
 private val NECK_MIN_HEIGHT = 140.dp
-
-/** The scales two to a row upright, three on its side, where the height is short. */
-private const val SCALES_PER_ROW = 2
-private const val SCALES_PER_ROW_WIDE = 3
-private const val LARGE_TEXT_SCALE = 1.5f
-
-/** On its side, the choice's 40 dp faces about level with the tool switch's (each in a 48 dp touch row). */
-private val CHOICE_TOP_WIDE = 4.dp
 
 private val PAGER_HEIGHT = 56.dp
 private val PAGER_BUTTON_SIZE = 48.dp

@@ -38,6 +38,8 @@ private const val METRONOME_TAP_TAG = "metronome_tap"
 private const val CHORDS_TAG = "practice_chords"
 private const val CHART_CHORDS_TAG = "practice_chart_chords"
 private const val CHART_SCALES_TAG = "practice_chart_scales"
+private const val ROOT_PICKER_TAG = "practice_root_picker"
+private const val TYPE_PICKER_TAG = "practice_type_picker"
 private const val ROOT_A_TAG = "practice_root_a"
 private const val ROOT_E_TAG = "practice_root_e"
 private const val TYPE_MINOR_TAG = "practice_type_minor"
@@ -142,12 +144,16 @@ fun MacrobenchmarkScope.usePractice() {
     clickTag(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
     clickTag(CHART_CHORDS_TAG)
+    clickTag(ROOT_PICKER_TAG)
     clickTag(ROOT_A_TAG)
+    clickTag(TYPE_PICKER_TAG)
     clickTag(TYPE_MINOR_TAG)
     clickTag(SHAPE_NEXT_TAG)
     Thread.sleep(SHOW_MS)
     clickTag(CHART_SCALES_TAG)
+    clickTag(ROOT_PICKER_TAG)
     clickTag(ROOT_E_TAG)
+    clickTag(TYPE_PICKER_TAG)
     clickTag(SCALE_PENTATONIC_TAG)
     Thread.sleep(SHOW_MS)
 

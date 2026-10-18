@@ -84,7 +84,7 @@ class PracticeTabTest {
 
     private fun shown(tag: String): Boolean = device.wait(Until.hasObject(By.res(tag)), WAIT_MS)
     private fun gone(tag: String): Boolean = device.wait(Until.gone(By.res(tag)), WAIT_MS)
-    private fun click(tag: String) = device.findObject(By.res(tag)).click()
+    private fun click(tag: String) = checkNotNull(device.wait(Until.findObject(By.res(tag)), WAIT_MS)) { "$tag not shown" }.click()
 
     private fun savedTool(): PracticeTool = runBlocking { container.settingsRepository.settings.first().practiceTool }
 
@@ -113,6 +113,22 @@ class PracticeTabTest {
 
     private fun checked(tag: String): Boolean = device.findObject(By.res(tag)).isChecked
 
+    /** Opens [picker]'s grid and taps [option] in it, then waits for the grid to close. */
+    private fun pick(picker: String, option: String) {
+        click(picker)
+        click(option)
+        gone(option)
+    }
+
+    /** Whether [option] is the one picked in [picker]'s grid; the grid is closed again by tapping it. */
+    private fun picked(picker: String, option: String): Boolean {
+        click(picker)
+        val picked = device.wait(Until.findObject(By.res(option)), WAIT_MS).isChecked
+        click(option)
+        gone(option)
+        return picked
+    }
+
     private fun openPractice() {
         val tab = NavigationTestTags.tab(Destination.METRONOME)
         assertTrue("the bar shows", shown(tab))
@@ -137,9 +153,9 @@ class PracticeTabTest {
             assertEquals("the pick is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
             // A chord picked is saved too.
-            assertTrue("a fresh install shows C major", shown(PracticeTestTags.CHART) && checked(PracticeTestTags.root(PitchClass.C)))
-            click(PracticeTestTags.root(PitchClass.A))
-            click(PracticeTestTags.type(ChordQuality.MINOR))
+            assertTrue("a fresh install shows C major", shown(PracticeTestTags.CHART) && picked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.C)))
+            pick(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.A))
+            pick(PracticeTestTags.TYPE_PICKER, PracticeTestTags.type(ChordQuality.MINOR))
             assertEquals("the chord is saved", PitchClass.A to ChordQuality.MINOR, waitForSavedChord(PitchClass.A, ChordQuality.MINOR))
 
             // Another tab and back: still chords.
@@ -152,7 +168,10 @@ class PracticeTabTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             assertTrue("opens on chords", shown(PracticeTestTags.CHORDS))
-            assertTrue("on the chord picked last", checked(PracticeTestTags.root(PitchClass.A)) && checked(PracticeTestTags.type(ChordQuality.MINOR)))
+            assertTrue(
+                "on the chord picked last",
+                picked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.A)) && picked(PracticeTestTags.TYPE_PICKER, PracticeTestTags.type(ChordQuality.MINOR)),
+            )
             // "A minor", or "La minor" where an earlier test left solfège picked.
             assertTrue("its chart in words", device.wait(Until.hasObject(By.res(PracticeTestTags.CHART).desc(Pattern.compile("(A|La) minor, shape 1 of .*"))), WAIT_MS))
             assertFalse("not on the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
@@ -160,7 +179,7 @@ class PracticeTabTest {
             // Scales: the choice and the scale are saved too, the root shared.
             click(PracticeTestTags.chart(PracticeChart.SCALES))
             assertTrue("the neck shows", shown(PracticeTestTags.NECK))
-            click(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
+            pick(PracticeTestTags.TYPE_PICKER, PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
             assertTrue(
                 "the neck in words, on the root picked for the chord",
                 device.wait(Until.hasObject(By.res(PracticeTestTags.NECK).desc(Pattern.compile("(A|La) minor pentatonic, notes .*"))), WAIT_MS),
@@ -192,7 +211,10 @@ class PracticeTabTest {
 
             click(PracticeTestTags.capoRow(Chord.of(PitchClass.F, ChordQuality.MAJOR)))
             assertTrue("Chords shows", shown(PracticeTestTags.CHART))
-            assertTrue("on the shape tapped", checked(PracticeTestTags.root(PitchClass.F)) && checked(PracticeTestTags.type(ChordQuality.MAJOR)))
+            assertTrue(
+                "on the shape tapped",
+                picked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.F)) && picked(PracticeTestTags.TYPE_PICKER, PracticeTestTags.type(ChordQuality.MAJOR)),
+            )
             assertTrue("the switch on Chords", checked(PracticeTestTags.tool(PracticeTool.CHORDS)))
             assertEquals("the chord is saved", PitchClass.F to ChordQuality.MAJOR, waitForSavedChord(PitchClass.F, ChordQuality.MAJOR))
             assertEquals("chords, not scales", PracticeChart.CHORDS to ScaleType.MAJOR, waitForSavedScale(PracticeChart.CHORDS, ScaleType.MAJOR))

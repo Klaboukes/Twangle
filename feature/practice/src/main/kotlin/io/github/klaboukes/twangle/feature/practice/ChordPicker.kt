@@ -1,32 +1,45 @@
 package io.github.klaboukes.twangle.feature.practice
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -53,6 +66,141 @@ import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
+/** Which of [ChordPickers]' grids is open. */
+private enum class PickerMenu { ROOT, TYPE }
+
+/**
+ * The root and the chord type (or, with [scales], the scale) side by side, the owner's pick C in
+ * docs/design/chords-calm-preview.html: two buttons of one steady size, each half the row (at most
+ * [MENU_BUTTON_MAX_WIDTH]), showing what is picked: the root, and the chord or scale in words ("C ⌄" and
+ * "C minor seventh ⌄"; "A ⌄" and "Minor pentatonic ⌄"), so no title line is needed over the chart.
+ * A tap opens its grid right under the row, as wide as the row: the twelve roots six to a row
+ * ([RootPicker]), the seven chord types four to a row ([ChordTypePicker]) or the five scales two to
+ * a row ([ScaleTypePicker]); a pick closes it, and so do Back and a tap beside it. A long name takes
+ * two lines rather than getting small.
+ *
+ * TalkBack hears each button as a list with what is picked ("Root, B flat", "Chord type, B flat
+ * minor seventh", "Scale, A minor pentatonic"); the scale's button is a polite live region, so a new
+ * scale is said briefly (the chord chart says a new chord itself). The grids are radio groups.
+ */
+@Composable
+internal fun ChordPickers(
+    scales: Boolean,
+    root: PitchClass,
+    quality: ChordQuality,
+    scaleType: ScaleType,
+    notation: Notation,
+    onRootChange: (PitchClass) -> Unit,
+    onQualityChange: (ChordQuality) -> Unit,
+    onScaleTypeChange: (ScaleType) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var open by remember { mutableStateOf<PickerMenu?>(null) }
+    val speech = rememberNoteNameSpeech()
+    val separator = stringResource(R.string.practice_spoken_separator)
+    val spell = if (scales) scaleRootSpelling(scaleType, notation) else chordRootSpelling(quality, notation)
+    val rootText = spell(root)
+    val rootSpoken = stringResource(R.string.practice_root) + separator + speech.name(rootText)
+    // A chord in words, root and all ("C major"): its symbol alone would be "C" beside the root's "C". A scale by its name
+    // alone ("Minor pentatonic"): with its root too, a long one needed three lines (Korean at 2× text).
+    val typeText = if (scales) stringResource(scaleTypeLabel(scaleType)) else chordWords(Chord.of(root, quality), notation)
+    val typeSpoken = if (scales) {
+        stringResource(R.string.practice_scale_type) + separator + scaleWords(Scale(root, scaleType), notation, speech)
+    } else {
+        stringResource(R.string.practice_chord_type) + separator + chordWords(Chord.of(root, quality), notation, speech)
+    }
+    BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        val rowWidth = maxWidth
+        val buttonWidth = minOf((rowWidth - MENU_BUTTON_GAP) / 2, MENU_BUTTON_MAX_WIDTH)
+        Box {
+            Row(horizontalArrangement = Arrangement.spacedBy(MENU_BUTTON_GAP)) {
+                MenuButton(
+                    text = rootText,
+                    spoken = rootSpoken,
+                    width = buttonWidth,
+                    onClick = { open = PickerMenu.ROOT },
+                    modifier = Modifier.testTag(PracticeTestTags.ROOT_PICKER),
+                )
+                MenuButton(
+                    text = typeText,
+                    spoken = typeSpoken,
+                    width = buttonWidth,
+                    lines = 2,
+                    live = scales,
+                    onClick = { open = PickerMenu.TYPE },
+                    modifier = Modifier.testTag(PracticeTestTags.TYPE_PICKER),
+                )
+            }
+            DropdownMenu(
+                expanded = open != null,
+                onDismissRequest = { open = null },
+                // The menu is a window of its own: UI Automator finds its buttons by tag only when it says so too (as MainActivity's root does).
+                modifier = Modifier.semantics { testTagsAsResourceId = true },
+            ) {
+                // A known width: a menu asks its content's intrinsic size, which a grid that measures its room can't give.
+                val width = rowWidth - MENU_PADDING * 2
+                val grid = Modifier.padding(horizontal = MENU_PADDING)
+                val close = { open = null }
+                when {
+                    open == PickerMenu.ROOT -> RootPicker(root, spell, width, onRootChange = { onRootChange(it); close() }, modifier = grid)
+                    scales -> ScaleTypePicker(scaleType, width, onTypeChange = { onScaleTypeChange(it); close() }, modifier = grid)
+                    else -> ChordTypePicker(root, quality, notation, width, onQualityChange = { onQualityChange(it); close() }, modifier = grid)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * A button of one steady size showing [text] with ⌄ after it, its face as the pickers' see-through
+ * buttons; [text] is set smaller where it would not fit (on [lines] lines, never breaking a word).
+ */
+@Composable
+private fun MenuButton(
+    text: String,
+    spoken: String,
+    width: Dp,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    lines: Int = 1,
+    live: Boolean = false,
+) {
+    val source = remember { MutableInteractionSource() }
+    Box(
+        modifier = modifier
+            .size(width, TOUCH_HEIGHT)
+            .clickable(interactionSource = source, indication = null) {
+                source.pressFlash()
+                onClick()
+            }
+            // Its text stays in the tree for the tests' checks; TalkBack says the description.
+            .semantics {
+                role = Role.DropdownList
+                contentDescription = spoken
+                if (live) liveRegion = LiveRegionMode.Polite
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            Modifier
+                .size(width, BUTTON_HEIGHT)
+                .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
+                .padding(start = 12.dp, end = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                PickLabel(text, MaterialTheme.colorScheme.onBackground, lines, TextAlign.Start)
+            }
+            Icon(
+                painterResource(R.drawable.ic_expand_more),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
 /**
  * The twelve roots in two rows of six, [root] picked, each written by [spell] as the chord or scale
  * picked would write it in the player's notation (B♭ for B♭ major, A♯… never: B♭m; but F♯ and C♯m;
@@ -61,9 +209,10 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * smaller to fit. TalkBack hears one radio group ("Root"), each root by its spoken name ("B flat").
  */
 @Composable
-internal fun RootPicker(
+private fun RootPicker(
     root: PitchClass,
     spell: (PitchClass) -> String,
+    width: Dp,
     onRootChange: (PitchClass) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -77,6 +226,7 @@ internal fun RootPicker(
         label = spell,
         spoken = { speech.name(spell(it)) },
         tag = PracticeTestTags::root,
+        width = width,
         onPick = onRootChange,
         modifier = modifier,
     )
@@ -96,10 +246,11 @@ internal fun scaleRootSpelling(type: ScaleType, notation: Notation): (PitchClass
  * type"), each in words ("C minor seventh").
  */
 @Composable
-internal fun ChordTypePicker(
+private fun ChordTypePicker(
     root: PitchClass,
     quality: ChordQuality,
     notation: Notation,
+    width: Dp,
     onQualityChange: (ChordQuality) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,21 +265,21 @@ internal fun ChordTypePicker(
         label = { chordSymbol(Chord.of(root, it), notation) },
         spoken = { spoken.getValue(it) },
         tag = PracticeTestTags::type,
+        width = width,
         onPick = onQualityChange,
         modifier = modifier,
     )
 }
 
 /**
- * The five scales, [type] picked, by name ("Major", "Minor pentatonic"), [perRow] to a row: two
- * upright, so long names (French "Pentatonique majeure") keep a fair size, three on its side, where
- * the height is short (two there too at large text sizes); a long name takes two lines rather than getting small. TalkBack hears one
- * radio group ("Scale"), each by its name.
+ * The five scales, [type] picked, by name ("Major", "Minor pentatonic"), two to a row, so long names
+ * (French "Pentatonique majeure") keep a fair size; a long name takes two lines rather than getting
+ * small. TalkBack hears one radio group ("Scale"), each by its name.
  */
 @Composable
-internal fun ScaleTypePicker(
+private fun ScaleTypePicker(
     type: ScaleType,
-    perRow: Int,
+    width: Dp,
     onTypeChange: (ScaleType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,12 +287,13 @@ internal fun ScaleTypePicker(
     PickerGrid(
         options = ScaleType.entries,
         picked = type,
-        perRow = perRow,
+        perRow = SCALES_PER_ROW,
         maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
         groupLabel = stringResource(R.string.practice_scale_type),
         label = { names.getValue(it) },
         spoken = { names.getValue(it) },
         tag = PracticeTestTags::scale,
+        width = width,
         onPick = onTypeChange,
         modifier = modifier,
         lines = 2,
@@ -181,6 +333,7 @@ internal fun ChartChoice(
  * allows up to [maxButtonWidth] and 40 dp tall; the [picked] one in the accent's container with an
  * accent outline, as the metronome's meter buttons. Each touch area is its share of the row and 48 dp
  * tall, the gap between the faces inside it, so six roots still fit a 320 dp phone with 48 dp each.
+ * The row is [width] wide where that is known (in a menu), else as wide as the room.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -195,11 +348,12 @@ private fun <T> PickerGrid(
     tag: (T) -> String,
     onPick: (T) -> Unit,
     modifier: Modifier = Modifier,
+    width: Dp? = null,
     lines: Int = 1,
 ) {
-    BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+    val rows = @Composable { room: Int ->
         // Whole pixels, rounded down, so a row of [perRow] never comes out a pixel too wide and wraps.
-        val slot = minOf(maxButtonWidth + BUTTON_GAP, with(LocalDensity.current) { (constraints.maxWidth / perRow).toDp() })
+        val slot = minOf(maxButtonWidth + BUTTON_GAP, with(LocalDensity.current) { (room / perRow).toDp() })
         FlowRow(
             modifier = Modifier.selectableGroup().semantics { contentDescription = groupLabel },
             horizontalArrangement = Arrangement.Center,
@@ -217,6 +371,11 @@ private fun <T> PickerGrid(
                 )
             }
         }
+    }
+    if (width != null) {
+        Box(modifier.width(width), contentAlignment = Alignment.Center) { rows(with(LocalDensity.current) { width.roundToPx() }) }
+    } else {
+        BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { rows(constraints.maxWidth) }
     }
 }
 
@@ -247,27 +406,33 @@ private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, 
                 .padding(horizontal = 3.dp),
             contentAlignment = Alignment.Center,
         ) {
-            val style = MaterialTheme.typography.labelLarge
-            Text(
-                musicText(breakableAtHyphens(text)),
-                style = style.copy(
-                    textAlign = TextAlign.Center,
-                    // Two lines take the size the text is set at, so they fit the face as it shrinks.
-                    lineHeight = if (lines > 1) TWO_LINE_HEIGHT else style.lineHeight,
-                    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
-                ),
-                color = if (picked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground,
-                maxLines = lines,
-                autoSize = if (lines > 1) {
-                    WholeWordsAutoSize
-                } else {
-                    // The largest size that fits: below MIN_LABEL_SIZE only where the label would otherwise be cut
-                    // off (Classic's La♭maj7 at 2× text on a 320 dp phone fits at 7.5 sp).
-                    TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
-                },
-            )
+            PickLabel(text, if (picked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onBackground, lines)
         }
     }
+}
+
+/** A button's label in [color] on up to [lines] lines, set smaller where it would not fit. */
+@Composable
+private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign = TextAlign.Center) {
+    val style = MaterialTheme.typography.labelLarge
+    Text(
+        musicText(breakableAtHyphens(text)),
+        style = style.copy(
+            textAlign = align,
+            // Two lines take the size the text is set at, so they fit the face as it shrinks.
+            lineHeight = if (lines > 1) TWO_LINE_HEIGHT else style.lineHeight,
+            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both),
+        ),
+        color = color,
+        maxLines = lines,
+        autoSize = if (lines > 1) {
+            WholeWordsAutoSize
+        } else {
+            // The largest size that fits: below MIN_LABEL_SIZE only where the label would otherwise be cut
+            // off (Classic's La♭maj7 at 2× text on a 320 dp phone fits at 7.5 sp).
+            TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp)
+        },
+    )
 }
 
 /**
@@ -349,6 +514,7 @@ internal fun faceOutline(picked: Boolean): BorderStroke {
 }
 
 private const val ROOTS_PER_ROW = 6
+private const val SCALES_PER_ROW = 2
 private const val TYPES_PER_ROW = 4
 private val ROOT_BUTTON_MAX_WIDTH = 56.dp
 private val TYPE_BUTTON_MAX_WIDTH = 84.dp
@@ -357,6 +523,11 @@ private val CHOICE_BUTTON_MAX_WIDTH = 132.dp
 private val BUTTON_GAP = 6.dp
 private val BUTTON_HEIGHT = 40.dp
 private val TOUCH_HEIGHT = 48.dp
+
+/** The two menu buttons: each half the row, at most this wide, this far apart; their grids this far in from the menu's edges. */
+private val MENU_BUTTON_MAX_WIDTH = 180.dp
+private val MENU_BUTTON_GAP = 8.dp
+private val MENU_PADDING = 4.dp
 private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
