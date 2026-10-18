@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -88,9 +89,10 @@ import kotlinx.coroutines.withContext
  * ([tuningName], heard as [spokenTuningName]), the Chords · Scales choice, the root and the chord
  * type or scale as two buttons that each open a grid ([ChordPickers], the owner's pick C in
  * docs/design/chords-calm-preview.html: fewer buttons in sight, and room for more types later), then
- * the chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit,
- * at large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall)
- * the switch, the choice and the pickers fill the start half; the chart or neck the end half.
+ * the chord's or the scale's name in words ("C minor seventh"; the pickers say it short), then the
+ * chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit, at
+ * large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall) the
+ * switch, the choice and the pickers fill the start half; the name and the chart or neck the end half.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
  * sign). The tool opens on [savedChart], [savedRoot], [savedQuality] and [savedScaleType], and each
@@ -98,10 +100,10 @@ import kotlinx.coroutines.withContext
  * saved. The shapes are worked out off the main thread ([ChordShapeFinder.shapesOf], a few
  * milliseconds); the last ones stay shown meanwhile. A scale's notes take microseconds.
  *
- * TalkBack hears the choice as a radio group, the pickers as lists with what is picked, and the
- * chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a polite live region,
- * so a new shape or chord is said when it shows, and so is the scale's picker (not the whole neck:
- * it is long).
+ * TalkBack hears the choice as a radio group, the pickers as lists with what is picked, the name as
+ * a heading, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
+ * polite live region, so a new shape or chord is said when it shows, and so is a scale's name (not
+ * the whole neck: it is long).
  */
 @Composable
 fun ChordsScreen(
@@ -177,6 +179,18 @@ fun ChordsScreen(
             },
         )
     }
+    val title = @Composable {
+        Text(
+            musicText(breakableAtHyphens(if (scales) scaleWords(scale, notation) else chordWords(chord, notation))),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics {
+                heading()
+                if (scales) liveRegion = LiveRegionMode.Polite
+            },
+        )
+    }
     val fill = @Composable {
         if (scales) {
             NeckArea(scale, tuning, notation, Modifier.fillMaxSize())
@@ -218,7 +232,10 @@ fun ChordsScreen(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    top = { Spacer(Modifier.height(HEADER_TOP)) },
+                    top = {
+                        Spacer(Modifier.height(HEADER_TOP))
+                        title()
+                    },
                     fill = fill,
                     bottom = bottom(1f),
                 )
@@ -245,6 +262,7 @@ fun ChordsScreen(
                         Spacer(Modifier.height(8.dp * gap))
                         pickers()
                         Spacer(Modifier.height(12.dp * gap))
+                        title()
                     },
                     fill = fill,
                     bottom = bottom(gap),

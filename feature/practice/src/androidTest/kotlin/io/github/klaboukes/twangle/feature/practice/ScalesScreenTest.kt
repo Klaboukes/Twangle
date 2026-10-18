@@ -17,6 +17,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -150,6 +151,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             spoken.startsWith("A minor pentatonic, notes A, C, D, E, G, E 2 string, open E, fret 3 G, fret 5 A, root, fret 8 C"),
         )
         node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Minor pentatonic")
+        node(PracticeTestTags.TITLE).assertTextEquals("A minor pentatonic")
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assertIsSelected()
         assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.A))
         assertPicked(PracticeTestTags.TYPE_PICKER, PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
@@ -161,6 +163,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
         pick(PracticeTestTags.TYPE_PICKER, PracticeTestTags.scale(ScaleType.MAJOR))
         assertTrue(spokenNeck(), spokenNeck().startsWith("G major, notes G, A, B, C, D, E, F sharp, E 2 string, open E, fret 2 F sharp, fret 3 G, root"))
         node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Major")
+        node(PracticeTestTags.TITLE).assertTextEquals("G major")
         node(PracticeTestTags.TYPE_PICKER).performClick()
         node(PracticeTestTags.scale(ScaleType.MAJOR)).assertIsSelected()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assertIsNotSelected()
@@ -181,13 +184,14 @@ class ScalesScreenTest(private val style: VisualStyle) {
         compose.waitForIdle()
         assertTrue("the neck shows", exists(PracticeTestTags.NECK))
         assertFalse("the chord chart has gone", exists(PracticeTestTags.CHART))
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Blues")
+        node(PracticeTestTags.TITLE).assertTextEquals("D blues")
         assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.D))
         pick(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.E))
 
         node(PracticeTestTags.chart(PracticeChart.CHORDS)).performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("E major")
+        node(PracticeTestTags.TITLE).assertTextEquals("E major")
+        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("E")
         assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.E))
         assertEquals("both picks passed on to be saved", listOf(PracticeChart.SCALES, PracticeChart.CHORDS), savedCharts)
         assertEquals(listOf(PitchClass.E), savedRoots)
@@ -203,7 +207,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assert(radio).assert(hasContentDescription("Scales"))
         node(PracticeTestTags.ROOT_PICKER).assert(list).assert(hasContentDescription("Root, B flat")).assertTextEquals("B♭")
         node(PracticeTestTags.TYPE_PICKER).assert(list).assert(hasContentDescription("Scale, B flat major")).assertTextEquals("Major")
-        assertTrue("the scale's picker is a polite live region", node(PracticeTestTags.TYPE_PICKER).fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
+        node(PracticeTestTags.TITLE).assert(isHeading()).assertTextEquals("B♭ major")
+        assertTrue("the scale's name is a polite live region", node(PracticeTestTags.TITLE).fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         node(PracticeTestTags.TYPE_PICKER).performClick()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assert(radio).assert(hasContentDescription("Minor pentatonic"))
         node(PracticeTestTags.scale(ScaleType.MAJOR)).performClick()
@@ -244,28 +249,31 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = node(WINDOW).getBoundsInRoot()
             val tags = listOf(
-                PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER,
+                PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE,
             )
             for (tag in tags) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
-            // Upright on a phone held upright, where the pickers leave it the height; sideways on its side.
+            // Upright on the Xiaomi (the owner's choice), sideways on its side; a short phone takes whichever is bigger (sideways).
             val lie = lie()
-            assertEquals("$case how the neck lies", if (size == PHONE_LANDSCAPE) NeckLie.SIDEWAYS else NeckLie.UPRIGHT, lie)
+            if (size == XIAOMI) assertEquals("$case how the neck lies", NeckLie.UPRIGHT, lie)
+            if (size == PHONE_LANDSCAPE) assertEquals("$case how the neck lies", NeckLie.SIDEWAYS, lie)
             val drawn = node(PracticeTestTags.neckLie(lie)).getBoundsInRoot()
             val area = neck().getBoundsInRoot()
             assertTrue("$case the neck inside its room $drawn $area", drawn.left >= area.left && drawn.right <= area.right && drawn.top >= area.top && drawn.bottom <= area.bottom)
             assertTrue("$case inside the window", drawn.bottom <= window.bottom)
             assertTrue("$case a big neck $drawn", maxOf(drawn.width, drawn.height) >= 300.dp)
             val pickers = node(PracticeTestTags.TYPE_PICKER).getBoundsInRoot()
+            val title = node(PracticeTestTags.TITLE).getBoundsInRoot()
+            assertTrue("$case the name over the neck", title.bottom <= area.top + 1.dp)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
                 assertTrue("$case the choice and pickers in the start half", pickers.right <= middle && node(PracticeTestTags.chart(PracticeChart.CHORDS)).getBoundsInRoot().right <= middle)
-                assertTrue("$case the neck in the end half", area.left >= middle)
+                assertTrue("$case the name and the neck in the end half", title.left >= middle && area.left >= middle)
             } else {
-                assertTrue("$case pickers over the neck", pickers.bottom <= area.top + 1.dp)
+                assertTrue("$case pickers over the name", pickers.bottom <= title.top + 1.dp)
                 assertTrue("$case the choice under the tuning line", node(PracticeTestTags.TUNING).getBoundsInRoot().bottom <= node(PracticeTestTags.chart(PracticeChart.SCALES)).getBoundsInRoot().top)
             }
             assertTheGrid(case)
@@ -318,7 +326,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
         for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
-            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.NECK)) {
+            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.NECK)) {
                 assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
             }
             compose.assertEveryTextWhollyShown("$style nl $size at 2x:")

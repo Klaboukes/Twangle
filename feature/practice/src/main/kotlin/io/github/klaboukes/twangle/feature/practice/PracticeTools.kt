@@ -60,6 +60,9 @@ object PracticeTestTags {
     const val ROOT_PICKER = "practice_root_picker"
     const val TYPE_PICKER = "practice_type_picker"
 
+    /** The chord's or the scale's name in words over its chart ("C major", "A minor pentatonic"). */
+    const val TITLE = "practice_chord_title"
+
     /** The chord chart (one item for TalkBack). */
     const val CHART = "practice_chord_chart"
 

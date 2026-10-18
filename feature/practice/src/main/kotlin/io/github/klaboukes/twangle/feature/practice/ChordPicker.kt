@@ -33,10 +33,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -72,16 +70,15 @@ private enum class PickerMenu { ROOT, TYPE }
 /**
  * The root and the chord type (or, with [scales], the scale) side by side, the owner's pick C in
  * docs/design/chords-calm-preview.html: two buttons of one steady size, each half the row (at most
- * [MENU_BUTTON_MAX_WIDTH]), showing what is picked: the root, and the chord or scale in words ("C ⌄" and
- * "C minor seventh ⌄"; "A ⌄" and "Minor pentatonic ⌄"), so no title line is needed over the chart.
+ * [MENU_BUTTON_MAX_WIDTH]), showing what is picked: the root, and the chord's symbol or the scale's
+ * name ("C ⌄" and "Cm7 ⌄"; "A ⌄" and "Minor pentatonic ⌄"); the chart's title says it in words.
  * A tap opens its grid right under the row, as wide as the row: the twelve roots six to a row
  * ([RootPicker]), the seven chord types four to a row ([ChordTypePicker]) or the five scales two to
  * a row ([ScaleTypePicker]); a pick closes it, and so do Back and a tap beside it. A long name takes
  * two lines rather than getting small.
  *
  * TalkBack hears each button as a list with what is picked ("Root, B flat", "Chord type, B flat
- * minor seventh", "Scale, A minor pentatonic"); the scale's button is a polite live region, so a new
- * scale is said briefly (the chord chart says a new chord itself). The grids are radio groups.
+ * minor seventh", "Scale, A minor pentatonic"). The grids are radio groups.
  */
 @Composable
 internal fun ChordPickers(
@@ -101,9 +98,9 @@ internal fun ChordPickers(
     val spell = if (scales) scaleRootSpelling(scaleType, notation) else chordRootSpelling(quality, notation)
     val rootText = spell(root)
     val rootSpoken = stringResource(R.string.practice_root) + separator + speech.name(rootText)
-    // A chord in words, root and all ("C major"): its symbol alone would be "C" beside the root's "C". A scale by its name
-    // alone ("Minor pentatonic"): with its root too, a long one needed three lines (Korean at 2× text).
-    val typeText = if (scales) stringResource(scaleTypeLabel(scaleType)) else chordWords(Chord.of(root, quality), notation)
+    // Short, as the grid writes it: the chord's symbol ("Cm7", the owner's choice), the scale's name without its root
+    // ("Minor pentatonic": with it, a long one needed three lines, Korean at 2× text). The title over the chart has the words.
+    val typeText = if (scales) stringResource(scaleTypeLabel(scaleType)) else chordSymbol(Chord.of(root, quality), notation)
     val typeSpoken = if (scales) {
         stringResource(R.string.practice_scale_type) + separator + scaleWords(Scale(root, scaleType), notation, speech)
     } else {
@@ -125,8 +122,7 @@ internal fun ChordPickers(
                     text = typeText,
                     spoken = typeSpoken,
                     width = buttonWidth,
-                    lines = 2,
-                    live = scales,
+                    lines = if (scales) 2 else 1,
                     onClick = { open = PickerMenu.TYPE },
                     modifier = Modifier.testTag(PracticeTestTags.TYPE_PICKER),
                 )
@@ -163,7 +159,6 @@ private fun MenuButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     lines: Int = 1,
-    live: Boolean = false,
 ) {
     val source = remember { MutableInteractionSource() }
     Box(
@@ -177,7 +172,6 @@ private fun MenuButton(
             .semantics {
                 role = Role.DropdownList
                 contentDescription = spoken
-                if (live) liveRegion = LiveRegionMode.Polite
             },
         contentAlignment = Alignment.Center,
     ) {

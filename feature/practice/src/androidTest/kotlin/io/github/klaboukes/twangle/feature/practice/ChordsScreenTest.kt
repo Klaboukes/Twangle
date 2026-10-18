@@ -149,7 +149,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
             awaitChart("A minor, shape 1 of"),
         )
         node(PracticeTestTags.ROOT_PICKER).assertTextEquals("A")
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("A minor")
+        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Am")
+        node(PracticeTestTags.TITLE).assertTextEquals("A minor")
         assertFalse("the grids are closed", exists(PracticeTestTags.root(PitchClass.A)) || exists(PracticeTestTags.type(ChordQuality.MINOR)))
         assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.A))
         assertPicked(PracticeTestTags.TYPE_PICKER, PracticeTestTags.type(ChordQuality.MINOR))
@@ -159,7 +160,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
         pick(PracticeTestTags.TYPE_PICKER, PracticeTestTags.type(ChordQuality.DOMINANT_SEVENTH))
         awaitChart("G seventh, shape 1 of")
         node(PracticeTestTags.ROOT_PICKER).assertTextEquals("G")
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("G seventh")
+        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("G7")
+        node(PracticeTestTags.TITLE).assertTextEquals("G seventh")
         node(PracticeTestTags.ROOT_PICKER).performClick()
         node(PracticeTestTags.root(PitchClass.G)).assertIsSelected()
         node(PracticeTestTags.root(PitchClass.A)).assertIsNotSelected()
@@ -226,7 +228,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
         compose.waitUntil(WAIT_MS) { spokenChart().contains("C 2 string") }
         shownNotation.value = Notation.SOLFEGE
         awaitChart("Re major")
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Re major")
+        node(PracticeTestTags.TITLE).assertTextEquals("Re major")
+        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Re")
         node(PracticeTestTags.TYPE_PICKER).performClick()
         node(PracticeTestTags.type(ChordQuality.MINOR)).assertTextEquals("Rem")
     }
@@ -241,7 +244,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             awaitChart("C major")
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = node(WINDOW).getBoundsInRoot()
-            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
@@ -252,14 +255,16 @@ class ChordsScreenTest(private val style: VisualStyle) {
             assertTrue("$case a big chart ${chart.height}", chart.height >= if (size == PHONE_UPRIGHT) 156.dp else 170.dp)
             val pager = node(PracticeTestTags.NEXT).getBoundsInRoot()
             val pickers = node(PracticeTestTags.TYPE_PICKER).getBoundsInRoot()
+            val title = node(PracticeTestTags.TITLE).getBoundsInRoot()
             assertTrue("$case chart, then pager", chart.bottom <= pager.top + 1.dp)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
                 assertTrue("$case pickers in the start half", pickers.right <= middle)
-                assertTrue("$case chart in the end half", chart.left >= middle)
+                assertTrue("$case title and chart in the end half", title.left >= middle && chart.left >= middle)
             } else {
-                assertTrue("$case pickers over the chart", pickers.bottom <= chart.top + 1.dp)
+                assertTrue("$case pickers over the title", pickers.bottom <= title.top + 1.dp)
             }
+            assertTrue("$case the title over the chart", title.bottom <= chart.top + 1.dp)
         }
     }
 
@@ -273,7 +278,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             shownSize.value = size
             compose.waitForIdle()
             awaitChart("La")
-            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
             }
             compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
