@@ -73,16 +73,10 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
-import io.github.klaboukes.twangle.feature.metronome.components.StartStopButton
-import io.github.klaboukes.twangle.feature.metronome.components.DIAL_UNITS
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
-import io.github.klaboukes.twangle.feature.metronome.components.STEP_BUTTON_SIZE
-import io.github.klaboukes.twangle.feature.metronome.components.STEP_INSET_UNITS
-import io.github.klaboukes.twangle.feature.metronome.components.STEP_UP_UNITS
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
-import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
@@ -258,10 +252,12 @@ class BeatClock {
 
 /**
  * The metronome's controls for [bpm], [meter], [playing] and [vibrate], stateless: the meter picker at
- * the top, the beat lights, Listen's status line, the tempo dial with − and + in its bottom corners,
- * Tap tempo and Listen, Start / Stop and "Vibrate on the beat". Upright they stand in one column; on
- * a wide screen on its side the dial is at the start and the rest in a column beside it. With a very
- * large font the column scrolls. Only the beat lights and the dial's glow move, and only while
+ * the top, the beat lights, Listen's status line, the tempo dial (as large as the screen leaves room
+ * for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon buttons:
+ * Tap tempo, Listen and "Vibrate on the beat" (the owner's pick A, 2026-10-18,
+ * docs/design/metronome-roomy-preview.html). Upright they stand in one column; on a wide screen on
+ * its side the dial is at the start and the rest in a column beside it. With a very large font the
+ * column scrolls. Only the beat lights and the dial's glow move, and only while
  * playing or listening. [listen] says where Listen stands; a found tempo shows in a balloon over
  * the screen, pointing at Listen ([onUse], [onNotNow]; Back is Not now).
  *
@@ -349,6 +345,9 @@ fun MetronomeContent(
                     onBpmChange = onBpmChange,
                     onBpmChangeFinished = onBpmChangeFinished,
                     onStep = onStep,
+                    playing = playing || (listening && listen.wasPlaying),
+                    onToggle = onToggle,
+                    startResting = listening,
                     beatGlow = clock::glow,
                     size = size,
                     shown = dial::shown,
@@ -366,11 +365,10 @@ fun MetronomeContent(
                     listenEndedAtNanos = listen.endedAtNanos,
                     frameNanos = { clock.frameNanos },
                     onListen = onListen,
+                    vibrate = vibrate,
+                    onVibrateChange = onVibrateChange,
                     onListenPlaced = { listenBounds = it },
                 )
-            }
-            val startStop: @Composable () -> Unit = {
-                StartStopButton(playing || (listening && listen.wasPlaying), onToggle, resting = listening)
             }
             if (wide) {
                 // The halves 16 dp apart, as the other Practice tools: the meter buttons kept clear of the tool switch.
@@ -385,7 +383,7 @@ fun MetronomeContent(
                             header()
                         }
                         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            tempoDial(minOf(DIAL_WIDE, maxHeight, dialFittingHeight(maxHeight), dialFitting(maxWidth)))
+                            tempoDial(minOf(DIAL_LARGEST, maxWidth, maxHeight))
                         }
                     }
                     FitColumn(
@@ -397,16 +395,12 @@ fun MetronomeContent(
                     ) {
                         Spacer(Modifier.gap(1f))
                         MeterPicker(meter, onMeterChange)
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(8.dp))
                         // A short window (a phone's status bar above) gets lower beat lights, so the rest stays in view.
                         Shrinking { room -> lights(room.coerceIn(LIGHTS_HEIGHT_WIDE_SMALLEST, LIGHTS_HEIGHT_WIDE)) }
                         line()
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(12.dp))
                         row()
-                        Spacer(Modifier.height(10.dp))
-                        startStop()
-                        Spacer(Modifier.height(4.dp))
-                        VibrateSwitch(vibrate, onVibrateChange)
                         Spacer(Modifier.gap(1f))
                     }
                 }
@@ -424,25 +418,22 @@ fun MetronomeContent(
                     }
                     Spacer(Modifier.height(12.dp))
                     MeterPicker(meter, onMeterChange)
-                    Spacer(Modifier.gap(1f))
+                    Spacer(Modifier.height(8.dp))
                     lights(LIGHTS_HEIGHT)
                     line()
                     Spacer(Modifier.gap(1f))
-                    // On a short screen (a phone with navigation buttons) the dial shrinks, so the rest stays in view.
+                    // The dial takes all the height the rest leave, up to the width (the gaps share what
+                    // a tall screen has left); below its smallest (very large text) the column scrolls.
                     Shrinking { room ->
-                        val widest = minOf(DIAL_UPRIGHT, width - 32.dp, dialFitting(minOf(width, COLUMN_MAX_WIDTH)))
-                        val dial = minOf(widest, maxOf(dialFittingAbove(room), DIAL_SMALLEST))
-                        // A smaller dial's − and + reach below it: room kept for them, so they never touch Tap tempo.
-                        Box(Modifier.padding(bottom = stepsBelow(dial))) { tempoDial(dial) }
+                        val widest = minOf(DIAL_LARGEST, width - 32.dp)
+                        Box(Modifier.padding(vertical = DIAL_MARGIN)) {
+                            tempoDial(minOf(widest, maxOf(room - DIAL_MARGIN * 2, DIAL_SMALLEST)))
+                        }
                     }
                     Spacer(Modifier.gap(1f))
                     row()
-                    Spacer(Modifier.height(16.dp))
-                    startStop()
-                    Spacer(Modifier.height(12.dp))
-                    VibrateSwitch(vibrate, onVibrateChange)
                     Spacer(Modifier.gap(1f))
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(12.dp))
                 }
             }
             // The suggestion floats on its own layer over the screen, pointing at Listen.
@@ -456,37 +447,6 @@ fun MetronomeContent(
         }
     }
 }
-
-/**
- * The largest dial whose − and + (52 dp, centres 8 units in from its sides) still stand inside
- * [room] (its pane, or the screen with its 16 dp padding), with 2 dp to spare: they reach
- * 26 − 8u dp past the dial, u = dial / 288.
- */
-private fun dialFitting(room: Dp): Dp = ((room.value / 2f - STEP_REACH_DP) * DIAL_UNITS / (DIAL_UNITS / 2f - STEP_INSET_UNITS)).dp
-
-/**
- * The largest dial, centred in a pane [room] tall (on its side, under the Practice tab's tool
- * switch), whose − and + stay inside it: below a dial smaller than 288 dp they reach
- * 26 − 26u dp past its bottom, u = dial / 288, into the room under it. Any dial up to [room]
- * fits from about 290 dp.
- */
-private fun dialFittingHeight(room: Dp): Dp {
-    val half = STEP_BUTTON_SIZE.value / 2f
-    return ((room.value - 2f * half) / (1f - 2f * STEP_UP_UNITS / DIAL_UNITS)).dp
-}
-
-/**
- * How far a [dial]'s − and + reach below it: 26 − 26u dp, u = dial / 288 (none from 288 dp up).
- */
-private fun stepsBelow(dial: Dp): Dp =
-    (STEP_BUTTON_SIZE.value / 2f - STEP_UP_UNITS * dial.value / DIAL_UNITS).coerceAtLeast(0f).dp
-
-/** The largest dial that, with its − and + reaching below it ([stepsBelow]), stays within [room] (upright). */
-private fun dialFittingAbove(room: Dp): Dp =
-    ((room.value - STEP_BUTTON_SIZE.value / 2f) / (1f - STEP_UP_UNITS / DIAL_UNITS)).dp
-
-/** Half a step button plus 2 dp to spare. */
-private const val STEP_REACH_DP = 28f
 
 /**
  * The dial's motion for Listen: the tempo shown (gliding to a used one in 700 ms, [glideNext]), the
@@ -592,15 +552,17 @@ private val HEADER_TOP = 8.dp
 /** The column keeps to this width on a large screen. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** The dial upright (the mock-up's 288 dp) and on its side (300 dp), smaller where the space is. */
-private val DIAL_UPRIGHT = 288.dp
+/** The dial is as large as the room it has, up to this (a tablet); it fills a phone's width upright. */
+private val DIAL_LARGEST = 440.dp
 
 /** Upright the dial shrinks to fit a short screen, down to this; below it (very large text) the column scrolls. */
-private val DIAL_SMALLEST = 150.dp
-private val DIAL_WIDE = 300.dp
+private val DIAL_SMALLEST = 200.dp
 
-/** The beat lights' row: 64 dp upright, 56 dp on its side, at most 360 dp wide. */
-private val LIGHTS_HEIGHT = 64.dp
+/** Room kept above and below the dial upright. */
+private val DIAL_MARGIN = 8.dp
+
+/** The beat lights' row: 48 dp upright, 56 dp on its side, at most 360 dp wide. */
+private val LIGHTS_HEIGHT = 48.dp
 private val LIGHTS_HEIGHT_WIDE = 56.dp
 private val LIGHTS_HEIGHT_WIDE_SMALLEST = 40.dp
 private val LIGHTS_MAX_WIDTH = 360.dp

@@ -25,7 +25,6 @@
     <string name="metronome_meter_7_8_spoken">ميزان سبعة على ثمانية</string>
 
     <string name="metronome_listen">استمع</string>
-    <string name="metronome_listen_stop">أوقف</string>
     <string name="metronome_listen_stop_spoken">أوقف الاستماع</string>
     <string name="metronome_listening">يستمع…</string>
     <string name="metronome_heard">ما سُمع</string>

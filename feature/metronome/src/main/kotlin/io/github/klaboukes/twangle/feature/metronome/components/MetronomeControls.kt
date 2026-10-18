@@ -33,9 +33,14 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -242,9 +247,12 @@ private val MIN_LABEL_SIZE = 9.sp
 /** The mock-up's 52 dp, less 2, so all six fit in a row on a 360 dp phone. */
 private val METER_BUTTON_WIDTH = 50.dp
 
-/** − or + (one BPM slower or faster), 52 dp in the style's shape (round in Contemporary and Space Age), for the dial's corners. */
+/**
+ * − or + (one BPM slower or faster) beside the tempo inside the dial: a [face] across in the style's
+ * shape (round in Contemporary and Space Age), in a touch area of at least 48 dp.
+ */
 @Composable
-fun StepButton(faster: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val shape = if (look.round) CircleShape else look.shape
     val source = remember { MutableInteractionSource() }
@@ -252,25 +260,31 @@ fun StepButton(faster: Boolean, onClick: () -> Unit, modifier: Modifier = Modifi
     Box(
         modifier = modifier
             .testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER)
-            .size(STEP_BUTTON_SIZE)
-            .pressFeedback(source, shape, fill = faceFill(look), outline = faceOutline(look))
+            .size(maxOf(face, MIN_TOUCH))
             .clickable(interactionSource = source, indication = null, role = Role.Button) {
                 source.pressFlash()
                 onClick()
             },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = label, modifier = Modifier.size(22.dp))
+        Box(
+            Modifier.size(face).pressFeedback(source, shape, fill = faceFill(look), outline = faceOutline(look)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = label, modifier = Modifier.size(face * STEP_ICON_SHARE))
+        }
     }
 }
 
-/** − and +: 52 dp, at least the 48 dp touch target. */
-val STEP_BUTTON_SIZE = 52.dp
+/** − and +'s icon: this share of the face. */
+private const val STEP_ICON_SHARE = 0.5f
 
 /**
- * Tap tempo and Listen side by side, 12 dp apart, both the same fixed width whatever their labels
- * say: min(156 dp, (the row's width − 12 dp) / 2), 56 dp tall. A label that doesn't fit is set
- * smaller (down to 12 sp), then wraps.
+ * Tap tempo, Listen and "Vibrate on the beat" in one quiet row under the dial (2026-10-18, the
+ * owner's pick A in docs/design/metronome-roomy-preview.html): three icon buttons of one fixed size,
+ * [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart. Each says its name to TalkBack
+ * and in a tooltip on a long press. Vibrate is a switch, picked (container fill, accent outline,
+ * accent icon) while on.
  */
 @Composable
 fun TempoRow(
@@ -280,43 +294,57 @@ fun TempoRow(
     listenEndedAtNanos: Long,
     frameNanos: () -> Long,
     onListen: () -> Unit,
+    vibrate: Boolean,
+    onVibrateChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onListenPlaced: (Rect) -> Unit = {},
 ) {
-    BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        // Halved in whole pixels: both buttons rounded up could leave Listen a pixel short.
-        val half = with(LocalDensity.current) { ((constraints.maxWidth - ROW_GAP.roundToPx()) / 2).toDp() }
-        val width = min(ROW_BUTTON_MAX_WIDTH, half)
-        Row(
-            Modifier.height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(ROW_GAP),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TapTempoButton(onTap, width, Modifier.width(width).fillMaxHeight())
+    Row(
+        modifier,
+        horizontalArrangement = Arrangement.spacedBy(ICON_ROW_GAP),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val button = Modifier.size(ICON_BUTTON_WIDTH, ICON_BUTTON_HEIGHT)
+        Named(stringResource(R.string.metronome_tap)) { TapTempoButton(onTap, button) }
+        Named(stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen)) {
             ListenButton(
-                width = width,
                 listening = listening,
                 startedAtNanos = listenStartedAtNanos,
                 endedAtNanos = listenEndedAtNanos,
                 frameNanos = frameNanos,
                 onClick = onListen,
-                modifier = Modifier.width(width).fillMaxHeight().onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
+                modifier = button.onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
             )
         }
+        Named(stringResource(R.string.metronome_vibrate)) { VibrateButton(vibrate, onVibrateChange, button) }
     }
 }
 
-private val ROW_BUTTON_MAX_WIDTH = 156.dp
-private val ROW_GAP = 12.dp
-private val ROW_BUTTON_HEIGHT = 56.dp
+/** [content] with [name] in a tooltip above it on a long press, as the tuner's More tools button. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Named(name: String, content: @Composable () -> Unit) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { PlainTooltip { Text(name) } },
+        state = rememberTooltipState(),
+        content = content,
+    )
+}
+
+private val ICON_BUTTON_WIDTH = 72.dp
+private val ICON_BUTTON_HEIGHT = 52.dp
+private val ICON_ROW_GAP = 16.dp
+private val ROW_ICON = 24.dp
 
 /**
- * Tap tempo. A tap counts the moment the finger touches (not when it lifts), so the tempo follows the
- * player's taps as closely as it can; the same touch gives the crisp flash (full for 70 ms, gone
- * 110 ms after the touch, never smeared into the next tap). TalkBack's double tap counts too.
+ * Tap tempo, a fingertip with two ripples. A tap counts the moment the finger touches (not when it
+ * lifts), so the tempo follows the player's taps as closely as it can; the same touch gives the crisp
+ * flash (full for 70 ms, gone 110 ms after the touch, never smeared into the next tap). TalkBack's
+ * double tap counts too.
  */
 @Composable
-private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, width: Dp, modifier: Modifier = Modifier) {
+private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val currentOnTap by rememberUpdatedState(onTap)
     val source = remember { MutableInteractionSource() }
@@ -324,10 +352,10 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, width: Dp, modifier:
     Box(
         modifier = modifier
             .testTag(MetronomeTestTags.TAP)
-            .heightIn(min = ROW_BUTTON_HEIGHT)
             .pressFeedback(source, look.shape, fill = faceFill(look), outline = faceOutline(look), crisp = true)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
+                contentDescription = label
                 onClick(label) {
                     currentOnTap(SystemClock.uptimeMillis())
                     source.tryEmit(PressInteraction.Press(Offset.Zero))
@@ -340,23 +368,48 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, width: Dp, modifier:
                     currentOnTap(down.uptimeMillis)
                     source.tryEmit(PressInteraction.Press(down.position))
                 }
-            }
-            .padding(horizontal = LABEL_PADDING, vertical = 8.dp),
+            },
         contentAlignment = Alignment.Center,
     ) {
-        FittedLabel(label, width - LABEL_PADDING * 2)
+        Icon(painterResource(R.drawable.ic_tap), contentDescription = null, modifier = Modifier.size(ROW_ICON))
+    }
+}
+
+/** "Vibrate on the beat", a switch: picked (container fill, accent outline, accent icon) while [checked]. */
+@Composable
+private fun VibrateButton(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val look = buttonLook()
+    val scheme = MaterialTheme.colorScheme
+    val source = remember { MutableInteractionSource() }
+    val label = stringResource(R.string.metronome_vibrate)
+    Box(
+        modifier = modifier
+            .testTag(MetronomeTestTags.VIBRATE)
+            .pressFeedback(source, look.shape, fill = faceFill(look, checked), outline = faceOutline(look, checked))
+            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
+                source.pressFlash()
+                onCheckedChange(it)
+            }
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_vibrate),
+            contentDescription = null,
+            tint = if (checked) scheme.primary else scheme.onSurface,
+            modifier = Modifier.size(ROW_ICON),
+        )
     }
 }
 
 /**
- * Listen, with a microphone line icon; while [listening] a stop square and "Stop" ("Stop listening"
- * for TalkBack), both in the accent, in the same width. Its 15 s show as a subtle trace round its own
+ * Listen, a microphone line icon; while [listening] a stop square in the accent ("Stop listening"
+ * for TalkBack). Its 15 s show as a subtle trace round its own
  * edge, clockwise from the top centre ([drawListenTrace]): the outline dims, the trace grows with the
  * time (read from [frameNanos], every frame) and fades out over 300 ms where it is when listening ends.
  */
 @Composable
 private fun ListenButton(
-    width: Dp,
     listening: Boolean,
     startedAtNanos: Long,
     endedAtNanos: Long,
@@ -383,14 +436,12 @@ private fun ListenButton(
         if (listening) trace.snapTo(1f) else trace.animateTo(0f, tween(TRACE_FADE_MILLIS, easing = LinearEasing))
     }
     val traceColor = scheme.primary.copy(alpha = TRACE_ALPHA)
-    val label = stringResource(if (listening) R.string.metronome_listen_stop else R.string.metronome_listen)
     val spoken = stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen)
     val content = if (listening) scheme.primary else scheme.onSurface
     val shape = look.shape
-    Row(
+    Box(
         modifier = modifier
             .testTag(MetronomeTestTags.LISTEN)
-            .heightIn(min = ROW_BUTTON_HEIGHT)
             .pressFeedback(source, shape, fill = faceFill(look), outline = BorderStroke(1.dp, outlineColor))
             .drawWithCache {
                 val traced = ListenTrace(shape, size, layoutDirection, this, 1.dp.toPx())
@@ -408,20 +459,15 @@ private fun ListenButton(
                 source.pressFlash()
                 onClick()
             }
-            // TalkBack says the name ("Stop listening"), not the shorter label.
-            .semantics { contentDescription = spoken }
-            .padding(horizontal = LABEL_PADDING, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+            .semantics { contentDescription = spoken },
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             painterResource(if (listening) R.drawable.ic_listen_stop else R.drawable.ic_listen),
             contentDescription = null,
             tint = content,
-            modifier = Modifier.size(LISTEN_ICON),
+            modifier = Modifier.size(ROW_ICON),
         )
-        Spacer(Modifier.width(LISTEN_ICON_GAP))
-        FittedLabel(label, width - LABEL_PADDING * 2 - LISTEN_ICON - LISTEN_ICON_GAP, color = content, modifier = Modifier.weight(1f, fill = false))
     }
 }
 
@@ -521,53 +567,26 @@ private class ListenTrace(shape: Shape, size: Size, direction: LayoutDirection, 
 }
 
 /**
- * A button's label in a fixed width ([available], the button's inside): set smaller where it doesn't
- * fit (down to 12 sp), then wrapped onto two lines, so the button never changes size with its words.
- * Measured here rather than in a constraints-aware layout, so the row can ask for its height.
+ * Start / Stop in the dial's opening: a play or stop icon on a [face] across in the accent, round in
+ * Contemporary and Space Age, else in the style's shape (Futuristic: a neon outline on a solid tint).
+ * It keeps its size whatever it does; TalkBack hears "Start" or "Stop". While Listen listens it rests
+ * at 38 % and takes no taps ([resting]).
  */
 @Composable
-private fun FittedLabel(text: String, available: Dp, modifier: Modifier = Modifier, color: Color = Color.Unspecified) {
-    val base = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center)
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    val room = with(density) { available.roundToPx() }
-    val style = remember(text, base, room, density) {
-        var size = base.fontSize.value
-        while (size > MIN_LABEL_SP) {
-            val result = measurer.measure(text, base.copy(fontSize = size.sp), maxLines = 1, softWrap = false)
-            if (result.size.width <= room) break
-            size -= 0.5f
-        }
-        val fitted = size.coerceAtLeast(MIN_LABEL_SP)
-        base.copy(fontSize = fitted.sp, lineHeight = (fitted * 1.2f).sp)
-    }
-    Text(text, style = style, color = color, maxLines = 2, modifier = modifier)
-}
-
-private const val MIN_LABEL_SP = 12f
-private val LABEL_PADDING = 10.dp
-private val LISTEN_ICON = 20.dp
-private val LISTEN_ICON_GAP = 6.dp
-
-/**
- * Start / Stop, in the accent (Futuristic: a neon outline on a solid tint), 196 dp wide whatever it
- * says. While Listen listens it rests at 38 % and takes no taps ([resting]).
- */
-@Composable
-fun StartStopButton(playing: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, resting: Boolean = false) {
+fun StartStopButton(playing: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier, resting: Boolean = false) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
-    val shape = look.shape
+    val shape = if (look.round) CircleShape else look.shape
     val source = remember { MutableInteractionSource() }
     // Futuristic's tint lies on the background colour, not over the picture: the grid's lines would
     // run through the button.
     val fill = if (look.neon) scheme.primary.copy(alpha = 0.14f).compositeOver(scheme.background) else scheme.primary
     val content = if (look.neon) scheme.primary else scheme.onPrimary
-    Row(
+    val label = stringResource(if (playing) R.string.metronome_stop else R.string.metronome_start)
+    Box(
         modifier = modifier
             .alpha(if (resting) RESTING_ALPHA else 1f)
-            .heightIn(min = 56.dp)
-            .width(START_WIDTH)
+            .size(face)
             .pressFeedback(
                 source,
                 shape,
@@ -579,70 +598,27 @@ fun StartStopButton(playing: Boolean, onClick: () -> Unit, modifier: Modifier = 
                 source.pressFlash()
                 onClick()
             }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .semantics { contentDescription = label }
             .testTag(MetronomeTestTags.START),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             painterResource(if (playing) R.drawable.ic_stop else R.drawable.ic_play),
             contentDescription = null,
             tint = content,
-            modifier = Modifier.size(18.dp),
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            stringResource(if (playing) R.string.metronome_stop else R.string.metronome_start),
-            color = content,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
+            modifier = Modifier.size(face * START_ICON_SHARE),
         )
     }
 }
 
-/** Start / Stop keeps one width: the mock-up's 196 dp. */
-private val START_WIDTH = 196.dp
+/** Start / Stop's icon: this share of its face. */
+private const val START_ICON_SHARE = 0.42f
 
 /** Start / Stop while listening. */
 private const val RESTING_ALPHA = 0.38f
 
-/** "Vibrate on the beat": the whole row is one switch for TalkBack; its press light is a pill. */
-@Composable
-fun VibrateSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    Row(
-        modifier = modifier
-            .testTag(MetronomeTestTags.VIBRATE)
-            .heightIn(min = 48.dp)
-            .pressFeedback(source, PILL, lightInset = PILL_INSET, sink = WIDE_SINK)
-            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onCheckedChange(it)
-            }
-            .padding(horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(
-            painterResource(R.drawable.ic_vibrate),
-            contentDescription = null,
-            tint = if (checked) scheme.primary else scheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp),
-        )
-        Text(stringResource(R.string.metronome_vibrate), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f, fill = false))
-        Switch(checked = checked, onCheckedChange = null)
-    }
-}
-
-/** A text button's (or the vibrate row's) press light: a pill with 12 dp corners, 8 dp in from the top and bottom of its 48 dp. */
+/** A text button's press light (Listen's status line): a pill with 12 dp corners, 8 dp in from the top and bottom of its 48 dp. */
 internal val PILL = RoundedCornerShape(12.dp)
-internal val PILL_INSET = 8.dp
 
-/** The wide vibrate row sinks less. */
-private const val WIDE_SINK = 0.015f
-
-/** − and + sit with their centres 8 units in from the dial's sides and 26 units up from its bottom. */
-internal const val STEP_INSET_UNITS = 8f
-internal const val STEP_UP_UNITS = 26f
+/** The dial is this many units across: lengths in it are in dp at a 288 dp dial. */
 internal const val DIAL_UNITS = 288f

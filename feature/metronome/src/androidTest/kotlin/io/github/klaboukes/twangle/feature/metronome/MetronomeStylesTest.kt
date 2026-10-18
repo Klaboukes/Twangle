@@ -47,7 +47,7 @@ import org.junit.runners.Parameterized
  * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
- * then wholly shown. Playing, in 7/8, so every mark size and the Stop label show. With the Practice
+ * then wholly shown. Playing, in 7/8, so every mark size and Stop show. With the Practice
  * tab's tool switch over it (Phase 32, a stand-in with the same switch and English labels), as the
  * app shows it, and without, as the plain Metronome tab.
  *
@@ -145,9 +145,6 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             val case = "$style ${size.width} x ${size.height} at 2x"
             // On its side the dial has a pane of its own that doesn't scroll (it is sized to fit).
             for ((name, node) in parts()) assertWhollyShown(node, "$case $name", scroll = name != "dial" || size == PHONE_UPRIGHT)
-            for (text in listOf("Tap tempo", "Listen", "Stop", "Vibrate on the beat")) {
-                assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), "$case $text")
-            }
             // The marking in the dial's middle (Presto at 168 BPM), not cut off.
             assertWhollyShown(compose.onNodeWithText("Presto", useUnmergedTree = true), "$case marking", scroll = size == PHONE_UPRIGHT)
         }
@@ -165,15 +162,27 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             for (j in i + 1 until bounds.size) {
                 val (a, first) = bounds[i]
                 val (b, second) = bounds[j]
-                // − and + stand in the dial's bottom corners by design, outside its ring.
-                val corner = setOf(a, b).let { "dial" in it && ("slower" in it || "faster" in it) }
-                if (!corner && first.overlaps(second)) fail("$case $a $first overlaps $b $second")
+                // − and + and Start stand inside the dial by design.
+                val inDial = setOf(a, b).let { "dial" in it && ("slower" in it || "faster" in it || "start" in it) }
+                if (!inDial && first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
+        }
+        // Inside the dial: − and +'s faces (32 units of a 288 unit dial, at least 32 dp, in their 48 dp
+        // touch areas) clear of the tempo's figures, Start clear of the marking.
+        val figures = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
+        val marking = compose.onNodeWithText("Presto", useUnmergedTree = true).getBoundsInRoot()
+        val dial = bounds.first { it.first == "dial" }.second
+        val face = maxOf(dial.width * (32f / 288f), 32.dp)
+        for ((name, rect) in bounds) {
+            val inset = ((rect.width - face) / 2).coerceAtLeast(0.dp)
+            val faceRect = DpRect(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
+            if ((name == "slower" || name == "faster") && faceRect.overlaps(figures)) fail("$case $name $faceRect overlaps the tempo $figures")
+            if (name == "start" && rect.overlaps(marking)) fail("$case start $rect overlaps the marking $marking")
         }
     }
 
     @Test
-    fun tapTempoAndListenKeepOneWidthAndTheDialsStepsStayInTheWindow() {
+    fun theIconRowKeepsOneSizeAndTheDialsButtonsStayInsideIt() {
         show()
         for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, NARROW_UPRIGHT to 1f, PHONE_LANDSCAPE to 1f)) {
             shownSize.value = size
@@ -182,22 +191,18 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 shownListen.value = if (listening) ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96) else ListenUi()
                 compose.waitForIdle()
                 val case = "$style ${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
-                val tap = compose.onNodeWithTag(MetronomeTestTags.TAP).getBoundsInRoot()
-                val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
-                assertEquals("$case same width", tap.width.value, listen.width.value, 0.5f)
-                assertEquals("$case same height", tap.height.value, listen.height.value, 0.5f)
-                assertTrue("$case at most 156 dp", tap.width <= 156.5.dp)
-                val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+                for (tag in listOf(MetronomeTestTags.TAP, MetronomeTestTags.LISTEN, MetronomeTestTags.VIBRATE)) {
+                    val button = compose.onNodeWithTag(tag).getBoundsInRoot()
+                    assertEquals("$case $tag width", 72f, button.width.value, 0.5f)
+                    assertEquals("$case $tag height", 52f, button.height.value, 0.5f)
+                }
                 val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
-                for (tag in listOf(MetronomeTestTags.SLOWER, MetronomeTestTags.FASTER)) {
-                    val step = compose.onNodeWithTag(tag).getBoundsInRoot()
+                for (tag in listOf(MetronomeTestTags.SLOWER, MetronomeTestTags.FASTER, MetronomeTestTags.START)) {
+                    val part = compose.onNodeWithTag(tag).getBoundsInRoot()
                     assertTrue(
-                        "$case $tag $step inside the window $window",
-                        step.left >= window.left - SLACK && step.right <= window.right + SLACK && step.bottom <= window.bottom + SLACK,
+                        "$case $tag $part inside the dial $dial",
+                        part.left >= dial.left - SLACK && part.right <= dial.right + SLACK && part.top >= dial.top - SLACK && part.bottom <= dial.bottom + SLACK,
                     )
-                    // A dial smaller than 288 dp (on its side under the tool switch) has them reach 26 − 26u dp below it, u = dial / 288.
-                    val below = (26f - 26f * dial.height.value / 288f).coerceAtLeast(0f).dp
-                    assertTrue("$case $tag $step at the dial's bottom $dial", step.bottom <= dial.bottom + below + 1.dp && step.bottom >= dial.bottom - 8.dp)
                 }
                 assertTrue("$case slower on the left", compose.onNodeWithTag(MetronomeTestTags.SLOWER).getBoundsInRoot().right < dial.left + dial.width / 2)
             }
@@ -217,9 +222,9 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
             val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
             val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-            // Above Listen upright; on its side, with no room above or below, beside it over the dial.
+            // Above Listen upright; on its side above it where there is room, else beside it over the dial.
             if (size == PHONE_LANDSCAPE) {
-                assertTrue("$case balloon $balloon beside Listen $listen", balloon.right <= listen.left)
+                assertTrue("$case balloon $balloon above or beside Listen $listen", balloon.bottom <= listen.top || balloon.right <= listen.left)
             } else {
                 assertTrue("$case balloon $balloon above Listen $listen", balloon.bottom <= listen.top)
             }
@@ -294,7 +299,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(650.dp, 325.dp)
 
-        /** A small, narrow phone (320 dp wide): the dial shrinks so − and + still fit beside it. */
+        /** A small, narrow phone (320 dp wide). */
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
 
         /** The owner's Xiaomi 12X upright without the status bar, the button bar and the app's navigation bar. */

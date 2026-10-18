@@ -73,7 +73,7 @@ Designs and measurements that have been superseded, kept for the record and take
 - **Press effect:** Phase 27 (2026-10-15) replaced Material's ripple everywhere, including the navigation bar's unbounded ripple, with the style's own press light.
 
 ## Metronome, widget and watch
-- **Metronome screen:** Phase 19 built it; Phase 27 (2026-10-15) added Listen and the press effect. Until Phase 26 a tap on the tempo dial's middle jumped the tempo to 30 or 250.
+- **Metronome screen:** Phase 19 built it; Phase 27 (2026-10-15) added Listen and the press effect. Until Phase 26 a tap on the tempo dial's middle jumped the tempo to 30 or 250. Until 2026-10-18 the dial was 288 dp upright (the tempo's figures 58 units) with 52 dp − and + in its bottom corners (centres 8 units in and 26 up, reaching outside it, so `dialFitting`, `dialFittingAbove` and `stepsBelow` sized the dial round them), and under it Tap tempo and Listen as labelled buttons (min(156 dp, half the row) × 56 dp, labels fitted by `FittedLabel`), a 196 dp Start / Stop with its word and a "Vibrate on the beat" row with a Material switch; the owner found it too crowded. The tool switch's selected segment showed Material's check mark (dropped from 1.5× text with three segments) until the same day.
 - **Home-screen widget and watch app:** both Phase 20.
 - **Watch microphone permission:** until Phase 26 a dismissed first dialog sent the player to the watch's settings.
 

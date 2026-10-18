@@ -20,7 +20,6 @@
     <string name="metronome_meter_7_8_spoken">Siebenachteltakt</string>
 
     <string name="metronome_listen">Zuhören</string>
-    <string name="metronome_listen_stop">Stopp</string>
     <string name="metronome_listen_stop_spoken">Zuhören beenden</string>
     <string name="metronome_listening">Hört zu…</string>
     <string name="metronome_heard">Gehört</string>

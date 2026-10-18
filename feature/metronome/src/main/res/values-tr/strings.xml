@@ -20,7 +20,6 @@
     <string name="metronome_meter_7_8_spoken">Yedi sekizlik ölçü</string>
 
     <string name="metronome_listen">Dinle</string>
-    <string name="metronome_listen_stop">Durdur</string>
     <string name="metronome_listen_stop_spoken">Dinlemeyi durdur</string>
     <string name="metronome_listening">Dinleniyor…</string>
     <string name="metronome_heard">Duyulan</string>

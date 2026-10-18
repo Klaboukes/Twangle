@@ -1,0 +1,174 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Roomy Metronome</title>
+<!--
+TWANGLE METRONOME, LESS CROWDED (round 1). ROUGH, plain on purpose: the core layout ideas, Contemporary style.
+OWNER'S PICK, 2026-10-18: A. As built, − and + sit level with the tempo but closer in than drawn here, and the
+         figures smaller (46 units of the 288 unit dial, not 58), so both stay inside the needle's path.
+Owner's asks (2026-10-18): the dial as big as it can be, the rest secondary; − and + part of the dial; the
+three big buttons (Tap tempo, Listen, Start) smaller; "Vibrate on the beat" smaller; no check mark in the
+Metronome / Chords / Capo switch, only the highlight.
+Phone    393 dp wide (Xiaomi 12X), the 740 dp between the status bar and the navigation bar.
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --track: #CDD3E3; --accent: #3A4FD6; --on-accent: #fff;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #343A50; --accent: #A6ADFF; --on-accent: #10141F;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #343A50; --accent: #A6ADFF; --on-accent: #10141F;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.phones { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 28px; }
+.cand { display: grid; gap: 8px; width: 393px; max-width: 100%; align-content: start; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; }
+svg.phone { width: 100%; height: auto; background: var(--bg); border-radius: 18px; display: block; }
+.face { fill: color-mix(in srgb, var(--surface) 45%, transparent); stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 1; }
+.picked { fill: var(--container); stroke: var(--accent); stroke-width: 2; }
+.seg-line { stroke: color-mix(in srgb, var(--muted) 60%, transparent); }
+.start { fill: var(--accent); }
+.on-accent { fill: var(--on-accent); }
+.ink { fill: var(--ink); } .muted { fill: var(--muted); } .acc { fill: var(--accent); }
+.ring { fill: none; stroke: var(--track); stroke-width: 6; stroke-linecap: round; }
+.ring-on { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+.tick { stroke: var(--muted); stroke-width: 1.5; }
+.stroke-ink { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.light { fill: var(--track); } .light-on { fill: var(--accent); }
+text { font-family: var(--ui); }
+.lbl { font-size: 15px; } .small { font-size: 12px; } .num { font-size: 76px; font-weight: 300; } .bpm { font-size: 14px; letter-spacing: .1em; }
+</style>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Metronome · round 1 · rough</p>
+  <h1>A roomier metronome</h1>
+  <p class="lede">Two ways to give the tempo dial the screen. In both the dial fills the width (about 360 dp, today 288),
+  Tap tempo, Listen and Vibrate become icon buttons (their names stay for TalkBack and on a long press),
+  Start becomes a round play button, and the tool switch loses its check mark.</p>
+</header>
+
+<div class="phones">
+
+<!-- ============ A ============ -->
+<section class="cand">
+  <h2>A · Everything about tempo inside the dial</h2>
+  <svg class="phone" viewBox="0 0 393 740" role="img" aria-label="Option A">
+    <!-- tool switch: no check, only the highlight -->
+    <rect x="16" y="8" width="361" height="48" rx="24" class="face"/>
+    <path d="M40,8 h96.3 v48 h-96.3 a24,24 0 0 1 0,-48z" class="picked"/>
+    <line x1="136.3" y1="8" x2="136.3" y2="56" class="seg-line"/><line x1="256.7" y1="8" x2="256.7" y2="56" class="seg-line"/>
+    <text x="76" y="37" text-anchor="middle" class="lbl ink">Metronome</text>
+    <text x="196.5" y="37" text-anchor="middle" class="lbl ink">Chords</text>
+    <text x="317" y="37" text-anchor="middle" class="lbl ink">Capo</text>
+    <!-- meters -->
+    <g id="meters">
+      <rect x="36.5" y="68" width="50" height="40" rx="20" class="face"/><text x="61.5" y="93" text-anchor="middle" class="lbl ink">2/4</text>
+      <rect x="90.5" y="68" width="50" height="40" rx="20" class="face"/><text x="115.5" y="93" text-anchor="middle" class="lbl ink">3/4</text>
+      <rect x="144.5" y="68" width="50" height="40" rx="20" class="picked"/><text x="169.5" y="93" text-anchor="middle" class="lbl ink">4/4</text>
+      <rect x="198.5" y="68" width="50" height="40" rx="20" class="face"/><text x="223.5" y="93" text-anchor="middle" class="lbl ink">5/4</text>
+      <rect x="252.5" y="68" width="50" height="40" rx="20" class="face"/><text x="277.5" y="93" text-anchor="middle" class="lbl ink">6/8</text>
+      <rect x="306.5" y="68" width="50" height="40" rx="20" class="face"/><text x="331.5" y="93" text-anchor="middle" class="lbl ink">7/8</text>
+    </g>
+    <!-- beat lights, lower -->
+    <circle cx="141" cy="136" r="9" class="light-on"/><circle cx="178" cy="136" r="7" class="light"/><circle cx="215" cy="136" r="7" class="light"/><circle cx="252" cy="136" r="7" class="light"/>
+    <!-- dial: centre 196.5,350, ring r 158 -->
+    <path d="M84.8,461.7 A158,158 0 1 1 308.2,461.7" class="ring"/>
+    <path d="M84.8,461.7 A158,158 0 0 1 110,217" class="ring-on"/>
+    <g class="small muted" text-anchor="middle">
+      <text x="62" y="490">30</text><text x="30" y="350">60</text><text x="80" y="210">100</text><text x="196.5" y="174">150</text><text x="313" y="210">200</text><text x="363" y="350">220</text><text x="331" y="490">250</text>
+    </g>
+    <!-- − and + beside the number -->
+    <circle cx="86" cy="330" r="24" class="face"/><rect x="77" y="329" width="18" height="2.2" class="ink"/>
+    <circle cx="307" cy="330" r="24" class="face"/><rect x="298" y="329" width="18" height="2.2" class="ink"/><rect x="305.9" y="320" width="2.2" height="20" class="ink"/>
+    <text x="196.5" y="356" text-anchor="middle" class="num ink">120</text>
+    <text x="196.5" y="382" text-anchor="middle" class="bpm muted">BPM</text>
+    <text x="196.5" y="404" text-anchor="middle" class="lbl muted" font-style="italic">Allegro</text>
+    <!-- Start in the dial's opening -->
+    <circle cx="196.5" cy="470" r="36" class="start"/><path d="M186,452 v36 l30,-18z" class="on-accent"/>
+    <!-- Tap · Listen · Vibrate icons -->
+    <g transform="translate(76,566)">
+      <rect width="64" height="52" rx="26" class="face"/>
+      <circle cx="32" cy="30" r="4" class="ink"/><path d="M24,22 a11,11 0 0 1 16,0 M19,17 a18,18 0 0 1 26,0" class="stroke-ink"/>
+    </g>
+    <g transform="translate(164.5,566)">
+      <rect width="64" height="52" rx="26" class="face"/>
+      <g transform="translate(20,14)" class="stroke-ink"><path d="M12,2.5a3,3 0 0 1 3,3v5.5a3,3 0 0 1 -6,0v-5.5a3,3 0 0 1 3,-3z M5.5,11a6.5,6.5 0 0 0 13,0 M12,17.5v3.5M9,21h6"/></g>
+    </g>
+    <g transform="translate(253,566)">
+      <rect width="64" height="52" rx="26" class="face"/>
+      <g transform="translate(20,14)" class="stroke-ink"><path d="M9.8,3.5h4.4a1.8,1.8 0 0 1 1.8,1.8v13.4a1.8,1.8 0 0 1 -1.8,1.8h-4.4a1.8,1.8 0 0 1 -1.8,-1.8v-13.4a1.8,1.8 0 0 1 1.8,-1.8z M4.5,8.5v7M19.5,8.5v7M1.8,10.5v3M22.2,10.5v3"/></g>
+    </g>
+    <text x="108" y="636" text-anchor="middle" class="small muted">Tap</text><text x="196.5" y="636" text-anchor="middle" class="small muted">Listen</text><text x="285" y="636" text-anchor="middle" class="small muted">Vibrate</text>
+    <text x="196.5" y="700" text-anchor="middle" class="small muted">(words under the icons only in this sketch)</text>
+  </svg>
+  <p class="note">Start sits in the dial's opening at the bottom, − and + either side of the number. One quiet row of
+  three icons underneath. Vibrate lights up in the accent when it's on. Inside the dial gets fairly busy.</p>
+</section>
+
+<!-- ============ B ============ -->
+<section class="cand">
+  <h2>B · − and + end the scale, Start in a player row</h2>
+  <svg class="phone" viewBox="0 0 393 740" role="img" aria-label="Option B">
+    <rect x="16" y="8" width="361" height="48" rx="24" class="face"/>
+    <path d="M40,8 h96.3 v48 h-96.3 a24,24 0 0 1 0,-48z" class="picked"/>
+    <line x1="136.3" y1="8" x2="136.3" y2="56" class="seg-line"/><line x1="256.7" y1="8" x2="256.7" y2="56" class="seg-line"/>
+    <text x="76" y="37" text-anchor="middle" class="lbl ink">Metronome</text>
+    <text x="196.5" y="37" text-anchor="middle" class="lbl ink">Chords</text>
+    <text x="317" y="37" text-anchor="middle" class="lbl ink">Capo</text>
+    <use href="#meters"/>
+    <!-- beat lights with the vibrate switch at the row's end -->
+    <circle cx="141" cy="140" r="9" class="light-on"/><circle cx="178" cy="140" r="7" class="light"/><circle cx="215" cy="140" r="7" class="light"/><circle cx="252" cy="140" r="7" class="light"/>
+    <g transform="translate(333,118)">
+      <circle cx="22" cy="22" r="22" class="picked"/>
+      <g transform="translate(10,10)" class="stroke-ink"><path d="M9.8,3.5h4.4a1.8,1.8 0 0 1 1.8,1.8v13.4a1.8,1.8 0 0 1 -1.8,1.8h-4.4a1.8,1.8 0 0 1 -1.8,-1.8v-13.4a1.8,1.8 0 0 1 1.8,-1.8z M4.5,8.5v7M19.5,8.5v7M1.8,10.5v3M22.2,10.5v3"/></g>
+    </g>
+    <text x="355" y="178" text-anchor="middle" class="small muted">(on)</text>
+    <!-- dial: centre 196.5,362, ring r 160; − and + at its ends -->
+    <path d="M83.4,475.1 A160,160 0 1 1 309.6,475.1" class="ring"/>
+    <path d="M83.4,475.1 A160,160 0 0 1 110,227" class="ring-on"/>
+    <g class="small muted" text-anchor="middle">
+      <text x="28" y="366">50</text><text x="78" y="220">100</text><text x="196.5" y="184">150</text><text x="315" y="220">200</text><text x="365" y="366">220</text>
+    </g>
+    <circle cx="83.4" cy="475.1" r="26" class="face"/><rect x="74" y="474" width="18" height="2.2" class="ink"/>
+    <circle cx="309.6" cy="475.1" r="26" class="face"/><rect x="300.6" y="474" width="18" height="2.2" class="ink"/><rect x="308.5" y="465" width="2.2" height="20" class="ink"/>
+    <text x="196.5" y="370" text-anchor="middle" class="num ink">120</text>
+    <text x="196.5" y="398" text-anchor="middle" class="bpm muted">BPM</text>
+    <text x="196.5" y="422" text-anchor="middle" class="lbl muted" font-style="italic">Allegro</text>
+    <!-- player row: Tap · Start · Listen -->
+    <g transform="translate(78,570)">
+      <circle cx="28" cy="28" r="28" class="face"/>
+      <circle cx="28" cy="32" r="4" class="ink"/><path d="M20,24 a11,11 0 0 1 16,0 M15,19 a18,18 0 0 1 26,0" class="stroke-ink"/>
+    </g>
+    <circle cx="196.5" cy="598" r="40" class="start"/><path d="M185,578 v40 l33,-20z" class="on-accent"/>
+    <g transform="translate(259,570)">
+      <circle cx="28" cy="28" r="28" class="face"/>
+      <g transform="translate(16,16)" class="stroke-ink"><path d="M12,2.5a3,3 0 0 1 3,3v5.5a3,3 0 0 1 -6,0v-5.5a3,3 0 0 1 3,-3z M5.5,11a6.5,6.5 0 0 0 13,0 M12,17.5v3.5M9,21h6"/></g>
+    </g>
+    <text x="106" y="646" text-anchor="middle" class="small muted">Tap</text><text x="287" y="646" text-anchor="middle" class="small muted">Listen</text>
+    <text x="196.5" y="700" text-anchor="middle" class="small muted">(words under the icons only in this sketch)</text>
+  </svg>
+  <p class="note">The scale runs into − and + (slower at the slow end, faster at the fast end). Underneath, a row like
+  a music player: Tap tempo, a big Start, Listen. Vibrate becomes a small switch beside the beat lights, since it's
+  about the beat. The dial stays calm inside. <b>My pick.</b></p>
+</section>
+
+</div>
+</div>

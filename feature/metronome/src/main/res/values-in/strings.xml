@@ -19,7 +19,6 @@
     <string name="metronome_meter_7_8_spoken">Birama tujuh per delapan</string>
 
     <string name="metronome_listen">Dengarkan</string>
-    <string name="metronome_listen_stop">Berhenti</string>
     <string name="metronome_listen_stop_spoken">Berhenti mendengarkan</string>
     <string name="metronome_listening">Mendengarkan…</string>
     <string name="metronome_heard">Terdengar</string>

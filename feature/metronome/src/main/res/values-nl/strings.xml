@@ -20,7 +20,6 @@
     <string name="metronome_meter_7_8_spoken">Zevenachtstemaat</string>
 
     <string name="metronome_listen">Luisteren</string>
-    <string name="metronome_listen_stop">Stop</string>
     <string name="metronome_listen_stop_spoken">Stop met luisteren</string>
     <string name="metronome_listening">Luisteren…</string>
     <string name="metronome_heard">Gehoord</string>

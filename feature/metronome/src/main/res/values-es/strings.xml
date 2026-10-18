@@ -21,7 +21,6 @@
     <string name="metronome_meter_7_8_spoken">Compás de siete por ocho</string>
 
     <string name="metronome_listen">Escuchar</string>
-    <string name="metronome_listen_stop">Detener</string>
     <string name="metronome_listen_stop_spoken">Dejar de escuchar</string>
     <string name="metronome_listening">Escuchando…</string>
     <string name="metronome_heard">Oído</string>

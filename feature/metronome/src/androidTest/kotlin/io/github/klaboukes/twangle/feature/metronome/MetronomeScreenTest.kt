@@ -105,7 +105,7 @@ class MetronomeScreenTest {
         compose.onNodeWithText("Andante", useUnmergedTree = true).assertExists()
         compose.onNodeWithTag(MetronomeTestTags.meter(Meter.THREE_FOUR)).assertIsSelected()
         compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).assertIsNotSelected()
-        start.assert(hasText("Start"))
+        start.assertContentDescriptionEquals("Start")
         assertFalse(player.isPlaying.value)
         assertEquals(0, player.startCount)
     }
@@ -118,7 +118,7 @@ class MetronomeScreenTest {
         assertTrue(player.isPlaying.value)
         assertEquals(96, player.bpm)
         assertEquals(Meter.THREE_FOUR, player.meter)
-        start.assert(hasText("Stop"))
+        start.assertContentDescriptionEquals("Stop")
 
         compose.onNodeWithTag(MetronomeTestTags.FASTER).performClick()
         compose.onNodeWithTag(MetronomeTestTags.FASTER).performClick()
@@ -197,7 +197,7 @@ class MetronomeScreenTest {
         show()
         compose.onNodeWithContentDescription("Slower").assertHasClickAction()
         compose.onNodeWithContentDescription("Faster").assertHasClickAction()
-        compose.onNodeWithTag(MetronomeTestTags.TAP).assert(hasText("Tap tempo")).assertHasClickAction()
+        compose.onNodeWithTag(MetronomeTestTags.TAP).assertContentDescriptionEquals("Tap tempo").assertHasClickAction()
         compose.onNodeWithContentDescription("Beats in a bar").assertExists()
         for (meter in Meter.entries) {
             compose.onNodeWithTag(MetronomeTestTags.meter(meter))
@@ -212,7 +212,7 @@ class MetronomeScreenTest {
     fun theVibrationSwitchIsSaved() {
         show()
         val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE)
-        vibrate.assert(hasText("Vibrate on the beat")).assertIsOff()
+        vibrate.assertContentDescriptionEquals("Vibrate on the beat").assertIsOff()
         vibrate.performClick()
         compose.waitForIdle()
         vibrate.assertIsOn()
@@ -235,8 +235,8 @@ class MetronomeScreenTest {
     @Test
     fun dutchAtTwiceTheTextSizeOnItsSideIsWhollyShown() {
         show(locale = "nl", fontScale = 2f, size = PHONE_LANDSCAPE)
-        for (text in listOf("Tempo tikken", "Luisteren", "Start", "Trillen op de tel")) {
-            assertWhollyShown(compose.onNodeWithText(text, useUnmergedTree = true), text)
+        for (name in listOf("Tempo tikken", "Luisteren", "Start", "Trillen op de tel")) {
+            assertWhollyShown(compose.onNodeWithContentDescription(name), name)
         }
         compose.onNodeWithContentDescription("Langzamer").assertExists()
         compose.onNodeWithContentDescription("Tellen per maat").assertExists()
@@ -245,13 +245,16 @@ class MetronomeScreenTest {
     }
 
     @Test
-    fun theStepButtonsSitInTheDialsCornersAndNeverTurnIt() {
+    fun theStepButtonsSitBesideTheTempoAndStartInTheOpeningAndNeitherTurnsTheDial() {
         show()
         val dialBounds = dial.getBoundsInRoot()
+        val figures = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
         val slower = compose.onNodeWithTag(MetronomeTestTags.SLOWER)
         val faster = compose.onNodeWithTag(MetronomeTestTags.FASTER)
-        assertTrue("slower at the dial's bottom left", slower.getBoundsInRoot().let { it.right < dialBounds.left + dialBounds.width / 3 && it.bottom > dialBounds.bottom - 60.dp })
-        assertTrue("faster at the dial's bottom right", faster.getBoundsInRoot().let { it.left > dialBounds.right - dialBounds.width / 3 && it.bottom > dialBounds.bottom - 60.dp })
+        fun level(it: androidx.compose.ui.unit.DpRect) = it.top < figures.bottom && it.bottom > figures.top
+        assertTrue("slower left of the tempo, level with it", slower.getBoundsInRoot().let { it.left > dialBounds.left && it.right <= figures.left + 4.dp && level(it) })
+        assertTrue("faster right of the tempo, level with it", faster.getBoundsInRoot().let { it.right < dialBounds.right && it.left >= figures.right - 4.dp && level(it) })
+        assertTrue("start in the dial's opening", start.getBoundsInRoot().let { it.top > figures.bottom && it.bottom <= dialBounds.bottom })
         slower.performClick()
         slower.performClick()
         faster.performClick()

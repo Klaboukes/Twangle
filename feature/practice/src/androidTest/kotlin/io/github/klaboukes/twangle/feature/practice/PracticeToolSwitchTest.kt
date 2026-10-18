@@ -160,8 +160,8 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
 
     /**
      * Every language at 2× text, either tool picked, upright on a 360 dp phone (as the tuner's and the
-     * metronome's checks: on a 320 dp phone a picked Japanese "メトロノーム" beside its check mark needs
-     * less than the labels' smallest size, 8 sp, as the tuner's "クロマチック" would) and on its side.
+     * metronome's checks: on a 320 dp phone Japanese "メトロノーム" needs less than the labels'
+     * smallest size, 8 sp, as the tuner's "クロマチック" would) and on its side.
      * Only with `--languages`.
      */
     @EveryLanguage

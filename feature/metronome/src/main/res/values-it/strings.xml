@@ -21,7 +21,6 @@
     <string name="metronome_meter_7_8_spoken">Tempo in sette ottavi</string>
 
     <string name="metronome_listen">Ascolta</string>
-    <string name="metronome_listen_stop">Ferma</string>
     <string name="metronome_listen_stop_spoken">Smetti di ascoltare</string>
     <string name="metronome_listening">In ascolto…</string>
     <string name="metronome_heard">Sentito</string>

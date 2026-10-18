@@ -2,12 +2,12 @@ package io.github.klaboukes.twangle.feature.metronome.components
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,11 +60,13 @@ import kotlin.math.roundToInt
  * Andante") that steps one BPM at a time. [beatGlow] lights the soft glow behind the tempo on each
  * beat, read in the draw phase only. [size] is the dial's width and height.
  *
- * − and + ([onStep]) stand in the dial's bottom corners (Phase 27): their centres 8 units in from
- * its sides and 26 units up from its bottom, so they reach up to 18 dp outside it (the caller leaves
- * that room); slower on the left, faster on the right in every language; never part of its ring.
- * [shown] is the tempo the arc, needle and figures show (gliding to a used tempo), [ringBpm] and
- * [ringAlpha] the listening ring, [foundGlow] the glow when a found tempo is used.
+ * Everything about the tempo stands inside the dial (2026-10-18, the owner's pick A in
+ * docs/design/metronome-roomy-preview.html): − and + ([onStep]) either side of the figures, inside
+ * the needle's path, slower on the left and faster on the right in every language; Start / Stop
+ * ([playing], [onToggle], resting while Listen listens: [startResting]) in the opening at the
+ * bottom. Each takes its own touches, never the ring's. [shown] is the tempo the arc, needle and
+ * figures show (gliding to a used tempo), [ringBpm] and [ringAlpha] the listening ring,
+ * [foundGlow] the glow when a found tempo is used.
  */
 @Composable
 fun TempoDial(
@@ -72,9 +74,12 @@ fun TempoDial(
     onBpmChange: (Int) -> Unit,
     onBpmChangeFinished: () -> Unit,
     onStep: (Int) -> Unit,
+    playing: Boolean,
+    onToggle: () -> Unit,
     beatGlow: () -> Float,
     size: Dp,
     modifier: Modifier = Modifier,
+    startResting: Boolean = false,
     shown: () -> Float = { bpm.toFloat() },
     shownBpm: Int = bpm,
     ringBpm: () -> Float = { 0f },
@@ -145,32 +150,47 @@ fun TempoDial(
                 foundGlow = foundGlow,
                 modifier = Modifier.size(size),
             )
-            TempoReadout(shownBpm, markingName(TempoMarking.of(shownBpm)), size)
+            TempoReadout(shownBpm, markingName(TempoMarking.of(shownBpm)), size, Modifier.align(Alignment.TopCenter))
         }
-        // After the dial, so TalkBack hears "Slower", "Faster" after it; placed by absolute left and right.
+        // After the dial, so TalkBack hears "Slower", "Faster" and Start after it; placed by absolute
+        // left and right, each centred on its spot (in units from the dial's middle).
         val u = size.value / DIAL_UNITS
-        val half = STEP_BUTTON_SIZE.value / 2f
-        val top = (size.value - STEP_UP_UNITS * u - half).dp
+        val half = size.value / 2f
+        val face = maxOf(STEP_FACE_UNITS * u, STEP_FACE_MIN.value).dp
+        val stepBox = maxOf(face, MIN_TOUCH)
+        val startFace = maxOf(START_UNITS * u, START_MIN.value).dp
+        fun Modifier.centredAt(x: Float, y: Float, box: Dp): Modifier = align(AbsoluteAlignment.TopLeft)
+            .absoluteOffset(x = (half + x * u - box.value / 2f).dp, y = (half + y * u - box.value / 2f).dp)
         StepButton(
             faster = false,
             onClick = { onStep(-1) },
-            modifier = Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset(x = (STEP_INSET_UNITS * u - half).dp, y = top),
+            face = face,
+            modifier = Modifier.centredAt(-STEP_X_UNITS, -FIGURES_UP_UNITS, stepBox),
         )
         StepButton(
             faster = true,
             onClick = { onStep(+1) },
-            modifier = Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset(x = (size.value - STEP_INSET_UNITS * u - half).dp, y = top),
+            face = face,
+            modifier = Modifier.centredAt(STEP_X_UNITS, -FIGURES_UP_UNITS, stepBox),
+        )
+        StartStopButton(
+            playing = playing,
+            onClick = onToggle,
+            face = startFace,
+            resting = startResting,
+            modifier = Modifier.centredAt(0f, START_DOWN_UNITS, startFace),
         )
     }
 }
 
 /**
- * The tempo in the dial's middle, sized with the dial (58, 13 and 15 units at 288): the figures stay
- * that size at any font size, like the tuner's note; "BPM" and the marking grow with the font up to
- * [MAX_LABEL_SCALE], so they keep clear of the needle. TalkBack hears it through the dial.
+ * The tempo in the dial's middle, sized with the dial (46, 13 and 15 units at 288), the figures'
+ * middle [FIGURES_UP_UNITS] above the dial's, level with − and +: the figures stay that size at any
+ * font size, like the tuner's note; "BPM" and the marking grow with the font up to
+ * [MAX_LABEL_SCALE], so they keep clear of the needle and Start. TalkBack hears it through the dial.
  */
 @Composable
-private fun TempoReadout(bpm: Int, marking: String, size: Dp) {
+private fun TempoReadout(bpm: Int, marking: String, size: Dp, modifier: Modifier = Modifier) {
     val style = MaterialTheme.styleTokens.style
     val scheme = MaterialTheme.colorScheme
     val density = LocalDensity.current
@@ -179,17 +199,19 @@ private fun TempoReadout(bpm: Int, marking: String, size: Dp) {
     fun fixed(units: Float): TextUnit = with(density) { (units * u).dp.toSp() }
     fun label(units: Float): TextUnit = with(density) { (units * u * labelScale).dp.toSp() }
     val numbers = numberFontFor(style)
+    val figures = BPM_UNITS * numberScaleFor(style)
     Column(
-        modifier = Modifier.clearAndSetSemantics {},
+        modifier = modifier
+            .padding(top = (DIAL_DP / 2f - FIGURES_UP_UNITS - figures / 2f).coerceAtLeast(0f).times(u).dp)
+            .clearAndSetSemantics {},
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             localDigits(bpm, appLocale()),
             style = TextStyle(
                 fontFamily = numbers,
-                fontSize = fixed(BPM_UNITS * numberScaleFor(style)),
-                lineHeight = fixed(BPM_UNITS * numberScaleFor(style)),
+                fontSize = fixed(figures),
+                lineHeight = fixed(figures),
                 fontFeatureSettings = "$LINING_FIGURES, tnum",
                 color = scheme.onBackground,
             ),
@@ -234,8 +256,28 @@ internal fun markingName(marking: TempoMarking): String = stringResource(
 /** The dial's design size: its units are dp at this size. */
 private const val DIAL_DP = DIAL_UNITS
 
-/** The tempo's figures are this many units high (times the number face's scale). */
-private const val BPM_UNITS = 58f
+/** The tempo's figures are this many units high (times the number face's scale), small enough for − and + beside them. */
+private const val BPM_UNITS = 46f
+
+/** The figures' middle, and − and +, stand this many units above the dial's middle. */
+private const val FIGURES_UP_UNITS = 14f
+
+/**
+ * − and + : faces 32 units across (at least 32 dp, in a 48 dp touch area), their middles 58 units out
+ * from the dial's, so they reach no further than 76 units out, inside the needle (from 78).
+ */
+private const val STEP_FACE_UNITS = 32f
+private val STEP_FACE_MIN = 32.dp
+private const val STEP_X_UNITS = 58f
+private val MIN_TOUCH = 48.dp
+
+/**
+ * Start / Stop: 54 units across (at least 56 dp), its middle 104 units below the dial's, in the
+ * opening between the arc's ends (which are 47 units either side, 81 down), clear of the marking.
+ */
+private const val START_UNITS = 54f
+private val START_MIN = 56.dp
+private const val START_DOWN_UNITS = 104f
 
 /** "BPM" and the marking grow with the font up to this. */
 private const val MAX_LABEL_SCALE = 1.3f
