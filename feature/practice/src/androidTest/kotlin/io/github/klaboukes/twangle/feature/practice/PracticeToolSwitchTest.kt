@@ -190,8 +190,8 @@ class PracticeToolSwitchTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 20L
 
-        /** A narrow phone less the app's navigation bar (as MetronomeStylesTest), on its side less the rail, and a 320 dp phone. */
-        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        /** A short narrow phone less its bars and the app's navigation bar (as MetronomeStylesTest), on its side less the rail, and a 320 dp phone. */
+        private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
     }

@@ -388,10 +388,10 @@ class StrumCheckStylesTest(private val style: VisualStyle) {
         private const val TEST_TIMEOUT_SECONDS = 15L
 
         /**
-         * A narrow phone (a Galaxy S26, 360 x 730 dp without the status and navigation bars): upright
-         * less the app's navigation bar (at most 80 dp), on its side less the 80 dp rail (it stays in focus mode too).
+         * A short narrow phone (360 x 720 dp with navigation buttons: 650 dp without the status bar and
+         * the buttons; a Galaxy S26 has more): upright less the app's navigation bar (at most 80 dp), on its side less the 80 dp rail (it stays in focus mode too).
          */
-        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
 
         /** The owner's Xiaomi 12X upright (393 x 873 dp) without the status bar, the button bar and the app's navigation bar. */

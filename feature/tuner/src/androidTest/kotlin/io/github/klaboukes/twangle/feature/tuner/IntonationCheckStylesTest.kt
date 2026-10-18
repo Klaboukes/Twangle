@@ -455,7 +455,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         private const val SCREENS_ARGUMENT = "intonationScreens"
         private const val OUTPUT_DIR_ARGUMENT = "additionalTestOutputDir"
 
-        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f

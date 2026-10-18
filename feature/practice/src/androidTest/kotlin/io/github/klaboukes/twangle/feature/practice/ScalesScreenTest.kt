@@ -306,9 +306,9 @@ class ScalesScreenTest(private val style: VisualStyle) {
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L
 
-        /** The Xiaomi 12X less the status and navigation bars, a narrow phone less the bar, on its side less the rail, a 320 dp phone and a tall tablet. */
+        /** The Xiaomi 12X less the status and navigation bars, a short narrow phone (360 x 720 dp with navigation buttons) less the bars, on its side less the rail, a 320 dp phone and a tall tablet. */
         private val XIAOMI = DpSize(393.dp, 760.dp)
-        private val PHONE_UPRIGHT = DpSize(360.dp, 650.dp)
+        private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
         private val TABLET_UPRIGHT = DpSize(700.dp, 1100.dp)

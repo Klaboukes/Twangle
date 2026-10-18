@@ -64,6 +64,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
+import io.github.klaboukes.twangle.core.designsystem.FitColumn
 import io.github.klaboukes.twangle.core.designsystem.metronome.BeatLightsArt
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
@@ -404,13 +405,12 @@ fun MetronomeContent(
                     }
                 }
             } else {
-                Column(
+                FitColumn(
+                    height = height,
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
-                        .heightIn(min = height)
                         .widthIn(max = COLUMN_MAX_WIDTH)
                         .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     if (header != null) {
                         Spacer(Modifier.height(HEADER_TOP))
@@ -418,18 +418,24 @@ fun MetronomeContent(
                     }
                     Spacer(Modifier.height(12.dp))
                     MeterPicker(meter, onMeterChange)
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.gap(1f))
                     lights(LIGHTS_HEIGHT)
                     line()
-                    Spacer(Modifier.weight(1f))
-                    tempoDial(minOf(DIAL_UPRIGHT, width - 32.dp, dialFitting(minOf(width, COLUMN_MAX_WIDTH))))
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.gap(1f))
+                    // On a short screen (a phone with navigation buttons) the dial shrinks, so the rest stays in view.
+                    Shrinking { room ->
+                        val widest = minOf(DIAL_UPRIGHT, width - 32.dp, dialFitting(minOf(width, COLUMN_MAX_WIDTH)))
+                        val dial = minOf(widest, maxOf(dialFittingAbove(room), DIAL_SMALLEST))
+                        // A smaller dial's − and + reach below it: room kept for them, so they never touch Tap tempo.
+                        Box(Modifier.padding(bottom = stepsBelow(dial))) { tempoDial(dial) }
+                    }
+                    Spacer(Modifier.gap(1f))
                     row()
                     Spacer(Modifier.height(16.dp))
                     startStop()
                     Spacer(Modifier.height(12.dp))
                     VibrateSwitch(vibrate, onVibrateChange)
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.gap(1f))
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -462,6 +468,16 @@ private fun dialFittingHeight(room: Dp): Dp {
     val half = STEP_BUTTON_SIZE.value / 2f
     return ((room.value - 2f * half) / (1f - 2f * STEP_UP_UNITS / DIAL_UNITS)).dp
 }
+
+/**
+ * How far a [dial]'s − and + reach below it: 26 − 26u dp, u = dial / 288 (none from 288 dp up).
+ */
+private fun stepsBelow(dial: Dp): Dp =
+    (STEP_BUTTON_SIZE.value / 2f - STEP_UP_UNITS * dial.value / DIAL_UNITS).coerceAtLeast(0f).dp
+
+/** The largest dial that, with its − and + reaching below it ([stepsBelow]), stays within [room] (upright). */
+private fun dialFittingAbove(room: Dp): Dp =
+    ((room.value - STEP_BUTTON_SIZE.value / 2f) / (1f - STEP_UP_UNITS / DIAL_UNITS)).dp
 
 /** Half a step button plus 2 dp to spare. */
 private const val STEP_REACH_DP = 28f
@@ -572,6 +588,9 @@ private val COLUMN_MAX_WIDTH = 480.dp
 
 /** The dial upright (the mock-up's 288 dp) and on its side (300 dp), smaller where the space is. */
 private val DIAL_UPRIGHT = 288.dp
+
+/** Upright the dial shrinks to fit a short screen, down to this; below it (very large text) the column scrolls. */
+private val DIAL_SMALLEST = 150.dp
 private val DIAL_WIDE = 300.dp
 
 /** The beat lights' row: 64 dp upright, 56 dp on its side, at most 360 dp wide. */

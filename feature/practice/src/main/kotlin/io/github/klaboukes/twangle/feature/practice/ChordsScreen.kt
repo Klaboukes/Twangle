@@ -197,9 +197,12 @@ fun ChordsScreen(
             ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
         }
     }
-    val bottom: @Composable ColumnScope.() -> Unit = {
-        if (!scales) ShapePager(shown, count, step)
-        Spacer(Modifier.height(8.dp))
+    val bottom: (gap: Float) -> @Composable ColumnScope.() -> Unit = { gap ->
+        {
+            // Where the gaps close up, the pager is no taller than its buttons.
+            if (!scales) ShapePager(shown, count, step, height = if (gap < 1f) PAGER_BUTTON_SIZE else PAGER_HEIGHT)
+            Spacer(Modifier.height(8.dp * gap))
+        }
     }
 
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CHORDS)) {
@@ -232,10 +235,12 @@ fun ChordsScreen(
                         title()
                     },
                     fill = fill,
-                    bottom = bottom,
+                    bottom = bottom(1f),
                 )
             }
         } else {
+            // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so the chart keeps more room.
+            val gap = if (height < ROOMY_HEIGHT) TIGHT_GAPS else 1f
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 FillColumn(
                     viewport = height,
@@ -248,17 +253,17 @@ fun ChordsScreen(
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
                         header()
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(8.dp * gap))
                         tuningLine()
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(4.dp * gap))
                         choice()
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(6.dp * gap))
                         pickers(false)
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(10.dp * gap))
                         title()
                     },
                     fill = fill,
-                    bottom = bottom,
+                    bottom = bottom(gap),
                 )
             }
         }
@@ -363,10 +368,10 @@ private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step:
  * chord has no shape, so nothing moves.
  */
 @Composable
-private fun ShapePager(index: Int, count: Int, step: (Int) -> Unit, modifier: Modifier = Modifier) {
+private fun ShapePager(index: Int, count: Int, step: (Int) -> Unit, modifier: Modifier = Modifier, height: Dp = PAGER_HEIGHT) {
     Row(
         modifier
-            .height(PAGER_HEIGHT)
+            .height(height)
             .alpha(if (count == 0) 0f else 1f)
             .then(if (count == 0) Modifier.clearAndSetSemantics {} else Modifier),
         verticalAlignment = Alignment.CenterVertically,
@@ -457,11 +462,18 @@ private val HEADER_TOP = 8.dp
 /** Upright, as the metronome's column. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
+/** Upright, a screen shorter than this gets the gaps between the pickers a quarter as wide ([TIGHT_GAPS]). */
+private val ROOMY_HEIGHT = 610.dp
+private const val TIGHT_GAPS = 0.25f
+
 /** On its side, the pickers' column. */
 private val PICKERS_MAX_WIDTH = 400.dp
 
-/** The smallest chart's height (about a 6-string chart 1.2 dp a unit); below it the column scrolls. */
-private val CHART_MIN_HEIGHT = 190.dp
+/**
+ * The smallest chart's height (a 6-string chart 1 dp a unit, the smallest it is drawn at, which a
+ * narrow phone with navigation buttons needs); below it the column scrolls.
+ */
+private val CHART_MIN_HEIGHT = 156.dp
 private val CHART_MIN_HEIGHT_WIDE = 170.dp
 
 /** The smallest neck's room (a 6-string neck sideways about 1 dp a unit); below it the column scrolls. */

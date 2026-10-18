@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
@@ -135,7 +136,7 @@ fun CapoScreen(
             }
         })
     }
-    val stepper = @Composable { CapoStepper(fret, spokenSoundsIn, step) }
+    val stepper = @Composable { tight: Boolean -> CapoStepper(fret, spokenSoundsIn, step, if (tight) STEP_BUTTON_SIZE else STEPPER_HEIGHT) }
     val soundsInLine = @Composable {
         Text(
             musicText(soundsIn),
@@ -162,7 +163,7 @@ fun CapoScreen(
                     Spacer(Modifier.height(12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp))
-                    stepper()
+                    stepper(false)
                     Spacer(Modifier.height(8.dp))
                     soundsInLine()
                     Spacer(Modifier.height(8.dp))
@@ -178,6 +179,9 @@ fun CapoScreen(
                 }
             }
         } else {
+            // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so it all still fits.
+            val tight = maxHeight < ROOMY_HEIGHT
+            val gap = if (tight) 0.5f else 1f
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     Modifier
@@ -189,17 +193,17 @@ fun CapoScreen(
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
                     header()
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp * gap))
                     tuningLine()
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(12.dp * gap))
                     picker()
-                    Spacer(Modifier.height(8.dp))
-                    stepper()
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(8.dp * gap))
+                    stepper(tight)
+                    Spacer(Modifier.height(12.dp * gap))
                     table()
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(12.dp * gap))
                     soundsInLine()
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(8.dp * gap))
                 }
             }
         }
@@ -297,11 +301,11 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
  * key the shapes then sound in ([spokenSoundsIn]).
  */
 @Composable
-private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit) {
+private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, height: Dp = STEPPER_HEIGHT) {
     val spokenFret = if (fret == 0) stringResource(R.string.practice_capo_none) else stringResource(R.string.practice_capo_on_fret, fret)
     val spoken = spokenFret + stringResource(R.string.practice_spoken_separator) + spokenSoundsIn
     Row(
-        Modifier.fillMaxWidth().heightIn(min = STEPPER_HEIGHT),
+        Modifier.fillMaxWidth().heightIn(min = height),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
     ) {
@@ -474,5 +478,8 @@ private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp
 
 private val STEPPER_HEIGHT = 56.dp
+
+/** Upright, a screen shorter than this gets the gaps half as wide and the stepper no taller than its buttons. */
+private val ROOMY_HEIGHT = 610.dp
 private val STEP_BUTTON_SIZE = 48.dp
 private const val DISABLED_ALPHA = 0.38f

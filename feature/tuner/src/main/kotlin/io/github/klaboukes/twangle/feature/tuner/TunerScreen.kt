@@ -65,6 +65,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -75,6 +76,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.designsystem.FitColumn
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
@@ -819,8 +821,10 @@ fun TunerContent(
  * as the screen less [METER_MARGIN] at each side, the note under it, and the strings (with the strum
  * check's switch above them) at the bottom. The free [height] is shared out one to two above the meter and above the
  * strings, so the meter sits a little high and the gaps look balanced. Everything but the meter keeps
- * the [COLUMN_PADDING] text margin. With a very large system font it can be taller than the screen;
- * then the gaps close up to [SECTION_SPACING] and it scrolls. The scroll area fills the screen, so
+ * the [COLUMN_PADDING] text margin. Where the screen is too short for all that (a narrow phone with
+ * navigation buttons), the gaps close up to [SECTION_SPACING] and the meter shrinks (keeping its shape,
+ * down to [GAUGE_MIN_WIDTH]); only with a very large system font is it still taller than the screen,
+ * and then it scrolls. The scroll area fills the screen, so
  * the meter's glow fades out on the screen rather than at the column's edge.
  */
 @Composable
@@ -834,28 +838,28 @@ private fun SingleColumnLayout(
     guitarSlot: @Composable () -> Unit,
 ) {
     val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
-    Column(
+    FitColumn(
+        height = height,
         modifier = Modifier
             .verticalScroll(rememberScrollState())
-            .heightIn(min = height)
             .widthIn(max = COLUMN_MAX_WIDTH)
             .padding(horizontal = METER_MARGIN),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(textMargin.padding(top = EDGE_INSET)) { header() }
-        Spacer(Modifier.weight(TOP_GAP_WEIGHT))
+        Spacer(Modifier.gap(TOP_GAP_WEIGHT))
         Spacer(Modifier.height(SECTION_SPACING))
         if (error != null) {
             Column(textMargin, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SECTION_SPACING)) {
                 TunerErrorMessage(error, onRetry)
             }
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.gap(1f))
         } else {
-            gauge()
+            // On a short screen (a phone with navigation buttons) the meter shrinks, so the strings stay in view.
+            Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
             Spacer(Modifier.height(SECTION_SPACING))
             Box(textMargin) { note() }
             Spacer(Modifier.height(SECTION_SPACING))
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.gap(1f))
             Box(textMargin) { guitarSlot() }
         }
         Spacer(Modifier.height(EDGE_INSET))
@@ -1045,20 +1049,21 @@ private fun CompactExtraFor(state: TunerUiState, mode: TunerMode, pictured: Bool
 
 /**
  * The gauge as wide as the space allows (at most [maxWidth]), shrinking (keeping its shape, down to
- * [GAUGE_MIN_WIDTH]) when it would be taller than the space.
+ * [GAUGE_MIN_WIDTH]) when it would be taller than the space, or than [maxHeight] where that is given.
  */
 @Composable
-private fun FitGauge(gauge: @Composable () -> Unit, maxWidth: Dp) {
+private fun FitGauge(gauge: @Composable () -> Unit, maxWidth: Dp, maxHeight: Dp = Dp.Unspecified) {
     Layout(content = gauge) { measurables, constraints ->
         val measurable = measurables.single()
         val width = min(constraints.maxWidth, maxWidth.roundToPx())
         val fullHeight = measurable.minIntrinsicHeight(width)
-        val gaugeWidth = if (!constraints.hasBoundedHeight || fullHeight <= constraints.maxHeight) {
+        val height = if (maxHeight.isSpecified) min(maxHeight.roundToPx(), constraints.maxHeight) else constraints.maxHeight
+        val gaugeWidth = if (height == Constraints.Infinity || fullHeight <= height) {
             width
         } else {
             // The dial is twice as wide as it is tall (anything the gauge adds under it keeps its height).
             val labels = fullHeight - width / 2
-            ((constraints.maxHeight - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), width), width)
+            ((height - labels) * 2).coerceIn(min(GAUGE_MIN_WIDTH.roundToPx(), width), width)
         }
         val placeable = measurable.measure(Constraints.fixedWidth(gaugeWidth))
         layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
