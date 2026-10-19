@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Cordas</string>
     <string name="tuner_mode_chromatic">Cromático</string>
     <string name="tuner_show_controls">Mostrar controles</string>
+    <string name="tuner_focus_mode">Modo foco</string>
     <string name="tuner_exit_focus_mode">Sair do modo foco</string>
     <string name="tuner_compact_tap_hint">Toque para mostrar os controles</string>
 
@@ -139,6 +140,7 @@
     <string name="tour_strings">Toque para travar, segure para ouvir</string>
     <string name="tour_picker">Escolha instrumento e afinação</string>
     <string name="tour_mode">Afine cordas ou qualquer nota</string>
+    <string name="tour_focus">Tela cheia, um medidor grande</string>
     <string name="tour_navigation">Metrônomo e configurações</string>
     <string name="tour_navigation_practice">Prática e configurações</string>
     <string name="tour_skip">Pular</string>

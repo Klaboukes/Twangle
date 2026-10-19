@@ -108,10 +108,12 @@ class TourStylesTest(private val style: VisualStyle) {
                 DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
             DeviceConfigurationOverride(override) {
                 contentDensity = LocalDensity.current.density
+                // As on a phone: focus mode turns it on its side, so upright it is off.
+                val focus = focusMode.value && shownSize.value.width > shownSize.value.height
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     TourHost(
                         open = shownOpen.value,
-                        steps = TourPart.stepsFor(shownMode.value),
+                        steps = TourPart.stepsFor(shownMode.value, focusMode = focus),
                         onEnd = {
                             ends.intValue++
                             shownOpen.value = false
@@ -128,7 +130,8 @@ class TourStylesTest(private val style: VisualStyle) {
                                 onStringClick = {},
                                 onRetry = {},
                                 onStrumCheckChange = {},
-                                compactLandscape = focusMode.value,
+                                compactLandscape = focus,
+                                onFocusModeChange = {},
                                 controlsAlwaysShown = shownOpen.value,
                                 modifier = Modifier.fillMaxSize(),
                             )
@@ -274,7 +277,7 @@ class TourStylesTest(private val style: VisualStyle) {
         shownFontScale.value = OWNER_FONT_SCALE
         focusMode.value = false
         show()
-        stepThroughWhollyShown("$style two-pane", SIDEWAYS)
+        stepThroughWhollyShown("$style two-pane", TWO_PANE)
     }
 
     @Thorough
@@ -352,7 +355,7 @@ class TourStylesTest(private val style: VisualStyle) {
     fun talkBackHearsOnlyTheBalloon() {
         show()
         compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, string(R.string.tour_title))).assertIsDisplayed()
-        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, 7, string(R.string.tour_mode)))
+        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, UPRIGHT.size, string(R.string.tour_mode)))
         for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
             compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
@@ -424,7 +427,9 @@ class TourStylesTest(private val style: VisualStyle) {
          * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane),
          * the bar's or rail's Instrument item and tabs last.
          */
-        private val UPRIGHT = listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        private val UPRIGHT = listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        // In focus mode on its side (the compact tuner's controls shown) there is no focus mode step.
         private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        private val TWO_PANE = listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
     }
 }

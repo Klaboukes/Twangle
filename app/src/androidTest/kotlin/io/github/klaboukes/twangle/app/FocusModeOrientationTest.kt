@@ -132,11 +132,16 @@ class FocusModeOrientationTest {
         }
     }
 
-    /** The exit button among the controls a tap brings up, and Back, switch focus mode off and the app keeps running. */
+    /**
+     * The tuner's full-screen button turns focus mode on; the exit button among the controls a tap
+     * brings up, and Back, switch it off, and the app keeps running.
+     */
     @Test
-    fun theExitButtonAndBackLeaveFocusMode() {
+    fun theTunersButtonsAndBackTurnFocusModeOnAndOff() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            runBlocking { settings.setFocusMode(true) }
+            (device.wait(Until.findObject(By.res(TunerTestTags.ENTER_FOCUS)), WAIT_MS) ?: error("no full-screen button")).click()
+            assertTrue("the button switches focus mode on", waitFor { runBlocking { settings.settings.first().focusMode } })
+            assertTrue("and the screen turns", waitFor { scenario.onItsSide() })
             assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
             (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
             (device.wait(Until.findObject(By.res(TunerTestTags.EXIT_FOCUS)), WAIT_MS) ?: error("no exit button")).click()

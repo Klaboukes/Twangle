@@ -18,6 +18,7 @@
     <string name="tuner_mode_strings">Snaren</string>
     <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bediening tonen</string>
+    <string name="tuner_focus_mode">Focusmodus</string>
     <string name="tuner_exit_focus_mode">Focusmodus verlaten</string>
     <string name="tuner_compact_tap_hint">Tik om de bediening te tonen</string>
 
@@ -145,6 +146,7 @@
     <string name="tour_strings">Kies om vast te zetten, houd vast om te horen</string>
     <string name="tour_picker">Kies instrument en stemming</string>
     <string name="tour_mode">Stem snaren of elke noot</string>
+    <string name="tour_focus">Volledig scherm, één grote meter</string>
     <string name="tour_navigation">Metronoom en instellingen</string>
     <string name="tour_navigation_practice">Oefenen en instellingen</string>
     <string name="tour_skip">Overslaan</string>

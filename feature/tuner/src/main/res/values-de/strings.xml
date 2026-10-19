@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Saiten</string>
     <string name="tuner_mode_chromatic">Chromatisch</string>
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
+    <string name="tuner_focus_mode">Fokusmodus</string>
     <string name="tuner_exit_focus_mode">Fokusmodus beenden</string>
     <string name="tuner_compact_tap_hint">Tippen, um die Bedienelemente zu zeigen</string>
 
@@ -136,6 +137,7 @@
     <string name="tour_strings">Tippen zum Festlegen, halten zum Anhören</string>
     <string name="tour_picker">Instrument und Stimmung wählen</string>
     <string name="tour_mode">Saiten oder jeden Ton stimmen</string>
+    <string name="tour_focus">Vollbild mit einer großen Anzeige</string>
     <string name="tour_navigation">Metronom und Einstellungen</string>
     <string name="tour_navigation_practice">Üben und Einstellungen</string>
     <string name="tour_skip">Überspringen</string>

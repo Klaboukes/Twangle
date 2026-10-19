@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Struny</string>
     <string name="tuner_mode_chromatic">Chromatyczny</string>
     <string name="tuner_show_controls">Pokaż sterowanie</string>
+    <string name="tuner_focus_mode">Tryb skupienia</string>
     <string name="tuner_exit_focus_mode">Wyjdź z trybu skupienia</string>
     <string name="tuner_compact_tap_hint">Dotknij, aby pokazać sterowanie</string>
 
@@ -142,6 +143,7 @@
     <string name="tour_strings">Dotknij, by zablokować, przytrzymaj, by posłuchać</string>
     <string name="tour_picker">Wybierz instrument i strój</string>
     <string name="tour_mode">Struny lub dowolny dźwięk</string>
+    <string name="tour_focus">Pełny ekran, jeden duży wskaźnik</string>
     <string name="tour_navigation">Metronom i ustawienia</string>
     <string name="tour_navigation_practice">Ćwiczenia i ustawienia</string>
     <string name="tour_skip">Pomiń</string>

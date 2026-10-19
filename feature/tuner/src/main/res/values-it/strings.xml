@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Corde</string>
     <string name="tuner_mode_chromatic">Cromatico</string>
     <string name="tuner_show_controls">Mostra comandi</string>
+    <string name="tuner_focus_mode">Modalità concentrazione</string>
     <string name="tuner_exit_focus_mode">Esci dalla modalità concentrazione</string>
     <string name="tuner_compact_tap_hint">Tocca per mostrare i comandi</string>
 
@@ -139,6 +140,7 @@
     <string name="tour_strings">Tocca per bloccare, tieni premuto per ascoltare</string>
     <string name="tour_picker">Scegli strumento e accordatura</string>
     <string name="tour_mode">Accorda corde o qualsiasi nota</string>
+    <string name="tour_focus">Schermo intero, un grande indicatore</string>
     <string name="tour_navigation">Metronomo e impostazioni</string>
     <string name="tour_navigation_practice">Pratica e impostazioni</string>
     <string name="tour_skip">Salta</string>

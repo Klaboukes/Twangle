@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">줄</string>
     <string name="tuner_mode_chromatic">크로매틱</string>
     <string name="tuner_show_controls">컨트롤 보기</string>
+    <string name="tuner_focus_mode">집중 모드</string>
     <string name="tuner_exit_focus_mode">집중 모드 종료</string>
     <string name="tuner_compact_tap_hint">탭하면 컨트롤이 보여요</string>
 
@@ -132,6 +133,7 @@
     <string name="tour_strings">탭하여 고정, 길게 눌러 듣기</string>
     <string name="tour_picker">악기와 튜닝 선택</string>
     <string name="tour_mode">줄 또는 아무 음이나 튜닝</string>
+    <string name="tour_focus">전체 화면, 큰 미터 하나</string>
     <string name="tour_navigation">메트로놈과 설정</string>
     <string name="tour_navigation_practice">연습과 설정</string>
     <string name="tour_skip">둘러보기 건너뛰기</string>

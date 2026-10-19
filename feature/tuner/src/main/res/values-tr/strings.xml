@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Teller</string>
     <string name="tuner_mode_chromatic">Kromatik</string>
     <string name="tuner_show_controls">Kontrolleri göster</string>
+    <string name="tuner_focus_mode">Odak modu</string>
     <string name="tuner_exit_focus_mode">Odak modundan çık</string>
     <string name="tuner_compact_tap_hint">Kontrolleri göstermek için dokun</string>
 
@@ -136,6 +137,7 @@
     <string name="tour_strings">Sabitlemek için dokun, dinlemek için basılı tut</string>
     <string name="tour_picker">Enstrüman ve akort seç</string>
     <string name="tour_mode">Teller ya da herhangi bir nota</string>
+    <string name="tour_focus">Tam ekran, tek büyük gösterge</string>
     <string name="tour_navigation">Metronom ve ayarlar</string>
     <string name="tour_navigation_practice">Pratik ve ayarlar</string>
     <string name="tour_skip">Turu atla</string>

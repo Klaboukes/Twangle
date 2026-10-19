@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">弦</string>
     <string name="tuner_mode_chromatic">クロマチック</string>
     <string name="tuner_show_controls">操作を表示</string>
+    <string name="tuner_focus_mode">フォーカスモード</string>
     <string name="tuner_exit_focus_mode">フォーカスモードを終了</string>
     <string name="tuner_compact_tap_hint">タップして操作を表示</string>
 
@@ -132,6 +133,7 @@
     <string name="tour_strings">タップで固定、長押しで試聴</string>
     <string name="tour_picker">楽器とチューニングを選ぶ</string>
     <string name="tour_mode">弦か、どの音でもチューニング</string>
+    <string name="tour_focus">全画面で大きなメーター</string>
     <string name="tour_navigation">メトロノームと設定</string>
     <string name="tour_navigation_practice">練習と設定</string>
     <string name="tour_skip">ツアーをスキップ</string>

@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">तार</string>
     <string name="tuner_mode_chromatic">क्रोमैटिक</string>
     <string name="tuner_show_controls">कंट्रोल दिखाएँ</string>
+    <string name="tuner_focus_mode">फ़ोकस मोड</string>
     <string name="tuner_exit_focus_mode">फ़ोकस मोड से बाहर निकलें</string>
     <string name="tuner_compact_tap_hint">कंट्रोल दिखाने के लिए टैप करें</string>
 
@@ -135,6 +136,7 @@
     <string name="tour_strings">लॉक करने के लिए टैप करें, सुनने के लिए दबाए रखें</string>
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
     <string name="tour_mode">तार या कोई भी नोट ट्यून करें</string>
+    <string name="tour_focus">पूरी स्क्रीन, एक बड़ा मीटर</string>
     <string name="tour_navigation">मेट्रोनोम और सेटिंग्स</string>
     <string name="tour_navigation_practice">अभ्यास और सेटिंग्स</string>
     <string name="tour_skip">टूर छोड़ें</string>

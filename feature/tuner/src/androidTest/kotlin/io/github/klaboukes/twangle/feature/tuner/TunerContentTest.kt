@@ -89,6 +89,7 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 @RunWith(AndroidJUnit4::class)
 class TunerContentTest {
@@ -117,7 +118,7 @@ class TunerContentTest {
     private var shownCustomTunings = emptyList<CustomTuning>()
     private val stringClicks = mutableListOf<Int>()
     private val fullScreenReports = mutableListOf<Boolean>()
-    private var focusExits = 0
+    private val focusChanges = mutableListOf<Boolean>()
     private var backDispatcher: OnBackPressedDispatcher? = null
     private val stringLongClicks = mutableListOf<Int>()
 
@@ -206,7 +207,7 @@ class TunerContentTest {
                         signalFigures = signalFigures,
                         onStrumCheckChange = {},
                         onFullScreenChange = { fullScreenReports += it },
-                        onExitFocus = { focusExits++ },
+                        onFocusModeChange = { focusChanges += it },
                     )
                 }
             }
@@ -1666,22 +1667,45 @@ class TunerContentTest {
         val button = exitButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
         assertTrue("button at $button, in the top end corner", button.right >= window.right - 12.dp && button.top <= window.top + 12.dp)
         exitButton.performClick()
-        assertEquals(1, focusExits)
+        assertEquals(listOf(false), focusChanges)
         // Back leaves focus mode too, with the controls shown or not.
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
-        assertEquals(2, focusExits)
+        assertEquals(listOf(false, false), focusChanges)
     }
 
     @Test
-    fun withoutFocusModeThereIsNoExitButton() {
+    fun onItsSideWithoutFocusModeTheCornerButtonTurnsItOn() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         exitButton.assertDoesNotExist()
-        shownCompact.value = true
-        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        exitButton.assertIsDisplayed()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val button = enterButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
+        assertTrue("button at $button, in the top end corner", button.right >= window.right - 12.dp && button.top <= window.top + 12.dp)
+        enterButton.performClick()
+        assertEquals(listOf(true), focusChanges)
+        // Back is the app's again: it doesn't touch focus mode.
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        assertEquals(listOf(true), focusChanges)
+    }
+
+    @Test
+    fun uprightTheButtonSitsBesideTheModeSwitchWhichStaysCentred() {
+        show(detected(-12.3f), size = PHONE_UPRIGHT)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val button = enterButton.assertIsDisplayed().getBoundsInRoot()
+        val strings = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).getBoundsInRoot()
+        val chromatic = compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).getBoundsInRoot()
+        assertTrue("button at $button, right of the switch", button.left >= chromatic.right)
+        assertTrue("button at $button, level with the switch", abs((button.top + button.bottom - strings.top - strings.bottom).value) < 2f)
+        assertTrue("button at $button, at the end", button.right >= window.right - 24.dp)
+        // The switch still in the middle.
+        val middle = (strings.left + chromatic.right) / 2
+        assertTrue("switch centred at $middle in ${window.width}", abs((middle - (window.left + window.right) / 2).value) < 12f)
+        enterButton.performClick()
+        assertEquals(listOf(true), focusChanges)
     }
 
     private val exitButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_exit_focus_mode))
+    private val enterButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_focus_mode))
 
     @Test
     fun compactShowsAnErrorWithRetry() {

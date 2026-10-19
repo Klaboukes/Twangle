@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Струны</string>
     <string name="tuner_mode_chromatic">Хроматический</string>
     <string name="tuner_show_controls">Показать управление</string>
+    <string name="tuner_focus_mode">Режим фокуса</string>
     <string name="tuner_exit_focus_mode">Выйти из режима фокуса</string>
     <string name="tuner_compact_tap_hint">Нажми, чтобы показать управление</string>
 
@@ -142,6 +143,7 @@
     <string name="tour_strings">Нажми, чтобы закрепить, удерживай, чтобы послушать</string>
     <string name="tour_picker">Выбери инструмент и строй</string>
     <string name="tour_mode">Струны или любая нота</string>
+    <string name="tour_focus">Весь экран, один большой индикатор</string>
     <string name="tour_navigation">Метроном и настройки</string>
     <string name="tour_navigation_practice">Практика и настройки</string>
     <string name="tour_skip">Пропустить</string>

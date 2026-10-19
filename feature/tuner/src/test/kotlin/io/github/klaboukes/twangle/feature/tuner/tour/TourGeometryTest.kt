@@ -124,23 +124,33 @@ class TourGeometryTest {
     @Test
     fun `chromatic mode leaves out strum check and strings`() {
         assertEquals(TourPart.entries, TourPart.stepsFor(TunerMode.AUTO))
-        assertEquals(7, TourPart.stepsFor(TunerMode.AUTO).size)
+        assertEquals(8, TourPart.stepsFor(TunerMode.AUTO).size)
         assertEquals(
-            listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION),
+            listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION),
             TourPart.stepsFor(TunerMode.CHROMATIC),
         )
     }
 
     @Test
+    fun `in focus mode its own step is left out`() {
+        for (mode in TunerMode.entries) {
+            val steps = TourPart.stepsFor(mode, focusMode = true)
+            assertFalse(TourPart.FOCUS in steps)
+            assertEquals(TourPart.stepsFor(mode).size - 1, steps.size)
+        }
+    }
+
+    @Test
     fun `without strum check its step is left out`() {
         val steps = TourPart.stepsFor(TunerMode.AUTO, strumCheck = false)
-        assertEquals(6, steps.size)
+        assertEquals(7, steps.size)
         assertFalse(TourPart.STRUM in steps)
     }
 
     @Test
     fun `each step prefers the side that keeps it off its neighbours`() {
         assertEquals(BalloonSide.BELOW, TourPart.MODE.preferredSide)
+        assertEquals(BalloonSide.BELOW, TourPart.FOCUS.preferredSide)
         assertEquals(BalloonSide.BELOW, TourPart.METER.preferredSide)
         assertEquals(BalloonSide.BELOW, TourPart.NOTE.preferredSide)
         assertEquals(BalloonSide.ABOVE, TourPart.PICKER.preferredSide)
@@ -154,6 +164,7 @@ class TourGeometryTest {
     // Instrument item (the instrument and tuning step), then its Metronome and Settings tabs (the bar step).
     private val upright = mapOf(
         TourPart.MODE to TourBox(82f, 40f, 311f, 88f),
+        TourPart.FOCUS to TourBox(329f, 40f, 377f, 88f),
         TourPart.METER to TourBox(8f, 146f, 385f, 334f),
         TourPart.NOTE to TourBox(76f, 358f, 316f, 579f),
         TourPart.STRUM to TourBox(322f, 673f, 366f, 717f),
@@ -166,6 +177,7 @@ class TourGeometryTest {
     private val sideways = mapOf(
         TourPart.METER to TourBox(120f, 20f, 460f, 200f),
         TourPart.NOTE to TourBox(180f, 216f, 400f, 372f),
+        TourPart.FOCUS to TourBox(821f, 4f, 869f, 52f),
         TourPart.MODE to TourBox(560f, 96f, 790f, 144f),
         TourPart.STRUM to TourBox(796f, 168f, 840f, 212f),
         TourPart.STRINGS to TourBox(510f, 228f, 840f, 276f),
@@ -176,7 +188,7 @@ class TourGeometryTest {
     @Test
     fun `upright the tour reads top to bottom, left to right in a row, the bar's Instrument item and tabs last`() {
         val order = tourOrder(TourPart.entries.shuffled(java.util.Random(4))) { upright[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
     }
 
     @Test
@@ -184,13 +196,13 @@ class TourGeometryTest {
         // Arabic mirrors the screen: the strum check's switch sits at the strings' left end.
         val mirrored = upright.mapValues { (_, b) -> TourBox(w - b.right, b.top, w - b.left, b.bottom) }
         val order = tourOrder(TourPart.entries, rightToLeft = true) { mirrored[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
     }
 
     @Test
     fun `on its side and in two panes it reads the readout pane, then the controls pane, the rail's items last`() {
         val order = tourOrder(TourPart.entries) { sideways[it] }
-        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
         // The controls pane scrolled on its own (a large font) changes nothing.
         val scrolled = sideways.mapValues { (_, b) -> if (b.left >= 500f) TourBox(b.left, b.top - 150f, b.right, b.bottom - 150f) else b }
         assertEquals(order, tourOrder(TourPart.entries) { scrolled[it] })
@@ -199,8 +211,9 @@ class TourGeometryTest {
     @Test
     fun `chromatic mode keeps the same reading order`() {
         val steps = TourPart.stepsFor(TunerMode.CHROMATIC)
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
-        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { sideways[it] })
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
+        // Without the strings row under both, the corner button stands apart from the mode switch: read after it.
+        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { sideways[it] })
     }
 
     @Test
