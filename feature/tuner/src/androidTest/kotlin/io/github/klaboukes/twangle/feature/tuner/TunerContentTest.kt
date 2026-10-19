@@ -1678,9 +1678,8 @@ class TunerContentTest {
         // Not over the full-screen meter: it comes with the controls.
         exitButton.assertDoesNotExist()
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val button = exitButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
-        assertTrue("button at $button, in the top end corner", button.right >= window.right - 12.dp && button.top <= window.top + 12.dp)
+        exitButton.assertIsDisplayed().assertHasClickAction()
+        assertRightAboveTheToolsButton(exitButton)
         exitButton.performClick()
         assertEquals(listOf(false), focusChanges)
         // Back leaves focus mode too, with the controls shown or not.
@@ -1689,12 +1688,11 @@ class TunerContentTest {
     }
 
     @Test
-    fun onItsSideWithoutFocusModeTheCornerButtonTurnsItOn() {
+    fun onItsSideWithoutFocusModeTheButtonTurnsItOn() {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         exitButton.assertDoesNotExist()
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val button = enterButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
-        assertTrue("button at $button, in the top end corner", button.right >= window.right - 12.dp && button.top <= window.top + 12.dp)
+        enterButton.assertIsDisplayed().assertHasClickAction()
+        assertRightAboveTheToolsButton(enterButton)
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
         // Back is the app's again: it doesn't touch focus mode.
@@ -1703,20 +1701,25 @@ class TunerContentTest {
     }
 
     @Test
-    fun uprightTheButtonSitsBesideTheModeSwitchWhichStaysCentred() {
+    fun uprightTheButtonStaysRightAboveTheToolsButtonInBothModes() {
         show(detected(-12.3f), size = PHONE_UPRIGHT)
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val button = enterButton.assertIsDisplayed().getBoundsInRoot()
-        val strings = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).getBoundsInRoot()
-        val chromatic = compose.onNodeWithText(context.getString(R.string.tuner_mode_chromatic)).getBoundsInRoot()
-        assertTrue("button at $button, right of the switch", button.left >= chromatic.right)
-        assertTrue("button at $button, level with the switch", abs((button.top + button.bottom - strings.top - strings.bottom).value) < 2f)
-        assertTrue("button at $button, at the end", button.right >= window.right - 24.dp)
-        // The switch still in the middle.
-        val middle = (strings.left + chromatic.right) / 2
-        assertTrue("switch centred at $middle in ${window.width}", abs((middle - (window.left + window.right) / 2).value) < 12f)
+        val guitar = assertRightAboveTheToolsButton(enterButton)
+        // Chromatic mode has no strings or tools button, but the button keeps its place.
+        shownMode.value = TunerMode.CHROMATIC
+        shownState.value = chromatic(-12.3f)
+        compose.waitForIdle()
+        assertEquals(guitar, enterButton.assertIsDisplayed().getBoundsInRoot())
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
+    }
+
+    /** [button] stands centred over the strum check's switch (the tools button), its touch area just above it; returns its bounds. */
+    private fun assertRightAboveTheToolsButton(button: SemanticsNodeInteraction): DpRect {
+        val place = button.assertIsDisplayed().getBoundsInRoot()
+        val tools = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("button at $place, tools at $tools: not centred over it", abs(((place.left + place.right) - (tools.left + tools.right)).value) < 2f)
+        assertTrue("button at $place, tools at $tools: not just above it", place.bottom <= tools.top + 1.dp && place.bottom >= tools.top - 24.dp)
+        return place
     }
 
     private val exitButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_exit_focus_mode))

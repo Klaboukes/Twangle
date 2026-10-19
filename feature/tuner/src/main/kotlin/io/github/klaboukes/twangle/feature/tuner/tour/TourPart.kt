@@ -20,8 +20,8 @@ enum class TourPart(
     /** The guitar/chromatic mode switch. */
     MODE(BalloonSide.BELOW, TourCorner.BUTTON, R.string.tour_mode, interactive = true),
 
-    /** Focus mode's full-screen button, beside the mode switch (top end corner on its side). */
-    FOCUS(BalloonSide.BELOW, TourCorner.BUTTON, R.string.tour_focus, interactive = true),
+    /** Focus mode's full-screen button, right above the "more tools" button. */
+    FOCUS(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_focus, interactive = true),
 
     /** The meter (its look, also with the wave display; the strum panel in its place). */
     METER(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_meter, interactive = false),

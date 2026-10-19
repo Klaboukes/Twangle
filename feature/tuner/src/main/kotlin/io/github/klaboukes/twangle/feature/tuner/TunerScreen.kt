@@ -20,17 +20,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -56,7 +52,6 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -110,6 +105,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
+import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
@@ -615,24 +611,6 @@ fun TunerContent(
         null
     }
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
-    // Focus mode's on/off button: full screen when off, exit when on ([compactLandscape] is focus mode).
-    val focusButton = @Composable { buttonModifier: Modifier ->
-        if (onFocusModeChange != null) {
-            FocusButton(on = compactLandscape, onClick = { onFocusModeChange(!compactLandscape) }, modifier = buttonModifier)
-        }
-    }
-    // Upright the button sits level with the mode switch at the top end, the switch still centred.
-    val uprightHeader = @Composable {
-        if (onFocusModeChange == null) {
-            header()
-        } else {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Spacer(Modifier.width(FOCUS_BUTTON_SIZE))
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { header() }
-                focusButton(Modifier)
-            }
-        }
-    }
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
         val strum = onStrumCheckChange?.let { onStrum ->
@@ -664,7 +642,20 @@ fun TunerContent(
                 },
             )
         }
-        GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
+        val slot = @Composable {
+            GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
+        }
+        if (onFocusModeChange == null) {
+            slot()
+        } else {
+            // Focus mode's button right above the "more tools" button, in both modes (the slot keeps its size).
+            // On: the exit button, among the controls a tap brings up ([compactLandscape] is focus mode).
+            FocusAboveTools(
+                button = { FocusModeButton(on = compactLandscape, onClick = { onFocusModeChange(!compactLandscape) }) },
+                stringCount = stringCountOf(state),
+                slot = slot,
+            )
+        }
     }
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
@@ -794,16 +785,12 @@ fun TunerContent(
                 height = maxHeight,
                 error = error,
                 onRetry = onRetry,
-                header = uprightHeader,
+                header = header,
                 gauge = gauge,
                 note = { note(false) },
                 guitarSlot = guitarSlot,
             )
-            // On its side the button sits in the top end corner, where focus mode's exit button is.
-            TunerLayout.TWO_PANE -> Box(Modifier.fillMaxSize()) {
-                twoPane()
-                focusButton(Modifier.align(Alignment.TopEnd).padding(FOCUS_BUTTON_INSET))
-            }
+            TunerLayout.TWO_PANE -> twoPane()
             TunerLayout.COMPACT -> {
                 var controlsShown by remember { mutableStateOf(false) }
                 // Every touch while the controls show, and an open instrument and tuning panel, keep them a while longer.
@@ -850,7 +837,6 @@ fun TunerContent(
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
                             twoPane()
-                            focusButton(Modifier.align(Alignment.TopEnd).padding(FOCUS_BUTTON_INSET))
                         }
                     } else {
                         CompactLayout(
@@ -1074,23 +1060,38 @@ private fun CompactLayout(
 }
 
 /**
- * Focus mode's button, no word: with focus mode off ([on] false) the "full screen" icon (four corners
- * pointing out; TalkBack hears "Focus mode"), with it on the "exit full screen" icon (pointing in;
- * "Exit focus mode"), in the top end corner of the controls a tap brings up, where the tap hint was.
- * The tour's focus mode step points at it.
+ * [button] (focus mode's) above [slot] (the strings and the "more tools" button above them, or chromatic
+ * mode's numbers), its outline ending where the tools button's does: in line with the last string's
+ * face ([stringFaceInsetFor], for [stringCount] strings; at the end where no tuning is known). The slot
+ * keeps its width and height in both modes, so the button stays put when the mode changes.
  */
 @Composable
-private fun FocusButton(on: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.testTag(if (on) TunerTestTags.EXIT_FOCUS else TunerTestTags.ENTER_FOCUS).tourTarget(TourPart.FOCUS),
-    ) {
-        Icon(
-            painter = painterResource(if (on) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen),
-            contentDescription = stringResource(if (on) R.string.tuner_exit_focus_mode else R.string.tuner_focus_mode),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+private fun FocusAboveTools(button: @Composable () -> Unit, stringCount: Int?, slot: @Composable () -> Unit) {
+    val style = MaterialTheme.styleTokens.style
+    Layout(contents = listOf(button, slot)) { (buttonMeasurables, slotMeasurables), constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val slotPlaceable = slotMeasurables.single().measure(constraints.copy(minHeight = 0))
+        val buttonPlaceable = buttonMeasurables.single().measure(loose)
+        val width = slotPlaceable.width
+        val faceInset = stringCount?.let { stringFaceInsetFor(style, width.toDp(), it).dp.roundToPx().coerceAtLeast(0) } ?: 0
+        val outlineInset = (buttonPlaceable.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+        val x = (width - faceInset - buttonPlaceable.width + outlineInset).coerceIn(0, (width - buttonPlaceable.width).coerceAtLeast(0))
+        val slotY = buttonPlaceable.height + FOCUS_TOOLS_GAP.roundToPx()
+        layout(width, slotY + slotPlaceable.height) {
+            buttonPlaceable.placeRelative(x, 0)
+            slotPlaceable.placeRelative(0, slotY)
+        }
     }
+}
+
+/** How many strings [state]'s tuning has, where it has one. */
+private fun stringCountOf(state: TunerUiState): Int? = when (state) {
+    is TunerUiState.Detected -> state.tuning.strings.size
+    is TunerUiState.Listening -> state.tuning.strings.size
+    is TunerUiState.StrumCheck -> state.tuning.strings.size
+    is TunerUiState.IntonationCheck -> state.tuning.strings.size
+    is TunerUiState.ChordName -> state.tuning.strings.size
+    else -> null
 }
 
 /**
@@ -1594,9 +1595,8 @@ private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 private val FOCUS_METER_MARGIN = 8.dp
 private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 
-/** Focus mode's button: its 48 dp touch area from the top end corner, its icon about where the tap hint's line was. */
-private val FOCUS_BUTTON_INSET = 4.dp
-private val FOCUS_BUTTON_SIZE = 48.dp
+/** Between focus mode's button and the "more tools" button under it (their touch areas): their outlines 12 dp apart. */
+private val FOCUS_TOOLS_GAP = 8.dp
 
 /** The full-screen meter's corner texts (the note, the tap hint) keep this far from the screen's edges. */
 private val FOCUS_EDGE_SIDE = 16.dp
