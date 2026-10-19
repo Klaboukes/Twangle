@@ -18,4 +18,9 @@
 
     <!-- The unit printed on the Classic meter's dial, above the needle's pivot (in capitals, as on a real meter). -->
     <string name="meter_cents_label">CENTS</string>
+
+    <!-- The instrument and tuning button (a headstock, no word) above the tuner's strings and in the
+         Practice tools: its name (tooltip, TalkBack) and what a double-tap does. -->
+    <string name="instrument_button">Instrument</string>
+    <string name="instrument_button_action">Change instrument or tuning</string>
 </resources>

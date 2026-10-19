@@ -81,7 +81,6 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_change_instrument_or_tuning">Ganti instrumen atau stem</string>
     <string name="tuner_picker_title">Instrumen dan stem</string>
 
     <string name="tuner_new_tuning">Stem baru</string>

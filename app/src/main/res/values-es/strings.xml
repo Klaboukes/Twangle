@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">Afinador</string>
-    <string name="nav_instrument">Instrumento</string>
     <string name="nav_metronome">Metrónomo</string>
     <string name="nav_practice">Práctica</string>
     <string name="nav_settings">Ajustes</string>

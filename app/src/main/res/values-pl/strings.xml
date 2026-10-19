@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">Stroik</string>
-    <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronom</string>
     <string name="nav_practice">Ćwiczenia</string>
     <string name="nav_settings">Ustawienia</string>

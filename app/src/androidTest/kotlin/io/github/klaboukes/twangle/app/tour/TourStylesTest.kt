@@ -359,12 +359,12 @@ class TourStylesTest(private val style: VisualStyle) {
         for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
             compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
-        for (tag in listOf(NavigationTestTags.INSTRUMENT, TunerTestTags.mode(TunerMode.CHROMATIC), NavigationTestTags.tab(Destination.SETTINGS))) {
+        for (tag in listOf(TunerTestTags.INSTRUMENT_BUTTON, TunerTestTags.mode(TunerMode.CHROMATIC), NavigationTestTags.tab(Destination.SETTINGS))) {
             compose.onNodeWithTag(tag).assertDoesNotExist()
         }
         compose.onNodeWithTag(TourTestTags.SKIP).performClick()
         compose.waitForIdle()
-        compose.onNodeWithTag(NavigationTestTags.INSTRUMENT).assertExists()
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).assertExists()
         compose.onNodeWithTag(NavigationTestTags.tab(Destination.SETTINGS)).assertExists()
     }
 
@@ -425,11 +425,11 @@ class TourStylesTest(private val style: VisualStyle) {
 
         /**
          * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane),
-         * the bar's or rail's Instrument item and tabs last.
+         * the bar's or rail's tabs last.
          */
-        private val UPRIGHT = listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        private val UPRIGHT = listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
         // In focus mode on its side (the compact tuner's controls shown) there is no focus mode step.
-        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
-        private val TWO_PANE = listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION)
+        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
+        private val TWO_PANE = listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
     }
 }

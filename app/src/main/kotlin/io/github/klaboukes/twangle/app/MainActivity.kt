@@ -53,11 +53,13 @@ import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
+import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
+import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
@@ -69,6 +71,7 @@ import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.settings.openPlayPage
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
+import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.editor.TuningEditorScreen
@@ -117,9 +120,9 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * The app in the user's style and theme, showing the tuner, the metronome, settings, About or the
-     * tuning editor over the style's background, with the navigation bar (Tuner · Tuning · Metronome ·
-     * Settings) at the bottom, or the rail at the start edge on its side. Tuning shows the tuner with
-     * the instrument and tuning panel open over it. Back leads from About to Settings, from
+     * tuning editor over the style's background, with the navigation bar (Tuner · Metronome · Settings)
+     * at the bottom, or the rail at the start edge on its side. The instrument and tuning panel opens
+     * over the tuner, or over the Practice tools, from their instrument button. Back leads from About to Settings, from
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
@@ -183,7 +186,9 @@ class MainActivity : AppCompatActivity() {
                 // What the tuning editor works on: an instrument, and a custom tuning's id or null for a new one.
                 var editorInstrumentId by rememberSaveable { mutableStateOf(Instruments.DEFAULT.id) }
                 var editorTuningId by rememberSaveable { mutableStateOf<String?>(null) }
-                // Whether the instrument and tuning panel shows over the tuner (the bar's Instrument item opens it).
+                // Where the tuning editor goes back to: the tuner, or Practice when its panel opened it.
+                var editorReturn by rememberSaveable { mutableStateOf(Screen.TUNER) }
+                // Whether the instrument and tuning panel shows over the tuner (its instrument button opens it).
                 var tuningPanelOpen by rememberSaveable { mutableStateOf(false) }
                 // The first-start tour: asked for again from Settings, ended in this session, and whether the tuner itself shows.
                 var tourRequested by rememberSaveable { mutableStateOf(false) }
@@ -214,7 +219,13 @@ class MainActivity : AppCompatActivity() {
                 val closeEditor = {
                     // Each opening starts afresh, not from the last draft.
                     saveableState.removeState(Screen.TUNING_EDITOR.name)
-                    screen = Screen.TUNER
+                    screen = editorReturn
+                }
+                val openTuningEditor: (Instrument, String?, Screen) -> Unit = { instrument, customTuningId, from ->
+                    editorInstrumentId = instrument.id
+                    editorTuningId = customTuningId
+                    editorReturn = from
+                    screen = Screen.TUNING_EDITOR
                 }
                 // A tap on the home-screen widget: back to the tuner. The tuning editor handles it itself,
                 // as it does Back: it asks before dropping a draft with edits.
@@ -246,12 +257,6 @@ class MainActivity : AppCompatActivity() {
                             screen = it.screen
                         },
                         onReselect = { if (it == Destination.TUNER) tunerTabTaps++ },
-                        // The panel opens over the tuner, so its tunings can be tried on the strings at once.
-                        onTuning = {
-                            screen = Screen.TUNER
-                            tuningPanelOpen = true
-                        },
-                        tuningState = spokenTuning(settings),
                         practice = tools.practiceTab,
                         navigationHidden = fullScreen,
                     ) {
@@ -271,9 +276,7 @@ class MainActivity : AppCompatActivity() {
                                         savedInstrument = settings.instrument,
                                         savedCustomTunings = settings.customTunings,
                                         onOpenTuningEditor = { instrument, customTuningId ->
-                                            editorInstrumentId = instrument.id
-                                            editorTuningId = customTuningId
-                                            screen = Screen.TUNING_EDITOR
+                                            openTuningEditor(instrument, customTuningId, Screen.TUNER)
                                         },
                                         pickerOpen = tuningPanelOpen,
                                         onPickerOpenChange = { tuningPanelOpen = it },
@@ -284,7 +287,9 @@ class MainActivity : AppCompatActivity() {
                                         onFullScreenChange = { tunerFullScreen = it },
                                     )
                                 }
-                                Screen.METRONOME -> PracticeTab(container, settings, tools)
+                                Screen.METRONOME -> PracticeTab(container, settings, tools) { instrument, customTuningId ->
+                                    openTuningEditor(instrument, customTuningId, Screen.METRONOME)
+                                }
                                 Screen.SETTINGS -> SettingsScreen(
                                     settingsRepository = container.settingsRepository,
                                     appVersion = BuildConfig.VERSION_NAME,
@@ -326,10 +331,25 @@ class MainActivity : AppCompatActivity() {
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
      * tool keeps its own saved UI state while another shows; leaving the metronome stops it, as
      * leaving the tab does. A chord tapped in the capo helper opens in Chords: its saved state is
-     * dropped, so Chords opens afresh on that chord (saved too, as if picked there).
+     * dropped, so Chords opens afresh on that chord (saved too, as if picked there). The instrument
+     * button in Chords and the capo helper opens the instrument and tuning panel over the tool
+     * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
      */
     @Composable
-    private fun PracticeTab(container: AppContainer, settings: AppSettings, tools: ToolSwitches) {
+    private fun PracticeTab(
+        container: AppContainer,
+        settings: AppSettings,
+        tools: ToolSwitches,
+        onOpenTuningEditor: (Instrument, String?) -> Unit,
+    ) {
+        var panelOpen by rememberSaveable { mutableStateOf(false) }
+        val openPanel = { panelOpen = true }
+        if (panelOpen) {
+            PracticeTuningPanel(container, settings, onDismiss = { panelOpen = false }, onOpenTuningEditor = { instrument, id ->
+                panelOpen = false
+                onOpenTuningEditor(instrument, id)
+            })
+        }
         val offered = practiceToolsFor(tools)
         var tool by rememberSaveable { mutableStateOf(practiceToolToOpen(settings.practiceTool, offered)) }
         // The chord the capo helper opened in Chords, until the saved settings have caught up with it.
@@ -377,6 +397,7 @@ class MainActivity : AppCompatActivity() {
                     savedScaleType = settings.practiceScaleType,
                     onChartChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChart(it) } },
                     onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
+                    onPickInstrument = openPanel,
                 )
                 PracticeTool.CAPO -> CapoScreen(
                     tuningName = practiceTuningName(settings),
@@ -397,9 +418,48 @@ class MainActivity : AppCompatActivity() {
                         pickTool(PracticeTool.CHORDS)
                     },
                     header = header ?: {},
+                    onPickInstrument = openPanel,
                 )
             }
         }
+    }
+
+    /**
+     * The instrument and tuning panel over a Practice tool: the same panel as the tuner's, saving what is
+     * picked as the tuner does. A pick also switches the tuner to guitar mode, where the strings show,
+     * as a pick in the tuner's panel does.
+     */
+    @Composable
+    private fun PracticeTuningPanel(
+        container: AppContainer,
+        settings: AppSettings,
+        onDismiss: () -> Unit,
+        onOpenTuningEditor: (Instrument, String?) -> Unit,
+    ) {
+        val repository = container.settingsRepository
+        val toGuitar = suspend { if (settings.mode != TunerMode.AUTO) repository.setMode(TunerMode.AUTO) }
+        InstrumentTuningPanel(
+            instrument = settings.instrument,
+            tuning = settings.tuning,
+            onInstrumentChange = {
+                lifecycleScope.launch {
+                    toGuitar()
+                    repository.setInstrument(it)
+                }
+            },
+            onTuningChange = {
+                lifecycleScope.launch {
+                    toGuitar()
+                    repository.setTuning(it)
+                }
+            },
+            onDismiss = onDismiss,
+            notation = settings.notationFor(appLanguage()),
+            customTunings = settings.customTunings,
+            onNewTuning = { onOpenTuningEditor(it, null) },
+            onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
+            onDeleteTuning = { lifecycleScope.launch { repository.deleteCustomTuning(it.id) } },
+        )
     }
 
     /** The picked instrument and tuning as the Practice tools show them, e.g. "Guitar · Standard". */
@@ -407,7 +467,7 @@ class MainActivity : AppCompatActivity() {
     private fun practiceTuningName(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_tuning_name, instrumentLabel(settings.instrument), tuningName(settings))
 
-    /** The picked instrument and tuning as TalkBack says them on the bar's Instrument item, e.g. "Guitar, Standard" or a custom tuning's name. */
+    /** The picked instrument and tuning as TalkBack says them on the instrument button, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
     private fun spokenTuning(settings: AppSettings): String =
         stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), tuningName(settings))

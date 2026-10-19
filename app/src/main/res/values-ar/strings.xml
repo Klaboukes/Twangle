@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">الموالف</string>
-    <string name="nav_instrument">الآلة</string>
     <string name="nav_metronome">المترونوم</string>
     <string name="nav_practice">تدريب</string>
     <string name="nav_settings">الإعدادات</string>

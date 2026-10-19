@@ -76,7 +76,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * Dm Em Am), move the capo with ‹ › (no capo to fret 11), and a table shows what each of the key's
  * six usual chords sounds with the capo on (C shapes at 3: C → E♭, Dm → Fm … Am → Cm), with "Sounds
  * in E♭" under it. A tap on a row opens its shape in the Chords tool ([onOpenChord]), on the
- * instrument and tuning picked in the Instrument item ([tuningName], heard as [spokenTuningName]).
+ * instrument and tuning picked with the instrument button ([tuningName], heard as [spokenTuningName];
+ * with [onPickInstrument] the button stands before that line and opens the instrument and tuning panel).
  *
  * Upright, one column: the tool switch ([header]) 8 dp from the top, the tuning line, the shapes,
  * the capo, the table and "Sounds in". On its side (≥ 600 dp wide and wider than tall) the switch,
@@ -102,6 +103,7 @@ fun CapoScreen(
     onOpenChord: (Chord) -> Unit,
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    onPickInstrument: (() -> Unit)? = null,
 ) {
     var shapesIndex by rememberSaveable { mutableIntStateOf(CAPO_SHAPES.indexOf(capoShapesToOpen(savedShapes))) }
     var fret by rememberSaveable { mutableIntStateOf(capoFretToOpen(savedFret)) }
@@ -118,15 +120,7 @@ fun CapoScreen(
         }
     }
 
-    val tuningLine = @Composable {
-        Text(
-            musicText(tuningName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(PracticeTestTags.TUNING).clearAndSetSemantics { contentDescription = spokenTuningName },
-        )
-    }
+    val tuningLine = @Composable { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
     val picker = @Composable {
         ShapesPicker(shapes, notation, speech, onPick = { picked ->
             val index = CAPO_SHAPES.indexOf(picked)
@@ -193,9 +187,10 @@ fun CapoScreen(
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
                     header()
-                    Spacer(Modifier.height(8.dp * gap))
+                    // The instrument button's 48 dp touch target already keeps its outline clear of its neighbours.
+                    Spacer(Modifier.height(if (tight) 0.dp else 8.dp))
                     tuningLine()
-                    Spacer(Modifier.height(12.dp * gap))
+                    Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp * gap))
                     stepper(tight)

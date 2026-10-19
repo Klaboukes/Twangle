@@ -155,7 +155,7 @@ class StoreScreenshots(private val shot: Shot) {
             Shot.TUNE_UP -> tuner { recorder.play(flatLowE()); settle(NOTE_SETTLE_MS) }
             Shot.INSTRUMENTS -> tuner {
                 // The panel is a window of its own, whose parts UI Automator can't find by tag.
-                click(NavigationTestTags.INSTRUMENT)
+                click(TunerTestTags.INSTRUMENT_BUTTON)
                 settle(SHEET_SETTLE_MS)
             }
             Shot.TALKBACK -> withFontScale(TALKBACK_FONT_SCALE) {

@@ -29,8 +29,8 @@ enum class TourPart(
     /** The note under the meter: its name with the cents pill and frequency, or with the wave. */
     NOTE(BalloonSide.BELOW, TourCorner.CARD, R.string.tour_note, interactive = false),
 
-    /** The navigation bar's Instrument item (the rail's on a phone on its side), which opens the instrument and tuning panel. */
-    PICKER(BalloonSide.ABOVE, TourCorner.CARD, R.string.tour_picker, interactive = true),
+    /** The instrument button (a headstock) at the start of the row above the strings, which opens the instrument and tuning panel. */
+    PICKER(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_picker, interactive = true),
 
     /** The strum check's switch above the strings (or the "more tools" button in its place, [tourTextOf]). */
     STRUM(BalloonSide.ABOVE, TourCorner.BUTTON, R.string.tour_strum, interactive = true),
@@ -46,13 +46,13 @@ enum class TourPart(
         /**
          * The tour's steps in [mode]: all eight in guitar mode, without the strum check's switch where
          * strum check isn't offered ([strumCheck]; every instrument has it today, up to 8 strings); in
-         * chromatic mode (only when started again from Settings) without the strum check and the
-         * strings, which aren't shown there. In [focusMode] without its own step: the button is then
+         * chromatic mode (only when started again from Settings) without the instrument button, the
+         * strum check and the strings, which aren't shown there. In [focusMode] without its own step: the button is then
          * the way out, and the player has found it.
          */
         fun stepsFor(mode: TunerMode, strumCheck: Boolean = true, focusMode: Boolean = false): List<TourPart> = when (mode) {
             TunerMode.AUTO -> entries.filter { strumCheck || it != STRUM }
-            TunerMode.CHROMATIC -> listOf(MODE, FOCUS, METER, NOTE, PICKER, NAVIGATION)
+            TunerMode.CHROMATIC -> listOf(MODE, FOCUS, METER, NOTE, NAVIGATION)
         }.filter { !focusMode || it != FOCUS }
     }
 }

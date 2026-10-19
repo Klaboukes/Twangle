@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Twangle</string>
-    <!-- The navigation bar's three tabs and its Tuning item (instrument tuning, as in "Drop D"), which opens the instrument and tuning panel. -->
+    <!-- The navigation bar's three tabs. -->
     <string name="nav_tuner">Tuner</string>
-    <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronome</string>
     <!-- The Metronome tab's name with the Practice tab's switch on (Phase 32): it holds the metronome and the chord charts. -->
     <string name="nav_practice">Practice</string>

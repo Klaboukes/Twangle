@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -288,29 +289,43 @@ class TunerContentTest {
     }
 
     @Test
-    fun theTuningsNameShowsAboveTheStringsAndOpensThePanel() {
+    fun theInstrumentButtonShowsAboveTheStringsAndOpensThePanel() {
         show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
         val spoken = context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_d))
-        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
             .assertIsDisplayed()
-            .assert(hasContentDescription(spoken))
+            .assert(hasContentDescription(text(DesignR.string.instrument_button)))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, spoken))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
             .performClick()
         assertTrue(shownPickerOpen.value)
         compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+    }
+
+    /** The name beside the button opens the panel too; TalkBack skips it, as the button says the same. */
+    @Test
+    fun theTuningsNameOpensThePanelToo() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
+        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
+            .performClick()
+        assertTrue(shownPickerOpen.value)
     }
 
     @Test
     fun anOwnTuningIsNamedByItsOwnName() {
         shownCustomTunings = listOf(lowC)
         show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning))
-        compose.onNodeWithTag(TunerTestTags.TUNING_NAME)
-            .assert(hasContentDescription(context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), "Low C")))
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), "Low C")))
     }
 
     @Test
-    fun chromaticModeHasNoTuningsName() {
+    fun chromaticModeHasNoTuningsNameNorInstrumentButton() {
         show(TunerUiState.Listening(TunerMode.CHROMATIC, Tunings.STANDARD), TunerMode.CHROMATIC)
         compose.onNodeWithTag(TunerTestTags.TUNING_NAME).assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).assertDoesNotExist()
     }
 
     @Test

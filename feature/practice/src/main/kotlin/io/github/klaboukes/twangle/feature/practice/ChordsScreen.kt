@@ -81,13 +81,13 @@ import kotlinx.coroutines.withContext
 /**
  * The Practice tab's Chords tool (Phase 32, the owner's picks D, G and I in
  * docs/design/practice-preview.html): pick a root and a chord type, see its finger shapes on the
- * instrument and [tuning] picked in the Instrument item (the player's own tunings too), one big
+ * instrument and [tuning] picked with the instrument button (the player's own tunings too), one big
  * chart at a time, easiest first, with ‹ "2 of 3" › under it and a swipe across the chart for the
  * others; or, with the small Chords · Scales choice, pick a root and a scale and see it on the
  * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
  *
  * Upright, one column: the tool switch ([header]) 8 dp from the top, the instrument and tuning
- * ([tuningName], heard as [spokenTuningName]), the Chords · Scales choice, the root and the chord
+ * ([tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice, the root and the chord
  * type or scale as two buttons that each open a grid ([ChordPickers], the owner's pick C in
  * docs/design/chords-calm-preview.html: fewer buttons in sight, and room for more types later), then
  * the chord's or the scale's name in words ("C minor seventh"; the pickers say it short), then the
@@ -122,6 +122,7 @@ fun ChordsScreen(
     savedScaleType: ScaleType = ScaleType.MAJOR,
     onChartChange: (PracticeChart) -> Unit = {},
     onScaleTypeChange: (ScaleType) -> Unit = {},
+    onPickInstrument: (() -> Unit)? = null,
 ) {
     var chart by rememberSaveable { mutableStateOf(savedChart) }
     var root by rememberSaveable { mutableStateOf(savedRoot) }
@@ -136,15 +137,7 @@ fun ChordsScreen(
     val shown = index.coerceIn(0, (count - 1).coerceAtLeast(0))
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
 
-    val tuningLine = @Composable {
-        Text(
-            musicText(tuningName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.testTag(PracticeTestTags.TUNING).clearAndSetSemantics { contentDescription = spokenTuningName },
-        )
-    }
+    val tuningLine = @Composable { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
     val choice = @Composable {
         ChartChoice(chart, onChartChange = { picked ->
             if (picked != chart) {

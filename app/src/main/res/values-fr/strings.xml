@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">Accordeur</string>
-    <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Métronome</string>
     <string name="nav_practice">Pratique</string>
     <string name="nav_settings">Paramètres</string>

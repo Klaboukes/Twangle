@@ -1,7 +1,6 @@
 <resources>
     <!-- De drie tabs van de navigatiebalk. -->
     <string name="nav_tuner">Stemmer</string>
-    <string name="nav_instrument">Instrument</string>
     <string name="nav_metronome">Metronoom</string>
     <string name="nav_practice">Oefenen</string>
     <string name="nav_settings">Instellingen</string>

@@ -1,0 +1,172 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Instrument Button</title>
+<!--
+TWANGLE INSTRUMENT AND TUNING BUTTON (rough mock-up, 2026-10-19). Plain on purpose: Contemporary only.
+OWNER, 2026-10-19: all three options "very cluttery". Built instead (idea A, agreed in chat, not drawn here): the
+          bar's headstock as a small icon button at the start of the row above the strings, the same size and look
+          as the More tools button at its end, with "Guitar · Drop D" as quiet text between them.
+The idea  The bar's Instrument item goes (the bar keeps three real tabs: Tuner · Practice · Settings). The
+          "Guitar · Standard" line above the strings becomes a real button, styled like the More tools button
+          (the style's outline and shape, see-through backing, muted ink). Buttons keep one size whatever they say.
+Options   1. One button, two lines: instrument (small, muted) over tuning, ⌄ at the end. Opens today's combined panel.
+          2. Two buttons side by side, equal fixed widths: instrument ⌄ and tuning ⌄, then More tools.
+          3. Two buttons stacked, full width: instrument ⌄ over tuning ⌄, More tools beside the top one.
+Long text A name that doesn't fit shrinks a little (to 85 %), then wraps or ends in "…". Shown with an 8-string
+          guitar and a 40-character own tuning (CustomTuning.MAX_NAME_LENGTH) in Dutch.
+Scale     The Xiaomi 12X, 393 dp wide, at 0.8 px per dp; 16 dp side margins.
+Look      Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 28px; display: grid; gap: 28px; }
+.cand { display: grid; gap: 8px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.phones { display: flex; flex-wrap: wrap; gap: 12px 16px; }
+.cap { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+/* The bottom of the tuner: 393 dp at 0.8 px per dp; 16 dp (13 px) side margins. */
+.phone { width: 314px; border-radius: 10px; background: var(--bg); padding: 10px 13px 0; overflow: hidden; }
+.meterhint { height: 22px; border-bottom: 1px dashed color-mix(in srgb, var(--muted) 40%, transparent);
+  font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+.ctl { display: flex; gap: 10px; align-items: flex-start; }
+.ctl .grow { flex: 1; min-width: 0; display: flex; gap: 6px; }
+.ctl .stack { flex-direction: column; }
+
+/* Every button: the More tools button's look (outline, see-through backing, muted ink). */
+.b { border-radius: 11px; border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg));
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); color: var(--ink);
+  display: flex; align-items: center; gap: 6px; padding: 0 8px 0 10px; min-width: 0; }
+.b .t { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.b .chev { color: var(--muted); font-size: 11px; flex: none; }
+.b .small { font: 400 9.6px/1.15 var(--ui); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b .main { font: 500 11.2px/1.2 var(--ui); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; }
+.one .main { -webkit-line-clamp: 1; white-space: nowrap; text-overflow: ellipsis; display: block; }
+.two .main { -webkit-line-clamp: 2; }
+.tools { width: 35px; height: 35px; flex: none; border-radius: 14px; display: grid; place-items: center; color: var(--muted); margin-top: 1px;
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.tools svg { width: 19px; height: 19px; fill: currentColor; }
+
+.strings { display: flex; justify-content: space-evenly; margin: 10px 0 12px; }
+.s { border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 500 11px/1 var(--ui);
+  border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); color: var(--ink); }
+.s sub { font-size: 7px; }
+.nav { display: flex; margin: 0 -13px; padding: 8px 0 10px; }
+.nav span { flex: 1; text-align: center; font: 500 10px/1.2 var(--ui); color: var(--muted); }
+.nav span.on { color: var(--accent); }
+.nav i { display: block; width: 16px; height: 16px; border-radius: 4px; margin: 0 auto 3px; border: 1.5px solid currentColor; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Instrument and tuning · rough mock-up</p>
+  <h1>One button or two?</h1>
+  <p class="lede">The bar loses its Instrument item and keeps three real tabs. The line above the strings becomes a
+    real button that looks like the <strong>More tools</strong> button beside it. Each option is shown twice: a short
+    English name, and an <strong>8-string guitar with a 40-character own tuning in Dutch</strong>. Buttons keep the
+    same size whatever they say. A name that doesn't fit first shrinks a little, then ends in "…".</p>
+</header>
+
+<div class="list" id="list"></div>
+
+<footer>
+  <p>The dashed line is where the meter ends. Anything that makes the controls taller takes height from the meter.</p>
+  <p>Not shown: chromatic mode (no strings, so no button; tap "Strings" to get it back), and the Chords and Capo
+    tools in Practice, which would get the same button and open the same panel there.</p>
+</footer>
+</div>
+
+<script>
+// Material Symbols Outlined "handyman", the More tools icon (Apache 2.0), unchanged.
+const TOOLS = "M754-81q-8 0-15-2.5T726-92L522-296q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l85-85q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l204 204q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13l-85 85q-6 6-13 8.5T754-81Zm0-95 29-29-147-147-29 29 147 147ZM205-80q-8 0-15.5-3T176-92l-84-84q-6-6-9-13.5T80-205q0-8 3-15t9-13l212-212h85l34-34-165-165h-57L80-765l113-113 121 121v57l165 165 116-116-43-43 56-56H495l-28-28 142-142 28 28v113l56-56 142 142q17 17 26 38.5t9 45.5q0 24-9 46t-26 39l-85-85-56 56-42-42-207 207v84L233-92q-6 6-13 9t-15 3Zm0-96 170-170v-29h-29L176-205l29 29Zm0 0-29-29 15 14 14 15Zm549 0 29-29-29 29Z";
+const tools = `<span class="tools"><svg viewBox="0 -960 960 960" aria-hidden="true"><path d="${TOOLS}"/></svg></span>`;
+
+const CASES = [
+  { cap: "English, Guitar · Standard", instr: "Guitar", tuning: "Standard",
+    strings: ["E2", "A2", "D3", "G3", "B3", "E4"], nav: ["Tuner", "Practice", "Settings"] },
+  { cap: "Dutch, 8-string guitar · own tuning (40 characters)", instr: "8-snarige gitaar",
+    tuning: "Drop E met hoge B-snaar voor metal-riffs",
+    strings: ["E1", "B1", "E2", "A2", "D3", "G3", "B3", "E4"], nav: ["Stemmer", "Oefenen", "Instellingen"] },
+];
+
+const chev = `<span class="chev">⌄</span>`;
+// 1 dp = 0.8 px; a button 56 dp tall (one), 48 dp (each of two).
+const OPTIONS = [
+  { n: "1", title: "One button, two lines", rec: true,
+    controls: c => `<div class="ctl"><div class="grow"><span class="b two" style="flex:1;height:45px">
+      <span class="t"><span class="small">${c.instr}</span><span class="main fit" style="-webkit-line-clamp:1;display:block;white-space:nowrap;text-overflow:ellipsis">${c.tuning}</span></span>${chev}</span></div>${tools}</div>`,
+    note: "One tap target, one panel (today's combined picker, unchanged). The instrument is small above the tuning, " +
+      "so the tuning, the part you change most, gets the whole width. Same size for every name. The long Dutch name " +
+      "shrinks a little and just fits; at 2× text it would end in \"…\" (the panel shows it whole)." },
+  { n: "2", title: "Two buttons side by side", rec: false,
+    controls: c => `<div class="ctl"><div class="grow">
+      <span class="b two" style="flex:1;height:45px"><span class="t"><span class="main fit">${c.instr}</span></span>${chev}</span>
+      <span class="b two" style="flex:1;height:45px"><span class="t"><span class="main fit">${c.tuning}</span></span>${chev}</span>
+      </div>${tools}</div>`,
+    note: "Three controls in one row, each about a third of the width. Even \"8-snarige gitaar\" is tight, and the long " +
+      "tuning has to wrap and end in \"…\". It also needs two panels (or one opening at two places) instead of " +
+      "today's single picker." },
+  { n: "3", title: "Two buttons stacked", rec: false,
+    controls: c => `<div class="ctl"><div class="grow stack">
+      <span class="b one" style="height:38px"><span class="t"><span class="main fit">${c.instr}</span></span>${chev}</span>
+      <span class="b one" style="height:38px"><span class="t"><span class="main fit">${c.tuning}</span></span>${chev}</span>
+      </div>${tools}</div>`,
+    note: "Room for long names, but two full-width buttons over the strings make the bottom busy, and the extra " +
+      "48 dp row comes out of the meter. Also two panels, as option 2." },
+];
+
+const chip = (name, size) => {
+  const m = name.match(/^([A-G][#b]?)(\d)$/);
+  return `<span class="s" style="width:${size}px;height:${size}px">${m[1]}<sub>${m[2]}</sub></span>`;
+};
+const phone = (opt, c) => {
+  // 48 dp chips (38 px) while they fit, else equal shares less 4 dp gaps, as StringRowFit.
+  const size = Math.min(38, Math.floor(288 / c.strings.length) - 3);
+  return `<div><div class="cap">${c.cap}</div><div class="phone">
+    <div class="meterhint">meter above</div>
+    ${opt.controls(c)}
+    <div class="strings">${c.strings.map(s => chip(s, size)).join("")}</div>
+    <div class="nav">${c.nav.map((t, i) => `<span class="${i === 0 ? "on" : ""}"><i></i>${t}</span>`).join("")}</div>
+  </div></div>`;
+};
+
+document.getElementById("list").innerHTML = OPTIONS.map(o => `<div class="cand">
+  <h2>${o.n}. ${o.title}${o.rec ? `<span class="tag">recommended</span>` : ""}</h2>
+  <div class="phones">${CASES.map(c => phone(o, c)).join("")}</div>
+  <p class="note">${o.note}</p></div>`).join("");
+
+// A name that doesn't fit shrinks to 85 % at most; past that it wraps or ends in "…" (CSS above).
+for (const el of document.querySelectorAll(".fit")) {
+  let size = 11.2;
+  const overflowing = () => el.scrollWidth > el.clientWidth + 0.5 || el.scrollHeight > el.clientHeight + 0.5;
+  while (overflowing() && size > 11.2 * 0.85) { size -= 0.2; el.style.fontSize = size + "px"; }
+}
+</script>

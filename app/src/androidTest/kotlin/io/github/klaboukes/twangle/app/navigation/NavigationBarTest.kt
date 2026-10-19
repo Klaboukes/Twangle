@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -62,8 +61,7 @@ import org.junit.runners.Parameterized
 
 /**
  * The navigation bar (upright) and rail (on its side) in each style, light and dark: three tabs that
- * TalkBack hears as tabs by name with the open one selected, and the Instrument item after the Tuner tab,
- * a button that is never selected; a tap on another tab opens it, and one on the open tab only says so
+ * TalkBack hears as tabs by name with the open one selected, and nothing else; a tap on another tab opens it, and one on the open tab only says so
  * (the app's Tuner tab closes the tuner's tools then); the open tab
  * wears the style's mark in the accent; the bar stays at most [MAX_BAR_HEIGHT] tall up to the owner's
  * 1.25× text (the feature modules' layout tests count on that); in Dutch at 2× text every name is
@@ -93,7 +91,6 @@ class NavigationBarTest(private val style: VisualStyle) {
     private val shownPractice = mutableStateOf(false)
     private val picked = mutableListOf<Destination>()
     private val reselected = mutableListOf<Destination>()
-    private var tuningTaps = 0
     private var contentStarts = 0
 
     private fun show() {
@@ -107,8 +104,6 @@ class NavigationBarTest(private val style: VisualStyle) {
                         selected = shownSelected.value,
                         onSelect = { picked += it; shownSelected.value = it },
                         onReselect = { reselected += it },
-                        onTuning = { tuningTaps++ },
-                        tuningState = TUNING_STATE,
                         practice = shownPractice.value,
                         modifier = Modifier.testTag(WINDOW),
                     ) {
@@ -122,7 +117,6 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     private fun tab(destination: Destination) = compose.onNodeWithTag(NavigationTestTags.tab(destination))
-    private val tuning get() = compose.onNodeWithTag(NavigationTestTags.INSTRUMENT)
 
     private fun label(destination: Destination, dutch: Boolean = false, practice: Boolean = false): String {
         val id = destination.label(practice)
@@ -161,41 +155,20 @@ class NavigationBarTest(private val style: VisualStyle) {
     }
 
     /**
-     * The Instrument item, bar and rail: after the Tuner tab, before Metronome; TalkBack hears a button
-     * named "Instrument" holding the picked instrument and tuning, and what a double tap does; a tap
-     * calls it, from every tab, and it is never selected.
+     * Bar and rail hold the three tabs and nothing else: the instrument and tuning are picked with the
+     * headstock button above the tuner's strings, so no item stands among the tabs without being one
+     * (the bar's Instrument item until 2026-10-19).
      */
     @Test
-    fun theInstrumentItemIsAButtonAfterTheTunerTab() {
+    fun theBarAndTheRailHoldOnlyTheTabs() {
         show()
-        val change = english(io.github.klaboukes.twangle.feature.tuner.R.string.tuner_change_instrument_or_tuning)
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
-            for (open in Destination.entries) {
-                shownSelected.value = open
-                compose.waitForIdle()
-                tuning.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
-                    .assert(hasText(english(R.string.nav_instrument)))
-                    .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, TUNING_STATE))
-                    .assert(SemanticsMatcher("click label is \"$change\"") { it.config.getOrNull(SemanticsActions.OnClick)?.label == change })
-                    .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
-                val before = tuningTaps
-                tuning.performClick()
-                assertEquals("$size from $open", before + 1, tuningTaps)
-                assertEquals("$size: a tap opens no tab", open, shownSelected.value)
-            }
-            val tuner = tab(Destination.TUNER).getBoundsInRoot()
-            val item = tuning.getBoundsInRoot()
-            val metronome = tab(Destination.METRONOME).getBoundsInRoot()
-            if (size == PHONE_LANDSCAPE) {
-                assertTrue("$size: under the Tuner tab", item.top >= tuner.bottom - SLACK.dp)
-                assertTrue("$size: above Metronome", item.bottom <= metronome.top + SLACK.dp)
-            } else {
-                assertTrue("$size: right of the Tuner tab", item.left >= tuner.right - SLACK.dp)
-                assertTrue("$size: left of Metronome", item.right <= metronome.left + SLACK.dp)
-            }
+            compose.waitForIdle()
+            compose.onNodeWithTag("nav_instrument").assertDoesNotExist()
+            compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab)).assertCountEquals(Destination.entries.size)
+            compose.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)).assertCountEquals(0)
         }
-        shownSelected.value = Destination.TUNER
     }
 
     /** With the Practice tab's switch on, the Metronome tab is heard and shown as "Practice", in the bar and the rail. */
@@ -251,7 +224,6 @@ class NavigationBarTest(private val style: VisualStyle) {
                     assertTrue("$case content above the bar", content.bottom <= bar.top + SLACK.dp)
                 }
                 for (destination in Destination.entries) assertWhollyShown(tab(destination), "$case $destination", scroll = false)
-                assertWhollyShown(tuning, "$case Instrument", scroll = false)
             }
         }
     }
@@ -271,9 +243,6 @@ class NavigationBarTest(private val style: VisualStyle) {
                 tab(destination).assert(hasText(name))
                 assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
             }
-            val name = dutch(R.string.nav_instrument)
-            tuning.assert(hasText(name))
-            assertWhollyShown(compose.onNode(hasText(name), useUnmergedTree = true), "$style $size: $name", scroll = false)
         }
     }
 
@@ -313,11 +282,6 @@ class NavigationBarTest(private val style: VisualStyle) {
                 if (destination == Destination.TUNER && lit < MIN_MARK_PIXELS) fail("$case: only $lit accent pixels in the mark")
                 if (destination != Destination.TUNER && lit > 0) fail("$case: $lit accent pixels under a tab that isn't open")
             }
-            // The Instrument item is never open: no accent at all.
-            val pixels = tuning.captureToImage().toPixelMap()
-            var lit = 0
-            for (y in 0 until pixels.height) for (x in 0 until pixels.width) if (near(pixels[x, y].toArgb(), accent)) lit++
-            if (lit > 0) fail("$style ${if (dark) "dark" else "light"} Tuning: $lit accent pixels")
         }
     }
 
@@ -370,7 +334,6 @@ class NavigationBarTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val CONTENT = "content"
         private const val TEST_TIMEOUT_SECONDS = 20L
-        private const val TUNING_STATE = "Guitar, Drop D"
 
         /** A Galaxy S26 without the status and navigation bars, upright and on its side, and a narrow 320 dp phone. */
         private val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)

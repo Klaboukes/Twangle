@@ -27,7 +27,7 @@ Part of §5 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 Settings (`:feature:settings`) is one of the three tabs of the navigation bar ([UI basics](ui.md), *Navigation bar*), so it has no back arrow; About, opened from it, keeps one. `MainActivity` switches between tuner, metronome, settings, About and the tuning editor with one saved `Screen` value (no navigation library; `navigation/Navigation.kt`) and a `SaveableStateHolder`; Back returns About → settings → tuner, metronome and editor → tuner, and from the tuner leaves the app (`Screen.back`, JVM-tested). The editor's draft is dropped on leaving it (`removeState`), so each opening starts afresh. `SettingsViewModel` saves every change at once; there is no save button.
 
 Four groups under headings (in the style's title face and `primary`, marked as headings for TalkBack), then Language, Show me around and About, each with an arrow (they open something). Groups are 32 dp apart; rows, including the card grids, keep 16 dp from the edges. No group holds more than two card grids.
-- **Pitch and notes:** A4 calibration, note names, in-tune precision. (The instrument and tuning are picked on the tuner itself, from the navigation bar's Instrument item.)
+- **Pitch and notes:** A4 calibration, note names, in-tune precision. (The instrument and tuning are picked on the tuner itself, and in the Practice tools, with the instrument button.)
 - **Look:** style, light or dark, wallpaper colours.
 - **Tuner screen:** meter look, in-tune effect (with a one-line explanation), "Below the note" (numbers or wave; the saved value for numbers is `TunerDisplay.NEEDLE`), wave look, focus mode.
 - **While tuning:** keep screen on, vibrate when in tune, tune up/down hint, signal bars.

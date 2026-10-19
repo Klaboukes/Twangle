@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">Тюнер</string>
-    <string name="nav_instrument">Инструмент</string>
     <string name="nav_metronome">Метроном</string>
     <string name="nav_practice">Практика</string>
     <string name="nav_settings">Настройки</string>

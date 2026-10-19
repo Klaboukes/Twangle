@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.then
 import androidx.compose.ui.text.intl.LocaleList
@@ -76,6 +77,7 @@ class CapoScreenTest(private val style: VisualStyle) {
     private val savedShapes = mutableListOf<SongKey>()
     private val savedFrets = mutableListOf<Int>()
     private val opened = mutableListOf<Chord>()
+    private var instrumentTaps = 0
     private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
 
     private fun show(shapes: SongKey = SongKey(PitchClass.C), fret: Int = 0) {
@@ -96,6 +98,7 @@ class CapoScreenTest(private val style: VisualStyle) {
                         onOpenChord = { opened += it },
                         header = { PracticeToolSwitch(PracticeTool.CAPO, {}, tools) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                        onPickInstrument = { instrumentTaps++ },
                     )
                 }
             }
@@ -175,7 +178,10 @@ class CapoScreenTest(private val style: VisualStyle) {
             .assert(hasContentDescription("Shapes I play: C major"))
         node(PracticeTestTags.CAPO_LOWER).assert(hasContentDescription("Capo one fret down"))
         node(PracticeTestTags.CAPO_HIGHER).assert(hasContentDescription("Capo one fret up"))
-        node(PracticeTestTags.TUNING).assert(hasContentDescription("Guitar, Standard"))
+        node(PracticeTestTags.INSTRUMENT_BUTTON)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Guitar, Standard"))
+        assertTrue("the name beside it is skipped", node(PracticeTestTags.TUNING).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         assertTrue("the capo is a polite live region", node(PracticeTestTags.CAPO_FRET).fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
     }
 
@@ -208,7 +214,7 @@ class CapoScreenTest(private val style: VisualStyle) {
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = node(WINDOW).getBoundsInRoot()
-            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
+            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
@@ -254,6 +260,15 @@ class CapoScreenTest(private val style: VisualStyle) {
         }
     }
 
+
+    /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
+    @Test
+    fun theInstrumentButtonAndTheTuningLineOpenThePanel() {
+        show()
+        node(PracticeTestTags.INSTRUMENT_BUTTON).assertIsDisplayed().performClick()
+        node(PracticeTestTags.TUNING).performClick()
+        assertEquals(2, instrumentTaps)
+    }
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

@@ -111,6 +111,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
                         savedScaleType = type,
                         onChartChange = { savedCharts += it },
                         onScaleTypeChange = { savedTypes += it },
+                        onPickInstrument = {},
                     )
                 }
             }

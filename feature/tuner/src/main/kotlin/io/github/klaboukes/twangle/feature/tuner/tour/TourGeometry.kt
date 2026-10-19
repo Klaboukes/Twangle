@@ -228,11 +228,10 @@ fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointer
 
 /**
  * The tour's order in the current layout: [steps] in reading order ([readingOrder]) by their
- * [bounds], with the navigation bar's or rail's parts (its Instrument item, then its Metronome and
- * Settings tabs) always last. Steps not laid out yet keep their place in [steps] after the others,
- * before the bar. Upright that is mode switch, meter, note, strum check, strings, then the bar; in the
- * two panes (a phone on its side, wide screens) the readout pane's meter and note, then the controls
- * pane's mode switch, strum check and strings, then the rail or bar. [rightToLeft] reads right to
+ * [bounds], with the navigation bar's or rail's part (its Metronome and Settings tabs) always last. Steps not laid out yet keep their place in [steps] after the others,
+ * before the bar. Upright that is mode switch, meter, note, instrument button, strum check, strings,
+ * then the bar; in the two panes (a phone on its side, wide screens) the readout pane's meter and note,
+ * then the controls pane's mode switch, instrument button, strum check and strings, then the rail or bar. [rightToLeft] reads right to
  * left, as in Arabic, where the layout is mirrored.
  */
 fun tourOrder(steps: List<TourPart>, rightToLeft: Boolean = false, bounds: (TourPart) -> TourBox?): List<TourPart> {
@@ -308,4 +307,4 @@ fun easeInOutCubic(t: Float): Float {
 }
 
 /** The tour's parts on the navigation bar or rail, in their tour order. */
-private val BAR_PARTS = listOf(TourPart.PICKER, TourPart.NAVIGATION)
+private val BAR_PARTS = listOf(TourPart.NAVIGATION)

@@ -10,4 +10,7 @@
     <string name="spoken_flat">%1$s bemol</string>
 
     <string name="meter_cents_label">SENT</string>
+
+    <string name="instrument_button">Enstrüman</string>
+    <string name="instrument_button_action">Enstrümanı veya akordu değiştir</string>
 </resources>

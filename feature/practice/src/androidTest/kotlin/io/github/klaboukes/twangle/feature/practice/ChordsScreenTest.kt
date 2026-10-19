@@ -21,6 +21,7 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
@@ -87,6 +88,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
     private val shownTuning = mutableStateOf(Tunings.STANDARD)
     private val shownNotation = mutableStateOf(Notation.SHARPS)
     private val savedRoots = mutableListOf<PitchClass>()
+    private var instrumentTaps = 0
     private val savedQualities = mutableListOf<ChordQuality>()
 
     private fun show(root: PitchClass = PitchClass.C, quality: ChordQuality = ChordQuality.MAJOR) {
@@ -107,6 +109,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                         onQualityChange = { savedQualities += it },
                         header = { PracticeToolSwitch(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                        onPickInstrument = { instrumentTaps++ },
                     )
                 }
             }
@@ -188,7 +191,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.type(ChordQuality.MAJOR)).performClick()
         node(PracticeTestTags.PREVIOUS).assert(hasContentDescription("Previous shape"))
         node(PracticeTestTags.NEXT).assert(hasContentDescription("Next shape"))
-        node(PracticeTestTags.TUNING).assert(hasContentDescription("Guitar, Standard"))
+        node(PracticeTestTags.INSTRUMENT_BUTTON)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Guitar, Standard"))
+        assertTrue("the name beside it is skipped", node(PracticeTestTags.TUNING).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         assertTrue("a chart is a polite live region", chart().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
     }
 
@@ -244,7 +250,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             awaitChart("C major")
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = node(WINDOW).getBoundsInRoot()
-            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
@@ -344,6 +350,15 @@ class ChordsScreenTest(private val style: VisualStyle) {
         }
     }
 
+
+    /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
+    @Test
+    fun theInstrumentButtonAndTheTuningLineOpenThePanel() {
+        show()
+        node(PracticeTestTags.INSTRUMENT_BUTTON).assertIsDisplayed().performClick()
+        node(PracticeTestTags.TUNING).performClick()
+        assertEquals(2, instrumentTaps)
+    }
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")

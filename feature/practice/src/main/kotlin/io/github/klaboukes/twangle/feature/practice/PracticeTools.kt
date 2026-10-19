@@ -35,8 +35,11 @@ object PracticeTestTags {
     /** A segment of the tool switch, e.g. "practice_tool_chords". */
     fun tool(tool: PracticeTool): String = "practice_tool_" + tool.name.lowercase()
 
-    /** The Chords tool's line naming the instrument and tuning ("Guitar · Standard"). */
+    /** The Chords and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
     const val TUNING = "practice_tuning"
+
+    /** The instrument and tuning button (a headstock) before that line, which opens the panel. */
+    const val INSTRUMENT_BUTTON = "practice_instrument_button"
 
     /** A root button, e.g. "practice_root_a_sharp". */
     fun root(root: PitchClass): String = "practice_root_" + root.name.lowercase()

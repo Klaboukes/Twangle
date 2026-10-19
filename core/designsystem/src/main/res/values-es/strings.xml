@@ -10,4 +10,7 @@
     <string name="spoken_flat">%1$s bemol</string>
 
     <string name="meter_cents_label">CENTS</string>
+
+    <string name="instrument_button">Instrumento</string>
+    <string name="instrument_button_action">Cambiar instrumento o afinación</string>
 </resources>

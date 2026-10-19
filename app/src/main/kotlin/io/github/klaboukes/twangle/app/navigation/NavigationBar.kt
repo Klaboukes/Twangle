@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -52,8 +51,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
@@ -67,23 +64,21 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlin.math.min
 
 /**
- * The app's frame: [content] with the navigation bar (Tuner · Tuning · Metronome · Settings) at the
+ * The app's frame: [content] with the navigation bar (Tuner · Metronome · Settings) at the
  * bottom, or, in a window wider than tall (a phone on its side, [useRail]), the rail along the start
  * edge. Both are variant B of the approved mock-up (docs/design/metronome-nav-preview.html): icons and
  * names straight on the style's background over a calm field, the open tab ([selected]) in the accent
  * with the style's wave mark under its name. A tap on another tab calls [onSelect], and one on the open
- * tab [onReselect] (the Tuner tab's closes the tuner's tools). Tuning is no tab
- * but a button ([InstrumentItem]): a tap calls [onTuning], which opens the instrument and tuning panel,
- * and [tuningState] ("Guitar, Standard") is what TalkBack hears it holds. Without a [selected] tab (the tuning
- * editor) the bar or rail is away and [content]
- * takes the whole window, as it does with [navigationHidden] (focus mode's full-screen tuner). The bar or rail keeps clear of the system bars; [content] is told those
+ * tab [onReselect] (the Tuner tab's closes the tuner's tools). Every item is a tab: the instrument
+ * and tuning are picked with the headstock button above the tuner's strings and in the Practice tools
+ * (the bar's Instrument item until 2026-10-19). Without a [selected] tab (the tuning editor) the bar or
+ * rail is away and [content] takes the whole window, as it does with [navigationHidden] (focus mode's full-screen tuner). The bar or rail keeps clear of the system bars; [content] is told those
  * insets are taken, so it doesn't leave room for them twice. With [practice] (the Practice tab's
  * switch on, Phase 32) the Metronome tab is called Practice.
  */
@@ -93,8 +88,6 @@ fun AppNavigationFrame(
     onSelect: (Destination) -> Unit,
     modifier: Modifier = Modifier,
     onReselect: (Destination) -> Unit = {},
-    onTuning: () -> Unit = {},
-    tuningState: String? = null,
     practice: Boolean = false,
     navigationHidden: Boolean = false,
     content: @Composable () -> Unit,
@@ -113,7 +106,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
                     exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
-                    AppNavigationRail(tab, onSelect, onTuning, tuningState, practice = practice, onReselect = onReselect)
+                    AppNavigationRail(tab, onSelect, practice = practice, onReselect = onReselect)
                 }
             } else {
                 AnimatedVisibility(
@@ -121,7 +114,7 @@ fun AppNavigationFrame(
                     enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
                     exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
                 ) {
-                    AppNavigationBar(tab, onSelect, onTuning, tuningState, practice = practice, onReselect = onReselect)
+                    AppNavigationBar(tab, onSelect, practice = practice, onReselect = onReselect)
                 }
             }
         }
@@ -162,8 +155,7 @@ fun AppNavigationFrame(
 }
 
 /**
- * The navigation bar at the bottom of an upright phone: the three tabs and the Instrument item ([onTuning],
- * [tuningState]), four equal items over the gesture bar, on a calm field (a soft wash of the background
+ * The navigation bar at the bottom of an upright phone: the three tabs, three equal items over the gesture bar, on a calm field (a soft wash of the background
  * colour that starts [FIELD_REACH] above the bar, no edge) that keeps them readable over the style's
  * motifs and the screen's last rows.
  */
@@ -171,8 +163,6 @@ fun AppNavigationFrame(
 fun AppNavigationBar(
     selected: Destination,
     onSelect: (Destination) -> Unit,
-    onTuning: () -> Unit,
-    tuningState: String?,
     modifier: Modifier = Modifier,
     practice: Boolean = false,
     onReselect: (Destination) -> Unit = {},
@@ -204,21 +194,18 @@ fun AppNavigationBar(
     ) {
         for (destination in Destination.entries) {
             NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.weight(1f))
-            if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.weight(1f))
         }
     }
 }
 
 /**
- * The rail along the start edge of a phone on its side: the same four items, one above the other in
+ * The rail along the start edge of a phone on its side: the same three tabs, one above the other in
  * the middle of the height, on a calm field that fades out [FIELD_REACH] past the rail's end edge.
  */
 @Composable
 fun AppNavigationRail(
     selected: Destination,
     onSelect: (Destination) -> Unit,
-    onTuning: () -> Unit,
-    tuningState: String?,
     modifier: Modifier = Modifier,
     practice: Boolean = false,
     onReselect: (Destination) -> Unit = {},
@@ -256,7 +243,6 @@ fun AppNavigationRail(
         ) {
             for (destination in Destination.entries) {
                 NavItem(destination, destination == selected, { onSelect(destination) }, { onReselect(destination) }, practice, Modifier.fillMaxWidth())
-                if (destination == Destination.TUNER) InstrumentItem(onTuning, tuningState, Modifier.fillMaxWidth())
             }
         }
     }
@@ -297,34 +283,7 @@ private fun NavItem(
 }
 
 /**
- * The Instrument item, after the Tuner tab: a headstock and "Instrument", drawn like a tab that isn't open,
- * but a button rather than a tab, as it opens the instrument and tuning panel over the tuner
- * ([onClick]) instead of a screen of its own. TalkBack: "Instrument, Guitar, Standard ([current]), button,
- * double-tap to change instrument or tuning". The tour's instrument and tuning step lights it up.
- */
-@Composable
-private fun InstrumentItem(onClick: () -> Unit, current: String?, modifier: Modifier = Modifier) {
-    val clickLabel = stringResource(TunerR.string.tuner_change_instrument_or_tuning)
-    NavEntry(
-        icon = INSTRUMENT_ICON,
-        label = stringResource(R.string.nav_instrument),
-        selected = false,
-        modifier = modifier
-            .testTag(NavigationTestTags.INSTRUMENT)
-            .tourTarget(TourPart.PICKER)
-            .clickable(
-                interactionSource = null,
-                indication = PressIndication(MaterialTheme.shapes.medium),
-                onClickLabel = clickLabel,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .then(if (current != null) Modifier.semantics { stateDescription = current } else Modifier),
-    )
-}
-
-/**
- * What every item of the bar or rail looks like: its [icon], its [label] under it and, while
+ * What every tab of the bar or rail looks like: its [icon], its [label] under it and, while
  * [selected], the style's wave mark under that (the room for the mark is kept either way, so nothing
  * moves); in the accent while selected, else in the muted colour.
  */
@@ -384,9 +343,6 @@ internal fun Destination.label(practice: Boolean): Int = when (this) {
 object NavigationTestTags {
     const val BAR = "nav_bar"
     const val RAIL = "nav_rail"
-
-    /** The Instrument item, which opens the instrument and tuning panel. */
-    const val INSTRUMENT = "nav_instrument"
 
     /** A tab, e.g. "nav_settings". */
     fun tab(destination: Destination): String = "nav_" + destination.name.lowercase()

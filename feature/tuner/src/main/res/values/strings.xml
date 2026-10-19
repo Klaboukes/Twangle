@@ -114,7 +114,6 @@
     <!-- The button above the strings ("Guitar · Standard") as TalkBack says it: %1$s the instrument, %2$s its tuning. -->
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_change_instrument_or_tuning">Change instrument or tuning</string>
     <!-- Title of the panel that opens from the bottom, with the instruments and their tunings. -->
     <string name="tuner_picker_title">Instrument and tuning</string>
 

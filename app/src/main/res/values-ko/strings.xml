@@ -1,6 +1,5 @@
 <resources>
     <string name="nav_tuner">튜너</string>
-    <string name="nav_instrument">악기</string>
     <string name="nav_metronome">메트로놈</string>
     <string name="nav_practice">연습</string>
     <string name="nav_settings">설정</string>

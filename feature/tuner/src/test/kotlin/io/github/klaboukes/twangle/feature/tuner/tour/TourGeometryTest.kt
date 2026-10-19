@@ -122,11 +122,11 @@ class TourGeometryTest {
     }
 
     @Test
-    fun `chromatic mode leaves out strum check and strings`() {
+    fun `chromatic mode leaves out the instrument button, strum check and strings`() {
         assertEquals(TourPart.entries, TourPart.stepsFor(TunerMode.AUTO))
         assertEquals(8, TourPart.stepsFor(TunerMode.AUTO).size)
         assertEquals(
-            listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION),
+            listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.NAVIGATION),
             TourPart.stepsFor(TunerMode.CHROMATIC),
         )
     }
@@ -160,8 +160,8 @@ class TourGeometryTest {
         assertEquals(setOf(TourPart.METER, TourPart.NOTE), TourPart.entries.filterNot { it.interactive }.toSet())
     }
 
-    // The Xiaomi 12X upright (dp): the strum check's switch above the strings, at their end; the bar's
-    // Instrument item (the instrument and tuning step), then its Metronome and Settings tabs (the bar step).
+    // The Xiaomi 12X upright (dp): the instrument button and the strum check's switch above the strings,
+    // at their start and end; the bar's Metronome and Settings tabs (the bar step).
     private val upright = mapOf(
         TourPart.MODE to TourBox(82f, 40f, 311f, 88f),
         TourPart.FOCUS to TourBox(329f, 40f, 377f, 88f),
@@ -169,7 +169,7 @@ class TourGeometryTest {
         TourPart.NOTE to TourBox(76f, 358f, 316f, 579f),
         TourPart.STRUM to TourBox(322f, 673f, 366f, 717f),
         TourPart.STRINGS to TourBox(27f, 727f, 366f, 775f),
-        TourPart.PICKER to TourBox(98f, 793f, 196f, 825f),
+        TourPart.PICKER to TourBox(27f, 673f, 71f, 717f),
         TourPart.NAVIGATION to TourBox(196f, 793f, 393f, 825f),
     )
 
@@ -181,28 +181,28 @@ class TourGeometryTest {
         TourPart.MODE to TourBox(560f, 96f, 790f, 144f),
         TourPart.STRUM to TourBox(796f, 168f, 840f, 212f),
         TourPart.STRINGS to TourBox(510f, 228f, 840f, 276f),
-        TourPart.PICKER to TourBox(0f, 110f, 80f, 170f),
+        TourPart.PICKER to TourBox(514f, 168f, 558f, 212f),
         TourPart.NAVIGATION to TourBox(0f, 184f, 80f, 314f),
     )
 
     @Test
-    fun `upright the tour reads top to bottom, left to right in a row, the bar's Instrument item and tabs last`() {
+    fun `upright the tour reads top to bottom, left to right in a row, the bar's tabs last`() {
         val order = tourOrder(TourPart.entries.shuffled(java.util.Random(4))) { upright[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
     }
 
     @Test
     fun `in a right-to-left language the mirrored layout reads in the same order`() {
-        // Arabic mirrors the screen: the strum check's switch sits at the strings' left end.
+        // Arabic mirrors the screen: the instrument button sits at the strings' right end, the strum check's switch at their left.
         val mirrored = upright.mapValues { (_, b) -> TourBox(w - b.right, b.top, w - b.left, b.bottom) }
         val order = tourOrder(TourPart.entries, rightToLeft = true) { mirrored[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
     }
 
     @Test
-    fun `on its side and in two panes it reads the readout pane, then the controls pane, the rail's items last`() {
+    fun `on its side and in two panes it reads the readout pane, then the controls pane, the rail's tabs last`() {
         val order = tourOrder(TourPart.entries) { sideways[it] }
-        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.STRUM, TourPart.STRINGS, TourPart.PICKER, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
         // The controls pane scrolled on its own (a large font) changes nothing.
         val scrolled = sideways.mapValues { (_, b) -> if (b.left >= 500f) TourBox(b.left, b.top - 150f, b.right, b.bottom - 150f) else b }
         assertEquals(order, tourOrder(TourPart.entries) { scrolled[it] })
@@ -211,17 +211,17 @@ class TourGeometryTest {
     @Test
     fun `chromatic mode keeps the same reading order`() {
         val steps = TourPart.stepsFor(TunerMode.CHROMATIC)
-        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
         // Without the strings row under both, the corner button stands apart from the mode switch: read after it.
-        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.PICKER, TourPart.NAVIGATION), tourOrder(steps) { sideways[it] })
+        assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.NAVIGATION), tourOrder(steps) { sideways[it] })
     }
 
     @Test
     fun `parts not laid out yet go after the others, before the bar`() {
         val partial = upright - TourPart.MODE
         val order = tourOrder(TourPart.entries) { partial[it] }
-        assertEquals(TourPart.MODE, order[order.lastIndex - 2])
-        assertEquals(listOf(TourPart.PICKER, TourPart.NAVIGATION), order.takeLast(2))
+        assertEquals(TourPart.MODE, order[order.lastIndex - 1])
+        assertEquals(TourPart.NAVIGATION, order.last())
     }
 
     @Test
@@ -305,7 +305,7 @@ class TourGeometryTest {
     fun `with no clear side the balloon takes the side that fits`() {
         // The strings: no room below (the bar), and above lies over the instrument button: above all the same.
         assertEquals(BalloonSide.ABOVE, placeStep(TourPart.STRINGS).side)
-        // The bar's Instrument item: nothing below it, and above lies over the strings: above all the same.
+        // The instrument button: below lies over the strings, so above, over the note.
         assertEquals(BalloonSide.ABOVE, placeStep(TourPart.PICKER).side)
         val part = TourBox(100f, 400f, 300f, 440f)
         val above = TourBox(100f, 300f, 300f, 340f)

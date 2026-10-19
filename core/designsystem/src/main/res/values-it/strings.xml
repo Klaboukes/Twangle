@@ -11,4 +11,7 @@
 
     <!-- "cent" è invariabile ("12 cent"), anche sulla scala. -->
     <string name="meter_cents_label">CENT</string>
+
+    <string name="instrument_button">Strumento</string>
+    <string name="instrument_button_action">Cambia strumento o accordatura</string>
 </resources>

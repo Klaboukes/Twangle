@@ -86,7 +86,6 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>
-    <string name="tuner_change_instrument_or_tuning">Trocar instrumento ou afinação</string>
     <string name="tuner_picker_title">Instrumento e afinação</string>
 
     <string name="tuner_new_tuning">Nova afinação</string>

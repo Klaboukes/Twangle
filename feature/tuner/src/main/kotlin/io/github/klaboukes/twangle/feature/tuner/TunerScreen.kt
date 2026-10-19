@@ -83,6 +83,8 @@ import io.github.klaboukes.twangle.core.audio.MicPermissionRules
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.INSTRUMENT_BUTTON_SIZE
+import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
@@ -418,7 +420,10 @@ object TunerTestTags {
     fun customTuning(id: String): String = "tuner_custom_tuning_$id"
     fun customTuningMenu(id: String): String = "tuner_custom_tuning_menu_$id"
 
-    /** The instrument and tuning's name above the strings ("Guitar · Drop D"), which opens the panel. */
+    /** The instrument and tuning button (a headstock) at the start of the row above the strings, which opens the panel. */
+    const val INSTRUMENT_BUTTON = "tuner_instrument_button"
+
+    /** The instrument and tuning's name beside it ("Guitar · Drop D"), which opens the panel too. */
     const val TUNING_NAME = "tuner_tuning_name"
 
     /** The compact landscape layout, which shows the controls when tapped. */
@@ -1342,9 +1347,9 @@ private fun instrumentOf(state: TunerUiState): Instrument {
 }
 
 /**
- * What the name over the string row is made of: the [instrument] picked and the player's own
- * [customTunings], whose names are their own (the presets' come from the string resources). A tap
- * on it calls [onClick] (opens the instrument and tuning panel, as the navigation bar's Instrument item).
+ * What the instrument button and the name over the string row are made of: the [instrument] picked
+ * and the player's own [customTunings], whose names are their own (the presets' come from the string
+ * resources). A tap on either calls [onClick] (opens the instrument and tuning panel).
  */
 private data class TuningNames(val instrument: Instrument, val customTunings: List<CustomTuning>, val onClick: () -> Unit)
 
@@ -1362,14 +1367,16 @@ private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
 private data class ToolsState(val tools: List<TunerTool>, val active: TunerTool?, val onChange: (TunerTool, Boolean) -> Unit)
 
 /**
- * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch sits
- * in a row of its own above the strings, at its end, its outline ending in line with the last
- * string's button ([stringFaceInsetFor]). With [names] that row starts with the instrument and tuning
- * ("Guitar · Drop D"), in line with the first string's button, quiet in the muted text colour; a long name (a large font, a long language) takes up to two
- * lines and widens the row rather than run under the switch. A tap on it opens the instrument and
- * tuning panel; TalkBack says it as "Guitar, Drop D".
- * [inTour]: the switch and the strings are the tour's steps. (The instrument and tuning are picked
- * from the navigation bar's Instrument item.)
+ * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch (or
+ * the "more tools" button) sits in a row of its own above the strings, at its end, its outline ending
+ * in line with the last string's button ([stringFaceInsetFor]). With [names] that row starts with the
+ * instrument button ([InstrumentButton], a headstock in the same outline), its outline starting in
+ * line with the first string's button, so a button of one kind stands at each end; between them the
+ * instrument and tuning ("Guitar · Drop D"), quiet in the muted text colour. A long name (a large font,
+ * a long language, an own tuning) takes up to two lines and ends in "…" rather than move either
+ * button. A tap on the button or the name opens the instrument and tuning panel; TalkBack hears the
+ * button ("Instrument, Guitar, Drop D") and skips the name, which says the same.
+ * [inTour]: the instrument button, the switch and the strings are the tour's steps.
  */
 @Composable
 private fun GuitarControls(
@@ -1409,10 +1416,20 @@ private fun GuitarControls(
             else -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
         }
     }
+    val instrument = @Composable {
+        if (names != null) {
+            InstrumentButton(
+                current = names.labelFor(tuning, spoken = true),
+                onClick = names.onClick,
+                // The tour lights up the outline, not the touch target round it.
+                faceModifier = Modifier
+                    .testTag(TunerTestTags.INSTRUMENT_BUTTON)
+                    .then(if (inTour) Modifier.tourTarget(TourPart.PICKER) else Modifier),
+            )
+        }
+    }
     val label = @Composable {
         if (names != null) {
-            val spoken = names.labelFor(tuning, spoken = true)
-            val clickLabel = stringResource(R.string.tuner_change_instrument_or_tuning)
             // Pressed, the name sinks and lights up; a quiet label, so only the tint, never
             // Futuristic's neon frame tight round its text.
             val press = remember { MutableInteractionSource() }
@@ -1422,15 +1439,15 @@ private fun GuitarControls(
                     .heightIn(min = LABEL_MIN_HEIGHT)
                     .pressSink(press)
                     .clip(nameShape)
-                    .clickable(press, PressIndication(nameShape), onClickLabel = clickLabel, role = Role.Button) {
+                    .clickable(press, PressIndication(nameShape)) {
                         press.pressFlash()
                         names.onClick()
                     }
                     .testTag(TunerTestTags.TUNING_NAME)
+                    // The instrument button beside it says the same to TalkBack.
                     .clearAndSetSemantics {
-                        contentDescription = spoken
-                        role = Role.Button
-                        onClick(label = clickLabel) {
+                        hideFromAccessibility()
+                        onClick {
                             names.onClick()
                             true
                         }
@@ -1448,36 +1465,45 @@ private fun GuitarControls(
         }
     }
     val style = MaterialTheme.styleTokens.style
-    Layout(contents = listOf(strings, toggle, label)) { (stringMeasurables, toggleMeasurables, labelMeasurables), constraints ->
+    Layout(contents = listOf(strings, toggle, instrument, label)) { (stringMeasurables, toggleMeasurables, instrumentMeasurables, labelMeasurables), constraints ->
         val partConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val stringsPlaceable = stringMeasurables.single().measure(partConstraints)
         val togglePlaceable = toggleMeasurables.firstOrNull()?.measure(partConstraints)
-        val gap = LABEL_TOGGLE_GAP.roundToPx()
-        val toggleRoom = togglePlaceable?.let { it.width + gap } ?: 0
-        val labelPlaceable = labelMeasurables.firstOrNull()
-            ?.measure(partConstraints.copy(maxWidth = (constraints.maxWidth - toggleRoom).coerceAtLeast(0)))
-        val labelRoom = labelPlaceable?.let { it.width + toggleRoom } ?: (togglePlaceable?.width ?: 0)
-        val width = max(stringsPlaceable.width, labelRoom).coerceIn(constraints.minWidth, constraints.maxWidth)
-        val rowHeight = max(togglePlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
-        val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
-        val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+        val instrumentPlaceable = instrumentMeasurables.firstOrNull()?.measure(partConstraints)
+        val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val stringsX = (width - stringsPlaceable.width) / 2
         // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
         val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning.strings.size).dp.roundToPx().coerceAtLeast(0)
-        val facesStart = faceInset
-        val facesEnd = stringsPlaceable.width - faceInset
+        val facesStart = stringsX + faceInset
+        val facesEnd = stringsX + stringsPlaceable.width - faceInset
+        // Each button's outline sits inside its 48 dp touch target: the switch's ends where the last
+        // string's face does, the instrument button's starts where the first one's does.
+        val toggleX = togglePlaceable?.let {
+            val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+            (facesEnd - it.width + outlineInset).coerceIn(0, (width - it.width).coerceAtLeast(0))
+        }
+        val instrumentInset = instrumentPlaceable?.let { (it.width - INSTRUMENT_BUTTON_SIZE.roundToPx()).coerceAtLeast(0) / 2 } ?: 0
+        val instrumentX = instrumentPlaceable?.let { (facesStart - instrumentInset).coerceIn(0, (width - it.width).coerceAtLeast(0)) }
+        // The name between the two buttons' outlines, a gap from each.
+        val labelStart = if (instrumentPlaceable != null && instrumentX != null) {
+            instrumentX + instrumentPlaceable.width - instrumentInset + LABEL_BUTTON_GAP.roundToPx()
+        } else {
+            facesStart
+        }
+        val labelEnd = if (togglePlaceable != null && toggleX != null) {
+            toggleX + (togglePlaceable.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2 - LABEL_TOGGLE_GAP.roundToPx()
+        } else {
+            facesEnd
+        }
+        val labelPlaceable = labelMeasurables.firstOrNull()
+            ?.measure(partConstraints.copy(maxWidth = (labelEnd - labelStart).coerceAtLeast(0)))
+        val rowHeight = maxOf(togglePlaceable?.height ?: 0, instrumentPlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
+        val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
+        val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
         layout(width, height) {
-            val stringsX = (width - stringsPlaceable.width) / 2
-            // The switch's outline (inside its touch target) ends where the last button's face does.
-            val toggleX = togglePlaceable?.let {
-                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
-                (stringsX + facesEnd - it.width + outlineInset).coerceIn(0, width - it.width)
-            } ?: width
-            togglePlaceable?.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
-            // From the first button's face, unless that would run under the switch.
-            labelPlaceable?.placeRelative(
-                min(stringsX + facesStart, toggleX - (if (togglePlaceable != null) gap else 0) - labelPlaceable.width).coerceAtLeast(0),
-                (rowHeight - labelPlaceable.height) / 2,
-            )
+            if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
+            if (instrumentPlaceable != null && instrumentX != null) instrumentPlaceable.placeRelative(instrumentX, (rowHeight - instrumentPlaceable.height) / 2)
+            labelPlaceable?.placeRelative(labelStart, (rowHeight - labelPlaceable.height) / 2)
             stringsPlaceable.placeRelative(stringsX, stringsY)
         }
     }
@@ -1530,6 +1556,9 @@ private val LABEL_MIN_HEIGHT = 48.dp
 
 /** At least this much room between the tuning's name and the strum check's switch. */
 private val LABEL_TOGGLE_GAP = 12.dp
+
+/** Between the instrument button's outline and the tuning's name. */
+private val LABEL_BUTTON_GAP = 12.dp
 
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp
