@@ -341,11 +341,15 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
                 compose.assertNoWordBroken("$style $language $size at 2x:")
+                // The grid is a window of its own: Back with it shut would close the activity, and a tap while the last
+                // one is still going away only shuts that one (the Retro run, 2026-10-19). So wait for it both ways.
+                val types = PracticeTestTags.type(ChordQuality.MAJOR)
                 node(PracticeTestTags.TYPE_PICKER).performClick()
+                compose.waitUntil(WAIT_MS) { exists(types) }
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x, types:")
                 compose.assertNoWordBroken("$style $language $size at 2x, types:")
                 Espresso.pressBack()
-                compose.waitForIdle()
+                compose.waitUntil(WAIT_MS) { !exists(types) }
             }
         }
     }
