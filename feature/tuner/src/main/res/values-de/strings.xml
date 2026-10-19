@@ -18,7 +18,7 @@
     <string name="tuner_show_controls">Bedienelemente zeigen</string>
     <string name="tuner_focus_mode">Fokusmodus</string>
     <string name="tuner_exit_focus_mode">Fokusmodus beenden</string>
-    <string name="tuner_compact_tap_hint">Tippen, um die Bedienelemente zu zeigen</string>
+    <string name="tuner_hide_controls">Bedienelemente ausblenden</string>
 
     <string name="tuning_standard">Standard</string>
     <string name="tuning_drop_d">Drop D</string>

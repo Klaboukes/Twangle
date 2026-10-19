@@ -40,22 +40,38 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 
+/** What [FocusModeButton] does, which decides its icon and name. */
+internal enum class FocusAction {
+    /** Focus mode off: "full screen" (four corners pointing out; "Focus mode") turns it on. */
+    ENTER,
+
+    /** Focus mode on: "exit full screen" (pointing in; "Exit focus mode") turns it off. */
+    EXIT,
+
+    /** Focus mode's controls up after a tap: "full screen" again ("Hide controls") takes them away. */
+    HIDE_CONTROLS,
+}
+
 /**
- * Focus mode's button, right above the "more tools" button and drawn like it (the same outline, fill,
- * size and press feel in every style), so it stands out on every style's background (owner,
- * 2026-10-19: the bare icon in the top corner was hardly visible, in Space Age least of all). No
- * word: with focus mode off ([on] false) the "full screen" icon (four corners pointing out; TalkBack
- * and the long-press tooltip "Focus mode"), with it on the "exit full screen" icon (pointing in; "Exit
- * focus mode"). Its outline is the tour's focus mode step.
+ * Focus mode's button, drawn like the "more tools" button (the same outline, fill, size and press feel
+ * in every style), so it stands out on every style's background (owner, 2026-10-19: the bare icon in
+ * the top corner was hardly visible, in Space Age least of all). No word, only the icon for its
+ * [action]; TalkBack and the long-press tooltip say its name. Its outline is the tour's focus mode step.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun FocusModeButton(on: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     val neon = style == VisualStyle.FUTURISTIC
     val shape = pickerButtonShape(style, MaterialTheme.shapes.small)
-    val label = stringResource(if (on) R.string.tuner_exit_focus_mode else R.string.tuner_focus_mode)
+    val label = stringResource(
+        when (action) {
+            FocusAction.ENTER -> R.string.tuner_focus_mode
+            FocusAction.EXIT -> R.string.tuner_exit_focus_mode
+            FocusAction.HIDE_CONTROLS -> R.string.tuner_hide_controls
+        },
+    )
     val outline = if (neon) scheme.primary.copy(alpha = 0.55f) else scheme.onSurfaceVariant.copy(alpha = 0.6f)
     val fill = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.45f)
     TooltipBox(
@@ -68,7 +84,13 @@ internal fun FocusModeButton(on: Boolean, onClick: () -> Unit, modifier: Modifie
         Box(
             Modifier
                 .minimumInteractiveComponentSize()
-                .testTag(if (on) TunerTestTags.EXIT_FOCUS else TunerTestTags.ENTER_FOCUS)
+                .testTag(
+                    when (action) {
+                        FocusAction.ENTER -> TunerTestTags.ENTER_FOCUS
+                        FocusAction.EXIT -> TunerTestTags.EXIT_FOCUS
+                        FocusAction.HIDE_CONTROLS -> TunerTestTags.HIDE_CONTROLS
+                    },
+                )
                 .size(STRUM_TOGGLE_SIZE)
                 .tourTarget(TourPart.FOCUS)
                 .pressSink(press)
@@ -83,7 +105,7 @@ internal fun FocusModeButton(on: Boolean, onClick: () -> Unit, modifier: Modifie
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                painterResource(if (on) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen),
+                painterResource(if (action == FocusAction.EXIT) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen),
                 contentDescription = null,
                 tint = scheme.onSurfaceVariant,
                 modifier = Modifier.size(FOCUS_ICON_SIZE),

@@ -133,8 +133,9 @@ class FocusModeOrientationTest {
     }
 
     /**
-     * The tuner's full-screen button turns focus mode on; the exit button among the controls a tap
-     * brings up, and Back, switch it off, and the app keeps running.
+     * The tuner's full-screen button turns focus mode on; the button among the controls a tap brings
+     * up goes back to full screen; the exit button in the corner, and Back, switch it off, and the
+     * app keeps running.
      */
     @Test
     fun theTunersButtonsAndBackTurnFocusModeOnAndOff() {
@@ -143,7 +144,12 @@ class FocusModeOrientationTest {
             assertTrue("the button switches focus mode on", waitFor { runBlocking { settings.settings.first().focusMode } })
             assertTrue("and the screen turns", waitFor { scenario.onItsSide() })
             assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
+            // A tap brings the controls; their button takes them away again, still in focus mode.
             (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
+            (device.wait(Until.findObject(By.res(TunerTestTags.HIDE_CONTROLS)), WAIT_MS) ?: error("no full-screen button among the controls")).click()
+            assertTrue("the controls go", device.wait(Until.gone(By.res(TunerTestTags.HIDE_CONTROLS)), WAIT_MS))
+            assertTrue("still in focus mode", runBlocking { settings.settings.first().focusMode })
+            // The exit button in the full-screen tuner's corner.
             (device.wait(Until.findObject(By.res(TunerTestTags.EXIT_FOCUS)), WAIT_MS) ?: error("no exit button")).click()
             assertTrue("the button switches focus mode off", waitFor { !runBlocking { settings.settings.first().focusMode } })
             assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })

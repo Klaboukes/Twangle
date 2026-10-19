@@ -1,11 +1,8 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -105,6 +102,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
+import io.github.klaboukes.twangle.feature.tuner.components.FocusAction
 import io.github.klaboukes.twangle.feature.tuner.components.FocusModeButton
 import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
@@ -425,14 +423,14 @@ object TunerTestTags {
     /** The compact landscape layout, which shows the controls when tapped. */
     const val COMPACT = "tuner_compact"
 
-    /** The compact layout's "Tap to show the controls" line, shown for a few seconds after it appears. */
-    const val COMPACT_TAP_HINT = "tuner_compact_tap_hint"
-
-    /** Focus mode's exit button, among the controls a tap brings up. */
+    /** Focus mode's exit button, in the top end corner of the full-screen tuner. */
     const val EXIT_FOCUS = "tuner_exit_focus"
 
-    /** The button that turns focus mode on, beside the mode switch upright and in the top end corner on its side. */
+    /** The button that turns focus mode on, right above the "more tools" button. */
     const val ENTER_FOCUS = "tuner_enter_focus"
+
+    /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
+    const val HIDE_CONTROLS = "tuner_hide_controls"
 
     /** Focus mode's small note in the corner, beside the full-screen meter. */
     const val FOCUS_NOTE = "tuner_focus_note"
@@ -610,6 +608,8 @@ fun TunerContent(
     } else {
         null
     }
+    // While focus mode's controls are up over the compact layout, its button takes them away again.
+    var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
     val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
@@ -649,9 +649,18 @@ fun TunerContent(
             slot()
         } else {
             // Focus mode's button right above the "more tools" button, in both modes (the slot keeps its size).
-            // On: the exit button, among the controls a tap brings up ([compactLandscape] is focus mode).
+            // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
+            // the exit button there looked as if a tap had already left focus mode); its exit is in the
+            // full-screen tuner's corner. On, without the compact layout (a large screen upright), it exits.
+            val hide = hideControls
             FocusAboveTools(
-                button = { FocusModeButton(on = compactLandscape, onClick = { onFocusModeChange(!compactLandscape) }) },
+                button = {
+                    when {
+                        hide != null -> FocusModeButton(FocusAction.HIDE_CONTROLS, onClick = hide)
+                        compactLandscape -> FocusModeButton(FocusAction.EXIT, onClick = { onFocusModeChange(false) })
+                        else -> FocusModeButton(FocusAction.ENTER, onClick = { onFocusModeChange(true) })
+                    }
+                },
                 stringCount = stringCountOf(state),
                 slot = slot,
             )
@@ -805,18 +814,12 @@ fun TunerContent(
                         containsControls = true,
                     ) ?: COMPACT_CONTROLS_SHOWN_MS
                 }
-                // "Tap to show the controls" for a few seconds after the compact layout appears, or until a tap.
-                var tapHintShown by remember { mutableStateOf(true) }
-                val hintMillis = remember(accessibility) {
-                    accessibility?.calculateRecommendedTimeoutMillis(COMPACT_TAP_HINT_SHOWN_MS, containsText = true)
-                        ?: COMPACT_TAP_HINT_SHOWN_MS
-                }
-                LaunchedEffect(Unit) {
-                    delay(hintMillis)
-                    tapHintShown = false
-                }
                 // While the tour runs the controls stay, so it can point at them.
                 val showing = controlsShown || controlsAlwaysShown
+                DisposableEffect(controlsAlwaysShown) {
+                    hideControls = if (controlsAlwaysShown) null else ({ controlsShown = false })
+                    onDispose { hideControls = null }
+                }
                 LaunchedEffect(controlsShown, touches, pickerOpen) {
                     if (controlsShown && !pickerOpen) {
                         delay(shownMillis)
@@ -848,11 +851,8 @@ fun TunerContent(
                             focusNote = if (fullMeter) focusNote else null,
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
                             gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
-                            tapHint = tapHintShown,
-                            onShowControls = {
-                                tapHintShown = false
-                                controlsShown = true
-                            },
+                            onShowControls = { controlsShown = true },
+                            onExitFocus = onFocusModeChange?.let { { it(false) } },
                         )
                     }
                 }
@@ -998,10 +998,10 @@ private fun TwoPaneLayout(
  * the screen, the small note in its top start corner ([FocusMeter]). Otherwise (a tool on) the gauge
  * is as big as the space allows beside the [note] with [below] under it (the small string row or the
  * chromatic numbers). No mode switch, strum check switch or string buttons. A tap anywhere, or
- * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]; while
- * [tapHint], a quiet line says so (TalkBack has the button instead): in the top end corner beside
- * the full-screen meter, where every look leaves room, else at the bottom. An [error] shows its
- * message and retry instead.
+ * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]. Focus
+ * mode's exit button ([onExitFocus]) sits in the top end corner, where every meter look leaves room
+ * (owner, 2026-10-19: in place of a "Tap to show the controls" line, as the way out). An [error]
+ * shows its message and retry instead.
  */
 @Composable
 private fun CompactLayout(
@@ -1011,8 +1011,8 @@ private fun CompactLayout(
     note: @Composable () -> Unit,
     below: @Composable () -> Unit,
     gaugeMinWidth: Dp,
-    tapHint: Boolean,
     onShowControls: () -> Unit,
+    onExitFocus: (() -> Unit)?,
     focusNote: (@Composable () -> Unit)? = null,
 ) {
     val fullMeter = focusNote != null && error == null
@@ -1037,24 +1037,11 @@ private fun CompactLayout(
         } else {
             CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
         }
-        // Laid over the layout, so nothing moves when it fades out.
-        AnimatedVisibility(
-            visible = tapHint && error == null,
-            enter = fadeIn(tween(TAP_HINT_FADE_MS)),
-            exit = fadeOut(tween(TAP_HINT_FADE_MS)),
-            modifier = if (fullMeter) {
-                Modifier.align(Alignment.TopEnd).padding(top = FOCUS_EDGE_TOP, end = FOCUS_EDGE_SIDE)
-            } else {
-                Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)
-            },
-        ) {
-            Text(
-                stringResource(R.string.tuner_compact_tap_hint),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                modifier = Modifier.testTag(TunerTestTags.COMPACT_TAP_HINT).semantics { hideFromAccessibility() },
-            )
+        if (onExitFocus != null) {
+            // In a box of its own: the button's tooltip wrapper doesn't pass the alignment on.
+            Box(Modifier.align(Alignment.TopEnd).padding(top = FOCUS_EDGE_TOP, end = FOCUS_EDGE_SIDE)) {
+                FocusModeButton(FocusAction.EXIT, onClick = onExitFocus)
+            }
         }
     }
 }
@@ -1139,8 +1126,12 @@ private fun CompactRow(
                     FitGauge(gauge, maxWidth = COMPACT_GAUGE_MAX_WIDTH)
                 }
                 Column(
-                    // With a very large system font the note column can be taller than the screen; then it scrolls.
-                    modifier = Modifier.widthIn(max = noteMaxWidth).verticalScroll(rememberScrollState()),
+                    // With a very large system font the note column can be taller than the screen; then it scrolls,
+                    // clear of focus mode's exit button in the top end corner (and as far from the bottom).
+                    modifier = Modifier
+                        .widthIn(max = noteMaxWidth)
+                        .padding(vertical = COMPACT_CORNER_CLEARANCE)
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(COMPACT_NOTE_SPACING),
                 ) {
@@ -1589,7 +1580,6 @@ private val GAUGE_MIN_WIDTH = 160.dp
 private val COMPACT_PANE_HEIGHT = 420.dp
 
 /** The compact layout's "Tap to show the controls" fades in and out this gently. */
-private const val TAP_HINT_FADE_MS = 400
 
 /** In the compact layout the meter grows with the screen, up to this. */
 private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
@@ -1601,9 +1591,12 @@ private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 /** Between focus mode's button and the "more tools" button under it (their touch areas): their outlines 12 dp apart. */
 private val FOCUS_TOOLS_GAP = 8.dp
 
-/** The full-screen meter's corner texts (the note, the tap hint) keep this far from the screen's edges. */
+/** What sits in the compact layout's top corners (the note, focus mode's exit button) keeps this far from the screen's edges. */
 private val FOCUS_EDGE_SIDE = 16.dp
 private val FOCUS_EDGE_TOP = 8.dp
+
+/** Above and below the compact layout's note column: focus mode's exit button (48 dp at 8 dp from the top) stays clear. */
+private val COMPACT_CORNER_CLEARANCE = 56.dp
 
 /** Between the note and what's under it in the compact layout. */
 private val COMPACT_NOTE_SPACING = 12.dp

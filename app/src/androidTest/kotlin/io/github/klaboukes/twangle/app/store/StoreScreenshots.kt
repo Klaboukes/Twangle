@@ -243,8 +243,6 @@ class StoreScreenshots(private val shot: Shot) {
                             // Without its controls the tuner takes the whole screen: no rail and no status bar to cut off.
                             check(waitUntil { scenario.barsHidden() }) { "focus mode didn't go full screen" }
                             measureCrop(scenario)
-                            // "Tap to show the controls" shows for its first few seconds.
-                            settle(TAP_HINT_MS)
                             recorder.play(StoreSounds.vibratoNote(StoreSounds.hz(StoreSounds.A4), NOTE_SECONDS, VIBRATO_STEADY_SECONDS))
                             settle(TRAIL_SETTLE_MS)
                         },
@@ -474,8 +472,6 @@ class StoreScreenshots(private val shot: Shot) {
         private const val METRONOME_BPM = 120
         private const val BEAT_LIT_MS = 120L
         private const val CAPO_FRET = 2
-
-        private const val TAP_HINT_MS = 4_500L
 
         /** The navigation rail's width (NavigationBar.kt, RAIL_WIDTH). */
         private const val RAIL_DP = 80

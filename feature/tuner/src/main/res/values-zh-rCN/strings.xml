@@ -18,7 +18,7 @@
     <string name="tuner_show_controls">显示控件</string>
     <string name="tuner_focus_mode">专注模式</string>
     <string name="tuner_exit_focus_mode">退出专注模式</string>
-    <string name="tuner_compact_tap_hint">点按以显示控件</string>
+    <string name="tuner_hide_controls">隐藏控件</string>
 
     <string name="tuning_standard">标准</string>
     <string name="tuning_drop_d">Drop D</string>

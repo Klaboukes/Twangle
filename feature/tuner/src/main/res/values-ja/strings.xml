@@ -18,7 +18,7 @@
     <string name="tuner_show_controls">操作を表示</string>
     <string name="tuner_focus_mode">フォーカスモード</string>
     <string name="tuner_exit_focus_mode">フォーカスモードを終了</string>
-    <string name="tuner_compact_tap_hint">タップして操作を表示</string>
+    <string name="tuner_hide_controls">操作を隠す</string>
 
     <string name="tuning_standard">スタンダード</string>
     <string name="tuning_drop_d">ドロップD</string>

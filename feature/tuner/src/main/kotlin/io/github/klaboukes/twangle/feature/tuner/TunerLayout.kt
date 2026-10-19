@@ -32,6 +32,3 @@ const val TWO_PANE_MIN_WIDTH_DP = 600f
 
 /** How long the controls stay after a tap in the [TunerLayout.COMPACT] layout, before TalkBack's own timeout setting. */
 const val COMPACT_CONTROLS_SHOWN_MS = 5_000L
-
-/** How long the [TunerLayout.COMPACT] layout says "Tap to show the controls" after it appears, before TalkBack's own timeout setting. */
-const val COMPACT_TAP_HINT_SHOWN_MS = 4_000L

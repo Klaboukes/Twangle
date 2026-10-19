@@ -108,6 +108,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                         showSignalBars = true,
                         compactLandscape = shownCompact.value,
                         onStrumCheckChange = {},
+                        onFocusModeChange = {},
                     )
                 }
             }
@@ -239,23 +240,24 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         modeSwitch.assertIsDisplayed()
     }
 
-    /** A quiet "Tap to show the controls" when the compact layout appears, not for TalkBack, gone by itself. */
+    /** Focus mode's exit button in the top end corner, wholly shown, clear of the note, also at 2× font. */
     @Test
-    fun aQuietLineSaysATapShowsTheControls() {
-        compose.mainClock.autoAdvance = false
+    fun theExitButtonSitsInTheTopEndCorner() {
         show()
-        val hint = compose.onNodeWithText(context.getString(R.string.tuner_compact_tap_hint))
-        hint.assertIsDisplayed()
-        // In the top end corner, which every meter look leaves free.
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val place = hint.getBoundsInRoot()
-        assertTrue("hint at $place", place.right >= window.right - 24.dp && place.top <= window.top + 24.dp)
-        assertTrue("TalkBack hears the hint", hint.fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
-        // Still there just before its time is up (no flicker), then gone.
-        compose.mainClock.advanceTimeBy(COMPACT_TAP_HINT_SHOWN_MS - FADE_MS)
-        hint.assertIsDisplayed()
-        compose.mainClock.advanceTimeBy(2 * FADE_MS)
-        hint.assertDoesNotExist()
+        forEach(PHONE_LANDSCAPE to false, TABLET_LANDSCAPE to true) { case ->
+            for (scale in listOf(1f, 2f)) {
+                shownFontScale.value = scale
+                compose.waitForIdle()
+                val button = compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS)
+                assertWhollyShown(button, "$case ${scale}x exit button", scroll = false)
+                val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+                val place = button.getBoundsInRoot()
+                assertTrue("$case ${scale}x exit button at $place", place.right >= window.right - 24.dp && place.top <= window.top + 16.dp)
+                val noteAt = note.getBoundsInRoot()
+                assertTrue("$case ${scale}x exit button at $place, note at $noteAt", place.left > noteAt.right)
+            }
+            shownFontScale.value = 1f
+        }
     }
 
     /**
@@ -285,8 +287,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
      */
     private fun assertEveryMeterLookInItsBox(case: String) {
         shownLook.value = MeterLook.CLASSIC
-        // The tap hint gone first: it fades out on its own.
-        compose.mainClock.advanceTimeBy(COMPACT_TAP_HINT_SHOWN_MS + FADE_MS)
         compose.waitForIdle()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val places = placesOnScreen()

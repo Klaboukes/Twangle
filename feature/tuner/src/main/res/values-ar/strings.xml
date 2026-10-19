@@ -18,7 +18,7 @@
     <string name="tuner_show_controls">إظهار عناصر التحكم</string>
     <string name="tuner_focus_mode">وضع التركيز</string>
     <string name="tuner_exit_focus_mode">الخروج من وضع التركيز</string>
-    <string name="tuner_compact_tap_hint">انقر لإظهار عناصر التحكم</string>
+    <string name="tuner_hide_controls">إخفاء عناصر التحكم</string>
 
     <string name="tuning_standard">قياسي</string>
     <string name="tuning_drop_d">Drop D</string>

@@ -93,14 +93,14 @@ class TunerScreenTest {
         modeSwitch.assertExists()
     }
 
-    /** In focus mode a tap brings the tuner's own controls for 5 s, with the "tap" hint before it. */
+    /** In focus mode a tap brings the tuner's own controls for 5 s; the full-screen tuner has the exit button. */
     @Test
     fun inFocusModeATapShowsTheControlsFor5Seconds() {
         compose.mainClock.autoAdvance = false
         show(FakeSettingsRepository(AppSettings(focusMode = true)))
         compose.mainClock.advanceTimeByFrame()
         compose.waitForIdle()
-        compose.onNodeWithText(context.getString(R.string.tuner_compact_tap_hint)).assertExists()
+        compose.onNodeWithTag(TunerTestTags.EXIT_FOCUS).assertExists()
         modeSwitch.assertDoesNotExist()
 
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()

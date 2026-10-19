@@ -1673,18 +1673,35 @@ class TunerContentTest {
     }
 
     @Test
-    fun focusTheControlsBringAnExitButtonAndBackLeavesToo() {
+    fun focusTheExitButtonSitsInTheTopEndCornerAndBackLeavesToo() {
         show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
-        // Not over the full-screen meter: it comes with the controls.
-        exitButton.assertDoesNotExist()
-        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        exitButton.assertIsDisplayed().assertHasClickAction()
-        assertRightAboveTheToolsButton(exitButton)
+        // Over the full-screen meter, in the corner the note leaves free (owner, 2026-10-19: the way out, in place of a tap hint).
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val place = exitButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
+        assertTrue("exit button at $place", place.right >= window.right - 24.dp && place.top <= window.top + 16.dp)
+        val note = compose.onNodeWithTag(TunerTestTags.FOCUS_NOTE).getBoundsInRoot()
+        assertTrue("exit button at $place, note at $note", place.left > note.right)
         exitButton.performClick()
         assertEquals(listOf(false), focusChanges)
         // Back leaves focus mode too, with the controls shown or not.
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         assertEquals(listOf(false, false), focusChanges)
+    }
+
+    @Test
+    fun focusTheControlsButtonGoesBackToFullScreen() {
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        // With the controls up the button above the tools button doesn't leave focus mode (it looked as if a tap
+        // had already left it): it takes the controls away again, at once.
+        exitButton.assertDoesNotExist()
+        hideButton.assertHasClickAction()
+        assertRightAboveTheToolsButton(hideButton)
+        hideButton.performClick()
+        compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
+        assertEquals("full screen again", true, fullScreenReports.last())
+        exitButton.assertIsDisplayed()
+        assertEquals(emptyList<Boolean>(), focusChanges)
     }
 
     @Test
@@ -1724,6 +1741,7 @@ class TunerContentTest {
 
     private val exitButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_exit_focus_mode))
     private val enterButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_focus_mode))
+    private val hideButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_hide_controls))
 
     @Test
     fun compactShowsAnErrorWithRetry() {

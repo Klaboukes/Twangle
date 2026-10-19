@@ -25,8 +25,8 @@
     <string name="tuner_show_controls">Show controls</string>
     <string name="tuner_focus_mode">Focus mode</string>
     <string name="tuner_exit_focus_mode">Exit focus mode</string>
-    <!-- A quiet line in the compact layout on its side, for a few seconds after it appears: a tap anywhere shows the controls. -->
-    <string name="tuner_compact_tap_hint">Tap to show the controls</string>
+    <!-- TalkBack: among focus mode's controls, the button that takes them away, back to the full-screen tuner. -->
+    <string name="tuner_hide_controls">Hide controls</string>
 
     <!-- Tuning presets, see Tunings in :core:dsp. -->
     <string name="tuning_standard">Standard</string>
