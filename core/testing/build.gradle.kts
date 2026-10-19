@@ -31,4 +31,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.junit)
     api(libs.androidx.test.runner)
+    // Compose's UI test library brings Espresso 3.5, which calls InputManager.getInstance, gone in
+    // API 37 (the Galaxy S26): every test failed there. 3.8 works on it.
+    api(libs.androidx.espresso.core)
 }
