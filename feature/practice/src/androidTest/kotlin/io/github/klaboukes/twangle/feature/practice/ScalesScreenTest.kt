@@ -61,11 +61,11 @@ import org.junit.runners.Parameterized
 
 /**
  * Scales in the Chords tool (Phase 32) in each style, light and dark: the Chords · Scales choice
- * switches the view and shares the root, it opens on the saved scale, the pickers pick another (and
- * report it to be saved), the neck follows the picked tuning and notation, TalkBack hears the choice
- * and the scales' grid as radio groups, the scale's picker as a list and the neck in words, and it
- * all fits: without scrolling upright and on its side at normal text, wholly shown at 2× text, the
- * grid too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
+ * switches the view and shares the root, it opens on the saved scale, the name button's panel picks
+ * another (and reports it to be saved), the neck follows the picked tuning and notation, TalkBack
+ * hears the choice and the panel's grids as radio groups, the name as a heading and a list and the
+ * neck in words, and it all fits: without scrolling upright and on its side at normal text, wholly
+ * shown at 2× text, the panel too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -123,20 +123,36 @@ class ScalesScreenTest(private val style: VisualStyle) {
     private fun spokenNeck(): String = neck().fetchSemanticsNode().config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
     private fun exists(tag: String): Boolean = compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
 
-    /** Opens [picker]'s grid and taps [option] in it, which closes the grid. */
-    private fun pick(picker: String, option: String) {
-        node(picker).performClick()
-        node(option).performClick()
-        compose.waitForIdle()
-        assertFalse("a pick closes the grid", exists(option))
+    private fun picker() = node(PracticeTestTags.NAME_PICKER)
+
+    /** Opens the panel and waits for it: a window of its own. */
+    private fun openPanel() {
+        picker().performClick()
+        compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.root(PitchClass.C)) }
     }
 
-    /** Opens [picker]'s grid, checks that [option] is the one picked, and closes the grid by tapping it again. */
-    private fun assertPicked(picker: String, option: String) {
-        node(picker).performClick()
-        node(option).assertIsSelected()
-        node(option).performClick()
-        compose.waitForIdle()
+    /** Closes the panel with Back and waits for it to go: Back with it shut would close the activity. */
+    private fun closePanel() {
+        Espresso.pressBack()
+        compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
+    }
+
+    /** Opens the panel, taps each of [options] in it (it stays open), and closes it. */
+    private fun pick(vararg options: String) {
+        openPanel()
+        for (option in options) {
+            node(option).performClick()
+            compose.waitForIdle()
+            assertTrue("a pick leaves the panel open", exists(option))
+        }
+        closePanel()
+    }
+
+    /** Opens the panel, checks that each of [options] is picked, and closes it. */
+    private fun assertPicked(vararg options: String) {
+        openPanel()
+        for (option in options) node(option).assertIsSelected()
+        closePanel()
     }
 
     /** How the neck lies now. */
@@ -151,24 +167,21 @@ class ScalesScreenTest(private val style: VisualStyle) {
             spoken,
             spoken.startsWith("A minor pentatonic, notes A, C, D, E, G, E 2 string, open E, fret 3 G, fret 5 A, root, fret 8 C"),
         )
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Minor pentatonic")
-        node(PracticeTestTags.TITLE).assertTextEquals("A minor pentatonic")
+        picker().assertTextEquals("A minor pentatonic")
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assertIsSelected()
-        assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.A))
-        assertPicked(PracticeTestTags.TYPE_PICKER, PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
+        assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
         assertFalse("no chord chart", exists(PracticeTestTags.CHART))
         assertFalse("no pager", exists(PracticeTestTags.NEXT))
 
-        pick(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.G))
+        pick(PracticeTestTags.root(PitchClass.G))
         assertTrue(spokenNeck(), spokenNeck().startsWith("G minor pentatonic, notes G, B flat, C, D, F, "))
-        pick(PracticeTestTags.TYPE_PICKER, PracticeTestTags.scale(ScaleType.MAJOR))
+        pick(PracticeTestTags.scale(ScaleType.MAJOR))
         assertTrue(spokenNeck(), spokenNeck().startsWith("G major, notes G, A, B, C, D, E, F sharp, E 2 string, open E, fret 2 F sharp, fret 3 G, root"))
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("Major")
-        node(PracticeTestTags.TITLE).assertTextEquals("G major")
-        node(PracticeTestTags.TYPE_PICKER).performClick()
+        picker().assertTextEquals("G major")
+        openPanel()
         node(PracticeTestTags.scale(ScaleType.MAJOR)).assertIsSelected()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assertIsNotSelected()
-        node(PracticeTestTags.scale(ScaleType.MAJOR)).performClick()
+        closePanel()
         assertEquals("the picks are passed on to be saved", listOf(PitchClass.G), savedRoots)
         assertEquals(listOf(ScaleType.MAJOR), savedTypes)
         assertEquals("the choice wasn't touched", emptyList<PracticeChart>(), savedCharts)
@@ -185,37 +198,32 @@ class ScalesScreenTest(private val style: VisualStyle) {
         compose.waitForIdle()
         assertTrue("the neck shows", exists(PracticeTestTags.NECK))
         assertFalse("the chord chart has gone", exists(PracticeTestTags.CHART))
-        node(PracticeTestTags.TITLE).assertTextEquals("D blues")
-        assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.D))
-        pick(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.E))
+        picker().assertTextEquals("D blues")
+        assertPicked(PracticeTestTags.root(PitchClass.D))
+        pick(PracticeTestTags.root(PitchClass.E))
 
         node(PracticeTestTags.chart(PracticeChart.CHORDS)).performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
-        node(PracticeTestTags.TITLE).assertTextEquals("E major")
-        node(PracticeTestTags.TYPE_PICKER).assertTextEquals("E")
-        assertPicked(PracticeTestTags.ROOT_PICKER, PracticeTestTags.root(PitchClass.E))
+        picker().assertTextEquals("E major")
+        assertPicked(PracticeTestTags.root(PitchClass.E), PracticeTestTags.type(ChordQuality.MAJOR))
         assertEquals("both picks passed on to be saved", listOf(PracticeChart.SCALES, PracticeChart.CHORDS), savedCharts)
         assertEquals(listOf(PitchClass.E), savedRoots)
     }
 
     @Test
-    fun talkBackHearsTheChoiceAndTheScalesAsRadioButtons() {
+    fun talkBackHearsTheChoiceAndThePanelAsRadioButtons() {
         show(PitchClass.A_SHARP, ScaleType.MAJOR)
         compose.waitForIdle()
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
         node(PracticeTestTags.chart(PracticeChart.CHORDS)).assert(radio).assert(hasContentDescription("Chords"))
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assert(radio).assert(hasContentDescription("Scales"))
-        node(PracticeTestTags.ROOT_PICKER).assert(list).assert(hasContentDescription("Root, B flat")).assertTextEquals("B♭")
-        node(PracticeTestTags.TYPE_PICKER).assert(list).assert(hasContentDescription("Scale, B flat major")).assertTextEquals("Major")
-        node(PracticeTestTags.TITLE).assert(isHeading()).assertTextEquals("B♭ major")
-        assertTrue("the scale's name is a polite live region", node(PracticeTestTags.TITLE).fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
-        node(PracticeTestTags.TYPE_PICKER).performClick()
+        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭ major")
+        assertTrue("the scale's name is a polite live region", picker().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
+        openPanel()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assert(radio).assert(hasContentDescription("Minor pentatonic"))
-        node(PracticeTestTags.scale(ScaleType.MAJOR)).performClick()
-        node(PracticeTestTags.ROOT_PICKER).performClick()
         node(PracticeTestTags.root(PitchClass.A_SHARP)).assert(radio).assert(hasContentDescription("B flat")).assertTextEquals("B♭")
-        node(PracticeTestTags.root(PitchClass.A_SHARP)).performClick()
+        closePanel()
         assertFalse("the long neck is not", neck().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         assertTrue(spokenNeck(), spokenNeck().startsWith("B flat major, notes B flat, C, D, E flat, F, G, A"))
     }
@@ -235,9 +243,11 @@ class ScalesScreenTest(private val style: VisualStyle) {
         compose.waitUntil(WAIT_MS) { spokenNeck().contains("C 2 string, fret 1 C sharp, fret 2 D, root") }
         shownNotation.value = Notation.SOLFEGE
         compose.waitUntil(WAIT_MS) { spokenNeck().startsWith("Re major, notes Re, Mi, Fa sharp, Sol, La, Si, Do sharp") }
-        node(PracticeTestTags.ROOT_PICKER).assertTextEquals("Re")
-        node(PracticeTestTags.ROOT_PICKER).performClick()
+        picker().assertTextEquals("Re major")
+        openPanel()
+        node(PracticeTestTags.root(PitchClass.D)).assertTextEquals("Re")
         node(PracticeTestTags.root(PitchClass.F_SHARP)).assertTextEquals("Fa♯")
+        closePanel()
     }
 
     @Test
@@ -250,7 +260,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = node(WINDOW).getBoundsInRoot()
             val tags = listOf(
-                PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE,
+                PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER,
             )
             for (tag in tags) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
@@ -266,44 +276,49 @@ class ScalesScreenTest(private val style: VisualStyle) {
             assertTrue("$case the neck inside its room $drawn $area", drawn.left >= area.left && drawn.right <= area.right && drawn.top >= area.top && drawn.bottom <= area.bottom)
             assertTrue("$case inside the window", drawn.bottom <= window.bottom)
             assertTrue("$case a big neck $drawn", maxOf(drawn.width, drawn.height) >= 300.dp)
-            val pickers = node(PracticeTestTags.TYPE_PICKER).getBoundsInRoot()
-            val title = node(PracticeTestTags.TITLE).getBoundsInRoot()
-            assertTrue("$case the name over the neck", title.bottom <= area.top + 1.dp)
+            val choice = node(PracticeTestTags.chart(PracticeChart.SCALES)).getBoundsInRoot()
+            val name = picker().getBoundsInRoot()
+            assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
-                assertTrue("$case the choice and pickers in the start half", pickers.right <= middle && node(PracticeTestTags.chart(PracticeChart.CHORDS)).getBoundsInRoot().right <= middle)
-                assertTrue("$case the name and the neck in the end half", title.left >= middle && area.left >= middle)
+                assertTrue("$case the choice in the start half", choice.right <= middle)
+                assertTrue("$case the name and the neck in the end half", name.left >= middle && area.left >= middle)
             } else {
-                assertTrue("$case pickers over the name", pickers.bottom <= title.top + 1.dp)
+                assertTrue("$case the choice over the name", choice.bottom <= name.top + 1.dp)
                 assertTrue("$case the choice under the tuning line", node(PracticeTestTags.TUNING).getBoundsInRoot().bottom <= node(PracticeTestTags.chart(PracticeChart.SCALES)).getBoundsInRoot().top)
             }
-            assertTheGrid(case)
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
         }
     }
 
     /**
-     * The scales' grid two to a row (Blues alone on the last), under the pickers, wholly shown (with
-     * [texts], every text in it too); Back closes it.
+     * The panel under the name (where not [wide]): the roots in two rows of six, then the scales two to a row (Blues alone
+     * on the last), each wholly shown (scrolling the panel where it must; with [texts], every text in it
+     * too); Back closes it.
      */
-    private fun assertTheGrid(case: String, texts: Boolean = false) {
-        fun top(tag: String) = node(tag).getBoundsInRoot().top
-        val pickers = node(PracticeTestTags.TYPE_PICKER).fetchSemanticsNode().let { it.positionOnScreen.y + it.size.height }
-        node(PracticeTestTags.TYPE_PICKER).performClick()
+    private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
+        fun top(tag: String) = node(tag).fetchSemanticsNode().positionInRoot.y
+        // The panel is a popup, a window of its own: against the name button on the screen.
+        val button = picker().fetchSemanticsNode().let { it.positionOnScreen.y + it.size.height }
+        openPanel()
+        val roots = top(PracticeTestTags.root(PitchClass.F_SHARP))
+        assertTrue("$case roots in two rows of six", top(PracticeTestTags.root(PitchClass.F)) == top(PracticeTestTags.root(PitchClass.C)) && roots > top(PracticeTestTags.root(PitchClass.C)))
         val first = top(PracticeTestTags.scale(ScaleType.MAJOR))
+        assertTrue("$case the scales under the roots", first > roots)
         assertTrue(
             "$case scales two to a row",
             top(PracticeTestTags.scale(ScaleType.NATURAL_MINOR)) == first && top(PracticeTestTags.scale(ScaleType.MAJOR_PENTATONIC)) > first,
         )
-        // The grid is a popup, a window of its own: against the pickers on the screen.
-        assertTrue("$case the scales under the pickers", node(PracticeTestTags.scale(ScaleType.MAJOR)).fetchSemanticsNode().positionOnScreen.y >= pickers)
-        for (type in ScaleType.entries) assertWhollyShown(node(PracticeTestTags.scale(type)), "$case scale $type", scroll = false)
+        // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
+        if (!wide) assertTrue("$case the panel under the name", node(PracticeTestTags.root(PitchClass.C)).fetchSemanticsNode().positionOnScreen.y >= button)
+        for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
+        for (type in ScaleType.entries) assertWhollyShown(node(PracticeTestTags.scale(type)), "$case scale $type")
         if (texts) {
-            compose.assertEveryTextWhollyShown("$case scales:")
-            compose.assertNoWordBroken("$case scales:")
+            compose.assertEveryTextWhollyShown("$case panel:")
+            compose.assertNoWordBroken("$case panel:")
         }
-        Espresso.pressBack()
-        compose.waitForIdle()
-        assertFalse("$case Back closes the grid", exists(PracticeTestTags.scale(ScaleType.MAJOR)))
+        closePanel()
+        assertFalse("$case Back closes the panel", exists(PracticeTestTags.scale(ScaleType.MAJOR)))
     }
 
     @Test
@@ -327,12 +342,12 @@ class ScalesScreenTest(private val style: VisualStyle) {
         for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
-            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.ROOT_PICKER, PracticeTestTags.TYPE_PICKER, PracticeTestTags.TITLE, PracticeTestTags.NECK)) {
+            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER, PracticeTestTags.NECK)) {
                 assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
             }
             compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
             compose.assertNoWordBroken("$style nl $size at 2x:")
-            assertTheGrid("$style nl $size at 2x:", texts = true)
+            assertThePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
         }
     }
 
@@ -349,7 +364,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
                 compose.waitForIdle()
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
                 compose.assertNoWordBroken("$style $language $size at 2x:")
-                assertTheGrid("$style $language $size at 2x:", texts = true)
+                assertThePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
             }
         }
     }

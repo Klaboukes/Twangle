@@ -50,7 +50,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -58,8 +57,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -87,13 +84,13 @@ import kotlinx.coroutines.withContext
  * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
  *
  * Upright, one column: the tool switch ([header]) 8 dp from the top, the instrument and tuning
- * ([tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice, the root and the chord
- * type or scale as two buttons that each open a grid ([ChordPickers], the owner's pick C in
- * docs/design/chords-calm-preview.html: fewer buttons in sight, and room for more types later), then
- * the chord's or the scale's name in words ("C minor seventh"; the pickers say it short), then the
- * chart or the neck in all the height left (scrolling only where even the smallest wouldn't fit, at
- * large text sizes) and, for chords, the pager. On its side (≥ 600 dp wide and wider than tall) the
- * switch, the choice and the pickers fill the start half; the name and the chart or neck the end half.
+ * ([tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice,
+ * the chord's or the scale's name in words as one button ("C minor seventh ⌄", [ChordNameButton]):
+ * it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
+ * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
+ * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
+ * pager. On its side (≥ 600 dp wide and wider than tall) the switch and the choice fill the start
+ * half, and the panel opens over it; the name button and the chart or neck the end half.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
  * sign). The tool opens on [savedChart], [savedRoot], [savedQuality] and [savedScaleType], and each
@@ -101,8 +98,7 @@ import kotlinx.coroutines.withContext
  * saved. The shapes are worked out off the main thread ([ChordShapeFinder.shapesOf], a few
  * milliseconds); the last ones stay shown meanwhile. A scale's notes take microseconds.
  *
- * TalkBack hears the choice as a radio group, the pickers as lists with what is picked, the name as
- * a heading, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
+ * TalkBack hears the choice as a radio group, the name button as a heading and a list, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
  * polite live region, so a new shape or chord is said when it shows, and so is a scale's name (not
  * the whole neck: it is long).
  */
@@ -146,8 +142,12 @@ fun ChordsScreen(
             }
         })
     }
-    val pickers = @Composable {
-        ChordPickers(
+    var panelOpen by remember { mutableStateOf(false) }
+    val panel = @Composable { width: Dp ->
+        ChordPanel(
+            expanded = panelOpen,
+            onDismiss = { panelOpen = false },
+            width = width,
             scales = scales,
             root = root,
             quality = quality,
@@ -173,18 +173,16 @@ fun ChordsScreen(
             },
         )
     }
-    val title = @Composable {
-        Text(
-            musicText(breakableAtHyphens(if (scales) scaleWords(scale, notation) else chordWords(chord, notation))),
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            // Smaller rather than broken inside a word (Dutch "Sol♯ mineur-pentatonisch" at 2× text in Space Age on a 320 dp phone).
-            autoSize = WholeWordsAutoSize(MaterialTheme.typography.titleLarge.fontSize, TITLE_MIN_SIZE),
-            modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics {
-                heading()
-                if (scales) liveRegion = LiveRegionMode.Polite
-            },
+    // Upright the panel opens right under the name; on its side over the start half ([wide]), so it hides neither the name nor the chart.
+    val name = @Composable { wide: Boolean ->
+        ChordNameButton(
+            scales = scales,
+            root = root,
+            quality = quality,
+            scaleType = scaleType,
+            notation = notation,
+            onClick = { panelOpen = true },
+            panel = if (wide) { _ -> } else panel,
         )
     }
     val fill = @Composable {
@@ -211,6 +209,8 @@ fun ChordsScreen(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    // The panel's place: from the top of the start half down.
+                    BoxWithConstraints(Modifier.fillMaxWidth()) { panel(maxWidth) }
                     Spacer(Modifier.height(HEADER_TOP))
                     header()
                     Spacer(Modifier.height(8.dp))
@@ -218,8 +218,6 @@ fun ChordsScreen(
                     Spacer(Modifier.height(12.dp))
                     Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
                         choice()
-                        Spacer(Modifier.height(8.dp))
-                        pickers()
                     }
                     Spacer(Modifier.height(8.dp))
                 }
@@ -230,7 +228,7 @@ fun ChordsScreen(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
-                        title()
+                        name(true)
                     },
                     fill = fill,
                     bottom = bottom(1f),
@@ -256,9 +254,8 @@ fun ChordsScreen(
                         Spacer(Modifier.height(4.dp * gap))
                         choice()
                         Spacer(Modifier.height(8.dp * gap))
-                        pickers()
-                        Spacer(Modifier.height(12.dp * gap))
-                        title()
+                        name(false)
+                        Spacer(Modifier.height(4.dp * gap))
                     },
                     fill = fill,
                     bottom = bottom(gap),
@@ -484,5 +481,3 @@ private const val DISABLED_ALPHA = 0.38f
 /** A swipe this far across the chart steps to the next shape. */
 private val SWIPE_DISTANCE = 48.dp
 
-/** The chart's title shrinks at most to this to keep its words whole. */
-private val TITLE_MIN_SIZE = 12.sp

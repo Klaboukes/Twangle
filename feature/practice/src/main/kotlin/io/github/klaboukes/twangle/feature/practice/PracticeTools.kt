@@ -59,12 +59,8 @@ object PracticeTestTags {
     /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
     internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()
 
-    /** The two pickers: the root, and the chord type or scale; each opens its grid of [root], [type] or [scale] buttons. */
-    const val ROOT_PICKER = "practice_root_picker"
-    const val TYPE_PICKER = "practice_type_picker"
-
-    /** The chord's or the scale's name in words over its chart ("C major", "A minor pentatonic"). */
-    const val TITLE = "practice_chord_title"
+    /** The chord's or the scale's name in words over its chart ("C major ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
+    const val NAME_PICKER = "practice_name_picker"
 
     /** The chord chart (one item for TalkBack). */
     const val CHART = "practice_chord_chart"

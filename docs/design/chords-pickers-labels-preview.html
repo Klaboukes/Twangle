@@ -1,0 +1,166 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chords Picker Names</title>
+<!--
+TWANGLE CHORDS & SCALES PICKERS, WHICH IS WHICH (preview, 2026-10-19). ROUGH, plain on purpose.
+The ask   The owner: the two pickers both show "C" at first; it isn't clear the first is the root and the second
+          the chord type. Scales has the same problem ("C ⌄" "Major ⌄").
+OWNER'S PICK, 2026-10-19: B, one name button (built: ChordNamePicker, docs/architecture/ui-other-screens.md, Chords, Picking).
+Options   A: a small name in each button's outline: Root · Chord (Chords), Key · Scale (Scales). Name line stays.
+          B: one wide button that is also the name ("C major ⌄"); it opens one panel with Root and Chord type.
+Look      Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA); --line: color-mix(in srgb, #4A5268 45%, #E3E7F0);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 40%, #171D2E); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 40%, #171D2E); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1100px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 34px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.list { margin-top: 24px; display: grid; gap: 34px; }
+.cand { display: grid; gap: 10px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.phones { display: flex; flex-wrap: wrap; gap: 16px; }
+.cap { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+/* The top of the screen: 393 dp wide (the Xiaomi 12X) at 0.66 px per dp. */
+.phone { width: 260px; height: 250px; border-radius: 18px; background: var(--bg); padding: 10px 11px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; overflow: hidden; font-size: 11px; }
+.tun { color: var(--muted); font-size: 10px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; width: 62%; }
+.seg span { flex: 1; text-align: center; padding: 3px 0; color: var(--muted); font-weight: 500; font-size: 10px; }
+.seg span.on { background: var(--container); color: var(--ink); }
+.name { font-size: 17px; }
+.chart { flex: 1; width: 60%; border-radius: 8px; border: 1px dashed var(--line); display: grid; place-items: center; color: var(--muted); font-size: 10px; }
+
+/* A picker button: see-through face, muted outline, ⌄ at the end. */
+.pickers { display: flex; gap: 6px; width: 100%; margin-top: 4px; }
+.pick { flex: 1; position: relative; height: 28px; border: 1px solid var(--line); border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 45%, transparent); display: flex; align-items: center;
+  padding: 0 6px 0 9px; font-size: 12px; font-weight: 500; }
+.pick::after { content: "⌄"; margin-left: auto; color: var(--muted); font-size: 13px; line-height: 0; padding-bottom: 6px; }
+/* A: the name sits in the outline, on the screen's colour so it cuts the line. */
+.pick .lbl { position: absolute; top: -7px; left: 7px; padding: 0 3px; background: var(--bg); color: var(--muted);
+  font-size: 9px; font-weight: 400; line-height: 12px; }
+
+/* B: one wide button that is also the name. */
+.big { width: 100%; height: 34px; font-size: 16px; font-weight: 400; justify-content: center; gap: 8px; padding: 0 10px; }
+.big::after { margin-left: 0; }
+.panel { position: absolute; left: 6px; right: 6px; top: 98px; background: var(--surface); border-radius: 10px;
+  padding: 8px 8px 10px; display: grid; gap: 5px; box-shadow: 0 6px 22px rgb(0 0 0 / .22); }
+.panel .lbl { font-size: 9px; color: var(--muted); }
+.grid { display: grid; gap: 4px; }
+.grid span { text-align: center; padding: 3px 0; border-radius: 6px; border: 1px solid var(--line); font-size: 10px; }
+.grid span.on { background: var(--container); border: 2px solid var(--accent); padding: 2px 0; font-weight: 500; }
+.g6 { grid-template-columns: repeat(6, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Which picker is which?</h1>
+  <p class="lede">Today both pickers say "C" at first. A puts a small name on each button. B turns them into one button that is also the name. Contemporary style only, just the top of the screen.</p>
+</header>
+
+<div class="list">
+
+<section class="cand">
+  <h2>Today</h2>
+  <div class="phones">
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span class="on">Chords</span><span>Scales</span></div>
+      <div class="pickers"><div class="pick">C</div><div class="pick">C</div></div>
+      <span class="name">C major</span>
+      <div class="chart">chart</div>
+    </div><p class="cap">Chords</p></div>
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span>Chords</span><span class="on">Scales</span></div>
+      <div class="pickers"><div class="pick">C</div><div class="pick">Major</div></div>
+      <span class="name">C major</span>
+      <div class="chart">neck</div>
+    </div><p class="cap">Scales</p></div>
+  </div>
+  <p class="note">Two buttons that look the same, and neither says what it picks.</p>
+</section>
+
+<section class="cand">
+  <h2>A · a small name on each button</h2>
+  <div class="phones">
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span class="on">Chords</span><span>Scales</span></div>
+      <div class="pickers"><div class="pick"><span class="lbl">Root</span>C</div><div class="pick"><span class="lbl">Chord</span>C</div></div>
+      <span class="name">C major</span>
+      <div class="chart">chart</div>
+    </div><p class="cap">Chords</p></div>
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span class="on">Chords</span><span>Scales</span></div>
+      <div class="pickers"><div class="pick"><span class="lbl">Root</span>A</div><div class="pick"><span class="lbl">Chord</span>Am7</div></div>
+      <span class="name">A minor seventh</span>
+      <div class="chart">chart</div>
+    </div><p class="cap">Chords, another pick</p></div>
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span>Chords</span><span class="on">Scales</span></div>
+      <div class="pickers"><div class="pick"><span class="lbl">Key</span>C</div><div class="pick"><span class="lbl">Scale</span>Major</div></div>
+      <span class="name">C major</span>
+      <div class="chart">neck</div>
+    </div><p class="cap">Scales</p></div>
+  </div>
+  <p class="note">Same buttons and grids as today, each with a name in its outline. No extra height. Scales says "Key" instead of "Root".</p>
+</section>
+
+<section class="cand">
+  <h2>B · one button that is also the name</h2>
+  <div class="phones">
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span class="on">Chords</span><span>Scales</span></div>
+      <div class="pickers"><div class="pick big">C major</div></div>
+      <div class="chart">chart</div>
+    </div><p class="cap">Chords</p></div>
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span class="on">Chords</span><span>Scales</span></div>
+      <div class="pickers"><div class="pick big">C major</div></div>
+      <div class="chart">chart</div>
+      <div class="panel">
+        <span class="lbl">Root</span>
+        <div class="grid g6"><span class="on">C</span><span>C♯</span><span>D</span><span>E♭</span><span>E</span><span>F</span><span>F♯</span><span>G</span><span>A♭</span><span>A</span><span>B♭</span><span>B</span></div>
+        <span class="lbl">Chord type</span>
+        <div class="grid g4"><span class="on">C</span><span>Cm</span><span>C7</span><span>Cmaj7</span><span>Cm7</span><span>Csus2</span><span>Csus4</span></div>
+      </div>
+    </div><p class="cap">Chords, panel open</p></div>
+    <div><div class="phone">
+      <span class="tun">Guitar · Standard</span>
+      <div class="seg"><span>Chords</span><span class="on">Scales</span></div>
+      <div class="pickers"><div class="pick big">C major</div></div>
+      <div class="chart">neck</div>
+    </div><p class="cap">Scales</p></div>
+  </div>
+  <p class="note">One button, and the name line under it is gone, so the chart gets that room. The panel has both choices, so it stays open until you tap beside it: one more tap to change only the root.</p>
+</section>
+
+</div>
+</div>
