@@ -25,26 +25,29 @@ import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.pressSink
 
 /**
  * The Practice tools' line naming the instrument and tuning ("Guitar · Standard", [tuningName], heard
  * as [spokenTuningName]), centred. With [onPickInstrument] the instrument button (a headstock, as above
  * the tuner's strings) stands before it, and a tap on either opens the instrument and tuning panel
- * over the tool; TalkBack hears the button ("Instrument, Guitar, Standard") and skips the name, which
+ * over the tool (a press on either lights both, as one control); TalkBack hears the button ("Instrument, Guitar, Standard") and skips the name, which
  * says the same. Without it, the name alone, heard as [spokenTuningName].
  */
 @Composable
 internal fun TuningLine(tuningName: String, spokenTuningName: String, onPickInstrument: (() -> Unit)?) {
+    // One press for the button and the name: a tap on either sinks and lights both.
+    val press = remember { MutableInteractionSource() }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
         if (onPickInstrument != null) {
             InstrumentButton(
+                interactionSource = press,
                 current = spokenTuningName,
                 onClick = onPickInstrument,
                 faceModifier = Modifier.testTag(PracticeTestTags.INSTRUMENT_BUTTON),
             )
             Spacer(Modifier.width(NAME_GAP))
         }
-        val press = remember { MutableInteractionSource() }
         val shape = MaterialTheme.shapes.small
         Text(
             musicText(tuningName),
@@ -58,6 +61,7 @@ internal fun TuningLine(tuningName: String, spokenTuningName: String, onPickInst
                 .then(
                     if (onPickInstrument != null) {
                         Modifier
+                            .pressSink(press)
                             .clip(shape)
                             .clickable(press, PressIndication(shape)) {
                                 press.pressFlash()

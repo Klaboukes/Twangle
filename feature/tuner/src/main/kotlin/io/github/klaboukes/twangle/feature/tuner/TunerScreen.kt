@@ -1417,9 +1417,12 @@ private fun GuitarControls(
             else -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
         }
     }
+    // One press for the instrument button and the name beside it: a tap on either sinks and lights both.
+    val namePress = remember { MutableInteractionSource() }
     val instrument = @Composable {
         if (names != null) {
             InstrumentButton(
+                interactionSource = namePress,
                 current = names.labelFor(tuning, spoken = true),
                 onClick = names.onClick,
                 // The tour lights up the outline, not the touch target round it.
@@ -1431,9 +1434,9 @@ private fun GuitarControls(
     }
     val label = @Composable {
         if (names != null) {
-            // Pressed, the name sinks and lights up; a quiet label, so only the tint, never
-            // Futuristic's neon frame tight round its text.
-            val press = remember { MutableInteractionSource() }
+            // Pressed (or its button pressed), the name sinks and lights up; a quiet label, so only the
+            // tint, never Futuristic's neon frame tight round its text.
+            val press = namePress
             val nameShape = MaterialTheme.shapes.small
             Box(
                 Modifier
