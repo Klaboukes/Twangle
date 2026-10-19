@@ -136,7 +136,8 @@ data class SpeechBubble(val text: String)
 
 /** The caption, as large as fits in three lines, centred in its space. */
 @Composable
-private fun Caption(text: String, modifier: Modifier) {
+private fun Caption(caption: String, modifier: Modifier) {
+    val text = remember(caption) { koreanWordsKeptWhole(caption) }
     val measurer = rememberTextMeasurer()
     val base = MaterialTheme.typography.headlineLarge
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
@@ -162,6 +163,19 @@ private fun Caption(text: String, modifier: Modifier) {
         Text(shown, style = style, color = MaterialTheme.colorScheme.onBackground)
     }
 }
+
+/**
+ * [text] with a word joiner between the letters of each Korean word, so its lines break only at spaces:
+ * Korean is written with spaces between words, but Android breaks Hangul between any two syllables
+ * ("맞았 / 는지", overnight run 2026-10-18). Other text is returned as it is.
+ */
+private fun koreanWordsKeptWhole(text: String): String =
+    if (text.none { it in HANGUL_SYLLABLES }) text else text.replace(BETWEEN_TWO_NON_SPACES, WORD_JOINER)
+
+private val HANGUL_SYLLABLES = Char(0xAC00)..Char(0xD7A3)
+private val WORD_JOINER = Char(0x2060).toString()
+
+private val BETWEEN_TWO_NON_SPACES = Regex("""(?<=\S)(?=\S)""")
 
 /** [text] with a line break after its first sentence, if it is two sentences; else null. */
 private fun sentencesOnTheirOwnLines(text: String): String? {

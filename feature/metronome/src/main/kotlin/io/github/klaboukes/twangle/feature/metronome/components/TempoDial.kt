@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -92,6 +94,11 @@ fun TempoDial(
     val marking = markingName(TempoMarking.of(bpm))
     val description = stringResource(R.string.metronome_tempo)
     val value = pluralStringResource(R.plurals.metronome_tempo_value, bpm, bpm, marking)
+    val u = size.value / DIAL_UNITS
+    val half = size.value / 2f
+    val face = maxOf(STEP_FACE_UNITS * u, STEP_FACE_MIN.value).dp
+    val stepBox = maxOf(face, MIN_TOUCH)
+    val startFace = maxOf(START_UNITS * u, START_MIN.value).dp
     Box(modifier.size(size)) {
         Box(
             modifier = Modifier
@@ -150,15 +157,17 @@ fun TempoDial(
                 foundGlow = foundGlow,
                 modifier = Modifier.size(size),
             )
-            TempoReadout(shownBpm, markingName(TempoMarking.of(shownBpm)), size, Modifier.align(Alignment.TopCenter))
+            TempoReadout(
+                bpm = shownBpm,
+                marking = markingName(TempoMarking.of(shownBpm)),
+                size = size,
+                figuresWidest = (2f * (STEP_X_UNITS * u - FIGURES_GAP_UNITS * u) - face.value).dp,
+                labelsBottom = (half + START_DOWN_UNITS * u - FIGURES_GAP_UNITS * u).dp - startFace / 2,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
         }
         // After the dial, so TalkBack hears "Slower", "Faster" and Start after it; placed by absolute
         // left and right, each centred on its spot (in units from the dial's middle).
-        val u = size.value / DIAL_UNITS
-        val half = size.value / 2f
-        val face = maxOf(STEP_FACE_UNITS * u, STEP_FACE_MIN.value).dp
-        val stepBox = maxOf(face, MIN_TOUCH)
-        val startFace = maxOf(START_UNITS * u, START_MIN.value).dp
         fun Modifier.centredAt(x: Float, y: Float, box: Dp): Modifier = align(AbsoluteAlignment.TopLeft)
             .absoluteOffset(x = (half + x * u - box.value / 2f).dp, y = (half + y * u - box.value / 2f).dp)
         StepButton(
@@ -187,53 +196,77 @@ fun TempoDial(
  * The tempo in the dial's middle, sized with the dial (46, 13 and 15 units at 288), the figures'
  * middle [FIGURES_UP_UNITS] above the dial's, level with − and +: the figures stay that size at any
  * font size, like the tuner's note; "BPM" and the marking grow with the font up to
- * [MAX_LABEL_SCALE], so they keep clear of the needle and Start. TalkBack hears it through the dial.
+ * [MAX_LABEL_SCALE]. Measured, so every style's faces keep clear: the figures shrink to
+ * [figuresWidest] (Space Age's and Futuristic's wide faces would reach under − and +), and "BPM" and
+ * the marking shrink so the marking ends above [labelsBottom] (Start's top, less a gap: on a small dial
+ * Start keeps its 56 dp, and some faces' "BPM" is set in a tall line). TalkBack hears it through the dial.
  */
 @Composable
-private fun TempoReadout(bpm: Int, marking: String, size: Dp, modifier: Modifier = Modifier) {
+private fun TempoReadout(bpm: Int, marking: String, size: Dp, figuresWidest: Dp, labelsBottom: Dp, modifier: Modifier = Modifier) {
     val style = MaterialTheme.styleTokens.style
     val scheme = MaterialTheme.colorScheme
+    val body = MaterialTheme.typography.bodyLarge
     val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
     val u = size.value / DIAL_DP
-    val labelScale = min(density.fontScale, MAX_LABEL_SCALE)
     fun fixed(units: Float): TextUnit = with(density) { (units * u).dp.toSp() }
-    fun label(units: Float): TextUnit = with(density) { (units * u * labelScale).dp.toSp() }
+    fun label(units: Float, scale: Float): TextUnit = with(density) { (units * u * scale).dp.toSp() }
     val numbers = numberFontFor(style)
     val figures = BPM_UNITS * numberScaleFor(style)
+    val topPadding = (DIAL_DP / 2f - FIGURES_UP_UNITS - figures / 2f).coerceAtLeast(0f) * u
+    val bpmLabel = stringResource(R.string.metronome_bpm)
+    fun bpmStyle(scale: Float) = TextStyle(
+        fontFamily = numbers,
+        fontSize = label(13f, scale),
+        letterSpacing = label(13f * 0.12f, scale),
+        fontFeatureSettings = LINING_FIGURES,
+        color = scheme.onSurfaceVariant,
+    )
+    fun markingStyle(scale: Float) = body.copy(fontSize = label(15f, scale), lineHeight = label(18f, scale), fontStyle = FontStyle.Italic)
+    val figuresStyle = TextStyle(
+        fontFamily = numbers,
+        fontSize = fixed(figures),
+        lineHeight = fixed(figures),
+        fontFeatureSettings = "$LINING_FIGURES, tnum",
+        color = scheme.onBackground,
+    )
+    // Sized by the widest tempo, so the figures keep one size from 40 to 240 BPM.
+    val widest = localDigits(ClickTrack.MAX_BPM, appLocale())
+    val figuresScale = remember(widest, figuresStyle, figuresWidest, density) {
+        val natural = measurer.measure(widest, figuresStyle).size.width
+        val room = with(density) { figuresWidest.toPx() }
+        if (natural > room) room / natural else 1f
+    }
+    val labelScale = remember(bpmLabel, marking, size, labelsBottom, density, figuresStyle, figuresScale, body) {
+        // What is left for the two lines under the figures (as tall as their face sets them, which may
+        // be more than their size) and the gaps between them.
+        val shownFigures = figuresStyle.copy(fontSize = figuresStyle.fontSize * figuresScale)
+        val figuresHeight = measurer.measure(widest, shownFigures).size.height
+        val room = with(density) { (labelsBottom.value - topPadding - (6f + 8f) * u).dp.toPx() } - figuresHeight
+        var scale = min(density.fontScale, MAX_LABEL_SCALE)
+        while (scale > MIN_LABEL_SCALE &&
+            measurer.measure(bpmLabel, bpmStyle(scale)).size.height + measurer.measure(marking, markingStyle(scale)).size.height > room
+        ) {
+            scale -= LABEL_SCALE_STEP
+        }
+        scale
+    }
     Column(
         modifier = modifier
-            .padding(top = (DIAL_DP / 2f - FIGURES_UP_UNITS - figures / 2f).coerceAtLeast(0f).times(u).dp)
+            .padding(top = topPadding.dp)
             .clearAndSetSemantics {},
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             localDigits(bpm, appLocale()),
-            style = TextStyle(
-                fontFamily = numbers,
-                fontSize = fixed(figures),
-                lineHeight = fixed(figures),
-                fontFeatureSettings = "$LINING_FIGURES, tnum",
-                color = scheme.onBackground,
-            ),
+            style = figuresStyle.copy(fontSize = figuresStyle.fontSize * figuresScale),
+            maxLines = 1,
             modifier = Modifier.testTag(MetronomeTestTags.BPM),
         )
         Spacer(Modifier.height((6 * u).dp))
-        Text(
-            stringResource(R.string.metronome_bpm),
-            style = TextStyle(
-                fontFamily = numbers,
-                fontSize = label(13f),
-                letterSpacing = label(13f * 0.12f),
-                fontFeatureSettings = LINING_FIGURES,
-                color = scheme.onSurfaceVariant,
-            ),
-        )
+        Text(bpmLabel, style = bpmStyle(labelScale), maxLines = 1)
         Spacer(Modifier.height((8 * u).dp))
-        Text(
-            marking,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = label(15f), lineHeight = label(18f), fontStyle = FontStyle.Italic),
-            color = scheme.onSurfaceVariant,
-        )
+        Text(marking, style = markingStyle(labelScale), color = scheme.onSurfaceVariant, maxLines = 1)
     }
 }
 
@@ -279,5 +312,10 @@ private const val START_UNITS = 54f
 private val START_MIN = 56.dp
 private const val START_DOWN_UNITS = 104f
 
-/** "BPM" and the marking grow with the font up to this. */
+/** "BPM" and the marking grow with the font up to this, and shrink, a step at a time, at most to [MIN_LABEL_SCALE] where they would reach Start. */
 private const val MAX_LABEL_SCALE = 1.3f
+private const val MIN_LABEL_SCALE = 0.7f
+private const val LABEL_SCALE_STEP = 0.05f
+
+/** The figures keep this many units clear of − and + , and the marking of Start. */
+private const val FIGURES_GAP_UNITS = 3f

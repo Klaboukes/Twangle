@@ -25,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
@@ -218,7 +219,9 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
             }
             shownSize.value = PHONE_UPRIGHT
             compose.waitForIdle()
-            moreTools.performClick()
+            // Scrolled into view first: the checks above may leave it scrolled away (Space Age's Indonesian
+            // cents line takes three lines at 2× text), and a tap off the screen opens nothing.
+            moreTools.performScrollTo().performClick()
             compose.waitForIdle()
             compose.assertEveryTextWhollyShown("$style $language menu at 2x:")
             compose.onNodeWithText(context.getString(R.string.tuner_pitch_trail)).performClick()

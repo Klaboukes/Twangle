@@ -380,8 +380,10 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
         Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
             val style = MaterialTheme.typography.labelMedium
             val color = MaterialTheme.colorScheme.onSurfaceVariant
-            // One line each, set smaller where a long word would not fit (Italian "Diteggiatura" at 2× text).
-            val autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp)
+            // One line each, set smaller where a long word would not fit (Italian "Diteggiatura" at 2× text);
+            // below MIN_LABEL_SIZE only where it would otherwise be cut off (Russian "Аппликатура" in Classic
+            // at 2× text on a 320 dp phone).
+            val autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp)
             Text(stringResource(R.string.practice_capo_shape_column), style = style, color = color, maxLines = 1, autoSize = autoSize, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.practice_capo_sounds_column), style = style, color = color, textAlign = TextAlign.End, maxLines = 1, autoSize = autoSize, modifier = Modifier.weight(1f))
@@ -476,6 +478,7 @@ private val TOUCH_HEIGHT = 48.dp
 private val FACE_HEIGHT = 40.dp
 private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp
+private val LAST_RESORT_LABEL_SIZE = 6.sp
 
 private val STEPPER_HEIGHT = 56.dp
 

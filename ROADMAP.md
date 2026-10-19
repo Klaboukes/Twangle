@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22 and 24–37 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 38 (Claude), then Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22 and 24–38 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -21,13 +21,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 - ☐ Phase 36: with auto-rotate off and the phone upright, turn on Settings → Focus mode: the whole app turns on its side by itself. Play a string and read the big meter from a few steps away; the tabs and the Instrument item stay at the side. Switch to another tab and back: the screen doesn't turn. Turn the phone the other way round: the app follows. Then switch Focus mode off: the app turns back upright and stays upright
 
 ---
-
-## Phase 38 — Store listing
-Goal: everything Play shows about Twangle is ready to upload: texts, screenshots and graphics, in every language. Claude builds it; the owner picks where the plan offers a choice.
-- ☑ Play Store listing texts as planned in [docs/store-listing.md](docs/store-listing.md): title "Twangle: Guitar Tuner", short and full description (strong points first: accurate, many instruments, metronome, the music tools that went live in Phase 34 (Practice with chords, scales and the Capo helper; chord name, pitch trail and the 12th-fret check), made for everyone with TalkBack and large text, no ads / account / tracking / internet), translated into all 16 languages, ready to paste from `fastlane/metadata/android/<Play locale>/`; `StoreListingTest` checks Play's limits. Short description: the owner picked "Accurate tuner for guitar, bass, ukulele and violin, with a metronome. No ads." (2026-10-17)
-- ☑ Store screenshots made by an on-device test, not by hand: a fixed sound through the fake recorder (a note, a strummed chord, a held note with vibrato), the eight screens and styles of the plan (the chord name, Chords with the Capo helper as a two-phone picture, and the pitch trail in focus mode among them), placed on a 1080×1920 canvas with a translated caption (the Xiaomi's 20:9 screen is too long for Play as it is), in every language; run in the overnight run (`StoreScreenshots` and `scripts/store-screenshots.sh`; the canvas is drawn on the phone in the app's theme, captions in `fastlane/metadata/android/<locale>/screenshot_captions.txt`; English and Dutch made and checked 2026-10-17, Arabic, Hindi and Japanese captions checked on three screens; pictures git-ignored)
-- ☐ Runs overnight: the store screenshots of all 16 languages, each language's eight pictures looked at
-- ☑ Store graphics: the 512×512 icon and the 1024×500 feature graphic (icon, name and an in-tune meter, no other words); no "free" or "no ads" in any picture or the title (Google's rules). Made on the phone from the app itself (`scripts/store-graphics.sh`), committed in `fastlane/metadata/android/en-US/images/`
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Done by the owner in the Play Console, with Claude's help. Plan at least 3 weeks of calendar time: Google's closed test alone takes 14 days. The account and the Play Console forms can start any time; the tracks need Phase 37's build, and the store listing Phase 38's texts and pictures. The finished preparation (final look, privacy policy, contact email, watch decision) is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).

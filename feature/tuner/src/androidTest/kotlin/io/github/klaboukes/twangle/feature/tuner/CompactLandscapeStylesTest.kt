@@ -189,15 +189,18 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * The meter takes at least half the width, every one of [parts] sits beside it and in the window
-     * (no scrolling) and none overlap.
+     * The meter is the biggest thing on the screen: at least as wide as the readings beside it, and at
+     * least [METER_SHARE] of the window. Every one of [parts] sits beside it and in the window (no
+     * scrolling) and none overlap.
      */
     private fun assertBigMeterBeside(parts: List<Pair<String, SemanticsNodeInteraction>>, case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val meter = gauge.assertIsDisplayed().getBoundsInRoot()
-        assertTrue("$case: meter ${meter.width} wide in ${window.width}", meter.width >= window.width * 0.5f)
+        assertTrue("$case: meter ${meter.width} wide in ${window.width}", meter.width >= window.width * METER_SHARE)
         assertInside(window, "meter", meter, case)
         val bounds = listOf("meter" to meter) + parts.map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
+        val readings = bounds.drop(1).let { rects -> rects.maxOf { it.second.right } - rects.minOf { it.second.left } }
+        assertTrue("$case: meter ${meter.width} narrower than the readings beside it ($readings)", meter.width >= readings)
         for ((name, rect) in bounds.drop(1)) {
             assertInside(window, name, rect, case)
             assertTrue("$case: $name should be right of the meter", rect.left >= meter.right)
@@ -463,6 +466,13 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         private val TABLET_LANDSCAPE = DpSize(1200.dp, 760.dp)
 
         private val SLACK = 0.5.dp
+
+        /**
+         * The meter's least share of the window. Half until the navigation rail stayed in focus mode
+         * (Phase 36, 80 dp less); since then Futuristic's and Space Age's wide faces, whose Dutch cents
+         * line ("12 cent te laag") is about 210 dp long, leave it 46 % (overnight run, 2026-10-18).
+         */
+        private const val METER_SHARE = 0.45f
 
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L

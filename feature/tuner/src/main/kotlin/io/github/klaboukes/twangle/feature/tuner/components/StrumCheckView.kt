@@ -73,6 +73,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -532,6 +533,12 @@ private const val UNITS_HIGH = 170f
 
 /** Room at the panel's start for the ♯ and ♭ that say which way is which. */
 private val SIGN_ROOM = 14.dp
+
+/**
+ * The panel's narrowest width with [strings] columns, each a 48 dp touch target, plus 1 dp a column:
+ * whole pixels round each column down a little (on a screen of few pixels a dp, 47.5 dp).
+ */
+internal fun strumPanelMinWidth(strings: Int): Dp = SIGN_ROOM + 49.dp * strings
 private const val SIGN_X = 3f
 private const val SIGN_UNITS = 15f
 

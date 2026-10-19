@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -185,6 +186,8 @@ fun ChordsScreen(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
+            // Smaller rather than broken inside a word (Dutch "Sol♯ mineur-pentatonisch" at 2× text in Space Age on a 320 dp phone).
+            autoSize = WholeWordsAutoSize(MaterialTheme.typography.titleLarge.fontSize, TITLE_MIN_SIZE),
             modifier = Modifier.testTag(PracticeTestTags.TITLE).semantics {
                 heading()
                 if (scales) liveRegion = LiveRegionMode.Polite
@@ -487,3 +490,6 @@ private const val DISABLED_ALPHA = 0.38f
 
 /** A swipe this far across the chart steps to the next shape. */
 private val SWIPE_DISTANCE = 48.dp
+
+/** The chart's title shrinks at most to this to keep its words whole. */
+private val TITLE_MIN_SIZE = 12.sp

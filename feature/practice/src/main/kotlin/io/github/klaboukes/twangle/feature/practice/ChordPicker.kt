@@ -420,7 +420,7 @@ private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign =
         color = color,
         maxLines = lines,
         autoSize = if (lines > 1) {
-            WholeWordsAutoSize
+            LabelAutoSize
         } else {
             // The largest size that fits: below MIN_LABEL_SIZE only where the label would otherwise be cut
             // off (Classic's La♭maj7 at 2× text on a 320 dp phone fits at 7.5 sp).
@@ -430,22 +430,26 @@ private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign =
 }
 
 /**
- * The largest label size from [LABEL_SIZE] down to [MIN_LABEL_SIZE] at which the label fits its face
+ * The largest size from [largest] down to [smallest] at which the text fits its box
  * on its lines without breaking a word ("Pentatonique / majeure", never "Pentatoni / que"); Chinese
  * and Japanese, written without spaces, may break between any two characters. Smallest if none.
- * Where it can, it leaves [TWO_LINE_MARGIN] above and below, so two lines never touch the outline
+ * Where it can, it leaves [twoLineMargin] above and below, so two lines never touch the outline
  * (Classic's and Retro's letters did); at large text sizes, where even the smallest wouldn't fit
  * with it, the label may use the whole face.
  */
-private object WholeWordsAutoSize : TextAutoSize {
+internal class WholeWordsAutoSize(
+    private val largest: TextUnit,
+    private val smallest: TextUnit,
+    private val twoLineMargin: Dp = 0.dp,
+) : TextAutoSize {
     override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
-        val margin = 2 * TWO_LINE_MARGIN.roundToPx()
-        return largestFitting(constraints, text, margin) ?: largestFitting(constraints, text, 0) ?: MIN_LABEL_SIZE
+        val margin = 2 * twoLineMargin.roundToPx()
+        return largestFitting(constraints, text, margin) ?: largestFitting(constraints, text, 0) ?: smallest
     }
 
     private fun TextAutoSizeLayoutScope.largestFitting(constraints: Constraints, text: AnnotatedString, margin: Int): TextUnit? {
-        var size = LABEL_SIZE.value
-        while (size > MIN_LABEL_SIZE.value) {
+        var size = largest.value
+        while (size > smallest.value) {
             val layout = performLayout(constraints, text, size.sp)
             val roomy = !constraints.hasBoundedHeight || layout.size.height <= constraints.maxHeight - margin
             if (!layout.didOverflowWidth && !layout.didOverflowHeight && roomy && breaksBetweenWords(layout, text)) return size.sp
@@ -467,8 +471,9 @@ private object WholeWordsAutoSize : TextAutoSize {
         else -> this == 'ー'
     }
 
-    override fun equals(other: Any?): Boolean = other === this
-    override fun hashCode(): Int = System.identityHashCode(this)
+    override fun equals(other: Any?): Boolean =
+        other is WholeWordsAutoSize && other.largest == largest && other.smallest == smallest && other.twoLineMargin == twoLineMargin
+    override fun hashCode(): Int = (largest.hashCode() * 31 + smallest.hashCode()) * 31 + twoLineMargin.hashCode()
 }
 
 /**
@@ -530,3 +535,9 @@ private val TWO_LINE_HEIGHT = 1.15.em
 private val TWO_LINE_MARGIN = 3.dp
 private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val MUTED_OUTLINE_ALPHA = 0.6f
+
+/**
+ * A picker label: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can.
+ * Written after those sizes: top-level values are set in the order they are written.
+ */
+private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN)

@@ -190,10 +190,19 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
         fontFeatureSettings = LINING_FIGURES,
         textAlign = TextAlign.Center,
     )
+    val labels = Meter.entries.map { meterLabel(it) }
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    // The widest label at its smallest size, with the face's padding.
+    val smallestFace = remember(labels, numbers, density) {
+        with(density) { labels.maxOf { measurer.measure(it, numbers.copy(fontSize = MIN_LABEL_SIZE)).size.width }.toDp() } + 12.dp
+    }
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val count = Meter.entries.size
-        val tight = maxWidth < METER_BUTTON_WIDTH * count + METER_GAP * (count - 1)
-        val share = with(LocalDensity.current) { (constraints.maxWidth / count).toDp() }
+        val share = with(density) { (constraints.maxWidth / count).toDp() }
+        // One row of shrunk faces only while the labels still fit them at their smallest; else (wide faces
+        // at 2× text on a phone on its side) the full-size faces wrap onto a second row.
+        val tight = maxWidth < METER_BUTTON_WIDTH * count + METER_GAP * (count - 1) && share - METER_GAP >= smallestFace
         val faceWidth = if (tight) share - METER_GAP else METER_BUTTON_WIDTH
         val touch = if (tight) Modifier.width(share).heightIn(min = MIN_TOUCH) else Modifier.minimumInteractiveComponentSize()
         FlowRow(

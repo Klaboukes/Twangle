@@ -104,6 +104,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
+import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
 import io.github.klaboukes.twangle.feature.tuner.components.InTuneHaptic
 import io.github.klaboukes.twangle.feature.tuner.components.ModeSwitch
 import io.github.klaboukes.twangle.feature.tuner.components.MeterFrame
@@ -777,6 +778,8 @@ fun TunerContent(
                             gauge = gauge,
                             note = { note(false) },
                             below = { CompactExtraFor(state, mode, pictured) },
+                            // The strum check's columns are buttons: each keeps a 48 dp touch width.
+                            gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
                             tapHint = tapHintShown,
                             onShowControls = {
                                 tapHintShown = false
@@ -936,6 +939,7 @@ private fun CompactLayout(
     gauge: @Composable () -> Unit,
     note: @Composable () -> Unit,
     below: @Composable () -> Unit,
+    gaugeMinWidth: Dp,
     tapHint: Boolean,
     onShowControls: () -> Unit,
 ) {
@@ -955,7 +959,7 @@ private fun CompactLayout(
                 }
             },
     ) {
-        CompactRow(error, onRetry, gauge, note, below)
+        CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
         // Laid over the layout, so nothing moves when it fades out.
         AnimatedVisibility(
             visible = tapHint && error == null,
@@ -974,7 +978,7 @@ private fun CompactLayout(
     }
 }
 
-/** The compact layout's meter beside the note column, or the [error]. */
+/** The compact layout's meter, at least [gaugeMinWidth] wide, beside the note column, or the [error]. */
 @Composable
 private fun CompactRow(
     error: TunerError?,
@@ -982,11 +986,13 @@ private fun CompactRow(
     gauge: @Composable () -> Unit,
     note: @Composable () -> Unit,
     below: @Composable () -> Unit,
+    gaugeMinWidth: Dp,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-        // The note column never takes the meter's last GAUGE_MIN_WIDTH: long lines in a wide face at 2× text
-        // (Space Age's 12th-fret check in Dutch) would otherwise leave the meter no width at all.
-        val noteMaxWidth = (maxWidth - SECTION_SPACING - GAUGE_MIN_WIDTH).coerceAtLeast(0.dp)
+        // The note column never takes the meter's last [gaugeMinWidth]: long lines in a wide face at 2× text
+        // (Space Age's 12th-fret check in Dutch) would otherwise leave the meter no width at all, and the
+        // strum check's columns, which are buttons, too little (Futuristic and Space Age beside the rail).
+        val noteMaxWidth = (maxWidth - SECTION_SPACING - gaugeMinWidth).coerceAtLeast(0.dp)
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically,
