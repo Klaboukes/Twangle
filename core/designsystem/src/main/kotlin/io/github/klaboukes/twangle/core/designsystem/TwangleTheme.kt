@@ -227,7 +227,9 @@ internal fun shapesFor(style: VisualStyle): Shapes = when (style) {
         extraLarge = CutCornerShape(16.dp),
     )
     VisualStyle.SPACE_AGE -> Shapes(
-        extraSmall = RoundedCornerShape(50),
+        // Not 50 %: Material draws its menus in this, and a tall menu as a capsule cut off its corner buttons and rows.
+        // Anything up to 40 dp tall is still a capsule (a corner is never more than half the side).
+        extraSmall = RoundedCornerShape(20.dp),
         small = RoundedCornerShape(50),
         medium = RoundedCornerShape(20.dp),
         large = RoundedCornerShape(28.dp),
