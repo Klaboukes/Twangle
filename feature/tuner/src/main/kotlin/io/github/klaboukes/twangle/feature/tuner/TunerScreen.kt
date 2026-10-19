@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -26,6 +27,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +54,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -131,6 +135,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.markOf
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -313,6 +318,7 @@ fun TunerScreen(
                     onPitchTrailChange = viewModel::setPitchTrail,
                     pitchHistory = viewModel.pitchHistory,
                     onFullScreenChange = onFullScreenChange,
+                    onExitFocus = viewModel::exitFocusMode,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -419,6 +425,9 @@ object TunerTestTags {
 
     /** The compact layout's "Tap to show the controls" line, shown for a few seconds after it appears. */
     const val COMPACT_TAP_HINT = "tuner_compact_tap_hint"
+
+    /** Focus mode's exit button, among the controls a tap brings up. */
+    const val EXIT_FOCUS = "tuner_exit_focus"
 
     /** Focus mode's small note in the corner, beside the full-screen meter. */
     const val FOCUS_NOTE = "tuner_focus_note"
@@ -578,6 +587,7 @@ fun TunerContent(
     onPitchTrailChange: ((Boolean) -> Unit)? = null,
     pitchHistory: PitchHistory? = null,
     onFullScreenChange: (Boolean) -> Unit = {},
+    onExitFocus: (() -> Unit)? = null,
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -799,6 +809,9 @@ fun TunerContent(
                 val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
                 LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
                 DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
+                // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app
+                // (not while the tour runs: there Back ends the tour).
+                if (onExitFocus != null) BackHandler(enabled = !controlsAlwaysShown) { onExitFocus() }
                 // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
                 val fullMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
                     !(pitchTrail && pitchHistory != null)
@@ -806,6 +819,9 @@ fun TunerContent(
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
                             twoPane()
+                            if (onExitFocus != null) {
+                                ExitFocusButton(onExitFocus, Modifier.align(Alignment.TopEnd).padding(EXIT_FOCUS_INSET))
+                            }
                         }
                     } else {
                         CompactLayout(
@@ -1025,6 +1041,21 @@ private fun CompactLayout(
                 modifier = Modifier.testTag(TunerTestTags.COMPACT_TAP_HINT).semantics { hideFromAccessibility() },
             )
         }
+    }
+}
+
+/**
+ * Leaves focus mode ([onClick]): the four-corners "exit full screen" icon, no word (TalkBack hears
+ * "Exit focus mode"), in the top end corner of the controls a tap brings up, where the tap hint was.
+ */
+@Composable
+private fun ExitFocusButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(onClick = onClick, modifier = modifier.testTag(TunerTestTags.EXIT_FOCUS).tourControl()) {
+        Icon(
+            painter = painterResource(R.drawable.ic_fullscreen_exit),
+            contentDescription = stringResource(R.string.tuner_exit_focus_mode),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -1504,6 +1535,9 @@ private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 /** Focus mode's full-screen meter: the margin round it, and how wide it may grow (a tablet on its side). */
 private val FOCUS_METER_MARGIN = 8.dp
 private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
+
+/** The exit button's 48 dp touch area from the top end corner: its icon about where the tap hint's line was. */
+private val EXIT_FOCUS_INSET = 4.dp
 
 /** The full-screen meter's corner texts (the note, the tap hint) keep this far from the screen's edges. */
 private val FOCUS_EDGE_SIDE = 16.dp

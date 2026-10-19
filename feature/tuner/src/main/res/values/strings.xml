@@ -23,6 +23,7 @@
     <!-- Temporary, until the bottom bar: opens the metronome. -->
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>
+    <string name="tuner_exit_focus_mode">Exit focus mode</string>
     <!-- A quiet line in the compact layout on its side, for a few seconds after it appears: a tap anywhere shows the controls. -->
     <string name="tuner_compact_tap_hint">Tap to show the controls</string>
 

@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Struny</string>
     <string name="tuner_mode_chromatic">Chromatyczny</string>
     <string name="tuner_show_controls">Pokaż sterowanie</string>
+    <string name="tuner_exit_focus_mode">Wyjdź z trybu skupienia</string>
     <string name="tuner_compact_tap_hint">Dotknij, aby pokazać sterowanie</string>
 
     <string name="tuning_standard">Standardowy</string>

@@ -2,6 +2,8 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import android.content.res.Configuration
 import android.content.res.Resources
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -36,6 +38,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -114,6 +117,8 @@ class TunerContentTest {
     private var shownCustomTunings = emptyList<CustomTuning>()
     private val stringClicks = mutableListOf<Int>()
     private val fullScreenReports = mutableListOf<Boolean>()
+    private var focusExits = 0
+    private var backDispatcher: OnBackPressedDispatcher? = null
     private val stringLongClicks = mutableListOf<Int>()
 
     /** The string whose tone [show] says is sounding; set it while the tuner is shown. */
@@ -173,6 +178,7 @@ class TunerContentTest {
         shownPickerOpen.value = false
         compose.setContent {
             val content = @Composable {
+                backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                 MaterialTheme {
                     TunerContent(
                         shownState.value,
@@ -200,6 +206,7 @@ class TunerContentTest {
                         signalFigures = signalFigures,
                         onStrumCheckChange = {},
                         onFullScreenChange = { fullScreenReports += it },
+                        onExitFocus = { focusExits++ },
                     )
                 }
             }
@@ -1648,6 +1655,33 @@ class TunerContentTest {
         compose.mainClock.advanceTimeBy(FRAME_MS)
         assertEquals("focus mode off", false, fullScreenReports.last())
     }
+
+    @Test
+    fun focusTheControlsBringAnExitButtonAndBackLeavesToo() {
+        show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
+        // Not over the full-screen meter: it comes with the controls.
+        exitButton.assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val button = exitButton.assertIsDisplayed().assertHasClickAction().getBoundsInRoot()
+        assertTrue("button at $button, in the top end corner", button.right >= window.right - 12.dp && button.top <= window.top + 12.dp)
+        exitButton.performClick()
+        assertEquals(1, focusExits)
+        // Back leaves focus mode too, with the controls shown or not.
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        assertEquals(2, focusExits)
+    }
+
+    @Test
+    fun withoutFocusModeThereIsNoExitButton() {
+        show(detected(-12.3f), size = PHONE_LANDSCAPE)
+        exitButton.assertDoesNotExist()
+        shownCompact.value = true
+        compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
+        exitButton.assertIsDisplayed()
+    }
+
+    private val exitButton get() = compose.onNodeWithContentDescription(context.getString(R.string.tuner_exit_focus_mode))
 
     @Test
     fun compactShowsAnErrorWithRetry() {

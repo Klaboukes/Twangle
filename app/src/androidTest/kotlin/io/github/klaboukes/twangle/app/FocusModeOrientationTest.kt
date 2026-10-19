@@ -132,6 +132,25 @@ class FocusModeOrientationTest {
         }
     }
 
+    /** The exit button among the controls a tap brings up, and Back, switch focus mode off and the app keeps running. */
+    @Test
+    fun theExitButtonAndBackLeaveFocusMode() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            runBlocking { settings.setFocusMode(true) }
+            assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
+            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
+            (device.wait(Until.findObject(By.res(TunerTestTags.EXIT_FOCUS)), WAIT_MS) ?: error("no exit button")).click()
+            assertTrue("the button switches focus mode off", waitFor { !runBlocking { settings.settings.first().focusMode } })
+            assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
+
+            runBlocking { settings.setFocusMode(true) }
+            assertTrue("the compact tuner shows again", shown(TunerTestTags.COMPACT))
+            device.pressBack()
+            assertTrue("Back switches focus mode off", waitFor { !runBlocking { settings.settings.first().focusMode } })
+            assertTrue("and the app stays open", shown(NavigationTestTags.RAIL) || shown(NavigationTestTags.BAR))
+        }
+    }
+
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L

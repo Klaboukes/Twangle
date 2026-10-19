@@ -16,6 +16,7 @@
     <string name="tuner_mode_strings">Corde</string>
     <string name="tuner_mode_chromatic">Cromatico</string>
     <string name="tuner_show_controls">Mostra comandi</string>
+    <string name="tuner_exit_focus_mode">Esci dalla modalità concentrazione</string>
     <string name="tuner_compact_tap_hint">Tocca per mostrare i comandi</string>
 
     <string name="tuning_standard">Standard</string>

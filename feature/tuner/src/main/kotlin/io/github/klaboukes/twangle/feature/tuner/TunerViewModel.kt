@@ -317,6 +317,11 @@ class TunerViewModel(
         appLanguage.value = language
     }
 
+    /** Switches focus mode off, as its switch in Settings does: the focused tuner's exit button and Back. */
+    fun exitFocusMode() {
+        viewModelScope.launch { settingsRepository.setFocusMode(false) }
+    }
+
     /** Switches to [mode] straight away and saves it, so the next start opens in it too. */
     fun setMode(mode: TunerMode) {
         // Chromatic mode has no strings to show which one sounds.
