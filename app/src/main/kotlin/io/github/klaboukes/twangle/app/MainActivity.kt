@@ -36,6 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import io.github.klaboukes.twangle.app.navigation.AppNavigationFrame
@@ -186,6 +189,20 @@ class MainActivity : AppCompatActivity() {
                 var tourRequested by rememberSaveable { mutableStateOf(false) }
                 var tourEnded by rememberSaveable { mutableStateOf(false) }
                 var tunerShown by remember { mutableStateOf(false) }
+                // Focus mode's tuner without its controls: the meter takes the whole screen, so the rail
+                // and the system bars go (a swipe from the edge shows the system bars for a moment).
+                var tunerFullScreen by remember { mutableStateOf(false) }
+                val fullScreen = tunerFullScreen && screen == Screen.TUNER
+                DisposableEffect(fullScreen) {
+                    val bars = WindowCompat.getInsetsController(window, window.decorView)
+                    if (fullScreen) {
+                        bars.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        bars.hide(WindowInsetsCompat.Type.systemBars())
+                    } else {
+                        bars.show(WindowInsetsCompat.Type.systemBars())
+                    }
+                    onDispose {}
+                }
                 // Taps on the bar's Tuner tab, also while the tuner shows: each closes the tuner's tools.
                 var tunerTabTaps by rememberSaveable { mutableIntStateOf(0) }
                 val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
@@ -236,6 +253,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         tuningState = spokenTuning(settings),
                         practice = tools.practiceTab,
+                        navigationHidden = fullScreen,
                     ) {
                         saveableState.SaveableStateProvider(screen.name) {
                             when (screen) {
@@ -263,6 +281,7 @@ class MainActivity : AppCompatActivity() {
                                         onMicGrantedChange = { tunerShown = it },
                                         savedMicRefused = settings.micRefused,
                                         closeToolsRequest = tunerTabTaps,
+                                        onFullScreenChange = { tunerFullScreen = it },
                                     )
                                 }
                                 Screen.METRONOME -> PracticeTab(container, settings, tools)

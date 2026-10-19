@@ -1,0 +1,127 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Focus Mode</title>
+<!--
+TWANGLE FOCUS MODE, REDESIGN (preview). ROUGH, plain on purpose: one style (Contemporary), the Classic meter.
+Sizes  The Xiaomi 12X on its side, 873 x 393 dp, drawn at 0.8 px per dp. Today: the status bar (~30 dp), the
+       gesture bar (~16 dp), the 80 dp rail and the note column (112 dp note, cents pill, frequency, string chips)
+       leave the meter about 490 x 245 dp. Proposed: full screen, the meter as tall as the screen less 8 dp a side,
+       about 754 x 377 dp, with the note small (48 dp) in the top start corner, where every meter look leaves room.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --ink: #10141F; --muted: #4A5268; --track: #B9C0D2; --accent: #3A4FD6; --tuned: #1E8A4C;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --ink: #E6E9F4; --muted: #A6AECB; --track: #3B4258; --accent: #A6ADFF; --tuned: #6FD49A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --ink: #E6E9F4; --muted: #A6AECB; --track: #3B4258; --accent: #A6ADFF; --tuned: #6FD49A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 760px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 500 17px/1.3 var(--ui); margin: 28px 0 8px; }
+p, ul { margin: 0; }
+.lede, .note { color: var(--muted); max-width: 70ch; }
+.note { font-size: 14px; margin-top: 8px; }
+ul.note { padding-left: 20px; display: grid; gap: 4px; }
+.note strong { color: var(--ink); font-weight: 500; }
+.scroll { overflow-x: auto; }
+.phone { position: relative; width: 698px; height: 314px; border-radius: 22px; background: var(--bg);
+  border: 6px solid #1A1D26; overflow: hidden; flex: none; }
+.status { position: absolute; top: 0; left: 0; right: 0; height: 24px; font: 500 10px/24px var(--ui); color: var(--muted); padding: 0 80px; }
+.rail { position: absolute; top: 24px; bottom: 0; left: 0; width: 64px; display: grid; align-content: center; justify-items: center; gap: 18px; }
+.rail i { width: 18px; height: 18px; border-radius: 50%; border: 1.6px solid var(--muted); display: block; }
+.rail i.on { border-color: var(--accent); }
+.meter { position: absolute; }
+.meter svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.notecol { position: absolute; right: 19px; top: 24px; bottom: 13px; width: 168px; display: grid; align-content: center; justify-items: center; gap: 6px; }
+.big { font: 400 90px/0.95 var(--ui); }
+.pill { font: 500 12px/1 var(--ui); padding: 6px 10px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, var(--bg)); }
+.hz { font-size: 11px; color: var(--muted); }
+.chips { display: flex; gap: 3px; margin-top: 4px; }
+.chips b { width: 24px; height: 24px; border-radius: 7px; font: 500 10px/24px var(--ui); text-align: center; color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 12%, var(--bg)); }
+.chips b.on { color: var(--page); background: var(--accent); }
+.corner { position: absolute; left: 14px; top: 8px; font: 400 38px/1 var(--ui); }
+.corner sub { font-size: 16px; color: var(--muted); }
+.hint { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 12px; color: var(--muted); }
+.gesture { position: absolute; bottom: 4px; left: 50%; width: 90px; margin-left: -45px; height: 3px; border-radius: 2px; background: var(--muted); opacity: .5; }
+</style>
+
+<svg width="0" height="0" style="position:absolute">
+  <!-- Classic: a 146u dial round a pivot 17u above the bottom of a 340 x 170 box; the needle 7 cents flat. -->
+  <symbol id="classic" viewBox="0 0 340 170">
+    <path d="M 51.6 67.2 A 146 146 0 0 1 288.4 67.2" fill="none" stroke="var(--track)" stroke-width="2" />
+    <g stroke="var(--muted)" stroke-width="1.5">
+      <line x1="51.6" y1="67.2" x2="61.3" y2="74.2" /><line x1="78.5" y1="44.6" x2="86.0" y2="53.8" />
+      <line x1="109.3" y1="28.3" x2="114.3" y2="39.1" /><line x1="142.6" y1="19.6" x2="145.0" y2="31.3" />
+      <line x1="170" y1="7" x2="170" y2="25" stroke="var(--tuned)" stroke-width="3" />
+      <line x1="197.4" y1="19.6" x2="195.0" y2="31.3" /><line x1="230.7" y1="28.3" x2="225.7" y2="39.1" />
+      <line x1="261.5" y1="44.6" x2="254.0" y2="53.8" /><line x1="288.4" y1="67.2" x2="278.7" y2="74.2" />
+    </g>
+    <text x="40" y="96" fill="var(--muted)" font-size="16" text-anchor="middle">♭</text>
+    <text x="300" y="96" fill="var(--muted)" font-size="16" text-anchor="middle">♯</text>
+    <text x="170" y="117" fill="var(--muted)" font-size="7.5" letter-spacing="2.2" text-anchor="middle">CENTS</text>
+    <line x1="170" y1="153" x2="152.4" y2="17.1" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+    <circle cx="170" cy="153" r="8" fill="var(--ink)" />
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Focus mode · rough preview</p>
+    <h1>The meter takes the whole screen</h1>
+    <p class="lede">Both pictures are the Xiaomi 12X on its side, a note 7 cents flat in guitar mode.</p>
+  </header>
+
+  <h2>Today</h2>
+  <div class="scroll">
+    <div class="phone">
+      <div class="status">12:30</div>
+      <div class="rail"><i class="on"></i><i></i><i></i><i></i></div>
+      <div class="meter" style="left: 83px; top: 63px; width: 392px; height: 196px;"><svg><use href="#classic" /></svg></div>
+      <div class="notecol">
+        <div class="big">A</div>
+        <div class="pill">7 cents flat</div>
+        <div class="hz">109.6 Hz</div>
+        <div class="chips"><b>E</b><b class="on">A</b><b>D</b><b>G</b><b>B</b><b>E</b></div>
+      </div>
+      <div class="gesture"></div>
+    </div>
+  </div>
+  <p class="note">The status bar, the rail, a big note, the cents, the frequency and the strings leave the meter less than
+    two thirds of the width (about 490 dp wide).</p>
+
+  <h2>Proposed</h2>
+  <div class="scroll">
+    <div class="phone">
+      <div class="meter" style="left: 47px; top: 6px; width: 603px; height: 302px;"><svg><use href="#classic" /></svg></div>
+      <div class="corner">A<sub>2</sub></div>
+      <div class="hint">Tap to show the controls</div>
+    </div>
+  </div>
+  <ul class="note">
+    <li><strong>Full screen on the tuner:</strong> no status bar, no gesture bar and no rail. The meter is about
+      754 dp wide, half as wide again as today, and more than twice the area.</li>
+    <li><strong>Only the note stays,</strong> small in the top corner (about a third of today's size), still readable
+      from a few steps. The cents, frequency and strings go: the meter already shows them. The wave view isn't shown here either.</li>
+    <li><strong>A tap</strong> brings back today's normal side layout with the rail, the strings and the switches for
+      5 seconds, as now. So the tabs and the Instrument item are still one tap away. The hint shows for 4 seconds, as now.</li>
+    <li><strong>The tools</strong> (strum check, 12th-fret check, chord name, pitch trail) keep their panel beside
+      their own text, as today, but also full screen without the rail: their text has buttons and the words matter.</li>
+    <li><strong>Other tabs</strong> (Practice, Settings) stay on their side with their normal side layouts and the
+      rail, so the screen doesn't turn on every tab switch. Only the tuner gets the focus treatment.</li>
+  </ul>
+</div>

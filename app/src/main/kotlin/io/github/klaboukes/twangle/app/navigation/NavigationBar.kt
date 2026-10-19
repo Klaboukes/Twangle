@@ -83,7 +83,7 @@ import kotlin.math.min
  * but a button ([InstrumentItem]): a tap calls [onTuning], which opens the instrument and tuning panel,
  * and [tuningState] ("Guitar, Standard") is what TalkBack hears it holds. Without a [selected] tab (the tuning
  * editor) the bar or rail is away and [content]
- * takes the whole window. The bar or rail keeps clear of the system bars; [content] is told those
+ * takes the whole window, as it does with [navigationHidden] (focus mode's full-screen tuner). The bar or rail keeps clear of the system bars; [content] is told those
  * insets are taken, so it doesn't leave room for them twice. With [practice] (the Practice tab's
  * switch on, Phase 32) the Metronome tab is called Practice.
  */
@@ -96,9 +96,10 @@ fun AppNavigationFrame(
     onTuning: () -> Unit = {},
     tuningState: String? = null,
     practice: Boolean = false,
+    navigationHidden: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val shown = selected != null
+    val shown = selected != null && !navigationHidden
     // The tab shown while the bar fades out after its screen has gone.
     val lastSelected = remember { arrayOf(Destination.TUNER) }
     if (selected != null) lastSelected[0] = selected

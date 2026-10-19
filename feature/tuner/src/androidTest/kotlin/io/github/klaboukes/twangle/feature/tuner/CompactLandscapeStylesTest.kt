@@ -29,6 +29,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -38,6 +39,7 @@ import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.allIfThorough
+import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -53,12 +55,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 /**
- * The compact landscape layout in each of the six styles: each style brings its own fonts and
- * dial, so the note column and the meter differ in size. On a phone and a tablet on their side
- * everything fits beside a big meter (beside the app's 80 dp navigation rail, which stays in focus mode); with
- * 2× font it can still be reached; a tap (light) or TalkBack (dark) brings back the controls. Every
- * meter look, at its biggest here, is clearly drawn inside its box in the style's colours, light and
- * dark, skipped by TalkBack, and moves nothing else on the screen, also at 2× font.
+ * The compact landscape layout (focus mode) in each of the six styles: each style brings its own fonts
+ * and dial. On a phone and a tablet on their side, full screen (no rail, no status bar, Phase 40), the
+ * meter fills the screen with the small note in its top start corner; with 2× font the note and a tip
+ * are wholly shown; a tap (light) or TalkBack (dark) brings back the controls. Every meter look, at its
+ * biggest here, is clearly drawn inside its box in the style's colours, light and dark, skipped by
+ * TalkBack, and moves nothing else on the screen, also at 2× font.
  * [TunerContentTest] covers the layout itself in one style.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -84,6 +86,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLook = mutableStateOf(MeterLook.DEFAULT)
+    private val shownCompact = mutableStateOf(true)
 
     private fun show() {
         compose.setContent {
@@ -103,7 +106,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
                         meterLook = shownLook.value,
                         showTuneHint = true,
                         showSignalBars = true,
-                        compactLandscape = true,
+                        compactLandscape = shownCompact.value,
                         onStrumCheckChange = {},
                     )
                 }
@@ -122,21 +125,20 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         inTune = false,
     )
 
-    private val note get() = compose.onNodeWithText("A")
+    private val note get() = compose.onNodeWithTag(TunerTestTags.FOCUS_NOTE)
     private val gauge get() = compose.onNodeWithTag(TunerTestTags.GAUGE)
     private val cents get() = compose.onNodeWithText(context.resources.getQuantityString(R.plurals.tuner_cents_flat, 12, 12))
     private val frequency get() = compose.onNodeWithText(context.getString(R.string.tuner_frequency, 108.47f))
-    private val tuneUp get() = compose.onNodeWithText(context.getString(R.string.tuner_tune_up))
     private val targetString get() = compose.onNodeWithText("A2")
     private val signalBars get() = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON)
     private val modeSwitch get() = compose.onNodeWithText(context.getString(R.string.tuner_mode_strings))
 
     /**
-     * Guitar mode with the needle and the wave, then chromatic mode with the wave (the cents and
-     * frequency under the note): all of it in view, nothing overlapping.
+     * Guitar mode with the needle and the wave, then chromatic mode: the meter fills the screen, the
+     * note in its corner, and nothing else shows (no cents, frequency, strings or signal bars).
      */
     @Test
-    fun onItsSideEveryDisplayFits() {
+    fun onItsSideTheMeterFillsTheScreen() {
         show()
         forEachLook { case ->
             shownState.value = detected()
@@ -144,26 +146,12 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
             for (display in TunerDisplay.entries) {
                 shownDisplay.value = display
                 compose.waitForIdle()
-                val parts = buildList {
-                    add("note" to note)
-                    add("tune hint" to tuneUp)
-                    add("signal bars" to signalBars)
-                    add("string" to targetString)
-                    // With the wave, those take the cents' place and the frequency is left out.
-                    if (display == TunerDisplay.NEEDLE) {
-                        add("cents" to cents)
-                        add("frequency" to frequency)
-                    }
-                }
-                assertBigMeterBeside(parts, "$case $display")
+                assertMeterFillsTheScreen("$case $display")
             }
             shownState.value = detected(TunerMode.CHROMATIC)
             shownMode.value = TunerMode.CHROMATIC
-            shownDisplay.value = TunerDisplay.WAVE
             compose.waitForIdle()
-            targetString.assertDoesNotExist()
-            val parts = listOf("note" to note, "tune hint" to tuneUp, "signal bars" to signalBars, "cents" to cents, "frequency" to frequency)
-            assertBigMeterBeside(parts, "$case chromatic wave")
+            assertMeterFillsTheScreen("$case chromatic")
         }
     }
 
@@ -189,55 +177,43 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
     }
 
     /**
-     * The meter is the biggest thing on the screen: at least as wide as the readings beside it, and at
-     * least [METER_SHARE] of the window. Every one of [parts] sits beside it and in the window (no
-     * scrolling) and none overlap.
+     * The meter is as big as the window allows (as tall as it less its margins, or [METER_SHARE] of its
+     * width), the note in its top start corner, within the window, and nothing else of the tuner shows.
      */
-    private fun assertBigMeterBeside(parts: List<Pair<String, SemanticsNodeInteraction>>, case: String) {
+    private fun assertMeterFillsTheScreen(case: String) {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val meter = gauge.assertIsDisplayed().getBoundsInRoot()
-        assertTrue("$case: meter ${meter.width} wide in ${window.width}", meter.width >= window.width * METER_SHARE)
+        assertTrue(
+            "$case: meter ${meter.width} x ${meter.height} in ${window.width} x ${window.height}",
+            meter.height >= window.height - FULL_HEIGHT_MARGINS || meter.width >= window.width * METER_SHARE,
+        )
         assertInside(window, "meter", meter, case)
-        val bounds = listOf("meter" to meter) + parts.map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
-        val readings = bounds.drop(1).let { rects -> rects.maxOf { it.second.right } - rects.minOf { it.second.left } }
-        assertTrue("$case: meter ${meter.width} narrower than the readings beside it ($readings)", meter.width >= readings)
-        for ((name, rect) in bounds.drop(1)) {
-            assertInside(window, name, rect, case)
-            assertTrue("$case: $name should be right of the meter", rect.left >= meter.right)
-        }
-        for (i in bounds.indices) {
-            for (j in i + 1 until bounds.size) {
-                val (a, first) = bounds[i]
-                val (b, second) = bounds[j]
-                assertFalse("$case: $a $first overlaps $b $second", first.overlaps(second))
-            }
-        }
+        val corner = note.assertIsDisplayed().getBoundsInRoot()
+        assertInside(window, "note", corner, case)
+        assertTrue(
+            "$case: note $corner not in the top start corner",
+            corner.right <= window.left + window.width * CORNER_SHARE && corner.bottom <= window.top + window.height * CORNER_SHARE,
+        )
+        // Nothing else: the meter shows how far off the note is.
+        cents.assertDoesNotExist()
+        frequency.assertDoesNotExist()
+        targetString.assertDoesNotExist()
+        signalBars.assertDoesNotExist()
     }
 
     @Test
-    fun withTheLargestFontEverythingCanStillBeReached() {
+    fun withTheLargestFontTheNoteAndATipAreWhollyShown() {
         shownFontScale.value = 2f
         show()
-        forEachLook {
-            for (display in TunerDisplay.entries) {
-                shownDisplay.value = display
-                compose.waitForIdle()
-                gauge.assertIsDisplayed()
-                note.performScrollTo().assertIsDisplayed()
-                tuneUp.performScrollTo().assertIsDisplayed()
-                signalBars.performScrollTo().assertIsDisplayed()
-                targetString.performScrollTo().assertIsDisplayed()
-                if (display == TunerDisplay.NEEDLE) {
-                    cents.performScrollTo().assertIsDisplayed()
-                    frequency.performScrollTo().assertIsDisplayed()
-                }
-                // The longest tip keeps to one line in its place, beside the meter.
-                shownState.value = detected().copy(tip = ReceptionTip.TOO_LOUD)
-                compose.waitForIdle()
-                val tip = compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)).performScrollTo().assertIsDisplayed()
-                assertTrue("tip right of the meter", tip.getBoundsInRoot().left >= gauge.getBoundsInRoot().right)
-                shownState.value = detected()
-            }
+        forEachLook { case ->
+            shownState.value = detected()
+            compose.waitForIdle()
+            assertWhollyShown(compose.onNodeWithText("A"), "$case note", scroll = false)
+            // The longest tip, in its line under the note.
+            shownState.value = detected().copy(tip = ReceptionTip.TOO_LOUD)
+            compose.waitForIdle()
+            assertWhollyShown(compose.onNodeWithText(context.getString(R.string.tuner_tip_too_loud)), "$case tip", scroll = false)
+            shownState.value = detected()
         }
     }
 
@@ -270,6 +246,10 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         show()
         val hint = compose.onNodeWithText(context.getString(R.string.tuner_compact_tap_hint))
         hint.assertIsDisplayed()
+        // In the top end corner, which every meter look leaves free.
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val place = hint.getBoundsInRoot()
+        assertTrue("hint at $place", place.right >= window.right - 24.dp && place.top <= window.top + 24.dp)
         assertTrue("TalkBack hears the hint", hint.fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         // Still there just before its time is up (no flicker), then gone.
         compose.mainClock.advanceTimeBy(COMPACT_TAP_HINT_SHOWN_MS - FADE_MS)
@@ -305,6 +285,8 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
      */
     private fun assertEveryMeterLookInItsBox(case: String) {
         shownLook.value = MeterLook.CLASSIC
+        // The tap hint gone first: it fades out on its own.
+        compose.mainClock.advanceTimeBy(COMPACT_TAP_HINT_SHOWN_MS + FADE_MS)
         compose.waitForIdle()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val places = placesOnScreen()
@@ -356,15 +338,10 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         shownLook.value = MeterLook.DEFAULT
     }
 
-    /** Where the meter and every reading part around it are. */
+    /** Where the meter and the note in its corner are. */
     private fun placesOnScreen(): Map<String, DpRect> = buildMap {
         put("meter", gauge.getBoundsInRoot())
         put("note", note.getBoundsInRoot())
-        put("tune hint", tuneUp.getBoundsInRoot())
-        put("signal bars", signalBars.getBoundsInRoot())
-        put("string", targetString.getBoundsInRoot())
-        put("cents", cents.getBoundsInRoot())
-        put("frequency", frequency.getBoundsInRoot())
     }
 
     private fun PixelMap.argbAt(x: Int, y: Int): Int = buffer[bufferOffset + y * stride + x]
@@ -410,9 +387,13 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         }
     }
 
-    /** The signal bars stand out from what is behind them in the style's colours, light and dark. */
+    /**
+     * The signal bars stand out from what is behind them in the style's colours, light and dark, in the
+     * full layout on its side (focus mode leaves them out).
+     */
     @Test
     fun theSignalBarsAreDrawn() {
+        shownCompact.value = false
         show()
         forEachLook(bothThemes = true) { case ->
             for (display in TunerDisplay.entries) {
@@ -442,9 +423,6 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
         )
     }
 
-    private fun DpRect.overlaps(other: DpRect) =
-        left < other.right && other.left < right && top < other.bottom && other.top < bottom
-
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
@@ -458,21 +436,20 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
          */
         private const val TEST_TIMEOUT_SECONDS = 10L
 
-        /**
-         * A Galaxy S26 on its side (360 dp tall), without the status bar, and a tablet on its side, each
-         * less the app's 80 dp navigation rail.
-         */
-        private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
-        private val TABLET_LANDSCAPE = DpSize(1200.dp, 760.dp)
+        /** A Galaxy S26 (360 dp tall) and a tablet on their side, full screen as focus mode shows the tuner. */
+        private val PHONE_LANDSCAPE = DpSize(780.dp, 360.dp)
+        private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
+
+        /** The full-screen meter's margins above and below it (8 dp each), and half a dp for rounding. */
+        private val FULL_HEIGHT_MARGINS = 16.5.dp
+
+        /** The note stays within this share of the window's width and height from its top start corner. */
+        private const val CORNER_SHARE = 0.25f
 
         private val SLACK = 0.5.dp
 
-        /**
-         * The meter's least share of the window. Half until the navigation rail stayed in focus mode
-         * (Phase 36, 80 dp less); since then Futuristic's and Space Age's wide faces, whose Dutch cents
-         * line ("12 cent te laag") is about 210 dp long, leave it 46 % (overnight run, 2026-10-18).
-         */
-        private const val METER_SHARE = 0.45f
+        /** The meter's least share of the window's width where the width, not the height, limits it (a tablet). */
+        private const val METER_SHARE = 0.85f
 
         /** Long enough for the compact layout's cross-fade to finish. */
         private const val FADE_MS = 1_000L

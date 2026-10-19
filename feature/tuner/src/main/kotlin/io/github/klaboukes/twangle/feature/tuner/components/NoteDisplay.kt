@@ -430,8 +430,94 @@ fun NoteDisplay(
     }
 }
 
+/**
+ * The note in focus mode's corner, beside the full-screen meter: its name and octave at [FOCUS_NOTE_SIZE]
+ * (under half the big note's size) and nothing else while a note sounds, since the meter shows how far
+ * off it is. In tune it turns the "in tune" colour. Without a note, [hint] ("Play a string") stands in
+ * its place; a [tip] about the sound ("Play a bit louder") goes in a line under it. TalkBack hears it
+ * as [NoteDisplay] (one polite live region, paced by [speech]).
+ */
+@Composable
+fun FocusNote(
+    readout: NoteReadout?,
+    hint: String,
+    modifier: Modifier = Modifier,
+    spokenHint: String = hint,
+    showTuneHint: Boolean = false,
+    tip: ReceptionTip? = null,
+    speech: PacedSpeech = rememberPacedSpeech(),
+) {
+    val colors = MaterialTheme.colorScheme
+    val direction = if (showTuneHint) readout?.hint?.takeIf { it.isDirection } else null
+    val tipText = tip?.let { stringResource(it.label) }
+    val noteColor by animateInTuneColor(readout?.inTune == true, colors.onSurface, "focusNoteColor")
+    val spoken = pacedSpeech(
+        text = if (readout != null) spokenReading(readout, direction, tipText) else tipText ?: spokenHint,
+        key = readout?.let { "${it.noteName}${it.octave}/${it.inTune}" },
+        speech = speech,
+    )
+    val density = LocalDensity.current
+    Box(modifier.testTag(TunerTestTags.FOCUS_NOTE), propagateMinConstraints = true) {
+        // As in NoteDisplay: this layer speaks for the texts, which are hidden from TalkBack.
+        Box(
+            Modifier
+                .matchParentSize()
+                .semantics {
+                    contentDescription = spoken
+                    liveRegion = LiveRegionMode.Polite
+                },
+        )
+        Column(Modifier.widthIn(max = FOCUS_NOTE_MAX_WIDTH), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (readout != null) {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Row {
+                        Text(
+                            text = remember(readout.noteName) { musicText(readout.noteName) },
+                            // In dp, as the big note: it doesn't grow with the system font size.
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontSize = with(density) { FOCUS_NOTE_SIZE.toSp() },
+                                lineHeight = with(density) { (FOCUS_NOTE_SIZE * BIG_NOTE_LINE_RATIO).toSp() },
+                            ),
+                            color = noteColor,
+                            maxLines = 1,
+                            modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                        )
+                        Text(
+                            text = readout.octave.toString(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
+                        )
+                    }
+                }
+            } else if (tipText == null) {
+                // The hint can name a note: "Play the C♯ string".
+                Text(
+                    text = musicText(hint),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.hiddenFromTalkBack(),
+                )
+            }
+            if (tipText != null) {
+                Text(
+                    text = tipText,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.primary,
+                    modifier = Modifier.hiddenFromTalkBack(),
+                )
+            }
+        }
+    }
+}
+
 /** Left out for screen readers (the block's description says it), but still there for UI tests. */
 private fun Modifier.hiddenFromTalkBack(): Modifier = semantics { hideFromAccessibility() }
+
+private val FOCUS_NOTE_SIZE = 48.dp
+
+/** Longer hints and tips wrap rather than reach far under the meter. */
+private val FOCUS_NOTE_MAX_WIDTH = 240.dp
 
 private val BIG_NOTE_SIZE = 112.dp
 private val BIG_NOTE_MIN_SIZE = 56.dp

@@ -14,6 +14,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import io.github.klaboukes.twangle.app.FocusModeOffRule
 import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.R
 import io.github.klaboukes.twangle.app.navigation.Destination
@@ -44,6 +45,10 @@ class TuningWidgetTest {
 
     @get:Rule
     val permission: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
+
+    /** Focus mode's full-screen tuner hides the tabs a test opens Settings from. */
+    @get:Rule
+    val focusModeOff = FocusModeOffRule()
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context: Context = instrumentation.targetContext

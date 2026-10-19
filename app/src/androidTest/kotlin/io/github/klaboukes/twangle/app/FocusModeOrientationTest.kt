@@ -5,6 +5,8 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.SystemClock
 import android.provider.Settings
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -29,8 +31,8 @@ import org.junit.rules.Timeout
 
 /**
  * Focus mode (Phase 36) asks Android to keep the whole app on its side, either way round, also with
- * auto-rotate off: the tuner shows its compact layout beside the navigation rail, and the request holds
- * on every tab. Switched off, it is turned back upright (with auto-rotate off) and the request is let
+ * auto-rotate off, and the request holds on every tab. The tuner takes the whole screen (Phase 40): no
+ * rail and no status bar until a tap brings back its controls and the rail; other tabs show both. Switched off, it is turned back upright (with auto-rotate off) and the request is let
  * go, so the screen follows the phone again. On the
  * phone this really turns the screen.
  */
@@ -88,6 +90,12 @@ class FocusModeOrientationTest {
         0,
     ) == 1
 
+    private fun ActivityScenario<MainActivity>.statusBarShown(): Boolean {
+        var shown = true
+        onActivity { shown = ViewCompat.getRootWindowInsets(it.window.decorView)?.isVisible(WindowInsetsCompat.Type.statusBars()) != false }
+        return shown
+    }
+
     private fun shown(tag: String): Boolean = device.wait(Until.hasObject(By.res(tag)), WAIT_MS)
 
     @Test
@@ -99,13 +107,23 @@ class FocusModeOrientationTest {
             assertTrue("focus mode asks for either side", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE })
             assertTrue("and the screen turns", waitFor { scenario.onItsSide() })
             assertTrue("the compact tuner shows", shown(TunerTestTags.COMPACT))
-            assertTrue("beside the rail", shown(NavigationTestTags.RAIL))
+            assertTrue("over the whole screen: no rail", device.wait(Until.gone(By.res(NavigationTestTags.RAIL)), WAIT_MS))
+            assertTrue("and no status bar", waitFor { !scenario.statusBarShown() })
+
+            // A tap brings back the controls and the rail, so the other tabs are one tap away.
+            (device.findObject(By.res(TunerTestTags.COMPACT)) ?: error("no compact tuner")).click()
+            assertTrue("the rail comes back", shown(NavigationTestTags.RAIL))
+            assertTrue("and the status bar", waitFor { scenario.statusBarShown() })
 
             // Another tab keeps the request: the screen doesn't turn on a tab switch.
             (device.wait(Until.findObject(By.res(NavigationTestTags.tab(Destination.SETTINGS))), WAIT_MS) ?: error("no Settings tab")).click()
-            assertTrue("Settings shows", device.wait(Until.gone(By.res(TunerTestTags.COMPACT)), WAIT_MS))
+            assertTrue("Settings shows", device.wait(Until.gone(By.res(TunerTestTags.GAUGE)), WAIT_MS))
             assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, scenario.requested())
             assertTrue("still on its side", scenario.onItsSide())
+            // With its rail and the status bar, after the controls' time is up too.
+            SystemClock.sleep(CONTROLS_GONE_MS)
+            assertTrue("Settings has the rail", shown(NavigationTestTags.RAIL))
+            assertTrue("and the status bar", scenario.statusBarShown())
 
             runBlocking { settings.setFocusMode(false) }
             assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
@@ -117,5 +135,8 @@ class FocusModeOrientationTest {
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+
+        /** Longer than the tuner's controls stay shown after a tap (5 s), had they stayed in charge. */
+        const val CONTROLS_GONE_MS = 6_000L
     }
 }

@@ -49,6 +49,8 @@ class PracticeTabTest {
     val rules: RuleChain = RuleChain
         .outerRule(Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build())
         .around(GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO))
+        // Focus mode's full-screen tuner hides the bar these tests open Practice from.
+        .around(FocusModeOffRule())
 
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())

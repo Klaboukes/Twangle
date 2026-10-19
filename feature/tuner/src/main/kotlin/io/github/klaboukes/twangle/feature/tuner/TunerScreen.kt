@@ -102,6 +102,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.feature.tuner.components.ChromaticReadout
+import io.github.klaboukes.twangle.feature.tuner.components.FocusNote
 import io.github.klaboukes.twangle.feature.tuner.components.STRUM_TOGGLE_SIZE
 import io.github.klaboukes.twangle.feature.tuner.components.stringFaceInsetFor
 import io.github.klaboukes.twangle.feature.tuner.components.strumPanelMinWidth
@@ -160,6 +161,8 @@ import kotlin.math.min
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
  * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
+ * [onFullScreenChange] says when focus mode's compact layout shows without its controls, so the app
+ * can hide the rail and the system bars around it.
  */
 @Composable
 fun TunerScreen(
@@ -179,6 +182,7 @@ fun TunerScreen(
     onMicGrantedChange: (Boolean) -> Unit = {},
     savedMicRefused: Boolean = false,
     closeToolsRequest: Int = 0,
+    onFullScreenChange: (Boolean) -> Unit = {},
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -308,6 +312,7 @@ fun TunerScreen(
                     pitchTrail = pitchTrail,
                     onPitchTrailChange = viewModel::setPitchTrail,
                     pitchHistory = viewModel.pitchHistory,
+                    onFullScreenChange = onFullScreenChange,
                 )
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
@@ -414,6 +419,9 @@ object TunerTestTags {
 
     /** The compact layout's "Tap to show the controls" line, shown for a few seconds after it appears. */
     const val COMPACT_TAP_HINT = "tuner_compact_tap_hint"
+
+    /** Focus mode's small note in the corner, beside the full-screen meter. */
+    const val FOCUS_NOTE = "tuner_focus_note"
 
     /** Strum check: its switch above the strings, its panel in the meter's place, and the line under it. */
     const val STRUM_TOGGLE = "tuner_strum_toggle"
@@ -569,6 +577,7 @@ fun TunerContent(
     pitchTrail: Boolean = false,
     onPitchTrailChange: ((Boolean) -> Unit)? = null,
     pitchHistory: PitchHistory? = null,
+    onFullScreenChange: (Boolean) -> Unit = {},
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
@@ -706,6 +715,26 @@ fun TunerContent(
             )
         }
     }
+    // Focus mode's note: small in the corner, beside the full-screen meter.
+    val focusNote = @Composable {
+        when (state) {
+            is TunerUiState.Detected -> FocusNote(
+                readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
+                hint = "",
+                showTuneHint = showTuneHint,
+                tip = state.tip,
+                speech = speech,
+            )
+            is TunerUiState.Listening -> FocusNote(
+                readout = null,
+                hint = listeningHint(mode, state, soundingString),
+                spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
+                tip = state.tip.takeIf { soundingString == null },
+                speech = speech,
+            )
+            else -> FocusNote(readout = null, hint = "", speech = speech)
+        }
+    }
     // The note (with its pill and frequency, or the wave) is a tour step of its own, after the meter.
     val note = @Composable { compact: Boolean -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact) } }
     val error = (state as? TunerUiState.Error)?.reason
@@ -766,6 +795,13 @@ fun TunerContent(
                         controlsShown = false
                     }
                 }
+                // Without the controls the tuner takes the whole screen: the app hides the rail and the system bars.
+                val currentOnFullScreenChange by rememberUpdatedState(onFullScreenChange)
+                LaunchedEffect(showing) { currentOnFullScreenChange(!showing) }
+                DisposableEffect(Unit) { onDispose { currentOnFullScreenChange(false) } }
+                // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
+                val fullMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
+                    !(pitchTrail && pitchHistory != null)
                 Crossfade(targetState = showing, label = "compactControls") { shown ->
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
@@ -778,6 +814,7 @@ fun TunerContent(
                             gauge = gauge,
                             note = { note(false) },
                             below = { CompactExtraFor(state, mode, pictured) },
+                            focusNote = if (fullMeter) focusNote else null,
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
                             gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
                             tapHint = tapHintShown,
@@ -926,11 +963,14 @@ private fun TwoPaneLayout(
 }
 
 /**
- * The compact landscape layout: the [gauge] as big as the space allows, beside the [note] with
- * [below] under it (the small string row or the chromatic numbers). No mode switch, strum check
- * switch or string buttons. A tap anywhere, or TalkBack's double tap on the screen's
- * "Show controls" button, calls [onShowControls]; while [tapHint], a quiet line at the bottom says
- * so (TalkBack has the button instead). An [error] shows its message and retry instead.
+ * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
+ * the screen, the small note in its top start corner ([FocusMeter]). Otherwise (a tool on) the gauge
+ * is as big as the space allows beside the [note] with [below] under it (the small string row or the
+ * chromatic numbers). No mode switch, strum check switch or string buttons. A tap anywhere, or
+ * TalkBack's double tap on the screen's "Show controls" button, calls [onShowControls]; while
+ * [tapHint], a quiet line says so (TalkBack has the button instead): in the top end corner beside
+ * the full-screen meter, where every look leaves room, else at the bottom. An [error] shows its
+ * message and retry instead.
  */
 @Composable
 private fun CompactLayout(
@@ -942,7 +982,9 @@ private fun CompactLayout(
     gaugeMinWidth: Dp,
     tapHint: Boolean,
     onShowControls: () -> Unit,
+    focusNote: (@Composable () -> Unit)? = null,
 ) {
+    val fullMeter = focusNote != null && error == null
     val showControls = stringResource(R.string.tuner_show_controls)
     val currentOnShowControls by rememberUpdatedState(onShowControls)
     Box(
@@ -959,13 +1001,21 @@ private fun CompactLayout(
                 }
             },
     ) {
-        CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
+        if (fullMeter && focusNote != null) {
+            FocusMeter(gauge, focusNote)
+        } else {
+            CompactRow(error, onRetry, gauge, note, below, gaugeMinWidth)
+        }
         // Laid over the layout, so nothing moves when it fades out.
         AnimatedVisibility(
             visible = tapHint && error == null,
             enter = fadeIn(tween(TAP_HINT_FADE_MS)),
             exit = fadeOut(tween(TAP_HINT_FADE_MS)),
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
+            modifier = if (fullMeter) {
+                Modifier.align(Alignment.TopEnd).padding(top = FOCUS_EDGE_TOP, end = FOCUS_EDGE_SIDE)
+            } else {
+                Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)
+            },
         ) {
             Text(
                 stringResource(R.string.tuner_compact_tap_hint),
@@ -975,6 +1025,21 @@ private fun CompactLayout(
                 modifier = Modifier.testTag(TunerTestTags.COMPACT_TAP_HINT).semantics { hideFromAccessibility() },
             )
         }
+    }
+}
+
+/**
+ * Focus mode's plain tuner: the [gauge] as big as the whole screen allows (keeping its 2:1 shape, so
+ * on a phone on its side its height decides), with [note] small in the top start corner, where every
+ * meter look leaves room above its scale.
+ */
+@Composable
+private fun FocusMeter(gauge: @Composable () -> Unit, note: @Composable () -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().padding(FOCUS_METER_MARGIN), contentAlignment = Alignment.Center) {
+            FitGauge(gauge, maxWidth = FOCUS_GAUGE_MAX_WIDTH)
+        }
+        Box(Modifier.align(Alignment.TopStart).padding(start = FOCUS_EDGE_SIDE, top = FOCUS_EDGE_TOP)) { note() }
     }
 }
 
@@ -1435,6 +1500,14 @@ private const val TAP_HINT_FADE_MS = 400
 
 /** In the compact layout the meter grows with the screen, up to this. */
 private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
+
+/** Focus mode's full-screen meter: the margin round it, and how wide it may grow (a tablet on its side). */
+private val FOCUS_METER_MARGIN = 8.dp
+private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
+
+/** The full-screen meter's corner texts (the note, the tap hint) keep this far from the screen's edges. */
+private val FOCUS_EDGE_SIDE = 16.dp
+private val FOCUS_EDGE_TOP = 8.dp
 
 /** Between the note and what's under it in the compact layout. */
 private val COMPACT_NOTE_SPACING = 12.dp

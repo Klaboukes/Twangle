@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The string row from a 4-string bass to an 8-string guitar, in each of the six styles: upright, in
- * the full layout and the compact layout on its side, at normal and 2× text. Every button is in the
+ * the full layout on its side, at normal and 2× text (focus mode's full-screen tuner shows no string row). Every button is in the
  * window, wholly shown with its whole name, clear of its neighbours; every one can be tapped (also
  * just beside it) and TalkBack names it.
  * [TunerStylesTest] covers the six-string guitar.
@@ -75,10 +75,9 @@ class StringRowStylesTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val clicked = mutableListOf<Int>()
 
-    private enum class Layout(val size: DpSize, val compact: Boolean) {
-        UPRIGHT(DpSize(360.dp, 730.dp), compact = false),
-        FULL_ON_ITS_SIDE(DpSize(780.dp, 330.dp), compact = false),
-        COMPACT_ON_ITS_SIDE(DpSize(700.dp, 330.dp), compact = true),
+    private enum class Layout(val size: DpSize) {
+        UPRIGHT(DpSize(360.dp, 730.dp)),
+        FULL_ON_ITS_SIDE(DpSize(780.dp, 330.dp)),
     }
 
     private fun show(listening: Boolean = false) {
@@ -115,7 +114,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
                         onStringClick = { clicked += it },
                         onRetry = {},
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        compactLandscape = layout.compact,
+                        compactLandscape = false,
                         // As in the app: the strum check's switch above the strings.
                         onStrumCheckChange = {},
                     )

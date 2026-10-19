@@ -240,6 +240,8 @@ class StoreScreenshots(private val shot: Shot) {
                             // Focus mode turns the phone on its side, the trail in the big meter's place.
                             runBlocking { settings.setFocusMode(true) }
                             check(waitUntil { scenario.landscape() }) { "focus mode didn't turn the screen" }
+                            // Without its controls the tuner takes the whole screen: no rail and no status bar to cut off.
+                            check(waitUntil { scenario.barsHidden() }) { "focus mode didn't go full screen" }
                             measureCrop(scenario)
                             // "Tap to show the controls" shows for its first few seconds.
                             settle(TAP_HINT_MS)
@@ -302,7 +304,9 @@ class StoreScreenshots(private val shot: Shot) {
             val top = insets?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
             val landscape = activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             val side = insets?.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())?.left ?: 0
-            val rail = if (landscape) side + (RAIL_DP * activity.resources.displayMetrics.density).toInt() else 0
+            // Focus mode's full-screen tuner has no rail (and its status bar is hidden, so [top] is 0).
+            val railShown = landscape && insets?.isVisible(WindowInsetsCompat.Type.statusBars()) != false
+            val rail = if (railShown) side + (RAIL_DP * activity.resources.displayMetrics.density).toInt() else side
             measured = top to rail
         }
         crop = measured
@@ -345,6 +349,15 @@ class StoreScreenshots(private val shot: Shot) {
 
     /** The low E string 12 cents flat. */
     private fun flatLowE() = StoreSounds.heldNote(StoreSounds.hz(StoreSounds.LOW_E, cents = -12.0), NOTE_SECONDS)
+
+    private fun ActivityScenario<MainActivity>.barsHidden(): Boolean {
+        var hidden = false
+        onActivity {
+            val insets = ViewCompat.getRootWindowInsets(it.window.decorView)
+            hidden = insets != null && !insets.isVisible(WindowInsetsCompat.Type.statusBars())
+        }
+        return hidden
+    }
 
     private fun ActivityScenario<MainActivity>.landscape(): Boolean {
         var side = false

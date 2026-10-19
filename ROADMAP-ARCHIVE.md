@@ -48,6 +48,7 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 37 — Store-ready app](#phase-37--store-ready-app)
 - [Finished owner items](#finished-owner-items)
 - [Phase 38 — Store listing](#phase-38--store-listing)
+- [Phase 40 — Focus mode, full screen](#phase-40--focus-mode-full-screen)
 
 ---
 
@@ -462,3 +463,13 @@ Goal: everything Play shows about Twangle is ready to upload: texts, screenshots
 - ☑ Store screenshots made by an on-device test, not by hand: a fixed sound through the fake recorder (a note, a strummed chord, a held note with vibrato), the eight screens and styles of the plan (the chord name, Chords with the Capo helper as a two-phone picture, and the pitch trail in focus mode among them), placed on a 1080×1920 canvas with a translated caption (the Xiaomi's 20:9 screen is too long for Play as it is), in every language; run in the overnight run (`StoreScreenshots` and `scripts/store-screenshots.sh`; the canvas is drawn on the phone in the app's theme, captions in `fastlane/metadata/android/<locale>/screenshot_captions.txt`; English and Dutch made and checked 2026-10-17, Arabic, Hindi and Japanese captions checked on three screens; pictures git-ignored)
 - ☑ Runs overnight: the store screenshots of all 16 languages, each language's eight pictures looked at (2026-10-18/19: all 16 made, 8 of 8 each, and looked at; Korean captions were broken inside words ("맞았 / 는지") and now break only between words; the run also found and fixed the metronome dial's tempo running into − + and Start in Classic, Retro and Space Age, the meter buttons cut off on its side at 2× text, the compact strum check's columns under 48 dp, the Scales title and Russian capo header cut off at 2× text, and two outdated tests)
 - ☑ Store graphics: the 512×512 icon and the 1024×500 feature graphic (icon, name and an in-tune meter, no other words); no "free" or "no ads" in any picture or the title (Google's rules). Made on the phone from the app itself (`scripts/store-graphics.sh`), committed in `fastlane/metadata/android/en-US/images/`
+
+---
+
+## Phase 40 — Focus mode, full screen
+Goal: in focus mode the meter is as big as the screen allows. **Owner (2026-10-19):** "Focus mode should be all about displaying the meter as big as possible. The other information on screen should be much smaller or even absent", and asked Claude to suggest the rest. The owner approved the rough mock-up [docs/design/focus-mode-preview.html](docs/design/focus-mode-preview.html) the same day.
+- ☑ The plain tuner goes full screen in focus mode: no rail, no status bar and no navigation bar while its controls are away (a swipe from the edge shows the system bars for a moment); a tap brings back the controls, the rail and the bars for 5 s, as before. The other tabs keep their side layouts with the rail, and the whole app stays on its side, so the screen doesn't turn on a tab switch
+- ☑ The meter fills the screen at its 2:1 shape: about 750 × 375 dp on the Xiaomi 12X, against about 490 dp wide before. Only the note stays, small (48 dp) in the top start corner, green in tune; without a note the hint, and a reception tip under it. No cents, frequency, string row, wave or signal bars. "Tap to show the controls" moves to the top end corner
+- ☑ With a tool on (strum check, 12th-fret check, chord name, pitch trail) its panel stays beside its own text and buttons, also full screen
+- ☑ Tests: `TunerContentTest`, `CompactLandscapeStylesTest` and `FocusModeOrientationTest` for the new layout, the full-screen report and the rail and status bar on the phone; the store screenshots' picture 8 (pitch trail in focus mode) crops no rail any more
+- ☑ Docs: docs/architecture/ui.md (*Navigation bar*, *Landscape and wide screens*), the old design to history.md, lifecycle.md, README.md; the owner check under *Owner checks* updated
