@@ -35,6 +35,21 @@ mkdir -p "$OUT"
 
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
+# Keeps Windows from sleeping while the run lasts: on 2026-10-19 the PC went to sleep after an idle
+# hour, the phone's connection went with it, and one test seemed to hang for 8 hours. A PowerShell
+# that holds SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) until it is stopped; the
+# display may still turn off.
+keep_awake() {
+    command -v powershell.exe > /dev/null || return 0
+    powershell.exe -NoProfile -NonInteractive -Command '
+        Add-Type -Name Power -Namespace Twangle -MemberDefinition "[DllImport(\"kernel32.dll\")] public static extern uint SetThreadExecutionState(uint flags);"
+        if ([Twangle.Power]::SetThreadExecutionState([uint32]"0x80000001") -eq 0) { exit 1 }
+        while ($true) { Start-Sleep -Seconds 60 }' > /dev/null 2>&1 &
+    awake_pid=$!
+    trap 'kill $awake_pid 2> /dev/null' EXIT
+}
+keep_awake
+
 # The battery's temperature in whole degrees; waits (screen on, so the phone stays unlocked) while
 # it is at COOL_BELOW or warmer, at most 30 minutes.
 wait_cool() {
