@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,6 +92,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
@@ -758,6 +760,7 @@ fun MoreToolsButton(
                 )
             }
         }
+        val density = LocalDensity.current
         DropdownMenu(
             expanded = open,
             onDismissRequest = { open = false },
@@ -768,30 +771,32 @@ fun MoreToolsButton(
             // The menu is a window of its own: UI Automator finds its rows by tag only when it says so too (as MainActivity's root does).
             modifier = Modifier.testTag(TunerTestTags.MORE_TOOLS_MENU).semantics { testTagsAsResourceId = true },
         ) {
-            for (tool in tools) {
-                val picked = tool == active
-                val tint = if (picked) scheme.primary else scheme.onSurface
-                val itemPress = remember { MutableInteractionSource() }
-                DropdownMenuItem(
-                    text = { Text(toolName(tool), color = tint, style = MaterialTheme.typography.bodyLarge) },
-                    onClick = {
-                        itemPress.pressFlash()
-                        open = false
-                        onToolChange(tool, !picked)
-                    },
-                    leadingIcon = { Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = tint, modifier = Modifier.size(MENU_ICON_SIZE)) },
-                    trailingIcon = {
-                        // Always the check's room, so the menu keeps its width whichever tool is on.
-                        Box(Modifier.size(MENU_ICON_SIZE)) {
-                            if (picked) Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary)
-                        }
-                    },
-                    interactionSource = itemPress,
-                    modifier = Modifier
-                        .indication(itemPress, PressIndication.Row)
-                        .testTag(TunerTestTags.tool(tool))
-                        .semantics { selected = picked },
-                )
+            ScreenDensity(density) {
+                for (tool in tools) {
+                    val picked = tool == active
+                    val tint = if (picked) scheme.primary else scheme.onSurface
+                    val itemPress = remember { MutableInteractionSource() }
+                    DropdownMenuItem(
+                        text = { Text(toolName(tool), color = tint, style = MaterialTheme.typography.bodyLarge) },
+                        onClick = {
+                            itemPress.pressFlash()
+                            open = false
+                            onToolChange(tool, !picked)
+                        },
+                        leadingIcon = { Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = tint, modifier = Modifier.size(MENU_ICON_SIZE)) },
+                        trailingIcon = {
+                            // Always the check's room, so the menu keeps its width whichever tool is on.
+                            Box(Modifier.size(MENU_ICON_SIZE)) {
+                                if (picked) Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary)
+                            }
+                        },
+                        interactionSource = itemPress,
+                        modifier = Modifier
+                            .indication(itemPress, PressIndication.Row)
+                            .testTag(TunerTestTags.tool(tool))
+                            .semantics { selected = picked },
+                    )
+                }
             }
         }
     }

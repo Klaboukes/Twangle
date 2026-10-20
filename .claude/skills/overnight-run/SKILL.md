@@ -17,17 +17,17 @@ what the phone's failures mean.
 ```bash
 git status --short && git switch main && git pull
 gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
-adb devices                                   # f813c98c, "device"
+adb devices                                   # f813c98c or R3GL502L08P, "device"
 adb shell dumpsys battery | grep -E "temp|AC" # charging, below ~35 °C
 adb shell settings get system font_scale      # 1.0
 adb shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
 ```
 - The script keeps Windows awake while it runs (a sleeping PC drops the phone: on 2026-10-19 it
   cost the night). A closed laptop lid still sleeps it, so the laptop stays open.
-- The Galaxy S26 (API 37) runs the tests too, but is 360 dp wide and draws edge to edge: tests
-  that force a size wider than its window, or expect the test screen to start below the status
-  bar, fail there (2026-10-19, 99 failures in 21 tests). Until those tests allow for it, the
-  overnight run belongs on the Xiaomi.
+- The run works on either test phone, the Xiaomi 12X or the Galaxy S26 (`R3GL502L08P`, API 37):
+  the tests give the same answer on any phone (docs/architecture/testing.md, *Any phone*). A
+  failure on one phone only is a test that still assumes a phone, or a real bug on that kind of
+  phone: find out which, never skip it.
 - Check no other session or sub-agent holds the phone (ListAgents; `scripts/ui-tests.sh` also
   takes a lock on the phone and exits 5 if another run has it).
 - Read ROADMAP.md: phases may have items marked "Runs overnight", and *Waiting on the owner* may

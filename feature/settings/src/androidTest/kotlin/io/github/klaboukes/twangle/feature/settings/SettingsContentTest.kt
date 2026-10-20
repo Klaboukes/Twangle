@@ -7,10 +7,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
@@ -55,6 +51,10 @@ import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
+import io.github.klaboukes.twangle.core.testing.isCutOffAtTheBottom
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.settings.components.LANGUAGE_SETTING_TAG
@@ -108,10 +108,18 @@ class SettingsContentTest {
     private var toursAsked = 0
     private val languageChanges = mutableListOf<String?>()
 
+    /** The window [show] shows, inside the phone's bars ([shownBars]). */
+    private var shownArea = PHONE
+    private var shownBars = SystemBars.NONE
+
+    /** Where the window's content may lie: inside the bars. */
+    private fun safeArea() = shownBars.safeArea(shownArea)
+
     /**
-     * Shows [settings] (or, with [about], the About page), as if the window were [size] ([ForcedSize]
-     * scales it down to fit), the phone's font were [fontScale] times its normal size, or the app were
-     * in another language ([locale], e.g. "nl").
+     * Shows [settings] (or, with [about], the About page), as if the window inside the phone's bars were
+     * [size] ([PHONE] unless given, whatever the phone's own screen; [PhoneScreen] draws a larger one
+     * smaller to fit), the phone's font were [fontScale] times its normal size, or the app were in
+     * another language ([locale], e.g. "nl").
      */
     private fun show(
         settings: AppSettings,
@@ -124,6 +132,8 @@ class SettingsContentTest {
         languages: List<String> = emptyList(),
         appLanguage: String? = null,
     ) {
+        shownArea = size ?: PHONE
+        shownBars = SystemBars.tab(onItsSide = shownArea.width > shownArea.height, Navigation.BUTTONS)
         compose.setContent {
             val content = @Composable {
                 Themed(style) {
@@ -157,12 +167,7 @@ class SettingsContentTest {
                     )
                 }
             }
-            val overrides = listOfNotNull(
-                size?.let { DeviceConfigurationOverride.ForcedSize(it) },
-                fontScale?.let { DeviceConfigurationOverride.FontScale(it) },
-                locale?.let { DeviceConfigurationOverride.Locales(LocaleList(it)) },
-            ).reduceOrNull { a, b -> a then b }
-            if (overrides != null) DeviceConfigurationOverride(overrides) { content() } else content()
+            PhoneScreen(shownArea, shownBars, fontScale ?: 1f, locale, content)
         }
     }
 
@@ -831,7 +836,7 @@ class SettingsContentTest {
     @Test
     fun onAWideScreenTheSettingsStayInAReadableColumn() {
         show(AppSettings(), size = DpSize(1200.dp, 800.dp))
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val window = safeArea()
         val row = compose.onNodeWithText(context.getString(R.string.settings_theme_dark)).performScrollTo().getBoundsInRoot()
         // 600 of the 1200 dp, in the middle.
         val share = (row.right - row.left) / (window.right - window.left)
@@ -941,7 +946,7 @@ class SettingsContentTest {
             context.getString(R.string.settings_about_privacy_summary),
             context.getString(R.string.settings_about_credits_summary),
         ).forEach { compose.onNodeWithText(it).performScrollTo().assertIsDisplayed() }
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val window = safeArea()
         credits.forEach {
             val row = compose.onNodeWithTag(creditTag(it.name)).performScrollTo().assertIsDisplayed().getBoundsInRoot()
             assertTrue("${it.name} fits across", row.left >= window.left && row.right <= window.right)
@@ -1054,7 +1059,7 @@ class SettingsContentTest {
         ).map { res.getString(it) } + res.getString(R.string.settings_about_version, VERSION) + credits.map { it.name }
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }
         // The long About texts are taller than a phone on its side at 2×, but they wrap inside the window.
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val window = safeArea()
         listOf(R.string.settings_about_free_summary, R.string.settings_about_privacy_summary, R.string.settings_about_credits_summary)
             .map { res.getString(it) }
             .forEach {
@@ -1086,7 +1091,7 @@ class SettingsContentTest {
         // the bottom, and none ends in an ellipsis.
         layouts.forEach { layout ->
             val lines = 0 until layout.lineCount
-            assertTrue("\"$what\" is cut off at the bottom", !layout.didOverflowHeight)
+            assertTrue("\"$what\" is cut off at the bottom", !layout.isCutOffAtTheBottom())
             lines.forEach { line ->
                 assertTrue("\"$what\" line $line runs out of its box", layout.getLineRight(line) <= layout.size.width + 1f)
                 assertTrue("\"$what\" line $line is ellipsized", !layout.isLineEllipsized(line))
@@ -1095,6 +1100,9 @@ class SettingsContentTest {
     }
 
     private companion object {
+        /** The window unless a test gives one: a Galaxy S26 upright inside its bars, the same on every phone. */
+        val PHONE = DpSize(360.dp, 730.dp)
+
         const val WINDOW = "window"
         const val VERSION = "1.2.3-test"
         const val TEST_TIMEOUT_SECONDS = 10L

@@ -9,10 +9,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasAnyAncestor
@@ -23,7 +19,6 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
@@ -43,6 +38,9 @@ import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.onPhoneScreen
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -103,10 +101,8 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
-                DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
-            DeviceConfigurationOverride(override) {
+            // The area inside the bars: TunerScreen keeps TunerContent clear of them.
+            PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerContent(
@@ -281,7 +277,7 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
         val recorder = NoteOnCue()
         compose.mainClock.autoAdvance = true
         compose.setContent {
-            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(XIAOMI_UPRIGHT)) {
+            PhoneScreen(XIAOMI_UPRIGHT, SystemBars.tab(onItsSide = false)) {
                 TwangleTheme(style = style, darkTheme = true, animate = false) {
                     StyleBackdrop(Modifier.fillMaxSize())
                     TunerScreen(
@@ -362,7 +358,7 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
         if (arguments.getString(SCREENS_ARGUMENT) != "true") return
         val dir = arguments.getString(OUTPUT_DIR_ARGUMENT) ?: return
         compose.waitForIdle()
-        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        val bitmap = compose.onPhoneScreen().captureToImage().asAndroidBitmap()
         File(File(dir).apply { mkdirs() }, "trail-$style-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 

@@ -6,8 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.FocusModeOffRule
 import io.github.klaboukes.twangle.app.MainActivity
@@ -72,10 +72,7 @@ class TourFlowTest {
             // Settings → Show me around: the tuner, with the tour from its first step.
             click(NavigationTestTags.tab(Destination.SETTINGS))
             assertTrue("Settings opened", gone(TUNER_SHOWN))
-            val row = device.findObject(By.res(SHOW_TOUR_TAG))
-                ?: device.wait(Until.findObject(By.scrollable(true)), WAIT_MS)?.scrollUntil(Direction.DOWN, Until.findObject(By.res(SHOW_TOUR_TAG)))
-                ?: error("no Show me around")
-            row.click()
+            showMeAround().click()
             assertTrue("the tour starts again", shown(TourTestTags.BALLOON))
             click(TourTestTags.NEXT)
             click(TourTestTags.SKIP)
@@ -83,6 +80,29 @@ class TourFlowTest {
             assertTrue(shown(TUNER_SHOWN))
             assertTrue(saved.tourSeen)
         }
+    }
+
+    /**
+     * Settings' "Show me around" row, scrolled to with swipes up the middle of the screen (not through
+     * the first scrollable UI Automator finds: on a Galaxy S26 that wasn't the list), once the list has
+     * come to rest: a tap on a list still gliding from a swipe only stops it (the row was on screen on
+     * the S26, smaller than the Xiaomi, and the tap did nothing).
+     */
+    private fun showMeAround(): UiObject2 {
+        var swipes = 0
+        while (device.findObject(By.res(SHOW_TOUR_TAG)) == null && swipes++ < MAX_SWIPES) {
+            device.swipe(device.displayWidth / 2, device.displayHeight * 3 / 4, device.displayWidth / 2, device.displayHeight / 4, SWIPE_STEPS)
+        }
+        var last: android.graphics.Rect? = null
+        val end = System.currentTimeMillis() + WAIT_MS
+        while (System.currentTimeMillis() < end) {
+            val row = device.findObject(By.res(SHOW_TOUR_TAG)) ?: error("no Show me around")
+            val bounds = row.visibleBounds
+            if (bounds == last) return row
+            last = bounds
+            Thread.sleep(REST_MS)
+        }
+        error("Show me around never came to rest")
     }
 
     private fun waitUntil(condition: () -> Boolean): Boolean {
@@ -97,6 +117,9 @@ class TourFlowTest {
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+        const val MAX_SWIPES = 12
+        const val SWIPE_STEPS = 20
+        const val REST_MS = 300L
 
         /** A part of the tuner screen itself, so its being found means the tuner shows (and TalkBack reaches it). */
         val TUNER_SHOWN = TunerTestTags.mode(TunerMode.CHROMATIC)

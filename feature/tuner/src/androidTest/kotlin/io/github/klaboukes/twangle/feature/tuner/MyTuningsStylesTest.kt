@@ -10,18 +10,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,6 +25,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -84,10 +80,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
      */
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(DpSize(360.dp, 730.dp)) then
-                DeviceConfigurationOverride.FontScale(2f) then
-                DeviceConfigurationOverride.Locales(LocaleList("nl"))
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(DpSize(360.dp, 730.dp), SystemBars.NONE, fontScale = 2f, locale = "nl") {
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     Column(
                         Modifier

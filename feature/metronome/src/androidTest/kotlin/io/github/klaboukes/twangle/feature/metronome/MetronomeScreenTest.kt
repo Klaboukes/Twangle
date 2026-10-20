@@ -7,10 +7,6 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertContentDescriptionEquals
@@ -32,7 +28,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -46,6 +41,9 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Assert.assertEquals
@@ -83,9 +81,7 @@ class MetronomeScreenTest {
 
     private fun show(locale: String? = null, fontScale: Float = 1f, size: DpSize = PHONE) {
         compose.setContent {
-            val base = DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(fontScale)
-            val override = locale?.let { base then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: base
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(size, SystemBars.tab(onItsSide = size.width > size.height, Navigation.BUTTONS), fontScale, locale) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     if (shown.value) {
                         MetronomeScreen(player, settings, recorder, ToolSwitches.ALL_ON, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
@@ -312,7 +308,7 @@ class MetronomeScreenTest {
         var used: TempoPick? = null
         var notNow = 0
         compose.setContent {
-            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE)) {
+            PhoneScreen(PHONE, SystemBars.tab(onItsSide = false)) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     MetronomeContent(
                         bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,
@@ -356,7 +352,7 @@ class MetronomeScreenTest {
         val listen = mutableStateOf(ListenUi(ListenPhase.LISTENING, startedAtNanos = 1L))
         var again = 0
         compose.setContent {
-            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE)) {
+            PhoneScreen(PHONE, SystemBars.tab(onItsSide = false)) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     MetronomeContent(
                         bpm = 96, meter = Meter.FOUR_FOUR, playing = false, vibrate = false,

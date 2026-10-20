@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.core.testing
 
 import android.view.ViewGroup
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -46,6 +47,8 @@ private class SharedActivityComposeRule(
                     base.evaluate()
                 } finally {
                     SharedActivity.clear(activity)
+                    // A PhoneScreen in another language set the default one; the next test starts in the phone's.
+                    DefaultLocale.reset()
                     // On the main thread, as when an activity closes.
                     viewModels?.let { InstrumentationRegistry.getInstrumentation().runOnMainSync(it::clear) }
                     viewModels = null
@@ -81,8 +84,12 @@ private object SharedActivity {
     fun open(): ComponentActivity {
         opened?.takeIf { !it.isFinishing && !it.isDestroyed }?.let { return it }
         var activity: ComponentActivity? = null
-        // Never closed: the test process ends with the run, and the activity with it.
-        ActivityScenario.launch(ComponentActivity::class.java).onActivity { activity = it }
+        // Never closed: the test process ends with the run, and the activity with it. Edge to edge, as the
+        // app and every phone from Android 15 on: the system bars lie over the window (PhoneScreen).
+        ActivityScenario.launch(ComponentActivity::class.java).onActivity {
+            it.enableEdgeToEdge()
+            activity = it
+        }
         return checkNotNull(activity).also { opened = it }
     }
 

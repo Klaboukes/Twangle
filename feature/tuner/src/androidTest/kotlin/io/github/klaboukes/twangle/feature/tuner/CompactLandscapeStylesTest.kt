@@ -12,9 +12,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
@@ -38,6 +35,8 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -90,9 +89,8 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value)
-            DeviceConfigurationOverride(override) {
+            // The area inside the bars: TunerScreen keeps TunerContent clear of them.
+            PhoneScreen(shownSize.value, SystemBars.NONE, shownFontScale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     TunerContent(
                         shownState.value,

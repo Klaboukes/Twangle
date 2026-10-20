@@ -5,10 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
@@ -22,7 +18,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,6 +28,9 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -78,6 +76,10 @@ class SettingsStylesTest(private val style: VisualStyle) {
 
     // Set these to change what the window shows without composing it again.
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
+    private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** The phone's bars around the window: the status bar, and on its side the navigation bar too. */
+    private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
@@ -85,10 +87,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
     /** Settings (with the wave display, so its rows show too) or, with [about], the About page. */
     private fun show(about: Boolean = false) {
         compose.setContent {
-            val sized = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value)
-            val override = shownLocale.value?.let { sized then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: sized
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     if (about) {
                         AboutScreen(appVersion = VERSION, onRate = {}, onBack = {}, modifier = Modifier.testTag(WINDOW))

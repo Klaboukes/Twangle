@@ -34,7 +34,7 @@ ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
-UI_MODULES=(:feature:tuner :feature:settings :feature:metronome :feature:practice :core:audio :app)
+UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :core:audio :app)
 
 usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
@@ -49,7 +49,7 @@ affected_modules() {
     local base changed
     base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
     changed="$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)"
-    local tuner=0 settings=0 metronome=0 practice=0 audio=0 app=0 path
+    local testing=0 tuner=0 settings=0 metronome=0 practice=0 audio=0 app=0 path
     while IFS= read -r path; do
         [ -z "$path" ] && continue
         case "$path" in
@@ -66,13 +66,14 @@ affected_modules() {
             feature/practice/*) practice=1; app=1 ;;
             core/audio/*) audio=1; tuner=1; metronome=1; app=1 ;;
             core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; metronome=1; practice=1; app=1 ;;
-            core/testing/*) tuner=1; settings=1; metronome=1; practice=1 ;;
+            core/testing/*) testing=1; tuner=1; settings=1; metronome=1; practice=1; app=1 ;;
             app/*) app=1 ;;
             baselineprofile/*) ;;
             wear/*) ;; # the watch app: checked on a Wear OS emulator, not on the phone
-            *) tuner=1; settings=1; metronome=1; practice=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
+            *) testing=1; tuner=1; settings=1; metronome=1; practice=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
         esac
     done <<< "$changed"
+    [ $testing = 1 ] && echo :core:testing
     [ $tuner = 1 ] && echo :feature:tuner
     [ $settings = 1 ] && echo :feature:settings
     [ $metronome = 1 ] && echo :feature:metronome
@@ -110,7 +111,7 @@ fi
 
 # Say plainly that the phone is missing instead of failing after the build.
 if ! adb devices 2>/dev/null | tr -d '\r' | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect the Xiaomi 12X and accept the USB-debugging prompt." >&2
+    echo "No phone connected (adb devices shows none). Connect a test phone (the Xiaomi 12X or the Galaxy S26) and accept the USB-debugging prompt." >&2
     exit 3
 fi
 

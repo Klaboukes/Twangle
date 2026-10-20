@@ -12,10 +12,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
@@ -39,6 +35,9 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.tokensFor
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -84,6 +83,10 @@ class NavigationBarTest(private val style: VisualStyle) {
 
     // Set these to change what the window shows without composing it again.
     private val shownSize = mutableStateOf(PHONE_UPRIGHT)
+    private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** The phone's bars around the window: the status bar and the navigation bar. */
+    private fun bars() = SystemBars.phone(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
@@ -95,10 +98,7 @@ class NavigationBarTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
-                DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     AppNavigationFrame(
                         selected = shownSelected.value,
@@ -207,10 +207,11 @@ class NavigationBarTest(private val style: VisualStyle) {
         for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
             shownSize.value = size
             shownFontScale.value = scale
-            for (dark in listOf(false, true)) {
+            for ((dark, navigation) in listOf(false to Navigation.BUTTONS, true to Navigation.GESTURES)) {
                 shownDark.value = dark
+                shownNavigation.value = navigation
                 compose.waitForIdle()
-                val case = "$style ${if (dark) "dark" else "light"} $size at ${scale}x:"
+                val case = "$style ${if (dark) "dark" else "light"} $size at ${scale}x $navigation:"
                 val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
                 val content = compose.onNodeWithTag(CONTENT).getBoundsInRoot()
                 if (size == PHONE_LANDSCAPE) {
@@ -218,14 +219,17 @@ class NavigationBarTest(private val style: VisualStyle) {
                     assertEquals("$case rail at the start", window.left.value, rail.left.value, SLACK)
                     assertTrue("$case content right of the rail", content.left >= rail.right - SLACK.dp)
                 } else {
+                    // Its face reaches the bottom edge, under the phone's own navigation bar, and is above it at most 80 dp tall.
                     val bar = compose.onNodeWithTag(NavigationTestTags.BAR).assertIsDisplayed().getBoundsInRoot()
                     assertEquals("$case bar at the bottom", window.bottom.value, bar.bottom.value, SLACK)
-                    assertTrue("$case bar ${bar.height} tall", bar.height <= MAX_BAR_HEIGHT)
+                    val above = bar.height - bars().bottom
+                    assertTrue("$case bar $above tall above the phone's bar", above <= MAX_BAR_HEIGHT)
                     assertTrue("$case content above the bar", content.bottom <= bar.top + SLACK.dp)
                 }
                 for (destination in Destination.entries) assertWhollyShown(tab(destination), "$case $destination", scroll = false)
             }
         }
+        shownNavigation.value = Navigation.BUTTONS
     }
 
     /** The longest names, Dutch at 2× text (Practice "Oefenen" too), are wholly shown in the bar and in the rail (set smaller where they must). */
@@ -273,7 +277,8 @@ class NavigationBarTest(private val style: VisualStyle) {
             val accent = accentOf(dark)
             for (destination in Destination.entries) {
                 val pixels = tab(destination).captureToImage().toPixelMap()
-                val markRows = (NAV_MARK_HEIGHT.value * context.resources.displayMetrics.density).toInt()
+                // At the density the window is drawn at, which a forced size can lower.
+                val markRows = (NAV_MARK_HEIGHT.value * tab(destination).fetchSemanticsNode().layoutInfo.density.density).toInt()
                 var lit = 0
                 for (y in pixels.height - markRows until pixels.height) {
                     for (x in 0 until pixels.width) if (near(pixels[x, y].toArgb(), accent)) lit++

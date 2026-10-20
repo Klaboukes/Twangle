@@ -20,9 +20,6 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
@@ -46,10 +43,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
@@ -71,6 +66,9 @@ import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.WaveLook
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
+import io.github.klaboukes.twangle.core.testing.isCutOffAtTheBottom
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -147,9 +145,9 @@ class TunerContentTest {
 
     /**
      * Shows [state] in the test window with a [fontScale] (1 unless given, whatever the phone's own
-     * text size, so tests behave the same on every phone), as if the window were [size]
-     * (e.g. a phone on its side; [DeviceConfigurationOverride.ForcedSize] scales it down to fit) or in
-     * another language ([locale], e.g. "nl"). Landscape shows the two-pane layout unless
+     * text size, so tests behave the same on every phone), as if the window were [size] ([PHONE] unless
+     * given, whatever the phone's own screen; [PhoneScreen] draws a larger one smaller to fit) or in
+     * another language ([locale], e.g. "nl"). The area inside the bars: TunerScreen keeps TunerContent clear of them. Landscape shows the two-pane layout unless
      * [compactLandscape] asks for the compact one.
      */
     private fun show(
@@ -165,11 +163,6 @@ class TunerContentTest {
         signalBars: Boolean = false,
         signalFigures: Flow<SignalFigures?> = emptyFlow(),
     ) {
-        val overrides = listOfNotNull(
-            DeviceConfigurationOverride.FontScale(fontScale ?: 1f),
-            size?.let { DeviceConfigurationOverride.ForcedSize(it) },
-            locale?.let { DeviceConfigurationOverride.Locales(LocaleList(it)) },
-        )
         shownMode.value = mode
         shownState.value = state
         shownCompact.value = compactLandscape
@@ -212,8 +205,7 @@ class TunerContentTest {
                     )
                 }
             }
-            val override = overrides.reduceOrNull { first, second -> first then second }
-            if (override != null) DeviceConfigurationOverride(override) { content() } else content()
+            PhoneScreen(size ?: PHONE, SystemBars.NONE, fontScale ?: 1f, locale, content)
         }
     }
 
@@ -1101,7 +1093,7 @@ class TunerContentTest {
         // The wave too, whole and in view without scrolling, and the strings beside it.
         val shown = wave.assertIsDisplayed().getBoundsInRoot()
         assertTrue("wave ends at ${shown.bottom}, window at ${window.bottom}", shown.bottom <= window.bottom)
-        assertWaveSize(shown, PHONE_LANDSCAPE, COMPACT_WAVE_HEIGHT)
+        assertWaveSize(shown, COMPACT_WAVE_HEIGHT)
         assertTrue(stringChip("E4").assertIsDisplayed().getBoundsInRoot().left >= shown.right)
     }
 
@@ -1148,7 +1140,7 @@ class TunerContentTest {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val shown = wave.assertIsDisplayed().getBoundsInRoot()
         // Full size (not the compact one of a phone on its side), and everything in view.
-        assertWaveSize(shown, TABLET_LANDSCAPE)
+        assertWaveSize(shown)
         assertTrue(shown.bottom <= window.bottom)
         assertTrue(stringChip("A2").assertIsDisplayed().getBoundsInRoot().left >= shown.right)
         compose.onNodeWithText(context.getString(R.string.tuner_tune_down)).assertIsDisplayed()
@@ -1160,7 +1152,7 @@ class TunerContentTest {
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
         val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
         val shown = wave.assertIsDisplayed().getBoundsInRoot()
-        assertWaveSize(shown, TABLET_PORTRAIT)
+        assertWaveSize(shown)
         assertTrue("wave under the note", shown.top >= note.bottom)
         for (label in listOf("E2", "E4")) {
             assertTrue(stringChip(label).assertIsDisplayed().getBoundsInRoot().bottom <= window.bottom)
@@ -1270,14 +1262,10 @@ class TunerContentTest {
         Recomposer.runningRecomposers.value.sumOf { it.changeCount }
     }
 
-    /**
-     * The [shown] wave has its own size ([height] high), whatever the font. In a window of
-     * [size], [DeviceConfigurationOverride.ForcedSize] scales everything down by the same amount.
-     */
-    private fun assertWaveSize(shown: DpRect, size: DpSize? = null, height: Dp = WAVE_HEIGHT) {
-        val scale = if (size == null) 1f else compose.onNodeWithTag(WINDOW).getBoundsInRoot().width / size.width
-        assertEquals("wave width", WAVE_WIDTH.value * scale, shown.width.value, 1f)
-        assertEquals("wave height", height.value * scale, shown.height.value, 1f)
+    /** The [shown] wave has its own size ([height] high), whatever the font and the window. */
+    private fun assertWaveSize(shown: DpRect, height: Dp = WAVE_HEIGHT) {
+        assertEquals("wave width", WAVE_WIDTH.value, shown.width.value, 1f)
+        assertEquals("wave height", height.value, shown.height.value, 1f)
     }
 
     /** The wave view (in the unmerged tree: it has nothing to merge for TalkBack). */
@@ -1568,8 +1556,8 @@ class TunerContentTest {
             val widest = (0 until layout.lineCount).maxOf { layout.getLineRight(it) - layout.getLineLeft(it) }
             val ellipsized = (0 until layout.lineCount).any { layout.isLineEllipsized(it) }
             assertFalse(
-                "'$text' is cut off: widest line $widest of ${layout.size.width}, height ${layout.didOverflowHeight}, ellipsized $ellipsized",
-                widest > layout.size.width + 1f || layout.didOverflowHeight || ellipsized,
+                "'$text' is cut off: widest line $widest of ${layout.size.width}, cut off at the bottom ${layout.isCutOffAtTheBottom()}, ellipsized $ellipsized",
+                widest > layout.size.width + 1f || layout.isCutOffAtTheBottom() || ellipsized,
             )
         }
     }
@@ -1835,6 +1823,12 @@ class TunerContentTest {
 
         /** The slowest test takes about 2 s on the S26; 10 s means it hangs. */
         const val TEST_TIMEOUT_SECONDS = 10L
+
+        /**
+         * The window unless a test gives one: a Galaxy S26 upright, the smaller of the two test phones
+         * (the tests' window there before PhoneScreen), the same on every phone.
+         */
+        val PHONE = DpSize(360.dp, 780.dp)
 
         /** A Galaxy S26 on its side (360 dp tall), without the status bar. */
         val PHONE_LANDSCAPE = DpSize(780.dp, 330.dp)

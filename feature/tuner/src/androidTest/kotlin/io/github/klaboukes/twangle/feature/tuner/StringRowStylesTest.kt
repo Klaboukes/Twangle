@@ -7,22 +7,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -33,6 +26,9 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.onPhoneScreen
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -83,10 +79,8 @@ class StringRowStylesTest(private val style: VisualStyle) {
     private fun show(listening: Boolean = false) {
         compose.setContent {
             val layout = shownLayout.value
-            val override = DeviceConfigurationOverride.ForcedSize(layout.size) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
-                DeviceConfigurationOverride.Locales(LocaleList(shownLocale.value))
-            DeviceConfigurationOverride(override) {
+            // The area inside the bars: TunerScreen keeps TunerContent clear of them.
+            PhoneScreen(layout.size, SystemBars.NONE, shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     val tuning = shownTuning.value
                     val notation = shownNotation.value
@@ -178,12 +172,12 @@ class StringRowStylesTest(private val style: VisualStyle) {
                 assertEquals("$style $layout: tapping $label", listOf(index), clicked)
             }
             for (index in 0 until labels.size - 1) {
-                // In the root's pixels: a forced size larger than the phone gets a smaller density.
+                // In the root's pixels (PhoneScreen's window, at its top left): a forced size larger than the phone gets a smaller density.
                 val left = compose.onNodeWithText(labels[index]).fetchSemanticsNode().boundsInRoot
                 val right = compose.onNodeWithText(labels[index + 1]).fetchSemanticsNode().boundsInRoot
                 val between = Offset((left.right + right.left) / 2f, left.center.y)
                 clicked.clear()
-                compose.onRoot().performTouchInput { click(between) }
+                compose.onPhoneScreen().performTouchInput { click(between) }
                 compose.waitForIdle()
                 if (clicked.size != 1 || clicked.single() !in index..index + 1) {
                     fail("$style $layout: a tap between ${labels[index]} and ${labels[index + 1]} reached $clicked")

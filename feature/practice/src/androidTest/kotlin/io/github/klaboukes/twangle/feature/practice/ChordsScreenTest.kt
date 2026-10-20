@@ -6,10 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
@@ -28,7 +24,6 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -44,6 +39,9 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
@@ -84,6 +82,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
     ).around(compose)
 
     private val shownSize = mutableStateOf(XIAOMI)
+    private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** The phone's bars around the window: the status bar, and on its side the navigation bar too. */
+    private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
@@ -95,10 +97,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     private fun show(root: PitchClass = PitchClass.C, quality: ChordQuality = ChordQuality.MAJOR) {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
-                DeviceConfigurationOverride.Locales(LocaleList(shownLocale.value))
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     ChordsScreen(
                         tuning = shownTuning.value,
@@ -279,7 +278,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             compose.waitForIdle()
             awaitChart("C major")
             val case = "$style ${if (dark) "dark" else "light"} $size:"
-            val window = node(WINDOW).getBoundsInRoot()
+            val window = bars().safeArea(size)
             for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()

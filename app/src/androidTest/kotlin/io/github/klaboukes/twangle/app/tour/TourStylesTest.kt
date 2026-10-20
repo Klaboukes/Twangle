@@ -1,7 +1,10 @@
 package io.github.klaboukes.twangle.app.tour
 
 import android.os.LocaleList
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -10,10 +13,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertContentDescriptionEquals
@@ -24,7 +23,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.espresso.Espresso
@@ -36,6 +34,9 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.allIfThorough
@@ -89,6 +90,13 @@ class TourStylesTest(private val style: VisualStyle) {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val shownSize = mutableStateOf(XIAOMI)
+    private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** The phone's bars over the window (a whole phone's screen): the status bar and the navigation bar. */
+    private fun bars() = SystemBars.phone(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
+
+    /** The part of the window the bars leave clear, where every balloon must lie. */
+    private fun clearOfTheBars() = bars().let { it.safeArea(it.inside(shownSize.value)) }
     private val shownFontScale = mutableStateOf(1f)
     private val shownLocale = mutableStateOf("en")
     private val shownMode = mutableStateOf(TunerMode.AUTO)
@@ -103,10 +111,7 @@ class TourStylesTest(private val style: VisualStyle) {
 
     private fun show() {
         compose.setContent {
-            val override = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value) then
-                DeviceConfigurationOverride.Locales(androidx.compose.ui.text.intl.LocaleList(shownLocale.value))
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(bars().inside(shownSize.value), bars(), shownFontScale.value, shownLocale.value) {
                 contentDensity = LocalDensity.current.density
                 // As on a phone: focus mode turns it on its side, so upright it is off.
                 val focus = focusMode.value && shownSize.value.width > shownSize.value.height
@@ -133,7 +138,8 @@ class TourStylesTest(private val style: VisualStyle) {
                                 compactLandscape = focus,
                                 onFocusModeChange = {},
                                 controlsAlwaysShown = shownOpen.value,
-                                modifier = Modifier.fillMaxSize(),
+                                // Clear of the phone's bars, as TunerScreen keeps it.
+                                modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing),
                             )
                         }
                     }
@@ -152,12 +158,12 @@ class TourStylesTest(private val style: VisualStyle) {
 
     /**
      * Steps through the whole tour with Next (Done at the end), in [order]: at each step the balloon,
-     * its text and both buttons are wholly shown inside the window, TalkBack hears "Step i of n. …",
+     * its text and both buttons are wholly shown inside the window and clear of the phone's bars, TalkBack hears "Step i of n. …",
      * and the balloon points at its own part (the pointer's tip over the part, 2 dp from it) without
      * lying over it.
      */
     private fun stepThroughWhollyShown(case: String, layoutOrder: List<TourPart>) {
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val window = clearOfTheBars()
         val density = contentDensity
         val order = layoutOrder
         order.forEachIndexed { index, part ->

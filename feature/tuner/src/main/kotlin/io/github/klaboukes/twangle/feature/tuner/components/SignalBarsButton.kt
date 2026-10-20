@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.feature.tuner.R
@@ -106,8 +108,11 @@ fun SignalBarsButton(
                 }
                 .semantics { contentDescription = description },
         )
+        val density = LocalDensity.current
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            SignalFiguresPanel(figures)
+            ScreenDensity(density) {
+                SignalFiguresPanel(figures)
+            }
         }
     }
 }

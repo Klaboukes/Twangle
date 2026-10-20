@@ -2,8 +2,6 @@ package io.github.klaboukes.twangle.feature.tuner
 
 import android.Manifest
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithText
@@ -18,6 +16,9 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import org.junit.Rule
 import org.junit.Test
@@ -48,7 +49,7 @@ class TunerScreenTest {
 
     private fun show(settings: FakeSettingsRepository) {
         compose.setContent {
-            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(PHONE_LANDSCAPE)) {
+            PhoneScreen(PHONE_LANDSCAPE, SystemBars.tab(onItsSide = true, Navigation.BUTTONS)) {
                 MaterialTheme {
                     TunerScreen(
                         audioRecorder = silence,

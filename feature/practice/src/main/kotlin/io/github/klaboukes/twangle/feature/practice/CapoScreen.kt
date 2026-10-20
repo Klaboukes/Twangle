@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
@@ -264,26 +266,29 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
                     )
                 }
             }
+            val density = LocalDensity.current
             DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                for (option in CAPO_SHAPES) {
-                    val picked = option == shapes
-                    TwangleMenuItem(
-                        text = {
-                            Text(
-                                musicText(option.symbolOf(notation)),
-                                fontWeight = if (picked) FontWeight.Bold else null,
-                                color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            )
-                        },
-                        onClick = {
-                            open = false
-                            onPick(option)
-                        },
-                        modifier = Modifier
-                            .widthIn(min = SHAPES_BUTTON_WIDTH)
-                            .testTag(PracticeTestTags.capoShapes(option))
-                            .semantics { contentDescription = words.getValue(option) },
-                    )
+                ScreenDensity(density) {
+                    for (option in CAPO_SHAPES) {
+                        val picked = option == shapes
+                        TwangleMenuItem(
+                            text = {
+                                Text(
+                                    musicText(option.symbolOf(notation)),
+                                    fontWeight = if (picked) FontWeight.Bold else null,
+                                    color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                )
+                            },
+                            onClick = {
+                                open = false
+                                onPick(option)
+                            },
+                            modifier = Modifier
+                                .widthIn(min = SHAPES_BUTTON_WIDTH)
+                                .testTag(PracticeTestTags.capoShapes(option))
+                                .semantics { contentDescription = words.getValue(option) },
+                        )
+                    }
                 }
             }
         }

@@ -43,6 +43,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /**
@@ -305,8 +306,10 @@ class MeterLooksTest(private val style: VisualStyle) {
     /**
      * Asserts [case] reaches past its [box] only softly: at the edge of its padding nothing is drawn
      * (the field and the glow have faded out), and across the box's top and sides there is no edge
-     * where something stops (a clip), only a gentle change. (The messages are built only on a failure:
-     * per pixel they cost more than the check.)
+     * where something stops (a clip), only a gentle change. A clip runs along the edge; a mark drawn
+     * just inside it (Classic's in-tune tick, 0.8 dp under the top) is a few px wide, and where its
+     * soft edge falls depends on the phone's density: only a step along [EDGE_RUN_DP] or more of the
+     * edge counts. (The messages are built only on a failure: per pixel they cost more than the check.)
      */
     private fun assertFadesOutAroundTheBox(case: String, pixels: PixelMap, box: IntRect) {
         for (x in 0 until pixels.width) {
@@ -316,14 +319,20 @@ class MeterLooksTest(private val style: VisualStyle) {
             for (x in listOf(0, pixels.width - 1)) if (!pixels[x, y].near(BACKGROUND)) fail("$case drew at the edge of its padding at $x, $y")
         }
         val across = EDGE_STEP_PIXELS
+        // The case's px per dp: its width is the frame's and the padding's.
+        val run = ceil(EDGE_RUN_DP * pixels.width / (FRAME_WIDTH + 2 * PADDING)).toInt()
+        var steps = 0
         for (x in box.left + across until box.right - across) {
             val step = pixels[x, box.top - across].distanceTo(pixels[x, box.top + across])
-            if (step > EDGE_JUMP) fail("$case stops at the box's top at $x: $step")
+            steps = if (step > EDGE_JUMP) steps + 1 else 0
+            if (steps >= run) fail("$case stops at the box's top at ${x - run + 1}..$x: $step")
         }
-        for (y in box.top + across until box.bottom - across) {
-            for ((outside, inside) in listOf(box.left - across to box.left + across, box.right + across to box.right - across)) {
+        for ((outside, inside) in listOf(box.left - across to box.left + across, box.right + across to box.right - across)) {
+            steps = 0
+            for (y in box.top + across until box.bottom - across) {
                 val step = pixels[outside, y].distanceTo(pixels[inside, y])
-                if (step > EDGE_JUMP) fail("$case stops at the box's side at $outside, $y: $step")
+                steps = if (step > EDGE_JUMP) steps + 1 else 0
+                if (steps >= run) fail("$case stops at the box's side at $outside, ${y - run + 1}..$y: $step")
             }
         }
     }
@@ -360,6 +369,9 @@ class MeterLooksTest(private val style: VisualStyle) {
 
         /** More change than this across a box's edge would be a stop, not a fade. */
         const val EDGE_JUMP = 0.06f
+
+        /** A stop as long as this along the edge is a clip; a mark by the edge is shorter. */
+        const val EDGE_RUN_DP = 3f
 
         /** A pixel this much nearer the "in tune" colour (in its most changed channel) is lit by the glow. */
         const val GLOW_STEP = 0.01f

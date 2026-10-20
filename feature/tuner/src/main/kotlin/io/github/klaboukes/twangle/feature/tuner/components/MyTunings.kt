@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
@@ -26,6 +27,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
@@ -118,24 +120,27 @@ private fun TuningMenu(tuning: CustomTuning, selected: Boolean, onEdit: (() -> U
                 tint = if (selected) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
             )
         }
+        val density = LocalDensity.current
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            if (onEdit != null) {
-                TwangleMenuItem(
-                    text = { Text(stringResource(R.string.tuner_edit_tuning)) },
-                    onClick = {
-                        open = false
-                        onEdit()
-                    },
-                )
-            }
-            if (onDelete != null) {
-                TwangleMenuItem(
-                    text = { Text(stringResource(R.string.tuner_delete_tuning)) },
-                    onClick = {
-                        open = false
-                        onDelete()
-                    },
-                )
+            ScreenDensity(density) {
+                if (onEdit != null) {
+                    TwangleMenuItem(
+                        text = { Text(stringResource(R.string.tuner_edit_tuning)) },
+                        onClick = {
+                            open = false
+                            onEdit()
+                        },
+                    )
+                }
+                if (onDelete != null) {
+                    TwangleMenuItem(
+                        text = { Text(stringResource(R.string.tuner_delete_tuning)) },
+                        onClick = {
+                            open = false
+                            onDelete()
+                        },
+                    )
+                }
             }
         }
     }

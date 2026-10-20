@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -135,24 +136,27 @@ internal fun ChordPanel(
     onScaleTypeChange: (ScaleType) -> Unit,
 ) {
     val spell = if (scales) scaleRootSpelling(scaleType, notation) else chordRootSpelling(quality, notation)
+    val density = LocalDensity.current
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         // The menu is a window of its own: UI Automator finds its buttons by tag only when it says so too (as MainActivity's root does).
         modifier = Modifier.semantics { testTagsAsResourceId = true },
     ) {
-        // A known width: a menu asks its content's intrinsic size, which a grid that measures its room can't give.
-        val gridWidth = minOf(width, NAME_BUTTON_MAX_WIDTH) - MENU_PADDING * 2
-        Column(Modifier.padding(horizontal = MENU_PADDING)) {
-            PanelLabel(stringResource(R.string.practice_root))
-            RootPicker(root, spell, gridWidth, onRootChange = onRootChange)
-            Spacer(Modifier.height(SECTION_GAP))
-            if (scales) {
-                PanelLabel(stringResource(R.string.practice_scale_type))
-                ScaleTypePicker(scaleType, gridWidth, onTypeChange = onScaleTypeChange)
-            } else {
-                PanelLabel(stringResource(R.string.practice_chord_type))
-                ChordTypePicker(root, quality, notation, gridWidth, onQualityChange = onQualityChange)
+        ScreenDensity(density) {
+            // A known width: a menu asks its content's intrinsic size, which a grid that measures its room can't give.
+            val gridWidth = minOf(width, NAME_BUTTON_MAX_WIDTH) - MENU_PADDING * 2
+            Column(Modifier.padding(horizontal = MENU_PADDING)) {
+                PanelLabel(stringResource(R.string.practice_root))
+                RootPicker(root, spell, gridWidth, onRootChange = onRootChange)
+                Spacer(Modifier.height(SECTION_GAP))
+                if (scales) {
+                    PanelLabel(stringResource(R.string.practice_scale_type))
+                    ScaleTypePicker(scaleType, gridWidth, onTypeChange = onScaleTypeChange)
+                } else {
+                    PanelLabel(stringResource(R.string.practice_chord_type))
+                    ChordTypePicker(root, quality, notation, gridWidth, onQualityChange = onQualityChange)
+                }
             }
         }
     }
@@ -185,7 +189,10 @@ private fun NameButton(
 ) {
     val source = remember { MutableInteractionSource() }
     val title = MaterialTheme.typography.titleLarge
-    val height = maxOf(NAME_BUTTON_HEIGHT, with(LocalDensity.current) { (NAME_LINE_SIZE * NAME_TWO_LINES).toDp() } + NAME_BUTTON_PADDING * 2)
+    // One line's size to dp first, then two and a half of them: from Android 14 large text sizes grow
+    // less than small ones (nonlinear font scaling), so 30 sp at 2× text is far less than 2.5 lines of
+    // 12 sp, and the two lines were cut off (Space Age's Dutch "A♭ majeur-pentatonisch" on a Galaxy S26).
+    val height = maxOf(NAME_BUTTON_HEIGHT, with(LocalDensity.current) { NAME_LINE_SIZE.toDp() } * NAME_TWO_LINES + NAME_BUTTON_PADDING * 2)
     Row(
         modifier = modifier
             .size(width, height)

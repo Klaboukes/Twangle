@@ -4,17 +4,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.DeviceConfigurationOverride
-import androidx.compose.ui.test.FontScale
-import androidx.compose.ui.test.ForcedSize
-import androidx.compose.ui.test.Locales
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.then
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -25,6 +19,9 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
+import io.github.klaboukes.twangle.core.testing.Navigation
+import io.github.klaboukes.twangle.core.testing.PhoneScreen
+import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
@@ -69,13 +66,14 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf<String?>(null)
     private val shownListen = mutableStateOf(ListenUi())
     private val shownHeader = mutableStateOf(true)
+    private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** The phone's bars around the tab: the status bar, and on its side the navigation bar too. */
+    private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
 
     private fun show() {
         compose.setContent {
-            val sized = DeviceConfigurationOverride.ForcedSize(shownSize.value) then
-                DeviceConfigurationOverride.FontScale(shownFontScale.value)
-            val override = shownLocale.value?.let { sized then DeviceConfigurationOverride.Locales(LocaleList(it)) } ?: sized
-            DeviceConfigurationOverride(override) {
+            PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     MetronomeContent(
                         bpm = 168,
@@ -123,15 +121,17 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, PHONE_LANDSCAPE to 1f)) {
                 shownSize.value = size
                 shownFontScale.value = scale
-                for (dark in listOf(false, true)) {
+                for ((dark, navigation) in listOf(false to Navigation.BUTTONS, true to Navigation.GESTURES)) {
                     shownDark.value = dark
+                    shownNavigation.value = navigation
                     compose.waitForIdle()
                     val practice = if (header) " with the tool switch" else ""
-                    assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x$practice:")
+                    assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$practice:")
                 }
             }
         }
         shownHeader.value = true
+        shownNavigation.value = Navigation.BUTTONS
     }
 
     @Test
@@ -151,7 +151,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     private fun assertAllInView(case: String) {
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val window = bars().safeArea(shownSize.value)
         val bounds = parts().map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
@@ -221,7 +221,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             val case = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
             val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
-            val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+            val window = bars().safeArea(size)
             // Above Listen upright; on its side above it where there is room, else beside it over the dial.
             if (size == PHONE_LANDSCAPE) {
                 assertTrue("$case balloon $balloon above or beside Listen $listen", balloon.bottom <= listen.top || balloon.right <= listen.left)
