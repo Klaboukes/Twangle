@@ -311,7 +311,8 @@ private fun TourOverlay(
             right = max(TourMeasures.EDGE.dp.toPx(), insets.getRight(this, layoutDirection).toFloat()),
             bottom = max(TourMeasures.BOTTOM.dp.toPx(), insets.getBottom(this).toFloat()),
         )
-        val maxWidth = min(width - margins.left - margins.right, TourMeasures.MAX_WIDTH.dp.toPx() * fontScale).toInt().coerceAtLeast(0)
+        val maxBalloonWidth = TourMeasures.MAX_WIDTH.dp.toPx() * fontScale
+        val maxWidth = min(width - margins.left - margins.right, maxBalloonWidth).toInt().coerceAtLeast(0)
         val measurable = measurables.single()
         val part = order[balloonStep]
         val element = targets.boundsOf(part)?.let(::local)
@@ -319,16 +320,18 @@ private fun TourOverlay(
         val avoid = targets.controlsBesides(part).map(::local)
         // Where it fits nowhere within the usual margins, the screen's edges up to the system bars
         // before lying over the part (the note's step at 2× text on a small phone).
+        val near = TourMeasures.NEAR_EDGE.dp.toPx()
         val nearMargins = TourMargins(
-            left = margins.left,
-            top = max(TourMeasures.NEAR_EDGE.dp.toPx(), insets.getTop(this).toFloat()),
-            right = margins.right,
-            bottom = max(TourMeasures.NEAR_EDGE.dp.toPx(), insets.getBottom(this).toFloat()),
+            left = max(near, insets.getLeft(this, layoutDirection).toFloat()),
+            top = max(near, insets.getTop(this).toFloat()),
+            right = max(near, insets.getRight(this, layoutDirection).toFloat()),
+            bottom = max(near, insets.getBottom(this).toFloat()),
         )
-        fun placeAt(balloonWidth: Int, balloonHeight: Int, within: TourMargins = margins) = placeBalloon(
+        val nearMaxWidth = min(width - nearMargins.left - nearMargins.right, maxBalloonWidth).toInt().coerceAtLeast(0)
+        fun placeAt(balloonWidth: Float, balloonHeight: Float, within: TourMargins = margins) = placeBalloon(
             element,
-            balloonWidth.toFloat(),
-            balloonHeight.toFloat(),
+            balloonWidth,
+            balloonHeight,
             width.toFloat(),
             height.toFloat(),
             within,
@@ -337,21 +340,25 @@ private fun TourOverlay(
             TourMeasures.POINTER_END.dp.toPx(),
             avoid = avoid,
         )
-        // Where it fits nowhere at its full width (a large font on a phone on its side), a narrower,
-        // taller balloon beside the part, rather than one over it.
-        var balloonWidth = maxWidth
-        if (element != null && placeAt(maxWidth, measurable.maxIntrinsicHeight(maxWidth)).side == BalloonSide.OVER) {
-            val besideRoom = max(element.left - reach - margins.left, width - margins.right - element.right - reach).toInt()
-            if (besideRoom in TourMeasures.MIN_BESIDE_WIDTH.dp.roundToPx() until maxWidth &&
-                measurable.maxIntrinsicHeight(besideRoom) <= height - margins.top - margins.bottom
-            ) {
-                balloonWidth = besideRoom
-            }
-        }
+        // Narrower beside the part (a large font on a phone on its side) or wider near the screen's
+        // edges (the note's step at 2× text on a small phone) where that keeps it off the part.
+        val balloonWidth = balloonWidth(
+            element,
+            maxWidth.toFloat(),
+            nearMaxWidth.toFloat(),
+            { measurable.maxIntrinsicHeight(it.toInt()).toFloat() },
+            width.toFloat(),
+            height.toFloat(),
+            margins,
+            nearMargins,
+            reach,
+            TourMeasures.MIN_BESIDE_WIDTH.dp.toPx(),
+            ::placeAt,
+        ).toInt()
         val balloon = measurable.measure(Constraints(maxWidth = balloonWidth, maxHeight = height))
-        val place = placeAt(balloon.width, balloon.height).let { usual ->
+        val place = placeAt(balloon.width.toFloat(), balloon.height.toFloat()).let { usual ->
             if (usual.side == BalloonSide.OVER && element != null) {
-                placeAt(balloon.width, balloon.height, nearMargins).takeIf { it.side != BalloonSide.OVER } ?: usual
+                placeAt(balloon.width.toFloat(), balloon.height.toFloat(), nearMargins).takeIf { it.side != BalloonSide.OVER } ?: usual
             } else {
                 usual
             }
@@ -615,10 +622,22 @@ private object TourButtonsPolicy : MultiContentMeasurePolicy {
         max(measurables[0].single().minIntrinsicWidth(height) - SKIP_SHIFT.roundToPx(), measurables[1].single().minIntrinsicWidth(height))
 
     override fun IntrinsicMeasureScope.minIntrinsicHeight(measurables: List<List<IntrinsicMeasurable>>, width: Int): Int =
-        measurables[0].single().minIntrinsicHeight(width) + BUTTON_ROW_GAP.roundToPx() + measurables[1].single().minIntrinsicHeight(width)
+        height(measurables, width) { minIntrinsicHeight(it) }
 
     override fun IntrinsicMeasureScope.maxIntrinsicHeight(measurables: List<List<IntrinsicMeasurable>>, width: Int): Int =
-        measurables[0].single().maxIntrinsicHeight(width) + BUTTON_ROW_GAP.roundToPx() + measurables[1].single().maxIntrinsicHeight(width)
+        height(measurables, width) { maxIntrinsicHeight(it) }
+
+    /** As [measure]: one row where both fit side by side in [width], else two (so a wider balloon is shorter). */
+    private fun IntrinsicMeasureScope.height(measurables: List<List<IntrinsicMeasurable>>, width: Int, of: IntrinsicMeasurable.(Int) -> Int): Int {
+        val skip = measurables[0].single()
+        val next = measurables[1].single()
+        val oneRow = skip.maxIntrinsicWidth(Constraints.Infinity) - SKIP_SHIFT.roundToPx() + BUTTON_GAP.roundToPx() + next.maxIntrinsicWidth(Constraints.Infinity)
+        return if (oneRow <= width) {
+            max(skip.of(width), next.of(width))
+        } else {
+            skip.of(width) + BUTTON_ROW_GAP.roundToPx() + next.of(width)
+        }
+    }
 }
 
 /** The paints of the balloon's two-layer shadow (or Futuristic's glow); Android 9+ draws them in hardware. */

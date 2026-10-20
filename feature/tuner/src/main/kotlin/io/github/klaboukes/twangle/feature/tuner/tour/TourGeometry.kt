@@ -84,7 +84,12 @@ object TourMeasures {
      */
     const val MIN_BESIDE_WIDTH = 200f
 
-    /** Where a balloon fits on no side within [TOP] and [BOTTOM], it may come this close (dp) to the screen's edges. */
+    /**
+     * Where a balloon fits on no side within the usual margins, it may come this close (dp) to the
+     * screen's edges: above and below, and on the sides too where the 16 dp it gains in width is what
+     * lets it fit (Skip tour and Next back on one row: the note's step in German at 2× text on a
+     * 360 × 800 dp phone with navigation buttons).
+     */
     const val NEAR_EDGE = 8f
 
     /**
@@ -205,6 +210,38 @@ fun placeBalloon(
         BalloonSide.OVER -> width / 2f
     }
     return BalloonPlacement(b.left, b.top, side, pointer)
+}
+
+/**
+ * How wide the balloon for [part] is, [heightAt] giving its height at a width and [place] where it
+ * goes at a width and height within some margins ([placeBalloon]). [maxWidth] where it fits on some
+ * side within [margins], or where there is no part. Else (a large font on a phone on its side)
+ * narrowed to the room beside the part, down to [minBesideWidth], if it then fits within the window's
+ * height: taller, but pointing at the part. Else, where it fits on no side within [nearMargins] at
+ * [maxWidth] either, [nearMaxWidth] (as wide as those margins allow) if that lets it fit there: wider
+ * is shorter (its buttons back on one row). Else [maxWidth], over the part.
+ */
+fun balloonWidth(
+    part: TourBox?,
+    maxWidth: Float,
+    nearMaxWidth: Float,
+    heightAt: (Float) -> Float,
+    windowWidth: Float,
+    windowHeight: Float,
+    margins: TourMargins,
+    nearMargins: TourMargins,
+    reach: Float,
+    minBesideWidth: Float,
+    place: (width: Float, height: Float, within: TourMargins) -> BalloonPlacement,
+): Float {
+    fun fits(width: Float, within: TourMargins) = place(width, heightAt(width), within).side != BalloonSide.OVER
+    if (part == null || fits(maxWidth, margins)) return maxWidth
+    val besideRoom = max(part.left - reach - margins.left, windowWidth - margins.right - part.right - reach)
+    if (besideRoom >= minBesideWidth && besideRoom < maxWidth && heightAt(besideRoom) <= windowHeight - margins.top - margins.bottom) {
+        return besideRoom
+    }
+    if (nearMaxWidth > maxWidth && !fits(maxWidth, nearMargins) && fits(nearMaxWidth, nearMargins)) return nearMaxWidth
+    return maxWidth
 }
 
 /** Whether this box and [other] share some area (touching edges don't count). */

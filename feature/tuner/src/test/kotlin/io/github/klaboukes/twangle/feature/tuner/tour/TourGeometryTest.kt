@@ -316,6 +316,62 @@ class TourGeometryTest {
         assertEquals(BalloonSide.ABOVE, placeBalloon(part, BW, BH, w, h, margins, BalloonSide.BELOW, reach, TourMeasures.POINTER_END, listOf(below)).side)
     }
 
+    /** [balloonWidth] in a [width] × [height] window, the balloon [heightAt] tall at a width. */
+    private fun widthFor(
+        part: TourBox?,
+        heightAt: (Float) -> Float,
+        width: Float,
+        height: Float,
+        usual: TourMargins,
+        near: TourMargins,
+        preferred: BalloonSide = BalloonSide.BELOW,
+    ) = balloonWidth(
+        part,
+        maxWidth = minOf(width - usual.left - usual.right, 520f),
+        nearMaxWidth = minOf(width - near.left - near.right, 520f),
+        heightAt = heightAt,
+        windowWidth = width,
+        windowHeight = height,
+        margins = usual,
+        nearMargins = near,
+        reach = reach,
+        minBesideWidth = TourMeasures.MIN_BESIDE_WIDTH,
+    ) { bw, bh, within -> placeBalloon(part, bw, bh, width, height, within, preferred, reach, TourMeasures.POINTER_END) }
+
+    @Test
+    fun `where it fits on no side, the balloon widens near the screen's sides if that lets it fit`() {
+        // Space Age's note in German at 2× text on a 360 × 800 dp phone with navigation buttons (measured
+        // on the phone): 232 dp tall at 328 dp, its buttons on two rows; at 344 dp on one row, 180 dp.
+        val usual = TourMargins(16f, 40f, 16f, 48f)
+        val near = TourMargins(8f, 24f, 8f, 48f)
+        val note = TourBox(15.7f, 201.7f, 344.3f, 522.4f)
+        val tall = { bw: Float -> if (bw < 330f) 232f else 180f }
+        val bw = widthFor(note, tall, 360f, 800f, usual, near)
+        assertEquals(344f, bw)
+        val p = placeBalloon(note, bw, tall(bw), 360f, 800f, near, BalloonSide.BELOW, reach, TourMeasures.POINTER_END)
+        assertEquals("below the note, pointing at it", BalloonSide.BELOW, p.side)
+        assertEquals("8 dp from the side", 8f, p.x)
+
+        // Where its usual width fits, it keeps it.
+        assertEquals(328f, widthFor(note, { 142f }, 360f, 800f, usual, near))
+        // Where even the wider one fits nowhere, the usual width, over the part.
+        assertEquals(328f, widthFor(note, { 300f }, 360f, 800f, usual, near))
+        // No part to point at: the usual width.
+        assertEquals(328f, widthFor(null, tall, 360f, 800f, usual, near))
+    }
+
+    @Test
+    fun `where it fits on no side, the balloon narrows to the room beside the part first`() {
+        // A phone on its side at 2× text: the strings fill the height, 274 dp to their left.
+        val usual = TourMargins(16f, 40f, 16f, 24f)
+        val near = TourMargins(8f, 24f, 8f, 8f)
+        val strings = TourBox(300f, 20f, 780f, 340f)
+        val bw = widthFor(strings, { 40_000f / it }, 800f, 360f, usual, near)
+        assertEquals(300f - reach - 16f, bw)
+        // Too tall at that width for the window: not narrowed.
+        assertEquals(520f, widthFor(strings, { 100_000f / it }, 800f, 360f, usual, near))
+    }
+
     @Test
     fun `every style has corners for every part`() {
         for (style in VisualStyle.entries) for (corner in TourCorner.entries) {
