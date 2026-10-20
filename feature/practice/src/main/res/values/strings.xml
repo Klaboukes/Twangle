@@ -54,6 +54,9 @@
     <string name="practice_scale_major_pentatonic">%1$s major pentatonic</string>
     <string name="practice_scale_minor_pentatonic">%1$s minor pentatonic</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <!-- The name button's short name of a pentatonic scale and of the blues scale: %1$s is the root as a chord symbol ("A" major, "Am" minor; "Am pent."). A scale in words is under the button. -->
+    <string name="practice_scale_short_pentatonic">%1$s pent.</string>
+    <string name="practice_scale_short_blues">%1$s blues</string>
     <!-- TalkBack, the neck: %1$s the scale in words ("A minor pentatonic"), %2$s its notes from the root ("A, C, D, E, G"). -->
     <string name="practice_spoken_scale_notes">%1$s, notes %2$s</string>
     <!-- TalkBack, each note on a string: open, or the fret %1$d and the note's name %2$s; the root's places add "root". -->

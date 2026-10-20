@@ -124,6 +124,12 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
+    /** The name button says [symbol], the quiet line under it [words]. */
+    private fun assertName(symbol: String, words: String) {
+        picker().assertTextEquals(symbol)
+        node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
+    }
+
     /** Opens the panel and waits for it: a window of its own. */
     private fun openPanel() {
         picker().performClick()
@@ -166,7 +172,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             spoken,
             spoken.startsWith("A minor pentatonic, notes A, C, D, E, G, E 2 string, open E, fret 3 G, fret 5 A, root, fret 8 C"),
         )
-        picker().assertTextEquals("A minor pentatonic")
+        assertName("Am pent.", "A minor pentatonic")
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assertIsSelected()
         assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
         assertFalse("no chord chart", exists(PracticeTestTags.CHART))
@@ -174,15 +180,22 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
         pick(PracticeTestTags.root(PitchClass.G))
         assertTrue(spokenNeck(), spokenNeck().startsWith("G minor pentatonic, notes G, B flat, C, D, F, "))
+        assertName("Gm pent.", "G minor pentatonic")
         pick(PracticeTestTags.scale(ScaleType.MAJOR))
         assertTrue(spokenNeck(), spokenNeck().startsWith("G major, notes G, A, B, C, D, E, F sharp, E 2 string, open E, fret 2 F sharp, fret 3 G, root"))
-        picker().assertTextEquals("G major")
+        assertName("G", "G major")
+        // The other short names, each the scale's symbol: "pent." for both pentatonics.
+        pick(PracticeTestTags.scale(ScaleType.MAJOR_PENTATONIC))
+        assertName("G pent.", "G major pentatonic")
+        pick(PracticeTestTags.scale(ScaleType.NATURAL_MINOR))
+        assertName("Gm", "G natural minor")
+        pick(PracticeTestTags.scale(ScaleType.MAJOR))
         openPanel()
         node(PracticeTestTags.scale(ScaleType.MAJOR)).assertIsSelected()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assertIsNotSelected()
         closePanel()
         assertEquals("the picks are passed on to be saved", listOf(PitchClass.G), savedRoots)
-        assertEquals(listOf(ScaleType.MAJOR), savedTypes)
+        assertEquals(listOf(ScaleType.MAJOR, ScaleType.MAJOR_PENTATONIC, ScaleType.NATURAL_MINOR, ScaleType.MAJOR), savedTypes)
         assertEquals("the choice wasn't touched", emptyList<PracticeChart>(), savedCharts)
     }
 
@@ -197,13 +210,13 @@ class ScalesScreenTest(private val style: VisualStyle) {
         compose.waitForIdle()
         assertTrue("the neck shows", exists(PracticeTestTags.NECK))
         assertFalse("the chord chart has gone", exists(PracticeTestTags.CHART))
-        picker().assertTextEquals("D blues")
+        assertName("D blues", "D blues")
         assertPicked(PracticeTestTags.root(PitchClass.D))
         pick(PracticeTestTags.root(PitchClass.E))
 
         node(PracticeTestTags.chart(PracticeChart.CHORDS)).performClick()
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
-        picker().assertTextEquals("E major")
+        assertName("E", "E major")
         assertPicked(PracticeTestTags.root(PitchClass.E), PracticeTestTags.type(ChordQuality.MAJOR))
         assertEquals("both picks passed on to be saved", listOf(PracticeChart.SCALES, PracticeChart.CHORDS), savedCharts)
         assertEquals(listOf(PitchClass.E), savedRoots)
@@ -217,7 +230,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
         node(PracticeTestTags.chart(PracticeChart.CHORDS)).assert(radio).assert(hasContentDescription("Chords"))
         node(PracticeTestTags.chart(PracticeChart.SCALES)).assert(radio).assert(hasContentDescription("Scales"))
-        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭ major")
+        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭")
+        assertTrue("the words under it are skipped", node(PracticeTestTags.NAME_WORDS).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         assertTrue("the scale's name is a polite live region", picker().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         openPanel()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assert(radio).assert(hasContentDescription("Minor pentatonic"))
@@ -242,7 +256,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
         compose.waitUntil(WAIT_MS) { spokenNeck().contains("C 2 string, fret 1 C sharp, fret 2 D, root") }
         shownNotation.value = Notation.SOLFEGE
         compose.waitUntil(WAIT_MS) { spokenNeck().startsWith("Re major, notes Re, Mi, Fa sharp, Sol, La, Si, Do sharp") }
-        picker().assertTextEquals("Re major")
+        assertName("Re", "Re major")
         openPanel()
         node(PracticeTestTags.root(PitchClass.D)).assertTextEquals("Re")
         node(PracticeTestTags.root(PitchClass.F_SHARP)).assertTextEquals("Fa♯")

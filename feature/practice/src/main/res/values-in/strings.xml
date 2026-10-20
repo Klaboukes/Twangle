@@ -37,6 +37,8 @@
     <string name="practice_scale_major_pentatonic">%1$s pentatonik mayor</string>
     <string name="practice_scale_minor_pentatonic">%1$s pentatonik minor</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_short_pentatonic">%1$s pent.</string>
+    <string name="practice_scale_short_blues">%1$s blues</string>
     <string name="practice_spoken_scale_notes">%1$s, nada %2$s</string>
     <string name="practice_spoken_scale_open">terbuka %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>

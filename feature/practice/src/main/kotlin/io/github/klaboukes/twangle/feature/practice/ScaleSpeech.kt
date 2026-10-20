@@ -6,6 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.FretNote
@@ -41,6 +43,24 @@ internal fun scaleWordsPattern(type: ScaleType): Int = when (type) {
 internal fun scaleWords(scale: Scale, notation: Notation, speech: NoteNameSpeech? = null): String {
     val root = scale.nameOf(scale.root, notation)
     return stringResource(scaleWordsPattern(scale.type), speech?.name(root) ?: root)
+}
+
+/**
+ * [scale]'s short name on the name button, as a chord symbol with "pent." or "blues" after it: "A"
+ * (major), "Am" (natural minor), "A pent.", "Am pent.", "A blues"; the root as the scale writes it in
+ * the player's [notation].
+ */
+@Composable
+internal fun scaleSymbol(scale: Scale, notation: Notation): String {
+    val root = scale.nameOf(scale.root, notation)
+    val minor = root + ChordSpelling.suffixOf(ChordQuality.MINOR)
+    return when (scale.type) {
+        ScaleType.MAJOR -> root
+        ScaleType.NATURAL_MINOR -> minor
+        ScaleType.MAJOR_PENTATONIC -> stringResource(R.string.practice_scale_short_pentatonic, root)
+        ScaleType.MINOR_PENTATONIC -> stringResource(R.string.practice_scale_short_pentatonic, minor)
+        ScaleType.BLUES -> stringResource(R.string.practice_scale_short_blues, root)
+    }
 }
 
 /** The patterns a scale on the neck is said with ([spokenScale]), from the app language's strings, and the [locale] their numbers are written in. */

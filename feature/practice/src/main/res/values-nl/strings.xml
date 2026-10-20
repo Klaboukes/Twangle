@@ -37,6 +37,8 @@
     <string name="practice_scale_major_pentatonic">%1$s majeur-pentatonisch</string>
     <string name="practice_scale_minor_pentatonic">%1$s mineur-pentatonisch</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_short_pentatonic">%1$s pent.</string>
+    <string name="practice_scale_short_blues">%1$s blues</string>
     <string name="practice_spoken_scale_notes">%1$s, noten %2$s</string>
     <string name="practice_spoken_scale_open">open %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>

@@ -37,6 +37,8 @@
     <string name="practice_scale_major_pentatonic">%1$s मेजर पेंटाटोनिक</string>
     <string name="practice_scale_minor_pentatonic">%1$s माइनर पेंटाटोनिक</string>
     <string name="practice_scale_blues">%1$s ब्लूज़</string>
+    <string name="practice_scale_short_pentatonic">%1$s पेंटा</string>
+    <string name="practice_scale_short_blues">%1$s ब्लूज़</string>
     <string name="practice_spoken_scale_notes">%1$s, स्वर %2$s</string>
     <string name="practice_spoken_scale_open">खुला %1$s</string>
     <string name="practice_spoken_scale_fret">फ़्रेट %1$d %2$s</string>

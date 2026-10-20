@@ -37,6 +37,8 @@
     <string name="practice_scale_major_pentatonic">%1$s خماسي ماجور</string>
     <string name="practice_scale_minor_pentatonic">%1$s خماسي مينور</string>
     <string name="practice_scale_blues">%1$s بلوز</string>
+    <string name="practice_scale_short_pentatonic">%1$s خماسي</string>
+    <string name="practice_scale_short_blues">%1$s بلوز</string>
     <string name="practice_spoken_scale_notes">%1$s، النغمات %2$s</string>
     <string name="practice_spoken_scale_open">مفتوح %1$s</string>
     <string name="practice_spoken_scale_fret">الدستان %1$d %2$s</string>

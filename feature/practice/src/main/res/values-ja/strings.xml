@@ -37,6 +37,8 @@
     <string name="practice_scale_major_pentatonic">%1$s メジャーペンタトニック</string>
     <string name="practice_scale_minor_pentatonic">%1$s マイナーペンタトニック</string>
     <string name="practice_scale_blues">%1$s ブルース</string>
+    <string name="practice_scale_short_pentatonic">%1$s ペンタ</string>
+    <string name="practice_scale_short_blues">%1$s ブルース</string>
     <string name="practice_spoken_scale_notes">%1$s、音 %2$s</string>
     <string name="practice_spoken_scale_open">開放 %1$s</string>
     <string name="practice_spoken_scale_fret">%1$d フレット %2$s</string>

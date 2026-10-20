@@ -130,6 +130,12 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
+    /** The name button says [symbol], the quiet line under it [words]. */
+    private fun assertName(symbol: String, words: String) {
+        picker().assertTextEquals(symbol)
+        node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
+    }
+
     /** Opens the panel and waits for it: a window of its own. */
     private fun openPanel() {
         picker().performClick()
@@ -168,7 +174,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 "G 3 string, fret 2, finger 3, A, B 3 string, fret 1, finger 1, C, E 4 string, open",
             awaitChart("A minor, shape 1 of"),
         )
-        picker().assertTextEquals("A minor")
+        assertName("Am", "A minor")
         assertFalse("the panel is closed", exists(PracticeTestTags.root(PitchClass.A)) || exists(PracticeTestTags.type(ChordQuality.MINOR)))
         assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR))
 
@@ -176,7 +182,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         awaitChart("G minor, shape 1 of")
         pick(PracticeTestTags.type(ChordQuality.DOMINANT_SEVENTH))
         awaitChart("G seventh, shape 1 of")
-        picker().assertTextEquals("G seventh")
+        assertName("G7", "G seventh")
         openPanel()
         node(PracticeTestTags.root(PitchClass.G)).assertIsSelected()
         node(PracticeTestTags.root(PitchClass.A)).assertIsNotSelected()
@@ -193,10 +199,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
         awaitChart("C major")
         openPanel()
         node(PracticeTestTags.root(PitchClass.D)).performClick()
-        picker().assertTextEquals("D major")
+        assertName("D", "D major")
         awaitChart("D major, shape 1 of")
         node(PracticeTestTags.type(ChordQuality.MINOR)).performClick()
-        picker().assertTextEquals("D minor")
+        assertName("Dm", "D minor")
         awaitChart("D minor, shape 1 of")
         node(PracticeTestTags.root(PitchClass.D)).assertIsSelected()
         node(PracticeTestTags.type(ChordQuality.MINOR)).assertIsSelected()
@@ -210,7 +216,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
         show(PitchClass.A_SHARP, ChordQuality.MAJOR)
         awaitChart("B flat major")
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
-        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭ major")
+        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭")
+        assertTrue("the words under it are skipped", node(PracticeTestTags.NAME_WORDS).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         openPanel()
         node(PracticeTestTags.root(PitchClass.A_SHARP)).assert(radio).assert(hasContentDescription("B flat"))
@@ -262,10 +269,12 @@ class ChordsScreenTest(private val style: VisualStyle) {
         compose.waitUntil(WAIT_MS) { spokenChart().contains("C 2 string") }
         shownNotation.value = Notation.SOLFEGE
         awaitChart("Re major")
-        picker().assertTextEquals("Re major")
+        assertName("Re", "Re major")
         openPanel()
         node(PracticeTestTags.type(ChordQuality.MAJOR)).assertTextEquals("Re")
         node(PracticeTestTags.type(ChordQuality.MINOR)).assertTextEquals("Rem")
+        node(PracticeTestTags.type(ChordQuality.SUS2)).performClick()
+        assertName("Resus2", "Re suspended second")
         closePanel()
     }
 
