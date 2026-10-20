@@ -65,7 +65,8 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
   - MIUI needs *Developer options → Install via USB* for `:app:installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
   - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
 - Either phone:
-  - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule for the Xiaomi: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing its settings and own tunings is fine. On the S26, the daily phone, ask the owner first.
+  - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule, on both phones: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing Twangle's settings and own tunings is fine.
+  - Leave every other setting on the phone as it was, above all on the S26, the owner's daily phone: put back anything a check changes (font size, rotation, screen timeout, developer options); `scripts/ui-tests.sh` restores the rotation itself.
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
