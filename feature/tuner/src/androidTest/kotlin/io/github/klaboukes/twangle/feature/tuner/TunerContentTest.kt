@@ -1033,11 +1033,45 @@ class TunerContentTest {
         show(detected(-12.3f), display = display, showTuneHint = true)
         val noteTop = compose.onNodeWithText("E").getBoundsInRoot().top
         val hint = compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot()
+        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
         shownSignalBars.value = true
         compose.waitForIdle()
         compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).assertIsDisplayed()
         assertEquals(noteTop, compose.onNodeWithText("E").getBoundsInRoot().top)
         assertEquals(hint, compose.onNodeWithText(context.getString(R.string.tuner_tune_up)).getBoundsInRoot())
+        assertEquals("the mode switch stays centred", switch, compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot())
+    }
+
+    @Test
+    fun theSignalBarsSitAtTheEndOfTheModeSwitchRow() {
+        show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
+        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
+        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        assertTrue("bars $bars not after the switch $switch", bars.left >= switch.right)
+        assertTrue("bars $bars not level with the switch $switch", bars.top < switch.bottom && bars.bottom > switch.top)
+        assertTrue("bars $bars not near the window's end $window", window.right - bars.right <= 40.dp)
+    }
+
+    // By the note they rode along with its text ("Play a string", "12 cents flat"); in the corner they stay put.
+    @Test
+    fun theSignalBarsStayPutWhateverTheNoteSays() {
+        show(listening, signalBars = true)
+        val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
+        for (state in listOf(detected(-12.3f), detected(-12.3f).copy(tip = ReceptionTip.TOO_SOFT), detected(0f).copy(inTune = true), listening)) {
+            shownState.value = state
+            compose.waitForIdle()
+            assertEquals("$state", bars, compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot())
+        }
+    }
+
+    // A long label at the largest font moves the switch towards the start rather than under the bars' touch area.
+    @Test
+    fun withTheLargestFontTheModeSwitchKeepsClearOfTheSignalBars() {
+        show(detected(-12.3f), fontScale = 2f, size = PHONE, signalBars = true)
+        val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
+        val chromatic = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
+        assertTrue("switch $chromatic runs under the bars $button", chromatic.right <= button.left + 0.5.dp)
     }
 
     @Test

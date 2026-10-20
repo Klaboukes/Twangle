@@ -1,0 +1,169 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal Bars Place</title>
+<!--
+TWANGLE SIGNAL BARS, WHERE THEY GO (rough mock-up, plain on purpose).
+Today    The bars (SignalBarsButton) sit in a slot at the end of the note's pill (NoteDisplay), mirroring the check
+         mark's slot. The pill's text changes ("Play a string", "Play a bit louder", "12 cents flat") and the bars
+         ride along at its end, so they jump sideways; the text block grows and shrinks with it.
+Options  A top-right corner across from the mode switch; B in the right-hand button column, above full screen;
+         C under the meter, between flat and sharp; D stay by the note, in one steady-width pill.
+Phone    The Xiaomi 12X, 393 x 873 dp, drawn at 0.6 px per dp; positions measured from a screenshot of the
+         Strings tuner (2026-10-20).
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1000px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.list { margin-top: 28px; display: grid; gap: 30px; }
+.cand { display: grid; gap: 8px; }
+.cand h2 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.phones { display: flex; flex-wrap: wrap; gap: 14px; }
+.phone { display: grid; gap: 4px; justify-items: center; }
+.phone svg { width: 236px; max-width: 100%; height: auto; border-radius: 18px; background: var(--bg); display: block; }
+.phone span { font-size: 12px; color: var(--muted); }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+svg text { font-family: var(--ui); }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Signal bars · rough mock-up</p>
+  <h1>Where should the signal bars go?</h1>
+  <p class="lede">Today they sit at the end of the line under the note, so they jump sideways each time the text
+    changes. Every option below keeps them in one spot that never moves. Each phone shows the screen with no note
+    and with a note, so you can see that nothing shifts.</p>
+</header>
+
+<div class="list" id="list"></div>
+
+<footer>
+  <p>With A, B and C the line under the note no longer carries the bars, so it simply stays centred. In all four,
+    a tap on the bars still opens the panel with Volume, Background and Clarity.</p>
+  <p>Phone on its side and focus mode: the bars take the same kind of spot there (A: the top corner of the note's
+    side, B: by the buttons, D: with the note).</p>
+</footer>
+</div>
+
+<script>
+// Positions in dp on a 393 x 873 dp phone, measured from the Xiaomi 12X's Strings tuner.
+const W = 393, H = 873;
+const BARS = { A: [352, 63], B: [340, 578], C: [196, 292] };
+
+function bars(x, y, lit, accent) {
+  // Four bars rising left to right, 22 x 16 dp, centred on (x, y).
+  let s = "";
+  for (let i = 0; i < 4; i++) {
+    const h = 4 + i * 4;
+    const on = i < lit;
+    s += `<rect x="${x - 11 + i * 6}" y="${y + 8 - h}" width="4" height="${h}" rx="1.3"
+      fill="${on ? accent : "var(--muted)"}" opacity="${on ? 1 : 0.25}"/>`;
+  }
+  return s;
+}
+
+function phone(option, withNote) {
+  const ink = "var(--ink)", muted = "var(--muted)", accent = "var(--accent)";
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img"
+    aria-label="Option ${option}, ${withNote ? "a note sounding" : "no note"}">`;
+  // Mode switch.
+  s += `<rect x="82" y="44" width="229" height="40" rx="20" fill="none" stroke="${muted}" stroke-opacity=".5"/>
+    <rect x="82" y="44" width="114" height="40" rx="20" fill="var(--container)"/>
+    <text x="139" y="70" font-size="15" text-anchor="middle" fill="${ink}">Strings</text>
+    <text x="254" y="70" font-size="15" text-anchor="middle" fill="${muted}">Chromatic</text>`;
+  // Meter: an arc of ticks, flat and sharp, and the needle.
+  for (let a = -60; a <= 60; a += 10) {
+    const r = Math.PI * a / 180, cx = 196, cy = 300;
+    const x1 = cx + Math.sin(r) * 130, y1 = cy - Math.cos(r) * 130;
+    const x2 = cx + Math.sin(r) * (a % 30 === 0 ? 112 : 120), y2 = cy - Math.cos(r) * (a % 30 === 0 ? 112 : 120);
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${muted}" stroke-opacity=".55" stroke-width="2"/>`;
+  }
+  const na = withNote ? -14 : 0, nr = Math.PI * na / 180;
+  s += `<line x1="196" y1="300" x2="${196 + Math.sin(nr) * 125}" y2="${300 - Math.cos(nr) * 125}"
+      stroke="${withNote ? accent : muted}" stroke-opacity="${withNote ? 1 : .35}" stroke-width="3" stroke-linecap="round"/>
+    <text x="34" y="296" font-size="18" fill="${muted}">♭</text><text x="350" y="296" font-size="18" fill="${muted}">♯</text>`;
+  // The note.
+  s += withNote
+    ? `<text x="196" y="460" font-size="96" text-anchor="middle" fill="${ink}">E<tspan font-size="30" fill="${muted}">2</tspan></text>`
+    : `<text x="196" y="460" font-size="80" text-anchor="middle" fill="${muted}" opacity=".35">♪</text>`;
+  // The line under the note; D gives it one steady pill with the bars at its end.
+  const text = withNote ? "12 cents flat" : "Play a string";
+  if (option === "D") {
+    s += `<rect x="86" y="500" width="221" height="38" rx="10" fill="${withNote ? "var(--surface)" : "none"}"
+        stroke="${withNote ? "none" : muted}" stroke-opacity=".25" stroke-dasharray="${withNote ? "" : "4 4"}"/>
+      <text x="190" y="526" font-size="19" text-anchor="middle" fill="${withNote ? ink : ink}">${text}</text>
+      ${bars(285, 519, withNote ? 3 : 2, withNote ? ink : muted)}`;
+  } else {
+    if (withNote) s += `<rect x="102" y="500" width="189" height="38" rx="10" fill="var(--surface)"/>`;
+    s += `<text x="196" y="526" font-size="19" text-anchor="middle" fill="${ink}">${text}</text>`;
+  }
+  if (withNote) s += `<text x="196" y="562" font-size="14" text-anchor="middle" fill="${muted}">80.9 Hz</text>`;
+  // Right-hand buttons, the tuning row, the strings and the navigation bar.
+  s += `<circle cx="340" cy="633" r="22" fill="none" stroke="${muted}" stroke-opacity=".6"/>
+    <rect x="331" y="624" width="18" height="18" rx="2" fill="none" stroke="${muted}" stroke-dasharray="6 6"/>
+    <circle cx="53" cy="689" r="22" fill="none" stroke="${muted}" stroke-opacity=".6"/>
+    <circle cx="340" cy="689" r="22" fill="none" stroke="${muted}" stroke-opacity=".6"/>
+    <text x="87" y="695" font-size="15" fill="${muted}">Guitar · Standard</text>`;
+  ["E", "A", "D", "G", "B", "E"].forEach((n, i) => {
+    const x = 51 + i * 58.2;
+    s += `<circle cx="${x}" cy="747" r="20" fill="var(--surface)"/>
+      <text x="${x}" y="753" font-size="16" text-anchor="middle" fill="${withNote && i === 0 ? accent : ink}">${n}</text>`;
+  });
+  s += `<line x1="0" y1="790" x2="${W}" y2="790" stroke="${muted}" stroke-opacity=".15"/>
+    ${[["Tuner", 65], ["Practice", 196], ["Settings", 327]].map(([l, x], i) =>
+      `<circle cx="${x}" cy="815" r="9" fill="none" stroke="${i === 0 ? accent : muted}"/>
+       <text x="${x}" y="845" font-size="12" text-anchor="middle" fill="${i === 0 ? accent : muted}">${l}</text>`).join("")}`;
+  // The bars in their place, with a faint ring for the tap area.
+  if (BARS[option]) {
+    const [x, y] = BARS[option];
+    s += `<circle cx="${x}" cy="${y}" r="20" fill="var(--accent)" opacity=".08"/>
+      ${bars(x, y, withNote ? 3 : 2, withNote ? ink : muted)}`;
+  }
+  return s + "</svg>";
+}
+
+const CANDIDATES = [
+  ["A", "Top-right corner, across from Strings / Chromatic", true,
+    "Where a phone shows its own signal bars, so the picture is familiar. The corner is empty today, and the bars " +
+    "stay out of the way of the note and the meter."],
+  ["B", "With the buttons on the right, above full screen", false,
+    "Groups them with the other small controls. Further from the note, and that column gets a third item."],
+  ["C", "Under the meter, between ♭ and ♯", false,
+    "Right by the reading, but some meter looks draw their needle's pivot or a scale there, so it can clash."],
+  ["D", "Stay by the note, in one steady pill", false,
+    "The smallest change: the pill gets one width for every text, with the bars always at its right end. The line " +
+    "is a little wider than the text needs."],
+];
+document.getElementById("list").innerHTML = CANDIDATES.map(([o, title, rec, note]) => `<div class="cand">
+  <h2>${o}. ${title}${rec ? `<span class="tag">recommended</span>` : ""}</h2>
+  <div class="phones">
+    <div class="phone">${phone(o, false)}<span>No note</span></div>
+    <div class="phone">${phone(o, true)}<span>A note sounding</span></div>
+  </div>
+  <p class="note">${note}</p></div>`).join("");
+</script>

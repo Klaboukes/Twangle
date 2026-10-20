@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -129,17 +130,14 @@ data class NoteReadout(
  * TalkBack says it instead of the direction. A tip keeps to one line, set smaller when it doesn't
  * fit, so a long one ("Te hard, leg de telefoon verder weg") never pushes the note up.
  *
- * [signalBars] (the optional "Show signal bars" setting) go in the free slot at the pill's right end,
- * which mirrors the check mark's, so they add nothing and move nothing.
- *
  * The glow and the pop are read only while drawing, so they animate without recomposing.
  * For TalkBack the whole block is one polite live region that says e.g. "E 2, 12 cents flat" or
  * "E 2, in tune" (with [showTuneHint] also "E 2, 12 cents flat, tune up"), paced by [speech] so it
  * doesn't talk over itself; pass the same [speech] to every [NoteDisplay] the screen switches between,
  * so the pacing carries over from a note to "Play a string". Note names are spoken through
  * [rememberNoteNameSpeech] ("C sharp 4", in Dutch "cis 4"); without a readout it says [spokenHint].
- * The live region is a layer of its own under the block, so nothing changing inside the block (the
- * signal bars' "3 of 4") can make TalkBack read it again early.
+ * The live region is a layer of its own under the block, so nothing changing inside the block can
+ * make TalkBack read it again early.
  */
 @Composable
 fun NoteDisplay(
@@ -153,7 +151,6 @@ fun NoteDisplay(
     showTuneHint: Boolean = false,
     reception: () -> Float? = { null },
     tip: ReceptionTip? = null,
-    signalBars: (@Composable (tint: Color) -> Unit)? = null,
     speech: PacedSpeech = rememberPacedSpeech(),
 ) {
     val inTune = readout?.inTune == true
@@ -243,8 +240,7 @@ fun NoteDisplay(
     // The block takes the size it is given, as it did before it had a layer under it.
     Box(modifier, propagateMinConstraints = true) {
         // The texts below are hidden from TalkBack; this layer speaks for them. It lies under the
-        // block, not around it, so the signal bars' button (on top, so a touch still finds it)
-        // changing its words isn't a change inside the live region.
+        // block, not around it, so nothing inside the block is part of the live region.
         Box(
             Modifier
                 .matchParentSize()
@@ -341,8 +337,7 @@ fun NoteDisplay(
                 )
             }
             Box(contentAlignment = Alignment.Center) {
-                // The pill's fill is clipped to its shape on a layer of its own, so the signal bars'
-                // 48 dp touch area can reach past the pill's edge.
+                // The pill's fill, clipped to its shape on a layer of its own.
                 Box(
                     Modifier
                         .matchParentSize()
@@ -392,9 +387,7 @@ fun NoteDisplay(
                             .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
                             .hiddenFromTalkBack(),
                     )
-                    Box(Modifier.size(CHECK_SIZE)) {
-                        signalBars?.invoke(if (readout != null && !pictured) pillText else colors.onSurfaceVariant)
-                    }
+                    Spacer(Modifier.size(CHECK_SIZE))
                 }
                 if (pictured) check(checkCentred)
             }

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -513,7 +514,8 @@ private fun KeepScreenOn() {
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
  * tune; as strong as [inTuneEffect]; with [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
- * adds small signal bars by the note, which open the live [signalFigures] when tapped. While
+ * adds small signal bars at the end of the mode switch's row ([SwitchWithSignalBars]), which open the
+ * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
  * [pickerOpen] the instrument and tuning panel shows over the tuner ([InstrumentTuningPanel], opened
  * from the navigation bar), and [onPickerOpenChange] hears false once it has closed. [instrument] is
  * the one picked there (by default the one [state]'s tuning belongs to); picking another calls
@@ -594,23 +596,21 @@ fun TunerContent(
 ) {
     // The wave takes the cents' place, which changes the layout.
     val pictured = display != TunerDisplay.NEEDLE
-    // Movable, so the bars keep their count (and an open figures panel stays open) when a note
-    // starts or stops, or the layout changes, and the note's display is built afresh around them.
+    // Movable, so the bars keep their count (and an open figures panel stays open) when the layout
+    // changes and the header is built afresh around them.
     val currentReception by rememberUpdatedState(reception)
     val currentFigures by rememberUpdatedState(signalFigures)
     val movableSignalBars = remember {
-        movableContentOf { tint: Color ->
-            SignalBarsButton({ currentReception() }, currentFigures, tint, Modifier.fillMaxSize())
+        movableContentOf {
+            SignalBarsButton({ currentReception() }, currentFigures, MaterialTheme.colorScheme.onSurface, Modifier.fillMaxSize())
         }
-    }
-    val signalBars: (@Composable (Color) -> Unit)? = if (showSignalBars) {
-        { tint -> movableSignalBars(tint) }
-    } else {
-        null
     }
     // While focus mode's controls are up over the compact layout, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val header = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
+    val header = @Composable {
+        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
+        if (showSignalBars) SwitchWithSignalBars(switch) { movableSignalBars() } else switch()
+    }
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
         val strum = onStrumCheckChange?.let { onStrum ->
@@ -722,7 +722,6 @@ fun TunerContent(
                 showTuneHint = showTuneHint,
                 reception = reception,
                 tip = state.tip,
-                signalBars = signalBars,
                 speech = speech,
             )
             // showTuneHint here too: it keeps the hint's (empty) line, so nothing moves when a note starts or stops.
@@ -737,7 +736,6 @@ fun TunerContent(
                     showTuneHint = showTuneHint,
                     // While a reference tone sounds its line says which, not a tip about the mic.
                     tip = state.tip.takeIf { soundingString == null },
-                    signalBars = signalBars,
                     speech = speech,
                 )
             else -> NoteDisplay(
@@ -747,7 +745,6 @@ fun TunerContent(
                 compact = compact,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
-                signalBars = signalBars,
                 speech = speech,
             )
         }
@@ -1073,6 +1070,30 @@ private fun FocusAboveTools(button: @Composable () -> Unit, stringCount: Int?, s
         layout(width, slotY + slotPlaceable.height) {
             buttonPlaceable.placeRelative(x, 0)
             slotPlaceable.placeRelative(0, slotY)
+        }
+    }
+}
+
+/**
+ * The mode [switch] with the signal [bars] at the row's end, like a phone's own in its status bar
+ * (owner's pick, 2026-10-20: by the note they rode along with its changing text). The row takes the
+ * whole width; the switch stays centred unless that would bring it within the bars' slot
+ * ([SIGNAL_BARS_SLOT], their 48 dp touch area), where it moves towards the start instead, so a long
+ * label at a large font never runs under them. Neither moves with anything the tuner hears.
+ */
+@Composable
+private fun SwitchWithSignalBars(switch: @Composable () -> Unit, bars: @Composable () -> Unit) {
+    Layout(contents = listOf(switch, { Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } })) { (switchMeasurables, barsMeasurables), constraints ->
+        val slot = SIGNAL_BARS_SLOT.roundToPx()
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val barsPlaceable = barsMeasurables.single().measure(loose)
+        val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = (loose.maxWidth - slot).coerceAtLeast(0)))
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else switchPlaceable.width + 2 * slot
+        val height = maxOf(switchPlaceable.height, barsPlaceable.height)
+        val switchX = minOf((width - switchPlaceable.width) / 2, width - slot - switchPlaceable.width).coerceAtLeast(0)
+        layout(width, height) {
+            switchPlaceable.placeRelative(switchX, (height - switchPlaceable.height) / 2)
+            barsPlaceable.placeRelative(width - slot + (slot - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
         }
     }
 }
@@ -1563,6 +1584,10 @@ private val LABEL_BUTTON_GAP = 12.dp
 
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp
+
+/** The signal bars as drawn, and the slot at the mode switch's end they sit in (their touch area's width). */
+private val SIGNAL_BARS_SIZE = 24.dp
+private val SIGNAL_BARS_SLOT = 48.dp
 
 /** The single column's text margin at each side. */
 private val COLUMN_PADDING = 16.dp
