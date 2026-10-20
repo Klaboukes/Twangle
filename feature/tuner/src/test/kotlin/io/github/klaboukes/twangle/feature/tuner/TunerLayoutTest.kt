@@ -64,10 +64,20 @@ class TunerLayoutTest {
     }
 
     @Test
-    fun uprightAndNarrowWindowsStayOneColumnWhenCompactIsAsked() {
+    fun uprightAndSquareWindowsStayOneColumnWhenCompactIsAsked() {
         assertEquals(TunerLayout.SINGLE_COLUMN, tunerLayoutFor(widthDp = 384f, heightDp = 780f, compactLandscape = true))
         assertEquals(TunerLayout.SINGLE_COLUMN, tunerLayoutFor(widthDp = 800f, heightDp = 1240f, compactLandscape = true))
-        assertEquals(TunerLayout.SINGLE_COLUMN, tunerLayoutFor(widthDp = 560f, heightDp = 300f, compactLandscape = true))
         assertEquals(TunerLayout.SINGLE_COLUMN, tunerLayoutFor(widthDp = 840f, heightDp = 840f, compactLandscape = true))
+    }
+
+    @Test
+    fun focusModeStaysCompactWhenTheRailAndTheBarsComeBack() {
+        // A Galaxy S26 with navigation buttons on its side: 663 dp without the rail and the bars, 578 dp
+        // with them. The layout switching with the width hid and showed the bars ~40 times a second.
+        assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 663f, heightDp = 360f, compactLandscape = true))
+        assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 578f, heightDp = 330f, compactLandscape = true))
+        assertEquals(TunerLayout.COMPACT, tunerLayoutFor(widthDp = 560f, heightDp = 300f, compactLandscape = true))
+        // Without focus mode the narrow width keeps one column.
+        assertEquals(TunerLayout.SINGLE_COLUMN, tunerLayoutFor(widthDp = 578f, heightDp = 330f, compactLandscape = false))
     }
 }

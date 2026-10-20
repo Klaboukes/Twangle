@@ -788,9 +788,8 @@ fun TunerContent(
                 compactNote = pictured || showTuneHint,
             )
         }
-        val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
-        when (layout) {
-            TunerLayout.SINGLE_COLUMN -> SingleColumnLayout(
+        val singleColumn = @Composable {
+            SingleColumnLayout(
                 height = maxHeight,
                 error = error,
                 onRetry = onRetry,
@@ -799,6 +798,11 @@ fun TunerContent(
                 note = { note(false) },
                 guitarSlot = guitarSlot,
             )
+        }
+        val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
+        val twoPanesFit = maxWidth.value >= TWO_PANE_MIN_WIDTH_DP
+        when (layout) {
+            TunerLayout.SINGLE_COLUMN -> singleColumn()
             TunerLayout.TWO_PANE -> twoPane()
             TunerLayout.COMPACT -> {
                 var controlsShown by remember { mutableStateOf(false) }
@@ -839,7 +843,9 @@ fun TunerContent(
                 Crossfade(targetState = showing, label = "compactControls") { shown ->
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
-                            twoPane()
+                            // Beside the rail and the phone's navigation buttons a phone on its side may be
+                            // too narrow for two panes (578 dp on a Galaxy S26): the controls in one column then.
+                            if (twoPanesFit) twoPane() else singleColumn()
                         }
                     } else {
                         CompactLayout(
