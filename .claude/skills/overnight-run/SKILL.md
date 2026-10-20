@@ -6,7 +6,8 @@ argument-hint: "[optional: --sweep or --languages to run only one part]"
 
 # The overnight run
 
-The owner starts it at bedtime with the Xiaomi 12X on USB and goes to sleep. It runs for hours, so
+The owner starts it at bedtime with a test phone on USB and goes to sleep, taking turns between the
+Xiaomi 12X and the Galaxy S26 from one night to the next; say in the summary which phone it was. It runs for hours, so
 the owner can't be asked anything: take the recommended answer to every question, note it, and put
 it in the morning summary for them to double-check. CLAUDE.md's hard rules, Git workflow and
 environment notes apply; the [ui-test skill](../ui-test/SKILL.md) says how to read results and

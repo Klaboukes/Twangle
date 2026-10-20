@@ -58,10 +58,14 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
 - Wear OS emulator: AVD `Wear_OS_Large_Round` (Wear OS 6, API 36, `system-images;android-36;android-wear-signed;x86_64`). Start it with `<sdk>/emulator/emulator.exe -avd Wear_OS_Large_Round`, then `./gradlew :wear:installDebug`. `<sdk>/cmdline-tools/latest` has `sdkmanager` and `avdmanager`; from Git Bash, write package paths with `/` instead of `;`.
-- **Physical test device: Xiaomi 12X** (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, up to 120 Hz), since October 2026. Measurements in the architecture docs and the archive come from the earlier test phone, a Samsung Galaxy S26 (Android 16), and say so.
+- **Test phones.** The owner takes turns between the two for the overnight run. UI tests give the same answer on either (`PhoneScreen` in `:core:testing`).
+  - **Xiaomi 12X**, the main development and test phone (adb serial `f813c98c`, Android 13 / MIUI 14, ≈ 393 × 873 dp, gesture navigation, up to 120 Hz), since October 2026. It is the owner's old phone, so it is usually there.
+  - **Samsung Galaxy S26**, the owner's daily phone (adb serial `R3GL502L08P`, Android 17 / API 37, 360 × 780 dp, three navigation buttons, always edge to edge). It is plugged in only on some days and every other night, so don't count on it. Measurements in the architecture docs and the archive from before October 2026 come from the S26 (then on Android 16), and say so.
+- Xiaomi quirks:
   - MIUI needs *Developer options → Install via USB* for `:app:installDebug`, and *USB debugging (Security settings)* for the UI tests and `adb shell input`. Without them installs fail with `INSTALL_GRANT_RUNTIME_PERMISSIONS` or `INSTALL_FAILED_USER_RESTRICTED`. *MIUI optimization* is off.
   - MIUI also blocks tests from opening an activity unless Xiaomi's background-start app-op is set, which every install resets; `scripts/ui-tests.sh` keeps setting it during a run (more in the ui-test skill).
-  - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing the phone's settings and own tunings is fine.
+- Either phone:
+  - The owner works from a laptop and a desktop, each with its own debug key, so the phone's Twangle may be signed by the other machine (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). The owner's rule for the Xiaomi: during development, just uninstall it (`adb uninstall io.github.klaboukes.twangle`) and reinstall. Losing its settings and own tunings is fine. On the S26, the daily phone, ask the owner first.
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
 
 ### CI
@@ -91,7 +95,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 ## Workflow
 - **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment; each increment runs in its own sub-agent so the session stays small.
 - Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
-- Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on the test phone (the Xiaomi 12X).
+- Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in).
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
