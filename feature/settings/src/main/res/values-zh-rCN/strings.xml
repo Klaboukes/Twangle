@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">将 Twangle 横过来，只显示一个大表盘，远处也能看清</string>
 
     <string name="settings_keep_screen_on_title">屏幕常亮</string>
-    <string name="settings_keep_screen_on_summary">调音器打开时屏幕保持常亮</string>
+    <string name="settings_keep_screen_on_summary">调音时屏幕保持常亮</string>
     <string name="settings_vibrate_in_tune_title">调准时振动</string>
     <string name="settings_vibrate_in_tune_summary">音准到位时短促振动一下</string>
     <string name="settings_show_tune_hint_title">显示调高/调低提示</string>

@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Поворачивает Twangle горизонтально с одним большим индикатором, который легко читать издалека</string>
 
     <string name="settings_keep_screen_on_title">Не выключать экран</string>
-    <string name="settings_keep_screen_on_summary">Экран не гаснет, пока открыт тюнер</string>
+    <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>
     <string name="settings_vibrate_in_tune_title">Вибрация, когда настроено</string>
     <string name="settings_vibrate_in_tune_summary">Короткая вибрация, когда нота попадает в строй</string>
     <string name="settings_show_tune_hint_title">Подсказка «подтяни/ослабь»</string>

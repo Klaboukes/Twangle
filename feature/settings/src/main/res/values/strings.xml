@@ -69,7 +69,7 @@
 
     <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Keep screen on</string>
-    <string name="settings_keep_screen_on_summary">The screen stays on while the tuner is open</string>
+    <string name="settings_keep_screen_on_summary">The screen stays on while you tune</string>
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>
     <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
     <string name="settings_show_tune_hint_title">Show tune up/down hint</string>

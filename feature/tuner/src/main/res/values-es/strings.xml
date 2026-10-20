@@ -211,4 +211,6 @@
     <string name="tuner_trail_wavering">oscilante, %1$s</string>
     <string name="tuner_trail_bending_up">subiendo</string>
     <string name="tuner_trail_bending_down">bajando</string>
+    <string name="tuner_screen_off_soon">La pantalla se apagará pronto</string>
+    <string name="tuner_screen_off_keep_on">Toca para mantenerla encendida</string>
 </resources>

@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Twangle を横向きにして大きなメーターを 1 つだけ表示し、離れていても読みやすくします</string>
 
     <string name="settings_keep_screen_on_title">画面をオンのままにする</string>
-    <string name="settings_keep_screen_on_summary">チューナーを開いている間、画面が消えません</string>
+    <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>
     <string name="settings_vibrate_in_tune_title">合ったら振動</string>
     <string name="settings_vibrate_in_tune_summary">音が合うと短く振動します</string>
     <string name="settings_show_tune_hint_title">上げる / 下げるのヒントを表示</string>

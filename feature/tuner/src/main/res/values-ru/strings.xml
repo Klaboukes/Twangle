@@ -216,4 +216,6 @@
     <string name="tuner_trail_wavering">колеблется, %1$s</string>
     <string name="tuner_trail_bending_up">идёт вверх</string>
     <string name="tuner_trail_bending_down">идёт вниз</string>
+    <string name="tuner_screen_off_soon">Экран скоро погаснет</string>
+    <string name="tuner_screen_off_keep_on">Нажми, чтобы он не гас</string>
 </resources>

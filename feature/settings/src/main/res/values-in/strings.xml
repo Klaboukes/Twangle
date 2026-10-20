@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Memutar Twangle ke samping dengan satu meter besar, mudah dibaca dari jauh</string>
 
     <string name="settings_keep_screen_on_title">Layar tetap menyala</string>
-    <string name="settings_keep_screen_on_summary">Layar tetap menyala selama tuner terbuka</string>
+    <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>
     <string name="settings_vibrate_in_tune_title">Bergetar saat pas</string>
     <string name="settings_vibrate_in_tune_summary">Getaran singkat saat nada sudah tepat</string>
     <string name="settings_show_tune_hint_title">Tampilkan petunjuk naik/turun</string>

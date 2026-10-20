@@ -208,4 +208,6 @@
     <string name="tuner_trail_wavering">dalgalı, %1$s</string>
     <string name="tuner_trail_bending_up">yükseliyor</string>
     <string name="tuner_trail_bending_down">alçalıyor</string>
+    <string name="tuner_screen_off_soon">Ekran birazdan kapanacak</string>
+    <string name="tuner_screen_off_keep_on">Açık tutmak için dokun</string>
 </resources>

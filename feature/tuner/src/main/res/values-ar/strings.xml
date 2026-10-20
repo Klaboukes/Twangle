@@ -225,4 +225,6 @@
     <string name="tuner_trail_wavering">متذبذبة، %1$s</string>
     <string name="tuner_trail_bending_up">ترتفع</string>
     <string name="tuner_trail_bending_down">تنخفض</string>
+    <string name="tuner_screen_off_soon">ستنطفئ الشاشة قريبًا</string>
+    <string name="tuner_screen_off_keep_on">انقر لإبقائها مضاءة</string>
 </resources>

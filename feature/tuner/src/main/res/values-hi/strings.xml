@@ -207,4 +207,6 @@
     <string name="tuner_trail_wavering">डगमगाता, %1$s</string>
     <string name="tuner_trail_bending_up">ऊपर खिंच रहा</string>
     <string name="tuner_trail_bending_down">नीचे जा रहा</string>
+    <string name="tuner_screen_off_soon">स्क्रीन जल्द ही बंद हो जाएगी</string>
+    <string name="tuner_screen_off_keep_on">चालू रखने के लिए टैप करें</string>
 </resources>

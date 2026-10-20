@@ -203,4 +203,6 @@
     <string name="tuner_trail_wavering">흔들림, %1$s</string>
     <string name="tuner_trail_bending_up">올라가는 중</string>
     <string name="tuner_trail_bending_down">내려가는 중</string>
+    <string name="tuner_screen_off_soon">곧 화면이 꺼져요</string>
+    <string name="tuner_screen_off_keep_on">탭하면 계속 켜져 있어요</string>
 </resources>

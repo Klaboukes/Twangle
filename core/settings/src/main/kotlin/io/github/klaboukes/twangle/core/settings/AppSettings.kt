@@ -232,7 +232,7 @@ data class AppSettings(
     val style: VisualStyle = VisualStyle.DEFAULT,
     /** Colours from the wallpaper (Android 12+), in the contemporary [style] only. Ignored on older phones. */
     val dynamicColor: Boolean = true,
-    /** Stop the screen from dimming while the tuner is open. */
+    /** Stop the screen from dimming while the tuner is open and hears playing (it lets go after a quiet spell). */
     val keepScreenOn: Boolean = true,
     /** One short vibration when the played note becomes in tune. */
     val vibrateInTune: Boolean = true,

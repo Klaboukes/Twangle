@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
 
     <string name="settings_keep_screen_on_title">화면 켜짐 유지</string>
-    <string name="settings_keep_screen_on_summary">튜너가 열려 있는 동안 화면이 꺼지지 않아요</string>
+    <string name="settings_keep_screen_on_summary">튜닝하는 동안 화면이 꺼지지 않아요</string>
     <string name="settings_vibrate_in_tune_title">음이 맞으면 진동</string>
     <string name="settings_vibrate_in_tune_summary">음이 맞으면 짧게 진동해요</string>
     <string name="settings_show_tune_hint_title">올리기/내리기 힌트 표시</string>

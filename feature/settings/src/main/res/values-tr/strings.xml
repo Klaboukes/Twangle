@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Twangle\'ı tek büyük göstergeyle yana çevirir, uzaktan kolayca okunur</string>
 
     <string name="settings_keep_screen_on_title">Ekranı açık tut</string>
-    <string name="settings_keep_screen_on_summary">Akort ekranı açıkken ekran kapanmaz</string>
+    <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>
     <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
     <string name="settings_vibrate_in_tune_summary">Nota doğru perdeye ulaşınca kısa bir titreşim</string>
     <string name="settings_show_tune_hint_title">Yükselt/düşür ipucunu göster</string>

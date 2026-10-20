@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">يُدير Twangle أفقيًا مع مقياس واحد كبير، تسهل قراءته من بعيد</string>
 
     <string name="settings_keep_screen_on_title">إبقاء الشاشة مضاءة</string>
-    <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة ما دام الموالف مفتوحًا</string>
+    <string name="settings_keep_screen_on_summary">تبقى الشاشة مضاءة أثناء الدوزنة</string>
     <string name="settings_vibrate_in_tune_title">اهتزاز عند الضبط</string>
     <string name="settings_vibrate_in_tune_summary">اهتزاز قصير عندما تبلغ النغمة طبقتها الصحيحة</string>
     <string name="settings_show_tune_hint_title">إظهار تلميح الشدّ والإرخاء</string>

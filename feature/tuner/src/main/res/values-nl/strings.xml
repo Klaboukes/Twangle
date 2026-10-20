@@ -217,4 +217,6 @@
     <string name="tuner_trail_wavering">wisselend, %1$s</string>
     <string name="tuner_trail_bending_up">buigt omhoog</string>
     <string name="tuner_trail_bending_down">buigt omlaag</string>
+    <string name="tuner_screen_off_soon">Scherm gaat zo uit</string>
+    <string name="tuner_screen_off_keep_on">Tik om het aan te houden</string>
 </resources>

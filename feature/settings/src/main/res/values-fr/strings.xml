@@ -61,7 +61,7 @@
     <string name="settings_focus_mode_summary">Met Twangle à l\'horizontale avec un grand cadran, facile à lire de loin</string>
 
     <string name="settings_keep_screen_on_title">Garder l\'écran allumé</string>
-    <string name="settings_keep_screen_on_summary">L\'écran reste allumé tant que l\'accordeur est ouvert</string>
+    <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>
     <string name="settings_vibrate_in_tune_title">Vibrer quand c\'est juste</string>
     <string name="settings_vibrate_in_tune_summary">Une courte vibration quand la note est juste</string>
     <string name="settings_show_tune_hint_title">Indiquer plus haut ou plus bas</string>

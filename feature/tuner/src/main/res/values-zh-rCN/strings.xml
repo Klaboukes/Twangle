@@ -203,4 +203,6 @@
     <string name="tuner_trail_wavering">摆动，%1$s</string>
     <string name="tuner_trail_bending_up">向上推弦</string>
     <string name="tuner_trail_bending_down">向下滑</string>
+    <string name="tuner_screen_off_soon">屏幕即将关闭</string>
+    <string name="tuner_screen_off_keep_on">轻触以保持常亮</string>
 </resources>

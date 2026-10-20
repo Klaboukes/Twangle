@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Pone Twangle en horizontal con un gran indicador, fácil de leer a distancia</string>
 
     <string name="settings_keep_screen_on_title">Mantener la pantalla encendida</string>
-    <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras el afinador está abierto</string>
+    <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
     <string name="settings_vibrate_in_tune_summary">Una vibración corta cuando la nota llega al tono</string>
     <string name="settings_show_tune_hint_title">Indicar subir o bajar</string>

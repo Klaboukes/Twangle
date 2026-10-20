@@ -286,4 +286,7 @@
     <string name="tuner_trail_wavering">wavering, %1$s</string>
     <string name="tuner_trail_bending_up">bending up</string>
     <string name="tuner_trail_bending_down">bending down</string>
+    <!-- Keep screen on's warning, 10 s before the screen is left to the phone's own timeout after 3 minutes without playing. -->
+    <string name="tuner_screen_off_soon">Screen turns off soon</string>
+    <string name="tuner_screen_off_keep_on">Tap to keep it on</string>
 </resources>

@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Dreht Twangle ins Querformat mit einer großen Anzeige, gut aus der Ferne lesbar</string>
 
     <string name="settings_keep_screen_on_title">Bildschirm anlassen</string>
-    <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt an, solange das Stimmgerät offen ist</string>
+    <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt beim Stimmen an</string>
     <string name="settings_vibrate_in_tune_title">Vibrieren, wenn gestimmt</string>
     <string name="settings_vibrate_in_tune_summary">Ein kurzes Summen, wenn der Ton stimmt</string>
     <string name="settings_show_tune_hint_title">Hinweis höher/tiefer zeigen</string>

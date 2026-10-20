@@ -203,4 +203,6 @@
     <string name="tuner_trail_wavering">goyah, %1$s</string>
     <string name="tuner_trail_bending_up">naik</string>
     <string name="tuner_trail_bending_down">turun</string>
+    <string name="tuner_screen_off_soon">Layar akan segera mati</string>
+    <string name="tuner_screen_off_keep_on">Ketuk agar tetap menyala</string>
 </resources>

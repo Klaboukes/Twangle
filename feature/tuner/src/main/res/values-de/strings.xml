@@ -208,4 +208,6 @@
     <string name="tuner_trail_wavering">schwankend, %1$s</string>
     <string name="tuner_trail_bending_up">zieht nach oben</string>
     <string name="tuner_trail_bending_down">zieht nach unten</string>
+    <string name="tuner_screen_off_soon">Bildschirm geht gleich aus</string>
+    <string name="tuner_screen_off_keep_on">Tippe, damit er an bleibt</string>
 </resources>

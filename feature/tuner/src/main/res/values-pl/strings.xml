@@ -216,4 +216,6 @@
     <string name="tuner_trail_wavering">faluje, %1$s</string>
     <string name="tuner_trail_bending_up">podciąga w górę</string>
     <string name="tuner_trail_bending_down">opada w dół</string>
+    <string name="tuner_screen_off_soon">Ekran zaraz zgaśnie</string>
+    <string name="tuner_screen_off_keep_on">Dotknij, aby nie gasł</string>
 </resources>

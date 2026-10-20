@@ -212,4 +212,6 @@
     <string name="tuner_trail_wavering">instable, %1$s</string>
     <string name="tuner_trail_bending_up">monte</string>
     <string name="tuner_trail_bending_down">descend</string>
+    <string name="tuner_screen_off_soon">L\'écran va bientôt s\'éteindre</string>
+    <string name="tuner_screen_off_keep_on">Touchez pour le garder allumé</string>
 </resources>

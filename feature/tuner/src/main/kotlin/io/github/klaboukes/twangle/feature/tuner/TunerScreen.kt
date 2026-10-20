@@ -1,7 +1,10 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -236,7 +239,9 @@ fun TunerScreen(
     val currentOnMicGrantedChange by rememberUpdatedState(onMicGrantedChange)
     LaunchedEffect(granted) { currentOnMicGrantedChange(granted) }
     DisposableEffect(Unit) { onDispose { currentOnMicGrantedChange(false) } }
-    if (granted && keepScreenOn) KeepScreenOn()
+    // Keep screen on lets go after a quiet spell, with a warning first (ScreenAwakeRule).
+    val awake = rememberScreenAwake(readings, enabled = granted && keepScreenOn)
+    if (granted && keepScreenOn && awake.phase != ScreenAwakePhase.OFF) KeepScreenOn()
     // The microphone refused to open for want of the permission (taken back while the app was open):
     // the prompt comes back, unless Android still says it is granted (then the error stays, with Try again).
     val permissionLost = (state as? TunerUiState.Error)?.reason == TunerError.MIC_PERMISSION_MISSING
@@ -269,7 +274,8 @@ fun TunerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .touchesKeepAwake(awake),
             contentAlignment = Alignment.Center,
         ) {
             if (granted) {
@@ -318,6 +324,17 @@ fun TunerScreen(
                     onFullScreenChange = onFullScreenChange,
                     onFocusModeChange = viewModel::setFocusMode,
                 )
+                val fade = if (animationsOff) 0 else WARNING_FADE_MILLIS
+                AnimatedVisibility(
+                    visible = keepScreenOn && awake.phase == ScreenAwakePhase.WARNING,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .zIndex(1f),
+                    enter = fadeIn(tween(fade)),
+                    exit = fadeOut(tween(fade)),
+                ) {
+                    ScreenOffWarning(left = awake::warningLeft, onKeepOn = awake::touched, animationsOff = animationsOff)
+                }
             } else {
                 PermissionPrompt(status = mic.status, onRequest = mic::request, onOpenSettings = mic::openSettings)
                 // The navigation bar's Instrument item works without the microphone too: the panel opens
@@ -468,6 +485,9 @@ object TunerTestTags {
     /** String [index]'s column in the 12th-fret check's summary. */
     fun intonationString(index: Int): String = "tuner_intonation_string_$index"
 
+    /** Keep screen on's warning before the screen is let go ("Screen turns off soon"). */
+    const val SCREEN_OFF_WARNING = "tuner_screen_off_warning"
+
     /** The mode switch button for [mode], e.g. "tuner_mode_chromatic". */
     fun mode(mode: TunerMode): String = "tuner_mode_" + mode.name.lowercase()
 }
@@ -490,9 +510,13 @@ private fun StopToneWhenHidden(stopTone: () -> Unit) {
     }
 }
 
+/** How long Keep screen on's warning takes to fade in and out. */
+private const val WARNING_FADE_MILLIS = 400
+
 /**
- * Stops the screen from dimming and locking while this is in the composition, i.e. while the tuner
- * is shown. Leaving the screen (or the app) lets it time out normally again.
+ * Stops the screen from dimming and locking while this is in the composition: while the tuner is
+ * shown and hears playing (see [rememberScreenAwake]). Leaving the screen (or the app) lets it time
+ * out normally again.
  */
 @Composable
 private fun KeepScreenOn() {

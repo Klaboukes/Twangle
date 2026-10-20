@@ -203,4 +203,6 @@
     <string name="tuner_trail_wavering">揺れている、%1$s</string>
     <string name="tuner_trail_bending_up">上がっている</string>
     <string name="tuner_trail_bending_down">下がっている</string>
+    <string name="tuner_screen_off_soon">まもなく画面が消えます</string>
+    <string name="tuner_screen_off_keep_on">タップすると消えません</string>
 </resources>

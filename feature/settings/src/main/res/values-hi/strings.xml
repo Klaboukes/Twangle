@@ -60,7 +60,7 @@
     <string name="settings_focus_mode_summary">Twangle को आड़ा करके एक बड़ा मीटर दिखाता है, जिसे दूर से भी आसानी से पढ़ सकें</string>
 
     <string name="settings_keep_screen_on_title">स्क्रीन चालू रखें</string>
-    <string name="settings_keep_screen_on_summary">ट्यूनर खुला रहने तक स्क्रीन चालू रहती है</string>
+    <string name="settings_keep_screen_on_summary">ट्यून करते समय स्क्रीन चालू रहती है</string>
     <string name="settings_vibrate_in_tune_title">सुर में आने पर वाइब्रेट करें</string>
     <string name="settings_vibrate_in_tune_summary">नोट सही पिच पर पहुँचते ही हल्का-सा वाइब्रेशन</string>
     <string name="settings_show_tune_hint_title">ऊपर/नीचे ट्यून करने का संकेत दिखाएँ</string>
