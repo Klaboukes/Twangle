@@ -1,9 +1,14 @@
 package io.github.klaboukes.twangle.core.dsp.chord
 
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.AUGMENTED
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.DIMINISHED_SEVENTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.DOMINANT_SEVENTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.HALF_DIMINISHED
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR_SEVENTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_SIXTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SIXTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SUS4
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
@@ -49,6 +54,23 @@ class ChordShapeFinderTest {
             Triple(C, MAJOR_SEVENTH, "x32000"),
             Triple(D, SUS4, "xx0233"),
             Triple(F, MAJOR_SEVENTH, "xx3210"),
+        )
+        for ((root, quality, frets) in expected) assertEquals("$root $quality", frets, first(root, quality).toString())
+    }
+
+    @Test
+    fun `the further chords come out as the chord books' open shapes`() {
+        val expected = listOf(
+            Triple(C, SIXTH, "x32210"),
+            Triple(D, SIXTH, "xx0202"),
+            Triple(E, SIXTH, "022120"),
+            Triple(G, SIXTH, "320000"),
+            Triple(A, SIXTH, "x02222"),
+            Triple(E, MINOR_SIXTH, "022020"),
+            Triple(D, HALF_DIMINISHED, "xx0111"),
+            Triple(B, HALF_DIMINISHED, "x20201"),
+            Triple(D, DIMINISHED_SEVENTH, "xx0101"),
+            Triple(D, AUGMENTED, "xx0332"),
         )
         for ((root, quality, frets) in expected) assertEquals("$root $quality", frets, first(root, quality).toString())
     }
@@ -132,10 +154,14 @@ class ChordShapeFinderTest {
     @Test
     fun `every shape sounds exactly the chord on every preset`() {
         val tunings = Instruments.all.flatMap { it.tunings }
+        val strummedStandards = Instruments.all.filter(ChordInstruments::offers).map { it.tunings.first() }
         for (tuning in tunings) for (quality in ChordQuality.entries) for (root in PitchClass.entries) {
             val chord = Chord.of(root, quality)
             val shapes = ChordShapeFinder.shapesOf(chord, tuning)
-            if (tuning.stringCount >= 4) assertTrue("${tuning.id} has no $root $quality", shapes.isNotEmpty())
+            // The chart-only chords on the strummed instruments' standard tunings; elsewhere a few are
+            // out of reach (open G's F♯add9), and the chart says so.
+            val reachable = quality.detected || tuning in strummedStandards
+            if (tuning.stringCount >= 4 && reachable) assertTrue("${tuning.id} has no $root $quality", shapes.isNotEmpty())
             val tones = ChordSpelling.tonesOf(chord).toSet()
             for (shape in shapes) {
                 val sounded = shape.notesIn(tuning).filterNotNull().map { it.pitchClass }.toSet()

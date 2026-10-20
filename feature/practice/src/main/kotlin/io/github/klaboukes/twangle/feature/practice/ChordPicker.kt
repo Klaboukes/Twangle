@@ -141,7 +141,7 @@ private fun NameWords(text: String, modifier: Modifier = Modifier) {
 /**
  * The name button's panel, [expanded] or not, a Material dropdown under the place it is put in, at
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
- * ([RootPicker]), then "Chord type" over the seven chord types four to a row ([ChordTypePicker]) or,
+ * ([RootPicker]), then "Chord type" over the sixteen chord types four to a row ([ChordTypePicker]) or,
  * with [scales], "Scale" over the five scales two to a row ([ScaleTypePicker]). A pick leaves it
  * open, so both can be changed in one go, and shows at once on the button and the chart; Back and a
  * tap beside it call [onDismiss]. On a short screen it scrolls.
@@ -298,9 +298,11 @@ internal fun scaleRootSpelling(type: ScaleType, notation: Notation): (PitchClass
     { Scale(it, type).nameOf(it, notation) }
 
 /**
- * The seven chord types, [quality] picked, each by its symbol on the picked [root] ("C", "Cm",
- * "C7", "Cmaj7", "Cm7", "Csus2", "Csus4"), four to a row. TalkBack hears one radio group ("Chord
- * type"), each in words ("C minor seventh").
+ * The sixteen chord types, [quality] picked, each by its symbol on the picked [root], four to a row
+ * in four full rows: the common ones ("C", "Cm", "C7", "Cmaj7"), "Cm7" and the sus chords ("Csus2",
+ * "Csus4", "C7sus4"), the 6ths and 9ths ("C6", "Cm6", "Cadd9", "C9"), and the diminished and
+ * augmented ones ("Cdim", "Cdim7", "Cm7♭5", "Caug"). TalkBack hears one radio group ("Chord type"),
+ * each in words ("C minor seventh").
  */
 @Composable
 private fun ChordTypePicker(

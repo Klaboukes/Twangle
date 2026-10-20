@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ChordNamerTest {
@@ -14,7 +15,7 @@ class ChordNamerTest {
     @Test
     fun `every chord of every root is named from its own tones, in root position and without a bass`() {
         for (root in PitchClass.entries) {
-            for (quality in ChordQuality.entries) {
+            for (quality in ChordQuality.entries.filter { it.detected }) {
                 val chord = Chord.of(root, quality)
                 val tones = ChordNamer.maskOf(chord)
                 assertSame("$chord with its root in the bass", chord, ChordNamer.name(tones, root.ordinal))
@@ -37,6 +38,20 @@ class ChordNamerTest {
         assertEquals(mask(PitchClass.D, PitchClass.G, PitchClass.A), ChordNamer.maskOf(Chord.of(PitchClass.D, ChordQuality.SUS4)))
         // Roots near the top of the octave wrap round: B major is B D# F#.
         assertEquals(mask(PitchClass.B, PitchClass.D_SHARP, PitchClass.F_SHARP), ChordNamer.maskOf(Chord.of(PitchClass.B, ChordQuality.MAJOR)))
+    }
+
+    @Test
+    fun `the chart-only chords are never named, even from their own tones`() {
+        for (root in PitchClass.entries) {
+            for (quality in ChordQuality.entries.filterNot { it.detected }) {
+                val tones = ChordNamer.maskOf(Chord.of(root, quality))
+                val named = ChordNamer.name(tones, root.ordinal)
+                assertTrue("$root $quality named $named", named == null || named.quality.detected)
+            }
+        }
+        // C6 has Am7's tones: named Am7, as before there was a C6.
+        val c6 = ChordNamer.maskOf(Chord.of(PitchClass.C, ChordQuality.SIXTH))
+        assertSame(Chord.of(PitchClass.A, ChordQuality.MINOR_SEVENTH), ChordNamer.name(c6, PitchClass.C.ordinal))
     }
 
     @Test

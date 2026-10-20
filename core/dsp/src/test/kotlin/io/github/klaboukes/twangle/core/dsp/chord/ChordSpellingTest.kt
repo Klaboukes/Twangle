@@ -16,11 +16,20 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass.F
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.F_SHARP
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.G
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.G_SHARP
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.ADD9
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.AUGMENTED
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.DIMINISHED
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.DIMINISHED_SEVENTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.DOMINANT_SEVENTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.HALF_DIMINISHED
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR_SEVENTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_SEVENTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_SIXTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.NINTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SEVENTH_SUS4
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SIXTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SUS2
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SUS4
 import org.junit.Assert.assertEquals
@@ -45,6 +54,41 @@ class ChordSpellingTest {
         assertEquals("Em7", symbol(E, MINOR_SEVENTH))
         assertEquals("Dsus2", symbol(D, SUS2))
         assertEquals("Dsus4", symbol(D, SUS4))
+    }
+
+    @Test
+    fun `symbols of the further chords`() {
+        assertEquals("G7sus4", symbol(G, SEVENTH_SUS4))
+        assertEquals("C6", symbol(C, SIXTH))
+        assertEquals("Am6", symbol(A, MINOR_SIXTH))
+        assertEquals("Cadd9", symbol(C, ADD9))
+        assertEquals("E9", symbol(E, NINTH))
+        assertEquals("Bdim", symbol(B, DIMINISHED))
+        assertEquals("C♯dim7", symbol(C_SHARP, DIMINISHED_SEVENTH))
+        assertEquals("Bm7♭5", symbol(B, HALF_DIMINISHED))
+        assertEquals("E♭aug", symbol(D_SHARP, AUGMENTED))
+        assertEquals("Lam6", symbol(A, MINOR_SIXTH, notation = Notation.SOLFEGE))
+        assertEquals("Hdim", symbol(B, DIMINISHED, notation = Notation.GERMAN))
+    }
+
+    @Test
+    fun `altered fifths and sixths are spelled by their sign`() {
+        // A diminished fifth is flat on a white root, the minor key's sign otherwise.
+        assertEquals("E G B♭", tones(E, DIMINISHED))
+        assertEquals("A C E♭ G♭", tones(A, DIMINISHED_SEVENTH))
+        assertEquals("B D F A", tones(B, HALF_DIMINISHED))
+        assertEquals("C♯ E G", tones(C_SHARP, DIMINISHED))
+        assertEquals("E♭ G♭ A C", tones(D_SHARP, DIMINISHED_SEVENTH))
+        // An augmented fifth is sharp on a white root, the major key's sign otherwise.
+        assertEquals("C E G♯", tones(C, AUGMENTED))
+        assertEquals("F A C♯", tones(F, AUGMENTED))
+        assertEquals("A♭ C E", tones(G_SHARP, AUGMENTED))
+        // A minor 6th's sixth is major: Am6 has an F♯, Gm6 a B♭ and an E.
+        assertEquals("A C E F♯", tones(A, MINOR_SIXTH))
+        assertEquals("G B♭ D E", tones(G, MINOR_SIXTH))
+        assertEquals("C♯ E G♯ A♯", tones(C_SHARP, MINOR_SIXTH))
+        assertEquals("C D E G B♭", tones(C, NINTH))
+        assertEquals("F B♭ C E♭", tones(F, SEVENTH_SUS4))
     }
 
     @Test

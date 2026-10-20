@@ -10,7 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
  *
  * **Search.** Every string is muted, open (if its open note is a chord tone) or pressed at a chord
  * tone within [MAX_SPAN] frets of the lowest fret pressed, up to [HIGHEST_FRET]. A shape must sound
- * every tone of the chord and no other (a 7th chord may leave out its fifth, as in
+ * every tone of the chord and no other (a 6th, 7th or 9th chord may leave out its fifth, as in
  * [ChordQuality.fifthOptional]), play a run of strings ending on the last string (strings are only
  * left out on the thick side, as chord charts do, so it can be strummed), at least [minPlayed] of
  * them (all four on a ukulele or mandolin), and on five strings or more have the root as its lowest

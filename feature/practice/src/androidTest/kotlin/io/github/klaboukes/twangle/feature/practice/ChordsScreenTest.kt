@@ -332,7 +332,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     /**
      * The panel under the name (where not [wide]): the roots in two rows of six (C to F, F♯ to B), then the chord types
-     * four and three, each wholly shown (scrolling the panel where it must; with [texts], every text in
+     * in four rows of four, each wholly shown (scrolling the panel where it must; with [texts], every text in
      * it too); Back closes it and leaves the name as it was.
      */
     private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
@@ -348,7 +348,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
         if (!wide) assertTrue("$case the panel under the name", node(PracticeTestTags.root(PitchClass.C)).fetchSemanticsNode().positionOnScreen.y >= button)
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
-        assertTrue("$case four chord types a row", top(PracticeTestTags.type(ChordQuality.MAJOR_SEVENTH)) == types && top(PracticeTestTags.type(ChordQuality.MINOR_SEVENTH)) > types)
+        // C to Cmaj7, Cm7 to C7sus4, C6 to C9, Cdim to Caug.
+        val rows = ChordQuality.entries.chunked(4).map { row -> row.map { top(PracticeTestTags.type(it)) } }
+        assertTrue("$case four chord types a row, in four rows", rows.size == 4 && rows.all { row -> row.size == 4 && row.all { it == row[0] } })
+        assertTrue("$case the rows one under the other", rows.zipWithNext().all { (above, below) -> below[0] > above[0] })
         for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
         for (quality in ChordQuality.entries) assertWhollyShown(node(PracticeTestTags.type(quality)), "$case type $quality")
         if (texts) compose.assertEveryTextWhollyShown("$case panel:")

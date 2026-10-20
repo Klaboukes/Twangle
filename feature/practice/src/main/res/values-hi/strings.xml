@@ -11,6 +11,15 @@
     <string name="practice_chord_minor_seventh">%1$s माइनर सेवन्थ</string>
     <string name="practice_chord_sus2">%1$s सस 2</string>
     <string name="practice_chord_sus4">%1$s सस 4</string>
+    <string name="practice_chord_seventh_sus4">%1$s सेवन्थ सस 4</string>
+    <string name="practice_chord_sixth">%1$s सिक्स्थ</string>
+    <string name="practice_chord_minor_sixth">%1$s माइनर सिक्स्थ</string>
+    <string name="practice_chord_add9">%1$s ऐड 9</string>
+    <string name="practice_chord_ninth">%1$s नाइन्थ</string>
+    <string name="practice_chord_diminished">%1$s डिमिनिश्ड</string>
+    <string name="practice_chord_diminished_seventh">%1$s डिमिनिश्ड सेवन्थ</string>
+    <string name="practice_chord_half_diminished">%1$s हाफ़-डिमिनिश्ड</string>
+    <string name="practice_chord_augmented">%1$s ऑगमेंटेड</string>
     <string name="practice_shape_count">%2$d में से %1$d</string>
     <string name="practice_shape_previous">पिछला आकार</string>
     <string name="practice_shape_next">अगला आकार</string>

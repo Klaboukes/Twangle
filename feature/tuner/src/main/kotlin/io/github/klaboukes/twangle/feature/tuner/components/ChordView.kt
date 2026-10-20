@@ -248,6 +248,7 @@ private fun qualityWords(quality: ChordQuality): Int = when (quality) {
     ChordQuality.MINOR_SEVENTH -> R.string.tuner_chord_minor_seventh
     ChordQuality.SUS2 -> R.string.tuner_chord_sus2
     ChordQuality.SUS4 -> R.string.tuner_chord_sus4
+    else -> error("The tuner names only the detected chord types, not $quality")
 }
 
 /** The symbol as drawn: a slash chord's "/E" smaller and in [muted], like a footnote to the chord. */

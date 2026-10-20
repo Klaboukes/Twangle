@@ -11,6 +11,15 @@
     <string name="practice_chord_minor_seventh">%1$s 마이너 세븐스</string>
     <string name="practice_chord_sus2">%1$s 서스 2</string>
     <string name="practice_chord_sus4">%1$s 서스 4</string>
+    <string name="practice_chord_seventh_sus4">%1$s 세븐스 서스 4</string>
+    <string name="practice_chord_sixth">%1$s 식스</string>
+    <string name="practice_chord_minor_sixth">%1$s 마이너 식스</string>
+    <string name="practice_chord_add9">%1$s 애드 나인</string>
+    <string name="practice_chord_ninth">%1$s 나인스</string>
+    <string name="practice_chord_diminished">%1$s 디미니시</string>
+    <string name="practice_chord_diminished_seventh">%1$s 디미니시 세븐스</string>
+    <string name="practice_chord_half_diminished">%1$s 하프 디미니시</string>
+    <string name="practice_chord_augmented">%1$s 어그먼트</string>
     <string name="practice_shape_count">%1$d / %2$d</string>
     <string name="practice_shape_previous">이전 운지</string>
     <string name="practice_shape_next">다음 운지</string>

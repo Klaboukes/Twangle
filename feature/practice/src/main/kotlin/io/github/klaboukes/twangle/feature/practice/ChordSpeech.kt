@@ -24,6 +24,15 @@ internal fun qualityWords(quality: ChordQuality): Int = when (quality) {
     ChordQuality.MINOR_SEVENTH -> R.string.practice_chord_minor_seventh
     ChordQuality.SUS2 -> R.string.practice_chord_sus2
     ChordQuality.SUS4 -> R.string.practice_chord_sus4
+    ChordQuality.SEVENTH_SUS4 -> R.string.practice_chord_seventh_sus4
+    ChordQuality.SIXTH -> R.string.practice_chord_sixth
+    ChordQuality.MINOR_SIXTH -> R.string.practice_chord_minor_sixth
+    ChordQuality.ADD9 -> R.string.practice_chord_add9
+    ChordQuality.NINTH -> R.string.practice_chord_ninth
+    ChordQuality.DIMINISHED -> R.string.practice_chord_diminished
+    ChordQuality.DIMINISHED_SEVENTH -> R.string.practice_chord_diminished_seventh
+    ChordQuality.HALF_DIMINISHED -> R.string.practice_chord_half_diminished
+    ChordQuality.AUGMENTED -> R.string.practice_chord_augmented
 }
 
 /**

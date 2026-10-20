@@ -11,6 +11,15 @@
     <string name="practice_chord_minor_seventh">%1$s minore settima</string>
     <string name="practice_chord_sus2">%1$s sus 2</string>
     <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_chord_seventh_sus4">%1$s settima sus 4</string>
+    <string name="practice_chord_sixth">%1$s sesta</string>
+    <string name="practice_chord_minor_sixth">%1$s minore sesta</string>
+    <string name="practice_chord_add9">%1$s add 9</string>
+    <string name="practice_chord_ninth">%1$s nona</string>
+    <string name="practice_chord_diminished">%1$s diminuito</string>
+    <string name="practice_chord_diminished_seventh">%1$s settima diminuita</string>
+    <string name="practice_chord_half_diminished">%1$s semidiminuito</string>
+    <string name="practice_chord_augmented">%1$s aumentato</string>
     <string name="practice_shape_count">%1$d di %2$d</string>
     <string name="practice_shape_previous">Diteggiatura precedente</string>
     <string name="practice_shape_next">Diteggiatura successiva</string>

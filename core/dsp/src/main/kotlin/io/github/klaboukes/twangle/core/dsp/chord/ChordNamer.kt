@@ -3,7 +3,7 @@ package io.github.klaboukes.twangle.core.dsp.chord
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 
 /**
- * Names a set of pitch classes as one of the [ChordQuality] chords, or not at all. Pure and
+ * Names a set of pitch classes as one of the [ChordQuality.detected] chords, or not at all. Pure and
  * allocation-free.
  *
  * The set must be exactly a chord's: every tone there and nothing else (a [ChordQuality.fifthOptional]
@@ -14,7 +14,7 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
  */
 object ChordNamer {
 
-    private val qualities = ChordQuality.entries.toTypedArray()
+    private val qualities = ChordQuality.entries.filter { it.detected }.toTypedArray()
 
     /**
      * The chord whose tones are exactly [pitchClasses] (a 12-bit mask, bit i = pitch class i from

@@ -11,6 +11,15 @@
     <string name="practice_chord_minor_seventh">%1$s-Moll-Septakkord</string>
     <string name="practice_chord_sus2">%1$s sus 2</string>
     <string name="practice_chord_sus4">%1$s sus 4</string>
+    <string name="practice_chord_seventh_sus4">%1$s-Septakkord sus 4</string>
+    <string name="practice_chord_sixth">%1$s-Dur mit Sexte</string>
+    <string name="practice_chord_minor_sixth">%1$s-Moll mit Sexte</string>
+    <string name="practice_chord_add9">%1$s add 9</string>
+    <string name="practice_chord_ninth">%1$s-Nonenakkord</string>
+    <string name="practice_chord_diminished">%1$s vermindert</string>
+    <string name="practice_chord_diminished_seventh">%1$s verminderter Septakkord</string>
+    <string name="practice_chord_half_diminished">%1$s halbvermindert</string>
+    <string name="practice_chord_augmented">%1$s übermäßig</string>
     <string name="practice_shape_count">%1$d von %2$d</string>
     <string name="practice_shape_previous">Vorheriger Griff</string>
     <string name="practice_shape_next">Nächster Griff</string>

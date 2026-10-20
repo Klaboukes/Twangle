@@ -11,6 +11,15 @@
     <string name="practice_chord_minor_seventh">%1$s マイナーセブンス</string>
     <string name="practice_chord_sus2">%1$s サスツー</string>
     <string name="practice_chord_sus4">%1$s サスフォー</string>
+    <string name="practice_chord_seventh_sus4">%1$s セブンスサスフォー</string>
+    <string name="practice_chord_sixth">%1$s シックス</string>
+    <string name="practice_chord_minor_sixth">%1$s マイナーシックス</string>
+    <string name="practice_chord_add9">%1$s アドナインス</string>
+    <string name="practice_chord_ninth">%1$s ナインス</string>
+    <string name="practice_chord_diminished">%1$s ディミニッシュ</string>
+    <string name="practice_chord_diminished_seventh">%1$s ディミニッシュセブンス</string>
+    <string name="practice_chord_half_diminished">%1$s マイナーセブンスフラットファイブ</string>
+    <string name="practice_chord_augmented">%1$s オーギュメント</string>
     <string name="practice_shape_count">%1$d / %2$d</string>
     <string name="practice_shape_previous">前の押さえ方</string>
     <string name="practice_shape_next">次の押さえ方</string>

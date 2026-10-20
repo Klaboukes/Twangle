@@ -15,6 +15,15 @@
     <string name="practice_chord_minor_seventh">%1$s minor seventh</string>
     <string name="practice_chord_sus2">%1$s suspended second</string>
     <string name="practice_chord_sus4">%1$s suspended fourth</string>
+    <string name="practice_chord_seventh_sus4">%1$s seventh suspended fourth</string>
+    <string name="practice_chord_sixth">%1$s sixth</string>
+    <string name="practice_chord_minor_sixth">%1$s minor sixth</string>
+    <string name="practice_chord_add9">%1$s added ninth</string>
+    <string name="practice_chord_ninth">%1$s ninth</string>
+    <string name="practice_chord_diminished">%1$s diminished</string>
+    <string name="practice_chord_diminished_seventh">%1$s diminished seventh</string>
+    <string name="practice_chord_half_diminished">%1$s half-diminished</string>
+    <string name="practice_chord_augmented">%1$s augmented</string>
     <!-- Between the ‹ › buttons under the chart: shape %1$d of the %2$d found. -->
     <string name="practice_shape_count">%1$d of %2$d</string>
     <!-- TalkBack, the ‹ and › buttons that step through the shapes of the chord. -->
