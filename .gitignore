@@ -30,3 +30,6 @@ keystore.properties
 fastlane/metadata/android/*/images/*
 !fastlane/metadata/android/en-US/images/icon.png
 !fastlane/metadata/android/en-US/images/featureGraphic.png
+
+# Release bundles and their notes, made by scripts/release.sh bundle (docs/release.md)
+/release/

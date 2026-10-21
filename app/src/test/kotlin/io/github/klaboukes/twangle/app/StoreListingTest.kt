@@ -15,7 +15,8 @@ import java.util.Properties
  * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md). Each
  * folder also has the eight captions of the phone screenshots (`screenshot_captions.txt`, one a line,
  * in the order of the plan), which the store-screenshot test draws above each screen: short, and
- * without those words either, since Google bans them in screenshots too. The icon and the feature
+ * without those words either, since Google bans them in screenshots too. Each release's notes
+ * (`changelogs/<versionCode>.txt`) are there in every language, within Play's 500 characters. The icon and the feature
  * graphic, one pair for every language (`en-US/images/`, made by `scripts/store-graphics.sh`), have
  * Play's exact sizes and formats.
  */
@@ -128,6 +129,30 @@ class StoreListingTest {
     }
 
     @Test
+    fun `release notes are in every language and within Play's limit`() {
+        val notes = folderOf.values.associateWith { folder ->
+            File(listings, "$folder/$CHANGELOGS").listFiles().orEmpty().filter { it.isFile }.map { it.name }.toSet()
+        }
+        notes.forEach { (folder, names) ->
+            names.forEach { name ->
+                val where = "$folder/$CHANGELOGS/$name"
+                assertTrue("$where must be named after its versionCode, e.g. 10001.txt", RELEASE_NOTES_NAME.matches(name))
+                val text = text(folder, "$CHANGELOGS/$name").orEmpty()
+                assertTrue("$where is empty", text.isNotBlank())
+                val length = text.codePointCount(0, text.length)
+                assertTrue("$where has $length characters, Play takes at most $RELEASE_NOTES_LIMIT", length <= RELEASE_NOTES_LIMIT)
+                val emoji = text.codePoints().filter { it in 0x1F000..0x1FAFF || it == 0xFE0F }.toArray()
+                assertTrue("Emoji in $where", emoji.isEmpty())
+            }
+        }
+        // A release's notes are written in every language at once (scripts/release.sh bundle needs them all).
+        notes.values.flatten().toSet().forEach { name ->
+            val missing = notes.filterValues { name !in it }.keys
+            assertTrue("Release notes $name are missing in: $missing", missing.isEmpty())
+        }
+    }
+
+    @Test
     fun `the icon and the feature graphic have Play's sizes and formats`() {
         PICTURES.forEach { picture ->
             val file = File(listings, "$PICTURE_FOLDER/${picture.name}")
@@ -174,6 +199,13 @@ class StoreListingTest {
 
         /** At most this many characters, so a caption fits in three lines of large type above the screen. */
         const val CAPTION_LIMIT = 80
+
+        /** Each release's "What's new", one file a language named after its versionCode (docs/release.md). */
+        const val CHANGELOGS = "changelogs"
+        val RELEASE_NOTES_NAME = Regex("""[1-9][0-9]*\.txt""")
+
+        /** Google Play's limit for release notes, per language. */
+        const val RELEASE_NOTES_LIMIT = 500
 
         /** One icon and feature graphic for every language, in the default listing's folder. */
         const val PICTURE_FOLDER = "en-US/images"

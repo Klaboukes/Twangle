@@ -48,6 +48,7 @@ scripts/meter-frames.sh                 # frame times of every meter look on the
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
+scripts/release.sh bump|notes|bundle    # a Play release: raise the version, show the notes, build the signed bundle and tag it (see /release)
 ```
 ### Dev machine environment (Windows)
 - No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
@@ -99,6 +100,7 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in).
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
+- **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md).
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
@@ -108,7 +110,7 @@ Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default bra
 
 **Every change goes through its own branch and pull request. Never commit directly to `main`.**
 1. `git switch main && git pull`
-2. Branch: `phase-<N>/<short-kebab-topic>` for roadmap work (e.g. `phase-1/yin-detector`), `fix/<topic>` for repairs, `chore/<topic>` for tooling and docs.
+2. Branch: `phase-<N>/<short-kebab-topic>` for roadmap work (e.g. `phase-1/yin-detector`), `fix/<topic>` for repairs, `chore/<topic>` for tooling and docs, `release/v<version>` for a release's version and notes.
 3. Commit in small, focused commits (imperative subject line, ≤ 72 chars).
 4. Tick the finished items in ROADMAP.md (☐ → ☑) in the same branch.
 5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
