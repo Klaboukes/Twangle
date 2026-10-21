@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +68,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -107,7 +109,9 @@ data class NoteReadout(
  * Big target note with its octave, then how far off it is ("12 cents flat") in a pill, and the
  * frequency. With the [display] set to the wave ([WaveView], in [waveLook], e.g. the strobe),
  * that picture replaces both: the dial already shows how far off the note is, so the pill only shows
- * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side. The note is set in the style's display face and shrinks to fit when a face or a
+ * [hint] and stays empty during a note. [compact] makes the note and the picture smaller, for short spaces such as a phone on its side.
+ * With a [maxHeight] the note (only the note, whatever it says) gets smaller so the block fits in it,
+ * down to [FIT_NOTE_MIN_SIZE]. The note is set in the style's display face and shrinks to fit when a face or a
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and a small check mark shows at the pill's
  * start, so the state doesn't rely on colour alone (colour-blind players see it too). With the needle's
@@ -147,6 +151,7 @@ fun NoteDisplay(
     spokenHint: String = hint,
     display: TunerDisplay = TunerDisplay.NEEDLE,
     compact: Boolean = false,
+    maxHeight: Dp = Dp.Unspecified,
     waveLook: WaveLook = WaveLook.DEFAULT,
     showTuneHint: Boolean = false,
     reception: () -> Float? = { null },
@@ -231,6 +236,13 @@ fun NoteDisplay(
     )
     val density = LocalDensity.current
     val noteSize = if (compact) COMPACT_NOTE_SIZE else BIG_NOTE_SIZE
+    val displayLarge = MaterialTheme.typography.displayLarge
+    // Already huge, so it doesn't grow further with the system font size; that would
+    // push the rest of the tuner off the screen.
+    fun noteStyle(size: Dp) = displayLarge.copy(
+        fontSize = with(density) { size.toSp() },
+        lineHeight = with(density) { (size * BIG_NOTE_LINE_RATIO).toSp() },
+    )
     val placeholder = stringResource(R.string.tuner_placeholder_note)
     val noteText = remember(readout?.noteName, placeholder) {
         // Spaces in the style's face around the ♪ give its line the height of a note's line, so
@@ -249,10 +261,7 @@ fun NoteDisplay(
                     liveRegion = LiveRegionMode.Polite
                 },
         )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
+        val noteRow = @Composable { letterSize: Dp ->
             // The note reads "E2" in every language: the octave stays right of the letter in
             // right-to-left languages too.
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -274,15 +283,10 @@ fun NoteDisplay(
                 ) {
                     Text(
                         text = noteText,
-                        // Already huge, so it doesn't grow further with the system font size; that would
-                        // push the rest of the tuner off the screen.
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = with(density) { noteSize.toSp() },
-                            lineHeight = with(density) { (noteSize * BIG_NOTE_LINE_RATIO).toSp() },
-                        ),
+                        style = noteStyle(letterSize),
                         autoSize = TextAutoSize.StepBased(
-                            minFontSize = with(density) { BIG_NOTE_MIN_SIZE.toSp() },
-                            maxFontSize = with(density) { noteSize.toSp() },
+                            minFontSize = with(density) { minOf(BIG_NOTE_MIN_SIZE, letterSize).toSp() },
+                            maxFontSize = with(density) { letterSize.toSp() },
                             stepSize = with(density) { 4.dp.toSp() },
                         ),
                         color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
@@ -302,7 +306,10 @@ fun NoteDisplay(
                     }
                 }
             }
-            val pictureSize = Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
+        }
+        // Everything under the note: the wave, the pill and the lines under it.
+        val rest = @Composable {
+            val pictureSize =Modifier.size(WAVE_WIDTH, if (compact) COMPACT_WAVE_HEIGHT else WAVE_HEIGHT)
             when (display) {
                 TunerDisplay.WAVE -> WaveView(
                     cents = readout?.cents,
@@ -420,8 +427,50 @@ fun NoteDisplay(
                 )
             }
         }
+        if (maxHeight.isSpecified) {
+            FitNoteColumn(maxHeight, noteSize, rememberLineHeight(noteStyle(noteSize)), noteRow, rest)
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) {
+                noteRow(noteSize)
+                rest()
+            }
+        }
     }
 }
+
+/**
+ * [note] above [rest], as [NoteDisplay]'s column, with the note at the size that fills what [rest]
+ * leaves of [maxHeight]: at most [fullSize] (whose line is [fullLine] px tall in the style's face),
+ * at least [FIT_NOTE_MIN_SIZE]. It follows the room, not the note's name, so it doesn't change from
+ * one note to the next.
+ */
+@Composable
+private fun FitNoteColumn(
+    maxHeight: Dp,
+    fullSize: Dp,
+    fullLine: Int,
+    note: @Composable (size: Dp) -> Unit,
+    rest: @Composable () -> Unit,
+) {
+    SubcomposeLayout { constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0, maxHeight = Constraints.Infinity)
+        val restPlaceable = subcompose(FitSlot.REST) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(NOTE_SPACING)) { rest() }
+        }.single().measure(loose)
+        val spacing = NOTE_SPACING.roundToPx()
+        val room = maxHeight.roundToPx() - restPlaceable.height - spacing
+        // The line grows with the note, so the size that fills the room is in proportion to it.
+        val size = (fullSize * (room.toFloat() / fullLine)).coerceIn(FIT_NOTE_MIN_SIZE, fullSize)
+        val notePlaceable = subcompose(FitSlot.NOTE) { note(size) }.single().measure(loose)
+        val width = maxOf(notePlaceable.width, restPlaceable.width)
+        layout(width, notePlaceable.height + spacing + restPlaceable.height) {
+            notePlaceable.placeRelative((width - notePlaceable.width) / 2, 0)
+            restPlaceable.placeRelative((width - restPlaceable.width) / 2, notePlaceable.height + spacing)
+        }
+    }
+}
+
+private enum class FitSlot { NOTE, REST }
 
 /**
  * The note in focus mode's corner, beside the full-screen meter: its name and octave at [FOCUS_NOTE_SIZE]
@@ -516,6 +565,12 @@ private val BIG_NOTE_SIZE = 112.dp
 private val BIG_NOTE_MIN_SIZE = 56.dp
 private const val BIG_NOTE_LINE_RATIO = 120f / 112f
 private val COMPACT_NOTE_SIZE = 80.dp
+
+/** A note fitted to a short screen ([NoteDisplay]'s maxHeight) gets no smaller than this. */
+private val FIT_NOTE_MIN_SIZE = 32.dp
+
+/** Between the note, the wave, the pill and the lines under it. */
+private val NOTE_SPACING = 6.dp
 private val CHECK_SIZE = 24.dp
 
 /** The wave view: narrower than the note's pill can grow, and low, so it stays in the background. */

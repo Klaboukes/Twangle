@@ -732,7 +732,7 @@ fun TunerContent(
     // Kept here, as the bars are: TalkBack's pacing carries over when the note's display is built
     // afresh, so a note fading to "Play a string" (or a short drop-out) isn't said at once.
     val speech = rememberPacedSpeech()
-    val noteFor = @Composable { compact: Boolean ->
+    val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
         when (state) {
             is TunerUiState.StrumCheck -> StrumStatus(state)
             is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString)
@@ -742,6 +742,7 @@ fun TunerContent(
                 hint = "",
                 display = display,
                 compact = compact,
+                maxHeight = maxHeight,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
                 reception = reception,
@@ -756,6 +757,7 @@ fun TunerContent(
                     spokenHint = listeningHint(mode, state, soundingString, rememberNoteNameSpeech()),
                     display = display,
                     compact = compact,
+                    maxHeight = maxHeight,
                     waveLook = waveLook,
                     showTuneHint = showTuneHint,
                     // While a reference tone sounds its line says which, not a tip about the mic.
@@ -767,6 +769,7 @@ fun TunerContent(
                 hint = "",
                 display = display,
                 compact = compact,
+                maxHeight = maxHeight,
                 waveLook = waveLook,
                 showTuneHint = showTuneHint,
                 speech = speech,
@@ -794,8 +797,11 @@ fun TunerContent(
         }
     }
     // The note (with its pill and frequency, or the wave) is a tour step of its own, after the meter.
-    val note = @Composable { compact: Boolean -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact) } }
+    val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact, maxHeight) } }
     val error = (state as? TunerUiState.Error)?.reason
+    // The plain tuner's meter; with a tool on, its panel takes the meter's place.
+    val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
+        !(pitchTrail && pitchHistory != null)
 
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
         val twoPane = @Composable {
@@ -805,7 +811,7 @@ fun TunerContent(
                 header = header,
                 guitarSlot = guitarSlot,
                 gauge = gauge,
-                note = note,
+                note = { compact -> note(compact, Dp.Unspecified) },
                 compactNote = pictured || showTuneHint,
             )
         }
@@ -816,7 +822,8 @@ fun TunerContent(
                 onRetry = onRetry,
                 header = header,
                 gauge = gauge,
-                note = { note(false) },
+                note = { maxHeight -> note(false, maxHeight) },
+                noteShrinks = plainMeter,
                 guitarSlot = guitarSlot,
             )
         }
@@ -858,9 +865,6 @@ fun TunerContent(
                 // Back leaves focus mode, as it leaves a video player's full screen, before it leaves the app
                 // (not while the tour runs: there Back ends the tour).
                 if (onFocusModeChange != null) BackHandler(enabled = !controlsAlwaysShown) { onFocusModeChange(false) }
-                // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
-                val fullMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
-                    !(pitchTrail && pitchHistory != null)
                 Crossfade(targetState = showing, label = "compactControls") { shown ->
                     if (shown) {
                         Box(Modifier.fillMaxSize().onEveryTouch { touches++ }) {
@@ -873,9 +877,10 @@ fun TunerContent(
                             error = error,
                             onRetry = onRetry,
                             gauge = gauge,
-                            note = { note(false) },
+                            note = { note(false, Dp.Unspecified) },
                             below = { CompactExtraFor(state, mode, pictured) },
-                            focusNote = if (fullMeter) focusNote else null,
+                            // The plain tuner gets the meter over the whole screen; a tool keeps its panel beside its own text and buttons.
+                            focusNote = if (plainMeter) focusNote else null,
                             // The strum check's columns are buttons: each keeps a 48 dp touch width.
                             gaugeMinWidth = if (state is TunerUiState.StrumCheck) strumPanelMinWidth(state.tuning.strings.size) else GAUGE_MIN_WIDTH,
                             onShowControls = { controlsShown = true },
@@ -920,8 +925,11 @@ fun TunerContent(
  * check's switch above them) at the bottom. The free [height] is shared out one to two above the meter and above the
  * strings, so the meter sits a little high and the gaps look balanced. Everything but the meter keeps
  * the [COLUMN_PADDING] text margin. Where the screen is too short for all that (a narrow phone with
- * navigation buttons), the gaps close up to [SECTION_SPACING] and the meter shrinks (keeping its shape,
- * down to [GAUGE_MIN_WIDTH]); only with a very large system font is it still taller than the screen,
+ * navigation buttons), the gaps close up to [SECTION_SPACING] and, with [noteShrinks] (the plain
+ * tuner), the note gets smaller (given its room as [note]'s maxHeight) while the meter keeps its full
+ * width (owner, 2026-10-21: shrink the note, never the meter). With a tool on, its panel in the
+ * meter's place shrinks instead (keeping its shape, down to [GAUGE_MIN_WIDTH]), so the tool's text
+ * under it keeps its size. Only with a very large system font is it still taller than the screen,
  * and then it scrolls. The scroll area fills the screen, so
  * the meter's glow fades out on the screen rather than at the column's edge.
  */
@@ -932,7 +940,8 @@ private fun SingleColumnLayout(
     onRetry: () -> Unit,
     header: @Composable () -> Unit,
     gauge: @Composable () -> Unit,
-    note: @Composable () -> Unit,
+    note: @Composable (maxHeight: Dp) -> Unit,
+    noteShrinks: Boolean,
     guitarSlot: @Composable () -> Unit,
 ) {
     val textMargin = Modifier.padding(horizontal = COLUMN_PADDING - METER_MARGIN)
@@ -952,10 +961,16 @@ private fun SingleColumnLayout(
             }
             Spacer(Modifier.gap(1f))
         } else {
-            // On a short screen (a phone with navigation buttons) the meter shrinks, so the strings stay in view.
-            Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
-            Spacer(Modifier.height(SECTION_SPACING))
-            Box(textMargin) { note() }
+            // On a short screen (a phone with navigation buttons) the note, or a tool's panel, shrinks, so the strings stay in view.
+            if (noteShrinks) {
+                FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH)
+                Spacer(Modifier.height(SECTION_SPACING))
+                Shrinking { room -> Box(textMargin) { note(room) } }
+            } else {
+                Shrinking { room -> FitGauge(gauge, maxWidth = COLUMN_MAX_WIDTH, maxHeight = room) }
+                Spacer(Modifier.height(SECTION_SPACING))
+                Box(textMargin) { note(Dp.Unspecified) }
+            }
             Spacer(Modifier.height(SECTION_SPACING))
             Spacer(Modifier.gap(1f))
             Box(textMargin) { guitarSlot() }

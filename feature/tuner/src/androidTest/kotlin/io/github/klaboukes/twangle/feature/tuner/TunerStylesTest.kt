@@ -37,6 +37,7 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -143,6 +144,24 @@ class TunerStylesTest(private val style: VisualStyle) {
     fun uprightEverythingFitsWithoutScrolling() {
         show()
         forEachCase(PHONE_UPRIGHT, 1f) { case -> assertAllInView(case) }
+    }
+
+    /**
+     * On a short phone the note shrinks, never the meter (owner, 2026-10-21: on the Galaxy S26 it was
+     * at its 160 dp minimum): the meter keeps the screen's width less 8 dp at each side, light and
+     * dark, with the cents and with the wave, and everything stays in view. Space Age's face, whose
+     * line is the tallest, is in the thorough run.
+     */
+    @Test
+    fun uprightOnAShortPhoneTheMeterKeepsItsFullWidth() {
+        show()
+        forEachCase(PHONE_UPRIGHT, 1f) { case ->
+            assertAllInView(case)
+            val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+            val scale = (window.right - window.left) / PHONE_UPRIGHT.width
+            val meter = gauge.assertIsDisplayed().getBoundsInRoot()
+            assertEquals("$case meter width", (PHONE_UPRIGHT.width - 16.dp).value * scale, (meter.right - meter.left).value, 1f)
+        }
     }
 
     /** The owner's phone and text size: the Xiaomi 12X upright at 1.25× text. */
