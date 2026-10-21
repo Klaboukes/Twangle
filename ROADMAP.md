@@ -24,7 +24,7 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Done by the owner in the Play Console, with Claude's help. Plan at least 3 weeks of calendar time: Google's closed test alone takes 14 days. The account and the Play Console forms can start any time; the tracks need Phase 37's build, and the store listing Phase 38's texts and pictures. The finished preparation (final look, privacy policy, contact email, watch decision) is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
-- ☐ Developer account ready (owner, with Claude's help): identity and Android-device verification, and a public developer contact email (**decision 5**)
+- ◐ Developer account ready (owner, with Claude's help): identity and Android-device verification, and a public developer contact email (**decision 5**). Owner, 2026-10-21: signed up as a personal account (2-Step Verification on, fee paid), waiting for Google's identity check
 - ☐ The policy URL and the contact email entered in the Play Console (once the developer account is ready)
 - ☐ Play Console *App content*: privacy policy, ads (none), app access (no login), content rating questionnaire, target audience (13+), data safety (no data collected or shared), category Music & Audio
 - ☐ Store listing in the Play Console: the texts, screenshots and graphics from Phase 38, category Music & Audio, up to five tags, contact email and website (**decision 5**); after the internal-track upload, read Play's pre-launch report, its accessibility findings included
