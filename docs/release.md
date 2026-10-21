@@ -2,7 +2,8 @@
 
 How a new version of Twangle gets from `main` to people's phones. Claude does the build part with the
 `/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`; the owner does the
-Play Console part with the checklist below.
+Play Console part with the checklist below. Phase 41 (ROADMAP.md) will send the uploads, promotions
+and store listing through the Google Play API instead, with the owner's OK for each.
 
 ## The idea
 - **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or

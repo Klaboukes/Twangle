@@ -4,13 +4,15 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22, 24–38 and 40 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–38 and 40 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 41 (uploads through the Google Play API), Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
 - ◐ **Find 12+ testers for the closed test (Phase 23):** Google requires new personal developer accounts to run a closed test with at least 12 testers who stay opted in for 14 days in a row before the app can go public. Gather their Google account emails (or a Google Group) early (owner, 2026-10-16: gathering them through their personal network). No hurry: the closed test starts once the developer account and the internal track are ready
+
+- ☐ **A service account for the Google Play API (Phase 41):** a robot user that lets Claude's scripts upload to Play. Made once in Google Cloud and the Play Console, about 15 minutes, with Claude guiding in the browser
 
 ## Owner checks (live tests)
 Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
@@ -22,12 +24,22 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
 
 ---
 
+## Phase 41 — Releases through the Google Play API
+Goal: one command sends a release, the store texts and the pictures to Google Play, so the owner no longer drags files in or pastes 16 languages by hand. Owner, 2026-10-21: before Phase 23's store-listing step, which it then does; Phase 23's Play Console forms and the policy URL don't wait for it. It uses the Google Play Developer API through the Gradle Play Publisher plugin (Triple-T, version in the catalog) and runs on the PC only: the app itself doesn't change (no `INTERNET` permission).
+- ☐ Owner, with Claude guiding in the browser: a Google Cloud project with the Google Play Android Developer API switched on, a service account and its JSON key, saved next to the upload key in `~/.twangle-keys/` (never in the repo); the service account invited in the Play Console (*Users and permissions*) for Twangle only, with permission to release and to edit the store listing
+- ☐ Gradle Play Publisher in `:app`, reading the key from `~/.twangle-keys/` as the upload key is read; without it (CI, other machines) nothing changes and nothing fails. It takes the texts, release notes and pictures from `fastlane/metadata/android/`, still the one place they live (`StoreListingTest` keeps guarding them)
+- ☐ `scripts/release.sh upload`: the signed bundle and its notes in every language to the internal track; while Twangle is still a draft on Play, as a draft release the owner starts with one click
+- ☐ `scripts/release.sh promote closed|production` and `rollout <percent>|halt`: the same build to another track, a staged rollout raised step by step, or halted
+- ☐ `scripts/release.sh listing`: title, short and full description, screenshots (`scripts/store-screenshots.sh`), icon and feature graphic for every language
+- ☐ docs/release.md and the `/release` skill updated: Claude asks the owner before every upload, promotion and listing change, since each changes what people get or see; the owner still checks the internal build on the Xiaomi before it is promoted
+- ☐ Tried for real: the store listing sent for every language, and a build on the internal track as a draft
+
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Done by the owner in the Play Console, with Claude's help. Plan at least 3 weeks of calendar time: Google's closed test alone takes 14 days. The account and the Play Console forms can start any time; the tracks need Phase 37's build, and the store listing Phase 38's texts and pictures. The finished preparation (final look, privacy policy, contact email, watch decision) is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
 - ☑ Developer account ready (owner, with Claude's help): identity and Android-device verification, and a public developer contact email (**decision 5**). Owner, 2026-10-21: personal account, identity and device checks passed
 - ☐ The policy URL and the contact email entered in the Play Console (once the developer account is ready)
 - ☐ Play Console *App content*: privacy policy, ads (none), app access (no login), content rating questionnaire, target audience (13+), data safety (no data collected or shared), category Music & Audio
-- ☐ Store listing in the Play Console: the texts, screenshots and graphics from Phase 38, category Music & Audio, up to five tags, contact email and website (**decision 5**); after the internal-track upload, read Play's pre-launch report, its accessibility findings included
+- ☐ Store listing in the Play Console: the texts, screenshots and graphics from Phase 38, sent with `scripts/release.sh listing` (Phase 41), category Music & Audio, up to five tags, contact email and website (**decision 5**); after the internal-track upload, read Play's pre-launch report, its accessibility findings included
 - ☐ Internal track: install the Play-signed build on the Xiaomi from Play and check the mic, widget and language switch
 - ☐ Closed track with 12+ testers for 14 days in a row (see *Waiting on the owner*), collecting their feedback
 - ☐ Apply for production access, then a staged rollout to production
