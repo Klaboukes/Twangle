@@ -4,7 +4,7 @@ Status legend: ☐ todo · ◐ in progress · ☑ done
 
 Each phase ends in a state that builds and can be demoed. Phases are worked in the order they are listed here, not by number. See [ARCHITECTURE.md](ARCHITECTURE.md) and its topic files for design details.
 
-Phases 0–22, 24–38 and 40 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 41 (uploads through the Google Play API), Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
+Phases 0–22, 24–38 and 40 are finished and moved to [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the overview of the music tools that went into v1.0. Left is the release: Phase 41 (uploads through the Google Play API), Phase 42 (a check on a real tablet), Phase 23 (the owner, in the Play Console), then Phase 39, opening the code. Move a phase there once all its items are ☑, and finished owner items too, so only open ones stay below. Ideas not planned yet live in [IDEAS.md](IDEAS.md).
 
 ---
 
@@ -13,6 +13,8 @@ Things only the owner can start. Claude mentions these at the start of a session
 - ◐ **Find 12+ testers for the closed test (Phase 23):** Google requires new personal developer accounts to run a closed test with at least 12 testers who stay opted in for 14 days in a row before the app can go public. Gather their Google account emails (or a Google Group) early (owner, 2026-10-16: gathering them through their personal network). No hurry: the closed test starts once the developer account and the internal track are ready
 
 - ☐ **A service account for the Google Play API (Phase 41):** a robot user that lets Claude's scripts upload to Play. Made once in Google Cloud and the Play Console, about 15 minutes, with Claude guiding in the browser
+
+- ☐ **Plug in the Lenovo Tab M11 (Phase 42):** turn on its developer options and USB debugging, plug it into the PC and accept the "Allow USB debugging?" prompt, then tell Claude
 
 ## Owner checks (live tests)
 Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
@@ -33,6 +35,14 @@ Goal: one command sends a release, the store texts and the pictures to Google Pl
 - ☐ `scripts/release.sh listing`: title, short and full description, screenshots (`scripts/store-screenshots.sh`), icon and feature graphic for every language
 - ☐ docs/release.md and the `/release` skill updated: Claude asks the owner before every upload, promotion and listing change, since each changes what people get or see; the owner still checks the internal build on the Xiaomi before it is promoted
 - ☐ Tried for real: the store listing sent for every language, and a build on the internal track as a draft
+
+## Phase 42 — Check on a real tablet (Lenovo Tab M11)
+Goal: Twangle looks and works right on a real tablet before v1.0, since Play offers it to tablets too. Owner, 2026-10-21: the owner has a Lenovo Tab M11 and plugs it in later. The layouts already pick their arrangement from the space (`tunerLayoutFor`), and the UI tests already include a tablet-sized screen, so this checks the real thing: the tablet's own density, microphone, speaker and navigation. It starts once the tablet is plugged in (see *Waiting on the owner*); until then `/roadmap-step` skips it, and it doesn't hold up Phase 23.
+- ☐ Twangle installed on the tablet; its details (adb serial, Android version, screen size in dp, refresh rate, navigation) and any install quirks noted in CLAUDE.md next to the two phones
+- ☐ Every tab checked on the tablet, upright and on its side, in a few styles: the tuner (column upright, two panes on its side), focus mode full screen, the metronome, Practice and its tools, Settings and About, the tour, and the widget on the home screen
+- ☐ The tuner reads a string through the tablet's microphone (a short test tone from the laptop), and the reference tones and metronome clicks sound through its speaker
+- ☐ What looks or works wrong fixed, each fix on its own branch and PR, with a tablet-sized case added to the matching UI test where one is missing
+- ☐ With the owner: decide whether the store listing gets 10-inch tablet screenshots (Play shows them to tablet users), and if so take them on the tablet with `scripts/store-screenshots.sh`
 
 ## Phase 23 — Go live on the Play Store → **v1.0**
 Goal: Twangle is public on Google Play. Done by the owner in the Play Console, with Claude's help. Plan at least 3 weeks of calendar time: Google's closed test alone takes 14 days. The account and the Play Console forms can start any time; the tracks need Phase 37's build, and the store listing Phase 38's texts and pictures. The finished preparation (final look, privacy policy, contact email, watch decision) is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md).
