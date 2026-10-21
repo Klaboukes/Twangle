@@ -45,6 +45,7 @@ import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
+import io.github.klaboukes.twangle.core.testing.assertMenuUnder
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
@@ -331,21 +332,19 @@ class ChordsScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The panel under the name (where not [wide]): the roots in two rows of six (C to F, F♯ to B), then the chord types
+     * The panel under the name where it fits (where not [wide]): the roots in two rows of six (C to F, F♯ to B), then the chord types
      * in four rows of four, each wholly shown (scrolling the panel where it must; with [texts], every text in
      * it too); Back closes it and leaves the name as it was.
      */
     private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
         fun top(tag: String) = node(tag).fetchSemanticsNode().positionInRoot.y
-        // The panel is a popup, a window of its own: against the name button on the screen.
-        val button = picker().fetchSemanticsNode().let { it.positionOnScreen.y + it.size.height }
         val name = picker().fetchSemanticsNode().config[SemanticsProperties.ContentDescription].joinToString()
         openPanel()
         val first = top(PracticeTestTags.root(PitchClass.C))
         val second = top(PracticeTestTags.root(PitchClass.F_SHARP))
         assertTrue("$case roots in two rows of six", top(PracticeTestTags.root(PitchClass.F)) == first && second > first && top(PracticeTestTags.root(PitchClass.B)) == second)
         // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
-        if (!wide) assertTrue("$case the panel under the name", node(PracticeTestTags.root(PitchClass.C)).fetchSemanticsNode().positionOnScreen.y >= button)
+        if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
         // C to Cmaj7, Cm7 to C7sus4, C6 to C9, Cdim to Caug.
