@@ -600,8 +600,12 @@ private val NAME_BUTTON_PADDING = 4.dp
 private val MENU_PADDING = 4.dp
 private val SECTION_GAP = 4.dp
 
-/** The short name shrinks at most to this; the button is one line of [NAME_LINE_SIZE] tall, with room for rounding. */
-private val NAME_MIN_SIZE = 10.sp
+/**
+ * The short name shrinks at most to this: at 2× text the wide Space Age letters need it for "Sol♯m pent."
+ * on the button (10 sp didn't fit, the overnight run of 2026-10-20); at 1× it never gets this small. The
+ * button is one line of [NAME_LINE_SIZE] tall, with room for rounding.
+ */
+private val NAME_MIN_SIZE = 7.sp
 private val NAME_LINE_SIZE = 12.sp
 private const val NAME_LINE = 1.5f
 
