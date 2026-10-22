@@ -1,11 +1,11 @@
 # Releasing an update on Google Play
 
-How a new version of Twangle gets from `main` to people's phones. Claude does the build part with the
-`/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`; the owner does the
-Play Console part with the checklist below. Phase 41 (ROADMAP.md) sends the uploads, promotions
-and store listing through the Google Play API instead, with the owner's OK for each: the upload to
-the internal track, the promotions and the staged rollout (`scripts/release.sh upload`, `promote`,
-`rollout`, `halt`), and the store listing (`scripts/release.sh listing`), below.
+How a new version of Twangle gets from `main` to people's phones. Claude does it with the
+`/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`: the build, and then,
+through the Google Play API (Phase 41), the upload to the internal track, the promotions, the staged
+rollout and the store listing. **Each step that reaches Google Play waits for the owner's yes**,
+since it changes what people get or see. The owner checks every build on the Xiaomi before it goes
+further, and does the few things only the Play Console can do (the checklist below).
 
 ## The idea
 - **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or
@@ -33,14 +33,23 @@ the internal track, the promotions and the staged rollout (`scripts/release.sh u
 4. On `main`: `scripts/release.sh bundle` builds the phone app's bundle signed with the upload key
    (`~/.twangle-keys/`), checks the signature, and puts two files in `release/` (git-ignored):
    `Twangle-<version>.aab` and `Twangle-<version>-release-notes.txt`, every language in one block in
-   the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …). Then it tags the commit and
-   pushes the tag. It refuses a version that already has a tag, uncommitted changes, or a `main`
-   that differs from GitHub's.
+   the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …, for sending it by hand). Then it
+   tags the commit and pushes the tag. It refuses a version that already has a tag, uncommitted
+   changes, or a `main` that differs from GitHub's.
+5. With the owner's yes: `scripts/release.sh upload`, the bundle to the internal track (below).
+6. Hands the owner the check on the Xiaomi (*What the owner does*, step 3) and waits for it to pass.
+7. With the owner's yes each time: `promote closed` or `promote production`, later `rollout 50` and
+   `rollout 100`, or `halt` when something is wrong (below).
+8. With the owner's yes, only when the store texts or pictures changed: `scripts/release.sh listing`
+   (below).
+
+Claude asks for each of steps 5, 7 and 8 on its own, naming the version and where it goes ("Send
+Twangle 1.0.1 to the internal track, as a draft?"); a yes to one is not a yes to the next.
 
 ## Uploads through the Google Play API
 `scripts/release.sh upload`, after `bundle`, sends `release/Twangle-<version>.aab` and its notes in
-every language (`changelogs/<versionCode>.txt`) to the **internal track** on Google Play, so step 1
-below needs no dragging or pasting. It goes through the Google Play Developer API with Gradle Play
+every language (`changelogs/<versionCode>.txt`) to the **internal track** on Google Play, so nobody
+drags or pastes anything. It goes through the Google Play Developer API with Gradle Play
 Publisher in `:app` ([performance.md](architecture/performance.md), *Release build*), which reads the
 texts and notes from `fastlane/metadata/android/` too, so they still live in one place.
 - **The key:** the robot user's key, a service-account JSON key, made once in Google Cloud and the
@@ -57,7 +66,7 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
   bundled) may go without notes. Play itself refuses a versionCode it has seen.
 - Only the phone app is uploaded; the watch app follows in an update (decision 3).
 
-Then the same build moves on, without building or uploading anything again (step 3 below). Each
+Then the same build moves on, without building or uploading anything again. Each
 command acts on the version in `gradle.properties`, which must be tagged, and sends its notes again.
 **Claude asks the owner before running any of these** (and `upload`): each changes what people get.
 - `scripts/release.sh promote closed`: from the internal track to the **closed test**, once the owner
@@ -102,31 +111,54 @@ people see on Play.
 The watch app isn't part of a release yet: it follows in an update (decision 3). When it goes out, its
 bundle (`:wear:bundleRelease`, versionCode + 1,000,000) is uploaded to the same release.
 
-## What the owner does in the Play Console
+## What the owner does
 The menu names were right in October 2026; Google moves them now and then.
 
-**1. Upload to the internal track** (or `scripts/release.sh upload` does it: then only open the draft
-release in *Internal testing*, check it, and *Save and publish*)
-- [ ] *Test and release → Testing → Internal testing → Create new release*.
-- [ ] Drag in `release/Twangle-<version>.aab`. The release name fills in by itself (`1.0.1 (10001)`).
-- [ ] Paste the whole of `release/Twangle-<version>-release-notes.txt` into *Release notes*.
-- [ ] *Next*, read any warnings (a warning about a deobfuscation file doesn't apply: the bundle carries it), then *Save and publish*.
+**1. Say yes, or not yet.** Claude asks in the chat before each step that reaches Google Play: the
+upload, each promotion, each rollout step, a halt and the store listing. Nothing is sent until you
+say yes.
 
-**2. Check it on a phone**
+**2. Start the internal draft** (while Twangle is still a draft on Play, Play takes only drafts)
+- [ ] *Test and release → Testing → Internal testing*: open the draft release Claude sent, *Next*,
+      read any warnings (a warning about a deobfuscation file doesn't apply: the bundle carries it),
+      then *Save and publish*.
+
+**3. Check it on a phone**
 - [ ] On the Xiaomi (signed in with an internal tester's account), open Twangle's page in the Play
       Store through the internal testing link and update. It may take a few minutes to show up.
 - [ ] About shows the new version. The tuner hears a string, the widget works, a language switch works,
       and whatever this release fixed is fixed.
+- [ ] Tell Claude it passed, or what is wrong. Nothing is promoted before.
 
-**3. Promote the same build** (or `scripts/release.sh promote`, `rollout` and `halt` do it, above)
-- [ ] In *Internal testing*, the release → *Promote release* → *Closed testing* (while the closed test
-      runs) or *Production* (once Google has given production access).
-- [ ] For production: set the rollout to **20 %**, then *Send for review*. Google's review takes from
-      a few hours to a few days; Play then updates phones by itself.
+**4. Watch the rollout**
+- [ ] A promotion to the closed test made as a draft: start it in *Closed testing* as in step 2.
+- [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
+      updates phones by itself, starting with 20 % of people.
 - [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews),
-      *Production → Manage rollout*: 50 %, then a few days later 100 %.
-- [ ] Something wrong: *Halt rollout*. Nobody new gets the version; fix it on `main` and make the next
-      release (a halted version can't be uploaded again, the fix gets a higher version).
+      tell Claude to raise it to 50 %, a few days later to 100 %.
+- [ ] Something wrong: tell Claude to halt it. Nobody new gets the version; the fix goes on `main`
+      and out in the next release (a halted version can't be uploaded again, the fix gets a higher
+      version).
+
+**Only in the Play Console** (the Google Play API can't do these)
+- [ ] The first time: the *App content* forms (privacy policy, ads, app access, content rating, target
+      audience, data safety) and *Store settings* (category, tags), Phase 23.
+- [ ] The closed test's testers (their emails or a Google Group) and its 14 days in a row, then
+      applying for production access.
+- [ ] Play's pre-launch report after an upload, with Claude reading along if you like.
+- [ ] *Users and permissions*: the testers and the robot user's rights.
+
+**By hand, without the key** (a machine without `~/.twangle-keys/play-service-account.json`:
+`scripts/release.sh` stops and sends nothing). Easiest is to run the step on the machine that has
+the key. Otherwise, in the Play Console:
+- [ ] Upload: *Internal testing → Create new release*, drag in `release/Twangle-<version>.aab`, paste
+      the whole of `release/Twangle-<version>-release-notes.txt` into *Release notes*, *Next*, *Save
+      and publish*.
+- [ ] Promote: in *Internal testing*, the release → *Promote release* → *Closed testing* or
+      *Production*; for production set the rollout to **20 %**, then *Send for review*.
+- [ ] Rollout: *Production → Manage rollout* to raise it, or *Halt rollout*.
+- [ ] Store listing: *Grow users → Store presence → Main store listing*, each language's texts and
+      pictures from `fastlane/metadata/android/` ([store-listing.md](store-listing.md)).
 
 **Never:** upload a bundle that wasn't made by `scripts/release.sh bundle`, or share the upload key.
 A lost upload key can be reset through Play support, since Google holds the app signing key.

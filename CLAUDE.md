@@ -48,7 +48,7 @@ scripts/meter-frames.sh                 # frame times of every meter look on the
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
-scripts/release.sh bump|notes|bundle|upload  # a Play release: raise the version, show the notes, build the signed bundle and tag it, send it to the internal track (see /release)
+scripts/release.sh bump|notes|bundle|upload|promote|rollout|halt|listing  # a Play release: version, notes, signed bundle and tag, then (each after the owner's yes) internal track, promotion, staged rollout, store listing (see /release)
 ```
 ### Dev machine environment (Windows)
 - No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
