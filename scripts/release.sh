@@ -18,9 +18,26 @@
 #       starts it in the Play Console with one click. "completed" makes it live on the internal track at
 #       once (for later, once the app is out of draft). Needs the robot user's key (a service account):
 #       ~/.twangle-keys/play-service-account.json, or the file in $TWANGLE_PLAY_SERVICE_ACCOUNT.
+#   scripts/release.sh promote closed [draft|completed]
+#       Once the owner has checked the internal build: moves that same build (this version) from the
+#       internal track to the closed test (Play's track "alpha", or $TWANGLE_PLAY_CLOSED_TRACK) with its
+#       notes. A draft by default, as upload; "completed" makes it live for the testers at once.
+#   scripts/release.sh promote production [draft]
+#       Moves this version from the internal track to production (whether or not it went to the closed
+#       test too) as a staged rollout to 20 % of people (Google reviews it first). "draft" leaves it a
+#       draft release to start in the Play Console.
+#   scripts/release.sh rollout <percent>
+#       Raises this version's staged rollout on production to <percent> (1..100); 100 is everyone and
+#       ends the staged rollout.
+#   scripts/release.sh halt
+#       Halts this version's rollout on production: nobody new gets it, who has it keeps it.
 #
-# The watch app is not part of a release yet (it follows in an update, decision 3): neither bundle nor
-# upload touches it.
+# upload, promote, rollout and halt change what people get on Google Play, so Claude asks the owner
+# before running any of them (docs/release.md). They act on the version in gradle.properties, which
+# must be released (tagged), and ask nothing themselves.
+#
+# The watch app is not part of a release yet (it follows in an update, decision 3): none of these
+# touches it.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -28,6 +45,10 @@ cd "$ROOT"
 LISTINGS="fastlane/metadata/android"
 OUT="release"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
+# Play's API name of the closed test the Play Console makes first ("Closed testing - Alpha").
+CLOSED_TRACK="${TWANGLE_PLAY_CLOSED_TRACK:-alpha}"
+# The first step of a staged rollout to production, in percent (docs/release.md, The idea).
+FIRST_ROLLOUT=20
 
 fail() { echo "release: $*" >&2; exit 1; }
 
@@ -116,21 +137,19 @@ bundle() {
     echo "  tagged $tag at $(git rev-parse --short HEAD) and pushed"
 }
 
-upload() {
-    local v code tag aab status key notes
-    v="$(version)"
-    code="$(code_of "$v")"
-    tag="v$v"
-    aab="$OUT/Twangle-$v.aab"
-    status="${1:-draft}"
-    [[ "$status" == draft || "$status" == completed ]] || fail "usage: scripts/release.sh upload [draft|completed]"
-
-    # The key first: without it nothing else matters, and nothing is built or sent.
+# Fails, saying what to do, unless the robot user's key is there. Checked first: without it nothing
+# else matters, and nothing is built or sent.
+need_play_key() {
     [[ -f "$PLAY_KEY" ]] || fail "the Google Play key is missing ($PLAY_KEY).
 It is the robot user's key (a service account) that lets this PC send releases to Google Play. It is
 made once in Google Cloud and the Play Console, with Claude guiding (docs/release.md, Uploads through
-the Google Play API), and kept only on the owner's machines. Nothing was uploaded."
-    [[ -f "$aab" ]] || fail "no $aab: make it first with scripts/release.sh bundle"
+the Google Play API), and kept only on the owner's machines. Nothing was sent to Google Play."
+}
+
+# Fails unless version $1 (versionCode $2) is released, that is tagged, with its notes in every
+# language unchanged since the tag: Play gets the working copy's notes.
+need_release() {
+    local v="$1" code="$2" tag="v$1" notes
     git rev-parse --quiet --verify "refs/tags/$tag" >/dev/null || fail "$tag is not tagged: make the bundle with scripts/release.sh bundle"
     # Every release has its notes in every language, except the very first (1.0.0, nothing to tell
     # what changed since), which goes without when it has none.
@@ -140,20 +159,39 @@ the Google Play API), and kept only on the owner's machines. Nothing was uploade
     else
         notes_block "$code" >/dev/null
     fi
-    # The notes sent are the working copy's; they must be the ones of the tagged release.
     notes="$LISTINGS/*/changelogs/$code.txt"
     [[ -z "$(git status --porcelain -- "$notes")" ]] && git diff --quiet "$tag" -- "$notes" ||
-        fail "the release notes ($notes) differ from $tag; upload the notes that were released"
+        fail "the release notes ($notes) differ from $tag; send the notes that were released"
+}
+
+# Runs a Gradle Play Publisher task of :app, signed in with the robot user's key.
+play_gradle() {
+    local key="$PLAY_KEY"
+    use_java
+    # Gradle wants a Windows path for the key; Git Bash's /c/... is not one.
+    if command -v cygpath >/dev/null; then key="$(cygpath -m "$key")"; fi
+    ./gradlew --quiet "$@" "-Ptwangle.playServiceAccount=$key"
+}
+
+# A whole percent as Play's user fraction: 20 -> 0.20.
+fraction() { printf '%d.%02d' $(($1 / 100)) $(($1 % 100)); }
+
+upload() {
+    local v code aab status
+    v="$(version)"
+    code="$(code_of "$v")"
+    aab="$OUT/Twangle-$v.aab"
+    status="${1:-draft}"
+    [[ "$status" == draft || "$status" == completed ]] || fail "usage: scripts/release.sh upload [draft|completed]"
+
+    need_play_key
+    [[ -f "$aab" ]] || fail "no $aab: make it first with scripts/release.sh bundle"
+    need_release "$v" "$code"
     use_java
     "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" || fail "$aab is not signed"
 
-    # Gradle wants a Windows path for the key; Git Bash's /c/... is not one.
-    key="$PLAY_KEY"
-    if command -v cygpath >/dev/null; then key="$(cygpath -m "$key")"; fi
-
     echo "Sending Twangle $v (versionCode $code) to the internal track on Google Play, as $status..."
-    ./gradlew --quiet :app:publishReleaseBundle \
-        "-Ptwangle.playServiceAccount=$key" \
+    play_gradle :app:publishReleaseBundle \
         --artifact-dir "$aab" \
         --track internal \
         --release-status "$status" \
@@ -167,10 +205,121 @@ the Google Play API), and kept only on the owner's machines. Nothing was uploade
     fi
 }
 
+# The same build, already on Play, from the internal track (where every release goes first) to the
+# closed test or to production. Nothing is built or uploaded again, so what people get is exactly what
+# was checked.
+promote() {
+    local v code target="${1:-}" status="${2:-}" from to name
+    local -a args
+    v="$(version)"
+    code="$(code_of "$v")"
+    case "$target" in
+        closed)
+            status="${status:-draft}"
+            [[ "$status" == draft || "$status" == completed ]] ||
+                fail "usage: scripts/release.sh promote closed [draft|completed]"
+            from=internal to="$CLOSED_TRACK" name="the closed test"
+            args=(--release-status "$status")
+            ;;
+        production)
+            [[ -z "$status" || "$status" == draft ]] || fail "usage: scripts/release.sh promote production [draft]
+(production starts as a staged rollout to $FIRST_ROLLOUT %; raise it with scripts/release.sh rollout <percent>)"
+            from=internal to=production name="production"
+            if [[ "$status" == draft ]]; then
+                args=(--release-status draft)
+            else
+                status="a staged rollout to $FIRST_ROLLOUT %"
+                args=(--release-status inProgress --user-fraction "$(fraction "$FIRST_ROLLOUT")")
+            fi
+            ;;
+        *) fail "usage: scripts/release.sh promote closed [draft|completed] | promote production [draft]" ;;
+    esac
+
+    need_play_key
+    need_release "$v" "$code"
+
+    echo "Moving Twangle $v (versionCode $code) from $from to $name on Google Play, as $status..."
+    play_gradle :app:promoteReleaseArtifact \
+        --from-track "$from" \
+        --promote-track "$to" \
+        --version-code "$code" \
+        --release-name "$v ($code)" \
+        "${args[@]}"
+
+    echo
+    echo "Twangle $v is on $name on Google Play, as $status."
+    if [[ "$status" == draft ]]; then
+        echo "It is a draft: open it in the Play Console under Test and release, then Next and Save and publish."
+    elif [[ "$to" == production ]]; then
+        echo "Google reviews it first (a few hours to a few days). After two or three quiet days, raise it"
+        echo "with scripts/release.sh rollout 50, later rollout 100; something wrong: scripts/release.sh halt."
+    fi
+}
+
+# Raises (or sets) this version's staged rollout on production; 100 % ends it.
+rollout() {
+    local v code percent="${1:-}"
+    local -a args
+    v="$(version)"
+    code="$(code_of "$v")"
+    [[ "$percent" =~ ^[0-9]{1,3}$ ]] && (( 10#$percent >= 1 && 10#$percent <= 100 )) ||
+        fail "usage: scripts/release.sh rollout <percent>, a whole number from 1 to 100 (100 is everyone)"
+    percent=$((10#$percent))
+    if (( percent == 100 )); then
+        args=(--release-status completed)
+    else
+        args=(--release-status inProgress --user-fraction "$(fraction "$percent")")
+    fi
+
+    need_play_key
+    need_release "$v" "$code"
+
+    echo "Setting the rollout of Twangle $v (versionCode $code) on production to $percent %..."
+    play_gradle :app:promoteReleaseArtifact \
+        --update production \
+        --version-code "$code" \
+        --release-name "$v ($code)" \
+        "${args[@]}"
+
+    echo
+    if (( percent == 100 )); then
+        echo "Twangle $v now goes to everyone on production; the staged rollout is over."
+    else
+        echo "Twangle $v now goes to $percent % of people on production."
+    fi
+}
+
+# Stops this version's rollout on production. The fraction it had stays (the plugin keeps it).
+halt() {
+    local v code
+    v="$(version)"
+    code="$(code_of "$v")"
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh halt"
+
+    need_play_key
+    need_release "$v" "$code"
+
+    echo "Halting the rollout of Twangle $v (versionCode $code) on production..."
+    play_gradle :app:promoteReleaseArtifact \
+        --update production \
+        --version-code "$code" \
+        --release-name "$v ($code)" \
+        --release-status halted
+
+    echo
+    echo "Twangle $v is halted on production: nobody new gets it, who has it keeps it. Fix it on main and"
+    echo "make the next release (the fix gets a higher version). A false alarm: scripts/release.sh rollout"
+    echo "<percent> starts it again."
+}
+
 case "${1:-}" in
     bump) bump "${2:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
     bundle) bundle ;;
     upload) upload "${2:-}" ;;
-    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]" ;;
+    promote) promote "${2:-}" "${3:-}" ;;
+    rollout) rollout "${2:-}" ;;
+    halt) shift; halt "$@" ;;
+    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]
+       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt" ;;
 esac

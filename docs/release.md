@@ -4,7 +4,8 @@ How a new version of Twangle gets from `main` to people's phones. Claude does th
 `/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`; the owner does the
 Play Console part with the checklist below. Phase 41 (ROADMAP.md) sends the uploads, promotions
 and store listing through the Google Play API instead, with the owner's OK for each: the upload to
-the internal track is there (`scripts/release.sh upload`, below), the rest follows.
+the internal track, the promotions and the staged rollout are there (`scripts/release.sh upload`,
+`promote`, `rollout`, `halt`, below), the store listing follows.
 
 ## The idea
 - **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or
@@ -56,6 +57,22 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
   bundled) may go without notes. Play itself refuses a versionCode it has seen.
 - Only the phone app is uploaded; the watch app follows in an update (decision 3).
 
+Then the same build moves on, without building or uploading anything again (step 3 below). Each
+command acts on the version in `gradle.properties`, which must be tagged, and sends its notes again.
+**Claude asks the owner before running any of these** (and `upload`): each changes what people get.
+- `scripts/release.sh promote closed`: from the internal track to the **closed test**, once the owner
+  has checked the internal build on the Xiaomi. Play's API calls the closed test the Play Console
+  makes first (*Closed testing - Alpha*) `alpha`; a closed test made by hand has its own name, set
+  with `TWANGLE_PLAY_CLOSED_TRACK`. A draft by default, as `upload`; `promote closed completed` makes
+  it live for the testers at once.
+- `scripts/release.sh promote production`: from the internal track to **production** (whether or not
+  it went to the closed test too) as a staged rollout to **20 %** (Google reviews it first). `promote production draft` leaves it a draft to
+  start in the Play Console instead.
+- `scripts/release.sh rollout <percent>`: raises the production rollout, a whole number 1–100
+  (50, later 100); 100 is everyone and ends the staged rollout. It also starts a halted one again.
+- `scripts/release.sh halt`: halts the production rollout. Nobody new gets the version; who has it
+  keeps it.
+
 The watch app isn't part of a release yet: it follows in an update (decision 3). When it goes out, its
 bundle (`:wear:bundleRelease`, versionCode + 1,000,000) is uploaded to the same release.
 
@@ -75,7 +92,7 @@ release in *Internal testing*, check it, and *Save and publish*)
 - [ ] About shows the new version. The tuner hears a string, the widget works, a language switch works,
       and whatever this release fixed is fixed.
 
-**3. Promote the same build**
+**3. Promote the same build** (or `scripts/release.sh promote`, `rollout` and `halt` do it, above)
 - [ ] In *Internal testing*, the release → *Promote release* → *Closed testing* (while the closed test
       runs) or *Production* (once Google has given production access).
 - [ ] For production: set the rollout to **20 %**, then *Send for review*. Google's review takes from
