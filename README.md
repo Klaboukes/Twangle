@@ -1,6 +1,6 @@
 # Twangle
 
-Twangle is a free guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents. It also has a metronome, tunes many other instruments, and comes with a home-screen widget and a Wear OS watch app.
+Twangle is a free guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents. It also has tools for guitarists (strum check, intonation check, chord name, pitch trail), a metronome, chord charts, scales and a capo helper, tunes many other instruments, and comes with a home-screen widget and a Wear OS watch app.
 
 ## Free forever
 
@@ -19,7 +19,6 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 ### Tuner
 - **Strings mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
 - **Hear the note:** hold a string to hear it as a plucked string, so you can also tune by ear. The tone follows your A4 setting and fades out by itself.
-- **Strum check:** strum all strings at once and see, for every string, whether it is flat, in tune, sharp or not heard.
 - **Instruments:** guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (standard or low G), violin, viola, cello and mandolin.
 - **Guitar tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E.
 - **Your own tunings:** make, edit and delete tunings of your own for any instrument, unison strings included.
@@ -30,10 +29,20 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 - **Accurate:** within ±1 cent on test signals, from the low B of a 5-string bass up to the highest frets.
 - **Keeps the screen on** while you tune (can be turned off).
 
-### Metronome
-- 30 to 250 beats per minute on a round tempo dial, with − and + buttons and tap tempo.
-- 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
+### Tuner tools
+From the tools button above the strings, one at a time:
+- **Strum check:** strum all strings at once and see, for every string, whether it is flat, in tune, sharp or not heard.
+- **12th-fret check:** checks the intonation of a guitar, bass or other fretted instrument. Play a string open, then pressed at the 12th fret, and see how far the fretted octave is off, string by string.
+- **Chord name:** strum a chord and see its name ("Am", "C/E") and its notes, with the last few chords below.
+- **Pitch trail:** a line of your pitch over the last few seconds, to see bends, vibrato and how steady a note is.
+
+### Practice
+- **Metronome:** 30 to 250 beats per minute on a round tempo dial, with − and + buttons and tap tempo. 2/4, 3/4, 4/4, 5/4, 6/8 and 7/8, with an accent on beat 1 and beat lights to follow along.
+- **Listen:** play for a few seconds and the metronome suggests your tempo.
 - Clicks over your own music or backing track, and can vibrate on the beat. It stops by itself for a phone call or when headphones are unplugged.
+- **Chord charts:** 16 chord types on any root, drawn as in a songbook with fingers and barres, several shapes for each chord, for the tuning you picked, your own tunings included.
+- **Scales:** major, natural minor, major and minor pentatonic, and blues, with every note on the neck up to the 12th fret.
+- **Capo helper:** pick the chord shapes you know and move the capo, and see which chords they sound as and in which key. A tap opens the shape in the chord charts.
 
 ### Make it yours
 - **Six visual styles:** Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own colours, lettering and background.
@@ -50,7 +59,7 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 
 ## Status
 
-Version 1.0.0, getting ready for the Google Play Store. The tuner, metronome, widget and watch app are done; the last checks before launch are listed in the [roadmap](ROADMAP.md), and finished work in the [roadmap archive](ROADMAP-ARCHIVE.md). The phone app needs Android 8.0 or newer, the watch app Wear OS 3 or newer.
+Version 1.0.0, getting ready for the Google Play Store. The tuner and its tools, the Practice tab, the widget and the watch app are done; the last checks before launch are listed in the [roadmap](ROADMAP.md), and finished work in the [roadmap archive](ROADMAP-ARCHIVE.md). The phone app needs Android 8.0 or newer, the watch app Wear OS 3 or newer.
 
 ## How it works
 
