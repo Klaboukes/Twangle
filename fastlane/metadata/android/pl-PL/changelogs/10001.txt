@@ -1,0 +1,1 @@
+- Na telefonach z krótszym ekranem wskaźnik zawsze zachowuje teraz pełną szerokość; zamiast tego dźwięk nad nim robi się nieco mniejszy.

@@ -1,0 +1,1 @@
+- On phones with a shorter screen, the meter now always keeps its full width; the note above it gets a little smaller instead.

@@ -1,0 +1,1 @@
+- Op telefoons met een korter scherm houdt de meter nu altijd zijn volle breedte; de noot erboven wordt in plaats daarvan iets kleiner.

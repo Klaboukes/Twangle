@@ -1,0 +1,1 @@
+- Daha kısa ekranlı telefonlarda gösterge artık her zaman tam genişliğini koruyor; bunun yerine üstündeki nota biraz küçülüyor.

@@ -1,0 +1,1 @@
+- Em celulares com tela mais curta, o medidor agora mantém sempre toda a sua largura; em vez disso, a nota acima dele fica um pouco menor.

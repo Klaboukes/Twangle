@@ -1,0 +1,1 @@
+- Sui telefoni con lo schermo più corto, l'indicatore ora mantiene sempre tutta la sua larghezza; è la nota sopra a diventare un po' più piccola.

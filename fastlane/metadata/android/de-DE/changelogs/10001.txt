@@ -1,0 +1,1 @@
+- Auf Handys mit kürzerem Bildschirm behält die Anzeige jetzt immer ihre volle Breite; dafür wird der Ton darüber etwas kleiner.
