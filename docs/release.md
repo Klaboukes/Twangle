@@ -43,6 +43,9 @@ further, and does the few things only the Play Console can do (the checklist bel
 8. With the owner's yes, only when the store texts or pictures changed: `scripts/release.sh listing`
    (below).
 
+Before each rollout raise Claude runs `scripts/release.sh health` and shows the owner what it says;
+after a step reaches people, `status` and `reviews` (below). These only read, so they need no yes.
+
 Claude asks for each of steps 5, 7 and 8 on its own, naming the version and where it goes ("Send
 Twangle 1.0.1 to the internal track, as a draft?"); a yes to one is not a yes to the next.
 
@@ -85,6 +88,30 @@ command acts on the version in `gradle.properties`, which must be tagged, and se
   (50, later 100); 100 is everyone and ends the staged rollout. It also starts a halted one again.
 - `scripts/release.sh halt`: halts the production rollout. Nobody new gets the version; who has it
   keeps it.
+
+## Looking at Play (read only)
+Three commands only read what is on Google Play and change nothing there, so **Claude runs them
+without asking** (`scripts/PlayReports.java`, plain Java run by Android Studio's JDK: nothing else to
+install). They need the same key as `upload`; without it they stop, saying it is missing.
+- `scripts/release.sh status`: each track (internal, the closed test `alpha`, the open test `beta`,
+  production) with its releases: name, versionCode and status (a draft, live, a staged rollout to
+  some %, or halted), and the store-listing languages. It opens a temporary edit (Play's scratch copy
+  of the app's setup), reads it and deletes it, never commits it. Google's review of a release shows
+  only in the Play Console (*Publishing overview*): a release in review reads as live here.
+- `scripts/release.sh health [days]`: the user-perceived crash rate and ANR rate of each version over
+  the last 7 days (or `days`, 1–90), from the **Google Play Developer Reporting API**, with a verdict
+  against Play's bad-behaviour lines: **1.09 %** of users a day hit by a crash, **0.47 %** by an ANR
+  (app not responding). Play's daily figures are in Pacific time and a day or two behind; each
+  version's rate is the daily rates weighted by that day's users, as Play's own 7-day figure. While
+  the app isn't public or has few users there is no data, and it says so: that isn't a fault.
+  **Claude runs it before every rollout raise** and shows the owner the verdict with the question.
+  The API is switched on in the Google Cloud project *Twangle Play* (2026-10-22); if it is ever off,
+  `health` says to switch it on there.
+- `scripts/release.sh reviews [language]`: the reviews of the last week, every language, each with
+  its stars, date, language, app version and phone, the original text and a translation into
+  `language` (English by default, e.g. `reviews nl`). Google's API gives only reviews with text from
+  the last 7 days; older ones and star-only ratings are in the Play Console (*Quality → Ratings and
+  reviews*). Read only: replying is a later idea, and the robot user may not reply.
 
 ## The store listing
 `scripts/release.sh listing` sends the whole store listing to Google Play in every language at once,
@@ -143,8 +170,9 @@ say yes.
 - [ ] A promotion to the closed test made as a draft: start it in *Closed testing* as in step 2.
 - [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
       updates phones by itself, starting with 20 % of people.
-- [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews),
-      tell Claude to raise it to 50 %, a few days later to 100 %.
+- [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
+      Claude shows you `health` and `reviews` too), tell Claude to raise it to 50 %, a few days later
+      to 100 %.
 - [ ] Something wrong: tell Claude to halt it. Nobody new gets the version; the fix goes on `main`
       and out in the next release (a halted version can't be uploaded again, the fix gets a higher
       version).

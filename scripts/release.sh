@@ -37,6 +37,20 @@
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored, so made on this PC), and checks the texts and pictures against Play's rules first.
+#   scripts/release.sh status
+#       What is on Google Play now: each track (internal, closed test "alpha", open test "beta",
+#       production) with its releases (name, versionCode, draft / live / staged rollout % / halted), and
+#       the store-listing languages.
+#   scripts/release.sh health [days]
+#       Crash and ANR rates (user-perceived) of each version over the last <days> days (7 by default),
+#       from the Google Play Developer Reporting API, against Play's bad-behaviour lines (1.09 % and
+#       0.47 %), with a verdict. Run before asking the owner to raise a staged rollout.
+#   scripts/release.sh reviews [language]
+#       The reviews with text of the last week (all the API gives), every language, with stars, date,
+#       version and phone, the original text and a translation into <language> (en by default).
+#
+# status, health and reviews only read (scripts/PlayReports.java; status opens a temporary edit and
+# deletes it, never commits it), so they need no yes from the owner. They need the robot user's key too.
 #
 # upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
@@ -50,6 +64,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 LISTINGS="fastlane/metadata/android"
 OUT="release"
+APP_ID="io.github.klaboukes.twangle"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
 # Play's API name of the closed test the Play Console makes first ("Closed testing - Alpha").
 CLOSED_TRACK="${TWANGLE_PLAY_CLOSED_TRACK:-alpha}"
@@ -402,6 +417,35 @@ listing() {
     echo "Check it in the Play Console: Grow users -> Store presence -> Main store listing."
 }
 
+# Runs one of the read-only looks at Play (scripts/PlayReports.java, plain JDK, no Gradle).
+play_read() {
+    local key="$PLAY_KEY" script="scripts/PlayReports.java"
+    need_play_key
+    use_java
+    # Windows' java wants Windows paths; Git Bash's /c/... are not.
+    if command -v cygpath >/dev/null; then key="$(cygpath -m "$key")"; script="$(cygpath -m "$ROOT/$script")"; fi
+    "$JAVA_HOME/bin/java" "$script" "$@" "$key" "$APP_ID"
+}
+
+status() {
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh status"
+    play_read status
+}
+
+health() {
+    local days="${1:-7}"
+    [[ $# -le 1 && "$days" =~ ^[0-9]{1,2}$ ]] && (( 10#$days >= 1 && 10#$days <= 90 )) ||
+        fail "usage: scripts/release.sh health [days], 1 to 90 days (7 by default)"
+    play_read health "$((10#$days))"
+}
+
+reviews() {
+    local language="${1:-en}"
+    [[ $# -le 1 && "$language" =~ ^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$ ]] ||
+        fail "usage: scripts/release.sh reviews [language], e.g. en, nl or pt-BR (en by default)"
+    play_read reviews "$language"
+}
+
 case "${1:-}" in
     bump) bump "${2:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
@@ -411,6 +455,10 @@ case "${1:-}" in
     rollout) rollout "${2:-}" ;;
     halt) shift; halt "$@" ;;
     listing) shift; listing "$@" ;;
+    status) shift; status "$@" ;;
+    health) shift; health "$@" ;;
+    reviews) shift; reviews "$@" ;;
     *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]
-       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt | listing" ;;
+       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt | listing
+       | status | health [days] | reviews [language]" ;;
 esac

@@ -1,6 +1,6 @@
 ---
 name: release
-description: Make a new Twangle release for Google Play from what is on main — check main, raise the version, write the release notes in every language, land them, build the signed bundle and tag it, then, each step only after the owner says yes, send it to Play's internal track, hand the owner the Xiaomi check, promote it to the closed test or production, raise or halt the staged rollout, and send the store listing when it changed. Use when the owner says "make a release", "release 1.0.1", "put the fixes on Play", "promote it", "raise the rollout", "halt the rollout", "send the store listing", "/release", or "/release patch|minor".
+description: Make a new Twangle release for Google Play from what is on main — check main, raise the version, write the release notes in every language, land them, build the signed bundle and tag it, then, each step only after the owner says yes, send it to Play's internal track, hand the owner the Xiaomi check, promote it to the closed test or production, raise or halt the staged rollout, and send the store listing when it changed. Use when the owner says "make a release", "release 1.0.1", "put the fixes on Play", "promote it", "raise the rollout", "halt the rollout", "send the store listing", "what is on Play", "any crashes?", "any reviews?", "/release", or "/release patch|minor". Also reads, without asking, what is on each Play track, the crash and ANR rates per version, and the last week's reviews.
 argument-hint: "[optional: patch or minor]"
 ---
 
@@ -14,7 +14,9 @@ change what people get or see, so each one waits for the owner's clear yes in ch
 exactly what goes where, for example: "Send Twangle 1.0.1 (versionCode 10001) and its notes in 16
 languages to the internal track on Google Play, as a draft?" A yes to one step is not a yes to the
 next. When the owner's own message asks for that very step ("halt the rollout", "raise it to 50 %"),
-that is the yes. Steps 1–3 (version, notes, bundle, tag) need no ask.
+that is the yes. Steps 1–3 (version, notes, bundle, tag) need no ask, nor do `status`, `health` and
+`reviews`: they only read what is on Play (docs/release.md, *Looking at Play*). `status` is the quick
+answer to "what is on Play now?" at any step.
 
 Picking up a release that is already tagged (the owner asks for a promotion days later): check that
 `twangle.version` in `gradle.properties` is that version, then go straight to the step asked for.
@@ -56,6 +58,7 @@ Only after the Xiaomi check passed. Nothing is built or uploaded again: the buil
 - **Production** (once Google has given production access): ask "Move Twangle <version> to production for 20 % of people? Google reviews it first, a few hours to a few days." → `scripts/release.sh promote production` (`promote production draft` leaves it to start in the Play Console).
 
 ## 7. The staged rollout (ask first)
+- Before every raise: `scripts/release.sh health` (crash and ANR rates per version against Play's lines of 1.09 % and 0.47 %, with a verdict) and `scripts/release.sh reviews`; show the owner both in plain words with the question. A verdict above Play's line: don't offer the raise, offer `halt` instead. "No data yet" (few users) is not a fault: say so, and lean on the owner's own look.
 - After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews; offer to look with the owner in the browser), ask "Raise Twangle <version> on production from 20 % to 50 %?" → `scripts/release.sh rollout 50`. A few days later the same for 100 % (`rollout 100`: everyone, the staged rollout ends).
 - Something wrong: ask "Halt Twangle <version> on production? Nobody new gets it; who has it keeps it." → `scripts/release.sh halt`. Then fix it through a `fix/` branch and make the next release (a halted version can't be uploaded again). A false alarm: `rollout <percent>` starts it again, also behind a yes.
 
@@ -68,4 +71,5 @@ Not part of every release: only when the store texts or pictures changed since t
 `release.sh` stops at once, saying the key is missing, and sends nothing. Never make, copy or move a key. Either the owner runs the step on the machine that has the key, or does it by hand in the Play Console (docs/release.md, *By hand, without the key*): drag in `release/Twangle-<version>.aab` and paste `release/Twangle-<version>-release-notes.txt` (`scripts/release.sh notes` prints the same block); promote, raise and halt there too. Offer to walk them through it in the browser.
 
 ## 10. Hand it over
-After each step, tell the owner in plain language what is on Google Play now and where (the version, the track, the percentage), the English notes on the first step, and what comes next and when: their Xiaomi check, a promotion, the next rollout step in a few days.
+After each step, tell the owner in plain language what is on Google Play now and where (the version, the track, the percentage; `scripts/release.sh status` reads it), the English notes on the first step, and what comes next and when: their Xiaomi check, a promotion, the next rollout step in a few days.
+Once a version reaches people (the closed test, production), check `scripts/release.sh reviews` now and then (it shows only the last week), and tell the owner what players say, translated; replies are theirs to write in the Play Console.
