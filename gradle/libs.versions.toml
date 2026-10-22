@@ -22,6 +22,9 @@ profileinstaller = "1.4.1"
 uiautomator = "2.4.0"
 # Compose for Wear OS (the :wear watch app).
 wearCompose = "1.7.1"
+# Gradle Play Publisher (Triple-T): uploads to Google Play from the PC (scripts/release.sh upload).
+# 4.x is the line for AGP 9 and Gradle 9; build-time only, nothing of it goes into the app.
+playPublisher = "4.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -65,3 +68,4 @@ android-test = { id = "com.android.test", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
+play-publisher = { id = "com.github.triplet.play", version.ref = "playPublisher" }

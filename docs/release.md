@@ -2,8 +2,9 @@
 
 How a new version of Twangle gets from `main` to people's phones. Claude does the build part with the
 `/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`; the owner does the
-Play Console part with the checklist below. Phase 41 (ROADMAP.md) will send the uploads, promotions
-and store listing through the Google Play API instead, with the owner's OK for each.
+Play Console part with the checklist below. Phase 41 (ROADMAP.md) sends the uploads, promotions
+and store listing through the Google Play API instead, with the owner's OK for each: the upload to
+the internal track is there (`scripts/release.sh upload`, below), the rest follows.
 
 ## The idea
 - **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or
@@ -35,13 +36,34 @@ and store listing through the Google Play API instead, with the owner's OK for e
    pushes the tag. It refuses a version that already has a tag, uncommitted changes, or a `main`
    that differs from GitHub's.
 
+## Uploads through the Google Play API
+`scripts/release.sh upload`, after `bundle`, sends `release/Twangle-<version>.aab` and its notes in
+every language (`changelogs/<versionCode>.txt`) to the **internal track** on Google Play, so step 1
+below needs no dragging or pasting. It goes through the Google Play Developer API with Gradle Play
+Publisher in `:app` ([performance.md](architecture/performance.md), *Release build*), which reads the
+texts and notes from `fastlane/metadata/android/` too, so they still live in one place.
+- **The key:** the robot user's key, a service-account JSON key, made once in Google Cloud and the
+  Play Console (Phase 41, *Waiting on the owner*), lives next to the upload key as
+  `~/.twangle-keys/play-service-account.json` (another file: the environment variable
+  `TWANGLE_PLAY_SERVICE_ACCOUNT`, or the Gradle property `twangle.playServiceAccount`). Never in the
+  repo. Without it `upload` stops at once, saying the key is missing, and nothing is sent.
+- **A draft first:** while Twangle itself is still a draft on Play (before it is first published),
+  Play only takes draft releases, so `upload` makes one: the owner opens it in *Internal testing*
+  and clicks through to *Save and publish*. Once the app is out of draft, `scripts/release.sh upload
+  completed` makes the internal release live at once.
+- It refuses a version without its tag or its bundle (run `bundle` first), notes missing in a
+  language, or notes changed since the tag. Only the very first release (1.0.0, already tagged and
+  bundled) may go without notes. Play itself refuses a versionCode it has seen.
+- Only the phone app is uploaded; the watch app follows in an update (decision 3).
+
 The watch app isn't part of a release yet: it follows in an update (decision 3). When it goes out, its
 bundle (`:wear:bundleRelease`, versionCode + 1,000,000) is uploaded to the same release.
 
 ## What the owner does in the Play Console
 The menu names were right in October 2026; Google moves them now and then.
 
-**1. Upload to the internal track**
+**1. Upload to the internal track** (or `scripts/release.sh upload` does it: then only open the draft
+release in *Internal testing*, check it, and *Save and publish*)
 - [ ] *Test and release → Testing → Internal testing → Create new release*.
 - [ ] Drag in `release/Twangle-<version>.aab`. The release name fills in by itself (`1.0.1 (10001)`).
 - [ ] Paste the whole of `release/Twangle-<version>-release-notes.txt` into *Release notes*.

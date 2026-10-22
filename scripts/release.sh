@@ -11,14 +11,23 @@
 #       On main, once the version bump has landed: builds the phone app's bundle signed with the upload
 #       key, checks the signature, puts it with its notes in release/ (git-ignored), then tags the commit
 #       v<version> and pushes the tag. Refuses a version that already has a tag.
+#   scripts/release.sh upload [draft|completed]
+#       After bundle: sends release/Twangle-<version>.aab and its notes in every language to the
+#       internal track on Google Play, through the Google Play API (Gradle Play Publisher in :app). As a
+#       draft by default, the only kind Play takes while Twangle itself is still a draft there: the owner
+#       starts it in the Play Console with one click. "completed" makes it live on the internal track at
+#       once (for later, once the app is out of draft). Needs the robot user's key (a service account):
+#       ~/.twangle-keys/play-service-account.json, or the file in $TWANGLE_PLAY_SERVICE_ACCOUNT.
 #
-# The watch app is not part of a release yet (it follows in an update, decision 3).
+# The watch app is not part of a release yet (it follows in an update, decision 3): neither bundle nor
+# upload touches it.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 LISTINGS="fastlane/metadata/android"
 OUT="release"
+PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
 
 fail() { echo "release: $*" >&2; exit 1; }
 
@@ -61,6 +70,14 @@ bump() {
     echo "Write the release notes, one file a language: $LISTINGS/<locale>/changelogs/$(code_of "$next").txt"
 }
 
+# Gradle runs on Android Studio's JDK (CLAUDE.md, Dev machine environment).
+use_java() {
+    if [[ -z "${JAVA_HOME:-}" && -d "/c/Program Files/Android/Android Studio/jbr" ]]; then
+        export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
+    fi
+    [[ -n "${JAVA_HOME:-}" ]] || fail "JAVA_HOME is not set (CLAUDE.md, Dev machine environment)"
+}
+
 bundle() {
     local v code tag aab
     v="$(version)"
@@ -75,11 +92,7 @@ bundle() {
         fail "$tag is already released; raise the version (scripts/release.sh bump patch)"
     fi
     notes_block "$code" >/dev/null
-
-    if [[ -z "${JAVA_HOME:-}" && -d "/c/Program Files/Android/Android Studio/jbr" ]]; then
-        export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
-    fi
-    [[ -n "${JAVA_HOME:-}" ]] || fail "JAVA_HOME is not set (CLAUDE.md, Dev machine environment)"
+    use_java
 
     echo "Building Twangle $v (versionCode $code)..."
     ./gradlew --quiet :app:bundleRelease
@@ -103,9 +116,61 @@ bundle() {
     echo "  tagged $tag at $(git rev-parse --short HEAD) and pushed"
 }
 
+upload() {
+    local v code tag aab status key notes
+    v="$(version)"
+    code="$(code_of "$v")"
+    tag="v$v"
+    aab="$OUT/Twangle-$v.aab"
+    status="${1:-draft}"
+    [[ "$status" == draft || "$status" == completed ]] || fail "usage: scripts/release.sh upload [draft|completed]"
+
+    # The key first: without it nothing else matters, and nothing is built or sent.
+    [[ -f "$PLAY_KEY" ]] || fail "the Google Play key is missing ($PLAY_KEY).
+It is the robot user's key (a service account) that lets this PC send releases to Google Play. It is
+made once in Google Cloud and the Play Console, with Claude guiding (docs/release.md, Uploads through
+the Google Play API), and kept only on the owner's machines. Nothing was uploaded."
+    [[ -f "$aab" ]] || fail "no $aab: make it first with scripts/release.sh bundle"
+    git rev-parse --quiet --verify "refs/tags/$tag" >/dev/null || fail "$tag is not tagged: make the bundle with scripts/release.sh bundle"
+    # Every release has its notes in every language, except the very first (1.0.0, nothing to tell
+    # what changed since), which goes without when it has none.
+    if [[ -z "$(git tag -l 'v*' | grep -vx "$tag")" ]] &&
+        ! compgen -G "$LISTINGS/*/changelogs/$code.txt" >/dev/null; then
+        echo "The first release, without release notes."
+    else
+        notes_block "$code" >/dev/null
+    fi
+    # The notes sent are the working copy's; they must be the ones of the tagged release.
+    notes="$LISTINGS/*/changelogs/$code.txt"
+    [[ -z "$(git status --porcelain -- "$notes")" ]] && git diff --quiet "$tag" -- "$notes" ||
+        fail "the release notes ($notes) differ from $tag; upload the notes that were released"
+    use_java
+    "$JAVA_HOME/bin/jarsigner" -verify "$aab" | grep -q "jar verified" || fail "$aab is not signed"
+
+    # Gradle wants a Windows path for the key; Git Bash's /c/... is not one.
+    key="$PLAY_KEY"
+    if command -v cygpath >/dev/null; then key="$(cygpath -m "$key")"; fi
+
+    echo "Sending Twangle $v (versionCode $code) to the internal track on Google Play, as $status..."
+    ./gradlew --quiet :app:publishReleaseBundle \
+        "-Ptwangle.playServiceAccount=$key" \
+        --artifact-dir "$aab" \
+        --track internal \
+        --release-status "$status" \
+        --release-name "$v ($code)"
+
+    echo
+    echo "Twangle $v is on the internal track of Google Play, with its notes in every language."
+    if [[ "$status" == draft ]]; then
+        echo "It is a draft: in the Play Console, Test and release -> Testing -> Internal testing, open the"
+        echo "draft release, then Next and Save and publish (docs/release.md)."
+    fi
+}
+
 case "${1:-}" in
     bump) bump "${2:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
     bundle) bundle ;;
-    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle" ;;
+    upload) upload "${2:-}" ;;
+    *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]" ;;
 esac

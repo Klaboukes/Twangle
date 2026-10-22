@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.baselineprofile) apply false
+    alias(libs.plugins.play.publisher) apply false
 }
 
 // Release settings shared by the phone app (:app) and the watch app (:wear), read there through

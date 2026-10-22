@@ -11,6 +11,8 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+# The Google Play API key (a service-account JSON key) lives in ~/.twangle-keys/, never here.
+play-service-account*.json
 
 # IDE
 .idea/

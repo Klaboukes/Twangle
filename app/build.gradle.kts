@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.play.publisher)
 }
 
 // Version and upload key: shared with the watch app, see the root build.gradle.kts.
@@ -74,6 +75,100 @@ android {
 
 kotlin {
     jvmToolchain(17)
+}
+
+// Google Play uploads through the Google Play Developer API (Gradle Play Publisher, Phase 41;
+// docs/release.md, docs/architecture/performance.md *Release build*). Build-time only: nothing of it
+// goes into the app. The robot user's key (a service-account JSON key) lives next to the upload key,
+// ~/.twangle-keys/play-service-account.json, or at the path in the Gradle property
+// twangle.playServiceAccount. Without it (CI, other machines) nothing changes: the play tasks are there
+// but nothing runs them, and scripts/release.sh upload stops first, saying the key is missing.
+val playServiceAccount: File? = providers.gradleProperty("twangle.playServiceAccount")
+    .orElse(providers.systemProperty("user.home").map { "$it/.twangle-keys/play-service-account.json" })
+    .map { rootProject.layout.projectDirectory.file(it).asFile }
+    .orNull
+    ?.takeIf { it.isFile }
+
+play {
+    // Only the release build goes to Play (playConfigs below); the debug and benchmark builds get no
+    // play tasks. scripts/release.sh passes the track and the release status (internal, draft).
+    enabled.set(false)
+    defaultToAppBundles.set(true)
+    track.set("internal")
+    playServiceAccount?.let { serviceAccountCredentials.set(it) }
+}
+
+android {
+    playConfigs {
+        register("release") {
+            enabled.set(true)
+        }
+    }
+}
+
+// The store texts, release notes and pictures live in one place, fastlane/metadata/android/ (the
+// fastlane layout, which F-Droid reads too; StoreListingTest guards it). Gradle Play Publisher wants
+// its own layout under a folder named play/, so this copies them there in build/ at task time and
+// points the plugin's resource task at the copy, instead of src/<source set>/play:
+//   <locale>/title.txt, short_description.txt, full_description.txt -> listings/<locale>/title.txt,
+//       short-description.txt, full-description.txt
+//   <locale>/images/icon.png, featureGraphic.png, tvBanner.png -> listings/<locale>/graphics/<type>/
+//   <locale>/images/phoneScreenshots/*, sevenInchScreenshots/* ... -> listings/<locale>/graphics/<type>/
+//   <locale>/changelogs/<this versionCode>.txt -> release-notes/<locale>/default.txt (every track)
+// screenshot_captions.txt is only for the store-screenshot test and stays behind.
+val playVersionCode = rootProject.extra["twangleVersionCode"] as Int
+val playResources = layout.buildDirectory.dir("twangle-play/play")
+val playImageTypes = mapOf(
+    "icon" to "icon",
+    "featureGraphic" to "feature-graphic",
+    "tvBanner" to "tv-banner",
+    "phoneScreenshots" to "phone-screenshots",
+    "sevenInchScreenshots" to "tablet-screenshots",
+    "tenInchScreenshots" to "large-tablet-screenshots",
+    "tvScreenshots" to "tv-screenshots",
+    "wearScreenshots" to "wear-screenshots",
+)
+val playTexts = mapOf(
+    "title.txt" to "title.txt",
+    "short_description.txt" to "short-description.txt",
+    "full_description.txt" to "full-description.txt",
+)
+val syncPlayResources = tasks.register<Sync>("syncPlayResourcesFromFastlane") {
+    description = "Copies the store texts, release notes and pictures from fastlane/metadata/android/ " +
+        "into Gradle Play Publisher's layout."
+    from(rootProject.layout.projectDirectory.dir("fastlane/metadata/android")) {
+        include(playTexts.keys.map { "*/$it" })
+        include("*/images/*.png", "*/images/*.jpg", "*/images/*/*.png", "*/images/*/*.jpg")
+        include("*/changelogs/$playVersionCode.txt")
+        eachFile {
+            val parts = relativePath.segments
+            val locale = parts.first()
+            val target = when {
+                parts.size == 2 -> listOf("listings", locale, playTexts.getValue(parts[1]))
+                parts[1] == "changelogs" -> listOf("release-notes", locale, "default.txt")
+                parts.size == 3 -> playImageTypes[parts[2].substringBeforeLast('.')]
+                    ?.let { listOf("listings", locale, "graphics", it, parts[2]) }
+                else -> playImageTypes[parts[2]]?.let { listOf("listings", locale, "graphics", it, parts[3]) }
+            }
+            if (target == null) exclude() else relativePath = RelativePath(true, *target.toTypedArray())
+        }
+    }
+    into(playResources)
+    includeEmptyDirs = false
+}
+// The plugin's resource task reads only src/<source set>/play; its properties are not public API, so
+// they are set by name. A plugin update that renames them fails here, at configuration, not silently.
+// The plugin registers the task in its own onVariants, which runs before this one, so these settings
+// come after its own.
+androidComponents {
+    onVariants(selector().withName("release")) {
+        tasks.named("generateReleasePlayResources") {
+            dependsOn(syncPlayResources)
+            @Suppress("UNCHECKED_CAST")
+            (property("resSrcDirs") as ListProperty<Directory>).set(listOf(playResources.get()))
+            (property("resSrcTree") as ConfigurableFileCollection).setFrom(syncPlayResources)
+        }
+    }
 }
 
 // The benchmarkRelease build (made by the Baseline Profile plugin, used by scripts/meter-frames.sh)
