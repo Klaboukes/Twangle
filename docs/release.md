@@ -127,7 +127,10 @@ say yes.
 **2. Start the internal draft** (while Twangle is still a draft on Play, Play takes only drafts)
 - [ ] *Test and release → Testing → Internal testing*: open the draft release Claude sent, *Next*,
       read any warnings (a warning about a deobfuscation file doesn't apply: the bundle carries it),
-      then *Save and publish*.
+      then *Save and publish*. The warning *"This App Bundle contains native code, and you've not
+      uploaded debug symbols"* is expected and harmless: the only native code is in two AndroidX
+      libraries (`androidx.graphics.path`, DataStore), which Google ships already stripped, so there
+      are no symbols to send (`ndk.debugSymbolLevel` finds nothing to extract; checked 2026-10-22).
 
 **3. Check it on a phone**
 - [ ] On the Xiaomi (signed in with an internal tester's account), open Twangle's page in the Play
