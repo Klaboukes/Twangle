@@ -146,10 +146,17 @@ val playAppDetails = mapOf(
     "contact-email.txt" to "twangle.tuner@proton.me",
     "contact-website.txt" to "https://klaboukes.github.io/twangle-privacy/",
 )
+// A language's pictures can go up only once Play has its listing, and the plugin sends a listing's texts
+// and pictures side by side, so a language new on Play fails with "Listing for language … not found".
+// scripts/release.sh listing therefore sends the texts first with -Ptwangle.playListingTextsOnly=true,
+// then everything.
+val playListingTextsOnly = providers.gradleProperty("twangle.playListingTextsOnly").map { it.toBoolean() }
+    .getOrElse(false)
 val syncPlayResources = tasks.register<Sync>("syncPlayResourcesFromFastlane") {
     description = "Copies the store texts, release notes and pictures from fastlane/metadata/android/ " +
         "into Gradle Play Publisher's layout."
     inputs.property("playAppDetails", playAppDetails)
+    inputs.property("playListingTextsOnly", playListingTextsOnly)
     doLast {
         val play = playResources.get().asFile
         playAppDetails.forEach { (name, value) -> File(play, name).writeText(value) }
@@ -168,7 +175,9 @@ val syncPlayResources = tasks.register<Sync>("syncPlayResourcesFromFastlane") {
     }
     from(rootProject.layout.projectDirectory.dir("fastlane/metadata/android")) {
         include(playTexts.keys.map { "*/$it" })
-        include("*/images/*.png", "*/images/*.jpg", "*/images/*/*.png", "*/images/*/*.jpg")
+        if (!playListingTextsOnly) {
+            include("*/images/*.png", "*/images/*.jpg", "*/images/*/*.png", "*/images/*/*.jpg")
+        }
         include("*/changelogs/$playVersionCode.txt")
         eachFile {
             val parts = relativePath.segments

@@ -389,6 +389,11 @@ listing() {
     echo "Sending the store listing in $(locales | wc -l) languages to Google Play..."
     # --rerun sends everything, also what an earlier run sent: the Play Console may have been edited
     # since. Pictures Play already has (the same file) are skipped by the plugin.
+    # Texts first: Play takes a language's pictures only once that language has a listing, and the
+    # plugin sends both side by side (app/build.gradle.kts, playListingTextsOnly).
+    echo "  1/2: the texts and app details..."
+    play_gradle :app:publishReleaseListing --rerun -Ptwangle.playListingTextsOnly=true
+    echo "  2/2: the screenshots, icon and feature graphic..."
     play_gradle :app:publishReleaseListing --rerun
 
     echo
