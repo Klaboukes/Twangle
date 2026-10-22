@@ -27,7 +27,7 @@ play-service-account*.json
 # Claude Code per-user settings (shared skills in .claude/skills ARE committed)
 .claude/settings.local.json
 
-# Play Store screenshots: made on the phone by scripts/store-screenshots.sh, uploaded by hand.
+# Play Store screenshots: made on the phone by scripts/store-screenshots.sh, sent by scripts/release.sh listing.
 # The icon and feature graphic (scripts/store-graphics.sh) have no words and are small: committed.
 fastlane/metadata/android/*/images/*
 !fastlane/metadata/android/en-US/images/icon.png

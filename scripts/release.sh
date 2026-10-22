@@ -31,9 +31,15 @@
 #       ends the staged rollout.
 #   scripts/release.sh halt
 #       Halts this version's rollout on production: nobody new gets it, who has it keeps it.
+#   scripts/release.sh listing
+#       Sends the store listing to Google Play: every language's title, short and full description and
+#       phone screenshots, the icon and feature graphic (one pair, shown for every language), and the
+#       app details (default language en-US, contact email, website). From fastlane/metadata/android/
+#       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
+#       git-ignored, so made on this PC), and checks the texts and pictures against Play's rules first.
 #
-# upload, promote, rollout and halt change what people get on Google Play, so Claude asks the owner
-# before running any of them (docs/release.md). They act on the version in gradle.properties, which
+# upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
+# asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
 # must be released (tagged), and ask nothing themselves.
 #
 # The watch app is not part of a release yet (it follows in an update, decision 3): none of these
@@ -312,6 +318,85 @@ halt() {
     echo "<percent> starts it again."
 }
 
+# Width, height and PNG colour type of a picture, from its header: "1080 1920 6"; empty if not a PNG.
+png_info() {
+    local b
+    read -ra b < <(od -An -tu1 -N26 "$1" | tr -s ' \n' ' ')
+    [[ ${#b[@]} -eq 26 && "${b[1]} ${b[2]} ${b[3]}" == "80 78 71" ]] || return 0
+    echo "$(( b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19] )) $(( b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23] )) ${b[25]}"
+}
+
+# Fails, naming every language and picture that is wrong, unless every language has its phone
+# screenshots, 1.png ... one for each caption, within Play's rules. A language without them would show
+# English screenshots on Play, so none is sent until all are there. Tablet screenshots, where there are
+# any (none yet: Phase 42), are checked the same way and sent too.
+need_screenshots() {
+    local locale want dir file n w h info oldest="" problems=() missing=()
+    for locale in $(locales); do
+        want="$(grep -c . "$LISTINGS/$locale/screenshot_captions.txt" 2>/dev/null || true)"
+        dir="$LISTINGS/$locale/images/phoneScreenshots"
+        for n in $(seq 1 "${want:-0}"); do
+            [[ -f "$dir/$n.png" ]] || { missing+=("$locale"); continue 2; }
+        done
+        for dir in "$LISTINGS/$locale"/images/*Screenshots; do
+            [[ -d "$dir" ]] || continue
+            n="$(find "$dir" -maxdepth 1 \( -name '*.png' -o -name '*.jpg' \) | wc -l)"
+            (( n >= 2 && n <= 8 )) || problems+=("$dir: $n pictures, Play takes 2 to 8")
+            for file in "$dir"/*.png; do
+                [[ -f "$file" ]] || continue
+                info="$(png_info "$file")"
+                [[ -n "$info" ]] || { problems+=("$file is not a PNG"); continue; }
+                read -r w h _ <<<"$info"
+                # Play: each side 320 to 3840 px, the long side at most twice the short one, at most 8 MB.
+                if (( w < 320 || h < 320 || w > 3840 || h > 3840 || w > 2 * h || h > 2 * w )); then
+                    problems+=("$file is $w x $h px; Play takes 320 to 3840 px a side, at most 2:1")
+                fi
+                (( $(stat -c %s "$file") <= 8 * 1024 * 1024 )) || problems+=("$file is over Play's 8 MB")
+                [[ -z "$oldest" || "$file" -ot "$oldest" ]] && oldest="$file"
+            done
+        done
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        fail "no phone screenshots (1.png ... 8.png) for: ${missing[*]}
+They are made on the phone and kept only on this PC (git-ignored): connect the phone and run
+  scripts/store-screenshots.sh ${missing[*]}
+(about 2 minutes a language; without arguments it makes every language). Nothing was sent to Google Play."
+    fi
+    [[ ${#problems[@]} -eq 0 ]] || fail "the screenshots don't meet Play's rules:
+$(printf '  %s\n' "${problems[@]}")
+Make them again with scripts/store-screenshots.sh. Nothing was sent to Google Play."
+    echo "Screenshots for every language; the oldest made $(date -r "$oldest" '+%Y-%m-%d %H:%M')."
+    echo "(If the app looks different since, make them again first: scripts/store-screenshots.sh.)"
+}
+
+# The store listing as it is on main, for every language, with the app details.
+listing() {
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh listing"
+    need_play_key
+    [[ "$(git rev-parse --abbrev-ref HEAD)" == "main" ]] || fail "not on main; send only the listing that has landed"
+    [[ -z "$(git status --porcelain -- "$LISTINGS")" ]] || fail "uncommitted changes in $LISTINGS; land them first"
+    git fetch --quiet origin main
+    [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] || fail "main differs from origin/main; git pull first"
+    need_screenshots
+    use_java
+
+    # Titles, descriptions and captions within Play's limits, the icon and feature graphic at Play's
+    # sizes and formats (docs/store-listing.md).
+    echo "Checking the texts, the icon and the feature graphic (StoreListingTest)..."
+    ./gradlew --quiet :app:testDebugUnitTest --tests '*.StoreListingTest' ||
+        fail "the store listing doesn't meet Play's rules (StoreListingTest above). Nothing was sent to Google Play."
+
+    echo "Sending the store listing in $(locales | wc -l) languages to Google Play..."
+    # --rerun sends everything, also what an earlier run sent: the Play Console may have been edited
+    # since. Pictures Play already has (the same file) are skipped by the plugin.
+    play_gradle :app:publishReleaseListing --rerun
+
+    echo
+    echo "The store listing is on Google Play in every language: title, short and full description,"
+    echo "screenshots, icon and feature graphic, and the contact email, website and default language."
+    echo "Check it in the Play Console: Grow users -> Store presence -> Main store listing."
+}
+
 case "${1:-}" in
     bump) bump "${2:-}" ;;
     notes) notes_block "$(code_of "$(version)")" ;;
@@ -320,6 +405,7 @@ case "${1:-}" in
     promote) promote "${2:-}" "${3:-}" ;;
     rollout) rollout "${2:-}" ;;
     halt) shift; halt "$@" ;;
+    listing) shift; listing "$@" ;;
     *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]
-       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt" ;;
+       | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt | listing" ;;
 esac

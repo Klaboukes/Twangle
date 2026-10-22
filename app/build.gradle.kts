@@ -1,5 +1,7 @@
 import com.android.build.api.variant.BuildConfigField
+import java.awt.image.BufferedImage
 import java.util.Properties
+import javax.imageio.ImageIO
 
 plugins {
     alias(libs.plugins.android.application)
@@ -115,7 +117,8 @@ android {
 //   <locale>/images/icon.png, featureGraphic.png, tvBanner.png -> listings/<locale>/graphics/<type>/
 //   <locale>/images/phoneScreenshots/*, sevenInchScreenshots/* ... -> listings/<locale>/graphics/<type>/
 //   <locale>/changelogs/<this versionCode>.txt -> release-notes/<locale>/default.txt (every track)
-// screenshot_captions.txt is only for the store-screenshot test and stays behind.
+// screenshot_captions.txt is only for the store-screenshot test and stays behind. The app details
+// (playAppDetails below) are written beside them, at the top of play/.
 val playVersionCode = rootProject.extra["twangleVersionCode"] as Int
 val playResources = layout.buildDirectory.dir("twangle-play/play")
 val playImageTypes = mapOf(
@@ -133,9 +136,36 @@ val playTexts = mapOf(
     "short_description.txt" to "short-description.txt",
     "full_description.txt" to "full-description.txt",
 )
+// Play's app details, which the listing upload (scripts/release.sh listing) sets together: Play
+// replaces all of them at once, so a missing one would be cleared on Play (decision 5, ROADMAP-ARCHIVE;
+// docs/store-listing.md, *Being found*). The default language is the source of the texts, en-US; the
+// plugin also fills a language's missing files from it, which gives every language the one icon and
+// feature graphic. No public phone number: Play's contact phone stays empty.
+val playAppDetails = mapOf(
+    "default-language.txt" to "en-US",
+    "contact-email.txt" to "twangle.tuner@proton.me",
+    "contact-website.txt" to "https://klaboukes.github.io/twangle-privacy/",
+)
 val syncPlayResources = tasks.register<Sync>("syncPlayResourcesFromFastlane") {
     description = "Copies the store texts, release notes and pictures from fastlane/metadata/android/ " +
         "into Gradle Play Publisher's layout."
+    inputs.property("playAppDetails", playAppDetails)
+    doLast {
+        val play = playResources.get().asFile
+        playAppDetails.forEach { (name, value) -> File(play, name).writeText(value) }
+        // Play takes screenshots only as JPEG or 24-bit PNG, without alpha. The store canvas is opaque
+        // but saved with an alpha channel (StoreScreenshots), so those are written again as 24-bit.
+        // The icon stays 32-bit, as Play wants it.
+        play.walk()
+            .filter { it.extension == "png" && it.parentFile.name.endsWith("-screenshots") }
+            .filter { file -> file.inputStream().use { it.readNBytes(26) }.let { it.size == 26 && it[25].toInt() in setOf(4, 6) } }
+            .forEach { file ->
+                val image = ImageIO.read(file)
+                val opaque = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
+                opaque.createGraphics().apply { drawImage(image, 0, 0, null); dispose() }
+                ImageIO.write(opaque, "png", file)
+            }
+    }
     from(rootProject.layout.projectDirectory.dir("fastlane/metadata/android")) {
         include(playTexts.keys.map { "*/$it" })
         include("*/images/*.png", "*/images/*.jpg", "*/images/*/*.png", "*/images/*/*.jpg")

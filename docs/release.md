@@ -4,8 +4,8 @@ How a new version of Twangle gets from `main` to people's phones. Claude does th
 `/release` skill (`.claude/skills/release/SKILL.md`) and `scripts/release.sh`; the owner does the
 Play Console part with the checklist below. Phase 41 (ROADMAP.md) sends the uploads, promotions
 and store listing through the Google Play API instead, with the owner's OK for each: the upload to
-the internal track, the promotions and the staged rollout are there (`scripts/release.sh upload`,
-`promote`, `rollout`, `halt`, below), the store listing follows.
+the internal track, the promotions and the staged rollout (`scripts/release.sh upload`, `promote`,
+`rollout`, `halt`), and the store listing (`scripts/release.sh listing`), below.
 
 ## The idea
 - **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or
@@ -72,6 +72,32 @@ command acts on the version in `gradle.properties`, which must be tagged, and se
   (50, later 100); 100 is everyone and ends the staged rollout. It also starts a halted one again.
 - `scripts/release.sh halt`: halts the production rollout. Nobody new gets the version; who has it
   keeps it.
+
+## The store listing
+`scripts/release.sh listing` sends the whole store listing to Google Play in every language at once,
+from `fastlane/metadata/android/` as it is on `main` ([store-listing.md](store-listing.md)): the
+title, short and full description and the eight phone screenshots of each language, the icon and the
+feature graphic, and Play's app details. It needs the same key as `upload`, but no release: the
+listing isn't tied to a version. **Claude asks the owner first**, as for the others: it changes what
+people see on Play.
+- **Screenshots first:** they are git-ignored, so they exist only on the PC that made them
+  (`scripts/store-screenshots.sh`, phone connected, about 2 minutes a language). `listing` refuses,
+  naming the languages and the command to run, unless every language has its eight: Play shows the
+  English screenshots in a language without its own, so a half-finished set is never sent. It says
+  when the oldest was made, to make them again if the app has changed since.
+- **Checked before sending:** `StoreListingTest` (texts within Play's 30, 80 and 4000 characters, the
+  icon 512 × 512 and the feature graphic 1024 × 500 in Play's formats) and the screenshots against
+  Play's rules (2 to 8, 320 to 3840 px a side, at most 2 : 1, at most 8 MB). The copy sent is 24-bit
+  PNG: Play takes screenshots only without alpha.
+- **One icon and feature graphic** go with the default language, en-US; Play shows them in every
+  language without its own.
+- **App details:** Play sets the default language, contact email and website together, so `listing`
+  sends all three: English (United States), twangle.tuner@proton.me and the privacy-policy page
+  (decision 5; `playAppDetails` in `app/build.gradle.kts`). The contact phone stays empty.
+- It sends everything each time, also what an earlier run sent, so it puts back anything changed by
+  hand in the Play Console's store listing; pictures Play already has are skipped. Languages on Play
+  that the repo doesn't have are left alone. The category, tags and the rest of *Store settings*
+  stay in the Play Console.
 
 The watch app isn't part of a release yet: it follows in an update (decision 3). When it goes out, its
 bundle (`:wear:bundleRelease`, versionCode + 1,000,000) is uploaded to the same release.

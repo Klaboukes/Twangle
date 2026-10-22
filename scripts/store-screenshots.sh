@@ -9,7 +9,7 @@
 #
 # The finished pictures go where fastlane and F-Droid look for them,
 #   fastlane/metadata/android/<locale>/images/phoneScreenshots/1.png ... 8.png
-# (git-ignored: made again by this script, uploaded by hand), the screens as they were (without the
+# (git-ignored: made again by this script, sent by scripts/release.sh listing), the screens as they were (without the
 # status bar) to build/store-screenshots/<locale>/. Captions: fastlane/metadata/android/<locale>/
 # screenshot_captions.txt, one a line. Needs the phone connected, like scripts/ui-tests.sh, whose
 # exit codes it passes on (3 no phone, 4 locked, 5 busy). Leaves Twangle in the last screenshot's
