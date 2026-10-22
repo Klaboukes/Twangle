@@ -53,7 +53,9 @@ drags or pastes anything. It goes through the Google Play Developer API with Gra
 Publisher in `:app` ([performance.md](architecture/performance.md), *Release build*), which reads the
 texts and notes from `fastlane/metadata/android/` too, so they still live in one place.
 - **The key:** the robot user's key, a service-account JSON key, made once in Google Cloud and the
-  Play Console (Phase 41, *Waiting on the owner*), lives next to the upload key as
+  Play Console (Phase 41, 2026-10-22: the service account `twangle-uploader` in the Google Cloud
+  project *Twangle Play*, `twangle-play`; in the Play Console for Twangle only, allowed to view the app,
+  release to every track, manage testing tracks and manage the store presence), lives next to the upload key as
   `~/.twangle-keys/play-service-account.json` (another file: the environment variable
   `TWANGLE_PLAY_SERVICE_ACCOUNT`, or the Gradle property `twangle.playServiceAccount`). Never in the
   repo. Without it `upload` stops at once, saying the key is missing, and nothing is sent.
@@ -61,6 +63,8 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
   Play only takes draft releases, so `upload` makes one: the owner opens it in *Internal testing*
   and clicks through to *Save and publish*. Once the app is out of draft, `scripts/release.sh upload
   completed` makes the internal release live at once.
+- Play's API can't make a new app or take its very first bundle: Twangle was made in the Play Console
+  and 1.0.0 went to the internal track by hand (2026-10-21); every later version goes with `upload`.
 - It refuses a version without its tag or its bundle (run `bundle` first), notes missing in a
   language, or notes changed since the tag. Only the very first release (1.0.0, already tagged and
   bundled) may go without notes. Play itself refuses a versionCode it has seen.
@@ -89,6 +93,8 @@ title, short and full description and the eight phone screenshots of each langua
 feature graphic, and Play's app details. It needs the same key as `upload`, but no release: the
 listing isn't tied to a version. **Claude asks the owner first**, as for the others: it changes what
 people see on Play.
+- **Texts, then pictures:** Play takes a language's pictures only once that language has a listing,
+  so `listing` sends the texts and app details first, then everything (two passes).
 - **Screenshots first:** they are git-ignored, so they exist only on the PC that made them
   (`scripts/store-screenshots.sh`, phone connected, about 2 minutes a language). `listing` refuses,
   naming the languages and the command to run, unless every language has its eight: Play shows the
