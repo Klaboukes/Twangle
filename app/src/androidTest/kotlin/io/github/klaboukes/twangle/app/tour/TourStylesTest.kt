@@ -335,6 +335,26 @@ class TourStylesTest(private val style: VisualStyle) {
         compose.onNodeWithTag(TourTestTags.OVERLAY).assertDoesNotExist()
     }
 
+    /** A finger that moves a little while it presses (as every real one does) still works Next and Skip tour. */
+    @Test
+    fun aFingerThatMovesALittleStillPressesTheButtons() {
+        show()
+        fun pressWithAShakyFinger(tag: String) {
+            compose.onNodeWithTag(tag).performTouchInput {
+                down(center)
+                moveBy(Offset(3f, 2f))
+                moveBy(Offset(-2f, 1f))
+                up()
+            }
+            compose.waitForIdle()
+        }
+        pressWithAShakyFinger(TourTestTags.NEXT)
+        assertEquals("Next went on to step 2", 1, targets.shown?.index)
+        pressWithAShakyFinger(TourTestTags.SKIP)
+        assertEquals("Skip tour ended it", 1, ends.intValue)
+        compose.onNodeWithTag(TourTestTags.BALLOON).assertDoesNotExist()
+    }
+
     @Test
     fun backEndsItAtOnce() {
         show()

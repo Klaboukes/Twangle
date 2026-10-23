@@ -284,13 +284,14 @@ private fun TourOverlay(
                 frame.originX = origin.x
                 frame.originY = origin.y
             }
-            // Taps anywhere but on the balloon's buttons do nothing: the lit part isn't live.
+            // Taps anywhere but on the balloon's buttons do nothing: the lit part isn't live. Being hit is
+            // enough to keep them from the screen below (a sibling); consuming them too would cancel a
+            // button's tap whenever the finger moves a pixel (the buttons check after this layer).
             .pointerInput(Unit) {
                 awaitEachGesture {
-                    awaitFirstDown(requireUnconsumed = false).consume()
+                    awaitFirstDown(requireUnconsumed = false)
                     do {
                         val event = awaitPointerEvent()
-                        event.changes.forEach { it.consume() }
                     } while (event.changes.any { it.pressed })
                 }
             }
