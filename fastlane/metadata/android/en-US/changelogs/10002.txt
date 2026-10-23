@@ -1,0 +1,1 @@
+- In the tour on first start, Skip tour and Next now work on the first tap.

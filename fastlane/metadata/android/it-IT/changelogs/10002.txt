@@ -1,0 +1,1 @@
+- Nel tour guidato al primo avvio, Salta e Avanti ora rispondono al primo tocco.

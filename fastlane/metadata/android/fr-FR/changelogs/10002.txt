@@ -1,0 +1,1 @@
+- Dans la visite guidée du premier lancement, Passer et Suivant réagissent désormais dès le premier appui.

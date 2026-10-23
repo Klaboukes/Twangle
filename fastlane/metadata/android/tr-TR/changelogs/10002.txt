@@ -1,0 +1,1 @@
+- İlk açılıştaki tanıtım turunda Turu atla ve İleri artık ilk dokunuşta çalışıyor.

@@ -1,0 +1,1 @@
+- Im Rundgang beim ersten Start reagieren Überspringen und Weiter jetzt schon beim ersten Tippen.

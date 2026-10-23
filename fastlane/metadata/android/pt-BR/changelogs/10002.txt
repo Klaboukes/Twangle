@@ -1,0 +1,1 @@
+- No tour da primeira abertura, Pular e Próximo agora funcionam no primeiro toque.

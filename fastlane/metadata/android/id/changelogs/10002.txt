@@ -1,0 +1,1 @@
+- Di tur aplikasi saat pertama dibuka, Lewati tur dan Berikutnya kini langsung berfungsi pada ketukan pertama.
