@@ -88,6 +88,10 @@ For each failure decide first: **app bug or outdated test?**
   design changed.
 - Push, `gh pr create --base main`, `gh pr merge --squash --delete-branch`, `git switch main &&
   git pull` (the owner's policy: merge right away).
+- On `main`, when there is time left: `scripts/ui-tests.sh --since-pass`. Every module the sweep
+  passed whole is already noted as passed; this runs the ones that failed (or changed with the
+  fixes) once more and notes them too, so the next release (the [release skill](../release/SKILL.md))
+  has little or nothing left to run.
 - Put the phone back as it was: its system settings (font size, rotation, developer options), not
   Twangle's own settings (the owner resets those).
 

@@ -11,7 +11,8 @@
 #
 # Logs go to build/overnight/ (sweep.txt, languages.txt, store.txt, summary.txt); pictures of screens
 # where a language didn't fit go to each module's build/outputs/connected_android_test_additional_output,
-# the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/.
+# the store screenshots to fastlane/metadata/android/<locale>/images/phoneScreenshots/. Each module the
+# sweep passes is noted as passed at this commit (scripts/ui-tests.sh, --since-pass), for the release.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -29,7 +30,7 @@ case "${1:-}" in
     --languages) sweep=0 store=0 ;;
     --store) sweep=0 languages=0 ;;
     "") ;;
-    *) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    *) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
 mkdir -p "$OUT"
 
@@ -90,8 +91,10 @@ if [ $store = 1 ]; then
     [ "${PIPESTATUS[0]}" = 0 ] || status=1
 fi
 
+tested="at $(git rev-parse --short HEAD)"
+[ -z "$(git status --porcelain)" ] || tested="$tested with uncommitted changes"
 {
-    echo "Overnight run: $(( (SECONDS - start) / 60 )) min, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
+    echo "Overnight run: $(( (SECONDS - start) / 60 )) min $tested, $([ $status = 0 ] && echo "everything passed" || echo "failures below")"
     cat "$OUT"/sweep.txt "$OUT"/languages.txt "$OUT"/store.txt 2>/dev/null | grep -E "FAIL|CRASH|TIMED OUT|no results|Build failed|screen went off" || true
 } > "$OUT/summary.txt"
 cat "$OUT/summary.txt"

@@ -23,7 +23,9 @@ further, and does the few things only the Play Console can do (the checklist bel
   version can be found again.
 
 ## What Claude does (`/release`)
-1. Checks `main`: the last nightly CI run, `./gradlew test lint assembleDebug` and `scripts/ui-tests.sh --all` on a test phone.
+1. Checks `main`: `./gradlew test lint assembleDebug`, skipped when the nightly CI run passed on this
+   very commit, and `scripts/ui-tests.sh --since-pass` on a test phone, which runs only the parts of
+   the app changed since their UI tests last passed on this PC (after a good overnight run, often none).
 2. Reads what changed since the last tag (`git log v<last>..main`) and picks patch or minor.
 3. On a branch `release/v<version>`: `scripts/release.sh bump patch|minor`, then the release notes,
    one file a language: `fastlane/metadata/android/<Play locale>/changelogs/<versionCode>.txt`
@@ -34,20 +36,20 @@ further, and does the few things only the Play Console can do (the checklist bel
    (`~/.twangle-keys/`), checks the signature, and puts two files in `release/` (git-ignored):
    `Twangle-<version>.aab` and `Twangle-<version>-release-notes.txt`, every language in one block in
    the Play Console's format (`<en-US>` … `</en-US>`, `<nl-NL>` …, for sending it by hand). Then it
-   tags the commit and pushes the tag. It refuses a version that already has a tag, uncommitted
+   tags the commit and pushes the tag (a push that fails takes the tag back). It refuses a version that already has a tag, uncommitted
    changes, or a `main` that differs from GitHub's.
 5. With the owner's yes: `scripts/release.sh upload`, the bundle to the internal track (below).
 6. Hands the owner the check on the Xiaomi (*What the owner does*, step 3) and waits for it to pass.
 7. With the owner's yes each time: `promote closed` or `promote production`, later `rollout 50` and
    `rollout 100`, or `halt` when something is wrong (below).
-8. With the owner's yes, only when the store texts or pictures changed: `scripts/release.sh listing`
-   (below).
+8. With the owner's yes, only when the store texts or pictures changed (`scripts/release.sh
+   listing-changes` says): `scripts/release.sh listing` (below).
 
 Before each rollout raise Claude runs `scripts/release.sh health` and shows the owner what it says;
 after a step reaches people, `status` and `reviews` (below). These only read, so they need no yes.
-
-Claude asks for each of steps 5, 7 and 8 on its own, naming the version and where it goes ("Send
-Twangle 1.0.1 to the internal track, as a draft?"); a yes to one is not a yes to the next.
+While a production rollout runs, Claude can keep a daily scheduled look (`twangle-rollout-watch`)
+that runs the three and says whether a raise looks fine; it never changes anything on Play, and goes
+once the rollout is at 100 % or halted.
 
 ## Uploads through the Google Play API
 `scripts/release.sh upload`, after `bundle`, sends `release/Twangle-<version>.aab` and its notes in
@@ -75,7 +77,6 @@ texts and notes from `fastlane/metadata/android/` too, so they still live in one
 
 Then the same build moves on, without building or uploading anything again. Each
 command acts on the version in `gradle.properties`, which must be tagged, and sends its notes again.
-**Claude asks the owner before running any of these** (and `upload`): each changes what people get.
 - `scripts/release.sh promote closed`: from the internal track to the **closed test**, once the owner
   has checked the internal build on the Xiaomi. Play's API calls the closed test the Play Console
   makes first (*Closed testing - Alpha*) `alpha`; a closed test made by hand has its own name, set
@@ -118,8 +119,11 @@ install). They need the same key as `upload`; without it they stop, saying it is
 from `fastlane/metadata/android/` as it is on `main` ([store-listing.md](store-listing.md)): the
 title, short and full description and the eight phone screenshots of each language, the icon and the
 feature graphic, and Play's app details. It needs the same key as `upload`, but no release: the
-listing isn't tied to a version. **Claude asks the owner first**, as for the others: it changes what
-people see on Play.
+listing isn't tied to a version.
+- **What changed since the last send:** each send is tagged `listing/<date-time>` on the commit it
+  sent (the first, of 2026-10-22, was tagged afterwards). `scripts/release.sh listing-changes` reads
+  git only: the texts and pictures changed since that tag (a new language shows as new files), and
+  the app's screen changes since, for a look at whether the screenshots still match.
 - **Texts, then pictures:** Play takes a language's pictures only once that language has a listing,
   so `listing` sends the texts and app details first, then everything (two passes).
 - **Screenshots first:** they are git-ignored, so they exist only on the PC that made them
@@ -171,8 +175,8 @@ say yes.
 - [ ] After the promotion to production Google reviews it (a few hours to a few days); Play then
       updates phones by itself, starting with 20 % of people.
 - [ ] After two or three quiet days (*Quality → Android vitals → Crashes and ANRs*, and the reviews;
-      Claude shows you `health` and `reviews` too), tell Claude to raise it to 50 %, a few days later
-      to 100 %.
+      Claude shows you `health` and `reviews` too, or the daily rollout watch if you said yes to it),
+      tell Claude to raise it to 50 %, a few days later to 100 %.
 - [ ] Something wrong: tell Claude to halt it. Nobody new gets the version; the fix goes on `main`
       and out in the next release (a halted version can't be uploaded again, the fix gets a higher
       version).

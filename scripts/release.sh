@@ -37,6 +37,10 @@
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored, so made on this PC), and checks the texts and pictures against Play's rules first.
+#       Each send is noted as a tag listing/<date-time> on the commit sent.
+#   scripts/release.sh listing-changes
+#       Whether the store listing needs sending: what changed in its texts and pictures since the last
+#       listing/* tag, and the app's screen changes since then (do the screenshots still match?).
 #   scripts/release.sh status
 #       What is on Google Play now: each track (internal, closed test "alpha", open test "beta",
 #       production) with its releases (name, versionCode, draft / live / staged rollout % / halted), and
@@ -51,6 +55,7 @@
 #
 # status, health and reviews only read (scripts/PlayReports.java; status opens a temporary edit and
 # deletes it, never commits it), so they need no yes from the owner. They need the robot user's key too.
+# listing-changes only reads git.
 #
 # upload, promote, rollout, halt and listing change what people get or see on Google Play, so Claude
 # asks the owner before running any of them (docs/release.md). They act on the version in gradle.properties, which
@@ -149,7 +154,11 @@ bundle() {
     notes_block "$code" >"$OUT/Twangle-$v-release-notes.txt"
 
     git tag -a "$tag" -m "Twangle $v (versionCode $code)"
-    git push --quiet origin "$tag"
+    # A tag only here would make the next try refuse the version as released.
+    if ! git push --quiet origin "$tag"; then
+        git tag -d "$tag" >/dev/null
+        fail "couldn't push the tag $tag to GitHub, so $v is not tagged yet; run scripts/release.sh bundle again"
+    fi
 
     echo
     echo "Twangle $v is ready for the Play Console (docs/release.md):"
@@ -411,10 +420,43 @@ listing() {
     echo "  2/2: the screenshots, icon and feature graphic..."
     play_gradle :app:publishReleaseListing --rerun
 
+    # The mark listing-changes compares with next time.
+    local mark="listing/$(date '+%Y-%m-%d-%H%M')"
+    git tag -a "$mark" -m "Store listing sent to Google Play" && git push --quiet origin "$mark" ||
+        echo "(The send isn't noted on GitHub: git push origin $mark.)"
+
     echo
     echo "The store listing is on Google Play in every language: title, short and full description,"
     echo "screenshots, icon and feature graphic, and the contact email, website and default language."
     echo "Check it in the Play Console: Grow users -> Store presence -> Main store listing."
+}
+
+# What changed for the store listing since it was last sent (the newest listing/* tag): its texts and
+# pictures in git, and the app's screens, which the git-ignored screenshots show.
+listing_changes() {
+    local mark texts screens
+    [[ $# -eq 0 ]] || fail "usage: scripts/release.sh listing-changes"
+    git fetch --quiet origin --tags 2>/dev/null || true
+    mark="$(git tag -l 'listing/*' --sort=-creatordate | head -1)"
+    if [[ -z "$mark" ]]; then
+        echo "No store listing sent from this repo yet (no listing/* tag): send it with scripts/release.sh listing."
+        return
+    fi
+    echo "The store listing was last sent at $mark (commit $(git rev-parse --short "$mark^{commit}"))."
+    texts="$(git diff --stat "$mark" HEAD -- "$LISTINGS" ":(exclude,glob)$LISTINGS/*/changelogs/**")"
+    if [[ -n "$texts" ]]; then
+        echo "Its texts or pictures changed since (a new language shows as new files):"
+        echo "$texts"
+    else
+        echo "Its texts and pictures are unchanged since."
+    fi
+    screens="$(git log --oneline "$mark..HEAD" -- app/src/main feature/*/src/main core/designsystem/src/main)"
+    if [[ -n "$screens" ]]; then
+        echo "Changes to the app's screens since; do the screenshots still match them?"
+        echo "$screens" | head -20
+    else
+        echo "The app's screens are unchanged since, so the screenshots still match."
+    fi
 }
 
 # Runs one of the read-only looks at Play (scripts/PlayReports.java, plain JDK, no Gradle).
@@ -455,10 +497,11 @@ case "${1:-}" in
     rollout) rollout "${2:-}" ;;
     halt) shift; halt "$@" ;;
     listing) shift; listing "$@" ;;
+    listing-changes) shift; listing_changes "$@" ;;
     status) shift; status "$@" ;;
     health) shift; health "$@" ;;
     reviews) shift; reviews "$@" ;;
     *) fail "usage: scripts/release.sh bump patch|minor|major | notes | bundle | upload [draft|completed]
        | promote closed [draft|completed] | promote production [draft] | rollout <percent> | halt | listing
-       | status | health [days] | reviews [language]" ;;
+       | listing-changes | status | health [days] | reviews [language]" ;;
 esac

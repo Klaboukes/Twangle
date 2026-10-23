@@ -4,6 +4,8 @@
 #
 #   scripts/ui-tests.sh                          modules affected by this branch (vs main) + uncommitted work
 #   scripts/ui-tests.sh --all                    every module with UI tests
+#   scripts/ui-tests.sh --since-pass             every module changed since it last passed whole on
+#                                                this PC (or never did): before a release
 #   scripts/ui-tests.sh :feature:tuner           whole module(s)
 #   scripts/ui-tests.sh :feature:tuner -f Tip    only tests whose Class#method name matches a regex
 #   scripts/ui-tests.sh :feature:tuner -c TunerContentTest#switchingModesMovesNothingWithTheLargestFont
@@ -21,6 +23,10 @@
 # (scripts/overnight-ui-tests.sh) passes --thorough and checks everything. --quick is accepted and
 # changes nothing.
 #
+# A module that passes whole (no -f, -c or -a) from a clean working tree is noted as passed at that
+# commit in build/ui-tests-passed/ (this PC only; the overnight run notes every module it passes).
+# --since-pass reads those notes, so a release runs only what changed since the last good run.
+#
 # One Gradle call builds every test APK (and the app, for :app). Each module's tests are then
 # installed and run straight on the phone with `am instrument`: Gradle's own test task costs 15-25 s
 # more per module and uninstalls the app afterwards. A module's run is stopped after MODULE_TIMEOUT
@@ -36,18 +42,18 @@ COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :core:audio :app)
 
-usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
 # Maps changed paths to the UI test modules that can see the change (a module's own sources, or
-# anything it depends on). Docs, CI files, the Play Store texts (fastlane/) and JVM unit tests need no
-# device run.
+# anything it depends on), since commit [base] (by default where this branch left main). Docs, CI
+# files, the Play Store texts (fastlane/) and JVM unit tests need no device run.
 affected_modules() {
-    local base changed
-    base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
+    local base="${1:-}" changed
+    [ -n "$base" ] || base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
     changed="$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)"
     local testing=0 tuner=0 settings=0 metronome=0 practice=0 audio=0 app=0 path
     while IFS= read -r path; do
@@ -82,10 +88,28 @@ affected_modules() {
     [ $app = 1 ] && echo :app
 }
 
-modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0
+# A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>".
+PASSED="$ROOT/build/ui-tests-passed"
+pass_file() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
+
+# The UI test modules no pass vouches for: never passed whole on this PC, passed at a commit this
+# clone no longer has, or changed since in a way the module can see.
+unproven_modules() {
+    local module commit
+    for module in "${UI_MODULES[@]}"; do
+        commit="$(cut -d' ' -f1 "$(pass_file "$module")" 2>/dev/null)"
+        if [ -z "$commit" ] || ! git cat-file -e "$commit^{commit}" 2>/dev/null ||
+            affected_modules "$commit" | grep -qx -- "$module"; then
+            echo "$module"
+        fi
+    done
+}
+
+modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0 since_pass=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
+        --since-pass) since_pass=1 ;;
         --thorough) thorough=1 ;;
         --quick) thorough=0 ;;
         --cool) cool=1 ;;
@@ -100,7 +124,19 @@ while [ $# -gt 0 ]; do
     shift
 done
 [ -n "$filter" ] && [ -n "$class" ] && { echo "Use -f or -c, not both." >&2; exit 2; }
-if [ ${#modules[@]} -eq 0 ]; then
+if [ $since_pass = 1 ]; then
+    [ ${#modules[@]} -eq 0 ] && [ -z "$filter$class" ] || { echo "--since-pass picks the modules itself: no modules, -f or -c with it." >&2; exit 2; }
+    mapfile -t modules < <(unproven_modules)
+    for module in "${UI_MODULES[@]}"; do
+        [[ " ${modules[*]} " == *" $module "* ]] ||
+            echo "Passed, nothing changed since: $module ($(cut -d' ' -f2- "$(pass_file "$module")"), at $(cut -c1-8 "$(pass_file "$module")"))"
+    done
+    if [ ${#modules[@]} -eq 0 ]; then
+        echo "Every module passed after its last change: nothing to run."
+        exit 0
+    fi
+    echo "To run: ${modules[*]}"
+elif [ ${#modules[@]} -eq 0 ]; then
     mapfile -t modules < <(affected_modules)
     if [ ${#modules[@]} -eq 0 ]; then
         echo "No UI tests affected (only docs, CI or unit tests changed)."
@@ -201,6 +237,18 @@ if failed:
     print('\n'.join(failed))
 sys.exit(1 if fails or running is not None else 0)
 EOF
+}
+
+# The tests are built from the working tree as it is now: only a clean one is a commit a pass can
+# be noted at.
+tested="$(git rev-parse HEAD)"
+[ -z "$(git status --porcelain)" ] && clean=1 || clean=0
+
+# Notes that [module] passed whole at this commit (pass_file above).
+note_pass() {
+    [ $clean = 1 ] && [ -z "$filter$class" ] && [ ${#extra[@]} -eq 0 ] || return 0
+    mkdir -p "$PASSED"
+    echo "$tested $(date '+%Y-%m-%d %H:%M')" > "$(pass_file "$1")"
 }
 
 # Build everything first, in one Gradle call.
@@ -345,6 +393,7 @@ wait_cool() {
 status=0
 for module in "${modules[@]}"; do
     start=$SECONDS
+    failed=0
     dir="$(dir_of "$module")"
     log="build/ui-tests${module//:/-}.log"
     package="$(test_package "$module")"
@@ -387,16 +436,17 @@ for module in "${modules[@]}"; do
             wait_cool
             printf '  %-28s ' "$name"
             run_tests "$module" "$package" "$runner" "build/ui-tests${module//:/-}-$name.log" \
-                "${args[@]}" -e class "$(qualify "$module" "$name")" || status=1
+                "${args[@]}" -e class "$(qualify "$module" "$name")" || failed=1
         done
     else
-        run_tests "$module" "$package" "$runner" "$log" "${args[@]}" || status=1
+        run_tests "$module" "$package" "$runner" "$log" "${args[@]}" || failed=1
     fi
     off="$(ms_since_screen_off)"
     if [ -n "$off" ] && [ "$off" -lt $(((SECONDS - start) * 1000)) ]; then
         echo "  The phone's screen went off during this run, so its failures say nothing: leave the screen on and run again."
-        status=1
+        failed=1
     fi
+    if [ $failed = 0 ]; then note_pass "$module"; else status=1; fi
     if [ -n "$(adb shell ls "$outdir" 2>/dev/null | tr -d '\r')" ]; then
         pulled="$dir/build/outputs/connected_android_test_additional_output"
         rm -rf "$pulled" && mkdir -p "$pulled"

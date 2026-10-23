@@ -1,14 +1,14 @@
 ---
 name: ui-test
 description: Run Twangle's on-device UI tests on a test phone (Xiaomi 12X or Galaxy S26), scoped to what changed, with tight timeouts and a short summary. Use whenever UI or instrumented tests need to run, while iterating on a UI change, before landing a change the user can see or hear, or when the user says "run the UI tests", "/ui-test", or "/ui-test <filter>".
-argument-hint: "[optional: test-name regex, a :module, --all, --thorough, --cool or --languages]"
+argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --thorough, --cool or --languages]"
 ---
 
 # UI tests on the phone
 
 Always go through `scripts/ui-tests.sh`, never `./gradlew connectedDebugAndroidTest`. Gradle's task is slower, uninstalls the app (wiping the owner's settings) and floods the session with log lines. The script builds once, runs each module with `am instrument` under a time limit, and prints one line per module.
 
-**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--thorough`, `--cool` or `--languages` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
+**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool` or `--languages` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
 
 ## Pick the smallest run
 
@@ -20,6 +20,7 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 | Iterating on one area | `scripts/ui-tests.sh :feature:tuner -f 'Tip\|Hint'` | ~30 s | 180000 |
 | **Once before landing** (when the owner hasn't left UI tests for the night) | `scripts/ui-tests.sh` (the modules this branch touches, default style) | 1–3 min | 300000 |
 | Build files or version catalog changed | `scripts/ui-tests.sh --all` | ~3 min | 300000 |
+| Before a release (the [release skill](../release/SKILL.md)) | `scripts/ui-tests.sh --since-pass`: the modules changed since they last passed whole on this PC | 0–5 min | 420000 |
 | Every style, every double check | only in the overnight run: `scripts/overnight-ui-tests.sh` (the [overnight-run skill](../overnight-run/SKILL.md)), never during the day | ~1½ h | in the background |
 | A language's texts changed | `scripts/ui-tests.sh <module> --languages -f 'everyLanguage'` (default style) | 1–5 min per module | 600000 |
 
