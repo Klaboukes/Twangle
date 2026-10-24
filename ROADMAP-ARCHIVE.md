@@ -1,6 +1,6 @@
 # Twangle — Roadmap archive
 
-Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33, 34 and 37 on 2026-10-17, 38 on 2026-10-19, with the *Music tools* overview and the finished part of Phase 23; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
+Finished phases, moved here from [ROADMAP.md](ROADMAP.md) so the roadmap stays short (phases 0–8 on 2026-10-11, 9–10 on 2026-10-12, 11–14 on 2026-10-13, 15–17 on 2026-10-14, 18–20 on 2026-10-14, 24 and 21 on 2026-10-15, 22, 25–27, 28, 29, 30 and 35 on 2026-10-16, 31, 32, 36, 33, 34 and 37 on 2026-10-17, 38 on 2026-10-19, with the *Music tools* overview and the finished part of Phase 23, more of it on 2026-10-24; finished owner items on 2026-10-16). The text is kept as it was when each item was ticked.
 
 Status legend: ☐ todo · ◐ in progress · ☑ done
 
@@ -418,6 +418,12 @@ Phase 23 was split on 2026-10-17: its open steps became Phase 37 (store-ready ap
 - ☑ Privacy policy brought up to date (every stored setting: instrument, own tunings, metronome, app language, landscape layout; the tour instead of the string-lock tip; the remembered microphone refusal, on the phone and in the watch's own small file, so "stores no settings" no longer holds for the watch; the wave's "when in tune" choice is gone; also the metronome's Listen and the widget) in English and Dutch, and published at a public URL (**decision 5**, owner 2026-10-16: a small separate public repo just for the policy, the code stays private until after release): https://klaboukes.github.io/twangle-privacy/, kept up to date with `scripts/publish-privacy.sh`
 - ☑ The contact email (owner, **decision 5**: twangle.tuner@proton.me) in the policy's *Contact* section (English and Dutch, then `scripts/publish-privacy.sh`)
 - ☑ Watch app as decided (**decision 3**): if it launches now, a real-watch check, the Wear OS form factor opted in, Wear screenshots and its own track; otherwise it follows in an update (owner, 2026-10-16: it follows in an update after v1.0; v1.0 ships the phone app only)
+
+The Play Console steps done after the split, moved here on 2026-10-24 once 1.0.2 was on the closed track (the open ones stay in [ROADMAP.md](ROADMAP.md)):
+- ☑ Developer account ready (owner, with Claude's help): identity and Android-device verification, and a public developer contact email (**decision 5**). Owner, 2026-10-21: personal account, identity and device checks passed
+- ☑ The policy URL and the contact email entered in the Play Console (once the developer account is ready). 2026-10-22: the policy URL in *App content*, the contact email and website sent with `scripts/release.sh listing`
+- ☑ Play Console *App content*: privacy policy, ads (none), app access (no login), content rating questionnaire, target audience (13+), data safety (no data collected or shared), category Music & Audio. 2026-10-22: all declarations done (Play: "You've caught up with everything") and sent for Google's review, with the category
+- ☑ Internal track: install the Play-signed build on the Xiaomi from Play and check the mic, widget and language switch (owner, 2026-10-22: 1.0.1 from Play works fine)
 
 ---
 
