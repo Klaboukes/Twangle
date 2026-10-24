@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -639,6 +640,30 @@ class TunerViewModelTest {
         tones.finish()
         runCurrent()
         assertNull("the tone died away", vm.soundingString.value)
+    }
+
+    @Test
+    fun `a string is played in the picked instrument's voice`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+
+        vm.playString(0)
+        runCurrent()
+        assertEquals(listOf(StringVoices.STEEL_GUITAR), tones.voices)
+
+        vm.setInstrument(Instruments.VIOLIN)
+        runCurrent()
+        vm.playString(3)
+        runCurrent()
+        assertEquals(StringVoices.VIOLIN, tones.voices.last())
+        // E5 at A4 = 440 Hz.
+        assertEquals(440.0 * Math.pow(2.0, 7.0 / 12.0), tones.played.last().toDouble(), 0.01)
+
+        vm.setInstrument(Instruments.BASS_4)
+        runCurrent()
+        vm.playString(0)
+        runCurrent()
+        assertEquals(StringVoices.ELECTRIC_BASS, tones.voices.last())
     }
 
     @Test

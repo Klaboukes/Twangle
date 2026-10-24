@@ -250,6 +250,7 @@ class TunerViewModel(
                 intonationAttempt = tool.choice.attempt,
                 intonationScaleMm = IntonationInstruments.scaleLengthMm(settings.instrument),
                 chordName = tool.chord && tools.chordNaming && ChordInstruments.offers(settings.instrument),
+                voice = settings.instrument.voice,
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
@@ -459,15 +460,16 @@ class TunerViewModel(
     }
 
     /**
-     * Plays string [index]'s note of the current tuning as a plucked tone at the current A4, so it
-     * can be tuned by ear. A tone already sounding gives way to it. Does nothing before the settings
-     * have loaded or for a string the tuning doesn't have.
+     * Plays string [index]'s note of the current tuning at the current A4, in the picked
+     * instrument's voice (a plucked guitar string, a bowed violin string), so it can be tuned by ear.
+     * A tone already sounding gives way to it. Does nothing before the settings have loaded or for a
+     * string the tuning doesn't have.
      */
     fun playString(index: Int) {
         val options = options.value ?: return
         val note = options.tuning.strings.getOrNull(index) ?: return
         playedString.value = index
-        tonePlayer.play(NoteMapper(options.a4Hz).frequencyOf(note))
+        tonePlayer.play(NoteMapper(options.a4Hz).frequencyOf(note), options.voice)
     }
 
     /** Stops a reference tone that is sounding (it fades out within a few tens of ms); also when the tuner leaves the screen. */

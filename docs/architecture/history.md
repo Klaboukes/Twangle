@@ -6,6 +6,7 @@ Designs and measurements that have been superseded, kept for the record and take
 
 ## Contents
 - [Overview](#overview)
+- [Notes, tunings and audio](#notes-tunings-and-audio)
 - [Threading and performance](#threading-and-performance)
 - [Lifecycle, permissions and settings](#lifecycle-permissions-and-settings)
 - [UI basics](#ui-basics)
@@ -20,6 +21,9 @@ Designs and measurements that have been superseded, kept for the record and take
 - **Music tools in 1.1:** on 2026-10-16 the owner first planned v1.0 as it was and the music tools (Phases 29–33) for a version 1.1 after it (Phase 34, "Version 1.1 on the Play Store", once v1.0 was live; the store screenshots under `ToolSwitchesOffRule`). Later that day, in no hurry to release, the owner moved the tools into v1.0: Phase 34 turns them on before the release.
 - **CI trigger:** until 2026-10-16 GitHub Actions built `main` after every merge (and before that, every PR too). About 200 merges in a week used up the free plan's 2,000 minutes a month, so it now runs once a night.
 - **Launcher icon:** until 2026-10-15 the icon was the October loop: a string that came in at an angle, made one loop and left straight.
+
+## Notes, tunings and audio
+- **Reference tone until 2026-10-24:** one ideal plucked string for every instrument (`PluckSynth`): harmonics at 1/k, each a plain exponential with time constant 1.5 s / (1 + (k − 1)/2), at most 32 below 6 kHz, a 5 ms attack, the harmonic amplitudes adding up to 0.8. No body, no pluck point, no attack noise, no stiffness, and a violin's string plucked like a guitar's: it sounded like a cheap keyboard (the owner, 2026-10-24), so `StringSynth` with a `StringVoice` per instrument took its place ([Notes, tunings and audio](notes-and-audio.md), *Reference tone*). `PluckSynth` moved to the test fixtures, where the strum, chord, 12th-fret and store-screenshot tests still play it, so their measured figures stand.
 
 ## Threading and performance
 - **Meter looks removed in Phase 25**, as measured on the S26 in Phase 13 (same method as the table in [Threading and performance](performance.md)):

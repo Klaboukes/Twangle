@@ -71,7 +71,7 @@ Topic files:
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
-                   pluck synthesis, metronome click track
+                   string synthesis (the reference tone in each instrument's voice), metronome click track
 :core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough
 :baselineprofile   Android test module: Baseline Profile generator, startup and meter-frame benchmarks
 ```
@@ -88,8 +88,8 @@ Dependencies ("→" = depends on):
 :feature:practice  → :core:settings, :core:designsystem, :core:dsp (no microphone, no audio)
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
-:core:audio        → :core:dsp (api: PluckSynth makes the reference tone's samples, ClickTrack the metronome's;
-                     MetronomePlayer's beats and meters are :core:dsp types)
+:core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's;
+                     TonePlayer's StringVoice and MetronomePlayer's beats and meters are :core:dsp types)
 :core:dsp          → no other module
 :core:testing      → no other module; used by the UI tests of the :feature modules
 :baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
@@ -114,7 +114,8 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector
     strobe/     StrobeMotion
     trail/      PitchHistory (the pitch trail's last seconds of readings)
-    synth/      PluckSynth (reference tone samples)
+    synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
+                (PluckSynth, the tests' ideal plucked string, is in testFixtures)
     metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent), TapTempo (+ TempoMarking),
                 TempoDetector (+ TempoStatus), OnsetTempoDetector (tempo from music)
     strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check)

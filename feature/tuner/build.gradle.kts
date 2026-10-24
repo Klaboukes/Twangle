@@ -49,6 +49,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(testFixtures(project(":core:audio")))
+    androidTestImplementation(testFixtures(project(":core:dsp")))
     androidTestImplementation(testFixtures(project(":core:settings")))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

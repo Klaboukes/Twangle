@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.dsp.music
 
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -141,12 +142,28 @@ class InstrumentTest {
     }
 
     @Test
+    fun `each instrument sounds like its own kind`() {
+        for (instrument in Instruments.all) {
+            val voice = instrument.voice
+            val bowed = instrument.id in setOf("violin", "viola", "cello")
+            assertEquals("${instrument.id} bowed", bowed, voice.bowed)
+            assertEquals("${instrument.id} courses", if (instrument.id == "mandolin") 2 else 1, voice.courses)
+            assertEquals("${instrument.id} has a known voice", true, voice in StringVoices.all)
+        }
+        assertEquals(StringVoices.STEEL_GUITAR, Instruments.GUITAR.voice)
+        assertEquals(StringVoices.STEEL_GUITAR, Instruments.GUITAR_8.voice)
+        assertEquals(StringVoices.ELECTRIC_BASS, Instruments.BASS_5.voice)
+        assertEquals(StringVoices.UKULELE, Instruments.UKULELE.voice)
+        assertEquals(StringVoices.DEFAULT, Instruments.DEFAULT.voice)
+    }
+
+    @Test
     fun `invalid instruments are rejected`() {
         val four = Tuning("four", listOf(Note(40), Note(45), Note(50), Note(55)))
-        assertThrows(IllegalArgumentException::class.java) { Instrument(" ", 4, listOf(four)) }
-        assertThrows(IllegalArgumentException::class.java) { Instrument("none", 4, emptyList()) }
-        assertThrows(IllegalArgumentException::class.java) { Instrument("zero", 0, listOf(four)) }
-        assertThrows(IllegalArgumentException::class.java) { Instrument("wrong_count", 6, listOf(four)) }
-        assertThrows(IllegalArgumentException::class.java) { Instrument("twice", 4, listOf(four, four)) }
+        assertThrows(IllegalArgumentException::class.java) { Instrument(" ", 4, listOf(four), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { Instrument("none", 4, emptyList(), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { Instrument("zero", 0, listOf(four), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { Instrument("wrong_count", 6, listOf(four), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { Instrument("twice", 4, listOf(four, four), StringVoices.STEEL_GUITAR) }
     }
 }

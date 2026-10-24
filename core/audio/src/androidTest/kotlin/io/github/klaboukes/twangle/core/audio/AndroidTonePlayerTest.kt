@@ -6,7 +6,8 @@ import android.media.AudioManager
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
+import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -23,12 +24,12 @@ class AndroidTonePlayerTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val player = AndroidTonePlayer(context)
-    private val toneMillis = (PluckSynth.DEFAULT_DURATION_SECONDS * 1000).toLong()
+    private val toneMillis = (StringSynth.DEFAULT_DURATION_SECONDS * 1000).toLong()
 
     @Test
     fun playsForTheWholeToneAndStopsByItself() = runBlocking {
         val started = SystemClock.uptimeMillis()
-        player.play(440f)
+        player.play(440f, StringVoices.STEEL_GUITAR)
         assertTrue(player.isPlaying.value)
 
         withTimeout(toneMillis + SLACK_MILLIS) { player.isPlaying.first { !it } }
@@ -38,7 +39,7 @@ class AndroidTonePlayerTest {
 
     @Test
     fun stopEndsTheToneQuickly() = runBlocking {
-        player.play(329.63f)
+        player.play(329.63f, StringVoices.STEEL_GUITAR)
         delay(300)
         assertTrue(player.isPlaying.value)
         val stopped = SystemClock.uptimeMillis()
@@ -50,10 +51,10 @@ class AndroidTonePlayerTest {
 
     @Test
     fun aNewNoteReplacesTheOneSoundingAndThePlayerCanBeReused() = runBlocking {
-        player.play(110f)
+        player.play(110f, StringVoices.STEEL_GUITAR)
         delay(200)
         val switched = SystemClock.uptimeMillis()
-        player.play(146.83f)
+        player.play(146.83f, StringVoices.STEEL_GUITAR)
         delay(200)
         assertTrue(player.isPlaying.value)
         player.stop()
@@ -61,7 +62,7 @@ class AndroidTonePlayerTest {
         assertTrue("the second note must not have ended by itself", SystemClock.uptimeMillis() - switched < toneMillis)
 
         // Released properly, so it plays again.
-        player.play(196f)
+        player.play(196f, StringVoices.STEEL_GUITAR)
         assertTrue(player.isPlaying.value)
         player.stop()
         withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
@@ -71,7 +72,7 @@ class AndroidTonePlayerTest {
     /** Another app taking audio focus for good (here: the test, as another focus owner) stops the tone. */
     @Test
     fun losingAudioFocusStopsTheTone() = runBlocking {
-        player.play(220f)
+        player.play(220f, StringVoices.VIOLIN)
         delay(300)
         assertTrue(player.isPlaying.value)
         val audioManager = context.getSystemService(AudioManager::class.java)

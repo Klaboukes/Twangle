@@ -5,6 +5,8 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.TunerMode
 
@@ -36,6 +38,8 @@ data class TunerOptions(
     val intonationScaleMm: Float? = null,
     /** Whether the chord name is switched on (Phase 30); it only runs in guitar mode ([chordNaming]). */
     val chordName: Boolean = false,
+    /** How the picked instrument's strings sound when a reference tone is played. */
+    val voice: StringVoice = StringVoices.DEFAULT,
 ) {
     /** Strum check runs: switched on, and in guitar mode, where there are strings to check. */
     val strumChecking: Boolean get() = strumCheck && mode == TunerMode.AUTO

@@ -9,7 +9,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
-import io.github.klaboukes.twangle.core.dsp.synth.PluckSynth
+import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,15 +26,17 @@ import kotlinx.coroutines.launch
 /**
  * [TonePlayer] backed by a streaming `android.media.AudioTrack`: mono `ENCODING_PCM_FLOAT` at the
  * phone's native output rate, `USAGE_MEDIA` / `CONTENT_TYPE_MUSIC`, so the tone follows the media
- * volume. The samples come from a [PluckSynth].
+ * volume. The samples come from a [StringSynth] per voice, made the first time an instrument's
+ * voice is asked for and kept.
  *
  * The track exists only while a tone sounds. [play] starts a session on a dedicated single thread
  * (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer allocated per
  * session, so playing creates no garbage. Requests reach it through a field it checks every chunk:
- * a new note releases the old one over [PluckSynth.STOP_FADE_SECONDS] and then starts, [stop] only
- * releases. When the tone has ended the session pads the track with one buffer of silence (so a
- * very short tone still starts playing), waits until the last sample has been played, then releases
- * the track and [isPlaying] turns false. A failing track ends the session the same way, quietly.
+ * a new note releases the old one over [StringSynth.STOP_FADE_SECONDS] and then starts (in its own
+ * voice's synth), [stop] only releases. When the tone has ended the session pads the track with one
+ * buffer of silence (so a very short tone still starts playing), waits until the last sample has
+ * been played, then releases the track and [isPlaying] turns false. A failing track ends the
+ * session the same way, quietly.
  *
  * Each session holds transient audio focus (`AUDIOFOCUS_GAIN_TRANSIENT`), so music from another
  * app pauses while the tone sounds and resumes after it; losing focus (a call, another app's sound
@@ -47,8 +50,11 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
     /** Sample rate of the tone: the phone's native output rate, 48 kHz if it reports nothing usable. */
     val sampleRate: Int = AudioOutput.nativeSampleRate()
 
-    // Used only on the writer thread, apart from the immutable maxFrequencyHz.
-    private val synth = PluckSynth(sampleRate)
+    /** Highest frequency [play] accepts. */
+    val maxFrequencyHz: Float = StringSynth.maxFrequencyHz(sampleRate)
+
+    // Used only on the writer thread: one synth per voice heard so far.
+    private val synths = HashMap<StringVoice, StringSynth>()
     private val chunkFrames = sampleRate / CHUNKS_PER_SECOND
 
     private val scope = CoroutineScope(SupervisorJob())
@@ -56,9 +62,9 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
 
     private val lock = Any()
 
-    // Guarded by lock: the latest request the session hasn't taken yet (NONE, STOP or a frequency),
-    // and whether a session is running.
-    private var pending = NONE
+    // Guarded by lock: the latest request the session hasn't taken yet (null for none), and whether
+    // a session is running.
+    private var pending: Request? = null
     private var active = false
 
     private val playing = MutableStateFlow(false)
@@ -81,22 +87,22 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         )
         .build()
 
-    override fun play(frequencyHz: Float) {
-        require(frequencyHz > 0f && frequencyHz <= synth.maxFrequencyHz) {
-            "frequencyHz must be in (0, ${synth.maxFrequencyHz}], was $frequencyHz"
+    override fun play(frequencyHz: Float, voice: StringVoice) {
+        require(frequencyHz > 0f && frequencyHz <= maxFrequencyHz) {
+            "frequencyHz must be in (0, $maxFrequencyHz], was $frequencyHz"
         }
-        request(frequencyHz)
+        request(Request.Play(frequencyHz, voice))
     }
 
-    override fun stop() = request(STOP)
+    override fun stop() = request(Request.Stop)
 
-    private fun request(value: Float) {
+    private fun request(value: Request) {
         synchronized(lock) {
             if (active) {
                 pending = value
                 return
             }
-            if (value == STOP) return
+            if (value is Request.Stop) return
             pending = value
             active = true
             playing.value = true
@@ -104,15 +110,18 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         scope.launch(writeDispatcher) { session() }
     }
 
-    private fun takeRequest(): Float = synchronized(lock) { pending.also { pending = NONE } }
+    private fun takeRequest(): Request? = synchronized(lock) { pending.also { pending = null } }
 
     /** Ends the session unless a request came in meanwhile. */
     private fun finishIfIdle(): Boolean = synchronized(lock) {
-        if (pending != NONE) return false
+        if (pending != null) return false
         active = false
         playing.value = false
         true
     }
+
+    /** The synth for [voice], made on its first tone (on the writer thread). */
+    private fun synthFor(voice: StringVoice): StringSynth = synths.getOrPut(voice) { StringSynth(sampleRate, voice) }
 
     private suspend fun session() {
         var track: AudioTrack? = null
@@ -130,26 +139,31 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
             opened.play()
             val buffer = FloatArray(chunkFrames)
             var framesWritten = 0L
-            var next = NONE
+            var synth: StringSynth? = null
+            var next: Request.Play? = null
             while (true) {
                 currentCoroutineContext().ensureActive()
                 val request = takeRequest()
-                when {
-                    request == STOP -> {
-                        synth.release()
-                        next = NONE
+                val current = synth
+                when (request) {
+                    is Request.Stop -> {
+                        current?.release()
+                        next = null
                     }
-                    request != NONE && synth.isSounding -> {
-                        synth.release()
+                    is Request.Play -> if (current != null && current.isSounding) {
+                        current.release()
                         next = request
+                    } else {
+                        synth = synthFor(request.voice).also { it.start(request.frequencyHz) }
                     }
-                    request != NONE -> synth.start(request)
+                    null -> Unit
                 }
-                if (!synth.isSounding && next != NONE) {
-                    synth.start(next)
-                    next = NONE
+                val queued = next
+                if (queued != null && synth?.isSounding != true) {
+                    synth = synthFor(queued.voice).also { it.start(queued.frequencyHz) }
+                    next = null
                 }
-                val count = synth.render(buffer)
+                val count = synth?.render(buffer) ?: 0
                 if (count > 0) {
                     AudioOutput.write(opened, buffer, count)
                     framesWritten += count
@@ -181,7 +195,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
             if (!finished) {
                 synchronized(lock) {
                     active = false
-                    pending = NONE
+                    pending = null
                     playing.value = false
                 }
             }
@@ -200,12 +214,14 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         }
     }
 
+    /** What [play] and [stop] ask the session for. */
+    private sealed interface Request {
+        data object Stop : Request
+        class Play(val frequencyHz: Float, val voice: StringVoice) : Request
+    }
+
     private companion object {
         const val TAG = "TonePlayer"
-
-        // Requests other than a frequency, which is always above 0.
-        const val NONE = -1f
-        const val STOP = -2f
 
         const val CHUNKS_PER_SECOND = 100
         const val BUFFERED_CHUNKS = 4
