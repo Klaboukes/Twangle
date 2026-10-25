@@ -1,0 +1,86 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Click Sounds</title>
+<!--
+TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST". Candidates for the owner to pick by ear.
+Goal     The metronome gets a short list of clicks in Settings, not only the wood block, so it can be heard over
+         a loud amp or a band and stays pleasant through a long practice. The owner picks the two (or three)
+         that join the wood block.
+Files    One bar of 4/4 at 100 BPM each (beat 1 higher and louder, as the app plays it), then 1 s of silence;
+         16-bit mono, 48 kHz, 3.4 s. Nothing loops: the players below have no loop and no autoplay.
+Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt, in the test
+         sources only (not in the app). Make them again, byte for byte, with
+         ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
+         The wood block is the app's own ClickSounds, played through ClickTrack. The candidates are made the
+         same way: a few decaying partials, a raised-cosine attack, the same 8 ms fade to exactly 0 after 40 ms,
+         the wood block's level steps (peak 0.8 : 0.6 : 0.45), and each set scaled to the wood block's RMS
+         (downbeat peak at most 0.8). No recordings, so nothing to licence.
+Recipes  wood-block   free bar, modes 1 : 2.756 (0.35), decay 9 ms / 4.5 ms, attack 0.8 ms; A6 / E6 / A5
+         soft-beep    one sine, decay 25 ms, attack 2 ms; E6 / B5 / E5; RMS +0.0 dB, peak 0.42
+         sharp-click  small stiff bar, modes 1 : 2.756 (0.45) : 5.404 (0.2), decay 7 / 3.5 / 1.8 ms, attack
+                      0.3 ms; A7 / E7 / A6; RMS -2.4 dB (peak 0.8 already; the ear hears 2-4 kHz best)
+         low-knock    drum skin, modes 1 : 1.594 (0.4) : 2.136 (0.2), decay 14 / 8 / 5 ms, attack 1 ms;
+                      E5 / B4 / E4; RMS +0.0 dB, peak 0.63
+Phone    The same four files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
+         app on the speaker and in headphones.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6; --line: #D5DAE6;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF; --line: #343A4E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF; --line: #343A4E;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.45 var(--ui); }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 24px; margin: 0 0 8px; }
+p.intro { color: var(--muted); margin: 0 0 24px; }
+.sound { background: var(--surface); border-radius: 16px; padding: 16px; margin: 0 0 12px; }
+.sound h2 { font-size: 18px; margin: 0 0 4px; }
+.sound h2 small { color: var(--accent); font-size: 13px; font-weight: 500; margin-left: 8px; }
+.sound p { margin: 0 0 12px; color: var(--muted); }
+.sound audio { width: 100%; }
+.how { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
+</style>
+<main>
+  <h1>Metronome click sounds</h1>
+  <p class="intro">Each player plays one bar of four beats at 100 BPM, beat 1 higher and louder, then stops.
+    Listen on the phone's speaker and in headphones, and pick the two (or three) that should join the wood block.</p>
+
+  <section class="sound">
+    <h2>Wood block <small>today's click</small></h2>
+    <p>The click the metronome has now: a short, woody "tock". A good all-rounder.</p>
+    <audio controls preload="auto" src="wood-block.wav"></audio>
+  </section>
+
+  <section class="sound">
+    <h2>Soft beep</h2>
+    <p>A gentle electronic beep, like a classic digital metronome. Easy on the ears for long, quiet practice.</p>
+    <audio controls preload="auto" src="soft-beep.wav"></audio>
+  </section>
+
+  <section class="sound">
+    <h2>Sharp click</h2>
+    <p>A bright, high tick that cuts through a loud amp or a band. For playing loud or with others.</p>
+    <audio controls preload="auto" src="sharp-click.wav"></audio>
+  </section>
+
+  <section class="sound">
+    <h2>Low knock</h2>
+    <p>A low, round knock, like a soft drum. For players who hear high sounds poorly, or who find high clicks tiring.</p>
+    <audio controls preload="auto" src="low-knock.wav"></audio>
+  </section>
+
+  <p class="how">All four are about equally loud (the sharp click measures a little quieter, but sits where the ear
+    is most sensitive). Every click lasts 40 ms, like today's, so the timing, the beat lights and the vibration stay the same.</p>
+</main>
