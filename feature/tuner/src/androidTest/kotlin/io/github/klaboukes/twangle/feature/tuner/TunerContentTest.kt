@@ -239,6 +239,22 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertIsDisplayed()
     }
 
+    /**
+     * The octave stays a small figure beside the letter when a short screen shrinks the note: Polish at
+     * 2× text on the Xiaomi wraps the pill to two lines, and the octave, which grows with the text size,
+     * stood as tall as the shrunken letter (store screenshot 4, overnight run of 2026-10-24).
+     */
+    @Test
+    fun theOctaveStaysSmallBesideAShrunkenNote() {
+        show(detected(-12.3f), fontScale = 2f, size = DpSize(393.dp, 713.dp), locale = "pl", showTuneHint = true)
+        val letter = compose.onNodeWithText("E").getBoundsInRoot()
+        val octave = compose.onNodeWithText("2").getBoundsInRoot()
+        assertTrue(
+            "octave ${octave.height} should be at most 0.7 of the letter ${letter.height}",
+            octave.height <= letter.height * OCTAVE_MAX_SHARE,
+        )
+    }
+
     @Test
     fun sharpReading() {
         show(detected(1.2f))
@@ -1857,6 +1873,9 @@ class TunerContentTest {
 
         /** The slowest test takes about 2 s on the S26; 10 s means it hangs. */
         const val TEST_TIMEOUT_SECONDS = 10L
+
+        /** The octave's line next to the letter's: about 0.3 at normal text, 0.6 at 2× (its cap). */
+        const val OCTAVE_MAX_SHARE = 0.7f
 
         /**
          * The window unless a test gives one: a Galaxy S26 upright, the smaller of the two test phones

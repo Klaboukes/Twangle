@@ -243,6 +243,15 @@ fun NoteDisplay(
         fontSize = with(density) { size.toSp() },
         lineHeight = with(density) { (size * BIG_NOTE_LINE_RATIO).toSp() },
     )
+    val headline = MaterialTheme.typography.headlineMedium
+    // The octave grows with the system font size, but never past half the letter, which a short
+    // screen may have shrunk: Polish at 2× text had an octave as tall as the letter beside it.
+    // In dp: large text grows non-linearly, so a share of the size in sp would come out too big.
+    fun octaveStyle(letterSize: Dp): TextStyle = with(density) {
+        val most = letterSize * OCTAVE_MAX_SHARE
+        val size = headline.fontSize.toDp()
+        if (size <= most) headline else headline.copy(fontSize = most.toSp(), lineHeight = (headline.lineHeight.toDp() * (most / size)).toSp())
+    }
     val placeholder = stringResource(R.string.tuner_placeholder_note)
     val noteText = remember(readout?.noteName, placeholder) {
         // Spaces in the style's face around the ♪ give its line the height of a note's line, so
@@ -299,7 +308,7 @@ fun NoteDisplay(
                     if (readout != null) {
                         Text(
                             text = readout.octave.toString(),
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = octaveStyle(letterSize),
                             color = colors.onSurfaceVariant,
                             modifier = Modifier.alignByBaseline().hiddenFromTalkBack(),
                         )
@@ -563,6 +572,9 @@ private val FOCUS_NOTE_MAX_WIDTH = 240.dp
 
 private val BIG_NOTE_SIZE = 112.dp
 private val BIG_NOTE_MIN_SIZE = 56.dp
+
+/** The octave's size at most, as a share of the letter's: it is a small figure beside it. */
+private const val OCTAVE_MAX_SHARE = 0.5f
 private const val BIG_NOTE_LINE_RATIO = 120f / 112f
 private val COMPACT_NOTE_SIZE = 80.dp
 
