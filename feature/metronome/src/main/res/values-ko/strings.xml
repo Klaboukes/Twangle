@@ -11,6 +11,7 @@
     <string name="metronome_start">시작</string>
     <string name="metronome_stop">정지</string>
     <string name="metronome_vibrate">박자에 맞춰 진동</string>
+    <string name="metronome_vibrate_label">진동</string>
     <string name="metronome_meter_2_4_spoken">4분의 2박자</string>
     <string name="metronome_meter_3_4_spoken">4분의 3박자</string>
     <string name="metronome_meter_4_4_spoken">4분의 4박자</string>

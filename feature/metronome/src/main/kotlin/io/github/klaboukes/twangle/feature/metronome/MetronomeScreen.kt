@@ -48,12 +48,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -253,9 +255,10 @@ class BeatClock {
 /**
  * The metronome's controls for [bpm], [meter], [playing] and [vibrate], stateless: the meter picker at
  * the top, the beat lights, Listen's status line, the tempo dial (as large as the screen leaves room
- * for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon buttons:
- * Tap tempo, Listen and "Vibrate on the beat" (the owner's pick A, 2026-10-18,
- * docs/design/metronome-roomy-preview.html). Upright they stand in one column; on a wide screen on
+ * for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon buttons
+ * with their names under them: Tap tempo, Listen and "Vibrate on the beat" (the owner's pick A,
+ * 2026-10-18, docs/design/metronome-roomy-preview.html). Upright the beat lights stand right over the
+ * dial and grow with the height a tall screen has to spare (Phase 43). Upright they stand in one column; on a wide screen on
  * its side the dial is at the start and the rest in a column beside it. With a very large font the
  * column scrolls. Only the beat lights and the dial's glow move, and only while
  * playing or listening. [listen] says where Listen stands; a found tempo shows in a balloon over
@@ -396,8 +399,9 @@ fun MetronomeContent(
                         Spacer(Modifier.gap(1f))
                         MeterPicker(meter, onMeterChange)
                         Spacer(Modifier.height(8.dp))
-                        // A short window (a phone's status bar above) gets lower beat lights, so the rest stays in view.
-                        Shrinking { room -> lights(room.coerceIn(LIGHTS_HEIGHT_WIDE_SMALLEST, LIGHTS_HEIGHT_WIDE)) }
+                        // A short window (a phone's status bar above) gets lower beat lights, so the rest stays in
+                        // view; a tall one (a tablet) larger ones.
+                        Shrinking { room -> lights(wideLightsHeight(room)) }
                         line()
                         Spacer(Modifier.height(12.dp))
                         row()
@@ -419,16 +423,12 @@ fun MetronomeContent(
                     Spacer(Modifier.height(12.dp))
                     MeterPicker(meter, onMeterChange)
                     Spacer(Modifier.height(8.dp))
-                    lights(LIGHTS_HEIGHT)
-                    line()
                     Spacer(Modifier.gap(1f))
-                    // The dial takes all the height the rest leave, up to the width (the gaps share what
-                    // a tall screen has left); below its smallest (very large text) the column scrolls.
+                    // The beat lights stand right over the dial, which takes all the height the rest leave,
+                    // up to the width; the lights grow with what a tall screen has left (the gaps share the
+                    // rest). Below the dial's smallest (very large text) the column scrolls.
                     Shrinking { room ->
-                        val widest = minOf(DIAL_LARGEST, width - 32.dp)
-                        Box(Modifier.padding(vertical = DIAL_MARGIN)) {
-                            tempoDial(minOf(widest, maxOf(room - DIAL_MARGIN * 2, DIAL_SMALLEST)))
-                        }
+                        LightsOverDial(room = room, widest = minOf(DIAL_LARGEST, width - 32.dp), lights = lights, line = line, dial = tempoDial)
                     }
                     Spacer(Modifier.gap(1f))
                     row()
@@ -447,6 +447,49 @@ fun MetronomeContent(
         }
     }
 }
+
+/**
+ * Upright: the beat lights, Listen's status line and the dial in [room]. The dial is as large as the
+ * room leaves after the line and the lights at their [LIGHTS_HEIGHT], up to [widest], down to
+ * [DIAL_SMALLEST]; the lights take [LIGHTS_SHARE] of what is still left, up to [LIGHTS_LARGEST]. The
+ * heights depend only on the room and the line's steady height, so nothing moves while the lights flash.
+ */
+@Composable
+private fun LightsOverDial(
+    room: Dp,
+    widest: Dp,
+    lights: @Composable (Dp) -> Unit,
+    line: @Composable () -> Unit,
+    dial: @Composable (Dp) -> Unit,
+) {
+    SubcomposeLayout { constraints ->
+        val across = Constraints(maxWidth = constraints.maxWidth)
+        val lineParts = subcompose("line", line).map { it.measure(across) }
+        val rest = room - lineParts.sumOf { it.height }.toDp() - DIAL_MARGIN * 2 - LIGHTS_HEIGHT
+        val dialSize = minOf(widest, maxOf(rest, DIAL_SMALLEST))
+        val spare = (rest - dialSize).coerceAtLeast(0.dp)
+        val lightsHeight = LIGHTS_HEIGHT + minOf(spare * LIGHTS_SHARE, LIGHTS_LARGEST - LIGHTS_HEIGHT)
+        val lightParts = subcompose("lights") { lights(lightsHeight) }.map { it.measure(across) }
+        val dialParts = subcompose("dial") { Box(Modifier.padding(vertical = DIAL_MARGIN)) { dial(dialSize) } }.map { it.measure(across) }
+        val parts = lightParts + lineParts + dialParts
+        val partsWidth = parts.maxOfOrNull { it.width } ?: 0
+        layout(partsWidth, parts.sumOf { it.height }) {
+            var y = 0
+            for (part in parts) {
+                part.placeRelative((partsWidth - part.width) / 2, y)
+                y += part.height
+            }
+        }
+    }
+}
+
+/** On its side the beat lights take what the column leaves: down to 40 dp on a short window, past 56 dp on a tall one. */
+private fun wideLightsHeight(room: Dp): Dp =
+    if (room <= LIGHTS_HEIGHT_WIDE) {
+        room.coerceAtLeast(LIGHTS_HEIGHT_WIDE_SMALLEST)
+    } else {
+        minOf(LIGHTS_LARGEST, LIGHTS_HEIGHT_WIDE + (room - LIGHTS_HEIGHT_WIDE) * LIGHTS_SHARE)
+    }
 
 /**
  * The dial's motion for Listen: the tempo shown (gliding to a used one in 700 ms, [glideNext]), the
@@ -529,6 +572,11 @@ object MetronomeTestTags {
     const val START = "metronome_start"
     const val VIBRATE = "metronome_vibrate"
     const val LISTEN = "metronome_listen"
+
+    /** The names under Tap tempo, Listen and Vibrate (hidden from TalkBack: the buttons say them). */
+    const val TAP_LABEL = "metronome_tap_label"
+    const val LISTEN_LABEL = "metronome_listen_label"
+    const val VIBRATE_LABEL = "metronome_vibrate_label"
     const val LINE = "metronome_listen_line"
     const val LINE_ACTION = "metronome_listen_line_action"
     const val BALLOON = "metronome_listen_balloon"
@@ -561,8 +609,14 @@ private val DIAL_SMALLEST = 200.dp
 /** Room kept above and below the dial upright. */
 private val DIAL_MARGIN = 8.dp
 
-/** The beat lights' row: 48 dp upright, 56 dp on its side, at most 360 dp wide. */
+/**
+ * The beat lights' row: at least 48 dp upright, 56 dp on its side (down to 40 on a short window), at
+ * most 360 dp wide. Where the screen has height to spare they take [LIGHTS_SHARE] of it, up to
+ * [LIGHTS_LARGEST], and their marks grow with them (Phase 43: a beat that reads from a music stand).
+ */
 private val LIGHTS_HEIGHT = 48.dp
+private val LIGHTS_LARGEST = 80.dp
+private const val LIGHTS_SHARE = 0.5f
 private val LIGHTS_HEIGHT_WIDE = 56.dp
 private val LIGHTS_HEIGHT_WIDE_SMALLEST = 40.dp
 private val LIGHTS_MAX_WIDTH = 360.dp

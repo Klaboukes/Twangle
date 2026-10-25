@@ -12,6 +12,7 @@
     <string name="metronome_start">शुरू करें</string>
     <string name="metronome_stop">रोकें</string>
     <string name="metronome_vibrate">बीट पर वाइब्रेट करें</string>
+    <string name="metronome_vibrate_label">वाइब्रेट</string>
     <!-- भिन्न की तरह पढ़ा जाता है: 3/4 = "तीन बटा चार"। -->
     <string name="metronome_meter_2_4_spoken">दो बटा चार ताल</string>
     <string name="metronome_meter_3_4_spoken">तीन बटा चार ताल</string>

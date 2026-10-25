@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
+import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -67,6 +68,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownListen = mutableStateOf(ListenUi())
     private val shownHeader = mutableStateOf(true)
     private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+    private val clock = BeatClock()
 
     /** The phone's bars around the tab: the status bar, and on its side the navigation bar too. */
     private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
@@ -87,6 +89,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         onMeterChange = {},
                         onToggle = {},
                         onVibrateChange = {},
+                        clock = clock,
                         listen = shownListen.value,
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         header = if (shownHeader.value) {
@@ -111,6 +114,9 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
             "start" to compose.onNodeWithTag(MetronomeTestTags.START),
             "vibrate" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE),
+            "tap tempo's name" to compose.onNodeWithTag(MetronomeTestTags.TAP_LABEL),
+            "listen's name" to compose.onNodeWithTag(MetronomeTestTags.LISTEN_LABEL),
+            "vibrate's name" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE_LABEL),
         )
 
     @Test
@@ -191,11 +197,18 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 shownListen.value = if (listening) ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96) else ListenUi()
                 compose.waitForIdle()
                 val case = "$style ${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
-                for (tag in listOf(MetronomeTestTags.TAP, MetronomeTestTags.LISTEN, MetronomeTestTags.VIBRATE)) {
+                val labels = mutableListOf<DpRect>()
+                for ((tag, labelTag) in BUTTONS_AND_NAMES) {
                     val button = compose.onNodeWithTag(tag).getBoundsInRoot()
                     assertEquals("$case $tag width", 72f, button.width.value, 0.5f)
                     assertEquals("$case $tag height", 52f, button.height.value, 0.5f)
+                    // Its name right under it, centred.
+                    val label = compose.onNodeWithTag(labelTag).getBoundsInRoot().also { labels += it }
+                    assertTrue("$case $labelTag $label under $button", label.top >= button.bottom - SLACK && label.top <= button.bottom + 8.dp)
+                    assertEquals("$case $labelTag centred", ((button.left + button.right) / 2).value, ((label.left + label.right) / 2).value, 0.5f)
                 }
+                // One line each, all three alike.
+                for (label in labels) assertEquals("$case names one height", labels.first().height.value, label.height.value, 0.5f)
                 val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
                 for (tag in listOf(MetronomeTestTags.SLOWER, MetronomeTestTags.FASTER, MetronomeTestTags.START)) {
                     val part = compose.onNodeWithTag(tag).getBoundsInRoot()
@@ -208,6 +221,52 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             }
         }
         shownListen.value = ListenUi()
+    }
+
+    @Test
+    fun theBeatLightsStandOverTheDialAndGrowWhereThereIsRoom() {
+        show()
+        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE)) {
+            shownSize.value = size
+            shownFontScale.value = scale
+            compose.waitForIdle()
+            val case = "$style ${size.width} x ${size.height} at ${scale}x:"
+            val lights = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
+            val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
+            val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
+            // Only Listen's status line and the dial's 8 dp margin between them.
+            assertTrue("$case lights $lights over the line $line", line.top >= lights.bottom - SLACK && line.top <= lights.bottom + 2.dp + SLACK)
+            assertTrue("$case line $line right over the dial $dial", dial.top >= line.bottom - SLACK && dial.top <= line.bottom + 8.dp + SLACK)
+            assertTrue("$case lights at least 48 dp tall: $lights", lights.height >= 48.dp - SLACK)
+            assertTrue("$case lights at most 80 dp tall: $lights", lights.height <= 80.dp + SLACK)
+        }
+        // The Xiaomi at 1x has height to spare: the lights take some of it.
+        shownSize.value = XIAOMI_UPRIGHT
+        shownFontScale.value = 1f
+        compose.waitForIdle()
+        val xiaomi = compose.onNodeWithTag(MetronomeTestTags.LIGHTS).getBoundsInRoot()
+        assertTrue("$style lights grow on the Xiaomi at 1x: $xiaomi", xiaomi.height > 56.dp)
+        shownSize.value = PHONE_UPRIGHT
+    }
+
+    @Test
+    fun aBeatLightingUpMovesNothing() {
+        show()
+        for (size in listOf(XIAOMI_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            clock.beat = null
+            compose.waitForIdle()
+            val before = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+            for (beat in 0 until Meter.SEVEN_EIGHT.beatsPerBar) {
+                clock.beat = MetronomeBeat(beat.toLong(), beat, Meter.SEVEN_EIGHT.accentOf(beat), heardAtNanos = 0L)
+                clock.frameNanos = 0L
+                compose.waitForIdle()
+                val after = parts().map { (name, node) -> name to node.getBoundsInRoot() }
+                assertEquals("$style ${size.width} x ${size.height} beat ${beat + 1}", before, after)
+            }
+        }
+        clock.beat = null
+        shownSize.value = PHONE_UPRIGHT
     }
 
     @Test
@@ -306,5 +365,11 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
+
+        private val BUTTONS_AND_NAMES = listOf(
+            MetronomeTestTags.TAP to MetronomeTestTags.TAP_LABEL,
+            MetronomeTestTags.LISTEN to MetronomeTestTags.LISTEN_LABEL,
+            MetronomeTestTags.VIBRATE to MetronomeTestTags.VIBRATE_LABEL,
+        )
     }
 }

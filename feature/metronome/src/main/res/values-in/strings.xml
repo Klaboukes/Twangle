@@ -11,6 +11,7 @@
     <string name="metronome_start">Mulai</string>
     <string name="metronome_stop">Berhenti</string>
     <string name="metronome_vibrate">Bergetar mengikuti ketukan</string>
+    <string name="metronome_vibrate_label">Getar</string>
     <string name="metronome_meter_2_4_spoken">Birama dua per empat</string>
     <string name="metronome_meter_3_4_spoken">Birama tiga per empat</string>
     <string name="metronome_meter_4_4_spoken">Birama empat per empat</string>

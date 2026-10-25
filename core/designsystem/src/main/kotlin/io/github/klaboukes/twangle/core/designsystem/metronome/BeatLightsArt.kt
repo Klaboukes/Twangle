@@ -39,14 +39,16 @@ import kotlin.math.sin
  * a rounded voice-memo bar, Futuristic a neon bar, Space Age a pair of stars), beat 1 the largest and
  * the first beat of each later group (5/4, 6/8, 7/8) middle sized. The beat that sounds lights up in
  * the accent with a soft glow, never in the "in tune" green, and stays faintly lit until the next
- * one. The beat's number is under each mark in the style's number face. All lengths in dp.
+ * one. The beat's number is under each mark in the style's number face. All lengths in dp, at a
+ * row [BASE_HEIGHT_DP] tall; a taller row (upright on a tall phone, Phase 43) draws everything larger
+ * in proportion, so the beat reads from a music stand.
  */
 
 /**
  * The beat lights for [meter]: beat [litBeat] (0-based, −1 for none) lit at [litLevel] (0..1, eased
  * by the caller from 1 just after the click to a resting glow). Both are read in the draw phase
- * only, so lighting the beats never recomposes. Fills its width; meant for 56–64 dp of height.
- * Says nothing to TalkBack itself.
+ * only, so lighting the beats never recomposes. Fills its width; the marks, their glow and numbers
+ * grow with its height past [BASE_HEIGHT_DP] (never smaller). Says nothing to TalkBack itself.
  */
 @Composable
 fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modifier: Modifier = Modifier) {
@@ -55,10 +57,11 @@ fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modif
     val measurer = rememberTextMeasurer()
     Spacer(
         modifier.drawWithCache {
-            val lights = BeatLights(meter, style, roles, size, 1.dp.toPx())
+            val d = 1.dp.toPx() * lightsScale(size.height / 1.dp.toPx())
+            val lights = BeatLights(meter, style, roles, size, d)
             val numberStyle = TextStyle(
                 fontFamily = roles.numbers,
-                fontSize = (NUMBER_DP * roles.numberScale).dp.toSp(),
+                fontSize = (NUMBER_DP * roles.numberScale * d).toSp(),
                 fontFeatureSettings = LINING_FIGURES,
             )
             val numbers = List(meter.beatsPerBar) { measurer.measure(roles.digits(it + 1), numberStyle) }
@@ -83,9 +86,15 @@ fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modif
     )
 }
 
-/** The marks sit this share of the way down, their numbers this share. */
-private const val MARK_Y = 0.4f
-private const val NUMBER_Y = 0.88f
+/** The row height (dp) the marks' lengths are drawn for. */
+private const val BASE_HEIGHT_DP = 48f
+
+/** How much larger than at [BASE_HEIGHT_DP] the marks are drawn in a row [heightDp] tall: in proportion, never smaller. */
+private fun lightsScale(heightDp: Float): Float = max(1f, heightDp / BASE_HEIGHT_DP)
+
+/** The marks sit this share of the way down, their numbers this share (clear of the tallest mark, Phase 43). */
+private const val MARK_Y = 0.36f
+private const val NUMBER_Y = 0.9f
 
 /** The beat numbers are this many dp high (times the number face's scale). */
 private const val NUMBER_DP = 11f

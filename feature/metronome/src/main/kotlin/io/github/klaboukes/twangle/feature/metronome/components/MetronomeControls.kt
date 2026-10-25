@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -33,13 +34,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -73,6 +68,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -82,6 +78,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
@@ -291,9 +288,10 @@ private const val STEP_ICON_SHARE = 0.5f
 /**
  * Tap tempo, Listen and "Vibrate on the beat" in one quiet row under the dial (2026-10-18, the
  * owner's pick A in docs/design/metronome-roomy-preview.html): three icon buttons of one fixed size,
- * [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart. Each says its name to TalkBack
- * and in a tooltip on a long press. Vibrate is a switch, picked (container fill, accent outline,
- * accent icon) while on.
+ * [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart, each with its short name under it
+ * (Phase 43: "Tap tempo", "Listen", "Vibrate"; one line, all three in one size, set smaller where a
+ * language needs it, [rowLabelSize]). The buttons say their names to TalkBack, so the words under them
+ * are hidden from it. Vibrate is a switch, picked (container fill, accent outline, accent icon) while on.
  */
 @Composable
 fun TempoRow(
@@ -308,42 +306,77 @@ fun TempoRow(
     modifier: Modifier = Modifier,
     onListenPlaced: (Rect) -> Unit = {},
 ) {
-    Row(
-        modifier,
-        horizontalArrangement = Arrangement.spacedBy(ICON_ROW_GAP),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    val names = listOf(
+        stringResource(R.string.metronome_tap),
+        // Listen keeps its word while listening (its stop square and TalkBack say "Stop listening"), so nothing moves.
+        stringResource(R.string.metronome_listen),
+        stringResource(R.string.metronome_vibrate_label),
+    )
+    val label = MaterialTheme.typography.labelMedium.let { it.copy(fontSize = rowLabelSize(names, it), textAlign = TextAlign.Center) }
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(modifier, verticalAlignment = Alignment.Top) {
         val button = Modifier.size(ICON_BUTTON_WIDTH, ICON_BUTTON_HEIGHT)
-        Named(stringResource(R.string.metronome_tap)) { TapTempoButton(onTap, button) }
-        Named(stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen)) {
-            ListenButton(
-                listening = listening,
-                startedAtNanos = listenStartedAtNanos,
-                endedAtNanos = listenEndedAtNanos,
-                frameNanos = frameNanos,
-                onClick = onListen,
-                modifier = button.onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
-            )
+        for ((index, name) in names.withIndex()) {
+            Column(Modifier.width(ROW_ITEM_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
+                when (index) {
+                    0 -> TapTempoButton(onTap, button)
+                    1 -> ListenButton(
+                        listening = listening,
+                        startedAtNanos = listenStartedAtNanos,
+                        endedAtNanos = listenEndedAtNanos,
+                        frameNanos = frameNanos,
+                        onClick = onListen,
+                        modifier = button.onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
+                    )
+                    else -> VibrateButton(vibrate, onVibrateChange, button)
+                }
+                Spacer(Modifier.height(LABEL_GAP))
+                Text(
+                    name,
+                    style = label,
+                    color = labelColor,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.width(ROW_LABEL_WIDTH).testTag(LABEL_TAGS[index]).semantics { hideFromAccessibility() },
+                )
+            }
         }
-        Named(stringResource(R.string.metronome_vibrate)) { VibrateButton(vibrate, onVibrateChange, button) }
     }
 }
 
-/** [content] with [name] in a tooltip above it on a long press, as the tuner's More tools button. */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * The one size the row's [names] are set in: [style]'s, or smaller where the widest wouldn't fit
+ * [ROW_LABEL_WIDTH] on one line (long languages, large text), down to [ROW_LABEL_SMALLEST] (in dp, so
+ * it holds at any font size).
+ */
 @Composable
-private fun Named(name: String, content: @Composable () -> Unit) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(name) } },
-        state = rememberTooltipState(),
-        content = content,
-    )
+private fun rowLabelSize(names: List<String>, style: TextStyle): TextUnit {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(names, style, density) {
+        val room = with(density) { ROW_LABEL_WIDTH.toPx() }
+        val smallest = with(density) { ROW_LABEL_SMALLEST.toSp() }.value
+        var size = style.fontSize.value
+        fun widest() = names.maxOf { measurer.measure(it, style.copy(fontSize = size.sp), maxLines = 1, softWrap = false).size.width }
+        // Letter spacing doesn't shrink with the size, so step down until it fits.
+        while (size > smallest && widest() > room) size = maxOf(smallest, size * 0.94f)
+        size.sp
+    }
 }
+
+private val LABEL_TAGS = listOf(MetronomeTestTags.TAP_LABEL, MetronomeTestTags.LISTEN_LABEL, MetronomeTestTags.VIBRATE_LABEL)
 
 private val ICON_BUTTON_WIDTH = 72.dp
 private val ICON_BUTTON_HEIGHT = 52.dp
 private val ICON_ROW_GAP = 16.dp
+
+/** Each button with its name takes this width, so the buttons stand [ICON_ROW_GAP] apart. */
+private val ROW_ITEM_WIDTH = ICON_BUTTON_WIDTH + ICON_ROW_GAP
+
+/** A name under a button keeps 2 dp from the next one's. */
+private val ROW_LABEL_WIDTH = ROW_ITEM_WIDTH - 4.dp
+private val ROW_LABEL_SMALLEST = 8.dp
+private val LABEL_GAP = 4.dp
 private val ROW_ICON = 24.dp
 
 /**

@@ -15,6 +15,8 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Vibrate on the beat</string>
+    <!-- The short name under the Vibrate button; TalkBack says metronome_vibrate. -->
+    <string name="metronome_vibrate_label">Vibrate</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
     <string name="metronome_meter_2_4_spoken">Two-four time</string>

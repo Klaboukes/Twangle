@@ -13,6 +13,7 @@
     <string name="metronome_start">Iniciar</string>
     <string name="metronome_stop">Parar</string>
     <string name="metronome_vibrate">Vibrar na batida</string>
+    <string name="metronome_vibrate_label">Vibrar</string>
     <string name="metronome_meter_2_4_spoken">Compasso dois por quatro</string>
     <string name="metronome_meter_3_4_spoken">Compasso três por quatro</string>
     <string name="metronome_meter_4_4_spoken">Compasso quatro por quatro</string>

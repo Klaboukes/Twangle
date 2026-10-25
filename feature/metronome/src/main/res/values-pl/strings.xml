@@ -14,6 +14,7 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Wibruj w rytm</string>
+    <string name="metronome_vibrate_label">Wibracja</string>
     <string name="metronome_meter_2_4_spoken">Metrum dwie czwarte</string>
     <string name="metronome_meter_3_4_spoken">Metrum trzy czwarte</string>
     <string name="metronome_meter_4_4_spoken">Metrum cztery czwarte</string>

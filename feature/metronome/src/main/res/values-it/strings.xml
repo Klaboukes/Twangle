@@ -13,6 +13,7 @@
     <string name="metronome_start">Avvia</string>
     <string name="metronome_stop">Ferma</string>
     <string name="metronome_vibrate">Vibra a tempo</string>
+    <string name="metronome_vibrate_label">Vibra</string>
     <string name="metronome_meter_2_4_spoken">Tempo in due quarti</string>
     <string name="metronome_meter_3_4_spoken">Tempo in tre quarti</string>
     <string name="metronome_meter_4_4_spoken">Tempo in quattro quarti</string>

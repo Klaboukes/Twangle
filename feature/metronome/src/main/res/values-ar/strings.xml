@@ -17,6 +17,7 @@
     <string name="metronome_start">ابدأ</string>
     <string name="metronome_stop">أوقف</string>
     <string name="metronome_vibrate">اهتزاز مع النبضة</string>
+    <string name="metronome_vibrate_label">اهتزاز</string>
     <string name="metronome_meter_2_4_spoken">ميزان اثنان على أربعة</string>
     <string name="metronome_meter_3_4_spoken">ميزان ثلاثة على أربعة</string>
     <string name="metronome_meter_4_4_spoken">ميزان أربعة على أربعة</string>

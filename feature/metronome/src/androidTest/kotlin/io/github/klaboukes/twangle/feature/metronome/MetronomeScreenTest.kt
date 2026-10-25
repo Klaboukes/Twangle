@@ -11,12 +11,14 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -238,6 +240,40 @@ class MetronomeScreenTest {
         compose.onNodeWithContentDescription("Tellen per maat").assertExists()
         compose.onNodeWithContentDescription("Driekwartsmaat").assertExists()
         dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 slagen per minuut, Andante"))
+        assertDutchNamesUnderTheButtons("on its side")
+    }
+
+    @Test
+    fun dutchAtTwiceTheTextSizeUprightShowsTheNamesUnderTheButtons() {
+        show(locale = "nl", fontScale = 2f)
+        assertDutchNamesUnderTheButtons("upright")
+    }
+
+    /** "Tempo tikken", "Luisteren" and "Trillen" under the buttons, each on one line and wholly shown. */
+    private fun assertDutchNamesUnderTheButtons(case: String) {
+        for ((tag, name) in listOf(MetronomeTestTags.TAP_LABEL to "Tempo tikken", MetronomeTestTags.LISTEN_LABEL to "Luisteren", MetronomeTestTags.VIBRATE_LABEL to "Trillen")) {
+            val label = compose.onNodeWithTag(tag)
+            label.assertTextEquals(name)
+            assertWhollyShown(label, "$case $name")
+            val lines = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            label.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(lines) }
+            assertEquals("$case $name on one line", 1, lines.single().lineCount)
+        }
+    }
+
+    @Test
+    fun theButtonsShowTheirNamesButTalkBackHearsOnlyTheButtons() {
+        show()
+        for ((tag, name) in listOf(MetronomeTestTags.TAP_LABEL to "Tap tempo", MetronomeTestTags.LISTEN_LABEL to "Listen", MetronomeTestTags.VIBRATE_LABEL to "Vibrate")) {
+            compose.onNodeWithTag(tag).assertTextEquals(name).assertIsDisplayed()
+                .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
+        }
+        // Listen keeps its word while listening; its button says "Stop listening".
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN_LABEL).assertTextEquals("Listen")
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertContentDescriptionEquals("Stop listening").performClick()
+        compose.waitForIdle()
     }
 
     @Test

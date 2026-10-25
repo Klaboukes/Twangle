@@ -12,6 +12,7 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stopp</string>
     <string name="metronome_vibrate">Im Takt vibrieren</string>
+    <string name="metronome_vibrate_label">Vibrieren</string>
     <string name="metronome_meter_2_4_spoken">Zweivierteltakt</string>
     <string name="metronome_meter_3_4_spoken">Dreivierteltakt</string>
     <string name="metronome_meter_4_4_spoken">Viervierteltakt</string>
