@@ -240,6 +240,43 @@ class TunerContentTest {
     }
 
     /**
+     * In tune holds until 7 cents, so the pill read "7 cents flat" beside the check mark (store
+     * screenshot 8). In tune it says "In tune" instead; the frequency line stays as it is.
+     */
+    @Test
+    fun inTunePillSaysInTuneInsteadOfTheCents() {
+        show(detected(-7f, inTune = true))
+        val word = context.getString(R.string.tuner_in_tune)
+        val label = word.replaceFirstChar { it.titlecase(context.resources.configuration.locales[0]) }
+        compose.onNodeWithText(label).assertIsDisplayed()
+        compose.onNodeWithText(centsFlat(7)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.tuner_frequency, 81.84f)).assertIsDisplayed()
+        // TalkBack says it as before.
+        compose.onNode(hasContentDescription("E 2, $word")).assertExists()
+    }
+
+    @Test
+    fun inTunePillSaysItInDutch() {
+        show(detected(-7f, inTune = true), locale = "nl")
+        compose.onNodeWithText("Zuiver").assertIsDisplayed()
+        compose.onNodeWithText(dutch.resources.getQuantityString(R.plurals.tuner_cents_flat, 7, 7)).assertDoesNotExist()
+    }
+
+    /** Leaving tune brings the cents back in the same place, with the pill keeping its size. */
+    @Test
+    fun leavingTuneBringsTheCentsBackWithoutMovingThePill() {
+        show(detected(-7f, inTune = true))
+        val word = context.getString(R.string.tuner_in_tune)
+        val label = word.replaceFirstChar { it.titlecase(context.resources.configuration.locales[0]) }
+        val inTunePill = compose.onNodeWithText(label).getBoundsInRoot()
+        compose.runOnIdle { shownState.value = detected(-8f) }
+        compose.onNodeWithText(label).assertDoesNotExist()
+        val centsPill = compose.onNodeWithText(centsFlat(8)).assertIsDisplayed().getBoundsInRoot()
+        assertEquals(inTunePill.top, centsPill.top)
+        assertEquals(inTunePill.width, centsPill.width)
+    }
+
+    /**
      * The octave stays a small figure beside the letter when a short screen shrinks the note: Polish at
      * 2× text on the Xiaomi wraps the pill to two lines, and the octave, which grows with the text size,
      * stood as tall as the shrunken letter (store screenshot 4, overnight run of 2026-10-24).

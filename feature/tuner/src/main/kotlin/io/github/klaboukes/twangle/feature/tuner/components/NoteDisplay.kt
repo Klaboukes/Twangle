@@ -91,6 +91,7 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 import io.github.klaboukes.twangle.feature.tuner.tunerHintFor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -115,7 +116,9 @@ data class NoteReadout(
  * solfège name ("Sol♯") is wide. While the readout is in tune the note turns the style's "in tune"
  * colour, a soft glow lights up behind it with a small pop, and a small check mark shows at the pill's
  * start, so the state doesn't rely on colour alone (colour-blind players see it too). With the needle's
- * cents the pill also fills with that colour; in the wave view the pill stays clear, the check is
+ * cents the pill also fills with that colour and says "In tune" instead of the cents, so the check
+ * never stands beside "7 cents flat" (in tune holds until 7 cents, Precise 3; the needle still shows
+ * where in that window the note sits). In the wave view the pill stays clear, the check is
  * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] it shows a
  * faint ♪ and [hint], e.g. "Play a string". [reception] (read while drawing) makes the wave crisp or
  * faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
@@ -380,12 +383,15 @@ fun NoteDisplay(
                     val pillLine = rememberLineHeight(pillStyle)
                     // As wide as the widest cents text, so the pill keeps its size while the cents change.
                     val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
+                    val inTuneLabel = inTuneLabel()
                     Text(
                         text = when {
                             // The hint can name a note: "Play the C♯ string".
                             readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
                             // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
                             pictured -> AnnotatedString(tipText ?: directionText)
+                            // In tune the pill says so, with the check, rather than "7 cents flat" beside it.
+                            inTune -> AnnotatedString(inTuneLabel)
                             else -> AnnotatedString(centsText(readout.cents))
                         },
                         style = pillStyle,
@@ -608,10 +614,11 @@ private fun rememberLineHeight(style: TextStyle): Int {
 }
 
 /**
- * The width of the widest cents text ([centsText]) from 0 to 99 cents, flat or sharp, in [style] and
- * the current language. The pill takes this width while it shows cents: sized to each reading, it
- * grew and shrank with every change ("9 cents flat", "12 cents sharp"), which looked like flicker.
- * Measured once per language, style and font size; a reading of 100 cents or more may widen it.
+ * The width of the widest cents text ([centsText]) from 0 to 99 cents, flat or sharp, or of
+ * [inTuneLabel], in [style] and the current language. The pill takes this width while it shows a
+ * note: sized to each reading, it grew and shrank with every change ("9 cents flat", "12 cents
+ * sharp", "In tune"), which looked like flicker. Measured once per language, style and font size; a
+ * reading of 100 cents or more may widen it.
  */
 @Composable
 private fun rememberCentsTextWidth(style: TextStyle): Dp {
@@ -622,7 +629,10 @@ private fun rememberCentsTextWidth(style: TextStyle): Dp {
     val density = LocalDensity.current
     return remember(measurer, merged, resources, configuration, density) {
         fun width(text: String) = measurer.measure(text, merged, maxLines = 1).size.width
-        var widest = width(resources.getString(R.string.tuner_cents_zero))
+        var widest = maxOf(
+            width(resources.getString(R.string.tuner_cents_zero)),
+            width(capitalised(resources.getString(R.string.tuner_in_tune), configuration.locales[0])),
+        )
         for (amount in 1..MAX_STEADY_CENTS) {
             widest = maxOf(
                 widest,
@@ -633,6 +643,20 @@ private fun rememberCentsTextWidth(style: TextStyle): Dp {
         with(density) { widest.toDp() }
     }
 }
+
+/**
+ * "In tune" as the needle's pill shows it: TalkBack's words for it (`tuner_in_tune`, "in tune",
+ * "zuiver", "gestimmt"), with a capital since it stands alone on its line.
+ */
+@Composable
+private fun inTuneLabel(): String {
+    val word = stringResource(R.string.tuner_in_tune)
+    val locale = LocalConfiguration.current.locales[0]
+    return remember(word, locale) { capitalised(word, locale) }
+}
+
+/** [text] with its first letter as a capital in [locale] ("akortlu" → "Akortlu"); scripts without capitals stay as they are. */
+internal fun capitalised(text: String, locale: Locale): String = text.replaceFirstChar { it.titlecase(locale) }
 
 /** Cents up to this keep the pill at one width; more (a string far off) may widen it. */
 private const val MAX_STEADY_CENTS = 99
