@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
@@ -67,7 +68,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -119,8 +122,10 @@ data class NoteReadout(
  * cents the pill also fills with that colour and says "In tune" instead of the cents, so the check
  * never stands beside "7 cents flat" (in tune holds until 7 cents, Precise 3; the needle still shows
  * where in that window the note sits). In the wave view the pill stays clear, the check is
- * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] it shows a
- * faint ♪ and [hint], e.g. "Play a string". [reception] (read while drawing) makes the wave crisp or
+ * drawn in the "in tune" colour, and the wave holds still on the note. Without a [readout] [hint]
+ * ("Play a string") stands in the note's slot, in the note's face but smaller ([HintInNoteSlot]), so it
+ * reads right under the meter, and the pill and the wave rest empty under it; without a hint the slot
+ * shows a faint ♪. [reception] (read while drawing) makes the wave crisp or
  * faint and soft by how well the note is heard. A ♯ or ♭ is set smaller and raised, like in sheet
  * music ([musicText]).
  *
@@ -132,7 +137,7 @@ data class NoteReadout(
  *
  * A [tip] about the sound ("Play a bit louder", "Too noisy here", "Too loud, move the phone back")
  * takes the place of something less needed at that moment, so nothing is added to the screen and
- * nothing moves: without a note it replaces [hint]; with the wave it fills the pill instead of the
+ * nothing moves: without a note it replaces [hint] in the note's slot; with the wave it fills the pill instead of the
  * direction; with the needle it replaces the frequency, so "Tune up" / "Tune down" stays in view.
  * TalkBack says it instead of the direction. A tip keeps to one line, set smaller when it doesn't
  * fit, so a long one ("Te hard, leg de telefoon verder weg") never pushes the note up.
@@ -261,6 +266,19 @@ fun NoteDisplay(
         // nothing moves when a note comes in or goes.
         musicText(readout?.noteName ?: " $placeholder ")
     }
+    // Without a note the hint ("Play a string"), or a tip about the sound, stands in the note's
+    // slot, right under the meter, where the note will come; the ♪ only keeps the slot's height then.
+    val idleText = when {
+        readout != null -> null
+        tipText != null -> AnnotatedString(tipText)
+        hint.isNotEmpty() -> musicText(hint)
+        else -> null
+    }
+    val hintStyle = displayLarge.copy(
+        fontSize = if (compact) COMPACT_HINT_SIZE else HINT_SIZE,
+        lineHeight = HINT_LINE_HEIGHT,
+    )
+    val hintColor = if (tipText != null) colors.primary else colors.onSurfaceVariant
     // The block takes the size it is given, as it did before it had a layer under it.
     Box(modifier, propagateMinConstraints = true) {
         // The texts below are hidden from TalkBack; this layer speaks for them. It lies under the
@@ -273,7 +291,7 @@ fun NoteDisplay(
                     liveRegion = LiveRegionMode.Polite
                 },
         )
-        val noteRow = @Composable { letterSize: Dp ->
+        val noteLine = @Composable { letterSize: Dp ->
             // The note reads "E2" in every language: the octave stays right of the letter in
             // right-to-left languages too.
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -301,7 +319,12 @@ fun NoteDisplay(
                             maxFontSize = with(density) { letterSize.toSp() },
                             stepSize = with(density) { 4.dp.toSp() },
                         ),
-                        color = if (readout != null) noteColor else colors.onSurfaceVariant.copy(alpha = 0.35f),
+                        color = when {
+                            readout != null -> noteColor
+                            // Under the hint the ♪ only holds the slot's height.
+                            idleText != null -> Color.Transparent
+                            else -> colors.onSurfaceVariant.copy(alpha = 0.35f)
+                        },
                         maxLines = 1,
                         modifier = Modifier
                             .alignByBaseline()
@@ -317,6 +340,13 @@ fun NoteDisplay(
                         )
                     }
                 }
+            }
+        }
+        val noteRow = @Composable { letterSize: Dp ->
+            if (idleText == null) {
+                noteLine(letterSize)
+            } else {
+                HintInNoteSlot(idleText, hintStyle, hintColor) { noteLine(letterSize) }
             }
         }
         // Everything under the note: the wave, the pill and the lines under it.
@@ -379,16 +409,21 @@ fun NoteDisplay(
                         readout != null -> MaterialTheme.typography.titleLarge.copy(fontFamily = numberFontFor(MaterialTheme.styleTokens.style))
                         else -> MaterialTheme.typography.titleLarge
                     }
-                    val tipInPill = tipText != null && (readout == null || pictured)
+                    // The wave's pill holds a tip or the direction on one line, set smaller where it
+                    // doesn't fit, so it is as tall as when it is empty and nothing moves as they come
+                    // and go (Dutch "Hoger stemmen ↑" took two lines at 2× text on a phone on its side).
+                    // Without a note the tip is in the note's slot, with the hint.
+                    val oneLineInPill = readout != null && pictured
                     val pillLine = rememberLineHeight(pillStyle)
                     // As wide as the widest cents text, so the pill keeps its size while the cents change.
                     val centsWidth = if (readout != null && !pictured) rememberCentsTextWidth(pillStyle) else 0.dp
                     val inTuneLabel = inTuneLabel()
                     Text(
                         text = when {
-                            // The hint can name a note: "Play the C♯ string".
-                            readout == null -> if (tipText != null) AnnotatedString(tipText) else musicText(hint)
-                            // Empty (or the hint) but still there, so the screen doesn't jump when a note starts or stops.
+                            // Resting, empty: the hint is in the note's slot. Still there, so the
+                            // pill keeps its line and nothing moves when a note starts.
+                            readout == null -> AnnotatedString("")
+                            // Empty (or the direction) but still there, so the screen doesn't jump when a note starts or stops.
                             pictured -> AnnotatedString(tipText ?: directionText)
                             // In tune the pill says so, with the check, rather than "7 cents flat" beside it.
                             inTune -> AnnotatedString(inTuneLabel)
@@ -401,12 +436,12 @@ fun NoteDisplay(
                             else -> pillText
                         },
                         textAlign = TextAlign.Center,
-                        maxLines = if (tipInPill) 1 else Int.MAX_VALUE,
-                        autoSize = if (tipInPill) tipAutoSize(pillStyle.fontSize) else null,
+                        maxLines = if (oneLineInPill) 1 else Int.MAX_VALUE,
+                        autoSize = if (oneLineInPill) tipAutoSize(pillStyle.fontSize) else null,
                         modifier = Modifier
                             .weight(1f, fill = false)
                             .widthIn(min = centsWidth)
-                            .then(if (tipInPill) Modifier.keepLineHeight(pillLine) else Modifier)
+                            .then(if (oneLineInPill) Modifier.keepLineHeight(pillLine) else Modifier)
                             .hiddenFromTalkBack(),
                     )
                     Spacer(Modifier.size(CHECK_SIZE))
@@ -414,12 +449,17 @@ fun NoteDisplay(
                 if (pictured) check(checkCentred)
             }
             if (!pictured && showTuneHint) {
-                // Always there (empty without a hint), so the frequency below doesn't move.
+                // Always there (empty without a hint) and one line, set smaller where it doesn't fit,
+                // so the frequency below doesn't move.
+                val directionLine = rememberLineHeight(MaterialTheme.typography.titleMedium)
                 Text(
                     text = directionText,
                     style = MaterialTheme.typography.titleMedium,
                     color = colors.primary,
-                    modifier = Modifier.hiddenFromTalkBack(),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    autoSize = tipAutoSize(MaterialTheme.typography.titleMedium.fontSize),
+                    modifier = Modifier.keepLineHeight(directionLine).hiddenFromTalkBack(),
                 )
             }
             if (!pictured) {
@@ -486,6 +526,55 @@ private fun FitNoteColumn(
 }
 
 private enum class FitSlot { NOTE, REST }
+
+/**
+ * [text] (the idle hint, "Play a string", or a tip) in the note's slot: [slot] (the ♪'s line, drawn
+ * clear) sets the height, so nothing moves when the note arrives and takes its place, and the text is
+ * centred in it, as wide as the column allows up to [HINT_MAX_WIDTH]. It wraps to two lines and, where
+ * two lines of [style] don't fit the slot (a long language at 2× text, or a note shrunk on a short
+ * screen), is set smaller, down to [HINT_MIN_SIZE], as the note itself shrinks; never cut off.
+ */
+@Composable
+private fun HintInNoteSlot(text: AnnotatedString, style: TextStyle, color: Color, slot: @Composable () -> Unit) {
+    val density = LocalDensity.current
+    val hint = @Composable {
+        Text(
+            text = text,
+            style = style,
+            color = color,
+            textAlign = TextAlign.Center,
+            maxLines = HINT_MAX_LINES,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = with(density) { HINT_MIN_SIZE.toSp() },
+                maxFontSize = style.fontSize,
+                stepSize = 1.sp,
+            ),
+            modifier = Modifier.hiddenFromTalkBack(),
+        )
+    }
+    Layout(contents = listOf(slot, hint)) { (slotMeasurables, hintMeasurables), constraints ->
+        val slotPlaceable = slotMeasurables.single().measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val widest = HINT_MAX_WIDTH.roundToPx()
+        val maxWidth = if (constraints.hasBoundedWidth) minOf(constraints.maxWidth, widest) else widest
+        val hintPlaceable = hintMeasurables.single().measure(Constraints(maxWidth = maxWidth, maxHeight = slotPlaceable.height))
+        val width = constraints.constrainWidth(maxOf(slotPlaceable.width, hintPlaceable.width))
+        val height = slotPlaceable.height
+        layout(width, height) {
+            slotPlaceable.placeRelative((width - slotPlaceable.width) / 2, 0)
+            hintPlaceable.placeRelative((width - hintPlaceable.width) / 2, (height - hintPlaceable.height) / 2)
+        }
+    }
+}
+
+/** The idle hint in the note's slot: in the note's face, but at a reading size that grows with the system's text size. */
+private val HINT_SIZE = 32.sp
+private val COMPACT_HINT_SIZE = 24.sp
+private val HINT_LINE_HEIGHT = 1.2.em
+private val HINT_MIN_SIZE = 10.dp
+private const val HINT_MAX_LINES = 2
+
+/** Wider than the note may grow, so a long hint takes two lines rather than three. */
+private val HINT_MAX_WIDTH = 300.dp
 
 /**
  * The note in focus mode's corner, beside the full-screen meter: its name and octave at [FOCUS_NOTE_SIZE]

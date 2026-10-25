@@ -310,6 +310,52 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuner_hint_play_string)).assertIsDisplayed()
     }
 
+    /**
+     * While nothing is heard the hint stands in the big note's slot, right under the meter, where the
+     * note then comes (Phase 43: it sat under a faint ♪, far below, nearer the strings than the meter),
+     * in both modes. [TunerStylesTest] checks it in every style, on its side and in Dutch at 2× text.
+     */
+    @Test
+    fun theIdleHintSitsInTheNotesSlotRightUnderTheMeter() {
+        show(listening)
+        for (mode in TunerMode.entries) {
+            shownMode.value = mode
+            shownState.value = TunerUiState.Listening(mode, Tunings.STANDARD)
+            compose.waitForIdle()
+            val words = context.getString(if (mode == TunerMode.AUTO) R.string.tuner_hint_play_string else R.string.tuner_hint_play_note)
+            val hint = compose.onNodeWithText(words).assertIsDisplayed()
+            assertWholeTextShown(hint)
+            // Only in the slot: the pill under it rests empty.
+            compose.onAllNodesWithText(words).assertCountEquals(1)
+            val hintBounds = hint.getBoundsInRoot()
+            val meter = compose.onNodeWithTag(TunerTestTags.GAUGE).getBoundsInRoot()
+            assertTrue("$mode: hint $hintBounds overlaps the meter $meter", hintBounds.top >= meter.bottom - 0.5.dp)
+            shownState.value = if (mode == TunerMode.AUTO) detected(-12.3f) else chromatic(-12.3f)
+            compose.waitForIdle()
+            val note = compose.onNodeWithText("E").getBoundsInRoot()
+            assertTrue(
+                "$mode: hint $hintBounds not in the note's slot $note",
+                hintBounds.top >= note.top - 0.5.dp && hintBounds.bottom <= note.bottom + 0.5.dp,
+            )
+        }
+    }
+
+    /** A locked string's hint and a long tip (Dutch at 2× text) wrap or shrink in the note's slot, never cut off. */
+    @Test
+    fun longIdleTextsFitTheNotesSlotInDutchAtTwiceTheTextSize() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), fontScale = 2f, locale = "nl")
+        assertWholeTextShown(compose.onNodeWithText(dutch.getString(R.string.tuner_hint_play_locked_string, "A2")).assertIsDisplayed())
+        shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, tip = ReceptionTip.TOO_LOUD)
+        compose.waitForIdle()
+        val tip = compose.onNodeWithText(dutch.getString(R.string.tuner_tip_too_loud)).assertIsDisplayed()
+        assertWholeTextShown(tip)
+        val tipBounds = tip.getBoundsInRoot()
+        shownState.value = detected(-12.3f)
+        compose.waitForIdle()
+        val note = compose.onNodeWithText("E").getBoundsInRoot()
+        assertTrue("tip $tipBounds runs past the note's slot $note", tipBounds.top >= note.top - 0.5.dp && tipBounds.bottom <= note.bottom + 0.5.dp)
+    }
+
     @Test
     fun errorOffersRetry() {
         show(TunerUiState.Error(TunerError.MIC_BUSY))

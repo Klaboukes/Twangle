@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -36,6 +37,7 @@ import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -80,6 +82,7 @@ class TunerStylesTest(private val style: VisualStyle) {
     private val shownFontScale = mutableStateOf(1f)
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf<String?>(null)
+    private val shownMode = mutableStateOf(TunerMode.AUTO)
 
     private fun show() {
         compose.setContent {
@@ -88,7 +91,7 @@ class TunerStylesTest(private val style: VisualStyle) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     TunerContent(
                         shownState.value,
-                        TunerMode.AUTO,
+                        shownMode.value,
                         onModeChange = {},
                         onTuningChange = {},
                         onStringClick = {},
@@ -252,6 +255,46 @@ class TunerStylesTest(private val style: VisualStyle) {
             }
         }
     }
+
+    /**
+     * While nothing is heard the hint ("Play a string", "Play a note") stands in the note's slot, in
+     * the style's face, where the note then comes, so nothing moves: upright and on its side, at 1× and,
+     * in Dutch, at 2× text, in both modes (Strings with the meter, Chromatic with the wave). It is
+     * wholly shown (wrapped or set smaller where it must) and never reaches past the note's slot.
+     */
+    @Test
+    fun theIdleHintFitsTheNotesSlot() {
+        show()
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            for ((fontScale, locale) in listOf(1f to null, 2f to "nl")) {
+                shownSize.value = size
+                shownFontScale.value = fontScale
+                shownLocale.value = locale
+                for ((mode, display) in listOf(TunerMode.AUTO to TunerDisplay.NEEDLE, TunerMode.CHROMATIC to TunerDisplay.WAVE)) {
+                    shownMode.value = mode
+                    shownDisplay.value = display
+                    shownState.value = TunerUiState.Listening(mode, Tunings.STANDARD)
+                    compose.waitForIdle()
+                    val case = "$style $mode $display ${size.width} x ${size.height} at ${fontScale}x in ${locale ?: "en"}:"
+                    val resources = locale?.let { localised(it) } ?: context.resources
+                    val words = resources.getString(if (mode == TunerMode.AUTO) R.string.tuner_hint_play_string else R.string.tuner_hint_play_note)
+                    val hint = compose.onNodeWithText(words)
+                    assertWhollyShown(hint, "$case hint")
+                    val hintBounds = hint.getBoundsInRoot()
+                    shownState.value = detected().copy(mode = mode, targetString = if (mode == TunerMode.AUTO) 1 else null)
+                    compose.waitForIdle()
+                    val note = compose.onNodeWithText("A").getBoundsInRoot()
+                    if (hintBounds.top < note.top - SLACK || hintBounds.bottom > note.bottom + SLACK) {
+                        fail("$case hint $hintBounds reaches past the note's slot $note")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun localised(language: String) = context.createConfigurationContext(
+        Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) },
+    ).resources
 
     /** Runs [check] with the meter and the wave, in the light and the dark theme, at [size] and [fontScale]. */
     private fun forEachCase(size: DpSize, fontScale: Float, check: (case: String) -> Unit) {
