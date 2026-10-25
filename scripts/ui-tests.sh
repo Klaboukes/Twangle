@@ -266,21 +266,53 @@ printf '%-18s %3ds\n' "build" $((SECONDS - start))
 
 # One run at a time on the phone. Two runs (say, from two Claude sessions) break each other: an
 # install stops the other run's tests ("Process crashed"), and their windows push each other into the
-# background. The lock is a folder on the phone, made in one step; a lock older than LOCK_MAX_AGE
-# seconds is left over from a run that was cut off, and is taken over.
+# background. The lock is a folder on the phone, made in one step. While this script lives, a loop on
+# this PC touches LOCK/beat every BEAT seconds. A run killed outright (twice on 2026-10-25: a stalled
+# sub-agent's run in the background) skips its EXIT trap, so its lock stayed and the next run waited
+# up to an hour, but its beat stops. So a lock whose beat is older than STALE_AFTER seconds (or, with
+# no beat, older than LOCK_MAX_AGE) is left over: the next run takes it over and first clears what the
+# dead run left (clear_leftovers).
 LOCK=/data/local/tmp/twangle-ui-tests.lock
 LOCK_MAX_AGE=3600
+BEAT=10
+STALE_AFTER=60
+
+# Stops every Twangle test package's process. `am instrument` can leave one running after its run
+# (seen after a run that passed), and a killed run leaves its tests running on the phone.
+stop_test_processes() {
+    local p
+    for p in $(adb shell pm list packages io.github.klaboukes.twangle | tr -d '\r' | sed -n 's/^package:\(.*\.test\)$/\1/p'); do
+        adb shell am force-stop "$p" > /dev/null 2>&1
+    done
+}
+
+# What a run killed outright leaves on the phone: the owner's rotation settings it saved in the lock
+# before turning auto-rotate off (left off, it changes the phone for good), its MIUI loop and its tests.
+clear_leftovers() {
+    local auto user
+    read -r auto user <<< "$(adb shell "cat $LOCK/rotation 2>/dev/null; [ -e $LOCK/guard.pid ] && kill \$(cat $LOCK/guard.pid)" 2>/dev/null | tr -d '\r' | head -1)"
+    [[ "$user" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$user" > /dev/null 2>&1
+    [[ "$auto" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$auto" > /dev/null 2>&1
+    stop_test_processes
+}
+
 take_lock() {
-    local age
-    adb shell "mkdir $LOCK" > /dev/null 2>&1 && return 0
-    age="$(adb shell "echo \$((\$(date +%s) - \$(stat -c %Y $LOCK)))" 2>/dev/null | tr -d '\r')"
-    if [[ "$age" =~ ^[0-9]+$ ]] && [ "$age" -lt $LOCK_MAX_AGE ]; then
-        echo "Another UI test run is using the phone (for ${age}s now), maybe from another session. Wait for it to finish and run again." >&2
+    local age limit
+    adb shell "mkdir $LOCK && touch $LOCK/beat" > /dev/null 2>&1 && return 0
+    # How long ago the run holding it last beat, and the limit for that (a lock from a script before
+    # the beat has only its own age).
+    read -r age limit <<< "$(adb shell "if [ -e $LOCK/beat ]; then echo \$((\$(date +%s) - \$(stat -c %Y $LOCK/beat))) $STALE_AFTER; else echo \$((\$(date +%s) - \$(stat -c %Y $LOCK))) $LOCK_MAX_AGE; fi" 2>/dev/null | tr -d '\r')"
+    if [[ "$age" =~ ^[0-9]+$ ]] && [ "$age" -lt "$limit" ]; then
+        echo "Another UI test run is using the phone (its last sign of life ${age}s ago), maybe from another session. Wait for it to finish and run again." >&2
         exit 5
     fi
-    adb shell "rm -rf $LOCK && mkdir $LOCK" > /dev/null 2>&1
+    echo "Taking over the phone from a UI test run that was cut off (no sign of life for ${age:-?}s); putting back what it left."
+    clear_leftovers
+    adb shell "rm -rf $LOCK && mkdir $LOCK && touch $LOCK/beat" > /dev/null 2>&1
 }
 take_lock
+# The beat: stops within BEAT seconds of this script, however it ends.
+( while kill -0 $$ 2>/dev/null; do adb shell "[ -d $LOCK ] && touch $LOCK/beat" > /dev/null 2>&1; sleep $BEAT; done ) &
 
 # The tests expect an upright phone. With auto-rotate on and the phone lying on its side, the screen
 # turns to landscape mid-run: the tuner hides its navigation bar there and the settings list is
@@ -288,12 +320,13 @@ take_lock
 # owner's rotation settings back.
 ROTATION_AUTO="$(adb shell settings get system accelerometer_rotation 2>/dev/null | tr -d '\r')"
 ROTATION_USER="$(adb shell settings get system user_rotation 2>/dev/null | tr -d '\r')"
+adb shell "echo $ROTATION_AUTO $ROTATION_USER > $LOCK/rotation" > /dev/null 2>&1
 adb shell "settings put system accelerometer_rotation 0 && settings put system user_rotation 0" > /dev/null 2>&1
 restore_rotation() {
     [[ "$ROTATION_USER" =~ ^[0-9]+$ ]] && adb shell settings put system user_rotation "$ROTATION_USER" > /dev/null 2>&1
     [[ "$ROTATION_AUTO" =~ ^[0-9]+$ ]] && adb shell settings put system accelerometer_rotation "$ROTATION_AUTO" > /dev/null 2>&1
 }
-trap 'restore_rotation; adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
+trap 'restore_rotation; stop_test_processes; adb shell "rm -rf $LOCK" > /dev/null 2>&1' EXIT
 # Ctrl+C or `timeout` stop the script through its EXIT trap too, so the lock and the loop below go.
 trap 'exit 130' INT TERM
 
@@ -305,7 +338,7 @@ trap 'exit 130' INT TERM
 # after its run costs the phone about a third of a core, and they used to pile up, one a run, until
 # the tests ran out of time (the first test of a --thorough run, an Ancient one, first).
 if [ -n "$(adb shell getprop ro.miui.ui.version.name 2>/dev/null | tr -d '\r')" ]; then
-    guard='end=$(($(date +%s) + MAX)); while [ -d LOCK ] && [ $(date +%s) -lt $end ]; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done'
+    guard='echo $$ > LOCK/guard.pid; end=$(($(date +%s) + MAX)); while [ -d LOCK ] && [ $(date +%s) -lt $end ]; do for p in $(pm list packages io.github.klaboukes.twangle | cut -d: -f2); do appops set $p 10021 allow; done; sleep 0.2; done'
     guard="${guard//LOCK/$LOCK}"
     adb shell "${guard//MAX/$LOCK_MAX_AGE}" > /dev/null 2>&1 &
 fi
