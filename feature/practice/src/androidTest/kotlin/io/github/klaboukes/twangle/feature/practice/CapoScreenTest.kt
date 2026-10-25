@@ -13,12 +13,14 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -125,6 +127,7 @@ class CapoScreenTest(private val style: VisualStyle) {
 
         repeat(3) { node(PracticeTestTags.CAPO_LOWER).performClick() }
         assertEquals("No capo, Sounds in C major", spoken(PracticeTestTags.CAPO_FRET))
+        node(PracticeTestTags.CAPO_NONE).assert(hasText("No capo")).assertIsDisplayed()
         assertEquals(
             rows("C major" to "C major", "D minor" to "D minor", "E minor" to "E minor", "F major" to "F major", "G major" to "G major", "A minor" to "A minor"),
             table(SongKey(PitchClass.C)),
@@ -134,6 +137,40 @@ class CapoScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.CAPO_HIGHER).assertIsNotEnabled()
         assertEquals("Capo on fret 11, Sounds in B major", spoken(PracticeTestTags.CAPO_FRET))
         assertEquals("every step is passed on to be saved", listOf(2, 1, 0) + (1..11).toList(), savedFrets)
+    }
+
+    /**
+     * At the nut the stepper says "No capo", not "Capo 0", and the buttons and the slot between them
+     * keep their size and place on every fret, in English and in Russian (the longest words) at 2× text.
+     */
+    @Test
+    fun atTheNutItSaysNoCapoAndTheButtonsStayPut() {
+        val cases = listOf(
+            Triple("en", 1f, XIAOMI) to "No capo",
+            Triple("en", 2f, NARROW_UPRIGHT) to "No capo",
+            Triple("ru", 2f, NARROW_UPRIGHT) to "Без каподастра",
+        )
+        show(SongKey(PitchClass.C), 0)
+        for ((setting, none) in cases) {
+            val (language, scale, size) = setting
+            shownLocale.value = language
+            shownFontScale.value = scale
+            shownSize.value = size
+            // Back to the nut from the case before.
+            repeat(Capo.HIGHEST_FRET) { node(PracticeTestTags.CAPO_LOWER).performClick() }
+            compose.waitForIdle()
+            val case = "$style $language ${scale}x $size:"
+            node(PracticeTestTags.CAPO_NONE).assert(hasText(none))
+            assertWhollyShown(node(PracticeTestTags.CAPO_NONE), "$case \"$none\"")
+            val tags = listOf(PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER)
+            val atTheNut = tags.map { node(it).getBoundsInRoot() }
+            for (fret in 1..Capo.HIGHEST_FRET) {
+                node(PracticeTestTags.CAPO_HIGHER).performClick()
+                node(PracticeTestTags.CAPO_NONE).assertDoesNotExist()
+                assertEquals("$case the stepper at fret $fret", atTheNut, tags.map { node(it).getBoundsInRoot() })
+            }
+            compose.assertEveryTextWhollyShown("$case at fret 11")
+        }
     }
 
     @Test
@@ -246,14 +283,18 @@ class CapoScreenTest(private val style: VisualStyle) {
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
-        show(SongKey(PitchClass.G), 11)
-        for (language in shippedLanguages) {
-            shownLocale.value = language
-            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
-                shownSize.value = size
-                compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
-                compose.assertNoWordBroken("$style $language $size at 2x:")
+        // At fret 11 and at the nut, where it says "No capo".
+        show(SongKey(PitchClass.G), Capo.HIGHEST_FRET)
+        for (fret in listOf(Capo.HIGHEST_FRET, 0)) {
+            repeat(Capo.HIGHEST_FRET - fret) { node(PracticeTestTags.CAPO_LOWER).performClick() }
+            for (language in shippedLanguages) {
+                shownLocale.value = language
+                for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+                    shownSize.value = size
+                    compose.waitForIdle()
+                    compose.assertEveryTextWhollyShown("$style $language $size fret $fret at 2x:")
+                    compose.assertNoWordBroken("$style $language $size fret $fret at 2x:")
+                }
             }
         }
     }

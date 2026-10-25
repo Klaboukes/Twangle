@@ -56,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
@@ -297,12 +298,13 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
 
 /**
  * ‹ "Capo 3" › : round buttons of one steady size ("Capo one fret down", "Capo one fret up"),
- * resting at no capo and at [Capo.HIGHEST_FRET]. The fret is a polite live region, said with the
- * key the shapes then sound in ([spokenSoundsIn]).
+ * resting at no capo ("No capo" between them) and at [Capo.HIGHEST_FRET]. The fret is a polite
+ * live region, said with the key the shapes then sound in ([spokenSoundsIn]).
  */
 @Composable
 private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, height: Dp = STEPPER_HEIGHT) {
-    val spokenFret = if (fret == 0) stringResource(R.string.practice_capo_none) else stringResource(R.string.practice_capo_on_fret, fret)
+    val none = stringResource(R.string.practice_capo_none)
+    val spokenFret = if (fret == 0) none else stringResource(R.string.practice_capo_on_fret, fret)
     val spoken = spokenFret + stringResource(R.string.practice_spoken_separator) + spokenSoundsIn
     Row(
         Modifier.fillMaxWidth().heightIn(min = height),
@@ -310,35 +312,66 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
     ) {
         StepButton(higher = false, enabled = fret > 0, onClick = { step(-1) })
-        // As wide as it needs, up to what the buttons leave: a long word for capo is set smaller (Russian at 2× text).
-        Row(
+        // One width and height whatever it says, so the buttons never move: FRET_SLOT_WIDTH, or what
+        // the buttons leave on a narrow phone, and the height of "Capo 3". A longer text is set smaller
+        // (Russian at 2× text).
+        Box(
             Modifier
                 .weight(1f, fill = false)
-                .widthIn(min = 96.dp)
-                .testTag(PracticeTestTags.CAPO_FRET)
-                .clearAndSetSemantics {
-                    contentDescription = spoken
-                    liveRegion = LiveRegionMode.Polite
-                },
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom,
+                .width(FRET_SLOT_WIDTH),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(
-                stringResource(R.string.practice_capo_label),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.bodyMedium.fontSize, stepSize = 0.5.sp),
-                modifier = Modifier.weight(1f, fill = false).alignByBaseline(),
+            // TalkBack hears the slot through this layer, as one; the texts in it are skipped (still there for UI tests).
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .testTag(PracticeTestTags.CAPO_FRET)
+                    .clearAndSetSemantics {
+                        contentDescription = spoken
+                        liveRegion = LiveRegionMode.Polite
+                    },
             )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                localDigits(fret, appLocale()),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                modifier = Modifier.alignByBaseline(),
-            )
+            val atTheNut = fret == 0
+            // At the nut "Capo 0" only keeps the slot's height, unseen and unheard.
+            Row(
+                if (atTheNut) Modifier.alpha(0f).clearAndSetSemantics {} else Modifier,
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    stringResource(R.string.practice_capo_label),
+                    // The line height in em: set smaller, the word's line stays within the number's, so the
+                    // slot's height is the number's on every fret (on the baseline it looks the same).
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 1.2.em),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.bodyMedium.fontSize, stepSize = 0.5.sp),
+                    modifier = Modifier.weight(1f, fill = false).alignByBaseline().semantics { hideFromAccessibility() },
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    localDigits(fret, appLocale()),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    modifier = Modifier.alignByBaseline().semantics { hideFromAccessibility() },
+                )
+            }
+            if (atTheNut) {
+                // Within the height "Capo 3" gives, never taller (large text grows less than linearly).
+                Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        none,
+                        // The line height in em, so it shrinks with the text.
+                        style = MaterialTheme.typography.titleLarge.copy(lineHeight = 1.2.em),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleLarge.fontSize, stepSize = 0.5.sp),
+                        modifier = Modifier.fillMaxWidth().testTag(PracticeTestTags.CAPO_NONE).semantics { hideFromAccessibility() },
+                    )
+                }
+            }
         }
         StepButton(higher = true, enabled = fret < Capo.HIGHEST_FRET, onClick = { step(1) })
     }
@@ -485,4 +518,7 @@ private val STEPPER_HEIGHT = 56.dp
 /** Upright, a screen shorter than this gets the gaps half as wide and the stepper no taller than its buttons. */
 private val ROOMY_HEIGHT = 610.dp
 private val STEP_BUTTON_SIZE = 48.dp
+
+/** Between the capo's buttons, as on a 320 dp phone: "Capo 11" and "No capo" at normal text in every language; longer, set smaller. */
+private val FRET_SLOT_WIDTH = 168.dp
 private const val DISABLED_ALPHA = 0.38f

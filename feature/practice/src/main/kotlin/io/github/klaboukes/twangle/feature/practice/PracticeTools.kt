@@ -87,6 +87,9 @@ object PracticeTestTags {
     const val CAPO_LOWER = "practice_capo_lower"
     const val CAPO_HIGHER = "practice_capo_higher"
 
+    /** "No capo" between the buttons at the nut. */
+    const val CAPO_NONE = "practice_capo_none"
+
     /** A row of the table by the shape it starts with, e.g. "practice_capo_row_d_minor". */
     fun capoRow(shape: Chord): String = "practice_capo_row_" + shape.root.name.lowercase() + "_" + shape.quality.name.lowercase()
 
