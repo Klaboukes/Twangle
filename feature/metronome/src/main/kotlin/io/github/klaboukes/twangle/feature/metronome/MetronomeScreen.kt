@@ -70,6 +70,7 @@ import io.github.klaboukes.twangle.core.designsystem.FitColumn
 import io.github.klaboukes.twangle.core.designsystem.metronome.BeatLightsArt
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
@@ -87,9 +88,9 @@ import kotlin.math.roundToInt
 
 /**
  * The metronome screen (Phase 19), as on the approved mock-ups (docs/design/metronome-nav-preview.html,
- * docs/design/metronome-listen-preview.html). It opens stopped, at the tempo, meter and vibration
- * saved last ([savedBpm], [savedMeter], [savedVibrate], from the settings already read, so the first
- * frame is right), and plays through [player]. The clicks stop when it leaves the screen: another
+ * docs/design/metronome-listen-preview.html). It opens stopped, at the tempo, meter, vibration and
+ * click sound saved last ([savedBpm], [savedMeter], [savedVibrate], [savedSound], from the settings
+ * already read, so the first frame and the first beat are right), and plays through [player]. The clicks stop when it leaves the screen: another
  * screen takes its place, or the app goes to the background (no foreground service); they play on
  * when the phone turns or dark mode switches. While it plays the screen stays on, so the phone's
  * screen timeout doesn't stop it.
@@ -111,6 +112,7 @@ fun MetronomeScreen(
     savedBpm: Int = ClickTrack.DEFAULT_BPM,
     savedMeter: Meter = Meter.DEFAULT,
     savedVibrate: Boolean = false,
+    savedSound: ClickSound = ClickSound.DEFAULT,
     savedMicRefused: Boolean = false,
     header: (@Composable () -> Unit)? = null,
 ) {
@@ -121,6 +123,7 @@ fun MetronomeScreen(
             savedBpm,
             savedMeter,
             savedVibrate,
+            savedSound,
             recorder = recorder,
             savedMicRefused = savedMicRefused,
             tools = tools,

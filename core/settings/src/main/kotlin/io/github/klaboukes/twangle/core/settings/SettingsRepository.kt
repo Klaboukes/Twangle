@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.settings
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -115,6 +116,9 @@ interface SettingsRepository {
     suspend fun setMetronomeMeter(meter: Meter)
 
     suspend fun setMetronomeVibrate(enabled: Boolean)
+
+    /** The metronome's click ([AppSettings.metronomeClickSound]). */
+    suspend fun setMetronomeClickSound(sound: ClickSound)
 
     /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
     suspend fun setPracticeTool(tool: PracticeTool)

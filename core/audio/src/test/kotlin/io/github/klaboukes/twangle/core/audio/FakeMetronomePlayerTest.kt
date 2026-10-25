@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.audio
 
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -39,7 +40,31 @@ class FakeMetronomePlayerTest {
     }
 
     @Test
-    fun `emits beats with the meter's accents`() = runTest(UnconfinedTestDispatcher()) {
+    fun `a preview plays while stopped and only switches the sound while playing`() {
+        player.setSound(ClickSound.COWBELL) // ignored while stopped
+        assertEquals(ClickSound.WOOD_BLOCK, player.sound)
+
+        player.previewBar(90, Meter.THREE_FOUR, ClickSound.CLAVES)
+        assertTrue(player.isPreviewing.value)
+        assertFalse(player.isPlaying.value)
+        assertEquals(Triple(90, Meter.THREE_FOUR, ClickSound.CLAVES), Triple(player.bpm, player.meter, player.sound))
+        player.finishPreview()
+        assertFalse(player.isPreviewing.value)
+
+        player.previewBar(90, Meter.THREE_FOUR, ClickSound.CLAVES)
+        player.start(120, Meter.FOUR_FOUR, ClickSound.RIM_CLICK)
+        assertFalse("Start ends the preview", player.isPreviewing.value)
+        assertEquals(ClickSound.RIM_CLICK, player.sound)
+
+        player.previewBar(60, Meter.TWO_FOUR, ClickSound.COWBELL)
+        assertFalse(player.isPreviewing.value)
+        assertEquals(ClickSound.COWBELL, player.sound)
+        assertEquals("the tempo and meter stay", 120 to Meter.FOUR_FOUR, player.bpm to player.meter)
+        assertEquals(2, player.previewCount)
+    }
+
+    @Test
+    fun `emits beats with the meter's accents`()= runTest(UnconfinedTestDispatcher()) {
         player.start(120, Meter.SEVEN_EIGHT)
         val heard = mutableListOf<MetronomeBeat>()
         val job = launch { player.beats.take(7).toList(heard) }

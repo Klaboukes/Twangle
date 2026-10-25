@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
@@ -40,6 +41,7 @@ class AndroidMetronomePlayerTest {
     fun stopPlayer() = runBlocking<Unit> {
         player.stop()
         withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+        withTimeout(SLACK_MILLIS) { player.isPreviewing.first { !it } }
     }
 
     @Test
@@ -92,6 +94,78 @@ class AndroidMetronomePlayerTest {
         assertTrue("no 7/8 bar started", downbeat in 3..7)
         val bar = beats.drop(downbeat).take(5).map { it.accent }
         assertEquals(listOf(BeatAccent.DOWNBEAT, BeatAccent.PLAIN, BeatAccent.GROUP, BeatAccent.PLAIN, BeatAccent.GROUP).take(bar.size), bar)
+    }
+
+    @Test
+    fun aNewSoundIsHeardFromTheNextBeat() = runBlocking<Unit> {
+        val heard = async(start = CoroutineStart.UNDISPATCHED) { player.beats.take(10).toList() }
+        player.start(240, Meter.FOUR_FOUR, ClickSound.CLAVES)
+        player.beats.first { it.index == 2L }
+        player.setSound(ClickSound.COWBELL)
+        val beats = withTimeout(10 * 250L + SLACK_MILLIS) { heard.await() }
+
+        val sounds = beats.map { it.sound }
+        assertEquals("starts with the sound asked for", ClickSound.CLAVES, sounds.first())
+        // The change comes within the queued buffer (≈ 0.12 s, under a beat), so by beat 4 at the latest.
+        val first = sounds.indexOf(ClickSound.COWBELL)
+        assertTrue("the cowbell came at beat $first", first in 3..4)
+        assertTrue("one change, no going back: $sounds", sounds.drop(first).all { it == ClickSound.COWBELL })
+        assertTrue(sounds.take(first).all { it == ClickSound.CLAVES })
+    }
+
+    @Test
+    fun aPreviewPlaysOneBarOnceAndTellsNoBeats() = runBlocking<Unit> {
+        val anyBeat = async(start = CoroutineStart.UNDISPATCHED) { withTimeoutOrNull(1_000L + SLACK_MILLIS) { player.beats.first() } }
+        val startedAt = System.nanoTime()
+        player.previewBar(240, Meter.FOUR_FOUR, ClickSound.RIM_CLICK) // one bar: 1 s
+        assertTrue(player.isPreviewing.value)
+        assertFalse("a preview isn't the metronome playing", player.isPlaying.value)
+        player.setTempo(60) // ignored: the preview keeps its bar
+        withTimeout(1_000L + SLACK_MILLIS) { player.isPreviewing.first { !it } }
+        val millis = (System.nanoTime() - startedAt) / 1e6
+        assertTrue("the preview ended after $millis ms", millis >= 1_000)
+        assertFalse(player.isPlaying.value)
+        assertNull("a preview's clicks aren't told as beats", anyBeat.await())
+    }
+
+    @Test
+    fun aNewPreviewStartsOverAndStartOrStopEndsIt() = runBlocking<Unit> {
+        player.previewBar(120, Meter.TWO_FOUR, ClickSound.COWBELL) // one bar: 1 s
+        delay(600)
+        player.previewBar(120, Meter.TWO_FOUR, ClickSound.CLAVES)
+        delay(700) // the first bar would be over by now; the second plays on until about 1.6 s
+        assertTrue("the second preview still plays", player.isPreviewing.value)
+        withTimeout(1_000L + SLACK_MILLIS) { player.isPreviewing.first { !it } }
+
+        val first = async(start = CoroutineStart.UNDISPATCHED) { player.beats.first() }
+        player.previewBar(120, Meter.TWO_FOUR, ClickSound.COWBELL)
+        delay(300)
+        player.start(200, Meter.THREE_FOUR, ClickSound.WOOD_BLOCK)
+        assertFalse("Start ends the preview", player.isPreviewing.value)
+        assertTrue(player.isPlaying.value)
+        val beat = withTimeout(SLACK_MILLIS) { first.await() }
+        assertEquals("the metronome starts at beat 0", 0L, beat.index)
+        assertEquals(BeatAccent.DOWNBEAT, beat.accent)
+        assertEquals(ClickSound.WOOD_BLOCK, beat.sound)
+        player.stop()
+        withTimeout(SLACK_MILLIS) { player.isPlaying.first { !it } }
+
+        player.previewBar(60, Meter.FOUR_FOUR, ClickSound.CLAVES) // one bar: 4 s
+        delay(200)
+        player.stop()
+        withTimeout(500) { player.isPreviewing.first { !it } }
+    }
+
+    @Test
+    fun aPreviewWhilePlayingOnlySwitchesTheSound() = runBlocking<Unit> {
+        player.start(240, Meter.FOUR_FOUR)
+        player.beats.first { it.index == 1L }
+        player.previewBar(60, Meter.TWO_FOUR, ClickSound.RIM_CLICK)
+        assertFalse(player.isPreviewing.value)
+        assertTrue(player.isPlaying.value)
+        val later = withTimeout(SLACK_MILLIS) { player.beats.first { it.index == 5L } }
+        assertEquals(ClickSound.RIM_CLICK, later.sound)
+        assertEquals("the meter stays 4/4", 1, later.beatInBar)
     }
 
     @Test

@@ -16,6 +16,7 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -220,6 +221,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[METRONOME_VIBRATE] = enabled }
     }
 
+    override suspend fun setMetronomeClickSound(sound: ClickSound) {
+        dataStore.edit { it[METRONOME_CLICK_SOUND] = sound.name }
+    }
+
     override suspend fun setPracticeTool(tool: PracticeTool) {
         dataStore.edit { it[PRACTICE_TOOL] = tool.name }
     }
@@ -286,6 +291,7 @@ class DataStoreSettingsRepository internal constructor(
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
+            metronomeClickSound = enumOrNull<ClickSound>(prefs[METRONOME_CLICK_SOUND]) ?: defaults.metronomeClickSound,
             practiceTool = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL]) ?: defaults.practiceTool,
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
@@ -341,6 +347,9 @@ class DataStoreSettingsRepository internal constructor(
         /** The metronome's [Meter], by its name. */
         private val METRONOME_METER = stringPreferencesKey("metronome_meter")
         private val METRONOME_VIBRATE = booleanPreferencesKey("metronome_vibrate")
+
+        /** The metronome's [ClickSound], by its name. */
+        private val METRONOME_CLICK_SOUND = stringPreferencesKey("metronome_click_sound")
 
         /** The Practice tab's [PracticeTool] used last, by its name. */
         private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")

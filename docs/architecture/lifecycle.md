@@ -71,6 +71,7 @@ What each does:
 | `metronomeBpm` | 120 | Key `metronome_bpm` (int); clamped to 30–250 in the setter and when read |
 | `metronomeMeter` | `FOUR_FOUR` | `Meter` (`:core:dsp`) by name; key `metronome_meter`; unknown gives 4/4 |
 | `metronomeVibrate` | false | Key `metronome_vibrate`: "Vibrate on the beat" |
+| `metronomeClickSound` | `WOOD_BLOCK` | `ClickSound` (`:core:dsp`) by name; key `metronome_click_sound`; the metronome's click, saved when picked (Phase 45); unknown gives the wood block |
 | `practiceTool` | `METRONOME` | `PracticeTool` by name (`METRONOME`, `CHORDS`, `CAPO`); key `practice_tool`; the Practice tab's tool used last, saved when picked, written only with the Practice tab's switch on (Phase 32); unknown gives the metronome |
 | `practiceRoot` | `C` | `PitchClass` by name; key `practice_root`; the Chords tool's root picked last, shared by its chords and scales, saved when picked (Phase 32); unknown gives C |
 | `practiceChordQuality` | `MAJOR` | `ChordQuality` by name; key `practice_chord_quality`; the Chords tool's chord type picked last, saved when picked (Phase 32); unknown gives major |

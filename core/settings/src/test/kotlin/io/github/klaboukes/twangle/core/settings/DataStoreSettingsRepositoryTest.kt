@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -106,6 +107,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome starts at 120 BPM", 120, settings.metronomeBpm)
         assertEquals("the metronome starts in 4/4", Meter.FOUR_FOUR, settings.metronomeMeter)
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
+        assertEquals("the metronome clicks with the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
         assertEquals("the Chords tool opens on chords", PracticeChart.CHORDS, settings.practiceChart)
@@ -138,6 +140,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setMetronomeBpm(96)
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
+        repo.setMetronomeClickSound(ClickSound.CLAVES)
         repo.setPracticeTool(PracticeTool.CHORDS)
         repo.setPracticeRoot(PitchClass.A_SHARP)
         repo.setPracticeChordQuality(ChordQuality.MINOR_SEVENTH)
@@ -168,6 +171,7 @@ class DataStoreSettingsRepositoryTest {
             metronomeBpm = 96,
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
+            metronomeClickSound = ClickSound.CLAVES,
             practiceTool = PracticeTool.CHORDS,
             practiceRoot = PitchClass.A_SHARP,
             practiceChordQuality = ChordQuality.MINOR_SEVENTH,
@@ -204,6 +208,7 @@ class DataStoreSettingsRepositoryTest {
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
             setMetronomeVibrate(true)
+            setMetronomeClickSound(ClickSound.COWBELL)
             setPracticeTool(PracticeTool.CHORDS)
             setPracticeRoot(PitchClass.F_SHARP)
             setPracticeChordQuality(ChordQuality.SUS4)
@@ -229,6 +234,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
         assertEquals("the metronome's vibration is kept", true, settings.metronomeVibrate)
+        assertEquals("the metronome's click is kept", ClickSound.COWBELL, settings.metronomeClickSound)
         assertEquals("the Practice tool used last is kept", PracticeTool.CAPO, settings.practiceTool)
         assertEquals("the chord picked last is kept", PitchClass.F_SHARP to ChordQuality.SUS4, settings.practiceRoot to settings.practiceChordQuality)
         assertEquals("chords or scales is kept", PracticeChart.SCALES, settings.practiceChart)
@@ -268,6 +274,17 @@ class DataStoreSettingsRepositoryTest {
             repo.setMetronomeMeter(meter)
             assertEquals(meter.name, store.data.first()[stringPreferencesKey("metronome_meter")])
             assertEquals(meter, repo.settings.first().metronomeMeter)
+        }
+    }
+
+    @Test
+    fun `every click is saved under metronome_click_sound by its name`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        for (sound in ClickSound.entries) {
+            repo.setMetronomeClickSound(sound)
+            assertEquals(sound.name, store.data.first()[stringPreferencesKey("metronome_click_sound")])
+            assertEquals(sound, repo.settings.first().metronomeClickSound)
         }
     }
 
@@ -379,6 +396,7 @@ class DataStoreSettingsRepositoryTest {
             it[stringPreferencesKey("tuner_display")] = "HOLOGRAM"
             it[floatPreferencesKey("a4_hz")] = 1000f
             it[stringPreferencesKey("metronome_meter")] = "THIRTEEN_EIGHT"
+            it[stringPreferencesKey("metronome_click_sound")] = "GONG"
             it[stringPreferencesKey("practice_chart")] = "ARPEGGIOS"
             it[stringPreferencesKey("practice_scale_type")] = "HUNGARIAN_MINOR"
             it[stringPreferencesKey("practice_capo_shapes")] = "H"
@@ -400,6 +418,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(TunerDisplay.DEFAULT, settings.display)
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
+        assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("an unknown chart gives chords", PracticeChart.CHORDS, settings.practiceChart)
         assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("unknown capo shapes give C", SongKey(PitchClass.C), settings.practiceCapoShapes)

@@ -379,6 +379,7 @@ class MainActivity : AppCompatActivity() {
                         savedBpm = settings.metronomeBpm,
                         savedMeter = settings.metronomeMeter,
                         savedVibrate = settings.metronomeVibrate,
+                        savedSound = settings.metronomeClickSound,
                         savedMicRefused = settings.micRefused,
                         header = header,
                     )

@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSounds
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -244,7 +245,20 @@ class MetronomeListenTest {
     }
 
     @Test
-    fun `listening again from an open suggestion remembers that the clicks were playing`() = runTest(dispatcher) {
+    fun `Listen ends a preview, and the clicks don't start after it`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(clicks(120.0))
+        val vm = viewModel(recorder)
+        vm.previewSound(ClickSound.COWBELL)
+        vm.listen()
+        assertFalse("the microphone doesn't hear the preview", player.isPreviewing.value)
+        assertFalse(vm.listen.value.wasPlaying)
+        advanceUntilIdle()
+        vm.notNow()
+        assertFalse(player.isPlaying.value)
+    }
+
+    @Test
+    fun `listening again from an open suggestion remembers that the clicks were playing`()= runTest(dispatcher) {
         val recorder = FakeAudioRecorder(clicks(120.0))
         val vm = viewModel(recorder)
         vm.toggle()

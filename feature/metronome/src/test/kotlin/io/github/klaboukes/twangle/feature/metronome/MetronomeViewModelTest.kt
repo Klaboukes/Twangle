@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
@@ -34,8 +35,12 @@ class MetronomeViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel(bpm: Int = 96, meter: Meter = Meter.THREE_FOUR, vibrate: Boolean = false) =
-        MetronomeViewModel(player, settings, savedBpm = bpm, savedMeter = meter, savedVibrate = vibrate)
+    private fun viewModel(
+        bpm: Int = 96,
+        meter: Meter = Meter.THREE_FOUR,
+        vibrate: Boolean = false,
+        sound: ClickSound = ClickSound.DEFAULT,
+    ) = MetronomeViewModel(player, settings, savedBpm = bpm, savedMeter = meter, savedVibrate = vibrate, savedSound = sound)
 
     @Test
     fun `it opens stopped at the saved tempo, meter and vibration`() {
@@ -113,6 +118,71 @@ class MetronomeViewModelTest {
         advanceUntilIdle()
         assertTrue(vm.vibrate.value)
         assertTrue(settings.current.metronomeVibrate)
+    }
+
+    @Test
+    fun `it opens with the saved sound, and the first beat clicks with it`() {
+        val vm = viewModel(sound = ClickSound.CLAVES)
+        assertEquals(ClickSound.CLAVES, vm.sound.value)
+        vm.toggle()
+        assertEquals(ClickSound.CLAVES, player.sound)
+        assertEquals(0, player.previewCount)
+    }
+
+    @Test
+    fun `a sound picked while stopped is saved and plays one bar at the tempo and meter shown`() = runTest(dispatcher) {
+        val vm = viewModel(bpm = 84, meter = Meter.SIX_EIGHT)
+        vm.previewSound(ClickSound.COWBELL)
+        advanceUntilIdle()
+        assertEquals(ClickSound.COWBELL, vm.sound.value)
+        assertEquals(ClickSound.COWBELL, settings.current.metronomeClickSound)
+        assertTrue(vm.isPreviewing.value)
+        assertFalse("a preview isn't the metronome playing", vm.isPlaying.value)
+        assertEquals(Triple(84, Meter.SIX_EIGHT, ClickSound.COWBELL), Triple(player.bpm, player.meter, player.sound))
+        player.finishPreview()
+        assertFalse(vm.isPreviewing.value)
+        assertEquals(1, player.previewCount)
+    }
+
+    @Test
+    fun `the next pick starts a new preview, and Start plays the sound picked`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.previewSound(ClickSound.COWBELL)
+        vm.previewSound(ClickSound.RIM_CLICK)
+        assertEquals(2, player.previewCount)
+        assertEquals(ClickSound.RIM_CLICK, player.sound)
+        vm.toggle()
+        assertFalse("Start ends the preview", vm.isPreviewing.value)
+        assertTrue(vm.isPlaying.value)
+        assertEquals(ClickSound.RIM_CLICK, player.sound)
+        advanceUntilIdle()
+        assertEquals(ClickSound.RIM_CLICK, settings.current.metronomeClickSound)
+    }
+
+    @Test
+    fun `a sound picked while playing is heard from the next beat, with no preview`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.toggle()
+        vm.previewSound(ClickSound.CLAVES)
+        advanceUntilIdle()
+        assertEquals(ClickSound.CLAVES, player.sound)
+        assertTrue(vm.isPlaying.value)
+        assertFalse(vm.isPreviewing.value)
+        assertEquals(0, player.previewCount)
+        assertEquals("the clicks go on", 1, player.startCount)
+        assertEquals(ClickSound.CLAVES, settings.current.metronomeClickSound)
+    }
+
+    @Test
+    fun `leaving the screen ends a preview`() {
+        val vm = viewModel()
+        vm.previewSound(ClickSound.CLAVES)
+        vm.stop()
+        assertFalse(vm.isPreviewing.value)
+        assertEquals(1, player.stopCount)
+        vm.previewSound(ClickSound.COWBELL)
+        vm.viewModelStore().clear()
+        assertFalse("a cleared ViewModel ends the preview", player.isPreviewing.value)
     }
 
     @Test

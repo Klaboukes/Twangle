@@ -12,6 +12,7 @@ import android.os.Build
 import android.util.Log
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatListener
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import kotlinx.coroutines.CancellationException
@@ -41,8 +42,14 @@ import kotlinx.coroutines.launch
  * The track exists only while the metronome plays. [start] launches a session on a dedicated single
  * thread (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer and keeps
  * [BUFFERED_CHUNKS] chunks queued, enough that a busy moment on the phone doesn't starve the
- * speaker. Tempo, meter and stop requests reach it through fields it reads before every chunk, so
- * a change is heard about one buffer later (≈ 0.1 s) and the clicks stay on their samples.
+ * speaker. Tempo, meter, sound and stop requests reach it through fields it reads before every
+ * chunk, so a change is heard about one buffer later (≈ 0.1 s) and the clicks stay on their samples.
+ * A sound not played yet is rendered there, on the writer thread, the first time (a few ms).
+ *
+ * A preview ([previewBar]) is a session too: it renders one bar from beat 0, then silence until the
+ * playback head has passed the bar's end, and ends by itself; it emits no [beats]. A new preview or
+ * a [start] during one starts the click track over within the same session and track (the frames
+ * already queued still play out first), so nothing waits for a track to close and open again.
  *
  * [beats]: the session notes each click as it renders it, works out from the output's timestamp
  * (`AudioTrack.getTimestamp`) when it will be heard, and emits it then from a timer; before the
@@ -78,9 +85,18 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private var stopRequested = false
     private var wantedBpm = ClickTrack.DEFAULT_BPM
     private var wantedMeter = Meter.DEFAULT
+    private var wantedSound = ClickSound.DEFAULT
+
+    // Guarded by lock: whether the session plays one bar (a preview) rather than the metronome, and
+    // a count bumped whenever it must start over from beat 0 (a new preview, or Start during one).
+    private var wantedPreview = false
+    private var restarts = 0
 
     private val playing = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = playing.asStateFlow()
+
+    private val previewing = MutableStateFlow(false)
+    override val isPreviewing: StateFlow<Boolean> = previewing.asStateFlow()
 
     private val beatFlow = MutableSharedFlow<MetronomeBeat>(
         extraBufferCapacity = BEAT_BUFFER,
@@ -97,8 +113,17 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val pendingBeatInBar = IntArray(PENDING_BEATS)
     private val pendingAccent = Array(PENDING_BEATS) { BeatAccent.PLAIN }
     private val pendingFrame = LongArray(PENDING_BEATS)
+    private val pendingSound = Array(PENDING_BEATS) { ClickSound.DEFAULT }
     private var pendingFirst = 0
     private var pendingCount = 0
+
+    // The session: whether it plays a preview, the restarts it has taken, the track frame the click
+    // track's sample 0 was written at, frames written to the track, and where a preview's bar ends.
+    private var preview = false
+    private var seenRestarts = 0
+    private var clickOffset = 0L
+    private var framesWritten = 0L
+    private var barEnd = Long.MAX_VALUE
 
     private val noteBeat = BeatListener { index, beatInBar, accent, frame ->
         if (pendingCount == PENDING_BEATS) dropOldestPending()
@@ -106,7 +131,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         pendingIndex[slot] = index
         pendingBeatInBar[slot] = beatInBar
         pendingAccent[slot] = accent
-        pendingFrame[slot] = frame
+        pendingFrame[slot] = clickOffset + frame
+        pendingSound[slot] = clickTrack.sound
         pendingCount++
     }
 
@@ -122,24 +148,61 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         }
     }
 
-    override fun start(bpm: Int, meter: Meter) {
+    override fun start(bpm: Int, meter: Meter, sound: ClickSound) {
         synchronized(lock) {
             wantedBpm = ClickTrack.clampBpm(bpm)
             wantedMeter = meter
+            wantedSound = sound
             stopRequested = false
-            if (active) return
-            active = true
             playing.value = true
+            if (active) {
+                if (wantedPreview) {
+                    // The preview's session goes on as the metronome, from beat 0.
+                    wantedPreview = false
+                    restarts++
+                    previewing.value = false
+                }
+                return
+            }
+            active = true
+            wantedPreview = false
+        }
+        scope.launch(writeDispatcher) { session() }
+    }
+
+    override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound) {
+        synchronized(lock) {
+            // Playing (and not about to stop): only the sound changes.
+            if (active && !wantedPreview && !stopRequested) {
+                wantedSound = sound
+                return
+            }
+            wantedBpm = ClickTrack.clampBpm(bpm)
+            wantedMeter = meter
+            wantedSound = sound
+            stopRequested = false
+            wantedPreview = true
+            playing.value = false
+            previewing.value = true
+            if (active) {
+                restarts++
+                return
+            }
+            active = true
         }
         scope.launch(writeDispatcher) { session() }
     }
 
     override fun setTempo(bpm: Int) {
-        synchronized(lock) { if (active) wantedBpm = ClickTrack.clampBpm(bpm) }
+        synchronized(lock) { if (active && !wantedPreview) wantedBpm = ClickTrack.clampBpm(bpm) }
     }
 
     override fun setMeter(meter: Meter) {
-        synchronized(lock) { if (active) wantedMeter = meter }
+        synchronized(lock) { if (active && !wantedPreview) wantedMeter = meter }
+    }
+
+    override fun setSound(sound: ClickSound) {
+        synchronized(lock) { if (active && !wantedPreview) wantedSound = sound }
     }
 
     override fun stop() {
@@ -147,25 +210,49 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     }
 
     /**
-     * Takes the latest requests: true if the session must end (then it is marked ended already, so
-     * a [start] from now on launches a new one), else copies the wanted tempo and meter to the track.
+     * Takes the latest requests: true if the session must end, for a stop or because the preview
+     * was heard to its end ([previewHeard]) and nothing new came (then it is marked ended already, so
+     * a [start] from now on launches a new one); else copies the wanted tempo, meter and sound to the
+     * track, and starts it over from beat 0 for a new preview or a start during one.
      */
-    private fun takeRequests(): Boolean {
+    private fun takeRequests(previewHeard: Boolean): Boolean {
         val bpm: Int
         val meter: Meter
+        val sound: ClickSound
+        val restart: Boolean
         synchronized(lock) {
-            if (stopRequested) {
+            if (stopRequested || (previewHeard && wantedPreview && restarts == seenRestarts)) {
                 stopRequested = false
                 active = false
+                wantedPreview = false
                 playing.value = false
+                previewing.value = false
                 return true
             }
             bpm = wantedBpm
             meter = wantedMeter
+            sound = wantedSound
+            preview = wantedPreview
+            restart = restarts != seenRestarts
+            seenRestarts = restarts
         }
         clickTrack.bpm = bpm
         clickTrack.meter = meter
+        clickTrack.sound = sound // A sound not played yet is rendered here, once.
+        if (restart) startOver()
         return false
+    }
+
+    /** The click track starts over at beat 0 with the next frame written to the track. */
+    private fun startOver() {
+        clickTrack.reset()
+        pendingCount = 0
+        clickOffset = framesWritten
+        barEnd = if (preview) {
+            clickOffset + clickTrack.frameOfBeat(clickTrack.meter.beatsPerBar.toLong())
+        } else {
+            Long.MAX_VALUE
+        }
     }
 
     private suspend fun session() {
@@ -188,26 +275,41 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             }
             listening = true
             AudioOutput.showVolumeIfSilent(audioManager)
-            clickTrack.reset()
-            pendingCount = 0
+            framesWritten = 0L
+            // The first requests always start the click track over, at frame 0.
+            seenRestarts = synchronized(lock) { restarts } - 1
             val opened = AudioOutput.openTrack(sampleRate, attributes, chunkFrames * BUFFERED_CHUNKS)
             track = opened
             opened.play()
             val buffer = FloatArray(chunkFrames)
             var chunk = 0
+            var previewHeard = false
             while (true) {
                 currentCoroutineContext().ensureActive()
                 if (++chunk % MODE_CHECK_CHUNKS == 0 && isCallMode(audioManager.mode)) {
                     Log.i(TAG, "A call: the metronome stops")
                     stop()
                 }
-                if (takeRequests()) {
+                if (takeRequests(previewHeard)) {
                     ended = true
                     break
                 }
-                clickTrack.render(buffer, listener = noteBeat)
+                if (preview) {
+                    // The bar, then silence: the beat after it never sounds.
+                    val bar = (barEnd - framesWritten).coerceIn(0L, chunkFrames.toLong()).toInt()
+                    if (bar > 0) clickTrack.render(buffer, 0, bar)
+                    if (bar < chunkFrames) buffer.fill(0f, bar, chunkFrames)
+                } else {
+                    clickTrack.render(buffer, listener = noteBeat)
+                }
                 AudioOutput.write(opened, buffer, buffer.size)
-                scheduleBeats(opened, beatScope)
+                framesWritten += chunkFrames
+                if (preview) {
+                    previewHeard = framesWritten >= barEnd &&
+                        (playedFrames(opened) >= barEnd || framesWritten >= barEnd + chunkFrames * DRAIN_CHUNKS)
+                } else {
+                    scheduleBeats(opened, beatScope)
+                }
             }
         } catch (e: CancellationException) {
             throw e
@@ -226,7 +328,9 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
                 synchronized(lock) {
                     active = false
                     stopRequested = false
+                    wantedPreview = false
                     playing.value = false
+                    previewing.value = false
                 }
             }
         }
@@ -242,7 +346,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         if (pendingCount == 0) return
         val now = System.nanoTime()
         val stamped = track.getTimestamp(timestamp)
-        val head = track.playbackHeadPosition.toLong() and 0xFFFF_FFFFL // an unsigned 32-bit count
+        val head = playedFrames(track)
         while (pendingCount > 0) {
             val frame = pendingFrame[pendingFirst]
             val beat = if (stamped) {
@@ -270,7 +374,11 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         pendingBeatInBar[pendingFirst],
         pendingAccent[pendingFirst],
         heardAtNanos,
+        pendingSound[pendingFirst],
     )
+
+    /** Frames the track has played since it started: its playback head, an unsigned 32-bit count. */
+    private fun playedFrames(track: AudioTrack): Long = track.playbackHeadPosition.toLong() and 0xFFFF_FFFFL
 
     private fun dropOldestPending() {
         pendingFirst = (pendingFirst + 1) % PENDING_BEATS
@@ -297,6 +405,12 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
         /** How often the session looks for a call: every 25 chunks, 4 times a second. */
         const val MODE_CHECK_CHUNKS = 25
+
+        /**
+         * A preview ends once the playback head has passed its bar, or at the latest this many
+         * chunks of silence after it (a head that doesn't move): the queue and then some.
+         */
+        const val DRAIN_CHUNKS = BUFFERED_CHUNKS + 8
     }
 }
 
