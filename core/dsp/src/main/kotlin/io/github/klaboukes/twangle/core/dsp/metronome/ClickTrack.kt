@@ -27,16 +27,21 @@ fun interface BeatListener {
  * - [bpm]: the next beat comes one new interval after the last beat that sounded (or at once, if
  *   that moment has passed), and the beats after it follow the new tempo from there.
  * - [meter]: the next beat starts a new bar (a downbeat); the timing doesn't change.
+ * - [sound]: the next beat clicks with the new sound; a click still sounding ends as it began.
  *
- * The tempo is clamped to [MIN_BPM]..[MAX_BPM], so beats are always at least 0.24 s apart and a
- * click (0.04 s) always ends before the next starts.
+ * The tempo is clamped to [MIN_BPM]..[MAX_BPM], so beats are always at least 0.24 s apart (a tempo
+ * change never brings the next beat closer than one new interval) and every click (0.04–0.18 s,
+ * [ClickSounds]) ends before the next starts: one voice is enough.
  *
- * [render] and the setters allocate nothing. Not thread-safe: one thread (the audio writer) uses it.
+ * [render] and the tempo and meter setters allocate nothing. Setting [sound] to one not played yet
+ * renders its clicks once ([ClickSounds.prepare], a few milliseconds); after that it allocates
+ * nothing either. Not thread-safe: one thread (the audio writer) uses it.
  */
 class ClickTrack(
     val sampleRate: Int,
     bpm: Int = DEFAULT_BPM,
     meter: Meter = Meter.DEFAULT,
+    sound: ClickSound = ClickSound.DEFAULT,
 ) {
 
     init {
@@ -45,6 +50,14 @@ class ClickTrack(
 
     /** The clicks this track plays. */
     val sounds = ClickSounds(sampleRate)
+
+    /** The instrument the beats click with. Setting it takes effect from the next beat. */
+    var sound: ClickSound = sound.also { sounds.prepare(it) }
+        set(value) {
+            if (value == field) return
+            sounds.prepare(value)
+            field = value
+        }
 
     /** Beats per minute, kept within [MIN_BPM]..[MAX_BPM]. Setting it takes effect from the next beat. */
     var bpm: Int = clampBpm(bpm)
@@ -83,7 +96,7 @@ class ClickTrack(
     private var voice: FloatArray? = null
     private var voicePosition = 0
 
-    /** Starts over: the next [render] begins at sample 0 with beat 0, a downbeat. Tempo and meter stay. */
+    /** Starts over: the next [render] begins at sample 0 with beat 0, a downbeat. Tempo, meter and sound stay. */
     fun reset() {
         framesRendered = 0L
         anchorBeat = 0L
@@ -132,7 +145,7 @@ class ClickTrack(
     private fun startBeat(frame: Long, listener: BeatListener?) {
         val beatInBar = ((nextBeat - barStartBeat) % meter.beatsPerBar).toInt()
         val accent = meter.accentOf(beatInBar)
-        voice = sounds.waveform(accent)
+        voice = sounds.waveform(sound, accent)
         voicePosition = 0
         listener?.onBeat(nextBeat, beatInBar, accent, frame)
         lastBeatFrame = frame

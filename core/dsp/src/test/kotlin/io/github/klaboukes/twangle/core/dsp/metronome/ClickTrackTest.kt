@@ -81,6 +81,58 @@ class ClickTrackTest {
     }
 
     @Test
+    fun `every sound's clicks play whole at 250 BPM, also when the tempo changes at the worst moment`() {
+        val rate = 44_100
+        for (sound in ClickSound.entries) {
+            val track = ClickTrack(rate, bpm = 250, meter = Meter.SEVEN_EIGHT, sound = sound)
+            val recorder = Recorder()
+            val total = rate * 3
+            val out = FloatArray(total)
+            // 250 BPM, then 30 just after a beat, then 250 again 0.4 s later: the next beat comes
+            // one new interval (0.24 s) after the last, never sooner.
+            val changes = mapOf(rate / 2 to 30, rate / 2 + rate * 2 / 5 to 250)
+            var at = 0
+            while (at < total) {
+                changes[at]?.let { track.bpm = it }
+                val n = minOf(441, total - at)
+                track.render(out, at, n, recorder)
+                at += n
+            }
+            val frames = recorder.beats.map { it.frame }
+            assertTrue("$sound: beats ${frames.zipWithNext { a, b -> b - a }}", frames.zipWithNext().all { (a, b) -> b - a >= rate * 60 / 250 })
+            assertTrue(frames.zipWithNext().any { (a, b) -> b - a == (rate * 60 / 250).toLong() })
+
+            val expected = FloatArray(total)
+            for (beat in recorder.beats) {
+                val click = track.sounds.waveform(sound, beat.accent)
+                val start = beat.frame.toInt()
+                System.arraycopy(click, 0, expected, start, minOf(click.size, total - start))
+            }
+            assertArrayEquals("$sound", expected, out, 0f)
+        }
+    }
+
+    @Test
+    fun `a new sound is heard from the next beat, and the click sounding plays out`() {
+        val rate = 48_000
+        val track = ClickTrack(rate, bpm = 240, meter = Meter.FOUR_FOUR, sound = ClickSound.COWBELL)
+        val out = FloatArray(rate)
+        track.render(out, 0, rate / 20) // 50 ms into the first cowbell
+        track.sound = ClickSound.CLAVES
+        track.render(out, rate / 20, rate - rate / 20)
+
+        val expected = FloatArray(rate)
+        val cowbell = track.sounds.waveform(ClickSound.COWBELL, BeatAccent.DOWNBEAT)
+        System.arraycopy(cowbell, 0, expected, 0, cowbell.size)
+        for (beat in 1..3) {
+            val claves = track.sounds.waveform(ClickSound.CLAVES, BeatAccent.PLAIN)
+            System.arraycopy(claves, 0, expected, beat * 12_000, claves.size)
+        }
+        assertEquals(ClickSound.CLAVES, track.sound)
+        assertArrayEquals(expected, out, 0f)
+    }
+
+    @Test
     fun `the first beat of every bar is the accent, with group accents in 5-4, 6-8 and 7-8`() {
         val d = BeatAccent.DOWNBEAT
         val g = BeatAccent.GROUP
@@ -171,10 +223,12 @@ class ClickTrackTest {
     }
 
     @Test
-    fun `rendering and changing tempo or meter allocate nothing`() {
+    fun `rendering and changing tempo, meter or a sound played before allocate nothing`() {
         val track = ClickTrack(48_000, bpm = 250)
         val buffer = FloatArray(480)
         val listener = BeatListener { _, _, _, _ -> }
+        for (sound in ClickSound.entries) track.sound = sound // each rendered once
+        track.sound = ClickSound.WOOD_BLOCK
         repeat(2_000) { track.render(buffer, listener = listener) }
 
         val bytes = allocatedBytes {
@@ -182,8 +236,12 @@ class ClickTrackTest {
             track.bpm = 90
             track.meter = Meter.SEVEN_EIGHT
             repeat(500) { track.render(buffer, listener = listener) }
+            track.sound = ClickSound.RIM_CLICK
+            repeat(500) { track.render(buffer, listener = listener) }
             track.bpm = 250
             track.meter = Meter.FOUR_FOUR
+            track.sound = ClickSound.COWBELL
+            repeat(500) { track.render(buffer, listener = listener) }
         }
         assertEquals(0L, bytes)
     }

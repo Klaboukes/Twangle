@@ -116,7 +116,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
                 (PluckSynth, the tests' ideal plucked string, is in testFixtures)
-    metronome/  ClickTrack (+ BeatListener), ClickSounds, Meter (+ BeatAccent), TapTempo (+ TempoMarking),
+    metronome/  ClickTrack (+ BeatListener), ClickSounds (+ ClickSound, ClickRecipes, PercussionSynth, Resampler), Meter (+ BeatAccent), TapTempo (+ TempoMarking),
                 TempoDetector (+ TempoStatus), OnsetTempoDetector (tempo from music)
     strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check)
     chord/      ChordDetector, ChordResult, ChordNamer, Chord, ChordQuality (chord naming from a strum);

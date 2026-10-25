@@ -12,8 +12,9 @@ import kotlin.math.sinh
 import kotlin.math.sqrt
 
 /**
- * Modal synthesis of short, struck clicks, for the Phase 45 click candidates
- * ([ClickCandidatesReport]). Test sources only: nothing here is in the app.
+ * Modal synthesis of short, struck clicks: the cowbell, claves and rim click of [ClickSounds]
+ * (recipes in [ClickRecipes]). Used only while [ClickSounds] renders, once per sample rate, so it
+ * may allocate.
  *
  * A hit is what happens physically, in three parts:
  * 1. **Contact.** The stick or mallet presses on the instrument for a fraction of a millisecond,
@@ -26,14 +27,13 @@ import kotlin.math.sqrt
  *    its own frequency, decay and strength (its shape at the strike point, signed as heard).
  * 3. **Strike noise.** A short band-passed noise burst for the impact itself, which no mode explains.
  *
- * Round 3 (a click to keep time by, not an instrument): every mode is damped hard, there is no
- * room, and a hit is the same every time (the noise is seeded by the sound and the listener's
- * place); only the accent changes
- * how hard it is struck and the pitch (beat 1 clearly higher, as the wood block's octave).
+ * Clicks to keep time by, not instruments: every mode is damped hard, there is no room, and a hit
+ * is the same every time. The noise comes from a [Random] seeded by the recipe's name and the
+ * listener's place, so it is the same on every run and every device (java.util.Random's generator
+ * and its nextGaussian are fixed by the Java specification). Only the accent changes how hard it is
+ * struck and the pitch.
  */
 internal object PercussionSynth {
-
-    const val RATE = 48_000
 
     /** One mode: [hz], its strength [amp] before the contact's filtering, and its time constant. */
     class Mode(val hz: Double, val amp: Double, val decaySeconds: Double)
@@ -48,8 +48,9 @@ internal object PercussionSynth {
         val attackSeconds: Double = 0.0002,
     )
 
-    class Sound(
-        val file: String,
+    class Recipe(
+        /** Seeds the strike noise (with the listener's place); also the preview's file name. */
+        val name: String,
         val lengthSeconds: Double,
         val fadeSeconds: Double,
         /** Contact time of a hit at striking speed 1. */
@@ -63,49 +64,73 @@ internal object PercussionSynth {
         /** How much higher a group accent's modes ring than a plain beat's: between the two. */
         val groupPitch: Double,
         val bursts: List<Burst>,
+        /**
+         * Where each accent is heard from (a seed for the modes' signs and the noise): of 300
+         * places, the one with the least peak for its energy whose energy still peaks within
+         * 1.6 ms of the onset, found at 48 kHz by `ClickCandidatesReport`.
+         */
+        val downbeatListener: Long,
+        val groupListener: Long,
+        val plainListener: Long,
         /** The modes at [pitchFactor]; [listener] gives each mode's sign where it is heard. */
         val modes: (pitchFactor: Double, listener: Random) -> List<Mode>,
     )
 
-    fun velocityOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
-        BeatAccent.DOWNBEAT -> sound.downbeatVelocity
-        BeatAccent.GROUP -> (sound.downbeatVelocity + sound.plainVelocity) / 2
-        BeatAccent.PLAIN -> sound.plainVelocity
+    fun velocityOf(recipe: Recipe, accent: BeatAccent): Double = when (accent) {
+        BeatAccent.DOWNBEAT -> recipe.downbeatVelocity
+        BeatAccent.GROUP -> (recipe.downbeatVelocity + recipe.plainVelocity) / 2
+        BeatAccent.PLAIN -> recipe.plainVelocity
     }
 
-    fun pitchOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
-        BeatAccent.DOWNBEAT -> sound.downbeatPitch
-        BeatAccent.GROUP -> sound.groupPitch
+    fun pitchOf(recipe: Recipe, accent: BeatAccent): Double = when (accent) {
+        BeatAccent.DOWNBEAT -> recipe.downbeatPitch
+        BeatAccent.GROUP -> recipe.groupPitch
         BeatAccent.PLAIN -> 1.0
     }
 
+    fun listenerOf(recipe: Recipe, accent: BeatAccent): Long = when (accent) {
+        BeatAccent.DOWNBEAT -> recipe.downbeatListener
+        BeatAccent.GROUP -> recipe.groupListener
+        BeatAccent.PLAIN -> recipe.plainListener
+    }
+
     /**
-     * One hit of [sound] at [accent], heard from the place [listenerSeed] picks: the same every
-     * time. Starts and ends on exactly 0.
+     * One hit of [recipe] at [accent] and [sampleRate], heard from the place [listenerSeed] picks
+     * (the recipe's own by default): the same every time, at full strength (not yet scaled).
+     * Starts and ends on exactly 0.
      */
-    fun hit(sound: Sound, accent: BeatAccent, listenerSeed: Long): DoubleArray {
-        val frames = (sound.lengthSeconds * RATE).roundToInt()
-        val v = velocityOf(sound, accent)
-        val contact = sound.contactSeconds * v.pow(-0.2)
+    fun hit(
+        recipe: Recipe,
+        accent: BeatAccent,
+        sampleRate: Int,
+        listenerSeed: Long = listenerOf(recipe, accent),
+    ): DoubleArray {
+        val frames = (recipe.lengthSeconds * sampleRate).roundToInt()
+        val v = velocityOf(recipe, accent)
+        val contact = recipe.contactSeconds * v.pow(-0.2)
         val force = v.pow(1.2)
 
         // Contact: a raised-cosine force pulse, 0 at both ends.
-        val pulseFrames = (contact * RATE).roundToInt().coerceAtLeast(2)
+        val pulseFrames = (contact * sampleRate).roundToInt().coerceAtLeast(2)
         val excitation = DoubleArray(frames)
         for (n in 0..minOf(pulseFrames, frames - 1)) excitation[n] = force * (0.5 - 0.5 * cos(2 * PI * n / pulseFrames))
         val area = force * pulseFrames / 2
 
         val out = DoubleArray(frames)
-        val pitch = pitchOf(sound, accent)
-        for (mode in sound.modes(pitch, Random(listenerSeed))) {
-            if (mode.hz < 0.45 * RATE) resonate(excitation, mode.hz, mode.amp, mode.decaySeconds, out)
+        val pitch = pitchOf(recipe, accent)
+        for (mode in recipe.modes(pitch, Random(listenerSeed))) {
+            // A mode past 0.45 × the rate is left out, so nothing folds back.
+            if (mode.hz < 0.45 * sampleRate) resonate(excitation, mode.hz, mode.amp, mode.decaySeconds, sampleRate, out)
         }
-        val noise = Random(sound.file.hashCode().toLong() * 1000 + listenerSeed)
+        val noise = Random(recipe.name.hashCode().toLong() * 1000 + listenerSeed)
         // The strike noise moves with the pitch too (a smaller, higher body has a brighter impact).
-        for (burst in sound.bursts) addBurst(burst, minOf(burst.centerHz * pitch, 0.4 * RATE), area * burst.level * sqrt(v), noise, out)
+        for (burst in recipe.bursts) {
+            val centerHz = minOf(burst.centerHz * pitch, 0.4 * sampleRate)
+            addBurst(burst, centerHz, area * burst.level * sqrt(v), noise, sampleRate, out)
+        }
 
         // Raised-cosine fade over the last fadeSeconds, ending on exactly 0.
-        val fade = sound.fadeSeconds * RATE
+        val fade = recipe.fadeSeconds * sampleRate
         for (n in out.indices) {
             val left = frames - 1 - n
             if (left < fade) out[n] *= raisedCosine(left / fade)
@@ -114,9 +139,9 @@ internal object PercussionSynth {
     }
 
     // A two-pole resonator: an impulse gives amp · e^(−t/τ) · sin(2π f t) exactly.
-    private fun resonate(x: DoubleArray, hz: Double, amp: Double, decaySeconds: Double, out: DoubleArray) {
-        val w = 2 * PI * hz / RATE
-        val r = exp(-1.0 / (decaySeconds * RATE))
+    private fun resonate(x: DoubleArray, hz: Double, amp: Double, decaySeconds: Double, sampleRate: Int, out: DoubleArray) {
+        val w = 2 * PI * hz / sampleRate
+        val r = exp(-1.0 / (decaySeconds * sampleRate))
         val c1 = 2 * r * cos(w)
         val c2 = -r * r
         val g = amp * r * sin(w)
@@ -130,16 +155,16 @@ internal object PercussionSynth {
         }
     }
 
-    private fun addBurst(burst: Burst, centerHz: Double, level: Double, rnd: Random, out: DoubleArray) {
-        val bp = BandPass(centerHz, burst.q)
-        val delay = burst.delaySeconds * RATE
-        val attack = (burst.attackSeconds * RATE).coerceAtLeast(1.0)
+    private fun addBurst(burst: Burst, centerHz: Double, level: Double, rnd: Random, sampleRate: Int, out: DoubleArray) {
+        val bp = BandPass(centerHz, burst.q, sampleRate)
+        val delay = burst.delaySeconds * sampleRate
+        val attack = (burst.attackSeconds * sampleRate).coerceAtLeast(1.0)
         for (n in out.indices) {
             val t = n - delay
             val env = when {
                 t <= 0 -> 0.0
                 t < attack -> raisedCosine(t / attack)
-                else -> exp(-(t - attack) / (burst.decaySeconds * RATE))
+                else -> exp(-(t - attack) / (burst.decaySeconds * sampleRate))
             }
             out[n] += level * env * bp.filter(rnd.nextGaussian())
         }
@@ -147,8 +172,8 @@ internal object PercussionSynth {
 
     private fun raisedCosine(x: Double): Double = 0.5 - 0.5 * cos(PI * x)
 
-    /** RBJ cookbook band-pass, 0 dB at [centerHz]. */
-    private class BandPass(centerHz: Double, q: Double) {
+    /** Band-pass of R. Bristow-Johnson's "Audio EQ Cookbook", 0 dB at [centerHz]. */
+    private class BandPass(centerHz: Double, q: Double, sampleRate: Int) {
         private val b0: Double
         private val a1: Double
         private val a2: Double
@@ -158,7 +183,7 @@ internal object PercussionSynth {
         private var y2 = 0.0
 
         init {
-            val w0 = 2 * PI * centerHz / RATE
+            val w0 = 2 * PI * centerHz / sampleRate
             val alpha = sin(w0) / (2 * q)
             val a0 = 1 + alpha
             b0 = alpha / a0
@@ -195,20 +220,23 @@ internal object PercussionSynth {
         return DoubleArray(count) { f[it] / f[0] }
     }
 
-    /** A free-free bar's bending mode [n] (from 0) at [x] along it (0..1), 1 at the ends. */
+    /** A free-free bar's bending mode [n] (from 0) at [x] along it (0..1), 1 at the ends (Fletcher & Rossing §2.15). */
     fun barShape(n: Int, x: Double): Double {
         val b = BAR_BETA[n]
         val s = (cosh(b) - cos(b)) / (sinh(b) - sin(b))
         return (cosh(b * x) + cos(b * x) - s * (sinh(b * x) + sin(b * x))) / 2
     }
 
-    /** Zeros j_mn of the Bessel functions: an ideal circular membrane's mode (m, n) rings at j_mn / j_01 × f01. */
+    /**
+     * Zeros j_mn of the Bessel functions: an ideal circular membrane's mode (m, n) rings at
+     * j_mn / j_01 × f01 (Fletcher & Rossing §3.5).
+     */
     val MEMBRANE: List<Triple<Int, Int, Double>> = listOf(
         Triple(0, 1, 2.4048), Triple(1, 1, 3.8317), Triple(2, 1, 5.1356), Triple(0, 2, 5.5201),
         Triple(3, 1, 6.3802), Triple(1, 2, 7.0156), Triple(4, 1, 7.5883), Triple(2, 2, 8.4172),
     )
 
-    /** Bessel function J_m(x) by its power series (fine for x below about 20). */
+    /** Bessel function J_m(x) by its power series (Abramowitz & Stegun 9.1.10; fine for x below about 20). */
     fun besselJ(m: Int, x: Double): Double {
         var term = (x / 2).pow(m)
         for (i in 1..m) term /= i
