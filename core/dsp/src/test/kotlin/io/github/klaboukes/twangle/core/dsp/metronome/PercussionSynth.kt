@@ -27,7 +27,8 @@ import kotlin.math.sqrt
  * 3. **Strike noise.** A short band-passed noise burst for the impact itself, which no mode explains.
  *
  * Round 3 (a click to keep time by, not an instrument): every mode is damped hard, there is no
- * room, and a hit is the same every time (the noise has a fixed seed); only the accent changes
+ * room, and a hit is the same every time (the noise is seeded by the sound and the listener's
+ * place); only the accent changes
  * how hard it is struck and the pitch (beat 1 clearly higher, as the wood block's octave).
  */
 internal object PercussionSynth {
@@ -99,7 +100,7 @@ internal object PercussionSynth {
         for (mode in sound.modes(pitch, Random(listenerSeed))) {
             if (mode.hz < 0.45 * RATE) resonate(excitation, mode.hz, mode.amp, mode.decaySeconds, out)
         }
-        val noise = Random(sound.file.hashCode().toLong())
+        val noise = Random(sound.file.hashCode().toLong() * 1000 + listenerSeed)
         // The strike noise moves with the pitch too (a smaller, higher body has a brighter impact).
         for (burst in sound.bursts) addBurst(burst, minOf(burst.centerHz * pitch, 0.4 * RATE), area * burst.level * sqrt(v), noise, out)
 

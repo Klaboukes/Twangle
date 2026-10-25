@@ -3,38 +3,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Twangle Click Sounds</title>
 <!--
-TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST". The owner's set: the wood block (today's, the
-default), the rim click, the cowbell and the bright tick, picked with a Sound button in the metronome.
+TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST". The owner's four, picked with a Sound button in the
+metronome: the wood block (today's, the default), the cowbell, the claves and the rim click.
 History  Round 1 (2026-10-25) soft beep, sharp click, low knock: "mechanical, like a cheap keyboard". Round 2: real
          instruments ringing 0.2-0.4 s in a little room. Round 3: clicks made to keep time by (sharp, short, the
-         same every beat, unpitched); then a higher cowbell that clears the guitar, and a stronger beat 1. Then the
-         owner kept the wood block as the default, dropped the woody click, and found beat 1 of the other three
-         still harder to follow than the wood block's.
-This     The wood block's beat 1 is easy to follow because the block has a clear note (A6 against A5), so its octave
-round    jump is obvious. Each of the three now has a note of its own, built into the instrument, and beat 1 jumps a
-         clear octave, hit harder (brighter, at least the wood block's +5 dB peak):
-         - rim click: the stick's ring (its second bending mode, 930 Hz) left to sound a little; beat 1 is the stick
-           an octave up.
-         - cowbell: the bell's lowest mode (950 Hz) rings clearest; beat 1 is the pair's smaller bell, an octave up,
-           as an agogo has two.
-         - bright tick: a clearer glint (2.6 kHz) under the plate's sizzle; beat 1 is a smaller plate, a fifth up,
-           whose glint sits an octave higher (a whole plate an octave up would be shrill).
-         Everything is crisper too (40 dB down by 37-50 ms, the wood block: 36 ms). The same every bar, the energy
-         peak within 1.1-1.3 ms, peaks at most 0.8, each bar within 0.6 dB of the wood block's RMS.
-Check    How clearly beat 1 stands out from beat 2 (the report prints it). Main pitch by autocorrelation over the
-         first 40 ms, its clarity 0-1 (the autocorrelation peak's height: near 1 for a clear note):
-         sound          RMS step   peak step   beat 1 (clarity)    beat 2 (clarity)    apart
-         wood-block     +4.1 dB    +5.0 dB     1727 Hz (0.93)      865 Hz (0.92)       +12.0 semitones
-         rim-click      +5.8 dB    +5.6 dB     1856 Hz (0.92)      933 Hz (0.84)       +11.9
-         cowbell-tonk   +5.1 dB    +5.5 dB     1874 Hz (0.88)      952 Hz (0.85)       +11.7
-         bright-tick    +4.2 dB    +5.0 dB     5214 Hz (0.95)      2590 Hz (0.88)      +12.1
-         Envelope (1 ms RMS) and centroid over 80 ms, plain beat / beat 1:
-         wood-block     peak 1.6 / 1.6 ms   -40 dB at 36 / 36 ms   centroid 1.0 / 1.9 kHz
-         rim-click      peak 1.1 / 1.1 ms   -40 dB at 50 / 50 ms   centroid 1.0 / 1.8 kHz
-         cowbell-tonk   peak 1.1 / 1.1 ms   -40 dB at 45 / 37 ms   centroid 1.1 / 2.1 kHz
-         bright-tick    peak 1.1 / 1.1 ms   -40 dB at 40 / 47 ms   centroid 2.7 / 5.2 kHz
-         Over the guitar (share of the click's energy in third-octave bands where it is louder than the guitar,
-         80 ms after each beat): wood block 51 %, rim click 58 %, cowbell 62 %, bright tick 96 %.
+         same every beat); a higher cowbell; a stronger beat 1; a note in each so beat 1 jumps an octave. Then the
+         owner heard the wood block, rim click and cowbell as one instrument at slightly different pitches (they
+         were tuned to 865, 933 and 952 Hz, with very short envelopes), dropped the bright tick and asked for four
+         instruments, each clearly its own.
+This     Each sound lives in its own register and keeps its own nature; ring lengths differ (up to 180 ms):
+round    - wood block: today's, unchanged (A5, beat 1 A6), 40 dB down at 36 ms.
+         - cowbell: metal, a choked bell still audibly ringing. Its tone at 560 Hz, below the wood block, with
+           clashing, beating partials at 0.8-3 kHz; 40 dB down at 132 ms. Beat 1: the smaller bell, an octave up.
+         - claves: high, clear and glassy, the rosewood rod's tone at 2.2 kHz with a short bright ring, hardly any
+           noise; 40 dB down at 100 ms. Beat 1: the higher clave, a fifth up (an octave would be shrill).
+         - rim click: a dry crack of stick on hoop, mostly noise, with a short low thump of the drum (180 Hz) and a
+           faint hoop ring; 40 dB down at 64 ms. Beat 1: a harder, brighter crack and the hoop ringing out at 2.4 kHz.
+         Beat 1 is at least as clear as the wood block's (+5 dB at the peak or more), the energy peaks within
+         1.1-1.6 ms, the same every bar, peaks at most 0.8, each bar within 0.7 dB of the wood block's RMS.
+         The metronome's ClickTrack plays one click at a time; at 250 BPM a beat is 240 ms, longer than the longest
+         click (180 ms), so no tail is ever cut and no second voice is needed.
+Check    Plain beats (the report prints all of it, beat 1's too). Main pitch by autocorrelation over the first
+         40 ms and its clarity (near 1 for a clear note; under 0.3 counts as unpitched); centroid; spectral
+         flatness over 26 mel bands (0 = tonal, towards 1 = noise); time to 40 dB down:
+         wood-block     865 Hz (0.92)     centroid  889 Hz   flatness 0.00   36 ms
+         cowbell        547 Hz (0.69)     centroid  707 Hz   flatness 0.00   132 ms
+         claves         2199 Hz (0.98)    centroid 2202 Hz   flatness 0.00   100 ms
+         rim-click      unpitched (0.23)  centroid 2378 Hz   flatness 0.62   64 ms
+         Pairs (pitch apart, centroid ratio, flatness difference, decay ratio, timbre distance by 12 MFCCs);
+         none is close on 3 or more of the 5:
+         wood-block / cowbell     7.9 st     x1.26   0.00   x3.62    98
+         wood-block / claves      16.2 st    x2.48   0.00   x2.73    229
+         wood-block / rim-click   unpitched  x2.68   0.62   x1.76    167
+         cowbell / claves         24.1 st    x3.12   0.00   x1.33    236
+         cowbell / rim-click      unpitched  x3.36   0.62   x2.06    169
+         claves / rim-click       unpitched  x1.08   0.62   x1.55    156
+         Beat 1 against beat 2:
+         wood-block     +5.0 dB peak   1727 / 865 Hz    +12.0 st
+         cowbell        +5.4 dB        1116 / 547 Hz    +12.3 st
+         claves         +5.2 dB        3298 / 2199 Hz   +7.0 st (a fifth)
+         rim-click      +5.1 dB        2401 Hz (0.70) against an unpitched crack
+         Beat 1's pitches are at least 5 semitones apart from each other (1116, 1727, 2401, 3298 Hz).
+         Over the guitar (share of the click's energy in bands where it is louder than the guitar): wood block
+         51 %, cowbell 45 %, claves 93 %, rim click 76 %.
 Files    <sound>.wav: one bar of 4/4 at 100 BPM, then 1 s of silence.
          <sound>-with-guitar.wav: the same click under two bars of strummed steel-string guitar (down and up
          eighths, E minor then C, a last E minor ringing out), the guitar 14 dB louder than the click by RMS, the
@@ -78,12 +89,12 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 </style>
 <main>
   <h1>Metronome click sounds</h1>
-  <p class="intro">The four sounds for the metronome's Sound button. Each one has a note of its own, and beat 1 jumps an
-    octave and is louder, as on today's wood block. Each plays alone (one bar) and under a strummed guitar (two bars), then stops.</p>
+  <p class="intro">Four instruments for the metronome's Sound button, each in its own register. Beat 1 is louder and higher,
+    as on the wood block. Each plays alone (one bar) and under a strummed guitar (two bars), then stops.</p>
 
   <section class="sound">
     <h2>Wood block <small>today's click, the default</small></h2>
-    <p>The everyday click: a short, woody "tock".</p>
+    <p>A short, woody "tock" in the middle register.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="wood-block.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="wood-block-with-guitar.wav"></audio></div>
@@ -91,29 +102,29 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
   </section>
 
   <section class="sound">
+    <h2>Cowbell</h2>
+    <p>A metal bell, lower than the wood block, that clangs and rings on a little: the classic studio cue.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="cowbell.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="cowbell-with-guitar.wav"></audio></div>
+    </div>
+  </section>
+
+  <section class="sound">
+    <h2>Claves</h2>
+    <p>Two rosewood sticks struck together: a high, clear, glassy "tick" that rings briefly and sits above the guitar.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="claves.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="claves-with-guitar.wav"></audio></div>
+    </div>
+  </section>
+
+  <section class="sound">
     <h2>Rim click</h2>
-    <p>A drummer's dry cross-stick on the snare's rim, the stick ringing briefly: precise, like playing along with a drummer.</p>
+    <p>A drummer's stick cracking on the snare's rim: dry and noisy, with a small thump of the drum under it.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="rim-click.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="rim-click-with-guitar.wav"></audio></div>
-    </div>
-  </section>
-
-  <section class="sound">
-    <h2>Cowbell</h2>
-    <p>A small, choked cowbell with a clear note, beat 1 on its smaller twin: the studio click that cuts through a band.</p>
-    <div class="players">
-      <div><label>Alone</label><audio controls preload="auto" src="cowbell-tonk.wav"></audio></div>
-      <div><label>With guitar</label><audio controls preload="auto" src="cowbell-tonk-with-guitar.wav"></audio></div>
-    </div>
-  </section>
-
-  <section class="sound">
-    <h2>Bright tick</h2>
-    <p>A high, crisp metal tick with a small glint of a note, for loud or distorted guitar.</p>
-    <div class="players">
-      <div><label>Alone</label><audio controls preload="auto" src="bright-tick.wav"></audio></div>
-      <div><label>With guitar</label><audio controls preload="auto" src="bright-tick-with-guitar.wav"></audio></div>
     </div>
   </section>
 
