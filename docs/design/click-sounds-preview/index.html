@@ -3,26 +3,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Twangle Click Sounds</title>
 <!--
-TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST". Candidates for the owner to pick by ear.
+TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST", ROUND 2. Candidates for the owner to pick by ear.
 Goal     The metronome gets a short list of clicks in Settings, not only the wood block, so it can be heard over
          a loud amp or a band and stays pleasant through a long practice. The owner picks the two (or three)
-         that join the wood block.
-Files    One bar of 4/4 at 100 BPM each (beat 1 higher and louder, as the app plays it), then 1 s of silence;
-         16-bit mono, 48 kHz, 3.4 s. Nothing loops: the players below have no loop and no autoplay.
-Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt, in the test
-         sources only (not in the app). Make them again, byte for byte, with
+         that join (or replace) the wood block.
+Round 1  (2026-10-25) soft beep, sharp click, low knock: "they all sound very mechanical, like a cheap keyboard",
+         today's wood block included. The owner wants real, high-end percussion instruments.
+Round 2  Physical models of real instruments (modal synthesis), no recordings, so nothing to licence:
+         - Contact: the mallet or stick's force pulse (raised cosine, 0.15-0.6 ms; Hertz's law: a harder hit is
+           shorter, so brighter, and louder), plus a band-passed noise burst for the strike itself.
+         - Modes: 7 to ~230 per instrument, ratios from the physics of the vibrating body (free bar, thick
+           Timoshenko rod, ideal membrane, ring, Chladni plate, marimba tuning 1:4:10), each excited by its
+           shape at the strike point; higher modes die faster (wood: Chaigne & Doutaut 1997); metals in
+           slightly split, beating pairs.
+         - Accent: beat 1 is hit harder (brighter, ~4-7 dB louder); the blocks, claves and marimba also play
+           beat 1 on a higher one, as two-tone blocks do; the side stick and hi-hat only by how hard.
+         - A small, fairly dead room, 18-25 dB under the dry sound, arriving after the attack.
+         - Every hit slightly different (seeded), so beat 2, 3 and 4 aren't copies.
+         Full recipes and sources: the comments in the generator below.
+Files    One bar of 4/4 at 100 BPM each, then 1 s of silence; 16-bit mono, 48 kHz, 3.4 s. Nothing loops:
+         the players below have no loop and no autoplay. Each hit lasts 0.2-0.4 s (today's: 0.04 s).
+Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt and
+         PercussionSynth.kt, in the test sources only (not in the app). Make them again, byte for byte, with
          ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
-         The wood block is the app's own ClickSounds, played through ClickTrack. The candidates are made the
-         same way: a few decaying partials, a raised-cosine attack, the same 8 ms fade to exactly 0 after 40 ms,
-         the wood block's level steps (peak 0.8 : 0.6 : 0.45), and each set scaled to the wood block's RMS
-         (downbeat peak at most 0.8). No recordings, so nothing to licence.
-Recipes  wood-block   free bar, modes 1 : 2.756 (0.35), decay 9 ms / 4.5 ms, attack 0.8 ms; A6 / E6 / A5
-         soft-beep    one sine, decay 25 ms, attack 2 ms; E6 / B5 / E5; RMS +0.0 dB, peak 0.42
-         sharp-click  small stiff bar, modes 1 : 2.756 (0.45) : 5.404 (0.2), decay 7 / 3.5 / 1.8 ms, attack
-                      0.3 ms; A7 / E7 / A6; RMS -2.4 dB (peak 0.8 already; the ear hears 2-4 kHz best)
-         low-knock    drum skin, modes 1 : 1.594 (0.4) : 2.136 (0.2), decay 14 / 8 / 5 ms, attack 1 ms;
-                      E5 / B4 / E4; RMS +0.0 dB, peak 0.63
-Phone    The same four files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
+         Each bar is scaled to the wood block's RMS (the hi-hat 0.8 dB under it: its peak reached 0.8).
+Phone    The same six files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
          app on the speaker and in headphones.
 -->
 <style>
@@ -53,34 +58,46 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 .how { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
 </style>
 <main>
-  <h1>Metronome click sounds</h1>
-  <p class="intro">Each player plays one bar of four beats at 100 BPM, beat 1 higher and louder, then stops.
-    Listen on the phone's speaker and in headphones, and pick the two (or three) that should join the wood block.</p>
+  <h1>Metronome click sounds, round 2</h1>
+  <p class="intro">Each player plays one bar of four beats at 100 BPM, beat 1 accented, then stops.
+    Listen on the phone's speaker and in headphones, and pick the two (or three) you'd like in the app.</p>
 
   <section class="sound">
-    <h2>Wood block <small>today's click</small></h2>
-    <p>The click the metronome has now: a short, woody "tock". A good all-rounder.</p>
+    <h2>Wood block <small>today's click, for comparison</small></h2>
+    <p>The click the metronome has now.</p>
     <audio controls preload="auto" src="wood-block.wav"></audio>
   </section>
 
   <section class="sound">
-    <h2>Soft beep</h2>
-    <p>A gentle electronic beep, like a classic digital metronome. Easy on the ears for long, quiet practice.</p>
-    <audio controls preload="auto" src="soft-beep.wav"></audio>
+    <h2>Temple blocks</h2>
+    <p>Two hollow wooden blocks, a high one for beat 1 and a lower one for the others. Warm and woody; a good all-rounder.</p>
+    <audio controls preload="auto" src="temple-blocks.wav"></audio>
   </section>
 
   <section class="sound">
-    <h2>Sharp click</h2>
-    <p>A bright, high tick that cuts through a loud amp or a band. For playing loud or with others.</p>
-    <audio controls preload="auto" src="sharp-click.wav"></audio>
+    <h2>Claves</h2>
+    <p>Two rosewood sticks struck together: a bright, ringing "tock" that cuts through a band without being harsh.</p>
+    <audio controls preload="auto" src="claves.wav"></audio>
   </section>
 
   <section class="sound">
-    <h2>Low knock</h2>
-    <p>A low, round knock, like a soft drum. For players who hear high sounds poorly, or who find high clicks tiring.</p>
-    <audio controls preload="auto" src="low-knock.wav"></audio>
+    <h2>Side stick</h2>
+    <p>A drummer's cross-stick on the snare's rim: dry and familiar, for playing along as if with a drummer.</p>
+    <audio controls preload="auto" src="side-stick.wav"></audio>
   </section>
 
-  <p class="how">All four are about equally loud (the sharp click measures a little quieter, but sits where the ear
-    is most sensitive). Every click lasts 40 ms, like today's, so the timing, the beat lights and the vibration stay the same.</p>
+  <section class="sound">
+    <h2>Hi-hat</h2>
+    <p>A closed hi-hat tapped with a stick: a short, crisp "tss" high above the guitar, so it never covers the notes.</p>
+    <audio controls preload="auto" src="hi-hat.wav"></audio>
+  </section>
+
+  <section class="sound">
+    <h2>Marimba</h2>
+    <p>A low rosewood marimba note with a soft mallet: round and warm, for players who hear high sounds poorly or find them tiring.</p>
+    <audio controls preload="auto" src="marimba.wav"></audio>
+  </section>
+
+  <p class="how">All six are about equally loud. These ring a little longer than today's click (0.2 to 0.4 seconds),
+    as real instruments do; the beats themselves stay exactly on time.</p>
 </main>
