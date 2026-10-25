@@ -22,12 +22,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.min
 
 /** Whether [this] theme choice means dark colours, given the phone's own dark-theme setting. */
 fun ThemeMode.useDarkTheme(systemDark: Boolean): Boolean = when (this) {
@@ -76,10 +80,66 @@ fun usesWallpaperColors(style: VisualStyle, dynamicColor: Boolean): Boolean =
  */
 fun colorSchemeFor(context: Context, style: VisualStyle, dark: Boolean, dynamicColor: Boolean): ColorScheme =
     if (usesWallpaperColors(style, dynamicColor)) {
-        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val wallpaper = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        wallpaper.keepingInTuneApart(dark)
     } else {
         tokensFor(style, dark).scheme
     }
+
+/**
+ * How near, in degrees of perceptual hue ([hueOf]), the wallpaper's accent may come to the "in tune" green before it gives
+ * way to Contemporary's own blue (Phase 43). The six styles keep their accents out of the greens by
+ * design (`StylePaletteTest`); a green wallpaper would otherwise make every picked segment, the open
+ * tab and the Start button look "in tune".
+ */
+internal const val IN_TUNE_HUE_GUARD = 40f
+
+/**
+ * This wallpaper scheme (light or [dark]) with its accent swapped for Contemporary's own blue when it
+ * lies within [IN_TUNE_HUE_GUARD] of Contemporary's in-tune hue: primary, its container and their
+ * text, and the secondary container (Material's slider track), which the app's own schemes also fill
+ * with the accent. Backgrounds, surfaces, text and the background art's colours stay the wallpaper's.
+ * Any other accent comes back unchanged.
+ */
+internal fun ColorScheme.keepingInTuneApart(dark: Boolean): ColorScheme {
+    val own = paletteFor(VisualStyle.CONTEMPORARY, dark)
+    if (hueDistance(primary, own.inTune) >= IN_TUNE_HUE_GUARD) return this
+    val ownScheme = tokensFor(VisualStyle.CONTEMPORARY, dark).scheme
+    // The accent container as the palettes mix it (Palette.container), but over the wallpaper's surface.
+    val container = lerp(surface, own.accent, if (dark) 0.32f else 0.22f)
+    return copy(
+        primary = own.accent,
+        onPrimary = own.onAccent,
+        primaryContainer = container,
+        onPrimaryContainer = onSurface,
+        inversePrimary = ownScheme.inversePrimary,
+        surfaceTint = own.accent,
+        secondaryContainer = container,
+        onSecondaryContainer = onSurface,
+    )
+}
+
+/** How far apart the hues of [a] and [b] lie round the colour wheel, 0..180 degrees. */
+internal fun hueDistance(a: Color, b: Color): Float {
+    val d = abs(hueOf(a) - hueOf(b))
+    return min(d, 360f - d)
+}
+
+/**
+ * The perceptual hue of [c] in degrees, 0..360: its OKLCH hue (Ottosson 2020), so a yellowish green
+ * and a bluish green are as far apart as they look. A grey has none and gives 0.
+ */
+internal fun hueOf(c: Color): Float {
+    val lab = c.convert(ColorSpaces.Oklab)
+    val a = lab.green
+    val b = lab.blue
+    if (a * a + b * b < GREY_CHROMA * GREY_CHROMA) return 0f
+    val deg = Math.toDegrees(atan2(b, a).toDouble()).toFloat()
+    return if (deg < 0f) deg + 360f else deg
+}
+
+/** Below this OKLab chroma a colour counts as grey (it has no hue worth comparing). */
+private const val GREY_CHROMA = 1e-4f
 
 /**
  * The app's theme: the colours, lettering and shapes of [style] in light or [darkTheme]. With
