@@ -1,0 +1,227 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Click Sound Button</title>
+<!--
+TWANGLE METRONOME, PICKING THE CLICK SOUND (Phase 45 preview, round 1). ROUGH, plain on purpose.
+The ask (owner, 2026-10-25): four click sounds, wood block (today's, the default), cowbell, claves and rim click
+         (samples in docs/design/click-sounds-preview/), changed quickly from the metronome itself, not in Settings.
+         The screen is already full (meter picker, beat lights, the big dial with − + and Start inside, one row of
+         three 72 × 52 dp icon buttons 16 dp apart with short names under them), so nothing may get crowded: steady
+         button sizes, never four buttons in a row, no help text or hint badges.
+A (recommended) The third button, "Vibrate", becomes "Sound". Its icon shows the click picked (wood block, cowbell,
+         claves, rim click), with the app's two vibration marks either side when "Vibrate on the beat" is on. The
+         word under it is always "Sound", so the button never changes size. A tap opens a panel above the row (a
+         calm dropdown, the surface colour, soft lift, no border): four rows of icon + name (48 dp each, the picked
+         one in primaryContainer with a 2 dp accent outline, as the app marks picked items), then a "Vibrate on the
+         beat" switch. A tap on a sound picks it: while playing it is heard from the next beat; while stopped it
+         plays one bar of it once (never loops). The panel stays open for another try; Back or a tap beside it
+         closes it. On its side (no room above the row) it opens beside the row, towards the dial, its
+         bottom level with the row, as Listen's balloon does.
+         TalkBack: the button is "Sound, Wood block" (plus ", vibrate on" when on); each row says its name.
+B        The row stays Tap tempo · Listen · Vibrate. A small name button ("Wood block ⌄", the sound's icon before
+         the name, see-through with the muted outline) sits in the empty band between the meter picker and the
+         beat lights, and opens the same four-row list under it, without the switch. On its side it goes in the
+         right-hand column between the meter picker and the lights, taking height from the lights.
+Icons    Drawn for this page in the row icons' own style (24-unit grid, 1.8 stroke, round ends, as ic_tap,
+         ic_listen and ic_vibrate): a block of wood with its slot, a bell with its handle, two crossed sticks, a stick across a
+         drum's rim. Tap tempo, Listen and Vibrate are the app's own paths.
+Phone    393 × 740 dp (the Xiaomi 12X between the bars), on its side 873 × 393 dp with the navigation rail. The
+         Metronome / Chords / Capo switch is left out of the sketches. The dial and lights are flat placeholders.
+Look     Contemporary, dark (core/designsystem StylePalettes.kt).
+-->
+<style>
+:root {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #343A50;
+  --accent: #A6ADFF; --on-accent: #10141F;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736);
+  --face: color-mix(in srgb, #232736 45%, #171D2E);
+  --outline: color-mix(in srgb, #A6AECB 60%, #171D2E);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 500 20px/1.3 var(--ui); margin: 36px 0 4px; }
+h3 { font: 500 15px/1.3 var(--ui); margin: 18px 0 6px; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.note { color: var(--muted); font-size: 14px; max-width: 70ch; margin-top: 8px; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); margin-left: 8px; vertical-align: 3px; }
+.rows { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+.lab { font-size: 13px; margin-bottom: 6px; }
+.cap { font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+/* The row, 1 px per dp: three 72 × 52 dp buttons 16 dp apart, names under them. */
+.row { display: flex; gap: 16px; }
+.cell { width: 72px; display: grid; justify-items: center; gap: 4px; }
+.btn { width: 72px; height: 52px; border-radius: 26px; display: grid; place-items: center; color: var(--ink);
+  background: var(--face); border: 1px solid var(--outline); --under: var(--face); }
+.btn.on { background: var(--container); border: 2px solid var(--accent); --under: var(--container); }
+.cell span { font: 500 12px/1 var(--ui); color: var(--muted); white-space: nowrap; }
+svg.ic { width: 24px; height: 24px; overflow: visible; }
+
+/* The panel: a calm dropdown, the surface colour, a soft lift, no border. */
+.stack { display: grid; justify-items: end; gap: 8px; width: 248px; }
+.panel { width: 232px; padding: 8px; border-radius: 16px; background: var(--surface); box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.3); --under: var(--surface); }
+.opt { height: 48px; display: flex; align-items: center; gap: 14px; padding: 0 14px; border-radius: 12px; font-size: 15px; }
+.opt.on { background: var(--container); box-shadow: inset 0 0 0 2px var(--accent); --under: var(--container); }
+.sw { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 14px; font-size: 15px; margin-top: 4px; }
+.track { width: 52px; height: 32px; border-radius: 16px; border: 2px solid var(--muted); background: var(--track); position: relative; }
+.track::after { content: ""; position: absolute; left: 6px; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); }
+
+/* Flat phone sketches, in dp. */
+.phones { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 8px; }
+.phone-up { width: 340px; max-width: 100%; }
+.phone-side { width: 100%; max-width: 760px; }
+svg.sk { width: 100%; height: auto; display: block; background: var(--bg); border-radius: 18px; }
+.sk text { font-family: var(--ui); }
+.f { fill: var(--face); stroke: var(--outline); stroke-width: 1; }
+.pk { fill: var(--container); stroke: var(--accent); stroke-width: 2; }
+.ring { fill: none; stroke: var(--track); stroke-width: 6; }
+.bar { fill: var(--track); } .bar1 { fill: var(--accent); }
+.st { fill: var(--accent); }
+.pn { fill: var(--surface); filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+.t { fill: var(--ink); font-size: 14px; } .tm { fill: var(--muted); font-size: 12px; } .big { fill: var(--ink); font-size: 64px; font-weight: 300; }
+</style>
+
+<!-- The icons: 24-unit grid, 1.8 stroke, round ends, as the app's row icons. --under fills a stick so the one behind is hidden. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-wood" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5,10L6.5,6H21.5V15.5L17,20H2.5Z M2.5,10H17V20 M17,10L21.5,6"/><rect x="5.3" y="13.7" width="9" height="2.6" rx="1.3"/>
+    </g>
+    <g id="i-cowbell" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5,7h7l3.5,12.5q-7,2 -14,0z"/><path d="M10.3,7v-3.2h3.4v3.2"/>
+    </g>
+    <g id="i-claves" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="10.5" width="20" height="3" rx="1.5" transform="rotate(32 12 12)" fill="none"/>
+      <rect x="2" y="10.5" width="20" height="3" rx="1.5" transform="rotate(-32 12 12)" style="fill: var(--under)"/>
+    </g>
+    <g id="i-rim" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="11" cy="12.5" rx="8.5" ry="3.2" fill="none"/><path d="M2.5,12.5v5a8.5,3.2 0 0 0 17,0v-5" fill="none"/>
+      <rect x="5.5" y="11" width="18" height="2.8" rx="1.4" transform="rotate(-22 5.5 12.4)" style="fill: var(--under)"/>
+    </g>
+    <g id="i-tap" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5,2.5v12a2.5,2.5 0,0 0,5 0v-12"/><path d="M3.5,20.5h17M5.5,16.5l1.5,1.2M18.5,16.5l-1.5,1.2"/>
+    </g>
+    <g id="i-listen" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12,2.5a3,3 0,0 1,3 3v5.5a3,3 0,0 1,-6 0v-5.5a3,3 0,0 1,3 -3z"/><path d="M5.5,11a6.5,6.5 0,0 0,13 0"/><path d="M12,17.5v3.5M9,21h6"/>
+    </g>
+    <g id="i-vibrate" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.8,3.5h4.4a1.8,1.8 0,0 1,1.8 1.8v13.4a1.8,1.8 0,0 1,-1.8 1.8h-4.4a1.8,1.8 0,0 1,-1.8 -1.8v-13.4a1.8,1.8 0,0 1,1.8 -1.8z"/><path d="M4.5,8.5v7M19.5,8.5v7M1.8,10.5v3M22.2,10.5v3"/>
+    </g>
+    <!-- The vibration marks, outside the 24-unit icon (the button has room). -->
+    <path id="i-marks" d="M-2.5,8.5v7M-5.5,10.5v3M26.5,8.5v7M29.5,10.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 45 · rough mock-up · round 1</p>
+  <h1>Where do you pick the click?</h1>
+  <p class="lede">Four sounds, wood block, cowbell, claves and rim click, changed from the metronome itself. Two
+    places for the choice; the rest of the screen stays as it is.</p>
+</header>
+
+<h2>A · The third button becomes "Sound"<span class="tag">recommended</span></h2>
+<p class="lede">The button shows the click picked; "Vibrate on the beat" moves into its panel.</p>
+
+<h3>The row, with each sound picked</h3>
+<div class="rows" id="rowsA"></div>
+<p class="note">The word stays "Sound" whatever is picked, so the button never changes size. The marks either side
+  (last row) show that "Vibrate on the beat" is on.</p>
+
+<h3>The panel it opens</h3>
+<div class="stack">
+  <div class="panel" id="panel"></div>
+  <div id="rowUnder"></div>
+</div>
+<p class="note">A tap on a sound while it plays switches from the next beat; while stopped it plays one bar of that
+  sound once, never looping. Back or a tap beside the panel closes it.</p>
+
+<h3>On the screen</h3>
+<div class="phones">
+  <div class="phone-up"><svg class="sk" id="upA" viewBox="0 0 393 740" role="img" aria-label="Option A upright"></svg><p class="cap">Upright</p></div>
+  <div class="phone-side"><svg class="sk" id="sideA" viewBox="0 0 873 393" role="img" aria-label="Option A on its side"></svg><p class="cap">On its side: no room above the row, so the panel opens beside it</p></div>
+</div>
+
+<h2>B · A name button above the beat lights</h2>
+<p class="lede">The row stays Tap tempo · Listen · Vibrate; the sound gets its own small button in the empty band.</p>
+<div class="phones">
+  <div class="phone-up"><svg class="sk" id="upB" viewBox="0 0 393 740" role="img" aria-label="Option B upright"></svg><p class="cap">Upright, the list open</p></div>
+</div>
+<p class="note">The list is the same four rows, without the switch. On its side the name button goes in the right-hand
+  column between the meter picker and the lights, which then get lower.</p>
+</div>
+
+<script>
+const SOUNDS = [["wood", "Wood block"], ["cowbell", "Cowbell"], ["claves", "Claves"], ["rim", "Rim click"]];
+const use = (id, x = 0, y = 0) => `<use href="#i-${id}" x="${x}" y="${y}"/>`;
+const ic = (id, marks) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${use(id)}${marks ? `<use href="#i-marks"/>` : ""}</svg>`;
+const cell = (id, word, marks) => `<div class="cell"><div class="btn">${ic(id, marks)}</div><span>${word}</span></div>`;
+const rowA = (sound, marks) => `<div class="row">${cell("tap", "Tap tempo")}${cell("listen", "Listen")}${cell(sound, "Sound", marks)}</div>`;
+
+document.getElementById("rowsA").innerHTML =
+  SOUNDS.map(([id, name]) => `<div><p class="lab">${name}</p>${rowA(id)}</div>`).join("") +
+  `<div><p class="lab">Wood block, vibrate on</p>${rowA("wood", true)}</div>`;
+document.getElementById("panel").innerHTML =
+  SOUNDS.map(([id, name], i) => `<div class="opt ${i === 0 ? "on" : ""}">${ic(id)}${name}</div>`).join("") +
+  `<div class="sw">Vibrate on the beat<span class="track"></span></div>`;
+document.getElementById("rowUnder").innerHTML = rowA("wood");
+
+// ---- flat sketches (dp units) ----
+const meters = (x, y) => ["2/4", "3/4", "4/4", "5/4", "6/8", "7/8"].map((m, i) =>
+  `<rect x="${x + i * 54}" y="${y}" width="50" height="40" rx="20" class="${i === 2 ? "pk" : "f"}"/>` +
+  `<text x="${x + i * 54 + 25}" y="${y + 25}" text-anchor="middle" class="t">${m}</text>`).join("");
+const lights = (cx, y, h) => [0, 1, 2, 3].map(i => {
+  const w = i === 0 ? 30 : 22, bh = i === 0 ? h * .62 : h * .46, x = cx - 105 + i * 70 - w / 2;
+  return `<rect x="${x}" y="${y + h * .62 - bh}" width="${w}" height="${bh}" rx="6" class="${i === 0 ? "bar1" : "bar"}"/>` +
+    `<text x="${x + w / 2}" y="${y + h * .95}" text-anchor="middle" class="tm">${i + 1}</text>`;
+}).join("");
+const dial = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r - 6}" class="ring"/>` +
+  `<circle cx="${cx - r * .43}" cy="${cy - 12}" r="20" class="f"/><circle cx="${cx + r * .43}" cy="${cy - 12}" r="20" class="f"/>` +
+  `<text x="${cx - r * .43}" y="${cy - 5}" text-anchor="middle" class="t" font-size="22">−</text><text x="${cx + r * .43}" y="${cy - 5}" text-anchor="middle" class="t" font-size="22">+</text>` +
+  `<text x="${cx}" y="${cy + 10}" text-anchor="middle" class="big">120</text><text x="${cx}" y="${cy + 34}" text-anchor="middle" class="tm">BPM</text>` +
+  `<circle cx="${cx}" cy="${cy + r * .62}" r="28" class="st"/>`;
+const btn = (x, y, id, word, on) => `<g transform="translate(${x},${y})" style="color: var(--ink); --under: var(--face)">` +
+  `<rect width="72" height="52" rx="26" class="${on ? "pk" : "f"}"/>${use(id, 24, 14)}</g>` +
+  `<text x="${x + 36}" y="${y + 68}" text-anchor="middle" class="tm">${word}</text>`;
+const row = (x, y, third) => btn(x, y, "tap", "Tap tempo") + btn(x + 88, y, "listen", "Listen") + btn(x + 176, y, third, third === "vibrate" ? "Vibrate" : "Sound");
+const list = (x, y, withSwitch, w = 232) => {
+  const h = 16 + 4 * 48 + (withSwitch ? 60 : 0);
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" class="pn"/>`;
+  SOUNDS.forEach(([id, name], i) => {
+    const ry = y + 8 + i * 48;
+    if (i === 0) s += `<rect x="${x + 8}" y="${ry}" width="${w - 16}" height="48" rx="12" class="pk"/>`;
+    s += `<g transform="translate(${x + 22},${ry + 12})" style="color: var(--ink); --under: ${i === 0 ? "var(--container)" : "var(--surface)"}">${use(id)}</g>` +
+      `<text x="${x + 60}" y="${ry + 29}" class="t">${name}</text>`;
+  });
+  if (withSwitch) {
+    const sy = y + 8 + 4 * 48 + 4;
+    s += `<text x="${x + 22}" y="${sy + 33}" class="t">Vibrate on the beat</text>` +
+      `<rect x="${x + 166}" y="${sy + 12}" width="52" height="32" rx="16" fill="var(--track)" stroke="var(--muted)" stroke-width="2"/>` +
+      `<circle cx="${x + 182}" cy="${sy + 28}" r="8" fill="var(--muted)"/>`;
+  }
+  return s;
+};
+
+// A upright: meters, empty band, lights, dial, row; the panel open above the row's end.
+document.getElementById("upA").innerHTML =
+  meters(36.5, 16) + lights(196.5, 120, 80) + dial(196.5, 430, 180) + row(72.5, 636, "wood") + list(145, 356, true);
+// A on its side: rail, dial on the left, the column on the right; no room above the row, so the panel opens beside it.
+document.getElementById("sideA").innerHTML =
+  `<rect width="80" height="393" fill="var(--surface)" opacity=".5"/>` +
+  [0, 1, 2, 3].map(i => `<circle cx="40" cy="${110 + i * 58}" r="12" class="f"/>`).join("") +
+  dial(278, 196.5, 172) + meters(515, 50) + lights(674, 110, 56) + row(550, 248, "wood") + list(280, 32, true);
+// B upright: the name button in the band, its list open under it; the row keeps Vibrate.
+document.getElementById("upB").innerHTML =
+  meters(36.5, 16) + lights(196.5, 120, 80) + dial(196.5, 430, 180) + row(72.5, 636, "vibrate") +
+  `<g style="color: var(--ink); --under: var(--face)"><rect x="118.5" y="68" width="156" height="40" rx="20" class="f"/>${use("wood", 134, 76)}</g>` +
+  `<text x="166" y="93" class="t">Wood block ⌄</text>` + list(66.5, 114, false, 260);
+</script>
