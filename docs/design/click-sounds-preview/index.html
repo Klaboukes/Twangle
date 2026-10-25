@@ -3,51 +3,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Twangle Click Sounds</title>
 <!--
-TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST", ROUND 3. Candidates for the owner to pick by ear.
-Goal     The metronome gets a short list of clicks in Settings, not only the wood block, so it can be heard over
-         a loud amp or a band and stays pleasant through a long practice.
-Round 1  (2026-10-25) soft beep, sharp click, low knock: "mechanical, like a cheap keyboard", today's included.
-Round 2  (2026-10-25) physical models of real instruments (temple blocks, claves, side stick, hi-hat, marimba),
-         ringing 0.2-0.4 s with a little room.
-Round 3  New direction, agreed with the owner: a click that helps a musician keep time, not a realistic instrument.
-         - A sharp attack: the energy peaks within 1.6 ms of the onset, so the beat's moment is exact.
-         - Short: about 40 dB down by 47-70 ms, 65-80 ms in all with the fade to 0; no room, no ring. The app's
-           ClickTrack (one click at a time) works unchanged up to 250 BPM (a beat is never under 240 ms).
-         - The same on every beat; only beat 1 differs: hit harder (brighter, 4-5 dB louder) and clearly higher.
-         - Unpitched or weakly pitched: inharmonic modes and noise, no clear note to clash with the key.
-         - Round 2's texture kept (contact pulse, strike noise, inharmonic modes), damped hard.
-         - Each at today's wood block's RMS (within 0.6 dB), peak at most 0.8.
+TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST". The owner's set: the wood block (today's, the
+default), the rim click, the cowbell and the bright tick, picked with a Sound button in the metronome.
+History  Round 1 (2026-10-25) soft beep, sharp click, low knock: "mechanical, like a cheap keyboard". Round 2: real
+         instruments ringing 0.2-0.4 s in a little room. Round 3: clicks made to keep time by (sharp, short, the
+         same every beat, unpitched); then a higher cowbell that clears the guitar, and a stronger beat 1. Then the
+         owner kept the wood block as the default, dropped the woody click, and found beat 1 of the other three
+         still harder to follow than the wood block's.
+This     The wood block's beat 1 is easy to follow because the block has a clear note (A6 against A5), so its octave
+round    jump is obvious. Each of the three now has a note of its own, built into the instrument, and beat 1 jumps a
+         clear octave, hit harder (brighter, at least the wood block's +5 dB peak):
+         - rim click: the stick's ring (its second bending mode, 930 Hz) left to sound a little; beat 1 is the stick
+           an octave up.
+         - cowbell: the bell's lowest mode (950 Hz) rings clearest; beat 1 is the pair's smaller bell, an octave up,
+           as an agogo has two.
+         - bright tick: a clearer glint (2.6 kHz) under the plate's sizzle; beat 1 is a smaller plate, a fifth up,
+           whose glint sits an octave higher (a whole plate an octave up would be shrill).
+         Everything is crisper too (40 dB down by 37-50 ms, the wood block: 36 ms). The same every bar, the energy
+         peak within 1.1-1.3 ms, peaks at most 0.8, each bar within 0.6 dB of the wood block's RMS.
+Check    How clearly beat 1 stands out from beat 2 (the report prints it). Main pitch by autocorrelation over the
+         first 40 ms, its clarity 0-1 (the autocorrelation peak's height: near 1 for a clear note):
+         sound          RMS step   peak step   beat 1 (clarity)    beat 2 (clarity)    apart
+         wood-block     +4.1 dB    +5.0 dB     1727 Hz (0.93)      865 Hz (0.92)       +12.0 semitones
+         rim-click      +5.8 dB    +5.6 dB     1856 Hz (0.92)      933 Hz (0.84)       +11.9
+         cowbell-tonk   +5.1 dB    +5.5 dB     1874 Hz (0.88)      952 Hz (0.85)       +11.7
+         bright-tick    +4.2 dB    +5.0 dB     5214 Hz (0.95)      2590 Hz (0.88)      +12.1
+         Envelope (1 ms RMS) and centroid over 80 ms, plain beat / beat 1:
+         wood-block     peak 1.6 / 1.6 ms   -40 dB at 36 / 36 ms   centroid 1.0 / 1.9 kHz
+         rim-click      peak 1.1 / 1.1 ms   -40 dB at 50 / 50 ms   centroid 1.0 / 1.8 kHz
+         cowbell-tonk   peak 1.1 / 1.1 ms   -40 dB at 45 / 37 ms   centroid 1.1 / 2.1 kHz
+         bright-tick    peak 1.1 / 1.1 ms   -40 dB at 40 / 47 ms   centroid 2.7 / 5.2 kHz
+         Over the guitar (share of the click's energy in third-octave bands where it is louder than the guitar,
+         80 ms after each beat): wood block 51 %, rim click 58 %, cowbell 62 %, bright tick 96 %.
 Files    <sound>.wav: one bar of 4/4 at 100 BPM, then 1 s of silence.
          <sound>-with-guitar.wav: the same click under two bars of strummed steel-string guitar (down and up
          eighths, E minor then C, a last E minor ringing out), the guitar 14 dB louder than the click by RMS, the
          same guitar under every sound. The guitar is the app's own reference-tone synth (StringSynth).
          16-bit mono, 48 kHz. Nothing loops: the players below have no loop and no autoplay.
 Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt (recipes,
-         guitar) and PercussionSynth.kt (the synthesis), in the test sources only (not in the app). Make them again,
-         byte for byte, with ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
-Measured (1 ms RMS envelope; centroid over 80 ms). Plain beats (2, 3, 4):
-         sound          peak at   -40 dB at   centroid
-         wood-block     1.6 ms    36 ms       1.0 kHz   (today)
-         woody-click    1.2 ms    52 ms       1.8 kHz
-         rim-click      1.5 ms    56 ms       1.4 kHz
-         cowbell-tonk   1.2 ms    71 ms       2.3 kHz   (reworked: was 0.8 kHz, inside the guitar's range)
-         bright-tick    1.5 ms    53 ms       4.8 kHz
-Beat 1   Owner, 2026-10-25: beat 1 stood out too little (6-8 % higher, 3.5 dB). Now, as the wood block's (an
-         octave up, +4.1 dB RMS, +5.0 dB peak): hit harder (brighter) and clearly higher, the strike noise moving
-         with it, its modes keeping the plain beat's decay times; peaks within 1.3 ms, 40 dB down by 52-69 ms.
-         sound          pitch     RMS step   peak step   centroid
-         wood-block     octave    +4.1 dB    +5.0 dB     x1.99
-         woody-click    octave    +4.1 dB    +5.1 dB     x1.76
-         rim-click      octave    +4.5 dB    +3.4 dB     x1.37  (the drum head under it keeps its pitch)
-         cowbell-tonk   fifth     +5.0 dB    +4.5 dB     x1.45  (an octave would put it at 4.5 kHz: shrill, on
-                                                                  top of the bright tick)
-         bright-tick    fifth     +4.0 dB    +4.5 dB     x1.36  (an octave up would be 8-16 kHz, shrill and
-                                                                  partly lost on phone speakers and older ears;
-                                                                  an octave down would sink beat 1 into the guitar)
-         The plain beats sound as before; to keep beat 1 under the 0.8 peak, the woody click, cowbell and bright
-         tick are 1.1, 1.2 and 0.5 dB quieter overall (the rim click is unchanged), each bar within 1 dB of the
-         wood block's RMS.
-Phone    The same ten files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
+         guitar, checks) and PercussionSynth.kt (the synthesis), in the test sources only (not in the app). Make
+         them again, byte for byte, with ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
+Phone    The same eight files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
          app on the speaker and in headphones.
 -->
 <style>
@@ -81,14 +77,13 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 .how { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
 </style>
 <main>
-  <h1>Metronome click sounds, round 3</h1>
-  <p class="intro">Clicks made to keep time by: short, exact, the same on every beat, with beat 1 clearly higher and louder, as on today's wood block.
-    Each sound plays alone (one bar) and under a strummed guitar (two bars), then stops.
-    Listen on the phone's speaker and in headphones, and pick the two (or three) you'd like in the app.</p>
+  <h1>Metronome click sounds</h1>
+  <p class="intro">The four sounds for the metronome's Sound button. Each one has a note of its own, and beat 1 jumps an
+    octave and is louder, as on today's wood block. Each plays alone (one bar) and under a strummed guitar (two bars), then stops.</p>
 
   <section class="sound">
-    <h2>Wood block <small>today's click, for comparison</small></h2>
-    <p>The click the metronome has now.</p>
+    <h2>Wood block <small>today's click, the default</small></h2>
+    <p>The everyday click: a short, woody "tock".</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="wood-block.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="wood-block-with-guitar.wav"></audio></div>
@@ -96,17 +91,8 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
   </section>
 
   <section class="sound">
-    <h2>Woody click</h2>
-    <p>A better wood block for everyday practice: a dry, woody tick with no note of its own.</p>
-    <div class="players">
-      <div><label>Alone</label><audio controls preload="auto" src="woody-click.wav"></audio></div>
-      <div><label>With guitar</label><audio controls preload="auto" src="woody-click-with-guitar.wav"></audio></div>
-    </div>
-  </section>
-
-  <section class="sound">
     <h2>Rim click</h2>
-    <p>A drummer's dry cross-stick on the snare's rim: precise, like playing along with a drummer.</p>
+    <p>A drummer's dry cross-stick on the snare's rim, the stick ringing briefly: precise, like playing along with a drummer.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="rim-click.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="rim-click-with-guitar.wav"></audio></div>
@@ -114,8 +100,8 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
   </section>
 
   <section class="sound">
-    <h2>Cowbell tonk</h2>
-    <p>A small, high cowbell, choked: a bright, clanky metal "tonk" above the guitar, the studio click that cuts through a band.</p>
+    <h2>Cowbell</h2>
+    <p>A small, choked cowbell with a clear note, beat 1 on its smaller twin: the studio click that cuts through a band.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="cowbell-tonk.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="cowbell-tonk-with-guitar.wav"></audio></div>
@@ -124,13 +110,13 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 
   <section class="sound">
     <h2>Bright tick</h2>
-    <p>A high, crisp tick that sits above a loud or distorted guitar, without being harsh.</p>
+    <p>A high, crisp metal tick with a small glint of a note, for loud or distorted guitar.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="bright-tick.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="bright-tick-with-guitar.wav"></audio></div>
     </div>
   </section>
 
-  <p class="how">All five are about equally loud on their own. In the guitar versions the guitar is clearly louder than the
+  <p class="how">All four are about equally loud on their own. In the guitar versions the guitar is clearly louder than the
     click, as when practising. The guitar is synthetic (the app's own reference tones), so judge the click, not the guitar.</p>
 </main>

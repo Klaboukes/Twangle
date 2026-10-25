@@ -24,7 +24,9 @@ import java.util.Random
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.ln
 import kotlin.math.log10
+import kotlin.math.log2
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -46,10 +48,12 @@ import kotlin.math.sqrt
  * Round 3's rules, from the owner (2026-10-25): a click that helps a musician keep time, not a
  * realistic instrument. A sharp attack (the peak within 1–2 ms), short (about 40 dB down within
  * 30–60 ms, at most 80 ms in all, no room, no ring), identical on every beat, unpitched or only
- * weakly pitched (inharmonic modes and noise, no clear note to clash with the key). Beat 1 stands
- * out as the wood block's does (owner, the same day): hit harder, so brighter and 4–5 dB louder,
- * and an octave higher, or a fifth where an octave would be shrill; its modes keep the plain
- * beat's decay times. Round 2's texture stays (contact pulse, strike noise, a few
+ * weakly pitched (inharmonic modes and noise). Then (owner, the same day) the woody click went and
+ * beat 1 had to be as easy to follow as the wood block's, whose clear note makes its octave jump
+ * obvious: each sound got a note of its own built into the instrument (a stick's ring, a bell's
+ * clearest mode, a plate's glint), and beat 1 is hit harder (brighter, at least +5 dB at the peak)
+ * with that note an octave up; its modes keep the plain beat's decay times. The report prints
+ * how clearly beat 1 stands out ([mainPitch]). Round 2's texture stays (contact pulse, strike noise, a few
  * inharmonic modes, [PercussionSynth]), damped hard. Each set is scaled so a bar has the wood
  * block's RMS, its peak kept at or under 0.8.
  */
@@ -66,36 +70,32 @@ class ClickCandidatesReport {
         val target = rms(woodBlock)
         val clickSets = mutableListOf("wood-block" to woodClicks)
 
-        for (candidate in CANDIDATES) {
-            val sound = candidate.sound
+        for (sound in SOUNDS) {
             // Where the click is heard sets each mode's sign, and so how far the modes add up in
-            // the first instant. The plain beats keep round 3's place and gain, so they stay exactly
-            // as they were. Beat 1 and the group accent, struck harder and higher, get their own:
-            // of 300 places, the one with the least peak for its energy (the most loudness under
-            // the 0.8 peak) among those whose energy still peaks within ATTACK_MS of the onset.
+            // the first instant. For each accent, of 300 places, take the one with the least peak
+            // for its energy (the most loudness under the 0.8 peak) among those whose energy still
+            // peaks within ATTACK_MS of the onset, so the beat's moment stays exact.
             fun place(accent: BeatAccent) = (0L until 300L)
                 .filter { peakMs(PercussionSynth.hit(sound, accent, it)) <= ATTACK_MS }
                 .minBy { crest(PercussionSynth.hit(sound, accent, it)) }
-            val raw = mapOf(
-                BeatAccent.DOWNBEAT to PercussionSynth.hit(sound, BeatAccent.DOWNBEAT, place(BeatAccent.DOWNBEAT)),
-                BeatAccent.GROUP to PercussionSynth.hit(sound, BeatAccent.GROUP, place(BeatAccent.GROUP)),
-                BeatAccent.PLAIN to PercussionSynth.hit(sound, BeatAccent.PLAIN, candidate.place),
-            )
-            // Round 3's gain, unless beat 1 would then pass the 0.8 peak: then all a little quieter.
-            val gain = minOf(candidate.gain, MAX_PEAK / raw.getValue(BeatAccent.DOWNBEAT).maxOf { abs(it) })
-            if (gain < candidate.gain) println("%s: %.1f dB quieter than round 3, so beat 1 stays under 0.8".format(sound.file, -20 * log10(gain / candidate.gain)))
+            val raw = BeatAccent.entries.associateWith { PercussionSynth.hit(sound, it, place(it)) }
+            val bar = renderBar { raw.getValue(it) }
+            // Match the wood block's RMS, but never let beat 1 pass 0.8.
+            val gain = minOf(target / rms(bar), MAX_PEAK / bar.maxOf { abs(it) })
             clickSets += sound.file to raw.mapValues { (_, x) -> DoubleArray(x.size) { x[it] * gain } }
         }
-        println("sound          beat 1 over beat 2: RMS     peak     pitch   centroid")
+        // How clearly beat 1 stands out from beat 2: the level steps, each one's main pitch and how
+        // clear it is (autocorrelation), the distance between the two pitches, and the brightness.
+        println("sound          RMS step  peak step   beat 1 pitch (clarity)   beat 2 pitch (clarity)   apart       centroid")
         for ((name, clicks) in clickSets) {
             val down = clicks.getValue(BeatAccent.DOWNBEAT)
             val plain = clicks.getValue(BeatAccent.PLAIN)
-            val pitch = CANDIDATES.firstOrNull { it.sound.file == name }?.sound?.downbeatPitch
-                ?: (ClickSounds.frequencyOf(BeatAccent.DOWNBEAT) / ClickSounds.frequencyOf(BeatAccent.PLAIN))
+            val (downHz, downClarity) = mainPitch(down)
+            val (plainHz, plainClarity) = mainPitch(plain)
             println(
-                "%-13s  %+5.1f dB  %+5.1f dB   ×%.2f    ×%.2f".format(
+                "%-13s  %+5.1f dB  %+5.1f dB   %6.0f Hz (%.2f)          %6.0f Hz (%.2f)          %+5.1f st   x%.2f".format(
                     name, 20 * log10(rms(down) / rms(plain)), 20 * log10(down.maxOf { abs(it) } / plain.maxOf { abs(it) }),
-                    pitch, centroid(down) / centroid(plain),
+                    downHz, downClarity, plainHz, plainClarity, 12 * log2(downHz / plainHz), centroid(down) / centroid(plain),
                 ),
             )
         }
@@ -260,6 +260,50 @@ class ClickCandidatesReport {
         return above / all
     }
 
+    /**
+     * The main pitch of a click and how clear it is: the highest peak of the normalised
+     * autocorrelation over its first 40 ms, past the autocorrelation's first zero crossing, for
+     * lags of 150 Hz to 8 kHz (refined between samples by a parabola), the shortest lag whose peak
+     * comes within 10 % of the highest. The peak's height, 0 to 1,
+     * is the pitch's clarity (salience): near 1 for a clear note, low for noise.
+     */
+    private fun mainPitch(x: DoubleArray): Pair<Double, Double> {
+        val n = minOf(x.size, (0.04 * RATE).roundToInt())
+        val maxLag = RATE / 150
+        fun r(lag: Int): Double {
+            var xy = 0.0
+            var xx = 0.0
+            var yy = 0.0
+            for (i in 0 until n - lag) {
+                xy += x[i] * x[i + lag]
+                xx += x[i] * x[i]
+                yy += x[i + lag] * x[i + lag]
+            }
+            return xy / sqrt(xx * yy + 1e-30)
+        }
+        val ac = DoubleArray(maxLag + 2) { if (it == 0) 1.0 else r(it) }
+        var lag = 1
+        while (lag < maxLag && ac[lag] > 0) lag++
+        lag = maxOf(lag, RATE / 8000)
+        var top = lag
+        for (l in lag..maxLag) if (ac[l] > ac[top]) top = l
+        // A note's period repeats at every multiple of it, nearly as strongly: take the first peak
+        // within 10 % of the highest, as YIN does, so the pitch isn't read octaves low.
+        var best = top
+        for (l in lag + 1 until top) {
+            if (ac[l] >= ac[l - 1] && ac[l] >= ac[l + 1] && ac[l] >= 0.9 * ac[top]) {
+                best = l
+                break
+            }
+        }
+        val a = ac[best - 1]
+        val b = ac[best]
+        val c = ac[best + 1]
+        val curve = a - 2 * b + c
+        val shift = if (curve == 0.0) 0.0 else 0.5 * (a - c) / curve
+        return RATE / (best + shift) to b
+    }
+
     // Spectral centroid of [x] by a plain DFT on a 50 Hz grid (slow, but only a few clicks).
     private fun centroid(x: DoubleArray): Double {
         var weighted = 0.0
@@ -342,43 +386,17 @@ class ClickCandidatesReport {
         /** How much louder (RMS over the two bars) the guitar is than the click in the mixes. */
         const val GUITAR_OVER_CLICK_DB = 14.0
 
-        // A better wood block, the everyday default: a slotted hardwood block hit with a hard stick
-        // near a node of its lowest mode, so no single note stands out. The bar's bending modes as a
-        // thick hardwood bar (Timoshenko estimate, 1 : 2.36 : 3.91 : 5.49) and two torsional modes
-        // (1.5, 3.0, an estimate), all damped hard (τ 6–12 ms, the loss rising with frequency as
-        // Chaigne & Doutaut's), and a woody strike noise around 2 kHz. Energy 1.5–3 kHz.
-        val WOODY_CLICK = Sound(
-            file = "woody-click",
-            lengthSeconds = 0.07,
-            fadeSeconds = 0.02,
-            contactSeconds = 0.0003,
-            plainVelocity = 0.66,
-            downbeatVelocity = 1.6,
-            downbeatPitch = 2.0,
-            groupPitch = 1.5,
-            bursts = listOf(Burst(2000.0, 1.0, 0.0025, 0.3)),
-        ) { p, listener ->
-            val f = 900.0 * p
-            val ratios = barRatios(4, gyrationOverLength = 0.03, eOverKappaG = 12.0)
-            buildList {
-                for (n in ratios.indices) {
-                    val hz = f * ratios[n]
-                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz / p, 80.0, 3e-6)))
-                }
-                add(Mode(f * 1.5, 0.35 * listener.sign(), woodDecay(f * 1.5 / p, 80.0, 3e-6)))
-                add(Mode(f * 3.0, 0.2 * listener.sign(), woodDecay(f * 3.0 / p, 80.0, 3e-6)))
-            }
-        }
-
         // A dry snare cross-stick: the stick's shaft hits the metal hoop. The stick's bending modes
-        // (a thin hickory rod, 345 Hz, Euler–Bernoulli 1 : 2.76 : 5.40 …, held, so damped), the
-        // steel hoop's ring modes (f ∝ n(n² − 1)/√(n² + 1)) as slightly split pairs, the head's
-        // first membrane modes (Bessel ratios, f01 = 190 Hz) as a short thump, and only a 6 ms
-        // trace of the snare wires.
+        // (a thin hickory rod, 345 Hz, Euler–Bernoulli 1 : 2.76 : 5.40 …, held, so damped), its
+        // second one, at 950 Hz, left to ring a little so the click has a note. On beat 1 the
+        // whole stick sounds an octave up, as if struck harder on a stick half as long. The steel
+        // hoop's ring modes (f ∝ n(n² − 1)/√(n² + 1)) as slightly split pairs, the head's first
+        // membrane modes (Bessel ratios, f01 = 190 Hz) as a short thump, and only a 6 ms trace of
+        // the snare wires.
         val RIM_CLICK = Sound(
             file = "rim-click",
-            lengthSeconds = 0.07,
-            fadeSeconds = 0.02,
+            lengthSeconds = 0.06,
+            fadeSeconds = 0.015,
             contactSeconds = 0.0002,
             plainVelocity = 0.69,
             downbeatVelocity = 1.4,
@@ -393,49 +411,58 @@ class ClickCandidatesReport {
                 val stick = barRatios(6, gyrationOverLength = 0.00875, eOverKappaG = 13.0)
                 for (n in stick.indices) {
                     val hz = 345.0 * p * stick[n]
-                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz / p, 80.0, 2e-6)))
+                    if (n == 1) {
+                        add(Mode(hz, RIM_RING * listener.sign(), RING_DECAY)) // the stick's ring: the click's note
+                    } else {
+                        add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz / p, 100.0, 2e-6)))
+                    }
                 }
                 for (n in 6..14) {
                     val hz = 62.0 * p * ringRatio(n)
                     val amp = 0.12 * 6.0 / n
-                    val decay = 0.015 * (1000.0 * p / hz).pow(0.3)
+                    val decay = 0.012 * (1000.0 * p / hz).pow(0.3)
                     val sign = listener.sign() // a split pair starts together, then beats
                     add(Mode(hz * 0.9965, amp * sign, decay))
                     add(Mode(hz * 1.0035, amp * sign, decay))
                 }
                 for ((m, _, j) in MEMBRANE) {
-                    add(Mode(190.0 * j / MEMBRANE[0].third, 1.5 * besselJ(m, j * 0.93) * listener.sign(), 0.012))
+                    add(Mode(190.0 * j / MEMBRANE[0].third, 1.5 * besselJ(m, j * 0.93) * listener.sign(), 0.01))
                 }
             }
         }
 
+        /** Strength of the rim click's ring, its note. */
+        const val RIM_RING = 2.5
+
+        /** Time constant of each sound's note (the rim click's ring, the cowbell's, the tick's glint). */
+        const val RING_DECAY = 0.011
+
         // A small, high cowbell (or agogo bell) struck with a stick near its open mouth and choked
-        // with a hand: the bright, clanky metal "tonk" that sits above a guitar. No published table
-        // of cowbell or agogo modes was at hand, so the modes come from the physics of a thin bell
+        // with a hand: the clanky metal "tonk" that sits above a guitar. No published table of
+        // cowbell or agogo modes was at hand, so the modes come from the physics of a thin bell
         // shell: its (m, 0) modes, where the mouth bends into m waves round the rim, follow a thin
         // ring's inextensional bending, f ∝ m(m² − 1)/√(m² + 1), 1 : 2.83 : 5.42 for m = 2, 3, 4
         // (Rayleigh; Fletcher & Rossing ch. 2 and 21), a hit near the mouth exciting them most; and
         // between them a cluster of modes with one nodal line across the shell, at 1.62, 1.94, 2.37
         // and 3.38 × the lowest (an estimate). Every mode is a pair split by the shell's flattened,
-        // uneven shape (±1.2–1.5 %, an estimate), so it beats. The lowest at 1.1 kHz, above the
-        // guitar's main energy, the strongest cluster between 1.5 and 4 kHz. A hard stick on metal
-        // (0.15 ms) and a strike noise around 4.5 kHz; the hand chokes the ring (τ ≈ 24 ms at the
-        // bottom, shorter higher up).
+        // uneven shape (±1.2–1.5 %, an estimate), so it beats; the lowest, at 950 Hz, rings
+        // clearest (split only ±0.3 %, the strongest) and gives the bell its note. Beat 1 is the
+        // pair's smaller bell, an octave higher, as an agogo has two. A hard stick on metal
+        // (0.15 ms), a strike noise around 4.5 kHz, and the hand chokes the ring.
         val COWBELL_TONK = Sound(
             file = "cowbell-tonk",
-            lengthSeconds = 0.08,
+            lengthSeconds = 0.06,
             fadeSeconds = 0.015,
             contactSeconds = 0.00015,
             plainVelocity = 0.66,
             downbeatVelocity = 1.3,
-            downbeatPitch = 1.5,
-            groupPitch = 1.25,
+            downbeatPitch = 2.0,
+            groupPitch = 1.5,
             bursts = listOf(Burst(4500.0, 1.0, 0.0015, 0.2)),
         ) { p, listener ->
-            val f = 1100.0 * p
+            val f = 950.0 * p
             // (ratio, strength, pair split)
             val modes = listOf(
-                Triple(ringRatio(2), 0.7, 0.015),
                 Triple(1.62, 0.8, 0.012),
                 Triple(1.94, 0.9, 0.012),
                 Triple(2.37, 1.0, 0.012),
@@ -444,9 +471,12 @@ class ClickCandidatesReport {
                 Triple(ringRatio(4), 0.4, 0.015),
             )
             buildList {
+                val ringSign = listener.sign()
+                add(Mode(f * 0.997, COWBELL_RING * ringSign, RING_DECAY)) // the bell's note
+                add(Mode(f * 1.003, COWBELL_RING * ringSign, RING_DECAY))
                 for ((ratio, amp, split) in modes) {
                     val hz = f * ratio
-                    val decay = 0.024 * sqrt(f / hz)
+                    val decay = 0.012 * sqrt(f / hz)
                     val sign = listener.sign() // a split pair starts together, then beats
                     add(Mode(hz * (1 - split), amp * sign, decay))
                     add(Mode(hz * (1 + split), amp * sign, decay))
@@ -454,20 +484,30 @@ class ClickCandidatesReport {
             }
         }
 
+        /** Strength of the cowbell's lowest mode, its note. */
+        const val COWBELL_RING = 3.0
+
         // A high, crisp tick for loud or distorted guitar: a stick tip on a small, stiff metal plate.
         // Plate modes by Chladni's law, f ∝ (m + 2n)² (Fletcher & Rossing ch. 3), spread a few
-        // percent (an estimate) in split pairs, so there are many and none is a tone; they die within
-        // about 40 ms. Above 8 kHz they are weighted down, and the contact (0.16 ms) has a natural low-pass,
-        // so it is bright without being harsh. Energy 4–8 kHz.
+        // percent (an estimate) in split pairs, so there are many and no one dominates; they die
+        // within about 40 ms. Above 8 kHz they are weighted down, and the contact (0.16 ms) has a
+        // natural low-pass, so it is bright without being harsh. Energy 4–8 kHz. Under them one
+        // clearer glint at 2.6 kHz gives the tick a note: beat 1 is a smaller plate, a fifth up
+        // (an octave would be shrill), whose glint sits a full octave above the plain beat's.
         val BRIGHT_TICK_MODES: (Double, Random) -> List<Mode> = { p, listener ->
             val rnd = Random(4747)
             buildList {
+                // The glint: an octave up on beat 1 (p = 1.5), in between on a group accent.
+                val glint = 2600.0 * p.pow(ln(2.0) / ln(1.5))
+                val glintSign = listener.sign()
+                add(Mode(glint * 0.998, TICK_GLINT * glintSign, RING_DECAY))
+                add(Mode(glint * 1.002, TICK_GLINT * glintSign, RING_DECAY))
                 for (k in 6..12) {
                     for (n in 0..k / 2) {
                         val hz = 110.0 * p * k * k * (1 + 0.04 * rnd.nextGaussian())
                         val weight = if (hz < 8000) 1.0 else (8000 / hz).pow(2)
                         val amp = weight * (0.3 + 0.7 * rnd.nextDouble()) / 2
-                        val decay = 0.011 * sqrt(6000 * p / hz)
+                        val decay = 0.009 * sqrt(6000 * p / hz)
                         val sign = listener.sign()
                         add(Mode(hz * 0.997, amp * sign, decay))
                         add(Mode(hz * 1.003, amp * sign, decay))
@@ -476,10 +516,13 @@ class ClickCandidatesReport {
             }
         }
 
+        /** Strength of the bright tick's glint, its note. */
+        const val TICK_GLINT = 3.0
+
         val BRIGHT_TICK = Sound(
             file = "bright-tick",
-            lengthSeconds = 0.065,
-            fadeSeconds = 0.02,
+            lengthSeconds = 0.055,
+            fadeSeconds = 0.015,
             contactSeconds = 0.00016,
             plainVelocity = 0.66,
             downbeatVelocity = 1.47,
@@ -489,18 +532,6 @@ class ClickCandidatesReport {
             modes = BRIGHT_TICK_MODES,
         )
 
-        /**
-         * A sound with the place it is heard from and the gain of its plain beats: both found in
-         * round 3 (the place by the same search as the downbeat's below, the gain matching the bar
-         * to the wood block's RMS) and fixed since, so the plain beats stay exactly as they were.
-         */
-        class Candidate(val sound: Sound, val place: Long, val gain: Double)
-
-        val CANDIDATES = listOf(
-            Candidate(WOODY_CLICK, 14, 0.12045642122947114),
-            Candidate(RIM_CLICK, 23, 0.095979752162946770),
-            Candidate(COWBELL_TONK, 108, 0.043684274648478440),
-            Candidate(BRIGHT_TICK, 103, 0.13623647462247460),
-        )
+        val SOUNDS = listOf(RIM_CLICK, COWBELL_TONK, BRIGHT_TICK)
     }
 }
