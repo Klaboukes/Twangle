@@ -139,15 +139,10 @@
     <string name="tour_title">Rondleiding</string>
     <string name="tour_step_count">%1$d van %2$d</string>
     <string name="tour_step_spoken">Stap %1$d van %2$d. %3$s.</string>
-    <string name="tour_meter">Hoe ver je ernaast zit</string>
-    <string name="tour_note">De noot die je speelt</string>
+    <string name="tour_readout">Hoe ver je ernaast zit, en welke noot</string>
     <string name="tour_strum">Sla aan en check alle snaren</string>
     <string name="tour_strings">Kies om vast te zetten, houd vast om te horen</string>
     <string name="tour_picker">Kies instrument en stemming</string>
-    <string name="tour_mode">Stem snaren of elke noot</string>
-    <string name="tour_focus">Volledig scherm, één grote meter</string>
-    <string name="tour_navigation">Metronoom en instellingen</string>
-    <string name="tour_navigation_practice">Oefenen en instellingen</string>
     <string name="tour_skip">Overslaan</string>
     <string name="tour_next">Volgende</string>
     <string name="tour_done">Klaar</string>

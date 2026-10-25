@@ -18,10 +18,10 @@ import androidx.compose.ui.relocation.bringIntoView
 
 /**
  * Where the parts the tour lights up are: each part marks itself with [tourTarget], wherever it is
- * laid out (the tuner, the navigation bar or rail), and the overlay reads their bounds here. A part
- * can be in several pieces (the bar's Metronome and Settings tabs); the spotlight goes round all of
- * them. Controls that are no step's part (the Tuner tab) mark themselves with [tourControl], so
- * balloons keep clear of them too. Bounds are in the window's (the root's) pixels, unclipped, so a
+ * laid out, and the overlay reads their bounds here. A part can be in several pieces (the meter and
+ * the note); the spotlight goes round all of them. Controls that are no step's part (the mode switch,
+ * focus mode's button, the navigation tabs) mark themselves with [tourControl], so balloons keep
+ * clear of them too. Bounds are in the window's (the root's) pixels, unclipped, so a
  * part scrolled out of view still has its place; [reveal] scrolls it into view. [shown] is the step
  * on screen, for tests.
  */
@@ -81,7 +81,7 @@ val LocalTourTargets = staticCompositionLocalOf<TourTargets?> { null }
 fun Modifier.tourTarget(part: TourPart): Modifier = this then TourTargetElement(part)
 
 /**
- * Marks this element as an interactive control that is no step's part (the Tuner tab): the tour's
+ * Marks this element as an interactive control that is no step's part (a navigation tab): the tour's
  * balloons keep clear of it where they can. Takes no room and changes nothing about the layout.
  */
 fun Modifier.tourControl(): Modifier = this then TourTargetElement(null)

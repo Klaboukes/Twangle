@@ -133,15 +133,10 @@
     <string name="tour_title">Visite guidée</string>
     <string name="tour_step_count">%1$d sur %2$d</string>
     <string name="tour_step_spoken">Étape %1$d sur %2$d. %3$s.</string>
-    <string name="tour_meter">Votre écart de justesse</string>
-    <string name="tour_note">La note que vous jouez</string>
+    <string name="tour_readout">Votre écart, et quelle note</string>
     <string name="tour_strum">Grattez pour tester toutes les cordes</string>
     <string name="tour_strings">Touchez pour verrouiller, maintenez pour écouter</string>
     <string name="tour_picker">Choisissez instrument et accordage</string>
-    <string name="tour_mode">Accordez des cordes ou toute note</string>
-    <string name="tour_focus">Plein écran, un grand cadran</string>
-    <string name="tour_navigation">Métronome et paramètres</string>
-    <string name="tour_navigation_practice">Pratique et paramètres</string>
     <string name="tour_skip">Passer</string>
     <string name="tour_next">Suivant</string>
     <string name="tour_done">Terminé</string>

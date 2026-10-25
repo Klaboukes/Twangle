@@ -265,17 +265,18 @@ fun pointerTip(placement: BalloonPlacement, width: Float, height: Float, pointer
 
 /**
  * The tour's order in the current layout: [steps] in reading order ([readingOrder]) by their
- * [bounds], with the navigation bar's or rail's part (its Metronome and Settings tabs) always last. Steps not laid out yet keep their place in [steps] after the others,
- * before the bar. Upright that is mode switch, meter, note, instrument button, strum check, strings,
- * then the bar; in the two panes (a phone on its side, wide screens) the readout pane's meter and note,
- * then the controls pane's mode switch, instrument button, strum check and strings, then the rail or bar. [rightToLeft] reads right to
+ * [bounds], with the tools button always last: what tunes the guitar first, the extras after it.
+ * Steps not laid out yet keep their place in [steps] after the others, before the tools button.
+ * Upright that is the meter and note, the instrument button, the strings, then the tools button; in
+ * the two panes (a phone on its side, wide screens) the readout pane's meter and note, then the
+ * controls pane's instrument button and strings, then the tools button. [rightToLeft] reads right to
  * left, as in Arabic, where the layout is mirrored.
  */
 fun tourOrder(steps: List<TourPart>, rightToLeft: Boolean = false, bounds: (TourPart) -> TourBox?): List<TourPart> {
-    val (bar, rest) = steps.partition { it in BAR_PARTS }.let { (bar, rest) -> bar.sortedBy(BAR_PARTS::indexOf) to rest }
+    val (last, rest) = steps.partition { it in LAST_PARTS }.let { (last, rest) -> last.sortedBy(LAST_PARTS::indexOf) to rest }
     val placed = rest.mapNotNull { part -> bounds(part)?.let { part to it } }
     val unplaced = rest.filter { bounds(it) == null }
-    return readingOrder(placed, rightToLeft) { it.second }.map { it.first } + unplaced + bar
+    return readingOrder(placed, rightToLeft) { it.second }.map { it.first } + unplaced + last
 }
 
 /**
@@ -343,5 +344,5 @@ fun easeInOutCubic(t: Float): Float {
     return if (c < 0.5f) 4f * c * c * c else 1f - ((-2f * c + 2f).let { it * it * it }) / 2f
 }
 
-/** The tour's parts on the navigation bar or rail, in their tour order. */
-private val BAR_PARTS = listOf(TourPart.NAVIGATION)
+/** The tour's parts that come after all the others, in their tour order: the tools button. */
+private val LAST_PARTS = listOf(TourPart.STRUM)

@@ -136,15 +136,10 @@
     <string name="tour_title">Экскурсия</string>
     <string name="tour_step_count">%1$d из %2$d</string>
     <string name="tour_step_spoken">Шаг %1$d из %2$d. %3$s.</string>
-    <string name="tour_meter">Отклонение от ноты</string>
-    <string name="tour_note">Нота, которую ты играешь</string>
+    <string name="tour_readout">Отклонение и какая нота</string>
     <string name="tour_strum">Проведи по струнам, чтобы проверить все</string>
     <string name="tour_strings">Нажми, чтобы закрепить, удерживай, чтобы послушать</string>
     <string name="tour_picker">Выбери инструмент и строй</string>
-    <string name="tour_mode">Струны или любая нота</string>
-    <string name="tour_focus">Весь экран, один большой индикатор</string>
-    <string name="tour_navigation">Метроном и настройки</string>
-    <string name="tour_navigation_practice">Практика и настройки</string>
     <string name="tour_skip">Пропустить</string>
     <string name="tour_next">Далее</string>
     <string name="tour_done">Готово</string>

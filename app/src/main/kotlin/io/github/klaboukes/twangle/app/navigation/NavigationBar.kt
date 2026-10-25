@@ -64,9 +64,7 @@ import io.github.klaboukes.twangle.core.designsystem.NAV_MARK_WIDTH
 import io.github.klaboukes.twangle.core.designsystem.NavMark
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
 import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlin.math.min
 
 /**
@@ -270,8 +268,8 @@ private fun NavItem(
         selected = selected,
         modifier = modifier
             .testTag(NavigationTestTags.tab(destination))
-            // The tour's last step lights up the Metronome and Settings tabs together; its balloons keep clear of the Tuner tab.
-            .then(if (destination == Destination.TUNER) Modifier.tourControl() else Modifier.tourTarget(TourPart.NAVIGATION))
+            // No tour step of their own: the tour's balloons keep clear of the tabs.
+            .tourControl()
             .selectable(
                 selected = selected,
                 onClick = { if (selected) onReselect() else onClick() },

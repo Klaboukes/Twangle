@@ -132,15 +132,10 @@
     <string name="tour_title">Recorrido</string>
     <string name="tour_step_count">%1$d de %2$d</string>
     <string name="tour_step_spoken">Paso %1$d de %2$d. %3$s.</string>
-    <string name="tour_meter">Cuánto te desvías</string>
-    <string name="tour_note">La nota que tocas</string>
+    <string name="tour_readout">Cuánto te desvías y qué nota</string>
     <string name="tour_strum">Rasguea para revisar todas las cuerdas</string>
     <string name="tour_strings">Toca para fijar, mantén para escuchar</string>
     <string name="tour_picker">Elige instrumento y afinación</string>
-    <string name="tour_mode">Afina cuerdas o cualquier nota</string>
-    <string name="tour_focus">Pantalla completa, un gran indicador</string>
-    <string name="tour_navigation">Metrónomo y ajustes</string>
-    <string name="tour_navigation_practice">Práctica y ajustes</string>
     <string name="tour_skip">Saltar</string>
     <string name="tour_next">Siguiente</string>
     <string name="tour_done">Listo</string>

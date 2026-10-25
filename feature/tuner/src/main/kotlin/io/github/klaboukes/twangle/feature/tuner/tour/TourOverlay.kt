@@ -105,7 +105,7 @@ import kotlin.math.min
  * rail) with the tour on its own layer above it while [open], never in its layout, so nothing in
  * [content] moves when the tour comes or goes. The parts in [steps] mark themselves with
  * [tourTarget] somewhere in [content]; the tour lights them up one at a time, each with a balloon,
- * in the layout's reading order ([tourOrder]: the navigation bar or rail last). Skip tour, Done (the last step's Next) and Back call [onEnd], which should close it (make [open]
+ * in the layout's reading order ([tourOrder]: the tools button last). Skip tour, Done (the last step's Next) and Back call [onEnd], which should close it (make [open]
  * false); it then fades out. While it is open, taps outside the balloon do nothing and TalkBack
  * hears only the balloon. [targets] is where the parts' places are kept (tests read it). [textOf] gives
  * a step's balloon text, by default its own ([TourPart.text]); where the "more tools" button stands in
@@ -472,7 +472,7 @@ private fun holePath(hole: Spotlight, cut: Float): Path = Path().apply {
  * lifted by a soft shadow (Futuristic: an accent glow) that also falls under the pointer, which
  * points at the part from the side [placement] says. Above the text the style's mark and the step
  * count; under it Skip tour and Next (Done on the last step), side by side or on two rows. TalkBack
- * hears a pane titled "Show me around" reading "Step 2 of 5. Lock a string.", then the buttons.
+ * hears a pane titled "Show me around" reading "Step 3 of 4. Tap to lock, hold to hear.", then the buttons.
  */
 @Composable
 private fun TourBalloon(

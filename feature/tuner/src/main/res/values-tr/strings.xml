@@ -130,15 +130,10 @@
     <string name="tour_title">Tanıtım turu</string>
     <string name="tour_step_count">%1$d / %2$d</string>
     <string name="tour_step_spoken">Adım %1$d / %2$d. %3$s.</string>
-    <string name="tour_meter">Ne kadar sapma var</string>
-    <string name="tour_note">Çaldığın nota</string>
+    <string name="tour_readout">Ne kadar sapma var, hangi nota</string>
     <string name="tour_strum">Tüm telleri kontrol etmek için vur</string>
     <string name="tour_strings">Sabitlemek için dokun, dinlemek için basılı tut</string>
     <string name="tour_picker">Enstrüman ve akort seç</string>
-    <string name="tour_mode">Teller ya da herhangi bir nota</string>
-    <string name="tour_focus">Tam ekran, tek büyük gösterge</string>
-    <string name="tour_navigation">Metronom ve ayarlar</string>
-    <string name="tour_navigation_practice">Pratik ve ayarlar</string>
     <string name="tour_skip">Turu atla</string>
     <string name="tour_next">İleri</string>
     <string name="tour_done">Bitti</string>

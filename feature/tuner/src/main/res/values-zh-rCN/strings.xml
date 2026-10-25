@@ -126,15 +126,10 @@
     <string name="tour_title">带我看看</string>
     <string name="tour_step_count">%1$d / %2$d</string>
     <string name="tour_step_spoken">第 %1$d 步，共 %2$d 步。%3$s。</string>
-    <string name="tour_meter">偏了多少</string>
-    <string name="tour_note">你弹的音</string>
+    <string name="tour_readout">偏了多少，是哪个音</string>
     <string name="tour_strum">扫弦，检查每根弦</string>
     <string name="tour_strings">轻触锁定，长按试听</string>
     <string name="tour_picker">选择乐器和定弦</string>
-    <string name="tour_mode">调琴弦或任意音</string>
-    <string name="tour_focus">全屏，一个大表盘</string>
-    <string name="tour_navigation">节拍器和设置</string>
-    <string name="tour_navigation_practice">练习和设置</string>
     <string name="tour_skip">跳过导览</string>
     <string name="tour_next">下一步</string>
     <string name="tour_done">完成</string>

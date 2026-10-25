@@ -12,16 +12,8 @@ class TourTextTest {
     }
 
     @Test
-    fun `with more tools the strum check's step names the more tools button`() {
+    fun `with more tools the strum check's step names the more tools button, the others don't change`() {
         assertEquals(R.string.tour_more_tools, tourTextOf(TourPart.STRUM, moreTools = true))
-        assertEquals(R.string.tour_navigation, tourTextOf(TourPart.NAVIGATION, moreTools = true))
-    }
-
-    @Test
-    fun `with the Practice tab the last step names Practice, the others don't change`() {
-        assertEquals(R.string.tour_navigation_practice, tourTextOf(TourPart.NAVIGATION, moreTools = true, practice = true))
-        for (part in TourPart.entries - TourPart.NAVIGATION) {
-            assertEquals(part.name, tourTextOf(part, moreTools = false), tourTextOf(part, moreTools = false, practice = true))
-        }
+        for (part in TourPart.entries - TourPart.STRUM) assertEquals(part.name, part.text, tourTextOf(part, moreTools = true))
     }
 }

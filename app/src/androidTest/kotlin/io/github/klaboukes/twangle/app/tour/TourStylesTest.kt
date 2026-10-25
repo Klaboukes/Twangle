@@ -118,7 +118,7 @@ class TourStylesTest(private val style: VisualStyle) {
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
                     TourHost(
                         open = shownOpen.value,
-                        steps = TourPart.stepsFor(shownMode.value, focusMode = focus),
+                        steps = TourPart.stepsFor(shownMode.value),
                         onEnd = {
                             ends.intValue++
                             shownOpen.value = false
@@ -271,8 +271,7 @@ class TourStylesTest(private val style: VisualStyle) {
         shownLocale.value = "nl"
         show()
         compose.onNodeWithTag(TunerTestTags.COMPACT).assertDoesNotExist()
-        assertNotNull("the rail is lit in the last step", targets.boundsOf(TourPart.NAVIGATION))
-        assertNotNull("the strum check's switch shows", targets.boundsOf(TourPart.STRUM))
+        assertNotNull("the tools button shows", targets.boundsOf(TourPart.STRUM))
         stepThroughWhollyShown("$style nl 2x on its side", SIDEWAYS)
     }
 
@@ -304,15 +303,19 @@ class TourStylesTest(private val style: VisualStyle) {
         stepThroughWhollyShown("$style tablet nl 2x", SIDEWAYS)
     }
 
-    /** Chromatic mode (the tour started again from Settings) leaves out the instrument button, strum check and strings. */
+    /**
+     * Chromatic mode (the tour started again from Settings) has no instrument button, tools button or
+     * strings: the meter and note alone, Done at once.
+     */
     @Test
-    fun chromaticModeHasFourSteps() {
+    fun chromaticModeHasOneStep() {
         shownMode.value = TunerMode.CHROMATIC
         show()
+        assertEquals(listOf(TourPart.READOUT), TourPart.stepsFor(TunerMode.CHROMATIC))
         stepThroughWhollyShown("$style chromatic", UPRIGHT.filter { it in TourPart.stepsFor(TunerMode.CHROMATIC) })
     }
 
-    /** Chromatic mode on its side, Dutch at 2× text: the readout pane first, the rail last. */
+    /** Chromatic mode on its side, Dutch at 2× text: the readout pane's step alone. */
     @Test
     fun chromaticModeOnItsSideReadsThePanes() {
         shownMode.value = TunerMode.CHROMATIC
@@ -373,7 +376,7 @@ class TourStylesTest(private val style: VisualStyle) {
         compose.onNodeWithTag(TourTestTags.SKIP).performClick()
         compose.waitForIdle()
         restart()
-        compose.onNodeWithTag(TourTestTags.TEXT).assert(hasText(string(TourPart.MODE.text)))
+        compose.onNodeWithTag(TourTestTags.TEXT).assert(hasText(string(TourPart.READOUT.text)))
     }
 
     /** TalkBack hears a pane "Show me around" with the step's text and two buttons, and nothing of the screen below. */
@@ -381,7 +384,7 @@ class TourStylesTest(private val style: VisualStyle) {
     fun talkBackHearsOnlyTheBalloon() {
         show()
         compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, string(R.string.tour_title))).assertIsDisplayed()
-        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, UPRIGHT.size, string(R.string.tour_mode)))
+        compose.onNodeWithTag(TourTestTags.TEXT).assertContentDescriptionEquals(string(R.string.tour_step_spoken, 1, UPRIGHT.size, string(R.string.tour_readout)))
         for (tag in listOf(TourTestTags.SKIP, TourTestTags.NEXT)) {
             compose.onNodeWithTag(tag).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
@@ -397,15 +400,16 @@ class TourStylesTest(private val style: VisualStyle) {
     /** A tap on the lit part (or anywhere outside the balloon) does nothing: the tour never changes a setting. */
     @Test
     fun tapsOutsideTheBalloonDoNothing() {
+        // Where the mode switch's Chromatic segment is, found before the tour hides the screen from TalkBack.
+        shownOpen.value = false
         show()
-        repeat(3) {
-            compose.onNodeWithTag(TourTestTags.NEXT).performClick()
-            compose.waitForIdle()
-        }
-        val mode = targets.boundsOf(TourPart.MODE) ?: error("no mode switch")
+        val chromatic = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).fetchSemanticsNode().boundsInRoot
+        restart()
+        compose.onNodeWithTag(TourTestTags.NEXT).performClick()
+        compose.waitForIdle()
         val window = compose.onNodeWithTag(WINDOW).fetchSemanticsNode().positionInRoot
         compose.onNodeWithTag(WINDOW).performTouchInput {
-            click(Offset(mode.left + mode.width * 0.75f, mode.centerY) - window)
+            click(chromatic.center - window)
         }
         compose.waitForIdle()
         assertEquals("the mode switch wasn't reached", 0, modeChanges)
@@ -450,12 +454,12 @@ class TourStylesTest(private val style: VisualStyle) {
         private val TABLET = DpSize(1280.dp, 800.dp)
 
         /**
-         * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane),
-         * the bar's or rail's tabs last.
+         * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane):
+         * the meter and note, the instrument button, the strings, the tools button last.
          */
-        private val UPRIGHT = listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
-        // In focus mode on its side (the compact tuner's controls shown) there is no focus mode step.
-        private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
-        private val TWO_PANE = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
+        private val UPRIGHT = listOf(TourPart.READOUT, TourPart.PICKER, TourPart.STRINGS, TourPart.STRUM)
+        // In focus mode on its side (the compact tuner's controls shown), and in the two-pane layout.
+        private val SIDEWAYS = UPRIGHT
+        private val TWO_PANE = UPRIGHT
     }
 }

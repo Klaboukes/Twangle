@@ -130,15 +130,10 @@
     <string name="tour_title">Rundgang</string>
     <string name="tour_step_count">%1$d von %2$d</string>
     <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
-    <string name="tour_meter">Wie weit du daneben liegst</string>
-    <string name="tour_note">Der Ton, den du spielst</string>
+    <string name="tour_readout">Wie weit daneben, und welcher Ton</string>
     <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
     <string name="tour_strings">Tippen zum Festlegen, halten zum Anhören</string>
     <string name="tour_picker">Instrument und Stimmung wählen</string>
-    <string name="tour_mode">Saiten oder jeden Ton stimmen</string>
-    <string name="tour_focus">Vollbild mit einer großen Anzeige</string>
-    <string name="tour_navigation">Metronom und Einstellungen</string>
-    <string name="tour_navigation_practice">Üben und Einstellungen</string>
     <string name="tour_skip">Überspringen</string>
     <string name="tour_next">Weiter</string>
     <string name="tour_done">Fertig</string>

@@ -37,8 +37,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
-import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
-import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
+import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 
 /** What [FocusModeButton] does, which decides its icon and name. */
 internal enum class FocusAction {
@@ -56,7 +55,8 @@ internal enum class FocusAction {
  * Focus mode's button, drawn like the "more tools" button (the same outline, fill, size and press feel
  * in every style), so it stands out on every style's background (owner, 2026-10-19: the bare icon in
  * the top corner was hardly visible, in Space Age least of all). No word, only the icon for its
- * [action]; TalkBack and the long-press tooltip say its name. Its outline is the tour's focus mode step.
+ * [action]; TalkBack and the long-press tooltip say its name. It has no tour step of its own;
+ * the tour's balloons keep clear of it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +92,7 @@ internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier:
                     },
                 )
                 .size(STRUM_TOGGLE_SIZE)
-                .tourTarget(TourPart.FOCUS)
+                .tourControl()
                 .pressSink(press)
                 .clip(shape)
                 .background(fill, shape)

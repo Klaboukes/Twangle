@@ -129,15 +129,10 @@
     <string name="tour_title">ऐप का टूर</string>
     <string name="tour_step_count">%2$d में से %1$d</string>
     <string name="tour_step_spoken">%2$d में से चरण %1$d। %3$s।</string>
-    <string name="tour_meter">आप कितना हटकर हैं</string>
-    <string name="tour_note">आप जो नोट बजा रहे हैं</string>
+    <string name="tour_readout">आप कितना हटकर हैं, और कौन सा नोट</string>
     <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
     <string name="tour_strings">लॉक करने के लिए टैप करें, सुनने के लिए दबाए रखें</string>
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
-    <string name="tour_mode">तार या कोई भी नोट ट्यून करें</string>
-    <string name="tour_focus">पूरी स्क्रीन, एक बड़ा मीटर</string>
-    <string name="tour_navigation">मेट्रोनोम और सेटिंग्स</string>
-    <string name="tour_navigation_practice">अभ्यास और सेटिंग्स</string>
     <string name="tour_skip">टूर छोड़ें</string>
     <string name="tour_next">आगे</string>
     <string name="tour_done">हो गया</string>

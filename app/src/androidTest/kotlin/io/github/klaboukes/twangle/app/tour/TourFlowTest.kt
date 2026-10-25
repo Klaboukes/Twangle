@@ -53,7 +53,11 @@ class TourFlowTest {
 
     @Test
     fun backEndsTheTourForGoodAndShowMeAroundStartsItAgain() {
-        runBlocking { repository.setTourSeen(false) }
+        runBlocking {
+            repository.setTourSeen(false)
+            // Strings mode: four steps, so Next leaves Skip tour to press (chromatic mode has one).
+            repository.setMode(TunerMode.AUTO)
+        }
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             assertTrue("the tour shows", shown(TourTestTags.BALLOON))
             assertFalse("the tuner below is hidden from TalkBack", device.hasObject(By.res(TUNER_SHOWN)))

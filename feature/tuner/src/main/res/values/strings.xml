@@ -182,16 +182,11 @@
     <string name="tour_step_count">%1$d of %2$d</string>
     <!-- TalkBack reads the balloon as this. %1$d is the step, %2$d how many there are, %3$s the balloon's text. -->
     <string name="tour_step_spoken">Step %1$d of %2$d. %3$s.</string>
-    <string name="tour_meter">How far off you are</string>
-    <string name="tour_note">The note you play</string>
+    <!-- The tour's first step: the meter and the note under it, lit together. -->
+    <string name="tour_readout">How far off, and which note</string>
     <string name="tour_strum">Strum to check every string</string>
     <string name="tour_strings">Tap to lock, hold to hear</string>
     <string name="tour_picker">Pick instrument and tuning</string>
-    <string name="tour_mode">Tune strings or any note</string>
-    <string name="tour_focus">Full screen, one big meter</string>
-    <string name="tour_navigation">Metronome and settings</string>
-    <!-- The tour's last step with the Practice tab (Phase 32) in the bar. -->
-    <string name="tour_navigation_practice">Practice and settings</string>
     <string name="tour_skip">Skip tour</string>
     <string name="tour_next">Next</string>
     <string name="tour_done">Done</string>

@@ -239,9 +239,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 TourHost(
                     open = tourOpen,
-                    steps = TourPart.stepsFor(settings.mode, focusMode = settings.focusMode),
+                    steps = TourPart.stepsFor(settings.mode),
                     // Where the tuner offers more than the strum check, its "more tools" button stands in the switch's place.
-                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1, practice = tools.practiceTab) },
+                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1) },
                     onEnd = {
                         tourEnded = true
                         tourRequested = false

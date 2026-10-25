@@ -137,6 +137,7 @@ import io.github.klaboukes.twangle.feature.tuner.components.markOf
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
 import io.github.klaboukes.twangle.feature.tuner.tour.TourPart
+import io.github.klaboukes.twangle.feature.tuner.tour.tourControl
 import io.github.klaboukes.twangle.feature.tuner.tour.tourTarget
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -569,7 +570,8 @@ private fun KeepScreenOn() {
  * (a big meter beside the note, controls hidden until the screen is tapped), else two panes side by
  * side. All state lives in the ViewModel, so rotating keeps the mode, the tuning and a locked string.
  * [controlsAlwaysShown] (while the first-start tour runs) keeps the compact layout's controls shown.
- * The parts the tour lights up mark themselves with [tourTarget].
+ * The parts the tour lights up mark themselves with [tourTarget]; the mode switch and focus mode's
+ * button, which have no step, with [tourControl], so balloons keep clear of them.
  */
 @Composable
 fun TunerContent(
@@ -632,7 +634,7 @@ fun TunerContent(
     // While focus mode's controls are up over the compact layout, its button takes them away again.
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
     val header = @Composable {
-        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
+        val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourControl()) }
         // Focus mode's button at the end of the mode switch's row, in both modes in the same place (owner,
         // 2026-10-25, idea A1 of the Phase 43 mock-up: chromatic mode has no strings or tools to stand it on).
         // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
@@ -690,18 +692,18 @@ fun TunerContent(
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
         if (state is TunerUiState.ChordName) {
-            ChordPanel(state, Modifier.zIndex(-1f).tourTarget(TourPart.METER))
+            ChordPanel(state, Modifier.zIndex(-1f).tourTarget(TourPart.READOUT))
         } else if (state is TunerUiState.StrumCheck) {
             StrumPanel(
                 state,
-                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.METER),
+                Modifier.zIndex(-1f).testTag(TunerTestTags.STRUM_PANEL).tourTarget(TourPart.READOUT),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
         } else if (state is TunerUiState.IntonationCheck) {
             IntonationPanel(
                 state,
-                Modifier.zIndex(-1f).tourTarget(TourPart.METER),
+                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
                 onStringClick = onStringClick,
                 toneSounding = soundingString != null,
             )
@@ -709,7 +711,7 @@ fun TunerContent(
             // The pitch trail takes the needle's place; the note under it stays the tuner's.
             PitchTrailPanel(
                 pitchHistory,
-                Modifier.zIndex(-1f).tourTarget(TourPart.METER),
+                Modifier.zIndex(-1f).tourTarget(TourPart.READOUT),
                 animationsOff = animationsOff,
             )
         } else {
@@ -721,7 +723,7 @@ fun TunerContent(
                 glow = meterGlow,
                 animationsOff = animationsOff,
                 // Drawn under its neighbours: its calm field and in-tune glow reach past its box, behind them.
-                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.METER),
+                modifier = Modifier.zIndex(-1f).testTag(TunerTestTags.GAUGE).tourTarget(TourPart.READOUT),
                 reception = reception,
             )
         }
@@ -793,8 +795,8 @@ fun TunerContent(
             else -> FocusNote(readout = null, hint = "", speech = speech)
         }
     }
-    // The note (with its pill and frequency, or the wave) is a tour step of its own, after the meter.
-    val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.NOTE)) { noteFor(compact, maxHeight) } }
+    // The note (with its pill and frequency, or the wave) is lit with the meter in the tour's first step.
+    val note = @Composable { compact: Boolean, maxHeight: Dp -> Box(Modifier.tourTarget(TourPart.READOUT)) { noteFor(compact, maxHeight) } }
     val error = (state as? TunerUiState.Error)?.reason
     // The plain tuner's meter; with a tool on, its panel takes the meter's place.
     val plainMeter = (state is TunerUiState.Detected || state is TunerUiState.Listening) &&
