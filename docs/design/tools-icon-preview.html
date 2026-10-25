@@ -1,0 +1,97 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Tools Icon</title>
+<!--
+TWANGLE PHASE 43, TOOLS BUTTON ICON, ROUND 2. ROUGH, Contemporary only.
+Round 1 (2026-10-25): owner picked A1 (full-screen button top right in both modes, no instrument/tools buttons in
+chromatic), no change for C (the tour is enough), and for B: "good icons don't need a word"; the icon is for
+additional tools, so a plus could work, but in the wave the plus was too small. Design a better icon.
+OWNER'S PICK, 2026-10-25: icon 1, tiles and a plus (Material Symbols "dashboard_customize" is the same idea).
+Icons here are hand-drawn on a 24-unit grid; the built one gets the same lines as the app's other icons.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 980px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h3 { font: 500 16px/1.3 var(--ui); margin: 0; }
+p { margin: 0; }
+.lede, .note { color: var(--muted); max-width: 70ch; }
+.note { font-size: 14px; }
+.list { margin-top: 24px; display: grid; gap: 26px; }
+.cand { display: grid; gap: 8px; }
+.rows { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+.row { width: 314px; height: 48px; padding: 0 13px; border-radius: 10px; background: var(--bg);
+  display: flex; align-items: center; gap: 10px; font: 500 11.2px/1 var(--ui); color: var(--muted); }
+.row .grow { flex: 1; }
+.btn { --btnbg: color-mix(in srgb, var(--surface) 45%, var(--bg)); width: 35px; height: 35px; border-radius: 13px;
+  display: grid; place-items: center; color: var(--muted); background: var(--btnbg);
+  border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.btn.on { --btnbg: var(--container); border: 2px solid var(--accent); color: var(--ink); }
+.btn svg { width: 19px; height: 19px; }
+.big { --btnbg: var(--page); width: 72px; height: 72px; color: var(--ink); display: grid; place-items: center; }
+.big svg { width: 64px; height: 64px; }
+footer { margin-top: 36px; color: var(--muted); font-size: 14px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 43 · rough mock-up · round 2</p>
+  <h1>An icon that says "more tools"</h1>
+  <p class="lede">Your round 1 answers: <b>A1</b> (full-screen button top right in both modes; no instrument or tools
+    buttons in Chromatic), <b>no change for C</b> (the tour is enough), and a better icon for B. Each one below is
+    shown large, then in the real row at the real size, with no tool on and with a tool on. Every plus is drawn big
+    enough to read at button size. Pick one.</p>
+</header>
+<div class="list" id="list"></div>
+<footer>Reply with a number, for example "3".</footer>
+</div>
+
+<script>
+const ST = 'fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"';
+// A plus badge cut out of whatever is under it: a filled disc with a ring in the button's own colour.
+const badge = (cx, cy, r = 5.6) => `<circle cx="${cx}" cy="${cy}" r="${r + 1.4}" fill="var(--btnbg)"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="currentColor"/>
+  <path d="M${cx} ${cy - r * .55}v${r * 1.1}M${cx - r * .55} ${cy}h${r * 1.1}" stroke="var(--btnbg)" stroke-width="1.9" stroke-linecap="round"/>`;
+const HANDYMAN = "M754-81q-8 0-15-2.5T726-92L522-296q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l85-85q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l204 204q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13l-85 85q-6 6-13 8.5T754-81Zm0-95 29-29-147-147-29 29 147 147ZM205-80q-8 0-15.5-3T176-92l-84-84q-6-6-9-13.5T80-205q0-8 3-15t9-13l212-212h85l34-34-165-165h-57L80-765l113-113 121 121v57l165 165 116-116-43-43 56-56H495l-28-28 142-142 28 28v113l56-56 142 142q17 17 26 38.5t9 45.5q0 24-9 46t-26 39l-85-85-56 56-42-42-207 207v84L233-92q-6 6-13 9t-15 3Zm0-96 170-170v-29h-29L176-205l29 29Zm0 0-29-29 15 14 14 15Zm549 0 29-29-29 29Z";
+const ICONS = [
+  ["1", "Tiles and a plus", `<rect x="3" y="3" width="7.5" height="7.5" rx="2" ${ST}/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2" ${ST}/>
+     <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" ${ST}/><path d="M17.25 13.5v7.5M13.5 17.25h7.5" ${ST} stroke-width="2.4"/>`,
+   "Three tiles and a plus in the fourth: the common sign for \"more of these, add-ons\". The plus is a whole quarter of the icon. Not musical, but very clear."],
+  ["2", "Guitar pick with a plus", `<path d="M12 21.5C8 18 3.5 12.5 3.5 8.2 3.5 4.6 7.4 2.5 12 2.5s8.5 2.1 8.5 5.7c0 4.3-4.5 9.8-8.5 13.3Z" ${ST}/>
+     <path d="M12 6.5v8M8 10.5h8" ${ST} stroke-width="2.4"/>`,
+   "A pick with a big plus inside: \"more for your guitar\". Musical and simple; the plus fills the pick. It could read as \"add a pick\" at first sight."],
+  ["3", "Sound wave over a big plus", `<path d="M2 8.5c1.4 0 1.6-4 3-4s1.6 8 3 8 1.6-8 3-8 1.6 4 3 4" ${ST}/>${badge(16.5, 16.5, 6)}`,
+   "Round 1's idea, with the plus as a solid disc taking a third of the icon, so it still reads at button size."],
+  ["4", "Hammer and screwdriver with a plus", `<g transform="scale(.025) translate(0 960)" fill="currentColor"><path d="${HANDYMAN}"/></g>${badge(17.5, 17.5, 5.6)}`,
+   "Today's icon with a solid plus disc in its corner: \"more tools\". The plus covers the hammer's end, which still reads as tools."],
+  ["5", "Tuning fork with a plus", `<path d="M6 3v6.5a3.5 3.5 0 0 0 7 0V3M9.5 13v8.5" ${ST}/>${badge(17.5, 17, 5.6)}`,
+   "The Tuner tab's own fork with a plus: \"more for the tuner\". Musical, but the fork is already the Tuner tab's icon, so the two may be confused."],
+];
+const svg = body => `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+const head = `<span class="btn">${svg(`<path d="M9 21v-7h6v7M9 14V5a3 3 0 0 1 6 0v9M6 7h3M6 10h3M15 7h3M15 10h3" ${ST}/>`)}</span>`;
+const row = (body, on) => `<div class="row">${head}<span class="grow">Guitar · Standard</span><span class="btn ${on ? "on" : ""}">${svg(body)}</span></div>`;
+document.getElementById("list").innerHTML = ICONS.map(([n, title, body, note]) => `<div class="cand">
+  <h3>${n}. ${title}</h3>
+  <div class="rows"><span class="big">${svg(body)}</span>${row(body, false)}${row(body, true)}</div>
+  <p class="note">${note}</p></div>`).join("");
+</script>

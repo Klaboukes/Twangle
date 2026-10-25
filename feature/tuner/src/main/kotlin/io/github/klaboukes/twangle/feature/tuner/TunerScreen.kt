@@ -465,7 +465,7 @@ object TunerTestTags {
     /** String [index]'s column in the strum check's panel. */
     fun strumString(index: Int): String = "tuner_strum_string_$index"
 
-    /** The "more tools" button (hammer and screwdriver) above the strings, the menu it opens, and each tool's item in it. */
+    /** The "more tools" button (tiles and a plus) above the strings, the menu it opens, and each tool's item in it. */
     const val MORE_TOOLS = "tuner_more_tools"
     const val MORE_TOOLS_MENU = "tuner_more_tools_menu"
     fun tool(tool: TunerTool): String = "tuner_tool_" + tool.name.lowercase()

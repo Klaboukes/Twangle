@@ -691,7 +691,7 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 
 /**
  * The tuner's tools (strum check, the 12th-fret check, the chord name, the pitch trail; later ones join) behind one small "more tools"
- * button above the strings (a hammer and screwdriver, Material Symbols `handyman`, no word), where the strum
+ * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
  * check's switch sits when it is the only tool. Outlined like the strum check's switch; filled with the accent's container while a tool is on. A tap opens a
  * small menu that lifts softly off the screen (no outline): each tool with its icon and name, the one
  * that is on ticked and in the accent; picking one turns it on (and the other off), picking the ticked
