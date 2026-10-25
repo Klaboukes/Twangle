@@ -444,7 +444,7 @@ object TunerTestTags {
     /** Focus mode's exit button, in the top end corner of the full-screen tuner. */
     const val EXIT_FOCUS = "tuner_exit_focus"
 
-    /** The button that turns focus mode on, right above the "more tools" button. */
+    /** The button that turns focus mode on, at the end of the mode switch's row. */
     const val ENTER_FOCUS = "tuner_enter_focus"
 
     /** In its place among focus mode's controls a tap brings up: back to the full-screen tuner. */
@@ -538,7 +538,7 @@ private fun KeepScreenOn() {
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
  * tune; as strong as [inTuneEffect]; with [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
- * adds small signal bars at the end of the mode switch's row ([SwitchWithSignalBars]), which open the
+ * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
  * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
  * [pickerOpen] the instrument and tuning panel shows over the tuner ([InstrumentTuningPanel], opened
  * from the navigation bar), and [onPickerOpenChange] hears false once it has closed. [instrument] is
@@ -633,7 +633,26 @@ fun TunerContent(
     var hideControls by remember { mutableStateOf<(() -> Unit)?>(null) }
     val header = @Composable {
         val switch = @Composable { ModeSwitch(mode = mode, onModeChange = onModeChange, modifier = Modifier.tourTarget(TourPart.MODE)) }
-        if (showSignalBars) SwitchWithSignalBars(switch) { movableSignalBars() } else switch()
+        // Focus mode's button at the end of the mode switch's row, in both modes in the same place (owner,
+        // 2026-10-25, idea A1 of the Phase 43 mock-up: chromatic mode has no strings or tools to stand it on).
+        // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
+        // the exit button there looked as if a tap had already left focus mode); its exit is in the
+        // full-screen tuner's corner. On, without the compact layout (a large screen upright), it exits.
+        val focusButton = onFocusModeChange?.let { onFocus ->
+            @Composable {
+                val hide = hideControls
+                when {
+                    hide != null -> FocusModeButton(FocusAction.HIDE_CONTROLS, onClick = hide)
+                    compactLandscape -> FocusModeButton(FocusAction.EXIT, onClick = { onFocus(false) })
+                    else -> FocusModeButton(FocusAction.ENTER, onClick = { onFocus(true) })
+                }
+            }
+        }
+        ModeSwitchRow(
+            switch = switch,
+            bars = if (showSignalBars) ({ movableSignalBars() }) else null,
+            button = focusButton,
+        )
     }
     val guitarSlot = @Composable {
         val strings = StringActions(onStringClick, onStringLongClick, soundingString)
@@ -666,29 +685,7 @@ fun TunerContent(
                 },
             )
         }
-        val slot = @Composable {
-            GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
-        }
-        if (onFocusModeChange == null) {
-            slot()
-        } else {
-            // Focus mode's button right above the "more tools" button, in both modes (the slot keeps its size).
-            // Among the controls a tap brings up in focus mode it goes back to full screen (owner, 2026-10-19:
-            // the exit button there looked as if a tap had already left focus mode); its exit is in the
-            // full-screen tuner's corner. On, without the compact layout (a large screen upright), it exits.
-            val hide = hideControls
-            FocusAboveTools(
-                button = {
-                    when {
-                        hide != null -> FocusModeButton(FocusAction.HIDE_CONTROLS, onClick = hide)
-                        compactLandscape -> FocusModeButton(FocusAction.EXIT, onClick = { onFocusModeChange(false) })
-                        else -> FocusModeButton(FocusAction.ENTER, onClick = { onFocusModeChange(true) })
-                    }
-                },
-                stringCount = stringCountOf(state),
-                slot = slot,
-            )
-        }
+        GuitarSlotFor(state, mode, pictured, strings, strum, TuningNames(instrument, customTunings) { onPickerOpenChange(true) })
     }
     val gauge = @Composable {
         // Strum check, the 12th-fret check, the chord name and the pitch trail take the meter's place, at its shape.
@@ -1089,62 +1086,39 @@ private fun CompactLayout(
 }
 
 /**
- * [button] (focus mode's) above [slot] (the strings and the "more tools" button above them, or chromatic
- * mode's numbers), its outline ending where the tools button's does: in line with the last string's
- * face ([stringFaceInsetFor], for [stringCount] strings; at the end where no tuning is known). The slot
- * keeps its width and height in both modes, so the button stays put when the mode changes.
+ * The mode [switch] centred, with focus mode's [button] at the row's end, its outline in line with
+ * the column's text margin (owner, 2026-10-25: the same place in both modes, never moving), and the
+ * signal [bars] at its start, across from the button. The row takes the whole width. The switch keeps
+ * clear of two equal slots ([FOCUS_BUTTON_SLOT]) at the row's ends, whether the bars show or not, so
+ * it stays centred and never reaches either: a long label at a large font shrinks to fit instead
+ * (Dutch "Chromatisch" at 2× text on a 360 dp phone). None of them moves with anything the tuner
+ * hears, nor when the mode changes or the bars are turned on.
  */
 @Composable
-private fun FocusAboveTools(button: @Composable () -> Unit, stringCount: Int?, slot: @Composable () -> Unit) {
-    val style = MaterialTheme.styleTokens.style
-    Layout(contents = listOf(button, slot)) { (buttonMeasurables, slotMeasurables), constraints ->
+private fun ModeSwitchRow(switch: @Composable () -> Unit, bars: (@Composable () -> Unit)?, button: (@Composable () -> Unit)?) {
+    val barsSlot = @Composable { if (bars != null) Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } }
+    val buttonSlot = @Composable { if (button != null) button() }
+    Layout(contents = listOf(switch, barsSlot, buttonSlot)) { (switchMeasurables, barsMeasurables, buttonMeasurables), constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val slotPlaceable = slotMeasurables.single().measure(constraints.copy(minHeight = 0))
-        val buttonPlaceable = buttonMeasurables.single().measure(loose)
-        val width = slotPlaceable.width
-        val faceInset = stringCount?.let { stringFaceInsetFor(style, width.toDp(), it).dp.roundToPx().coerceAtLeast(0) } ?: 0
-        val outlineInset = (buttonPlaceable.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
-        val x = (width - faceInset - buttonPlaceable.width + outlineInset).coerceIn(0, (width - buttonPlaceable.width).coerceAtLeast(0))
-        val slotY = buttonPlaceable.height + FOCUS_TOOLS_GAP.roundToPx()
-        layout(width, slotY + slotPlaceable.height) {
-            buttonPlaceable.placeRelative(x, 0)
-            slotPlaceable.placeRelative(0, slotY)
-        }
-    }
-}
-
-/**
- * The mode [switch] with the signal [bars] at the row's end, like a phone's own in its status bar
- * (owner's pick, 2026-10-20: by the note they rode along with its changing text). The row takes the
- * whole width; the switch stays centred unless that would bring it within the bars' slot
- * ([SIGNAL_BARS_SLOT], their 48 dp touch area), where it moves towards the start instead, so a long
- * label at a large font never runs under them. Neither moves with anything the tuner hears.
- */
-@Composable
-private fun SwitchWithSignalBars(switch: @Composable () -> Unit, bars: @Composable () -> Unit) {
-    Layout(contents = listOf(switch, { Box(Modifier.size(SIGNAL_BARS_SIZE)) { bars() } })) { (switchMeasurables, barsMeasurables), constraints ->
-        val slot = SIGNAL_BARS_SLOT.roundToPx()
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val barsPlaceable = barsMeasurables.single().measure(loose)
-        val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = (loose.maxWidth - slot).coerceAtLeast(0)))
-        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else switchPlaceable.width + 2 * slot
-        val height = maxOf(switchPlaceable.height, barsPlaceable.height)
-        val switchX = minOf((width - switchPlaceable.width) / 2, width - slot - switchPlaceable.width).coerceAtLeast(0)
+        val buttonPlaceable = buttonMeasurables.singleOrNull()?.measure(loose)
+        val barsPlaceable = barsMeasurables.singleOrNull()?.measure(loose)
+        val slot = if (buttonPlaceable != null || barsPlaceable != null) FOCUS_BUTTON_SLOT.roundToPx() else 0
+        val bounded = constraints.hasBoundedWidth
+        val switchRoom = if (bounded) (loose.maxWidth - 2 * slot).coerceAtLeast(0) else Constraints.Infinity
+        val switchPlaceable = switchMeasurables.single().measure(loose.copy(maxWidth = switchRoom))
+        val width = if (bounded) constraints.maxWidth else switchPlaceable.width + 2 * slot
+        val height = maxOf(switchPlaceable.height, barsPlaceable?.height ?: 0, buttonPlaceable?.height ?: 0)
         layout(width, height) {
-            switchPlaceable.placeRelative(switchX, (height - switchPlaceable.height) / 2)
-            barsPlaceable.placeRelative(width - slot + (slot - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
+            switchPlaceable.placeRelative((width - switchPlaceable.width) / 2, (height - switchPlaceable.height) / 2)
+            // The bars in the middle of their 48 dp touch area, which starts at the row's start.
+            barsPlaceable?.placeRelative((SIGNAL_BARS_SLOT.roundToPx() - barsPlaceable.width) / 2, (height - barsPlaceable.height) / 2)
+            // The touch area is wider than the outline; the outline ends at the row's end.
+            buttonPlaceable?.let {
+                val outlineInset = (it.width - STRUM_TOGGLE_SIZE.roundToPx()).coerceAtLeast(0) / 2
+                it.placeRelative(width - it.width + outlineInset, (height - it.height) / 2)
+            }
         }
     }
-}
-
-/** How many strings [state]'s tuning has, where it has one. */
-private fun stringCountOf(state: TunerUiState): Int? = when (state) {
-    is TunerUiState.Detected -> state.tuning.strings.size
-    is TunerUiState.Listening -> state.tuning.strings.size
-    is TunerUiState.StrumCheck -> state.tuning.strings.size
-    is TunerUiState.IntonationCheck -> state.tuning.strings.size
-    is TunerUiState.ChordName -> state.tuning.strings.size
-    else -> null
 }
 
 /**
@@ -1624,7 +1598,7 @@ private val LABEL_BUTTON_GAP = 12.dp
 /** Between the strum check's switch and the string row under it. */
 private val TOGGLE_STRINGS_GAP = 8.dp
 
-/** The signal bars as drawn, and the slot at the mode switch's end they sit in (their touch area's width). */
+/** The signal bars as drawn, and their touch area's width at the mode switch row's start. */
 private val SIGNAL_BARS_SIZE = 24.dp
 private val SIGNAL_BARS_SLOT = 48.dp
 
@@ -1658,8 +1632,8 @@ private val COMPACT_GAUGE_MAX_WIDTH = 840.dp
 private val FOCUS_METER_MARGIN = 8.dp
 private val FOCUS_GAUGE_MAX_WIDTH = 1200.dp
 
-/** Between focus mode's button and the "more tools" button under it (their touch areas): their outlines 12 dp apart. */
-private val FOCUS_TOOLS_GAP = 8.dp
+/** The room at each end of the mode switch's row: focus mode's 44 dp button outline and 8 dp clear of the switch; the signal bars' 48 dp touch area fits it too. */
+private val FOCUS_BUTTON_SLOT = 52.dp
 
 /** What sits in the compact layout's top corners (the note, focus mode's exit button) keeps this far from the screen's edges. */
 private val FOCUS_EDGE_SIDE = 16.dp

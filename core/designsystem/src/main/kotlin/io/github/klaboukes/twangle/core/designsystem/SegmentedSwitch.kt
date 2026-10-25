@@ -22,6 +22,13 @@ import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.ceil
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +54,7 @@ fun <T> SegmentedSwitch(
     // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
     val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     val crowded = options.size >= CROWDED_SEGMENTS
+    val measurer = rememberTextMeasurer()
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
     // touch area set round the light, as the Twangle buttons do (OwnTouchArea).
     OwnTouchArea { touch ->
@@ -73,8 +81,12 @@ fun <T> SegmentedSwitch(
                         inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
                     ),
                     // Three segments (Practice's Metronome · Chords · Capo) keep less padding, so Dutch
-                    // "Metronoom" still fits a 320 dp phone at 2× text.
-                    contentPadding = if (crowded) CROWDED_PADDING else SegmentedButtonDefaults.ContentPadding,
+                    // "Metronoom" still fits a 320 dp phone at 2× text. Two keep Material's 12 dp where
+                    // the labels fit at full size; where they don't, the padding gives way down to the
+                    // three segments' 6 dp before a label shrinks (the label's [segmentLabel] holds the
+                    // difference): Russian "Хроматический" at 2× text on a 360 dp phone, beside focus
+                    // mode's button.
+                    contentPadding = CROWDED_PADDING,
                     icon = {},
                     modifier = Modifier.testTag(tag(option)).touchArea(touch).pressFeedback(press, shape, above = true),
                 ) {
@@ -85,11 +97,27 @@ fun <T> SegmentedSwitch(
                     // labels are single words, so Latin labels measure the same as before. Where a
                     // segment is too narrow (Dutch "Chromatisch" at 2× text on a 360 dp phone) it shrinks
                     // as far as it must to fit, rather than be cut off. One line needs no line spacing
-                    // above and below it, which at 2× text is taller than the button (the letters fit).
+                    // above and below it, which at 2× text is taller than the button (the letters fit):
+                    // its line is 1.2 times the style's own size, in sp, so a shrunk label keeps the
+                    // height of a whole one. The label's size as the row asks for it before laying it out
+                    // (its intrinsic size) is its one line at full size, measured here: asked of the
+                    // shrinking text itself, it came out differently before and after a tap, and the
+                    // switch grew or shrank by 10 dp when the mode changed (English at 2× text beside
+                    // focus mode's button, 2026-10-25).
+                    val style = LocalTextStyle.current
+                    val labelStyle = style.copy(
+                        lineHeight = (style.fontSize.value * LABEL_LINE_HEIGHT).sp,
+                        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+                    )
+                    val text = label(option)
+                    val lineHeight = with(LocalDensity.current) { labelStyle.lineHeight.toPx() }
+                    val whole = remember(text, labelStyle, measurer, lineHeight) {
+                        measurer.measure(text, labelStyle, maxLines = 1, softWrap = false).size.let { IntSize(it.width, maxOf(it.height, ceil(lineHeight).toInt())) }
+                    }
                     Text(
-                        label(option),
-                        style = LocalTextStyle.current.copy(lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)),
-                        modifier = Modifier.segmentLabel(),
+                        text,
+                        style = labelStyle,
+                        modifier = Modifier.segmentLabel(whole, give = if (crowded) 0.dp else GIVING_PADDING),
                         // Wrapping on, so a word too wide for one line counts as not fitting and shrinks.
                         maxLines = 1,
                         // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE).
@@ -102,29 +130,42 @@ fun <T> SegmentedSwitch(
 }
 
 /**
- * A segment's label: its minimum width is its whole one-line width, so the row gives every segment
- * room for the longest label where it can.
+ * A segment's label: its intrinsic size, both minimum and maximum, is [whole] (its one line at full
+ * size) and [give] more in width, so the row gives every segment room for the longest label and that
+ * padding where it can, and the same height in every state. Laid out, the padding goes first and
+ * the text shrinks only once it has gone; it keeps that height (where the row allows) with the text
+ * in its middle.
  */
-private fun Modifier.segmentLabel(): Modifier = this then SegmentLabelElement
+private fun Modifier.segmentLabel(whole: IntSize, give: Dp): Modifier = this then SegmentLabelElement(whole, give)
 
-private object SegmentLabelElement : ModifierNodeElement<SegmentLabelNode>() {
-    override fun create() = SegmentLabelNode()
-    override fun update(node: SegmentLabelNode) = Unit
+private data class SegmentLabelElement(val whole: IntSize, val give: Dp) : ModifierNodeElement<SegmentLabelNode>() {
+    override fun create() = SegmentLabelNode(whole, give)
+    override fun update(node: SegmentLabelNode) {
+        node.whole = whole
+        node.give = give
+    }
     override fun InspectorInfo.inspectableProperties() {
         name = "segmentLabel"
     }
-    override fun hashCode(): Int = 0
-    override fun equals(other: Any?): Boolean = other === this
 }
 
-private class SegmentLabelNode : Modifier.Node(), LayoutModifierNode {
+private class SegmentLabelNode(var whole: IntSize, var give: Dp) : Modifier.Node(), LayoutModifierNode {
     override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-        val placeable = measurable.measure(constraints)
-        return layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+        val giving = give.roundToPx()
+        val room = constraints.maxWidth
+        // The padding first: the text keeps its whole width while the room holds it.
+        val textRoom = if (room == Constraints.Infinity) room else maxOf(room - giving, minOf(room, whole.width))
+        // Only the width limits the label: its one line is never squeezed to a shorter row.
+        val placeable = measurable.measure(Constraints(maxWidth = textRoom))
+        val width = constraints.constrainWidth(placeable.width + giving)
+        val height = constraints.constrainHeight(maxOf(whole.height, placeable.height))
+        return layout(width, height) { placeable.place((width - placeable.width) / 2, (height - placeable.height) / 2) }
     }
 
-    override fun IntrinsicMeasureScope.minIntrinsicWidth(measurable: IntrinsicMeasurable, height: Int): Int =
-        measurable.maxIntrinsicWidth(height)
+    override fun IntrinsicMeasureScope.minIntrinsicWidth(measurable: IntrinsicMeasurable, height: Int): Int = whole.width + give.roundToPx()
+    override fun IntrinsicMeasureScope.maxIntrinsicWidth(measurable: IntrinsicMeasurable, height: Int): Int = whole.width + give.roundToPx()
+    override fun IntrinsicMeasureScope.minIntrinsicHeight(measurable: IntrinsicMeasurable, width: Int): Int = whole.height
+    override fun IntrinsicMeasureScope.maxIntrinsicHeight(measurable: IntrinsicMeasurable, width: Int): Int = whole.height
 }
 
 /**
@@ -138,5 +179,11 @@ private val LAST_RESORT_LABEL_SIZE = 6.sp
 private const val CROWDED_SEGMENTS = 3
 private val CROWDED_PADDING = PaddingValues(horizontal = 6.dp)
 
+/** With two segments, what the label holds on top of [CROWDED_PADDING]: Material's 12 dp a side in all, while the labels fit. */
+private val GIVING_PADDING = 12.dp
+
 /** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
 private const val NEON_OUTLINE_ALPHA = 0.55f
+
+/** A segment's line, as a multiple of the label style's own font size: the letters at full size fit it. */
+private const val LABEL_LINE_HEIGHT = 1.2f

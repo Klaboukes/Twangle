@@ -150,7 +150,7 @@ class TourGeometryTest {
     @Test
     fun `each step prefers the side that keeps it off its neighbours`() {
         assertEquals(BalloonSide.BELOW, TourPart.MODE.preferredSide)
-        assertEquals(BalloonSide.ABOVE, TourPart.FOCUS.preferredSide)
+        assertEquals(BalloonSide.BELOW, TourPart.FOCUS.preferredSide)
         assertEquals(BalloonSide.BELOW, TourPart.METER.preferredSide)
         assertEquals(BalloonSide.BELOW, TourPart.NOTE.preferredSide)
         assertEquals(BalloonSide.ABOVE, TourPart.PICKER.preferredSide)
@@ -160,13 +160,14 @@ class TourGeometryTest {
         assertEquals(setOf(TourPart.METER, TourPart.NOTE), TourPart.entries.filterNot { it.interactive }.toSet())
     }
 
-    // The Xiaomi 12X upright (dp): the instrument button and the strum check's switch above the strings,
+    // The Xiaomi 12X upright (dp): focus mode's button at the end of the mode switch's row; the
+    // instrument button and the strum check's switch above the strings,
     // at their start and end; the bar's Metronome and Settings tabs (the bar step).
     private val upright = mapOf(
         TourPart.MODE to TourBox(82f, 40f, 311f, 88f),
         TourPart.METER to TourBox(8f, 146f, 385f, 334f),
         TourPart.NOTE to TourBox(76f, 358f, 316f, 579f),
-        TourPart.FOCUS to TourBox(322f, 617f, 366f, 661f),
+        TourPart.FOCUS to TourBox(333f, 42f, 377f, 86f),
         TourPart.STRUM to TourBox(322f, 673f, 366f, 717f),
         TourPart.STRINGS to TourBox(27f, 727f, 366f, 775f),
         TourPart.PICKER to TourBox(27f, 673f, 71f, 717f),
@@ -178,7 +179,7 @@ class TourGeometryTest {
         TourPart.METER to TourBox(120f, 20f, 460f, 200f),
         TourPart.NOTE to TourBox(180f, 216f, 400f, 372f),
         TourPart.MODE to TourBox(560f, 96f, 790f, 144f),
-        TourPart.FOCUS to TourBox(796f, 164f, 840f, 208f),
+        TourPart.FOCUS to TourBox(796f, 98f, 840f, 142f),
         TourPart.STRUM to TourBox(796f, 228f, 840f, 272f),
         TourPart.STRINGS to TourBox(510f, 288f, 840f, 336f),
         TourPart.PICKER to TourBox(514f, 228f, 558f, 272f),
@@ -188,7 +189,7 @@ class TourGeometryTest {
     @Test
     fun `upright the tour reads top to bottom, left to right in a row, the bar's tabs last`() {
         val order = tourOrder(TourPart.entries.shuffled(java.util.Random(4))) { upright[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
     }
 
     @Test
@@ -196,7 +197,7 @@ class TourGeometryTest {
         // Arabic mirrors the screen: the instrument button sits at the strings' right end, the strum check's switch at their left.
         val mirrored = upright.mapValues { (_, b) -> TourBox(w - b.right, b.top, w - b.left, b.bottom) }
         val order = tourOrder(TourPart.entries, rightToLeft = true) { mirrored[it] }
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION), order)
     }
 
     @Test
@@ -211,7 +212,7 @@ class TourGeometryTest {
     @Test
     fun `chromatic mode keeps the same reading order`() {
         val steps = TourPart.stepsFor(TunerMode.CHROMATIC)
-        assertEquals(listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
+        assertEquals(listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.NAVIGATION), tourOrder(steps) { upright[it] })
         assertEquals(listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.NAVIGATION), tourOrder(steps) { sideways[it] })
     }
 
@@ -292,7 +293,7 @@ class TourGeometryTest {
         // The meter's below lies over the note only (no control): it stays below.
         assertEquals(BalloonSide.BELOW, placeStep(TourPart.METER).side)
         assertEquals(BalloonSide.BELOW, placeStep(TourPart.MODE).side)
-        // The strum check: a control on both sides (focus mode's button above, the strings below), so its preferred side.
+        // The strum check: the strings below, the free room over the note above: its preferred side.
         assertEquals(BalloonSide.ABOVE, placeStep(TourPart.STRUM).side)
         for (part in listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE)) {
             val q = placeStep(part)

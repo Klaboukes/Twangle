@@ -1095,15 +1095,16 @@ class TunerContentTest {
         assertEquals("the mode switch stays centred", switch, compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot())
     }
 
+    // Across from focus mode's button, which took the row's end on 2026-10-25.
     @Test
-    fun theSignalBarsSitAtTheEndOfTheModeSwitchRow() {
+    fun theSignalBarsSitAtTheStartOfTheModeSwitchRow() {
         show(detected(-12.3f), size = PHONE_UPRIGHT, signalBars = true)
         val bars = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS_ICON).getBoundsInRoot()
-        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
+        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
         val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        assertTrue("bars $bars not after the switch $switch", bars.left >= switch.right)
+        assertTrue("bars $bars not before the switch $switch", bars.right <= switch.left)
         assertTrue("bars $bars not level with the switch $switch", bars.top < switch.bottom && bars.bottom > switch.top)
-        assertTrue("bars $bars not near the window's end $window", window.right - bars.right <= 40.dp)
+        assertTrue("bars $bars not near the window's start $window", bars.left - window.left <= 40.dp)
     }
 
     // By the note they rode along with its text ("Play a string", "12 cents flat"); in the corner they stay put.
@@ -1118,13 +1119,13 @@ class TunerContentTest {
         }
     }
 
-    // A long label at the largest font moves the switch towards the start rather than under the bars' touch area.
+    // A long label at the largest font shrinks rather than run under the bars' touch area.
     @Test
     fun withTheLargestFontTheModeSwitchKeepsClearOfTheSignalBars() {
         show(detected(-12.3f), fontScale = 2f, size = PHONE, signalBars = true)
         val button = compose.onNodeWithTag(TunerTestTags.SIGNAL_BARS).getBoundsInRoot()
-        val chromatic = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
-        assertTrue("switch $chromatic runs under the bars $button", chromatic.right <= button.left + 0.5.dp)
+        val strings = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
+        assertTrue("switch $strings runs under the bars $button", strings.left >= button.right - 0.5.dp)
     }
 
     @Test
@@ -1767,11 +1768,11 @@ class TunerContentTest {
     fun focusTheControlsButtonGoesBackToFullScreen() {
         show(detected(-12.3f), size = PHONE_FULL_SCREEN, compactLandscape = true)
         compose.onNodeWithTag(TunerTestTags.COMPACT).performClick()
-        // With the controls up the button above the tools button doesn't leave focus mode (it looked as if a tap
+        // With the controls up the button at the mode switch's row doesn't leave focus mode (it looked as if a tap
         // had already left it): it takes the controls away again, at once.
         exitButton.assertDoesNotExist()
         hideButton.assertHasClickAction()
-        assertRightAboveTheToolsButton(hideButton)
+        assertAtTheEndOfTheModeSwitchRow(hideButton)
         hideButton.performClick()
         compose.onNodeWithText(context.getString(R.string.tuner_mode_strings)).assertDoesNotExist()
         assertEquals("full screen again", true, fullScreenReports.last())
@@ -1784,7 +1785,7 @@ class TunerContentTest {
         show(detected(-12.3f), size = PHONE_LANDSCAPE)
         exitButton.assertDoesNotExist()
         enterButton.assertIsDisplayed().assertHasClickAction()
-        assertRightAboveTheToolsButton(enterButton)
+        assertAtTheEndOfTheModeSwitchRow(enterButton)
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
         // Back is the app's again: it doesn't touch focus mode.
@@ -1792,25 +1793,53 @@ class TunerContentTest {
         assertEquals(listOf(true), focusChanges)
     }
 
+    // Owner, 2026-10-25 (idea A1): the button in the top end corner in both modes, never moving on a mode switch.
     @Test
-    fun uprightTheButtonStaysRightAboveTheToolsButtonInBothModes() {
+    fun uprightTheButtonStaysInTheTopEndCornerInBothModes() {
         show(detected(-12.3f), size = PHONE_UPRIGHT)
-        val guitar = assertRightAboveTheToolsButton(enterButton)
-        // Chromatic mode has no strings or tools button, but the button keeps its place.
+        val guitar = assertAtTheEndOfTheModeSwitchRow(enterButton)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        // Its outline (44 dp in a 48 dp touch area) ends at the column's 16 dp text margin.
+        assertEquals("button's end at ${guitar.right}", (window.right - 16.dp).value, guitar.right.value, 1f)
+        // Chromatic mode has no strings or tools button, and still no instrument or tools button; the button keeps its place.
         shownMode.value = TunerMode.CHROMATIC
         shownState.value = chromatic(-12.3f)
         compose.waitForIdle()
         assertEquals(guitar, enterButton.assertIsDisplayed().getBoundsInRoot())
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).assertDoesNotExist()
+        compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertDoesNotExist()
         enterButton.performClick()
         assertEquals(listOf(true), focusChanges)
     }
 
-    /** [button] stands centred over the strum check's switch (the tools button), its touch area just above it; returns its bounds. */
-    private fun assertRightAboveTheToolsButton(button: SemanticsNodeInteraction): DpRect {
+    // Dutch "Chromatisch" and Russian "Хроматический" at 2× text on a 360 dp phone: the switch stays centred
+    // and wholly shown, clear of the button.
+    @Test
+    fun withTheLargestFontTheModeSwitchStaysCentredBesideTheButtonInDutch() = assertSwitchCentredBesideTheButton("nl")
+
+    @Test
+    fun withTheLargestFontTheModeSwitchStaysCentredBesideTheButtonInRussian() = assertSwitchCentredBesideTheButton("ru")
+
+    private fun assertSwitchCentredBesideTheButton(locale: String) {
+        show(detected(-12.3f), fontScale = 2f, size = PHONE, locale = locale)
+        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
+        val inLocale = context.createConfigurationContext(Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(locale)) })
+        val button = assertAtTheEndOfTheModeSwitchRow(compose.onNodeWithContentDescription(inLocale.getString(R.string.tuner_focus_mode)))
+        val strings = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.AUTO)).getBoundsInRoot()
+        val chromatic = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).getBoundsInRoot()
+        assertEquals("switch centred", ((window.left + window.right) / 2).value, ((strings.left + chromatic.right) / 2).value, 1f)
+        assertTrue("switch $chromatic runs into the button $button", chromatic.right <= button.left)
+        for (label in listOf(R.string.tuner_mode_strings, R.string.tuner_mode_chromatic).map(inLocale::getString)) {
+            assertWhollyShown(compose.onNodeWithText(label, useUnmergedTree = true), "$locale $label")
+        }
+    }
+
+    /** [button] stands at the end of the mode switch's row, level with the switch and after it; returns its bounds. */
+    private fun assertAtTheEndOfTheModeSwitchRow(button: SemanticsNodeInteraction): DpRect {
         val place = button.assertIsDisplayed().getBoundsInRoot()
-        val tools = compose.onNodeWithTag(TunerTestTags.STRUM_TOGGLE).assertIsDisplayed().getBoundsInRoot()
-        assertTrue("button at $place, tools at $tools: not centred over it", abs(((place.left + place.right) - (tools.left + tools.right)).value) < 2f)
-        assertTrue("button at $place, tools at $tools: not just above it", place.bottom <= tools.top + 1.dp && place.bottom >= tools.top - 24.dp)
+        val switch = compose.onNodeWithTag(TunerTestTags.mode(TunerMode.CHROMATIC)).assertIsDisplayed().getBoundsInRoot()
+        assertTrue("button at $place, switch at $switch: not level with it", abs(((place.top + place.bottom) - (switch.top + switch.bottom)).value) < 2f)
+        assertTrue("button at $place, switch at $switch: not after it", place.left >= switch.right)
         return place
     }
 

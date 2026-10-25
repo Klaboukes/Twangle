@@ -453,7 +453,7 @@ class TourStylesTest(private val style: VisualStyle) {
          * The tour's order upright (rows top to bottom, left to right) and in two panes (pane by pane),
          * the bar's or rail's tabs last.
          */
-        private val UPRIGHT = listOf(TourPart.MODE, TourPart.METER, TourPart.NOTE, TourPart.FOCUS, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
+        private val UPRIGHT = listOf(TourPart.MODE, TourPart.FOCUS, TourPart.METER, TourPart.NOTE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
         // In focus mode on its side (the compact tuner's controls shown) there is no focus mode step.
         private val SIDEWAYS = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
         private val TWO_PANE = listOf(TourPart.METER, TourPart.NOTE, TourPart.MODE, TourPart.FOCUS, TourPart.PICKER, TourPart.STRUM, TourPart.STRINGS, TourPart.NAVIGATION)
