@@ -13,7 +13,7 @@ Round 3  New direction, agreed with the owner: a click that helps a musician kee
          - A sharp attack: the energy peaks within 1.6 ms of the onset, so the beat's moment is exact.
          - Short: about 40 dB down by 47-70 ms, 65-80 ms in all with the fade to 0; no room, no ring. The app's
            ClickTrack (one click at a time) works unchanged up to 250 BPM (a beat is never under 240 ms).
-         - The same on every beat; only beat 1 differs: hit harder (brighter, 3.3-4 dB louder) and a little higher.
+         - The same on every beat; only beat 1 differs: hit harder (brighter, 4-5 dB louder) and clearly higher.
          - Unpitched or weakly pitched: inharmonic modes and noise, no clear note to clash with the key.
          - Round 2's texture kept (contact pulse, strike noise, inharmonic modes), damped hard.
          - Each at today's wood block's RMS (within 0.6 dB), peak at most 0.8.
@@ -25,13 +25,28 @@ Files    <sound>.wav: one bar of 4/4 at 100 BPM, then 1 s of silence.
 Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt (recipes,
          guitar) and PercussionSynth.kt (the synthesis), in the test sources only (not in the app). Make them again,
          byte for byte, with ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
-Measured (downbeat; 1 ms RMS envelope; centroid over 80 ms):
+Measured (1 ms RMS envelope; centroid over 80 ms). Plain beats (2, 3, 4):
          sound          peak at   -40 dB at   centroid
-         wood-block     1.6 ms    36 ms       1.9 kHz   (today)
-         woody-click    1.1 ms    52 ms       1.9 kHz
-         rim-click      1.5 ms    54 ms       1.4 kHz
-         cowbell-tonk   1.2 ms    70 ms       2.4 kHz   (reworked: was 61 ms, 0.8 kHz, inside the guitar's range)
-         bright-tick    1.4 ms    51 ms       5.0 kHz
+         wood-block     1.6 ms    36 ms       1.0 kHz   (today)
+         woody-click    1.2 ms    52 ms       1.8 kHz
+         rim-click      1.5 ms    56 ms       1.4 kHz
+         cowbell-tonk   1.2 ms    71 ms       2.3 kHz   (reworked: was 0.8 kHz, inside the guitar's range)
+         bright-tick    1.5 ms    53 ms       4.8 kHz
+Beat 1   Owner, 2026-10-25: beat 1 stood out too little (6-8 % higher, 3.5 dB). Now, as the wood block's (an
+         octave up, +4.1 dB RMS, +5.0 dB peak): hit harder (brighter) and clearly higher, the strike noise moving
+         with it, its modes keeping the plain beat's decay times; peaks within 1.3 ms, 40 dB down by 52-69 ms.
+         sound          pitch     RMS step   peak step   centroid
+         wood-block     octave    +4.1 dB    +5.0 dB     x1.99
+         woody-click    octave    +4.1 dB    +5.1 dB     x1.76
+         rim-click      octave    +4.5 dB    +3.4 dB     x1.37  (the drum head under it keeps its pitch)
+         cowbell-tonk   fifth     +5.0 dB    +4.5 dB     x1.45  (an octave would put it at 4.5 kHz: shrill, on
+                                                                  top of the bright tick)
+         bright-tick    fifth     +4.0 dB    +4.5 dB     x1.36  (an octave up would be 8-16 kHz, shrill and
+                                                                  partly lost on phone speakers and older ears;
+                                                                  an octave down would sink beat 1 into the guitar)
+         The plain beats sound as before; to keep beat 1 under the 0.8 peak, the woody click, cowbell and bright
+         tick are 1.1, 1.2 and 0.5 dB quieter overall (the rim click is unchanged), each bar within 1 dB of the
+         wood block's RMS.
 Phone    The same ten files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
          app on the speaker and in headphones.
 -->
@@ -67,7 +82,7 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 </style>
 <main>
   <h1>Metronome click sounds, round 3</h1>
-  <p class="intro">Clicks made to keep time by: short, exact, the same on every beat, with beat 1 a little higher and louder.
+  <p class="intro">Clicks made to keep time by: short, exact, the same on every beat, with beat 1 clearly higher and louder, as on today's wood block.
     Each sound plays alone (one bar) and under a strummed guitar (two bars), then stops.
     Listen on the phone's speaker and in headphones, and pick the two (or three) you'd like in the app.</p>
 

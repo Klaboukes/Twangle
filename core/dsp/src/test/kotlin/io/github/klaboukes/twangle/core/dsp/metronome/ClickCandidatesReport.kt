@@ -46,8 +46,10 @@ import kotlin.math.sqrt
  * Round 3's rules, from the owner (2026-10-25): a click that helps a musician keep time, not a
  * realistic instrument. A sharp attack (the peak within 1–2 ms), short (about 40 dB down within
  * 30–60 ms, at most 80 ms in all, no room, no ring), identical on every beat, unpitched or only
- * weakly pitched (inharmonic modes and noise, no clear note to clash with the key), beat 1 a little
- * higher, brighter and 3–4 dB louder. Round 2's texture stays (contact pulse, strike noise, a few
+ * weakly pitched (inharmonic modes and noise, no clear note to clash with the key). Beat 1 stands
+ * out as the wood block's does (owner, the same day): hit harder, so brighter and 4–5 dB louder,
+ * and an octave higher, or a fifth where an octave would be shrill; its modes keep the plain
+ * beat's decay times. Round 2's texture stays (contact pulse, strike noise, a few
  * inharmonic modes, [PercussionSynth]), damped hard. Each set is scaled so a bar has the wood
  * block's RMS, its peak kept at or under 0.8.
  */
@@ -64,23 +66,38 @@ class ClickCandidatesReport {
         val target = rms(woodBlock)
         val clickSets = mutableListOf("wood-block" to woodClicks)
 
-        println("sound          length   downbeat over plain")
-        for (sound in SOUNDS) {
+        for (candidate in CANDIDATES) {
+            val sound = candidate.sound
             // Where the click is heard sets each mode's sign, and so how far the modes add up in
-            // the first instant. Of 300 places, take the one with the least peak for its energy
-            // (the most loudness under the 0.8 peak) among those whose energy still peaks within
-            // ATTACK_MS of the onset on every accent, so the beat's moment stays exact.
-            val seed = (0L until 300L)
-                .filter { seed -> BeatAccent.entries.all { peakMs(PercussionSynth.hit(sound, it, seed)) <= ATTACK_MS } }
-                .minBy { crest(PercussionSynth.hit(sound, BeatAccent.DOWNBEAT, it)) }
-            val raw = BeatAccent.entries.associateWith { PercussionSynth.hit(sound, it, seed) }
-            val bar = renderBar { raw.getValue(it) }
-            // Match the wood block's RMS, but never let the downbeat pass 0.8.
-            val gain = minOf(target / rms(bar), MAX_PEAK / bar.maxOf { abs(it) })
+            // the first instant. The plain beats keep round 3's place and gain, so they stay exactly
+            // as they were. Beat 1 and the group accent, struck harder and higher, get their own:
+            // of 300 places, the one with the least peak for its energy (the most loudness under
+            // the 0.8 peak) among those whose energy still peaks within ATTACK_MS of the onset.
+            fun place(accent: BeatAccent) = (0L until 300L)
+                .filter { peakMs(PercussionSynth.hit(sound, accent, it)) <= ATTACK_MS }
+                .minBy { crest(PercussionSynth.hit(sound, accent, it)) }
+            val raw = mapOf(
+                BeatAccent.DOWNBEAT to PercussionSynth.hit(sound, BeatAccent.DOWNBEAT, place(BeatAccent.DOWNBEAT)),
+                BeatAccent.GROUP to PercussionSynth.hit(sound, BeatAccent.GROUP, place(BeatAccent.GROUP)),
+                BeatAccent.PLAIN to PercussionSynth.hit(sound, BeatAccent.PLAIN, candidate.place),
+            )
+            // Round 3's gain, unless beat 1 would then pass the 0.8 peak: then all a little quieter.
+            val gain = minOf(candidate.gain, MAX_PEAK / raw.getValue(BeatAccent.DOWNBEAT).maxOf { abs(it) })
+            if (gain < candidate.gain) println("%s: %.1f dB quieter than round 3, so beat 1 stays under 0.8".format(sound.file, -20 * log10(gain / candidate.gain)))
             clickSets += sound.file to raw.mapValues { (_, x) -> DoubleArray(x.size) { x[it] * gain } }
-            val down = raw.getValue(BeatAccent.DOWNBEAT)
-            val plain = raw.getValue(BeatAccent.PLAIN)
-            println("%-13s  %3.0f ms   %+.1f dB   (heard from place %d)".format(sound.file, sound.lengthSeconds * 1000, 20 * log10(rms(down) / rms(plain)), seed))
+        }
+        println("sound          beat 1 over beat 2: RMS     peak     pitch   centroid")
+        for ((name, clicks) in clickSets) {
+            val down = clicks.getValue(BeatAccent.DOWNBEAT)
+            val plain = clicks.getValue(BeatAccent.PLAIN)
+            val pitch = CANDIDATES.firstOrNull { it.sound.file == name }?.sound?.downbeatPitch
+                ?: (ClickSounds.frequencyOf(BeatAccent.DOWNBEAT) / ClickSounds.frequencyOf(BeatAccent.PLAIN))
+            println(
+                "%-13s  %+5.1f dB  %+5.1f dB   ×%.2f    ×%.2f".format(
+                    name, 20 * log10(rms(down) / rms(plain)), 20 * log10(down.maxOf { abs(it) } / plain.maxOf { abs(it) }),
+                    pitch, centroid(down) / centroid(plain),
+                ),
+            )
         }
 
         val guitar = guitarTrack()
@@ -243,6 +260,27 @@ class ClickCandidatesReport {
         return above / all
     }
 
+    // Spectral centroid of [x] by a plain DFT on a 50 Hz grid (slow, but only a few clicks).
+    private fun centroid(x: DoubleArray): Double {
+        var weighted = 0.0
+        var total = 0.0
+        var hz = 50.0
+        while (hz < RATE / 2) {
+            var re = 0.0
+            var im = 0.0
+            val w = 2 * PI * hz / RATE
+            for (n in x.indices) {
+                re += x[n] * cos(w * n)
+                im -= x[n] * kotlin.math.sin(w * n)
+            }
+            val power = re * re + im * im
+            weighted += hz * power
+            total += power
+            hz += 50.0
+        }
+        return weighted / total
+    }
+
     private fun crest(x: DoubleArray): Double = x.maxOf { abs(it) } / rms(x)
 
     // When the energy peaks: the loudest millisecond (a 1 ms moving RMS), in ms from the onset.
@@ -315,7 +353,9 @@ class ClickCandidatesReport {
             fadeSeconds = 0.02,
             contactSeconds = 0.0003,
             plainVelocity = 0.66,
-            downbeatPitch = 1.08,
+            downbeatVelocity = 1.6,
+            downbeatPitch = 2.0,
+            groupPitch = 1.5,
             bursts = listOf(Burst(2000.0, 1.0, 0.0025, 0.3)),
         ) { p, listener ->
             val f = 900.0 * p
@@ -323,10 +363,10 @@ class ClickCandidatesReport {
             buildList {
                 for (n in ratios.indices) {
                     val hz = f * ratios[n]
-                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz, 80.0, 3e-6)))
+                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz / p, 80.0, 3e-6)))
                 }
-                add(Mode(f * 1.5, 0.35 * listener.sign(), woodDecay(f * 1.5, 80.0, 3e-6)))
-                add(Mode(f * 3.0, 0.2 * listener.sign(), woodDecay(f * 3.0, 80.0, 3e-6)))
+                add(Mode(f * 1.5, 0.35 * listener.sign(), woodDecay(f * 1.5 / p, 80.0, 3e-6)))
+                add(Mode(f * 3.0, 0.2 * listener.sign(), woodDecay(f * 3.0 / p, 80.0, 3e-6)))
             }
         }
 
@@ -341,7 +381,9 @@ class ClickCandidatesReport {
             fadeSeconds = 0.02,
             contactSeconds = 0.0002,
             plainVelocity = 0.69,
-            downbeatPitch = 1.06,
+            downbeatVelocity = 1.4,
+            downbeatPitch = 2.0,
+            groupPitch = 1.5,
             bursts = listOf(
                 Burst(2500.0, 0.8, 0.0012, 0.3),
                 Burst(5500.0, 0.6, 0.006, 0.04, delaySeconds = 0.001, attackSeconds = 0.001),
@@ -351,12 +393,12 @@ class ClickCandidatesReport {
                 val stick = barRatios(6, gyrationOverLength = 0.00875, eOverKappaG = 13.0)
                 for (n in stick.indices) {
                     val hz = 345.0 * p * stick[n]
-                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz, 80.0, 2e-6)))
+                    add(Mode(hz, barShape(n, 0.3) * listener.sign(), woodDecay(hz / p, 80.0, 2e-6)))
                 }
                 for (n in 6..14) {
                     val hz = 62.0 * p * ringRatio(n)
                     val amp = 0.12 * 6.0 / n
-                    val decay = 0.015 * (1000.0 / hz).pow(0.3)
+                    val decay = 0.015 * (1000.0 * p / hz).pow(0.3)
                     val sign = listener.sign() // a split pair starts together, then beats
                     add(Mode(hz * 0.9965, amp * sign, decay))
                     add(Mode(hz * 1.0035, amp * sign, decay))
@@ -385,7 +427,9 @@ class ClickCandidatesReport {
             fadeSeconds = 0.015,
             contactSeconds = 0.00015,
             plainVelocity = 0.66,
-            downbeatPitch = 1.06,
+            downbeatVelocity = 1.3,
+            downbeatPitch = 1.5,
+            groupPitch = 1.25,
             bursts = listOf(Burst(4500.0, 1.0, 0.0015, 0.2)),
         ) { p, listener ->
             val f = 1100.0 * p
@@ -423,7 +467,7 @@ class ClickCandidatesReport {
                         val hz = 110.0 * p * k * k * (1 + 0.04 * rnd.nextGaussian())
                         val weight = if (hz < 8000) 1.0 else (8000 / hz).pow(2)
                         val amp = weight * (0.3 + 0.7 * rnd.nextDouble()) / 2
-                        val decay = 0.011 * sqrt(6000 / hz)
+                        val decay = 0.011 * sqrt(6000 * p / hz)
                         val sign = listener.sign()
                         add(Mode(hz * 0.997, amp * sign, decay))
                         add(Mode(hz * 1.003, amp * sign, decay))
@@ -438,11 +482,25 @@ class ClickCandidatesReport {
             fadeSeconds = 0.02,
             contactSeconds = 0.00016,
             plainVelocity = 0.66,
-            downbeatPitch = 1.06,
+            downbeatVelocity = 1.47,
+            downbeatPitch = 1.5,
+            groupPitch = 1.25,
             bursts = listOf(Burst(6000.0, 1.2, 0.003, 0.15)),
             modes = BRIGHT_TICK_MODES,
         )
 
-        val SOUNDS = listOf(WOODY_CLICK, RIM_CLICK, COWBELL_TONK, BRIGHT_TICK)
+        /**
+         * A sound with the place it is heard from and the gain of its plain beats: both found in
+         * round 3 (the place by the same search as the downbeat's below, the gain matching the bar
+         * to the wood block's RMS) and fixed since, so the plain beats stay exactly as they were.
+         */
+        class Candidate(val sound: Sound, val place: Long, val gain: Double)
+
+        val CANDIDATES = listOf(
+            Candidate(WOODY_CLICK, 14, 0.12045642122947114),
+            Candidate(RIM_CLICK, 23, 0.095979752162946770),
+            Candidate(COWBELL_TONK, 108, 0.043684274648478440),
+            Candidate(BRIGHT_TICK, 103, 0.13623647462247460),
+        )
     }
 }

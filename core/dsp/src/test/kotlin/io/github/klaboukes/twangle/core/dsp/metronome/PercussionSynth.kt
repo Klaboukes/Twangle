@@ -28,7 +28,7 @@ import kotlin.math.sqrt
  *
  * Round 3 (a click to keep time by, not an instrument): every mode is damped hard, there is no
  * room, and a hit is the same every time (the noise has a fixed seed); only the accent changes
- * how hard it is struck and, a little, the pitch.
+ * how hard it is struck and the pitch (beat 1 clearly higher, as the wood block's octave).
  */
 internal object PercussionSynth {
 
@@ -51,26 +51,30 @@ internal object PercussionSynth {
         val file: String,
         val lengthSeconds: Double,
         val fadeSeconds: Double,
-        /** Contact time of the downbeat's hit. */
+        /** Contact time of a hit at striking speed 1. */
         val contactSeconds: Double,
-        /** Striking speed of a plain beat, the downbeat's being 1 (a group accent sits halfway). */
+        /** Striking speed of a plain beat. */
         val plainVelocity: Double,
-        /** How much higher the downbeat's modes ring than a plain beat's (a group accent: halfway). */
+        /** Striking speed of the downbeat: harder, so louder and brighter (a group accent sits halfway). */
+        val downbeatVelocity: Double,
+        /** How much higher the downbeat's modes ring than a plain beat's. */
         val downbeatPitch: Double,
+        /** How much higher a group accent's modes ring than a plain beat's: between the two. */
+        val groupPitch: Double,
         val bursts: List<Burst>,
         /** The modes at [pitchFactor]; [listener] gives each mode's sign where it is heard. */
         val modes: (pitchFactor: Double, listener: Random) -> List<Mode>,
     )
 
     fun velocityOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
-        BeatAccent.DOWNBEAT -> 1.0
-        BeatAccent.GROUP -> (1.0 + sound.plainVelocity) / 2
+        BeatAccent.DOWNBEAT -> sound.downbeatVelocity
+        BeatAccent.GROUP -> (sound.downbeatVelocity + sound.plainVelocity) / 2
         BeatAccent.PLAIN -> sound.plainVelocity
     }
 
     fun pitchOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
         BeatAccent.DOWNBEAT -> sound.downbeatPitch
-        BeatAccent.GROUP -> sqrt(sound.downbeatPitch)
+        BeatAccent.GROUP -> sound.groupPitch
         BeatAccent.PLAIN -> 1.0
     }
 
@@ -91,11 +95,13 @@ internal object PercussionSynth {
         val area = force * pulseFrames / 2
 
         val out = DoubleArray(frames)
-        for (mode in sound.modes(pitchOf(sound, accent), Random(listenerSeed))) {
+        val pitch = pitchOf(sound, accent)
+        for (mode in sound.modes(pitch, Random(listenerSeed))) {
             if (mode.hz < 0.45 * RATE) resonate(excitation, mode.hz, mode.amp, mode.decaySeconds, out)
         }
         val noise = Random(sound.file.hashCode().toLong())
-        for (burst in sound.bursts) addBurst(burst, area * burst.level * sqrt(v), noise, out)
+        // The strike noise moves with the pitch too (a smaller, higher body has a brighter impact).
+        for (burst in sound.bursts) addBurst(burst, minOf(burst.centerHz * pitch, 0.4 * RATE), area * burst.level * sqrt(v), noise, out)
 
         // Raised-cosine fade over the last fadeSeconds, ending on exactly 0.
         val fade = sound.fadeSeconds * RATE
@@ -123,8 +129,8 @@ internal object PercussionSynth {
         }
     }
 
-    private fun addBurst(burst: Burst, level: Double, rnd: Random, out: DoubleArray) {
-        val bp = BandPass(burst.centerHz, burst.q)
+    private fun addBurst(burst: Burst, centerHz: Double, level: Double, rnd: Random, out: DoubleArray) {
+        val bp = BandPass(centerHz, burst.q)
         val delay = burst.delaySeconds * RATE
         val attack = (burst.attackSeconds * RATE).coerceAtLeast(1.0)
         for (n in out.indices) {
