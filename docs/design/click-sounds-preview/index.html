@@ -3,31 +3,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Twangle Click Sounds</title>
 <!--
-TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST", ROUND 2. Candidates for the owner to pick by ear.
+TWANGLE PHASE 45, METRONOME CLICK SOUNDS, "HEAR THEM FIRST", ROUND 3. Candidates for the owner to pick by ear.
 Goal     The metronome gets a short list of clicks in Settings, not only the wood block, so it can be heard over
-         a loud amp or a band and stays pleasant through a long practice. The owner picks the two (or three)
-         that join (or replace) the wood block.
-Round 1  (2026-10-25) soft beep, sharp click, low knock: "they all sound very mechanical, like a cheap keyboard",
-         today's wood block included. The owner wants real, high-end percussion instruments.
-Round 2  Physical models of real instruments (modal synthesis), no recordings, so nothing to licence:
-         - Contact: the mallet or stick's force pulse (raised cosine, 0.15-0.6 ms; Hertz's law: a harder hit is
-           shorter, so brighter, and louder), plus a band-passed noise burst for the strike itself.
-         - Modes: 7 to ~230 per instrument, ratios from the physics of the vibrating body (free bar, thick
-           Timoshenko rod, ideal membrane, ring, Chladni plate, marimba tuning 1:4:10), each excited by its
-           shape at the strike point; higher modes die faster (wood: Chaigne & Doutaut 1997); metals in
-           slightly split, beating pairs.
-         - Accent: beat 1 is hit harder (brighter, ~4-7 dB louder); the blocks, claves and marimba also play
-           beat 1 on a higher one, as two-tone blocks do; the side stick and hi-hat only by how hard.
-         - A small, fairly dead room, 18-25 dB under the dry sound, arriving after the attack.
-         - Every hit slightly different (seeded), so beat 2, 3 and 4 aren't copies.
-         Full recipes and sources: the comments in the generator below.
-Files    One bar of 4/4 at 100 BPM each, then 1 s of silence; 16-bit mono, 48 kHz, 3.4 s. Nothing loops:
-         the players below have no loop and no autoplay. Each hit lasts 0.2-0.4 s (today's: 0.04 s).
-Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt and
-         PercussionSynth.kt, in the test sources only (not in the app). Make them again, byte for byte, with
-         ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
-         Each bar is scaled to the wood block's RMS (the hi-hat 0.8 dB under it: its peak reached 0.8).
-Phone    The same six files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
+         a loud amp or a band and stays pleasant through a long practice.
+Round 1  (2026-10-25) soft beep, sharp click, low knock: "mechanical, like a cheap keyboard", today's included.
+Round 2  (2026-10-25) physical models of real instruments (temple blocks, claves, side stick, hi-hat, marimba),
+         ringing 0.2-0.4 s with a little room.
+Round 3  New direction, agreed with the owner: a click that helps a musician keep time, not a realistic instrument.
+         - A sharp attack: the energy peaks within 1.6 ms of the onset, so the beat's moment is exact.
+         - Short: about 40 dB down by 47-61 ms, 65-80 ms in all with the fade to 0; no room, no ring. The app's
+           ClickTrack (one click at a time) works unchanged up to 250 BPM (a beat is never under 240 ms).
+         - The same on every beat; only beat 1 differs: hit harder (brighter, 3.5-4 dB louder) and a little higher.
+         - Unpitched or weakly pitched: inharmonic modes and noise, no clear note to clash with the key.
+         - Round 2's texture kept (contact pulse, strike noise, inharmonic modes), damped hard.
+         - Each at today's wood block's RMS (within 0.6 dB), peak at most 0.8.
+Files    <sound>.wav: one bar of 4/4 at 100 BPM, then 1 s of silence.
+         <sound>-with-guitar.wav: the same click under two bars of strummed steel-string guitar (down and up
+         eighths, E minor then C, a last E minor ringing out), the guitar 14 dB louder than the click by RMS, the
+         same guitar under every sound. The guitar is the app's own reference-tone synth (StringSynth).
+         16-bit mono, 48 kHz. Nothing loops: the players below have no loop and no autoplay.
+Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/metronome/ClickCandidatesReport.kt (recipes,
+         guitar) and PercussionSynth.kt (the synthesis), in the test sources only (not in the app). Make them again,
+         byte for byte, with ./gradlew :core:dsp:benchmark --tests '*ClickCandidatesReport*'
+Measured (downbeat; 1 ms RMS envelope; centroid over 80 ms):
+         sound          peak at   -40 dB at   centroid
+         wood-block     1.6 ms    36 ms       1.9 kHz   (today)
+         woody-click    1.1 ms    52 ms       1.9 kHz
+         rim-click      1.5 ms    54 ms       1.4 kHz
+         cowbell-tonk   1.2 ms    61 ms       0.8 kHz
+         bright-tick    1.4 ms    51 ms       5.0 kHz
+Phone    The same ten files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
          app on the speaker and in headphones.
 -->
 <style>
@@ -54,50 +59,63 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 .sound h2 { font-size: 18px; margin: 0 0 4px; }
 .sound h2 small { color: var(--accent); font-size: 13px; font-weight: 500; margin-left: 8px; }
 .sound p { margin: 0 0 12px; color: var(--muted); }
-.sound audio { width: 100%; }
+.players { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.players label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.players audio { width: 100%; }
+@media (max-width: 560px) { .players { grid-template-columns: 1fr; } }
 .how { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
 </style>
 <main>
-  <h1>Metronome click sounds, round 2</h1>
-  <p class="intro">Each player plays one bar of four beats at 100 BPM, beat 1 accented, then stops.
+  <h1>Metronome click sounds, round 3</h1>
+  <p class="intro">Clicks made to keep time by: short, exact, the same on every beat, with beat 1 a little higher and louder.
+    Each sound plays alone (one bar) and under a strummed guitar (two bars), then stops.
     Listen on the phone's speaker and in headphones, and pick the two (or three) you'd like in the app.</p>
 
   <section class="sound">
     <h2>Wood block <small>today's click, for comparison</small></h2>
     <p>The click the metronome has now.</p>
-    <audio controls preload="auto" src="wood-block.wav"></audio>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="wood-block.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="wood-block-with-guitar.wav"></audio></div>
+    </div>
   </section>
 
   <section class="sound">
-    <h2>Temple blocks</h2>
-    <p>Two hollow wooden blocks, a high one for beat 1 and a lower one for the others. Warm and woody; a good all-rounder.</p>
-    <audio controls preload="auto" src="temple-blocks.wav"></audio>
+    <h2>Woody click</h2>
+    <p>A better wood block for everyday practice: a dry, woody tick with no note of its own.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="woody-click.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="woody-click-with-guitar.wav"></audio></div>
+    </div>
   </section>
 
   <section class="sound">
-    <h2>Claves</h2>
-    <p>Two rosewood sticks struck together: a bright, ringing "tock" that cuts through a band without being harsh.</p>
-    <audio controls preload="auto" src="claves.wav"></audio>
+    <h2>Rim click</h2>
+    <p>A drummer's dry cross-stick on the snare's rim: precise, like playing along with a drummer.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="rim-click.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="rim-click-with-guitar.wav"></audio></div>
+    </div>
   </section>
 
   <section class="sound">
-    <h2>Side stick</h2>
-    <p>A drummer's cross-stick on the snare's rim: dry and familiar, for playing along as if with a drummer.</p>
-    <audio controls preload="auto" src="side-stick.wav"></audio>
+    <h2>Cowbell tonk</h2>
+    <p>A short, choked cowbell, the studio click that cuts through a band.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="cowbell-tonk.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="cowbell-tonk-with-guitar.wav"></audio></div>
+    </div>
   </section>
 
   <section class="sound">
-    <h2>Hi-hat</h2>
-    <p>A closed hi-hat tapped with a stick: a short, crisp "tss" high above the guitar, so it never covers the notes.</p>
-    <audio controls preload="auto" src="hi-hat.wav"></audio>
+    <h2>Bright tick</h2>
+    <p>A high, crisp tick that sits above a loud or distorted guitar, without being harsh.</p>
+    <div class="players">
+      <div><label>Alone</label><audio controls preload="auto" src="bright-tick.wav"></audio></div>
+      <div><label>With guitar</label><audio controls preload="auto" src="bright-tick-with-guitar.wav"></audio></div>
+    </div>
   </section>
 
-  <section class="sound">
-    <h2>Marimba</h2>
-    <p>A low rosewood marimba note with a soft mallet: round and warm, for players who hear high sounds poorly or find them tiring.</p>
-    <audio controls preload="auto" src="marimba.wav"></audio>
-  </section>
-
-  <p class="how">All six are about equally loud. These ring a little longer than today's click (0.2 to 0.4 seconds),
-    as real instruments do; the beats themselves stay exactly on time.</p>
+  <p class="how">All five are about equally loud on their own. In the guitar versions the guitar is clearly louder than the
+    click, as when practising. The guitar is synthetic (the app's own reference tones), so judge the click, not the guitar.</p>
 </main>

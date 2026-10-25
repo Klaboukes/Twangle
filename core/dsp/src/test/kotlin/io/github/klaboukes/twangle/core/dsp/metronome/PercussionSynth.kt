@@ -12,25 +12,23 @@ import kotlin.math.sinh
 import kotlin.math.sqrt
 
 /**
- * Modal synthesis of struck percussion, for the Phase 45 click candidates ([ClickCandidatesReport]).
- * Test sources only: nothing here is in the app.
+ * Modal synthesis of short, struck clicks, for the Phase 45 click candidates
+ * ([ClickCandidatesReport]). Test sources only: nothing here is in the app.
  *
  * A hit is what happens physically, in three parts:
- * 1. **Contact.** The mallet or stick presses on the instrument for a short time, modelled as a
- *    raised-cosine force pulse. Hertz's contact law gives a contact time that shortens with the
- *    striking speed v (∝ v^−1/5) and a peak force that grows as v^6/5, so the pulse's area (the
- *    momentum handed over) grows as v (Hertz's law as used for mallets by Chaigne & Doutaut,
- *    "Numerical simulations of xylophones I", JASA 101, 1997). A shorter pulse reaches higher modes, so a harder hit is louder *and* brighter.
- * 2. **Modes.** The force drives a bank of two-pole resonators, one per vibrating mode, each
- *    with its own frequency, decay and strength. The strength comes from the mode's shape at the
- *    strike point (a node isn't excited at all), so where the instrument is hit matters.
- * 3. **Strike noise.** A short band-passed noise burst for the impact itself (and, for a snare,
- *    the wires), which no mode explains.
+ * 1. **Contact.** The stick or mallet presses on the instrument for a fraction of a millisecond,
+ *    modelled as a raised-cosine force pulse. Hertz's contact law gives a contact time that shortens
+ *    with the striking speed v (∝ v^−1/5) and a peak force that grows as v^6/5, so the pulse's area
+ *    (the momentum handed over) grows as v (Hertz's law as used for mallets by Chaigne & Doutaut,
+ *    "Numerical simulations of xylophones I", JASA 101, 1997). A shorter pulse reaches higher modes,
+ *    so a harder hit is louder *and* brighter.
+ * 2. **Modes.** The force drives a bank of two-pole resonators, one per vibrating mode, each with
+ *    its own frequency, decay and strength (its shape at the strike point, signed as heard).
+ * 3. **Strike noise.** A short band-passed noise burst for the impact itself, which no mode explains.
  *
- * Then a little of one small room ([ROOM]): a few early reflections and a short diffuse tail
- * (velvet noise, Järveläinen & Karjalainen 2007), filtered dull, mixed low and arriving after the
- * direct sound so the attack stays crisp. Every hit gets a seeded, slightly different speed, contact
- * time, strike point and noise, so repeated beats aren't copies; the same seed gives the same hit.
+ * Round 3 (a click to keep time by, not an instrument): every mode is damped hard, there is no
+ * room, and a hit is the same every time (the noise has a fixed seed); only the accent changes
+ * how hard it is struck and, a little, the pitch.
  */
 internal object PercussionSynth {
 
@@ -53,30 +51,37 @@ internal object PercussionSynth {
         val file: String,
         val lengthSeconds: Double,
         val fadeSeconds: Double,
-        /** Contact time at the downbeat's speed. */
+        /** Contact time of the downbeat's hit. */
         val contactSeconds: Double,
-        val pitches: Map<BeatAccent, Double>,
+        /** Striking speed of a plain beat, the downbeat's being 1 (a group accent sits halfway). */
+        val plainVelocity: Double,
+        /** How much higher the downbeat's modes ring than a plain beat's (a group accent: halfway). */
+        val downbeatPitch: Double,
         val bursts: List<Burst>,
-        /** Level of the room next to the dry sound. */
-        val ambience: Double,
-        /** Strike point jitter between hits, as a fraction of each mode's strength. */
-        val strikeJitter: Double = 0.06,
-        val modes: (pitchHz: Double) -> List<Mode>,
+        /** The modes at [pitchFactor]; [listener] gives each mode's sign where it is heard. */
+        val modes: (pitchFactor: Double, listener: Random) -> List<Mode>,
     )
 
-    /** Striking speed per accent, the downbeat being 1: plain beats are hit about 5 dB softer. */
-    fun velocityOf(accent: BeatAccent): Double = when (accent) {
+    fun velocityOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
         BeatAccent.DOWNBEAT -> 1.0
-        BeatAccent.GROUP -> 0.75
-        BeatAccent.PLAIN -> 0.55
+        BeatAccent.GROUP -> (1.0 + sound.plainVelocity) / 2
+        BeatAccent.PLAIN -> sound.plainVelocity
     }
 
-    /** One hit of [sound] at [accent]; [seed] picks its small variations. Starts and ends on exactly 0. */
-    fun hit(sound: Sound, accent: BeatAccent, seed: Long, ambience: Double = sound.ambience): DoubleArray {
-        val rnd = Random(seed)
+    fun pitchOf(sound: Sound, accent: BeatAccent): Double = when (accent) {
+        BeatAccent.DOWNBEAT -> sound.downbeatPitch
+        BeatAccent.GROUP -> sqrt(sound.downbeatPitch)
+        BeatAccent.PLAIN -> 1.0
+    }
+
+    /**
+     * One hit of [sound] at [accent], heard from the place [listenerSeed] picks: the same every
+     * time. Starts and ends on exactly 0.
+     */
+    fun hit(sound: Sound, accent: BeatAccent, listenerSeed: Long): DoubleArray {
         val frames = (sound.lengthSeconds * RATE).roundToInt()
-        val v = velocityOf(accent) * (1 + 0.03 * rnd.nextGaussian())
-        val contact = sound.contactSeconds * v.pow(-0.2) * (1 + 0.03 * rnd.nextGaussian())
+        val v = velocityOf(sound, accent)
+        val contact = sound.contactSeconds * v.pow(-0.2)
         val force = v.pow(1.2)
 
         // Contact: a raised-cosine force pulse, 0 at both ends.
@@ -86,15 +91,11 @@ internal object PercussionSynth {
         val area = force * pulseFrames / 2
 
         val out = DoubleArray(frames)
-        for (mode in sound.modes(sound.pitches.getValue(accent))) {
-            if (mode.hz >= 0.45 * RATE) continue
-            val amp = mode.amp * (1 + sound.strikeJitter * rnd.nextGaussian())
-            resonate(excitation, mode.hz, amp, mode.decaySeconds, out)
+        for (mode in sound.modes(pitchOf(sound, accent), Random(listenerSeed))) {
+            if (mode.hz < 0.45 * RATE) resonate(excitation, mode.hz, mode.amp, mode.decaySeconds, out)
         }
-        for (burst in sound.bursts) addBurst(burst, area * burst.level * sqrt(v), rnd, out)
-
-        val wet = ROOM.apply(out)
-        for (n in out.indices) out[n] += ambience * wet[n]
+        val noise = Random(sound.file.hashCode().toLong())
+        for (burst in sound.bursts) addBurst(burst, area * burst.level * sqrt(v), noise, out)
 
         // Raised-cosine fade over the last fadeSeconds, ending on exactly 0.
         val fade = sound.fadeSeconds * RATE
@@ -168,40 +169,6 @@ internal object PercussionSynth {
         }
     }
 
-    /**
-     * A small, fairly dead room: eight early reflections 3–23 ms after the direct sound, then a
-     * velvet-noise tail (sparse ±1 taps, 1500 a second) dying with RT60 ≈ 0.3 s, all through a
-     * 5 kHz one-pole low-pass (walls and air take the highs). The same room for every sound.
-     */
-    private object ROOM {
-        private val taps: List<Pair<Int, Double>> = buildList {
-            val early = listOf(2.9 to 0.12, 4.3 to -0.10, 6.1 to 0.09, 8.7 to -0.08, 11.3 to 0.07, 14.2 to 0.06, 17.9 to -0.05, 22.6 to 0.04)
-            for ((ms, gain) in early) add((ms * RATE / 1000).roundToInt() to gain)
-            val rnd = Random(20261025)
-            val tau = 0.3 / 6.91
-            var t = 0.020
-            while (t < 0.35) {
-                val position = t + rnd.nextDouble() / 1500
-                add((position * RATE).roundToInt() to (if (rnd.nextBoolean()) 1 else -1) * 0.07 * exp(-(position - 0.02) / tau))
-                t += 1.0 / 1500
-            }
-        }
-
-        fun apply(dry: DoubleArray): DoubleArray {
-            val wet = DoubleArray(dry.size)
-            for ((delay, gain) in taps) {
-                for (n in 0 until dry.size - delay) wet[n + delay] += gain * dry[n]
-            }
-            val k = 1 - exp(-2 * PI * 5000.0 / RATE)
-            var y = 0.0
-            for (n in wet.indices) {
-                y += k * (wet[n] - y)
-                wet[n] = y
-            }
-            return wet
-        }
-    }
-
     // ---- Mode sets from the physics of each kind of vibrating body. ----
 
     // βL of a free-free bar's bending modes (Fletcher & Rossing §2.15; (2n + 1)π/2 from the third on).
@@ -232,8 +199,6 @@ internal object PercussionSynth {
     val MEMBRANE: List<Triple<Int, Int, Double>> = listOf(
         Triple(0, 1, 2.4048), Triple(1, 1, 3.8317), Triple(2, 1, 5.1356), Triple(0, 2, 5.5201),
         Triple(3, 1, 6.3802), Triple(1, 2, 7.0156), Triple(4, 1, 7.5883), Triple(2, 2, 8.4172),
-        Triple(0, 3, 8.6537), Triple(5, 1, 8.7715), Triple(3, 2, 9.7610), Triple(6, 1, 9.9361),
-        Triple(1, 3, 10.1735),
     )
 
     /** Bessel function J_m(x) by its power series (fine for x below about 20). */
@@ -248,10 +213,12 @@ internal object PercussionSynth {
         return sum
     }
 
-    /** A thin ring's in-plane bending modes n = 2, 3, …: f ∝ n(n² − 1)/√(n² + 1) (Fletcher & Rossing, *The Physics of Musical Instruments*, ch. 2). */
+    /** A thin ring's in-plane bending modes n = 2, 3, …: f ∝ n(n² − 1)/√(n² + 1) (Fletcher & Rossing, ch. 2), 1 at n = 2. */
     fun ringRatio(n: Int): Double = n * (n * n - 1.0) / sqrt(n * n + 1.0) / (2 * 3.0 / sqrt(5.0))
 
     /** Decay of wood: 1/τ = a + b·f², the loss law Chaigne & Doutaut (1997) fitted to xylophone bars. */
     fun woodDecay(hz: Double, a: Double, b: Double): Double = 1.0 / (a + b * hz * hz)
 
+    /** +1 or −1: a mode's sign where it is heard, so the modes don't all add up in the first instant. */
+    fun Random.sign(): Double = if (nextBoolean()) 1.0 else -1.0
 }
