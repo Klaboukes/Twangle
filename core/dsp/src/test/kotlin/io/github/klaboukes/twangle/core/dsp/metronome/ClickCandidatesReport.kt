@@ -94,7 +94,12 @@ class ClickCandidatesReport {
             val mix = DoubleArray(guitar.size) { guitarGain * guitar[it] + track[it] }
             val mixGain = minOf(1.0, MIX_PEAK / mix.maxOf { abs(it) })
             files += "$name-with-guitar" to mix.toFloats(mixGain)
-            println("%-13s  with guitar: mix scaled %+.1f dB to stay under %.2f".format(name, 20 * log10(mixGain), MIX_PEAK))
+            val guitarInMix = DoubleArray(guitar.size) { guitarGain * guitar[it] }
+            println(
+                "%-13s  with guitar: mix scaled %+.1f dB to stay under %.2f; %.0f %% of the click's energy is in bands where it is louder than the guitar".format(
+                    name, 20 * log10(mixGain), MIX_PEAK, 100 * shareAboveGuitar(track, guitarInMix, 9),
+                ),
+            )
         }
 
         // Only this round's files stay in the folder.
@@ -194,6 +199,48 @@ class ClickCandidatesReport {
             }
         }
         return out
+    }
+
+    /**
+     * How well the click stands out from the guitar: over the first 80 ms after each of [beats]
+     * beats, the share of the click's energy that lies in third-octave bands (50 Hz–16 kHz) where
+     * the click has more energy than the guitar. A rough masking measure, not a hearing model.
+     */
+    private fun shareAboveGuitar(click: DoubleArray, guitar: DoubleArray, beats: Int): Double {
+        val window = (0.08 * RATE).roundToInt()
+        fun bandEnergy(x: DoubleArray, centerHz: Double): Double {
+            // RBJ band-pass, a third of an octave wide (Q ≈ 4.32).
+            val w0 = 2 * PI * centerHz / RATE
+            val alpha = kotlin.math.sin(w0) / (2 * 4.32)
+            val a0 = 1 + alpha
+            val b0 = alpha / a0
+            val a1 = -2 * cos(w0) / a0
+            val a2 = (1 - alpha) / a0
+            var x1 = 0.0
+            var x2 = 0.0
+            var y1 = 0.0
+            var y2 = 0.0
+            var energy = 0.0
+            for (n in x.indices) {
+                val y = b0 * x[n] - b0 * x2 - a1 * y1 - a2 * y2
+                x2 = x1
+                x1 = x[n]
+                y2 = y1
+                y1 = y
+                if ((n % BEAT_FRAMES) < window && n / BEAT_FRAMES < beats) energy += y * y
+            }
+            return energy
+        }
+        var above = 0.0
+        var all = 0.0
+        var center = 50.0
+        while (center < 16_000) {
+            val c = bandEnergy(click, center)
+            if (c > bandEnergy(guitar, center)) above += c
+            all += c
+            center *= 2.0.pow(1.0 / 3)
+        }
+        return above / all
     }
 
     private fun crest(x: DoubleArray): Double = x.maxOf { abs(it) } / rms(x)
@@ -320,33 +367,46 @@ class ClickCandidatesReport {
             }
         }
 
-        // A choked cowbell "tonk", the studio click that cuts through a band. A cowbell is a bent
-        // sheet-metal shell; its cross-section bends like a ring, so its lowest modes are taken as a
-        // ring's (f ∝ n(n² − 1)/√(n² + 1), n = 2…6), each split into a beating pair by the flattened
-        // shape (±2.5 %, an estimate), plus two lengthwise modes (1.5 and 2.2 × the lowest, an
-        // estimate), all choked by a hand (τ ≈ 14 ms at the bottom). Weakly pitched: the beating
-        // pairs and the inharmonic set give no clear note.
+        // A small, high cowbell (or agogo bell) struck with a stick near its open mouth and choked
+        // with a hand: the bright, clanky metal "tonk" that sits above a guitar. No published table
+        // of cowbell or agogo modes was at hand, so the modes come from the physics of a thin bell
+        // shell: its (m, 0) modes, where the mouth bends into m waves round the rim, follow a thin
+        // ring's inextensional bending, f ∝ m(m² − 1)/√(m² + 1), 1 : 2.83 : 5.42 for m = 2, 3, 4
+        // (Rayleigh; Fletcher & Rossing ch. 2 and 21), a hit near the mouth exciting them most; and
+        // between them a cluster of modes with one nodal line across the shell, at 1.62, 1.94, 2.37
+        // and 3.38 × the lowest (an estimate). Every mode is a pair split by the shell's flattened,
+        // uneven shape (±1.2–1.5 %, an estimate), so it beats. The lowest at 1.1 kHz, above the
+        // guitar's main energy, the strongest cluster between 1.5 and 4 kHz. A hard stick on metal
+        // (0.15 ms) and a strike noise around 4.5 kHz; the hand chokes the ring (τ ≈ 24 ms at the
+        // bottom, shorter higher up).
         val COWBELL_TONK = Sound(
             file = "cowbell-tonk",
             lengthSeconds = 0.08,
-            fadeSeconds = 0.02,
-            contactSeconds = 0.00025,
+            fadeSeconds = 0.015,
+            contactSeconds = 0.00015,
             plainVelocity = 0.66,
             downbeatPitch = 1.06,
-            bursts = listOf(Burst(3000.0, 1.0, 0.0012, 0.2)),
+            bursts = listOf(Burst(4500.0, 1.0, 0.0015, 0.2)),
         ) { p, listener ->
-            val f = 600.0 * p
+            val f = 1100.0 * p
+            // (ratio, strength, pair split)
+            val modes = listOf(
+                Triple(ringRatio(2), 0.7, 0.015),
+                Triple(1.62, 0.8, 0.012),
+                Triple(1.94, 0.9, 0.012),
+                Triple(2.37, 1.0, 0.012),
+                Triple(ringRatio(3), 1.0, 0.015),
+                Triple(3.38, 0.8, 0.012),
+                Triple(ringRatio(4), 0.4, 0.015),
+            )
             buildList {
-                for (n in 2..6) {
-                    val hz = f * ringRatio(n)
-                    val amp = 1.0 / (n - 1)
-                    val decay = 0.014 * sqrt(f / hz)
+                for ((ratio, amp, split) in modes) {
+                    val hz = f * ratio
+                    val decay = 0.024 * sqrt(f / hz)
                     val sign = listener.sign() // a split pair starts together, then beats
-                    add(Mode(hz * 0.975, amp * sign, decay))
-                    add(Mode(hz * 1.025, amp * sign, decay))
+                    add(Mode(hz * (1 - split), amp * sign, decay))
+                    add(Mode(hz * (1 + split), amp * sign, decay))
                 }
-                add(Mode(f * 1.5, 0.6 * listener.sign(), 0.010))
-                add(Mode(f * 2.2, 0.5 * listener.sign(), 0.009))
             }
         }
 

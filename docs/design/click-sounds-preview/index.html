@@ -11,9 +11,9 @@ Round 2  (2026-10-25) physical models of real instruments (temple blocks, claves
          ringing 0.2-0.4 s with a little room.
 Round 3  New direction, agreed with the owner: a click that helps a musician keep time, not a realistic instrument.
          - A sharp attack: the energy peaks within 1.6 ms of the onset, so the beat's moment is exact.
-         - Short: about 40 dB down by 47-61 ms, 65-80 ms in all with the fade to 0; no room, no ring. The app's
+         - Short: about 40 dB down by 47-70 ms, 65-80 ms in all with the fade to 0; no room, no ring. The app's
            ClickTrack (one click at a time) works unchanged up to 250 BPM (a beat is never under 240 ms).
-         - The same on every beat; only beat 1 differs: hit harder (brighter, 3.5-4 dB louder) and a little higher.
+         - The same on every beat; only beat 1 differs: hit harder (brighter, 3.3-4 dB louder) and a little higher.
          - Unpitched or weakly pitched: inharmonic modes and noise, no clear note to clash with the key.
          - Round 2's texture kept (contact pulse, strike noise, inharmonic modes), damped hard.
          - Each at today's wood block's RMS (within 0.6 dB), peak at most 0.8.
@@ -30,7 +30,7 @@ Measured (downbeat; 1 ms RMS envelope; centroid over 80 ms):
          wood-block     1.6 ms    36 ms       1.9 kHz   (today)
          woody-click    1.1 ms    52 ms       1.9 kHz
          rim-click      1.5 ms    54 ms       1.4 kHz
-         cowbell-tonk   1.2 ms    61 ms       0.8 kHz
+         cowbell-tonk   1.2 ms    70 ms       2.4 kHz   (reworked: was 61 ms, 0.8 kHz, inside the guitar's range)
          bright-tick    1.4 ms    51 ms       5.0 kHz
 Phone    The same ten files are in the Xiaomi's Music/Twangle-clicks folder, to play from its own music or files
          app on the speaker and in headphones.
@@ -100,7 +100,7 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 
   <section class="sound">
     <h2>Cowbell tonk</h2>
-    <p>A short, choked cowbell, the studio click that cuts through a band.</p>
+    <p>A small, high cowbell, choked: a bright, clanky metal "tonk" above the guitar, the studio click that cuts through a band.</p>
     <div class="players">
       <div><label>Alone</label><audio controls preload="auto" src="cowbell-tonk.wav"></audio></div>
       <div><label>With guitar</label><audio controls preload="auto" src="cowbell-tonk-with-guitar.wav"></audio></div>
