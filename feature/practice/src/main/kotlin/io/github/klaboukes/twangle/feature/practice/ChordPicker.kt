@@ -66,15 +66,16 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
-import io.github.klaboukes.twangle.core.dsp.scale.ScaleGroup
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * The chord's or the scale's name as one button as wide as the row (Phase 47, the owner's pick D in
- * docs/design/tool-button-preview.html), two lines inside it: the short name large with ⌄ after it
- * ("Am7 ⌄", "Am pent. ⌄") and its name in words under it, small and muted ("A minor seventh"). One
- * steady height whatever the name, so the chart under it never moves ([NameButton]). A tap calls
+ * docs/design/tool-button-preview.html) with ⌄ after the name. A chord: two lines inside it, the
+ * symbol large ("Am7 ⌄") and its name in words under it, small and muted ("A minor seventh"). A scale:
+ * its full name in words, large, on one line ("D Dorian ⌄", "A minor pentatonic ⌄"; the owner's pick
+ * of 2026-10-26), on two lines set smaller only where one doesn't fit. One steady height whatever the
+ * name, so the chart or the neck under it never moves ([NameButton]). A tap calls
  * [onClick] to open the [ChordPanel]; [panel] places it right under the button, given the row's width
  * (upright, so the name stays in sight while picking), or the screen puts it elsewhere (on its side,
  * over the start half, so the panel doesn't hide the name and the chart that each pick changes).
@@ -96,8 +97,8 @@ internal fun ChordNameButton(
     val speech = rememberNoteNameSpeech()
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
-    val symbol = if (scales) scaleSymbol(scale, notation) else chordSymbol(chord, notation)
-    val name = if (scales) scaleWords(scale, notation) else chordWords(chord, notation)
+    val symbol = if (scales) scaleWords(scale, notation) else chordSymbol(chord, notation)
+    val name = if (scales) null else chordWords(chord, notation)
     val spoken = if (scales) scaleWords(scale, notation, speech) else chordWords(chord, notation, speech)
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         val width = minOf(maxWidth, NAME_ROW_MAX_WIDTH)
@@ -123,6 +124,10 @@ internal fun ChordNameButton(
  * (Dutch "Sol♯ mineur-pentatonisch" at 2× text on a 320 dp phone) are set smaller too, onto a second
  * line only where one would be smaller still, never making the button taller.
  *
+ * Without [words] (a scale) [symbol] is the full name: in the title's size on one line where it fits,
+ * else on two lines, whole words, at most [TWO_LINES_SCALE] of that size and smaller where it must
+ * ([OneLineFirstAutoSize]), in the same steady height.
+ *
  * The face with the short name is the button (tagged [PracticeTestTags.NAME_PICKER]); the words are
  * drawn over its lower part without taking touches (a tap there is the button's), hidden from
  * TalkBack, which hears them in the button's description ([spoken]).
@@ -130,7 +135,7 @@ internal fun ChordNameButton(
 @Composable
 private fun NameButton(
     symbol: String,
-    words: String,
+    words: String?,
     spoken: String,
     live: Boolean,
     onClick: () -> Unit,
@@ -164,20 +169,24 @@ private fun NameButton(
                     if (live) liveRegion = LiveRegionMode.Polite
                 }
                 .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
-                .padding(start = 12.dp, end = 12.dp, top = NAME_BUTTON_PADDING, bottom = NAME_BUTTON_PADDING + wordsHeight),
+                .padding(start = 12.dp, end = 12.dp, top = NAME_BUTTON_PADDING, bottom = NAME_BUTTON_PADDING + if (words != null) wordsHeight else 0.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                musicText(symbol),
+                musicText(if (words == null) breakableAtHyphens(symbol) else symbol),
                 style = title.copy(
                     textAlign = TextAlign.Center,
                     lineHeight = ONE_LINE_HEIGHT,
                     lineHeightStyle = TRIMMED,
                 ),
                 color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                autoSize = TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = title.fontSize, stepSize = 0.5.sp),
+                maxLines = if (words == null) 2 else 1,
+                autoSize = if (words == null) {
+                    remember(title.fontSize) { OneLineFirstAutoSize(title.fontSize, title.fontSize * TWO_LINES_SCALE, NAME_MIN_SIZE) }
+                } else {
+                    TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = title.fontSize, stepSize = 0.5.sp)
+                },
                 modifier = Modifier.weight(1f, fill = false),
             )
             Icon(
@@ -187,7 +196,7 @@ private fun NameButton(
                 modifier = Modifier.padding(start = 2.dp).size(20.dp),
             )
         }
-        Box(
+        if (words != null) Box(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -211,12 +220,11 @@ private fun NameButton(
  * The name button's panel, [expanded] or not, a Material dropdown under the place it is put in, at
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
  * ([RootPicker]), then "Chord type" over the sixteen chord types four to a row ([ChordTypePicker]) or,
- * with [scales], the twelve scales two to a row in three groups, each under its header ("Modes",
- * "Minor", "Pentatonic and blues"; [ScaleTypePicker]). A pick leaves it
- * open, so both can be changed in one go, and shows at once on the button and the chart; Back and a
- * tap beside it call [onDismiss]. On a short screen it scrolls.
+ * with [scales], the twelve scales two to a row in one list, the most used first ([ScaleTypePicker]).
+ * A pick leaves it open, so both can be changed in one go, and shows at once on the button and the
+ * chart; Back and a tap beside it call [onDismiss]. On a short screen it scrolls.
  *
- * TalkBack hears its grids as radio groups ("Root", "Chord type", "Modes", "Minor", "Pentatonic and blues").
+ * TalkBack hears its grids as radio groups ("Root", "Chord type" or "Scale").
  */
 @Composable
 internal fun ChordPanel(
@@ -342,12 +350,12 @@ private fun ChordTypePicker(
 }
 
 /**
- * The twelve scales, [type] picked, in their groups ([ScaleGroup]), each under its header: the seven
- * modes ("Ionian (major)" … "Locrian"), the two minors ("Harmonic minor", "Melodic minor"), the two
- * pentatonics and the blues. Two to a row, so long names (French "Pentatonique majeure", Russian
+ * The twelve scales, [type] picked, in one list without headers, the most used first ([ScaleType]'s
+ * order, the owner's of 2026-10-26), two to a row in six full rows: "Major" · "Minor", the two
+ * pentatonics, "Blues" · "Dorian", "Mixolydian" · "Harmonic minor", "Phrygian" · "Lydian", "Melodic
+ * minor" · "Locrian". Two to a row, so long names (French "Pentatonique majeure", Russian
  * "Миксолидийский") keep a fair size; a long name takes two lines rather than getting small. All of
- * one steady size, in every group. TalkBack hears each group as a radio group by its header, each
- * scale by its name.
+ * one steady size. TalkBack hears one radio group ("Scale"), each scale by its name.
  */
 @Composable
 private fun ScaleTypePicker(
@@ -357,26 +365,20 @@ private fun ScaleTypePicker(
     modifier: Modifier = Modifier,
 ) {
     val names = ScaleType.entries.associateWith { stringResource(scaleTypeLabel(it)) }
-    Column(modifier) {
-        for (group in ScaleGroup.entries) {
-            val header = stringResource(scaleGroupLabel(group))
-            if (group.ordinal > 0) Spacer(Modifier.height(GROUP_GAP))
-            PanelLabel(header)
-            PickerGrid(
-                options = ScaleType.entries.filter { it.group == group },
-                picked = type,
-                perRow = SCALES_PER_ROW,
-                maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
-                groupLabel = header,
-                label = { names.getValue(it) },
-                spoken = { names.getValue(it) },
-                tag = PracticeTestTags::scale,
-                width = width,
-                onPick = onTypeChange,
-                lines = 2,
-            )
-        }
-    }
+    PickerGrid(
+        options = ScaleType.entries,
+        picked = type,
+        perRow = SCALES_PER_ROW,
+        maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
+        groupLabel = stringResource(R.string.practice_scale_type),
+        label = { names.getValue(it) },
+        spoken = { names.getValue(it) },
+        tag = PracticeTestTags::scale,
+        width = width,
+        onPick = onTypeChange,
+        modifier = modifier,
+        lines = 2,
+    )
 }
 
 /**
@@ -523,6 +525,34 @@ internal class WholeWordsAutoSize(
 }
 
 /**
+ * The largest size from [largest] at which the text fits its box on one line; where it doesn't, the
+ * largest from [twoLines] down to [smallest] at which it fits on its lines without breaking a word (as
+ * [WholeWordsAutoSize]). Smallest if none. A scale's name on the name button: "A minor pentatonic" large
+ * on one line, "Sol♯ mineur-pentatonisch" at 2× text on two, smaller.
+ */
+internal class OneLineFirstAutoSize(
+    private val largest: TextUnit,
+    private val twoLines: TextUnit,
+    private val smallest: TextUnit,
+) : TextAutoSize {
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        val one = performLayout(constraints, text, largest)
+        if (one.lineCount == 1 && !one.didOverflowWidth && !one.didOverflowHeight) return largest
+        var size = minOf(twoLines.value, largest.value)
+        while (size > smallest.value) {
+            val layout = performLayout(constraints, text, size.sp)
+            if (!layout.didOverflowWidth && !layout.didOverflowHeight && layout.breaksBetweenWords(text.text)) return size.sp
+            size -= LABEL_STEP
+        }
+        return smallest
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other is OneLineFirstAutoSize && other.largest == largest && other.twoLines == twoLines && other.smallest == smallest
+    override fun hashCode(): Int = (largest.hashCode() * 31 + twoLines.hashCode()) * 31 + smallest.hashCode()
+}
+
+/**
  * [text] with a line break allowed after each hyphen between two letters (a zero-width space). Android
  * breaks a compound such as "majeur-pentatonisch" at its hyphen only when hyphenation is on, which
  * it isn't, so a long one (Dutch "A♭ majeur-pentatonisch" at 2× text in Futuristic) was broken in
@@ -578,14 +608,16 @@ private val NAME_BUTTON_HEIGHT = 64.dp
 private val NAME_BUTTON_PADDING = 4.dp
 private val MENU_PADDING = 4.dp
 private val SECTION_GAP = 4.dp
-private val GROUP_GAP = 2.dp
 
 /**
  * The short name shrinks at most to this: at 2× text the wide Space Age letters need it for "Sol♯m pent."
  * on the small button of before Phase 47 (10 sp didn't fit, the overnight run of 2026-10-20); at 1× it never
- * gets this small. The button's upper line is one line of [NAME_LINE_SIZE] tall, with room for rounding.
+ * gets this small; a scale's full name too, at worst. The button's upper line is one line of [NAME_LINE_SIZE] tall, with room for rounding.
  */
 private val NAME_MIN_SIZE = 7.sp
+
+/** A scale's full name that doesn't fit on one line takes two, at most this share of the title's size. */
+private const val TWO_LINES_SCALE = 0.8f
 private val NAME_LINE_SIZE = 12.sp
 private const val NAME_LINE = 1.5f
 

@@ -58,10 +58,10 @@ object PracticeTestTags {
     /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
     internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()
 
-    /** The chord's or the scale's short name over its chart ("Csus2 ⌄", "Am pent. ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
+    /** The chord's symbol or the scale's full name over its chart or neck ("Csus2 ⌄", "A minor pentatonic ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
     const val NAME_PICKER = "practice_name_picker"
 
-    /** The chord's or the scale's name in words, small, in [NAME_PICKER] under the short name ("C suspended second"). */
+    /** The chord's name in words, small, in [NAME_PICKER] under the symbol ("C suspended second"); a scale has none (its name in words is the button's). */
     const val NAME_WORDS = "practice_name_words"
 
     /** The chord chart (one item for TalkBack). */

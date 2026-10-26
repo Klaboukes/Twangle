@@ -105,7 +105,7 @@ class ScaleTest {
     @Test
     fun `every mode has its parent major scale's notes and, but for the key with six signs, its names`() {
         val parentStep = mapOf(DORIAN to 10, PHRYGIAN to 8, LYDIAN to 7, MIXOLYDIAN to 5, NATURAL_MINOR to 3, LOCRIAN to 1, MAJOR to 0)
-        assertEquals(ScaleType.entries.filter { it.group == ScaleGroup.MODES }.toSet(), parentStep.keys)
+        assertEquals("the seven-note scales written in a major key are the modes", ScaleType.entries.filter { it.steps.size == 7 && !it.key.minor }.toSet(), parentStep.keys)
         for ((mode, step) in parentStep) for (root in PitchClass.entries) {
             val parent = Scale(root.transposed(step), MAJOR)
             val scale = Scale(root, mode)
@@ -165,16 +165,26 @@ class ScaleTest {
     }
 
     @Test
-    fun `the scales in their groups, in the panel's order`() {
+    fun `the scales in the panel's order, the most used first`() {
         assertEquals(
-            listOf(MAJOR, DORIAN, PHRYGIAN, LYDIAN, MIXOLYDIAN, NATURAL_MINOR, LOCRIAN),
-            ScaleType.entries.filter { it.group == ScaleGroup.MODES },
+            listOf(
+                MAJOR, NATURAL_MINOR,
+                MAJOR_PENTATONIC, MINOR_PENTATONIC,
+                BLUES, DORIAN,
+                MIXOLYDIAN, HARMONIC_MINOR,
+                PHRYGIAN, LYDIAN,
+                MELODIC_MINOR, LOCRIAN,
+            ),
+            ScaleType.entries,
         )
-        assertEquals(listOf(HARMONIC_MINOR, MELODIC_MINOR), ScaleType.entries.filter { it.group == ScaleGroup.MINOR })
-        assertEquals(listOf(MAJOR_PENTATONIC, MINOR_PENTATONIC, BLUES), ScaleType.entries.filter { it.group == ScaleGroup.PENTATONIC_AND_BLUES })
-        assertEquals("grouped, one group after the other", ScaleType.entries.sortedBy { it.group.ordinal }, ScaleType.entries)
-        // Saved by name: the scales of before Phase 47 keep theirs.
-        for (old in listOf("MAJOR", "NATURAL_MINOR", "MAJOR_PENTATONIC", "MINOR_PENTATONIC", "BLUES")) ScaleType.valueOf(old)
+        // Saved by name, so a new order changes no saved choice: every name of before it still means its scale.
+        val saved = listOf(
+            "MAJOR", "DORIAN", "PHRYGIAN", "LYDIAN", "MIXOLYDIAN", "NATURAL_MINOR", "LOCRIAN",
+            "HARMONIC_MINOR", "MELODIC_MINOR", "MAJOR_PENTATONIC", "MINOR_PENTATONIC", "BLUES",
+        )
+        assertEquals(ScaleType.entries.map { it.name }.toSet(), saved.toSet())
+        assertEquals(listOf(0, 2, 3, 5, 7, 8, 10), ScaleType.valueOf("NATURAL_MINOR").steps)
+        assertEquals(listOf(0, 3, 5, 6, 7, 10), ScaleType.valueOf("BLUES").steps)
     }
 
     @Test
@@ -188,7 +198,7 @@ class ScaleTest {
 
     @Test
     fun `scale sizes and degrees`() {
-        assertEquals(listOf(7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 6), ScaleType.entries.map { it.steps.size })
+        assertEquals(listOf(7, 7, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7), ScaleType.entries.map { it.steps.size })
         val blues = Scale(A, BLUES)
         assertEquals(1, blues.degreeOf(A))
         assertEquals(4, blues.degreeOf(D_SHARP))

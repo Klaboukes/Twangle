@@ -6,21 +6,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.appLocale
-import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
-import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.FretNote
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
-import io.github.klaboukes.twangle.core.dsp.scale.ScaleGroup
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import java.util.Locale
 
-/** The scale type's button label: "Ionian (major)", "Dorian", "Minor pentatonic" … */
+/** The scale type's button label: "Major", "Minor", "Dorian", "Minor pentatonic" … */
 @StringRes
 internal fun scaleTypeLabel(type: ScaleType): Int = when (type) {
     ScaleType.MAJOR -> R.string.practice_scale_type_major
-    ScaleType.NATURAL_MINOR -> R.string.practice_scale_type_natural_minor
+    ScaleType.NATURAL_MINOR -> R.string.practice_scale_type_minor
     ScaleType.MAJOR_PENTATONIC -> R.string.practice_scale_type_major_pentatonic
     ScaleType.MINOR_PENTATONIC -> R.string.practice_scale_type_minor_pentatonic
     ScaleType.BLUES -> R.string.practice_scale_type_blues
@@ -33,19 +30,11 @@ internal fun scaleTypeLabel(type: ScaleType): Int = when (type) {
     ScaleType.MELODIC_MINOR -> R.string.practice_scale_type_melodic_minor
 }
 
-/** The header of a group of scale buttons in the panel: "Modes", "Minor", "Pentatonic and blues". */
-@StringRes
-internal fun scaleGroupLabel(group: ScaleGroup): Int = when (group) {
-    ScaleGroup.MODES -> R.string.practice_scale_group_modes
-    ScaleGroup.MINOR -> R.string.practice_scale_group_minor
-    ScaleGroup.PENTATONIC_AND_BLUES -> R.string.practice_scale_group_pentatonic
-}
-
 /** The words for a scale on a root: "%1$s major", "%1$s minor pentatonic" … */
 @StringRes
 internal fun scaleWordsPattern(type: ScaleType): Int = when (type) {
     ScaleType.MAJOR -> R.string.practice_scale_major
-    ScaleType.NATURAL_MINOR -> R.string.practice_scale_natural_minor
+    ScaleType.NATURAL_MINOR -> R.string.practice_scale_minor
     ScaleType.MAJOR_PENTATONIC -> R.string.practice_scale_major_pentatonic
     ScaleType.MINOR_PENTATONIC -> R.string.practice_scale_minor_pentatonic
     ScaleType.BLUES -> R.string.practice_scale_blues
@@ -59,38 +48,13 @@ internal fun scaleWordsPattern(type: ScaleType): Int = when (type) {
 }
 
 /**
- * [scale] in words, "A minor pentatonic", the root as the scale writes it in the player's
- * [notation]; with [speech] as TalkBack says it ("B flat major", Dutch "bes majeur").
+ * [scale] in words, "A minor pentatonic", "D Dorian", "A minor" (the natural minor scale, as players
+ * call it), the root as the scale writes it in the player's [notation]; the name button shows it; with [speech] as TalkBack says it ("B flat major", Dutch "bes majeur").
  */
 @Composable
 internal fun scaleWords(scale: Scale, notation: Notation, speech: NoteNameSpeech? = null): String {
     val root = scale.nameOf(scale.root, notation)
     return stringResource(scaleWordsPattern(scale.type), speech?.name(root) ?: root)
-}
-
-/**
- * [scale]'s short name on the name button, as a chord symbol with the scale's short name after it:
- * "A" (major), "Am" (natural minor), "A pent.", "Am pent.", "A blues", "D dor.", "G mixo.", "Am harm.",
- * "Am mel."; the root as the scale writes it in the player's [notation].
- */
-@Composable
-internal fun scaleSymbol(scale: Scale, notation: Notation): String {
-    val root = scale.nameOf(scale.root, notation)
-    val minor = root + ChordSpelling.suffixOf(ChordQuality.MINOR)
-    return when (scale.type) {
-        ScaleType.MAJOR -> root
-        ScaleType.NATURAL_MINOR -> minor
-        ScaleType.MAJOR_PENTATONIC -> stringResource(R.string.practice_scale_short_pentatonic, root)
-        ScaleType.MINOR_PENTATONIC -> stringResource(R.string.practice_scale_short_pentatonic, minor)
-        ScaleType.BLUES -> stringResource(R.string.practice_scale_short_blues, root)
-        ScaleType.DORIAN -> stringResource(R.string.practice_scale_short_dorian, root)
-        ScaleType.PHRYGIAN -> stringResource(R.string.practice_scale_short_phrygian, root)
-        ScaleType.LYDIAN -> stringResource(R.string.practice_scale_short_lydian, root)
-        ScaleType.MIXOLYDIAN -> stringResource(R.string.practice_scale_short_mixolydian, root)
-        ScaleType.LOCRIAN -> stringResource(R.string.practice_scale_short_locrian, root)
-        ScaleType.HARMONIC_MINOR -> stringResource(R.string.practice_scale_short_harmonic_minor, minor)
-        ScaleType.MELODIC_MINOR -> stringResource(R.string.practice_scale_short_melodic_minor, minor)
-    }
 }
 
 /** The patterns a scale on the neck is said with ([spokenScale]), from the app language's strings, and the [locale] their numbers are written in. */

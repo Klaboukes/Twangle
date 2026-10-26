@@ -5,18 +5,6 @@ import io.github.klaboukes.twangle.core.dsp.music.KeySpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 
-/** The families the scales are shown in, in this order (Phase 47). */
-enum class ScaleGroup {
-    /** The seven modes of the major scale, Ionian (major) to Locrian. */
-    MODES,
-
-    /** The minor scales that aren't modes: harmonic and melodic minor. */
-    MINOR,
-
-    /** The two pentatonics and the blues scale. */
-    PENTATONIC_AND_BLUES,
-}
-
 /**
  * The key a scale is written in, [tonicStep] semitones above its root: a major key (a mode's parent
  * key: Dorian's is 10 above, D Dorian is written in C major) or, with [minor], the minor key on it.
@@ -32,8 +20,9 @@ data class SpellingKey(val tonicStep: Int, val minor: Boolean) {
 }
 
 /**
- * The scales the Practice tab shows, in its order, each as its steps in semitones above the root, its
- * [group], the [key] it is written in ([Scale.accidentalOf]), any step written with a sign of its own
+ * The scales the Practice tab shows, in its order (the owner's, 2026-10-26: the most used first, two to a
+ * row: major and minor, the pentatonics, blues and Dorian, Mixolydian and harmonic minor, Phrygian and
+ * Lydian, melodic minor and Locrian), each as its steps in semitones above the root, the [key] it is written in ([Scale.accidentalOf]), any step written with a sign of its own
  * whatever the key ([signs]: the blues scale's flat fifth, the raised 6th and 7th of the minors), and
  * the step of its colour note ([colourStep]), the note that makes a mode sound as it does and the neck
  * marks with a ring (the owner's pick F, Phase 47): Dorian's 6th, Phrygian's ♭2, Lydian's ♯4,
@@ -41,43 +30,43 @@ data class SpellingKey(val tonicStep: Int, val minor: Boolean) {
  * natural minor the others are heard against, have none; nor has melodic minor, which differs from
  * natural minor in two notes (its 6th and 7th) rather than one.
  *
- * Saved in settings by [name] (MAJOR and NATURAL_MINOR from before the modes), so don't rename them.
- * The modes' steps are the major scale's from its 1st (Ionian) to its 7th note (Locrian).
+ * Saved in settings by [name] (MAJOR and NATURAL_MINOR from before the modes), so don't rename them;
+ * their order may change. The modes' steps are the major scale's from its 1st (Ionian) to its 7th note
+ * (Locrian); NATURAL_MINOR is Aeolian, the minor scale.
  */
 enum class ScaleType(
     vararg semitones: Int,
-    val group: ScaleGroup,
     val key: SpellingKey,
     val colourStep: Int? = null,
     val signs: Map<Int, Accidental> = emptyMap(),
 ) {
     /** Ionian. */
-    MAJOR(0, 2, 4, 5, 7, 9, 11, group = ScaleGroup.MODES, key = SpellingKey.major(0)),
-    DORIAN(0, 2, 3, 5, 7, 9, 10, group = ScaleGroup.MODES, key = SpellingKey.major(10), colourStep = 9),
-    PHRYGIAN(0, 1, 3, 5, 7, 8, 10, group = ScaleGroup.MODES, key = SpellingKey.major(8), colourStep = 1),
-    LYDIAN(0, 2, 4, 6, 7, 9, 11, group = ScaleGroup.MODES, key = SpellingKey.major(7), colourStep = 6),
-    MIXOLYDIAN(0, 2, 4, 5, 7, 9, 10, group = ScaleGroup.MODES, key = SpellingKey.major(5), colourStep = 10),
+    MAJOR(0, 2, 4, 5, 7, 9, 11, key = SpellingKey.major(0)),
 
-    /** Aeolian: written in its relative major, which [KeySpelling.ofMode] makes the minor key's own sign. */
-    NATURAL_MINOR(0, 2, 3, 5, 7, 8, 10, group = ScaleGroup.MODES, key = SpellingKey.major(3)),
-    LOCRIAN(0, 1, 3, 5, 6, 8, 10, group = ScaleGroup.MODES, key = SpellingKey.major(1), colourStep = 6),
+    /** Aeolian, the minor scale: written in its relative major, which [KeySpelling.ofMode] makes the minor key's own sign. */
+    NATURAL_MINOR(0, 2, 3, 5, 7, 8, 10, key = SpellingKey.major(3)),
+    MAJOR_PENTATONIC(0, 2, 4, 7, 9, key = SpellingKey.major(0)),
+    MINOR_PENTATONIC(0, 3, 5, 7, 10, key = SpellingKey.MINOR),
+
+    /** The minor pentatonic with the blue note, the flat fifth, always written flat: A C D E♭ E G. */
+    BLUES(0, 3, 5, 6, 7, 10, key = SpellingKey.MINOR, signs = mapOf(6 to Accidental.FLAT)),
+    DORIAN(0, 2, 3, 5, 7, 9, 10, key = SpellingKey.major(10), colourStep = 9),
+    MIXOLYDIAN(0, 2, 4, 5, 7, 9, 10, key = SpellingKey.major(5), colourStep = 10),
 
     /** Natural minor with a raised 7th, the leading note: A B C D E F G♯. */
     HARMONIC_MINOR(
         0, 2, 3, 5, 7, 8, 11,
-        group = ScaleGroup.MINOR, key = SpellingKey.MINOR, colourStep = 11, signs = mapOf(11 to Accidental.SHARP),
+        key = SpellingKey.MINOR, colourStep = 11, signs = mapOf(11 to Accidental.SHARP),
     ),
+    PHRYGIAN(0, 1, 3, 5, 7, 8, 10, key = SpellingKey.major(8), colourStep = 1),
+    LYDIAN(0, 2, 4, 6, 7, 9, 11, key = SpellingKey.major(7), colourStep = 6),
 
     /** The ascending form, as jazz plays it both ways: natural minor with a raised 6th and 7th, A B C D E F♯ G♯. */
     MELODIC_MINOR(
         0, 2, 3, 5, 7, 9, 11,
-        group = ScaleGroup.MINOR, key = SpellingKey.MINOR, signs = mapOf(9 to Accidental.SHARP, 11 to Accidental.SHARP),
+        key = SpellingKey.MINOR, signs = mapOf(9 to Accidental.SHARP, 11 to Accidental.SHARP),
     ),
-    MAJOR_PENTATONIC(0, 2, 4, 7, 9, group = ScaleGroup.PENTATONIC_AND_BLUES, key = SpellingKey.major(0)),
-    MINOR_PENTATONIC(0, 3, 5, 7, 10, group = ScaleGroup.PENTATONIC_AND_BLUES, key = SpellingKey.MINOR),
-
-    /** The minor pentatonic with the blue note, the flat fifth, always written flat: A C D E♭ E G. */
-    BLUES(0, 3, 5, 6, 7, 10, group = ScaleGroup.PENTATONIC_AND_BLUES, key = SpellingKey.MINOR, signs = mapOf(6 to Accidental.FLAT)),
+    LOCRIAN(0, 1, 3, 5, 6, 8, 10, key = SpellingKey.major(1), colourStep = 6),
     ;
 
     /** The steps from the root up, in semitones: 0 2 4 5 7 9 11 for the major scale. */
