@@ -15,8 +15,10 @@
 #                                                tests (other font sizes, languages, orientations)
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
-#   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests: screens in every
-#                                                language Twangle ships (long; the overnight run)
+#   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
+#                                                languages only (DAY_LANGUAGES, default en,nl): daytime
+#   scripts/ui-tests.sh --all-languages ...      the @EveryLanguage tests in every language Twangle
+#                                                ships (long; the overnight run)
 #
 # A normal run is quick and leaves out the double checks: the style tests run in the default style
 # only, and tests marked @Thorough (:core:testing) are skipped. The overnight run
@@ -38,11 +40,13 @@ cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
+# The languages a daytime --languages run checks: the ones with testers. The overnight run checks all.
+DAY_LANGUAGES="${DAY_LANGUAGES:-en,nl}"
 COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :core:audio :app)
 
-usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
@@ -114,6 +118,7 @@ while [ $# -gt 0 ]; do
         --quick) thorough=0 ;;
         --cool) cool=1 ;;
         --languages) languages=1 ;;
+        --all-languages) languages=2 ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
         -a | --arg) extra+=("$2"); shift ;;
@@ -456,7 +461,8 @@ for module in "${modules[@]}"; do
     # The annotations in :core:testing a run leaves out (a comma-separated list for the runner).
     skip=()
     if [ $thorough = 1 ]; then args+=(-e thorough true); else skip+=(io.github.klaboukes.twangle.core.testing.Thorough); fi
-    if [ $languages = 1 ]; then args+=(-e everyLanguage true); else skip+=(io.github.klaboukes.twangle.core.testing.EveryLanguage); fi
+    if [ $languages = 0 ]; then skip+=(io.github.klaboukes.twangle.core.testing.EveryLanguage); else args+=(-e everyLanguage true); fi
+    [ $languages = 1 ] && args+=(-e languages "$DAY_LANGUAGES")
     if [ ${#skip[@]} -gt 0 ] && grep -q '":core:testing"' "$dir/build.gradle.kts"; then
         args+=(-e notAnnotation "$(IFS=,; echo "${skip[*]}")")
     fi

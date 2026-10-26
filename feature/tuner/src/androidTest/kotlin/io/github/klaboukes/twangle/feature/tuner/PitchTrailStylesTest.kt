@@ -38,6 +38,7 @@ import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.core.settings.VisualStyle
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.onPhoneScreen
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
@@ -46,7 +47,6 @@ import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -206,7 +206,7 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
         show()
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size

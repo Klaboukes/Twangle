@@ -1,14 +1,14 @@
 ---
 name: ui-test
 description: Run Twangle's on-device UI tests on a test phone (Xiaomi 12X or Galaxy S26), scoped to what changed, with tight timeouts and a short summary. Use whenever UI or instrumented tests need to run, while iterating on a UI change, before landing a change the user can see or hear, or when the user says "run the UI tests", "/ui-test", or "/ui-test <filter>".
-argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --thorough, --cool or --languages]"
+argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --thorough, --cool, --languages or --all-languages]"
 ---
 
 # UI tests on the phone
 
 Always go through `scripts/ui-tests.sh`, never `./gradlew connectedDebugAndroidTest`. Gradle's task is slower, uninstalls the app (wiping the owner's settings) and floods the session with log lines. The script builds once, runs each module with `am instrument` under a time limit, and prints one line per module.
 
-**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool` or `--languages` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
+**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool`, `--languages` or `--all-languages` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
 
 ## Pick the smallest run
 
@@ -22,10 +22,10 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 | Build files or version catalog changed | `scripts/ui-tests.sh --all` | ~3 min | 300000 |
 | Before a release (the [release skill](../release/SKILL.md)) | `scripts/ui-tests.sh --since-pass`: the modules changed since they last passed whole on this PC | 0–5 min | 420000 |
 | Every style, every double check | only in the overnight run: `scripts/overnight-ui-tests.sh` (the [overnight-run skill](../overnight-run/SKILL.md)), never during the day | ~1½ h | in the background |
-| A language's texts changed | `scripts/ui-tests.sh <module> --languages -f 'everyLanguage'` (default style) | 1–5 min per module | 600000 |
+| Texts changed or added (any language) | `scripts/ui-tests.sh <module> --languages -f 'everyLanguage'` (default style, English and Dutch only) | ~1 min per module | 300000 |
 
 - `-f` is a regex matched against `Class#method` (a style-parameterized test is `method[ANCIENT]`, so `-f 'someTest.*\[RETRO\]'` picks one style). `-c` takes a class, `Class#method`, or a comma-separated list. `-a key=value` passes an instrumentation argument.
-- `--cool` runs one test class at a time and waits while the phone is 37 °C or warmer (`COOL_BELOW`); use it for anything longer than a few minutes. `--languages` adds the `@EveryLanguage` checks (every language at 2× text, about 20 minutes per style); a screen that didn't fit is saved as a picture under the module's `build/outputs/connected_android_test_additional_output`.
+- `--cool` runs one test class at a time and waits while the phone is 37 °C or warmer (`COOL_BELOW`); use it for anything longer than a few minutes. `--languages` adds the `@EveryLanguage` checks at 2× text in the testers' languages only, English and Dutch (`DAY_LANGUAGES`); `--all-languages` runs them in all 16 (about 20 minutes per style) and belongs to the overnight run, never the day: the owner has testers only for English and Dutch, so a text too long in another language may wait for the night (2026-10-26). A screen that didn't fit is saved as a picture under the module's `build/outputs/connected_android_test_additional_output`.
 - **The phone heats up.** About 15 minutes of thorough tests, or long screenshot and tone sessions, took the Xiaomi to 45 °C (`adb shell dumpsys battery | grep temp`, in tenths of a degree); then the pixel tests run past their 10 s limits and the owner notices the heat. Use `--cool` for long runs (it keeps the screen on while it waits: turned off, the phone may lock and stop the run), and never re-run a whole sweep that a smaller run already covers. With `--cool` the whole thorough sweep (~1 h) stayed below 37 °C on 2026-10-16.
 - A normal run is quick: the style tests run in the default style only and `@Thorough` tests are skipped. Naming a `@Thorough` test with `-c` runs nothing unless you add `--thorough`. The full suite (`--thorough`, every style) is for the overnight run only: the owner wants limited tests during normal work, so they never wait for long runs (2026-10-16).
 - With no module given, the script picks the affected modules itself. If only docs, scripts or unit tests changed, it says so and exits 0.

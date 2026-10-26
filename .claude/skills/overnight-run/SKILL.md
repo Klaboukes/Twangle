@@ -68,7 +68,8 @@ summary.
 For each failure decide first: **app bug or outdated test?**
 - Read the test and the code. Reproduce with the smallest run (`scripts/ui-tests.sh <module> -c
   Class#method`, `-f` for parameterized names like `test[ANCIENT]`, `--thorough` for style
-  variants, `--languages` for language checks).
+  variants, `DAY_LANGUAGES=<tag> … --languages` for the failing language's checks, `--all-languages`
+  for all 16).
 - When it isn't clear, add a temporary probe (a `Log.i("PROBE", …)` read back with
   `adb logcat -d -s PROBE`, or a screenshot to the extra output) and remove it before committing.
 - A real bug: fix the app, keep the test. A test that is wrong about the app (a tag on the wrong

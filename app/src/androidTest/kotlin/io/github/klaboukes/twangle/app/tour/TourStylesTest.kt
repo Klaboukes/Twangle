@@ -41,8 +41,8 @@ import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Thorough
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.TunerContent
@@ -256,7 +256,7 @@ class TourStylesTest(private val style: VisualStyle) {
         shownSize.value = NARROW
         shownFontScale.value = 2f
         show()
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             restart()
             stepThroughWhollyShown("$style $language 2x 360 dp", UPRIGHT)

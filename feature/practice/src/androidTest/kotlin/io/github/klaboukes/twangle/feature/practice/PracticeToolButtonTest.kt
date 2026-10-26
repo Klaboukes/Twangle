@@ -34,8 +34,8 @@ import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
@@ -243,7 +243,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
         show()
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size

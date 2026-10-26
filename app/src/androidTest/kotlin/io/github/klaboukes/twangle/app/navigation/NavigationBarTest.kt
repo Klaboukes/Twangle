@@ -42,8 +42,8 @@ import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -256,7 +256,7 @@ class NavigationBarTest(private val style: VisualStyle) {
     fun everyLanguagesNamesAtTwiceTheTextSizeAreWhollyShown() {
         shownFontScale.value = 2f
         show()
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) for (practice in listOf(false, true)) {
                 shownSize.value = size

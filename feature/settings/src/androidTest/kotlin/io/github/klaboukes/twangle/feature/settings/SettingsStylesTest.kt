@@ -35,8 +35,8 @@ import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
@@ -277,7 +277,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
     private fun everyLanguageFits(about: Boolean) {
         shownFontScale.value = 2f
         show(about)
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(PHONE_UPRIGHT, PHONE_ON_ITS_SIDE)) {
                 shownSize.value = size

@@ -18,8 +18,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -86,7 +86,7 @@ class ScreenOffWarningTest {
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {
         show(fontScale = 2f)
-        for (language in shippedLanguages) {
+        for (language in checkedLanguages) {
             shownLocale.value = language
             compose.waitForIdle()
             compose.assertEveryTextWhollyShown("$language at 2x:")

@@ -36,8 +36,8 @@ import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertEveryTextWhollyShown
 import io.github.klaboukes.twangle.core.testing.assertNoWordBroken
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
-import io.github.klaboukes.twangle.core.testing.shippedLanguages
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
@@ -294,7 +294,7 @@ class CapoScreenTest(private val style: VisualStyle) {
         show(SongKey(PitchClass.G), Capo.HIGHEST_FRET)
         for (fret in listOf(Capo.HIGHEST_FRET, 0)) {
             repeat(Capo.HIGHEST_FRET - fret) { node(PracticeTestTags.CAPO_LOWER).performClick() }
-            for (language in shippedLanguages) {
+            for (language in checkedLanguages) {
                 shownLocale.value = language
                 for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                     shownSize.value = size

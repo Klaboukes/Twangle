@@ -15,9 +15,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * Marks a UI test that checks a screen in every language Twangle ships ([shippedLanguages]), which
- * takes long. `scripts/ui-tests.sh` leaves these out unless it is run with `--languages` (the
- * overnight run).
+ * Marks a UI test that checks a screen in every language of [checkedLanguages], which takes long.
+ * `scripts/ui-tests.sh` leaves these out unless it is run with `--languages` (the testers' languages,
+ * by day) or `--all-languages` (every language Twangle ships, the overnight run).
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
@@ -27,7 +27,19 @@ annotation class EveryLanguage
 val shippedLanguages: List<String> =
     BuildConfig.LANGUAGES.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { it.replace("-r", "-") }
 
-/** True when `scripts/ui-tests.sh --languages` asked for every language (`-e everyLanguage true`). */
+/**
+ * The languages an [EveryLanguage] test goes through: those of [shippedLanguages] the run names
+ * (`-e languages en,nl`, what `scripts/ui-tests.sh --languages` passes by day), or all of them.
+ */
+val checkedLanguages: List<String>
+    get() {
+        val asked = InstrumentationRegistry.getArguments().getString("languages")
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
+            ?: return shippedLanguages
+        return shippedLanguages.filter { it in asked }
+    }
+
+/** True when `scripts/ui-tests.sh --languages` or `--all-languages` asked for the language checks (`-e everyLanguage true`). */
 val isEveryLanguageRun: Boolean
     get() = InstrumentationRegistry.getArguments().getString("everyLanguage") == "true"
 
@@ -105,8 +117,8 @@ private fun SemanticsNodeInteractionsProvider.saveScreen(case: String) {
 }
 
 /**
- * A test's time limit: [normal] seconds, or in a `--languages` run 15 minutes, since an
- * [EveryLanguage] test goes through 16 languages.
+ * A test's time limit: [normal] seconds, or in a language run 15 minutes, since an
+ * [EveryLanguage] test may go through 16 languages.
  */
 fun timeLimitSeconds(normal: Long): Long = if (isEveryLanguageRun) EVERY_LANGUAGE_TIME_LIMIT_SECONDS else normal
 
