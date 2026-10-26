@@ -1,0 +1,343 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Drone Button</title>
+<!--
+TWANGLE PRACTICE → SCALES: THE DRONE BUTTON AND ITS PANEL (Phase 48 preview). ROUGH, plain on purpose.
+The ask (owner, 2026-10-26): only a ▶ / ■ button on Scales itself, one steady size whether it plays or not, the drone
+         defaulting to the tanpura with the fifth; a small drone panel like the metronome's Sound panel with three
+         rows, all three remembered: Sound (tanpura, harmonium, flute organ, warm pad, in that order, with icons),
+         Notes (Root / + fifth / + fifth and octave) and Lower (on/off). No hint texts (owner's rule).
+Today    Scales (Contemporary, the Xiaomi 12X, screenshots of 2026-10-26): the tool button "Scales ⌄" (160 dp) with the
+         instrument button and "Guitar · Standard" beside it; the name button as wide as the row, 64 dp tall
+         ("C major ⌄"); the neck upright in all the height left (about 560 dp). On its side the tool row stands at the
+         top of the start half and the rest of that half is EMPTY; the name button and the neck lie in the end half.
+Options  Where the ▶ / ■ sits and how the panel opens:
+         A  by the name: the name button gives up 128 dp to one split button of the name's height, ▶ / ■ on its
+            start half, the sound's icon with ⌄ on its end half (opens the panel);
+         B  under the neck, as the metronome: a row of two 72 × 52 dp buttons with words under them, "Sound" (the
+            sound's icon, opens the panel) and "Drone" (▶ / ■, filled in the accent);
+         C  by the name, ▶ / ■ alone (64 × 64 dp); a long press on it opens the panel.
+Panel    The same in every option: the surface colour, a soft lift, no border, as the metronome's Sound panel and the
+         tool list. "Sound": four 48 dp rows of icon and name; "Notes": three 48 dp rows; "Lower": a switch. The
+         picked rows in the container colour with a 2 dp accent outline. Upright it drops under the button (A, C) or
+         opens above the row (B); on its side it opens in two columns over the empty start half in every option,
+         as the name button's own panel does there. A pick sounds at once if the drone plays (the 0.4 s crossfade);
+         Back or a tap beside it closes it.
+Playing  ■ in place of ▶, the button filled in the accent; the root's dots on the neck get a soft accent ring that
+         breathes slowly (3 s), the only sign it sounds. Nothing else moves or changes size.
+Sizes    Frames are the Xiaomi 12X (393 × 873 dp upright, 873 × 393 on its side) at 0.8 px per dp, drawn in dp.
+Look     Contemporary (core/designsystem StylePalettes.kt), its own colours, not the wallpaper's. Each frame is
+         marked light or dark; the page around them follows the system.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --pink: #10141F; --pmuted: #4A5268; --paccent: #3A4FD6; --pcontainer: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --page: #0E1220; --pink: #E6E9F4; --pmuted: #A6AECB; --paccent: #A6ADFF; --pcontainer: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark; }
+}
+:root[data-theme="dark"] { --page: #0E1220; --pink: #E6E9F4; --pmuted: #A6AECB; --paccent: #A6ADFF; --pcontainer: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark; }
+
+/* The phone's colours, per frame. */
+.th-light { --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --track: #CDD3E3; --accent: #3A4FD6; --on-accent: #FFFFFF;
+  --line: color-mix(in srgb, #4A5268 60%, #E3E7F0); --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA); --shadow: rgb(0 0 0 / .18); }
+.th-dark { --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #2B3350; --accent: #A6ADFF; --on-accent: #121A5A;
+  --line: color-mix(in srgb, #A6AECB 60%, #171D2E); --container: color-mix(in srgb, #A6ADFF 32%, #232736); --shadow: rgb(0 0 0 / .5); }
+
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--pink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--paccent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 400 22px/1.25 var(--ui); margin: 44px 0 6px; }
+h2 b { color: var(--paccent); font-weight: 500; margin-right: 8px; }
+p { margin: 0; }
+.lede { color: var(--pmuted); max-width: 72ch; }
+.lede strong { color: var(--pink); font-weight: 500; }
+.note { color: var(--pmuted); font-size: 14px; max-width: 72ch; margin-top: 8px; }
+.note strong { color: var(--pink); font-weight: 500; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--pcontainer); color: var(--pink); margin-left: 8px; vertical-align: 3px; }
+.frames { display: flex; gap: 16px; align-items: flex-start; overflow-x: auto; padding-bottom: 8px; margin-top: 10px; }
+.frame { flex: none; }
+.frame svg { display: block; border-radius: 14px; }
+.up svg { width: 314px; height: 698px; }
+.side svg { width: 698px; height: 314px; }
+.cap { font-size: 12px; color: var(--pmuted); margin-top: 6px; }
+.pair { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; align-items: flex-start; }
+.icons { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
+.icons .one { display: grid; gap: 6px; justify-items: center; font-size: 13px; color: var(--pmuted); }
+.icons .big { width: 104px; height: 104px; border-radius: 16px; display: grid; place-items: center; background: var(--bg); color: var(--ink); }
+.icons .big svg { width: 80px; height: 80px; overflow: visible; }
+.sk text { font-family: var(--ui); }
+.halo { animation: breathe 3s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: .2; } 50% { opacity: .75; } }
+@media (prefers-reduced-motion: reduce) { .halo { animation: none; opacity: .5; } }
+.lift { filter: drop-shadow(0 6px 12px var(--shadow)); }
+</style>
+
+<!-- Icons: 24-unit grid, 1.8 stroke, round ends, as the app's row icons. Rough: drawn properly when built. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Tanpura: a long neck, pegs, the round gourd below. -->
+    <g id="i-tanpura" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.6,13V3.2a1.4,1.4 0 0 1 2.8,0V13"/><circle cx="12" cy="17.2" r="4.8"/>
+      <path d="M10.6,5.2H8.4M13.4,7.6h2.2M12,15.2v4"/>
+    </g>
+    <!-- Harmonium: the box with its keys, the folded bellows behind. -->
+    <g id="i-harmonium" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="12" width="19" height="8.5" rx="1.6"/><path d="M2.5,15.6h19M7.2,15.6v4.9M12,15.6v4.9M16.8,15.6v4.9"/>
+      <path d="M4,12l1.6,-4.5l1.6,4.5l1.6,-4.5l1.6,4.5l1.6,-4.5l1.6,4.5l1.6,-4.5l1.6,4.5l1.6,-4.5l1.6,4.5"/>
+    </g>
+    <!-- Flute organ: four stopped pipes of different heights on a chest. -->
+    <g id="i-flute" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="8.5" width="3.2" height="11" rx="1"/><rect x="8.6" y="4" width="3.2" height="15.5" rx="1"/>
+      <rect x="13.2" y="6.2" width="3.2" height="13.3" rx="1"/><rect x="17.8" y="10.5" width="3.2" height="9" rx="1"/>
+      <path d="M2.5,20.8h19"/>
+    </g>
+    <!-- Warm pad: two soft waves, one over the other. -->
+    <g id="i-pad" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5,10.5q4.75,-6 9.5,0t9.5,0"/><path d="M2.5,16q4.75,-6 9.5,0t9.5,0" opacity=".55"/>
+    </g>
+    <!-- Scales tool: a staircase. Instrument: a headstock. Rough stand-ins. -->
+    <g id="i-stairs" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3,19h4.5v-4.5h4.5v-4.5h4.5v-4.5h4.5"/>
+    </g>
+    <g id="i-head" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5,3h7v11l-2,2v5.5h-3v-5.5l-2,-2z"/><path d="M8.5,6.5h-2M8.5,10h-2M15.5,6.5h2M15.5,10h2"/>
+    </g>
+    <g id="i-fork" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8,3v7a4,4 0 0 0 8,0V3M12,14v7"/>
+    </g>
+    <g id="i-metro" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5,3h5l4.5,18h-14z"/><path d="M12,16l5,-9M7,16h10"/>
+    </g>
+    <g id="i-gear" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8" stroke-dasharray="3.2 2.1"/>
+    </g>
+    <path id="i-chev" d="M-4.5,-2.2l4.5,4.4l4.5,-4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 48 · rough mock-up</p>
+  <h1>The drone on Scales: where the button goes</h1>
+  <p class="lede"><strong>Pick A, B or C.</strong> Each puts the ▶ / ■ button somewhere else and opens the drone panel
+    another way. The button keeps one size whether it plays or not; the panel is the same in all three. Drawn on the
+    Xiaomi in Contemporary, upright and on its side, dark and light.</p>
+</header>
+
+<h2>The panel (the same in every option)</h2>
+<div class="pair" id="panels"></div>
+<p class="note">Three choices, all remembered: <strong>Sound</strong> (the tanpura first, as the default),
+  <strong>Notes</strong> (+ fifth by default) and <strong>Lower</strong> (the whole drone an octave down, off by
+  default). While the drone plays, a pick is heard at once, crossfading. Back or a tap beside the panel closes it.
+  The flute organ, the pad and <em>Lower</em> are very quiet on the phone's speaker; the panel doesn't say so (no
+  hint texts), so it is up to you whether that needs a word somewhere.</p>
+<div class="icons" id="icons"></div>
+<p class="note">The four sound icons enlarged: tanpura, harmonium, flute organ, warm pad. Rough; drawn properly when
+  the button is built.</p>
+
+<div id="options"></div>
+
+<h2>Recommendation</h2>
+<p class="note" style="font-size:15px"><strong>A.</strong> The button sits beside the scale it drones (a new root or
+  scale is one row up), the neck keeps all its height, and the sound shows on the button, so the panel can be found
+  without a hint, unlike C's long press. B is the most familiar (the metronome's Sound · Start) but costs the neck
+  about a seventh of its size upright, which Phase 47 just won back.</p>
+</div>
+
+<script>
+// ---------- notes of C major on a guitar in standard tuning ----------
+const OPEN = [4, 9, 2, 7, 11, 4];                       // E A D G B E (pitch classes), thickest first
+const NAME = { 0: "C", 2: "D", 4: "E", 5: "F", 7: "G", 9: "A", 11: "B" };
+const ROOT = 0;
+
+const esc = s => s.replace(/&/g, "&amp;");
+const T = (x, y, s, size, fill, extra = "") =>
+  `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" ${extra}>${esc(s)}</text>`;
+const icon = (id, x, y, color = "var(--ink)", s = 1) =>
+  `<g transform="translate(${x},${y}) scale(${s})" style="color:${color}"><use href="#i-${id}"/></g>`;
+const chev = (x, y, color = "var(--muted)") => `<g transform="translate(${x},${y})" style="color:${color}"><use href="#i-chev"/></g>`;
+
+// The neck, upright: nut at the top, thickest string on the left (units of ScaleNeck, roughly).
+function neckUp(bx, by, bw, bh, playing) {
+  const W = 140, H = 284, u = Math.min(bw / W, bh / H, 2.4);
+  const ox = bx + (bw - W * u) / 2, oy = by + (bh - H * u) / 2;
+  const sx = i => ox + (24 + 9 + i * 19) * u, fy = k => oy + (30 + k * 20.5) * u;
+  let s = `<ellipse cx="${ox + 78 * u}" cy="${oy + H * u / 2}" rx="${80 * u}" ry="${H * u * .56}" fill="var(--bg)" opacity=".7"/>`;
+  for (let i = 0; i < 6; i++) s += `<line x1="${sx(i)}" y1="${fy(0)}" x2="${sx(i)}" y2="${fy(12)}" stroke="var(--muted)" stroke-width="${.9 * u}"/>`;
+  for (let k = 1; k <= 12; k++) s += `<line x1="${sx(0)}" y1="${fy(k)}" x2="${sx(5)}" y2="${fy(k)}" stroke="var(--muted)" stroke-width="${.9 * u}"/>`;
+  s += `<line x1="${sx(0) - 2 * u}" y1="${fy(0) - 2 * u}" x2="${sx(5) + 2 * u}" y2="${fy(0) - 2 * u}" stroke="var(--ink)" stroke-width="${4.5 * u}" stroke-linecap="round"/>`;
+  [3, 5, 7, 9, 12].forEach(k => s += T(ox + 12 * u, fy(k) - 10.25 * u + 5.5 * u, String(k), 15 * u, "var(--ink)", `text-anchor="middle"`));
+  for (let i = 0; i < 6; i++) for (let k = 0; k <= 12; k++) {
+    const pc = (OPEN[i] + k) % 12; if (!(pc in NAME)) continue;
+    const cx = sx(i), cy = k === 0 ? oy + 14 * u : fy(k) - 10.25 * u;
+    s += dot(cx, cy, u, pc, playing);
+  }
+  return s;
+}
+// The neck on its side: thickest string at the bottom, frets to the right, numbers under it.
+function neckSide(bx, by, bw, bh, playing) {
+  const W = 284, H = 132, u = Math.min(bw / W, bh / H, 2.4);
+  const ox = bx + (bw - W * u) / 2, oy = by + (bh - H * u) / 2;
+  const sy = i => oy + (9 + (5 - i) * 19) * u, fx = k => ox + (28 + k * 20.5) * u;
+  let s = "";
+  for (let i = 0; i < 6; i++) s += `<line x1="${fx(0)}" y1="${sy(i)}" x2="${fx(12)}" y2="${sy(i)}" stroke="var(--muted)" stroke-width="${.9 * u}"/>`;
+  for (let k = 1; k <= 12; k++) s += `<line x1="${fx(k)}" y1="${sy(5)}" x2="${fx(k)}" y2="${sy(0)}" stroke="var(--muted)" stroke-width="${.9 * u}"/>`;
+  s += `<line x1="${fx(0) - 2 * u}" y1="${sy(5) - 2 * u}" x2="${fx(0) - 2 * u}" y2="${sy(0) + 2 * u}" stroke="var(--ink)" stroke-width="${4.5 * u}" stroke-linecap="round"/>`;
+  [3, 5, 7, 9, 12].forEach(k => s += T(fx(k) - 10.25 * u, sy(0) + 24 * u, String(k), 13 * u, "var(--ink)", `text-anchor="middle"`));
+  for (let i = 0; i < 6; i++) for (let k = 0; k <= 12; k++) {
+    const pc = (OPEN[i] + k) % 12; if (!(pc in NAME)) continue;
+    s += dot(k === 0 ? ox + 12 * u : fx(k) - 10.25 * u, sy(i), u, pc, playing);
+  }
+  return s;
+}
+function dot(cx, cy, u, pc, playing) {
+  const r = 8.2 * u, root = pc === ROOT;
+  let s = "";
+  if (root && playing) s += `<circle class="halo" cx="${cx}" cy="${cy}" r="${r + 3.4 * u}" fill="none" stroke="var(--accent)" stroke-width="${2.4 * u}"/>`;
+  s += root ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--accent)"/>`
+            : `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--bg)" stroke="var(--muted)" stroke-width="${1.1 * u}"/>`;
+  return s + T(cx, cy + 4.6 * u, NAME[pc], 12.5 * u, root ? "var(--on-accent)" : "var(--ink)", `text-anchor="middle"`);
+}
+
+// ---------- the parts ----------
+const toolRow = (x, y) =>
+  `<rect x="${x}" y="${y + 2}" width="160" height="44" rx="22" fill="none" stroke="var(--line)"/>` + icon("stairs", x + 14, y + 12) +
+  T(x + 48, y + 30, "Scales", 18, "var(--ink)", `font-weight="500"`) + chev(x + 140, y + 24) +
+  `<rect x="${x + 168}" y="${y + 2}" width="44" height="44" rx="22" fill="none" stroke="var(--line)"/>` + icon("head", x + 178, y + 12, "var(--muted)") +
+  T(x + 222, y + 30, "Guitar · Standard", 15, "var(--muted)");
+const nameBtn = (x, y, w, h = 64) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" fill="none" stroke="var(--line)"/>` +
+  T(x + w / 2 - 8, y + h / 2 + 8, "C major", 24, "var(--ink)", `text-anchor="middle"`) + chev(x + w / 2 + 50, y + h / 2 + 1);
+const play = (cx, cy, color) => `<path d="M${cx - 6},${cy - 9}l15,9l-15,9z" fill="${color}" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+const stop = (cx, cy, color) => `<rect x="${cx - 8}" y="${cy - 8}" width="16" height="16" rx="2.5" fill="${color}"/>`;
+const playOrStop = (cx, cy, playing, color) => playing ? stop(cx, cy, color) : play(cx, cy, color);
+
+// A: the split button, ▶ / ■ on its start half, the sound's icon and ⌄ on its end half.
+function splitBtn(x, y, playing) {
+  let s = "";
+  if (playing) s += `<path d="M${x + 16},${y}H${x + 60}V${y + 64}H${x + 16}A16,16 0 0 1 ${x},${y + 48}V${y + 16}A16,16 0 0 1 ${x + 16},${y}Z" fill="var(--accent)"/>`;
+  s += `<rect x="${x}" y="${y}" width="120" height="64" rx="16" fill="none" stroke="var(--line)"/>` +
+    `<line x1="${x + 60}" y1="${y}" x2="${x + 60}" y2="${y + 64}" stroke="var(--line)"/>` +
+    playOrStop(x + 30, y + 32, playing, playing ? "var(--on-accent)" : "var(--ink)") +
+    icon("tanpura", x + 68, y + 20) + chev(x + 104, y + 33);
+  return s;
+}
+// C: ▶ / ■ alone, the name's height.
+function soloBtn(x, y, playing) {
+  return `<rect x="${x}" y="${y}" width="64" height="64" rx="16" fill="${playing ? "var(--accent)" : "none"}" stroke="${playing ? "var(--accent)" : "var(--line)"}"/>` +
+    playOrStop(x + 32, y + 32, playing, playing ? "var(--on-accent)" : "var(--ink)");
+}
+// B: the metronome's kind of row: Sound (the sound's icon) and Drone (▶ / ■, filled), words under them.
+function rowB(x, y, playing) {
+  return `<rect x="${x}" y="${y}" width="72" height="52" rx="26" fill="none" stroke="var(--line)"/>` + icon("tanpura", x + 24, y + 14) +
+    T(x + 36, y + 70, "Sound", 12.5, "var(--muted)", `text-anchor="middle" font-weight="500"`) +
+    `<rect x="${x + 88}" y="${y}" width="72" height="52" rx="26" fill="var(--accent)"/>` + playOrStop(x + 124, y + 26, playing, "var(--on-accent)") +
+    T(x + 124, y + 70, "Drone", 12.5, "var(--muted)", `text-anchor="middle" font-weight="500"`);
+}
+
+const SOUNDS = [["tanpura", "Tanpura"], ["harmonium", "Harmonium"], ["flute", "Flute organ"], ["pad", "Warm pad"]];
+const NOTES = ["Root", "+ fifth", "+ fifth and octave"];
+function optRow(x, y, w, label, ic, on) {
+  let s = on ? `<rect x="${x}" y="${y}" width="${w}" height="48" rx="12" fill="var(--container)" stroke="var(--accent)" stroke-width="2"/>` : "";
+  if (ic) s += icon(ic, x + 14, y + 12);
+  return s + T(x + (ic ? 50 : 16), y + 29, label, 15, "var(--ink)", on ? `font-weight="500"` : "");
+}
+const sw = (x, y) => `<rect x="${x}" y="${y}" width="52" height="32" rx="16" fill="var(--track)" stroke="var(--muted)" stroke-width="2"/>` +
+  `<circle cx="${x + 16}" cy="${y + 16}" r="8" fill="var(--muted)"/>`;
+const lbl = (x, y, s) => T(x, y, s, 12, "var(--muted)", `font-weight="500" letter-spacing=".4"`);
+// One column (upright): 296 × 468 dp.
+function panel1(x, y) {
+  let s = `<rect class="lift" x="${x}" y="${y}" width="296" height="468" rx="16" fill="var(--surface)"/>`;
+  let yy = y + 8;
+  s += lbl(x + 16, yy + 16, "Sound"); yy += 24;
+  SOUNDS.forEach(([ic, n], i) => s += optRow(x + 8, yy + i * 48, 280, n, ic, i === 0)); yy += 192 + 8;
+  s += lbl(x + 16, yy + 16, "Notes"); yy += 24;
+  NOTES.forEach((n, i) => s += optRow(x + 8, yy + i * 48, 280, n, null, i === 1)); yy += 144 + 4;
+  return s + T(x + 24, yy + 33, "Lower", 15, "var(--ink)") + sw(x + 220, yy + 12);
+}
+// Two columns (on its side, over the empty start half): 360 × 240 dp.
+function panel2(x, y) {
+  let s = `<rect class="lift" x="${x}" y="${y}" width="360" height="240" rx="16" fill="var(--surface)"/>`;
+  s += lbl(x + 16, y + 24, "Sound");
+  SOUNDS.forEach(([ic, n], i) => s += optRow(x + 8, y + 32 + i * 48, 168, n, ic, i === 0));
+  s += lbl(x + 192, y + 24, "Notes");
+  NOTES.forEach((n, i) => s += optRow(x + 184, y + 32 + i * 48, 168, n, null, i === 1));
+  return s + T(x + 200, y + 209, "Lower", 15, "var(--ink)") + sw(x + 292, y + 188);
+}
+
+// ---------- the screens ----------
+function navBar() {
+  const it = (cx, ic, word, on) => icon(ic, cx - 12, 796, on ? "var(--accent)" : "var(--muted)") +
+    T(cx, 838, word, 13, on ? "var(--accent)" : "var(--muted)", `text-anchor="middle" font-weight="500"`) +
+    (on ? `<rect x="${cx - 11}" y="846" width="22" height="3" rx="1.5" fill="var(--accent)"/>` : "");
+  return it(65, "fork", "Tuner") + it(196, "metro", "Practice", true) + it(327, "gear", "Settings") +
+    `<rect x="123" y="862" width="146" height="4" rx="2" fill="var(--muted)" opacity=".7"/>`;
+}
+function rail() {
+  const it = (cy, ic, word, on) => icon(ic, 60, cy - 12, on ? "var(--accent)" : "var(--muted)") +
+    T(72, cy + 26, word, 11, on ? "var(--accent)" : "var(--muted)", `text-anchor="middle" font-weight="500"`) +
+    (on ? `<rect x="61" y="${cy + 34}" width="22" height="3" rx="1.5" fill="var(--accent)"/>` : "");
+  return it(113, "fork", "Tuner") + it(188, "metro", "Practice", true) + it(262, "gear", "Settings") +
+    `<rect x="363" y="383" width="146" height="4" rx="2" fill="var(--muted)" opacity=".7"/>`;
+}
+function upright(opt, playing, open) {
+  let s = `<rect width="393" height="873" fill="var(--bg)"/>` + T(20, 24, "18:43", 14, "var(--ink)") + toolRow(16, 40);
+  if (opt === "A") s += nameBtn(16, 96, 233) + splitBtn(257, 96, playing) + neckUp(16, 172, 361, 600, playing);
+  if (opt === "C") s += nameBtn(16, 96, 289) + soloBtn(313, 96, playing) + neckUp(16, 172, 361, 600, playing);
+  if (opt === "B") s += nameBtn(16, 96, 361) + neckUp(16, 172, 361, 508, playing) + rowB(116.5, 692, playing);
+  s += navBar();
+  if (open) s += opt === "B" ? panel1(48.5, 216) : panel1(81, 168);
+  return s;
+}
+function sideways(opt, playing, open) {
+  let s = `<rect width="873" height="393" fill="var(--bg)"/>` + T(44, 20, "18:44", 13, "var(--ink)") + rail() + toolRow(136, 40);
+  if (opt === "A") s += nameBtn(500, 40, 213) + splitBtn(721, 40, playing);
+  if (opt === "C") s += nameBtn(500, 40, 269) + soloBtn(777, 40, playing);
+  if (opt === "B") s += nameBtn(500, 40, 341) + rowB(188, 290, playing);
+  s += neckSide(500, 120, 341, 230, playing);
+  if (open) s += panel2(136, opt === "B" ? 40 : 100);
+  return s;
+}
+const frame = (kind, theme, svg, cap) =>
+  `<div class="frame ${kind} th-${theme}"><svg class="sk" viewBox="${kind === "up" ? "0 0 393 873" : "0 0 873 393"}" role="img" aria-label="${cap}">${svg}</svg><p class="cap">${cap}</p></div>`;
+
+const OPTIONS = [
+  ["A", "▶ / ■ and the sound beside the name", true,
+   "One button of the name's height, split in two: ▶ / ■ on the start half, the sound's icon with ⌄ on the end half, which opens the panel under it. The name button gives up 128 dp.",
+   "<strong>For:</strong> next to the scale it drones; the neck keeps all its height; the sound shows on the button, so the panel is easy to find. <strong>Against:</strong> long scale names (Dutch, Russian) get small or go onto two lines sooner; a ▶ by the scale's name could be read as \"play the scale\" at first."],
+  ["B", "A Sound · Drone row under the neck, as the metronome", false,
+   "Two 72 × 52 dp buttons with words under them, as the metronome's row: Sound (the sound's icon, opens the panel above it) and Drone (▶ / ■ on the accent). On its side the row sits in the empty start half.",
+   "<strong>For:</strong> the most familiar (the metronome's Sound and Start) and the words say plainly what each does. <strong>Against:</strong> upright the neck loses about 90 dp, a seventh of its size; the button is far from the name it follows."],
+  ["C", "▶ / ■ alone by the name, a long press for the panel", false,
+   "Only one 64 × 64 dp ▶ / ■ at the name's end; a long press on it opens the same panel under it. The name button gives up 72 dp.",
+   "<strong>For:</strong> the calmest: one small button, the neck untouched. <strong>Against:</strong> nothing shows that a long press opens the panel, and with no hint texts most players would never find the four sounds (TalkBack would need its own action for it)."],
+];
+document.getElementById("options").innerHTML = OPTIONS.map(([o, title, rec, what, trade]) => `
+  <h2><b>${o}</b>${title}${rec ? `<span class="tag">recommended</span>` : ""}</h2>
+  <p class="note">${what}</p>
+  <div class="frames">
+    ${frame("up", "dark", upright(o, false, false), "Upright, stopped")}
+    ${frame("up", "dark", upright(o, true, false), "Playing: ■, the roots breathe")}
+    ${frame("up", "dark", upright(o, true, true), o === "C" ? "The panel, after a long press" : "The panel open")}
+    ${frame("up", "light", upright(o, true, true), "Light, the panel open")}
+  </div>
+  <div class="frames">
+    ${frame("side", "dark", sideways(o, true, true), "On its side, the panel over the empty start half")}
+    ${frame("side", "light", sideways(o, true, false), "On its side, light, playing")}
+  </div>
+  <p class="note">${trade}</p>`).join("");
+
+// The panel at 1 px per dp, dark and light; the icons enlarged.
+document.getElementById("panels").innerHTML = ["dark", "light"].map(t =>
+  `<div class="frame th-${t}"><svg class="sk" viewBox="0 0 312 484" width="312" height="484" role="img" aria-label="The panel, ${t}">` +
+  `<rect width="312" height="484" rx="14" fill="var(--bg)"/>${panel1(8, 8)}</svg><p class="cap">${t === "dark" ? "Dark" : "Light"}, real size</p></div>`).join("");
+document.getElementById("icons").innerHTML = SOUNDS.map(([ic, n]) =>
+  `<div class="one th-dark"><div class="big"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${ic}"/></svg></div>${n}</div>`).join("");
+</script>
