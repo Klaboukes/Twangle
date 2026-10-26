@@ -128,12 +128,13 @@ class PracticeTabTest {
         return picked
     }
 
-    /** Opens the name button's panel, taps each of [options] in it (it stays open), and closes it with Back. */
+    /** For each of [options]: opens the name button's panel and taps it there, which closes the panel. */
     private fun pick(vararg options: String) {
-        click(PracticeTestTags.NAME_PICKER)
-        for (option in options) click(option)
-        device.pressBack()
-        gone(options.first())
+        for (option in options) {
+            click(PracticeTestTags.NAME_PICKER)
+            click(option)
+            assertTrue("a pick closes the panel", gone(option))
+        }
     }
 
     /** Whether each of [options] is picked in the name button's panel; the panel is closed again with Back. */

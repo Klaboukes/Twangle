@@ -68,7 +68,7 @@ import org.junit.runners.Parameterized
 /**
  * The Scales tool (Phase 32, a tool of its own since Phase 47) in each style, light and dark: it
  * shares its screen and root with Chords, it opens on the saved scale, the name button's panel picks
- * another (and reports it to be saved), the neck follows the picked tuning and notation, TalkBack
+ * another (and reports it to be saved) and closes so the neck shows it, the neck follows the picked tuning and notation, TalkBack
  * hears the panel's grids as radio groups, the name as a heading and a list and the
  * neck in words, and it all fits: without scrolling upright and on its side at normal text, wholly
  * shown at 2× text, the panel too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
@@ -166,18 +166,21 @@ class ScalesScreenTest(private val style: VisualStyle) {
     /** Closes the panel with Back and waits for it to go: Back with it shut would close the activity. */
     private fun closePanel() {
         Espresso.pressBack()
+        awaitPanelClosed()
+    }
+
+    /** Waits for the panel to go: a window of its own, it goes with a short animation. */
+    private fun awaitPanelClosed() {
         compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
     }
 
-    /** Opens the panel, taps each of [options] in it (it stays open), and closes it. */
+    /** For each of [options]: opens the panel, taps it there, and waits for the panel to close, as a pick closes it. */
     private fun pick(vararg options: String) {
-        openPanel()
         for (option in options) {
+            openPanel()
             node(option).performScrollTo().performClick()
-            compose.waitForIdle()
-            assertTrue("a pick leaves the panel open", exists(option))
+            awaitPanelClosed()
         }
-        closePanel()
     }
 
     /** Opens the panel, checks that each of [options] is picked, and closes it. */
@@ -223,6 +226,34 @@ class ScalesScreenTest(private val style: VisualStyle) {
         closePanel()
         assertEquals("the picks are passed on to be saved", listOf(PitchClass.G), savedRoots)
         assertEquals(listOf(ScaleType.MAJOR, ScaleType.MAJOR_PENTATONIC, ScaleType.NATURAL_MINOR, ScaleType.MAJOR), savedTypes)
+    }
+
+    /**
+     * Any pick closes the panel, so the neck shows the new scale at once (the owner's report of 2026-10-26):
+     * a scale, a root, and the scale already picked, which changes nothing.
+     */
+    @Test
+    fun aPickClosesThePanelAndTheNeckShowsIt() {
+        show(PitchClass.C, ScaleType.MAJOR)
+        compose.waitForIdle()
+        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Scales"))
+        openPanel()
+        node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).performScrollTo().performClick()
+        awaitPanelClosed()
+        assertName("C minor pentatonic")
+        assertTrue(spokenNeck(), spokenNeck().startsWith("C minor pentatonic, notes C, E flat, F, G, B flat, "))
+        assertTrue("the neck shows", neck().fetchSemanticsNode().boundsInRoot.height > 0f)
+        openPanel()
+        node(PracticeTestTags.root(PitchClass.A)).performClick()
+        awaitPanelClosed()
+        assertName("A minor pentatonic")
+        assertTrue(spokenNeck(), spokenNeck().startsWith("A minor pentatonic, notes A, C, D, E, G, "))
+        openPanel()
+        node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).performScrollTo().performClick()
+        awaitPanelClosed()
+        assertName("A minor pentatonic")
+        assertEquals(listOf(PitchClass.A), savedRoots)
+        assertEquals("the scale already picked isn't saved again", listOf(ScaleType.MINOR_PENTATONIC), savedTypes)
     }
 
     /**

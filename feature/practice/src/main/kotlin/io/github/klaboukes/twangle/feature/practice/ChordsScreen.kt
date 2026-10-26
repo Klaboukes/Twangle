@@ -143,19 +143,23 @@ fun ChordsScreen(
             quality = quality,
             scaleType = scaleType,
             notation = notation,
+            // Any pick closes the panel, so the chart or the neck shows it at once (the owner's report of 2026-10-26).
             onRootChange = { picked ->
+                panelOpen = false
                 if (picked != root) {
                     root = picked
                     onRootChange(picked)
                 }
             },
             onQualityChange = { picked ->
+                panelOpen = false
                 if (picked != quality) {
                     quality = picked
                     onQualityChange(picked)
                 }
             },
             onScaleTypeChange = { picked ->
+                panelOpen = false
                 if (picked != scaleType) {
                     scaleType = picked
                     onScaleTypeChange(picked)

@@ -65,7 +65,7 @@ import org.junit.runners.Parameterized
 /**
  * The Chords tool (Phase 32) in each style, light and dark: it opens on the saved chord, the name
  * button opens one panel of roots and chord types that picks the chord (and reports it to be saved),
- * staying open for both picks, the chart follows the picked tuning and notation, ‹ › and a swipe
+ * closing on each pick so the chart shows it, the chart follows the picked tuning and notation, ‹ › and a swipe
  * step through the shapes, TalkBack hears the name as a heading and a list, the panel's grids as
  * radio groups and the chart in words, and the whole tool fits: without scrolling upright and on its
  * side at normal text, wholly shown at 2× text, the panel too.
@@ -146,18 +146,21 @@ class ChordsScreenTest(private val style: VisualStyle) {
     /** Closes the panel with Back and waits for it to go: Back with it shut would close the activity. */
     private fun closePanel() {
         Espresso.pressBack()
+        awaitPanelClosed()
+    }
+
+    /** Waits for the panel to go: a window of its own, it goes with a short animation. */
+    private fun awaitPanelClosed() {
         compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.root(PitchClass.C)) }
     }
 
-    /** Opens the panel, taps each of [options] in it (it stays open), and closes it. */
+    /** For each of [options]: opens the panel, taps it there, and waits for the panel to close, as a pick closes it. */
     private fun pick(vararg options: String) {
-        openPanel()
         for (option in options) {
+            openPanel()
             node(option).performClick()
-            compose.waitForIdle()
-            assertTrue("a pick leaves the panel open", exists(option))
+            awaitPanelClosed()
         }
-        closePanel()
     }
 
     /** Opens the panel, checks that each of [options] is picked, and closes it. */
@@ -193,22 +196,30 @@ class ChordsScreenTest(private val style: VisualStyle) {
         assertEquals(listOf(ChordQuality.DOMINANT_SEVENTH), savedQualities)
     }
 
-    /** The panel stays open for a root and a type in one go; the name and the chart follow each pick at once. */
+    /**
+     * Any pick closes the panel, so the chart shows the new chord at once (the owner's report of 2026-10-26):
+     * a chord type, a root, and the root already picked, which changes nothing.
+     */
     @Test
-    fun bothPicksInOneGoShowAtOnce() {
+    fun aPickClosesThePanelAndTheChartShowsIt() {
         show()
         awaitChart("C major")
         openPanel()
-        node(PracticeTestTags.root(PitchClass.D)).performClick()
-        assertName("D", "D major")
-        awaitChart("D major, shape 1 of")
         node(PracticeTestTags.type(ChordQuality.MINOR)).performClick()
+        awaitPanelClosed()
+        assertName("Cm", "C minor")
+        awaitChart("C minor, shape 1 of")
+        chart().assertIsDisplayed()
+        openPanel()
+        node(PracticeTestTags.root(PitchClass.D)).performClick()
+        awaitPanelClosed()
         assertName("Dm", "D minor")
         awaitChart("D minor, shape 1 of")
-        node(PracticeTestTags.root(PitchClass.D)).assertIsSelected()
-        node(PracticeTestTags.type(ChordQuality.MINOR)).assertIsSelected()
-        closePanel()
-        assertEquals(listOf(PitchClass.D), savedRoots)
+        openPanel()
+        node(PracticeTestTags.root(PitchClass.D)).performClick()
+        awaitPanelClosed()
+        assertName("Dm", "D minor")
+        assertEquals("the root already picked isn't saved again", listOf(PitchClass.D), savedRoots)
         assertEquals(listOf(ChordQuality.MINOR), savedQualities)
     }
 
@@ -275,8 +286,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.type(ChordQuality.MAJOR)).assertTextEquals("Re")
         node(PracticeTestTags.type(ChordQuality.MINOR)).assertTextEquals("Rem")
         node(PracticeTestTags.type(ChordQuality.SUS2)).performClick()
+        awaitPanelClosed()
         assertName("Resus2", "Re suspended second")
-        closePanel()
     }
 
     @Test

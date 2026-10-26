@@ -78,7 +78,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * name, so the chart or the neck under it never moves ([NameButton]). A tap calls
  * [onClick] to open the [ChordPanel]; [panel] places it right under the button, given the row's width
  * (upright, so the name stays in sight while picking), or the screen puts it elsewhere (on its side,
- * over the start half, so the panel doesn't hide the name and the chart that each pick changes).
+ * over the start half, so the panel doesn't hide the name and the chart).
  *
  * TalkBack hears the button as a heading and a list with the name in words ("C suspended second"; a
  * scale's name is a polite live region, as the neck isn't), and skips the words drawn in it, which say the same.
@@ -221,8 +221,9 @@ private fun NameButton(
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
  * ([RootPicker]), then "Chord type" over the sixteen chord types four to a row ([ChordTypePicker]) or,
  * with [scales], the twelve scales two to a row in one list, the most used first ([ScaleTypePicker]).
- * A pick leaves it open, so both can be changed in one go, and shows at once on the button and the
- * chart; Back and a tap beside it call [onDismiss]. On a short screen it scrolls.
+ * A pick (the one already picked too) closes it, so the chart or the neck shows it at once; changing
+ * both the root and the type takes two openings. Back and a tap beside it call [onDismiss]. On a short
+ * screen it scrolls.
  *
  * TalkBack hears its grids as radio groups ("Root", "Chord type" or "Scale").
  */

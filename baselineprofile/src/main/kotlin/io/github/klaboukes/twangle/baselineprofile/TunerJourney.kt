@@ -142,20 +142,14 @@ fun MacrobenchmarkScope.usePractice() {
 
     pickTool(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
-    clickTag(NAME_PICKER_TAG)
-    clickTag(ROOT_A_TAG)
-    clickTag(TYPE_MINOR_TAG)
-    device.pressBack() // Closes the panel.
-    Thread.sleep(TAP_SETTLE_MS)
+    pickInPanel(ROOT_A_TAG)
+    pickInPanel(TYPE_MINOR_TAG)
     clickTag(SHAPE_NEXT_TAG)
     Thread.sleep(SHOW_MS)
     pickTool(PRACTICE_SCALES_TAG)
     check(device.wait(Until.hasObject(By.res(SCALES_TAG)), TIMEOUT_MS)) { "Scales didn't open" }
-    clickTag(NAME_PICKER_TAG)
-    clickTag(ROOT_E_TAG)
-    clickTag(SCALE_PENTATONIC_TAG)
-    device.pressBack() // Closes the panel.
-    Thread.sleep(TAP_SETTLE_MS)
+    pickInPanel(ROOT_E_TAG)
+    pickInPanel(SCALE_PENTATONIC_TAG)
     Thread.sleep(SHOW_MS)
 
     pickTool(PRACTICE_CAPO_TAG)
@@ -167,6 +161,13 @@ fun MacrobenchmarkScope.usePractice() {
 
     device.pressBack()
     waitForTuner()
+}
+
+/** Opens the Chords or Scales name button's panel and picks the root, chord type or scale [tag] names, which closes the panel. */
+private fun MacrobenchmarkScope.pickInPanel(tag: String) {
+    clickTag(NAME_PICKER_TAG)
+    clickTag(tag)
+    check(device.wait(Until.gone(By.res(tag)), TIMEOUT_MS)) { "The panel didn't close after picking $tag" }
 }
 
 /** Opens the Practice tool button's list and picks the tool [tag] names, which closes the list. */
