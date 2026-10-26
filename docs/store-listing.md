@@ -1,6 +1,6 @@
 # Twangle on Google Play: the store listing
 
-The plan for how Twangle is presented on Google Play: the texts, the pictures, and how people find it. Phase 38 of the [roadmap](../ROADMAP.md) builds it, and Phase 52 puts it on Play. The English texts are the source; every language in `twangle.languages` has its own translation (see *The texts, ready to paste*).
+The plan for how Twangle is presented on Google Play: the texts, the pictures, and how people find it. Phase 38 of the [roadmap](../ROADMAP.md) builds it, and Phase 53 puts it on Play. The English texts are the source; every language in `twangle.languages` has its own translation (see *The texts, ready to paste*).
 
 ## What makes Twangle stand out
 Most tuners in the store are free to download but show ads, sell a subscription, ask for an account or track their users. Twangle's strong points, in the order the listing tells them:

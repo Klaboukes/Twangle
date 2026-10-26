@@ -183,7 +183,7 @@ say yes.
 
 **Only in the Play Console** (the Google Play API can't do these)
 - [ ] The first time: the *App content* forms (privacy policy, ads, app access, content rating, target
-      audience, data safety) and *Store settings* (category, tags), Phase 52.
+      audience, data safety) and *Store settings* (category, tags), Phase 53.
 - [ ] The closed test's testers (their emails or a Google Group) and its 14 days in a row, then
       applying for production access.
 - [ ] Play's pre-launch report after an upload, with Claude reading along if you like.
