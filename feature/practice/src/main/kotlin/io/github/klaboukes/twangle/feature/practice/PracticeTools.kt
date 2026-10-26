@@ -61,7 +61,7 @@ object PracticeTestTags {
     /** The chord's or the scale's short name over its chart ("Csus2 ⌄", "Am pent. ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
     const val NAME_PICKER = "practice_name_picker"
 
-    /** The chord's or the scale's name in words, quiet, under [NAME_PICKER] ("C suspended second"). */
+    /** The chord's or the scale's name in words, small, in [NAME_PICKER] under the short name ("C suspended second"). */
     const val NAME_WORDS = "practice_name_words"
 
     /** The chord chart (one item for TalkBack). */

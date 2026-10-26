@@ -27,6 +27,7 @@ import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -130,7 +131,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
-    /** The name button says [symbol], the quiet line under it [words]. */
+    /** The name button says [symbol], the words in it under the short name [words]. */
     private fun assertName(symbol: String, words: String) {
         picker().assertTextEquals(symbol)
         node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
@@ -365,15 +366,18 @@ class ChordsScreenTest(private val style: VisualStyle) {
         picker().assert(hasContentDescription(name))
     }
 
-    /** Every language at 2× text, upright on a 360 dp phone and on its side, the grids too. Only with `--languages`. */
+    /**
+     * Every language at 2× text, upright on a 320 dp phone and on its side, the grids too, with a long name in words
+     * (Russian "G♯ большой мажорный септаккорд"). Only with `--languages`.
+     */
     @EveryLanguage
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
-        show(PitchClass.G_SHARP, ChordQuality.MINOR_SEVENTH)
+        show(PitchClass.G_SHARP, ChordQuality.MAJOR_SEVENTH)
         for (language in shippedLanguages) {
             shownLocale.value = language
-            for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
                 compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
@@ -389,6 +393,44 @@ class ChordsScreenTest(private val style: VisualStyle) {
         }
     }
 
+
+    /**
+     * The name is one button as wide as the row (Phase 47), the short name over the words inside it, and one steady
+     * height whatever the name, so the chart never moves: C major and the longest name in words (Russian
+     * "Sol♯ большой мажорный септаккорд" at 2× text on a 320 dp phone) alike, upright and on its side.
+     */
+    @Test
+    fun theNameIsOneWideButtonOfOneSteadyHeight() {
+        class Case(val fontScale: Float, val size: DpSize, val language: String)
+        show()
+        for (case in listOf(Case(1f, XIAOMI, "en"), Case(2f, NARROW_UPRIGHT, "ru"), Case(2f, PHONE_LANDSCAPE, "ru"))) {
+            shownFontScale.value = case.fontScale
+            shownSize.value = case.size
+            shownLocale.value = case.language
+            shownNotation.value = if (case.fontScale > 1f) Notation.SOLFEGE else Notation.SHARPS
+            val name = "$style ${case.language} ${case.size} at ${case.fontScale}x:"
+            pick(PracticeTestTags.root(PitchClass.C), PracticeTestTags.type(ChordQuality.MAJOR))
+            val short = picker().getBoundsInRoot()
+            val chartTop = chart().getBoundsInRoot().top
+            pick(PracticeTestTags.root(PitchClass.G_SHARP), PracticeTestTags.type(ChordQuality.MAJOR_SEVENTH))
+            val long = picker().getBoundsInRoot()
+            assertEquals("$name one steady height", short.height.value, long.height.value, 0.5f)
+            assertEquals("$name the chart stays put", chartTop.value, chart().getBoundsInRoot().top.value, 0.5f)
+            val words = node(PracticeTestTags.NAME_WORDS).getBoundsInRoot()
+            assertTrue(
+                "$name the words in the button, under the short name $words $long",
+                words.left >= long.left && words.right <= long.right && words.bottom <= long.bottom && words.top >= long.top + long.height / 3,
+            )
+            if (case.size.width < case.size.height) {
+                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+                assertEquals("$name at the row's start", tool.left.value, long.left.value, 1f)
+                assertTrue("$name as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
+            }
+            assertWhollyShown(node(PracticeTestTags.NAME_WORDS), "$name the words")
+            compose.assertEveryTextWhollyShown(name)
+            compose.assertNoWordBroken(name)
+        }
+    }
 
     /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
     @Test

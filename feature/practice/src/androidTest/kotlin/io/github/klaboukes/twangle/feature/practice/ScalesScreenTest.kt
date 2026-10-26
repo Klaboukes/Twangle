@@ -123,7 +123,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
-    /** The name button says [symbol], the quiet line under it [words]. */
+    /** The name button says [symbol], the words in it under the short name [words]. */
     private fun assertName(symbol: String, words: String) {
         picker().assertTextEquals(symbol)
         node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
@@ -358,15 +358,53 @@ class ScalesScreenTest(private val style: VisualStyle) {
         }
     }
 
-    /** Every language at 2× text, upright on a 360 dp phone and on its side, the grid too. Only with `--languages`. */
+    /**
+     * The name is one button as wide as the row (Phase 47), the short name over the words inside it, and one steady
+     * height whatever the name, so the neck never moves: C major and a long name in words (French "Sol♯ pentatonique
+     * mineure", Dutch "Sol♯ mineur-pentatonisch" at 2× text on a 320 dp phone and on its side) alike.
+     */
+    @Test
+    fun theNameIsOneWideButtonOfOneSteadyHeight() {
+        class Case(val fontScale: Float, val size: DpSize, val language: String)
+        show()
+        for (case in listOf(Case(1f, XIAOMI, "en"), Case(2f, NARROW_UPRIGHT, "fr"), Case(2f, PHONE_LANDSCAPE, "nl"))) {
+            shownFontScale.value = case.fontScale
+            shownSize.value = case.size
+            shownLocale.value = case.language
+            shownNotation.value = if (case.fontScale > 1f) Notation.SOLFEGE else Notation.SHARPS
+            val name = "$style ${case.language} ${case.size} at ${case.fontScale}x:"
+            pick(PracticeTestTags.root(PitchClass.C), PracticeTestTags.scale(ScaleType.MAJOR))
+            val short = picker().getBoundsInRoot()
+            val neckTop = neck().getBoundsInRoot().top
+            pick(PracticeTestTags.root(PitchClass.G_SHARP), PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
+            val long = picker().getBoundsInRoot()
+            assertEquals("$name one steady height", short.height.value, long.height.value, 0.5f)
+            assertEquals("$name the neck stays put", neckTop.value, neck().getBoundsInRoot().top.value, 0.5f)
+            val words = node(PracticeTestTags.NAME_WORDS).getBoundsInRoot()
+            assertTrue(
+                "$name the words in the button, under the short name $words $long",
+                words.left >= long.left && words.right <= long.right && words.bottom <= long.bottom && words.top >= long.top + long.height / 3,
+            )
+            if (case.size.width < case.size.height) {
+                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+                assertEquals("$name at the row's start", tool.left.value, long.left.value, 1f)
+                assertTrue("$name as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
+            }
+            assertWhollyShown(node(PracticeTestTags.NAME_WORDS), "$name the words")
+            compose.assertEveryTextWhollyShown(name)
+            compose.assertNoWordBroken(name)
+        }
+    }
+
+    /** Every language at 2× text, upright on a 320 dp phone and on its side, the grid too. Only with `--languages`. */
     @EveryLanguage
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
-        show(PitchClass.G_SHARP, ScaleType.MAJOR_PENTATONIC)
+        show(PitchClass.G_SHARP, ScaleType.MINOR_PENTATONIC)
         for (language in shippedLanguages) {
             shownLocale.value = language
-            for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x:")

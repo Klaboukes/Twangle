@@ -86,8 +86,8 @@ import kotlinx.coroutines.withContext
  *
  * Upright, one column: the tool button ([header]) 8 dp from the top at the start, the instrument and tuning
  * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
- * the chord's or the scale's name in words as one button ("C minor seventh ⌄", [ChordNameButton]):
- * it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
+ * the chord's or the scale's name as one button as wide as the row, the short name large over the name in
+ * words ("Cm7 ⌄" over "C minor seventh", [ChordNameButton]): it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
  * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
