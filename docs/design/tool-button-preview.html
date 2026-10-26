@@ -1,0 +1,341 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Practice Tool Button</title>
+<!--
+TWANGLE PRACTICE: ONE TOOL BUTTON, THE NAME AS WIDE AS THE ROW, THE MODE'S COLOUR NOTE (Phase 47 preview).
+ROUGH, plain on purpose: Contemporary style only, the bare element per option.
+OWNER'S PICK, 2026-10-26: A, D, F (the recommended ones): one tool button sharing its row with the instrument and
+         tuning line, the list it opens with the picked tool marked; the name as one wide button of two lines (short
+         name large, words under it inside the button); an accent ring on the mode's colour note.
+Asks     Three things, each with its own letters, so a pick reads "A, C, E":
+         1. how to switch tools (A: one tool button with a short list, sharing its row with the instrument and
+            tuning line; B: text tabs that scroll sideways, a row of their own);
+         2. the chord's or scale's name as one button as wide as the row (C: the words beside the short name;
+            D: the words on a second line inside the button); the quiet line under today's small button goes;
+         3. whether a mode's own colour note (Dorian's 6th, Lydian's #4, Mixolydian's b7, ...) gets a mark on the
+            neck (E: no mark; F: a mark), shown on D Dorian.
+Context  Practice holds Metronome · Chords · Scales · Capo (Scales becomes a tool of its own later in Phase 47, the
+         Chords · Scales choice goes). Today: the segmented switch on top (room for three tools), the instrument and
+         tuning line, the Chords · Scales choice, the small name button ("Am7 ⌄", 152 dp) with the name in words in a
+         quiet line under it, then the chart (docs/architecture/ui-other-screens.md, Practice tab).
+As drawn A's tool button: 160 dp wide whatever the tool's name, 44 dp outline in a 48 dp touch target, the tool's
+         icon (24 dp, 1.8 dp round lines like the headstock), the name, ⌄. Its list: a soft lift, no border, 48 dp
+         rows of icon and name, the picked one in the container colour with a 2 dp accent outline (as the Sound
+         panel). The icons are rough placeholders, drawn when the button is built. Upright the bar is
+         Tuner · Practice · Settings; on its side a rail at the start.
+Sizes    Frames are the Xiaomi 12X (393 × 873 dp) at 0.8 px per dp, as the other rough previews.
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --on-accent: #FFFFFF; --line: color-mix(in srgb, #4A5268 60%, #E3E7F0);
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --on-accent: #121A5A; --line: color-mix(in srgb, #A6AECB 60%, #171D2E);
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --on-accent: #121A5A; --line: color-mix(in srgb, #A6AECB 60%, #171D2E);
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1060px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2.part { font: 400 22px/1.2 var(--ui); margin: 40px 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 18px; display: grid; gap: 30px; }
+.cand { display: grid; gap: 8px; }
+.cand h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.frames { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-start; }
+.scroll { max-width: 100%; overflow-x: auto; }
+.cap { font: 400 11px/1.3 var(--ui); color: var(--muted); margin-top: 4px; }
+
+/* Frames: 393 x 800 dp upright, 873 x 375 dp on its side, at 0.8 px per dp. */
+.phone { width: 314px; height: 640px; border-radius: 14px; background: var(--bg); padding: 6px 13px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; flex: none; }
+.land { width: 698px; height: 300px; border-radius: 14px; background: var(--bg); display: flex; position: relative; flex: none; }
+.land .rail { width: 64px; display: grid; align-content: center; gap: 22px; justify-items: center; font: 500 9.5px/1 var(--ui); color: var(--muted); }
+.land .rail .on { color: var(--accent); }
+.land .half { width: 317px; padding: 6px 13px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
+.grow { flex: 1; display: grid; place-items: center; width: 100%; min-height: 0; }
+.bar { margin-top: auto; display: grid; grid-template-columns: repeat(3, 1fr); width: calc(100% + 26px); height: 64px; align-content: center;
+  text-align: center; font: 500 11px/1.2 var(--ui); color: var(--muted); }
+.bar .on { color: var(--accent); }
+.bar .on::after { content: ""; display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--accent); margin: 4px auto 0; }
+
+/* Buttons: the app's see-through face with a muted outline. */
+.btn { border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; color: var(--ink); flex: none; }
+.ico { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico .f { fill: currentColor; stroke: none; }
+.chev { width: 16px; height: 16px; fill: var(--muted); flex: none; }
+
+/* The top row: A's tool button, the instrument button, the tuning. */
+.toprow { display: flex; align-items: center; width: 100%; height: 38px; gap: 0; }
+.toolbtn { width: 128px; height: 35px; gap: 6px; padding: 0 8px; justify-content: flex-start; font: 500 12.5px/1 var(--ui); }
+.toolbtn .chev { margin-left: auto; }
+.inst { width: 35px; height: 35px; color: var(--muted); }
+.tuning { font: 400 11.2px/1.3 var(--ui); color: var(--muted); }
+.toprow .inst { margin-left: 8px; }
+.toprow .tuning { margin-left: 5px; }
+.tuneline { display: flex; align-items: center; justify-content: center; gap: 5px; height: 38px; }
+
+/* A's list, after a tap. */
+.menu { position: absolute; width: 168px; background: var(--surface); border-radius: 16px; padding: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .18), 0 1px 4px rgb(0 0 0 / .08); display: grid; gap: 2px; z-index: 2; }
+.menu div { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 12px; font: 400 12.5px/1 var(--ui); }
+.menu .on { background: var(--container); outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 500; }
+.scrim { position: absolute; inset: 0; border-radius: 14px; background: rgb(0 0 0 / .06); z-index: 1; }
+
+/* B: text tabs, a row of their own. */
+.tabs { display: flex; gap: 22px; width: 100%; height: 38px; align-items: center; overflow-x: auto; scrollbar-width: none;
+  font: 500 12.5px/1 var(--ui); color: var(--muted); white-space: nowrap; padding: 0 2px; }
+.tabs span { display: grid; gap: 5px; justify-items: center; padding-top: 8px; }
+.tabs .on { color: var(--accent); }
+.tabs span::after { content: ""; width: 18px; height: 3px; border-radius: 2px; background: transparent; }
+.tabs .on::after { background: var(--accent); }
+
+/* Today's small name button with the quiet line under it. */
+.namesmall { width: 122px; height: 38px; gap: 6px; font: 400 17.6px/1 var(--ui); }
+.quiet { font: 400 11.2px/1 var(--ui); color: var(--muted); height: 17px; display: grid; place-items: center; }
+/* C: one line, the words beside. D: two lines inside. */
+.namewide { width: 100%; height: 38px; gap: 7px; padding: 0 10px; font: 400 17.6px/1 var(--ui); white-space: nowrap; }
+.namewide small { font: 400 12px/1 var(--ui); color: var(--muted); }
+.namewide .sep { color: var(--muted); font-size: 13px; }
+.nametwo { width: 100%; height: 54px; flex-direction: column; gap: 4px; font: 400 17.6px/1 var(--ui); }
+.nametwo small { font: 400 11.2px/1 var(--ui); color: var(--muted); }
+.nametwo .top { display: flex; align-items: center; gap: 6px; }
+
+.pager { display: flex; align-items: center; gap: 14px; font: 400 12px/1 var(--ui); color: var(--muted); }
+.arrow { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; color: var(--ink);
+  border: 1px solid var(--line); }
+
+/* The metronome, roughly. */
+.meters { display: flex; gap: 4px; }
+.meters span { width: 40px; height: 35px; border-radius: 10px; border: 1px solid var(--line); display: grid; place-items: center; font: 500 11.5px/1 var(--ui); }
+.meters .on { background: var(--container); border: 2px solid var(--accent); }
+.lights { display: flex; gap: 10px; height: 52px; align-items: center; }
+.lights span { width: 46px; height: 30px; border-radius: 10px; background: color-mix(in srgb, var(--muted) 18%, var(--bg)); }
+.lights .on { background: var(--accent); }
+.dial { border-radius: 50%; border: 10px solid color-mix(in srgb, var(--muted) 22%, var(--bg)); display: grid; place-items: center; position: relative; flex: none; }
+.dial b { font: 300 46px/1 var(--ui); display: block; text-align: center; }
+.dial i { font: 400 11px/1 var(--ui); color: var(--muted); font-style: normal; display: block; text-align: center; margin-top: 4px; }
+.dial .pm { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.dial .st { position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-size: 15px; }
+.mrow { display: flex; gap: 13px; }
+.mrow div { display: grid; gap: 3px; justify-items: center; font: 500 9.5px/1 var(--ui); color: var(--muted); }
+.mrow span { width: 58px; height: 42px; border-radius: 10px; border: 1px solid var(--line); }
+
+/* Diagrams. */
+svg text { font-family: var(--ui); }
+.str { stroke: var(--muted); stroke-width: 1; }
+.fret { stroke: color-mix(in srgb, var(--muted) 70%, var(--bg)); stroke-width: 1; }
+.nut { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+.dot { fill: var(--ink); }
+.dt { fill: var(--bg); font-size: 10.5px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+.root { fill: var(--accent); }
+.rt { fill: var(--on-accent); font-size: 9px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+.hollow { fill: var(--bg); stroke: var(--muted); stroke-width: 1.2; }
+.ht { fill: var(--ink); font-size: 9px; text-anchor: middle; dominant-baseline: central; }
+.colour { fill: var(--bg); stroke: var(--accent); stroke-width: 2.4; }
+.ct { fill: var(--accent); font-size: 9px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.mk { fill: var(--muted); font-size: 11px; text-anchor: middle; dominant-baseline: central; }
+.un { fill: var(--muted); font-size: 10px; text-anchor: middle; }
+.unr { fill: var(--accent); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.fn { fill: var(--muted); font-size: 9px; text-anchor: middle; dominant-baseline: central; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 47 · rough mock-up</p>
+  <h1>One tool button, a wider name, the mode's colour note</h1>
+  <p class="lede"><strong>Owner picked A, D, F on 2026-10-26.</strong></p>
+  <p class="lede">Practice will hold four tools: <strong>Metronome · Chords · Scales · Capo</strong>. Three questions,
+    each with its own letters. <strong>Pick one letter per question</strong> (for example "A, C, E").</p>
+  <p class="lede">Shown on the Xiaomi, upright and on its side, guitar in standard tuning.</p>
+</header>
+
+<h2 class="part">1 · Switching tools</h2>
+<p class="lede">Today: the switch on top (room for three tools only), then the instrument and tuning line, then
+  Chords · Scales.</p>
+<div class="list" id="q1"></div>
+
+<h2 class="part">2 · The name as one wide button</h2>
+<p class="lede">A tap opens the same panel as today. The quiet line under today's small button goes. Shown with A's
+  top row.</p>
+<div class="list" id="q2"></div>
+
+<h2 class="part">3 · A mark on the mode's colour note?</h2>
+<p class="lede">D Dorian has the same notes as C major, so the neck shows the same dots but for the root (D, filled).
+  What makes Dorian sound like Dorian is its 6th, B.</p>
+<div class="list" id="q3"></div>
+
+<footer>
+  <p>Each tool keeps its own things under the top row; nothing above the chart moves when you switch tools.</p>
+</footer>
+</div>
+
+<script>
+// Rough tool icons on a 24 grid, 1.8 round lines (placeholders; real ones come when the button is built).
+const ICON = {
+  metronome: `<path d="M7.5 21h9L13.9 4.2a1 1 0 0 0-1-.7h-1.8a1 1 0 0 0-1 .7Z"/><path d="M12 17l4.5-9.5"/><circle class="f" cx="15.6" cy="9.4" r="1.6"/>`,
+  chords: `<path d="M6 4.5h12M6 4.5v15M10 4.5v15M14 4.5v15M18 4.5v15M6 9.5h12M6 14.5h12M6 19.5h12"/><circle class="f" cx="10" cy="12" r="2"/><circle class="f" cx="14" cy="7" r="2"/>`,
+  scales: `<path d="M3.5 19.5h4.25v-4.25h4.25V11h4.25V6.75h4.25"/>`,
+  capo: `<path d="M8 2.5v19M16 2.5v19"/><rect x="4.5" y="9.5" width="15" height="3.6" rx="1.8"/><path d="M19.5 11.3c1.6.6 1.9 2.6 1.1 4.2"/>`,
+  instrument: `<path d="M10.5 21.5v-6l-2-2V4A1.5 1.5 0 0 1 10 2.5h4A1.5 1.5 0 0 1 15.5 4v9.5l-2 2v6M5 5.5h3.5M5 9h3.5M5 12.5h3.5M15.5 5.5H19M15.5 9H19M15.5 12.5H19"/>`,
+};
+const chev = `<svg class="chev" viewBox="0 -960 960 960" aria-hidden="true"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>`;
+const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+const TOOLS = [["metronome", "Metronome"], ["chords", "Chords"], ["scales", "Scales"], ["capo", "Capo"]];
+const toolName = id => TOOLS.find(t => t[0] === id)[1];
+
+const toolBtn = id => `<span class="btn toolbtn">${ico(id)}${toolName(id)}${chev}</span>`;
+const inst = `<span class="btn inst">${ico("instrument")}</span>`;
+const tuning = `<span class="tuning">Guitar · Standard</span>`;
+const rowA = id => `<div class="toprow">${toolBtn(id)}${id === "metronome" ? "" : inst + tuning}</div>`;
+const tabsB = id => `<div class="tabs">${TOOLS.map(([t, n]) => `<span class="${t === id ? "on" : ""}">${n}</span>`).join("")}</div>`;
+const tuneLine = `<div class="tuneline">${inst}${tuning}</div>`;
+const menu = (id, style) => `<div class="scrim"></div><div class="menu" style="${style}">${TOOLS.map(([t, n]) =>
+  `<div class="${t === id ? "on" : ""}">${ico(t)}${n}</div>`).join("")}</div>`;
+const bar = `<div class="bar"><span>Tuner</span><span class="on">Practice</span><span>Settings</span></div>`;
+const rail = `<div class="rail"><span>Tuner</span><span class="on">Practice</span><span>Settings</span></div>`;
+
+// Chord chart (upright box), as in the app.
+const OPEN = [4, 9, 2, 7, 11, 4];   // E A D G B E, low to high, as pitch classes (C = 0)
+const NAME = ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const noteAt = (s, f) => NAME[(OPEN[s] + f) % 12];
+const AM7 = { frets: ["x", 0, 2, 0, 1, 0], fingers: [0, 0, 2, 0, 1, 0] };
+function chart(sh, z) {
+  const sp = 22, fh = 26, L = 34, rows = 4, T = 26, W = L + 5 * sp + 34, H = T + rows * fh + 26;
+  let g = "";
+  for (let r = 0; r <= rows; r++) g += `<line class="${r === 0 ? "nut" : "fret"}" x1="${L}" x2="${L + 5 * sp}" y1="${T + r * fh}" y2="${T + r * fh}"/>`;
+  for (let s = 0; s < 6; s++) {
+    const x = L + s * sp, f = sh.frets[s];
+    g += `<line class="str" x1="${x}" x2="${x}" y1="${T}" y2="${T + rows * fh}"/>`;
+    if (f === "x" || f === 0) g += `<text class="mk" x="${x}" y="${T - 12}">${f === "x" ? "×" : "o"}</text>`;
+    if (typeof f === "number" && f > 0) g += `<circle class="dot" cx="${x}" cy="${T + (f - .5) * fh}" r="9"/><text class="dt" x="${x}" y="${T + (f - .5) * fh}">${sh.fingers[s]}</text>`;
+    if (f !== "x") { const n = noteAt(s, f); g += `<text class="${n === "A" ? "unr" : "un"}" x="${x}" y="${T + rows * fh + 17}">${n}</text>`; }
+  }
+  return `<svg width="${W * z}" height="${H * z}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+const pager = `<div class="pager"><span class="arrow">‹</span><span>1 of 4</span><span class="arrow">›</span></div>`;
+const nameToday = `<span class="btn namesmall">Am7${chev}</span><div class="quiet">A minor seventh</div>`;
+const nameC = (s = "Am7", w = "A minor seventh") => `<span class="btn namewide">${s}<span class="sep">·</span><small>${w}</small>${chev}</span>`;
+const nameD = (s = "Am7", w = "A minor seventh") => `<span class="btn nametwo"><span class="top">${s}${chev}</span><small>${w}</small></span>`;
+
+// The metronome, roughly: meter picker, beat lights, dial, the row of three.
+const meters = `<div class="meters">${["2/4", "3/4", "4/4", "5/4", "6/8", "7/8"].map(m => `<span class="${m === "4/4" ? "on" : ""}">${m}</span>`).join("")}</div>`;
+const lights = `<div class="lights"><span class="on"></span><span></span><span></span><span></span></div>`;
+const dial = d => `<div class="dial" style="width:${d}px;height:${d}px"><span class="pm" style="left:8%">−</span><div><b>120</b><i>BPM</i></div><span class="pm" style="right:8%">+</span><span class="st">▶</span></div>`;
+const mrow = `<div class="mrow"><div><span></span>Sound</div><div><span></span>Tap tempo</div><div><span></span>Listen</div></div>`;
+
+const up = (inner, extra = "") => `<div><div class="phone">${inner}${bar}${extra}</div>`;
+const capUp = t => `<p class="cap">${t}</p></div>`;
+const chordsUp = top => up(`${top}${nameToday}<div class="grow">${chart(AM7, 1.55)}</div>${pager}`);
+const metroUp = top => up(`${top}${meters}${lights}${dial(270)}${mrow}`);
+const land = (start, end, extra = "") => `<div class="scroll"><div class="land">${rail}<div class="half">${start}</div><div class="half">${end}</div>${extra}</div>`;
+const chordsLand = top => land(top, `${nameToday}<div class="grow">${chart(AM7, 1.05)}</div>${pager}`);
+const metroLand = top => land(`${top}<div class="grow">${dial(top.includes("toprow") || top.includes("tabs") ? 222 : 250)}</div>`,
+  `<div class="grow" style="align-content:center;gap:10px">${meters}${lights}${mrow}</div>`);
+
+const cand = (letter, title, rec, body, note) => `<div class="cand">
+  <h3>${letter}. ${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>
+  <div class="frames">${body}</div><p class="note">${note}</p></div>`;
+
+// 1. Switching tools.
+document.getElementById("q1").innerHTML = [
+  cand("A", "One tool button, sharing its row with the tuning", true,
+    chordsUp(rowA("chords")) + capUp("Chords") +
+    metroUp(rowA("metronome")) + capUp("Metronome: the button alone, same place") +
+    up(`${rowA("chords")}${nameToday}<div class="grow">${chart(AM7, 1.55)}</div>${pager}`, menu("chords", "top:46px;left:13px")) + capUp("After a tap: the list, Chords marked") +
+    chordsLand(rowA("chords")) + `<p class="cap">On its side: at the top of the start half</p></div>` +
+    metroLand(rowA("metronome")) + `<p class="cap">Metronome on its side</p></div>`,
+    "One row less above the chart, and room for any number of tools. Switching takes two taps."),
+  cand("B", "Text tabs, a row of their own", false,
+    chordsUp(tabsB("chords") + tuneLine) + capUp("Chords") +
+    metroUp(tabsB("metronome")) + capUp("Metronome") +
+    chordsLand(tabsB("chords") + tuneLine) + `<p class="cap">On its side: at the top of the start half</p></div>` +
+    metroLand(tabsB("metronome")) + `<p class="cap">Metronome on its side</p></div>`,
+    "Every tool in sight, one tap to switch. Keeps today's number of rows; with more tools or larger text the row slides sideways."),
+].join("");
+
+// 2. The name as one wide button.
+const nameUp = name => `<div><div class="phone" style="height:auto;padding-bottom:12px">${rowA("chords")}${name}<div class="grow">${chart(AM7, 1.55)}</div>${pager}</div>`;
+const nameLand = name => `<div><div class="land" style="width:auto;height:300px"><div class="half">${name}<div class="grow">${chart(AM7, 1.05)}</div>${pager}</div></div>`;
+const longOne = (fn) => `<div><div class="phone" style="height:auto;padding:10px 13px">${fn("C♯m pent.", "C sharp minor pentatonic")}</div>`;
+document.getElementById("q2").innerHTML = [
+  cand("Today", "For comparison", false,
+    nameUp(nameToday) + capUp("Upright"),
+    "The small button and the quiet line under it."),
+  cand("C", "The words beside the short name, one line", false,
+    nameUp(nameC()) + capUp("Upright") + nameLand(nameC()) + capUp("On its side (the end half)") + longOne(nameC) + capUp("A long one"),
+    "The lowest button, so the chart gets the most room. Long names in some languages, or larger text, make the words smaller."),
+  cand("D", "The words on a second line inside the button", true,
+    nameUp(nameD()) + capUp("Upright") + nameLand(nameD()) + capUp("On its side (the end half)") + longOne(nameD) + capUp("A long one"),
+    "Like today, but one button; the words keep their size in every language."),
+].join("");
+
+// 3. D Dorian on the neck, upright (phone upright) and sideways (on its side).
+const DORIAN = { 2: "root", 4: "", 5: "", 7: "", 9: "", 11: "colour", 0: "" };   // D E F G A B C
+const dotOf = (s, f, mark) => {
+  const pc = (OPEN[s] + f) % 12;
+  if (!(pc in DORIAN)) return null;
+  const k = DORIAN[pc] === "root" ? "root" : DORIAN[pc] === "colour" && mark ? "colour" : "hollow";
+  return { t: NAME[pc], k };
+};
+const dotSvg = (x, y, d) => {
+  const [c, t] = d.k === "root" ? ["root", "rt"] : d.k === "colour" ? ["colour", "ct"] : ["hollow", "ht"];
+  return `<circle class="${c}" cx="${x}" cy="${y}" r="8.5"/><text class="${t}" x="${x}" y="${y}">${d.t}</text>`;
+};
+const FRET_NUMS = [3, 5, 7, 9, 12];
+function neckUpright(mark, z) {
+  const sp = 19, fw = 20.5, L = 26, T = 30, W = L + 5 * sp + 14, H = T + 12 * fw + 8;
+  let g = "";
+  for (let f = 0; f <= 12; f++) g += `<line class="${f === 0 ? "nut" : "fret"}" x1="${L}" x2="${L + 5 * sp}" y1="${T + f * fw}" y2="${T + f * fw}"/>`;
+  for (let s = 0; s < 6; s++) g += `<line class="str" x1="${L + s * sp}" x2="${L + s * sp}" y1="${T}" y2="${T + 12 * fw}"/>`;
+  FRET_NUMS.forEach(f => g += `<text class="fn" x="${L - 15}" y="${T + (f - .5) * fw}">${f}</text>`);
+  for (let s = 0; s < 6; s++) for (let f = 0; f <= 12; f++) {
+    const d = dotOf(s, f, mark);
+    if (d) g += dotSvg(L + s * sp, f === 0 ? T - 15 : T + (f - .5) * fw, d);
+  }
+  return `<svg width="${W * z}" height="${H * z}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+function neckSideways(mark, z) {
+  const sp = 19, fw = 20.5, L = 30, T = 12, W = L + 12 * fw + 8, H = T + 5 * sp + 26;
+  const y = s => T + (5 - s) * sp;
+  let g = "";
+  for (let f = 0; f <= 12; f++) g += `<line class="${f === 0 ? "nut" : "fret"}" x1="${L + f * fw}" x2="${L + f * fw}" y1="${T}" y2="${T + 5 * sp}"/>`;
+  for (let s = 0; s < 6; s++) g += `<line class="str" x1="${L}" x2="${L + 12 * fw}" y1="${y(s)}" y2="${y(s)}"/>`;
+  FRET_NUMS.forEach(f => g += `<text class="un" x="${L + (f - .5) * fw}" y="${T + 5 * sp + 19}">${f}</text>`);
+  for (let s = 0; s < 6; s++) for (let f = 0; f <= 12; f++) {
+    const d = dotOf(s, f, mark);
+    if (d) g += dotSvg(f === 0 ? L - 15 : L + (f - .5) * fw, y(s), d);
+  }
+  return `<svg width="${W * z}" height="${H * z}" viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+}
+const neckFrames = mark => `<div><div class="phone" style="height:auto;padding:12px 13px">${neckUpright(mark, 1.6)}</div><p class="cap">Upright</p></div>` +
+  `<div class="scroll"><div class="land" style="width:auto;height:auto;padding:12px 16px">${neckSideways(mark, 1.45)}</div><p class="cap">On its side</p></div>`;
+document.getElementById("q3").innerHTML = [
+  cand("E", "No mark", false, neckFrames(false),
+    "Calm, as today: only the root stands out."),
+  cand("F", "The colour note marked", true, neckFrames(true),
+    "B gets an accent ring, so each mode looks different on the neck: Lydian's ♯4, Mixolydian's ♭7 and so on."),
+].join("");
+</script>
