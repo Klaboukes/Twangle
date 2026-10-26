@@ -106,6 +106,7 @@ scripts/release.sh status|health [days]|reviews [language]|listing-changes  # re
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
+- Open every mock-up and preview page (`docs/design/*.html`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
 
 ## Git & GitHub
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
