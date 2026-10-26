@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akordy</string>
+    <string name="practice_tool_button">Narzędzie</string>
+    <string name="practice_tool_list">Narzędzia</string>
     <string name="practice_root">Pryma</string>
     <string name="practice_chord_type">Rodzaj akordu</string>
     <string name="practice_chord_major">%1$s-dur</string>

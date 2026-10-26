@@ -10,9 +10,9 @@ import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
- * The tools the Practice tab (Phase 32) offers with [tools], in its switch's order: the metronome,
+ * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order: the metronome,
  * chords and, with its own switch, the capo helper (Phase 33). None while the Practice tab's switch
- * is off: the tab is then the plain Metronome tab, with no switch.
+ * is off: the tab is then the plain Metronome tab, with no tool button.
  */
 fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> = when {
     !tools.practiceTab -> emptyList()
@@ -26,13 +26,13 @@ fun practiceToolToOpen(saved: PracticeTool, offered: List<PracticeTool>): Practi
 
 /** Test tags for UI tests (as resource ids in the app, see `MainActivity`). */
 object PracticeTestTags {
-    /** The tool switch at the top of every Practice tool. */
-    const val SWITCH = "practice_switch"
+    /** The tool button at the top start of every Practice tool, which opens the list of tools. */
+    const val TOOL_BUTTON = "practice_tool_button"
 
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 
-    /** A segment of the tool switch, e.g. "practice_tool_chords". */
+    /** A tool's row in the tool button's list, e.g. "practice_tool_chords". */
     fun tool(tool: PracticeTool): String = "practice_tool_" + tool.name.lowercase()
 
     /** The Chords and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */

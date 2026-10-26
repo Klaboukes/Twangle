@@ -82,9 +82,10 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * instrument and tuning picked with the instrument button ([tuningName], heard as [spokenTuningName];
  * with [onPickInstrument] the button stands before that line and opens the instrument and tuning panel).
  *
- * Upright, one column: the tool switch ([header]) 8 dp from the top, the tuning line, the shapes,
- * the capo, the table and "Sounds in". On its side (≥ 600 dp wide and wider than tall) the switch,
- * the tuning line, the shapes, the capo and "Sounds in" fill the start half, the table the end half.
+ * Upright, one column: the tool button ([header]) 8 dp from the top at the start with the tuning
+ * line beside it ([ToolAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
+ * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
+ * half, the table the end half.
  *
  * Names follow the player's [notation], written as the key writes them ([CapoPlan.shapeSymbolOf],
  * [CapoPlan.soundingSymbolOf]: E♭ in E♭, A♯m in F♯). It opens on [savedShapes] and [savedFret], and
@@ -123,7 +124,7 @@ fun CapoScreen(
         }
     }
 
-    val tuningLine = @Composable { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
     val picker = @Composable {
         ShapesPicker(shapes, notation, speech, onPick = { picked ->
             val index = CAPO_SHAPES.indexOf(picked)
@@ -154,9 +155,7 @@ fun CapoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
-                    header()
-                    Spacer(Modifier.height(8.dp))
-                    tuningLine()
+                    topRow()
                     Spacer(Modifier.height(12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp))
@@ -189,10 +188,7 @@ fun CapoScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
-                    header()
-                    // The instrument button's 48 dp touch target already keeps its outline clear of its neighbours.
-                    Spacer(Modifier.height(if (tight) 0.dp else 8.dp))
-                    tuningLine()
+                    topRow()
                     Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp * gap))
@@ -491,13 +487,13 @@ private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, spee
 /** On its side from this width, as the other Practice tools. */
 private val WIDE_MIN_WIDTH = 600.dp
 
-/** The tool switch stands this far down from the top, as on the other Practice tools. */
+/** The tool button stands this far down from the top, as on the other Practice tools. */
 private val HEADER_TOP = 8.dp
 
 /** Upright, as the other Practice tools' column. */
 private val COLUMN_MAX_WIDTH = 480.dp
 
-/** On its side, the table's top, about level with the tool switch. */
+/** On its side, the table's top, about level with the tool button. */
 private val TABLE_TOP_WIDE = 12.dp
 
 private val TABLE_MAX_WIDTH = 320.dp

@@ -212,6 +212,7 @@ class StoreScreenshots(private val shot: Shot) {
                     waitFor(PracticeTestTags.CHORDS)
                     settle(PANEL_SETTLE_MS)
                     screens += screenshot(scenario, "7a")
+                    click(PracticeTestTags.TOOL_BUTTON)
                     click(PracticeTestTags.tool(PracticeTool.CAPO))
                     device.wait(Until.gone(By.res(PracticeTestTags.CHORDS)), WAIT_MS)
                     settle(PANEL_SETTLE_MS)

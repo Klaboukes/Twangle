@@ -109,7 +109,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                         savedQuality = quality,
                         onRootChange = { savedRoots += it },
                         onQualityChange = { savedQualities += it },
-                        header = { PracticeToolSwitch(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
+                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                     )
@@ -289,11 +289,18 @@ class ChordsScreenTest(private val style: VisualStyle) {
             awaitChart("C major")
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
+            for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
+            // One row: the tool button at the start, the instrument and tuning beside it (Phase 47).
+            val toolButton = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+            val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
+            assertTrue(
+                "$case the tuning beside the tool button $toolButton $instrument",
+                instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
+            )
             assertThePanel(case, wide = size == PHONE_LANDSCAPE)
             val chart = chart().getBoundsInRoot()
             // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp).

@@ -37,7 +37,7 @@ import org.junit.rules.Timeout
 
 /**
  * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): the bar's
- * Metronome tab is called Practice, the tool switch at its top picks the metronome or chords, the
+ * Metronome tab is called Practice, the tool button at its top (Phase 47) picks the metronome or chords from its list, the
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
  * the Chords tool's chord picked is saved too and comes back with it, and so are its Chords · Scales
  * choice and the scale picked. The capo helper (Phase 33) saves its shapes and fret, and a row
@@ -115,6 +115,22 @@ class PracticeTabTest {
 
     private fun checked(tag: String): Boolean = device.findObject(By.res(tag)).isChecked
 
+    /** Opens the tool button's list and picks [tool] in it, which closes it. */
+    private fun pickTool(tool: PracticeTool) {
+        click(PracticeTestTags.TOOL_BUTTON)
+        click(PracticeTestTags.tool(tool))
+        gone(PracticeTestTags.tool(tool))
+    }
+
+    /** Whether [tool] is the one picked in the tool button's list; the list is closed again with Back. */
+    private fun toolPicked(tool: PracticeTool): Boolean {
+        click(PracticeTestTags.TOOL_BUTTON)
+        val picked = device.wait(Until.findObject(By.res(PracticeTestTags.tool(tool))), WAIT_MS).isChecked
+        device.pressBack()
+        gone(PracticeTestTags.tool(tool))
+        return picked
+    }
+
     /** Opens the name button's panel, taps each of [options] in it (it stays open), and closes it with Back. */
     private fun pick(vararg options: String) {
         click(PracticeTestTags.NAME_PICKER)
@@ -140,17 +156,19 @@ class PracticeTabTest {
             device.findObject(By.res(tab)).hasObject(By.text(context.getString(R.string.nav_practice))),
         )
         click(tab)
-        assertTrue("the tool switch shows", shown(PracticeTestTags.SWITCH))
+        assertTrue("the tool button shows", shown(PracticeTestTags.TOOL_BUTTON))
     }
 
     @Test
-    fun theSwitchPicksTheToolAndPracticeOpensOnTheOneUsedLast() {
+    fun theToolButtonPicksTheToolAndPracticeOpensOnTheOneUsedLast() {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             assertTrue("a fresh Practice opens on the metronome", shown(MetronomeTestTags.DIAL))
-            assertTrue("both tools", shown(PracticeTestTags.tool(PracticeTool.METRONOME)) && shown(PracticeTestTags.tool(PracticeTool.CHORDS)))
-
+            click(PracticeTestTags.TOOL_BUTTON)
+            assertTrue("the list has both tools", shown(PracticeTestTags.tool(PracticeTool.METRONOME)) && shown(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertTrue("the metronome picked", checked(PracticeTestTags.tool(PracticeTool.METRONOME)))
             click(PracticeTestTags.tool(PracticeTool.CHORDS))
+            assertTrue("the list closes", gone(PracticeTestTags.tool(PracticeTool.METRONOME)))
             assertTrue("chords show", shown(PracticeTestTags.CHORDS))
             assertTrue("the metronome has gone", gone(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
@@ -162,7 +180,7 @@ class PracticeTabTest {
 
             // Another tab and back: still chords.
             click(NavigationTestTags.tab(Destination.SETTINGS))
-            assertTrue(gone(PracticeTestTags.SWITCH))
+            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
             click(NavigationTestTags.tab(Destination.METRONOME))
             assertTrue("back on chords", shown(PracticeTestTags.CHORDS))
         }
@@ -187,7 +205,7 @@ class PracticeTabTest {
                 device.wait(Until.hasObject(By.res(PracticeTestTags.NECK).desc(Pattern.compile("(A|La) minor pentatonic, notes .*"))), WAIT_MS),
             )
             assertEquals("scales saved", PracticeChart.SCALES to ScaleType.MINOR_PENTATONIC, waitForSavedScale(PracticeChart.SCALES, ScaleType.MINOR_PENTATONIC))
-            click(PracticeTestTags.tool(PracticeTool.METRONOME))
+            pickTool(PracticeTool.METRONOME)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.METRONOME, waitForSaved(PracticeTool.METRONOME))
         }
@@ -199,10 +217,10 @@ class PracticeTabTest {
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
             // Chords first, on scales, so it has state of its own to be replaced.
-            click(PracticeTestTags.tool(PracticeTool.CHORDS))
+            pickTool(PracticeTool.CHORDS)
             assertTrue("scales show", shown(PracticeTestTags.NECK))
 
-            click(PracticeTestTags.tool(PracticeTool.CAPO))
+            pickTool(PracticeTool.CAPO)
             assertTrue("the capo helper shows", shown(PracticeTestTags.CAPO))
             assertEquals("the pick is saved", PracticeTool.CAPO, waitForSaved(PracticeTool.CAPO))
             val noCapo = device.findObject(By.res(PracticeTestTags.CAPO_SOUNDS_IN)).contentDescription
@@ -217,12 +235,12 @@ class PracticeTabTest {
                 "on the shape tapped",
                 picked(PracticeTestTags.root(PitchClass.F), PracticeTestTags.type(ChordQuality.MAJOR)),
             )
-            assertTrue("the switch on Chords", checked(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertTrue("the tool button on Chords", toolPicked(PracticeTool.CHORDS))
             assertEquals("the chord is saved", PitchClass.F to ChordQuality.MAJOR, waitForSavedChord(PitchClass.F, ChordQuality.MAJOR))
             assertEquals("chords, not scales", PracticeChart.CHORDS to ScaleType.MAJOR, waitForSavedScale(PracticeChart.CHORDS, ScaleType.MAJOR))
             assertEquals("the tool is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
-            click(PracticeTestTags.tool(PracticeTool.CAPO))
+            pickTool(PracticeTool.CAPO)
             assertTrue(
                 "the capo helper kept its fret",
                 device.wait(Until.hasObject(By.res(PracticeTestTags.CAPO_FRET).desc(Pattern.compile(Pattern.quote(onFret(3)) + ".*"))), WAIT_MS),

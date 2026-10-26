@@ -66,7 +66,7 @@ Topic files:
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
-:feature:practice  Practice tab (Phase 32, behind its switch): the tool switch, the Chords tool (chord charts, scales)
+:feature:practice  Practice tab (Phase 32, behind its switch): the tool button, the Chords tool (chord charts, scales)
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones and metronome clicks (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
@@ -174,7 +174,7 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
-    PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolSwitch,
+    PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolButton, PracticeToolIcons,
     ChordsScreen (root and type pickers, chart, ‹ › pager), ChordPicker (RootPicker, ChordTypePicker),
     ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart),
     CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)

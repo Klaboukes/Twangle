@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akorlar</string>
+    <string name="practice_tool_button">Araç</string>
+    <string name="practice_tool_list">Araçlar</string>
     <string name="practice_root">Kök nota</string>
     <string name="practice_chord_type">Akor türü</string>
     <string name="practice_chord_major">%1$s majör</string>

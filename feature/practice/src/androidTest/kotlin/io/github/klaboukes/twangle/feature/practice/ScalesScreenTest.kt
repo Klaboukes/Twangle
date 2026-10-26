@@ -105,7 +105,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
                         savedQuality = ChordQuality.MAJOR,
                         onRootChange = { savedRoots += it },
                         onQualityChange = {},
-                        header = { PracticeToolSwitch(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
+                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         savedChart = chart,
                         savedScaleType = type,
@@ -274,7 +274,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             val tags = listOf(
-                PracticeTestTags.SWITCH, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER,
+                PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER,
             )
             for (tag in tags) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)

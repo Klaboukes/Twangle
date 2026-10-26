@@ -523,18 +523,7 @@ internal class WholeWordsAutoSize(
         return null
     }
 
-    private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean =
-        (0 until layout.lineCount - 1).all { line ->
-            val end = layout.getLineEnd(line)
-            end <= 0 || end >= text.length || text[end - 1].isWhitespace() || text[end - 1] == '-' || text[end - 1] == ZERO_WIDTH_SPACE ||
-                text[end].isWhitespace() ||
-                (text[end - 1].breaksAnywhere() && text[end].breaksAnywhere())
-        }
-
-    private fun Char.breaksAnywhere(): Boolean = when (Character.UnicodeScript.of(code)) {
-        Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA -> true
-        else -> this == 'ー'
-    }
+    private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean = layout.breaksBetweenWords(text.text)
 
     override fun equals(other: Any?): Boolean =
         other is WholeWordsAutoSize && other.largest == largest && other.smallest == smallest && other.twoLineMargin == twoLineMargin
@@ -550,7 +539,7 @@ internal class WholeWordsAutoSize(
 internal fun breakableAtHyphens(text: String): String = text.replace(HYPHEN_BETWEEN_LETTERS, "-$ZERO_WIDTH_SPACE")
 
 private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=\\p{L})-(?=\\p{L})")
-private const val ZERO_WIDTH_SPACE = '\u200B'
+internal const val ZERO_WIDTH_SPACE = '\u200B'
 
 /** A see-through button's backing; picked ones in the container colour (Futuristic: a faint accent). */
 @Composable

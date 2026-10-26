@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">メトロノーム</string>
     <string name="practice_tool_chords">コード</string>
+    <string name="practice_tool_button">ツール</string>
+    <string name="practice_tool_list">ツール一覧</string>
     <string name="practice_root">ルート</string>
     <string name="practice_chord_type">コードの種類</string>
     <string name="practice_chord_major">%1$s メジャー</string>

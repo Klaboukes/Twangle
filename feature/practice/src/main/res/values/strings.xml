@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Practice tab (Phase 32): the tool switch at its top, one segment per tool. -->
+    <!-- Practice tab (Phase 32): the tools' names on the tool button at its top and in its list (Phase 47). -->
     <string name="practice_tool_metronome">Metronome</string>
     <string name="practice_tool_chords">Chords</string>
+    <!-- TalkBack (Phase 47): the tool button at the top of Practice, said before the tool picked ("Tool, Chords, drop-down list"), and the list of tools it opens. -->
+    <string name="practice_tool_button">Tool</string>
+    <string name="practice_tool_list">Tools</string>
     <!-- Chords (Phase 32): TalkBack, the group of root buttons (C, C♯, D …) the chord is built on. -->
     <string name="practice_root">Root</string>
     <!-- TalkBack, the group of chord type buttons (C, Cm, C7 …). -->

@@ -27,7 +27,7 @@ private val TUNER_TOOLS = listOf(
     "tuner_tool_pitch_trail" to "tuner_trail_panel",
 )
 
-private const val PRACTICE_SWITCH_TAG = "practice_switch"
+private const val PRACTICE_TOOL_BUTTON_TAG = "practice_tool_button"
 private const val PRACTICE_METRONOME_TAG = "practice_tool_metronome"
 private const val PRACTICE_CHORDS_TAG = "practice_tool_chords"
 private const val PRACTICE_CAPO_TAG = "practice_tool_capo"
@@ -124,14 +124,14 @@ fun MacrobenchmarkScope.useTuner() {
 /**
  * The Practice tab: the metronome (a few clicks, faster, slower, tap tempo, stopped again), Chords
  * (a chord, its next shape, then a scale on the neck) and the Capo helper. Each tool is picked on
- * the tool switch, so it works whichever tool the tab opens on (the one used last).
+ * the tool button's list, so it works whichever tool the tab opens on (the one used last).
  */
 fun MacrobenchmarkScope.usePractice() {
     waitForTuner()
     clickTag(PRACTICE_TAB_TAG)
-    check(device.wait(Until.hasObject(By.res(PRACTICE_SWITCH_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
+    check(device.wait(Until.hasObject(By.res(PRACTICE_TOOL_BUTTON_TAG)), TIMEOUT_MS)) { "Practice didn't open" }
 
-    clickTag(PRACTICE_METRONOME_TAG)
+    pickTool(PRACTICE_METRONOME_TAG)
     clickTag(METRONOME_START_TAG)
     Thread.sleep(METRONOME_MS / 2)
     clickTag(METRONOME_FASTER_TAG)
@@ -140,7 +140,7 @@ fun MacrobenchmarkScope.usePractice() {
     clickTag(METRONOME_START_TAG) // Stop.
     repeat(TAPS) { clickTag(METRONOME_TAP_TAG, settleMs = TAP_TEMPO_MS) }
 
-    clickTag(PRACTICE_CHORDS_TAG)
+    pickTool(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
     clickTag(CHART_CHORDS_TAG)
     clickTag(NAME_PICKER_TAG)
@@ -158,7 +158,7 @@ fun MacrobenchmarkScope.usePractice() {
     Thread.sleep(TAP_SETTLE_MS)
     Thread.sleep(SHOW_MS)
 
-    clickTag(PRACTICE_CAPO_TAG)
+    pickTool(PRACTICE_CAPO_TAG)
     check(device.wait(Until.hasObject(By.res(CAPO_TAG)), TIMEOUT_MS)) { "The Capo helper didn't open" }
     clickTag(CAPO_HIGHER_TAG)
     clickTag(CAPO_HIGHER_TAG)
@@ -167,6 +167,12 @@ fun MacrobenchmarkScope.usePractice() {
 
     device.pressBack()
     waitForTuner()
+}
+
+/** Opens the Practice tool button's list and picks the tool [tag] names, which closes the list. */
+private fun MacrobenchmarkScope.pickTool(tag: String) {
+    clickTag(PRACTICE_TOOL_BUTTON_TAG)
+    clickTag(tag)
 }
 
 /**

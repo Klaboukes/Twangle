@@ -96,7 +96,7 @@ class CapoScreenTest(private val style: VisualStyle) {
                         onShapesChange = { savedShapes += it },
                         onFretChange = { savedFrets += it },
                         onOpenChord = { opened += it },
-                        header = { PracticeToolSwitch(PracticeTool.CAPO, {}, tools) },
+                        header = { PracticeToolButton(PracticeTool.CAPO, {}, tools) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                     )
@@ -249,11 +249,18 @@ class CapoScreenTest(private val style: VisualStyle) {
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
-            for (tag in listOf(PracticeTestTags.SWITCH, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
+            for (tag in listOf(PracticeTestTags.TOOL_BUTTON, PracticeTestTags.INSTRUMENT_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.CAPO_SHAPES, PracticeTestTags.CAPO_LOWER, PracticeTestTags.CAPO_FRET, PracticeTestTags.CAPO_HIGHER, last, PracticeTestTags.CAPO_SOUNDS_IN)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
                 val bounds = node(tag).getBoundsInRoot()
                 assertTrue("$case $tag inside the window $bounds", bounds.top >= window.top && bounds.bottom <= window.bottom)
             }
+            // One row: the tool button at the start, the instrument and tuning beside it (Phase 47).
+            val toolButton = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+            val instrument = node(PracticeTestTags.INSTRUMENT_BUTTON).getBoundsInRoot()
+            assertTrue(
+                "$case the tuning beside the tool button $toolButton $instrument",
+                instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
+            )
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
                 assertTrue("$case the capo in the start half", node(PracticeTestTags.CAPO_HIGHER).getBoundsInRoot().right <= middle)

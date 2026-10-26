@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">Метроном</string>
     <string name="practice_tool_chords">Аккорды</string>
+    <string name="practice_tool_button">Функция</string>
+    <string name="practice_tool_list">Функции</string>
     <string name="practice_root">Тоника</string>
     <string name="practice_chord_type">Тип аккорда</string>
     <string name="practice_chord_major">%1$s мажор</string>

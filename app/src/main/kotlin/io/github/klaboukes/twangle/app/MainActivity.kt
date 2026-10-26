@@ -63,7 +63,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
-import io.github.klaboukes.twangle.feature.practice.PracticeToolSwitch
+import io.github.klaboukes.twangle.feature.practice.PracticeToolButton
 import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
 import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
@@ -326,7 +326,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab]) it
      * is the metronome alone. With it on it is Practice
-     * (Phase 32): the tool switch at the top of each tool picks the metronome, chords (and scales)
+     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome, chords (and scales)
      * or, with its own switch ([ToolSwitches.capoHelper]), the capo helper (Phase 33), and the tab
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
      * tool keeps its own saved UI state while another shows; leaving the metronome stops it, as
@@ -363,7 +363,7 @@ class MainActivity : AppCompatActivity() {
         val header: (@Composable () -> Unit)? = if (offered.isEmpty()) {
             null
         } else {
-            { PracticeToolSwitch(tool = tool, onToolChange = pickTool, tools = offered) }
+            { PracticeToolButton(tool = tool, onToolChange = pickTool, tools = offered) }
         }
         val toolState = rememberSaveableStateHolder()
         toolState.SaveableStateProvider(tool.name) {

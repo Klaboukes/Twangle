@@ -83,13 +83,13 @@ import kotlinx.coroutines.withContext
  * others; or, with the small Chords · Scales choice, pick a root and a scale and see it on the
  * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
  *
- * Upright, one column: the tool switch ([header]) 8 dp from the top, the instrument and tuning
- * ([tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice,
+ * Upright, one column: the tool button ([header]) 8 dp from the top at the start, the instrument and tuning
+ * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice,
  * the chord's or the scale's name in words as one button ("C minor seventh ⌄", [ChordNameButton]):
  * it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
- * pager. On its side (≥ 600 dp wide and wider than tall) the switch and the choice fill the start
+ * pager. On its side (≥ 600 dp wide and wider than tall) the top row and the choice fill the start
  * half, and the panel opens over it; the name button and the chart or neck the end half.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
@@ -133,7 +133,7 @@ fun ChordsScreen(
     val shown = index.coerceIn(0, (count - 1).coerceAtLeast(0))
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
 
-    val tuningLine = @Composable { TuningLine(tuningName, spokenTuningName, onPickInstrument) }
+    val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
     val choice = @Composable {
         ChartChoice(chart, onChartChange = { picked ->
             if (picked != chart) {
@@ -212,9 +212,7 @@ fun ChordsScreen(
                     // The panel's place: from the top of the start half down.
                     BoxWithConstraints(Modifier.fillMaxWidth()) { panel(maxWidth) }
                     Spacer(Modifier.height(HEADER_TOP))
-                    header()
-                    Spacer(Modifier.height(8.dp))
-                    tuningLine()
+                    topRow()
                     Spacer(Modifier.height(12.dp))
                     Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
                         choice()
@@ -248,9 +246,7 @@ fun ChordsScreen(
                         .padding(horizontal = 16.dp),
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
-                        header()
-                        Spacer(Modifier.height(8.dp * gap))
-                        tuningLine()
+                        topRow()
                         Spacer(Modifier.height(4.dp * gap))
                         choice()
                         Spacer(Modifier.height(8.dp * gap))
@@ -451,7 +447,7 @@ private fun FillColumn(
 /** On its side from this width, as the metronome's layout. */
 private val WIDE_MIN_WIDTH = 600.dp
 
-/** The tool switch stands this far down from the top, as the metronome's and the tuner's mode switch. */
+/** The tool button stands this far down from the top, as on the metronome and as the tuner's mode switch. */
 private val HEADER_TOP = 8.dp
 
 /** Upright, as the metronome's column. */

@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">Métronome</string>
     <string name="practice_tool_chords">Accords</string>
+    <string name="practice_tool_button">Outil</string>
+    <string name="practice_tool_list">Outils</string>
     <string name="practice_root">Fondamentale</string>
     <string name="practice_chord_type">Type d\'accord</string>
     <string name="practice_chord_major">%1$s majeur</string>

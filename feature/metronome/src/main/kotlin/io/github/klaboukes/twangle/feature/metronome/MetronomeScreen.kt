@@ -102,7 +102,7 @@ import kotlin.math.roundToInt
  *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
  * [ToolSwitches.ALL_OFF] this is the metronome alone. In the Practice tab (Phase 32) [header] is
- * its tool switch, at the top ([MetronomeContent]).
+ * its tool button, at the top start ([MetronomeContent]).
  */
 @Composable
 fun MetronomeScreen(
@@ -275,9 +275,9 @@ class BeatClock {
  * playing or listening. [listen] says where Listen stands; a found tempo shows in a balloon over
  * the screen, pointing at Listen ([onUse], [onNotNow]; Back is Not now).
  *
- * A [header] (the Practice tab's tool switch, Phase 32) stands at the very top, 8 dp down as the
- * tuner's mode switch, with the meter picker under it; on its side it stands at the top of the
- * dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
+ * A [header] (the Practice tab's tool button, Phase 47) stands at the very top at the start, 8 dp
+ * down as the tuner's mode switch, with the meter picker under it; on its side it stands at the top
+ * of the dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
  */
 @Composable
 fun MetronomeContent(
@@ -392,7 +392,7 @@ fun MetronomeContent(
                 )
             }
             if (wide) {
-                // The halves 16 dp apart, as the other Practice tools: the meter buttons kept clear of the tool switch.
+                // The halves 16 dp apart, as the other Practice tools: the meter buttons kept clear of the tool button.
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -401,7 +401,8 @@ fun MetronomeContent(
                     Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                         if (header != null) {
                             Spacer(Modifier.height(HEADER_TOP))
-                            header()
+                            // At the start, as on the other Practice tools (Phase 47).
+                            Box(Modifier.fillMaxWidth()) { header() }
                         }
                         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                             tempoDial(minOf(DIAL_LARGEST, maxWidth, maxHeight))
@@ -436,7 +437,8 @@ fun MetronomeContent(
                 ) {
                     if (header != null) {
                         Spacer(Modifier.height(HEADER_TOP))
-                        header()
+                        // At the start, as on the other Practice tools (Phase 47).
+                        Box(Modifier.fillMaxWidth()) { header() }
                     }
                     Spacer(Modifier.height(12.dp))
                     MeterPicker(meter, onMeterChange)

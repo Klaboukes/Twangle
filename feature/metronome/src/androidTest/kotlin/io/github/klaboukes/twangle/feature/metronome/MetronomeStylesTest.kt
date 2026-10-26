@@ -1,9 +1,15 @@
 package io.github.klaboukes.twangle.feature.metronome
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.Text
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -16,9 +22,9 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
-import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
@@ -53,8 +59,8 @@ import org.junit.runners.Parameterized
  * then wholly shown. Playing, in 7/8, so every mark size and Stop show, with the cowbell picked and
  * vibration on (its marks beside Sound's icon). The Sound panel opens from Sound, above the row
  * upright and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
- * tab's tool switch over it (Phase 32, a stand-in with the same switch and English labels), as the
- * app shows it, and without, as the plain Metronome tab.
+ * tab's tool button over it at the top start (Phase 47, a stand-in as large with an English name),
+ * as the app shows it, and without, as the plain Metronome tab.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -103,7 +109,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         listen = shownListen.value,
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         header = if (shownHeader.value) {
-                            { PracticeSwitchStandIn() }
+                            { PracticeToolButtonStandIn() }
                         } else {
                             null
                         },
@@ -114,7 +120,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     private fun parts(): List<Pair<String, SemanticsNodeInteraction>> =
-        (if (shownHeader.value) listOf("tool switch" to compose.onNodeWithTag(HEADER)) else emptyList()) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
+        (if (shownHeader.value) listOf("tool button" to compose.onNodeWithTag(HEADER)) else emptyList()) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
             "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
             "dial" to compose.onNodeWithTag(MetronomeTestTags.DIAL),
             "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
@@ -141,7 +147,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                     shownDark.value = dark
                     shownNavigation.value = navigation
                     compose.waitForIdle()
-                    val practice = if (header) " with the tool switch" else ""
+                    val practice = if (header) " with the tool button" else ""
                     assertAllInView("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x $navigation$practice:")
                 }
             }
@@ -169,6 +175,10 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private fun assertAllInView(case: String) {
         val window = bars().safeArea(shownSize.value)
         val bounds = parts().map { (name, node) -> name to node.assertIsDisplayed().getBoundsInRoot() }
+        bounds.firstOrNull { it.first == "tool button" }?.second?.let { button ->
+            // At the top start, as on the other Practice tools: the column's or the start half's margin before it.
+            assertTrue("$case the tool button at the top start $button", button.left - window.left <= 28.dp && button.top - window.top <= 16.dp)
+        }
         for ((name, rect) in bounds) {
             if (rect.left < window.left - SLACK || rect.top < window.top - SLACK || rect.right > window.right + SLACK || rect.bottom > window.bottom + SLACK) {
                 fail("$case $name $rect is outside the window $window")
@@ -362,17 +372,15 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         shownDark.value = false
     }
 
-    /** The Practice tab's tool switch as it stands over the metronome: the same switch, two tools. */
+    /**
+     * The Practice tab's tool button as it stands over the metronome (Phase 47; `:feature:practice` is
+     * out of reach here): a stand-in as large, 160 × 48 dp, its name set smaller where it must.
+     */
     @androidx.compose.runtime.Composable
-    private fun PracticeSwitchStandIn() {
-        SegmentedSwitch(
-            options = listOf("Metronome", "Chords"),
-            selected = "Metronome",
-            onSelect = {},
-            label = { it },
-            tag = { "header_$it" },
-            modifier = Modifier.testTag(HEADER),
-        )
+    private fun PracticeToolButtonStandIn() {
+        Box(Modifier.testTag(HEADER).size(160.dp, 48.dp).padding(start = 42.dp, end = 26.dp), contentAlignment = Alignment.CenterStart) {
+            Text("Metronome", maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 16.sp, stepSize = 0.5.sp))
+        }
     }
 
     private fun DpRect.overlaps(other: DpRect) =

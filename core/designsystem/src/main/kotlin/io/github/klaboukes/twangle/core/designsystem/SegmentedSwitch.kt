@@ -37,7 +37,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 /**
  * Twangle's segmented switch: one of [options], [selected] in the style's main accent container (the
  * fill alone tells it, with no check mark: the owner's choice, 2026-10-18), a tap on another calls
- * [onSelect]. The tuner's mode switch (Strings · Chromatic) and the Practice tab's tool switch (Metronome · Chords · Capo) are this one switch, so they look and behave alike. Each
+ * [onSelect]. The tuner's mode switch (Strings · Chromatic) is this switch (the Practice tab's tool switch was too, until Phase 47 gave it a tool button). Each
  * segment shows [label] on one line, shrinking to fit where it must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected.
  */

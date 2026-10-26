@@ -83,7 +83,7 @@ class TunerTabTest {
             // From another tab.
             turnStrumCheckOn()
             tab(Destination.METRONOME)
-            assertTrue("Practice shows", shown(PracticeTestTags.SWITCH))
+            assertTrue("Practice shows", shown(PracticeTestTags.TOOL_BUTTON))
             tab(Destination.TUNER)
             assertTrue("the tuner shows", shown(TunerTestTags.MORE_TOOLS))
             assertTrue("the Tuner tab from another tab closes it", gone(TunerTestTags.STRUM_PANEL))

@@ -2,6 +2,8 @@
 <resources>
     <string name="practice_tool_metronome">Metronoom</string>
     <string name="practice_tool_chords">Akkoorden</string>
+    <string name="practice_tool_button">Functie</string>
+    <string name="practice_tool_list">Functies</string>
     <string name="practice_root">Grondtoon</string>
     <string name="practice_chord_type">Akkoordsoort</string>
     <string name="practice_chord_major">%1$s majeur</string>
