@@ -44,6 +44,22 @@ class ChordShapeFinderTest {
     private fun ChordShape.fingerString() = fingers.joinToString("") { if (it == 0) "-" else it.toString() }
 
     @Test
+    fun `a lowered tuning plays the same shapes for the chords as far down`() {
+        // Drop C (Drop D a step down): Drop D's D shape is a C, its G shape an F, and so on.
+        for (lowered in 1..5) {
+            for (root in PitchClass.entries) {
+                for (quality in listOf(MAJOR, MINOR, DOMINANT_SEVENTH, POWER_CHORD)) {
+                    assertEquals(
+                        "$root $quality, Drop D lowered $lowered",
+                        ChordShapeFinder.shapesOf(Chord.of(root, quality), Tunings.DROP_D).map { "$it ${it.fingerString()}" },
+                        ChordShapeFinder.shapesOf(Chord.of(root.transposed(-lowered), quality), Tunings.DROP_D.lowered(lowered)).map { "$it ${it.fingerString()}" },
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
     fun `standard tuning gives the chord books' first shapes`() {
         val expected = listOf(
             Triple(C, MAJOR, "x32010"),

@@ -71,12 +71,14 @@ internal fun MyTunings(
     )
     for (mine in tunings) {
         val isSelected = mine.id == selected.id
+        // The picked one as it is, lowered or not.
+        val shown = if (isSelected) selected else mine.tuning
         TuningRow(
-            name = mine.name,
-            tuning = mine.tuning,
+            name = tuningLabel(shown, mine.name),
+            tuning = shown,
             notation = notation,
             selected = isSelected,
-            onClick = { onSelect(mine.tuning) },
+            onClick = { onSelect(shown) },
             modifier = Modifier
                 .testTag(TunerTestTags.customTuning(mine.id))
                 .then(if (isSelected && ticked != null) Modifier.bringIntoViewRequester(ticked) else Modifier),

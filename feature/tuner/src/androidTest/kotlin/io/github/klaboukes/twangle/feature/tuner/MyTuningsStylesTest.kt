@@ -78,7 +78,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
      * panel itself: the panel, the menu and the dialog are windows of their own, which take the
      * phone's text size and language rather than the test's (the phone check covers those).
      */
-    private fun show() {
+    private fun show(lowered: Int = 0) {
         compose.setContent {
             PhoneScreen(DpSize(360.dp, 730.dp), SystemBars.NONE, fontScale = 2f, locale = "nl") {
                 TwangleTheme(style = style, darkTheme = false, animate = false) {
@@ -89,7 +89,7 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 12.dp),
                     ) {
-                        MyTunings(listOf(longest, other), longest.tuning, Notation.DEFAULT, onSelect = {}, onEdit = {}, onDelete = {})
+                        MyTunings(listOf(longest, other), longest.tuning.lowered(lowered), Notation.DEFAULT, onSelect = {}, onEdit = {}, onDelete = {})
                     }
                 }
             }
@@ -111,6 +111,16 @@ class MyTuningsStylesTest(private val style: VisualStyle) {
             if (button.left < row.left - SLACK || button.right > row.right + SLACK) fail("$style: ⋮ $button is outside its row $row")
             if (name.getBoundsInRoot().right > button.left + SLACK) fail("$style: ${mine.name} runs under its ⋮ button")
         }
+    }
+
+    @Test
+    fun theLongestOwnTuningLoweredFitsWithItsShiftAtTwiceTheTextSizeInDutch() {
+        show(lowered = 5)
+        val name = dutch.getString(R.string.tuning_lowered_5, longest.name)
+        val shown = compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(longest.id))), useUnmergedTree = true)
+        assertWhollyShown(shown, "$style: $name")
+        val button = compose.onNodeWithTag(TunerTestTags.customTuningMenu(longest.id)).getBoundsInRoot()
+        if (shown.getBoundsInRoot().right > button.left + SLACK) fail("$style: $name runs under its ⋮ button")
     }
 
     companion object {

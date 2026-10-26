@@ -490,9 +490,20 @@ class TunerViewModel(
         viewModelScope.launch { settingsRepository.setInstrument(instrument) }
     }
 
-    /** Saves [tuning] as the selected tuning; listening follows it from the next frame. */
+    /**
+     * Saves [tuning] as the selected tuning, lowered as it is ([Tuning.loweredBy]); listening follows
+     * it from the next frame.
+     */
     fun setTuning(tuning: Tuning) {
         viewModelScope.launch { settingsRepository.setTuning(tuning) }
+    }
+
+    /**
+     * Lowers the selected tuning [semitones] below the tuning as written (0: as written); listening
+     * follows from the next frame, with the longer window for low strings where needed.
+     */
+    fun setLoweredBy(semitones: Int) {
+        viewModelScope.launch { settingsRepository.setLoweredBy(semitones) }
     }
 
     /**

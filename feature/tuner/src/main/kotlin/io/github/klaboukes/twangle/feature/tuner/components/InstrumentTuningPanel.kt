@@ -38,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -46,9 +47,13 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +61,8 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -82,7 +89,11 @@ import kotlinx.coroutines.launch
  * instrument's under its presets ([MyTunings]), each with a ⋮ menu: Edit closes the panel and calls
  * [onEditTuning], Delete asks first and then calls [onDeleteTuning] (no menu entry without its lambda).
  * With [onNewTuning], the list ends in "New tuning", which closes the panel and calls it with the
- * instrument shown.
+ * instrument shown. With [onLoweredByChange], a quiet "Lower by" row at the panel's bottom, under the
+ * list, lowers the picked tuning a semitone at a time (as the owner chose in
+ * docs/design/lower-tuning.html), calling it with the new amount and keeping the panel open; the
+ * ticked row then shows the lowered tuning. [tuning] comes lowered ([Tuning.loweredBy]); a tap on its
+ * row keeps it so, another row picks that tuning as written.
  */
 @Composable
 fun InstrumentTuningPanel(
@@ -96,6 +107,7 @@ fun InstrumentTuningPanel(
     onNewTuning: ((Instrument) -> Unit)? = null,
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
+    onLoweredByChange: ((Int) -> Unit)? = null,
 ) {
     PickerPanel(
         instrument,
@@ -105,6 +117,7 @@ fun InstrumentTuningPanel(
         onTuningChange,
         TuningActions(customTunings.filter { it.instrument == instrument }, onNewTuning, onEditTuning, onDeleteTuning),
         onDismiss = onDismiss,
+        onLoweredByChange = onLoweredByChange,
     )
 }
 
@@ -124,6 +137,7 @@ private fun PickerPanel(
     onTuningChange: (Tuning) -> Unit,
     mine: TuningActions,
     onDismiss: () -> Unit,
+    onLoweredByChange: ((Int) -> Unit)?,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -196,6 +210,87 @@ private fun PickerPanel(
                 }
                 mine.onNew?.let { onNew -> NewTuningRow(onClick = { close { onNew(instrument) } }) }
             }
+            // The tuning as written can go this far down; the row is left out where it can't go at all
+            // (a five-string bass's B0) and while another instrument's tunings are shown.
+            val lowest = tuning.loweredBy + tuning.lowerableBy
+            if (onLoweredByChange != null && lowest > 0 && instrument.ownsTuning(tuning, mine.tunings)) {
+                HorizontalDivider(color = scheme.outlineVariant)
+                LowerByRow(tuning.loweredBy, lowest, onLoweredByChange)
+            }
+        }
+    }
+}
+
+/** Whether [tuning] is one of this instrument's presets or of its player's own tunings ([mine]). */
+private fun Instrument.ownsTuning(tuning: Tuning, mine: List<CustomTuning>): Boolean =
+    tuningById(tuning.id) != null || mine.any { it.id == tuning.id }
+
+/**
+ * The panel's bottom row: "Lower by", then an up button (back up a half step), how far the picked
+ * tuning is lowered ("None", "½ step" … "2½ steps") and a down button (a half step lower, at most to
+ * [lowest]). The amount takes the room of the widest one, so the buttons never move; TalkBack hears
+ * the label with the amount, and again when it changes.
+ */
+@Composable
+internal fun LowerByRow(loweredBy: Int, lowest: Int, onChange: (Int) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val label = stringResource(R.string.tuner_lower_by)
+    val amount = stringResource(loweredAmountRes(loweredBy))
+    val spoken = stringResource(R.string.tuner_spoken_lower_by, label, amount)
+    val amountStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(TunerTestTags.LOWER_BY)
+            .padding(start = PANEL_PADDING, end = LIST_PADDING, top = 2.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onSurfaceVariant,
+            modifier = Modifier
+                .weight(1f)
+                .semantics { hideFromAccessibility() },
+        )
+        TwangleIconButton(
+            onClick = { onChange(loweredBy - 1) },
+            enabled = loweredBy > 0,
+            modifier = Modifier.testTag(TunerTestTags.LOWER_LESS),
+        ) {
+            Icon(painterResource(R.drawable.ic_expand_less), contentDescription = stringResource(R.string.tuner_lower_less))
+        }
+        Box(contentAlignment = Alignment.Center) {
+            for (semitones in 0..Tuning.MAX_LOWERED_BY) {
+                Text(
+                    stringResource(loweredAmountRes(semitones)),
+                    style = amountStyle,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .alpha(0f)
+                        .clearAndSetSemantics {},
+                )
+            }
+            Text(
+                musicText(amount),
+                style = amountStyle,
+                color = scheme.onSurface,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .testTag(TunerTestTags.LOWERED_AMOUNT)
+                    .semantics {
+                        contentDescription = spoken
+                        liveRegion = LiveRegionMode.Polite
+                    },
+            )
+        }
+        TwangleIconButton(
+            onClick = { onChange(loweredBy + 1) },
+            enabled = loweredBy < lowest,
+            modifier = Modifier.testTag(TunerTestTags.LOWER_MORE),
+        ) {
+            Icon(painterResource(R.drawable.ic_expand_more), contentDescription = stringResource(R.string.tuner_lower_more))
         }
     }
 }
@@ -221,13 +316,15 @@ private fun PresetTunings(
     ticked: BringIntoViewRequester? = null,
 ) {
     for (preset in instrument.tunings) {
-        val isSelected = preset == selected
+        val isSelected = preset.id == selected.id
+        // The picked one as it is, lowered or not.
+        val shown = if (isSelected) selected else preset
         TuningRow(
-            tuningLabel(preset),
-            preset,
+            tuningLabel(shown),
+            shown,
             notation,
             selected = isSelected,
-            onClick = { onSelect(preset) },
+            onClick = { onSelect(shown) },
             modifier = if (isSelected && ticked != null) Modifier.bringIntoViewRequester(ticked) else Modifier,
         )
     }
@@ -356,7 +453,7 @@ internal fun TuningRow(
 ) {
     val scheme = MaterialTheme.colorScheme
     val speech = rememberNoteNameSpeech()
-    val spoken = stringResource(R.string.tuner_spoken_tuning, name, spokenOpenStrings(tuning, notation, speech, stringResource(R.string.tuner_spoken_separator)))
+    val spoken = stringResource(R.string.tuner_spoken_tuning, speech.text(name), spokenOpenStrings(tuning, notation, speech, stringResource(R.string.tuner_spoken_separator)))
     val shape = MaterialTheme.shapes.medium
     Row(
         modifier = modifier
@@ -379,7 +476,7 @@ internal fun TuningRow(
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    name,
+                    musicText(name),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                     color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
                 )

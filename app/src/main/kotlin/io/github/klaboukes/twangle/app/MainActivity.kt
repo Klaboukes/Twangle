@@ -50,6 +50,7 @@ import io.github.klaboukes.twangle.app.navigation.screen
 import io.github.klaboukes.twangle.app.widget.TuningWidget
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.StyleBackdrop
 import io.github.klaboukes.twangle.core.designsystem.useDarkTheme
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -474,6 +475,12 @@ class MainActivity : AppCompatActivity() {
             onNewTuning = { onOpenTuningEditor(it, null) },
             onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
             onDeleteTuning = { lifecycleScope.launch { repository.deleteCustomTuning(it.id) } },
+            onLoweredByChange = {
+                lifecycleScope.launch {
+                    toGuitar()
+                    repository.setLoweredBy(it)
+                }
+            },
         )
     }
 
@@ -485,12 +492,12 @@ class MainActivity : AppCompatActivity() {
     /** The picked instrument and tuning as TalkBack says them on the instrument button, e.g. "Guitar, Standard" or a custom tuning's name. */
     @Composable
     private fun spokenTuning(settings: AppSettings): String =
-        stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), tuningName(settings))
+        stringResource(TunerR.string.tuner_spoken_picker, instrumentLabel(settings.instrument), rememberNoteNameSpeech().text(tuningName(settings)))
 
-    /** The picked tuning's name: a custom tuning's own, else the preset's ("Standard", "Drop D"). */
+    /** The picked tuning's name: a custom tuning's own, else the preset's ("Standard", "Drop D"); lowered, what it turns into ("Drop C"). */
     @Composable
     private fun tuningName(settings: AppSettings): String =
-        settings.pickedCustomTuning?.name ?: tuningLabel(settings.tuning)
+        tuningLabel(settings.tuning, settings.pickedCustomTuning?.name)
 
     /** Whether the phone's auto-rotate is on (Android's own setting, readable without a permission). */
     private fun autoRotateOn(): Boolean =

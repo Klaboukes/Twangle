@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.tuner.editor
 
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 
@@ -13,7 +14,7 @@ import io.github.klaboukes.twangle.core.settings.SettingsRepository
  * semitone sharp at A4 = 466 Hz (1479 Hz); F6 would not. `TuningDraftTest` checks these against the
  * detector's range.
  */
-internal val EDITOR_NOTE_RANGE: IntRange = 23..88
+internal val EDITOR_NOTE_RANGE: IntRange = Tuning.LOWEST_STRING.midi..88
 
 /** Why a name can't be saved. */
 internal enum class NameProblem {

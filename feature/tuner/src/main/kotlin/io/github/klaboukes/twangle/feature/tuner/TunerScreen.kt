@@ -85,6 +85,7 @@ import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
+import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -293,6 +294,7 @@ fun TunerScreen(
                     onNewTuning = { onOpenTuningEditor(it, null) },
                     onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
                     onDeleteTuning = { viewModel.deleteCustomTuning(it.id) },
+                    onLoweredByChange = viewModel::setLoweredBy,
                     pickerOpen = pickerOpen,
                     onPickerOpenChange = onPickerOpenChange,
                     onStringClick = viewModel::toggleString,
@@ -355,6 +357,7 @@ fun TunerScreen(
                         onNewTuning = { onOpenTuningEditor(it, null) },
                         onEditTuning = { onOpenTuningEditor(it.instrument, it.id) },
                         onDeleteTuning = { viewModel.deleteCustomTuning(it.id) },
+                        onLoweredByChange = viewModel::setLoweredBy,
                     )
                 }
             }
@@ -379,6 +382,7 @@ private fun TuningPanel(
     onNewTuning: ((Instrument) -> Unit)?,
     onEditTuning: ((CustomTuning) -> Unit)?,
     onDeleteTuning: ((CustomTuning) -> Unit)?,
+    onLoweredByChange: ((Int) -> Unit)?,
 ) {
     val toGuitar = { if (mode != TunerMode.AUTO) onModeChange(TunerMode.AUTO) }
     InstrumentTuningPanel(
@@ -398,6 +402,12 @@ private fun TuningPanel(
         onNewTuning = onNewTuning,
         onEditTuning = onEditTuning,
         onDeleteTuning = onDeleteTuning,
+        onLoweredByChange = onLoweredByChange?.let { lower ->
+            { semitones: Int ->
+                toGuitar()
+                lower(semitones)
+            }
+        },
     )
 }
 
@@ -425,6 +435,12 @@ object TunerTestTags {
 
     /** The panel's "New tuning" row, which opens the tuning editor. */
     const val NEW_TUNING = "tuner_new_tuning"
+
+    /** The panel's "Lower by" row at its bottom, its amount, and its down and up buttons. */
+    const val LOWER_BY = "tuner_lower_by"
+    const val LOWERED_AMOUNT = "tuner_lowered_amount"
+    const val LOWER_MORE = "tuner_lower_more"
+    const val LOWER_LESS = "tuner_lower_less"
 
     /** The dialog that asks before one of the player's own tunings is deleted. */
     const val DELETE_TUNING_DIALOG = "tuner_delete_tuning_dialog"
@@ -547,7 +563,8 @@ private fun KeepScreenOn() {
  * [onInstrumentChange]. Picking an instrument or a tuning in chromatic mode switches to guitar mode,
  * where the strings show. [customTunings] are the player's own tunings (the panel lists the
  * instrument's under its presets, each with Edit, [onEditTuning], and Delete, [onDeleteTuning], after
- * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list. A long-press on a string calls [onStringLongClick] (play its
+ * asking), and [onNewTuning], when given, adds "New tuning" to the panel's list; [onLoweredByChange],
+ * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
  * sounds a tap on any string calls [onStringClick], which stops the tone. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
@@ -603,6 +620,7 @@ fun TunerContent(
     onNewTuning: ((Instrument) -> Unit)? = null,
     onEditTuning: ((CustomTuning) -> Unit)? = null,
     onDeleteTuning: ((CustomTuning) -> Unit)? = null,
+    onLoweredByChange: ((Int) -> Unit)? = null,
     pickerOpen: Boolean = false,
     onPickerOpenChange: (Boolean) -> Unit = {},
     strumCheck: Boolean = false,
@@ -913,6 +931,7 @@ fun TunerContent(
             onNewTuning = onNewTuning,
             onEditTuning = onEditTuning,
             onDeleteTuning = onDeleteTuning,
+            onLoweredByChange = onLoweredByChange,
         )
     }
 }
@@ -1390,8 +1409,12 @@ private data class TuningNames(val instrument: Instrument, val customTunings: Li
 /** "Guitar · Drop D" for [tuning], or the player's own tuning's name after the instrument's. */
 @Composable
 private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
-    val tuningName = customTunings.firstOrNull { it.id == tuning.id }?.name ?: tuningLabel(tuning)
-    return stringResource(if (spoken) R.string.tuner_spoken_picker else R.string.tuner_tuning_name, instrumentLabel(instrument), tuningName)
+    val tuningName = tuningLabel(tuning, customTunings.firstOrNull { it.id == tuning.id }?.name)
+    return if (spoken) {
+        stringResource(R.string.tuner_spoken_picker, instrumentLabel(instrument), rememberNoteNameSpeech().text(tuningName))
+    } else {
+        stringResource(R.string.tuner_tuning_name, instrumentLabel(instrument), tuningName)
+    }
 }
 
 /**
@@ -1492,7 +1515,7 @@ private fun GuitarControls(
                 contentAlignment = Alignment.CenterStart,
             ) {
                 Text(
-                    names.labelFor(tuning, spoken = false),
+                    musicText(names.labelFor(tuning, spoken = false)),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

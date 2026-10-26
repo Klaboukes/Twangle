@@ -25,6 +25,8 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
@@ -112,6 +114,7 @@ class TunerContentTest {
     private val newTuningRequests = mutableListOf<Instrument>()
     private val editRequests = mutableListOf<CustomTuning>()
     private val deleteRequests = mutableListOf<CustomTuning>()
+    private val loweredChanges = mutableListOf<Int>()
 
     /** The player's own tunings [show] passes on. */
     private var shownCustomTunings = emptyList<CustomTuning>()
@@ -185,6 +188,7 @@ class TunerContentTest {
                         onNewTuning = { newTuningRequests += it },
                         onEditTuning = { editRequests += it },
                         onDeleteTuning = { deleteRequests += it },
+                        onLoweredByChange = { loweredChanges += it },
                         pickerOpen = shownPickerOpen.value,
                         onPickerOpenChange = { shownPickerOpen.value = it },
                         onStringClick = { stringClicks += it },
@@ -611,6 +615,80 @@ class TunerContentTest {
         compose.onNodeWithText(context.getString(R.string.tuning_low_g)).assertIsDisplayed()
         compose.onNodeWithText(context.getString(R.string.tuning_baritone)).assertIsDisplayed().performClick()
         assertEquals(listOf(ukulele.tuningById("ukulele_baritone")), tuningChanges)
+    }
+
+    @Test
+    fun theLowerByRowSitsUnderTheListAndLowersAHalfStepKeepingThePanelOpen() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        openPanel()
+        val row = compose.onNodeWithTag(TunerTestTags.LOWER_BY).assertIsDisplayed()
+        // Under the list: below the first tuning, and still there without scrolling to the list's end.
+        val standard = compose.onNodeWithText(text(R.string.tuning_standard)).getBoundsInRoot()
+        assertTrue(row.getBoundsInRoot().top > standard.bottom)
+        compose.onNodeWithTag(TunerTestTags.LOWERED_AMOUNT)
+            .assert(hasText(text(R.string.tuner_lowered_none)))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
+        compose.onNodeWithTag(TunerTestTags.LOWER_LESS).assertIsNotEnabled()
+        compose.onNodeWithContentDescription(text(R.string.tuner_lower_more)).assertIsEnabled().performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(1), loweredChanges)
+        assertEquals(emptyList<Tuning>(), tuningChanges)
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+    }
+
+    @Test
+    fun aLoweredTuningShowsItsCommonNameEverywhereAndATapOnItKeepsIt() {
+        val dropC = Tunings.DROP_D.lowered(2)
+        show(TunerUiState.Listening(TunerMode.AUTO, dropC))
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), text(R.string.tuning_drop_c))))
+        stringChip("C2").assertIsDisplayed()
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.LOWERED_AMOUNT).assert(hasText(text(R.string.tuner_lowered_2)))
+        compose.onNodeWithTag(TunerTestTags.LOWER_LESS).assertIsEnabled().performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(1), loweredChanges)
+        // The ticked row is the lowered Drop D, named Drop C; Drop D's own name isn't in the list.
+        compose.onNodeWithText(text(R.string.tuning_drop_d)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.tuning_drop_c)).performScrollTo().assertIsSelected().performClick()
+        assertEquals(listOf(dropC), tuningChanges)
+    }
+
+    @Test
+    fun anotherTuningIsPickedAsWritten() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.OPEN_G.lowered(1)))
+        openPanel()
+        compose.onNodeWithText(context.getString(R.string.tuning_lowered_1, text(R.string.tuning_open_g))).performScrollTo().assertIsSelected()
+        compose.onNodeWithText(text(R.string.tuning_dadgad)).performScrollTo().performClick()
+        assertEquals(listOf(Tunings.DADGAD), tuningChanges)
+    }
+
+    @Test
+    fun theLowestLoweringTurnsTheDownButtonOff() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D.lowered(5)))
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.LOWERED_AMOUNT).assert(hasText(text(R.string.tuner_lowered_5)))
+        compose.onNodeWithTag(TunerTestTags.LOWER_MORE).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.tuning_drop_a)).performScrollTo().assertIsSelected()
+    }
+
+    @Test
+    fun aFiveStringBassCantGoLowerSoItHasNoLowerByRow() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Instruments.BASS_5.defaultTuning))
+        openPanel()
+        compose.onNodeWithTag(TunerTestTags.PICKER_PANEL).assertExists()
+        compose.onNodeWithTag(TunerTestTags.LOWER_BY).assertDoesNotExist()
+    }
+
+    @Test
+    fun anOwnTuningLoweredSaysHowFarDown() {
+        shownCustomTunings = listOf(lowC)
+        show(TunerUiState.Listening(TunerMode.AUTO, lowC.tuning.lowered(1)))
+        val name = context.getString(R.string.tuning_lowered_1, "Low C")
+        compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_spoken_picker, text(R.string.instrument_guitar), name)))
+        openPanel()
+        compose.onNode(hasText(name) and hasAnyAncestor(hasTestTag(TunerTestTags.customTuning(lowC.id)))).performScrollTo().assertIsSelected()
     }
 
     @Test

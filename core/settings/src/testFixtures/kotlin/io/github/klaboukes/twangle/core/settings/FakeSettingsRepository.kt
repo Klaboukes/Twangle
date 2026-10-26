@@ -51,6 +51,11 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
         settings.copy(instrument = instrument ?: settings.instrument, tuning = tuning)
     }
 
+    override suspend fun setLoweredBy(semitones: Int) = state.update { settings ->
+        val asWritten = settings.tuningAsWritten
+        settings.copy(tuning = asWritten.lowered(semitones.coerceIn(0, asWritten.lowerableBy)))
+    }
+
     private var lastCustomId = 0
 
     override suspend fun addCustomTuning(name: String, instrument: Instrument, notes: List<Note>, pick: Boolean): CustomTuning {

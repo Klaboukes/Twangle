@@ -120,12 +120,25 @@ fun rememberNoteNameSpeech(): NoteNameSpeech {
     val flat = stringResource(R.string.spoken_flat)
     val letters = stringResource(R.string.spoken_letter_names)
     val solfege = stringResource(R.string.spoken_solfege)
-    return remember(sharp, flat, letters, solfege) {
-        val style = when (letters) {
-            "dutch" -> LetterNames.DUTCH
-            "german" -> LetterNames.GERMAN
-            else -> LetterNames.WORDS
-        }
-        NoteNameSpeech(sharp, flat, style, solfege.split(' '))
+    return remember(sharp, flat, letters, solfege) { noteNameSpeech(sharp, flat, letters, solfege) }
+}
+
+/**
+ * The [NoteNameSpeech] for a language outside a composable (the home-screen widget), from its string
+ * resources: [string] looks one up.
+ */
+fun noteNameSpeech(string: (Int) -> String): NoteNameSpeech = noteNameSpeech(
+    string(R.string.spoken_sharp),
+    string(R.string.spoken_flat),
+    string(R.string.spoken_letter_names),
+    string(R.string.spoken_solfege),
+)
+
+private fun noteNameSpeech(sharp: String, flat: String, letters: String, solfege: String): NoteNameSpeech {
+    val style = when (letters) {
+        "dutch" -> LetterNames.DUTCH
+        "german" -> LetterNames.GERMAN
+        else -> LetterNames.WORDS
     }
+    return NoteNameSpeech(sharp, flat, style, solfege.split(' '))
 }

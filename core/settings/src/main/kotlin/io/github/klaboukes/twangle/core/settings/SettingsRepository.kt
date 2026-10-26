@@ -28,16 +28,24 @@ interface SettingsRepository {
     suspend fun setMode(mode: TunerMode)
 
     /**
-     * Picks [instrument] and its standard tuning ([Instrument.defaultTuning]), both at once. Picking
-     * the instrument already picked changes nothing, so its tuning stays.
+     * Picks [instrument] and its standard tuning ([Instrument.defaultTuning]), not lowered, both at
+     * once. Picking the instrument already picked changes nothing, so its tuning stays.
      */
     suspend fun setInstrument(instrument: Instrument)
 
     /**
      * Picks [tuning] and the instrument it belongs to, so the two always match. [tuning] is a preset
-     * or a saved custom tuning's [CustomTuning.tuning].
+     * or a saved custom tuning's [CustomTuning.tuning], lowered as much as it is ([Tuning.loweredBy]):
+     * a tuning as written (another tuning picked in the panel) is no longer lowered.
      */
     suspend fun setTuning(tuning: Tuning)
+
+    /**
+     * Lowers the picked tuning [semitones] below the tuning as written (0 puts it back), kept within
+     * what it can go ([Tuning.lowerableBy] of the tuning as written). Saved with it, so a restart keeps
+     * it; picking another tuning or instrument, or editing or deleting the picked own tuning, ends it.
+     */
+    suspend fun setLoweredBy(semitones: Int)
 
     /**
      * Saves a new custom tuning after the player's others and returns it with its new, lasting id.

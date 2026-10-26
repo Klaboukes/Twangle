@@ -15,14 +15,24 @@ import kotlin.math.abs
  * Half step down (E♭ A♭ D♭ G♭ B♭ E♭). It wins over the notation setting's sharps or flats
  * (see [Notation.nameIn]); null means the tuning has no preference.
  *
+ * [loweredBy] is how many semitones every string sits below the tuning [id] names, as the player
+ * lowered it ([lowered]); 0 is the tuning as written. A lowered tuning keeps its [id], so it stays
+ * the picked one, and [loweredName] says what to call it.
+ *
  * Positions are compared as fractional MIDI note numbers (see [NoteMapper.midiOf]), so they
  * follow the user's A4 calibration and lookups are allocation-free.
  */
-data class Tuning(val id: String, val strings: List<Note>, val spelling: Accidental? = null) {
+data class Tuning(
+    val id: String,
+    val strings: List<Note>,
+    val spelling: Accidental? = null,
+    val loweredBy: Int = 0,
+) {
 
     init {
         require(id.isNotBlank()) { "Tuning id must not be blank" }
         require(strings.isNotEmpty()) { "Tuning '$id' must have at least one string" }
+        require(loweredBy in 0..MAX_LOWERED_BY) { "Tuning '$id' lowered by $loweredBy semitones" }
     }
 
     private val stringMidis = IntArray(strings.size) { strings[it].midi }
@@ -61,8 +71,51 @@ data class Tuning(val id: String, val strings: List<Note>, val spelling: Acciden
     fun centsFromString(midi: Float, stringIndex: Int): Float =
         CENTS_PER_SEMITONE * (midi - stringMidis[stringIndex])
 
-    private companion object {
-        const val CENTS_PER_SEMITONE = 100f
+    /**
+     * How many semitones further [lowered] can take this tuning: up to [MAX_LOWERED_BY] below the
+     * tuning as written, and never a string under [LOWEST_STRING]. 0 when it can go no lower (a
+     * five-string bass's B0).
+     */
+    val lowerableBy: Int get() = minOf(MAX_LOWERED_BY - loweredBy, lowestNote.midi - LOWEST_STRING.midi).coerceAtLeast(0)
+
+    /**
+     * This tuning with every string [semitones] lower (0 to [lowerableBy]), keeping its [id] and
+     * adding to [loweredBy]. It is spelled the way its name is written: as the preset or common
+     * tuning it turns into ([loweredName]: Standard lowered 1 is Half step down, in flats; lowered 3
+     * is C♯ standard, in sharps), else in flats when its lowest string is a black key (Open G
+     * lowered ½ step: D♭ G♭ D♭ G♭ B♭ D♭) and in sharps otherwise (lowered 1½ steps: B E B E G♯ B).
+     */
+    fun lowered(semitones: Int): Tuning {
+        require(semitones in 0..lowerableBy) { "Tuning '$id' can't go $semitones semitones lower (at most $lowerableBy)" }
+        if (semitones == 0) return this
+        val notes = strings.map { Note(it.midi - semitones) }
+        val spelling = when (val named = LoweredTunings.namedAs(id, notes)) {
+            is LoweredName.Preset -> named.tuning.spelling
+            is LoweredName.Common -> named.tuning.tuning.spelling
+            else -> LoweredTunings.spellingOf(notes)
+        }
+        return Tuning(id, notes, spelling, loweredBy + semitones)
+    }
+
+    /**
+     * What a lowered tuning is called: the preset or common tuning it turns into, else its own name
+     * with how far it is lowered ([LoweredName.Shifted]). Null when it isn't lowered.
+     */
+    val loweredName: LoweredName? by lazy {
+        if (loweredBy == 0) null else LoweredTunings.namedAs(id, strings) ?: LoweredName.Shifted(loweredBy)
+    }
+
+    companion object {
+        /** The most a tuning can be lowered: 5 semitones, 2½ steps (Drop D to Drop A). */
+        const val MAX_LOWERED_BY = 5
+
+        /**
+         * The lowest string any tuning may have, B0 (30.9 Hz): the five-string bass's, which still
+         * reads a semitone flat in the detector's low window (`PitchRange.LOW`, 28 Hz).
+         */
+        val LOWEST_STRING = Note(23)
+
+        private const val CENTS_PER_SEMITONE = 100f
     }
 }
 

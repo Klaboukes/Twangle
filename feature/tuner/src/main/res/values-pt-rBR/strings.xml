@@ -30,6 +30,30 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Barítono</string>
+    <string name="tuning_c_sharp_standard">C♯ padrão</string>
+    <string name="tuning_c_standard">C padrão</string>
+    <string name="tuning_b_standard">B padrão</string>
+    <string name="tuning_b_flat_standard">B♭ padrão</string>
+    <string name="tuning_a_standard">A padrão</string>
+    <string name="tuning_drop_c_sharp">Drop C♯</string>
+    <string name="tuning_drop_c">Drop C</string>
+    <string name="tuning_drop_b">Drop B</string>
+    <string name="tuning_drop_b_flat">Drop B♭</string>
+    <string name="tuning_drop_a">Drop A</string>
+    <string name="tuning_lowered_1">%1$s, ½ tom abaixo</string>
+    <string name="tuning_lowered_2">%1$s, 1 tom abaixo</string>
+    <string name="tuning_lowered_3">%1$s, 1½ tom abaixo</string>
+    <string name="tuning_lowered_4">%1$s, 2 tons abaixo</string>
+    <string name="tuning_lowered_5">%1$s, 2½ tons abaixo</string>
+    <string name="tuner_lower_by">Abaixar</string>
+    <string name="tuner_lowered_none">Nada</string>
+    <string name="tuner_lowered_1">½ tom</string>
+    <string name="tuner_lowered_2">1 tom</string>
+    <string name="tuner_lowered_3">1½ tom</string>
+    <string name="tuner_lowered_4">2 tons</string>
+    <string name="tuner_lowered_5">2½ tons</string>
+    <string name="tuner_lower_more">Abaixar meio tom</string>
+    <string name="tuner_lower_less">Voltar a subir meio tom</string>
 
     <!-- "Violão" is what Brazilian players call the guitar; "guitarra" means the electric one. -->
     <string name="instrument_guitar">Violão</string>

@@ -207,7 +207,10 @@ data class AppSettings(
     val mode: TunerMode = TunerMode.AUTO,
     /** The instrument picked in the tuning picker; [tuning] is always one of its presets or custom tunings. */
     val instrument: Instrument = Instruments.DEFAULT,
-    /** A preset of [instrument], or the [CustomTuning.tuning] of one of its [customTunings]. */
+    /**
+     * A preset of [instrument], or the [CustomTuning.tuning] of one of its [customTunings], lowered as
+     * the player set it ([Tuning.loweredBy], 0 as written; see [tuningAsWritten]).
+     */
     val tuning: Tuning = Tunings.DEFAULT,
     /** The tunings the player made, for every instrument, in the order they were made. */
     val customTunings: List<CustomTuning> = emptyList(),
@@ -284,6 +287,14 @@ data class AppSettings(
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)
+
+    /** [tuning] as written, before the player lowered it. */
+    val tuningAsWritten: Tuning
+        get() = if (tuning.loweredBy == 0) {
+            tuning
+        } else {
+            Instruments.tuningById(tuning.id) ?: pickedCustomTuning?.tuning ?: tuning
+        }
 
     /** The custom tuning that is picked, or null when [tuning] is a preset. */
     val pickedCustomTuning: CustomTuning? get() = customTunings.firstOrNull { it.id == tuning.id }

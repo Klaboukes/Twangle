@@ -22,7 +22,7 @@ Twangle's Wear OS watch app works on its own, without the phone. It follows the 
 
 ## Settings stay on your phone
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:
-- **Tuning:** the instrument and its tuning, tunings you made yourself, string or chromatic mode, the A4 reference pitch, how note names are written and how precise "in tune" is.
+- **Tuning:** the instrument and its tuning (and how far you lowered it), tunings you made yourself, string or chromatic mode, the A4 reference pitch, how note names are written and how precise "in tune" is.
 - **Look:** the visual style, light or dark mode, wallpaper colours, the meter look and in-tune effect, the display (needle or wave), the wave's look, whether focus mode is on, whether signal bars are shown, and the app's language if you picked one.
 - **While tuning:** keep screen on, vibrate when in tune and the tune up/down hint.
 - **Practice:** the tool you used last; the metronome's tempo, meter, click sound and whether it vibrates on the beat; the chord or scale you looked at last; the drone's sound, its notes and whether it plays an octave lower; and the Capo helper's key and fret.

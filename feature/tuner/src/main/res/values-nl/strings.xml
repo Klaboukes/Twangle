@@ -34,6 +34,30 @@
     <!-- Ukulele with its G string an octave lower than standard. -->
     <string name="tuning_low_g">Lage G</string>
     <string name="tuning_baritone">Bariton</string>
+    <string name="tuning_c_sharp_standard">C♯-standaard</string>
+    <string name="tuning_c_standard">C-standaard</string>
+    <string name="tuning_b_standard">B-standaard</string>
+    <string name="tuning_b_flat_standard">B♭-standaard</string>
+    <string name="tuning_a_standard">A-standaard</string>
+    <string name="tuning_drop_c_sharp">Drop C♯</string>
+    <string name="tuning_drop_c">Drop C</string>
+    <string name="tuning_drop_b">Drop B</string>
+    <string name="tuning_drop_b_flat">Drop B♭</string>
+    <string name="tuning_drop_a">Drop A</string>
+    <string name="tuning_lowered_1">%1$s, ½ toon lager</string>
+    <string name="tuning_lowered_2">%1$s, 1 toon lager</string>
+    <string name="tuning_lowered_3">%1$s, 1½ toon lager</string>
+    <string name="tuning_lowered_4">%1$s, 2 tonen lager</string>
+    <string name="tuning_lowered_5">%1$s, 2½ toon lager</string>
+    <string name="tuner_lower_by">Lager met</string>
+    <string name="tuner_lowered_none">Geen</string>
+    <string name="tuner_lowered_1">½ toon</string>
+    <string name="tuner_lowered_2">1 toon</string>
+    <string name="tuner_lowered_3">1½ toon</string>
+    <string name="tuner_lowered_4">2 tonen</string>
+    <string name="tuner_lowered_5">2½ toon</string>
+    <string name="tuner_lower_more">Halve toon lager</string>
+    <string name="tuner_lower_less">Halve toon terug omhoog</string>
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Gitaar</string>

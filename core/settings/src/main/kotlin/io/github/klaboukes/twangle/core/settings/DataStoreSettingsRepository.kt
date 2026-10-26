@@ -85,15 +85,24 @@ class DataStoreSettingsRepository internal constructor(
             if (instrumentAndTuning(it, customTunings(it)).first == instrument) return@edit
             it[INSTRUMENT_ID] = instrument.id
             it[TUNING_ID] = instrument.defaultTuning.id
+            it.remove(TUNING_LOWERED_BY)
         }
     }
 
     override suspend fun setTuning(tuning: Tuning) {
         dataStore.edit {
             it[TUNING_ID] = tuning.id
+            saveLoweredBy(it, tuning.loweredBy)
             val instrument = Instruments.ofTuning(tuning.id)
                 ?: customTunings(it).firstOrNull { custom -> custom.id == tuning.id }?.instrument
             instrument?.let { found -> it[INSTRUMENT_ID] = found.id }
+        }
+    }
+
+    override suspend fun setLoweredBy(semitones: Int) {
+        dataStore.edit {
+            val picked = instrumentAndTuning(it, customTunings(it)).second
+            saveLoweredBy(it, semitones.coerceIn(0, picked.loweredBy + picked.lowerableBy))
         }
     }
 
@@ -114,6 +123,8 @@ class DataStoreSettingsRepository internal constructor(
             if (index < 0) return@edit
             val changed = CustomTuning(id, CustomTuning.normalizeName(name), tunings[index].instrument, notes)
             saveCustomTunings(it, tunings.toMutableList().apply { set(index, changed) })
+            // New notes are the ones to tune to: a picked one is no longer lowered.
+            if (it[TUNING_ID] == id) it.remove(TUNING_LOWERED_BY)
             if (pick) pickCustomTuning(it, changed)
             updated = changed
         }
@@ -128,6 +139,7 @@ class DataStoreSettingsRepository internal constructor(
             if (it[TUNING_ID] == id) {
                 it[INSTRUMENT_ID] = deleted.instrument.id
                 it[TUNING_ID] = deleted.instrument.defaultTuning.id
+                it.remove(TUNING_LOWERED_BY)
             }
         }
     }
@@ -327,6 +339,9 @@ class DataStoreSettingsRepository internal constructor(
         private val MODE = stringPreferencesKey("tuner_mode")
         private val TUNING_ID = stringPreferencesKey("tuning_id")
         private val INSTRUMENT_ID = stringPreferencesKey("instrument_id")
+
+        /** How many semitones the picked tuning is lowered (1 to 5; no key: as written). */
+        private val TUNING_LOWERED_BY = intPreferencesKey("tuning_lowered_by")
         private val NOTATION = stringPreferencesKey("notation")
         private val IN_TUNE_PRECISION = stringPreferencesKey("in_tune_precision")
         private val THEME = stringPreferencesKey("theme")
@@ -413,6 +428,11 @@ class DataStoreSettingsRepository internal constructor(
         private fun pickCustomTuning(prefs: MutablePreferences, tuning: CustomTuning) {
             prefs[TUNING_ID] = tuning.id
             prefs[INSTRUMENT_ID] = tuning.instrument.id
+            prefs.remove(TUNING_LOWERED_BY)
+        }
+
+        private fun saveLoweredBy(prefs: MutablePreferences, semitones: Int) {
+            if (semitones > 0) prefs[TUNING_LOWERED_BY] = semitones else prefs.remove(TUNING_LOWERED_BY)
         }
 
         private fun saveCustomTunings(prefs: MutablePreferences, tunings: List<CustomTuning>) {
@@ -424,7 +444,8 @@ class DataStoreSettingsRepository internal constructor(
          * picker saved only a (guitar) tuning, whose instrument it then is. A tuning that is neither
          * one of the instrument's presets nor one of its [customs], or a missing or unknown one (a
          * deleted or damaged custom tuning), gives the instrument's standard tuning; an unknown
-         * instrument the tuning's own, else the default guitar.
+         * instrument the tuning's own, else the default guitar. The tuning comes lowered as saved, kept
+         * within what it can go ([Tuning.lowerableBy]); an amount out of range is cut to that.
          */
         private fun instrumentAndTuning(prefs: Preferences, customs: List<CustomTuning>): Pair<Instrument, Tuning> {
             val tuningId = prefs[TUNING_ID]
@@ -433,10 +454,11 @@ class DataStoreSettingsRepository internal constructor(
                 ?: custom?.instrument
                 ?: tuningId?.let(Instruments::ofTuning)
                 ?: Instruments.DEFAULT
-            val tuning = tuningId?.let(instrument::tuningById)
+            val asWritten = tuningId?.let(instrument::tuningById)
                 ?: custom?.takeIf { it.instrument == instrument }?.tuning
                 ?: instrument.defaultTuning
-            return instrument to tuning
+            val loweredBy = (prefs[TUNING_LOWERED_BY] ?: 0).coerceIn(0, asWritten.lowerableBy)
+            return instrument to asWritten.lowered(loweredBy)
         }
 
         /**

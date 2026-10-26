@@ -1,0 +1,308 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Lower Tuning</title>
+<!--
+OWNER'S CHOICE (2026-10-26), built in Phase 51:
+  Where   a combo of A and B: A's stepper (one "Lower by" row, an up button back up and a down button to lower more,
+          showing the amount), but at the bottom like B, under the tuning list. Most casual players rarely use it, so it
+          is not on top.
+  Keep    no: picking another tuning (or another instrument) starts it not lowered; "for a casual guitarist it will be
+          too confusing to keep the setting". The amount is still saved, so it survives a restart for the current tuning.
+  Names   Standard lowered 3 is "C♯ standard", 5 is "B standard"; Drop D lowered 1 is "Drop C♯" (see the Settled line).
+
+TWANGLE "LOWER ANY TUNING", ROUND 1 (Phase 51, second item). ROUGH, plain on purpose: one style (Contemporary).
+Decides  1. where the "lower by" control sits in the instrument and tuning panel (A, B or C below);
+         2. whether the lowering stays when another tuning is picked (keep or reset).
+Settled  (owner, 2026-10-26) the names: a lowered tuning with a common name shows that name (Drop D lowered 2 is
+         "Drop C", 3 is "Drop B"; Standard lowered 1 and 2 are today's "Half step down" and "Full step down", lowered 4
+         is "C standard"); any other shows the tuning's name with the shift ("Open G, ½ step down").
+Control  1 to 5 semitones, lower only, shown in steps as players say it (½ step = one semitone). Buttons keep one size;
+         the amount's box is as wide as its longest text, so nothing moves.
+Panel    As built (InstrumentTuningPanel.kt): title, the instruments in a row, a divider, the presets (name over its
+         strings, the picked one ticked in the container colour), "My tunings", "New tuning". Guitar only here; every
+         instrument would get the same control. The real panel closes when a tuning is picked; here it stays open.
+Spelling Names with a sharp (Drop C♯, C♯ standard, Drop B, B standard, Drop A) spell their notes with sharps; the
+         rest with flats where the lowest string is a black key (D♭, E♭, G♭, A♭, B♭), else sharps.
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --line: #CDD3E3; --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --line: #2B3350; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --line: #2B3350; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1160px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 500 20px/1.3 var(--ui); margin: 34px 0 6px; }
+h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+p { margin: 0; }
+.lede, .note { color: var(--muted); max-width: 72ch; }
+.note { font-size: 14px; }
+.lede strong, .note strong { color: var(--ink); font-weight: 500; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+button { font: inherit; color: inherit; }
+
+/* Try-it bar */
+.try { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.try .lbl { font-size: 14px; color: var(--muted); margin-right: 4px; }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+.pill[aria-pressed="true"] { background: var(--container); border-color: var(--accent); }
+
+/* Options side by side, one column on a phone */
+.opts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 22px; margin-top: 18px; justify-items: center; }
+@media (min-width: 760px) { .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1120px) { .opts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.opt { width: min(100%, 340px); display: grid; gap: 10px; align-content: start; }
+.opt > .note { min-height: 3em; }
+
+/* The panel (a bottom sheet) */
+.sheet { background: var(--surface); border-radius: 16px 16px 0 0; padding: 8px 14px 12px; display: grid; gap: 8px;
+  box-shadow: 0 10px 30px -18px rgba(0,0,0,.5); }
+.handle { width: 32px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--muted) 50%, transparent); justify-self: center; margin: 4px 0 6px; }
+.stitle { font: 400 18px/1.2 var(--ui); }
+.instr { display: flex; gap: 6px; overflow: hidden; }
+.instr span { flex: none; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--line); font-size: 13px; }
+.instr span.on { background: var(--container); border: 2px solid var(--accent); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
+.list { display: grid; gap: 2px; max-height: 330px; overflow-y: auto; }
+.row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 8px; padding: 6px 10px; border-radius: 10px; cursor: pointer; border: 0; background: none; text-align: left; width: 100%; }
+.row:hover { background: color-mix(in srgb, var(--container) 45%, transparent); }
+.row.on { background: var(--container); }
+.row .nm { font-size: 15px; }
+.row .ns { font-size: 12.5px; color: var(--muted); letter-spacing: .04em; }
+.row .tick { color: var(--accent); font-size: 18px; width: 20px; text-align: center; }
+.row .sub { grid-column: 1 / -1; }
+.mine { font: 500 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 8px 10px 2px; }
+.new { color: var(--muted); font-size: 14px; padding: 6px 10px; }
+.new b { color: var(--accent); font-weight: 500; margin-right: 6px; }
+
+/* The control: a stepper (down lowers, up goes back) and the chip row */
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px 2px 10px; }
+.stepper .lb { font-size: 14px; color: var(--muted); }
+.stepper .grp { display: flex; align-items: center; gap: 4px; }
+.sbtn { width: 36px; height: 36px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--surface)); background: transparent; display: grid; place-items: center; cursor: pointer; }
+.sbtn svg { width: 18px; height: 18px; fill: currentColor; }
+.sbtn:disabled { opacity: .3; cursor: default; }
+.amt { width: 84px; text-align: center; font-size: 14px; }
+.stepper.small { padding: 4px 0 2px; }
+.stepper.small .sbtn { width: 30px; height: 30px; border-radius: 10px; }
+.stepper.small .amt { width: 96px; font-size: 13px; }
+.chips { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.chip { height: 34px; border-radius: 10px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 14px; }
+.chip.on { background: var(--container); border: 2px solid var(--accent); }
+.chiplb { font-size: 13px; color: var(--muted); margin: 4px 4px 0; }
+
+/* On the tuner: the guitar controls row and the strings */
+.tuner { background: var(--bg); border-radius: 14px; padding: 10px 12px 12px; display: grid; gap: 10px; }
+.tlab { font: 500 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.gc { display: flex; align-items: center; gap: 10px; }
+.ob { width: 36px; height: 36px; border-radius: 14px; flex: none; display: grid; place-items: center; color: var(--muted);
+  border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.ob svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.gc .name { flex: 1; font: 500 13.5px/1.25 var(--ui); color: var(--muted); }
+.strs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.str { aspect-ratio: 1; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--muted) 55%, var(--bg)); display: grid; place-items: center; font-size: 14px; }
+.str sub { font-size: 9px; color: var(--muted); margin-left: 1px; }
+
+/* Question 2 */
+.answers { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+@media (min-width: 760px) { .answers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ans { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; cursor: pointer; text-align: left; }
+.ans[aria-pressed="true"] { border: 2px solid var(--accent); background: var(--container); }
+.ans .eg { font-size: 14px; }
+.ans .pc { font-size: 14px; color: var(--muted); }
+.reco { margin-top: 30px; border-radius: 14px; background: var(--container); padding: 14px 16px; display: grid; gap: 6px; max-width: 72ch; }
+.reco h3 { margin-bottom: 2px; }
+footer { margin-top: 30px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 72ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 51 · rough mock-up · lower any tuning</p>
+  <h1>Where does "lower by" go?</h1>
+  <p class="lede">Any tuning can be lowered by ½ to 2½ steps (one to five semitones, lower only). Already decided: a
+    lowered tuning with a well-known name shows that name (<strong>Drop D</strong> lowered 1 step is
+    <strong>Drop C</strong>); any other shows its name with the shift (<strong>Open G, ½ step down</strong>).
+    Below are three places for the control. They all show the same tuning, so a tap in one changes all three; under
+    each panel is what the tuner then shows. The real panel closes when you pick a tuning; here it stays open.</p>
+  <div class="try" id="try"></div>
+</header>
+
+<h2>1. Where the control sits</h2>
+<div class="opts" id="opts"></div>
+
+<h2>2. Does the lowering stay when you pick another tuning?</h2>
+<p class="note">Tap an answer to try it in the panels above: pick Open G, lower it ½ step, then pick Standard.</p>
+<div class="answers" id="answers"></div>
+
+<div class="reco">
+  <h3>Recommendations</h3>
+  <p><strong>Where:</strong> A, one row above the tuning list. Always in the same place, never under the fold,
+    two buttons of one size, and the list right under it shows the result.</p>
+  <p><strong>Stays or resets:</strong> keep it (answer 1). Players who tune down usually tune everything down, so
+    "½ step down" set once then gives Drop C♯, Open G ½ step down and so on. The name on the tuner always says what
+    you have, so it is never hidden.</p>
+  <p><strong>Another instrument:</strong> picking another instrument starts it not lowered (a ukulele is rarely
+    tuned down with the guitar).</p>
+</div>
+
+<footer>
+  <p>The names with a common name: Standard lowered ½ to 3½ steps is Half step down, Full step down, C♯ standard,
+    C standard, B standard, B♭ standard, A standard; Drop D lowered is Drop C♯, Drop C, Drop B, Drop B♭, Drop A.
+    The rest (DADGAD, the open tunings, your own) say how far down.</p>
+  <p>Chord charts, scales and the capo helper follow the lowered tuning by themselves: the shapes don't change.</p>
+</footer>
+</div>
+
+<script>
+// ---- Notes ----
+const SHARP = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const FLAT  = ["C","D♭","D","E♭","E","F","G♭","G","A♭","A","B♭","B"];
+const PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+const midi = s => { const m = /^([A-G])([b#]?)(-?\d)$/.exec(s);
+  return 12 * (+m[3] + 1) + PC[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0); };
+const notes = str => str.split(" ").map(midi);
+
+// ---- Tunings (core/dsp Tunings.all, plus one own tuning) ----
+// shape: "std" with its offset below Standard, "drop" with its offset below Drop D, or none.
+const PRESETS = [
+  { id: "standard", name: "Standard", n: notes("E2 A2 D3 G3 B3 E4"), shape: "std", off: 0 },
+  { id: "drop_d", name: "Drop D", n: notes("D2 A2 D3 G3 B3 E4"), shape: "drop", off: 0 },
+  { id: "half", name: "Half step down", n: notes("Eb2 Ab2 Db3 Gb3 Bb3 Eb4"), shape: "std", off: 1 },
+  { id: "full", name: "Full step down", n: notes("D2 G2 C3 F3 A3 D4"), shape: "std", off: 2 },
+  { id: "dadgad", name: "DADGAD", n: notes("D2 A2 D3 G3 A3 D4") },
+  { id: "open_g", name: "Open G", n: notes("D2 G2 D3 G3 B3 D4") },
+  { id: "open_d", name: "Open D", n: notes("D2 A2 D3 F#3 A3 D4") },
+  { id: "open_e", name: "Open E", n: notes("E2 B2 E3 G#3 B3 E4") },
+  { id: "open_c", name: "Open C", n: notes("C2 G2 C3 G3 C4 E4") },
+];
+const MINE = [{ id: "nick", name: "Nick Drake", n: notes("C2 G2 C3 F3 C4 E4") }];
+const ALL = [...PRESETS, ...MINE];
+
+// Common names, with how their notes are spelled (true = sharps).
+const STD = [["Standard", true], ["Half step down", false], ["Full step down", false], ["C♯ standard", true],
+  ["C standard", false], ["B standard", true], ["B♭ standard", false], ["A standard", true]];
+const DROP = [["Drop D", true], ["Drop C♯", true], ["Drop C", false], ["Drop B", true], ["Drop B♭", false], ["Drop A", true]];
+const STEPS = ["Not lowered", "½ step", "1 step", "1½ steps", "2 steps", "2½ steps"];
+const SHORT = ["–", "½", "1", "1½", "2", "2½"];
+
+function lowered(t, k) {
+  const n = t.n.map(x => x - k);
+  let name, sharps;
+  if (t.shape === "std") [name, sharps] = STD[t.off + k];
+  else if (t.shape === "drop") [name, sharps] = DROP[t.off + k];
+  else {
+    name = k === 0 ? t.name : `${t.name}, ${STEPS[k]} down`;
+    sharps = ![1, 3, 6, 8, 10].includes(n[0] % 12);
+  }
+  const names = sharps ? SHARP : FLAT;
+  return { name, n, spelled: n.map(x => ({ l: names[x % 12], o: Math.floor(x / 12) - 1 })) };
+}
+
+// ---- State ----
+const S = { base: "drop_d", shift: 2, keep: true };
+const byId = id => ALL.find(t => t.id === id);
+function pick(id) { S.base = id; if (!S.keep) S.shift = 0; render(); }
+function setShift(k) { S.shift = Math.max(0, Math.min(5, k)); render(); }
+
+// ---- Pieces ----
+const ICON_DOWN = `<svg viewBox="0 -960 960 960"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>`;
+const ICON_UP = `<svg viewBox="0 -960 960 960"><path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/></svg>`;
+const HEADSTOCK = `<svg viewBox="0 0 24 24"><path d="M9 21V9l-1-5h8l-1 5v12M8 7H5M8 11H5M8 15H5M16 7h3M16 11h3M16 15h3"/></svg>`;
+const TOOLS = `<svg viewBox="0 0 24 24"><path d="M5 19l8-8M14 4l6 6-3 3-6-6zM5 5l4 4M15 15l4 4"/></svg>`;
+
+const stepper = (label, small) => `<div class="stepper ${small ? "small" : ""}">
+  ${label ? `<span class="lb">${label}</span>` : ""}
+  <span class="grp">
+    <button class="sbtn" data-act="up" ${S.shift === 0 ? "disabled" : ""} aria-label="Back up a half step">${ICON_UP}</button>
+    <span class="amt">${S.shift === 0 ? "Not lowered" : STEPS[S.shift] + (small ? " down" : "")}</span>
+    <button class="sbtn" data-act="down" ${S.shift === 5 ? "disabled" : ""} aria-label="Lower a half step">${ICON_DOWN}</button>
+  </span></div>`;
+
+const chipRow = () => `<p class="chiplb">Lower by (steps)</p><div class="chips">${SHORT.map((s, k) =>
+  `<button class="chip ${k === S.shift ? "on" : ""}" data-k="${k}">${s}</button>`).join("")}</div>`;
+
+function rowFor(t, opt) {
+  const on = t.id === S.base;
+  // Keep: the whole list shows each tuning as you'd get it. Reset: only the picked one is lowered.
+  const k = S.keep || on ? S.shift : 0;
+  const r = lowered(t, k);
+  return `<div class="row ${on ? "on" : ""}" data-id="${t.id}">
+    <span><span class="nm">${r.name}</span><br><span class="ns">${r.spelled.map(x => x.l).join(" ")}</span></span>
+    <span class="tick">${on ? "✓" : ""}</span>
+    ${opt === "C" && on ? `<span class="sub">${stepper("", true)}</span>` : ""}</div>`;
+}
+
+function panel(opt) {
+  return `<div class="sheet"><div class="handle"></div><div class="stitle">Instrument and tuning</div>
+    <div class="instr"><span class="on">Guitar</span><span>Bass</span><span>Ukulele</span><span>Mandolin</span></div>
+    ${opt === "A" ? stepper("Lower by", false) : ""}
+    <hr>
+    <div class="list">${PRESETS.map(t => rowFor(t, opt)).join("")}
+      <div class="mine">My tunings</div>${MINE.map(t => rowFor(t, opt)).join("")}
+      <div class="new"><b>+</b>New tuning</div></div>
+    ${opt === "B" ? `<hr>${chipRow()}` : ""}</div>`;
+}
+
+function tuner() {
+  const r = lowered(byId(S.base), S.shift);
+  return `<div class="tuner"><span class="tlab">On the tuner</span>
+    <div class="gc"><span class="ob">${HEADSTOCK}</span><span class="name">Guitar · ${r.name}</span><span class="ob">${TOOLS}</span></div>
+    <div class="strs">${r.spelled.map(x => `<span class="str"><span>${x.l}<sub>${x.o}</sub></span></span>`).join("")}</div></div>`;
+}
+
+const OPTS = [
+  ["A", "A stepper above the list", true,
+    "One row under the instruments: \"Lower by\", ▲ back up, ▼ lower. Always in the same place; the list under it shows the result."],
+  ["B", "A row of step chips under the list", false,
+    "One tap to any amount, but six chips in a row is busy, and on a long list it sits below the fold."],
+  ["C", "A stepper inside the picked tuning", false,
+    "Right on the tuning it changes. The picked row grows a line, so the list shifts a little when you pick."],
+];
+
+function render() {
+  const scroll = [...document.querySelectorAll(".list")].map(l => l.scrollTop);
+  document.getElementById("opts").innerHTML = OPTS.map(([k, title, rec, note]) => `<div class="opt" data-opt="${k}">
+    <h3>${k}. ${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>
+    <p class="note">${note}</p>${panel(k)}${tuner()}</div>`).join("");
+  document.querySelectorAll(".list").forEach((l, i) => l.scrollTop = scroll[i] || 0);
+
+  const ex = [["Drop D, lowered 1 step", "drop_d", 2], ["Open G, lowered ½ step", "open_g", 1],
+    ["Standard, lowered 2 steps", "standard", 4], ["Not lowered", null, 0]];
+  document.getElementById("try").innerHTML = `<span class="lbl">Try:</span>` + ex.map(([l, id, k], i) =>
+    `<button class="pill" data-ex="${i}" aria-pressed="${(id ? S.base === id : true) && S.shift === k}">${l}</button>`).join("");
+  document.querySelectorAll("[data-ex]").forEach(b => b.onclick = () => {
+    const [, id, k] = ex[+b.dataset.ex]; if (id) S.base = id; S.shift = k; render(); });
+
+  document.getElementById("answers").innerHTML = [
+    [true, "1. It stays", "Open G lowered ½ step, then Standard: you get <b>Half step down</b>.",
+      "Pro: set it once if you always tune down. Con: the list's names change with it (Standard reads Half step down)."],
+    [false, "2. It goes back to not lowered", "Open G lowered ½ step, then Standard: you get <b>Standard</b>.",
+      "Pro: no surprises when you pick. Con: you lower again each time you change tuning."],
+  ].map(([keep, t, eg, pc]) => `<button class="ans" data-keep="${keep}" aria-pressed="${S.keep === keep}">
+    <h3>${t}${keep ? `<span class="tag">recommended</span>` : ""}</h3><span class="eg">${eg}</span><span class="pc">${pc}</span></button>`).join("");
+  document.querySelectorAll("[data-keep]").forEach(b => b.onclick = () => { S.keep = b.dataset.keep === "true"; render(); });
+
+  document.querySelectorAll(".row").forEach(r => r.onclick = e => { if (!e.target.closest(".sbtn")) pick(r.dataset.id); });
+  document.querySelectorAll("[data-act]").forEach(b => b.onclick = e => {
+    e.stopPropagation(); setShift(S.shift + (b.dataset.act === "down" ? 1 : -1)); });
+  document.querySelectorAll(".chip").forEach(c => c.onclick = () => setShift(+c.dataset.k));
+}
+render();
+</script>

@@ -329,6 +329,56 @@ class DataStoreSettingsRepositoryTest {
     }
 
     @Test
+    fun `a lowered tuning keeps its id, survives a restart and is cut to what it can go`() = runTest {
+        val repo = repository()
+        repo.setTuning(Tunings.DROP_D)
+        repo.setLoweredBy(2)
+        close()
+
+        val restarted = repository()
+        assertEquals(Tunings.DROP_D.lowered(2), restarted.settings.first().tuning)
+        restarted.setLoweredBy(9)
+        assertEquals(5, restarted.settings.first().tuning.loweredBy)
+        restarted.setLoweredBy(0)
+        assertEquals(Tunings.DROP_D, restarted.settings.first().tuning)
+
+        restarted.setInstrument(Instruments.BASS_5)
+        restarted.setLoweredBy(1)
+        assertEquals("B0 can't go lower", Instruments.BASS_5.defaultTuning, restarted.settings.first().tuning)
+    }
+
+    @Test
+    fun `picking another tuning or instrument starts it not lowered, the same tuning keeps it`() = runTest {
+        val repo = repository()
+        repo.setTuning(Tunings.OPEN_G)
+        repo.setLoweredBy(1)
+        repo.setTuning(repo.settings.first().tuning)
+        assertEquals(Tunings.OPEN_G.lowered(1), repo.settings.first().tuning)
+
+        repo.setTuning(Tunings.STANDARD)
+        assertEquals(Tunings.STANDARD, repo.settings.first().tuning)
+
+        repo.setLoweredBy(3)
+        repo.setInstrument(Instruments.GUITAR)
+        assertEquals("the same instrument keeps it", Tunings.STANDARD.lowered(3), repo.settings.first().tuning)
+        repo.setInstrument(Instruments.BASS_4)
+        repo.setInstrument(Instruments.GUITAR)
+        assertEquals(Tunings.STANDARD, repo.settings.first().tuning)
+    }
+
+    @Test
+    fun `a saved lowering out of range is cut to what the tuning can go`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("tuning_id")] = "bass_4_standard"
+            it[intPreferencesKey("tuning_lowered_by")] = 7
+        }
+        assertEquals(Instruments.BASS_4.defaultTuning.lowered(5), repository(store).settings.first().tuning)
+        store.edit { it[intPreferencesKey("tuning_lowered_by")] = -2 }
+        assertEquals(Instruments.BASS_4.defaultTuning, repository(store).settings.first().tuning)
+    }
+
+    @Test
     fun `a tuning saved before the instrument picker opens on the guitar`() = runTest {
         dataStore().edit { it[stringPreferencesKey("tuning_id")] = Tunings.OPEN_G.id }
         close()
@@ -839,6 +889,29 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(Instruments.GUITAR, settings.instrument)
         assertEquals(openC, settings.tuning.strings)
         assertEquals(changed, settings.pickedCustomTuning)
+    }
+
+    @Test
+    fun `editing or deleting the picked own tuning while lowered starts it, or the standard, not lowered`() = runTest {
+        val repo = repository()
+        val drop = repo.addCustomTuning("Drop C", Instruments.GUITAR, dropC)
+        val open = repo.addCustomTuning("Open C", Instruments.GUITAR, openC)
+        repo.setTuning(drop.tuning)
+        repo.setLoweredBy(2)
+        repo.updateCustomTuning(open.id, "Open C", openC)
+        assertEquals("editing another keeps it", 2, repo.settings.first().tuning.loweredBy)
+
+        repo.updateCustomTuning(drop.id, "Drop C", openC)
+        assertEquals(openC, repo.settings.first().tuning.strings)
+        assertEquals(0, repo.settings.first().tuning.loweredBy)
+
+        repo.setLoweredBy(1)
+        repo.deleteCustomTuning(drop.id)
+        assertEquals(Tunings.STANDARD, repo.settings.first().tuning)
+
+        repo.setLoweredBy(1)
+        repo.addCustomTuning("Mine", Instruments.GUITAR, dropC, pick = true)
+        assertEquals(0, repo.settings.first().tuning.loweredBy)
     }
 
     @Test
