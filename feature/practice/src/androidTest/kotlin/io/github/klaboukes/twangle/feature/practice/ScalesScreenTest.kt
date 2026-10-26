@@ -13,10 +13,12 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasParent
 import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -145,7 +148,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
     private fun pick(vararg options: String) {
         openPanel()
         for (option in options) {
-            node(option).performClick()
+            node(option).performScrollTo().performClick()
             compose.waitForIdle()
             assertTrue("a pick leaves the panel open", exists(option))
         }
@@ -197,6 +200,40 @@ class ScalesScreenTest(private val style: VisualStyle) {
         assertEquals(listOf(ScaleType.MAJOR, ScaleType.MAJOR_PENTATONIC, ScaleType.NATURAL_MINOR, ScaleType.MAJOR), savedTypes)
     }
 
+    /**
+     * The modes and the two minors (Phase 47): each with its short name and its name in words, spelled in its parent major key
+     * (B♭ Mixolydian with E♭ major's A♭) or the minor key with its raised notes; the colour note's places marked for TalkBack as
+     * the neck rings them, and none for the scales without one.
+     */
+    @Test
+    fun theModesAndTheMinorsWithTheirColourNote() {
+        show(PitchClass.D, ScaleType.MAJOR)
+        compose.waitForIdle()
+        pick(PracticeTestTags.scale(ScaleType.DORIAN))
+        assertName("D dor.", "D Dorian")
+        assertTrue(spokenNeck(), spokenNeck().startsWith("D Dorian, notes D, E, F, G, A, B, C, E 2 string, open E, fret 1 F, fret 3 G, fret 5 A, fret 7 B, colour note, fret 8 C"))
+        class Case(val root: PitchClass, val type: ScaleType, val symbol: String, val words: String, val notes: String)
+        val cases = listOf(
+            Case(PitchClass.E, ScaleType.PHRYGIAN, "E phryg.", "E Phrygian", "E, F, G, A, B, C, D"),
+            Case(PitchClass.F, ScaleType.LYDIAN, "F lyd.", "F Lydian", "F, G, A, B, C, D, E"),
+            Case(PitchClass.A_SHARP, ScaleType.MIXOLYDIAN, "B♭ mixo.", "B♭ Mixolydian", "B flat, C, D, E flat, F, G, A flat"),
+            Case(PitchClass.F_SHARP, ScaleType.LOCRIAN, "F♯ locr.", "F♯ Locrian", "F sharp, G, A, B, C, D, E"),
+            Case(PitchClass.D, ScaleType.HARMONIC_MINOR, "Dm harm.", "D harmonic minor", "D, E, F, G, A, B flat, C sharp"),
+            Case(PitchClass.A, ScaleType.MELODIC_MINOR, "Am mel.", "A melodic minor", "A, B, C, D, E, F sharp, G sharp"),
+            Case(PitchClass.A, ScaleType.NATURAL_MINOR, "Am", "A natural minor", "A, B, C, D, E, F, G"),
+        )
+        for (case in cases) {
+            pick(PracticeTestTags.root(case.root), PracticeTestTags.scale(case.type))
+            assertName(case.symbol, case.words)
+            val spoken = spokenNeck()
+            assertTrue(spoken, spoken.startsWith("${speechOf(case.words)}, notes ${case.notes}, "))
+            assertEquals("${case.type}: a colour note marked or none", Scale(case.root, case.type).colourNote != null, spoken.contains(", colour note"))
+        }
+    }
+
+    /** [words] as TalkBack's note names say them: "B♭ Mixolydian" is said "B flat Mixolydian". */
+    private fun speechOf(words: String) = words.replace("♭", " flat").replace("♯", " sharp")
+
     @Test
     fun chordsAndScalesShareTheRoot() {
         // The Practice tab shows both tools as this one screen with one saved state, so the root carries across.
@@ -232,6 +269,12 @@ class ScalesScreenTest(private val style: VisualStyle) {
         assertTrue("the scale's name is a polite live region", picker().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         openPanel()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assert(radio).assert(hasContentDescription("Minor pentatonic"))
+        node(PracticeTestTags.scale(ScaleType.MAJOR)).assert(radio).assert(hasContentDescription("Ionian (major)"))
+        node(PracticeTestTags.scale(ScaleType.MELODIC_MINOR)).assert(radio).assert(hasContentDescription("Melodic minor"))
+        // Each group a radio group of its own, by its header.
+        for ((header, type) in listOf("Modes" to ScaleType.LOCRIAN, "Minor" to ScaleType.HARMONIC_MINOR, "Pentatonic and blues" to ScaleType.BLUES)) {
+            node(PracticeTestTags.scale(type)).assert(hasParent(hasContentDescription(header) and SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
         node(PracticeTestTags.root(PitchClass.A_SHARP)).assert(radio).assert(hasContentDescription("B flat")).assertTextEquals("B♭")
         closePanel()
         assertFalse("the long neck is not", neck().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
@@ -301,21 +344,29 @@ class ScalesScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The panel under the name where it fits (where not [wide]): the roots in two rows of six, then the scales two to a row (Blues alone
-     * on the last), each wholly shown (scrolling the panel where it must; with [texts], every text in it
-     * too); Back closes it.
+     * The panel under the name where it fits (where not [wide]): the roots in two rows of six, then the twelve scales two to a row
+     * in their three groups (the modes, the minors, the pentatonics and the blues, each starting a row of its own), all of one size,
+     * each wholly shown (scrolling the panel where it must; with [texts], every text in it too); Back closes it.
      */
     private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
         fun top(tag: String) = node(tag).fetchSemanticsNode().positionInRoot.y
+        fun scale(type: ScaleType) = PracticeTestTags.scale(type)
         openPanel()
         val roots = top(PracticeTestTags.root(PitchClass.F_SHARP))
         assertTrue("$case roots in two rows of six", top(PracticeTestTags.root(PitchClass.F)) == top(PracticeTestTags.root(PitchClass.C)) && roots > top(PracticeTestTags.root(PitchClass.C)))
-        val first = top(PracticeTestTags.scale(ScaleType.MAJOR))
+        val first = top(scale(ScaleType.MAJOR))
         assertTrue("$case the scales under the roots", first > roots)
-        assertTrue(
-            "$case scales two to a row",
-            top(PracticeTestTags.scale(ScaleType.NATURAL_MINOR)) == first && top(PracticeTestTags.scale(ScaleType.MAJOR_PENTATONIC)) > first,
-        )
+        assertTrue("$case scales two to a row", top(scale(ScaleType.DORIAN)) == first && top(scale(ScaleType.PHRYGIAN)) > first)
+        // Each group on rows of its own, in order: Locrian alone on the modes' last row, the minors on one, the blues alone.
+        val locrian = top(scale(ScaleType.LOCRIAN))
+        assertTrue("$case Locrian alone", locrian > top(scale(ScaleType.NATURAL_MINOR)))
+        val minors = top(scale(ScaleType.HARMONIC_MINOR))
+        assertTrue("$case the minors under the modes, on one row", minors > locrian && top(scale(ScaleType.MELODIC_MINOR)) == minors)
+        val pentatonics = top(scale(ScaleType.MAJOR_PENTATONIC))
+        assertTrue("$case the pentatonics under the minors", pentatonics > minors && top(scale(ScaleType.MINOR_PENTATONIC)) == pentatonics)
+        assertTrue("$case the blues alone", top(scale(ScaleType.BLUES)) > pentatonics)
+        val sizes = ScaleType.entries.map { node(scale(it)).fetchSemanticsNode().size }.toSet()
+        assertEquals("$case every scale button of one size", 1, sizes.size)
         // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
         if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
         for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
@@ -396,20 +447,27 @@ class ScalesScreenTest(private val style: VisualStyle) {
         }
     }
 
-    /** Every language at 2× text, upright on a 320 dp phone and on its side, the grid too. Only with `--languages`. */
+    /**
+     * Every language at 2× text, upright on a 320 dp phone and on its side, the grid too, with the longest names: G♯ minor
+     * pentatonic and G♯ melodic minor (the longest of the minors, as long as Mixolydian or longer in every language). Only with `--languages`.
+     */
     @EveryLanguage
     @Test
     fun everyLanguageFitsAtTwiceTheTextSize() {
         shownFontScale.value = 2f
         show(PitchClass.G_SHARP, ScaleType.MINOR_PENTATONIC)
+        var shown = ScaleType.MINOR_PENTATONIC
         for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x:")
-                compose.assertNoWordBroken("$style $language $size at 2x:")
                 assertThePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+                for (type in listOf(shown, if (shown == ScaleType.MINOR_PENTATONIC) ScaleType.MELODIC_MINOR else ScaleType.MINOR_PENTATONIC)) {
+                    if (type != shown) pick(PracticeTestTags.scale(type)).also { shown = type }
+                    compose.assertEveryTextWhollyShown("$style $language $size $type at 2x:")
+                    compose.assertNoWordBroken("$style $language $size $type at 2x:")
+                }
             }
         }
     }

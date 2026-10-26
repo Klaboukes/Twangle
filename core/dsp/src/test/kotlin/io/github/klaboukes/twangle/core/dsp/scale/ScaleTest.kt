@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.core.dsp.scale
 
+import io.github.klaboukes.twangle.core.dsp.music.Accidental
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
+import io.github.klaboukes.twangle.core.dsp.music.KeySpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.A
@@ -14,13 +16,21 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass.E
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.F
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.F_SHARP
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass.G
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass.G_SHARP
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.music.tuningOf
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.BLUES
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.DORIAN
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.HARMONIC_MINOR
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.LOCRIAN
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.LYDIAN
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MAJOR
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MAJOR_PENTATONIC
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MELODIC_MINOR
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MINOR_PENTATONIC
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MIXOLYDIAN
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.NATURAL_MINOR
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.PHRYGIAN
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -60,6 +70,114 @@ class ScaleTest {
     }
 
     @Test
+    fun `each mode is written with its parent major key's signs`() {
+        assertEquals("D E F G A B C", names(D, DORIAN))
+        assertEquals("E F♯ G A B C♯ D", names(E, DORIAN))
+        assertEquals("F♯ G♯ A B C♯ D♯ E", names(F_SHARP, DORIAN)) // E major's sharps.
+        assertEquals("B♭ C D♭ E♭ F G A♭", names(A_SHARP, DORIAN)) // A♭ major's flats.
+        assertEquals("E F G A B C D", names(E, PHRYGIAN))
+        assertEquals("C♯ D E F♯ G♯ A B", names(C_SHARP, PHRYGIAN))
+        assertEquals("C D♭ E♭ F G A♭ B♭", names(C, PHRYGIAN))
+        assertEquals("F G A B C D E", names(F, LYDIAN))
+        assertEquals("C D E F♯ G A B", names(C, LYDIAN))
+        assertEquals("B♭ C D E F G A", names(A_SHARP, LYDIAN))
+        assertEquals("D♭ E♭ F G A♭ B♭ C", names(C_SHARP, LYDIAN))
+        assertEquals("G A B C D E F", names(G, MIXOLYDIAN))
+        assertEquals("A B C♯ D E F♯ G", names(A, MIXOLYDIAN))
+        assertEquals("B♭ C D E♭ F G A♭", names(A_SHARP, MIXOLYDIAN)) // E♭ major's flats.
+        assertEquals("E♭ F G A♭ B♭ C D♭", names(D_SHARP, MIXOLYDIAN))
+        assertEquals("B C D E F G A", names(B, LOCRIAN))
+        assertEquals("F♯ G A B C D E", names(F_SHARP, LOCRIAN))
+        assertEquals("E F G A B♭ C D", names(E, LOCRIAN))
+        assertEquals("C♯ D E F♯ G A B", names(C_SHARP, LOCRIAN))
+        assertEquals("D♯ E F♯ G♯ A B C♯", names(D_SHARP, LOCRIAN))
+    }
+
+    @Test
+    fun `the modes of the key with six signs take their root's own key`() {
+        assertEquals("G♯ A♯ B C♯ D♯ F F♯", names(G_SHARP, DORIAN)) // As G♯ minor: E♯ written F.
+        assertEquals("E♭ F G♭ A♭ B♭ B D♭", names(D_SHARP, NATURAL_MINOR)) // As E♭ minor: C♭ written B.
+        assertEquals("F G♭ A♭ B♭ B D♭ E♭", names(F, LOCRIAN)) // Never F F♯.
+        assertEquals("B C♯ D♯ F F♯ G♯ A♯", names(B, LYDIAN))
+        assertEquals("D♭ E♭ F G♭ A♭ B♭ B", names(C_SHARP, MIXOLYDIAN))
+    }
+
+    @Test
+    fun `every mode has its parent major scale's notes and, but for the key with six signs, its names`() {
+        val parentStep = mapOf(DORIAN to 10, PHRYGIAN to 8, LYDIAN to 7, MIXOLYDIAN to 5, NATURAL_MINOR to 3, LOCRIAN to 1, MAJOR to 0)
+        assertEquals(ScaleType.entries.filter { it.group == ScaleGroup.MODES }.toSet(), parentStep.keys)
+        for ((mode, step) in parentStep) for (root in PitchClass.entries) {
+            val parent = Scale(root.transposed(step), MAJOR)
+            val scale = Scale(root, mode)
+            assertEquals("$root $mode", parent.notes.toSet(), scale.notes.toSet())
+            assertEquals("$root $mode starts on its own note", root, scale.notes.first())
+            if (parent.root != F_SHARP) {
+                for (pc in scale.notes) assertEquals("$root $mode $pc", parent.nameOf(pc, Notation.SHARPS), scale.nameOf(pc, Notation.SHARPS))
+            }
+        }
+    }
+
+    @Test
+    fun `major and natural minor are written as their keys, as before the modes`() {
+        for (root in PitchClass.entries) {
+            assertEquals("$root major", KeySpelling.ofMajorKey(root), Scale(root, MAJOR).accidentalOf(root.transposed(1)))
+            assertEquals("$root minor", KeySpelling.ofMinorKey(root), Scale(root, NATURAL_MINOR).accidentalOf(root.transposed(1)))
+        }
+    }
+
+    @Test
+    fun `harmonic and melodic minor in the minor key's signs, their raised notes sharp`() {
+        assertEquals("A B C D E F G♯", names(A, HARMONIC_MINOR))
+        assertEquals("D E F G A B♭ C♯", names(D, HARMONIC_MINOR))
+        assertEquals("G A B♭ C D E♭ F♯", names(G, HARMONIC_MINOR))
+        assertEquals("C D E♭ F G A♭ B", names(C, HARMONIC_MINOR))
+        assertEquals("E F♯ G A B C D♯", names(E, HARMONIC_MINOR))
+        assertEquals("B C♯ D E F♯ G A♯", names(B, HARMONIC_MINOR))
+        assertEquals("A B C D E F♯ G♯", names(A, MELODIC_MINOR))
+        assertEquals("D E F G A B C♯", names(D, MELODIC_MINOR))
+        assertEquals("G A B♭ C D E F♯", names(G, MELODIC_MINOR))
+        assertEquals("C D E♭ F G A B", names(C, MELODIC_MINOR))
+        assertEquals("E♭ F G♭ A♭ B♭ C D", names(D_SHARP, MELODIC_MINOR))
+        assertEquals("B C♯ D E F♯ G♯ A♯", names(B, MELODIC_MINOR))
+        assertEquals("La Si Do Re Mi Fa Sol♯", names(A, HARMONIC_MINOR, Notation.SOLFEGE))
+        assertEquals("D E F G A H C♯", names(D, MELODIC_MINOR, Notation.GERMAN))
+        assertEquals(Accidental.FLAT, Scale(D, HARMONIC_MINOR).accidentalOf(A_SHARP))
+    }
+
+    @Test
+    fun `the colour note of each mode and of harmonic minor`() {
+        assertEquals(B, Scale(D, DORIAN).colourNote)
+        assertEquals(F, Scale(E, PHRYGIAN).colourNote)
+        assertEquals(B, Scale(F, LYDIAN).colourNote)
+        assertEquals(F_SHARP, Scale(C, LYDIAN).colourNote)
+        assertEquals(F, Scale(G, MIXOLYDIAN).colourNote)
+        assertEquals(F, Scale(B, LOCRIAN).colourNote)
+        assertEquals(G_SHARP, Scale(A, HARMONIC_MINOR).colourNote)
+        assertEquals("D Dorian is C major's notes, its 6th marked", "B", Scale(D, DORIAN).let { it.nameOf(it.colourNote!!, Notation.SHARPS) })
+        for (type in listOf(MAJOR, NATURAL_MINOR, MELODIC_MINOR, MAJOR_PENTATONIC, MINOR_PENTATONIC, BLUES)) {
+            assertNull("$type has none", Scale(C, type).colourNote)
+        }
+        for (type in ScaleType.entries) for (root in PitchClass.entries) {
+            val colour = Scale(root, type).colourNote ?: continue
+            assertTrue("$root $type: the colour note is in the scale", colour in Scale(root, type))
+            assertTrue("$root $type: never the root", colour != root)
+        }
+    }
+
+    @Test
+    fun `the scales in their groups, in the panel's order`() {
+        assertEquals(
+            listOf(MAJOR, DORIAN, PHRYGIAN, LYDIAN, MIXOLYDIAN, NATURAL_MINOR, LOCRIAN),
+            ScaleType.entries.filter { it.group == ScaleGroup.MODES },
+        )
+        assertEquals(listOf(HARMONIC_MINOR, MELODIC_MINOR), ScaleType.entries.filter { it.group == ScaleGroup.MINOR })
+        assertEquals(listOf(MAJOR_PENTATONIC, MINOR_PENTATONIC, BLUES), ScaleType.entries.filter { it.group == ScaleGroup.PENTATONIC_AND_BLUES })
+        assertEquals("grouped, one group after the other", ScaleType.entries.sortedBy { it.group.ordinal }, ScaleType.entries)
+        // Saved by name: the scales of before Phase 47 keep theirs.
+        for (old in listOf("MAJOR", "NATURAL_MINOR", "MAJOR_PENTATONIC", "MINOR_PENTATONIC", "BLUES")) ScaleType.valueOf(old)
+    }
+
+    @Test
     fun `names follow the player's notation`() {
         assertEquals("Fa Sol La Si♭ Do Re Mi", names(F, MAJOR, Notation.SOLFEGE))
         assertEquals("F G A B C D E", names(F, MAJOR, Notation.GERMAN))
@@ -70,7 +188,7 @@ class ScaleTest {
 
     @Test
     fun `scale sizes and degrees`() {
-        assertEquals(listOf(7, 7, 5, 5, 6), ScaleType.entries.map { it.steps.size })
+        assertEquals(listOf(7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 6), ScaleType.entries.map { it.steps.size })
         val blues = Scale(A, BLUES)
         assertEquals(1, blues.degreeOf(A))
         assertEquals(4, blues.degreeOf(D_SHARP))

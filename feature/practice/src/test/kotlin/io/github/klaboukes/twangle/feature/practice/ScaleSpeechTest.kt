@@ -25,6 +25,7 @@ class ScaleSpeechTest {
         fret = "fret %1\$d %2\$s",
         root = "%1\$s, root",
         locale = Locale.ENGLISH,
+        colour = "%1\$s, colour note",
     )
 
     /** As TalkBack's speech would, so the test sees which names went through it. */
@@ -71,6 +72,20 @@ class ScaleSpeechTest {
     }
 
     @Test
+    fun `the colour note's places are marked, as the neck rings them`() {
+        val dorian = spoken(Scale(PitchClass.D, ScaleType.DORIAN), name = "D Dorian")
+        assertTrue(dorian, dorian.startsWith("D Dorian, notes D, E, F, G, A, B, C, E 2 string, open E, fret 1 F, fret 3 G, fret 5 A, fret 7 B, colour note, fret 8 C, fret 10 D, root, fret 12 E"))
+        assertEquals("every B on the neck", ScaleFinder.notesOf(Scale(PitchClass.D, ScaleType.DORIAN), Tunings.STANDARD).count { it.note.pitchClass == PitchClass.B }, Regex(", colour note").findAll(dorian).count())
+        val lydian = spoken(Scale(PitchClass.A_SHARP, ScaleType.LYDIAN))
+        assertTrue("B flat Lydian's sharp 4th is E: $lydian", lydian.contains("notes B flat, C, D, E, F, G, A") && lydian.contains("open E, colour note"))
+        val harmonic = spoken(Scale(PitchClass.A, ScaleType.HARMONIC_MINOR))
+        assertTrue("A harmonic minor's raised 7th: $harmonic", harmonic.contains("notes A, B, C, D, E, F, G sharp") && harmonic.contains("fret 4 G sharp, colour note"))
+        for (type in listOf(ScaleType.MAJOR, ScaleType.NATURAL_MINOR, ScaleType.MELODIC_MINOR, ScaleType.MINOR_PENTATONIC, ScaleType.BLUES)) {
+            assertTrue("$type has no colour note", !spoken(Scale(PitchClass.A, type)).contains("colour note"))
+        }
+    }
+
+    @Test
     fun `every string of the instrument is said, on a ukulele, a 5-string bass and a tuning of one's own`() {
         val uke = Instruments.UKULELE.defaultTuning
         assertEquals(uke.stringCount, Regex(" string, ").findAll(spoken(Scale(PitchClass.C, ScaleType.MAJOR), uke)).count())
@@ -84,7 +99,7 @@ class ScaleSpeechTest {
 
     @Test
     fun `fret numbers are said in the language's digits`() {
-        val arabic = english.let { ScaleWords(it.separator, it.notes, it.string, it.open, it.fret, it.root, Locale.forLanguageTag("ar")) }
+        val arabic = english.let { ScaleWords(it.separator, it.notes, it.string, it.open, it.fret, it.root, Locale.forLanguageTag("ar"), it.colour) }
         val spoken = spoken(Scale(PitchClass.A, ScaleType.MINOR_PENTATONIC), words = arabic)
         assertTrue(spoken, spoken.contains("fret ٣ G") && spoken.contains("fret ١٢ E"))
     }

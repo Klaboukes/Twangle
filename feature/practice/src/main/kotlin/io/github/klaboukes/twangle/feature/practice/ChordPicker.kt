@@ -66,6 +66,7 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleGroup
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
@@ -210,11 +211,12 @@ private fun NameButton(
  * The name button's panel, [expanded] or not, a Material dropdown under the place it is put in, at
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
  * ([RootPicker]), then "Chord type" over the sixteen chord types four to a row ([ChordTypePicker]) or,
- * with [scales], "Scale" over the five scales two to a row ([ScaleTypePicker]). A pick leaves it
+ * with [scales], the twelve scales two to a row in three groups, each under its header ("Modes",
+ * "Minor", "Pentatonic and blues"; [ScaleTypePicker]). A pick leaves it
  * open, so both can be changed in one go, and shows at once on the button and the chart; Back and a
  * tap beside it call [onDismiss]. On a short screen it scrolls.
  *
- * TalkBack hears its grids as radio groups ("Root", "Chord type", "Scale").
+ * TalkBack hears its grids as radio groups ("Root", "Chord type", "Modes", "Minor", "Pentatonic and blues").
  */
 @Composable
 internal fun ChordPanel(
@@ -246,7 +248,6 @@ internal fun ChordPanel(
                 RootPicker(root, spell, gridWidth, onRootChange = onRootChange)
                 Spacer(Modifier.height(SECTION_GAP))
                 if (scales) {
-                    PanelLabel(stringResource(R.string.practice_scale_type))
                     ScaleTypePicker(scaleType, gridWidth, onTypeChange = onScaleTypeChange)
                 } else {
                     PanelLabel(stringResource(R.string.practice_chord_type))
@@ -341,9 +342,12 @@ private fun ChordTypePicker(
 }
 
 /**
- * The five scales, [type] picked, by name ("Major", "Minor pentatonic"), two to a row, so long names
- * (French "Pentatonique majeure") keep a fair size; a long name takes two lines rather than getting
- * small. TalkBack hears one radio group ("Scale"), each by its name.
+ * The twelve scales, [type] picked, in their groups ([ScaleGroup]), each under its header: the seven
+ * modes ("Ionian (major)" … "Locrian"), the two minors ("Harmonic minor", "Melodic minor"), the two
+ * pentatonics and the blues. Two to a row, so long names (French "Pentatonique majeure", Russian
+ * "Миксолидийский") keep a fair size; a long name takes two lines rather than getting small. All of
+ * one steady size, in every group. TalkBack hears each group as a radio group by its header, each
+ * scale by its name.
  */
 @Composable
 private fun ScaleTypePicker(
@@ -353,20 +357,26 @@ private fun ScaleTypePicker(
     modifier: Modifier = Modifier,
 ) {
     val names = ScaleType.entries.associateWith { stringResource(scaleTypeLabel(it)) }
-    PickerGrid(
-        options = ScaleType.entries,
-        picked = type,
-        perRow = SCALES_PER_ROW,
-        maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
-        groupLabel = stringResource(R.string.practice_scale_type),
-        label = { names.getValue(it) },
-        spoken = { names.getValue(it) },
-        tag = PracticeTestTags::scale,
-        width = width,
-        onPick = onTypeChange,
-        modifier = modifier,
-        lines = 2,
-    )
+    Column(modifier) {
+        for (group in ScaleGroup.entries) {
+            val header = stringResource(scaleGroupLabel(group))
+            if (group.ordinal > 0) Spacer(Modifier.height(GROUP_GAP))
+            PanelLabel(header)
+            PickerGrid(
+                options = ScaleType.entries.filter { it.group == group },
+                picked = type,
+                perRow = SCALES_PER_ROW,
+                maxButtonWidth = SCALE_BUTTON_MAX_WIDTH,
+                groupLabel = header,
+                label = { names.getValue(it) },
+                spoken = { names.getValue(it) },
+                tag = PracticeTestTags::scale,
+                width = width,
+                onPick = onTypeChange,
+                lines = 2,
+            )
+        }
+    }
 }
 
 /**
@@ -568,6 +578,7 @@ private val NAME_BUTTON_HEIGHT = 64.dp
 private val NAME_BUTTON_PADDING = 4.dp
 private val MENU_PADDING = 4.dp
 private val SECTION_GAP = 4.dp
+private val GROUP_GAP = 2.dp
 
 /**
  * The short name shrinks at most to this: at 2× text the wide Space Age letters need it for "Sol♯m pent."

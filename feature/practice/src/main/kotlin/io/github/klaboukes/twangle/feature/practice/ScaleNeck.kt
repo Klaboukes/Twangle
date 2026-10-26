@@ -44,7 +44,8 @@ internal enum class NeckLie {
  * A scale on the whole neck (the owner's pick I in docs/design/practice-preview.html): [strings]
  * strings, frets 0 to [ScaleFinder.HIGHEST_FRET], every note of the scale ([notes], from
  * [ScaleFinder.notesOf]) a dot with its name in the player's [notation] as the scale writes it
- * ([Scale.nameOf]); the root's dots filled in the accent, the others outlined; the open strings' notes
+ * ([Scale.nameOf]); the root's dots filled in the accent, the colour note's ([Scale.colourNote],
+ * the owner's pick F of Phase 47) ringed in the accent with its name in it, the others outlined; the open strings' notes
  * before the nut, the fret numbers 3 5 7 9 12 beside the thickest string. In the style's own colours
  * and lettering, on a soft field of its background so the style's pattern never runs through it.
  *
@@ -133,6 +134,7 @@ internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHE
 private class NeckPaint(
     val notes: List<FretNote>,
     val root: PitchClass,
+    val colour: PitchClass?,
     val ink: Color,
     val muted: Color,
     val accent: Color,
@@ -153,6 +155,7 @@ private fun rememberNeckPaint(scale: Scale, notes: List<FretNote>, notation: Not
     return NeckPaint(
         notes = notes,
         root = scale.root,
+        colour = scale.colourNote,
         ink = scheme.onBackground,
         muted = scheme.onSurfaceVariant,
         accent = scheme.primary,
@@ -168,6 +171,7 @@ private fun rememberNeckPaint(scale: Scale, notes: List<FretNote>, notation: Not
 private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie): Modifier {
     val notes = paint.notes
     val root = paint.root
+    val colour = paint.colour
     val ink = paint.ink
     val muted = paint.muted
     val accent = paint.accent
@@ -184,8 +188,12 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
             base.copy(color = color, fontSize = spOf(units * u, this), fontWeight = weight ?: base.fontWeight)
         val inDot = NeckGeometry.DOT_RADIUS * 2f * 0.86f * u
         val nameLayouts = names.mapValues { (pc, name) ->
-            val isRoot = pc == root
-            measurer.fitted(musicText(name), style(NeckGeometry.NOTE_SIZE, if (isRoot) onAccent else ink, if (isRoot) FontWeight.Medium else null), inDot)
+            val text = when (pc) {
+                root -> style(NeckGeometry.NOTE_SIZE, onAccent, FontWeight.Medium)
+                colour -> style(NeckGeometry.NOTE_SIZE, accent, FontWeight.SemiBold)
+                else -> style(NeckGeometry.NOTE_SIZE, ink)
+            }
+            measurer.fitted(musicText(name), text, inDot)
         }
         val numberLayouts = fretNumbers.map { (fret, text) ->
             fret to measurer.fitted(AnnotatedString(text), style(NeckGeometry.FRET_NUMBER_SIZE, muted), NeckGeometry.FRET * 0.96f * u)
@@ -218,6 +226,10 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
                 val middle = at(g.fretMiddle(note.fret), g.stringLine(note.string))
                 if (note.isRoot) {
                     drawCircle(accent, radius, middle)
+                } else if (pc == colour) {
+                    // The colour note: a soft accent ring, a little wider than the others' outline.
+                    drawCircle(background, radius, middle)
+                    drawCircle(accent.copy(alpha = COLOUR_RING_ALPHA), radius - COLOUR_STROKE * u / 2f, middle, style = Stroke(COLOUR_STROKE * u))
                 } else {
                     drawCircle(background, radius, middle)
                     drawCircle(muted, radius - HOLLOW_STROKE * u / 2f, middle, style = Stroke(HOLLOW_STROKE * u))
@@ -234,5 +246,9 @@ private const val NUT_WIDTH = 4f
 /** The nut runs this far past the outer strings, in units. */
 private const val NUT_OVERHANG = 1f
 private const val HOLLOW_STROKE = 1.2f
+
+/** The colour note's ring (the mock-up's 2.4 a little softened), in units, and its accent's opacity. */
+private const val COLOUR_STROKE = 2.2f
+private const val COLOUR_RING_ALPHA = 0.9f
 private const val FRET_ALPHA = 0.6f
 private const val FIELD_ALPHA = 0.72f

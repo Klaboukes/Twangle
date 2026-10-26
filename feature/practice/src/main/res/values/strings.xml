@@ -48,29 +48,55 @@
     <string name="practice_spoken_open">%1$s, open</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, finger %3$d, %4$s</string>
     <string name="practice_spoken_barre">barre, fret %2$d, finger %1$d, strings %3$s to %4$s</string>
-    <!-- Scales (Phase 32, a tool of its own since Phase 47): TalkBack, the group of scale buttons (Major, Natural minor …). -->
-    <string name="practice_scale_type">Scale</string>
-    <!-- The scale buttons, two or three to a row (long names are set smaller to fit). -->
-    <string name="practice_scale_type_major">Major</string>
-    <string name="practice_scale_type_natural_minor">Natural minor</string>
+    <!-- Scales (Phase 32, a tool of its own since Phase 47): the headers of the scale panel's three groups, each a TalkBack radio group. -->
+    <string name="practice_scale_group_modes">Modes</string>
+    <string name="practice_scale_group_minor">Minor</string>
+    <string name="practice_scale_group_pentatonic">Pentatonic and blues</string>
+    <!-- The scale buttons, two to a row in their groups (long names take two lines, set smaller to fit). Ionian and Aeolian are the major and natural minor scales. -->
+    <string name="practice_scale_type_major">Ionian (major)</string>
+    <string name="practice_scale_type_natural_minor">Aeolian (minor)</string>
     <string name="practice_scale_type_major_pentatonic">Major pentatonic</string>
     <string name="practice_scale_type_minor_pentatonic">Minor pentatonic</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_dorian">Dorian</string>
+    <string name="practice_scale_type_phrygian">Phrygian</string>
+    <string name="practice_scale_type_lydian">Lydian</string>
+    <string name="practice_scale_type_mixolydian">Mixolydian</string>
+    <string name="practice_scale_type_locrian">Locrian</string>
+    <string name="practice_scale_type_harmonic_minor">Harmonic minor</string>
+    <string name="practice_scale_type_melodic_minor">Melodic minor</string>
     <!-- A scale in words, the title over the neck. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_major">%1$s major</string>
     <string name="practice_scale_natural_minor">%1$s natural minor</string>
     <string name="practice_scale_major_pentatonic">%1$s major pentatonic</string>
     <string name="practice_scale_minor_pentatonic">%1$s minor pentatonic</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_dorian">%1$s Dorian</string>
+    <string name="practice_scale_phrygian">%1$s Phrygian</string>
+    <string name="practice_scale_lydian">%1$s Lydian</string>
+    <string name="practice_scale_mixolydian">%1$s Mixolydian</string>
+    <string name="practice_scale_locrian">%1$s Locrian</string>
+    <string name="practice_scale_harmonic_minor">%1$s harmonic minor</string>
+    <string name="practice_scale_melodic_minor">%1$s melodic minor</string>
     <!-- The name button's short name of a pentatonic scale and of the blues scale: %1$s is the root as a chord symbol ("A" major, "Am" minor; "Am pent."). A scale in words is under the button. -->
     <string name="practice_scale_short_pentatonic">%1$s pent.</string>
     <string name="practice_scale_short_blues">%1$s blues</string>
+    <!-- The name button's short name of a mode (%1$s the root: "D dor.") and of harmonic and melodic minor (%1$s the root as a minor chord: "Am harm."). -->
+    <string name="practice_scale_short_dorian">%1$s dor.</string>
+    <string name="practice_scale_short_phrygian">%1$s phryg.</string>
+    <string name="practice_scale_short_lydian">%1$s lyd.</string>
+    <string name="practice_scale_short_mixolydian">%1$s mixo.</string>
+    <string name="practice_scale_short_locrian">%1$s locr.</string>
+    <string name="practice_scale_short_harmonic_minor">%1$s harm.</string>
+    <string name="practice_scale_short_melodic_minor">%1$s mel.</string>
     <!-- TalkBack, the neck: %1$s the scale in words ("A minor pentatonic"), %2$s its notes from the root ("A, C, D, E, G"). -->
     <string name="practice_spoken_scale_notes">%1$s, notes %2$s</string>
     <!-- TalkBack, each note on a string: open, or the fret %1$d and the note's name %2$s; the root's places add "root". -->
     <string name="practice_spoken_scale_open">open %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, root</string>
+    <!-- TalkBack, the neck: a place of the scale's colour note, ringed on the neck (Dorian's 6th, Lydian's ♯4 …). -->
+    <string name="practice_spoken_scale_colour">%1$s, colour note</string>
     <!-- Capo helper (Phase 33): its name on the tool button and in its list. -->
     <string name="practice_tool_capo">Capo</string>
     <!-- Over the button that picks the chord shapes the player knows (C, D, E, G, A, Dm, Em, Am). -->
