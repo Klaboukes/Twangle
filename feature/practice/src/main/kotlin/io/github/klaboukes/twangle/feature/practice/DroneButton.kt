@@ -75,8 +75,8 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 /*
  * The drone under the Scales tool (Phase 48, the owner's pick A in docs/design/drone-button-preview.html): one split
  * button at the end of the scale's name row, ▶ / ■ on its start half and the sound's icon with ⌄ on its end half, which
- * drops the drone panel (Sound, Notes, Lower) under it. The drone sounds the scale's root ([droneRootHz]) through a
- * [DronePlayer], only while Scales shows ([StopDroneWhenHidden]).
+ * drops the drone panel (Sound, Notes, Lower) under the whole name row, as wide as it. The drone sounds the scale's
+ * root ([droneRootHz]) through a [DronePlayer], only while Scales shows ([StopDroneWhenHidden]).
  */
 
 /** The drone's choices, all saved: its [sound], its notes ([voicing]) and whether it sounds an octave [lower]. */
@@ -213,7 +213,7 @@ internal fun DronePanel(
             LocalResources provides resources,
         ) {
             // A known width: a menu asks its content's intrinsic size.
-            val panelWidth = minOf(width, if (wide) PANEL_WIDTH_WIDE else PANEL_WIDTH) - PANEL_PADDING * 2
+            val panelWidth = (if (wide) minOf(width, PANEL_WIDTH_WIDE) else width) - PANEL_PADDING * 2
             val sounds = @Composable { Sounds(choice.sound) { onChoiceChange(choice.copy(sound = it)) } }
             val notes = @Composable {
                 Notes(choice.voicing) { onChoiceChange(choice.copy(voicing = it)) }
@@ -485,8 +485,7 @@ private val SPLIT_INNER_CORNER = 4.dp
 private val ICON_SIZE = 24.dp
 private val CHEVRON_SIZE = 20.dp
 
-/** The panel: one column as the mock-up (296 dp, less on a narrow phone), two on its side. */
-private val PANEL_WIDTH = 296.dp
+/** The panel on its side, in two columns; upright it is one column as wide as the name's row. */
 private val PANEL_WIDTH_WIDE = 380.dp
 private val PANEL_PADDING = 8.dp
 private val COLUMN_GAP = 8.dp

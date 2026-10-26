@@ -226,27 +226,28 @@ fun ChordsScreen(
             scaleType = scaleType,
             notation = notation,
             onClick = { panelOpen = true },
-            panel = if (wide) { _ -> } else panel,
+            // Upright both panels drop under the whole row, as wide as it, so nothing of the neck shows beside them
+            // (the owner's report of 2026-10-26); on its side they open over the start half.
+            panel = if (wide) { _ -> } else { rowWidth ->
+                panel(rowWidth)
+                if (droning) dronePanel(false, rowWidth)
+            },
             endWidth = DRONE_BUTTON_WIDTH,
             end = if (droning && drone != null) {
-                { height, rowWidth ->
-                    Box {
-                        DroneButton(
-                            playing = dronePlaying,
-                            sound = droneChoice.sound,
-                            height = height,
-                            onPlayStop = {
-                                if (dronePlaying) {
-                                    drone.stop()
-                                } else {
-                                    drone.play(droneRootHz(root, a4Hz), droneChoice.sound, droneChoice.voicing, droneChoice.lower)
-                                }
-                            },
-                            onOpenPanel = { dronePanelOpen = true },
-                        )
-                        // Upright the panel drops under the button; on its side it opens over the start half.
-                        if (!wide) dronePanel(false, rowWidth)
-                    }
+                { height, _ ->
+                    DroneButton(
+                        playing = dronePlaying,
+                        sound = droneChoice.sound,
+                        height = height,
+                        onPlayStop = {
+                            if (dronePlaying) {
+                                drone.stop()
+                            } else {
+                                drone.play(droneRootHz(root, a4Hz), droneChoice.sound, droneChoice.voicing, droneChoice.lower)
+                            }
+                        },
+                        onOpenPanel = { dronePanelOpen = true },
+                    )
                 }
             } else {
                 null
