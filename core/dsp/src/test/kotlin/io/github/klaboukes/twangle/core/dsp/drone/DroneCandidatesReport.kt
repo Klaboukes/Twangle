@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.drone
 
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
+import io.github.klaboukes.twangle.core.dsp.pitch.Fft
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
 import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
@@ -16,20 +17,21 @@ import kotlin.math.cos
 import kotlin.math.log10
 import kotlin.math.log2
 import kotlin.math.pow
+import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * Phase 48, "Hear them first": renders the four candidate drones ([DroneCandidate]) into
+ * Phase 48, "Hear them first", round 2: renders the four candidate drones ([DroneCandidate]) into
  * `docs/design/drone-sounds-preview/` as 16-bit mono WAV files at [RATE], for the owner to play
- * side by side (open its `index.html`). For each candidate:
+ * side by side (open its `index.html`). For each candidate, [SECONDS] long:
  * - `<sound>-d3.wav`: the root alone, D3 (146.8 Hz, the cello's and the guitar's open D);
- * - `<sound>-d3-fifth.wav`: D3 with its fifth, A3, a pure 3:2 (220.25 Hz) so the drone itself
- *   doesn't beat;
- * - `<sound>-d3-fifth-octave.wav`: D3, A3 and D4 (2:1);
- * - `<sound>-a2-fifth.wav`: a fifth lower, A2 (110 Hz) with E3, to hear the low register (which a
- *   phone's speaker hardly plays);
+ * - `<sound>-d3-fifth.wav`: D3 with its fifth, a pure 3:2 so the drone itself doesn't beat (the
+ *   tanpura's fifth is its Pa, below the root);
+ * - `<sound>-d3-fifth-octave.wav`: with the fifth and the octave (2:1);
+ * - `<sound>-a2-fifth.wav`: a fifth lower, A2 (110 Hz) with its fifth, to hear the low register
+ *   (which a phone's speaker hardly plays);
  * - `<sound>-with-scale.wav`: D3 with its fifth under the D Dorian scale, D4 to D5 and back, played
  *   in the tuner's steel-guitar voice (the reference tones' [StringSynth]), the same guitar under
  *   every sound.
@@ -39,9 +41,13 @@ import kotlin.math.sqrt
  * than the drone (while the scale plays), equally loud in all four. Loudness is measured as LUFS
  * are ([loudness]), so a bright sound and a dark one are matched as the ear hears them.
  *
- * It prints, per candidate, what the app's own detector reads from the root alone, how steady the
- * level is, how much of the sound a phone's speaker plays (the share of energy above 400 Hz) and
- * its brightness, then each file's peak and RMS.
+ * It prints, per candidate (the root alone), what the app's own detector reads (the average over
+ * the held part and how far the readings move), how much the level moves, how much of the sound a
+ * phone's speaker plays (the share of energy above 400 Hz) and its brightness (the spectral
+ * centroid, over the held part and its range over quarter seconds), then each file's peak and
+ * loudness. The round's aim: four sounds far apart on those figures. It fails if a candidate's
+ * average reading is more than 1 cent off, a file clips past [MAX_PEAK] or doesn't start and end
+ * on silence.
  *
  * Not a test: run it with the benchmarks
  * (`./gradlew :core:dsp:benchmark --tests '*DroneCandidatesReport*'`). The output is the same on
@@ -49,32 +55,38 @@ import kotlin.math.sqrt
  */
 class DroneCandidatesReport {
 
+    private class Variant(val name: String, val rootHz: Double, val fifth: Boolean, val octave: Boolean)
+
     @Test
     fun writeCandidates() {
         val dir = File(repoRoot(), "docs/design/drone-sounds-preview").apply { mkdirs() }
         val d3 = 440.0 * 2.0.pow(-19 / 12.0)
         val a2 = 110.0
         val variants = listOf(
-            "d3" to listOf(d3 to 1.0),
-            "d3-fifth" to listOf(d3 to 1.0, 1.5 * d3 to FIFTH_GAIN),
-            "d3-fifth-octave" to listOf(d3 to 1.0, 1.5 * d3 to FIFTH_GAIN, 2 * d3 to OCTAVE_GAIN),
-            "a2-fifth" to listOf(a2 to 1.0, 1.5 * a2 to FIFTH_GAIN),
+            Variant("d3", d3, fifth = false, octave = false),
+            Variant("d3-fifth", d3, fifth = true, octave = false),
+            Variant("d3-fifth-octave", d3, fifth = true, octave = true),
+            Variant("a2-fifth", a2, fifth = true, octave = false),
         )
         val frames = (SECONDS * RATE).roundToInt()
         val held = (HELD_FROM_SECONDS * RATE).roundToInt() until frames - ((FADE_OUT_SECONDS + 0.2) * RATE).roundToInt()
 
-        println("sound        D3 read at 1 s   2 s (cents)   level swing (50 ms RMS)   above 400 Hz   centroid")
+        println("sound         pitch: average  readings move   level moves (50 ms RMS)   above 400 Hz   centroid: held  quarter seconds")
+        val failures = mutableListOf<String>()
         val drones = mutableListOf<Pair<String, DoubleArray>>()
         for (candidate in DroneCandidate.entries) {
-            val root = DroneCandidates.render(candidate, RATE, listOf(d3 to 1.0), frames)
+            val root = DroneCandidates.render(candidate, RATE, d3, fifth = false, octave = false, frames = frames)
+            val readings = readings(root, d3, held)
+            val (centroid, low, high) = centroids(root, held)
             println(
-                "%-11s  %+6.2f          %+6.2f        %4.1f dB                   %3.0f %%          %5.0f Hz".format(
-                    candidate.file, centsAt(root, d3, 1.0), centsAt(root, d3, 2.0), swingDb(root, held),
-                    100 * shareAbove(root, 400.0, held), centroid(root, held),
+                "%-12s  %+6.2f cents   %5.1f cents      %4.1f dB                   %3.0f %%          %5.0f Hz      %5.0f–%.0f Hz".format(
+                    candidate.file, readings.average(), readings.max() - readings.min(), swingDb(root, held),
+                    100 * shareAbove(root, 400.0, held), centroid, low, high,
                 ),
             )
-            for ((name, notes) in variants) {
-                drones += "${candidate.file}-$name" to faded(DroneCandidates.render(candidate, RATE, notes, frames))
+            if (abs(readings.average()) > 1.0) failures += "${candidate.file} reads ${readings.average()} cents off on average"
+            for (v in variants) {
+                drones += "${candidate.file}-${v.name}" to faded(DroneCandidates.render(candidate, RATE, v.rootHz, v.fifth, v.octave, frames))
             }
         }
         // One loudness for every drone: the loudness the loudest-peaking file allows under MAX_PEAK.
@@ -85,7 +97,7 @@ class DroneCandidatesReport {
         val guitar = scaleTrack()
         val scaleSpan = (SCALE_START_SECONDS * RATE).roundToInt() until ((SCALE_START_SECONDS + 15 * NOTE_SECONDS) * RATE).roundToInt()
         val mixes = DroneCandidate.entries.map { candidate ->
-            val drone = faded(DroneCandidates.render(candidate, RATE, variants[1].second, guitar.size))
+            val drone = faded(DroneCandidates.render(candidate, RATE, d3, fifth = true, octave = false, frames = guitar.size))
             val droneGain = loudness(guitar, scaleSpan) / loudness(drone, scaleSpan) / 10.0.pow(GUITAR_OVER_DRONE_DB / 20)
             "${candidate.file}-with-scale" to DoubleArray(guitar.size) { guitar[it] + droneGain * drone[it] }
         }
@@ -96,7 +108,6 @@ class DroneCandidatesReport {
         val names = files.map { "${it.first}.wav" }.toSet()
         dir.listFiles { f -> f.name.endsWith(".wav") && f.name !in names }?.forEach { it.delete() }
 
-        val failures = mutableListOf<String>()
         println("file                          seconds   peak   RMS dBFS   loudness (K-weighted dB, held)")
         for ((name, x) in files) {
             val samples = FloatArray(x.size) { x[it].toFloat() }
@@ -162,13 +173,21 @@ class DroneCandidatesReport {
         return out
     }
 
-    /** What the app's detector reads from [x] at [seconds], in cents from [hz]. */
-    private fun centsAt(x: DoubleArray, hz: Double, seconds: Double): Double {
-        val settings = AnalysisSettings.forSampleRate(RATE, PitchRange.forLowestNote(hz.toFloat()))
-        val from = (seconds * RATE).roundToInt()
-        val window = FloatArray(settings.windowSize) { x[from + it].toFloat() }
-        val result = settings.newPitchDetector().detect(window)
-        return if (result.isPitched) 1200 * log2(result.frequencyHz / hz) else Double.NaN
+    /**
+     * What the app's detector reads from [x] every 0.1 s over [span], each in cents from [hz],
+     * folded to the nearest octave of it (the tanpura's low Sa is the root an octave down).
+     */
+    private fun readings(x: DoubleArray, hz: Double, span: IntRange): List<Double> {
+        val settings = AnalysisSettings.forSampleRate(RATE, PitchRange.forLowestNote((hz / 2).toFloat()))
+        val detector = settings.newPitchDetector()
+        val window = FloatArray(settings.windowSize)
+        return (span.first until span.last - settings.windowSize step RATE / 10).mapNotNull { from ->
+            for (i in window.indices) window[i] = x[from + i].toFloat()
+            val result = detector.detect(window)
+            if (!result.isPitched) return@mapNotNull null
+            val cents = 1200 * log2(result.frequencyHz / hz)
+            cents - 1200 * round(cents / 1200)
+        }
     }
 
     /** The loudest minus the quietest 50 ms RMS over [span], in dB: how much the level moves. */
@@ -189,28 +208,39 @@ class DroneCandidatesReport {
         return rms(high, span).pow(2) / rms(x, span).pow(2)
     }
 
-    /** Spectral centroid of half a second of [x] from the start of [span], by a plain DFT on a 25 Hz grid. */
-    private fun centroid(x: DoubleArray, span: IntRange): Double {
-        val n = RATE / 2
-        val from = span.first
-        var weighted = 0.0
-        var total = 0.0
-        var hz = 25.0
-        while (hz < 8_000) {
-            var re = 0.0
-            var im = 0.0
-            val w = 2 * PI * hz / RATE
+    /**
+     * The spectral centroid of [x] over [span], in quarter-second frames ([CENTROID_FRAME] samples,
+     * Hann window, 25 Hz–8 kHz, by FFT): the energy-weighted centroid of the whole span, and the
+     * lowest and highest of the frames' own (how much its brightness moves).
+     */
+    private fun centroids(x: DoubleArray, span: IntRange): Triple<Double, Double, Double> {
+        val n = CENTROID_FRAME
+        val fft = Fft(n)
+        val re = DoubleArray(n)
+        val im = DoubleArray(n)
+        var weightedAll = 0.0
+        var totalAll = 0.0
+        val frames = mutableListOf<Double>()
+        for (from in span.first until span.last - n step n) {
             for (i in 0 until n) {
-                val hann = 0.5 - 0.5 * cos(2 * PI * i / n)
-                re += hann * x[from + i] * cos(w * i)
-                im -= hann * x[from + i] * sin(w * i)
+                re[i] = x[from + i] * (0.5 - 0.5 * cos(2 * PI * i / n))
+                im[i] = 0.0
             }
-            val power = re * re + im * im
-            weighted += hz * power
-            total += power
-            hz += 25.0
+            fft.forward(re, im)
+            var weighted = 0.0
+            var total = 0.0
+            for (k in 1 until n / 2) {
+                val hz = k.toDouble() * RATE / n
+                if (hz < 25 || hz > 8_000) continue
+                val power = re[k] * re[k] + im[k] * im[k]
+                weighted += hz * power
+                total += power
+            }
+            frames += weighted / total
+            weightedAll += weighted
+            totalAll += total
         }
-        return weighted / total
+        return Triple(weightedAll / totalAll, frames.min(), frames.max())
     }
 
     /**
@@ -294,20 +324,19 @@ class DroneCandidatesReport {
          * detector needs no upsampling ([AnalysisSettings.UPSAMPLE_BELOW_RATE]).
          */
         const val RATE = 32_000
-        const val SECONDS = 4.0
-        const val FADE_IN_SECONDS = 0.5
-        const val FADE_OUT_SECONDS = 1.2
+        const val SECONDS = 8.0
+        const val FADE_IN_SECONDS = 0.3
+        const val FADE_OUT_SECONDS = 1.5
 
-        /** Levels and colour are measured from here to just before the fade-out. */
-        const val HELD_FROM_SECONDS = 0.8
+        /** Pitch, level and colour are measured from here (the pad has swelled in) to just before the fade-out. */
+        const val HELD_FROM_SECONDS = 1.5
         const val MAX_PEAK = 0.8
 
-        /** The fifth and the octave under the root, by amplitude: −3 dB and −6 dB. */
-        const val FIFTH_GAIN = 0.7
-        const val OCTAVE_GAIN = 0.5
-
-        const val SCALE_START_SECONDS = 1.0
+        const val SCALE_START_SECONDS = 2.0
         const val NOTE_SECONDS = 0.5
+
+        /** The centroid's frames: 8192 samples, a quarter of a second at [RATE], bins 3.9 Hz apart. */
+        const val CENTROID_FRAME = 8_192
 
         /** How much louder ([loudness] while the scale plays) the guitar is than the drone in the scale files. */
         const val GUITAR_OVER_DRONE_DB = 6.0

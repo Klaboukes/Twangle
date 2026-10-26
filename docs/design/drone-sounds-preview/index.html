@@ -3,47 +3,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Twangle Drone Sounds</title>
 <!--
-TWANGLE PHASE 48, A DRONE UNDER THE SCALES, "HEAR THEM FIRST" (round 1, 2026-10-26). Four candidate sounds for the
+TWANGLE PHASE 48, A DRONE UNDER THE SCALES, "HEAR THEM FIRST", ROUND 2 (2026-10-26). Four candidate sounds for the
 drone the Scales tool will play under the scale's root. The owner listens on the phone's speaker and in headphones,
 picks the sound (or a choice of two), and says whether the fifth and the octave are offered.
-Sounds   - cello: the tuner's own bowed cello reference voice (StringVoices.CELLO) held, the bow never lifting: bow
-           noise through the body's four modes (100, 165, 205 Hz, 1.1 kHz), the level swaying up to +-6 %.
-         - organ: soft flue pipes drawn together, an 8' principal (partial k at 1/k^1.2) with a 4' octave (2nd
-           partial x1.5) and a 2' fifteenth (4th x1.4), rolled off above 2.5 kHz. Perfectly still.
-         - tanpura: rich partials (1/k^0.85, rolled off above 4.5 kHz) with two bumps of louder partials that sweep
-           slowly up and down them (3.4 s and 5.3 s periods), the jawari bridge's moving ring. The sweep changes
-           the colour only: the energy is held constant.
-         - shruti box: free reeds (1/k, even partials x0.6), a nasal hill near 1.3 kHz and a little body near
-           450 Hz, rolled off above 3.5 kHz; the bellows breathe (a few percent, more in the high partials, at
-           2.9 s and 1.13 s) with a breath of air noise around 2 kHz.
-         In a chord each voice gets its own sway, shimmer or breath (they don't move together).
-Notes    D3 = 146.83 Hz (A4 = 440). The fifth is a pure 3:2 (A3 = 220.25 Hz, 2 cents above the piano's A3) and the
-         octave 2:1, so the drone itself never beats; the fifth is 3 dB under the root, the octave 6 dB.
-Check    Root alone (D3), the app's own pitch detector, and the held part (0.8 s to 2.6 s):
-         sound        read at 1 s / 2 s   level swing (50 ms RMS)   energy above 400 Hz   centroid
-         cello        +0.12 / +0.12 cents   0.6 dB                   7 %                  466 Hz
-         organ        +0.04 / +0.04 cents   0.4 dB                  10 %                  515 Hz
-         tanpura      -0.01 / +0.01 cents   0.5 dB                  54 %                 1680 Hz
-         shruti box   +0.04 / +0.03 cents   1.0 dB                  15 %                  656 Hz
-         "Above 400 Hz" is a rough stand-in for a phone's small speaker, which plays little below 300-500 Hz: the
-         cello and the organ will sound much quieter and thinner on the speaker than in headphones; the tanpura
-         barely changes. At A2 the speaker plays even less of each.
-         Every drone file is equally loud by ITU-R BS.1770 K-weighting (the LUFS measure: -14.1 dB), peaks 0.29-0.80.
-         In the scale files the guitar is 6 dB louder than the drone, equally loud in all four (peaks 0.79-0.80).
-Files    <sound>-d3.wav            the root alone, D3
-         <sound>-d3-fifth.wav      D3 with its fifth, A3
-         <sound>-d3-fifth-octave.wav  D3, A3 and D4
-         <sound>-a2-fifth.wav      a fifth lower: A2 with E3
-         <sound>-with-scale.wav    D3 with its fifth under the D Dorian scale (D4 to D5 and back, half a second a
-                                   note) on the tuner's steel-guitar voice (StringSynth), the same guitar every time
-         4 s each (the scale files 11.2 s): a 0.5 s fade in and a 1.2 s fade out, starting and ending on exactly 0.
+History  Round 1 (the same day): the tuner's cello held, a soft organ, a steady tanpura-like hum and a shruti box. The
+         owner: "all 4 sounds are very similar". They were: steady stacks of harmonics with nearly the same slope
+         and only slight movement. Round 2 makes each a different kind of instrument, apart in brightness and in
+         how it moves.
+Sounds   - tanpura: re-plucked in its cycle, Pa (the fifth, below the root) - Sa - Sa - low Sa, a pluck every 1.5 s
+           (+-60 ms), each ringing for seconds under the next (decay 5 s at 100 Hz, 0.8 s at 2 kHz). The jawari
+           bridge's buzz blooms after each pluck: a 0.6-octave bump of partials up to 23x louder, rising over 0.12 s,
+           sinking from the 24th partial to the 8th and fading over 3 s. Each pluck freshly made, a little different
+           (strength +-1.5 dB, buzz +-15 %). Without the fifth all four strings are Sa; with the octave the third
+           string is the Sa above.
+         - harmonium: two reeds a note (musette), one 3 cents below, a softer one (0.8) 3.75 cents above, so their
+           level-weighted average is on pitch; bright (1/k^0.75), nasal hills at 1.25 kHz (+9 dB) and 2.6 kHz
+           (+5 dB); the bellows push in over 0.3 s and swell +-12 % every 2.4 s, brighter as they press, with air noise.
+         - flute organ: a stopped flute pipe (Gedackt), odd partials: 3rd -10 dB, 5th -20 dB, 7th -30 dB, even ones
+           -26 dB and below. Speaks over 0.15 s, then nothing moves.
+         - warm pad: five sawtooth voices at -13, -6, 0, +6, +13 cents (levels 0.25, 0.4, 1, 0.4, 0.25), through a
+           soft resonant low-pass whose corner sweeps 350 Hz - 2.4 kHz and back every 7 s; swells in over 1.5 s.
+         The steady three put the fifth above the root (3:2, -3 dB) and the octave above it (2:1, -6 dB).
+Check    Root alone (D3 = 146.83 Hz, A4 = 440), held part 1.5-6.3 s. Pitch by the app's own detector every 0.1 s
+         (octaves folded); level moves = loudest minus quietest 50 ms; centroid by quarter seconds:
+         sound        pitch avg   readings move   level moves   above 400 Hz   centroid   centroid moves
+         tanpura      +0.00 c     0.1 c           10.2 dB       57 %            987 Hz     490-1877 Hz
+         harmonium    -0.38 c     0.9 c            8.8 dB       43 %            726 Hz     371-1134 Hz
+         flute organ  +0.01 c     0.0 c            0.2 dB        4 %            180 Hz     180 Hz
+         warm pad     +0.01 c     4.3 c            5.1 dB       15 %            307 Hz     167-490 Hz
+         "Above 400 Hz" stands in for a phone's small speaker (it plays little below 300-500 Hz): the tanpura and the
+         harmonium carry well on it, the pad less, the flute organ hardly at all (in headphones it is fine).
+         Every drone file is equally loud by ITU-R BS.1770 K-weighting (the LUFS measure: -15.7 dB), peaks 0.30-0.80.
+         In the scale files the guitar is 6 dB louder than the drone, equally loud in all four (peaks 0.70-0.80).
+Files    <sound>-d3.wav               the root alone, D3
+         <sound>-d3-fifth.wav         D3 with its fifth
+         <sound>-d3-fifth-octave.wav  D3 with its fifth and octave
+         <sound>-a2-fifth.wav         a fifth lower: A2 with its fifth
+         <sound>-with-scale.wav       D3 with its fifth under the D Dorian scale (D4 to D5 and back, half a second a
+                                      note, from 2 s) on the tuner's steel-guitar voice (StringSynth), the same guitar
+         8 s each (the scale files 12.5 s): a 0.3 s fade in and a 1.5 s fade out, starting and ending on exactly 0.
          16-bit mono, 32 kHz (every partial is under 8 kHz, as in the app). Nothing loops: the players below have
          no loop and no autoplay.
 Made by  core/dsp/src/test/kotlin/io/github/klaboukes/twangle/core/dsp/drone/DroneCandidates.kt (the sounds) and
          DroneCandidatesReport.kt (the files and the figures), in the test sources only (not in the app). Make them
          again, byte for byte, with ./gradlew :core:dsp:benchmark --tests '*DroneCandidatesReport*'
-Phone    The same twenty files are in the Xiaomi's Music/Twangle-drones folder, to play from its own music or files
-         app on the speaker and in headphones.
+Phone    The same twenty files are in the Xiaomi's Music/Twangle-drones folder (round 1's removed), to play from its
+         own music or files app on the speaker and in headphones.
 -->
 <style>
 :root {
@@ -78,42 +83,17 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
 .how ul { padding-left: 20px; margin: 8px 0 0; }
 </style>
 <main>
-  <h1>Drone sounds</h1>
-  <p class="intro">Four candidates for the steady low note the Scales tool will play under a scale. Each plays the root (D)
-    alone, with its fifth, with its fifth and octave, a fifth lower, and under a scale on the guitar, then stops.
-    Listen on the phone's speaker and in headphones: which one (or which two) should the app have, and should the
-    fifth and the octave be offered?</p>
+  <h1>Drone sounds, round 2</h1>
+  <p class="intro">Four quite different sounds for the steady low note the Scales tool will play under a scale. Each
+    plays the root (D) alone, with its fifth, with its fifth and octave, a fifth lower, and under a scale on the
+    guitar, then stops. Listen on the phone's speaker and in headphones: which one (or which two) should the app
+    have, and should the fifth and the octave be offered?</p>
 
   <section class="sound">
-    <h2>Cello <small>the tuner's own cello voice</small></h2>
-    <p>A bowed cello holding its open D: warm and woody, with the bow's soft hiss and a gentle sway, as a player would.
-      Dark, so the phone's speaker plays little of it.</p>
-    <div class="players">
-      <div><label>Root alone (D)</label><audio controls preload="auto" src="cello-d3.wav"></audio></div>
-      <div><label>With the fifth</label><audio controls preload="auto" src="cello-d3-fifth.wav"></audio></div>
-      <div><label>With the fifth and octave</label><audio controls preload="auto" src="cello-d3-fifth-octave.wav"></audio></div>
-      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="cello-a2-fifth.wav"></audio></div>
-      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="cello-with-scale.wav"></audio></div>
-    </div>
-  </section>
-
-  <section class="sound">
-    <h2>Soft organ</h2>
-    <p>Quiet church-organ pipes: smooth, round and perfectly still. Nothing moves, so any out-of-tune note played
-      over it is easy to hear as a slow beat.</p>
-    <div class="players">
-      <div><label>Root alone (D)</label><audio controls preload="auto" src="organ-d3.wav"></audio></div>
-      <div><label>With the fifth</label><audio controls preload="auto" src="organ-d3-fifth.wav"></audio></div>
-      <div><label>With the fifth and octave</label><audio controls preload="auto" src="organ-d3-fifth-octave.wav"></audio></div>
-      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="organ-a2-fifth.wav"></audio></div>
-      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="organ-with-scale.wav"></audio></div>
-    </div>
-  </section>
-
-  <section class="sound">
-    <h2>Tanpura <small>an Indian drone</small></h2>
-    <p>A bright, buzzing hum whose overtones slowly sweep up and down, a shimmer that never quite repeats. The richest of
-      the four, and the one the phone's speaker plays best.</p>
+    <h2>Tanpura <small>plucked, buzzing</small></h2>
+    <p>The Indian drone instrument: four strings plucked one after another, over and over, each with a bright buzz that
+      blooms a moment after the pluck and slowly sinks. Lively and rhythmic, never the same twice. Its fifth is the
+      traditional one, below the root.</p>
     <div class="players">
       <div><label>Root alone (D)</label><audio controls preload="auto" src="tanpura-d3.wav"></audio></div>
       <div><label>With the fifth</label><audio controls preload="auto" src="tanpura-d3-fifth.wav"></audio></div>
@@ -124,26 +104,53 @@ p.intro { color: var(--muted); margin: 0 0 24px; }
   </section>
 
   <section class="sound">
-    <h2>Shruti box <small>a singer's drone</small></h2>
-    <p>A small hand-pumped reed box, like a harmonium: reedy and a little nasal, gently breathing with the bellows, with
-      a touch of air.</p>
+    <h2>Harmonium <small>reedy, breathing</small></h2>
+    <p>A hand-pumped reed box (a shruti box), as singers use: bright and nasal, two reeds a note that shimmer against
+      each other, and the bellows swelling in and out. Cuts through well on the phone's speaker.</p>
     <div class="players">
-      <div><label>Root alone (D)</label><audio controls preload="auto" src="shruti-box-d3.wav"></audio></div>
-      <div><label>With the fifth</label><audio controls preload="auto" src="shruti-box-d3-fifth.wav"></audio></div>
-      <div><label>With the fifth and octave</label><audio controls preload="auto" src="shruti-box-d3-fifth-octave.wav"></audio></div>
-      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="shruti-box-a2-fifth.wav"></audio></div>
-      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="shruti-box-with-scale.wav"></audio></div>
+      <div><label>Root alone (D)</label><audio controls preload="auto" src="harmonium-d3.wav"></audio></div>
+      <div><label>With the fifth</label><audio controls preload="auto" src="harmonium-d3-fifth.wav"></audio></div>
+      <div><label>With the fifth and octave</label><audio controls preload="auto" src="harmonium-d3-fifth-octave.wav"></audio></div>
+      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="harmonium-a2-fifth.wav"></audio></div>
+      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="harmonium-with-scale.wav"></audio></div>
+    </div>
+  </section>
+
+  <section class="sound">
+    <h2>Flute organ <small>pure, still</small></h2>
+    <p>One soft, hollow organ pipe, almost a pure tone: round and completely still, the calmest of the four. A note
+      played out of tune over it is easy to hear as a slow wobble. Very quiet on the phone's speaker, best in
+      headphones.</p>
+    <div class="players">
+      <div><label>Root alone (D)</label><audio controls preload="auto" src="flute-organ-d3.wav"></audio></div>
+      <div><label>With the fifth</label><audio controls preload="auto" src="flute-organ-d3-fifth.wav"></audio></div>
+      <div><label>With the fifth and octave</label><audio controls preload="auto" src="flute-organ-d3-fifth-octave.wav"></audio></div>
+      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="flute-organ-a2-fifth.wav"></audio></div>
+      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="flute-organ-with-scale.wav"></audio></div>
+    </div>
+  </section>
+
+  <section class="sound">
+    <h2>Warm pad <small>soft, wide, slowly opening</small></h2>
+    <p>A soft synthesizer pad: several voices a little apart, so it sounds wide and smooth, swelling in slowly and
+      opening and closing like a slow "wah" every few seconds.</p>
+    <div class="players">
+      <div><label>Root alone (D)</label><audio controls preload="auto" src="warm-pad-d3.wav"></audio></div>
+      <div><label>With the fifth</label><audio controls preload="auto" src="warm-pad-d3-fifth.wav"></audio></div>
+      <div><label>With the fifth and octave</label><audio controls preload="auto" src="warm-pad-d3-fifth-octave.wav"></audio></div>
+      <div><label>Lower (A with the fifth)</label><audio controls preload="auto" src="warm-pad-a2-fifth.wav"></audio></div>
+      <div class="wide"><label>Under a scale on the guitar</label><audio controls preload="auto" src="warm-pad-with-scale.wav"></audio></div>
     </div>
   </section>
 
   <div class="how">
     <p>All twenty are about equally loud by ear (in headphones). In the app the drone keeps sounding for as long as you
-      like; these samples are 4 seconds (the scale ones 11) and fade out.</p>
+      like; these samples are 8 seconds (the scale ones 12.5) and fade out.</p>
     <ul>
-      <li>All four are exactly in tune: the tuner's own pitch detector reads the root within 0.12 cents.</li>
+      <li>All four are in tune: on average the tuner's own pitch detector reads the root within 0.4 cents.</li>
       <li>The fifth is tuned pure (a hair, 2 cents, above a piano's), so the drone itself never wobbles.</li>
-      <li>On the phone's speaker the cello and the organ sound much quieter and thinner than in headphones: most of
-        their sound is too low for a small speaker. The tanpura hardly changes.</li>
+      <li>On the phone's speaker the flute organ almost disappears and the pad is softer: most of their sound is
+        too low for a small speaker. The tanpura and the harmonium carry well.</li>
       <li>The guitar is synthetic (the app's own reference tones), so judge the drone, not the guitar.</li>
     </ul>
   </div>
