@@ -2,7 +2,7 @@
 
 Finish every remaining ☐ item of phase N in this session. This session is the orchestrator: it does pre-flight (SKILL.md step 0), the announcements, progress notes and the final report. Each increment's real work runs in a fresh sub-agent, so code dumps and build logs never fill this session.
 
-1. **Check earlier phases first.** If a phase before N still has ☐ items (*Owner checks* don't count), name them in plain language. Ask whether to finish those first or start phase N anyway, and wait for the answer. Exception: Phase 23 (v1.0 on Play, the owner's Play Console steps) is listed after Phases 37 and 38, but its steps that don't need their results (developer account, Play Console forms) may be done any time.
+1. **Earlier phases don't stop phase N.** Start phase N even if a phase listed before it still has ☐ items, and don't ask about them (owner, 2026-10-26). Only if phase N truly depends on one of those items being built first (it uses code or a result that item makes), name that item in plain language and ask whether to do it first.
 2. **Announce the whole phase once.** List the remaining items in plain language, grouped into the planned increments, plus anything the owner must do along the way (e.g. "keep the phone connected for the last two").
 3. **For each increment, one after another:**
    - Post the SKILL.md step-2 announcement.
