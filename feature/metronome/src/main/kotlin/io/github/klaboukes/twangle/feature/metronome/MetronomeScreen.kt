@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +77,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
+import io.github.klaboukes.twangle.feature.metronome.components.SoundPanel
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
@@ -132,6 +134,7 @@ fun MetronomeScreen(
     val bpm by viewModel.bpm.collectAsStateWithLifecycle()
     val meter by viewModel.meter.collectAsStateWithLifecycle()
     val vibrate by viewModel.vibrate.collectAsStateWithLifecycle()
+    val sound by viewModel.sound.collectAsStateWithLifecycle()
     val playing by viewModel.isPlaying.collectAsStateWithLifecycle()
     val listen by viewModel.listen.collectAsStateWithLifecycle()
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
@@ -160,6 +163,8 @@ fun MetronomeScreen(
         meter = meter,
         playing = playing,
         vibrate = vibrate,
+        sound = sound,
+        onSoundPick = viewModel::previewSound,
         clock = clock,
         onBpmChange = { viewModel.setBpm(it, save = false) },
         onBpmChangeFinished = viewModel::saveBpm,
@@ -256,11 +261,14 @@ class BeatClock {
 }
 
 /**
- * The metronome's controls for [bpm], [meter], [playing] and [vibrate], stateless: the meter picker at
- * the top, the beat lights, Listen's status line, the tempo dial (as large as the screen leaves room
- * for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon buttons
- * with their names under them: Tap tempo, Listen and "Vibrate on the beat" (the owner's pick A,
- * 2026-10-18, docs/design/metronome-roomy-preview.html). Upright the beat lights stand right over the
+ * The metronome's controls for [bpm], [meter], [playing], [vibrate] and [sound], stateless: the meter
+ * picker at the top, the beat lights, Listen's status line, the tempo dial (as large as the screen
+ * leaves room for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon
+ * buttons with their names under them: Sound, Tap tempo and Listen (the owner's pick A, 2026-10-18,
+ * docs/design/metronome-roomy-preview.html; Sound since Phase 45, docs/design/metronome-sound-preview.html).
+ * Sound opens a panel over the screen with the four sounds ([onSoundPick]: while stopped one bar of
+ * the sound plays, while playing it is heard from the next beat) and "Vibrate on the beat"
+ * ([onVibrateChange]); Back or a tap beside it closes it. Upright the beat lights stand right over the
  * dial and grow with the height a tall screen has to spare (Phase 43). Upright they stand in one column; on a wide screen on
  * its side the dial is at the start and the rest in a column beside it. With a very large font the
  * column scrolls. Only the beat lights and the dial's glow move, and only while
@@ -285,6 +293,8 @@ fun MetronomeContent(
     onToggle: () -> Unit,
     onVibrateChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    sound: ClickSound = ClickSound.DEFAULT,
+    onSoundPick: (ClickSound) -> Unit = {},
     clock: BeatClock = remember { BeatClock() },
     listen: ListenUi = ListenUi(),
     heard: () -> HeardBeats? = { null },
@@ -318,6 +328,9 @@ fun MetronomeContent(
     }
     BackHandler(enabled = listen.phase == ListenPhase.FOUND, onBack = onNotNow)
     var listenBounds by remember { mutableStateOf<Rect?>(null) }
+    var soundBounds by remember { mutableStateOf<Rect?>(null) }
+    // Kept when the phone turns: the panel opens again in its place for the new layout.
+    var soundOpen by rememberSaveable { mutableStateOf(false) }
     var layerOrigin by remember { mutableStateOf(Offset.Zero) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -371,9 +384,11 @@ fun MetronomeContent(
                     listenEndedAtNanos = listen.endedAtNanos,
                     frameNanos = { clock.frameNanos },
                     onListen = onListen,
+                    sound = sound,
                     vibrate = vibrate,
-                    onVibrateChange = onVibrateChange,
+                    onSound = { soundOpen = true },
                     onListenPlaced = { listenBounds = it },
+                    onSoundPlaced = { soundBounds = it },
                 )
             }
             if (wide) {
@@ -439,14 +454,29 @@ fun MetronomeContent(
                     Spacer(Modifier.height(12.dp))
                 }
             }
-            // The suggestion floats on its own layer over the screen, pointing at Listen.
-            ListenBalloon(
-                listen = listen,
-                anchor = listenBounds?.translate(-layerOrigin),
-                onUse = use,
-                onNotNow = onNotNow,
-                modifier = Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() },
-            )
+            // The suggestion and the Sound panel float on their own layer over the screen, pointing at
+            // Listen and opening from Sound. The layer is always there, so its place is known before
+            // either shows (one that isn't showing has no place of its own).
+            Box(Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() }) {
+                ListenBalloon(
+                    listen = listen,
+                    anchor = listenBounds?.translate(-layerOrigin),
+                    onUse = use,
+                    onNotNow = onNotNow,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                SoundPanel(
+                    open = soundOpen,
+                    sound = sound,
+                    vibrate = vibrate,
+                    anchor = soundBounds?.translate(-layerOrigin),
+                    wide = wide,
+                    onPick = onSoundPick,
+                    onVibrateChange = onVibrateChange,
+                    onDismiss = { soundOpen = false },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
 }
@@ -573,13 +603,20 @@ object MetronomeTestTags {
     const val FASTER = "metronome_faster"
     const val TAP = "metronome_tap"
     const val START = "metronome_start"
-    const val VIBRATE = "metronome_vibrate"
     const val LISTEN = "metronome_listen"
+    const val SOUND = "metronome_sound"
 
-    /** The names under Tap tempo, Listen and Vibrate (hidden from TalkBack: the buttons say them). */
+    /** The two vibration marks beside Sound's icon while "Vibrate on the beat" is on. */
+    const val SOUND_VIBRATE_MARKS = "metronome_sound_vibrate_marks"
+
+    /** The Sound panel, and the "Vibrate on the beat" switch in it. */
+    const val SOUND_PANEL = "metronome_sound_panel"
+    const val VIBRATE = "metronome_vibrate"
+
+    /** The names under Sound, Tap tempo and Listen (hidden from TalkBack: the buttons say them). */
+    const val SOUND_LABEL = "metronome_sound_label"
     const val TAP_LABEL = "metronome_tap_label"
     const val LISTEN_LABEL = "metronome_listen_label"
-    const val VIBRATE_LABEL = "metronome_vibrate_label"
     const val LINE = "metronome_listen_line"
     const val LINE_ACTION = "metronome_listen_line_action"
     const val BALLOON = "metronome_listen_balloon"
@@ -589,6 +626,9 @@ object MetronomeTestTags {
 
     /** The suggestion's ½× 1× 2× chip for [pick], e.g. "metronome_listen_pick_double". */
     fun pick(pick: TempoPick): String = "metronome_listen_pick_" + pick.name.lowercase()
+
+    /** The Sound panel's row for [sound], e.g. "metronome_sound_cowbell". */
+    fun sound(sound: ClickSound): String = "metronome_sound_" + sound.name.lowercase()
 
     /** The meter picker's button for [meter], e.g. "metronome_meter_six_eight". */
     fun meter(meter: Meter): String = "metronome_meter_" + meter.name.lowercase()

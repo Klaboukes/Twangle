@@ -12,7 +12,13 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Trillen op de tel</string>
-    <string name="metronome_vibrate_label">Trillen</string>
+    <string name="metronome_sound">Geluid</string>
+    <string name="metronome_sound_wood_block">Woodblock</string>
+    <string name="metronome_sound_cowbell">Koebel</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Rimclick</string>
+    <string name="metronome_sound_spoken">Geluid: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Geluid: %1$s, trilt op de tel</string>
     <string name="metronome_meter_2_4_spoken">Tweekwartsmaat</string>
     <string name="metronome_meter_3_4_spoken">Driekwartsmaat</string>
     <string name="metronome_meter_4_4_spoken">Vierkwartsmaat</string>

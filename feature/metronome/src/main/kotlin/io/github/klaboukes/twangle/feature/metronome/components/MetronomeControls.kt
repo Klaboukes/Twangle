@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
@@ -92,6 +91,7 @@ import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -121,7 +121,7 @@ internal fun buttonLook(): ButtonLook {
 
 /** A see-through button's backing; [picked] ones in the container colour. */
 @Composable
-private fun faceFill(look: ButtonLook, picked: Boolean = false): Color {
+internal fun faceFill(look: ButtonLook, picked: Boolean = false): Color {
     val scheme = MaterialTheme.colorScheme
     return when {
         picked && look.neon -> scheme.primary.copy(alpha = 0.12f)
@@ -133,7 +133,7 @@ private fun faceFill(look: ButtonLook, picked: Boolean = false): Color {
 
 /** A see-through button's outline: muted, Futuristic's in the accent, [picked] ones 2 dp in the accent. */
 @Composable
-private fun faceOutline(look: ButtonLook, picked: Boolean = false): BorderStroke {
+internal fun faceOutline(look: ButtonLook, picked: Boolean = false): BorderStroke {
     val scheme = MaterialTheme.colorScheme
     return when {
         picked -> BorderStroke(2.dp, scheme.primary)
@@ -286,12 +286,13 @@ fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifie
 private const val STEP_ICON_SHARE = 0.5f
 
 /**
- * Tap tempo, Listen and "Vibrate on the beat" in one quiet row under the dial (2026-10-18, the
- * owner's pick A in docs/design/metronome-roomy-preview.html): three icon buttons of one fixed size,
- * [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart, each with its short name under it
- * (Phase 43: "Tap tempo", "Listen", "Vibrate"; one line, all three in one size, set smaller where a
- * language needs it, [rowLabelSize]). The buttons say their names to TalkBack, so the words under them
- * are hidden from it. Vibrate is a switch, picked (container fill, accent outline, accent icon) while on.
+ * Sound, Tap tempo and Listen in one quiet row under the dial (2026-10-18, the owner's pick A in
+ * docs/design/metronome-roomy-preview.html; Sound first since Phase 45, in Vibrate's place): three
+ * icon buttons of one fixed size, [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart,
+ * each with its short name under it ("Sound", "Tap tempo", "Listen"; one line, all three in one size,
+ * set smaller where a language needs it, [rowLabelSize]). The buttons say their names to TalkBack, so
+ * the words under them are hidden from it. Sound shows the click picked ([sound], with vibration marks
+ * while [vibrate] is on) and opens its panel ([onSound], [SoundPanel]).
  */
 @Composable
 fun TempoRow(
@@ -301,16 +302,19 @@ fun TempoRow(
     listenEndedAtNanos: Long,
     frameNanos: () -> Long,
     onListen: () -> Unit,
+    sound: ClickSound,
     vibrate: Boolean,
-    onVibrateChange: (Boolean) -> Unit,
+    onSound: () -> Unit,
     modifier: Modifier = Modifier,
     onListenPlaced: (Rect) -> Unit = {},
+    onSoundPlaced: (Rect) -> Unit = {},
 ) {
     val names = listOf(
+        // Always "Sound", whatever is picked, so the row never changes.
+        stringResource(R.string.metronome_sound),
         stringResource(R.string.metronome_tap),
         // Listen keeps its word while listening (its stop square and TalkBack say "Stop listening"), so nothing moves.
         stringResource(R.string.metronome_listen),
-        stringResource(R.string.metronome_vibrate_label),
     )
     val label = MaterialTheme.typography.labelMedium.let { it.copy(fontSize = rowLabelSize(names, it), textAlign = TextAlign.Center) }
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -319,8 +323,9 @@ fun TempoRow(
         for ((index, name) in names.withIndex()) {
             Column(Modifier.width(ROW_ITEM_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
                 when (index) {
-                    0 -> TapTempoButton(onTap, button)
-                    1 -> ListenButton(
+                    0 -> SoundButton(sound, vibrate, onSound, button.onGloballyPositioned { onSoundPlaced(it.boundsInRoot()) })
+                    1 -> TapTempoButton(onTap, button)
+                    else -> ListenButton(
                         listening = listening,
                         startedAtNanos = listenStartedAtNanos,
                         endedAtNanos = listenEndedAtNanos,
@@ -328,7 +333,6 @@ fun TempoRow(
                         onClick = onListen,
                         modifier = button.onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
                     )
-                    else -> VibrateButton(vibrate, onVibrateChange, button)
                 }
                 Spacer(Modifier.height(LABEL_GAP))
                 Text(
@@ -364,7 +368,7 @@ private fun rowLabelSize(names: List<String>, style: TextStyle): TextUnit {
     }
 }
 
-private val LABEL_TAGS = listOf(MetronomeTestTags.TAP_LABEL, MetronomeTestTags.LISTEN_LABEL, MetronomeTestTags.VIBRATE_LABEL)
+private val LABEL_TAGS = listOf(MetronomeTestTags.SOUND_LABEL, MetronomeTestTags.TAP_LABEL, MetronomeTestTags.LISTEN_LABEL)
 
 private val ICON_BUTTON_WIDTH = 72.dp
 private val ICON_BUTTON_HEIGHT = 52.dp
@@ -377,7 +381,7 @@ private val ROW_ITEM_WIDTH = ICON_BUTTON_WIDTH + ICON_ROW_GAP
 private val ROW_LABEL_WIDTH = ROW_ITEM_WIDTH - 4.dp
 private val ROW_LABEL_SMALLEST = 8.dp
 private val LABEL_GAP = 4.dp
-private val ROW_ICON = 24.dp
+internal val ROW_ICON = 24.dp
 
 /**
  * Tap tempo, a fingertip with two ripples. A tap counts the moment the finger touches (not when it
@@ -414,33 +418,6 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(R.drawable.ic_tap), contentDescription = null, modifier = Modifier.size(ROW_ICON))
-    }
-}
-
-/** "Vibrate on the beat", a switch: picked (container fill, accent outline, accent icon) while [checked]. */
-@Composable
-private fun VibrateButton(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
-    val look = buttonLook()
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    val label = stringResource(R.string.metronome_vibrate)
-    Box(
-        modifier = modifier
-            .testTag(MetronomeTestTags.VIBRATE)
-            .pressFeedback(source, look.shape, fill = faceFill(look, checked), outline = faceOutline(look, checked))
-            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
-                source.pressFlash()
-                onCheckedChange(it)
-            }
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            painterResource(R.drawable.ic_vibrate),
-            contentDescription = null,
-            tint = if (checked) scheme.primary else scheme.onSurface,
-            modifier = Modifier.size(ROW_ICON),
-        )
     }
 }
 

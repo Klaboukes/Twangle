@@ -14,7 +14,13 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Wibruj w rytm</string>
-    <string name="metronome_vibrate_label">Wibracja</string>
+    <string name="metronome_sound">Dźwięk</string>
+    <string name="metronome_sound_wood_block">Wood block</string>
+    <string name="metronome_sound_cowbell">Krowi dzwonek</string>
+    <string name="metronome_sound_claves">Klawesy</string>
+    <string name="metronome_sound_rim_click">Rimclick</string>
+    <string name="metronome_sound_spoken">Dźwięk: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Dźwięk: %1$s, wibruje w rytm</string>
     <string name="metronome_meter_2_4_spoken">Metrum dwie czwarte</string>
     <string name="metronome_meter_3_4_spoken">Metrum trzy czwarte</string>
     <string name="metronome_meter_4_4_spoken">Metrum cztery czwarte</string>

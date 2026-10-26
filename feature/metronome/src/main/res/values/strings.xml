@@ -15,8 +15,16 @@
     <string name="metronome_start">Start</string>
     <string name="metronome_stop">Stop</string>
     <string name="metronome_vibrate">Vibrate on the beat</string>
-    <!-- The short name under the Vibrate button; TalkBack says metronome_vibrate. -->
-    <string name="metronome_vibrate_label">Vibrate</string>
+    <!-- The Sound button, first under the dial: the word under it (always this, whatever is picked), and its panel's name. -->
+    <string name="metronome_sound">Sound</string>
+    <!-- The four click sounds, in the Sound panel: each instrument's common name. -->
+    <string name="metronome_sound_wood_block">Wood block</string>
+    <string name="metronome_sound_cowbell">Cowbell</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Rim click</string>
+    <!-- The Sound button for TalkBack: the sound picked, and whether it vibrates on the beat. -->
+    <string name="metronome_sound_spoken">Sound: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Sound: %1$s, vibrates on the beat</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
     <string name="metronome_meter_2_4_spoken">Two-four time</string>

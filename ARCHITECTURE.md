@@ -170,7 +170,8 @@ feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
     MetronomeScreen (+ MetronomeContent, BeatClock), MetronomeViewModel
     ListenPermission (rememberListenPermission)
     components/ TempoDial (with − / + in its corners), MetronomeControls (MeterPicker, StepButton, TempoRow with
-    Tap tempo and Listen, StartStopButton, VibrateSwitch), ListenParts (ListenLine, ListenBalloon)
+    Sound, Tap tempo and Listen, StartStopButton), SoundParts (SoundButton, SoundPanel with the vibrate switch),
+    ListenParts (ListenLine, ListenBalloon)
 
 feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolSwitch,

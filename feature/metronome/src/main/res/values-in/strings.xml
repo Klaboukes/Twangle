@@ -11,7 +11,13 @@
     <string name="metronome_start">Mulai</string>
     <string name="metronome_stop">Berhenti</string>
     <string name="metronome_vibrate">Bergetar mengikuti ketukan</string>
-    <string name="metronome_vibrate_label">Getar</string>
+    <string name="metronome_sound">Suara</string>
+    <string name="metronome_sound_wood_block">Wood block</string>
+    <string name="metronome_sound_cowbell">Cowbell</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Rim click</string>
+    <string name="metronome_sound_spoken">Suara: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Suara: %1$s, bergetar mengikuti ketukan</string>
     <string name="metronome_meter_2_4_spoken">Birama dua per empat</string>
     <string name="metronome_meter_3_4_spoken">Birama tiga per empat</string>
     <string name="metronome_meter_4_4_spoken">Birama empat per empat</string>

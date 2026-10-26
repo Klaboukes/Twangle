@@ -14,7 +14,13 @@
     <string name="metronome_start">Старт</string>
     <string name="metronome_stop">Стоп</string>
     <string name="metronome_vibrate">Вибрация в такт</string>
-    <string name="metronome_vibrate_label">Вибрация</string>
+    <string name="metronome_sound">Звук</string>
+    <string name="metronome_sound_wood_block">Вуд-блок</string>
+    <string name="metronome_sound_cowbell">Ковбелл</string>
+    <string name="metronome_sound_claves">Клавесы</string>
+    <string name="metronome_sound_rim_click">Кросс-стик</string>
+    <string name="metronome_sound_spoken">Звук: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Звук: %1$s, вибрация в такт</string>
     <string name="metronome_meter_2_4_spoken">Размер две четверти</string>
     <string name="metronome_meter_3_4_spoken">Размер три четверти</string>
     <string name="metronome_meter_4_4_spoken">Размер четыре четверти</string>

@@ -11,7 +11,13 @@
     <string name="metronome_start">开始</string>
     <string name="metronome_stop">停止</string>
     <string name="metronome_vibrate">随节拍振动</string>
-    <string name="metronome_vibrate_label">振动</string>
+    <string name="metronome_sound">音色</string>
+    <string name="metronome_sound_wood_block">木鱼</string>
+    <string name="metronome_sound_cowbell">牛铃</string>
+    <string name="metronome_sound_claves">响棒</string>
+    <string name="metronome_sound_rim_click">鼓边</string>
+    <string name="metronome_sound_spoken">音色：%1$s</string>
+    <string name="metronome_sound_spoken_vibrating">音色：%1$s，随节拍振动</string>
     <!-- 中文先读分母：2/4 拍读作“四二拍”。 -->
     <string name="metronome_meter_2_4_spoken">四二拍</string>
     <string name="metronome_meter_3_4_spoken">四三拍</string>

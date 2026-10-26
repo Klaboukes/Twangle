@@ -1,6 +1,8 @@
 package io.github.klaboukes.twangle.feature.metronome
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -9,6 +11,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -17,6 +21,7 @@ import androidx.compose.ui.unit.width
 import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
@@ -45,7 +50,9 @@ import org.junit.runners.Parameterized
  * every style): each style brings its own fonts and button shapes. Upright (a narrow phone at 1×, the
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
- * then wholly shown. Playing, in 7/8, so every mark size and Stop show. With the Practice
+ * then wholly shown. Playing, in 7/8, so every mark size and Stop show, with the cowbell picked and
+ * vibration on (its marks beside Sound's icon). The Sound panel opens from Sound, above the row
+ * upright and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
  * tab's tool switch over it (Phase 32, a stand-in with the same switch and English labels), as the
  * app shows it, and without, as the plain Metronome tab.
  *
@@ -69,6 +76,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownHeader = mutableStateOf(true)
     private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
     private val clock = BeatClock()
+    private var backDispatcher: OnBackPressedDispatcher? = null
 
     /** The phone's bars around the tab: the status bar, and on its side the navigation bar too. */
     private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
@@ -76,6 +84,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
+                backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
                     MetronomeContent(
                         bpm = 168,
@@ -89,6 +98,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         onMeterChange = {},
                         onToggle = {},
                         onVibrateChange = {},
+                        sound = ClickSound.COWBELL,
                         clock = clock,
                         listen = shownListen.value,
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
@@ -113,10 +123,10 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
             "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
             "start" to compose.onNodeWithTag(MetronomeTestTags.START),
-            "vibrate" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE),
+            "sound" to compose.onNodeWithTag(MetronomeTestTags.SOUND),
+            "sound's name" to compose.onNodeWithTag(MetronomeTestTags.SOUND_LABEL),
             "tap tempo's name" to compose.onNodeWithTag(MetronomeTestTags.TAP_LABEL),
             "listen's name" to compose.onNodeWithTag(MetronomeTestTags.LISTEN_LABEL),
-            "vibrate's name" to compose.onNodeWithTag(MetronomeTestTags.VIBRATE_LABEL),
         )
 
     @Test
@@ -296,6 +306,62 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         shownListen.value = ListenUi()
     }
 
+    @Test
+    fun theSoundPanelOpensFromSoundAndIsWhollyShown() {
+        show()
+        val cases = listOf(
+            Triple(PHONE_UPRIGHT, 1f, null),
+            Triple(XIAOMI_UPRIGHT, OWNER_FONT_SCALE, null),
+            Triple(PHONE_LANDSCAPE, 1f, null),
+            Triple(PHONE_UPRIGHT, 2f, null),
+            Triple(XIAOMI_UPRIGHT, 2f, null),
+            Triple(PHONE_LANDSCAPE, 2f, null),
+            Triple(PHONE_UPRIGHT, 2f, "nl"),
+            Triple(PHONE_LANDSCAPE, 2f, "nl"),
+        )
+        for ((index, case) in cases.withIndex()) {
+            val (size, scale, locale) = case
+            val dark = index % 2 == 1
+            shownSize.value = size
+            shownFontScale.value = scale
+            shownLocale.value = locale
+            shownDark.value = dark
+            compose.waitForIdle()
+            val name = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
+            compose.onNodeWithTag(MetronomeTestTags.SOUND).performScrollTo().performClick()
+            compose.waitForIdle()
+            val sound = compose.onNodeWithTag(MetronomeTestTags.SOUND).getBoundsInRoot()
+            val panel = compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertIsDisplayed().getBoundsInRoot()
+            val window = bars().safeArea(size)
+            assertTrue(
+                "$name panel $panel inside the window $window",
+                panel.left >= window.left - SLACK && panel.right <= window.right + SLACK && panel.top >= window.top - SLACK && panel.bottom <= window.bottom + SLACK,
+            )
+            if (size.width > size.height) {
+                // Beside Sound, towards the dial (at the start), its bottom level with the button where it can be.
+                assertTrue("$name panel $panel beside Sound $sound, towards the dial", panel.right <= sound.left + SLACK)
+                val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
+                assertTrue("$name panel $panel over the dial's half $dial", panel.left < dial.right)
+                if (panel.top > window.top + 8.dp + SLACK) assertEquals("$name panel's bottom level with Sound's", sound.bottom.value, panel.bottom.value, 1f)
+            } else {
+                // Above the row, its start edge in line with Sound's.
+                assertTrue("$name panel $panel above Sound $sound", panel.bottom <= sound.top + SLACK)
+                assertEquals("$name panel's start in line with Sound's", sound.left.value, panel.left.value, 1f)
+            }
+            for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
+            if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
+            // Back closes it.
+            compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+            compose.waitForIdle()
+            compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertDoesNotExist()
+        }
+        shownLocale.value = null
+        shownFontScale.value = 1f
+        shownSize.value = PHONE_UPRIGHT
+        shownDark.value = false
+    }
+
     /** The Practice tab's tool switch as it stands over the metronome: the same switch, two tools. */
     @androidx.compose.runtime.Composable
     private fun PracticeSwitchStandIn() {
@@ -367,9 +433,9 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         private val SLACK = 0.5.dp
 
         private val BUTTONS_AND_NAMES = listOf(
+            MetronomeTestTags.SOUND to MetronomeTestTags.SOUND_LABEL,
             MetronomeTestTags.TAP to MetronomeTestTags.TAP_LABEL,
             MetronomeTestTags.LISTEN to MetronomeTestTags.LISTEN_LABEL,
-            MetronomeTestTags.VIBRATE to MetronomeTestTags.VIBRATE_LABEL,
         )
     }
 }

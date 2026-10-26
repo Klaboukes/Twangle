@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The wood block: a block with wood grain, a stick striking its top edge, two impact marks, in the row icons' line style (1.8 dp round lines on a 24 dp grid); variant A3 of docs/design/metronome-sound-preview.html, drawn for Twangle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M4.5,11H19.5A2,2 0,0 1,21.5 13V18.5A2,2 0,0 1,19.5 20.5H4.5A2,2 0,0 1,2.5 18.5V13A2,2 0,0 1,4.5 11Z" />
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M5.5,14.4q3,-1.4 6,0t6.5,0M5.5,17.4q3,-1.4 6,0t6.5,0" />
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M11,8.6L20.5,2.4M7.4,8.6l-1.4,-1.4M9.2,6.4l-0.4,-1.8" />
+</vector>

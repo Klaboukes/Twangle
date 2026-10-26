@@ -11,7 +11,13 @@
     <string name="metronome_start">시작</string>
     <string name="metronome_stop">정지</string>
     <string name="metronome_vibrate">박자에 맞춰 진동</string>
-    <string name="metronome_vibrate_label">진동</string>
+    <string name="metronome_sound">소리</string>
+    <string name="metronome_sound_wood_block">우드블록</string>
+    <string name="metronome_sound_cowbell">카우벨</string>
+    <string name="metronome_sound_claves">클라베스</string>
+    <string name="metronome_sound_rim_click">크로스 스틱</string>
+    <string name="metronome_sound_spoken">소리: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">소리: %1$s, 박자에 맞춰 진동</string>
     <string name="metronome_meter_2_4_spoken">4분의 2박자</string>
     <string name="metronome_meter_3_4_spoken">4분의 3박자</string>
     <string name="metronome_meter_4_4_spoken">4분의 4박자</string>

@@ -17,7 +17,13 @@
     <string name="metronome_start">ابدأ</string>
     <string name="metronome_stop">أوقف</string>
     <string name="metronome_vibrate">اهتزاز مع النبضة</string>
-    <string name="metronome_vibrate_label">اهتزاز</string>
+    <string name="metronome_sound">الصوت</string>
+    <string name="metronome_sound_wood_block">بلوك خشبي</string>
+    <string name="metronome_sound_cowbell">جرس البقر</string>
+    <string name="metronome_sound_claves">كلافيس</string>
+    <string name="metronome_sound_rim_click">نقرة الحافة</string>
+    <string name="metronome_sound_spoken">الصوت: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">الصوت: %1$s، اهتزاز مع النبضة</string>
     <string name="metronome_meter_2_4_spoken">ميزان اثنان على أربعة</string>
     <string name="metronome_meter_3_4_spoken">ميزان ثلاثة على أربعة</string>
     <string name="metronome_meter_4_4_spoken">ميزان أربعة على أربعة</string>
