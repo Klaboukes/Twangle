@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.feature.practice
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeTool
@@ -63,6 +65,16 @@ object PracticeTestTags {
 
     /** The chord's name in words, small, in [NAME_PICKER] under the symbol ("C suspended second"); a scale has none (its name in words is the button's). */
     const val NAME_WORDS = "practice_name_words"
+
+    /** The drone button on Scales (Phase 48): its ▶ / ■ half, and its other half with the sound's icon, which opens the drone panel. */
+    const val DRONE_PLAY = "practice_drone_play"
+    const val DRONE_SOUND = "practice_drone_sound"
+
+    /** The drone panel, a sound in it (e.g. "practice_drone_sound_tanpura"), its notes (e.g. "practice_drone_notes_fifth") and the Lower switch. */
+    const val DRONE_PANEL = "practice_drone_panel"
+    fun droneSound(sound: DroneSound): String = "practice_drone_sound_" + sound.name.lowercase()
+    fun droneVoicing(voicing: DroneVoicing): String = "practice_drone_notes_" + voicing.name.lowercase()
+    const val DRONE_LOWER = "practice_drone_lower"
 
     /** The chord chart (one item for TalkBack). */
     const val CHART = "practice_chord_chart"

@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Klingt in %1$s</string>
     <string name="practice_capo_row_spoken">Griff %1$s, klingt als %2$s</string>
     <string name="practice_capo_open_chord">in Akkorde öffnen</string>
+    <string name="practice_drone">Bordun</string>
+    <string name="practice_drone_play">Bordun abspielen</string>
+    <string name="practice_drone_stop">Bordun stoppen</string>
+    <string name="practice_drone_sound_spoken">Bordunklang: %1$s</string>
+    <string name="practice_drone_sound">Klang</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Harmonium</string>
+    <string name="practice_drone_flute_organ">Flötenorgel</string>
+    <string name="practice_drone_warm_pad">Warmes Pad</string>
+    <string name="practice_drone_notes">Töne</string>
+    <string name="practice_drone_root">Grundton</string>
+    <string name="practice_drone_fifth">+ Quinte</string>
+    <string name="practice_drone_fifth_octave">+ Quinte und Oktave</string>
+    <string name="practice_drone_lower">Tiefer</string>
 </resources>

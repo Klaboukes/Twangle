@@ -12,6 +12,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -113,6 +115,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("the capo helper opens on C shapes", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("the capo helper opens with no capo", 0, settings.practiceCapoFret)
+        assertEquals("the drone is the tanpura with the fifth", DroneSound.TANPURA to DroneVoicing.FIFTH, settings.droneSound to settings.droneVoicing)
+        assertEquals("the drone isn't lower until asked", false, settings.droneLower)
     }
 
     @Test
@@ -146,6 +150,9 @@ class DataStoreSettingsRepositoryTest {
         repo.setPracticeScaleType(ScaleType.BLUES)
         repo.setPracticeCapoShapes(SongKey(PitchClass.A, minor = true))
         repo.setPracticeCapoFret(3)
+        repo.setDroneSound(DroneSound.WARM_PAD)
+        repo.setDroneVoicing(DroneVoicing.FIFTH_OCTAVE)
+        repo.setDroneLower(true)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -176,6 +183,9 @@ class DataStoreSettingsRepositoryTest {
             practiceScaleType = ScaleType.BLUES,
             practiceCapoShapes = SongKey(PitchClass.A, minor = true),
             practiceCapoFret = 3,
+            droneSound = DroneSound.WARM_PAD,
+            droneVoicing = DroneVoicing.FIFTH_OCTAVE,
+            droneLower = true,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -213,6 +223,9 @@ class DataStoreSettingsRepositoryTest {
             setPracticeTool(PracticeTool.CAPO)
             setPracticeCapoShapes(SongKey(PitchClass.G))
             setPracticeCapoFret(5)
+            setDroneSound(DroneSound.HARMONIUM)
+            setDroneVoicing(DroneVoicing.ROOT)
+            setDroneLower(true)
         }
         close()
 
@@ -236,6 +249,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the scale picked last is kept", ScaleType.MINOR_PENTATONIC, settings.practiceScaleType)
         assertEquals("the capo's shapes are kept", SongKey(PitchClass.G), settings.practiceCapoShapes)
         assertEquals("the capo's fret is kept", 5, settings.practiceCapoFret)
+        assertEquals("the drone's sound and notes are kept", DroneSound.HARMONIUM to DroneVoicing.ROOT, settings.droneSound to settings.droneVoicing)
+        assertEquals("the drone's Lower is kept", true, settings.droneLower)
     }
 
     @Test

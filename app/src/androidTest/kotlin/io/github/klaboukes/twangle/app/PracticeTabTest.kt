@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.app
 
 import android.Manifest
 import android.os.SystemClock
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -11,9 +12,12 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeTool
@@ -40,7 +44,8 @@ import org.junit.rules.Timeout
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
  * the Chords tool's chord picked is saved too and comes back with it, and so is the Scales tool's
  * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
- * tapped opens its shape in Chords.
+ * tapped opens its shape in Chords. The drone on Scales (Phase 48, a silent stand-in here) saves its panel's picks and
+ * stops when another tab takes Practice's place or the app goes to the background.
  */
 class PracticeTabTest {
 
@@ -54,9 +59,11 @@ class PracticeTabTest {
     private val container = ApplicationProvider.getApplicationContext<TwangleApplication>().container
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val drone = FakeDronePlayer()
 
     @Before
     fun setUp() {
+        container.testDronePlayer = drone
         runBlocking {
             // The tour would cover the tuner and the bar.
             container.settingsRepository.setTourSeen(true)
@@ -66,12 +73,19 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
             container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
             container.settingsRepository.setPracticeCapoFret(0)
+            container.settingsRepository.setDroneSound(DroneSound.TANPURA)
+            container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
+            container.settingsRepository.setDroneLower(false)
         }
     }
 
     @After
     fun tearDown() {
+        container.testDronePlayer = null
         runBlocking {
+            container.settingsRepository.setDroneSound(DroneSound.TANPURA)
+            container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
+            container.settingsRepository.setDroneLower(false)
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
@@ -252,6 +266,65 @@ class PracticeTabTest {
                 device.wait(Until.hasObject(By.res(PracticeTestTags.CAPO_FRET).desc(Pattern.compile(Pattern.quote(onFret(3)) + ".*"))), WAIT_MS),
             )
         }
+    }
+
+    @Test
+    fun theDroneSavesItsPicksAndStopsWhenScalesGoes() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            openPractice()
+            pickTool(PracticeTool.SCALES)
+            assertTrue("the drone button shows", shown(PracticeTestTags.DRONE_PLAY))
+            click(PracticeTestTags.DRONE_PLAY)
+            assertTrue("▶ plays", waitFor { drone.isPlaying.value })
+            assertEquals("C3, the tanpura with the fifth", 130.81f, drone.lastPlay!!.rootHz, 0.05f)
+
+            click(PracticeTestTags.DRONE_SOUND)
+            click(PracticeTestTags.droneSound(DroneSound.FLUTE_ORGAN))
+            click(PracticeTestTags.droneVoicing(DroneVoicing.ROOT))
+            click(PracticeTestTags.DRONE_LOWER)
+            device.pressBack()
+            assertTrue("Back closes the panel", gone(PracticeTestTags.DRONE_PANEL))
+            assertTrue("the picks are saved", waitFor { savedDrone() == Triple(DroneSound.FLUTE_ORGAN, DroneVoicing.ROOT, true) })
+            assertEquals("and heard", Triple(DroneSound.FLUTE_ORGAN, DroneVoicing.ROOT, true), drone.lastPlay!!.let { Triple(it.sound, it.voicing, it.lower) })
+
+            // Another tab stops it; back on Scales it stays still.
+            click(NavigationTestTags.tab(Destination.SETTINGS))
+            assertTrue(gone(PracticeTestTags.TOOL_BUTTON))
+            assertTrue("another tab stops the drone", waitFor { !drone.isPlaying.value })
+            val plays = drone.plays.size
+            click(NavigationTestTags.tab(Destination.METRONOME))
+            assertTrue("back on Scales", shown(PracticeTestTags.DRONE_PLAY))
+            assertEquals("still until a tap", plays, drone.plays.size)
+
+            // The app going to the background (the screen off) stops it too.
+            click(PracticeTestTags.DRONE_PLAY)
+            assertTrue(waitFor { drone.isPlaying.value })
+            scenario.moveToState(Lifecycle.State.CREATED)
+            assertTrue("the background stops the drone", waitFor { !drone.isPlaying.value })
+            scenario.moveToState(Lifecycle.State.RESUMED)
+        }
+        // A fresh start opens the panel on the picks saved.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            openPractice()
+            assertTrue(shown(PracticeTestTags.DRONE_SOUND))
+            click(PracticeTestTags.DRONE_SOUND)
+            assertTrue("the flute organ picked", device.wait(Until.findObject(By.res(PracticeTestTags.droneSound(DroneSound.FLUTE_ORGAN))), WAIT_MS).isChecked)
+            assertTrue("the root alone picked", checked(PracticeTestTags.droneVoicing(DroneVoicing.ROOT)))
+            assertTrue("Lower on", checked(PracticeTestTags.DRONE_LOWER))
+            device.pressBack()
+            assertTrue(gone(PracticeTestTags.DRONE_PANEL))
+            assertFalse("nothing plays by itself", drone.isPlaying.value)
+        }
+    }
+
+    private fun savedDrone(): Triple<DroneSound, DroneVoicing, Boolean> =
+        runBlocking { container.settingsRepository.settings.first().let { Triple(it.droneSound, it.droneVoicing, it.droneLower) } }
+
+    /** Waits up to [WAIT_MS] for [condition]. */
+    private fun waitFor(condition: () -> Boolean): Boolean {
+        val end = SystemClock.uptimeMillis() + WAIT_MS
+        while (!condition() && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+        return condition()
     }
 
     /** "Capo on fret 3", in the app's language. */

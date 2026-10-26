@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotSelected
@@ -30,7 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
+import io.github.klaboukes.twangle.core.audio.DronePlay
+import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -72,6 +77,8 @@ import org.junit.runners.Parameterized
  * hears the panel's grids as radio groups, the name as a heading and a list and the
  * neck in words, and it all fits: without scrolling upright and on its side at normal text, wholly
  * shown at 2× text, the panel too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
+ * The drone (Phase 48): its split button at the end of the name's row plays the root and follows it, stops when Scales
+ * goes and starts again only on a tap, and its panel's picks are heard and passed on to be saved.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -98,8 +105,11 @@ class ScalesScreenTest(private val style: VisualStyle) {
     private val shownScales = mutableStateOf(true)
     private val savedRoots = mutableListOf<PitchClass>()
     private val savedTypes = mutableListOf<ScaleType>()
+    private val drone = FakeDronePlayer()
+    private val shownA4 = mutableStateOf(440f)
+    private val savedDrones = mutableListOf<DroneChoice>()
 
-    private fun show(root: PitchClass = PitchClass.C, type: ScaleType = ScaleType.MAJOR) {
+    private fun show(root: PitchClass = PitchClass.C, type: ScaleType = ScaleType.MAJOR, droneChoice: DroneChoice = DroneChoice()) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
@@ -118,6 +128,10 @@ class ScalesScreenTest(private val style: VisualStyle) {
                         savedScaleType = type,
                         onScaleTypeChange = { savedTypes += it },
                         onPickInstrument = {},
+                        drone = drone,
+                        a4Hz = shownA4.value,
+                        savedDrone = droneChoice,
+                        onDroneChange = { savedDrones += it },
                     )
                 }
             }
@@ -377,6 +391,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val window = bars().safeArea(size)
             val tags = listOf(
                 PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER,
+                PracticeTestTags.DRONE_PLAY, PracticeTestTags.DRONE_SOUND,
             )
             for (tag in tags) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
@@ -395,6 +410,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
             assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
+            assertTheDroneButtonBesideTheName(case)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
@@ -403,8 +419,199 @@ class ScalesScreenTest(private val style: VisualStyle) {
                 assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
             }
             assertThePanel(case, wide = size == PHONE_LANDSCAPE)
+            assertTheDronePanel(case, wide = size == PHONE_LANDSCAPE)
         }
     }
+
+    /** The drone button at the end of the name's row: as tall as the name, after it, both halves of one size. */
+    private fun assertTheDroneButtonBesideTheName(case: String) {
+        val name = picker().getBoundsInRoot()
+        val play = node(PracticeTestTags.DRONE_PLAY).getBoundsInRoot()
+        val sound = node(PracticeTestTags.DRONE_SOUND).getBoundsInRoot()
+        assertEquals("$case the drone button as tall as the name", name.height.value, play.height.value, 0.5f)
+        assertEquals("$case both halves as tall", play.height.value, sound.height.value, 0.5f)
+        assertEquals("$case both halves as wide", play.width.value, sound.width.value, 0.5f)
+        assertEquals("$case level with the name", name.top.value, play.top.value, 0.5f)
+        assertTrue("$case after the name $name, $play, $sound", name.right <= play.left && play.right <= sound.left)
+    }
+
+    /**
+     * The drone panel, opened from the drone button: under it where it fits (where not [wide]); Sound with the four sounds,
+     * Notes with the three, then Lower, each wholly shown (with [texts], every text too); Back closes it.
+     */
+    private fun assertTheDronePanel(case: String, wide: Boolean, texts: Boolean = false) {
+        openDronePanel()
+        val rows = DroneSound.entries.map { PracticeTestTags.droneSound(it) } + DroneVoicing.entries.map { PracticeTestTags.droneVoicing(it) } +
+            PracticeTestTags.DRONE_LOWER
+        for (row in rows) assertWhollyShown(node(row), "$case $row")
+        fun top(tag: String) = node(tag).fetchSemanticsNode().positionInRoot.y
+        fun left(tag: String) = node(tag).fetchSemanticsNode().positionInRoot.x
+        val sounds = DroneSound.entries.map { top(PracticeTestTags.droneSound(it)) }
+        assertTrue("$case the sounds in their order, one under the other $sounds", sounds.zipWithNext().all { (a, b) -> b > a })
+        val firstNote = PracticeTestTags.droneVoicing(DroneVoicing.ROOT)
+        if (wide) {
+            assertTrue("$case on its side the notes beside the sounds", left(firstNote) > left(PracticeTestTags.droneSound(DroneSound.TANPURA)))
+        } else {
+            assertTrue("$case upright the notes under the sounds", top(firstNote) > sounds.last())
+            assertMenuUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.droneSound(DroneSound.TANPURA)), case)
+        }
+        assertTrue("$case Lower under the notes", top(PracticeTestTags.DRONE_LOWER) > top(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH_OCTAVE)))
+        if (texts) {
+            compose.assertEveryTextWhollyShown("$case drone panel:")
+            compose.assertNoWordBroken("$case drone panel:")
+        }
+        closeDronePanel()
+    }
+
+    private fun openDronePanel() {
+        node(PracticeTestTags.DRONE_SOUND).performClick()
+        compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.droneSound(DroneSound.TANPURA)) }
+    }
+
+    private fun closeDronePanel() {
+        Espresso.pressBack()
+        compose.waitUntil(WAIT_MS) { !exists(PracticeTestTags.droneSound(DroneSound.TANPURA)) }
+    }
+
+    private fun spoken(tag: String): String =
+        node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
+
+    private fun breathing(): Boolean =
+        node(PracticeTestTags.neckLie(lie())).fetchSemanticsNode().config.getOrElse(RootsBreathing) { false }
+
+    /**
+     * ▶ sounds the scale's root (D3 for D, the tanpura with the fifth by default) and turns into ■, the roots breathing;
+     * a new root follows at once (G3), a new scale on the same root changes nothing, a new A4 is followed too; ■ stops it,
+     * and while it is still nothing starts by itself. The button keeps its size, and shows ▶ again when the drone stopped
+     * by itself (a call). TalkBack hears "Play the drone" / "Stop the drone" and "Drone sound: Tanpura".
+     */
+    @Test
+    fun theDronePlaysTheRootAndFollowsIt() {
+        show(PitchClass.D, ScaleType.DORIAN)
+        compose.waitForIdle()
+        val button = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
+        val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
+        node(PracticeTestTags.DRONE_PLAY).assert(button).assert(hasContentDescription("Play the drone"))
+        node(PracticeTestTags.DRONE_SOUND).assert(list).assert(hasContentDescription("Drone sound: Tanpura"))
+        assertFalse("still at first", drone.isPlaying.value)
+        assertFalse("the roots still", breathing())
+        val still = node(PracticeTestTags.DRONE_PLAY).getBoundsInRoot()
+
+        node(PracticeTestTags.DRONE_PLAY).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(DronePlay(146.83f, DroneSound.TANPURA, DroneVoicing.FIFTH, lower = false)), drone.plays.map { it.rounded() })
+        node(PracticeTestTags.DRONE_PLAY).assert(hasContentDescription("Stop the drone"))
+        assertTrue("the roots breathe", breathing())
+        assertEquals("one steady size", still, node(PracticeTestTags.DRONE_PLAY).getBoundsInRoot())
+
+        pick(PracticeTestTags.root(PitchClass.G))
+        compose.waitForIdle()
+        assertEquals("a new root follows", 196f, drone.lastPlay!!.rootHz, 0.01f)
+        val plays = drone.plays.size
+        pick(PracticeTestTags.scale(ScaleType.MAJOR))
+        compose.waitForIdle()
+        assertEquals("a new scale on the same root changes nothing", plays, drone.plays.size)
+        shownA4.value = 432f
+        compose.waitForIdle()
+        assertEquals("a new A4 is followed", 192.43f, drone.lastPlay!!.rootHz, 0.01f)
+
+        node(PracticeTestTags.DRONE_PLAY).performClick()
+        compose.waitForIdle()
+        assertFalse("■ stops it", drone.isPlaying.value)
+        node(PracticeTestTags.DRONE_PLAY).assert(hasContentDescription("Play the drone"))
+        assertFalse("the roots still again", breathing())
+        val stopped = drone.plays.size
+        pick(PracticeTestTags.root(PitchClass.A))
+        compose.waitForIdle()
+        assertEquals("nothing starts by itself", stopped, drone.plays.size)
+
+        node(PracticeTestTags.DRONE_PLAY).performClick()
+        compose.waitForIdle()
+        assertEquals("A2 at 432", 108f, drone.lastPlay!!.rootHz, 0.01f)
+        drone.interrupt()
+        compose.waitForIdle()
+        node(PracticeTestTags.DRONE_PLAY).assert(hasContentDescription("Play the drone"))
+        assertFalse(breathing())
+    }
+
+    /** Scales going (another tool takes its place) stops the drone; back on Scales it stays still until a tap. */
+    @Test
+    fun theDroneStopsWhenScalesGoes() {
+        show(PitchClass.E, ScaleType.MINOR_PENTATONIC)
+        compose.waitForIdle()
+        node(PracticeTestTags.DRONE_PLAY).performClick()
+        compose.waitForIdle()
+        assertTrue(drone.isPlaying.value)
+        val stops = drone.stopCount
+        shownScales.value = false
+        compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
+        assertFalse("Chords has no drone button", exists(PracticeTestTags.DRONE_PLAY))
+        assertFalse("leaving Scales stops the drone", drone.isPlaying.value)
+        assertTrue("stopped, not just shown still", drone.stopCount > stops)
+        val plays = drone.plays.size
+        shownScales.value = true
+        compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.DRONE_PLAY) }
+        node(PracticeTestTags.DRONE_PLAY).assert(hasContentDescription("Play the drone"))
+        assertEquals("back on Scales it stays still", plays, drone.plays.size)
+        assertFalse(drone.isPlaying.value)
+    }
+
+    /**
+     * The panel opens on the saved choice, its sounds and notes radio groups and Lower a switch; each pick is heard at once
+     * while the drone sounds and passed on to be saved, the panel staying open for another; the button shows the sound.
+     */
+    @Test
+    fun theDronePanelPicksAreHeardAndSaved() {
+        show(PitchClass.C, ScaleType.MAJOR, DroneChoice(DroneSound.WARM_PAD, DroneVoicing.ROOT, lower = true))
+        compose.waitForIdle()
+        node(PracticeTestTags.DRONE_SOUND).assert(hasContentDescription("Drone sound: Warm pad"))
+        node(PracticeTestTags.DRONE_PLAY).performClick()
+        compose.waitForIdle()
+        assertEquals(DronePlay(130.81f, DroneSound.WARM_PAD, DroneVoicing.ROOT, lower = true), drone.lastPlay!!.rounded())
+
+        openDronePanel()
+        val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+        node(PracticeTestTags.droneSound(DroneSound.WARM_PAD)).assertIsSelected().assert(radio).assertTextEquals("Warm pad")
+        node(PracticeTestTags.droneSound(DroneSound.TANPURA)).assertIsNotSelected()
+        node(PracticeTestTags.droneVoicing(DroneVoicing.ROOT)).assertIsSelected().assert(radio).assertTextEquals("Root")
+        node(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH)).assertTextEquals("+ fifth")
+        node(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH_OCTAVE)).assertTextEquals("+ fifth and octave")
+        node(PracticeTestTags.DRONE_LOWER).assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.On))
+        for (sound in DroneSound.entries) {
+            node(PracticeTestTags.droneSound(sound)).assert(hasParent(hasContentDescription("Sound") and SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+        for (voicing in DroneVoicing.entries) {
+            node(PracticeTestTags.droneVoicing(voicing)).assert(hasParent(hasContentDescription("Notes") and SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
+        }
+
+        node(PracticeTestTags.droneSound(DroneSound.HARMONIUM)).performClick()
+        compose.waitForIdle()
+        assertTrue("the panel stays open", exists(PracticeTestTags.droneSound(DroneSound.TANPURA)))
+        node(PracticeTestTags.droneSound(DroneSound.HARMONIUM)).assertIsSelected()
+        assertEquals("heard at once", DronePlay(130.81f, DroneSound.HARMONIUM, DroneVoicing.ROOT, lower = true), drone.lastPlay!!.rounded())
+        node(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH_OCTAVE)).performClick()
+        node(PracticeTestTags.DRONE_LOWER).performClick()
+        compose.waitForIdle()
+        node(PracticeTestTags.DRONE_LOWER).assert(SemanticsMatcher.expectValue(SemanticsProperties.ToggleableState, ToggleableState.Off))
+        assertEquals(DronePlay(130.81f, DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, lower = false), drone.lastPlay!!.rounded())
+        // The one picked already changes nothing.
+        node(PracticeTestTags.droneSound(DroneSound.HARMONIUM)).performClick()
+        closeDronePanel()
+        assertEquals(
+            "the picks are passed on to be saved",
+            listOf(
+                DroneChoice(DroneSound.HARMONIUM, DroneVoicing.ROOT, lower = true),
+                DroneChoice(DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, lower = true),
+                DroneChoice(DroneSound.HARMONIUM, DroneVoicing.FIFTH_OCTAVE, lower = false),
+            ),
+            savedDrones,
+        )
+        node(PracticeTestTags.DRONE_SOUND).assert(hasContentDescription("Drone sound: Harmonium"))
+        assertTrue("still playing", drone.isPlaying.value)
+    }
+
+    /** [DronePlay] with its Hz to two decimals, as the tests write them. */
+    private fun DronePlay.rounded() = copy(rootHz = Math.round(rootHz * 100f) / 100f)
 
     /**
      * The panel under the name where it fits (where not [wide]): the roots in two rows of six, then the fourteen scales in one list,
@@ -467,14 +674,17 @@ class ScalesScreenTest(private val style: VisualStyle) {
             compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
             compose.assertNoWordBroken("$style nl $size at 2x:")
             assertThePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+            assertWhollyShown(node(PracticeTestTags.DRONE_PLAY), "$style nl $size the drone button at 2x")
+            assertWhollyShown(node(PracticeTestTags.DRONE_SOUND), "$style nl $size the drone's sound at 2x")
+            assertTheDronePanel("$style nl $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
         }
     }
 
     /**
-     * The name is one button as wide as the row (Phase 47) with the scale's full name in it, large on one line ("D Dorian",
-     * "G♯ minor pentatonic" on the Xiaomi), on two lines set smaller only where one doesn't fit (French "Sol♯ pentatonique
-     * mineure", Dutch "Sol♯ mineur-pentatonisch" at 2× text on a 320 dp phone and on its side), and one steady height whatever
-     * the name, so the neck never moves.
+     * The name is one button (Phase 47) that with the drone button after it (Phase 48) is as wide as the row, with the scale's
+     * full name in it, large on one line ("D Dorian" on the Xiaomi), on two lines set smaller only where one doesn't fit
+     * ("G♯ Phrygian dominant" beside the drone button, French "Sol♯ pentatonique mineure", Dutch "Sol♯ mineur-pentatonisch"
+     * at 2× text on a 320 dp phone and on its side), and one steady height whatever the name, so the neck never moves.
      */
     @Test
     fun theNameIsOneWideButtonOfOneSteadyHeight() {
@@ -499,17 +709,17 @@ class ScalesScreenTest(private val style: VisualStyle) {
                 assertEquals("$what one steady height", short.height.value, long.height.value, 0.5f)
                 assertEquals("$what the neck stays put", neckTop.value, neck().getBoundsInRoot().top.value, 0.5f)
                 val layout = nameLayout()
-                assertTrue("$what on one or two lines", layout.lineCount in 1..2)
-                if (case.fontScale == 1f) {
-                    assertEquals("$what on one line on the Xiaomi", 1, layout.lineCount)
-                    assertEquals("$what as large as D Dorian", dorian.letterWidth(), layout.letterWidth(), 0.5f)
-                } else if (layout.lineCount == 2) {
+                assertTrue("$what on one or two lines (three at 2x text)", layout.lineCount in 1..(if (case.fontScale > 1f) 3 else 2))
+                // Beside the drone button a long name is set smaller on the Xiaomi too, on one line or two, never larger.
+                assertTrue("$what no larger than D Dorian", layout.letterWidth() <= dorian.letterWidth() + 0.5f)
+                if (layout.lineCount == 2) {
                     assertTrue("$what set smaller on two lines: ${layout.letterWidth()} px an o, D Dorian ${dorian.letterWidth()}", layout.letterWidth() < dorian.letterWidth() - 0.5f)
                 }
                 if (case.size.width < case.size.height) {
                     val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
                     assertEquals("$what at the row's start", tool.left.value, long.left.value, 1f)
-                    assertTrue("$what as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
+                    val end = node(PracticeTestTags.DRONE_SOUND).getBoundsInRoot().right
+                    assertTrue("$what with the drone button as wide as the row ${long.left} to $end", end - long.left >= case.size.width - 32.dp - 1.dp)
                 }
                 assertWhollyShown(picker(), "$what the name")
                 compose.assertEveryTextWhollyShown(what)
@@ -535,13 +745,14 @@ class ScalesScreenTest(private val style: VisualStyle) {
                 shownSize.value = size
                 compose.waitForIdle()
                 assertThePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
+                assertTheDronePanel("$style $language $size at 2x:", wide = size == PHONE_LANDSCAPE, texts = true)
                 val height = picker().getBoundsInRoot().height
                 // The one shown first, so none is picked twice.
                 for (type in LONG_NAMES.sortedBy { it != shown }) {
                     if (type != shown) pick(PracticeTestTags.scale(type)).also { shown = type }
                     val what = "$style $language $size G♯ $type at 2x:"
                     assertEquals("$what one steady height", height.value, picker().getBoundsInRoot().height.value, 0.5f)
-                    assertTrue("$what on one or two lines", nameLayout().lineCount in 1..2)
+                    assertTrue("$what on one to three lines", nameLayout().lineCount in 1..3)
                     assertWhollyShown(picker(), "$what the name")
                     compose.assertEveryTextWhollyShown(what)
                     compose.assertNoWordBroken(what)

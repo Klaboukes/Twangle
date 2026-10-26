@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Brzmi w %1$s</string>
     <string name="practice_capo_row_spoken">Chwyt %1$s, brzmi jak %2$s</string>
     <string name="practice_capo_open_chord">otwórz w Akordach</string>
+    <string name="practice_drone">Burdon</string>
+    <string name="practice_drone_play">Graj burdon</string>
+    <string name="practice_drone_stop">Zatrzymaj burdon</string>
+    <string name="practice_drone_sound_spoken">Dźwięk burdonu: %1$s</string>
+    <string name="practice_drone_sound">Dźwięk</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Fisharmonia</string>
+    <string name="practice_drone_flute_organ">Organy fletowe</string>
+    <string name="practice_drone_warm_pad">Ciepły pad</string>
+    <string name="practice_drone_notes">Nuty</string>
+    <string name="practice_drone_root">Pryma</string>
+    <string name="practice_drone_fifth">+ kwinta</string>
+    <string name="practice_drone_fifth_octave">+ kwinta i oktawa</string>
+    <string name="practice_drone_lower">Niżej</string>
 </resources>

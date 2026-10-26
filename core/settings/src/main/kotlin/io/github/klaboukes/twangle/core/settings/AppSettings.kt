@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.core.settings
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -273,6 +275,12 @@ data class AppSettings(
     val practiceCapoShapes: SongKey = SongKey(PitchClass.C),
     /** The capo's fret picked last in the Capo helper, 0 (no capo) to [Capo.HIGHEST_FRET] (0 on a fresh install). */
     val practiceCapoFret: Int = 0,
+    /** The drone's sound under the Scales tool (Phase 48): the tanpura until another is picked. */
+    val droneSound: DroneSound = DroneSound.TANPURA,
+    /** The drone's notes: the root with its fifth until another is picked. */
+    val droneVoicing: DroneVoicing = DroneVoicing.FIFTH,
+    /** The whole drone an octave lower (off until the player turns it on). */
+    val droneLower: Boolean = false,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

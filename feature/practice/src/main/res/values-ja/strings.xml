@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">%1$s で鳴る</string>
     <string name="practice_capo_row_spoken">%1$s の押さえ方、鳴るのは %2$s</string>
     <string name="practice_capo_open_chord">コードで開く</string>
+    <string name="practice_drone">ドローン</string>
+    <string name="practice_drone_play">ドローンを再生</string>
+    <string name="practice_drone_stop">ドローンを停止</string>
+    <string name="practice_drone_sound_spoken">ドローンの音色：%1$s</string>
+    <string name="practice_drone_sound">音色</string>
+    <string name="practice_drone_tanpura">タンプーラ</string>
+    <string name="practice_drone_harmonium">ハルモニウム</string>
+    <string name="practice_drone_flute_organ">フルートオルガン</string>
+    <string name="practice_drone_warm_pad">ウォームパッド</string>
+    <string name="practice_drone_notes">構成音</string>
+    <string name="practice_drone_root">ルート</string>
+    <string name="practice_drone_fifth">+ 5度</string>
+    <string name="practice_drone_fifth_octave">+ 5度とオクターブ</string>
+    <string name="practice_drone_lower">オクターブ下</string>
 </resources>

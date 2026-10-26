@@ -1,5 +1,11 @@
 package io.github.klaboukes.twangle.feature.practice
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -57,7 +63,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
+import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
@@ -65,6 +74,7 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShape
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
 import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
@@ -102,6 +112,13 @@ import kotlinx.coroutines.withContext
  * TalkBack hears the name button as a heading and a list, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
  * polite live region, so a new shape or chord is said when it shows, and so is a scale's name (not
  * the whole neck: it is long).
+ *
+ * On Scales with a [drone] player (Phase 48) the name shares its row with the drone button ([DroneButton]): play
+ * sounds the scale's root ([droneRootHz], following [a4Hz]) as [savedDrone] says, stop stops it; the drone follows a
+ * new root at once (a crossfade) and stops when Scales goes (another tool, another tab, the app or the screen off),
+ * starting again only on a tap. While it sounds the roots on the neck breathe softly and the screen stays on. Its
+ * panel's picks are passed to [onDroneChange] to be saved; upright the panel drops under the button, on its side it
+ * opens over the start half, as the name's.
  */
 @Composable
 fun ChordsScreen(
@@ -119,6 +136,10 @@ fun ChordsScreen(
     savedScaleType: ScaleType = ScaleType.MAJOR,
     onScaleTypeChange: (ScaleType) -> Unit = {},
     onPickInstrument: (() -> Unit)? = null,
+    drone: DronePlayer? = null,
+    a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
+    savedDrone: DroneChoice = DroneChoice(),
+    onDroneChange: (DroneChoice) -> Unit = {},
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -130,6 +151,35 @@ fun ChordsScreen(
     val count = found?.shapes?.size ?: 0
     val shown = index.coerceIn(0, (count - 1).coerceAtLeast(0))
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
+
+    // The drone: only on Scales, and only while it shows.
+    val droning = scales && drone != null
+    var droneChoice by rememberSaveable(stateSaver = DroneChoice.Saver) { mutableStateOf(savedDrone) }
+    var dronePanelOpen by remember { mutableStateOf(false) }
+    val dronePlaying = if (drone != null) drone.isPlaying.collectAsStateWithLifecycle().value else false
+    if (droning && drone != null) {
+        StopDroneWhenHidden(drone)
+        // A new root (or choice) while it sounds crossfades to it; while it is still, nothing starts.
+        LaunchedEffect(drone, root, droneChoice, a4Hz) {
+            if (drone.isPlaying.value) drone.play(droneRootHz(root, a4Hz), droneChoice.sound, droneChoice.voicing, droneChoice.lower)
+        }
+        if (dronePlaying) KeepScreenOnWhileDroning()
+    }
+    val dronePanel = @Composable { wide: Boolean, width: Dp ->
+        DronePanel(
+            expanded = dronePanelOpen,
+            onDismiss = { dronePanelOpen = false },
+            wide = wide,
+            width = width,
+            choice = droneChoice,
+            onChoiceChange = { picked ->
+                if (picked != droneChoice) {
+                    droneChoice = picked
+                    onDroneChange(picked)
+                }
+            },
+        )
+    }
 
     val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
     var panelOpen by remember { mutableStateOf(false) }
@@ -177,11 +227,35 @@ fun ChordsScreen(
             notation = notation,
             onClick = { panelOpen = true },
             panel = if (wide) { _ -> } else panel,
+            endWidth = DRONE_BUTTON_WIDTH,
+            end = if (droning && drone != null) {
+                { height, rowWidth ->
+                    Box {
+                        DroneButton(
+                            playing = dronePlaying,
+                            sound = droneChoice.sound,
+                            height = height,
+                            onPlayStop = {
+                                if (dronePlaying) {
+                                    drone.stop()
+                                } else {
+                                    drone.play(droneRootHz(root, a4Hz), droneChoice.sound, droneChoice.voicing, droneChoice.lower)
+                                }
+                            },
+                            onOpenPanel = { dronePanelOpen = true },
+                        )
+                        // Upright the panel drops under the button; on its side it opens over the start half.
+                        if (!wide) dronePanel(false, rowWidth)
+                    }
+                }
+            } else {
+                null
+            },
         )
     }
     val fill = @Composable {
         if (scales) {
-            NeckArea(scale, tuning, notation, Modifier.fillMaxSize())
+            NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying)
         } else {
             ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
         }
@@ -203,8 +277,11 @@ fun ChordsScreen(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // The panel's place: from the top of the start half down.
-                    BoxWithConstraints(Modifier.fillMaxWidth()) { panel(maxWidth) }
+                    // The panels' place: from the top of the start half down.
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        panel(maxWidth)
+                        if (droning) dronePanel(true, maxWidth)
+                    }
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
                     Spacer(Modifier.height(8.dp))
@@ -254,7 +331,7 @@ fun ChordsScreen(
  * words ([spokenScale]), string by string.
  */
 @Composable
-private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier) {
+private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier, breathing: Boolean = false) {
     val speech = rememberNoteNameSpeech()
     val words = rememberScaleWords()
     val notes = remember(scale, tuning) { ScaleFinder.notesOf(scale, tuning) }
@@ -267,9 +344,30 @@ private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier:
             .semantics { contentDescription = spoken },
         contentAlignment = Alignment.Center,
     ) {
-        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize())
+        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize(), halo = if (breathing) rememberBreath() else null)
     }
 }
+
+/**
+ * How opaque the roots' ring is while the drone sounds: slowly in and out, once every [BREATH_MILLIS] (calm, as the
+ * mock-up's); held halfway with Android's animations off.
+ */
+@Composable
+private fun rememberBreath(): () -> Float {
+    if (rememberAnimationsOff()) return { BREATH_STILL }
+    val breath = rememberInfiniteTransition(label = "droneBreath").animateFloat(
+        initialValue = BREATH_LOW,
+        targetValue = BREATH_HIGH,
+        animationSpec = infiniteRepeatable(tween(BREATH_MILLIS / 2, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "droneBreath",
+    )
+    return { breath.value }
+}
+
+private const val BREATH_MILLIS = 3_000
+private const val BREATH_LOW = 0.2f
+private const val BREATH_HIGH = 0.75f
+private const val BREATH_STILL = 0.5f
 
 /** Shapes of [chord] on [tuning], found off the main thread; [shapes] easiest first. */
 private class FoundShapes(val chord: Chord, val tuning: Tuning, val shapes: List<ChordShape>)

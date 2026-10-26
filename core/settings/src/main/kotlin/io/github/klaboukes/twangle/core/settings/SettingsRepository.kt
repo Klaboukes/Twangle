@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.core.settings
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -137,4 +139,13 @@ interface SettingsRepository {
 
     /** The capo's fret picked last in the Capo helper, kept within 0..[Capo.HIGHEST_FRET] ([AppSettings.practiceCapoFret]). */
     suspend fun setPracticeCapoFret(fret: Int)
+
+    /** The drone's sound under the Scales tool ([AppSettings.droneSound]). */
+    suspend fun setDroneSound(sound: DroneSound)
+
+    /** The drone's notes ([AppSettings.droneVoicing]). */
+    suspend fun setDroneVoicing(voicing: DroneVoicing)
+
+    /** The drone an octave lower or not ([AppSettings.droneLower]). */
+    suspend fun setDroneLower(lower: Boolean)
 }

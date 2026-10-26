@@ -16,6 +16,8 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -256,6 +258,18 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[PRACTICE_CAPO_FRET] = fret.coerceIn(0, Capo.HIGHEST_FRET) }
     }
 
+    override suspend fun setDroneSound(sound: DroneSound) {
+        dataStore.edit { it[DRONE_SOUND] = sound.name }
+    }
+
+    override suspend fun setDroneVoicing(voicing: DroneVoicing) {
+        dataStore.edit { it[DRONE_VOICING] = voicing.name }
+    }
+
+    override suspend fun setDroneLower(lower: Boolean) {
+        dataStore.edit { it[DRONE_LOWER] = lower }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -299,6 +313,9 @@ class DataStoreSettingsRepository internal constructor(
             practiceCapoShapes = enumOrNull<PitchClass>(prefs[PRACTICE_CAPO_SHAPES])
                 ?.let { SongKey(it, prefs[PRACTICE_CAPO_MINOR] ?: false) } ?: defaults.practiceCapoShapes,
             practiceCapoFret = prefs[PRACTICE_CAPO_FRET]?.takeIf { it in 0..Capo.HIGHEST_FRET } ?: defaults.practiceCapoFret,
+            droneSound = enumOrNull<DroneSound>(prefs[DRONE_SOUND]) ?: defaults.droneSound,
+            droneVoicing = enumOrNull<DroneVoicing>(prefs[DRONE_VOICING]) ?: defaults.droneVoicing,
+            droneLower = prefs[DRONE_LOWER] ?: defaults.droneLower,
         )
     }
 
@@ -370,6 +387,11 @@ class DataStoreSettingsRepository internal constructor(
         private val PRACTICE_CAPO_SHAPES = stringPreferencesKey("practice_capo_shapes")
         private val PRACTICE_CAPO_MINOR = booleanPreferencesKey("practice_capo_minor")
         private val PRACTICE_CAPO_FRET = intPreferencesKey("practice_capo_fret")
+
+        /** The drone under the Scales tool: its [DroneSound] and [DroneVoicing] by their names, and whether it sounds an octave lower. */
+        private val DRONE_SOUND = stringPreferencesKey("drone_sound")
+        private val DRONE_VOICING = stringPreferencesKey("drone_voicing")
+        private val DRONE_LOWER = booleanPreferencesKey("drone_lower")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

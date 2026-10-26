@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Suona in %1$s</string>
     <string name="practice_capo_row_spoken">Diteggiatura di %1$s, suona %2$s</string>
     <string name="practice_capo_open_chord">apri in Accordi</string>
+    <string name="practice_drone">Bordone</string>
+    <string name="practice_drone_play">Suona il bordone</string>
+    <string name="practice_drone_stop">Ferma il bordone</string>
+    <string name="practice_drone_sound_spoken">Suono del bordone: %1$s</string>
+    <string name="practice_drone_sound">Suono</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Armonium</string>
+    <string name="practice_drone_flute_organ">Organo a flauto</string>
+    <string name="practice_drone_warm_pad">Pad caldo</string>
+    <string name="practice_drone_notes">Note</string>
+    <string name="practice_drone_root">Fondamentale</string>
+    <string name="practice_drone_fifth">+ quinta</string>
+    <string name="practice_drone_fifth_octave">+ quinta e ottava</string>
+    <string name="practice_drone_lower">Più grave</string>
 </resources>

@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Soa em %1$s</string>
     <string name="practice_capo_row_spoken">Posição de %1$s, soa %2$s</string>
     <string name="practice_capo_open_chord">abrir em Acordes</string>
+    <string name="practice_drone">Bordão</string>
+    <string name="practice_drone_play">Tocar o bordão</string>
+    <string name="practice_drone_stop">Parar o bordão</string>
+    <string name="practice_drone_sound_spoken">Som do bordão: %1$s</string>
+    <string name="practice_drone_sound">Som</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Harmônio</string>
+    <string name="practice_drone_flute_organ">Órgão de flauta</string>
+    <string name="practice_drone_warm_pad">Pad quente</string>
+    <string name="practice_drone_notes">Notas</string>
+    <string name="practice_drone_root">Tônica</string>
+    <string name="practice_drone_fifth">+ quinta</string>
+    <string name="practice_drone_fifth_octave">+ quinta e oitava</string>
+    <string name="practice_drone_lower">Mais grave</string>
 </resources>

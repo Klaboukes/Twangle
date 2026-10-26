@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">听起来是 %1$s</string>
     <string name="practice_capo_row_spoken">%1$s 指法，发声为 %2$s</string>
     <string name="practice_capo_open_chord">在和弦中打开</string>
+    <string name="practice_drone">持续音</string>
+    <string name="practice_drone_play">播放持续音</string>
+    <string name="practice_drone_stop">停止持续音</string>
+    <string name="practice_drone_sound_spoken">持续音音色：%1$s</string>
+    <string name="practice_drone_sound">音色</string>
+    <string name="practice_drone_tanpura">坦普拉琴</string>
+    <string name="practice_drone_harmonium">簧风琴</string>
+    <string name="practice_drone_flute_organ">笛管风琴</string>
+    <string name="practice_drone_warm_pad">温暖音垫</string>
+    <string name="practice_drone_notes">音符</string>
+    <string name="practice_drone_root">根音</string>
+    <string name="practice_drone_fifth">+ 五度</string>
+    <string name="practice_drone_fifth_octave">+ 五度和八度</string>
+    <string name="practice_drone_lower">低八度</string>
 </resources>

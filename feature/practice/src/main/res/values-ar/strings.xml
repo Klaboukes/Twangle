@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">يُسمَع في %1$s</string>
     <string name="practice_capo_row_spoken">شكل %1$s، يُسمَع %2$s</string>
     <string name="practice_capo_open_chord">افتح في الكوردات</string>
+    <string name="practice_drone">النغمة المستمرة</string>
+    <string name="practice_drone_play">تشغيل النغمة المستمرة</string>
+    <string name="practice_drone_stop">إيقاف النغمة المستمرة</string>
+    <string name="practice_drone_sound_spoken">صوت النغمة المستمرة: %1$s</string>
+    <string name="practice_drone_sound">الصوت</string>
+    <string name="practice_drone_tanpura">تانبورا</string>
+    <string name="practice_drone_harmonium">هارمونيوم</string>
+    <string name="practice_drone_flute_organ">أرغن الفلوت</string>
+    <string name="practice_drone_warm_pad">باد دافئ</string>
+    <string name="practice_drone_notes">النغمات</string>
+    <string name="practice_drone_root">النغمة الأساسية</string>
+    <string name="practice_drone_fifth">+ الخامسة</string>
+    <string name="practice_drone_fifth_octave">+ الخامسة والأوكتاف</string>
+    <string name="practice_drone_lower">أخفض</string>
 </resources>

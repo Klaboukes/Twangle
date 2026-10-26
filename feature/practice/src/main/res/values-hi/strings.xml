@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">%1$s में बजता है</string>
     <string name="practice_capo_row_spoken">%1$s आकार, बजता है %2$s</string>
     <string name="practice_capo_open_chord">कॉर्ड में खोलें</string>
+    <string name="practice_drone">ड्रोन</string>
+    <string name="practice_drone_play">ड्रोन बजाएँ</string>
+    <string name="practice_drone_stop">ड्रोन रोकें</string>
+    <string name="practice_drone_sound_spoken">ड्रोन की ध्वनि: %1$s</string>
+    <string name="practice_drone_sound">ध्वनि</string>
+    <string name="practice_drone_tanpura">तानपुरा</string>
+    <string name="practice_drone_harmonium">हारमोनियम</string>
+    <string name="practice_drone_flute_organ">फ़्लूट ऑर्गन</string>
+    <string name="practice_drone_warm_pad">वार्म पैड</string>
+    <string name="practice_drone_notes">स्वर</string>
+    <string name="practice_drone_root">मूल स्वर</string>
+    <string name="practice_drone_fifth">+ पंचम</string>
+    <string name="practice_drone_fifth_octave">+ पंचम और सप्तक</string>
+    <string name="practice_drone_lower">नीचे</string>
 </resources>

@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Klinkt in %1$s</string>
     <string name="practice_capo_row_spoken">Greep %1$s, klinkt als %2$s</string>
     <string name="practice_capo_open_chord">openen in Akkoorden</string>
+    <string name="practice_drone">Bourdon</string>
+    <string name="practice_drone_play">Bourdon afspelen</string>
+    <string name="practice_drone_stop">Bourdon stoppen</string>
+    <string name="practice_drone_sound_spoken">Bourdongeluid: %1$s</string>
+    <string name="practice_drone_sound">Geluid</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Harmonium</string>
+    <string name="practice_drone_flute_organ">Fluitorgel</string>
+    <string name="practice_drone_warm_pad">Warme pad</string>
+    <string name="practice_drone_notes">Noten</string>
+    <string name="practice_drone_root">Grondtoon</string>
+    <string name="practice_drone_fifth">+ kwint</string>
+    <string name="practice_drone_fifth_octave">+ kwint en octaaf</string>
+    <string name="practice_drone_lower">Lager</string>
 </resources>

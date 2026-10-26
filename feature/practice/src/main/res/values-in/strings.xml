@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Berbunyi dalam %1$s</string>
     <string name="practice_capo_row_spoken">Bentuk %1$s, berbunyi %2$s</string>
     <string name="practice_capo_open_chord">buka di Akor</string>
+    <string name="practice_drone">Drone</string>
+    <string name="practice_drone_play">Putar drone</string>
+    <string name="practice_drone_stop">Hentikan drone</string>
+    <string name="practice_drone_sound_spoken">Suara drone: %1$s</string>
+    <string name="practice_drone_sound">Suara</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Harmonium</string>
+    <string name="practice_drone_flute_organ">Organ seruling</string>
+    <string name="practice_drone_warm_pad">Pad hangat</string>
+    <string name="practice_drone_notes">Nada</string>
+    <string name="practice_drone_root">Nada dasar</string>
+    <string name="practice_drone_fifth">+ kuint</string>
+    <string name="practice_drone_fifth_octave">+ kuint dan oktaf</string>
+    <string name="practice_drone_lower">Lebih rendah</string>
 </resources>

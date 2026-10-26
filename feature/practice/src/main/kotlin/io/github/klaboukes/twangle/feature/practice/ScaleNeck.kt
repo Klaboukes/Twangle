@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -54,9 +55,19 @@ internal enum class NeckLie {
  * fits, up to [MAX_UNIT] dp a unit, its lettering in proportion (not scaled again by the font
  * setting). Always drawn with the thickest string at the bottom or on the left, in right-to-left
  * languages too, as charts are. It draws only; the Chords tool gives it its words for TalkBack.
+ *
+ * With [halo] (while the drone sounds, Phase 48) each root's dot has a soft accent ring around it, as opaque as
+ * [halo] says, read while drawing only, so its slow breathing redraws without composing or measuring again.
  */
 @Composable
-internal fun ScaleNeck(scale: Scale, strings: Int, notes: List<FretNote>, notation: Notation, modifier: Modifier = Modifier) {
+internal fun ScaleNeck(
+    scale: Scale,
+    strings: Int,
+    notes: List<FretNote>,
+    notation: Notation,
+    modifier: Modifier = Modifier,
+    halo: (() -> Float)? = null,
+) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val geometry = NeckGeometry(strings)
         val lie = geometry.lieFor(maxWidth.value, maxHeight.value)
@@ -64,8 +75,9 @@ internal fun ScaleNeck(scale: Scale, strings: Int, notes: List<FretNote>, notati
         Box(
             Modifier
                 .testTag(PracticeTestTags.neckLie(lie))
+                .semantics { rootsBreathing = halo != null }
                 .size((geometry.width(lie) * unit).dp, (geometry.height(lie) * unit).dp)
-                .neckDrawing(rememberNeckPaint(scale, notes, notation), geometry, lie),
+                .neckDrawing(rememberNeckPaint(scale, notes, notation), geometry, lie, halo),
         )
     }
 }
@@ -168,7 +180,7 @@ private fun rememberNeckPaint(scale: Scale, notes: List<FretNote>, notation: Not
     )
 }
 
-private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie): Modifier {
+private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie, halo: (() -> Float)?): Modifier {
     val notes = paint.notes
     val root = paint.root
     val colour = paint.colour
@@ -221,10 +233,12 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
             drawLine(ink, at(g.fretLine(0), thickest - NUT_OVERHANG), at(g.fretLine(0), thinnest + NUT_OVERHANG), NUT_WIDTH * u, StrokeCap.Round)
             numberLayouts.forEach { (fret, layout) -> centred(layout, at(g.fretMiddle(fret), NeckGeometry.LABEL_MIDDLE)) }
             val radius = NeckGeometry.DOT_RADIUS * u
+            val ring = halo?.invoke() ?: 0f
             for (note in notes) {
                 val pc = note.note.pitchClass
                 val middle = at(g.fretMiddle(note.fret), g.stringLine(note.string))
                 if (note.isRoot) {
+                    if (ring > 0f) drawCircle(accent.copy(alpha = ring), radius + HALO_GAP * u, middle, style = Stroke(HALO_STROKE * u))
                     drawCircle(accent, radius, middle)
                 } else if (pc == colour) {
                     // The colour note: a soft accent ring, a little wider than the others' outline.
@@ -251,4 +265,8 @@ private const val HOLLOW_STROKE = 1.2f
 private const val COLOUR_STROKE = 2.2f
 private const val COLOUR_RING_ALPHA = 0.9f
 private const val FRET_ALPHA = 0.6f
+
+/** The breathing ring round a root while the drone sounds: this far out from the dot, this wide, in units (clear of the next fret's dot). */
+private const val HALO_GAP = 2.4f
+private const val HALO_STROKE = 1.8f
 private const val FIELD_ALPHA = 0.72f

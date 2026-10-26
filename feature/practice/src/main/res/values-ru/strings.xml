@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">Звучит в %1$s</string>
     <string name="practice_capo_row_spoken">Аппликатура %1$s, звучит %2$s</string>
     <string name="practice_capo_open_chord">открыть в Аккордах</string>
+    <string name="practice_drone">Бурдон</string>
+    <string name="practice_drone_play">Включить бурдон</string>
+    <string name="practice_drone_stop">Остановить бурдон</string>
+    <string name="practice_drone_sound_spoken">Звук бурдона: %1$s</string>
+    <string name="practice_drone_sound">Звук</string>
+    <string name="practice_drone_tanpura">Танпура</string>
+    <string name="practice_drone_harmonium">Фисгармония</string>
+    <string name="practice_drone_flute_organ">Флейтовый орган</string>
+    <string name="practice_drone_warm_pad">Тёплый пэд</string>
+    <string name="practice_drone_notes">Ноты</string>
+    <string name="practice_drone_root">Тоника</string>
+    <string name="practice_drone_fifth">+ квинта</string>
+    <string name="practice_drone_fifth_octave">+ квинта и октава</string>
+    <string name="practice_drone_lower">Ниже</string>
 </resources>

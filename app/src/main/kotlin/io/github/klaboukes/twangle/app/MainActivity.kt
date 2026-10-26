@@ -62,6 +62,7 @@ import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
+import io.github.klaboukes.twangle.feature.practice.DroneChoice
 import io.github.klaboukes.twangle.feature.practice.PracticeToolButton
 import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
 import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
@@ -334,6 +335,8 @@ class MainActivity : AppCompatActivity() {
      * dropped, so Chords opens afresh on that chord (saved too, as if picked there). The instrument
      * button in Chords and the capo helper opens the instrument and tuning panel over the tool
      * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
+     * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
+     * drone itself when it goes.
      */
     @Composable
     private fun PracticeTab(
@@ -399,6 +402,18 @@ class MainActivity : AppCompatActivity() {
                     savedScaleType = settings.practiceScaleType,
                     onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                     onPickInstrument = openPanel,
+                    drone = container.dronePlayer,
+                    a4Hz = settings.a4Hz,
+                    savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
+                    onDroneChange = { picked ->
+                        lifecycleScope.launch {
+                            with(container.settingsRepository) {
+                                setDroneSound(picked.sound)
+                                setDroneVoicing(picked.voicing)
+                                setDroneLower(picked.lower)
+                            }
+                        }
+                    },
                 )
                 PracticeTool.CAPO -> CapoScreen(
                     tuningName = practiceTuningName(settings),

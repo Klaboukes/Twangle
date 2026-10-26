@@ -117,4 +117,24 @@
     <string name="practice_capo_row_spoken">%1$s shape, sounds %2$s</string>
     <!-- TalkBack, what a tap on a row does: it opens the shape in the Chords tool ("Double-tap to open in Chords"). -->
     <string name="practice_capo_open_chord">open in Chords</string>
+    <!-- The drone under Scales (Phase 48), a steady low note on the scale's root: TalkBack's name for its panel. -->
+    <string name="practice_drone">Drone</string>
+    <!-- TalkBack, the ▶ / ■ half of the drone button. -->
+    <string name="practice_drone_play">Play the drone</string>
+    <string name="practice_drone_stop">Stop the drone</string>
+    <!-- TalkBack, the drone button's other half, which opens the drone panel: %1$s the sound picked ("Drone sound: Tanpura"). -->
+    <string name="practice_drone_sound_spoken">Drone sound: %1$s</string>
+    <!-- The drone panel: the sound's section, then its four sounds in this order (the instruments' common names). -->
+    <string name="practice_drone_sound">Sound</string>
+    <string name="practice_drone_tanpura">Tanpura</string>
+    <string name="practice_drone_harmonium">Harmonium</string>
+    <string name="practice_drone_flute_organ">Flute organ</string>
+    <string name="practice_drone_warm_pad">Warm pad</string>
+    <!-- The drone panel: which notes sound: the scale's root alone, with its fifth, with its fifth and the octave above. -->
+    <string name="practice_drone_notes">Notes</string>
+    <string name="practice_drone_root">Root</string>
+    <string name="practice_drone_fifth">+ fifth</string>
+    <string name="practice_drone_fifth_octave">+ fifth and octave</string>
+    <!-- The drone panel's switch: the whole drone an octave lower. -->
+    <string name="practice_drone_lower">Lower</string>
 </resources>

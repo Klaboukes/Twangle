@@ -86,4 +86,18 @@
     <string name="practice_capo_sounds_in">%1$s(으)로 소리 남</string>
     <string name="practice_capo_row_spoken">%1$s 운지, 소리는 %2$s</string>
     <string name="practice_capo_open_chord">코드에서 열기</string>
+    <string name="practice_drone">드론</string>
+    <string name="practice_drone_play">드론 재생</string>
+    <string name="practice_drone_stop">드론 정지</string>
+    <string name="practice_drone_sound_spoken">드론 소리: %1$s</string>
+    <string name="practice_drone_sound">소리</string>
+    <string name="practice_drone_tanpura">탄푸라</string>
+    <string name="practice_drone_harmonium">하모니움</string>
+    <string name="practice_drone_flute_organ">플루트 오르간</string>
+    <string name="practice_drone_warm_pad">따뜻한 패드</string>
+    <string name="practice_drone_notes">음</string>
+    <string name="practice_drone_root">근음</string>
+    <string name="practice_drone_fifth">+ 5도</string>
+    <string name="practice_drone_fifth_octave">+ 5도와 옥타브</string>
+    <string name="practice_drone_lower">한 옥타브 아래</string>
 </resources>
