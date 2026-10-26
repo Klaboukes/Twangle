@@ -76,7 +76,7 @@ object IntonationInstruments {
 
     /**
      * The scale length the millimetres assume on [instrument], or null where it varies too much for
-     * millimetres to be right (basses 760–890 mm, ukuleles 330–480 mm, mandolins about 350 mm but with a
+     * millimetres to be right (basses 760–890 mm, ukuleles 330–510 mm, the baritone included, mandolins about 350 mm but with a
      * bridge moved whole): those get the direction only.
      */
     fun scaleLengthMm(instrument: Instrument): Float? = if (instrument.id in guitars) SaddleMove.GUITAR_SCALE_MM else null

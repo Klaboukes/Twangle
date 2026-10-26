@@ -66,8 +66,9 @@ class LowPitchRangeTest {
     @Test
     fun `every string of every low instrument reads its own note within 1 cent, even a semitone flat`() {
         val lowInstruments = Instruments.all.filter { PitchRange.forLowestNote(mapper.frequencyOf(it.lowestNote)) == PitchRange.LOW }
+        // The six-string guitar is here for Open C (C2); its other presets keep the standard window.
         assertEquals(
-            listOf("guitar_7", "guitar_8", "bass_4", "bass_5", "cello"),
+            listOf("guitar", "guitar_7", "guitar_8", "bass_4", "bass_5", "cello"),
             lowInstruments.map { it.id },
         )
         for (instrument in lowInstruments) {
@@ -151,7 +152,7 @@ class LowPitchRangeTest {
     fun `only tunings below what the standard window reads get the low range`() {
         for (a4 in listOf(NoteMapper.MIN_A4_HZ, 440f, NoteMapper.MAX_A4_HZ)) {
             val mapper = NoteMapper(a4)
-            for (tuning in Tunings.all) {
+            for (tuning in Tunings.all - Tunings.OPEN_C) {
                 assertEquals("${tuning.id} at A4 = $a4", PitchRange.STANDARD, PitchRange.forLowestNote(mapper.frequencyOf(tuning.lowestNote)))
             }
             for (instrument in listOf(Instruments.UKULELE, Instruments.VIOLIN, Instruments.VIOLA, Instruments.MANDOLIN)) {
@@ -165,12 +166,13 @@ class LowPitchRangeTest {
                 }
             }
         }
-        // The cello's C2 (65.4 Hz) is a semitone flat at 61.7 Hz, just out of the standard range;
-        // tuned to A4 = 466 Hz it sits high enough for the standard window.
-        val cello = Instruments.CELLO.defaultTuning.lowestNote
-        assertEquals(PitchRange.LOW, PitchRange.forLowestNote(NoteMapper(415f).frequencyOf(cello)))
-        assertEquals(PitchRange.LOW, PitchRange.forLowestNote(NoteMapper(440f).frequencyOf(cello)))
-        assertEquals(PitchRange.STANDARD, PitchRange.forLowestNote(NoteMapper(466f).frequencyOf(cello)))
+        // The cello's C2 (65.4 Hz), and Open C's on the guitar, is a semitone flat at 61.7 Hz, just out
+        // of the standard range; tuned to A4 = 466 Hz it sits high enough for the standard window.
+        for (c2 in listOf(Instruments.CELLO.defaultTuning.lowestNote, Tunings.OPEN_C.lowestNote)) {
+            assertEquals(PitchRange.LOW, PitchRange.forLowestNote(NoteMapper(415f).frequencyOf(c2)))
+            assertEquals(PitchRange.LOW, PitchRange.forLowestNote(NoteMapper(440f).frequencyOf(c2)))
+            assertEquals(PitchRange.STANDARD, PitchRange.forLowestNote(NoteMapper(466f).frequencyOf(c2)))
+        }
         // The edge: a string whose semitone-flat pitch drops under 62 Hz.
         assertEquals(PitchRange.STANDARD, PitchRange.forLowestNote(66f))
         assertEquals(PitchRange.LOW, PitchRange.forLowestNote(65f))

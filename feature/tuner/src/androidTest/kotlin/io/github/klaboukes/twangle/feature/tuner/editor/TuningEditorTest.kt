@@ -160,7 +160,7 @@ class TuningEditorTest {
 
     @Test
     fun aNameAlreadyUsedIsRefusedWhateverTheCaseOrSpaces() {
-        val mine = CustomTuning("custom_1", "Open C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
+        val mine = CustomTuning("custom_1", "Slide C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
         show(settings = AppSettings(customTunings = listOf(mine)))
         val taken = string(R.string.tuning_editor_name_taken)
         // A preset's name, typed in full: no message while typing.
@@ -169,7 +169,7 @@ class TuningEditorTest {
         save.performClick()
         compose.onNodeWithText(taken).assertIsDisplayed()
         // One of the player's own, in other letters and spaces.
-        name.performTextReplacement("  open   c")
+        name.performTextReplacement("  slide   c")
         compose.onNodeWithText(taken).assertDoesNotExist()
         save.performClick()
         compose.onNodeWithText(taken).assertIsDisplayed()
@@ -190,10 +190,11 @@ class TuningEditorTest {
 
     @Test
     fun editingStartsFromTheTuningAndKeepsItsOwnName() {
-        val mine = CustomTuning("custom_1", "Open C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
+        // Not "Open C": that is the guitar's preset's name since Phase 51, which a tuning of the player's can't take.
+        val mine = CustomTuning("custom_1", "Slide C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
         show(settings = AppSettings(customTunings = listOf(mine)), editingId = mine.id)
         compose.onNodeWithText(string(R.string.tuning_editor_title_edit)).assert(isHeading())
-        name.assert(hasText("Open C"))
+        name.assert(hasText("Slide C"))
         val lowE = spokenString("E", 2)
         noteOf(lowE, "C 2").assertIsDisplayed()
         raise(lowE).performClick()
@@ -201,7 +202,7 @@ class TuningEditorTest {
         compose.waitForIdle()
         val saved = repository.current.customTunings.single()
         assertEquals(mine.id, saved.id)
-        assertEquals("Open C", saved.name)
+        assertEquals("Slide C", saved.name)
         assertEquals(37, saved.notes.first().midi)
         assertEquals(1, closed)
     }
@@ -248,10 +249,10 @@ class TuningEditorTest {
 
     @Test
     fun closingWithoutEditsDoesNotAsk() {
-        val mine = CustomTuning("custom_1", "Open C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
+        val mine = CustomTuning("custom_1", "Slide C", Instruments.GUITAR, listOf(36, 43, 48, 55, 60, 64).map(::Note))
         show(settings = AppSettings(customTunings = listOf(mine)), editingId = mine.id)
         // Spaces alone change nothing that would be saved.
-        name.performTextReplacement(" Open C ")
+        name.performTextReplacement(" Slide C ")
         close.performClick()
         discardDialog.assertDoesNotExist()
         assertEquals(1, closed)

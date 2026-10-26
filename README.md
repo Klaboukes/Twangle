@@ -19,8 +19,8 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 ### Tuner
 - **Strings mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
 - **Hear the note:** hold a string to hear it as a plucked string, so you can also tune by ear. The tone follows your A4 setting and fades out by itself.
-- **Instruments:** guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (standard or low G), violin, viola, cello and mandolin.
-- **Guitar tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D and Open E.
+- **Instruments:** guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (standard, low G or baritone), violin, viola, cello and mandolin.
+- **Guitar tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D, Open E and Open C.
 - **Your own tunings:** make, edit and delete tunings of your own for any instrument, unison strings included.
 - **Chromatic mode:** tunes any note, for any instrument.
 - **A4 calibration:** set the reference pitch anywhere from 415 to 466 Hz, e.g. 442 Hz to match an orchestra.

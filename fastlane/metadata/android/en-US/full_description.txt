@@ -3,8 +3,8 @@ Twangle is a guitar tuner that is simple to use and precise to a single cent. Pl
 No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
 
 TUNE ANY INSTRUMENT
-• Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele, violin, viola, cello and mandolin
-• Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D and Open E
+• Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (baritone too), violin, viola, cello and mandolin
+• Guitar tunings: Standard, Drop D, half step down, full step down, DADGAD, Open G, Open D, Open E and Open C
 • Make your own tunings for any instrument
 • Chromatic tuner for any other instrument or your voice
 • Hold a string to hear its note and tune by ear

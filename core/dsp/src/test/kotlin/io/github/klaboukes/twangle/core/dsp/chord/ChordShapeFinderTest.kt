@@ -132,6 +132,19 @@ class ChordShapeFinderTest {
     }
 
     @Test
+    fun `baritone ukulele shapes are the guitar's top four strings`() {
+        val baritone = Instruments.UKULELE.tuningById("ukulele_baritone")!!
+        assertEquals("0003", first(G, MAJOR, baritone).toString())
+        assertEquals("2010", first(C, MAJOR, baritone).toString())
+        assertEquals("0232", first(D, MAJOR, baritone).toString())
+        assertEquals("2210", first(A, MINOR, baritone).toString())
+        assertEquals("2000", first(E, MINOR, baritone).toString())
+        for (shape in ChordShapeFinder.shapesOf(Chord.of(D, MAJOR), baritone)) {
+            assertTrue("$shape mutes a string", (0 until 4).none(shape::isMuted))
+        }
+    }
+
+    @Test
     fun `mandolin G is 0023`() {
         assertEquals("0023", first(G, MAJOR, Instruments.MANDOLIN.defaultTuning).toString())
     }
@@ -154,8 +167,10 @@ class ChordShapeFinderTest {
         assertEquals("000000", first(G, MAJOR, Tunings.OPEN_G).toString())
         assertEquals("555555", first(C, MAJOR, Tunings.OPEN_G).toString())
         assertEquals("000000", first(D, MAJOR, Tunings.OPEN_D).toString())
-        // The player's own tuning: open C.
-        assertEquals("000000", first(C, MAJOR, tuningOf("my_open_c", "C2 G2 C3 G3 C4 E4")).toString())
+        assertEquals("000000", first(C, MAJOR, Tunings.OPEN_C).toString())
+        assertEquals("555555", first(F, MAJOR, Tunings.OPEN_C).toString())
+        // The player's own tuning: open A.
+        assertEquals("000000", first(A, MAJOR, tuningOf("my_open_a", "E2 A2 E3 A3 C#4 E4")).toString())
     }
 
     @Test

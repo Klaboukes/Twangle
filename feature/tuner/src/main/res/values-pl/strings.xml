@@ -27,7 +27,9 @@
     <string name="tuning_open_g">Open G</string>
     <string name="tuning_open_d">Open D</string>
     <string name="tuning_open_e">Open E</string>
+    <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
+    <string name="tuning_baritone">Barytonowy</string>
 
     <string name="instrument_guitar">Gitara</string>
     <string name="instrument_guitar_7">Gitara 7-strunowa</string>

@@ -3,8 +3,8 @@ Twangle adalah tuner gitar yang mudah digunakan dan akurat hingga satu sen. Peti
 Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Twangle bahkan tidak punya izin untuk memakai internet: suara dari mikrofon Anda dianalisis langsung di ponsel dan tidak pernah direkam atau dikirim ke mana pun.
 
 STEM INSTRUMEN APA PUN
-• Gitar (6, 7, atau 8 senar), bass (4 atau 5 senar), ukulele, biola, viola, selo, dan mandolin
-• Stem gitar: Standar, Drop D, turun setengah nada, turun satu nada, DADGAD, Open G, Open D, dan Open E
+• Gitar (6, 7, atau 8 senar), bass (4 atau 5 senar), ukulele (juga bariton), biola, viola, selo, dan mandolin
+• Stem gitar: Standar, Drop D, turun setengah nada, turun satu nada, DADGAD, Open G, Open D, Open E, dan Open C
 • Buat stem sendiri untuk instrumen apa pun
 • Tuner kromatik untuk instrumen lain atau suara Anda
 • Tahan satu senar di layar untuk mendengar nadanya dan menyetem dengan telinga

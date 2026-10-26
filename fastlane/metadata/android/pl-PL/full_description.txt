@@ -3,8 +3,8 @@ Twangle to stroik do gitary, prosty w obsłudze i dokładny co do centa. Zagraj 
 Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Twangle nie ma nawet uprawnienia do korzystania z internetu: dźwięk z mikrofonu jest analizowany na bieżąco w telefonie i nigdy nie jest nagrywany ani nigdzie wysyłany.
 
 NASTRÓJ KAŻDY INSTRUMENT
-• Gitara (6, 7 lub 8 strun), bas (4 lub 5 strun), ukulele, skrzypce, altówka, wiolonczela i mandolina
-• Stroje gitarowe: standardowy, Drop D, pół tonu niżej, cały ton niżej, DADGAD, Open G, Open D i Open E
+• Gitara (6, 7 lub 8 strun), bas (4 lub 5 strun), ukulele (także barytonowe), skrzypce, altówka, wiolonczela i mandolina
+• Stroje gitarowe: standardowy, Drop D, pół tonu niżej, cały ton niżej, DADGAD, Open G, Open D, Open E i Open C
 • Własne stroje dla każdego instrumentu
 • Stroik chromatyczny do każdego innego instrumentu lub głosu
 • Przytrzymaj strunę na ekranie, by usłyszeć jej dźwięk i stroić ze słuchu

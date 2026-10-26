@@ -3,8 +3,8 @@ O Twangle é um afinador de violão fácil de usar e preciso até o cent. Toque 
 Sem anúncios, sem conta, sem compras no app e sem rastreamento. O Twangle nem sequer tem permissão para usar a internet: o som do microfone é analisado ao vivo no seu celular e nunca é gravado nem enviado.
 
 AFINE QUALQUER INSTRUMENTO
-• Violão e guitarra (6, 7 ou 8 cordas), baixo (4 ou 5 cordas), ukulele, violino, viola, violoncelo e bandolim
-• Afinações de violão: Padrão, Drop D, meio tom abaixo, um tom abaixo, DADGAD, Open G, Open D e Open E
+• Violão e guitarra (6, 7 ou 8 cordas), baixo (4 ou 5 cordas), ukulele (também barítono), violino, viola, violoncelo e bandolim
+• Afinações de violão: Padrão, Drop D, meio tom abaixo, um tom abaixo, DADGAD, Open G, Open D, Open E e Open C
 • Crie suas próprias afinações para qualquer instrumento
 • Afinador cromático para qualquer outro instrumento ou para sua voz
 • Toque e segure uma corda na tela para ouvir a nota e afinar de ouvido

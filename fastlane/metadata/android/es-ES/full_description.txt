@@ -3,8 +3,8 @@ Twangle es un afinador de guitarra fácil de usar y preciso hasta el cent. Toca 
 Sin anuncios, sin cuenta, sin compras en la app y sin rastreo. Twangle ni siquiera tiene permiso para usar internet: el sonido del micrófono se analiza en directo en tu teléfono y nunca se graba ni se envía.
 
 AFINA CUALQUIER INSTRUMENTO
-• Guitarra (6, 7 u 8 cuerdas), bajo (4 o 5 cuerdas), ukelele, violín, viola, violonchelo y mandolina
-• Afinaciones de guitarra: Estándar, Drop D, medio tono abajo, un tono abajo, DADGAD, Open G, Open D y Open E
+• Guitarra (6, 7 u 8 cuerdas), bajo (4 o 5 cuerdas), ukelele (también barítono), violín, viola, violonchelo y mandolina
+• Afinaciones de guitarra: Estándar, Drop D, medio tono abajo, un tono abajo, DADGAD, Open G, Open D, Open E y Open C
 • Crea tus propias afinaciones para cualquier instrumento
 • Afinador cromático para cualquier otro instrumento o para tu voz
 • Mantén pulsada una cuerda en la pantalla para oír su nota y afinar de oído

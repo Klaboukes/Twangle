@@ -47,7 +47,9 @@ fun tuningNameRes(id: String): Int? = when (id) {
     Tunings.OPEN_G.id -> R.string.tuning_open_g
     Tunings.OPEN_D.id -> R.string.tuning_open_d
     Tunings.OPEN_E.id -> R.string.tuning_open_e
+    Tunings.OPEN_C.id -> R.string.tuning_open_c
     "ukulele_low_g" -> R.string.tuning_low_g
+    "ukulele_baritone" -> R.string.tuning_baritone
     else -> null
 }
 

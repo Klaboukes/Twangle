@@ -27,7 +27,9 @@
     <string name="tuning_open_g">ओपन G</string>
     <string name="tuning_open_d">ओपन D</string>
     <string name="tuning_open_e">ओपन E</string>
+    <string name="tuning_open_c">ओपन C</string>
     <string name="tuning_low_g">लो G</string>
+    <string name="tuning_baritone">बैरिटोन</string>
 
     <string name="instrument_guitar">गिटार</string>
     <string name="instrument_guitar_7">7-तार गिटार</string>

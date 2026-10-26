@@ -3,8 +3,8 @@ Twangle est un accordeur de guitare simple à utiliser et précis au cent près.
 Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
 
 ACCORDEZ TOUS VOS INSTRUMENTS
-• Guitare (6, 7 ou 8 cordes), basse (4 ou 5 cordes), ukulélé, violon, alto, violoncelle et mandoline
-• Accordages de guitare : Standard, Drop D, un demi-ton plus bas, un ton plus bas, DADGAD, Open G, Open D et Open E
+• Guitare (6, 7 ou 8 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle et mandoline
+• Accordages de guitare : Standard, Drop D, un demi-ton plus bas, un ton plus bas, DADGAD, Open G, Open D, Open E et Open C
 • Créez vos propres accordages pour chaque instrument
 • Accordeur chromatique pour tout autre instrument ou pour votre voix
 • Maintenez une corde à l'écran pour entendre sa note et accorder à l'oreille

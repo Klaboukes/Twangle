@@ -608,8 +608,9 @@ class TunerContentTest {
         openPanel()
         compose.onNodeWithText(context.getString(R.string.instrument_ukulele)).assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.tuning_drop_d)).assertDoesNotExist()
-        compose.onNodeWithText(context.getString(R.string.tuning_low_g)).assertIsDisplayed().performClick()
-        assertEquals(listOf(ukulele.tunings.last()), tuningChanges)
+        compose.onNodeWithText(context.getString(R.string.tuning_low_g)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.tuning_baritone)).assertIsDisplayed().performClick()
+        assertEquals(listOf(ukulele.tuningById("ukulele_baritone")), tuningChanges)
     }
 
     @Test

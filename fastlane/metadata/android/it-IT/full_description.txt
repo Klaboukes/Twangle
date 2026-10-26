@@ -3,8 +3,8 @@ Twangle è un accordatore per chitarra semplice da usare e preciso al cent. Suon
 Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
 
 ACCORDA OGNI STRUMENTO
-• Chitarra (6, 7 o 8 corde), basso (4 o 5 corde), ukulele, violino, viola, violoncello e mandolino
-• Accordature per chitarra: Standard, Drop D, mezzo tono sotto, un tono sotto, DADGAD, Open G, Open D e Open E
+• Chitarra (6, 7 o 8 corde), basso (4 o 5 corde), ukulele (anche baritono), violino, viola, violoncello e mandolino
+• Accordature per chitarra: Standard, Drop D, mezzo tono sotto, un tono sotto, DADGAD, Open G, Open D, Open E e Open C
 • Crea le tue accordature per qualsiasi strumento
 • Accordatore cromatico per ogni altro strumento o per la voce
 • Tieni premuta una corda sullo schermo per sentirne la nota e accordare a orecchio

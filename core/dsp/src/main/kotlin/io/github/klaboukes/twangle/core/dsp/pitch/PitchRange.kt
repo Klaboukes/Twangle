@@ -8,7 +8,8 @@ import kotlin.math.pow
  * lag it searches (see [YinPitchDetector]).
  *
  * - [STANDARD]: 62–1500 Hz with a 4096-sample window (≈ 85 ms at 48 kHz). Covers the guitar
- *   (down to drop C) and keeps 60 Hz mains hum out.
+ *   (down to C2, though a tuning whose lowest string is C2, such as Open C, takes [LOW] for room
+ *   below it) and keeps 60 Hz mains hum out.
  * - [LOW]: 28–1500 Hz with an 8192-sample window (≈ 171 ms), for instruments that go below that,
  *   down to B0 (30.9 Hz) on a five-string bass with room for a string tuned a semitone flat. It
  *   costs twice the CPU per frame and the reading lags a little more; 50/60 Hz hum is now in range.
@@ -28,9 +29,9 @@ enum class PitchRange(
     companion object {
         /**
          * The range that still reads [lowestNoteHz] (an instrument's or tuning's lowest open string,
-         * at the current A4) when that string is up to a semitone flat. Every guitar preset stays
-         * [STANDARD] (drop D at A4 = 415 Hz is 69 Hz, a semitone below 65 Hz); 7- and 8-string
-         * guitars, basses and the cello (C2, 65.4 Hz) get [LOW].
+         * at the current A4) when that string is up to a semitone flat. The guitar presets down to
+         * D2 stay [STANDARD] (drop D at A4 = 415 Hz is 69 Hz, a semitone below 65 Hz); Open C and
+         * the cello (C2, 65.4 Hz), 7- and 8-string guitars and basses get [LOW].
          */
         fun forLowestNote(lowestNoteHz: Float): PitchRange =
             if (lowestNoteHz * SEMITONE_DOWN < STANDARD.minFrequencyHz) LOW else STANDARD

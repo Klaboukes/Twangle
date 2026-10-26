@@ -27,7 +27,9 @@
     <string name="tuning_open_g">오픈 G</string>
     <string name="tuning_open_d">오픈 D</string>
     <string name="tuning_open_e">오픈 E</string>
+    <string name="tuning_open_c">오픈 C</string>
     <string name="tuning_low_g">로우 G</string>
+    <string name="tuning_baritone">바리톤</string>
 
     <string name="instrument_guitar">기타</string>
     <string name="instrument_guitar_7">7현 기타</string>

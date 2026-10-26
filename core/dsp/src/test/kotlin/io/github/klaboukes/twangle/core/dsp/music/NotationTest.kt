@@ -110,6 +110,7 @@ class NotationTest {
             Tunings.OPEN_G to "D G D G B D",
             Tunings.OPEN_D to "D A D F♯ A D",
             Tunings.OPEN_E to "E B E G♯ B E",
+            Tunings.OPEN_C to "C G C G C E",
         )
         assertEquals(Tunings.all.toSet(), expected.keys)
         for (notation in listOf(Notation.SHARPS, Notation.FLATS)) {

@@ -27,7 +27,9 @@
     <string name="tuning_open_g">开放 G</string>
     <string name="tuning_open_d">开放 D</string>
     <string name="tuning_open_e">开放 E</string>
+    <string name="tuning_open_c">开放 C</string>
     <string name="tuning_low_g">低音 G</string>
+    <string name="tuning_baritone">上低音</string>
 
     <string name="instrument_guitar">吉他</string>
     <string name="instrument_guitar_7">七弦吉他</string>

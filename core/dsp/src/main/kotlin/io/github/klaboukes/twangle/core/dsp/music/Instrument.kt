@@ -73,12 +73,17 @@ object Instruments {
         StringVoices.ELECTRIC_BASS,
     )
 
-    /** Standard ukulele is re-entrant: the G string sits above C. Low G drops it an octave. */
+    /**
+     * Standard ukulele is re-entrant: the G string sits above C. Low G drops it an octave. The
+     * baritone ukulele is a bigger body tuned D3 G3 B3 E4, a guitar's four highest strings; it plays
+     * the same chords and scales, so it is a ukulele preset rather than an instrument of its own.
+     */
     val UKULELE = Instrument(
         "ukulele", 4,
         listOf(
             tuningOf("ukulele_standard", "G4 C4 E4 A4"),
             tuningOf("ukulele_low_g", "G3 C4 E4 A4"),
+            tuningOf("ukulele_baritone", "D3 G3 B3 E4"),
         ),
         StringVoices.UKULELE,
     )

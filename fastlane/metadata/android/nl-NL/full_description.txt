@@ -3,8 +3,8 @@ Twangle is een gitaarstemmer die eenvoudig werkt en precies is tot op de cent. S
 Geen advertenties, geen account, geen aankopen in de app en geen tracking. Twangle heeft zelfs geen toestemming om internet te gebruiken: het geluid van je microfoon wordt live op je telefoon geanalyseerd en nooit opgenomen of verstuurd.
 
 ELK INSTRUMENT STEMMEN
-• Gitaar (6, 7 of 8 snaren), bas (4 of 5 snaren), ukelele, viool, altviool, cello en mandoline
-• Gitaarstemmingen: Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D en Open E
+• Gitaar (6, 7 of 8 snaren), bas (4 of 5 snaren), ukelele (ook bariton), viool, altviool, cello en mandoline
+• Gitaarstemmingen: Standaard, Drop D, halve toon lager, hele toon lager, DADGAD, Open G, Open D, Open E en Open C
 • Maak je eigen stemmingen voor elk instrument
 • Chromatische stemmer voor elk ander instrument of je stem
 • Houd een snaar op het scherm vast om de toon te horen en op het gehoor te stemmen

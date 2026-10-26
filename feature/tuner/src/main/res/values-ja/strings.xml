@@ -27,7 +27,9 @@
     <string name="tuning_open_g">オープンG</string>
     <string name="tuning_open_d">オープンD</string>
     <string name="tuning_open_e">オープンE</string>
+    <string name="tuning_open_c">オープンC</string>
     <string name="tuning_low_g">Low G</string>
+    <string name="tuning_baritone">バリトン</string>
 
     <string name="instrument_guitar">ギター</string>
     <string name="instrument_guitar_7">7弦ギター</string>

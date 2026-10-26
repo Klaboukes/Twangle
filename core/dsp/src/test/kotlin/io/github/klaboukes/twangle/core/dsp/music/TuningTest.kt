@@ -23,7 +23,9 @@ class TuningTest {
             Tunings.OPEN_G to "D2 G2 D3 G3 B3 D4",
             Tunings.OPEN_D to "D2 A2 D3 F#3 A3 D4",
             Tunings.OPEN_E to "E2 B2 E3 G#3 B3 E4",
+            Tunings.OPEN_C to "C2 G2 C3 G3 C4 E4",
         )
+        assertEquals(Tunings.all.toSet(), expected.keys)
         for ((tuning, notes) in expected) {
             assertEquals(tuning.id, notes, tuning.strings.joinToString(" "))
             assertEquals(tuning.id, 6, tuning.stringCount)
@@ -35,7 +37,7 @@ class TuningTest {
         assertEquals(Accidental.FLAT, Tunings.HALF_STEP_DOWN.spelling)
         assertEquals(Accidental.SHARP, Tunings.OPEN_D.spelling)
         assertEquals(Accidental.SHARP, Tunings.OPEN_E.spelling)
-        for (tuning in listOf(Tunings.STANDARD, Tunings.DROP_D, Tunings.FULL_STEP_DOWN, Tunings.DADGAD, Tunings.OPEN_G)) {
+        for (tuning in listOf(Tunings.STANDARD, Tunings.DROP_D, Tunings.FULL_STEP_DOWN, Tunings.DADGAD, Tunings.OPEN_G, Tunings.OPEN_C)) {
             assertNull(tuning.id, tuning.spelling)
         }
     }
@@ -65,9 +67,9 @@ class TuningTest {
     }
 
     @Test
-    fun `preset list holds all eight with unique ids and standard as default`() {
-        assertEquals(8, Tunings.all.size)
-        assertEquals(8, Tunings.all.map { it.id }.toSet().size)
+    fun `preset list holds all nine with unique ids and standard as default`() {
+        assertEquals(9, Tunings.all.size)
+        assertEquals(9, Tunings.all.map { it.id }.toSet().size)
         assertSame(Tunings.STANDARD, Tunings.DEFAULT)
         assertSame(Tunings.STANDARD, Tunings.all.first())
     }

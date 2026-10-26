@@ -37,8 +37,11 @@
     <string name="tuning_open_g">Open G</string>
     <string name="tuning_open_d">Open D</string>
     <string name="tuning_open_e">Open E</string>
+    <string name="tuning_open_c">Open C</string>
     <!-- Ukulele with its G string an octave lower than standard. -->
     <string name="tuning_low_g">Low G</string>
+    <!-- The baritone ukulele: a bigger ukulele tuned D G B E, like a guitar's four highest strings. -->
+    <string name="tuning_baritone">Baritone</string>
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Guitar</string>

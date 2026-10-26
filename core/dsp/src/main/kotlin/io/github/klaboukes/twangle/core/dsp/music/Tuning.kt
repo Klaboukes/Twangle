@@ -80,9 +80,16 @@ object Tunings {
     val OPEN_D = tuningOf("open_d", "D2 A2 D3 F#3 A3 D4")
     val OPEN_E = tuningOf("open_e", "E2 B2 E3 G#3 B3 E4")
 
-    /** All presets, in the order a tuning picker should list them. */
+    /** The lowest preset (C2), so it takes the detector's low window (`PitchRange.forLowestNote`). */
+    val OPEN_C = tuningOf("open_c", "C2 G2 C3 G3 C4 E4")
+
+    /**
+     * All presets, in the order a tuning picker should list them: Standard, then Drop D, the two
+     * lowered standards, DADGAD and the open tunings, most played first. Kept together like this,
+     * the list needs no group headings.
+     */
     val all: List<Tuning> = listOf(
-        STANDARD, DROP_D, HALF_STEP_DOWN, FULL_STEP_DOWN, DADGAD, OPEN_G, OPEN_D, OPEN_E,
+        STANDARD, DROP_D, HALF_STEP_DOWN, FULL_STEP_DOWN, DADGAD, OPEN_G, OPEN_D, OPEN_E, OPEN_C,
     )
 
     val DEFAULT: Tuning = STANDARD

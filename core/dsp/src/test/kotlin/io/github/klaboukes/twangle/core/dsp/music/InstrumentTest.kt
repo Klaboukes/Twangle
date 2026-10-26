@@ -20,6 +20,7 @@ class InstrumentTest {
             "bass_5_standard" to "B0 E1 A1 D2 G2",
             "ukulele_standard" to "G4 C4 E4 A4",
             "ukulele_low_g" to "G3 C4 E4 A4",
+            "ukulele_baritone" to "D3 G3 B3 E4",
             "violin_standard" to "G3 D4 A4 E5",
             "viola_standard" to "C3 G3 D4 A4",
             "cello_standard" to "C2 G2 D3 A3",
@@ -86,14 +87,14 @@ class InstrumentTest {
 
     @Test
     fun `an instrument's range spans every preset`() {
-        // Guitar's Standard starts at E2, but Drop D and others reach D2.
+        // Guitar's Standard starts at E2, but Open C reaches C2; the baritone ukulele reaches D3.
         val expected = mapOf(
-            Instruments.GUITAR to ("D2" to "E4"),
+            Instruments.GUITAR to ("C2" to "E4"),
             Instruments.GUITAR_7 to ("B1" to "E4"),
             Instruments.GUITAR_8 to ("F#1" to "E4"),
             Instruments.BASS_4 to ("E1" to "G2"),
             Instruments.BASS_5 to ("B0" to "G2"),
-            Instruments.UKULELE to ("G3" to "A4"),
+            Instruments.UKULELE to ("D3" to "A4"),
             Instruments.VIOLIN to ("G3" to "E5"),
             Instruments.VIOLA to ("C3" to "A4"),
             Instruments.CELLO to ("C2" to "A3"),
@@ -111,6 +112,9 @@ class InstrumentTest {
         assertEquals("C4", standard.lowestNote.toString())
         assertEquals("A4", standard.highestNote.toString())
         assertEquals("G3", Instruments.UKULELE.tuningById("ukulele_low_g")!!.lowestNote.toString())
+        val baritone = Instruments.UKULELE.tuningById("ukulele_baritone")!!
+        assertEquals("D3", baritone.lowestNote.toString())
+        assertEquals(baritone.strings.first(), baritone.lowestNote)
     }
 
     @Test

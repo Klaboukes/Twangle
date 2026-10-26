@@ -3,8 +3,8 @@ Twangle, kullanımı kolay ve bir sente kadar hassas bir gitar akort cihazıdır
 Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
 
 HER ENSTRÜMANI AKORT ET
-• Gitar (6, 7 veya 8 tel), bas (4 veya 5 tel), ukulele, keman, viyola, çello ve mandolin
-• Gitar akortları: Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D ve Open E
+• Gitar (6, 7 veya 8 tel), bas (4 veya 5 tel), ukulele (bariton da), keman, viyola, çello ve mandolin
+• Gitar akortları: Standart, Drop D, yarım ses düşük, tam ses düşük, DADGAD, Open G, Open D, Open E ve Open C
 • Her enstrüman için kendi akortlarını oluştur
 • Diğer tüm enstrümanlar ya da sesin için kromatik akort cihazı
 • Ekrandaki bir teli basılı tutarak notasını duy ve kulaktan akort et

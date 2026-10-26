@@ -31,30 +31,30 @@ Scientific pitch notation (MIDI 60 = C4). `Note` is a value class over the MIDI 
 **Auto (guitar) mode** targets the closest string of the tuning, in cents; **Chromatic** the nearest equal-tempered note.
 
 ## Tunings
-`Tuning(id, strings)` lists open-string `Note`s lowest first; `id` is the saved key (never rename). Names live in string resources, so `:core:dsp` has no UI text. `Tunings` holds the presets (Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E), `DEFAULT` = Standard, `byId()` to restore.
+`Tuning(id, strings)` lists open-string `Note`s lowest first; `id` is the saved key (never rename). Names live in string resources, so `:core:dsp` has no UI text. `Tunings` holds the presets (Standard, Drop D, Half-step down, Full-step down, DADGAD, Open G, Open D, Open E, Open C), `DEFAULT` = Standard, `byId()` to restore. The order keeps Standard, the drop and lowered tunings and the open tunings together, so the picker needs no group headings. Open C (C2 G2 C3 G3 C4 E4, Phase 51) is the only guitar preset below D2, so it takes the low-note window like the cello. The owner chose it and the baritone ukulele out of the comparison's list (2026-10-26); Drop C, Drop B and C standard come from lowering a tuning (Phase 51's next item) rather than from list entries.
 - `nearestStringIndex(midi)` follows A4 calibration; smallest |Δ| in semitones, ties to the lower string, no allocation.
 - `centsFromString(midi, index)` is **not** wrapped to ±50, so a string far off shows the full distance.
 - Strings are in instrument order, thickest first. That is lowest pitch first except on re-entrant tunings (standard ukulele G4 C4 E4 A4), so `lowestNote` / `highestNote` scan all strings.
 
 ## Instruments
-`Instrument(id, stringCount, tunings, voice)` is a stringed instrument with its presets, the first being its standard tuning (`defaultTuning`), and its `voice`, how its strings sound when the tuner plays a reference tone (*Reference tone* below); every preset must have `stringCount` strings. `Instruments` holds them in picker order, `DEFAULT` = six-string guitar, whose presets are exactly `Tunings.all` with their original ids, so saved settings keep working. Tuning ids are unique across instruments (`<instrument>_standard`, `ukulele_low_g`), so `Instruments.tuningById()` / `ofTuning()` restore a saved tuning and its instrument. A mandolin counts its four pairs as four courses.
+`Instrument(id, stringCount, tunings, voice)` is a stringed instrument with its presets, the first being its standard tuning (`defaultTuning`), and its `voice`, how its strings sound when the tuner plays a reference tone (*Reference tone* below); every preset must have `stringCount` strings. `Instruments` holds them in picker order, `DEFAULT` = six-string guitar, whose presets are exactly `Tunings.all` with their original ids, so saved settings keep working. Tuning ids are unique across instruments (`<instrument>_standard`, `ukulele_low_g`, `ukulele_baritone`), so `Instruments.tuningById()` / `ofTuning()` restore a saved tuning and its instrument. A mandolin counts its four pairs as four courses.
 
 | Instrument (`id`) | Strings | Presets | Range |
 |---|---|---|---|
-| Guitar (`guitar`) | 6 | the eight `Tunings` | D2–E4 |
+| Guitar (`guitar`) | 6 | the nine `Tunings` | C2–E4 |
 | 7-string guitar (`guitar_7`) | 7 | B1 E2 A2 D3 G3 B3 E4 | B1–E4 |
 | 8-string guitar (`guitar_8`) | 8 | F♯1 B1 E2 A2 D3 G3 B3 E4 | F♯1–E4 |
 | Bass (`bass_4`) | 4 | E1 A1 D2 G2 | E1–G2 |
 | 5-string bass (`bass_5`) | 5 | B0 E1 A1 D2 G2 | B0 (30.9 Hz)–G2 |
-| Ukulele (`ukulele`) | 4 | G4 C4 E4 A4 (re-entrant), low G: G3 C4 E4 A4 | G3–A4 |
+| Ukulele (`ukulele`) | 4 | G4 C4 E4 A4 (re-entrant), low G: G3 C4 E4 A4, baritone: D3 G3 B3 E4 | D3–A4 |
 | Violin (`violin`) | 4 | G3 D4 A4 E5 | G3–E5 (659 Hz) |
 | Viola (`viola`) | 4 | C3 G3 D4 A4 | C3–A4 |
 | Cello (`cello`) | 4 | C2 G2 D3 A3 | C2–A3 |
 | Mandolin (`mandolin`) | 4 courses | G3 D4 A4 E5 | G3–E5 |
 
-`lowestNote` / `highestNote` span all of an instrument's presets. Tunings whose lowest string goes below the guitar's range (B1, F♯1, E1, B0, and the cello's C2) switch the detector to the low-note window ([Signal pipeline](signal-pipeline.md), *Low notes*). Players pick the instrument and its tuning in one panel ([Tuner screen and tour](ui-tuner.md), **Instrument and tuning**); the instrument is saved with the tuning ([Lifecycle](lifecycle.md), *Saved settings*), and the panel lists only its presets.
+`lowestNote` / `highestNote` span all of an instrument's presets. Tunings whose lowest string goes below the guitar's range (B1, F♯1, E1, B0, and the C2 of the cello and Open C) switch the detector to the low-note window ([Signal pipeline](signal-pipeline.md), *Low notes*). Players pick the instrument and its tuning in one panel ([Tuner screen and tour](ui-tuner.md), **Instrument and tuning**); the instrument is saved with the tuning ([Lifecycle](lifecycle.md), *Saved settings*), and the panel lists only its presets.
 
-**Names** (`PickerNames.kt`, `instrumentNameRes` / `tuningNameRes`, JVM-tested: every instrument and preset has one, none shared within an instrument): English and Dutch — Guitar/Gitaar, 7-string guitar/7-snarige gitaar, 8-string guitar/8-snarige gitaar, Bass/Bas, 5-string bass/5-snarige bas, Ukulele/Ukelele, Violin/Viool, Viola/Altviool, Cello, Mandolin/Mandoline. Every instrument's first preset is "Standard"; the ukulele's other is "Low G"/"Lage G".
+**Names** (`PickerNames.kt`, `instrumentNameRes` / `tuningNameRes`, JVM-tested: every instrument and preset has one, none shared within an instrument): English and Dutch — Guitar/Gitaar, 7-string guitar/7-snarige gitaar, 8-string guitar/8-snarige gitaar, Bass/Bas, 5-string bass/5-snarige bas, Ukulele/Ukelele, Violin/Viool, Viola/Altviool, Cello, Mandolin/Mandoline. Every instrument's first preset is "Standard"; the ukulele's others are "Low G"/"Lage G" and "Baritone"/"Bariton". The baritone ukulele is a preset, not an instrument of its own: four strings, the ukulele's voice and its chord charts (which strum every string), and D3 is well inside the standard window.
 
 ## Chord shapes and scales
 Pure `:core:dsp` music maths for the Practice tab's charts ([Metronome, widget and watch](ui-other-screens.md), *Practice tab*), worked out for whatever tuning is picked, a preset or the player's own, so a DADGAD player sees DADGAD shapes. Nothing is stored: a chord's shapes take well under a millisecond, so the screen asks again when the chord or tuning changes.

@@ -153,7 +153,7 @@ class StrumDetectorTest {
 
     @Test
     fun `a missing string in the other guitar tunings`() {
-        for (tuning in listOf(Tunings.DROP_D, Tunings.DADGAD, Tunings.OPEN_D, Tunings.OPEN_G, Tunings.OPEN_E)) {
+        for (tuning in listOf(Tunings.DROP_D, Tunings.DADGAD, Tunings.OPEN_D, Tunings.OPEN_G, Tunings.OPEN_E, Tunings.OPEN_C)) {
             val expected = StrumChords.expectedHz(tuning)
             for (missing in 0 until 6) {
                 val gains = FloatArray(6) { 1f }.also { it[missing] = 0f }
@@ -203,7 +203,7 @@ class StrumDetectorTest {
 
     @Test
     fun `other instruments, with the long frame below the guitar`() {
-        for (tuning in listOf(Tunings.DROP_D, Instruments.UKULELE.defaultTuning, Instruments.BASS_5.defaultTuning, Instruments.GUITAR_7.defaultTuning)) {
+        for (tuning in listOf(Tunings.DROP_D, Tunings.OPEN_C, Instruments.UKULELE.defaultTuning, Instruments.UKULELE.tunings.last(), Instruments.BASS_5.defaultTuning, Instruments.GUITAR_7.defaultTuning)) {
             val expected = StrumChords.expectedHz(tuning)
             val length = StrumDetector.frameLengthFor(rate, PitchRange.forLowestNote(expected.min()))
             val cents = FloatArray(expected.size) { if (it % 2 == 0) 15f else -20f }
