@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">Metrónomo</string>
     <string name="practice_tool_chords">Acordes</string>
+    <string name="practice_tool_scales">Escalas</string>
     <string name="practice_tool_button">Herramienta</string>
     <string name="practice_tool_list">Herramientas</string>
     <string name="practice_root">Nota fundamental</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, al aire</string>
     <string name="practice_spoken_fret">%1$s, traste %2$d, dedo %3$d, %4$s</string>
     <string name="practice_spoken_barre">cejilla, dedo %1$d sobre el traste %2$d, cuerdas %3$s a %4$s</string>
-    <string name="practice_chart_choice">Acordes o escalas</string>
-    <string name="practice_chart_chords">Acordes</string>
-    <string name="practice_chart_scales">Escalas</string>
     <string name="practice_scale_type">Escala</string>
     <string name="practice_scale_type_major">Mayor</string>
     <string name="practice_scale_type_natural_minor">Menor natural</string>

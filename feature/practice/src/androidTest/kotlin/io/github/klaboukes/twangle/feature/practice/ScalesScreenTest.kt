@@ -32,7 +32,6 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
@@ -59,10 +58,10 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Scales in the Chords tool (Phase 32) in each style, light and dark: the Chords · Scales choice
- * switches the view and shares the root, it opens on the saved scale, the name button's panel picks
+ * The Scales tool (Phase 32, a tool of its own since Phase 47) in each style, light and dark: it
+ * shares its screen and root with Chords, it opens on the saved scale, the name button's panel picks
  * another (and reports it to be saved), the neck follows the picked tuning and notation, TalkBack
- * hears the choice and the panel's grids as radio groups, the name as a heading and a list and the
+ * hears the panel's grids as radio groups, the name as a heading and a list and the
  * neck in words, and it all fits: without scrolling upright and on its side at normal text, wholly
  * shown at 2× text, the panel too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
  *
@@ -88,11 +87,11 @@ class ScalesScreenTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val shownTuning = mutableStateOf(Tunings.STANDARD)
     private val shownNotation = mutableStateOf(Notation.SHARPS)
-    private val savedCharts = mutableListOf<PracticeChart>()
+    private val shownScales = mutableStateOf(true)
     private val savedRoots = mutableListOf<PitchClass>()
     private val savedTypes = mutableListOf<ScaleType>()
 
-    private fun show(root: PitchClass = PitchClass.C, type: ScaleType = ScaleType.MAJOR, chart: PracticeChart = PracticeChart.SCALES) {
+    private fun show(root: PitchClass = PitchClass.C, type: ScaleType = ScaleType.MAJOR) {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
                 TwangleTheme(style = style, darkTheme = shownDark.value, animate = false) {
@@ -105,11 +104,10 @@ class ScalesScreenTest(private val style: VisualStyle) {
                         savedQuality = ChordQuality.MAJOR,
                         onRootChange = { savedRoots += it },
                         onQualityChange = {},
-                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
+                        header = { PracticeToolButton(if (shownScales.value) PracticeTool.SCALES else PracticeTool.CHORDS, {}, TOOLS) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
-                        savedChart = chart,
+                        scales = shownScales.value,
                         savedScaleType = type,
-                        onChartChange = { savedCharts += it },
                         onScaleTypeChange = { savedTypes += it },
                         onPickInstrument = {},
                     )
@@ -174,7 +172,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             spoken.startsWith("A minor pentatonic, notes A, C, D, E, G, E 2 string, open E, fret 3 G, fret 5 A, root, fret 8 C"),
         )
         assertName("Am pent.", "A minor pentatonic")
-        node(PracticeTestTags.chart(PracticeChart.SCALES)).assertIsSelected()
+        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Scales"))
         assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
         assertFalse("no chord chart", exists(PracticeTestTags.CHART))
         assertFalse("no pager", exists(PracticeTestTags.NEXT))
@@ -197,17 +195,18 @@ class ScalesScreenTest(private val style: VisualStyle) {
         closePanel()
         assertEquals("the picks are passed on to be saved", listOf(PitchClass.G), savedRoots)
         assertEquals(listOf(ScaleType.MAJOR, ScaleType.MAJOR_PENTATONIC, ScaleType.NATURAL_MINOR, ScaleType.MAJOR), savedTypes)
-        assertEquals("the choice wasn't touched", emptyList<PracticeChart>(), savedCharts)
     }
 
     @Test
-    fun theChoiceSwitchesBetweenChordsAndScalesAndTheRootIsShared() {
-        show(PitchClass.D, ScaleType.BLUES, chart = PracticeChart.CHORDS)
+    fun chordsAndScalesShareTheRoot() {
+        // The Practice tab shows both tools as this one screen with one saved state, so the root carries across.
+        shownScales.value = false
+        show(PitchClass.D, ScaleType.BLUES)
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
         assertFalse("chords first", exists(PracticeTestTags.NECK))
-        node(PracticeTestTags.chart(PracticeChart.CHORDS)).assertIsSelected()
+        node(PracticeTestTags.TOOL_BUTTON).assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Chords"))
 
-        node(PracticeTestTags.chart(PracticeChart.SCALES)).performClick()
+        shownScales.value = true
         compose.waitForIdle()
         assertTrue("the neck shows", exists(PracticeTestTags.NECK))
         assertFalse("the chord chart has gone", exists(PracticeTestTags.CHART))
@@ -215,22 +214,19 @@ class ScalesScreenTest(private val style: VisualStyle) {
         assertPicked(PracticeTestTags.root(PitchClass.D))
         pick(PracticeTestTags.root(PitchClass.E))
 
-        node(PracticeTestTags.chart(PracticeChart.CHORDS)).performClick()
+        shownScales.value = false
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
         assertName("E", "E major")
         assertPicked(PracticeTestTags.root(PitchClass.E), PracticeTestTags.type(ChordQuality.MAJOR))
-        assertEquals("both picks passed on to be saved", listOf(PracticeChart.SCALES, PracticeChart.CHORDS), savedCharts)
         assertEquals(listOf(PitchClass.E), savedRoots)
     }
 
     @Test
-    fun talkBackHearsTheChoiceAndThePanelAsRadioButtons() {
+    fun talkBackHearsThePanelAsRadioButtons() {
         show(PitchClass.A_SHARP, ScaleType.MAJOR)
         compose.waitForIdle()
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
-        node(PracticeTestTags.chart(PracticeChart.CHORDS)).assert(radio).assert(hasContentDescription("Chords"))
-        node(PracticeTestTags.chart(PracticeChart.SCALES)).assert(radio).assert(hasContentDescription("Scales"))
         picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭")
         assertTrue("the words under it are skipped", node(PracticeTestTags.NAME_WORDS).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
         assertTrue("the scale's name is a polite live region", picker().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
@@ -274,7 +270,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val case = "$style ${if (dark) "dark" else "light"} $size:"
             val window = bars().safeArea(size)
             val tags = listOf(
-                PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER,
+                PracticeTestTags.TOOL_BUTTON, PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER,
             )
             for (tag in tags) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
@@ -290,16 +286,15 @@ class ScalesScreenTest(private val style: VisualStyle) {
             assertTrue("$case the neck inside its room $drawn $area", drawn.left >= area.left && drawn.right <= area.right && drawn.top >= area.top && drawn.bottom <= area.bottom)
             assertTrue("$case inside the window", drawn.bottom <= window.bottom)
             assertTrue("$case a big neck $drawn", maxOf(drawn.width, drawn.height) >= 300.dp)
-            val choice = node(PracticeTestTags.chart(PracticeChart.SCALES)).getBoundsInRoot()
+            val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
             assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
-                assertTrue("$case the choice in the start half", choice.right <= middle)
+                assertTrue("$case the tuning line in the start half", tuning.right <= middle)
                 assertTrue("$case the name and the neck in the end half", name.left >= middle && area.left >= middle)
             } else {
-                assertTrue("$case the choice over the name", choice.bottom <= name.top + 1.dp)
-                assertTrue("$case the choice under the tuning line", node(PracticeTestTags.TUNING).getBoundsInRoot().bottom <= node(PracticeTestTags.chart(PracticeChart.SCALES)).getBoundsInRoot().top)
+                assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
             }
             assertThePanel(case, wide = size == PHONE_LANDSCAPE)
         }
@@ -354,7 +349,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
         for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
-            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.chart(PracticeChart.SCALES), PracticeTestTags.NAME_PICKER, PracticeTestTags.NECK)) {
+            for (tag in listOf(PracticeTestTags.TUNING, PracticeTestTags.NAME_PICKER, PracticeTestTags.NECK)) {
                 assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
             }
             compose.assertEveryTextWhollyShown("$style nl $size at 2x:")
@@ -386,6 +381,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
         @Parameterized.Parameters(name = "{0}")
         fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
+        private val TOOLS = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L

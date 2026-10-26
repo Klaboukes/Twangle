@@ -36,7 +36,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.Navigation
@@ -109,7 +108,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                         savedQuality = quality,
                         onRootChange = { savedRoots += it },
                         onQualityChange = { savedQualities += it },
-                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)) },
+                        header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
                     )
@@ -306,15 +305,15 @@ class ChordsScreenTest(private val style: VisualStyle) {
             // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp).
             assertTrue("$case a big chart ${chart.height}", chart.height >= if (size == PHONE_UPRIGHT) 156.dp else 170.dp)
             val pager = node(PracticeTestTags.NEXT).getBoundsInRoot()
-            val choice = node(PracticeTestTags.chart(PracticeChart.CHORDS)).getBoundsInRoot()
+            val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
             assertTrue("$case chart, then pager", chart.bottom <= pager.top + 1.dp)
             if (size == PHONE_LANDSCAPE) {
                 val middle = (window.left + window.right) / 2
-                assertTrue("$case the choice in the start half", choice.right <= middle)
+                assertTrue("$case the tuning line in the start half", tuning.right <= middle)
                 assertTrue("$case name and chart in the end half", name.left >= middle && chart.left >= middle)
             } else {
-                assertTrue("$case the choice over the name", choice.bottom <= name.top + 1.dp)
+                assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
             }
             assertTrue("$case the name over the chart", name.bottom <= chart.top + 1.dp)
         }

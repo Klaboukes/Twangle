@@ -37,7 +37,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
 import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ThemeMode
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
@@ -200,7 +199,6 @@ class StoreScreenshots(private val shot: Shot) {
                     settings.setPracticeTool(PracticeTool.CHORDS)
                     settings.setPracticeRoot(PitchClass.C)
                     settings.setPracticeChordQuality(ChordQuality.MAJOR)
-                    settings.setPracticeChart(PracticeChart.CHORDS)
                     // A song in A played with G shapes: capo on the 2nd fret.
                     settings.setPracticeCapoShapes(SongKey(PitchClass.G))
                     settings.setPracticeCapoFret(CAPO_FRET)

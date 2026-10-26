@@ -137,8 +137,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) = state.update { it.copy(practiceChordQuality = quality) }
 
-    override suspend fun setPracticeChart(chart: PracticeChart) = state.update { it.copy(practiceChart = chart) }
-
     override suspend fun setPracticeScaleType(type: ScaleType) = state.update { it.copy(practiceScaleType = type) }
 
     override suspend fun setPracticeCapoShapes(shapes: SongKey) = state.update { it.copy(practiceCapoShapes = shapes) }

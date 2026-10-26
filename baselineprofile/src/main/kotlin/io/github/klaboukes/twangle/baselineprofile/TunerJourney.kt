@@ -30,14 +30,14 @@ private val TUNER_TOOLS = listOf(
 private const val PRACTICE_TOOL_BUTTON_TAG = "practice_tool_button"
 private const val PRACTICE_METRONOME_TAG = "practice_tool_metronome"
 private const val PRACTICE_CHORDS_TAG = "practice_tool_chords"
+private const val PRACTICE_SCALES_TAG = "practice_tool_scales"
 private const val PRACTICE_CAPO_TAG = "practice_tool_capo"
 private const val METRONOME_START_TAG = "metronome_start"
 private const val METRONOME_FASTER_TAG = "metronome_faster"
 private const val METRONOME_SLOWER_TAG = "metronome_slower"
 private const val METRONOME_TAP_TAG = "metronome_tap"
 private const val CHORDS_TAG = "practice_chords"
-private const val CHART_CHORDS_TAG = "practice_chart_chords"
-private const val CHART_SCALES_TAG = "practice_chart_scales"
+private const val SCALES_TAG = "practice_scales"
 private const val NAME_PICKER_TAG = "practice_name_picker"
 private const val ROOT_A_TAG = "practice_root_a"
 private const val ROOT_E_TAG = "practice_root_e"
@@ -123,7 +123,7 @@ fun MacrobenchmarkScope.useTuner() {
 
 /**
  * The Practice tab: the metronome (a few clicks, faster, slower, tap tempo, stopped again), Chords
- * (a chord, its next shape, then a scale on the neck) and the Capo helper. Each tool is picked on
+ * (a chord and its next shape), Scales (a scale on the neck) and the Capo helper. Each tool is picked on
  * the tool button's list, so it works whichever tool the tab opens on (the one used last).
  */
 fun MacrobenchmarkScope.usePractice() {
@@ -142,7 +142,6 @@ fun MacrobenchmarkScope.usePractice() {
 
     pickTool(PRACTICE_CHORDS_TAG)
     check(device.wait(Until.hasObject(By.res(CHORDS_TAG)), TIMEOUT_MS)) { "Chords didn't open" }
-    clickTag(CHART_CHORDS_TAG)
     clickTag(NAME_PICKER_TAG)
     clickTag(ROOT_A_TAG)
     clickTag(TYPE_MINOR_TAG)
@@ -150,7 +149,8 @@ fun MacrobenchmarkScope.usePractice() {
     Thread.sleep(TAP_SETTLE_MS)
     clickTag(SHAPE_NEXT_TAG)
     Thread.sleep(SHOW_MS)
-    clickTag(CHART_SCALES_TAG)
+    pickTool(PRACTICE_SCALES_TAG)
+    check(device.wait(Until.hasObject(By.res(SCALES_TAG)), TIMEOUT_MS)) { "Scales didn't open" }
     clickTag(NAME_PICKER_TAG)
     clickTag(ROOT_E_TAG)
     clickTag(SCALE_PENTATONIC_TAG)

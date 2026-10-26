@@ -76,9 +76,9 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownTool = mutableStateOf(PracticeTool.CHORDS)
-    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
+    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
 
-    /** Chords, or the capo helper with Capo picked; the metronome lives in its own module, so Chords stands in for it. */
+    /** Chords or Scales, or the capo helper with Capo picked; the metronome lives in its own module, so Chords stands in for it. */
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
@@ -110,6 +110,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
                             onQualityChange = {},
                             header = header,
                             modifier = Modifier.fillMaxSize().testTag(WINDOW),
+                            scales = shownTool.value == PracticeTool.SCALES,
                             onPickInstrument = {},
                         )
                     }
@@ -150,7 +151,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
                 row(picked).assertDoesNotExist()
             }
         }
-        for (tool in listOf(PracticeTool.METRONOME, PracticeTool.CAPO, PracticeTool.CHORDS)) {
+        for (tool in listOf(PracticeTool.METRONOME, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.CHORDS)) {
             button().performClick()
             compose.waitForIdle()
             row(tool).performClick()
@@ -163,7 +164,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
     @Test
     fun itStandsAtTheTopStartOneSteadyWidthWithTheTuningBesideIt() {
         show()
-        for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE)) for (tool in listOf(PracticeTool.CHORDS, PracticeTool.CAPO)) {
+        for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE)) for (tool in listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) {
             shownSize.value = size
             shownTool.value = tool
             compose.waitForIdle()
@@ -214,7 +215,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
         show()
         for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
-            for (picked in listOf(PracticeTool.CHORDS, PracticeTool.CAPO)) {
+            for (picked in listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) {
                 shownTool.value = picked
                 compose.waitForIdle()
                 assertEquals("$style $size its width at 2x", 160f, button().getBoundsInRoot().width.value, 0.5f)
@@ -234,7 +235,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
     }
 
     /**
-     * Every language at 2× text on a 320 dp phone and on its side, Chords and Capo picked, and the
+     * Every language at 2× text on a 320 dp phone and on its side, Chords, Scales and Capo picked, and the
      * list opened: every text wholly shown. Only with `--languages`.
      */
     @EveryLanguage
@@ -246,7 +247,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
-                for (tool in listOf(PracticeTool.CHORDS, PracticeTool.CAPO)) {
+                for (tool in listOf(PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) {
                     shownTool.value = tool
                     compose.waitForIdle()
                     compose.assertEveryTextWhollyShown("$style $language $size $tool at 2x:")
@@ -266,7 +267,7 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
         @Parameterized.Parameters(name = "{0}")
         fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
-        private val LABELS = mapOf(PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.CAPO to "Capo")
+        private val LABELS = mapOf(PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo")
 
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L

@@ -27,6 +27,8 @@ private fun draw(tool: PracticeTool): ImageVector {
         PracticeTool.CHORDS -> listOf(
             "M5.25,4h13.5", "M5.25,4v16", "M9.75,4v16", "M14.25,4v16", "M18.75,4v16", "M5.25,9.5h13.5", "M5.25,15h13.5",
         ) to listOf(Dot(14.25f, 6.75f, 2f), Dot(9.75f, 12.25f, 2f))
+        // A staircase, a scale climbing step by step: four treads, as the mock-up's (docs/design/tool-button-preview.html).
+        PracticeTool.SCALES -> listOf("M3.5,18.5h4.25v-4.25h4.25v-4.25h4.25v-4.25h4.25") to emptyList()
         // A capo across the neck: the neck's edges, a fret, the bar clamped across and its lever curling under.
         PracticeTool.CAPO -> listOf(
             "M7,2.5V9.5", "M7,14v7.5", "M17,2.5V9.5", "M17,14v7.5", "M7,18.5h10",

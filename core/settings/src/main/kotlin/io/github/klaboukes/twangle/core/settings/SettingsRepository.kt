@@ -123,16 +123,13 @@ interface SettingsRepository {
     /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
     suspend fun setPracticeTool(tool: PracticeTool)
 
-    /** The root picked last in the chord charts ([AppSettings.practiceRoot]). */
+    /** The root picked last in the chord charts and scales, one for both ([AppSettings.practiceRoot]). */
     suspend fun setPracticeRoot(root: PitchClass)
 
     /** The chord type picked last in the chord charts ([AppSettings.practiceChordQuality]). */
     suspend fun setPracticeChordQuality(quality: ChordQuality)
 
-    /** Chords or scales, picked last in the Chords tool ([AppSettings.practiceChart]). */
-    suspend fun setPracticeChart(chart: PracticeChart)
-
-    /** The scale picked last in the Chords tool ([AppSettings.practiceScaleType]). */
+    /** The scale picked last in the Scales tool ([AppSettings.practiceScaleType]). */
     suspend fun setPracticeScaleType(type: ScaleType)
 
     /** The shapes picked last in the Capo helper ([AppSettings.practiceCapoShapes]). */

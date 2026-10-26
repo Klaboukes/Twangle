@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akordy</string>
+    <string name="practice_tool_scales">Skale</string>
     <string name="practice_tool_button">Narzędzie</string>
     <string name="practice_tool_list">Narzędzia</string>
     <string name="practice_root">Pryma</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, pusta</string>
     <string name="practice_spoken_fret">%1$s, próg %2$d, palec %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, palec %1$d na progu %2$d, struny od %3$s do %4$s</string>
-    <string name="practice_chart_choice">Akordy lub skale</string>
-    <string name="practice_chart_chords">Akordy</string>
-    <string name="practice_chart_scales">Skale</string>
     <string name="practice_scale_type">Skala</string>
     <string name="practice_scale_type_major">Durowa</string>
     <string name="practice_scale_type_natural_minor">Molowa naturalna</string>

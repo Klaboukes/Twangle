@@ -226,7 +226,11 @@ class DataStoreSettingsRepository internal constructor(
     }
 
     override suspend fun setPracticeTool(tool: PracticeTool) {
-        dataStore.edit { it[PRACTICE_TOOL] = tool.name }
+        dataStore.edit {
+            it[PRACTICE_TOOL] = tool.name
+            // The old Chords · Scales choice has had its say once a tool is picked (see [practiceTool]).
+            it.remove(OLD_PRACTICE_CHART)
+        }
     }
 
     override suspend fun setPracticeRoot(root: PitchClass) {
@@ -235,10 +239,6 @@ class DataStoreSettingsRepository internal constructor(
 
     override suspend fun setPracticeChordQuality(quality: ChordQuality) {
         dataStore.edit { it[PRACTICE_CHORD_QUALITY] = quality.name }
-    }
-
-    override suspend fun setPracticeChart(chart: PracticeChart) {
-        dataStore.edit { it[PRACTICE_CHART] = chart.name }
     }
 
     override suspend fun setPracticeScaleType(type: ScaleType) {
@@ -292,10 +292,9 @@ class DataStoreSettingsRepository internal constructor(
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
             metronomeClickSound = enumOrNull<ClickSound>(prefs[METRONOME_CLICK_SOUND]) ?: defaults.metronomeClickSound,
-            practiceTool = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL]) ?: defaults.practiceTool,
+            practiceTool = practiceTool(prefs) ?: defaults.practiceTool,
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
-            practiceChart = enumOrNull<PracticeChart>(prefs[PRACTICE_CHART]) ?: defaults.practiceChart,
             practiceScaleType = enumOrNull<ScaleType>(prefs[PRACTICE_SCALE_TYPE]) ?: defaults.practiceScaleType,
             practiceCapoShapes = enumOrNull<PitchClass>(prefs[PRACTICE_CAPO_SHAPES])
                 ?.let { SongKey(it, prefs[PRACTICE_CAPO_MINOR] ?: false) } ?: defaults.practiceCapoShapes,
@@ -358,9 +357,14 @@ class DataStoreSettingsRepository internal constructor(
         private val PRACTICE_ROOT = stringPreferencesKey("practice_root")
         private val PRACTICE_CHORD_QUALITY = stringPreferencesKey("practice_chord_quality")
 
-        /** The Chords tool's [PracticeChart] and the scale ([ScaleType]) picked last, by their names (the root is [PRACTICE_ROOT]). */
-        private val PRACTICE_CHART = stringPreferencesKey("practice_chart")
+        /** The Scales tool's [ScaleType] picked last, by its name (the root is [PRACTICE_ROOT], shared with the chord charts). */
         private val PRACTICE_SCALE_TYPE = stringPreferencesKey("practice_scale_type")
+
+        /**
+         * The Chords · Scales choice of versions before Scales became a tool of its own (Phase 47), "CHORDS" or
+         * "SCALES": read until a tool is picked, so whoever had scales open in Chords opens on Scales.
+         */
+        private val OLD_PRACTICE_CHART = stringPreferencesKey("practice_chart")
 
         /** The Capo helper's shapes picked last: their key's tonic ([PitchClass]) by its name, and whether it is minor; and the capo's fret. */
         private val PRACTICE_CAPO_SHAPES = stringPreferencesKey("practice_capo_shapes")
@@ -422,6 +426,12 @@ class DataStoreSettingsRepository internal constructor(
          * dismissed that tip still counts as used.
          */
         private fun tourSeen(prefs: Preferences): Boolean = prefs[TOUR_SEEN] ?: prefs.asMap().isNotEmpty()
+
+        /** The tool used last, with Chords read as Scales where the old choice ([OLD_PRACTICE_CHART]) still says scales. */
+        private fun practiceTool(prefs: Preferences): PracticeTool? {
+            val saved = enumOrNull<PracticeTool>(prefs[PRACTICE_TOOL])
+            return if (saved == PracticeTool.CHORDS && prefs[OLD_PRACTICE_CHART] == "SCALES") PracticeTool.SCALES else saved
+        }
 
         /** The display a saved wave-view switch stands for: on is the wave, off the needle with cents. */
         private fun displayFromWaveSwitch(showWaves: Boolean?): TunerDisplay? = when (showWaves) {

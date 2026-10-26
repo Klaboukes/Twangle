@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">Métronome</string>
     <string name="practice_tool_chords">Accords</string>
+    <string name="practice_tool_scales">Gammes</string>
     <string name="practice_tool_button">Outil</string>
     <string name="practice_tool_list">Outils</string>
     <string name="practice_root">Fondamentale</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, à vide</string>
     <string name="practice_spoken_fret">%1$s, case %2$d, doigt %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, doigt %1$d sur la case %2$d, cordes %3$s à %4$s</string>
-    <string name="practice_chart_choice">Accords ou gammes</string>
-    <string name="practice_chart_chords">Accords</string>
-    <string name="practice_chart_scales">Gammes</string>
     <string name="practice_scale_type">Gamme</string>
     <string name="practice_scale_type_major">Majeure</string>
     <string name="practice_scale_type_natural_minor">Mineure naturelle</string>

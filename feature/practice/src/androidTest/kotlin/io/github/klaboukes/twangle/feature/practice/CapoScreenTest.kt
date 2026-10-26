@@ -81,7 +81,7 @@ class CapoScreenTest(private val style: VisualStyle) {
     private val savedFrets = mutableListOf<Int>()
     private val opened = mutableListOf<Chord>()
     private var instrumentTaps = 0
-    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
+    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
 
     private fun show(shapes: SongKey = SongKey(PitchClass.C), fret: Int = 0) {
         compose.setContent {

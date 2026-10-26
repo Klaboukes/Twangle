@@ -67,7 +67,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
@@ -360,34 +359,6 @@ private fun ScaleTypePicker(
 }
 
 /**
- * The small Chords · Scales choice under the tuning line: what the tool shows, [chart] picked, as
- * two buttons of the pickers' kind. TalkBack hears one radio group ("Chords or scales").
- */
-@Composable
-internal fun ChartChoice(
-    chart: PracticeChart,
-    onChartChange: (PracticeChart) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val names = mapOf(
-        PracticeChart.CHORDS to stringResource(R.string.practice_chart_chords),
-        PracticeChart.SCALES to stringResource(R.string.practice_chart_scales),
-    )
-    PickerGrid(
-        options = PracticeChart.entries,
-        picked = chart,
-        perRow = PracticeChart.entries.size,
-        maxButtonWidth = CHOICE_BUTTON_MAX_WIDTH,
-        groupLabel = stringResource(R.string.practice_chart_choice),
-        label = { names.getValue(it) },
-        spoken = { names.getValue(it) },
-        tag = PracticeTestTags::chart,
-        onPick = onChartChange,
-        modifier = modifier,
-    )
-}
-
-/**
  * [options] as see-through buttons [perRow] to a row (the last row centred), each as wide as the row
  * allows up to [maxButtonWidth] and 40 dp tall; the [picked] one in the accent's container with an
  * accent outline, as the metronome's meter buttons. Each touch area is its share of the row and 48 dp
@@ -572,7 +543,6 @@ private const val TYPES_PER_ROW = 4
 private val ROOT_BUTTON_MAX_WIDTH = 56.dp
 private val TYPE_BUTTON_MAX_WIDTH = 84.dp
 private val SCALE_BUTTON_MAX_WIDTH = 180.dp
-private val CHOICE_BUTTON_MAX_WIDTH = 132.dp
 private val BUTTON_GAP = 6.dp
 private val BUTTON_HEIGHT = 40.dp
 private val TOUCH_HEIGHT = 48.dp

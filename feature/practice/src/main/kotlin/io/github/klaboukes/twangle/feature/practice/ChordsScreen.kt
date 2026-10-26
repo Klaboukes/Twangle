@@ -70,7 +70,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -80,25 +79,27 @@ import kotlinx.coroutines.withContext
  * docs/design/practice-preview.html): pick a root and a chord type, see its finger shapes on the
  * instrument and [tuning] picked with the instrument button (the player's own tunings too), one big
  * chart at a time, easiest first, with ‹ "2 of 3" › under it and a swipe across the chart for the
- * others; or, with the small Chords · Scales choice, pick a root and a scale and see it on the
- * whole neck, frets 0 to 12, every note named and the root in the accent ([ScaleNeck]).
+ * others. With [scales] it is the Scales tool (a tool of its own since Phase 47, before that a second view
+ * picked with a Chords · Scales choice): pick a root and a scale and see it on the whole neck, frets 0
+ * to 12, every note named and the root in the accent ([ScaleNeck]). The two are one screen, so they
+ * share their saved UI state: the root picked in one is the other's root too.
  *
  * Upright, one column: the tool button ([header]) 8 dp from the top at the start, the instrument and tuning
- * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel), the Chords · Scales choice,
+ * beside it ([ToolAndTuningRow]; [tuningName], heard as [spokenTuningName]; with [onPickInstrument] the instrument button before it opens the instrument and tuning panel),
  * the chord's or the scale's name in words as one button ("C minor seventh ⌄", [ChordNameButton]):
  * it opens one panel with the roots and the chord types or scales ([ChordPanel], the owner's pick B in
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
- * pager. On its side (≥ 600 dp wide and wider than tall) the top row and the choice fill the start
+ * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
  * half, and the panel opens over it; the name button and the chart or neck the end half.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
- * sign). The tool opens on [savedChart], [savedRoot], [savedQuality] and [savedScaleType], and each
- * pick is passed to [onChartChange], [onRootChange], [onQualityChange] or [onScaleTypeChange] to be
+ * sign). The tool opens on [savedRoot], [savedQuality] and [savedScaleType], and each
+ * pick is passed to [onRootChange], [onQualityChange] or [onScaleTypeChange] to be
  * saved. The shapes are worked out off the main thread ([ChordShapeFinder.shapesOf], a few
  * milliseconds); the last ones stay shown meanwhile. A scale's notes take microseconds.
  *
- * TalkBack hears the choice as a radio group, the name button as a heading and a list, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
+ * TalkBack hears the name button as a heading and a list, and the chart or the neck in words ([spokenChart], [spokenScale]); the chord chart is a
  * polite live region, so a new shape or chord is said when it shows, and so is a scale's name (not
  * the whole neck: it is long).
  */
@@ -114,17 +115,14 @@ fun ChordsScreen(
     onQualityChange: (ChordQuality) -> Unit,
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    savedChart: PracticeChart = PracticeChart.DEFAULT,
+    scales: Boolean = false,
     savedScaleType: ScaleType = ScaleType.MAJOR,
-    onChartChange: (PracticeChart) -> Unit = {},
     onScaleTypeChange: (ScaleType) -> Unit = {},
     onPickInstrument: (() -> Unit)? = null,
 ) {
-    var chart by rememberSaveable { mutableStateOf(savedChart) }
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
     var scaleType by rememberSaveable { mutableStateOf(savedScaleType) }
-    val scales = chart == PracticeChart.SCALES
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
     val found = rememberShapes(chord, tuning)
@@ -134,14 +132,6 @@ fun ChordsScreen(
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
 
     val topRow = @Composable { ToolAndTuningRow(header, tuningName, spokenTuningName, onPickInstrument) }
-    val choice = @Composable {
-        ChartChoice(chart, onChartChange = { picked ->
-            if (picked != chart) {
-                chart = picked
-                onChartChange(picked)
-            }
-        })
-    }
     var panelOpen by remember { mutableStateOf(false) }
     val panel = @Composable { width: Dp ->
         ChordPanel(
@@ -200,7 +190,7 @@ fun ChordsScreen(
         }
     }
 
-    BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CHORDS)) {
+    BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(if (scales) PracticeTestTags.SCALES else PracticeTestTags.CHORDS)) {
         val wide = maxWidth >= WIDE_MIN_WIDTH && maxWidth > maxHeight
         val height = maxHeight
         if (wide) {
@@ -213,10 +203,6 @@ fun ChordsScreen(
                     BoxWithConstraints(Modifier.fillMaxWidth()) { panel(maxWidth) }
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
-                    Spacer(Modifier.height(12.dp))
-                    Column(Modifier.widthIn(max = PICKERS_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
-                        choice()
-                    }
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.width(16.dp))
@@ -247,8 +233,6 @@ fun ChordsScreen(
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
                         topRow()
-                        Spacer(Modifier.height(4.dp * gap))
-                        choice()
                         Spacer(Modifier.height(8.dp * gap))
                         name(false)
                         Spacer(Modifier.height(4.dp * gap))
@@ -456,9 +440,6 @@ private val COLUMN_MAX_WIDTH = 480.dp
 /** Upright, a screen shorter than this gets the gaps between the pickers a quarter as wide ([TIGHT_GAPS]). */
 private val ROOMY_HEIGHT = 610.dp
 private const val TIGHT_GAPS = 0.25f
-
-/** On its side, the pickers' column. */
-private val PICKERS_MAX_WIDTH = 400.dp
 
 /**
  * The smallest chart's height (a 6-string chart 1 dp a unit, the smallest it is drawn at, which a

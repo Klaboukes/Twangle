@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">节拍器</string>
     <string name="practice_tool_chords">和弦</string>
+    <string name="practice_tool_scales">音阶</string>
     <string name="practice_tool_button">工具</string>
     <string name="practice_tool_list">工具列表</string>
     <string name="practice_root">根音</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s，空弦</string>
     <string name="practice_spoken_fret">%1$s，%2$d 品，%3$d 指，%4$s</string>
     <string name="practice_spoken_barre">横按，%1$d 指按 %2$d 品，%3$s 弦到 %4$s 弦</string>
-    <string name="practice_chart_choice">和弦或音阶</string>
-    <string name="practice_chart_chords">和弦</string>
-    <string name="practice_chart_scales">音阶</string>
     <string name="practice_scale_type">音阶</string>
     <string name="practice_scale_type_major">大调</string>
     <string name="practice_scale_type_natural_minor">自然小调</string>

@@ -16,7 +16,6 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
@@ -37,10 +36,10 @@ import org.junit.rules.Timeout
 
 /**
  * The Practice tab (Phase 32) in the real app (on in every build since Phase 34): the bar's
- * Metronome tab is called Practice, the tool button at its top (Phase 47) picks the metronome or chords from its list, the
+ * Metronome tab is called Practice, the tool button at its top (Phase 47) picks the metronome, chords or scales from its list, the
  * pick is saved at once, and the tab opens on the tool used last, also after the app starts again;
- * the Chords tool's chord picked is saved too and comes back with it, and so are its Chords · Scales
- * choice and the scale picked. The capo helper (Phase 33) saves its shapes and fret, and a row
+ * the Chords tool's chord picked is saved too and comes back with it, and so is the Scales tool's
+ * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
  * tapped opens its shape in Chords.
  */
 class PracticeTabTest {
@@ -64,7 +63,6 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
-            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
             container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
             container.settingsRepository.setPracticeCapoFret(0)
@@ -77,7 +75,6 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)
-            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
             container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
             container.settingsRepository.setPracticeCapoFret(0)
@@ -105,11 +102,11 @@ class PracticeTabTest {
         return saved()
     }
 
-    /** Waits up to [WAIT_MS] for the saved choice and scale to become [chart] and [type]. */
-    private fun waitForSavedScale(chart: PracticeChart, type: ScaleType): Pair<PracticeChart, ScaleType> {
-        fun saved() = runBlocking { container.settingsRepository.settings.first().let { it.practiceChart to it.practiceScaleType } }
+    /** Waits up to [WAIT_MS] for the saved scale to become [type]. */
+    private fun waitForSavedScale(type: ScaleType): ScaleType {
+        fun saved() = runBlocking { container.settingsRepository.settings.first().practiceScaleType }
         val end = SystemClock.uptimeMillis() + WAIT_MS
-        while (saved() != chart to type && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+        while (saved() != type && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
         return saved()
     }
 
@@ -165,7 +162,10 @@ class PracticeTabTest {
             openPractice()
             assertTrue("a fresh Practice opens on the metronome", shown(MetronomeTestTags.DIAL))
             click(PracticeTestTags.TOOL_BUTTON)
-            assertTrue("the list has both tools", shown(PracticeTestTags.tool(PracticeTool.METRONOME)) && shown(PracticeTestTags.tool(PracticeTool.CHORDS)))
+            assertTrue(
+                "the list has every tool",
+                listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO).all { shown(PracticeTestTags.tool(it)) },
+            )
             assertTrue("the metronome picked", checked(PracticeTestTags.tool(PracticeTool.METRONOME)))
             click(PracticeTestTags.tool(PracticeTool.CHORDS))
             assertTrue("the list closes", gone(PracticeTestTags.tool(PracticeTool.METRONOME)))
@@ -196,15 +196,21 @@ class PracticeTabTest {
             assertTrue("its chart in words", device.wait(Until.hasObject(By.res(PracticeTestTags.CHART).desc(Pattern.compile("(A|La) minor, shape 1 of .*"))), WAIT_MS))
             assertFalse("not on the metronome", device.hasObject(By.res(MetronomeTestTags.DIAL)))
 
-            // Scales: the choice and the scale are saved too, the root shared.
-            click(PracticeTestTags.chart(PracticeChart.SCALES))
+            // Scales, a tool of its own: the tool and the scale are saved too, the root shared.
+            pickTool(PracticeTool.SCALES)
+            assertTrue("the Scales tool shows", shown(PracticeTestTags.SCALES))
             assertTrue("the neck shows", shown(PracticeTestTags.NECK))
+            assertFalse("no chord chart", device.hasObject(By.res(PracticeTestTags.CHART)))
+            assertEquals("the pick is saved", PracticeTool.SCALES, waitForSaved(PracticeTool.SCALES))
             pick(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC))
             assertTrue(
                 "the neck in words, on the root picked for the chord",
                 device.wait(Until.hasObject(By.res(PracticeTestTags.NECK).desc(Pattern.compile("(A|La) minor pentatonic, notes .*"))), WAIT_MS),
             )
-            assertEquals("scales saved", PracticeChart.SCALES to ScaleType.MINOR_PENTATONIC, waitForSavedScale(PracticeChart.SCALES, ScaleType.MINOR_PENTATONIC))
+            assertEquals("the scale is saved", ScaleType.MINOR_PENTATONIC, waitForSavedScale(ScaleType.MINOR_PENTATONIC))
+            // Back to Chords: on the same root.
+            pickTool(PracticeTool.CHORDS)
+            assertTrue("on the chord picked last", picked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR)))
             pickTool(PracticeTool.METRONOME)
             assertTrue("the metronome shows", shown(MetronomeTestTags.DIAL))
             assertEquals("the pick is saved", PracticeTool.METRONOME, waitForSaved(PracticeTool.METRONOME))
@@ -213,11 +219,10 @@ class PracticeTabTest {
 
     @Test
     fun theCapoHelperSavesItsPicksAndOpensAShapeInChords() {
-        runBlocking { container.settingsRepository.setPracticeChart(PracticeChart.SCALES) }
         ActivityScenario.launch(MainActivity::class.java).use {
             openPractice()
-            // Chords first, on scales, so it has state of its own to be replaced.
-            pickTool(PracticeTool.CHORDS)
+            // Scales first, so Chords and Scales have state of their own to be replaced.
+            pickTool(PracticeTool.SCALES)
             assertTrue("scales show", shown(PracticeTestTags.NECK))
 
             pickTool(PracticeTool.CAPO)
@@ -230,14 +235,14 @@ class PracticeTabTest {
             assertEquals("the fret is saved", 3, waitForSavedFret(3))
 
             click(PracticeTestTags.capoRow(Chord.of(PitchClass.F, ChordQuality.MAJOR)))
-            assertTrue("Chords shows", shown(PracticeTestTags.CHART))
+            assertTrue("Chords shows", shown(PracticeTestTags.CHORDS) && shown(PracticeTestTags.CHART))
+            assertFalse("not scales", device.hasObject(By.res(PracticeTestTags.NECK)))
             assertTrue(
                 "on the shape tapped",
                 picked(PracticeTestTags.root(PitchClass.F), PracticeTestTags.type(ChordQuality.MAJOR)),
             )
             assertTrue("the tool button on Chords", toolPicked(PracticeTool.CHORDS))
             assertEquals("the chord is saved", PitchClass.F to ChordQuality.MAJOR, waitForSavedChord(PitchClass.F, ChordQuality.MAJOR))
-            assertEquals("chords, not scales", PracticeChart.CHORDS to ScaleType.MAJOR, waitForSavedScale(PracticeChart.CHORDS, ScaleType.MAJOR))
             assertEquals("the tool is saved", PracticeTool.CHORDS, waitForSaved(PracticeTool.CHORDS))
 
             pickTool(PracticeTool.CAPO)

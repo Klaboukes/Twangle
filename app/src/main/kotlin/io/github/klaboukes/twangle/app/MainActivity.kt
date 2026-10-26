@@ -56,7 +56,6 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.AppSettings
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
@@ -326,10 +325,11 @@ class MainActivity : AppCompatActivity() {
     /**
      * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab]) it
      * is the metronome alone. With it on it is Practice
-     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome, chords (and scales)
+     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome, chords, scales
      * or, with its own switch ([ToolSwitches.capoHelper]), the capo helper (Phase 33), and the tab
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
-     * tool keeps its own saved UI state while another shows; leaving the metronome stops it, as
+     * tool keeps its own saved UI state while another shows, but for Chords and Scales, one screen that
+     * shares it (one root for both); leaving the metronome stops it, as
      * leaving the tab does. A chord tapped in the capo helper opens in Chords: its saved state is
      * dropped, so Chords opens afresh on that chord (saved too, as if picked there). The instrument
      * button in Chords and the capo helper opens the instrument and tuning panel over the tool
@@ -366,7 +366,8 @@ class MainActivity : AppCompatActivity() {
             { PracticeToolButton(tool = tool, onToolChange = pickTool, tools = offered) }
         }
         val toolState = rememberSaveableStateHolder()
-        toolState.SaveableStateProvider(tool.name) {
+        // Chords and Scales are one screen ([ChordsScreen]) that keeps its saved state across them.
+        toolState.SaveableStateProvider(if (tool == PracticeTool.SCALES) PracticeTool.CHORDS.name else tool.name) {
             when (if (header == null) PracticeTool.METRONOME else tool) {
                 PracticeTool.METRONOME -> {
                     // The volume keys set the clicks' loudness (the media volume).
@@ -384,7 +385,7 @@ class MainActivity : AppCompatActivity() {
                         header = header,
                     )
                 }
-                PracticeTool.CHORDS -> ChordsScreen(
+                PracticeTool.CHORDS, PracticeTool.SCALES -> ChordsScreen(
                     tuning = settings.tuning,
                     tuningName = practiceTuningName(settings),
                     spokenTuningName = spokenTuning(settings),
@@ -394,9 +395,8 @@ class MainActivity : AppCompatActivity() {
                     onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
                     onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
                     header = header ?: {},
-                    savedChart = if (opened != null) PracticeChart.CHORDS else settings.practiceChart,
+                    scales = tool == PracticeTool.SCALES,
                     savedScaleType = settings.practiceScaleType,
-                    onChartChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChart(it) } },
                     onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
                     onPickInstrument = openPanel,
                 )
@@ -414,7 +414,6 @@ class MainActivity : AppCompatActivity() {
                         lifecycleScope.launch {
                             container.settingsRepository.setPracticeRoot(chord.root)
                             container.settingsRepository.setPracticeChordQuality(chord.quality)
-                            container.settingsRepository.setPracticeChart(PracticeChart.CHORDS)
                         }
                         pickTool(PracticeTool.CHORDS)
                     },

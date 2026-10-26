@@ -72,11 +72,10 @@ What each does:
 | `metronomeMeter` | `FOUR_FOUR` | `Meter` (`:core:dsp`) by name; key `metronome_meter`; unknown gives 4/4 |
 | `metronomeVibrate` | false | Key `metronome_vibrate`: "Vibrate on the beat" |
 | `metronomeClickSound` | `WOOD_BLOCK` | `ClickSound` (`:core:dsp`) by name; key `metronome_click_sound`; the metronome's click, saved when picked (Phase 45); unknown gives the wood block |
-| `practiceTool` | `METRONOME` | `PracticeTool` by name (`METRONOME`, `CHORDS`, `CAPO`); key `practice_tool`; the Practice tab's tool used last, saved when picked, written only with the Practice tab's switch on (Phase 32); unknown gives the metronome |
+| `practiceTool` | `METRONOME` | `PracticeTool` by name (`METRONOME`, `CHORDS`, `SCALES`, `CAPO`); key `practice_tool`; the Practice tab's tool used last, saved when picked, written only with the Practice tab's switch on (Phase 32); unknown gives the metronome; a saved `CHORDS` reads as `SCALES` while the old key `practice_chart` (the Chords · Scales choice before Phase 47) says `SCALES`, and picking a tool clears that key |
 | `practiceRoot` | `C` | `PitchClass` by name; key `practice_root`; the Chords tool's root picked last, shared by its chords and scales, saved when picked (Phase 32); unknown gives C |
 | `practiceChordQuality` | `MAJOR` | `ChordQuality` by name; key `practice_chord_quality`; the Chords tool's chord type picked last, saved when picked (Phase 32); unknown gives major |
-| `practiceChart` | `CHORDS` | `PracticeChart` by name (`CHORDS`, `SCALES`); key `practice_chart`; the Chords tool's Chords · Scales choice picked last, saved when picked (Phase 32); unknown gives chords |
-| `practiceScaleType` | `MAJOR` | `ScaleType` by name; key `practice_scale_type`; the scale picked last in the Chords tool, saved when picked (Phase 32); unknown gives major |
+| `practiceScaleType` | `MAJOR` | `ScaleType` by name; key `practice_scale_type`; the scale picked last in the Scales tool, saved when picked (Phase 32); unknown gives major |
 | `practiceCapoShapes` | C major | `SongKey` (`:core:dsp`): its tonic `PitchClass` by name, key `practice_capo_shapes`, and whether it is minor, key `practice_capo_minor` (boolean); the Capo helper's "Shapes I play" picked last, saved when picked (Phase 33); unknown gives C, and shapes the helper doesn't offer open on C |
 | `practiceCapoFret` | 0 | Key `practice_capo_fret` (int); the Capo helper's capo fret picked last, 0 (no capo) to 11, saved at each step (Phase 33); clamped in the setter, out of range when read gives 0 |
 

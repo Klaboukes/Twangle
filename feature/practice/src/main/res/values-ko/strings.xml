@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">메트로놈</string>
     <string name="practice_tool_chords">코드</string>
+    <string name="practice_tool_scales">스케일</string>
     <string name="practice_tool_button">도구</string>
     <string name="practice_tool_list">도구 목록</string>
     <string name="practice_root">근음</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, 개방</string>
     <string name="practice_spoken_fret">%1$s, %2$d 프렛, %3$d번 손가락, %4$s</string>
     <string name="practice_spoken_barre">바레, %1$d번 손가락으로 %2$d 프렛, %3$s 줄부터 %4$s 줄까지</string>
-    <string name="practice_chart_choice">코드 또는 스케일</string>
-    <string name="practice_chart_chords">코드</string>
-    <string name="practice_chart_scales">스케일</string>
     <string name="practice_scale_type">스케일</string>
     <string name="practice_scale_type_major">메이저</string>
     <string name="practice_scale_type_natural_minor">내추럴 마이너</string>

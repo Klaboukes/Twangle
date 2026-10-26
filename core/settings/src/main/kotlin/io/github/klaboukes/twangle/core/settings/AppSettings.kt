@@ -178,8 +178,14 @@ enum class PracticeTool {
     /** The metronome, the Metronome tab's screen. */
     METRONOME,
 
-    /** Chord charts and scales for the picked instrument and tuning. */
+    /** Chord charts for the picked instrument and tuning. */
     CHORDS,
+
+    /**
+     * A scale on the whole neck of the picked instrument and tuning, on the same root as [CHORDS]
+     * (Phase 47; until then a second view of [CHORDS], picked with a Chords · Scales choice).
+     */
+    SCALES,
 
     /** The capo helper (Phase 33, with its own switch, [ToolSwitches.capoHelper]). */
     CAPO,
@@ -188,25 +194,6 @@ enum class PracticeTool {
     companion object {
         /** A fresh install opens Practice on the metronome, the tab it used to be. */
         val DEFAULT = METRONOME
-    }
-}
-
-/**
- * What the Practice tab's Chords tool shows (Phase 32): chord charts or a scale on the neck, picked
- * with the small Chords · Scales choice under its tuning line. Saved in settings by [name], so don't
- * rename the entries.
- */
-enum class PracticeChart {
-    /** Finger charts of a chord. */
-    CHORDS,
-
-    /** A scale on the whole neck, frets 0 to 12. */
-    SCALES,
-    ;
-
-    companion object {
-        /** A fresh install shows chords, as the tool did before scales came. */
-        val DEFAULT = CHORDS
     }
 }
 
@@ -276,13 +263,11 @@ data class AppSettings(
     val metronomeClickSound: ClickSound = ClickSound.DEFAULT,
     /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
     val practiceTool: PracticeTool = PracticeTool.DEFAULT,
-    /** The root picked last in the Practice tab's chord charts (C on a fresh install). */
+    /** The root picked last in the Practice tab's chord charts and scales, one for both (C on a fresh install). */
     val practiceRoot: PitchClass = PitchClass.C,
     /** The chord type picked last in the Practice tab's chord charts (major on a fresh install). */
     val practiceChordQuality: ChordQuality = ChordQuality.MAJOR,
-    /** Chords or scales, as picked last in the Practice tab's Chords tool (chords on a fresh install). */
-    val practiceChart: PracticeChart = PracticeChart.DEFAULT,
-    /** The scale picked last in the Chords tool's scales, on [practiceRoot] (major on a fresh install). */
+    /** The scale picked last in the Scales tool, on [practiceRoot] (major on a fresh install). */
     val practiceScaleType: ScaleType = ScaleType.MAJOR,
     /** The shapes picked last in the Practice tab's Capo helper, by their key (C shapes on a fresh install). */
     val practiceCapoShapes: SongKey = SongKey(PitchClass.C),

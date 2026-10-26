@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">Metronom</string>
     <string name="practice_tool_chords">Akorlar</string>
+    <string name="practice_tool_scales">Gamlar</string>
     <string name="practice_tool_button">Araç</string>
     <string name="practice_tool_list">Araçlar</string>
     <string name="practice_root">Kök nota</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, açık</string>
     <string name="practice_spoken_fret">%1$s, %2$d. perde, %3$d. parmak, %4$s</string>
     <string name="practice_spoken_barre">barre, %1$d. parmak %2$d. perdede, teller %3$s ile %4$s arası</string>
-    <string name="practice_chart_choice">Akorlar veya gamlar</string>
-    <string name="practice_chart_chords">Akorlar</string>
-    <string name="practice_chart_scales">Gamlar</string>
     <string name="practice_scale_type">Gam</string>
     <string name="practice_scale_type_major">Majör</string>
     <string name="practice_scale_type_natural_minor">Doğal minör</string>

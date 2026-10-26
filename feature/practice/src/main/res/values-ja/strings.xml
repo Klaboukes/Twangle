@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">メトロノーム</string>
     <string name="practice_tool_chords">コード</string>
+    <string name="practice_tool_scales">スケール</string>
     <string name="practice_tool_button">ツール</string>
     <string name="practice_tool_list">ツール一覧</string>
     <string name="practice_root">ルート</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s、開放</string>
     <string name="practice_spoken_fret">%1$s、%2$d フレット、%3$d 指、%4$s</string>
     <string name="practice_spoken_barre">セーハ、%1$d 指で %2$d フレット、%3$s 弦から %4$s 弦まで</string>
-    <string name="practice_chart_choice">コードかスケール</string>
-    <string name="practice_chart_chords">コード</string>
-    <string name="practice_chart_scales">スケール</string>
     <string name="practice_scale_type">スケール</string>
     <string name="practice_scale_type_major">メジャー</string>
     <string name="practice_scale_type_natural_minor">ナチュラルマイナー</string>

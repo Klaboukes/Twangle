@@ -3,6 +3,7 @@
     <!-- Practice tab (Phase 32): the tools' names on the tool button at its top and in its list (Phase 47). -->
     <string name="practice_tool_metronome">Metronome</string>
     <string name="practice_tool_chords">Chords</string>
+    <string name="practice_tool_scales">Scales</string>
     <!-- TalkBack (Phase 47): the tool button at the top of Practice, said before the tool picked ("Tool, Chords, drop-down list"), and the list of tools it opens. -->
     <string name="practice_tool_button">Tool</string>
     <string name="practice_tool_list">Tools</string>
@@ -47,12 +48,7 @@
     <string name="practice_spoken_open">%1$s, open</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, finger %3$d, %4$s</string>
     <string name="practice_spoken_barre">barre, fret %2$d, finger %1$d, strings %3$s to %4$s</string>
-    <!-- Scales (Phase 32): TalkBack, the small Chords · Scales choice under the tuning line of the Chords tool. -->
-    <string name="practice_chart_choice">Chords or scales</string>
-    <!-- The choice's two buttons: chord charts, or a scale on the neck. -->
-    <string name="practice_chart_chords">Chords</string>
-    <string name="practice_chart_scales">Scales</string>
-    <!-- TalkBack, the group of scale buttons (Major, Natural minor …). -->
+    <!-- Scales (Phase 32, a tool of its own since Phase 47): TalkBack, the group of scale buttons (Major, Natural minor …). -->
     <string name="practice_scale_type">Scale</string>
     <!-- The scale buttons, two or three to a row (long names are set smaller to fit). -->
     <string name="practice_scale_type_major">Major</string>
@@ -75,7 +71,7 @@
     <string name="practice_spoken_scale_open">open %1$s</string>
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, root</string>
-    <!-- Capo helper (Phase 33): its segment of the Practice tool switch. -->
+    <!-- Capo helper (Phase 33): its name on the tool button and in its list. -->
     <string name="practice_tool_capo">Capo</string>
     <!-- Over the button that picks the chord shapes the player knows (C, D, E, G, A, Dm, Em, Am). -->
     <string name="practice_capo_shapes">Shapes I play</string>

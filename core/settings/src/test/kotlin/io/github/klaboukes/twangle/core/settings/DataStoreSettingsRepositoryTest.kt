@@ -110,7 +110,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome clicks with the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
-        assertEquals("the Chords tool opens on chords", PracticeChart.CHORDS, settings.practiceChart)
         assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("the capo helper opens on C shapes", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("the capo helper opens with no capo", 0, settings.practiceCapoFret)
@@ -141,10 +140,9 @@ class DataStoreSettingsRepositoryTest {
         repo.setMetronomeMeter(Meter.SEVEN_EIGHT)
         repo.setMetronomeVibrate(true)
         repo.setMetronomeClickSound(ClickSound.CLAVES)
-        repo.setPracticeTool(PracticeTool.CHORDS)
+        repo.setPracticeTool(PracticeTool.SCALES)
         repo.setPracticeRoot(PitchClass.A_SHARP)
         repo.setPracticeChordQuality(ChordQuality.MINOR_SEVENTH)
-        repo.setPracticeChart(PracticeChart.SCALES)
         repo.setPracticeScaleType(ScaleType.BLUES)
         repo.setPracticeCapoShapes(SongKey(PitchClass.A, minor = true))
         repo.setPracticeCapoFret(3)
@@ -172,10 +170,9 @@ class DataStoreSettingsRepositoryTest {
             metronomeMeter = Meter.SEVEN_EIGHT,
             metronomeVibrate = true,
             metronomeClickSound = ClickSound.CLAVES,
-            practiceTool = PracticeTool.CHORDS,
+            practiceTool = PracticeTool.SCALES,
             practiceRoot = PitchClass.A_SHARP,
             practiceChordQuality = ChordQuality.MINOR_SEVENTH,
-            practiceChart = PracticeChart.SCALES,
             practiceScaleType = ScaleType.BLUES,
             practiceCapoShapes = SongKey(PitchClass.A, minor = true),
             practiceCapoFret = 3,
@@ -212,7 +209,6 @@ class DataStoreSettingsRepositoryTest {
             setPracticeTool(PracticeTool.CHORDS)
             setPracticeRoot(PitchClass.F_SHARP)
             setPracticeChordQuality(ChordQuality.SUS4)
-            setPracticeChart(PracticeChart.SCALES)
             setPracticeScaleType(ScaleType.MINOR_PENTATONIC)
             setPracticeTool(PracticeTool.CAPO)
             setPracticeCapoShapes(SongKey(PitchClass.G))
@@ -237,7 +233,6 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome's click is kept", ClickSound.COWBELL, settings.metronomeClickSound)
         assertEquals("the Practice tool used last is kept", PracticeTool.CAPO, settings.practiceTool)
         assertEquals("the chord picked last is kept", PitchClass.F_SHARP to ChordQuality.SUS4, settings.practiceRoot to settings.practiceChordQuality)
-        assertEquals("chords or scales is kept", PracticeChart.SCALES, settings.practiceChart)
         assertEquals("the scale picked last is kept", ScaleType.MINOR_PENTATONIC, settings.practiceScaleType)
         assertEquals("the capo's shapes are kept", SongKey(PitchClass.G), settings.practiceCapoShapes)
         assertEquals("the capo's fret is kept", 5, settings.practiceCapoFret)
@@ -397,7 +392,7 @@ class DataStoreSettingsRepositoryTest {
             it[floatPreferencesKey("a4_hz")] = 1000f
             it[stringPreferencesKey("metronome_meter")] = "THIRTEEN_EIGHT"
             it[stringPreferencesKey("metronome_click_sound")] = "GONG"
-            it[stringPreferencesKey("practice_chart")] = "ARPEGGIOS"
+            it[stringPreferencesKey("practice_tool")] = "TUNER"
             it[stringPreferencesKey("practice_scale_type")] = "HUNGARIAN_MINOR"
             it[stringPreferencesKey("practice_capo_shapes")] = "H"
             it[booleanPreferencesKey("practice_capo_minor")] = true
@@ -419,7 +414,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(466f, settings.a4Hz)
         assertEquals("an unknown meter gives 4/4", Meter.DEFAULT, settings.metronomeMeter)
         assertEquals("an unknown click gives the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
-        assertEquals("an unknown chart gives chords", PracticeChart.CHORDS, settings.practiceChart)
+        assertEquals("an unknown tool gives the metronome", PracticeTool.METRONOME, settings.practiceTool)
         assertEquals("an unknown scale gives major", ScaleType.MAJOR, settings.practiceScaleType)
         assertEquals("unknown capo shapes give C", SongKey(PitchClass.C), settings.practiceCapoShapes)
         assertEquals("a capo fret out of range gives no capo", 0, settings.practiceCapoFret)
@@ -445,6 +440,40 @@ class DataStoreSettingsRepositoryTest {
         val store = dataStore()
         assertEquals(TunerDisplay.WAVE, repository(store).settings.first().display)
         assertEquals("the old switch is cleared", null, store.data.first()[booleanPreferencesKey("show_waves")])
+    }
+
+    @Test
+    fun `whoever had scales open in Chords opens on the Scales tool`() = runTest {
+        val store = dataStore()
+        store.edit {
+            it[stringPreferencesKey("practice_tool")] = "CHORDS"
+            it[stringPreferencesKey("practice_chart")] = "SCALES"
+        }
+        assertEquals(PracticeTool.SCALES, repository(store).settings.first().practiceTool)
+
+        store.edit { it[stringPreferencesKey("practice_chart")] = "CHORDS" }
+        assertEquals("chords open stays on Chords", PracticeTool.CHORDS, repository(store).settings.first().practiceTool)
+
+        store.edit {
+            it[stringPreferencesKey("practice_tool")] = "CAPO"
+            it[stringPreferencesKey("practice_chart")] = "SCALES"
+        }
+        assertEquals("another tool used last stays", PracticeTool.CAPO, repository(store).settings.first().practiceTool)
+    }
+
+    @Test
+    fun `the old chords or scales choice is read only until a tool is picked`() = runTest {
+        dataStore().edit {
+            it[stringPreferencesKey("practice_tool")] = "CHORDS"
+            it[stringPreferencesKey("practice_chart")] = "SCALES"
+        }
+        close()
+        repository().setPracticeTool(PracticeTool.CHORDS)
+        close()
+
+        val store = dataStore()
+        assertEquals("Chords picked after the update stays Chords", PracticeTool.CHORDS, repository(store).settings.first().practiceTool)
+        assertEquals("the old choice is cleared", null, store.data.first()[stringPreferencesKey("practice_chart")])
     }
 
     @Test

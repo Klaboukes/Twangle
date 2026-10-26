@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">Metronoom</string>
     <string name="practice_tool_chords">Akkoorden</string>
+    <string name="practice_tool_scales">Toonladders</string>
     <string name="practice_tool_button">Functie</string>
     <string name="practice_tool_list">Functies</string>
     <string name="practice_root">Grondtoon</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, open</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, vinger %3$d, %4$s</string>
     <string name="practice_spoken_barre">barré, fret %2$d, vinger %1$d, snaren %3$s tot %4$s</string>
-    <string name="practice_chart_choice">Akkoorden of toonladders</string>
-    <string name="practice_chart_chords">Akkoorden</string>
-    <string name="practice_chart_scales">Toonladders</string>
     <string name="practice_scale_type">Toonladder</string>
     <string name="practice_scale_type_major">Majeur</string>
     <string name="practice_scale_type_natural_minor">Natuurlijk mineur</string>

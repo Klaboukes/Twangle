@@ -5,19 +5,18 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.PracticeChart
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 
 /**
  * The tools the Practice tab (Phase 32) offers with [tools], in its tool list's order: the metronome,
- * chords and, with its own switch, the capo helper (Phase 33). None while the Practice tab's switch
+ * chords, scales (a tool of its own since Phase 47) and, with its own switch, the capo helper (Phase 33). None while the Practice tab's switch
  * is off: the tab is then the plain Metronome tab, with no tool button.
  */
 fun practiceToolsFor(tools: ToolSwitches): List<PracticeTool> = when {
     !tools.practiceTab -> emptyList()
-    tools.capoHelper -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO)
-    else -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS)
+    tools.capoHelper -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
+    else -> listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES)
 }
 
 /** The tool Practice opens on: the one used last ([saved]) while it is [offered], else the metronome. */
@@ -32,10 +31,13 @@ object PracticeTestTags {
     /** The Chords tool's screen. */
     const val CHORDS = "practice_chords"
 
+    /** The Scales tool's screen. */
+    const val SCALES = "practice_scales"
+
     /** A tool's row in the tool button's list, e.g. "practice_tool_chords". */
     fun tool(tool: PracticeTool): String = "practice_tool_" + tool.name.lowercase()
 
-    /** The Chords and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
+    /** The Chords, Scales and Capo tools' line naming the instrument and tuning ("Guitar · Standard"). */
     const val TUNING = "practice_tuning"
 
     /** The instrument and tuning button (a headstock) before that line, which opens the panel. */
@@ -46,9 +48,6 @@ object PracticeTestTags {
 
     /** A chord type button, e.g. "practice_type_minor". */
     fun type(quality: ChordQuality): String = "practice_type_" + quality.name.lowercase()
-
-    /** A button of the Chords · Scales choice, e.g. "practice_chart_scales". */
-    fun chart(chart: PracticeChart): String = "practice_chart_" + chart.name.lowercase()
 
     /** A scale type button, e.g. "practice_scale_minor_pentatonic". */
     fun scale(type: ScaleType): String = "practice_scale_" + type.name.lowercase()

@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">मेट्रोनोम</string>
     <string name="practice_tool_chords">कॉर्ड</string>
+    <string name="practice_tool_scales">स्केल</string>
     <string name="practice_tool_button">टूल</string>
     <string name="practice_tool_list">सभी टूल</string>
     <string name="practice_root">मूल स्वर</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s, खुला</string>
     <string name="practice_spoken_fret">%1$s, फ़्रेट %2$d, उंगली %3$d, %4$s</string>
     <string name="practice_spoken_barre">बैरे, उंगली %1$d फ़्रेट %2$d पर, तार %3$s से %4$s तक</string>
-    <string name="practice_chart_choice">कॉर्ड या स्केल</string>
-    <string name="practice_chart_chords">कॉर्ड</string>
-    <string name="practice_chart_scales">स्केल</string>
     <string name="practice_scale_type">स्केल</string>
     <string name="practice_scale_type_major">मेजर</string>
     <string name="practice_scale_type_natural_minor">नैचुरल माइनर</string>

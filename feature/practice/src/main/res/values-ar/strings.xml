@@ -2,6 +2,7 @@
 <resources>
     <string name="practice_tool_metronome">المترونوم</string>
     <string name="practice_tool_chords">الكوردات</string>
+    <string name="practice_tool_scales">السلالم</string>
     <string name="practice_tool_button">الأداة</string>
     <string name="practice_tool_list">الأدوات</string>
     <string name="practice_root">النغمة الأساسية</string>
@@ -34,9 +35,6 @@
     <string name="practice_spoken_open">%1$s، مفتوح</string>
     <string name="practice_spoken_fret">%1$s، الدستان %2$d، الإصبع %3$d، %4$s</string>
     <string name="practice_spoken_barre">باريه، الإصبع %1$d على الدستان %2$d، الأوتار من %3$s إلى %4$s</string>
-    <string name="practice_chart_choice">الكوردات أو السلالم</string>
-    <string name="practice_chart_chords">الكوردات</string>
-    <string name="practice_chart_scales">السلالم</string>
     <string name="practice_scale_type">السلم</string>
     <string name="practice_scale_type_major">ماجور</string>
     <string name="practice_scale_type_natural_minor">مينور طبيعي</string>
