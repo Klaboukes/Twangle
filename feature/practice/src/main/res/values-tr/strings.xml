@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Majör pentatonik</string>
     <string name="practice_scale_type_minor_pentatonic">Minör pentatonik</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Majör blues</string>
     <string name="practice_scale_type_dorian">Doryen</string>
     <string name="practice_scale_type_phrygian">Frigyen</string>
+    <string name="practice_scale_type_phrygian_dominant">Frigyen dominant</string>
     <string name="practice_scale_type_lydian">Lidyen</string>
     <string name="practice_scale_type_mixolydian">Miksolidyen</string>
     <string name="practice_scale_type_locrian">Lokriyen</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s majör pentatonik</string>
     <string name="practice_scale_minor_pentatonic">%1$s minör pentatonik</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s majör blues</string>
     <string name="practice_scale_dorian">%1$s doryen</string>
     <string name="practice_scale_phrygian">%1$s frigyen</string>
+    <string name="practice_scale_phrygian_dominant">%1$s frigyen dominant</string>
     <string name="practice_scale_lydian">%1$s lidyen</string>
     <string name="practice_scale_mixolydian">%1$s miksolidyen</string>
     <string name="practice_scale_locrian">%1$s lokriyen</string>

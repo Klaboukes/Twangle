@@ -257,9 +257,10 @@ class ScalesScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The modes and the minors (Phase 47): each with its full name on the button, spelled in its parent major key
-     * (B♭ Mixolydian with E♭ major's A♭) or the minor key with its raised notes; the colour note's places marked for TalkBack as
-     * the neck rings them, and none for the scales without one.
+     * The modes and the minors (Phase 47), Phrygian dominant and major blues (Phase 49): each with its full name on the button,
+     * spelled in its parent major key (B♭ Mixolydian with E♭ major's A♭), the minor key with its raised notes, Phrygian dominant
+     * in the harmonic minor's a fourth above (E F G♯ …), major blues in the major key with its blue note flat (G A B♭ B …); the
+     * colour note's places marked for TalkBack as the neck rings them, and none for the scales without one.
      */
     @Test
     fun theModesAndTheMinorsWithTheirColourNote() {
@@ -277,6 +278,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
             Case(PitchClass.D, ScaleType.HARMONIC_MINOR, "D harmonic minor", "D, E, F, G, A, B flat, C sharp"),
             Case(PitchClass.A, ScaleType.MELODIC_MINOR, "A melodic minor", "A, B, C, D, E, F sharp, G sharp"),
             Case(PitchClass.A, ScaleType.NATURAL_MINOR, "A minor", "A, B, C, D, E, F, G"),
+            Case(PitchClass.E, ScaleType.PHRYGIAN_DOMINANT, "E Phrygian dominant", "E, F, G sharp, A, B, C, D"),
+            Case(PitchClass.G, ScaleType.MAJOR_BLUES, "G major blues", "G, A, B flat, B, D, E"),
         )
         for (case in cases) {
             pick(PracticeTestTags.root(case.root), PracticeTestTags.scale(case.type))
@@ -328,7 +331,9 @@ class ScalesScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.scale(ScaleType.MAJOR)).assert(radio).assert(hasContentDescription("Major")).assertTextEquals("Major")
         node(PracticeTestTags.scale(ScaleType.NATURAL_MINOR)).assert(radio).assert(hasContentDescription("Minor")).assertTextEquals("Minor")
         node(PracticeTestTags.scale(ScaleType.MELODIC_MINOR)).assert(radio).assert(hasContentDescription("Melodic minor"))
-        // All twelve one radio group, "Scale", with no headers.
+        node(PracticeTestTags.scale(ScaleType.MAJOR_BLUES)).assert(radio).assert(hasContentDescription("Major blues")).assertTextEquals("Major blues")
+        node(PracticeTestTags.scale(ScaleType.PHRYGIAN_DOMINANT)).assert(radio).assert(hasContentDescription("Phrygian dominant")).assertTextEquals("Phrygian dominant")
+        // All fourteen one radio group, "Scale", with no headers.
         for (type in ScaleType.entries) {
             node(PracticeTestTags.scale(type)).assert(hasParent(hasContentDescription("Scale") and SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
         }
@@ -402,8 +407,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The panel under the name where it fits (where not [wide]): the roots in two rows of six, then the twelve scales in one list,
-     * the most used first, two to a row in six full rows, one right under the other (no headers between them), all of one size,
+     * The panel under the name where it fits (where not [wide]): the roots in two rows of six, then the fourteen scales in one list,
+     * the most used first, two to a row in seven full rows, one right under the other (no headers between them), all of one size,
      * each wholly shown (scrolling the panel where it must; with [texts], every text in it too); Back closes it.
      */
     private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
@@ -419,7 +424,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
             y
         }
         val steps = rows.zipWithNext { a, b -> b - a }
-        assertTrue("$case six rows, each right under the one before $rows", steps.all { it > 0f } && steps.toSet().size == 1)
+        assertEquals("$case every scale in a row", ScaleType.entries.toSet(), ROWS.flatMap { it.toList() }.toSet())
+        assertTrue("$case seven rows, each right under the one before $rows", rows.size == 7 && steps.all { it > 0f } && steps.toSet().size == 1)
         val sizes = ScaleType.entries.map { node(scale(it)).fetchSemanticsNode().size }.toSet()
         assertEquals("$case every scale button of one size", 1, sizes.size)
         // On its side it opens over the start half; where can't be told here: the forced size scales the screen, not the popup's window.
@@ -486,7 +492,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             pick(PracticeTestTags.root(PitchClass.D), PracticeTestTags.scale(ScaleType.DORIAN))
             val dorian = nameLayout()
             if (case.fontScale == 1f) assertEquals("$name D Dorian on one line", 1, dorian.lineCount)
-            for (type in listOf(ScaleType.MINOR_PENTATONIC, ScaleType.HARMONIC_MINOR)) {
+            for (type in listOf(ScaleType.MINOR_PENTATONIC, ScaleType.HARMONIC_MINOR, ScaleType.PHRYGIAN_DOMINANT)) {
                 pick(PracticeTestTags.root(PitchClass.G_SHARP), PracticeTestTags.scale(type))
                 val long = picker().getBoundsInRoot()
                 val what = "$name G♯ $type"
@@ -514,8 +520,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
     /**
      * Every language at 2× text, upright on a 320 dp phone and on its side, the grid too, with the longest full names on the
-     * name button, each in the one steady height: G♯ minor and major pentatonic, harmonic and melodic minor, and Mixolydian (the
-     * longest of the modes). Only with `--languages`.
+     * name button, each in the one steady height: G♯ minor and major pentatonic, harmonic and melodic minor, Mixolydian (the
+     * longest of the modes), Phrygian dominant and major blues. Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -553,15 +559,17 @@ class ScalesScreenTest(private val style: VisualStyle) {
         private val ROWS = listOf(
             ScaleType.MAJOR to ScaleType.NATURAL_MINOR,
             ScaleType.MAJOR_PENTATONIC to ScaleType.MINOR_PENTATONIC,
-            ScaleType.BLUES to ScaleType.DORIAN,
-            ScaleType.MIXOLYDIAN to ScaleType.HARMONIC_MINOR,
-            ScaleType.PHRYGIAN to ScaleType.LYDIAN,
+            ScaleType.BLUES to ScaleType.MAJOR_BLUES,
+            ScaleType.DORIAN to ScaleType.MIXOLYDIAN,
+            ScaleType.HARMONIC_MINOR to ScaleType.LYDIAN,
+            ScaleType.PHRYGIAN to ScaleType.PHRYGIAN_DOMINANT,
             ScaleType.MELODIC_MINOR to ScaleType.LOCRIAN,
         )
 
         /** The longest full names in most languages. */
         private val LONG_NAMES = listOf(
             ScaleType.MINOR_PENTATONIC, ScaleType.MAJOR_PENTATONIC, ScaleType.HARMONIC_MINOR, ScaleType.MELODIC_MINOR, ScaleType.MIXOLYDIAN,
+            ScaleType.PHRYGIAN_DOMINANT, ScaleType.MAJOR_BLUES,
         )
 
         private val TOOLS = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)

@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">मेजर पेंटाटोनिक</string>
     <string name="practice_scale_type_minor_pentatonic">माइनर पेंटाटोनिक</string>
     <string name="practice_scale_type_blues">ब्लूज़</string>
+    <string name="practice_scale_type_major_blues">मेजर ब्लूज़</string>
     <string name="practice_scale_type_dorian">डोरियन</string>
     <string name="practice_scale_type_phrygian">फ़्रीजियन</string>
+    <string name="practice_scale_type_phrygian_dominant">फ़्रीजियन डॉमिनेंट</string>
     <string name="practice_scale_type_lydian">लिडियन</string>
     <string name="practice_scale_type_mixolydian">मिक्सोलिडियन</string>
     <string name="practice_scale_type_locrian">लोक्रियन</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s मेजर पेंटाटोनिक</string>
     <string name="practice_scale_minor_pentatonic">%1$s माइनर पेंटाटोनिक</string>
     <string name="practice_scale_blues">%1$s ब्लूज़</string>
+    <string name="practice_scale_major_blues">%1$s मेजर ब्लूज़</string>
     <string name="practice_scale_dorian">%1$s डोरियन</string>
     <string name="practice_scale_phrygian">%1$s फ़्रीजियन</string>
+    <string name="practice_scale_phrygian_dominant">%1$s फ़्रीजियन डॉमिनेंट</string>
     <string name="practice_scale_lydian">%1$s लिडियन</string>
     <string name="practice_scale_mixolydian">%1$s मिक्सोलिडियन</string>
     <string name="practice_scale_locrian">%1$s लोक्रियन</string>

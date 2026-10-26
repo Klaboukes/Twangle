@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">خماسي ماجور</string>
     <string name="practice_scale_type_minor_pentatonic">خماسي مينور</string>
     <string name="practice_scale_type_blues">بلوز</string>
+    <string name="practice_scale_type_major_blues">بلوز ماجور</string>
     <string name="practice_scale_type_dorian">دوري</string>
     <string name="practice_scale_type_phrygian">فريجي</string>
+    <string name="practice_scale_type_phrygian_dominant">فريجي دومينانت</string>
     <string name="practice_scale_type_lydian">ليدي</string>
     <string name="practice_scale_type_mixolydian">ميكسوليدي</string>
     <string name="practice_scale_type_locrian">لوكري</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s خماسي ماجور</string>
     <string name="practice_scale_minor_pentatonic">%1$s خماسي مينور</string>
     <string name="practice_scale_blues">%1$s بلوز</string>
+    <string name="practice_scale_major_blues">%1$s بلوز ماجور</string>
     <string name="practice_scale_dorian">%1$s دوري</string>
     <string name="practice_scale_phrygian">%1$s فريجي</string>
+    <string name="practice_scale_phrygian_dominant">%1$s فريجي دومينانت</string>
     <string name="practice_scale_lydian">%1$s ليدي</string>
     <string name="practice_scale_mixolydian">%1$s ميكسوليدي</string>
     <string name="practice_scale_locrian">%1$s لوكري</string>

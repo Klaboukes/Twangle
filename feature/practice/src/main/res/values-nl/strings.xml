@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Majeur-pentatonisch</string>
     <string name="practice_scale_type_minor_pentatonic">Mineur-pentatonisch</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Majeur-blues</string>
     <string name="practice_scale_type_dorian">Dorisch</string>
     <string name="practice_scale_type_phrygian">Frygisch</string>
+    <string name="practice_scale_type_phrygian_dominant">Frygisch dominant</string>
     <string name="practice_scale_type_lydian">Lydisch</string>
     <string name="practice_scale_type_mixolydian">Mixolydisch</string>
     <string name="practice_scale_type_locrian">Locrisch</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s majeur-pentatonisch</string>
     <string name="practice_scale_minor_pentatonic">%1$s mineur-pentatonisch</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s majeur-blues</string>
     <string name="practice_scale_dorian">%1$s dorisch</string>
     <string name="practice_scale_phrygian">%1$s frygisch</string>
+    <string name="practice_scale_phrygian_dominant">%1$s frygisch dominant</string>
     <string name="practice_scale_lydian">%1$s lydisch</string>
     <string name="practice_scale_mixolydian">%1$s mixolydisch</string>
     <string name="practice_scale_locrian">%1$s locrisch</string>

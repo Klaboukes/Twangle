@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Pentatônica maior</string>
     <string name="practice_scale_type_minor_pentatonic">Pentatônica menor</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Blues maior</string>
     <string name="practice_scale_type_dorian">Dórico</string>
     <string name="practice_scale_type_phrygian">Frígio</string>
+    <string name="practice_scale_type_phrygian_dominant">Frígio dominante</string>
     <string name="practice_scale_type_lydian">Lídio</string>
     <string name="practice_scale_type_mixolydian">Mixolídio</string>
     <string name="practice_scale_type_locrian">Lócrio</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s pentatônica maior</string>
     <string name="practice_scale_minor_pentatonic">%1$s pentatônica menor</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s blues maior</string>
     <string name="practice_scale_dorian">%1$s dórico</string>
     <string name="practice_scale_phrygian">%1$s frígio</string>
+    <string name="practice_scale_phrygian_dominant">%1$s frígio dominante</string>
     <string name="practice_scale_lydian">%1$s lídio</string>
     <string name="practice_scale_mixolydian">%1$s mixolídio</string>
     <string name="practice_scale_locrian">%1$s lócrio</string>

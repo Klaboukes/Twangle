@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Pentatonika durowa</string>
     <string name="practice_scale_type_minor_pentatonic">Pentatonika molowa</string>
     <string name="practice_scale_type_blues">Bluesowa</string>
+    <string name="practice_scale_type_major_blues">Bluesowa durowa</string>
     <string name="practice_scale_type_dorian">Dorycka</string>
     <string name="practice_scale_type_phrygian">Frygijska</string>
+    <string name="practice_scale_type_phrygian_dominant">Frygijska dominantowa</string>
     <string name="practice_scale_type_lydian">Lidyjska</string>
     <string name="practice_scale_type_mixolydian">Miksolidyjska</string>
     <string name="practice_scale_type_locrian">Lokrycka</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s pentatonika durowa</string>
     <string name="practice_scale_minor_pentatonic">%1$s pentatonika molowa</string>
     <string name="practice_scale_blues">%1$s bluesowa</string>
+    <string name="practice_scale_major_blues">%1$s bluesowa durowa</string>
     <string name="practice_scale_dorian">%1$s dorycka</string>
     <string name="practice_scale_phrygian">%1$s frygijska</string>
+    <string name="practice_scale_phrygian_dominant">%1$s frygijska dominantowa</string>
     <string name="practice_scale_lydian">%1$s lidyjska</string>
     <string name="practice_scale_mixolydian">%1$s miksolidyjska</string>
     <string name="practice_scale_locrian">%1$s lokrycka</string>

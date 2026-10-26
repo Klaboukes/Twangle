@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Pentatonique majeure</string>
     <string name="practice_scale_type_minor_pentatonic">Pentatonique mineure</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Blues majeur</string>
     <string name="practice_scale_type_dorian">Dorien</string>
     <string name="practice_scale_type_phrygian">Phrygien</string>
+    <string name="practice_scale_type_phrygian_dominant">Phrygien dominant</string>
     <string name="practice_scale_type_lydian">Lydien</string>
     <string name="practice_scale_type_mixolydian">Mixolydien</string>
     <string name="practice_scale_type_locrian">Locrien</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s pentatonique majeure</string>
     <string name="practice_scale_minor_pentatonic">%1$s pentatonique mineure</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s blues majeur</string>
     <string name="practice_scale_dorian">%1$s dorien</string>
     <string name="practice_scale_phrygian">%1$s phrygien</string>
+    <string name="practice_scale_phrygian_dominant">%1$s phrygien dominant</string>
     <string name="practice_scale_lydian">%1$s lydien</string>
     <string name="practice_scale_mixolydian">%1$s mixolydien</string>
     <string name="practice_scale_locrian">%1$s locrien</string>

@@ -25,12 +25,14 @@ import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.HARMONIC_MINOR
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.LOCRIAN
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.LYDIAN
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MAJOR
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MAJOR_BLUES
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MAJOR_PENTATONIC
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MELODIC_MINOR
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MINOR_PENTATONIC
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.MIXOLYDIAN
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.NATURAL_MINOR
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.PHRYGIAN
+import io.github.klaboukes.twangle.core.dsp.scale.ScaleType.PHRYGIAN_DOMINANT
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -67,6 +69,45 @@ class ScaleTest {
         assertEquals("E G A B♭ B D", names(E, BLUES))
         assertEquals("C E♭ F G♭ G B♭", names(C, BLUES))
         assertEquals("F♯ A B C C♯ E", names(F_SHARP, BLUES))
+    }
+
+    @Test
+    fun `major blues is written in the major key, its blue note the minor 3rd written flat`() {
+        assertEquals("C D E♭ E G A", names(C, MAJOR_BLUES))
+        assertEquals("G A B♭ B D E", names(G, MAJOR_BLUES))
+        assertEquals("A B C C♯ E F♯", names(A, MAJOR_BLUES))
+        assertEquals("E F♯ G G♯ B C♯", names(E, MAJOR_BLUES))
+        assertEquals("D E F F♯ A B", names(D, MAJOR_BLUES))
+        assertEquals("B♭ C D♭ D F G", names(A_SHARP, MAJOR_BLUES))
+        assertEquals("F♯ G♯ A A♯ C♯ D♯", names(F_SHARP, MAJOR_BLUES))
+        assertEquals("D♭ E♭ E F A♭ B♭", names(C_SHARP, MAJOR_BLUES)) // F♭ written E.
+        assertEquals("Sol La Si♭ Si Re Mi", names(G, MAJOR_BLUES, Notation.SOLFEGE))
+        for (root in PitchClass.entries) {
+            val scale = Scale(root, MAJOR_BLUES)
+            assertEquals("$root major blues is the major pentatonic and the blue note", Scale(root, MAJOR_PENTATONIC).notes.toSet() + root.transposed(3), scale.notes.toSet())
+            for (pc in Scale(root, MAJOR_PENTATONIC).notes) assertEquals("$root $pc as in the major pentatonic", Scale(root, MAJOR_PENTATONIC).accidentalOf(pc), scale.accidentalOf(pc))
+            assertEquals("$root the blue note flat", Accidental.FLAT, scale.accidentalOf(root.transposed(3)))
+        }
+    }
+
+    @Test
+    fun `Phrygian dominant is written as the harmonic minor a fourth above, its major 3rd sharp`() {
+        assertEquals("E F G♯ A B C D", names(E, PHRYGIAN_DOMINANT))
+        assertEquals("A B♭ C♯ D E F G", names(A, PHRYGIAN_DOMINANT))
+        assertEquals("D E♭ F♯ G A B♭ C", names(D, PHRYGIAN_DOMINANT))
+        assertEquals("B C D♯ E F♯ G A", names(B, PHRYGIAN_DOMINANT))
+        assertEquals("C D♭ E F G A♭ B♭", names(C, PHRYGIAN_DOMINANT))
+        assertEquals("F♯ G A♯ B C♯ D E", names(F_SHARP, PHRYGIAN_DOMINANT))
+        assertEquals("C♯ D F F♯ G♯ A B", names(C_SHARP, PHRYGIAN_DOMINANT)) // E♯ written F.
+        assertEquals("Mi Fa Sol♯ La Si Do Re", names(E, PHRYGIAN_DOMINANT, Notation.SOLFEGE))
+        assertEquals("E F G♯ A H C D", names(E, PHRYGIAN_DOMINANT, Notation.GERMAN))
+        for (root in PitchClass.entries) {
+            val harmonic = Scale(root.transposed(5), HARMONIC_MINOR)
+            val scale = Scale(root, PHRYGIAN_DOMINANT)
+            assertEquals("$root Phrygian dominant has its harmonic minor's notes", harmonic.notes.toSet(), scale.notes.toSet())
+            assertEquals("$root starts on its own note", root, scale.notes.first())
+            for (pc in scale.notes) assertEquals("$root Phrygian dominant $pc", harmonic.nameOf(pc, Notation.SHARPS), scale.nameOf(pc, Notation.SHARPS))
+        }
     }
 
     @Test
@@ -153,8 +194,10 @@ class ScaleTest {
         assertEquals(F, Scale(G, MIXOLYDIAN).colourNote)
         assertEquals(F, Scale(B, LOCRIAN).colourNote)
         assertEquals(G_SHARP, Scale(A, HARMONIC_MINOR).colourNote)
+        assertEquals("E Phrygian dominant's major 3rd", G_SHARP, Scale(E, PHRYGIAN_DOMINANT).colourNote)
+        assertEquals(C_SHARP, Scale(A, PHRYGIAN_DOMINANT).colourNote)
         assertEquals("D Dorian is C major's notes, its 6th marked", "B", Scale(D, DORIAN).let { it.nameOf(it.colourNote!!, Notation.SHARPS) })
-        for (type in listOf(MAJOR, NATURAL_MINOR, MELODIC_MINOR, MAJOR_PENTATONIC, MINOR_PENTATONIC, BLUES)) {
+        for (type in listOf(MAJOR, NATURAL_MINOR, MELODIC_MINOR, MAJOR_PENTATONIC, MINOR_PENTATONIC, BLUES, MAJOR_BLUES)) {
             assertNull("$type has none", Scale(C, type).colourNote)
         }
         for (type in ScaleType.entries) for (root in PitchClass.entries) {
@@ -170,9 +213,10 @@ class ScaleTest {
             listOf(
                 MAJOR, NATURAL_MINOR,
                 MAJOR_PENTATONIC, MINOR_PENTATONIC,
-                BLUES, DORIAN,
-                MIXOLYDIAN, HARMONIC_MINOR,
-                PHRYGIAN, LYDIAN,
+                BLUES, MAJOR_BLUES,
+                DORIAN, MIXOLYDIAN,
+                HARMONIC_MINOR, LYDIAN,
+                PHRYGIAN, PHRYGIAN_DOMINANT,
                 MELODIC_MINOR, LOCRIAN,
             ),
             ScaleType.entries,
@@ -182,7 +226,8 @@ class ScaleTest {
             "MAJOR", "DORIAN", "PHRYGIAN", "LYDIAN", "MIXOLYDIAN", "NATURAL_MINOR", "LOCRIAN",
             "HARMONIC_MINOR", "MELODIC_MINOR", "MAJOR_PENTATONIC", "MINOR_PENTATONIC", "BLUES",
         )
-        assertEquals(ScaleType.entries.map { it.name }.toSet(), saved.toSet())
+        assertEquals(ScaleType.entries.map { it.name }.toSet(), saved.toSet() + setOf("MAJOR_BLUES", "PHRYGIAN_DOMINANT"))
+        assertEquals("seven full rows of two", 14, ScaleType.entries.size)
         assertEquals(listOf(0, 2, 3, 5, 7, 8, 10), ScaleType.valueOf("NATURAL_MINOR").steps)
         assertEquals(listOf(0, 3, 5, 6, 7, 10), ScaleType.valueOf("BLUES").steps)
     }
@@ -198,7 +243,7 @@ class ScaleTest {
 
     @Test
     fun `scale sizes and degrees`() {
-        assertEquals(listOf(7, 7, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7), ScaleType.entries.map { it.steps.size })
+        assertEquals(listOf(7, 7, 5, 5, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7), ScaleType.entries.map { it.steps.size })
         val blues = Scale(A, BLUES)
         assertEquals(1, blues.degreeOf(A))
         assertEquals(4, blues.degreeOf(D_SHARP))

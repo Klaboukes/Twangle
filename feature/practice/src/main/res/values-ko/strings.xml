@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">메이저 펜타토닉</string>
     <string name="practice_scale_type_minor_pentatonic">마이너 펜타토닉</string>
     <string name="practice_scale_type_blues">블루스</string>
+    <string name="practice_scale_type_major_blues">메이저 블루스</string>
     <string name="practice_scale_type_dorian">도리안</string>
     <string name="practice_scale_type_phrygian">프리지안</string>
+    <string name="practice_scale_type_phrygian_dominant">프리지안 도미넌트</string>
     <string name="practice_scale_type_lydian">리디안</string>
     <string name="practice_scale_type_mixolydian">믹솔리디안</string>
     <string name="practice_scale_type_locrian">로크리안</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s 메이저 펜타토닉</string>
     <string name="practice_scale_minor_pentatonic">%1$s 마이너 펜타토닉</string>
     <string name="practice_scale_blues">%1$s 블루스</string>
+    <string name="practice_scale_major_blues">%1$s 메이저 블루스</string>
     <string name="practice_scale_dorian">%1$s 도리안</string>
     <string name="practice_scale_phrygian">%1$s 프리지안</string>
+    <string name="practice_scale_phrygian_dominant">%1$s 프리지안 도미넌트</string>
     <string name="practice_scale_lydian">%1$s 리디안</string>
     <string name="practice_scale_mixolydian">%1$s 믹솔리디안</string>
     <string name="practice_scale_locrian">%1$s 로크리안</string>

@@ -220,7 +220,7 @@ private fun NameButton(
  * The name button's panel, [expanded] or not, a Material dropdown under the place it is put in, at
  * most [width] wide (and [NAME_ROW_MAX_WIDTH]): "Root" over the twelve roots six to a row
  * ([RootPicker]), then "Chord type" over the twenty chord types four to a row ([ChordTypePicker]) or,
- * with [scales], the twelve scales two to a row in one list, the most used first ([ScaleTypePicker]).
+ * with [scales], the fourteen scales two to a row in one list, the most used first ([ScaleTypePicker]).
  * A pick (the one already picked too) closes it, so the chart or the neck shows it at once; changing
  * both the root and the type takes two openings. Back and a tap beside it call [onDismiss]. On a short
  * screen it scrolls.
@@ -351,10 +351,10 @@ private fun ChordTypePicker(
 }
 
 /**
- * The twelve scales, [type] picked, in one list without headers, the most used first ([ScaleType]'s
- * order, the owner's of 2026-10-26), two to a row in six full rows: "Major" · "Minor", the two
- * pentatonics, "Blues" · "Dorian", "Mixolydian" · "Harmonic minor", "Phrygian" · "Lydian", "Melodic
- * minor" · "Locrian". Two to a row, so long names (French "Pentatonique majeure", Russian
+ * The fourteen scales, [type] picked, in one list without headers, the most used first ([ScaleType]'s
+ * order, the owner's of 2026-10-26), two to a row in seven full rows: "Major" · "Minor", the two
+ * pentatonics, "Blues" · "Major blues", "Dorian" · "Mixolydian", "Harmonic minor" · "Lydian",
+ * "Phrygian" · "Phrygian dominant", "Melodic minor" · "Locrian". Two to a row, so long names (French "Pentatonique majeure", Russian
  * "Миксолидийский") keep a fair size; a long name takes two lines rather than getting small. All of
  * one steady size. TalkBack hears one radio group ("Scale"), each scale by its name.
  */

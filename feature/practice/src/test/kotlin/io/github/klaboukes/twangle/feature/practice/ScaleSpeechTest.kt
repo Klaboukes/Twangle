@@ -60,6 +60,11 @@ class ScaleSpeechTest {
         val blues = spoken(Scale(PitchClass.E, ScaleType.BLUES))
         assertTrue("the blue note is the flat fifth: $blues", blues.contains("notes E, G, A, B flat, B, D"))
 
+        val majorBlues = spoken(Scale(PitchClass.G, ScaleType.MAJOR_BLUES))
+        assertTrue("major blues' blue note is the flat 3rd: $majorBlues", majorBlues.contains("notes G, A, B flat, B, D, E") && majorBlues.contains("E 2 string, open E, fret 3 G, root, fret 5 A, fret 6 B flat, fret 7 B, fret 10 D, fret 12 E"))
+        val aMajorBlues = spoken(Scale(PitchClass.A, ScaleType.MAJOR_BLUES))
+        assertTrue("A major blues has a C and a C sharp: $aMajorBlues", aMajorBlues.contains("notes A, B, C, C sharp, E, F sharp"))
+
         val solfege = spoken(Scale(PitchClass.G, ScaleType.MAJOR), notation = Notation.SOLFEGE)
         assertTrue(solfege, solfege.contains("notes Sol, La, Si, Do, Re, Mi, Fa sharp") && solfege.contains("Mi 2 string, open Mi, fret 2 Fa sharp, fret 3 Sol, root"))
 
@@ -80,7 +85,15 @@ class ScaleSpeechTest {
         assertTrue("B flat Lydian's sharp 4th is E: $lydian", lydian.contains("notes B flat, C, D, E, F, G, A") && lydian.contains("open E, colour note"))
         val harmonic = spoken(Scale(PitchClass.A, ScaleType.HARMONIC_MINOR))
         assertTrue("A harmonic minor's raised 7th: $harmonic", harmonic.contains("notes A, B, C, D, E, F, G sharp") && harmonic.contains("fret 4 G sharp, colour note"))
-        for (type in listOf(ScaleType.MAJOR, ScaleType.NATURAL_MINOR, ScaleType.MELODIC_MINOR, ScaleType.MINOR_PENTATONIC, ScaleType.BLUES)) {
+        val phrygianDominant = spoken(Scale(PitchClass.E, ScaleType.PHRYGIAN_DOMINANT), name = "E Phrygian dominant")
+        assertTrue(
+            "E Phrygian dominant's major 3rd, G sharp, ringed: $phrygianDominant",
+            phrygianDominant.startsWith("E Phrygian dominant, notes E, F, G sharp, A, B, C, D, E 2 string, open E, root, fret 1 F, fret 4 G sharp, colour note, fret 5 A"),
+        )
+        assertEquals("every G sharp on the neck", ScaleFinder.notesOf(Scale(PitchClass.E, ScaleType.PHRYGIAN_DOMINANT), Tunings.STANDARD).count { it.note.pitchClass == PitchClass.G_SHARP }, Regex(", colour note").findAll(phrygianDominant).count())
+        val a = spoken(Scale(PitchClass.A, ScaleType.PHRYGIAN_DOMINANT))
+        assertTrue("A Phrygian dominant in D harmonic minor's signs: $a", a.contains("notes A, B flat, C sharp, D, E, F, G") && a.contains("fret 4 C sharp, colour note"))
+        for (type in listOf(ScaleType.MAJOR, ScaleType.NATURAL_MINOR, ScaleType.MELODIC_MINOR, ScaleType.MINOR_PENTATONIC, ScaleType.BLUES, ScaleType.MAJOR_BLUES)) {
             assertTrue("$type has no colour note", !spoken(Scale(PitchClass.A, type)).contains("colour note"))
         }
     }

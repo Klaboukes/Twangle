@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Мажорная пентатоника</string>
     <string name="practice_scale_type_minor_pentatonic">Минорная пентатоника</string>
     <string name="practice_scale_type_blues">Блюз</string>
+    <string name="practice_scale_type_major_blues">Мажорный блюз</string>
     <string name="practice_scale_type_dorian">Дорийский</string>
     <string name="practice_scale_type_phrygian">Фригийский</string>
+    <string name="practice_scale_type_phrygian_dominant">Фригийский доминантовый</string>
     <string name="practice_scale_type_lydian">Лидийский</string>
     <string name="practice_scale_type_mixolydian">Миксолидийский</string>
     <string name="practice_scale_type_locrian">Локрийский</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s мажорная пентатоника</string>
     <string name="practice_scale_minor_pentatonic">%1$s минорная пентатоника</string>
     <string name="practice_scale_blues">%1$s блюз</string>
+    <string name="practice_scale_major_blues">%1$s мажорный блюз</string>
     <string name="practice_scale_dorian">%1$s дорийский</string>
     <string name="practice_scale_phrygian">%1$s фригийский</string>
+    <string name="practice_scale_phrygian_dominant">%1$s фригийский доминантовый</string>
     <string name="practice_scale_lydian">%1$s лидийский</string>
     <string name="practice_scale_mixolydian">%1$s миксолидийский</string>
     <string name="practice_scale_locrian">%1$s локрийский</string>

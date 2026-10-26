@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">メジャーペンタトニック</string>
     <string name="practice_scale_type_minor_pentatonic">マイナーペンタトニック</string>
     <string name="practice_scale_type_blues">ブルース</string>
+    <string name="practice_scale_type_major_blues">メジャーブルース</string>
     <string name="practice_scale_type_dorian">ドリアン</string>
     <string name="practice_scale_type_phrygian">フリジアン</string>
+    <string name="practice_scale_type_phrygian_dominant">フリジアンドミナント</string>
     <string name="practice_scale_type_lydian">リディアン</string>
     <string name="practice_scale_type_mixolydian">ミクソリディアン</string>
     <string name="practice_scale_type_locrian">ロクリアン</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s メジャーペンタトニック</string>
     <string name="practice_scale_minor_pentatonic">%1$s マイナーペンタトニック</string>
     <string name="practice_scale_blues">%1$s ブルース</string>
+    <string name="practice_scale_major_blues">%1$s メジャーブルース</string>
     <string name="practice_scale_dorian">%1$s ドリアン</string>
     <string name="practice_scale_phrygian">%1$s フリジアン</string>
+    <string name="practice_scale_phrygian_dominant">%1$s フリジアンドミナント</string>
     <string name="practice_scale_lydian">%1$s リディアン</string>
     <string name="practice_scale_mixolydian">%1$s ミクソリディアン</string>
     <string name="practice_scale_locrian">%1$s ロクリアン</string>

@@ -61,8 +61,10 @@
     <string name="practice_scale_type_major_pentatonic">Major pentatonic</string>
     <string name="practice_scale_type_minor_pentatonic">Minor pentatonic</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Major blues</string>
     <string name="practice_scale_type_dorian">Dorian</string>
     <string name="practice_scale_type_phrygian">Phrygian</string>
+    <string name="practice_scale_type_phrygian_dominant">Phrygian dominant</string>
     <string name="practice_scale_type_lydian">Lydian</string>
     <string name="practice_scale_type_mixolydian">Mixolydian</string>
     <string name="practice_scale_type_locrian">Locrian</string>
@@ -74,8 +76,10 @@
     <string name="practice_scale_major_pentatonic">%1$s major pentatonic</string>
     <string name="practice_scale_minor_pentatonic">%1$s minor pentatonic</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s major blues</string>
     <string name="practice_scale_dorian">%1$s Dorian</string>
     <string name="practice_scale_phrygian">%1$s Phrygian</string>
+    <string name="practice_scale_phrygian_dominant">%1$s Phrygian dominant</string>
     <string name="practice_scale_lydian">%1$s Lydian</string>
     <string name="practice_scale_mixolydian">%1$s Mixolydian</string>
     <string name="practice_scale_locrian">%1$s Locrian</string>

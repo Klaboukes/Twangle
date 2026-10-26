@@ -21,8 +21,10 @@ internal fun scaleTypeLabel(type: ScaleType): Int = when (type) {
     ScaleType.MAJOR_PENTATONIC -> R.string.practice_scale_type_major_pentatonic
     ScaleType.MINOR_PENTATONIC -> R.string.practice_scale_type_minor_pentatonic
     ScaleType.BLUES -> R.string.practice_scale_type_blues
+    ScaleType.MAJOR_BLUES -> R.string.practice_scale_type_major_blues
     ScaleType.DORIAN -> R.string.practice_scale_type_dorian
     ScaleType.PHRYGIAN -> R.string.practice_scale_type_phrygian
+    ScaleType.PHRYGIAN_DOMINANT -> R.string.practice_scale_type_phrygian_dominant
     ScaleType.LYDIAN -> R.string.practice_scale_type_lydian
     ScaleType.MIXOLYDIAN -> R.string.practice_scale_type_mixolydian
     ScaleType.LOCRIAN -> R.string.practice_scale_type_locrian
@@ -38,8 +40,10 @@ internal fun scaleWordsPattern(type: ScaleType): Int = when (type) {
     ScaleType.MAJOR_PENTATONIC -> R.string.practice_scale_major_pentatonic
     ScaleType.MINOR_PENTATONIC -> R.string.practice_scale_minor_pentatonic
     ScaleType.BLUES -> R.string.practice_scale_blues
+    ScaleType.MAJOR_BLUES -> R.string.practice_scale_major_blues
     ScaleType.DORIAN -> R.string.practice_scale_dorian
     ScaleType.PHRYGIAN -> R.string.practice_scale_phrygian
+    ScaleType.PHRYGIAN_DOMINANT -> R.string.practice_scale_phrygian_dominant
     ScaleType.LYDIAN -> R.string.practice_scale_lydian
     ScaleType.MIXOLYDIAN -> R.string.practice_scale_mixolydian
     ScaleType.LOCRIAN -> R.string.practice_scale_locrian

@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">大调五声</string>
     <string name="practice_scale_type_minor_pentatonic">小调五声</string>
     <string name="practice_scale_type_blues">布鲁斯</string>
+    <string name="practice_scale_type_major_blues">大调布鲁斯</string>
     <string name="practice_scale_type_dorian">多利亚</string>
     <string name="practice_scale_type_phrygian">弗里几亚</string>
+    <string name="practice_scale_type_phrygian_dominant">弗里几亚属音</string>
     <string name="practice_scale_type_lydian">利底亚</string>
     <string name="practice_scale_type_mixolydian">混合利底亚</string>
     <string name="practice_scale_type_locrian">洛克里亚</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s 大调五声</string>
     <string name="practice_scale_minor_pentatonic">%1$s 小调五声</string>
     <string name="practice_scale_blues">%1$s 布鲁斯</string>
+    <string name="practice_scale_major_blues">%1$s 大调布鲁斯</string>
     <string name="practice_scale_dorian">%1$s 多利亚</string>
     <string name="practice_scale_phrygian">%1$s 弗里几亚</string>
+    <string name="practice_scale_phrygian_dominant">%1$s 弗里几亚属音</string>
     <string name="practice_scale_lydian">%1$s 利底亚</string>
     <string name="practice_scale_mixolydian">%1$s 混合利底亚</string>
     <string name="practice_scale_locrian">%1$s 洛克里亚</string>

@@ -45,8 +45,10 @@
     <string name="practice_scale_type_major_pentatonic">Pentatonica maggiore</string>
     <string name="practice_scale_type_minor_pentatonic">Pentatonica minore</string>
     <string name="practice_scale_type_blues">Blues</string>
+    <string name="practice_scale_type_major_blues">Blues maggiore</string>
     <string name="practice_scale_type_dorian">Dorico</string>
     <string name="practice_scale_type_phrygian">Frigio</string>
+    <string name="practice_scale_type_phrygian_dominant">Frigio dominante</string>
     <string name="practice_scale_type_lydian">Lidio</string>
     <string name="practice_scale_type_mixolydian">Misolidio</string>
     <string name="practice_scale_type_locrian">Locrio</string>
@@ -57,8 +59,10 @@
     <string name="practice_scale_major_pentatonic">%1$s pentatonica maggiore</string>
     <string name="practice_scale_minor_pentatonic">%1$s pentatonica minore</string>
     <string name="practice_scale_blues">%1$s blues</string>
+    <string name="practice_scale_major_blues">%1$s blues maggiore</string>
     <string name="practice_scale_dorian">%1$s dorico</string>
     <string name="practice_scale_phrygian">%1$s frigio</string>
+    <string name="practice_scale_phrygian_dominant">%1$s frigio dominante</string>
     <string name="practice_scale_lydian">%1$s lidio</string>
     <string name="practice_scale_mixolydian">%1$s misolidio</string>
     <string name="practice_scale_locrian">%1$s locrio</string>
