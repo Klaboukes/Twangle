@@ -1,5 +1,8 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
+import io.github.klaboukes.twangle.core.dsp.drone.DroneSynth
+import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.OnsetTempoDetector
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
@@ -13,8 +16,8 @@ import java.io.File
 /**
  * CPU time per frame of the pitch detector on a phone, for the standard (4096-sample) and low-note
  * (8192-sample) windows at 48 kHz, of the strum detector (16 384 / 32 768 samples), of the
- * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, and of one microphone chunk into the tempo
- * detector. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
+ * watch's chain (`WatchPitchPipeline`) at 16 and 48 kHz, of one microphone chunk into the tempo
+ * detector, and of a 10 ms chunk of each drone sound. `scripts/dsp-phone-benchmark.sh` dexes `:core:dsp` with this class and runs it with
  * `dalvikvm` on the connected phone: the same ART runtime and JIT as the app, without a debuggable
  * build's slowdown. Plain `main`, so it also runs on the JVM.
  *
@@ -119,6 +122,16 @@ object DspPhoneBenchmark {
                     tempo.bpm > 0
                 },
             )
+        }
+
+        // The drone (Phase 48): one 10 ms chunk (480 samples at 48 kHz, what a player writes at a
+        // time) of each sound in its dearest case, the root, fifth and octave an octave lower (the
+        // most partials), after the warm-up has every tanpura pluck ringing.
+        for (sound in DroneSound.entries) {
+            val synth = DroneSynth(48_000)
+            synth.play(146.83f, sound, DroneVoicing.FIFTH_OCTAVE, lower = true)
+            val chunk = FloatArray(480)
+            report("drone $sound chunk (480)", time { _ -> synth.render(chunk) > 0 })
         }
 
         // Strum check (Phase 18 spike): every string of one strum in one long frame. Fewer frames,

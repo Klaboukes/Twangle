@@ -7,6 +7,7 @@ Part of §4 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Measured on the Galaxy S26](#measured-on-the-galaxy-s26)
 - [Low-note window on the Xiaomi 12X](#low-note-window-on-the-xiaomi-12x)
 - [Watch CPU and the native detector](#watch-cpu-and-the-native-detector)
+- [Drone on the Xiaomi 12X](#drone-on-the-xiaomi-12x)
 - [Meter looks](#meter-looks)
 - [Baseline Profile](#baseline-profile)
 - [Release build: shrinking and signing](#release-build-shrinking-and-signing)
@@ -58,6 +59,18 @@ A C++ (NDK) YIN was planned (Phase 21) only if the Kotlin one proved too slow, f
 The ×2 upsampling makes 16 kHz a little dearer than 48 kHz. Allowing for a slower watch core (up to ≈ 1.5×) the watch tuner takes about 15–20 % of one of its cores, with a reading ready in a few ms of each 21 ms hop and nothing else heavy running (the screen is the watch's real battery cost). On the phone the tuner runs on a big core at under 4 %.
 
 **Decision: no native detector.** Nothing comes near the budget: the dearest case, the low-note strum check pinned to a little core, still finishes in a third of its 0.1 s, and the phone's scheduler gives it a big core. A C++ YIN would at best halve these numbers while adding the NDK to the build, JNI, and a second detector to keep within ±1 cent. Look again only if a real watch drops readings or warms up, or a new feature runs YIN many times per frame; `scripts/dsp-phone-benchmark.sh` repeats these numbers in about a minute.
+
+## Drone on the Xiaomi 12X
+`scripts/dsp-phone-benchmark.sh` also times the drone (`DroneSynth`, [Notes, tunings and audio](notes-and-audio.md), *Drone*): one 10 ms chunk (480 samples at 48 kHz, what a player writes at a time) of each sound in its dearest case, root, fifth and octave an octave down (the pad then turns 870 phasors a sample), after the tanpura's six plucks are all ringing. Measured 2026-10-26.
+
+| Per 10 ms chunk | Big core, unpinned | Little cores (`TASKSET=0f`) |
+|---|---|---|
+| Warm pad | 1.1 ms (11 %) | 3.3 ms (33 %) |
+| Harmonium | 0.45 ms (4.5 %) | 1.4 ms (14 %) |
+| Tanpura | 0.32 ms (3 %) | 1.0 ms (10 %) |
+| Flute organ | 0.04 ms (0.4 %) | 0.1 ms (1 %) |
+
+A crossfade (0.4 s) runs two drones, so twice that for a moment; the default (tanpura with its fifth, not lower) costs less. There was no budget yet for sound made in the app; this keeps the dearest drone, even crossfading on a little core, inside two thirds of real time, and the tuner's microphone isn't running meanwhile (Scales doesn't listen). `PartialBank` renders a block partial by partial, four at a time, rather than all partials a sample: the four rotations and levels stay in registers and only the block's 64 output samples are read and written. That made the pad 2.8× faster on the little cores than the first version (9.4 ms, where a crossfade could not have kept up) and 1.3× on the big one; folding the levels into the phasors (to save the ramp's multiply) gained nothing measurable and was dropped. On the JVM (`DroneSynthBenchmark`) every sound is under 1 ms a chunk.
 
 ## Meter looks
 Measured on the S26 (Android 16, portrait) with `scripts/meter-frames.sh`, which runs `MeterFramesBenchmark` against the minified `benchmarkRelease` build (~4 min, phone unlocked and upright; `scripts/meter-frames.sh CLASSIC:LIGHT_ARC` for some looks, `CURRENT` for whatever the app shows).

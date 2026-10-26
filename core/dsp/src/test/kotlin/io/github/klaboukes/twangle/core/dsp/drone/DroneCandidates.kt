@@ -17,7 +17,7 @@ import kotlin.math.sqrt
  * made the way [StringSynth] is (additive partials at exact frequencies, resonances as
  * [BodyMode]s, seeded noise), so there are no recordings and nothing to licence. Test sources only:
  * [DroneCandidatesReport] renders them into `docs/design/drone-sounds-preview/` for the owner to
- * pick from; the picked one is built into `:core:dsp` in the next increment.
+ * pick from. The owner picked all four (2026-10-26); the app plays them through `DroneSynth`.
  *
  * Round 1's four (the cello held, a soft organ, a steady tanpura-like hum, a shruti box) were
  * steady stacks of harmonics with slopes close to each other, and the owner heard them as nearly

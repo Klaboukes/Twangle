@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Times the pitch detector on the connected phone: CPU per frame for the standard (4096-sample)
 # and low-note (8192-sample) windows at 48 kHz, the strum detector (16384 / 32768 samples), the
-# watch's chain at 16 and 48 kHz (the little cores stand in for a watch's CPU), and the tempo
-# detector per microphone chunk.
+# watch's chain at 16 and 48 kHz (the little cores stand in for a watch's CPU), the tempo
+# detector per microphone chunk, and the drone per 10 ms chunk of each sound.
 # See docs/architecture/performance.md, "Low-note window" and "Watch CPU", and
-# docs/architecture/strum-and-metronome.md, "Strum check" and "Tempo from music".
+# docs/architecture/strum-and-metronome.md, "Strum check" and "Tempo from music", and
+# docs/architecture/notes-and-audio.md, "Drone".
 #
 #   scripts/dsp-phone-benchmark.sh                 wherever the phone's scheduler runs it
 #   TASKSET=0f scripts/dsp-phone-benchmark.sh      pinned to CPUs 0–3 (the Xiaomi's little cores)
