@@ -24,6 +24,8 @@ kotlin {
 
 dependencies {
     implementation(project(":core:dsp"))
+    // Only for the drone under Scales (DronePlayer, playback): Practice never opens the microphone.
+    implementation(project(":core:audio"))
     implementation(project(":core:settings"))
     implementation(project(":core:designsystem"))
 
@@ -37,7 +39,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    testImplementation(testFixtures(project(":core:audio")))
     androidTestImplementation(project(":core:testing"))
+    androidTestImplementation(testFixtures(project(":core:audio")))
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

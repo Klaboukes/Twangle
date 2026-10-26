@@ -85,11 +85,13 @@ Dependencies ("→" = depends on):
 :feature:tuner     → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :feature:metronome → :core:audio, :core:settings, :core:designsystem, :core:dsp
-:feature:practice  → :core:settings, :core:designsystem, :core:dsp (no microphone, no audio)
+:feature:practice  → :core:audio (only DronePlayer, playback: no microphone), :core:settings, :core:designsystem, :core:dsp
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
-:core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's;
-                     TonePlayer's StringVoice and MetronomePlayer's beats and meters are :core:dsp types)
+:core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's,
+                     DroneSynth the drone's;
+                     TonePlayer's StringVoice, MetronomePlayer's beats and meters and DronePlayer's sounds
+                     are :core:dsp types)
 :core:dsp          → no other module
 :core:testing      → no other module; used by the UI tests of the :feature modules
 :baselineprofile   → drives :app on a device (targetProjectPath); nothing depends on it
@@ -134,8 +136,9 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     ChunkReader (+ MicInput: busy, silenced and stuck mics), MicOpener (openFirst: rate fallback),
     BlockingTransfer (transferFully: read/write loops that fail instead of spinning),
     TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
-    AndroidMetronomePlayer, AudioOutput (shared AudioTrack helpers)
-core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer
+    AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer,
+    AudioOutput (shared AudioTrack helpers)
+core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer, FakeMetronomePlayer, FakeDronePlayer
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),

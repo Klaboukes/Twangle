@@ -3,9 +3,11 @@ package io.github.klaboukes.twangle.app
 import android.content.Context
 import androidx.annotation.VisibleForTesting
 import io.github.klaboukes.twangle.core.audio.AndroidAudioRecorder
+import io.github.klaboukes.twangle.core.audio.AndroidDronePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidMetronomePlayer
 import io.github.klaboukes.twangle.core.audio.AndroidTonePlayer
 import io.github.klaboukes.twangle.core.audio.AudioRecorder
+import io.github.klaboukes.twangle.core.audio.DronePlayer
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
@@ -59,6 +61,19 @@ class AppContainer(private val appContext: Context) {
     /** A test's silent stand-in for the metronome's clicks, or null for the real ones (see [testAudioRecorder]). */
     @VisibleForTesting
     var testMetronomePlayer: MetronomePlayer? = null
+
+    /**
+     * The drone under the Scales tool (Phase 48). Playback only, handed to `:feature:practice`; it
+     * holds the speaker and audio focus only while the drone sounds.
+     */
+    val dronePlayer: DronePlayer
+        get() = testDronePlayer ?: droneSynthPlayer
+
+    private val droneSynthPlayer: DronePlayer by lazy { AndroidDronePlayer(appContext) }
+
+    /** A test's silent stand-in for the drone, or null for the real one (see [testAudioRecorder]). */
+    @VisibleForTesting
+    var testDronePlayer: DronePlayer? = null
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

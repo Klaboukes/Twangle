@@ -25,7 +25,7 @@ minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
 | `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`) and the Chords tool (`ChordsScreen`); `:app` puts the metronome and chords under it |
-| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones) and `MetronomePlayer` (clicks) through `AudioTrack` |
+| `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones), `MetronomePlayer` (clicks) and `DronePlayer` (the drone under Scales) through `AudioTrack` |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/vibration, Practice tool used last |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, string synthesis (the reference tones), metronome click track and tap tempo |
