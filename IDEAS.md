@@ -9,6 +9,6 @@ Let people make their own look on top of the six styles. **Condition:** start on
 3. ☐ **On the shelf, only if 1 and 2 prove popular:** a theme code (a short text to save and share themes; a theme with a photo needs a small file instead) and a round trip with the user's own AI app: Twangle shares instructions through Android's share menu, the user chats with any AI, copies the code it gives, and Twangle offers to preview it from the clipboard. Never a live connection (that would need internet and an account).
 
 ## After the drone and ear training (idea, 2026-10-26)
-What is left of these two ideas now that they are Phases 50 and 51. **Condition:** only once both have landed, and if players use them.
+What is left of these two ideas now that they are Phases 48 and 53. **Condition:** only once both have landed, and if players use them.
 1. ☐ **The drone and the metronome together:** both sounding while you practise, which needs them on one screen (leaving the metronome stops its clicks today)
 2. ☐ **A scale or mode by ear:** Twangle plays a scale over the drone, the player names it (major, Dorian, Mixolydian, …)

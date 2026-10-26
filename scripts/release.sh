@@ -353,7 +353,7 @@ png_info() {
 # Fails, naming every language and picture that is wrong, unless every language has its phone
 # screenshots, 1.png ... one for each caption, within Play's rules. A language without them would show
 # English screenshots on Play, so none is sent until all are there. Tablet screenshots, where there are
-# any (none yet: Phase 42), are checked the same way and sent too.
+# any (none yet: Phase 51), are checked the same way and sent too.
 need_screenshots() {
     local locale want dir file n w h info oldest="" problems=() missing=()
     for locale in $(locales); do

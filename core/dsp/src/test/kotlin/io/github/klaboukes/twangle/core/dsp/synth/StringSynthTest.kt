@@ -55,7 +55,7 @@ class StringSynthTest {
     fun `the shipped voices read on pitch once the brightest partials have died, a little sharp before on stiff strings`() {
         // Steel strings are stiff, so their upper partials sit sharp of exact multiples and YIN, which
         // weighs the whole waveform, reads the start of a low note sharp, as it does a real string
-        // (ROADMAP Phase 44). The fundamental is exact throughout; by 3 s the detector agrees.
+        // (ROADMAP Phase 46). The fundamental is exact throughout; by 3 s the detector agrees.
         val mapper = NoteMapper(NoteMapper.DEFAULT_A4_HZ)
         for ((voice, note) in presetStrings) {
             val f = mapper.frequencyOf(note)

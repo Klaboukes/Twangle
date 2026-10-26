@@ -152,7 +152,7 @@ data class StringVoice(
         /**
          * B never grows past this on the lowest strings: a reference tone keeps its partials closer to
          * harmonic than a heavy 8-string or 5-string bass string (which the detector reads sharp by
-         * several cents early in the note, see ROADMAP Phase 44), yet with a steel string's shimmer.
+         * several cents early in the note, see ROADMAP Phase 46), yet with a steel string's shimmer.
          */
         const val MAX_STIFFNESS = 8e-5
         const val MIN_DECAY_SECONDS = 0.02

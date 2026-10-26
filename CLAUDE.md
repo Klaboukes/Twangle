@@ -93,7 +93,7 @@ scripts/release.sh status|health [days]|reviews [language]|listing-changes  # re
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
 - Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
-- **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new tool still being built stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). The release comes next: Phase 23 on Play (Phases 37 and 38 are done); fixes land on `main` as usual.
+- **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new tool still being built stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). The release comes next: Phase 52 on Play (Phases 37 and 38 are done); fixes land on `main` as usual.
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow
