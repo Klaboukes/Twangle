@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s डिमिनिश्ड सेवन्थ</string>
     <string name="practice_chord_half_diminished">%1$s हाफ़-डिमिनिश्ड</string>
     <string name="practice_chord_augmented">%1$s ऑगमेंटेड</string>
+    <string name="practice_chord_power_chord">%1$s पावर कॉर्ड</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s सेवन्थ शार्प नाइन्थ</string>
+    <string name="practice_chord_minor_ninth">%1$s माइनर नाइन्थ</string>
+    <string name="practice_chord_major_ninth">%1$s मेजर नाइन्थ</string>
     <string name="practice_shape_count">%2$d में से %1$d</string>
     <string name="practice_shape_previous">पिछला आकार</string>
     <string name="practice_shape_next">अगला आकार</string>

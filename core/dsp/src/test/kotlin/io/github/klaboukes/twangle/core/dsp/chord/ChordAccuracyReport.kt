@@ -9,7 +9,8 @@ import java.util.Random
 /**
  * How often [ChordDetector] names synthetic strums right, not at all, or wrongly, and how often it
  * names sounds that are no chord: the numbers behind docs/architecture/strum-and-metronome.md,
- * *Chord naming*. Prints only, asserts nothing (that is [ChordDetectorTest]'s job).
+ * *Chord naming*; the power chords and the 9ths apart, so the other shapes' figures compare with
+ * those from before they were heard. Prints only, asserts nothing (that is [ChordDetectorTest]'s job).
  * Not part of `test`; run with `./gradlew :core:dsp:benchmark`.
  */
 class ChordAccuracyReport {
@@ -25,9 +26,25 @@ class ChordAccuracyReport {
 
     @Test
     fun shapes() {
+        println("=== ${shapes.size} shapes (${ChordShapes.OPEN.size} open, ${ChordShapes.BARRE.size} barre): right / no name / wrong")
+        sweep(shapes)
+    }
+
+    @Test
+    fun powerChords() {
+        println("=== ${ChordShapes.POWER.size} power chords: right / no name / wrong (a major or minor chord is wrong)")
+        sweep(ChordShapes.POWER)
+    }
+
+    @Test
+    fun ninths() {
+        println("=== ${ChordShapes.NINTHS.size} 7♯9, m9 and maj9 shapes: right / no name / wrong (most wrong ones are their 7th chord, the ninth unheard)")
+        sweep(ChordShapes.NINTHS)
+    }
+
+    private fun sweep(shapes: List<ChordShapes.Shape>) {
         val random = Random(3)
         val weak = TestSignals.WEAK_FUNDAMENTAL_HARMONICS
-        println("=== ${shapes.size} shapes (${ChordShapes.OPEN.size} open, ${ChordShapes.BARRE.size} barre): right / no name / wrong")
         val kinds = linkedMapOf<String, (IntArray) -> FloatArray>(
             "as played" to { m -> ChordShapes.strum(m) },
             "±10 cents, gains 0.5-1, 5-30 ms apart (x10)" to { m ->
@@ -87,11 +104,10 @@ class ChordAccuracyReport {
         }
         println("=== Sounds that are no chord: how many got a name")
         for (m in 40..76) check("single $m", ChordShapes.strum(intArrayOf(m)))
-        for (m in 40..57) check("power chord $m", ChordShapes.strum(intArrayOf(m, m + 7, m + 12)))
-        for (m in 40..57) check("fifth $m", ChordShapes.strum(intArrayOf(m, m + 7)))
         for (m in 40..60) check("third $m", ChordShapes.strum(intArrayOf(m, m + 4)))
         for (m in 40..60) check("minor third + octave $m", ChordShapes.strum(intArrayOf(m, m + 3, m + 12)))
-        println("  single notes, fifths, power chords, thirds: $named of $total")
+        for (m in 40..60) check("octave $m", ChordShapes.strum(intArrayOf(m, m + 12)))
+        println("  single notes, thirds, octaves: $named of $total")
         val before = named
         val beforeTotal = total
         repeat(100) {

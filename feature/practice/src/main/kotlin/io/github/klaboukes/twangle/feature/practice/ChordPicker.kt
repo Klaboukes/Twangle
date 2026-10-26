@@ -321,8 +321,9 @@ internal fun scaleRootSpelling(type: ScaleType, notation: Notation): (PitchClass
  * The sixteen chord types, [quality] picked, each by its symbol on the picked [root], four to a row
  * in four full rows: the common ones ("C", "Cm", "C7", "Cmaj7"), "Cm7" and the sus chords ("Csus2",
  * "Csus4", "C7sus4"), the 6ths and 9ths ("C6", "Cm6", "Cadd9", "C9"), and the diminished and
- * augmented ones ("Cdim", "Cdim7", "Cm7♭5", "Caug"). TalkBack hears one radio group ("Chord type"),
- * each in words ("C minor seventh").
+ * augmented ones ("Cdim", "Cdim7", "Cm7♭5", "Caug") ([ChordQuality.inPanel]; the power chord and
+ * the 9ths of Phase 49 join it later). TalkBack hears one radio group ("Chord type"), each in words
+ * ("C minor seventh").
  */
 @Composable
 private fun ChordTypePicker(
@@ -334,9 +335,9 @@ private fun ChordTypePicker(
     modifier: Modifier = Modifier,
 ) {
     val speech = rememberNoteNameSpeech()
-    val spoken = ChordQuality.entries.associateWith { chordWords(Chord.of(root, it), notation, speech) }
+    val spoken = ChordQuality.inPanel.associateWith { chordWords(Chord.of(root, it), notation, speech) }
     PickerGrid(
-        options = ChordQuality.entries,
+        options = ChordQuality.inPanel,
         picked = quality,
         perRow = TYPES_PER_ROW,
         maxButtonWidth = TYPE_BUTTON_MAX_WIDTH,

@@ -184,6 +184,10 @@
     <string name="tuner_chord_minor_seventh">%1$s माइनर सेवन्थ</string>
     <string name="tuner_chord_sus2">%1$s सस 2</string>
     <string name="tuner_chord_sus4">%1$s सस 4</string>
+    <string name="tuner_chord_power_chord">%1$s पावर कॉर्ड</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s सेवन्थ शार्प नाइन्थ</string>
+    <string name="tuner_chord_minor_ninth">%1$s माइनर नाइन्थ</string>
+    <string name="tuner_chord_major_ninth">%1$s मेजर नाइन्थ</string>
     <string name="tuner_chord_slash">%1$s, बेस में %2$s</string>
     <string name="tuner_chord_bass">बेस</string>
     <string name="tuner_chord_strum">एक कॉर्ड स्ट्रम करें</string>

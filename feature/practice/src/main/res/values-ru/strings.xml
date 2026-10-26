@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s уменьшённый септаккорд</string>
     <string name="practice_chord_half_diminished">%1$s полууменьшённый</string>
     <string name="practice_chord_augmented">%1$s увеличенный</string>
+    <string name="practice_chord_power_chord">%1$s пауэр-аккорд</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s септаккорд с повышенной ноной</string>
+    <string name="practice_chord_minor_ninth">%1$s минорный нонаккорд</string>
+    <string name="practice_chord_major_ninth">%1$s большой мажорный нонаккорд</string>
     <string name="practice_shape_count">%1$d из %2$d</string>
     <string name="practice_shape_previous">Предыдущая аппликатура</string>
     <string name="practice_shape_next">Следующая аппликатура</string>

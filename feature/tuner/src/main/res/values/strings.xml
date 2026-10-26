@@ -252,6 +252,11 @@
     <string name="tuner_chord_minor_seventh">%1$s minor seventh</string>
     <string name="tuner_chord_sus2">%1$s suspended second</string>
     <string name="tuner_chord_sus4">%1$s suspended fourth</string>
+    <!-- Phase 49: the power chord ("E5", root and fifth, no third), the 7♯9, m9 and maj9, as TalkBack says them. As the Chords tool. -->
+    <string name="tuner_chord_power_chord">%1$s power chord</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
+    <string name="tuner_chord_minor_ninth">%1$s minor ninth</string>
+    <string name="tuner_chord_major_ninth">%1$s major ninth</string>
     <!-- A slash chord ("C/E"): %1$s is the chord in words ("C major"), %2$s its bass note ("E"). -->
     <string name="tuner_chord_slash">%1$s, %2$s in the bass</string>
     <!-- The small label under the chord's lowest note, among its notes. -->

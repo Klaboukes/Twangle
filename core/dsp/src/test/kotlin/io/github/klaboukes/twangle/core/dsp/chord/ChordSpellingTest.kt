@@ -26,7 +26,11 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR_SEVENTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_SEVENTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MAJOR_NINTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_NINTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.MINOR_SIXTH
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.POWER_CHORD
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SEVENTH_SHARP_NINE
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.NINTH
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SEVENTH_SUS4
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality.SIXTH
@@ -69,6 +73,42 @@ class ChordSpellingTest {
         assertEquals("E♭aug", symbol(D_SHARP, AUGMENTED))
         assertEquals("Lam6", symbol(A, MINOR_SIXTH, notation = Notation.SOLFEGE))
         assertEquals("Hdim", symbol(B, DIMINISHED, notation = Notation.GERMAN))
+    }
+
+    @Test
+    fun `power chords, the 7 sharp 9 and the 9ths`() {
+        assertEquals("E5", symbol(E, POWER_CHORD))
+        assertEquals("B♭5", symbol(A_SHARP, POWER_CHORD))
+        assertEquals("F♯5", symbol(F_SHARP, POWER_CHORD))
+        assertEquals("Do5", symbol(C, POWER_CHORD, notation = Notation.SOLFEGE))
+        assertEquals("E5/B", symbol(E, POWER_CHORD, bass = B))
+        assertEquals("E7♯9", symbol(E, SEVENTH_SHARP_NINE))
+        assertEquals("Cm9", symbol(C, MINOR_NINTH))
+        assertEquals("Cmaj9", symbol(C, MAJOR_NINTH))
+        assertEquals("F♯m9", symbol(F_SHARP, MINOR_NINTH))
+        assertEquals("B♭maj9", symbol(A_SHARP, MAJOR_NINTH))
+        assertEquals("Hm9", symbol(B, MINOR_NINTH, notation = Notation.GERMAN))
+
+        assertEquals("E B", tones(E, POWER_CHORD))
+        assertEquals("C G", tones(C, POWER_CHORD))
+        assertEquals("B♭ F", tones(A_SHARP, POWER_CHORD))
+        assertEquals("F♯ C♯", tones(F_SHARP, POWER_CHORD))
+        // The ninth as a second, as in the 9th chord; the minor 9th in the minor key.
+        assertEquals("C D E♭ G B♭", tones(C, MINOR_NINTH))
+        assertEquals("A B C E G", tones(A, MINOR_NINTH))
+        assertEquals("E F♯ G B D", tones(E, MINOR_NINTH))
+        assertEquals("C D E G B", tones(C, MAJOR_NINTH))
+        assertEquals("F G A C E", tones(F, MAJOR_NINTH))
+        assertEquals("D E F♯ A C♯", tones(D, MAJOR_NINTH))
+        // The sharp ninth is sharp in a flat key too, and the note it sounds when the key has no such sharp.
+        assertEquals("C D♯ E G B♭", tones(C, SEVENTH_SHARP_NINE))
+        assertEquals("F G♯ A C E♭", tones(F, SEVENTH_SHARP_NINE))
+        assertEquals("B♭ C♯ D F A♭", tones(A_SHARP, SEVENTH_SHARP_NINE))
+        assertEquals("E G G♯ B D", tones(E, SEVENTH_SHARP_NINE))
+        assertEquals("A C C♯ E G", tones(A, SEVENTH_SHARP_NINE))
+        assertEquals("G A♯ B D F", tones(G, SEVENTH_SHARP_NINE))
+        assertEquals("Mi Sol Sol♯ Si Re", tones(E, SEVENTH_SHARP_NINE, Notation.SOLFEGE))
+        assertEquals("Do Re♯ Mi Sol Si♭", tones(C, SEVENTH_SHARP_NINE, Notation.SOLFEGE))
     }
 
     @Test
@@ -163,7 +203,9 @@ class ChordSpellingTest {
                 assertEquals(Integer.bitCount(quality.mask), tones.size)
                 assertEquals(ChordNamer.maskOf(chord), tones.fold(0) { m, pc -> m or (1 shl pc.ordinal) })
                 val sign = ChordSpelling.accidentalOf(chord)
-                val names = tones.map { ChordSpelling.nameOf(it, chord, Notation.SHARPS) }
+                // A 7♯9's sharp ninth is sharp in a flat key too (C7♯9's D♯).
+                val ninth = if (quality == SEVENTH_SHARP_NINE) root.transposed(3) else null
+                val names = tones.filter { it != ninth }.map { ChordSpelling.nameOf(it, chord, Notation.SHARPS) }
                 val other = if (sign == Accidental.SHARP) "♭" else "♯"
                 assertEquals("$chord: $names", false, names.any { other in it })
             }

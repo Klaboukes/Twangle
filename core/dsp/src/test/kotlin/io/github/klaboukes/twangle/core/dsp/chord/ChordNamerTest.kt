@@ -68,7 +68,38 @@ class ChordNamerTest {
         assertSame(Chord.of(PitchClass.C, ChordQuality.MINOR_SEVENTH), ChordNamer.name(mask(PitchClass.C, PitchClass.D_SHARP, PitchClass.A_SHARP), 0))
         // C and E alone could be C major or A minor without its fifth.
         assertNull(ChordNamer.name(mask(PitchClass.C, PitchClass.E), 0))
-        assertNull(ChordNamer.name(mask(PitchClass.C, PitchClass.G), 0))
+        assertNull(ChordNamer.name(mask(PitchClass.C, PitchClass.D_SHARP), 0))
+    }
+
+    @Test
+    fun `root and fifth alone are the power chord, whatever the bass`() {
+        val c5 = Chord.of(PitchClass.C, ChordQuality.POWER_CHORD)
+        assertSame(c5, ChordNamer.name(mask(PitchClass.C, PitchClass.G), PitchClass.C.ordinal))
+        assertSame(c5, ChordNamer.name(mask(PitchClass.C, PitchClass.G)))
+        // G under C (a fourth) is still C5, with G in the bass.
+        assertSame(c5, ChordNamer.name(mask(PitchClass.C, PitchClass.G), PitchClass.G.ordinal))
+        assertSame(Chord.of(PitchClass.E, ChordQuality.POWER_CHORD), ChordNamer.name(mask(PitchClass.E, PitchClass.B), PitchClass.E.ordinal))
+        // With a third it is the major or minor chord, as before.
+        assertSame(Chord.of(PitchClass.E, ChordQuality.MAJOR), ChordNamer.name(mask(PitchClass.E, PitchClass.G_SHARP, PitchClass.B), PitchClass.E.ordinal))
+        assertSame(Chord.of(PitchClass.E, ChordQuality.MINOR), ChordNamer.name(mask(PitchClass.E, PitchClass.G, PitchClass.B), PitchClass.E.ordinal))
+        // Two notes that aren't a fifth apart are still no chord.
+        assertNull(ChordNamer.name(mask(PitchClass.C, PitchClass.D), 0))
+        assertNull(ChordNamer.name(mask(PitchClass.C, PitchClass.F_SHARP), 0))
+    }
+
+    @Test
+    fun `the 9ths by their tones, with or without the fifth`() {
+        val cm9 = Chord.of(PitchClass.C, ChordQuality.MINOR_NINTH)
+        assertSame(cm9, ChordNamer.name(mask(PitchClass.C, PitchClass.D, PitchClass.D_SHARP, PitchClass.G, PitchClass.A_SHARP), 0))
+        assertSame(cm9, ChordNamer.name(mask(PitchClass.C, PitchClass.D, PitchClass.D_SHARP, PitchClass.A_SHARP), 0))
+        val cmaj9 = Chord.of(PitchClass.C, ChordQuality.MAJOR_NINTH)
+        assertSame(cmaj9, ChordNamer.name(mask(PitchClass.C, PitchClass.D, PitchClass.E, PitchClass.G, PitchClass.B), 0))
+        assertSame(cmaj9, ChordNamer.name(mask(PitchClass.C, PitchClass.D, PitchClass.E, PitchClass.B), 0))
+        // The Hendrix chord: E G♯ D G (x7678x).
+        val e7Sharp9 = Chord.of(PitchClass.E, ChordQuality.SEVENTH_SHARP_NINE)
+        assertSame(e7Sharp9, ChordNamer.name(mask(PitchClass.E, PitchClass.G_SHARP, PitchClass.D, PitchClass.G), PitchClass.E.ordinal))
+        // Without the ninth, still the 7th chords.
+        assertSame(Chord.of(PitchClass.C, ChordQuality.MINOR_SEVENTH), ChordNamer.name(mask(PitchClass.C, PitchClass.D_SHARP, PitchClass.G, PitchClass.A_SHARP), 0))
     }
 
     @Test

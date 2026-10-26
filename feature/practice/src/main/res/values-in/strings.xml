@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s diminished septim</string>
     <string name="practice_chord_half_diminished">%1$s half-diminished</string>
     <string name="practice_chord_augmented">%1$s augmented</string>
+    <string name="practice_chord_power_chord">%1$s power chord</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s septim nona kres</string>
+    <string name="practice_chord_minor_ninth">%1$s minor nona</string>
+    <string name="practice_chord_major_ninth">%1$s mayor nona</string>
     <string name="practice_shape_count">%1$d dari %2$d</string>
     <string name="practice_shape_previous">Bentuk sebelumnya</string>
     <string name="practice_shape_next">Bentuk berikutnya</string>

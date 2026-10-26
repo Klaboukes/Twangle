@@ -73,6 +73,42 @@ object ChordShapes {
         shape("Csus2 (3rd fret)", "x35533", PitchClass.C, ChordQuality.SUS2),
     )
 
+    /** Power chords as rock charts write them: root, fifth and octave on three strings, or root and fifth on two. */
+    val POWER = listOf(
+        shape("E5", "022xxx", PitchClass.E, ChordQuality.POWER_CHORD),
+        shape("A5", "x022xx", PitchClass.A, ChordQuality.POWER_CHORD),
+        shape("D5", "xx023x", PitchClass.D, ChordQuality.POWER_CHORD),
+        shape("F5", "133xxx", PitchClass.F, ChordQuality.POWER_CHORD),
+        shape("F#5", "244xxx", PitchClass.F_SHARP, ChordQuality.POWER_CHORD),
+        shape("G5", "355xxx", PitchClass.G, ChordQuality.POWER_CHORD),
+        shape("A5 (5th fret)", "577xxx", PitchClass.A, ChordQuality.POWER_CHORD),
+        shape("Bb5", "x133xx", PitchClass.A_SHARP, ChordQuality.POWER_CHORD),
+        shape("B5", "x244xx", PitchClass.B, ChordQuality.POWER_CHORD),
+        shape("C5", "x355xx", PitchClass.C, ChordQuality.POWER_CHORD),
+        shape("D5 (5th fret)", "x577xx", PitchClass.D, ChordQuality.POWER_CHORD),
+        shape("Eb5", "x688xx", PitchClass.D_SHARP, ChordQuality.POWER_CHORD),
+        shape("E5 (two strings)", "02xxxx", PitchClass.E, ChordQuality.POWER_CHORD),
+        shape("G5 (two strings)", "35xxxx", PitchClass.G, ChordQuality.POWER_CHORD),
+        shape("A5 (two strings)", "x02xxx", PitchClass.A, ChordQuality.POWER_CHORD),
+        shape("C5 (two strings)", "x35xxx", PitchClass.C, ChordQuality.POWER_CHORD),
+    )
+
+    /** The 7♯9, m9 and maj9 as chord books write them; some mute the top string. */
+    val NINTHS = listOf(
+        shape("Cm9", "x31333", PitchClass.C, ChordQuality.MINOR_NINTH),
+        shape("Em9", "020002", PitchClass.E, ChordQuality.MINOR_NINTH),
+        shape("Am9", "575557", PitchClass.A, ChordQuality.MINOR_NINTH),
+        shape("Dm9", "x53555", PitchClass.D, ChordQuality.MINOR_NINTH),
+        shape("Cmaj9", "x32430", PitchClass.C, ChordQuality.MAJOR_NINTH),
+        shape("Amaj9", "x02424", PitchClass.A, ChordQuality.MAJOR_NINTH),
+        shape("Emaj9", "021102", PitchClass.E, ChordQuality.MAJOR_NINTH),
+        shape("Fmaj9", "102010", PitchClass.F, ChordQuality.MAJOR_NINTH),
+        shape("E7#9", "076780", PitchClass.E, ChordQuality.SEVENTH_SHARP_NINE),
+        shape("C7#9", "x3234x", PitchClass.C, ChordQuality.SEVENTH_SHARP_NINE),
+        shape("A7#9", "575658", PitchClass.A, ChordQuality.SEVENTH_SHARP_NINE),
+        shape("B7#9", "x2123x", PitchClass.B, ChordQuality.SEVENTH_SHARP_NINE),
+    )
+
     /** Frequencies of [midi] at [a4Hz], each moved by `cents[i]`. */
     fun hz(midi: IntArray, a4Hz: Float = 440f, cents: FloatArray = FloatArray(midi.size)): FloatArray =
         FloatArray(midi.size) { (a4Hz * 2.0.pow((midi[it] - 69) / 12.0 + cents[it] / 1200.0)).toFloat() }

@@ -243,6 +243,17 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         compose.waitForIdle()
         val flat = context.getString(io.github.klaboukes.twangle.core.designsystem.R.string.spoken_flat, "B")
         assertTrue(spoken(panel), spoken(panel).startsWith(context.getString(R.string.tuner_chord_major, flat)))
+        // The power chord and the 9ths by their own words.
+        for ((quality, words) in listOf(
+            ChordQuality.POWER_CHORD to R.string.tuner_chord_power_chord,
+            ChordQuality.SEVENTH_SHARP_NINE to R.string.tuner_chord_seventh_sharp_nine,
+            ChordQuality.MINOR_NINTH to R.string.tuner_chord_minor_ninth,
+            ChordQuality.MAJOR_NINTH to R.string.tuner_chord_major_ninth,
+        )) {
+            shownState.value = named(Chord.of(PitchClass.E, quality))
+            compose.waitForIdle()
+            assertTrue(spoken(panel), spoken(panel).startsWith(context.getString(words, "E")))
+        }
         // Waiting and not a clear chord.
         shownState.value = TunerUiState.ChordName(Tunings.STANDARD, phase = ChordPhase.UNCLEAR)
         compose.waitForIdle()
@@ -272,7 +283,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
      */
     @Test
     fun syntheticStrumsAreNamedOnTheRealScreen() {
-        val recorder = StrumOnCue(strum(AM_SHAPE, 3.0) + strum(C_OVER_E_SHAPE, 3.0) + FloatArray(SAMPLE_RATE * 3))
+        val recorder = StrumOnCue(strum(AM_SHAPE, 3.0) + strum(C_OVER_E_SHAPE, 3.0) + strum(E5_SHAPE, 3.0) + FloatArray(SAMPLE_RATE * 3))
         compose.mainClock.autoAdvance = true
         compose.setContent {
             PhoneScreen(XIAOMI_UPRIGHT, SystemBars.tab(onItsSide = false)) {
@@ -300,11 +311,15 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         compose.waitUntil(STEP_WAIT_MS) { spoken(panel).startsWith(slash) }
         picture("real-4-c-over-e")
         compose.waitUntil(STEP_WAIT_MS) { spoken(status).startsWith(slash) }
+        // A power chord: E5, not E or Em.
+        val power = context.getString(R.string.tuner_chord_power_chord, "E")
+        compose.waitUntil(STEP_WAIT_MS) { spoken(panel).startsWith(power) }
+        picture("real-5-e5")
         // Rung out: it stays.
         Thread.sleep(2_500)
         compose.waitForIdle()
-        picture("real-5-faded")
-        assertTrue(spoken(panel), spoken(panel).startsWith(slash))
+        picture("real-6-faded")
+        assertTrue(spoken(panel), spoken(panel).startsWith(power))
     }
 
     private fun spoken(node: SemanticsNodeInteraction): String =
@@ -341,13 +356,15 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         File(File(dir).apply { mkdirs() }, "chord-$style-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    /** The phases to look at: waiting, listening, named (a triad, a slash chord, a long seventh, faded with the last chords), not a clear chord. */
+    /** The phases to look at: waiting, listening, named (a triad, a slash chord, a long seventh, a power chord, the longest name, faded with the last chords), not a clear chord. */
     private fun phases(): List<Pair<String, TunerUiState.ChordName>> = listOf(
         "waiting" to TunerUiState.ChordName(Tunings.STANDARD),
         "listening" to TunerUiState.ChordName(Tunings.STANDARD, phase = ChordPhase.LISTENING),
         "am" to named(AM),
         "slash" to named(C, bass = PitchClass.E, recent = listOf(SettledChord(AM, PitchClass.A), SettledChord(G, PitchClass.G), SettledChord(C, PitchClass.E))),
         "long" to named(Chord.of(PitchClass.A_SHARP, ChordQuality.MAJOR_SEVENTH), recent = listOf(SettledChord(C, PitchClass.E), SettledChord(G, PitchClass.G))),
+        "power" to named(Chord.of(PitchClass.E, ChordQuality.POWER_CHORD), recent = listOf(SettledChord(G, PitchClass.G))),
+        "longest" to named(Chord.of(PitchClass.A_SHARP, ChordQuality.MAJOR_NINTH), recent = listOf(SettledChord(Chord.of(PitchClass.D_SHARP, ChordQuality.SEVENTH_SHARP_NINE), PitchClass.D_SHARP))),
         "faded" to named(G7, faded = true, recent = listOf(SettledChord(C, PitchClass.E), SettledChord(AM, PitchClass.A), SettledChord(G7, PitchClass.G))),
         "listening again" to named(AM, faded = true, phase = ChordPhase.LISTENING),
         "unclear" to TunerUiState.ChordName(Tunings.STANDARD, phase = ChordPhase.UNCLEAR, recent = listOf(SettledChord(AM, PitchClass.A))),
@@ -400,9 +417,10 @@ class ChordNameStylesTest(private val style: VisualStyle) {
             recent = recent,
         )
 
-        /** Open A minor (x02210) and C over E (032010), as MIDI notes low to high. */
+        /** Open A minor (x02210), C over E (032010) and the power chord E5 (022xxx), as MIDI notes low to high. */
         private val AM_SHAPE = intArrayOf(45, 52, 57, 60, 64)
         private val C_OVER_E_SHAPE = intArrayOf(40, 48, 52, 55, 60, 64)
+        private val E5_SHAPE = intArrayOf(40, 47, 52)
 
         private const val SAMPLE_RATE = 48_000
 

@@ -168,16 +168,83 @@ class ChordDetectorTest {
     }
 
     @Test
-    fun `no name for two-note dyads and power chords`() {
+    fun `power chords are named as power chords, on two strings or three`() {
+        for (shape in ChordShapes.POWER) assertNamed(shape, ChordShapes.strum(shape.midi))
         for (root in 40..57) {
-            assertNoName("power chord ${Note(root)}5", ChordShapes.strum(intArrayOf(root, root + 7, root + 12)))
-            assertNoName("fifth ${Note(root)}", ChordShapes.strum(intArrayOf(root, root + 7)))
+            val chord = Chord.of(PitchClass.entries[root % 12], ChordQuality.POWER_CHORD)
+            for (midi in listOf(intArrayOf(root, root + 7, root + 12), intArrayOf(root, root + 7))) {
+                val named = detect(ChordShapes.strum(midi))
+                assertSame("${Note(root)}5 ${midi.size} strings, heard ${heard()}", chord, named)
+                assertEquals(chord.root, result.bass)
+            }
+        }
+    }
+
+    @Test
+    fun `a power chord is never taken for a major or minor chord`() {
+        val random = Random(32)
+        val weak = TestSignals.WEAK_FUNDAMENTAL_HARMONICS
+        for (shape in ChordShapes.POWER) {
+            val count = shape.midi.size
+            val hz = ChordShapes.hz(shape.midi)
+            val signals = listOf(
+                "stiff" to StrumChords.stiffStrum(hz, n, DoubleArray(count) { 1e-4 }),
+                "weak fundamentals" to StrumChords.stiffStrum(
+                    hz, n, DoubleArray(count) { 5e-5 },
+                    harmonicGain = { i, k -> if (shape.midi[i] < 55 && k <= weak.size) weak[k - 1].toDouble() else 1.0 / k },
+                ),
+                "20 dB SNR" to TestSignals.withNoise(ChordShapes.strum(shape.midi), 20f),
+                "upstroke" to ChordShapes.strum(shape.midi.reversedArray()),
+                "from 1 s" to ChordShapes.strum(shape.midi, fromSeconds = 1.0),
+            ) + List(5) {
+                "uneven #$it" to ChordShapes.strum(
+                    shape.midi,
+                    cents = FloatArray(count) { random.nextFloat() * 20 - 10 },
+                    gains = FloatArray(count) { 0.3f + 0.7f * random.nextFloat() },
+                    spreadSeconds = 0.005 + 0.025 * random.nextDouble(),
+                )
+            }
+            for ((label, signal) in signals) {
+                val chord = detect(signal)
+                assertTrue("$shape $label named $chord, heard ${heard()}", chord == null || chord === shape.chord)
+            }
+            // And as played, always named.
+            assertNamed(shape, ChordShapes.strum(shape.midi))
+        }
+    }
+
+    @Test
+    fun `the 7 sharp 9, m9 and maj9 are named, or as their 7th chord when the ninth goes unheard`() {
+        val random = Random(33)
+        var right = 0
+        var total = 0
+        for (shape in ChordShapes.NINTHS) {
+            val seventh = Chord.of(shape.root, SEVENTH_OF.getValue(shape.quality))
+            val count = shape.midi.size
+            val signals = listOf(ChordShapes.strum(shape.midi), ChordShapes.strum(shape.midi.reversedArray())) + List(5) {
+                ChordShapes.strum(
+                    shape.midi,
+                    cents = FloatArray(count) { random.nextFloat() * 20 - 10 },
+                    gains = FloatArray(count) { 0.5f + 0.5f * random.nextFloat() },
+                )
+            }
+            for (signal in signals) {
+                val chord = detect(signal)
+                total++
+                if (chord === shape.chord) right++
+                assertTrue("$shape named $chord, heard ${heard()}", chord == null || chord === shape.chord || chord === seventh)
+            }
+        }
+        assertTrue("right $right of $total", right >= 0.8 * total)
+    }
+
+    @Test
+    fun `no name for two-note thirds or an octave`() {
+        for (root in 40..57) {
             assertNoName("major third ${Note(root)}", ChordShapes.strum(intArrayOf(root, root + 4)))
             assertNoName("minor third and octave ${Note(root)}", ChordShapes.strum(intArrayOf(root, root + 3, root + 12)))
+            assertNoName("octave ${Note(root)}", ChordShapes.strum(intArrayOf(root, root + 12)))
         }
-        // E5 and A5 as played: 022xxx, x022xx.
-        assertNoName("E5", ChordShapes.strum(intArrayOf(40, 47, 52)))
-        assertNoName("A5", ChordShapes.strum(intArrayOf(45, 52, 57)))
     }
 
     @Test
@@ -241,4 +308,12 @@ class ChordDetectorTest {
     }
 
     private fun abs(x: Float) = kotlin.math.abs(x)
+
+    private companion object {
+        val SEVENTH_OF = mapOf(
+            ChordQuality.SEVENTH_SHARP_NINE to ChordQuality.DOMINANT_SEVENTH,
+            ChordQuality.MINOR_NINTH to ChordQuality.MINOR_SEVENTH,
+            ChordQuality.MAJOR_NINTH to ChordQuality.MAJOR_SEVENTH,
+        )
+    }
 }

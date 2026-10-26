@@ -180,6 +180,10 @@
     <string name="tuner_chord_minor_seventh">%1$s 마이너 세븐스</string>
     <string name="tuner_chord_sus2">%1$s 서스 2</string>
     <string name="tuner_chord_sus4">%1$s 서스 4</string>
+    <string name="tuner_chord_power_chord">%1$s 파워 코드</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s 세븐스 샵 나인스</string>
+    <string name="tuner_chord_minor_ninth">%1$s 마이너 나인스</string>
+    <string name="tuner_chord_major_ninth">%1$s 메이저 나인스</string>
     <string name="tuner_chord_slash">%1$s, 베이스 %2$s</string>
     <string name="tuner_chord_bass">베이스</string>
     <string name="tuner_chord_strum">코드를 치세요</string>

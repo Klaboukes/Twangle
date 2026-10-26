@@ -202,6 +202,10 @@
     <string name="tuner_chord_minor_seventh">%1$s مينور سابعة</string>
     <string name="tuner_chord_sus2">%1$s sus 2</string>
     <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_power_chord">%1$s باور كورد</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s سابعة تاسعة مرفوعة</string>
+    <string name="tuner_chord_minor_ninth">%1$s مينور تاسعة</string>
+    <string name="tuner_chord_major_ninth">%1$s ماجور تاسعة</string>
     <string name="tuner_chord_slash">%1$s، و%2$s في الباص</string>
     <string name="tuner_chord_bass">الباص</string>
     <string name="tuner_chord_strum">اعزف كوردًا</string>

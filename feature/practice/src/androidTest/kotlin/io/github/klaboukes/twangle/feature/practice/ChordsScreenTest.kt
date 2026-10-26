@@ -366,12 +366,13 @@ class ChordsScreenTest(private val style: VisualStyle) {
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
         // C to Cmaj7, Cm7 to C7sus4, C6 to C9, Cdim to Caug.
-        val rows = ChordQuality.entries.chunked(4).map { row -> row.map { top(PracticeTestTags.type(it)) } }
+        val rows = ChordQuality.inPanel.chunked(4).map { row -> row.map { top(PracticeTestTags.type(it)) } }
         assertTrue("$case four chord types a row, in four rows", rows.size == 4 && rows.all { row -> row.size == 4 && row.all { it == row[0] } })
         assertTrue("$case the rows one under the other", rows.zipWithNext().all { (above, below) -> below[0] > above[0] })
         for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
-        for (quality in ChordQuality.entries) assertWhollyShown(node(PracticeTestTags.type(quality)), "$case type $quality")
+        for (quality in ChordQuality.inPanel) assertWhollyShown(node(PracticeTestTags.type(quality)), "$case type $quality")
         if (texts) compose.assertEveryTextWhollyShown("$case panel:")
+        assertFalse("$case the power chord isn't in the panel yet", exists(PracticeTestTags.type(ChordQuality.POWER_CHORD)))
         closePanel()
         assertFalse("$case Back closes the panel", exists(PracticeTestTags.type(ChordQuality.MAJOR)))
         picker().assert(hasContentDescription(name))

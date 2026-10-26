@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s com sétima diminuta</string>
     <string name="practice_chord_half_diminished">%1$s meio diminuto</string>
     <string name="practice_chord_augmented">%1$s aumentado</string>
+    <string name="practice_chord_power_chord">%1$s power chord</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s com sétima e nona aumentada</string>
+    <string name="practice_chord_minor_ninth">%1$s menor com nona</string>
+    <string name="practice_chord_major_ninth">%1$s com sétima maior e nona</string>
     <string name="practice_shape_count">%1$d de %2$d</string>
     <string name="practice_shape_previous">Posição anterior</string>
     <string name="practice_shape_next">Próxima posição</string>

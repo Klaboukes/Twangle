@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s سابعة ناقصة</string>
     <string name="practice_chord_half_diminished">%1$s نصف ناقص</string>
     <string name="practice_chord_augmented">%1$s زائد</string>
+    <string name="practice_chord_power_chord">%1$s باور كورد</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s سابعة تاسعة مرفوعة</string>
+    <string name="practice_chord_minor_ninth">%1$s مينور تاسعة</string>
+    <string name="practice_chord_major_ninth">%1$s ماجور تاسعة</string>
     <string name="practice_shape_count">%1$d من %2$d</string>
     <string name="practice_shape_previous">الشكل السابق</string>
     <string name="practice_shape_next">الشكل التالي</string>

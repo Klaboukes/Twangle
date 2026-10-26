@@ -17,17 +17,27 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
  * note, except an open tuning's own chord: every string open or under one barre with the fifth in
  * the bass (open G's G 000000 and C 555555, which slide players strum whole). Fewer strings
  * (ukulele, mandolin) may sound an inversion, as their charts do (ukulele G is 0232), but a root in
- * the bass ranks higher.
+ * the bass ranks higher. A chord with no such shape on five strings or more is looked for again with
+ * the thinnest string muted as well, as jazz charts voice it (D♭maj9 x4354x, the ring finger's tip
+ * damping the top string).
+ *
+ * **Power chords** ([ChordQuality.POWER_CHORD]) are played on two or three neighbouring strings with
+ * the rest muted, the root lowest and on one of the thick strings (the lowest three of a guitar, the
+ * first two of a ukulele, mandolin or bass), so they sound full: E5 022xxx, F5 133xxx, A5 x022xx, D5 xx023x.
  *
  * **Fingers** ([fingeringOf]): one finger per fret, counted from the lowest fret pressed, or from the
  * 1st fret when the shape rings open strings and that fits exactly (C is x32010 with fingers 3 2 1,
  * Cmaj7 x32000 with 3 2). A barre (index finger across) when more than four strings are pressed
  * (F 133211), or when the lowest fret holds the last two strings or more side by side (Dm7 xx0211,
- * ukulele B♭ 3211). Thumb-over shapes are not suggested.
+ * ukulele B♭ 3211). Five strings pressed without that barre may take a short one by a later finger
+ * across the last strings at the highest fret (Cm9 x31333, the ring finger across). Thumb-over
+ * shapes are not suggested.
  *
  * **Ranking** ([effortOf]): roughly how hard a shape is, lowest first. Each finger costs 1, a barre
- * 0.5 more, each fret of stretch 0.5, each fret up the neck 0.5, each string left out 0.7, a fifth
- * left out 0.25 (C7 x32310 still before x35353), an inversion 1. Open strings ringing while a finger is above the 3rd fret cost 2 a
+ * 0.5 more (1.5 by a finger other than the index, so C6 stays x32210 before x35555), each fret
+ * of stretch 0.5, each fret up the neck 0.5, each string left out 0.7, a fifth left out 0.25 (C7 x32310 still before x35353), an inversion 1. A power chord's muted strings cost
+ * nothing (it mutes them all), but one on two strings costs 2 more than root, fifth and octave on
+ * three (E5 022xxx before 02xxxx). Open strings ringing while a finger is above the 3rd fret cost 2 a
  * fret: the hand has left the open position (that keeps x20402 below the barre Bm x24432). Fingers
  * arching over open strings to a higher fret cost 1 a fret ([archOf]: x10331 below the barre B♭
  * x13331, 102210 below Fmaj7 xx3210, xx1023 below E♭7 xx1323). Weighed so the shapes chord books show first come
@@ -49,8 +59,12 @@ object ChordShapeFinder {
     /** Up to [limit] shapes of [chord] on [tuning], easiest first; empty if it has none within reach. */
     fun shapesOf(chord: Chord, tuning: Tuning, limit: Int = DEFAULT_LIMIT): List<ChordShape> {
         val opens = IntArray(tuning.stringCount) { tuning.strings[it].midi }
-        val search = Search(opens, chord)
+        var search = Search(opens, chord, topMuted = false)
         for (lowest in 1..HIGHEST_FRET) search.fromFret(lowest)
+        if (search.found.isEmpty() && opens.size >= 5) {
+            search = Search(opens, chord, topMuted = true)
+            for (lowest in 1..HIGHEST_FRET) search.fromFret(lowest)
+        }
         return search.found.sortedWith(compareBy({ it.first }, { it.second.lowestFret }, { it.second.toString() }))
             .take(limit)
             .map { it.second }
@@ -66,7 +80,7 @@ object ChordShapeFinder {
     /** The pitch-class mask (bit i = i semitones above C) of [mask] built on [root] instead of C. */
     internal fun rotate(mask: Int, root: Int): Int = ((mask shl root) or (mask ushr (12 - root))) and 0xFFF
 
-    private class Search(val opens: IntArray, val chord: Chord) {
+    private class Search(val opens: IntArray, val chord: Chord, val topMuted: Boolean) {
         val strings = opens.size
         val root = chord.root.ordinal
         val tones = rotate(chord.quality.mask, root)
@@ -75,18 +89,39 @@ object ChordShapeFinder {
             root,
         )
         val fifth = 1 shl ((root + 7) % 12)
-        val maxMuted = strings - minPlayed(strings)
+        val maxMuted = strings - minPlayed(strings) - (if (topMuted) 1 else 0)
+        val power = chord.quality == ChordQuality.POWER_CHORD
         val frets = IntArray(strings)
+
+        // A power chord's strings: from powerFirst to powerLast, the rest muted.
+        var powerFirst = 0
+        var powerLast = 0
         val seen = HashSet<String>()
         val found = ArrayList<Pair<Double, ChordShape>>()
 
-        fun fromFret(lowest: Int) = place(0, lowest, minOf(lowest + MAX_SPAN, HIGHEST_FRET))
+        fun fromFret(lowest: Int) {
+            if (!power) return place(0, lowest, minOf(lowest + MAX_SPAN, HIGHEST_FRET))
+            for (first in 0..powerFirstStringMax(strings)) for (count in POWER_STRINGS) {
+                if (first + count > strings) continue
+                powerFirst = first
+                powerLast = first + count - 1
+                place(0, lowest, minOf(lowest + MAX_SPAN, HIGHEST_FRET))
+            }
+        }
 
         private fun place(string: Int, low: Int, high: Int) {
             if (string == strings) return judge()
-            if (string < maxMuted && (string == 0 || frets[string - 1] == ChordShape.MUTED)) {
+            if (power && string !in powerFirst..powerLast) {
+                frets[string] = ChordShape.MUTED
+                return place(string + 1, low, high)
+            }
+            if (!power && string < maxMuted && (string == 0 || frets[string - 1] == ChordShape.MUTED)) {
                 frets[string] = ChordShape.MUTED
                 place(string + 1, low, high)
+            }
+            if (topMuted && string == strings - 1) {
+                frets[string] = ChordShape.MUTED
+                return place(string + 1, low, high)
             }
             if (isTone(opens[string])) {
                 frets[string] = 0
@@ -113,9 +148,9 @@ object ChordShapeFinder {
             if (sounded and required != required) return
             // Every string open or under one barre, with the fifth in the bass: the open tuning's own
             // chord (open G strummed open is 000000, its C 555555), played as a root-position chord.
-            val wholeNeck = frets.all { it == frets[0] } && bass.mod(12) == (root + 7) % 12
+            val wholeNeck = !power && frets.all { it == frets[0] } && bass.mod(12) == (root + 7) % 12
             val rootInBass = bass.mod(12) == root || wholeNeck
-            if (!rootInBass && strings >= 5) return
+            if (!rootInBass && (strings >= 5 || power)) return
             val key = frets.joinToString(",")
             if (key in seen) return
             val fingering = fingeringOf(frets) ?: return
@@ -124,6 +159,12 @@ object ChordShapeFinder {
             found += effortOf(shape, rootInBass, hasFifth = sounded and fifth != 0) to shape
         }
     }
+
+    /** A power chord's lowest string, counted from the thickest: one of the lowest three of a guitar, the first two on four strings. */
+    internal fun powerFirstStringMax(strings: Int): Int = maxOf(1, strings - 4)
+
+    /** A power chord sounds on two or three strings: root and fifth, or root, fifth and octave. */
+    private val POWER_STRINGS = 2..3
 
     /** Suggested fingers per string and the barre, or null if four fingers can't hold [frets]. */
     internal class Fingering(val fingers: IntArray, val barre: Barre?)
@@ -136,7 +177,7 @@ object ChordShapeFinder {
         val lowest = frets[pressed[0]]
         val barre = barreOf(frets, lowest, needed = pressed.size > FINGERS)
         if (barre == null) {
-            if (pressed.size > FINGERS) return null
+            if (pressed.size > FINGERS) return highBarreFingering(frets, pressed, lowest)
             val openPosition = frets.any { it == 0 } && assign(pressed, frets, anchor = 1, firstFinger = 1, fingers)
             if (!openPosition) assign(pressed, frets, anchor = lowest, firstFinger = 1, fingers)
             return Fingering(fingers, null)
@@ -146,6 +187,28 @@ object ChordShapeFinder {
         if (rest.size > FINGERS - 1) return null
         assign(rest, frets, anchor = lowest, firstFinger = 2, fingers)
         return Fingering(fingers, barre)
+    }
+
+    /**
+     * Five strings pressed with no barre at the lowest fret: a short barre by a later finger across
+     * the last strings at the highest fret, the rest a finger each below it (Cm9 x31333: index
+     * on the D string, middle on the A, ring across G, B and E), at most [HIGH_BARRE_REACH] frets
+     * above the lowest. Null if that doesn't fit.
+     */
+    private fun highBarreFingering(frets: IntArray, pressed: List<Int>, lowest: Int): Fingering? {
+        val last = frets.lastIndex
+        val top = frets[last]
+        if (last < 1 || top <= lowest || top - lowest > HIGH_BARRE_REACH || frets[last - 1] != top || pressed.any { frets[it] > top }) return null
+        var first = last - 1
+        while (first > 0 && frets[first - 1] == top) first--
+        val rest = pressed.filter { it < first }
+        if (rest.size > FINGERS - 1) return null
+        // The fingers below it in turn, lowest fret first, so the barre's finger is the next one.
+        val fingers = IntArray(frets.size)
+        for ((k, string) in rest.withIndex()) fingers[string] = k + 1
+        val finger = rest.size + 1
+        for (s in first..last) fingers[s] = finger
+        return Fingering(fingers, Barre(top, first, last, finger))
     }
 
     /**
@@ -199,19 +262,23 @@ object ChordShapeFinder {
     /** See the class comment, *Ranking*: how hard [shape] is to play, lower is easier. */
     internal fun effortOf(shape: ChordShape, rootInBass: Boolean, hasFifth: Boolean): Double {
         val fingersUsed = shape.fingers.filter { it > 0 }.toSet().size
-        val muted = shape.frets.count { it == ChordShape.MUTED }
+        val power = shape.chord.quality == ChordQuality.POWER_CHORD
+        val played = shape.frets.count { it != ChordShape.MUTED }
+        val muted = if (power) 0 else shape.frets.count { it == ChordShape.MUTED }
         val open = shape.frets.any { it == 0 }
         val span = if (shape.lowestFret == 0) 0 else shape.highestFret - shape.lowestFret
         val outOfOpenPosition = if (open) (shape.highestFret - OPEN_POSITION).coerceAtLeast(0) else 0
         return fingersUsed * 1.0 +
             (if (shape.barre != null) 0.5 else 0.0) +
+            (if ((shape.barre?.finger ?: 1) > 1) 1.0 else 0.0) +
             span * 0.5 +
             shape.lowestFret * 0.5 +
             muted * 0.7 +
             outOfOpenPosition * 2.0 +
             archOf(shape.frets) * 1.0 +
             (if (rootInBass) 0.0 else 1.0) +
-            (if (hasFifth) 0.0 else 0.25)
+            (if (hasFifth) 0.0 else 0.25) +
+            (if (power && played < 3) 2.0 else 0.0)
     }
 
     /**
@@ -236,6 +303,9 @@ object ChordShapeFinder {
         }
         return arch
     }
+
+    /** How far above the lowest fret a barre by a later finger lies at most (Cm9 x31333: two frets). */
+    private const val HIGH_BARRE_REACH = 2
 
     /** The open position: frets a hand at the nut reaches while open strings ring. */
     private const val OPEN_POSITION = 3

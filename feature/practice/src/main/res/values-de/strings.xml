@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s verminderter Septakkord</string>
     <string name="practice_chord_half_diminished">%1$s halbvermindert</string>
     <string name="practice_chord_augmented">%1$s übermäßig</string>
+    <string name="practice_chord_power_chord">%1$s-Powerchord</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s-Septakkord mit übermäßiger None</string>
+    <string name="practice_chord_minor_ninth">%1$s-Moll-Nonenakkord</string>
+    <string name="practice_chord_major_ninth">%1$s-Dur mit großer Septime und None</string>
     <string name="practice_shape_count">%1$d von %2$d</string>
     <string name="practice_shape_previous">Vorheriger Griff</string>
     <string name="practice_shape_next">Nächster Griff</string>

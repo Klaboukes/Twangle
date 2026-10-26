@@ -188,6 +188,10 @@
     <string name="tuner_chord_minor_seventh">%1$s menor séptima</string>
     <string name="tuner_chord_sus2">%1$s sus 2</string>
     <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_power_chord">%1$s power chord</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s séptima novena aumentada</string>
+    <string name="tuner_chord_minor_ninth">%1$s menor novena</string>
+    <string name="tuner_chord_major_ninth">%1$s novena mayor</string>
     <string name="tuner_chord_slash">%1$s, %2$s en el bajo</string>
     <string name="tuner_chord_bass">bajo</string>
     <string name="tuner_chord_strum">Rasguea un acorde</string>

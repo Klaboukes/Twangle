@@ -180,6 +180,10 @@
     <string name="tuner_chord_minor_seventh">%1$s minor septim</string>
     <string name="tuner_chord_sus2">%1$s sus 2</string>
     <string name="tuner_chord_sus4">%1$s sus 4</string>
+    <string name="tuner_chord_power_chord">%1$s power chord</string>
+    <string name="tuner_chord_seventh_sharp_nine">%1$s septim nona kres</string>
+    <string name="tuner_chord_minor_ninth">%1$s minor nona</string>
+    <string name="tuner_chord_major_ninth">%1$s mayor nona</string>
     <string name="tuner_chord_slash">%1$s, bas %2$s</string>
     <string name="tuner_chord_bass">bas</string>
     <string name="tuner_chord_strum">Genjreng sebuah akor</string>

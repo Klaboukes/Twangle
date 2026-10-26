@@ -28,6 +28,11 @@
     <string name="practice_chord_diminished_seventh">%1$s diminished seventh</string>
     <string name="practice_chord_half_diminished">%1$s half-diminished</string>
     <string name="practice_chord_augmented">%1$s augmented</string>
+    <!-- Phase 49: the power chord ("C5"), the 7♯9 ("Hendrix chord"), m9 and maj9. Words for TalkBack, so "sharp" in words, not ♯. -->
+    <string name="practice_chord_power_chord">%1$s power chord</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
+    <string name="practice_chord_minor_ninth">%1$s minor ninth</string>
+    <string name="practice_chord_major_ninth">%1$s major ninth</string>
     <!-- Between the ‹ › buttons under the chart: shape %1$d of the %2$d found. -->
     <string name="practice_shape_count">%1$d of %2$d</string>
     <!-- TalkBack, the ‹ and › buttons that step through the shapes of the chord. -->

@@ -23,6 +23,10 @@
     <string name="practice_chord_diminished_seventh">%1$s eksik yedili</string>
     <string name="practice_chord_half_diminished">%1$s yarım eksik</string>
     <string name="practice_chord_augmented">%1$s artık</string>
+    <string name="practice_chord_power_chord">%1$s power chord</string>
+    <string name="practice_chord_seventh_sharp_nine">%1$s yedili artık dokuzlu</string>
+    <string name="practice_chord_minor_ninth">%1$s minör dokuzlu</string>
+    <string name="practice_chord_major_ninth">%1$s majör dokuzlu</string>
     <string name="practice_shape_count">%1$d / %2$d</string>
     <string name="practice_shape_previous">Önceki basış</string>
     <string name="practice_shape_next">Sonraki basış</string>
