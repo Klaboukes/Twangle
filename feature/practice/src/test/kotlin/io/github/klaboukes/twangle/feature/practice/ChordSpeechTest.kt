@@ -53,6 +53,20 @@ class ChordSpeechTest {
     }
 
     @Test
+    fun `a power chord is said with its muted strings, and a 7 sharp 9 with its sharp`() {
+        val f5 = first(PitchClass.F, ChordQuality.POWER_CHORD)
+        assertEquals("133xxx", f5.toString())
+        assertEquals(
+            "F power chord, shape 1 of 4, E 2 string, fret 1, finger 1, F, A 2 string, fret 3, finger 3, C, " +
+                "D 3 string, fret 3, finger 4, F, G 3 string, not played, B 3 string, not played, E 4 string, not played",
+            spokenChart(f5, 0, 4, Tunings.STANDARD, Notation.SHARPS, "F power chord", english, say),
+        )
+        val e = spokenChart(first(PitchClass.E, ChordQuality.SEVENTH_SHARP_NINE), 0, 1, Tunings.STANDARD, Notation.SHARPS, "E seven sharp nine", english, say)
+        // The third G♯ and the sharp ninth on top, which sounds as G and is said so (E G G♯ B D).
+        assertTrue(e, e.contains("G 3 string, fret 1, finger 1, G sharp") && e.endsWith("E 4 string, fret 3, finger 4, G"))
+    }
+
+    @Test
     fun `notes follow the chord's spelling and the notation, strings the tuning's own`() {
         val bFlat = first(PitchClass.A_SHARP, ChordQuality.MAJOR)
         val spoken = spokenChart(bFlat, 0, 1, Tunings.STANDARD, Notation.SHARPS, "B♭ major", english, say)

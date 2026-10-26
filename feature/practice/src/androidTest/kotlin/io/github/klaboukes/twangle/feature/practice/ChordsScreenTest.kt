@@ -221,6 +221,13 @@ class ChordsScreenTest(private val style: VisualStyle) {
         assertName("Dm", "D minor")
         assertEquals("the root already picked isn't saved again", listOf(PitchClass.D), savedRoots)
         assertEquals(listOf(ChordQuality.MINOR), savedQualities)
+        // One of Phase 49's four: the power chord, its chart with the strings it doesn't play.
+        openPanel()
+        node(PracticeTestTags.type(ChordQuality.POWER_CHORD)).performClick()
+        awaitPanelClosed()
+        assertName("D5", "D power chord")
+        assertTrue("D5 on the D, A and D strings, the rest not played", awaitChart("D power chord, shape 1 of").contains("E 2 string, not played"))
+        assertEquals(listOf(ChordQuality.MINOR, ChordQuality.POWER_CHORD), savedQualities)
     }
 
     @Test
@@ -235,6 +242,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.root(PitchClass.A_SHARP)).assert(radio).assert(hasContentDescription("B flat"))
         node(PracticeTestTags.root(PitchClass.F_SHARP)).assert(radio).assert(hasContentDescription("F sharp"))
         node(PracticeTestTags.type(ChordQuality.MINOR_SEVENTH)).assert(radio).assert(hasContentDescription("B flat minor seventh"))
+        node(PracticeTestTags.type(ChordQuality.POWER_CHORD)).assert(radio).assert(hasContentDescription("B flat power chord")).assertTextEquals("B♭5")
+        node(PracticeTestTags.type(ChordQuality.SEVENTH_SHARP_NINE)).assert(radio).assert(hasContentDescription("B flat seven sharp nine")).assertTextEquals("B♭7♯9")
+        node(PracticeTestTags.type(ChordQuality.MINOR_NINTH)).assert(radio).assert(hasContentDescription("B flat minor ninth")).assertTextEquals("B♭m9")
+        node(PracticeTestTags.type(ChordQuality.MAJOR_NINTH)).assert(radio).assert(hasContentDescription("B flat major ninth")).assertTextEquals("B♭maj9")
         closePanel()
         node(PracticeTestTags.PREVIOUS).assert(hasContentDescription("Previous shape"))
         node(PracticeTestTags.NEXT).assert(hasContentDescription("Next shape"))
@@ -351,7 +362,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     /**
      * The panel under the name where it fits (where not [wide]): the roots in two rows of six (C to F, F♯ to B), then the chord types
-     * in four rows of four, each wholly shown (scrolling the panel where it must; with [texts], every text in
+     * in five rows of four, each wholly shown (scrolling the panel where it must; with [texts], every text in
      * it too); Back closes it and leaves the name as it was.
      */
     private fun assertThePanel(case: String, wide: Boolean, texts: Boolean = false) {
@@ -365,14 +376,14 @@ class ChordsScreenTest(private val style: VisualStyle) {
         if (!wide) assertMenuUnder(picker(), node(PracticeTestTags.root(PitchClass.C)), case)
         val types = top(PracticeTestTags.type(ChordQuality.MAJOR))
         assertTrue("$case the types under the roots", types > second)
-        // C to Cmaj7, Cm7 to C7sus4, C6 to C9, Cdim to Caug.
+        // C to C7, Cmaj7 to Csus4, C7sus4 to Cadd9, C9 to C7♯9, Cdim to Caug.
         val rows = ChordQuality.inPanel.chunked(4).map { row -> row.map { top(PracticeTestTags.type(it)) } }
-        assertTrue("$case four chord types a row, in four rows", rows.size == 4 && rows.all { row -> row.size == 4 && row.all { it == row[0] } })
+        assertTrue("$case four chord types a row, in five rows", rows.size == 5 && rows.all { row -> row.size == 4 && row.all { it == row[0] } })
+        assertTrue("$case the power chord in the top row", top(PracticeTestTags.type(ChordQuality.POWER_CHORD)) == rows[0][0])
         assertTrue("$case the rows one under the other", rows.zipWithNext().all { (above, below) -> below[0] > above[0] })
         for (pitch in PitchClass.entries) assertWhollyShown(node(PracticeTestTags.root(pitch)), "$case root $pitch")
         for (quality in ChordQuality.inPanel) assertWhollyShown(node(PracticeTestTags.type(quality)), "$case type $quality")
         if (texts) compose.assertEveryTextWhollyShown("$case panel:")
-        assertFalse("$case the power chord isn't in the panel yet", exists(PracticeTestTags.type(ChordQuality.POWER_CHORD)))
         closePanel()
         assertFalse("$case Back closes the panel", exists(PracticeTestTags.type(ChordQuality.MAJOR)))
         picker().assert(hasContentDescription(name))

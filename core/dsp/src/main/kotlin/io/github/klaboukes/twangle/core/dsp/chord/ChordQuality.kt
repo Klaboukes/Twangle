@@ -1,8 +1,7 @@
 package io.github.klaboukes.twangle.core.dsp.chord
 
 /**
- * The chord types, the common ones first, in the order the chord charts' picker shows them, four to a
- * row. Each is a set of intervals in semitones above the root; [fifthOptional] chords are also named
+ * The chord types. Each is a set of intervals in semitones above the root; [fifthOptional] chords are also named
  * and charted without their fifth, as guitar voicings often leave it out (C7 as x32310: C E B♭, no G;
  * C9 as x32333).
  *
@@ -15,7 +14,8 @@ package io.github.klaboukes.twangle.core.dsp.chord
  * before them (`ChordAccuracyReport`); with a weak ninth they are heard as their 7th chord (Am9 as
  * Am7), as they were before.
  *
- * The four after [AUGMENTED] (Phase 49) are not in the Chords panel yet; [inPanel] says which are.
+ * The four after [AUGMENTED] came in Phase 49; they stay last here so the names heard before them
+ * keep their order. The Chords panel shows all twenty in its own order, the most used first ([inPanel]).
  */
 enum class ChordQuality(vararg intervals: Int, val fifthOptional: Boolean = false, val detected: Boolean = true) {
     MAJOR(0, 4, 7),
@@ -51,8 +51,19 @@ enum class ChordQuality(vararg intervals: Int, val fifthOptional: Boolean = fals
     val maskWithoutFifth: Int = mask and FIFTH_BIT.inv()
 
     companion object {
-        /** The chord types the Chords panel offers, in its order: the sixteen up to [AUGMENTED], four to a row. */
-        val inPanel: List<ChordQuality> = entries.subList(0, AUGMENTED.ordinal + 1)
+        /**
+         * All twenty chord types in the Chords panel's order, four to a row in five full rows, the most
+         * used first (Phase 49): C Cm C5 C7 · Cmaj7 Cm7 Csus2 Csus4 · C7sus4 C6 Cm6 Cadd9 ·
+         * C9 Cm9 Cmaj9 C7♯9 · Cdim Cdim7 Cm7♭5 Caug. The power chord in the top row, beside major and
+         * minor, as it is the most played after them in rock, punk and metal.
+         */
+        val inPanel: List<ChordQuality> = listOf(
+            MAJOR, MINOR, POWER_CHORD, DOMINANT_SEVENTH,
+            MAJOR_SEVENTH, MINOR_SEVENTH, SUS2, SUS4,
+            SEVENTH_SUS4, SIXTH, MINOR_SIXTH, ADD9,
+            NINTH, MINOR_NINTH, MAJOR_NINTH, SEVENTH_SHARP_NINE,
+            DIMINISHED, DIMINISHED_SEVENTH, HALF_DIMINISHED, AUGMENTED,
+        )
     }
 }
 

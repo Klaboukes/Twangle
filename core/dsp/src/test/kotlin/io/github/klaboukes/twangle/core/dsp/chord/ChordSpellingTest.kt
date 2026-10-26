@@ -112,6 +112,20 @@ class ChordSpellingTest {
     }
 
     @Test
+    fun `the Chords panel holds all twenty, in five full rows of four, the most used first`() {
+        val panel = ChordQuality.inPanel
+        assertEquals("each chord type once", ChordQuality.entries.toSet(), panel.toSet())
+        assertEquals(ChordQuality.entries.size, panel.size)
+        assertEquals("five full rows of four", 0, panel.size % 4)
+        assertEquals(5, panel.size / 4)
+        assertEquals(
+            listOf("C Cm C5 C7", "Cmaj7 Cm7 Csus2 Csus4", "C7sus4 C6 Cm6 Cadd9", "C9 Cm9 Cmaj9 C7♯9", "Cdim Cdim7 Cm7♭5 Caug"),
+            panel.chunked(4).map { row -> row.joinToString(" ") { symbol(C, it) } },
+        )
+        assertEquals("the power chord in the top row", 0, panel.indexOf(POWER_CHORD) / 4)
+    }
+
+    @Test
     fun `altered fifths and sixths are spelled by their sign`() {
         // A diminished fifth is flat on a white root, the minor key's sign otherwise.
         assertEquals("E G B♭", tones(E, DIMINISHED))
