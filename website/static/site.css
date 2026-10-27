@@ -55,6 +55,8 @@ p { margin: 0 0 14px; }
 /* A tool card is a link once the tool's page exists, a plain box until then */
 .tools > * { display: block; background: var(--surface); border-radius: 14px; padding: 16px; text-decoration: none; color: var(--muted); font-size: 15px; line-height: 1.45; }
 .tools b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 2px; }
+.tools a b::after { content: " →"; color: var(--accent); }
+.tools a:hover, .tools a:focus-visible { background: var(--container); }
 .group { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
 
 /* Tool page: text column with the screenshot beside it */
@@ -62,7 +64,8 @@ p { margin: 0 0 14px; }
 .crumb a { color: var(--muted); }
 .tool { display: grid; grid-template-columns: 1fr 260px; gap: 48px; align-items: start; }
 .tool .shot { position: sticky; top: 20px; }
-ol.steps { padding-left: 1.3em; margin: 0 0 14px; }
+.tool.solo { grid-template-columns: 1fr; max-width: 720px; } /* a tool page without a picture */
+.wide { display: block; width: 100%; height: auto; aspect-ratio: 960 / 448; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); margin: 8px 0 0; } /* a screenshot on its side, across the column */ol.steps { padding-left: 1.3em; margin: 0 0 14px; }
 ol.steps li { margin-bottom: 8px; }
 details { background: var(--surface); border-radius: 14px; padding: 4px 18px; margin: 0 0 10px; }
 summary { cursor: pointer; font-weight: 600; padding: 12px 0; }

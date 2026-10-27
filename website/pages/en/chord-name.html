@@ -1,0 +1,42 @@
+<!--
+title: Chord name · Twangle
+description: Strum a chord and Twangle names it: the symbol, the name in words, its notes and its bass note, and the last chords you played.
+nav: tools
+-->
+  <div class="crumb"><a href="./#tools">Tools</a> · Listening</div>
+  <div class="tool">
+    <div>
+      <h1>Chord name</h1>
+      <p class="lead">Strum a chord and Twangle names it. Handy to find out what you just played, to check a chord you are learning, or to work out a song by ear.</p>
+
+      <h2>Name a chord</h2>
+      <ol class="steps">
+        <li>Tap the tools button above the strings (three tiles and a plus) and pick <i>Chord name</i>.</li>
+        <li>Strum a chord, all the strings of it, and let it ring.</li>
+        <li>After about a second its name shows: the symbol big, for example <i>Am</i>, its name in words under it, <i>A minor</i>, and its notes, with the lowest one marked <i>bass</i>.</li>
+        <li>Strum the next one. The last three chords stay along the bottom.</li>
+      </ol>
+      <p>When the strings die away, the name stays, faded, until the next chord.</p>
+
+      <h2>Which chords it knows</h2>
+      <p>Major and minor chords, the seventh, major seventh and minor seventh, sus2 and sus4, the power chord (<i>E5</i>), the 7♯9 and the minor and major ninth, each from any note. When the lowest note isn't the chord's own, it says so: <i>C/E</i>, <i>C major, E in the bass</i>.</p>
+      <p>When a strum isn't clearly one chord, Twangle says <i>Not a clear chord</i>. It never guesses. Strum all the strings of the chord, and mute the ones that don't belong to it.</p>
+      <p>The notes are written the way you set in <i>Settings → Note names</i>: letters with sharps or flats, German (H for B), or Do Re Mi.</p>
+
+      <h2>Good to know</h2>
+      <ul>
+        <li>It works on the guitar (6, 7 and 8 strings), the ukulele, the mandolin and the banjo. The 12-string's octave strings ring too close together, and bass and bowed instruments rarely play chords.</li>
+        <li>An instrument a little out of tune as a whole, or tuned to another reference pitch, is still named right; tune it anyway for the best results.</li>
+        <li>Switching to <i>Chromatic</i>, tapping a string, or tapping the <i>Tuner</i> tab ends the chord name.</li>
+      </ul>
+
+      <details class="curious">
+        <summary>For the curious: how a chord is named</summary>
+        <p>Unlike the strum check, here Twangle doesn't know which notes to expect: a chord can put any note on any string, leave strings out and double others. So it finds the notes first. A note sounds with its harmonics, at two, three, four times its pitch, and those land on other notes: the third harmonic of an E is a B, the fifth a G♯. Simply adding up all the sound per note would turn an E power chord into E major.</p>
+        <p>So Twangle takes the strongest note, removes its harmonics from the sound, and looks again for the next, until only faint sound is left (iterative estimation and cancellation, after Anssi Klapuri, 2003 and 2006). The notes it found are matched against the chords it knows. Twangle reads the chord ten times a second, and a name shows once it wins four of the last six readings, so one stray reading never changes it.</p>
+      </details>
+
+      <div class="nextprev"><a href="12th-fret-check.html">← 12th-fret check</a><a href="pitch-trail.html">Pitch trail →</a></div>
+    </div>
+    <img class="shot" src="{root}shots/en/5.jpg" alt="The chord name: a strummed A minor, its notes, and the last chords C, G, Am" width="540" height="1157">
+  </div>

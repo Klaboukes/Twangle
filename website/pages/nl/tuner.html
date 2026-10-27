@@ -1,0 +1,53 @@
+<!--
+title: De stemmer · Twangle
+description: Zo stem je met Twangle: speel een snaar en draai aan de stemknop tot de naald in het midden staat. Snaren of chromatisch, cents, de stemtoon A4, en referentietonen om op het gehoor te stemmen.
+nav: tools
+-->
+  <div class="crumb"><a href="./#tools">Functies</a> · Stemmen</div>
+  <div class="tool">
+    <div>
+      <h1>De stemmer</h1>
+      <p class="lead">Speel één snaar. Twangle toont de noot, en de meter laat zien hoe ver die van zuiver zit.</p>
+
+      <h2>Een snaar stemmen</h2>
+      <ol class="steps">
+        <li>Tik op de kop-knop boven de snaren en kies je instrument en stemming, bijvoorbeeld <i>Gitaar · Standaard</i>.</li>
+        <li>Speel één snaar en laat hem doorklinken.</li>
+        <li>Draai aan de stemknop zoals Twangle zegt, <i>Hoger stemmen</i> of <i>Lager stemmen</i>, tot de naald in het midden staat en de noot <i>zuiver</i> toont.</li>
+      </ol>
+      <p>Twangle vindt zelf welke snaar je speelt. Wil je bij één snaar blijven, tik er dan op: Twangle zegt dan <i>Speel de A2-snaar</i> en luistert alleen naar die. Tik er nog eens op om Twangle weer zelf te laten kiezen.</p>
+
+      <h2>Hoe ver ernaast: cents</h2>
+      <p>Een cent is een honderdste van een halve toon, de stap van de ene fret naar de volgende. Onder de noot laat Twangle zien hoeveel cent die ernaast zit, bijvoorbeeld <i>12 cent te laag</i> of <i>8 cent te hoog</i>.</p>
+      <p>Een noot telt als zuiver binnen 5 cent. Wil je het strenger, zet dan <i>Instellingen → Marge voor zuiver</i> op <i>Precies: binnen 2 cent</i>. In Instellingen kun je de telefoon ook kort laten trillen als een noot zuiver is, of onder de noot een bewegende golf tonen in plaats van de getallen.</p>
+
+      <h2>Snaren of chromatisch</h2>
+      <p>De schakelaar bovenaan kiest hoe Twangle luistert. <b>Snaren</b> vergelijkt wat je speelt met de snaren van je stemming, en toont ze onderaan. <b>Chromatisch</b> benoemt elke noot, voor een instrument dat Twangle niet kent, of voor je stem.</p>
+
+      <h2>Je stemming</h2>
+      <p>Het paneel instrument en stemming toont de gangbare stemmingen van elk instrument: voor de gitaar Standaard, Drop D, DADGAD, open stemmingen en meer. Met <i>Lager met</i>, onderaan het paneel, zet je elke stemming tot 2½ toon lager. Met <i>Nieuwe stemming</i>, aan het eind van de lijst, maak je een eigen stemming.</p>
+
+      <h2>Op het gehoor stemmen</h2>
+      <p>Houd de knop van een snaar vast om de noot te horen, met de klank van je eigen instrument: een getokkelde snaar voor de gitaar, een gestreken snaar voor de viool. Hij klinkt ongeveer vier seconden; tik op een snaar om hem eerder te stoppen. Met de volumeknoppen van de telefoon zet je hem harder of zachter. Zolang de toon klinkt, luistert de stemmer niet, dus hij stemt nooit op zichzelf.</p>
+
+      <h2>Samen spelen</h2>
+      <p>De meeste muziek stemt de A boven de middelste C, A4, op 440 Hz. Orkesten stemmen vaak op 442 Hz, barokensembles op 415 Hz. Je stelt het in bij <i>Instellingen → Stemtoon (A4)</i>, van 415 tot 466 Hz. Alles volgt die stemtoon: de stemmer, de referentietonen en de andere functies.</p>
+
+      <h2>Als hij je niet goed hoort</h2>
+      <p>Dan zegt de stemmer dat onder de noot: <i>Speel wat harder</i>, <i>Te veel lawaai hier</i> of <i>Te hard, leg de telefoon verder weg</i>. Houd de telefoon bij je instrument, weg van ander geluid, en laat de snaar doorklinken in plaats van hem steeds opnieuw aan te slaan.</p>
+
+      <details class="curious">
+        <summary>Voor wie het wil weten: hoe Twangle een noot hoort</summary>
+        <p>Een getokkelde snaar herhaalt vele keren per seconde dezelfde golf. Ongeveer 47 keer per seconde neemt Twangle het nieuwste geluid van de microfoon (de laatste 85 milliseconden, twee keer zo lang voor lage snaren zoals die van een bas) en zoekt hoe lang het duurt voordat de golf zich herhaalt, met de YIN-methode van Alain de Cheveigné en Hideki Kawahara (2002). Die tijd geeft de frequentie, en de frequentie geeft de noot en hoeveel cent die ernaast zit. Twangles eigen tests houden dat binnen één cent op testtonen.</p>
+        <p>Een nieuwe noot verschijnt pas als een paar metingen het eens zijn, en de naald wordt afgevlakt zodat hij niet trilt, zonder achter je stemknop aan te lopen.</p>
+      </details>
+      <details class="curious">
+        <summary>Voor wie het wil weten: waarom Twangle de onbewerkte microfoon vraagt</summary>
+        <p>Voor bellen en video poetst een telefoon het geluid van de microfoon op: hij trekt het volume gelijk en haalt weg wat hij voor ruis houdt. Dat poetsen verandert de golf van een noot, zodat de toonhoogte verkeerd kan uitkomen en een uitstervende noot kan verdwijnen. Twangle vraagt Android om het onbewerkte geluid van de microfoon, of, op telefoons die dat niet bieden, het geluid voor spraakherkenning met het poetsen uit.</p>
+        <p>Het geluid wordt alleen geanalyseerd, zolang de stemmer op het scherm staat. Het wordt nooit opgenomen, bewaard of verstuurd: Twangle heeft geen toestemming om internet te gebruiken.</p>
+      </details>
+
+      <div class="nextprev"><a href="./#tools">← Alle functies</a><a href="strum-check.html">Strumcheck →</a></div>
+    </div>
+    <img class="shot" src="{root}shots/nl/2.jpg" alt="De stemmer: de lage E-snaar 12 cent te laag, met Hoger stemmen eronder, en boven de snaren de knoppen voor instrument en functies" width="540" height="1157">
+  </div>

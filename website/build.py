@@ -141,6 +141,18 @@ def nav_links(lang, root, current, exists):
     return "".join(out)
 
 
+CARD = re.compile(r'<div data-page="([^"]+)">(.*?)</div>', re.S)
+
+
+def tool_cards(body, exists):
+    """A tool card on the home page names its page (<div data-page="tuner.html">): it becomes a link
+    once that page exists, and stays a plain box until then, so no link is ever broken."""
+    def card(match):
+        page, inside = match.groups()
+        return f'<a href="{page}">{inside}</a>' if exists(page) else f"<div>{inside}</div>"
+    return CARD.sub(card, body)
+
+
 def build(out):
     if out.exists():
         shutil.rmtree(out)
@@ -180,7 +192,8 @@ def build(out):
                 other_href=href(root, LANGUAGES[other], name),
                 other_lang=other,
                 other_name=WORDS[other]["language_name"],
-                body=body.replace("{play}", PLAY_URL).replace("{root}", root),
+                body=tool_cards(body, lambda n: (PAGES / lang / n).exists())
+                .replace("{play}", PLAY_URL).replace("{root}", root),
                 made_by=w["made_by"],
                 footer_links="".join(footer),
                 email=EMAIL,

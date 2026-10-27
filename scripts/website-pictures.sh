@@ -14,8 +14,9 @@ JAVA="$JAVA_HOME/bin/java"
 SHRINK="$ROOT/website/tools/ShrinkImage.java"
 STATIC="$ROOT/website/static"
 
-# The screens the home page shows, by their number in docs/store-listing.md's table.
-SHOTS="1 3 5 6 7a"
+# The screens the pages show, by their number in docs/store-listing.md's table: the home page
+# 1, 3, 5, 6 and 7a, the tuner's page 2, the chord name's 5, the pitch trail's 8.
+SHOTS="1 2 3 5 6 7a 8"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 
@@ -30,6 +31,8 @@ for pair in $LOCALES; do
             echo "Missing $raw: run scripts/store-screenshots.sh $locale first." >&2
             exit 1
         fi
-        "$JAVA" "$SHRINK" "$raw" "$STATIC/shots/$lang/$n.jpg" 540
+        width=540
+        [ "$n" = 8 ] && width=960  # the phone on its side: a wide picture across the page's column
+        "$JAVA" "$SHRINK" "$raw" "$STATIC/shots/$lang/$n.jpg" "$width"
     done
 done
