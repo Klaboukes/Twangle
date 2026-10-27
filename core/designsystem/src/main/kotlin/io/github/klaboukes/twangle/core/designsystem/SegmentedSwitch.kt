@@ -2,7 +2,6 @@ package io.github.klaboukes.twangle.core.designsystem
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -120,8 +119,8 @@ fun <T> SegmentedSwitch(
                         modifier = Modifier.segmentLabel(whole, give = if (crowded) 0.dp else GIVING_PADDING),
                         // Wrapping on, so a word too wide for one line counts as not fitting and shrinks.
                         maxLines = 1,
-                        // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE).
-                        autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = LocalTextStyle.current.fontSize, stepSize = 0.5.sp),
+                        // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE), each tried in turn.
+                        autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, LAST_RESORT_LABEL_SIZE) },
                     )
                 }
             }
@@ -169,11 +168,12 @@ private class SegmentLabelNode(var whole: IntSize, var give: Dp) : Modifier.Node
 }
 
 /**
- * The labels shrink only as far as they must to fit: no smaller than 8 sp in every case measured
- * (as the string buttons' names), down to this only where one would otherwise be cut off (as the
- * Practice pickers' buttons): three segments at 2× text on a 320 dp phone.
+ * The labels shrink only as far as they must to fit: no smaller than 8 sp in most cases measured
+ * (as the string buttons' names), down to this only where one would otherwise be cut off: three
+ * segments at 2× text on a 320 dp phone, and Russian "Хроматический" in Classic at 2× text on a phone
+ * on its side, which needs 5.5 sp on the Xiaomi 12X (the overnight run of 2026-10-27).
  */
-private val LAST_RESORT_LABEL_SIZE = 6.sp
+private val LAST_RESORT_LABEL_SIZE = 5.sp
 
 /** From this many segments, each keeps [CROWDED_PADDING] at its sides instead of Material's 12 dp. */
 private const val CROWDED_SEGMENTS = 3

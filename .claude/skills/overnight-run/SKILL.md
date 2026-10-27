@@ -24,7 +24,11 @@ adb shell settings get system font_scale      # 1.0
 adb shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
 ```
 - The script keeps Windows awake while it runs (a sleeping PC drops the phone: on 2026-10-19 it
-  cost the night). A closed laptop lid still sleeps it, so the laptop stays open.
+  cost the night, and on 2026-10-27 again, as the keep-awake never loaded until it was fixed that
+  day). It prints a warning in its first ten seconds when it can't; then put that in the summary.
+  A closed laptop lid still sleeps it, so the laptop stays open.
+- A Twangle on the phone signed by the owner's other machine is uninstalled and installed again by
+  `scripts/ui-tests.sh` (the owner's rule); it says so in the log.
 - The run works on either test phone, the Xiaomi 12X or the Galaxy S26 (`R3GL502L08P`, API 37):
   the tests give the same answer on any phone (docs/architecture/testing.md, *Any phone*). A
   failure on one phone only is a test that still assumes a phone, or a real bug on that kind of

@@ -77,7 +77,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
@@ -316,7 +315,7 @@ fun TempoRow(
         // Listen keeps its word while listening (its stop square and TalkBack say "Stop listening"), so nothing moves.
         stringResource(R.string.metronome_listen),
     )
-    val label = MaterialTheme.typography.labelMedium.let { it.copy(fontSize = rowLabelSize(names, it), textAlign = TextAlign.Center) }
+    val label = rowLabelStyle(names, MaterialTheme.typography.labelMedium).copy(textAlign = TextAlign.Center)
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     Row(modifier, verticalAlignment = Alignment.Top) {
         val button = Modifier.size(ICON_BUTTON_WIDTH, ICON_BUTTON_HEIGHT)
@@ -349,22 +348,28 @@ fun TempoRow(
 }
 
 /**
- * The one size the row's [names] are set in: [style]'s, or smaller where the widest wouldn't fit
+ * The one style the row's [names] are set in: [style], or smaller where the widest wouldn't fit
  * [ROW_LABEL_WIDTH] on one line (long languages, large text), down to [ROW_LABEL_SMALLEST] (in dp, so
- * it holds at any font size).
+ * it holds at any font size). Its letter spacing shrinks with it: Material's 0.5 sp, kept whole beside
+ * the smallest letters, left Turkish "Dokunarak tempo" 2 px too wide at 2× text in Classic (the
+ * overnight run of 2026-10-27).
  */
 @Composable
-private fun rowLabelSize(names: List<String>, style: TextStyle): TextUnit {
+private fun rowLabelStyle(names: List<String>, style: TextStyle): TextStyle {
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
     return remember(names, style, density) {
         val room = with(density) { ROW_LABEL_WIDTH.toPx() }
         val smallest = with(density) { ROW_LABEL_SMALLEST.toSp() }.value
+        fun at(size: Float) = style.copy(
+            fontSize = size.sp,
+            letterSpacing = if (style.letterSpacing.isSp) (style.letterSpacing.value * size / style.fontSize.value).sp else style.letterSpacing,
+        )
         var size = style.fontSize.value
-        fun widest() = names.maxOf { measurer.measure(it, style.copy(fontSize = size.sp), maxLines = 1, softWrap = false).size.width }
-        // Letter spacing doesn't shrink with the size, so step down until it fits.
+        fun widest() = names.maxOf { measurer.measure(it, at(size), maxLines = 1, softWrap = false).size.width }
+        // The sizes don't scale evenly at large text, so step down until it fits.
         while (size > smallest && widest() > room) size = maxOf(smallest, size * 0.94f)
-        size.sp
+        at(size)
     }
 }
 

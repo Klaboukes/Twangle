@@ -38,16 +38,23 @@ adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
 # Keeps Windows from sleeping while the run lasts: on 2026-10-19 the PC went to sleep after an idle
 # hour, the phone's connection went with it, and one test seemed to hang for 8 hours. A PowerShell
-# that holds SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) until it is stopped; the
-# display may still turn off.
+# that sets SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED) again every 30 s until it is
+# stopped; the display may still turn off. Its C# goes in single quotes: PowerShell doesn't take \"
+# inside a string, so the first version never loaded it, failed quietly and the PC slept from 02:03
+# to 09:17 on 2026-10-27. It now stops on any error, and the run says so when it isn't holding.
 keep_awake() {
     command -v powershell.exe > /dev/null || return 0
     powershell.exe -NoProfile -NonInteractive -Command '
-        Add-Type -Name Power -Namespace Twangle -MemberDefinition "[DllImport(\"kernel32.dll\")] public static extern uint SetThreadExecutionState(uint flags);"
-        if ([Twangle.Power]::SetThreadExecutionState([uint32]"0x80000001") -eq 0) { exit 1 }
-        while ($true) { Start-Sleep -Seconds 60 }' > /dev/null 2>&1 &
+        $ErrorActionPreference = "Stop"
+        Add-Type -Name Power -Namespace Twangle -MemberDefinition '\''[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint flags);'\''
+        while ($true) {
+            if ([Twangle.Power]::SetThreadExecutionState([uint32]"0x80000001") -eq 0) { exit 1 }
+            Start-Sleep -Seconds 30
+        }' > /dev/null 2>&1 &
     awake_pid=$!
     trap 'kill $awake_pid 2> /dev/null' EXIT
+    sleep 10
+    kill -0 $awake_pid 2> /dev/null || echo "Warning: could not keep Windows awake; set the PC to never sleep for tonight." >&2
 }
 keep_awake
 

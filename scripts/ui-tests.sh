@@ -368,10 +368,18 @@ ms_since_screen_off() {
     adb shell dumpsys power 2>/dev/null | tr -d '\r' | sed -n 's/.*mLastSleepTime=[0-9-]* (\([0-9]*\) ms ago).*/\1/p' | head -1
 }
 
-# Installs an APK (relative path); prints why not on failure.
+# Installs an APK (relative path); prints why not on failure. A package signed by the owner's other
+# machine (INSTALL_FAILED_UPDATE_INCOMPATIBLE) is uninstalled and installed again, the owner's rule:
+# on 2026-10-26 it failed every install of the overnight run.
 install_apk() {
-    local out
+    local out package
     out="$(adb install -r -t -g "$1" 2>&1)" && return 0
+    package="$(echo "$out" | tr -d '\r' | sed -n 's/.*INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package \([^ ]*\) signatures.*/\1/p' | head -1)"
+    if [ -n "$package" ]; then
+        echo "$package was signed on the other machine: uninstalling it" >&2
+        adb uninstall "$package" > /dev/null 2>&1
+        out="$(adb install -r -t -g "$1" 2>&1)" && return 0
+    fi
     echo "could not install $1: $(echo "$out" | tr -d '\r' | grep -E 'Failure|INSTALL_|error' | head -1)"
     return 1
 }

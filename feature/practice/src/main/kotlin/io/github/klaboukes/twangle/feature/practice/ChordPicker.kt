@@ -193,7 +193,7 @@ private fun NameButton(
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = if (words == null) SCALE_NAME_LINES else 1,
                 autoSize = if (words == null) {
-                    remember(title.fontSize) { OneLineFirstAutoSize(title.fontSize, title.fontSize * TWO_LINES_SCALE, NAME_MIN_SIZE) }
+                    remember(title.fontSize) { OneLineFirstAutoSize(title.fontSize, title.fontSize * TWO_LINES_SCALE, NAME_MIN_SIZE, LAST_RESORT_NAME_SIZE) }
                 } else {
                     TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = title.fontSize, stepSize = 0.5.sp)
                 },
@@ -554,19 +554,22 @@ internal class WholeWordsAutoSize(
 /**
  * The largest size from [largest] at which the text fits its box on one line; where it doesn't, the
  * largest from [twoLines] down to [smallest] at which it fits on its lines without breaking a word (as
- * [WholeWordsAutoSize]). Smallest if none. A scale's name on the name button: "A minor pentatonic" large
- * on one line, "Sol♯ mineur-pentatonisch" at 2× text on two, smaller.
+ * [WholeWordsAutoSize]), below that down to [lastResort] only where a word would otherwise be broken
+ * (Space Age's wide letters at 2× text beside the drone button: "pentatonisch" on a 320 dp phone, the
+ * overnight run of 2026-10-27). Smallest if none. A scale's name on the name button: "A minor
+ * pentatonic" large on one line, "Sol♯ mineur-pentatonisch" at 2× text on two, smaller.
  */
 internal class OneLineFirstAutoSize(
     private val largest: TextUnit,
     private val twoLines: TextUnit,
     private val smallest: TextUnit,
+    private val lastResort: TextUnit = smallest,
 ) : TextAutoSize {
     override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
         val one = performLayout(constraints, text, largest)
         if (one.lineCount == 1 && !one.didOverflowWidth && !one.didOverflowHeight) return largest
         var size = minOf(twoLines.value, largest.value)
-        while (size > smallest.value) {
+        while (size >= lastResort.value) {
             val layout = performLayout(constraints, text, size.sp)
             if (!layout.didOverflowWidth && !layout.didOverflowHeight && layout.breaksBetweenWords(text.text)) return size.sp
             size -= LABEL_STEP
@@ -575,19 +578,21 @@ internal class OneLineFirstAutoSize(
     }
 
     override fun equals(other: Any?): Boolean =
-        other is OneLineFirstAutoSize && other.largest == largest && other.twoLines == twoLines && other.smallest == smallest
-    override fun hashCode(): Int = (largest.hashCode() * 31 + twoLines.hashCode()) * 31 + smallest.hashCode()
+        other is OneLineFirstAutoSize && other.largest == largest && other.twoLines == twoLines && other.smallest == smallest &&
+            other.lastResort == lastResort
+    override fun hashCode(): Int = ((largest.hashCode() * 31 + twoLines.hashCode()) * 31 + smallest.hashCode()) * 31 + lastResort.hashCode()
 }
 
 /**
- * [text] with a line break allowed after each hyphen between two letters (a zero-width space). Android
- * breaks a compound such as "majeur-pentatonisch" at its hyphen only when hyphenation is on, which
- * it isn't, so a long one (Dutch "A♭ majeur-pentatonisch" at 2× text in Futuristic) was broken in
- * the middle of a word instead.
+ * [text] with a line break allowed after each hyphen between two letters (a zero-width space), a ♭ or ♯
+ * counting as a letter before it. Android breaks a compound such as "majeur-pentatonisch" at its
+ * hyphen only when hyphenation is on, which it isn't, so a long one (Dutch "A♭ majeur-pentatonisch"
+ * at 2× text in Futuristic; German "A♭-Mixolydisch" at 2× text in Space Age beside the drone button,
+ * the overnight run of 2026-10-27) was broken in the middle of a word instead.
  */
 internal fun breakableAtHyphens(text: String): String = text.replace(HYPHEN_BETWEEN_LETTERS, "-$ZERO_WIDTH_SPACE")
 
-private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=\\p{L})-(?=\\p{L})")
+private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=[\\p{L}♭♯])-(?=\\p{L})")
 internal const val ZERO_WIDTH_SPACE = '\u200B'
 
 /** A see-through button's backing; picked ones in the container colour (Futuristic: a faint accent). */
@@ -645,6 +650,9 @@ private val SECTION_GAP = 4.dp
  * gets this small; a scale's full name too, at worst. The button's upper line is one line of [NAME_LINE_SIZE] tall, with room for rounding.
  */
 private val NAME_MIN_SIZE = 7.sp
+
+/** A scale's full name goes this small only where a word would otherwise be broken ([OneLineFirstAutoSize]). */
+private val LAST_RESORT_NAME_SIZE = 6.sp
 
 /** A scale's full name that doesn't fit on one line takes two, at most this share of the title's size. */
 private const val TWO_LINES_SCALE = 0.8f
