@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Website</title>
+<!--
+TWANGLE WEBSITE, ROUND 1 (Phase 54 rough mock-up). ROUGH, plain on purpose.
+The pages  website-preview/index.html (home), tuner.html (one tool page), help.html, one shared site.css. Each is
+           shown twice below, in a phone-wide frame (390 px) and a desktop-wide one (1280 px, drawn smaller).
+           The frames are the real pages: their links work, and each page can be opened on its own.
+Look       Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting, the
+           system font (Contemporary uses Roboto); nothing loaded from another site, no JavaScript in the pages.
+Pictures   The store screenshots (fastlane/metadata/android/en-US/images/phoneScreenshots, git-ignored, made by
+           scripts/store-screenshots.sh), copied to website-preview/shots/ where the page is served. The icon is a
+           plain square and the Play button a plain one here; the real site uses the app icon and Google's badge.
+-->
+<style>
+:root { --page: #F5F7FC; --ink: #10141F; --muted: #4A5268; --line: #D9DEEA; --ui: Roboto, system-ui, "Segoe UI", sans-serif; }
+@media (prefers-color-scheme: dark) { :root { --page: #0E1220; --ink: #E6E9F4; --muted: #A6AECB; --line: #2A3146; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1180px; margin: 0 auto; }
+h1 { font-size: 24px; font-weight: 600; margin: 28px 0 6px; }
+h2 { font-size: 19px; font-weight: 600; margin: 40px 0 4px; }
+p, li { color: var(--muted); max-width: 52em; }
+ul { margin: 6px 0 0; padding-left: 1.2em; }
+.row { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; margin-top: 14px; }
+.cap { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.phone iframe { width: 390px; height: 780px; border: 1px solid var(--line); border-radius: 28px; display: block; background: var(--page); }
+.desk { width: 704px; height: 440px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; }
+.desk iframe { width: 1280px; height: 800px; border: 0; transform: scale(.55); transform-origin: 0 0; display: block; }
+</style>
+<div class="wrap">
+  <h1>The Twangle website, rough mock-up</h1>
+  <p>Three pages, each at phone width and desktop width. Click around inside the frames: the links between the pages work. Only English for now; Dutch would be the same pages.</p>
+  <p>What to look at:</p>
+  <ul>
+    <li>Is the home page's order right: the promise and the Play button first, then the instruments, then the tools?</li>
+    <li>The tool page: steps to follow, then a few short sections, and a fold-out <i>For the curious</i> part on how Twangle hears a note. Too much, too little?</li>
+    <li>The help page: questions that fold open, grouped by topic. Are these the right first questions?</li>
+  </ul>
+
+  <h2>1 · Home page</h2>
+  <div class="row">
+    <div class="phone"><div class="cap">Phone</div><iframe src="website-preview/index.html" title="Home page at phone width"></iframe></div>
+    <div><div class="cap">Desktop (drawn smaller)</div><div class="desk"><iframe src="website-preview/index.html" title="Home page at desktop width"></iframe></div></div>
+  </div>
+
+  <h2>2 · A tool page: the tuner</h2>
+  <div class="row">
+    <div class="phone"><div class="cap">Phone</div><iframe src="website-preview/tuner.html" title="Tuner page at phone width"></iframe></div>
+    <div><div class="cap">Desktop (drawn smaller)</div><div class="desk"><iframe src="website-preview/tuner.html" title="Tuner page at desktop width"></iframe></div></div>
+  </div>
+
+  <h2>3 · Help</h2>
+  <div class="row">
+    <div class="phone"><div class="cap">Phone</div><iframe src="website-preview/help.html" title="Help page at phone width"></iframe></div>
+    <div><div class="cap">Desktop (drawn smaller)</div><div class="desk"><iframe src="website-preview/help.html" title="Help page at desktop width"></iframe></div></div>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The tuner · Twangle</title>
+<link rel="stylesheet" href="site.css">
+
+<header><div class="wrap">
+  <a class="brand" href="index.html"><span class="icon"></span>Twangle</a>
+  <nav><a href="tuner.html" aria-current="page">Tools</a><a href="help.html">Help</a><a href="#">Privacy</a></nav>
+  <a class="lang" href="#">Nederlands</a>
+</div></header>
+
+<main><div class="wrap">
+  <div class="crumb"><a href="index.html#tools">Tools</a> · Tuning</div>
+  <div class="tool">
+    <div>
+      <h1>The tuner</h1>
+      <p class="lead">Play one string. Twangle shows its note, and the meter shows how far it is from being in tune.</p>
+
+      <h2>Tune a string</h2>
+      <ol class="steps">
+        <li>Tap the headstock button above the strings and pick your instrument and tuning, for example <i>Guitar · Standard</i>.</li>
+        <li>Play one string and let it ring.</li>
+        <li>Turn the peg the way the words say, <i>Tune up</i> or <i>Tune down</i>, until the needle stands in the middle and Twangle says <i>In tune</i>.</li>
+      </ol>
+      <p>Twangle finds the string by itself. To stay on one string, tap it.</p>
+
+      <h2>Strings or chromatic</h2>
+      <p><b>Strings</b> compares what you play with the strings of your tuning. <b>Chromatic</b> shows any note, for an instrument Twangle doesn't list, or for your voice.</p>
+
+      <h2>Tune by ear</h2>
+      <p>Hold a string's button to hear its note, in your instrument's own sound.</p>
+
+      <h2>Playing with others</h2>
+      <p>Most music uses A at 440 Hz. Orchestras often tune to 442 Hz, baroque ensembles to 415 Hz. Set it in <i>Settings → Reference pitch (A4)</i>.</p>
+
+      <details class="curious">
+        <summary>For the curious: how Twangle hears a note</summary>
+        <p>A plucked string repeats the same wave many times a second. About 47 times a second, Twangle takes the latest sound from the microphone and looks for how long it takes the wave to repeat (the YIN method of de Cheveigné and Kawahara, 2002). That time gives the frequency, and the frequency gives the note and how many cents it is off. A cent is a hundredth of a semitone.</p>
+        <p>Twangle asks Android for the microphone's sound unprocessed, because the cleaning a phone does for calls changes the pitch. The sound is only analysed, never recorded or sent anywhere.</p>
+      </details>
+
+      <div class="nextprev"><a href="index.html#tools">← All tools</a><a href="#">Strum check →</a></div>
+    </div>
+    <img class="shot" src="shots/1.png" alt="Screenshot: the tuner, one string in tune">
+  </div>
+</div></main>
+
+<footer><div class="wrap">
+  <span>Made by one person. Free forever.</span>
+  <a href="help.html">Help</a><a href="#">Privacy</a><a href="#">Nederlands</a><a href="mailto:twangle.tuner@proton.me">twangle.tuner@proton.me</a>
+</div></footer>
+</html>
