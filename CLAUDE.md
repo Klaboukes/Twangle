@@ -44,7 +44,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
 scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language, then the store screenshots (~2–3 h, see /overnight-run)
-scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone (~2 min a language; git-ignored, docs/store-listing.md)
+scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2–3 min a language; git-ignored, docs/store-listing.md)
 scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)

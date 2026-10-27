@@ -4,13 +4,19 @@
 # the tuner a fixed sound through a stand-in microphone (nothing plays out loud) and draws each on a
 # 1080 x 1920 canvas with that language's caption above.
 #
+# With a tablet connected instead (at least 600 dp the short way) it makes the 10-inch tablet set
+# (*Tablet screenshots*): the tablet's screens on its side, on a 1920 x 1080 canvas with the same
+# captions, the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows
+# from the device; there is no switch.
+#
 #   scripts/store-screenshots.sh                 every language (the overnight run; ~2 min a language)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales
 #
 # The finished pictures go where fastlane and F-Droid look for them,
 #   fastlane/metadata/android/<locale>/images/phoneScreenshots/1.png ... 8.png
+#   fastlane/metadata/android/<locale>/images/tenInchScreenshots/<n>.png (the tablet's, numbered as their captions)
 # (git-ignored: made again by this script, sent by scripts/release.sh listing), the screens as they were (without the
-# status bar) to build/store-screenshots/<locale>/. Captions: fastlane/metadata/android/<locale>/
+# status bar) to build/store-screenshots/<locale>/ (the tablet's to build/store-screenshots-tablet/<locale>/). Captions: fastlane/metadata/android/<locale>/
 # screenshot_captions.txt, one a line. Needs the phone connected, like scripts/ui-tests.sh, whose
 # exit codes it passes on (3 no phone, 4 locked, 5 busy). Leaves Twangle in the last screenshot's
 # style; puts the app's language and the phone's text size back.
@@ -24,7 +30,10 @@ COOL_BELOW="${COOL_BELOW:-37}"
 LISTINGS=fastlane/metadata/android
 PULLED=app/build/outputs/connected_android_test_additional_output
 RAW=build/store-screenshots
-SHOTS=8
+SHOTS="1 2 3 4 5 6 7 8"
+FOLDER=phoneScreenshots
+# The tablet set's pictures, by caption number (StoreScreenshots.Shot.onTablet).
+TABLET_SHOTS="1 2 3 4 5 6 7 8"
 
 if [ $# -gt 0 ]; then
     locales=("$@")
@@ -52,6 +61,32 @@ wait_cool() {
     adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
 }
 
+# A tablet (at least 600 dp the short way, from the screen's pixels and density) gets the tablet set.
+read -r size_w size_h < <(adb shell wm size 2>/dev/null | tr -d '\r' | sed -n 's/.*: *\([0-9]*\)x\([0-9]*\)$/\1 \2/p' | tail -1)
+density="$(adb shell wm density 2>/dev/null | tr -d '\r' | sed -n 's/.*: *\([0-9]*\)$/\1/p' | tail -1)"
+tablet=false
+if [[ "${size_w:-}" =~ ^[0-9]+$ && "${size_h:-}" =~ ^[0-9]+$ && "${density:-}" =~ ^[0-9]+$ ]] &&
+    (( (size_w < size_h ? size_w : size_h) * 160 / density >= 600 )); then
+    tablet=true
+    SHOTS="$TABLET_SHOTS"
+    FOLDER=tenInchScreenshots
+    RAW=build/store-screenshots-tablet
+    echo "A tablet: the 10-inch tablet set ($(echo $SHOTS | wc -w) pictures a language, to images/$FOLDER/)."
+fi
+total="$(echo $SHOTS | wc -w)"
+
+# The test changes the device's text size and Twangle's own language and puts them back; a test that
+# crashes midway can't, and the next one would take what it left for the device's own (seen on the
+# tablet, 2026-10-27: Arabic and 1.0× left behind). So what is found here is put back at the end too.
+PACKAGE=io.github.klaboukes.twangle
+FONT_SCALE="$(adb shell settings get system font_scale 2>/dev/null | tr -d '\r')"
+APP_LOCALES="$(adb shell cmd locale get-app-locales $PACKAGE 2>/dev/null | tr -d '\r' | sed -n 's/.* are \[\(.*\)\]$/\1/p' | tr -d ' ')"
+put_back() {
+    [[ "$FONT_SCALE" =~ ^[0-9.]+$ ]] && adb shell settings put system font_scale "$FONT_SCALE" > /dev/null 2>&1
+    adb shell cmd locale set-app-locales $PACKAGE --locales "'$APP_LOCALES'" > /dev/null 2>&1
+}
+trap put_back EXIT
+
 mkdir -p build "$RAW"
 status=0
 for locale in "${locales[@]}"; do
@@ -64,25 +99,26 @@ for locale in "${locales[@]}"; do
     fi
     wait_cool
     log="build/store-screenshots-$locale.log"
+    [ "$tablet" = true ] && log="build/store-screenshots-tablet-$locale.log"
     start=$SECONDS
     # A run that saves nothing leaves the last run's pictures where ui-tests.sh pulls them to.
     rm -rf "$PULLED"
-    scripts/ui-tests.sh :app -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" > "$log" 2>&1
+    scripts/ui-tests.sh :app -c StoreScreenshots -a storeScreenshots="$locale" -a storeCaptions="$(base64 -w0 "$captions")" -a storeTablet=$tablet > "$log" 2>&1
     code=$?
     if [ $code -ge 3 ]; then
         tail -3 "$log"
         exit $code
     fi
-    dest="$LISTINGS/$locale/images/phoneScreenshots"
+    dest="$LISTINGS/$locale/images/$FOLDER"
     rm -rf "$dest" "$RAW/$locale"
     mkdir -p "$dest" "$RAW/$locale"
     made=0
-    for n in $(seq 1 $SHOTS); do
+    for n in $SHOTS; do
         [ -f "$PULLED/store-$n.png" ] && cp "$PULLED/store-$n.png" "$dest/$n.png" && made=$((made + 1))
     done
     cp "$PULLED"/raw-*.png "$RAW/$locale/" 2>/dev/null
-    printf '%3ds  %d of %d pictures' $((SECONDS - start)) $made $SHOTS
-    if [ $code != 0 ] || [ $made != $SHOTS ]; then
+    printf '%3ds  %d of %d pictures' $((SECONDS - start)) $made $total
+    if [ $code != 0 ] || [ $made != $total ]; then
         echo "  FAILED (log: $log)"
         grep -E "FAIL|CRASH|TIMED OUT" "$log" | head -8
         status=1

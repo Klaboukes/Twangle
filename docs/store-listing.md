@@ -68,6 +68,25 @@ Eight screenshots, the first three the strongest, because search results show on
 - **Captions** are `fastlane/metadata/android/<Play locale>/screenshot_captions.txt`, one a line in the order of the table above, in each language's app words; `StoreListingTest` checks that each has eight, at most 80 characters, without the promotion words.
 - **Making them:** `scripts/store-screenshots.sh [locale …]` (every language without arguments, about 2 minutes a language), and the overnight run makes the full set (`scripts/overnight-ui-tests.sh`, its third part). The pictures go to `fastlane/metadata/android/<Play locale>/images/phoneScreenshots/1.png` … `8.png`, where fastlane and F-Droid look for them; the screens as they were to `build/store-screenshots/<locale>/`. They are not committed (git-ignored): 128 pictures of about 1 MB each would add over 100 MB to the repository every time they are made again, and `scripts/release.sh listing` sends them from this PC, so make them on the computer used for the upload. It sends none until every language has its eight, since Play would show the English ones in a language without its own; Play also takes screenshots only without alpha, so the copy it sends is written as 24-bit PNG (the files here keep the canvas's alpha channel). When the repository goes public with F-Droid, the release's set can be committed once.
 
+### Tablet screenshots (Phase 52, owner 2026-10-27)
+Play shows tablet users the 10-inch tablet screenshots where a listing has them, else the phone's. So the listing has a tablet set too, made on the Lenovo Tab M11 by the same test: the app on the tablet on its side (1280 × 800 dp), in a slim tablet frame on the style's quiet background, the caption above as on the phone's canvas. It reuses the phone's captions by number (no new translations) and the phone's styles and themes:
+
+| # | Screen | Style, theme |
+|---|---|---|
+| 1 | Tuner, A string in tune with the glow: two panes on its side | Contemporary, light |
+| 2 | Tuner, low E 12 cents flat, "Tune up" | Classic, dark |
+| 3 | Instrument and tuning panel open | Retro, light |
+| 4 | Tuner at 2× text with the TalkBack-style speech bubble (the tablet a little smaller under it) | Contemporary, dark |
+| 5 | Chord name after a strummed A minor | Futuristic, dark |
+| 6 | Metronome at 120 BPM in 4/4, beat 1 lit | Space Age, dark |
+| 7 | Practice → Chords with a C major chart: one tablet, without the Capo helper | Ancient, light |
+| 8 | Focus mode with the pitch trail, full screen | Classic, light |
+
+- **Play's rule for 10-inch tablets:** 16:9 or 9:16, each side 1080 to 7680 px, at most 8 MB, 2 to 8 of them. All are on their side, **1920 × 1080 px** (16:9): the largest the tablet can draw and read back in its own 1920 × 1200 window, about as sharp as its screen.
+- **The canvas** (`TabletStoreCanvas`, beside `StoreCanvas`): 1080 px = 450 dp, the caption in a 92 dp band above with 8 dp under it, set as on the phone (the style's display face, as large as fits in two lines, else three; two sentences get a line each only where both lines fit the band's height), and the screen under it as large as fits, without the status and navigation bars but with the rail (1920 × 1092 px of the tablet's 1920 × 1200; focus mode's full screen keeps all of it), in a 6 dp frame with round corners and the phone's soft shadow. The TalkBack bubble stands between the caption and the tablet, as on the phone.
+- **Making them:** `scripts/store-screenshots.sh [locale …]` with the tablet connected (and no phone): it sees a device at least 600 dp the short way and makes the tablet set instead of the phone's (`StoreScreenshots` with `storeTablet=true`); there is no switch. The test locks the tablet on its side and at the normal text size for each picture (the TalkBack one at 2×) and puts both back afterwards (`scripts/ui-tests.sh` the rotation lock, the test the text size); the script also puts the text size and Twangle's own language back at its end, as it found them, since a test that crashes midway can't (on 2026-10-27 one left the tablet at 1.0× and Twangle in Arabic, and the next runs took that for the tablet's own). About 2½ minutes a language. The pictures go to `fastlane/metadata/android/<Play locale>/images/tenInchScreenshots/<n>.png`, numbered as their captions; Gradle Play Publisher sends that folder as Play's large-tablet screenshots (`playImageTypes` in `app/build.gradle.kts`), the screens as they were to `build/store-screenshots-tablet/<locale>/`. Git-ignored like the phone's.
+- **Sending:** `scripts/release.sh listing` sends them with the rest. It checks them against the tablet rule above, and once any language has tablet screenshots it refuses unless every language has as many, since the plugin would fill a language without them with the English ones.
+
 ### Watch screenshots (with the update that brings the watch app, **decision 3**)
 Two or three square screenshots (at least 384 × 384), the watch's round screen only, no watch frame: a note in tune with the glowing ring, a note flat, and the microphone prompt.
 

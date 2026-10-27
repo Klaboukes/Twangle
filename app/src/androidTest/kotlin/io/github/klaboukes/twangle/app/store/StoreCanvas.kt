@@ -131,6 +131,57 @@ fun StoreCanvas(
     }
 }
 
+/**
+ * One 10-inch tablet screenshot as Play shows it (docs/store-listing.md, *Tablet screenshots*):
+ * [TABLET_CANVAS_WIDTH] × [TABLET_CANVAS_HEIGHT] pixels (16:9, on its side) in the style's quiet
+ * background, the caption above as on the phone's canvas, and under it the tablet's screen on its side
+ * in a slim tablet frame. [bubble] stands between the caption and the tablet, as on the phone.
+ */
+@Composable
+fun TabletStoreCanvas(
+    caption: String,
+    screen: ImageBitmap,
+    style: VisualStyle,
+    dark: Boolean,
+    bubble: SpeechBubble? = null,
+) {
+    // 1080 px are 450 dp here on every tablet, and its own text size is left out.
+    CompositionLocalProvider(LocalDensity provides Density(TABLET_CANVAS_HEIGHT / TABLET_CANVAS_HEIGHT_DP, fontScale = 1f)) {
+        TwangleTheme(style = style, darkTheme = dark, animate = false) {
+            Box(
+                Modifier.layout { measurable, _ ->
+                    val placeable = measurable.measure(Constraints.fixed(TABLET_CANVAS_WIDTH, TABLET_CANVAS_HEIGHT))
+                    layout(TABLET_CANVAS_WIDTH, TABLET_CANVAS_HEIGHT) { placeable.place(0, 0) }
+                },
+            ) {
+                StyleBackdrop(Modifier.fillMaxSize(), quiet = true)
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Caption(
+                        caption,
+                        Modifier
+                            .padding(start = TABLET_SIDE_MARGIN, end = TABLET_SIDE_MARGIN, top = TABLET_CAPTION_GAP / 2, bottom = TABLET_CAPTION_GAP)
+                            .fillMaxWidth()
+                            .height(TABLET_CAPTION_HEIGHT),
+                    )
+                    // Wider than on the phone, so what TalkBack says stays on one line and the tablet large.
+                    if (bubble != null) Bubble(bubble.text, maxWidth = TABLET_BUBBLE_MAX_WIDTH)
+                    BoxWithConstraints(
+                        Modifier
+                            .weight(1f)
+                            .padding(bottom = TABLET_BOTTOM_MARGIN, start = TABLET_SIDE_MARGIN, end = TABLET_SIDE_MARGIN)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        val aspect = screen.width.toFloat() / screen.height
+                        val height = minOf(maxHeight, (maxWidth - TABLET_FRAME * 2) / aspect + TABLET_FRAME * 2)
+                        Device(screen, (height - TABLET_FRAME * 2) * aspect + TABLET_FRAME * 2, height, TABLET_FRAME, TABLET_CORNER)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /** What TalkBack says, drawn as a speech bubble above the phone. */
 data class SpeechBubble(val text: String)
 
@@ -154,10 +205,12 @@ private fun Caption(caption: String, modifier: Modifier) {
                 ?: sizes.firstOrNull { fits(it, CAPTION_MAX_LINES) }
                 ?: sizes.last()
         }
-        // Two short sentences ("Play a string. See it in tune.") get a line each, where they fit so.
-        val shown = remember(text, style, widthPx) {
+        // Two short sentences ("Play a string. See it in tune.") get a line each, where they fit so
+        // (also in the height: the tablet's band holds one line at the largest size, two only just).
+        val shown = remember(text, style, widthPx, heightPx) {
             sentencesOnTheirOwnLines(text)?.takeIf { split ->
-                measurer.measure(split, style, constraints = Constraints(maxWidth = widthPx)).lineCount == 2
+                measurer.measure(split, style, constraints = Constraints(maxWidth = widthPx))
+                    .let { it.lineCount == 2 && it.size.height <= heightPx }
             } ?: text
         }
         Text(shown, style = style, color = MaterialTheme.colorScheme.onBackground)
@@ -193,21 +246,26 @@ private fun phoneHeight(screen: ImageBitmap, width: Dp): Dp = (width - FRAME * 2
 
 /** A screen picture in a slim, dark phone frame with round corners and a soft shadow, [width] wide. */
 @Composable
-private fun Phone(screen: ImageBitmap, width: Dp, modifier: Modifier = Modifier) {
+private fun Phone(screen: ImageBitmap, width: Dp, modifier: Modifier = Modifier) =
+    Device(screen, width, phoneHeight(screen, width), FRAME, PHONE_CORNER, modifier)
+
+/** A screen picture in a slim, dark frame [frameWidth] wide with round [corner]s and a soft shadow, [width] × [height] in all. */
+@Composable
+private fun Device(screen: ImageBitmap, width: Dp, height: Dp, frameWidth: Dp, corner: Dp, modifier: Modifier = Modifier) {
     val frame = if (MaterialTheme.colorScheme.background.luminance() < 0.2f) FRAME_ON_DARK else FRAME_ON_LIGHT
     Box(
         modifier
-            .size(width, phoneHeight(screen, width))
-            .shadow(PHONE_SHADOW, RoundedCornerShape(PHONE_CORNER))
-            .background(frame, RoundedCornerShape(PHONE_CORNER))
-            .padding(FRAME),
+            .size(width, height)
+            .shadow(PHONE_SHADOW, RoundedCornerShape(corner))
+            .background(frame, RoundedCornerShape(corner))
+            .padding(frameWidth),
     ) {
         Image(
             bitmap = screen,
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
             filterQuality = FilterQuality.High,
-            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(PHONE_CORNER - FRAME)),
+            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(corner - frameWidth)),
         )
     }
 }
@@ -218,12 +276,12 @@ private fun Phone(screen: ImageBitmap, width: Dp, modifier: Modifier = Modifier)
  * words.
  */
 @Composable
-private fun Bubble(text: String) {
+private fun Bubble(text: String, maxWidth: Dp = BUBBLE_MAX_WIDTH) {
     val fill = MaterialTheme.colorScheme.inverseSurface
     val ink = MaterialTheme.colorScheme.inverseOnSurface
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val shape = RoundedCornerShape(BUBBLE_CORNER)
-    Column(Modifier.padding(horizontal = SIDE_MARGIN).widthIn(max = BUBBLE_MAX_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.padding(horizontal = SIDE_MARGIN).widthIn(max = maxWidth), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             Modifier
                 .shadow(BUBBLE_SHADOW, shape)
@@ -317,6 +375,19 @@ fun renderCanvas(width: Int = CANVAS_WIDTH, height: Int = CANVAS_HEIGHT, content
 const val CANVAS_WIDTH = 1080
 const val CANVAS_HEIGHT = 1920
 const val CANVAS_WIDTH_DP = 400f
+
+/** Play's 10-inch tablet screenshot on its side, 16:9 (docs/store-listing.md, *Tablet screenshots*). */
+const val TABLET_CANVAS_WIDTH = 1920
+const val TABLET_CANVAS_HEIGHT = 1080
+const val TABLET_CANVAS_HEIGHT_DP = 450f
+
+private val TABLET_CAPTION_HEIGHT = 92.dp
+private val TABLET_CAPTION_GAP = 8.dp
+private val TABLET_BUBBLE_MAX_WIDTH = 680.dp
+private val TABLET_SIDE_MARGIN = 40.dp
+private val TABLET_BOTTOM_MARGIN = 22.dp
+private val TABLET_FRAME = 6.dp
+private val TABLET_CORNER = 18.dp
 
 private val CAPTION_HEIGHT = 170.dp
 private val CAPTION_HEIGHT_OVER_BUBBLE = 128.dp

@@ -131,7 +131,9 @@ moves on.
   app as it looks?). Nothing changed: there is nothing to send.
 - Every language needs its eight screenshots on this PC: `scripts/store-screenshots.sh` (phone
   connected, about 2 minutes a language; [docs/store-listing.md](../../../docs/store-listing.md)).
-  `listing` refuses without them and says how old the oldest are.
+  `listing` refuses without them and says how old the oldest are. The 10-inch tablet set (the same
+  script with the tablet connected instead, *Tablet screenshots*) goes along where it was made, and
+  then every language needs it.
 - Ask: "Send the store listing to Google Play in all <n> languages: the texts, screenshots, icon,
   feature graphic and contact details? It replaces what is there, also anything changed by hand in the
   Play Console." On a yes: `scripts/release.sh listing` (it tags the send `listing/<date-time>` for

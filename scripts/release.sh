@@ -33,7 +33,7 @@
 #       Halts this version's rollout on production: nobody new gets it, who has it keeps it.
 #   scripts/release.sh listing
 #       Sends the store listing to Google Play: every language's title, short and full description and
-#       phone screenshots, the icon and feature graphic (one pair, shown for every language), and the
+#       phone and tablet screenshots, the icon and feature graphic (one pair for every language), and the
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
 #       git-ignored, so made on this PC), and checks the texts and pictures against Play's rules first.
@@ -352,10 +352,20 @@ png_info() {
 
 # Fails, naming every language and picture that is wrong, unless every language has its phone
 # screenshots, 1.png ... one for each caption, within Play's rules. A language without them would show
-# English screenshots on Play, so none is sent until all are there. Tablet screenshots, where there are
-# any (none yet: Phase 52), are checked the same way and sent too.
+# English screenshots on Play, so none is sent until all are there. The 10-inch tablet screenshots
+# (tenInchScreenshots, Phase 52) are checked against Play's tablet rule, and once any language has them
+# every language needs as many: the plugin would fill a language without them with the English ones.
 need_screenshots() {
-    local locale want dir file n w h info oldest="" problems=() missing=()
+    local locale want dir file n w h info tablets oldest="" problems=() missing=() tablet_counts=()
+    for locale in $(locales); do
+        dir="$LISTINGS/$locale/images/tenInchScreenshots"
+        tablets="$(find "$dir" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)"
+        tablet_counts+=("$locale:$tablets")
+    done
+    if printf '%s\n' "${tablet_counts[@]}" | grep -qv ':0$' &&
+        [[ "$(printf '%s\n' "${tablet_counts[@]}" | sed 's/.*://' | sort -u | wc -l)" -ne 1 ]]; then
+        problems+=("not every language has the same tablet screenshots ($(printf '%s ' "${tablet_counts[@]}")); make them with the tablet connected: scripts/store-screenshots.sh")
+    fi
     for locale in $(locales); do
         want="$(grep -c . "$LISTINGS/$locale/screenshot_captions.txt" 2>/dev/null || true)"
         dir="$LISTINGS/$locale/images/phoneScreenshots"
@@ -371,8 +381,13 @@ need_screenshots() {
                 info="$(png_info "$file")"
                 [[ -n "$info" ]] || { problems+=("$file is not a PNG"); continue; }
                 read -r w h _ <<<"$info"
+                if [[ "$dir" == */tenInchScreenshots ]]; then
+                    # Play's 10-inch tablets: 16:9 or 9:16, each side 1080 to 7680 px.
+                    if (( w < 1080 || h < 1080 || w > 7680 || h > 7680 || (w * 9 != h * 16 && w * 16 != h * 9) )); then
+                        problems+=("$file is $w x $h px; Play's 10-inch tablet screenshots are 16:9 or 9:16, 1080 to 7680 px a side")
+                    fi
                 # Play: each side 320 to 3840 px, the long side at most twice the short one, at most 8 MB.
-                if (( w < 320 || h < 320 || w > 3840 || h > 3840 || w > 2 * h || h > 2 * w )); then
+                elif (( w < 320 || h < 320 || w > 3840 || h > 3840 || w > 2 * h || h > 2 * w )); then
                     problems+=("$file is $w x $h px; Play takes 320 to 3840 px a side, at most 2:1")
                 fi
                 (( $(stat -c %s "$file") <= 8 * 1024 * 1024 )) || problems+=("$file is over Play's 8 MB")
