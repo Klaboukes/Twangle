@@ -100,8 +100,12 @@ internal class ChartGeometry(val strings: Int) {
     }
 }
 
-/** The largest unit: a 6-string chart is then about 400 dp wide, big enough on a tablet. */
-internal const val MAX_UNIT = 2.4f
+/**
+ * The largest unit, for the chart and the neck alike: a 6-string chart is then about 710 dp wide and the neck sideways
+ * about 1130 dp, so on a tablet they use the room (Phase 52: at 2.4 the neck on its side left half the Tab M11's width
+ * empty); phones never get near it.
+ */
+internal const val MAX_UNIT = 4f
 
 /** What [chartDrawing] draws [shape] with: the style's colours and lettering, and its texts in the app's language. */
 private class ChartPaint(

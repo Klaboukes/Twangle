@@ -381,9 +381,15 @@ class ScalesScreenTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() {
+    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false, true))
+
+    /** On a tablet, upright and on its side (Phase 52): it fits as on a phone, and the neck takes the whole width under the rows, and on its side the name shares the top row. */
+    @Test
+    fun onATabletTheNeckUsesTheWholeScreen() = assertItFits(listOf(TABLET_UPRIGHT, TABLET_LANDSCAPE), listOf(false))
+
+    private fun assertItFits(sizes: List<DpSize>, themes: List<Boolean>) {
         show(PitchClass.G_SHARP, ScaleType.BLUES)
-        for (dark in listOf(false, true)) for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+        for (dark in themes) for (size in sizes) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
@@ -401,7 +407,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
             // Upright on the Xiaomi (the owner's choice), sideways on its side; a short phone takes whichever is bigger (sideways).
             val lie = lie()
             if (size == XIAOMI) assertEquals("$case how the neck lies", NeckLie.UPRIGHT, lie)
-            if (size == PHONE_LANDSCAPE) assertEquals("$case how the neck lies", NeckLie.SIDEWAYS, lie)
+            if (size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE) assertEquals("$case how the neck lies", NeckLie.SIDEWAYS, lie)
+            if (size == TABLET_UPRIGHT) assertEquals("$case how the neck lies", NeckLie.UPRIGHT, lie)
             val drawn = node(PracticeTestTags.neckLie(lie)).getBoundsInRoot()
             val area = neck().getBoundsInRoot()
             assertTrue("$case the neck inside its room $drawn $area", drawn.left >= area.left && drawn.right <= area.right && drawn.top >= area.top && drawn.bottom <= area.bottom)
@@ -411,15 +418,27 @@ class ScalesScreenTest(private val style: VisualStyle) {
             val name = picker().getBoundsInRoot()
             assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
             assertTheDroneButtonBesideTheName(case)
+            val middle = (window.left + window.right) / 2
             if (size == PHONE_LANDSCAPE) {
-                val middle = (window.left + window.right) / 2
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
                 assertTrue("$case the name and the neck in the end half", name.left >= middle && area.left >= middle)
+            } else if (size == TABLET_LANDSCAPE) {
+                // A tablet on its side (Phase 52): the tuning line and the name share the top row, the neck runs the whole width under it.
+                val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+                assertTrue("$case the tuning line in the start half", tuning.right <= middle)
+                assertTrue("$case the name in the end half, beside the tool button", name.left >= middle && name.top < tool.bottom)
+                assertTrue("$case the neck across the whole width $drawn", drawn.left < middle && drawn.right > middle && drawn.width >= (window.right - window.left) * 0.85f)
             } else {
                 assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
             }
-            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
-            assertTheDronePanel(case, wide = size == PHONE_LANDSCAPE)
+            if (size == TABLET_UPRIGHT) {
+                assertTrue("$case the neck as tall as its room $drawn $area", drawn.height >= area.height - 1.dp)
+            }
+            // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not. On a
+            // tablet on its side the panels drop under the name as upright (Phase 52): the drone panel in one column.
+            val tablet = size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE || tablet)
+            assertTheDronePanel(case, wide = size == PHONE_LANDSCAPE, under = !tablet && size != PHONE_LANDSCAPE)
         }
     }
 
@@ -430,7 +449,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
         val sound = node(PracticeTestTags.DRONE_SOUND).getBoundsInRoot()
         assertEquals("$case the drone button as tall as the name", name.height.value, play.height.value, 0.5f)
         assertEquals("$case both halves as tall", play.height.value, sound.height.value, 0.5f)
-        assertEquals("$case both halves as wide", play.width.value, sound.width.value, 0.5f)
+        // Within a pixel: at the tablet's 1.5 px a dp the 120 dp split into whole pixels comes out 88 and 89 px.
+        assertEquals("$case both halves as wide", play.width.value, sound.width.value, 0.75f)
         assertEquals("$case level with the name", name.top.value, play.top.value, 0.5f)
         assertTrue("$case after the name $name, $play, $sound", name.right <= play.left && play.right <= sound.left)
     }
@@ -439,7 +459,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
      * The drone panel, opened from the drone button: under it where it fits (where not [wide]); Sound with the four sounds,
      * Notes with the three, then Lower, each wholly shown (with [texts], every text too); Back closes it.
      */
-    private fun assertTheDronePanel(case: String, wide: Boolean, texts: Boolean = false) {
+    private fun assertTheDronePanel(case: String, wide: Boolean, texts: Boolean = false, under: Boolean = !wide) {
         openDronePanel()
         val rows = DroneSound.entries.map { PracticeTestTags.droneSound(it) } + DroneVoicing.entries.map { PracticeTestTags.droneVoicing(it) } +
             PracticeTestTags.DRONE_LOWER
@@ -453,7 +473,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
             assertTrue("$case on its side the notes beside the sounds", left(firstNote) > left(PracticeTestTags.droneSound(DroneSound.TANPURA)))
         } else {
             assertTrue("$case upright the notes under the sounds", top(firstNote) > sounds.last())
-            assertMenuUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.droneSound(DroneSound.TANPURA)), case)
+            if (under) assertMenuUnder(node(PracticeTestTags.DRONE_SOUND), node(PracticeTestTags.droneSound(DroneSound.TANPURA)), case)
         }
         assertTrue("$case Lower under the notes", top(PracticeTestTags.DRONE_LOWER) > top(PracticeTestTags.droneVoicing(DroneVoicing.FIFTH_OCTAVE)))
         if (texts) {
@@ -659,6 +679,36 @@ class ScalesScreenTest(private val style: VisualStyle) {
         assertTrue("sideways on a phone on its side", exists(PracticeTestTags.neckLie(NeckLie.SIDEWAYS)))
     }
 
+    /**
+     * Every scale's name in the panel keeps room at its sides, the longest too ("Phrygian dominant" ran edge to edge at the
+     * Lenovo tablet's 1.3× text, Phase 52), set a little smaller where it must: upright on the Xiaomi and on a tablet on its side.
+     */
+    @Test
+    fun everyScaleNameKeepsRoomAtItsSides() {
+        shownFontScale.value = 1.3f
+        show()
+        for (size in listOf(XIAOMI, TABLET_LANDSCAPE)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            openPanel()
+            for (type in ScaleType.entries) {
+                val button = node(PracticeTestTags.scale(type)).fetchSemanticsNode()
+                val text = compose.onNode(
+                    hasAnyAncestor(hasTestTag(PracticeTestTags.scale(type))) and SemanticsMatcher.keyIsDefined(SemanticsActions.GetTextLayoutResult),
+                    useUnmergedTree = true,
+                ).fetchSemanticsNode()
+                val results = mutableListOf<TextLayoutResult>()
+                text.config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+                val layout = results.single()
+                val widest = (0 until layout.lineCount).maxOf { layout.getLineRight(it) - layout.getLineLeft(it) }
+                val room = (button.size.width - widest) / 2 / button.layoutInfo.density.density
+                // From the touch area's edge: 3 dp to the face, 3 dp inside it, and at least 5 dp more.
+                assertTrue("$style $size at 1.3x: $type keeps room at its sides, $room dp", room >= 11f)
+            }
+            closePanel()
+        }
+    }
+
     @Test
     fun dutchAtTwiceTheTextSizeIsWhollyShown() {
         shownLocale.value = "nl"
@@ -794,5 +844,8 @@ class ScalesScreenTest(private val style: VisualStyle) {
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
         private val TABLET_UPRIGHT = DpSize(700.dp, 1100.dp)
+
+        /** The Lenovo Tab M11 (1280 x 800 dp) on its side (Phase 52). */
+        private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
     }
 }

@@ -521,35 +521,55 @@ private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign =
  * and Japanese, written without spaces, may break between any two characters. Smallest if none.
  * Where it can, it leaves [twoLineMargin] above and below, so two lines never touch the outline
  * (Classic's and Retro's letters did); at large text sizes, where even the smallest wouldn't fit
- * with it, the label may use the whole face.
+ * with it, the label may use the whole face. With [sideMargin] it also keeps that much clear at either
+ * side, set a little smaller or on two lines for it (down to [SIDE_ROOM_SHARE] of the size it would
+ * have without), so a long name doesn't run edge to edge ("Phrygian dominant" at 1.3× text, Phase 52).
  */
 internal class WholeWordsAutoSize(
     private val largest: TextUnit,
     private val smallest: TextUnit,
     private val twoLineMargin: Dp = 0.dp,
+    private val sideMargin: Dp = 0.dp,
 ) : TextAutoSize {
     override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
         val margin = 2 * twoLineMargin.roundToPx()
-        return largestFitting(constraints, text, margin) ?: largestFitting(constraints, text, 0) ?: smallest
+        val plain = largestFitting(constraints, text, margin) ?: return largestFitting(constraints, text, 0) ?: smallest
+        if (sideMargin == 0.dp) return plain
+        val floor = maxOf(smallest.value, plain.value * SIDE_ROOM_SHARE)
+        return largestFitting(constraints, text, margin, 2 * sideMargin.roundToPx(), floor) ?: plain
     }
 
-    private fun TextAutoSizeLayoutScope.largestFitting(constraints: Constraints, text: AnnotatedString, margin: Int): TextUnit? {
+    private fun TextAutoSizeLayoutScope.largestFitting(
+        constraints: Constraints,
+        text: AnnotatedString,
+        margin: Int,
+        sides: Int = 0,
+        floor: Float? = null,
+    ): TextUnit? {
         var size = largest.value
-        while (size > smallest.value) {
+        // Down to [floor] itself where one is given, else to just above [smallest] (which is the answer when nothing fits).
+        while (if (floor == null) size > smallest.value else size >= floor - 0.001f) {
             val layout = performLayout(constraints, text, size.sp)
             val roomy = !constraints.hasBoundedHeight || layout.size.height <= constraints.maxHeight - margin
-            if (!layout.didOverflowWidth && !layout.didOverflowHeight && roomy && breaksBetweenWords(layout, text)) return size.sp
+            val clearOfSides = sides == 0 || !constraints.hasBoundedWidth || layout.widestLine() <= constraints.maxWidth - sides
+            if (!layout.didOverflowWidth && !layout.didOverflowHeight && roomy && clearOfSides && breaksBetweenWords(layout, text)) return size.sp
             size -= LABEL_STEP
         }
         return null
     }
 
+    private fun TextLayoutResult.widestLine(): Float = (0 until lineCount).maxOfOrNull { getLineRight(it) - getLineLeft(it) } ?: 0f
+
     private fun breaksBetweenWords(layout: TextLayoutResult, text: AnnotatedString): Boolean = layout.breaksBetweenWords(text.text)
 
     override fun equals(other: Any?): Boolean =
-        other is WholeWordsAutoSize && other.largest == largest && other.smallest == smallest && other.twoLineMargin == twoLineMargin
-    override fun hashCode(): Int = (largest.hashCode() * 31 + smallest.hashCode()) * 31 + twoLineMargin.hashCode()
+        other is WholeWordsAutoSize && other.largest == largest && other.smallest == smallest && other.twoLineMargin == twoLineMargin &&
+            other.sideMargin == sideMargin
+    override fun hashCode(): Int = ((largest.hashCode() * 31 + smallest.hashCode()) * 31 + twoLineMargin.hashCode()) * 31 + sideMargin.hashCode()
 }
+
+/** A label keeps its side room ([WholeWordsAutoSize]'s sideMargin) only down to this share of the size it would have without. */
+private const val SIDE_ROOM_SHARE = 0.85f
 
 /**
  * The largest size from [largest] at which the text fits its box on one line; where it doesn't, the
@@ -674,6 +694,9 @@ private val LAST_RESORT_LABEL_SIZE = 6.sp
 private const val LABEL_STEP = 0.5f
 private val TWO_LINE_HEIGHT = 1.15.em
 private val TWO_LINE_MARGIN = 3.dp
+
+/** A scale's name keeps this much clear at either side inside the face's own 3 dp, where it can (Phase 52). */
+private val LABEL_SIDE_ROOM = 6.dp
 private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val MUTED_OUTLINE_ALPHA = 0.6f
 
@@ -681,4 +704,4 @@ private const val MUTED_OUTLINE_ALPHA = 0.6f
  * A picker label: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can.
  * Written after those sizes: top-level values are set in the order they are written.
  */
-private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN)
+private val LabelAutoSize = WholeWordsAutoSize(LABEL_SIZE, MIN_LABEL_SIZE, TWO_LINE_MARGIN, LABEL_SIDE_ROOM)

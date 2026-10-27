@@ -302,9 +302,15 @@ class ChordsScreenTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() {
+    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false, true))
+
+    /** On a tablet, upright and on its side (Phase 52): it fits as on a phone, and the chart takes the whole width under the rows, and on its side the name shares the top row. */
+    @Test
+    fun onATabletTheChartUsesTheWholeScreen() = assertItFits(listOf(TABLET_UPRIGHT, TABLET_LANDSCAPE), listOf(false))
+
+    private fun assertItFits(sizes: List<DpSize>, themes: List<Boolean>) {
         show()
-        for (dark in listOf(false, true)) for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+        for (dark in themes) for (size in sizes) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
@@ -323,7 +329,8 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 "$case the tuning beside the tool button $toolButton $instrument",
                 instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
             )
-            assertThePanel(case, wide = size == PHONE_LANDSCAPE)
+            // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
+            assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
             val chart = chart().getBoundsInRoot()
             // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp).
             assertTrue("$case a big chart ${chart.height}", chart.height >= if (size == PHONE_UPRIGHT) 156.dp else 170.dp)
@@ -331,12 +338,23 @@ class ChordsScreenTest(private val style: VisualStyle) {
             val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
             assertTrue("$case chart, then pager", chart.bottom <= pager.top + 1.dp)
+            val middle = (window.left + window.right) / 2
             if (size == PHONE_LANDSCAPE) {
-                val middle = (window.left + window.right) / 2
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
                 assertTrue("$case name and chart in the end half", name.left >= middle && chart.left >= middle)
+            } else if (size == TABLET_LANDSCAPE) {
+                // A tablet on its side (Phase 52): the tuning line and the name share the top row, the chart runs the whole width under it.
+                assertTrue("$case the tuning line in the start half", tuning.right <= middle)
+                assertTrue("$case the name in the end half, beside the tool button", name.left >= middle && name.top < toolButton.bottom)
+                assertTrue("$case the chart's room the whole width $chart", chart.left <= window.left + 25.dp && chart.right >= window.right - 25.dp)
+                assertTrue("$case a large chart's room ${chart.height}", chart.height >= 500.dp)
             } else {
                 assertTrue("$case the tuning line over the name", tuning.bottom <= name.top + 1.dp)
+            }
+            if (size == TABLET_UPRIGHT) {
+                // Upright on a tablet the rows keep the phone's column and the chart takes the whole width.
+                assertTrue("$case the name in the column ${name.width}", name.width <= 448.dp + 1.dp)
+                assertTrue("$case the chart's room the whole width $chart", chart.width >= size.width - 32.dp - 1.dp)
             }
             assertTrue("$case the name over the chart", name.bottom <= chart.top + 1.dp)
         }
@@ -477,5 +495,9 @@ class ChordsScreenTest(private val style: VisualStyle) {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
+
+        /** The Lenovo Tab M11 (1280 x 800 dp) upright less its bars and navigation bar, and on its side (Phase 52). */
+        private val TABLET_UPRIGHT = DpSize(800.dp, 1120.dp)
+        private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
     }
 }

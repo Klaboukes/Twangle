@@ -85,7 +85,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * Upright, one column: the tool button ([header]) 8 dp from the top at the start with the tuning
  * line beside it ([ToolAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
  * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
- * half, the table the end half.
+ * half, the table the end half. On a large window ([practiceLayoutFor], a tablet) all but the top row stand
+ * in the middle of the height (on its side the two halves under the top row), as the metronome's column.
  *
  * Names follow the player's [notation], written as the key writes them ([CapoPlan.shapeSymbolOf],
  * [CapoPlan.soundingSymbolOf]: E♭ in E♭, A♯m in F♯). It opens on [savedShapes] and [savedFret], and
@@ -147,8 +148,40 @@ fun CapoScreen(
     val table = @Composable { CapoTableView(plan, notation, speech, onOpenChord) }
 
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CAPO)) {
-        val wide = maxWidth >= WIDE_MIN_WIDTH && maxWidth > maxHeight
-        if (wide) {
+        val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
+        val height = maxHeight
+        if (layout == PracticeLayout.LARGE_SIDE) {
+            // A tablet on its side: the top row at the top, and under it the two halves in the middle of the height
+            // left (as the metronome's column), so the lower half isn't left empty. Scrolls only at very large text.
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = height)
+                    .padding(horizontal = 24.dp),
+            ) {
+                Spacer(Modifier.height(HEADER_TOP))
+                Row(Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) { topRow() }
+                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.weight(1f))
+                }
+                Spacer(Modifier.weight(1f))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                        picker()
+                        Spacer(Modifier.height(8.dp))
+                        stepper(false)
+                        Spacer(Modifier.height(8.dp))
+                        soundsInLine()
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) { table() }
+                }
+                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(8.dp))
+            }
+        } else if (layout == PracticeLayout.HALVES) {
             Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 Column(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
@@ -178,17 +211,22 @@ fun CapoScreen(
             // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so it all still fits.
             val tight = maxHeight < ROOMY_HEIGHT
             val gap = if (tight) 0.5f else 1f
+            // On a large window (a tablet held upright) the part under the top row stands in the middle of the height
+            // left, as the metronome's column, instead of hanging at the top.
+            val large = layout == PracticeLayout.LARGE_COLUMN
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     Modifier
                         .widthIn(max = COLUMN_MAX_WIDTH)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .then(if (large) Modifier.heightIn(min = height) else Modifier)
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
+                    if (large) Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp * gap))
@@ -197,6 +235,7 @@ fun CapoScreen(
                     table()
                     Spacer(Modifier.height(12.dp * gap))
                     soundsInLine()
+                    if (large) Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp * gap))
                 }
             }
@@ -485,7 +524,6 @@ private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, spee
     stringResource(qualityWords(chord.quality), speech.name(rootInKey(key, chord, notation)))
 
 /** On its side from this width, as the other Practice tools. */
-private val WIDE_MIN_WIDTH = 600.dp
 
 /** The tool button stands this far down from the top, as on the other Practice tools. */
 private val HEADER_TOP = 8.dp

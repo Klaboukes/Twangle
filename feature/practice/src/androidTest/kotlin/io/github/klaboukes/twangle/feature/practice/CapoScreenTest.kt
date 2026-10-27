@@ -40,6 +40,7 @@ import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -240,10 +241,16 @@ class CapoScreenTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() {
+    fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false, true))
+
+    /** On a tablet, upright and on its side (Phase 52): it fits as on a phone, and all under the top row stands in the middle of the height, as the metronome's column. */
+    @Test
+    fun onATabletItStandsInTheMiddleOfTheHeight() = assertItFits(listOf(TABLET_UPRIGHT, TABLET_LANDSCAPE), listOf(false))
+
+    private fun assertItFits(sizes: List<DpSize>, themes: List<Boolean>) {
         show(SongKey(PitchClass.C), 3)
         val last = PracticeTestTags.capoRow(Chord.of(PitchClass.A, ChordQuality.MINOR))
-        for (dark in listOf(false, true)) for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+        for (dark in themes) for (size in sizes) {
             shownDark.value = dark
             shownSize.value = size
             compose.waitForIdle()
@@ -261,10 +268,22 @@ class CapoScreenTest(private val style: VisualStyle) {
                 "$case the tuning beside the tool button $toolButton $instrument",
                 instrument.left >= toolButton.right && instrument.top < toolButton.bottom && instrument.bottom > toolButton.top,
             )
-            if (size == PHONE_LANDSCAPE) {
-                val middle = (window.left + window.right) / 2
+            val middle = (window.left + window.right) / 2
+            if (size.width > size.height) {
                 assertTrue("$case the capo in the start half", node(PracticeTestTags.CAPO_HIGHER).getBoundsInRoot().right <= middle)
                 assertTrue("$case the table in the end half", node(last).getBoundsInRoot().left >= middle)
+            }
+            val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
+            assertTrue("$case the tool button at the top $tool", tool.top >= window.top && tool.top <= window.top + 16.dp)
+            if (size == TABLET_UPRIGHT || size == TABLET_LANDSCAPE) {
+                // A tablet (Phase 52): the part under the top row in the middle of the height left, not hanging at the top.
+                val first = if (size == TABLET_UPRIGHT) node(PracticeTestTags.CAPO_SHAPES) else node(PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR)))
+                val above = first.getBoundsInRoot().top - tool.bottom
+                val below = window.bottom - maxOf(node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot().bottom, node(last).getBoundsInRoot().bottom)
+                assertTrue("$case in the middle of the height: $above above, $below below", above > 100.dp && below > 100.dp && abs((above - below).value) < 60f)
+                if (size == TABLET_LANDSCAPE) {
+                    assertTrue("$case the table under the top row", node(PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR))).getBoundsInRoot().top >= tool.bottom)
+                }
             }
         }
     }
@@ -328,5 +347,9 @@ class CapoScreenTest(private val style: VisualStyle) {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
+
+        /** The Lenovo Tab M11 (1280 x 800 dp) upright less its bars and navigation bar, and on its side (Phase 52). */
+        private val TABLET_UPRIGHT = DpSize(800.dp, 1120.dp)
+        private val TABLET_LANDSCAPE = DpSize(1280.dp, 800.dp)
     }
 }

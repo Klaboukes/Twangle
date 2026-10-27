@@ -101,7 +101,10 @@ import kotlinx.coroutines.withContext
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
  * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
- * half, and the panel opens over it; the name button and the chart or neck the end half.
+ * half, and the panel opens over it; the name button and the chart or neck the end half. On a large
+ * window ([practiceLayoutFor], a tablet) the chart or the neck takes the whole width: upright under the
+ * phone's column of rows, on its side under one row holding the top row and the name button, whose
+ * panels then drop under it as upright.
  *
  * Names follow the player's [notation] with the usual spelling (B♭, F♯m; a scale with its key's
  * sign). The tool opens on [savedRoot], [savedQuality] and [savedScaleType], and each
@@ -270,9 +273,28 @@ fun ChordsScreen(
     }
 
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(if (scales) PracticeTestTags.SCALES else PracticeTestTags.CHORDS)) {
-        val wide = maxWidth >= WIDE_MIN_WIDTH && maxWidth > maxHeight
+        val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
         val height = maxHeight
-        if (wide) {
+        if (layout == PracticeLayout.LARGE_SIDE) {
+            // A tablet on its side: the tool button's row and the name share the top row (the panels drop under the
+            // name, as upright), and the chart or the neck runs the whole width under it.
+            FillColumn(
+                viewport = height,
+                minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
+                top = {
+                    Spacer(Modifier.height(HEADER_TOP))
+                    Row(Modifier.fillMaxWidth()) {
+                        Box(Modifier.weight(1f)) { topRow() }
+                        Spacer(Modifier.width(16.dp))
+                        Box(Modifier.weight(1f)) { name(false) }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                },
+                fill = fill,
+                bottom = bottom(1f),
+            )
+        } else if (layout == PracticeLayout.HALVES) {
             Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 Column(
                     Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
@@ -303,15 +325,18 @@ fun ChordsScreen(
         } else {
             // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so the chart keeps more room.
             val gap = if (height < ROOMY_HEIGHT) TIGHT_GAPS else 1f
+            // On a large window (a tablet held upright) the rows keep the phone's column, the chart or the neck the whole width.
+            val large = layout == PracticeLayout.LARGE_COLUMN
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 FillColumn(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT,
                     modifier = Modifier
-                        .widthIn(max = COLUMN_MAX_WIDTH)
+                        .widthIn(max = if (large) Dp.Unspecified else COLUMN_MAX_WIDTH)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
+                    rowsMaxWidth = if (large) COLUMN_MAX_WIDTH - 32.dp else null,
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
                         topRow()
@@ -494,8 +519,8 @@ private fun PagerButton(next: Boolean, enabled: Boolean, onClick: () -> Unit) {
 
 /**
  * [top], then [fill] as tall as is left of [viewport] (at least [minFill]), then [bottom], each as
- * wide as the column, [top] and [bottom] centred. In a scrolling column it scrolls only when
- * [minFill] doesn't fit.
+ * wide as the column, [top] and [bottom] centred (and with [rowsMaxWidth] at most that wide, in the middle,
+ * while [fill] keeps the whole width). In a scrolling column it scrolls only when [minFill] doesn't fit.
  */
 @Composable
 private fun FillColumn(
@@ -505,6 +530,7 @@ private fun FillColumn(
     top: @Composable ColumnScope.() -> Unit,
     fill: @Composable () -> Unit,
     bottom: @Composable ColumnScope.() -> Unit,
+    rowsMaxWidth: Dp? = null,
 ) {
     Layout(
         contents = listOf(
@@ -515,7 +541,9 @@ private fun FillColumn(
         modifier = modifier,
     ) { (tops, fills, bottoms), constraints ->
         val width = constraints.maxWidth
-        val across = Constraints(minWidth = width, maxWidth = width)
+        val rowsWidth = if (rowsMaxWidth == null) width else minOf(width, rowsMaxWidth.roundToPx())
+        val rowsX = (width - rowsWidth) / 2
+        val across = Constraints(minWidth = rowsWidth, maxWidth = rowsWidth)
         val topPlaced = tops.map { it.measure(across) }
         val bottomPlaced = bottoms.map { it.measure(across) }
         val used = topPlaced.sumOf { it.height } + bottomPlaced.sumOf { it.height }
@@ -523,16 +551,13 @@ private fun FillColumn(
         val fillPlaced = fills.map { it.measure(Constraints.fixed(width, fillHeight)) }
         layout(width, used + fillHeight) {
             var y = 0
-            topPlaced.forEach { it.place(0, y); y += it.height }
+            topPlaced.forEach { it.place(rowsX, y); y += it.height }
             fillPlaced.forEach { it.place(0, y) }
             y += fillHeight
-            bottomPlaced.forEach { it.place(0, y); y += it.height }
+            bottomPlaced.forEach { it.place(rowsX, y); y += it.height }
         }
     }
 }
-
-/** On its side from this width, as the metronome's layout. */
-private val WIDE_MIN_WIDTH = 600.dp
 
 /** The tool button stands this far down from the top, as on the metronome and as the tuner's mode switch. */
 private val HEADER_TOP = 8.dp
