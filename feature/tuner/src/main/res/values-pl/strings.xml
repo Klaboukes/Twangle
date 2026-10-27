@@ -56,6 +56,7 @@
     <string name="tuner_lower_less">Podnieś z powrotem o pół tonu</string>
 
     <string name="instrument_guitar">Gitara</string>
+    <string name="instrument_guitar_12">Gitara 12-strunowa</string>
     <string name="instrument_guitar_7">Gitara 7-strunowa</string>
     <string name="instrument_guitar_8">Gitara 8-strunowa</string>
     <string name="instrument_bass_4">Bas</string>
@@ -65,6 +66,7 @@
     <string name="instrument_viola">Altówka</string>
     <string name="instrument_cello">Wiolonczela</string>
     <string name="instrument_mandolin">Mandolina</string>
+    <string name="instrument_note_guitar_12">Test strun i nazwa akordu są wyłączone dla gitary 12-strunowej: jej dwanaście strun brzmi zbyt blisko siebie, by je rozróżnić.</string>
     <string name="tuner_hint_play_string">Zagraj na strunie</string>
     <string name="tuner_hint_play_note">Zagraj dźwięk</string>
     <string name="tuner_hint_play_locked_string">Zagraj na strunie %1$s</string>
@@ -111,6 +113,7 @@
     <string name="tuner_spoken_tune_down">popuść</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s, ze struną oktawową</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import io.github.klaboukes.twangle.core.dsp.level.ReceptionLimit
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
@@ -292,6 +293,53 @@ class TunerInterpreterTest {
         var state: TunerUiState? = null
         repeat(40) { state = interpreter.interpret(pitched(hz(50f)), options) }
         assertEquals(2, state!!.detected().targetString)
+    }
+
+    @Test
+    fun `a 12-string's octave string is its course from the first pluck, with the course's name and cents`() {
+        val twelve = TunerOptions(TunerMode.AUTO, Instruments.GUITAR_12.defaultTuning)
+        fun pluck(midi: Float): TunerUiState.Detected {
+            play(silent, frames = 10)
+            var state: TunerUiState? = null
+            repeat(40) { state = interpreter.interpret(pitched(hz(midi)), twelve) }
+            return state!!.detected()
+        }
+        // The thin string of each lower pair, from scratch, 2 cents sharp: E3 A3 D4 G4 on E2 A2 D3 G3.
+        listOf(52f, 57f, 62f, 67f).forEachIndexed { course, octaveString ->
+            val heard = pluck(octaveString + 0.02f)
+            assertEquals("course $course", course, heard.targetString)
+            assertEquals("course $course", twelve.tuning.strings[course].octave, heard.octave)
+            assertEquals("course $course", 2f, heard.cents, 0.5f)
+        }
+        val lowE = pluck(52.02f)
+        assertEquals("E", lowE.noteName)
+        assertEquals(2, lowE.octave)
+        // The thick string of the pair, and the unison pairs at the top, as on the guitar.
+        assertEquals(0, pluck(40f).targetString)
+        assertEquals(4, pluck(59f).targetString)
+        assertEquals(5, pluck(64f).targetString)
+        // On the six-string guitar E3 from scratch is still near no string: the D string, +200 cents.
+        play(silent, frames = 10)
+        val guitar = play(pitched(hz(52f))).detected()
+        assertEquals(2, guitar.targetString)
+        assertEquals(200f, guitar.cents, 0.5f)
+    }
+
+    @Test
+    fun `moving between a 12-string's two strings of a course keeps the course, a fretted note goes on to the next`() {
+        val twelve = TunerOptions(TunerMode.AUTO, Instruments.GUITAR_12.defaultTuning)
+        var state: TunerUiState? = null
+        // The low E pair rings both strings; the reading moves between them and stays on the course.
+        for (midi in listOf(40f, 52f, 40.03f, 52.03f)) {
+            repeat(30) { state = interpreter.interpret(pitched(hz(midi)), twelve) }
+            assertEquals("$midi", 0, state!!.detected().targetString)
+        }
+        assertEquals(3f, state!!.detected().cents, 0.5f)
+        // Locked to the A course, its octave string (A3) is read against A2.
+        val locked = twelve.copy(lockedString = 1)
+        repeat(40) { state = interpreter.interpret(pitched(hz(56.9f)), locked) }
+        assertEquals(1, state!!.detected().targetString)
+        assertEquals(-10f, state!!.detected().cents, 0.5f)
     }
 
     @Test

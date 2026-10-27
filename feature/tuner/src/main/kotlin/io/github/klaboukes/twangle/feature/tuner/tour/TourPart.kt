@@ -37,13 +37,14 @@ enum class TourPart(
 
     companion object {
         /**
-         * The tour's steps in [mode]: all four in guitar mode, without the tools button where strum
-         * check isn't offered ([strumCheck]; every instrument has it today, up to 8 strings); in
-         * chromatic mode (only when started again from Settings) the meter and note alone, as the
-         * instrument button, the tools button and the strings aren't shown there.
+         * The tour's steps in [mode]: all four in guitar mode, without the tools button where the
+         * tuner shows none ([toolsButton]: no tool offered; the 12-string, without the strum check,
+         * still has the 12th-fret check under it); in chromatic mode (only when started again from
+         * Settings) the meter and note alone, as the instrument button, the tools button and the
+         * strings aren't shown there.
          */
-        fun stepsFor(mode: TunerMode, strumCheck: Boolean = true): List<TourPart> = when (mode) {
-            TunerMode.AUTO -> entries.filter { strumCheck || it != STRUM }
+        fun stepsFor(mode: TunerMode, toolsButton: Boolean = true): List<TourPart> = when (mode) {
+            TunerMode.AUTO -> entries.filter { toolsButton || it != STRUM }
             TunerMode.CHROMATIC -> listOf(READOUT)
         }
     }

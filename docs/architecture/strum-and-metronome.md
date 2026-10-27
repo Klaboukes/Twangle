@@ -9,7 +9,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - [Tempo from music](#tempo-from-music)
 
 ## Strum check (polyphonic)
-Phase 18. Three parts in `:core:dsp` `strum/`, all allocation-free (byte-counting tests), used by the strum check view ([Tuner screen and tour](ui-tuner.md), *Strum check view*):
+Phase 18. Three parts in `:core:dsp` `strum/`, all allocation-free (byte-counting tests), used by the strum check view ([Tuner screen and tour](ui-tuner.md), *Strum check view*). Offered for every instrument but the 12-string (`StrumInstruments.offers`, Phase 57): its octave strings sound right on the lower strings' partials (E3 on the low E's second), which the one partial series per string below can't tell apart. The chord name leaves it out for the same reason (`ChordInstruments`).
 - **`StrumListener`** turns mic chunks into frames timed from each strum (below, *Timing*).
 - **`StrumDetector`** reads every string of one strum from one frame, given the frequencies to expect: the tuning's open strings at the current A4, for any instrument up to 8 strings, in any order. `detect(frame, expectedHz, count, result)` fills a `StrumResult` per string: Hz, cents from the expected note, level in dB below the loudest string, `present` and `shadowed`.
 - **`StrumVerdict.of(result, string, toleranceCents, previous)`** turns a reading into `NOT_HEARD`, `FLAT`, `IN_TUNE` or `SHARP` (below, *Verdict*).

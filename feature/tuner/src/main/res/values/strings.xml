@@ -76,6 +76,7 @@
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Guitar</string>
+    <string name="instrument_guitar_12">12-string guitar</string>
     <string name="instrument_guitar_7">7-string guitar</string>
     <string name="instrument_guitar_8">8-string guitar</string>
     <string name="instrument_bass_4">Bass</string>
@@ -85,6 +86,8 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Cello</string>
     <string name="instrument_mandolin">Mandolin</string>
+    <!-- Under the 12-string's tunings in the instrument and tuning panel: what the tuner leaves out for it, and why. -->
+    <string name="instrument_note_guitar_12">The strum check and the chord name are off for the 12-string: its twelve strings ring too close together to tell apart.</string>
     <string name="tuner_hint_play_string">Play a string</string>
     <string name="tuner_hint_play_note">Play a note</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
@@ -142,6 +145,8 @@
     <string name="tuner_spoken_separator">", "</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <!-- A 12-string's string button with a second string an octave up (its small "8"), as TalkBack says it: %1$s the string, e.g. "E 2". -->
+    <string name="tuner_spoken_octave_course">%1$s, with octave string</string>
     <!-- A tuning in the instrument and tuning panel as TalkBack says it: %1$s its name, %2$s its open strings, e.g.
          "Half step down, E flat, A flat, D flat, G flat, B flat, E flat". -->
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>

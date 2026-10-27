@@ -188,6 +188,27 @@ class ChordNameFlowTest {
         assertTrue(off.state.value is TunerUiState.Listening)
     }
 
+    @Test
+    fun `the 12-string has neither the strum check nor the chord name, and either turns off on picking it`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder.silence())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.setStrumCheck(true)
+        advanceTimeBy(100)
+        assertTrue(vm.strumCheck.value)
+        vm.setInstrument(Instruments.GUITAR_12)
+        advanceTimeBy(100)
+        assertEquals(listOf(TunerTool.INTONATION_CHECK, TunerTool.PITCH_TRAIL), vm.tunerTools.value)
+        assertFalse(vm.strumCheck.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+        vm.setStrumCheck(true)
+        vm.setChordName(true)
+        advanceTimeBy(100)
+        assertFalse(vm.strumCheck.value)
+        assertFalse(vm.chordName.value)
+        assertTrue(vm.state.value is TunerUiState.Listening)
+    }
+
     private companion object {
         /** Open A minor (x02210), C (x32010), G (320003) and C over E (032010), as MIDI notes low to high. */
         val AM = intArrayOf(45, 52, 57, 60, 64)

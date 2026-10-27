@@ -56,6 +56,9 @@ data class BodyMode(val hz: Double, val q: Double, val gainDb: Double) {
  *
  * **Courses.** A mandolin's [courses] of two strings never agree to the cent: the pair sit
  * [courseSpreadCents] apart, evenly around the pitch, and their beating is the instrument's shimmer.
+ * A 12-string's lower pairs have their second string an octave up ([StringSynth.start] with
+ * `octavePair`): a thinner, lighter string at [octaveStringLevel] of the main one's level, half
+ * [courseSpreadCents] sharp of the exact octave, the main string exactly on pitch.
  *
  * **The start.** A hard pluck stretches the string, so a plucked note begins [glideCents] sharp and
  * settles with time constant [glideSeconds] (nylon stretches most). A plectrum or finger scrapes
@@ -81,6 +84,7 @@ data class StringVoice(
     val body: List<BodyMode> = emptyList(),
     val courses: Int = 1,
     val courseSpreadCents: Double = 0.0,
+    val octaveStringLevel: Double = 1.0,
     val glideCents: Double = 0.0,
     val glideSeconds: Double = 0.04,
     val attackNoise: Double = 0.0,
@@ -101,6 +105,7 @@ data class StringVoice(
         require(sustainSeconds > 0 && trebleSustainSeconds > 0) { "$id: sustain must be positive" }
         require(fastShare >= 0 && fastShare < 1 && fastRatio > 0 && fastRatio <= 1) { "$id: fastShare must be below 1 and fastRatio in (0, 1]" }
         require(courses in 1..StringSynth.MAX_COURSES && courseSpreadCents >= 0) { "$id: 1 or 2 courses, spread 0 or more" }
+        require(octaveStringLevel > 0 && octaveStringLevel <= 1) { "$id: the octave string's level must be in (0, 1]" }
         require(glideCents >= 0 && glideSeconds > 0) { "$id: glide must be 0 or more over a positive time" }
         require(attackNoise >= 0 && attackNoiseSeconds > 0 && attackNoiseHz > 0 && bodyThump >= 0) { "$id: attack noise levels must be 0 or more" }
         require(attackSeconds > 0 && bowNoise >= 0 && bowNoiseHz > 0 && sway in 0.0..0.5) { "$id: attack, bow noise and sway out of range" }
@@ -252,6 +257,18 @@ object StringVoices {
         bodyThump = 0.3,
     )
 
+    /**
+     * A 12-string: the steel guitar's pick and body with every course a pair, the top two in unison
+     * 2 cents apart (a 12-string's chorus), the lower four with a thinner string an octave up, a
+     * little quieter than the main one.
+     */
+    val TWELVE_STRING = STEEL_GUITAR.copy(
+        id = "twelve_string",
+        courses = 2,
+        courseSpreadCents = 2.0,
+        octaveStringLevel = 0.6,
+    )
+
     /** A violin bowed on an open string: A0 near 275 Hz, B1− and B1+ near 450 and 540 Hz, the bridge hill near 2.5 kHz. */
     val VIOLIN = StringVoice(
         id = "violin",
@@ -295,7 +312,7 @@ object StringVoices {
     )
 
     /** Every voice, each used by at least one instrument. */
-    val all: List<StringVoice> = listOf(STEEL_GUITAR, ELECTRIC_BASS, UKULELE, MANDOLIN, VIOLIN, VIOLA, CELLO)
+    val all: List<StringVoice> = listOf(STEEL_GUITAR, TWELVE_STRING, ELECTRIC_BASS, UKULELE, MANDOLIN, VIOLIN, VIOLA, CELLO)
 
     /** The voice of the default instrument, the six-string guitar. */
     val DEFAULT: StringVoice = STEEL_GUITAR

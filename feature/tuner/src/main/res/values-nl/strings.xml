@@ -61,6 +61,7 @@
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Gitaar</string>
+    <string name="instrument_guitar_12">12-snarige gitaar</string>
     <string name="instrument_guitar_7">7-snarige gitaar</string>
     <string name="instrument_guitar_8">8-snarige gitaar</string>
     <string name="instrument_bass_4">Bas</string>
@@ -70,6 +71,7 @@
     <string name="instrument_viola">Altviool</string>
     <string name="instrument_cello">Cello</string>
     <string name="instrument_mandolin">Mandoline</string>
+    <string name="instrument_note_guitar_12">Strumcheck en akkoordnaam staan uit voor de 12-snarige: de twaalf snaren klinken te dicht op elkaar om ze uit elkaar te houden.</string>
     <string name="tuner_hint_play_string">Speel een snaar</string>
     <string name="tuner_hint_play_note">Speel een noot</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
@@ -115,6 +117,7 @@
     <string name="tuner_spoken_separator">", "</string>
     <!-- %1$s is a string's note as read aloud, %2$d its octave, e.g. "E 2". -->
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s, met octaafsnaar</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

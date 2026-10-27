@@ -209,6 +209,8 @@ private fun PickerPanel(
                     }
                 }
                 mine.onNew?.let { onNew -> NewTuningRow(onClick = { close { onNew(instrument) } }) }
+                // What the tuner can't do for this instrument, so nobody looks for it (the 12-string's strum check).
+                instrumentNoteRes(instrument.id)?.let { InstrumentNote(stringResource(it)) }
             }
             // The tuning as written can go this far down; the row is left out where it can't go at all
             // (a five-string bass's B0) and while another instrument's tunings are shown.
@@ -328,6 +330,19 @@ private fun PresetTunings(
             modifier = if (isSelected && ticked != null) Modifier.bringIntoViewRequester(ticked) else Modifier,
         )
     }
+}
+
+/** A quiet line under the tunings: what the tuner leaves out for the instrument shown ([instrumentNoteRes]). */
+@Composable
+private fun InstrumentNote(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .padding(start = TUNING_TEXT_INSET, end = TUNING_TEXT_INSET, top = 10.dp)
+            .testTag(TunerTestTags.PICKER_NOTE),
+    )
 }
 
 /** The list's last row: a + and "New tuning", opening the tuning editor for the instrument shown. */

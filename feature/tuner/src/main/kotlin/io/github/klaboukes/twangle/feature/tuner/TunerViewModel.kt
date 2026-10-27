@@ -11,6 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
@@ -244,7 +245,7 @@ class TunerViewModel(
                 lockedString = locked,
                 notation = settings.notationFor(language),
                 inTunePrecision = settings.inTunePrecision,
-                strumCheck = tool.strum,
+                strumCheck = tool.strum && StrumInstruments.offers(settings.instrument),
                 intonationCheck = tool.intonation && tools.intonationCheck && IntonationInstruments.offers(settings.instrument),
                 intonationString = tool.choice.string,
                 intonationAttempt = tool.choice.attempt,
@@ -289,9 +290,11 @@ class TunerViewModel(
                 stopTone()
             }
         }
-        // An instrument without frets has no 12th-fret check, and one not strummed in chords no chord name: they turn off.
+        // An instrument without frets has no 12th-fret check, one not strummed in chords no chord name,
+        // and the 12-string no strum check: they turn off.
         viewModelScope.launch {
             tunerTools.collect {
+                if (TunerTool.STRUM_CHECK !in it) strumCheckOn.value = false
                 if (TunerTool.INTONATION_CHECK !in it) intonationOn.value = false
                 if (TunerTool.CHORD_NAME !in it) chordNameOn.value = false
                 if (TunerTool.PITCH_TRAIL !in it) pitchTrailOn.value = false
@@ -364,9 +367,10 @@ class TunerViewModel(
     /**
      * Switches strum check [on] or off. The microphone stays open; from the next chunk its sound goes
      * to the strum check (or back to the tuner). Turning it on also switches to guitar mode, since
-     * it checks the tuning's strings.
+     * it checks the tuning's strings; only where [tunerTools] offers it (not on the 12-string).
      */
     fun setStrumCheck(on: Boolean) {
+        if (on && TunerTool.STRUM_CHECK !in tunerTools.value) return
         if (on && mode.value != TunerMode.AUTO) setMode(TunerMode.AUTO)
         if (on) {
             intonationOn.value = false
@@ -461,15 +465,15 @@ class TunerViewModel(
 
     /**
      * Plays string [index]'s note of the current tuning at the current A4, in the picked
-     * instrument's voice (a plucked guitar string, a bowed violin string), so it can be tuned by ear.
-     * A tone already sounding gives way to it. Does nothing before the settings have loaded or for a
+     * instrument's voice (a plucked guitar string, a bowed violin string), so it can be tuned by ear;
+     * a 12-string's course with an octave string sounds as the pair. A tone already sounding gives way to it. Does nothing before the settings have loaded or for a
      * string the tuning doesn't have.
      */
     fun playString(index: Int) {
         val options = options.value ?: return
         val note = options.tuning.strings.getOrNull(index) ?: return
         playedString.value = index
-        tonePlayer.play(NoteMapper(options.a4Hz).frequencyOf(note), options.voice)
+        tonePlayer.play(NoteMapper(options.a4Hz).frequencyOf(note), options.voice, octavePair = options.tuning.hasOctaveString(index))
     }
 
     /** Stops a reference tone that is sounding (it fades out within a few tens of ms); also when the tuner leaves the screen. */

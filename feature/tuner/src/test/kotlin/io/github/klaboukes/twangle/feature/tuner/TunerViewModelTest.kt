@@ -664,6 +664,23 @@ class TunerViewModelTest {
         vm.playString(0)
         runCurrent()
         assertEquals(StringVoices.ELECTRIC_BASS, tones.voices.last())
+        assertEquals(listOf(false, false, false), tones.octavePairs)
+    }
+
+    @Test
+    fun `a 12-string's course plays as its pair, an octave apart on the lower four`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        runCurrent()
+        vm.setInstrument(Instruments.GUITAR_12)
+        runCurrent()
+        for (string in 0 until 6) {
+            vm.playString(string)
+            runCurrent()
+        }
+        assertEquals(List(6) { StringVoices.TWELVE_STRING }, tones.voices)
+        assertEquals(listOf(true, true, true, true, false, false), tones.octavePairs)
+        // The course's own note, E2 for the low pair: the voice adds the octave string.
+        assertEquals(82.41, tones.played.first().toDouble(), 0.01)
     }
 
     @Test

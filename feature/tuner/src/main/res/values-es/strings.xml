@@ -56,6 +56,7 @@
     <string name="tuner_lower_less">Volver a subir medio tono</string>
 
     <string name="instrument_guitar">Guitarra</string>
+    <string name="instrument_guitar_12">Guitarra de 12 cuerdas</string>
     <string name="instrument_guitar_7">Guitarra de 7 cuerdas</string>
     <string name="instrument_guitar_8">Guitarra de 8 cuerdas</string>
     <string name="instrument_bass_4">Bajo</string>
@@ -65,6 +66,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Violonchelo</string>
     <string name="instrument_mandolin">Mandolina</string>
+    <string name="instrument_note_guitar_12">La prueba de rasgueo y el nombre del acorde no están disponibles en la de 12 cuerdas: sus doce cuerdas suenan demasiado juntas para distinguirlas.</string>
     <string name="tuner_hint_play_string">Toca una cuerda</string>
     <string name="tuner_hint_play_note">Toca una nota</string>
     <string name="tuner_hint_play_locked_string">Toca la cuerda %1$s</string>
@@ -108,6 +110,7 @@
     <string name="tuner_spoken_tune_down">bajar</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s, con cuerda octavada</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

@@ -65,11 +65,11 @@ object SaddleMove {
 object IntonationInstruments {
 
     private val fretted = setOf(
-        Instruments.GUITAR, Instruments.GUITAR_7, Instruments.GUITAR_8,
+        Instruments.GUITAR, Instruments.GUITAR_12, Instruments.GUITAR_7, Instruments.GUITAR_8,
         Instruments.BASS_4, Instruments.BASS_5, Instruments.UKULELE, Instruments.MANDOLIN,
     ).map { it.id }.toSet()
 
-    private val guitars = setOf(Instruments.GUITAR, Instruments.GUITAR_7, Instruments.GUITAR_8).map { it.id }.toSet()
+    private val guitars = setOf(Instruments.GUITAR, Instruments.GUITAR_12, Instruments.GUITAR_7, Instruments.GUITAR_8).map { it.id }.toSet()
 
     /** Whether [instrument] has frets and a saddle, so the 12th-fret check means something on it. */
     fun offers(instrument: Instrument): Boolean = instrument.id in fretted

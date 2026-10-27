@@ -118,12 +118,14 @@ class TunerInterpreter(
      * The nearest string, but sticky: the current string is kept until another one is closer by
      * more than [STRING_HYSTERESIS_SEMITONES], so a note half-way between two strings doesn't
      * make the target flicker. Same idea and margin as the note hysteresis in [PitchSmoother].
+     * A course's octave string ([Tuning.octaveCourses], a 12-string's) is that string from the
+     * first pluck: distances are to the nearer of its two strings ([Tuning.distanceToString]).
      */
     private fun trackString(midi: Float, tuning: Tuning): Int {
         val nearest = tuning.nearestStringIndex(midi)
         if (tuning == stringTuning && stringIndex != NO_STRING && nearest != stringIndex) {
             val stringMidi = tuning.strings[stringIndex].midi
-            val awayFromStrings = abs(midi - tuning.strings[nearest].midi) > OCTAVE_MATCH_SEMITONES
+            val awayFromStrings = tuning.distanceToString(midi, nearest) > OCTAVE_MATCH_SEMITONES
             // The current string read an octave off: keep it (see octaveOnString).
             if (awayFromStrings && octaveOnString(midi, stringMidi) != midi) return stringIndex
         }
@@ -131,8 +133,8 @@ class TunerInterpreter(
             stringTuning = tuning
             stringIndex = nearest
         } else if (nearest != stringIndex) {
-            val currentDistance = abs(midi - tuning.strings[stringIndex].midi)
-            val nearestDistance = abs(midi - tuning.strings[nearest].midi)
+            val currentDistance = tuning.distanceToString(midi, stringIndex)
+            val nearestDistance = tuning.distanceToString(midi, nearest)
             if (currentDistance - nearestDistance > STRING_HYSTERESIS_SEMITONES) stringIndex = nearest
         }
         return stringIndex
@@ -145,7 +147,8 @@ class TunerInterpreter(
      * high, and a 12th-fret harmonic is an octave high by design. Its cents are the same either way;
      * without this the reading, nearest to no string, jumped to another string far off (G4 to high
      * E, +300 cents). [trackString] keeps the string, so only one octave away, and only while no
-     * other string is near the reading (in open D, D3 after D2 is the D3 string).
+     * other string is near the reading (in open D, D3 after D2 is the D3 string). A 12-string's
+     * octave string is moved onto its course the same way, so it reads with the course's name.
      */
     private fun octaveOnString(midi: Float, stringMidi: Int): Float {
         for (octave in OCTAVE_MOVES) {

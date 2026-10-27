@@ -22,9 +22,10 @@ interface TonePlayer {
 
     /**
      * Sounds a note at [frequencyHz] (above 0, at most a few kHz) in [voice]. A tone still sounding
-     * fades out quickly first, so a new note never clicks.
+     * fades out quickly first, so a new note never clicks. With [octavePair] a voice of paired
+     * strings sounds the pair an octave apart, as a 12-string's lower courses (`StringSynth.start`).
      */
-    fun play(frequencyHz: Float, voice: StringVoice)
+    fun play(frequencyHz: Float, voice: StringVoice, octavePair: Boolean = false)
 
     /** Fades the current tone out quickly (a few tens of ms). Does nothing when nothing plays. */
     fun stop()

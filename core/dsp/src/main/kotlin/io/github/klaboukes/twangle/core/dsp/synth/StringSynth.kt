@@ -20,10 +20,10 @@ import kotlin.math.sqrt
  * is exact (no wavetable rounding) and a sample costs a few multiply-adds per partial. What the
  * partials are, how loud they start and how fast they die comes from the [StringVoice]: the pluck
  * point's comb, the body's resonances, the string's stiffness (partial k at `k·f·√(1 + B·k²)`, the
- * fundamental exactly on pitch), two decay rates per partial, a mandolin's two courses. Partials
- * stop below [MAX_PARTIAL_HZ] and 0.45 × the sample rate, so nothing aliases, with at most
- * [MAX_PARTIALS] per course; low notes keep many partials, so a phone speaker that can't play the
- * fundamental still gives the right pitch.
+ * fundamental exactly on pitch), two decay rates per partial, a mandolin's two courses (a
+ * 12-string's an octave apart). Partials stop below [MAX_PARTIAL_HZ] and 0.45 × the sample rate, so
+ * nothing aliases, with at most [MAX_PARTIALS] per course; low notes keep many partials, so a phone
+ * speaker that can't play the fundamental still gives the right pitch.
  *
  * On top of the partials run the sounds a keyboard lacks: a plucked note starts a few cents sharp
  * and settles (the phasors' steps are turned [GLIDE_UPDATES_PER_SECOND] times a second while it
@@ -159,9 +159,11 @@ class StringSynth(
     /**
      * Starts a new tone at [frequencyHz] (0 < f ≤ [maxFrequencyHz]) from the beginning, dropping any
      * tone still sounding. To change notes without a click, [release] the old one and start the new
-     * one once [isSounding] is false.
+     * one once [isSounding] is false. With [octavePair], a voice of two courses sounds its second
+     * string an octave up (a 12-string's lower pairs, [StringVoice.octaveStringLevel]); the pitch
+     * read stays [frequencyHz], the pair's common period.
      */
-    fun start(frequencyHz: Float) {
+    fun start(frequencyHz: Float, octavePair: Boolean = false) {
         require(frequencyHz > 0f && frequencyHz <= maxFrequencyHz) {
             "frequencyHz must be in (0, $maxFrequencyHz], was $frequencyHz"
         }
@@ -171,14 +173,24 @@ class StringSynth(
         partials = 0
         var levelSum = 0.0
         for (course in 0 until voice.courses) {
-            // The courses sit evenly around the pitch (a pair at ±half the spread), so their mean is exact.
-            val offsetCents = if (voice.courses == 1) 0.0 else (course - (voice.courses - 1) / 2.0) * voice.courseSpreadCents / (voice.courses - 1)
-            val courseHz = f * 2.0.pow(offsetCents / 1200)
+            // A 12-string's octave pair: the second, thinner string an octave up, less stiff and quieter,
+            // half the spread sharp of the exact octave; the main string stays exactly on pitch, so a
+            // pair read late (the octave string dies sooner) is still the note. A unison pair sits
+            // evenly around the pitch (at ±half the spread), so its mean is exact.
+            val octave = octavePair && course == 1
+            val offsetCents = when {
+                voice.courses == 1 -> 0.0
+                octavePair -> course * voice.courseSpreadCents / 2
+                else -> (course - (voice.courses - 1) / 2.0) * voice.courseSpreadCents / (voice.courses - 1)
+            }
+            val courseHz = (if (octave) 2 * f else f) * 2.0.pow(offsetCents / 1200)
+            val courseStiffness = if (octave) voice.stiffnessAt(courseHz) else stiffness
+            val courseLevel = if (octave) voice.octaveStringLevel else 1.0
             var k = 1
             while (k <= MAX_PARTIALS) {
-                val partialHz = k * courseHz * sqrt((1 + stiffness * k * k) / (1 + stiffness))
+                val partialHz = k * courseHz * sqrt((1 + courseStiffness * k * k) / (1 + courseStiffness))
                 if (partialHz > maxFrequencyHz) break
-                val level = voice.partialLevel(k, partialHz)
+                val level = courseLevel * voice.partialLevel(k, partialHz)
                 val decaySeconds = voice.decaySecondsAt(partialHz)
                 val w = 2.0 * PI * partialHz / sampleRate
                 addPartial(w, exp(-1.0 / (decaySeconds * sampleRate)), (1 - voice.fastShare) * level)
@@ -377,7 +389,7 @@ class StringSynth(
         /** Most partials a course uses (a low bass note). */
         const val MAX_PARTIALS = 60
 
-        /** Most courses (strings sounding together on one pitch) a voice has: a mandolin's pair. */
+        /** Most courses (strings sounding together on one pitch) a voice has: a mandolin's or a 12-string's pair. */
         const val MAX_COURSES = 2
 
         /** Most body modes a voice has. */

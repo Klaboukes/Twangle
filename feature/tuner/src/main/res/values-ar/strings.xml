@@ -56,6 +56,7 @@
     <string name="tuner_lower_less">رفع نصف درجة</string>
 
     <string name="instrument_guitar">جيتار</string>
+    <string name="instrument_guitar_12">جيتار باثني عشر وترًا</string>
     <string name="instrument_guitar_7">جيتار سباعي الأوتار</string>
     <string name="instrument_guitar_8">جيتار ثماني الأوتار</string>
     <string name="instrument_bass_4">باص</string>
@@ -65,6 +66,7 @@
     <string name="instrument_viola">فيولا</string>
     <string name="instrument_cello">تشيلو</string>
     <string name="instrument_mandolin">ماندولين</string>
+    <string name="instrument_note_guitar_12">فحص بضربة واسم الكورد غير متاحين للجيتار ذي الاثني عشر وترًا: أوتاره الاثنا عشر تتقارب أصواتها كثيرًا فلا يمكن تمييزها.</string>
     <string name="tuner_hint_play_string">اعزف وترًا</string>
     <string name="tuner_hint_play_note">اعزف نغمة</string>
     <string name="tuner_hint_play_locked_string">اعزف وتر %1$s</string>
@@ -115,6 +117,7 @@
     <string name="tuner_spoken_tune_down">أرخِ</string>
     <string name="tuner_spoken_separator">"، "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s، مع وتر الأوكتاف</string>
     <string name="tuner_spoken_tuning">%1$s، %2$s</string>
     <string name="tuner_spoken_picker">%1$s، %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

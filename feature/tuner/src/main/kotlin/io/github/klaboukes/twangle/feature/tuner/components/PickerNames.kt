@@ -115,6 +115,7 @@ private val LOWERED_AMOUNTS = listOf(
 @StringRes
 fun instrumentNameRes(id: String): Int? = when (id) {
     Instruments.GUITAR.id -> R.string.instrument_guitar
+    Instruments.GUITAR_12.id -> R.string.instrument_guitar_12
     Instruments.GUITAR_7.id -> R.string.instrument_guitar_7
     Instruments.GUITAR_8.id -> R.string.instrument_guitar_8
     Instruments.BASS_4.id -> R.string.instrument_bass_4
@@ -124,5 +125,15 @@ fun instrumentNameRes(id: String): Int? = when (id) {
     Instruments.VIOLA.id -> R.string.instrument_viola
     Instruments.CELLO.id -> R.string.instrument_cello
     Instruments.MANDOLIN.id -> R.string.instrument_mandolin
+    else -> null
+}
+
+/**
+ * The string of what the tuner leaves out for the instrument [id], shown quietly under its tunings in
+ * the panel, or null where it leaves out nothing: the 12-string's strum check and chord name.
+ */
+@StringRes
+fun instrumentNoteRes(id: String): Int? = when (id) {
+    Instruments.GUITAR_12.id -> R.string.instrument_note_guitar_12
     else -> null
 }

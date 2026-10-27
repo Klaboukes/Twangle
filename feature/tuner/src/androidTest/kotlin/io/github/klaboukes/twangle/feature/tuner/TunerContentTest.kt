@@ -611,6 +611,25 @@ class TunerContentTest {
     }
 
     @Test
+    fun theTwelveStringComesAfterTheGuitarAndItsPanelSaysWhatIsOff() {
+        val twelve = Instruments.GUITAR_12
+        assertEquals(listOf(Instruments.GUITAR, twelve), Instruments.all.take(2))
+        show(TunerUiState.Listening(TunerMode.AUTO, twelve.defaultTuning))
+        openPanel()
+        compose.onNodeWithText(text(R.string.instrument_guitar_12)).assertIsSelected()
+        val standard = compose.onNodeWithText(text(R.string.tuning_standard)).assertIsDisplayed().getBoundsInRoot()
+        val note = compose.onNodeWithTag(TunerTestTags.PICKER_NOTE).assert(hasText(text(R.string.instrument_note_guitar_12)))
+        assertWhollyShown(note, "the 12-string's note", scroll = true)
+        // Under its tunings.
+        assertTrue(note.getBoundsInRoot().top >= standard.bottom)
+        // The guitar leaves nothing out, so its panel has no such line.
+        compose.runOnIdle { shownState.value = TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD) }
+        compose.waitForIdle()
+        compose.onNodeWithText(text(R.string.instrument_guitar)).assertIsSelected()
+        compose.onNodeWithTag(TunerTestTags.PICKER_NOTE).assertDoesNotExist()
+    }
+
+    @Test
     fun thePanelShowsOnlyTheInstrumentsTunings() {
         val ukulele = Instruments.UKULELE
         show(TunerUiState.Listening(TunerMode.AUTO, ukulele.defaultTuning))

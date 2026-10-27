@@ -32,6 +32,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
@@ -46,8 +47,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.selected
@@ -55,6 +58,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -82,6 +86,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.tuner.R
+import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
 
 /**
  * The open strings of [tuning], lowest on the left (in right-to-left languages too), with the [targetString] (if any) highlighted.
@@ -94,6 +99,10 @@ import io.github.klaboukes.twangle.feature.tuner.R
  * [soundingString], whose tone sounds now, sends rings out round its button like sound waves (one
  * still ring with Android's animations off), drawn outside it so nothing moves. While a tone sounds
  * a tap on any string stops it, and TalkBack says so.
+ *
+ * A course with a second string an octave up ([Tuning.octaveCourses], a 12-string's lower four)
+ * carries a small "8" in its button's top corner, and TalkBack says "with octave string" after its
+ * name; the compact layout's small chips leave it out.
  *
  * With [marks] (the 12th-fret check) each string with a result carries its [StringMark] as a small
  * badge, and TalkBack says it after the string's name; [checking] makes a tap's TalkBack action
@@ -130,6 +139,7 @@ fun StringSelector(
     val animationsOff = soundingString != null && rememberAnimationsOff()
     val speech = rememberNoteNameSpeech()
     val spokenString = stringResource(R.string.tuner_spoken_string)
+    val spokenOctaveCourse = stringResource(R.string.tuner_spoken_octave_course)
     val style = MaterialTheme.styleTokens.style
     BoxWithConstraints(if (small) modifier else modifier.fillMaxWidth()) {
         // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
@@ -152,9 +162,11 @@ fun StringSelector(
                     val name = notation.nameIn(tuning, note.pitchClass)
                     val spokenName = spokenString.format(speech.name(name), note.octave)
                     val mark = marks?.getOrNull(index)
+                    val octaveString = tuning.hasOctaveString(index)
                     StringChip(
                         name = name,
-                        spokenName = spokenName,
+                        spokenName = if (octaveString) spokenOctaveCourse.format(spokenName) else spokenName,
+                        octaveString = octaveString,
                         octave = note.octave,
                         highlighted = index == targetString,
                         inTune = inTune,
@@ -210,6 +222,7 @@ private fun smallChipSize(style: VisualStyle): DpSize = stringChipSize(style).fi
 private fun StringChip(
     name: String,
     spokenName: String,
+    octaveString: Boolean,
     octave: Int,
     highlighted: Boolean,
     inTune: Boolean,
@@ -364,6 +377,24 @@ private fun StringChip(
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
                 modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )
+            // A 12-string's octave pair: a small "8" in the top corner, as an octave is marked in
+            // music (8va); TalkBack has it in the button's name.
+            if (octaveString && !small) {
+                Text(
+                    OCTAVE_MARK,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize * OCTAVE_MARK_SIZE * fit.buttonScale,
+                        lineHeight = 1.em,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    color = content.copy(alpha = OCTAVE_MARK_ALPHA),
+                    maxLines = 1,
+                    modifier = Modifier
+                        .align(OCTAVE_MARK_PLACE)
+                        .testTag(TunerTestTags.OCTAVE_MARK)
+                        .clearAndSetSemantics {},
+                )
+            }
         }
     }
 }
@@ -424,6 +455,16 @@ private fun DpSize.fitInside(side: Dp): DpSize {
 
 /** Largest font scale the string labels follow; beyond it "Sol♯₂" no longer fits its circle. */
 private const val MAX_CHIP_FONT_SCALE = 1.3f
+
+/** The octave pair's mark: "8", as music marks an octave up (8va), not a word to translate. */
+private const val OCTAVE_MARK = "8"
+
+/** The mark's size as a share of labelSmall's, and how strongly it shows. */
+private const val OCTAVE_MARK_SIZE = 0.75f
+private const val OCTAVE_MARK_ALPHA = 0.8f
+
+/** Up and to the end of the button, clear of the name, inside a round button's edge too. */
+private val OCTAVE_MARK_PLACE = BiasAlignment(0.55f, -0.7f)
 
 /** The small chips' labels don't grow with the system font: they are only 32 dp. */
 private const val MAX_SMALL_CHIP_FONT_SCALE = 1f

@@ -86,11 +86,11 @@ class SaddleMoveTest {
     @Test
     fun `offered on fretted instruments only, millimetres on guitars only`() {
         val offered = Instruments.all.filter(IntonationInstruments::offers).map { it.id }
-        assertEquals(listOf("guitar", "guitar_7", "guitar_8", "bass_4", "bass_5", "ukulele", "mandolin"), offered)
+        assertEquals(listOf("guitar", "guitar_12", "guitar_7", "guitar_8", "bass_4", "bass_5", "ukulele", "mandolin"), offered)
         for (fretless in listOf(Instruments.VIOLIN, Instruments.VIOLA, Instruments.CELLO)) {
             assertFalse(fretless.id, IntonationInstruments.offers(fretless))
         }
-        for (guitar in listOf(Instruments.GUITAR, Instruments.GUITAR_7, Instruments.GUITAR_8)) {
+        for (guitar in listOf(Instruments.GUITAR, Instruments.GUITAR_12, Instruments.GUITAR_7, Instruments.GUITAR_8)) {
             assertEquals(SaddleMove.GUITAR_SCALE_MM, IntonationInstruments.scaleLengthMm(guitar))
         }
         for (other in listOf(Instruments.BASS_4, Instruments.BASS_5, Instruments.UKULELE, Instruments.MANDOLIN, Instruments.VIOLIN)) {

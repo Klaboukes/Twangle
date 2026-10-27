@@ -87,11 +87,11 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         )
         .build()
 
-    override fun play(frequencyHz: Float, voice: StringVoice) {
+    override fun play(frequencyHz: Float, voice: StringVoice, octavePair: Boolean) {
         require(frequencyHz > 0f && frequencyHz <= maxFrequencyHz) {
             "frequencyHz must be in (0, $maxFrequencyHz], was $frequencyHz"
         }
-        request(Request.Play(frequencyHz, voice))
+        request(Request.Play(frequencyHz, voice, octavePair))
     }
 
     override fun stop() = request(Request.Stop)
@@ -154,13 +154,13 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                         current.release()
                         next = request
                     } else {
-                        synth = synthFor(request.voice).also { it.start(request.frequencyHz) }
+                        synth = synthFor(request.voice).also { it.start(request.frequencyHz, request.octavePair) }
                     }
                     null -> Unit
                 }
                 val queued = next
                 if (queued != null && synth?.isSounding != true) {
-                    synth = synthFor(queued.voice).also { it.start(queued.frequencyHz) }
+                    synth = synthFor(queued.voice).also { it.start(queued.frequencyHz, queued.octavePair) }
                     next = null
                 }
                 val count = synth?.render(buffer) ?: 0
@@ -217,7 +217,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
     /** What [play] and [stop] ask the session for. */
     private sealed interface Request {
         data object Stop : Request
-        class Play(val frequencyHz: Float, val voice: StringVoice) : Request
+        class Play(val frequencyHz: Float, val voice: StringVoice, val octavePair: Boolean) : Request
     }
 
     private companion object {

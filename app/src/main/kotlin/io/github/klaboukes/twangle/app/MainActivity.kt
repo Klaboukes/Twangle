@@ -72,6 +72,7 @@ import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.settings.openPlayPage
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
+import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.components.InstrumentTuningPanel
 import io.github.klaboukes.twangle.feature.tuner.components.instrumentLabel
 import io.github.klaboukes.twangle.feature.tuner.components.tuningLabel
@@ -245,9 +246,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 TourHost(
                     open = tourOpen,
-                    steps = TourPart.stepsFor(settings.mode),
-                    // Where the tuner offers more than the strum check, its "more tools" button stands in the switch's place.
-                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument).size > 1) },
+                    steps = TourPart.stepsFor(settings.mode, toolsButton = tunerToolsFor(tools, settings.instrument).isNotEmpty()),
+                    // Where the tuner offers anything but the strum check alone, its "more tools" button stands in the switch's place.
+                    textOf = { tourTextOf(it, moreTools = tunerToolsFor(tools, settings.instrument) != listOf(TunerTool.STRUM_CHECK)) },
                     onEnd = {
                         tourEnded = true
                         tourRequested = false

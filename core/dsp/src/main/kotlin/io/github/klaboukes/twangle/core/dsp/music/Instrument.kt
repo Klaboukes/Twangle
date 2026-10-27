@@ -9,8 +9,9 @@ import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
  *
  * [id] is a stable key for saved settings (never rename); the name shown to users comes from the
  * app's string resources, not from here. A mandolin's paired strings count as one course each,
- * because both strings of a pair are tuned to the same note. [voice] is how its strings sound when
- * the tuner plays a reference tone ([StringVoices]).
+ * because both strings of a pair are tuned to the same note. A 12-string guitar's pairs count as
+ * one course each too, the lower four with their second string an octave up ([octaveCourses]).
+ * [voice] is how its strings sound when the tuner plays a reference tone ([StringVoices]).
  */
 class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>, val voice: StringVoice) {
 
@@ -24,7 +25,15 @@ class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>
             }
         }
         require(tunings.map { it.id }.toSet().size == tunings.size) { "Instrument '$id' repeats a tuning id" }
+        require(tunings.all { it.octaveCourses == tunings.first().octaveCourses }) { "Instrument '$id' has tunings with different octave courses" }
     }
+
+    /**
+     * The strings that are pairs with a second string an octave up ([Tuning.octaveCourses]): the
+     * same in every preset, since they are how the instrument is strung, so the player's own
+     * tunings for it get them too.
+     */
+    val octaveCourses: Set<Int> get() = defaultTuning.octaveCourses
 
     /** The instrument's standard tuning, the first preset. */
     val defaultTuning: Tuning get() = tunings.first()
@@ -48,6 +57,16 @@ class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>
  */
 object Instruments {
     val GUITAR = Instrument("guitar", 6, Tunings.all, StringVoices.STEEL_GUITAR)
+
+    /**
+     * Six courses of two strings, tuned like the guitar: the lower four (E A D G) with the second
+     * string an octave up, the top two (B E) in unison.
+     */
+    val GUITAR_12 = Instrument(
+        "guitar_12", 6,
+        listOf(tuningOf("guitar_12_standard", "E2 A2 D3 G3 B3 E4", octaveCourses = setOf(0, 1, 2, 3))),
+        StringVoices.TWELVE_STRING,
+    )
 
     val GUITAR_7 = Instrument(
         "guitar_7", 7,
@@ -99,7 +118,7 @@ object Instruments {
 
     /** All instruments, in the order an instrument picker should list them. */
     val all: List<Instrument> = listOf(
-        GUITAR, GUITAR_7, GUITAR_8, BASS_4, BASS_5, UKULELE, VIOLIN, VIOLA, CELLO, MANDOLIN,
+        GUITAR, GUITAR_12, GUITAR_7, GUITAR_8, BASS_4, BASS_5, UKULELE, VIOLIN, VIOLA, CELLO, MANDOLIN,
     )
 
     val DEFAULT: Instrument = GUITAR

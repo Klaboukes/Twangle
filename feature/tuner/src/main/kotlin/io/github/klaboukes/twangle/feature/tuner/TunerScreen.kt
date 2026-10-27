@@ -435,6 +435,12 @@ object TunerTestTags {
     /** The instrument and tuning panel, opened from the navigation bar's Instrument item. */
     const val PICKER_PANEL = "tuner_picker_panel"
 
+    /** A 12-string's small "8" on a string button with an octave string (TalkBack has it in the button's name). */
+    const val OCTAVE_MARK = "tuner_octave_mark"
+
+    /** The quiet line under an instrument's tunings in the panel saying what the tuner can't do for it (the 12-string's). */
+    const val PICKER_NOTE = "tuner_picker_note"
+
     /** The panel's "New tuning" row, which opens the tuning editor. */
     const val NEW_TUNING = "tuner_new_tuning"
 
@@ -573,7 +579,7 @@ private fun KeepScreenOn() {
  * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
  * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
  * line in the note's ([StrumPanel], [StrumStatus]); a tap on a string's column there calls [onStringClick] too.
- * Where [tunerTools] holds more than the strum check, one "more tools" button takes the switch's place
+ * Where [tunerTools] holds anything but the strum check alone, one "more tools" button takes the switch's place
  * and opens a menu of them ([MoreToolsButton]); the 12th-fret check is turned on and off with
  * [onIntonationCheckChange] ([intonationCheck] is whether it is on). A [TunerUiState.IntonationCheck]
  * shows its panel and line in the same places ([IntonationPanel], [IntonationStatus]), the verdict's
@@ -1429,6 +1435,8 @@ private fun TuningNames.labelFor(tuning: Tuning, spoken: Boolean): String {
  */
 private data class ToolsState(val tools: List<TunerTool>, val active: TunerTool?, val onChange: (TunerTool, Boolean) -> Unit)
 
+private val STRUM_CHECK_ALONE = listOf(TunerTool.STRUM_CHECK)
+
 /**
  * The string row: what guitar mode shows in the [ModeSlot]. With [strum] the strum check's switch (or
  * the "more tools" button) sits in a row of its own above the strings, at its end, its outline ending
@@ -1472,11 +1480,12 @@ private fun GuitarControls(
     }
     val toggle = @Composable {
         when {
-            strum == null -> Unit
-            // More than one tool: one "more tools" button gathers them, in the switch's place.
-            strum.tools.size > 1 -> MoreToolsButton(strum.tools, strum.active, strum.onChange, inTour = inTour)
+            strum == null || strum.tools.isEmpty() -> Unit
             // The strum check alone keeps its own switch, exactly as in v1.0.
-            else -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
+            strum.tools == STRUM_CHECK_ALONE -> StrumCheckToggle(strum.active == TunerTool.STRUM_CHECK, { strum.onChange(TunerTool.STRUM_CHECK, it) }, inTour = inTour)
+            // Any other tool, or more than one (the 12-string has no strum check): one "more tools"
+            // button gathers them, in the switch's place.
+            else -> MoreToolsButton(strum.tools, strum.active, strum.onChange, inTour = inTour)
         }
     }
     // One press for the instrument button and the name beside it: a tap on either sinks and lights both.

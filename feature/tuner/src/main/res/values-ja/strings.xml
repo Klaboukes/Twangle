@@ -56,6 +56,7 @@
     <string name="tuner_lower_less">半音戻す</string>
 
     <string name="instrument_guitar">ギター</string>
+    <string name="instrument_guitar_12">12弦ギター</string>
     <string name="instrument_guitar_7">7弦ギター</string>
     <string name="instrument_guitar_8">8弦ギター</string>
     <string name="instrument_bass_4">ベース</string>
@@ -65,6 +66,7 @@
     <string name="instrument_viola">ビオラ</string>
     <string name="instrument_cello">チェロ</string>
     <string name="instrument_mandolin">マンドリン</string>
+    <string name="instrument_note_guitar_12">12弦ギターではストロークチェックとコード名は使えません。12本の弦の音が近すぎて聞き分けられないためです。</string>
     <string name="tuner_hint_play_string">弦を弾いてください</string>
     <string name="tuner_hint_play_note">音を鳴らしてください</string>
     <string name="tuner_hint_play_locked_string">%1$s 弦を弾いてください</string>
@@ -104,6 +106,7 @@
     <string name="tuner_spoken_tune_down">下げる</string>
     <string name="tuner_spoken_separator">、</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s、オクターブ弦付き</string>
     <string name="tuner_spoken_tuning">%1$s、%2$s</string>
     <string name="tuner_spoken_picker">%1$s、%2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

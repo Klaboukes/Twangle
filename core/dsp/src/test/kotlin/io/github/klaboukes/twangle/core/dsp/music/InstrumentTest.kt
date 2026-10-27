@@ -14,6 +14,7 @@ class InstrumentTest {
     @Test
     fun `presets have the expected notes in string order`() {
         val expected = mapOf(
+            "guitar_12_standard" to "E2 A2 D3 G3 B3 E4",
             "guitar_7_standard" to "B1 E2 A2 D3 G3 B3 E4",
             "guitar_8_standard" to "F#1 B1 E2 A2 D3 G3 B3 E4",
             "bass_4_standard" to "E1 A1 D2 G2",
@@ -36,6 +37,7 @@ class InstrumentTest {
     fun `instruments have the expected string counts`() {
         val expected = mapOf(
             Instruments.GUITAR to 6,
+            Instruments.GUITAR_12 to 6,
             Instruments.GUITAR_7 to 7,
             Instruments.GUITAR_8 to 8,
             Instruments.BASS_4 to 4,
@@ -90,6 +92,7 @@ class InstrumentTest {
         // Guitar's Standard starts at E2, but Open C reaches C2; the baritone ukulele reaches D3.
         val expected = mapOf(
             Instruments.GUITAR to ("C2" to "E4"),
+            Instruments.GUITAR_12 to ("E2" to "E4"),
             Instruments.GUITAR_7 to ("B1" to "E4"),
             Instruments.GUITAR_8 to ("F#1" to "E4"),
             Instruments.BASS_4 to ("E1" to "G2"),
@@ -151,11 +154,12 @@ class InstrumentTest {
             val voice = instrument.voice
             val bowed = instrument.id in setOf("violin", "viola", "cello")
             assertEquals("${instrument.id} bowed", bowed, voice.bowed)
-            assertEquals("${instrument.id} courses", if (instrument.id == "mandolin") 2 else 1, voice.courses)
+            assertEquals("${instrument.id} courses", if (instrument.id in setOf("mandolin", "guitar_12")) 2 else 1, voice.courses)
             assertEquals("${instrument.id} has a known voice", true, voice in StringVoices.all)
         }
         assertEquals(StringVoices.STEEL_GUITAR, Instruments.GUITAR.voice)
         assertEquals(StringVoices.STEEL_GUITAR, Instruments.GUITAR_8.voice)
+        assertEquals(StringVoices.TWELVE_STRING, Instruments.GUITAR_12.voice)
         assertEquals(StringVoices.ELECTRIC_BASS, Instruments.BASS_5.voice)
         assertEquals(StringVoices.UKULELE, Instruments.UKULELE.voice)
         assertEquals(StringVoices.DEFAULT, Instruments.DEFAULT.voice)
@@ -169,5 +173,45 @@ class InstrumentTest {
         assertThrows(IllegalArgumentException::class.java) { Instrument("zero", 0, listOf(four), StringVoices.STEEL_GUITAR) }
         assertThrows(IllegalArgumentException::class.java) { Instrument("wrong_count", 6, listOf(four), StringVoices.STEEL_GUITAR) }
         assertThrows(IllegalArgumentException::class.java) { Instrument("twice", 4, listOf(four, four), StringVoices.STEEL_GUITAR) }
+        val paired = four.copy(id = "paired", octaveCourses = setOf(0))
+        assertThrows(IllegalArgumentException::class.java) { Instrument("mixed", 4, listOf(four, paired), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { four.copy(octaveCourses = setOf(4)) }
+    }
+
+    @Test
+    fun `the 12-string's lower four courses have an octave string, the top two are in unison`() {
+        val twelve = Instruments.GUITAR_12
+        assertEquals(setOf(0, 1, 2, 3), twelve.octaveCourses)
+        assertEquals(listOf(true, true, true, true, false, false), (0 until 6).map(twelve.defaultTuning::hasOctaveString))
+        // Tuned like the guitar, strung differently: no other instrument has octave strings.
+        assertEquals(Tunings.STANDARD.strings, twelve.defaultTuning.strings)
+        for (instrument in Instruments.all - twelve) assertEquals(instrument.id, emptySet<Int>(), instrument.octaveCourses)
+        // A lowered 12-string keeps its pairs.
+        assertEquals(twelve.octaveCourses, twelve.defaultTuning.lowered(2).octaveCourses)
+    }
+
+    @Test
+    fun `a 12-string's octave string is its course's from the first note`() {
+        val twelve = Instruments.GUITAR_12.defaultTuning
+        // The octave strings sound E3 A3 D4 G4: each its own course, not the guitar's D, G, B or E string.
+        listOf("E3" to 52, "A3" to 57, "D4" to 62, "G4" to 67).forEachIndexed { course, (octave, note) ->
+            val midi = note.toFloat()
+            assertEquals(octave, course, twelve.nearestStringIndex(midi))
+            assertEquals(octave, 0f, twelve.distanceToString(midi, course), 1e-4f)
+            // On the six-string guitar the same note is another string's, or off between two.
+            assertEquals(octave, true, Tunings.STANDARD.nearestStringIndex(midi) != course)
+        }
+        // 20 cents sharp of the octave string is 20 cents off its course; the top two have none.
+        assertEquals(0.2f, twelve.distanceToString(52.2f, 0), 1e-4f)
+        assertEquals(12f, twelve.distanceToString(71f, 4), 1e-4f)
+        assertEquals(5, twelve.nearestStringIndex(64f))
+    }
+
+    @Test
+    fun `a 12-string lowered half a step is Half step down, like the guitar`() {
+        val lowered = Instruments.GUITAR_12.defaultTuning.lowered(1)
+        assertEquals(LoweredName.Preset(Tunings.HALF_STEP_DOWN), lowered.loweredName)
+        assertEquals(Accidental.FLAT, lowered.spelling)
+        assertEquals(LoweredName.Common(CommonTuning.C_STANDARD), Instruments.GUITAR_12.defaultTuning.lowered(4).loweredName)
     }
 }

@@ -24,7 +24,7 @@ import kotlin.math.sqrt
 /**
  * The reference tone in every instrument's voice: on pitch, the right shape (a pluck dies away, a
  * bow holds), the sounds that make it an instrument (the pick's noise, the body, the pluck point's
- * comb, stiff steel strings, a mandolin's beating pair), and the invariants of a tone generator
+ * comb, stiff steel strings, a mandolin's beating pair, a 12-string's octave pairs), and the invariants of a tone generator
  * (no clipping, no clicks, no allocation, the same samples in chunks or at once).
  */
 class StringSynthTest {
@@ -299,6 +299,28 @@ class StringSynthTest {
             val late = partial(tone, f, 0.775f, 0.05f)
             val dip = mid / sqrt(early * late)
             if (voice.courses == 2) assertTrue("${voice.id}: dip $dip", dip < 0.35) else assertTrue("${voice.id}: dip $dip", dip > 0.7)
+        }
+    }
+
+    @Test
+    fun `a 12-string's lower pairs sound an octave apart, its top two in unison`() {
+        val mapper = NoteMapper(NoteMapper.DEFAULT_A4_HZ)
+        val twelve = Instruments.GUITAR_12.defaultTuning
+        val synth = StringSynth(RATE, StringVoices.TWELVE_STRING)
+        twelve.strings.forEachIndexed { index, note ->
+            val f = mapper.frequencyOf(note)
+            val pair = twelve.hasOctaveString(index)
+            synth.start(f, octavePair = pair)
+            val tone = FloatArray(((synth.durationSeconds + 1) * RATE).toInt()).let { it.copyOf(synth.render(it)) }
+            val single = renderAll(StringSynth(RATE, StringVoices.STEEL_GUITAR), f)
+            // The octave string puts its weight on the second partial, against the fundamental.
+            val octaveWeight = (partial(tone, 2 * f) / partial(tone, f)) / (partial(single, 2 * f) / partial(single, f))
+            if (pair) assertTrue("$note: octave weight $octaveWeight", octaveWeight > 1.4) else assertEquals("$note: octave weight", 1.0, octaveWeight, 0.1)
+            // Read as the course's own note, the main string exact (measured: within 1.6 cents at 0.3 s, 0.3 at 3 s).
+            assertCents("$note pair, 0.3 s", tone, f, RATE, 0.3f, 2.5f)
+            assertCents("$note pair, 3 s", tone, f, RATE, 3f, 1f)
+            assertTrue("$note: peak", tone.maxOf { abs(it) } <= StringSynth.PEAK)
+            assertSilentEnd(StringVoices.TWELVE_STRING, f, tone)
         }
     }
 

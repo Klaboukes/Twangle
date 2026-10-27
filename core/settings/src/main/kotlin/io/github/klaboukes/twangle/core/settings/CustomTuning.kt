@@ -33,8 +33,8 @@ data class CustomTuning(
         require(notes.all { it.midi in MIDI_RANGE }) { "Custom tuning notes must be MIDI $MIDI_RANGE" }
     }
 
-    /** The tuning the tuner uses, with this tuning's [id]. */
-    val tuning: Tuning = Tuning(id, notes)
+    /** The tuning the tuner uses, with this tuning's [id] and the instrument's octave strings ([Instrument.octaveCourses]). */
+    val tuning: Tuning = Tuning(id, notes, octaveCourses = instrument.octaveCourses)
 
     companion object {
         /** Every custom tuning id starts with this; preset ids never do. */

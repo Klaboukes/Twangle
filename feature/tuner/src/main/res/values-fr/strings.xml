@@ -57,6 +57,7 @@
     <string name="tuner_lower_less">Remonter d’un demi-ton</string>
 
     <string name="instrument_guitar">Guitare</string>
+    <string name="instrument_guitar_12">Guitare 12 cordes</string>
     <string name="instrument_guitar_7">Guitare 7 cordes</string>
     <string name="instrument_guitar_8">Guitare 8 cordes</string>
     <string name="instrument_bass_4">Basse</string>
@@ -66,6 +67,7 @@
     <string name="instrument_viola">Alto</string>
     <string name="instrument_cello">Violoncelle</string>
     <string name="instrument_mandolin">Mandoline</string>
+    <string name="instrument_note_guitar_12">Le test en grattant et le nom d\'accord sont désactivés pour la 12 cordes : ses douze cordes sonnent trop près les unes des autres pour être distinguées.</string>
     <string name="tuner_hint_play_string">Jouez une corde</string>
     <string name="tuner_hint_play_note">Jouez une note</string>
     <string name="tuner_hint_play_locked_string">Jouez la corde %1$s</string>
@@ -109,6 +111,7 @@
     <string name="tuner_spoken_tune_down">plus bas</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s, avec corde à l\'octave</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

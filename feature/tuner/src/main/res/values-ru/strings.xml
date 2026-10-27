@@ -56,6 +56,7 @@
     <string name="tuner_lower_less">Обратно выше на полтона</string>
 
     <string name="instrument_guitar">Гитара</string>
+    <string name="instrument_guitar_12">12-струнная гитара</string>
     <string name="instrument_guitar_7">7-струнная гитара</string>
     <string name="instrument_guitar_8">8-струнная гитара</string>
     <string name="instrument_bass_4">Бас</string>
@@ -65,6 +66,7 @@
     <string name="instrument_viola">Альт</string>
     <string name="instrument_cello">Виолончель</string>
     <string name="instrument_mandolin">Мандолина</string>
+    <string name="instrument_note_guitar_12">Проверка струн и название аккорда недоступны для 12-струнной гитары: её двенадцать струн звучат слишком близко, чтобы их различить.</string>
     <string name="tuner_hint_play_string">Сыграй струну</string>
     <string name="tuner_hint_play_note">Сыграй ноту</string>
     <string name="tuner_hint_play_locked_string">Сыграй струну %1$s</string>
@@ -111,6 +113,7 @@
     <string name="tuner_spoken_tune_down">ослабь</string>
     <string name="tuner_spoken_separator">", "</string>
     <string name="tuner_spoken_string">%1$s %2$d</string>
+    <string name="tuner_spoken_octave_course">%1$s, с октавной струной</string>
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
     <string name="tuner_tuning_name">%1$s · %2$s</string>

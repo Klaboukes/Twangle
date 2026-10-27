@@ -129,7 +129,7 @@ class TourGeometryTest {
 
     @Test
     fun `without strum check its step is left out`() {
-        val steps = TourPart.stepsFor(TunerMode.AUTO, strumCheck = false)
+        val steps = TourPart.stepsFor(TunerMode.AUTO, toolsButton = false)
         assertEquals(listOf(TourPart.READOUT, TourPart.PICKER, TourPart.STRINGS), steps)
     }
 

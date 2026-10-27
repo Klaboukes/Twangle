@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -7,11 +8,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -31,7 +34,10 @@ import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.allIfThorough
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
+import io.github.klaboukes.twangle.core.testing.EveryLanguage
+import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -41,10 +47,12 @@ import org.junit.rules.RuleChain
 import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
- * The string row from a 4-string bass to an 8-string guitar, in each of the six styles: upright, in
+ * The string row from a 4-string bass to an 8-string guitar and the 12-string's six courses, in each
+ * of the six styles: upright, in
  * the full layout on its side, at normal and 2× text (focus mode's full-screen tuner shows no string row). Every button is in the
  * window, wholly shown with its whole name, clear of its neighbours; every one can be tapped (also
  * just beside it) and TalkBack names it.
@@ -60,7 +68,7 @@ class StringRowStylesTest(private val style: VisualStyle) {
     /** No test may hang: one that does would leave its window frozen on the phone. */
     @get:Rule
     val rules: RuleChain = RuleChain.outerRule(
-        Timeout.builder().withTimeout(TEST_TIMEOUT_SECONDS, TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
+        Timeout.builder().withTimeout(timeLimitSeconds(TEST_TIMEOUT_SECONDS), TimeUnit.SECONDS).withLookingForStuckThread(true).build(),
     ).around(compose)
 
     // Set these to change what the window shows without composing it again.
@@ -187,6 +195,80 @@ class StringRowStylesTest(private val style: VisualStyle) {
     }
 
     /**
+     * The 12-string's lower four courses carry a small "8", wholly shown inside their buttons, and
+     * TalkBack says "with octave string" after the name; the top two, in unison, carry none. Upright
+     * and on its side, at normal and 2× text.
+     */
+    @Test
+    fun theTwelveStringMarksItsOctavePairs() {
+        val tuning = Instruments.GUITAR_12.defaultTuning
+        shownTuning.value = tuning
+        show(listening = true)
+        val spoken = listOf("E 2, with octave string", "A 2, with octave string", "D 3, with octave string", "G 3, with octave string", "B 3", "E 4")
+        val labels = labels(tuning, Notation.SHARPS)
+        for (scale in listOf(1f, 2f)) {
+            shownFontScale.value = scale
+            for (layout in Layout.entries) {
+                shownLayout.value = layout
+                compose.waitForIdle()
+                val case = "$style $layout at ${scale}x"
+                val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
+                labels.forEachIndexed { index, label ->
+                    val chip = compose.onNodeWithText(label)
+                    val description = chip.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription)
+                    assertEquals("$case: TalkBack's name for $label", listOf(spoken[index]), description)
+                    if (index < 4) {
+                        val mark = marks[index]
+                        assertWhollyShown(mark, "$case: the 8 on $label", scroll = true)
+                        val face = chip.getBoundsInRoot()
+                        val eight = mark.getBoundsInRoot()
+                        val inside = eight.left >= face.left - SLACK && eight.right <= face.right + SLACK &&
+                            eight.top >= face.top - SLACK && eight.bottom <= face.bottom + SLACK
+                        assertTrue("$case: the 8 $eight is inside $label's button $face", inside)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The 12-string in every language at 2× text, upright and on its side: every string's name and
+     * every "8" wholly shown, and the instrument button says the 12-string's name in that language.
+     * The name beside it may end in "…" there, as every long name does at that size (the buttons
+     * keep their place; TalkBack hears it whole).
+     */
+    @EveryLanguage
+    @Test
+    fun theTwelveStringFitsInEveryLanguageAtTwiceTheTextSize() {
+        val tuning = Instruments.GUITAR_12.defaultTuning
+        shownTuning.value = tuning
+        shownFontScale.value = 2f
+        show(listening = true)
+        for (language in checkedLanguages) {
+            shownLocale.value = language
+            val name = localized(language, R.string.instrument_guitar_12)
+            for (layout in Layout.entries) {
+                shownLayout.value = layout
+                compose.waitForIdle()
+                val case = "$style $language $layout at 2x"
+                for (label in labels(tuning, Notation.SHARPS)) {
+                    assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$case: $label", scroll = true)
+                }
+                val marks = compose.onAllNodesWithTag(TunerTestTags.OCTAVE_MARK, useUnmergedTree = true).assertCountEquals(4)
+                for (index in 0 until 4) assertWhollyShown(marks[index], "$case: the 8 on course $index", scroll = true)
+                val spoken = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
+                assertTrue("$case: the instrument button says $spoken", spoken != null && name in spoken)
+            }
+        }
+    }
+
+    private fun localized(language: String, id: Int): String {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val configuration = Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) }
+        return context.createConfigurationContext(configuration).getString(id)
+    }
+
+    /**
      * The strum check's switch sits above the strings at their end, in the window, for every instrument
      * (4 to 8 strings), upright and on its side, at normal and at 2x text.
      */
@@ -252,8 +334,9 @@ class StringRowStylesTest(private val style: VisualStyle) {
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp
 
-        /** 4, 5, 7 and 8 strings, and the ukulele's re-entrant four. */
+        /** 4, 5, 7 and 8 strings, the ukulele's re-entrant four and the 12-string's six courses. */
         private val TUNINGS = listOf(
+            Instruments.GUITAR_12.defaultTuning,
             Instruments.BASS_4.defaultTuning,
             Instruments.BASS_5.defaultTuning,
             Instruments.UKULELE.defaultTuning,
