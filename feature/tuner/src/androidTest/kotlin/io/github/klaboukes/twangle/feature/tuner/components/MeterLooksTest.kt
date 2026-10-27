@@ -309,7 +309,11 @@ class MeterLooksTest(private val style: VisualStyle) {
      * where something stops (a clip), only a gentle change. A clip runs along the edge; a mark drawn
      * just inside it (Classic's in-tune tick, 0.8 dp under the top) is a few px wide, and where its
      * soft edge falls depends on the phone's density: only a step along [EDGE_RUN_DP] or more of the
-     * edge counts. (The messages are built only on a failure: per pixel they cost more than the check.)
+     * edge counts. The two sides compared are [EDGE_STEP_DP] from the edge, not a fixed number of px:
+     * the calm field still changes a little by the box's top, and on a screen of fewer px per dp
+     * (the Lenovo tablet's 1.5 against the phones' 2.75 and 3) 2 px either side spanned nearly twice
+     * as much of that smooth fade, which read as a stop. (The messages are built only on a failure:
+     * per pixel they cost more than the check.)
      */
     private fun assertFadesOutAroundTheBox(case: String, pixels: PixelMap, box: IntRect) {
         for (x in 0 until pixels.width) {
@@ -318,9 +322,10 @@ class MeterLooksTest(private val style: VisualStyle) {
         for (y in 0 until pixels.height) {
             for (x in listOf(0, pixels.width - 1)) if (!pixels[x, y].near(BACKGROUND)) fail("$case drew at the edge of its padding at $x, $y")
         }
-        val across = EDGE_STEP_PIXELS
         // The case's px per dp: its width is the frame's and the padding's.
-        val run = ceil(EDGE_RUN_DP * pixels.width / (FRAME_WIDTH + 2 * PADDING)).toInt()
+        val pxPerDp = pixels.width.toFloat() / (FRAME_WIDTH + 2 * PADDING)
+        val across = (EDGE_STEP_DP * pxPerDp).roundToInt().coerceAtLeast(1)
+        val run = ceil(EDGE_RUN_DP * pxPerDp).toInt()
         var steps = 0
         for (x in box.left + across until box.right - across) {
             val step = pixels[x, box.top - across].distanceTo(pixels[x, box.top + across])
@@ -364,8 +369,8 @@ class MeterLooksTest(private val style: VisualStyle) {
          */
         const val PADDING = 32
 
-        /** Pixels either side of a box's edge compared for an abrupt stop. */
-        const val EDGE_STEP_PIXELS = 2
+        /** How far either side of a box's edge is compared for an abrupt stop: 2 px on the phones, 1 on the tablet. */
+        const val EDGE_STEP_DP = 0.75f
 
         /** More change than this across a box's edge would be a stop, not a fade. */
         const val EDGE_JUMP = 0.06f
