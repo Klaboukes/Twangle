@@ -14,9 +14,11 @@ import io.github.klaboukes.twangle.app.MainActivity
 import io.github.klaboukes.twangle.app.TwangleApplication
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import io.github.klaboukes.twangle.feature.settings.SHOW_TOUR_TAG
 import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
+import io.github.klaboukes.twangle.feature.tuner.TunerTool
 import io.github.klaboukes.twangle.feature.tuner.tour.TourTestTags
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -32,7 +34,8 @@ import java.util.concurrent.TimeUnit
  * The tour in the real app, with its saved settings, as UI Automator (and TalkBack) sees it: due, it
  * shows on the tuner and hides the tuner; Back ends it for good (also after the app starts again)
  * and leaves the app open; "Show me around" in Settings opens the tuner and starts it again, and Skip
- * tour ends that. It leaves the tour seen. (A Compose test rule can't start `MainActivity`: its test
+ * tour ends that; started with a tool on, it closes the tool first, so it shows the plain tuner. It
+ * leaves the tour seen. (A Compose test rule can't start `MainActivity`: its test
  * clock holds the opening screen.)
  */
 class TourFlowTest {
@@ -83,6 +86,36 @@ class TourFlowTest {
             assertTrue("Skip tour ends it", gone(TourTestTags.BALLOON))
             assertTrue(shown(TUNER_SHOWN))
             assertTrue(saved.tourSeen)
+        }
+    }
+
+    @Test
+    fun showMeAroundClosesTheToolFirst() {
+        val instrumentBefore = saved.instrument
+        runBlocking {
+            repository.setTourSeen(true)
+            // The guitar offers every tool, so its "more tools" button shows.
+            repository.setInstrument(Instruments.GUITAR)
+            repository.setMode(TunerMode.AUTO)
+        }
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use {
+                click(TunerTestTags.MORE_TOOLS)
+                click(TunerTestTags.tool(TunerTool.INTONATION_CHECK))
+                assertTrue("the 12th-fret check is on", shown(TunerTestTags.INTONATION_PANEL))
+
+                click(NavigationTestTags.tab(Destination.SETTINGS))
+                assertTrue("Settings opened", gone(TUNER_SHOWN))
+                showMeAround().click()
+                assertTrue("the tour starts", shown(TourTestTags.BALLOON))
+                click(TourTestTags.SKIP)
+                assertTrue("Skip tour ends it", gone(TourTestTags.BALLOON))
+                assertTrue(shown(TUNER_SHOWN))
+                device.waitForIdle()
+                assertFalse("the tour closed the 12th-fret check", device.hasObject(By.res(TunerTestTags.INTONATION_PANEL)))
+            }
+        } finally {
+            runBlocking { repository.setInstrument(instrumentBefore) }
         }
     }
 

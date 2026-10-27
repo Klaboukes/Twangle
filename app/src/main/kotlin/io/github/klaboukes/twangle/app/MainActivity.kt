@@ -127,7 +127,8 @@ class MainActivity : AppCompatActivity() {
      * every other screen to the tuner, and from the tuner out of the app. Each new [openTunerRequest]
      * (the home-screen widget) shows the tuner, as Back does; the tuning editor handles both itself,
      * asking before it drops edits. A tap on the Tuner tab, also while the tuner shows, closes the
-     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner.
+     * tuner's tools (strum check and the others), so the tab always leads to the plain tuner; so
+     * does "Show me around", so the tour always shows the plain tuner.
      *
      * The first-start tour lies over everything (bar or rail included) while it is due ([tourDue]: a
      * fresh install, or "Show me around" in Settings) and the tuner shows ([tourShown]). Skip tour,
@@ -212,8 +213,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     onDispose {}
                 }
-                // Taps on the bar's Tuner tab, also while the tuner shows: each closes the tuner's tools.
-                var tunerTabTaps by rememberSaveable { mutableIntStateOf(0) }
+                // Taps on the bar's Tuner tab (also while the tuner shows) and "Show me around": each
+                // closes the tuner's tools, so the tab and the tour lead to the plain tuner.
+                var closeTunerToolsRequests by rememberSaveable { mutableIntStateOf(0) }
                 val tourDue = tourDue(settings.tourSeen, tourRequested, tourEnded)
                 val tourOpen = tourShown(tourDue, screen == Screen.TUNER, tunerShown)
                 // Every screen but the tuner gets the quiet version of the style's background.
@@ -257,10 +259,10 @@ class MainActivity : AppCompatActivity() {
                     AppNavigationFrame(
                         selected = screen.destination,
                         onSelect = {
-                            if (it == Destination.TUNER) tunerTabTaps++
+                            if (it == Destination.TUNER) closeTunerToolsRequests++
                             screen = it.screen
                         },
-                        onReselect = { if (it == Destination.TUNER) tunerTabTaps++ },
+                        onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
                         practice = tools.practiceTab,
                         navigationHidden = fullScreen,
                     ) {
@@ -287,7 +289,7 @@ class MainActivity : AppCompatActivity() {
                                         tourOpen = tourOpen,
                                         onMicGrantedChange = { tunerShown = it },
                                         savedMicRefused = settings.micRefused,
-                                        closeToolsRequest = tunerTabTaps,
+                                        closeToolsRequest = closeTunerToolsRequests,
                                         onFullScreenChange = { tunerFullScreen = it },
                                     )
                                 }
@@ -303,6 +305,7 @@ class MainActivity : AppCompatActivity() {
                                     onLanguageChange = { (application as TwangleApplication).redrawWidgets() },
                                     onShowTour = {
                                         tourRequested = true
+                                        closeTunerToolsRequests++
                                         screen = Screen.TUNER
                                     },
                                 )

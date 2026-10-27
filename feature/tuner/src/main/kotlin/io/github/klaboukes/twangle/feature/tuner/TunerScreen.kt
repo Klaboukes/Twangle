@@ -168,7 +168,7 @@ import kotlin.math.min
  * from one Android no longer shows ([MicPermissionRules]).
  * [tools] says which music tools show (Phase 28, decided in `:app`): a mode whose switch is off
  * leaves no trace, so with [ToolSwitches.ALL_OFF] this is the tuner without them. Each new
- * [closeToolsRequest] (a tap on the navigation bar's Tuner tab) turns the tool that is on off.
+ * [closeToolsRequest] (a tap on the navigation bar's Tuner tab, or "Show me around") turns the tool that is on off.
  * [onFullScreenChange] says when focus mode's compact layout shows without its controls, so the app
  * can hide the rail and the system bars around it.
  */
