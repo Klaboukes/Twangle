@@ -15,8 +15,9 @@ SHRINK="$ROOT/website/tools/ShrinkImage.java"
 STATIC="$ROOT/website/static"
 
 # The screens the pages show, by their number in docs/store-listing.md's table: the home page
-# 1, 3, 5, 6 and 7a, the tuner's page 2, the chord name's 5, the pitch trail's 8.
-SHOTS="1 2 3 5 6 7a 8"
+# 1, 3, 5, 6 and 7a, the tuner's page 2, the chord name's 5, the pitch trail's 8, the metronome's 6,
+# Chords' 7a, the Capo helper's 7b, the instruments' 3.
+SHOTS="1 2 3 5 6 7a 7b 8"
 # Play locale -> the site's language folder.
 LOCALES="en-US:en nl-NL:nl"
 
