@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 17 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 27 oktober 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -19,6 +19,11 @@ De app van Twangle voor Wear OS-horloges werkt zelfstandig, zonder de telefoon. 
 - Twangle heeft **geen internettoestemming** en kan dus niets versturen.
 - Geen advertenties, geen account of registratie, geen aankopen in de app, geen analytics, geen crashrapportage en geen enkele vorm van tracking.
 - Twangle deelt geen gegevens met wie dan ook, want het heeft er geen.
+
+## De website
+De website van Twangle, [klaboukes.github.io/nl](https://klaboukes.github.io/nl/), waar ook dit beleid staat, verzamelt evenmin iets: geen cookies, geen tracking of analytics, geen formulieren, geen scripts, en niets wat van een andere site wordt geladen (geen webfonts, geen ingesloten video's). Links naar andere sites, zoals Google Play of het e-mailadres, gaan pas open als je erop tikt.
+
+De website wordt gehost door GitHub (GitHub Pages). Zoals elke webhost ziet GitHub het internetadres (IP-adres) van het apparaat dat een pagina opent, en bewaart dat een tijdje voor de beveiliging. De ontwikkelaar van Twangle krijgt daarvan geen lijst van bezoekers en geen statistieken. Hoe GitHub ermee omgaat, staat in de [privacyverklaring van GitHub](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) (Engels).
 
 ## Instellingen blijven op je telefoon
 Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan alleen op je telefoon:

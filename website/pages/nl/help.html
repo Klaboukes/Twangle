@@ -1,0 +1,86 @@
+<!--
+title: Hulp · Twangle
+description: Korte antwoorden op waar spelers tegenaan lopen met Twangle: de microfoon, een naald die niet stil wil staan, een lage snaar een octaaf te hoog, de metronoom die stopt, en Twangle opnieuw beginnen.
+nav: help
+-->
+  <div class="help">
+    <h1>Hulp</h1>
+    <p class="lead">Korte antwoorden op waar spelers tegenaan lopen. Tik op een vraag.</p>
+
+    <h2>De microfoon</h2>
+    <details>
+      <summary>Ik heb nee gezegd tegen de microfoon</summary>
+      <p id="microphone-refused">Zonder microfoon hoort Twangle je snaren niet, dus de stemmer toont <i>Twangle heeft je microfoon nodig</i> in plaats van de meter. Tik op <i>Microfoon toestaan</i> en zeg ja.</p>
+      <p>Heb je twee keer nee gezegd (op Android 10 en ouder één keer met <i>Niet meer vragen</i>), dan vraagt Android het niet meer en wordt de knop <i>Instellingen openen</i>. Tik erop, dan op <i>Machtigingen</i> en op <i>Microfoon</i>, en sta hem toe terwijl je de app gebruikt. Ga terug naar Twangle en de stemmer begint te luisteren.</p>
+      <p><i>Luisteren</i> bij de metronoom vraagt het op dezelfde manier; daar staat dan <i>Microfoon staat uit</i>, met <i>Instellingen openen</i> als alleen de instellingen hem nog kunnen toestaan.</p>
+    </details>
+    <details>
+      <summary>De microfoon mag, maar Twangle hoort niets</summary>
+      <p id="hears-nothing">Vanaf Android 12 staat in de snelle instellingen (veeg omlaag vanaf de bovenkant van het scherm) een tegel <i>Microfoontoegang</i> die de microfoon voor alle apps uitzet. Zet hem weer aan. Meestal vraagt Android er zelf naar zodra Twangle gaat luisteren.</p>
+      <p>Kijk ook of er niets over de microfoon zit: een hoesje, een vinger, een sticker. Op de meeste telefoons is het een klein gaatje aan de onderkant.</p>
+    </details>
+    <details>
+      <summary>'Een andere app gebruikt de microfoon'</summary>
+      <p id="microphone-busy">Er kan maar één app tegelijk luisteren. Sluit de andere app (een gesprek, een spraakrecorder, een videogesprek) en tik in Twangle op <i>Opnieuw proberen</i>.</p>
+    </details>
+    <details>
+      <summary>Neemt Twangle me op?</summary>
+      <p id="recording">Nee. Het geluid wordt live op je telefoon geanalyseerd en daarna meteen weggegooid. De microfoon staat alleen aan zolang de stemmer op het scherm staat, of zolang <i>Luisteren</i> bij de metronoom loopt. Twangle heeft geen toestemming om internet te gebruiken, dus het kan niets versturen, ook niet als het zou willen. Het <a href="{root}twangle-privacy/nl.html">privacybeleid</a> legt het in gewone woorden uit.</p>
+    </details>
+
+    <h2>Stemmen</h2>
+    <details>
+      <summary>De naald zwerft in een rumoerige ruimte</summary>
+      <p id="noisy-room">Twangle hoort de ruimte net zo goed als je snaar, en praten, een ventilator of een tv laten de naald bewegen. Is het te veel, dan zegt de stemmer <i>Te veel lawaai hier</i> onder de noot.</p>
+      <ul>
+        <li>Houd de telefoon dicht bij je instrument: bij het klankgat of de kast, niet bij de kop.</li>
+        <li>Speel één snaar tegelijk en laat hem doorklinken. Leg een hand licht op de andere snaren, zodat die stil blijven.</li>
+        <li>Draai aan de stemknop terwijl de snaar nog klinkt, in plaats van hem steeds opnieuw aan te slaan.</li>
+        <li>Ga weg van het lawaai als dat kan, al is het maar een paar stappen.</li>
+      </ul>
+      <p>Wil je zien hoe goed Twangle je hoort, zet dan <i>Instellingen → Signaalstreepjes tonen</i> aan. Tik op de streepjes bij de noot voor de getallen, met daarbij de <i>Achtergrond</i> van de ruimte.</p>
+    </details>
+    <details>
+      <summary>Een lage snaar staat een octaaf te hoog</summary>
+      <p id="octave">De eigen toon van een lage snaar is vaak zwakker dan zijn boventonen, vooral voor de kleine microfoon van een telefoon en als de snaar uitklinkt. Dan klinkt de noot een octaaf hoger: E3 voor de lage E2.</p>
+      <ul>
+        <li>Kies je instrument en stemming met de kop-knop boven de snaren, ook in de chromatische modus. Voor een bas, een cello of een 7- of 8-snarige gitaar luistert Twangle lager; staat de gitaar gekozen, dan zitten de lage snaren van een bas onder wat hij hoort, en zie je ze een octaaf hoger.</li>
+        <li>In de modus <i>Snaren</i> blijft een snaar die Twangle al volgt die snaar als hij een octaaf hoger klinkt, met dezelfde cents. Tik op de snaar om Twangle erbij te houden.</li>
+        <li>Tokkel met de zachte kant van je duim, tussen het klankgat en de hals, in plaats van met een plectrum vlak bij de brug: dan komt de eigen toon van de snaar beter door.</li>
+      </ul>
+      <p>Een octaaf hoger zijn de cents hetzelfde, dus met de naald stem je de snaar nog steeds goed.</p>
+    </details>
+    <details>
+      <summary>Twangle toont de verkeerde snaar</summary>
+      <p id="wrong-string">Kijk of het instrument en de stemming boven de snaren kloppen met de jouwe. Zit een snaar ver uit de stemming, dan kan Twangle hem voor zijn buurman aanzien: tik op de snaar die je stemt, dan zegt Twangle <i>Speel de A2-snaar</i> en luistert alleen naar die. Tik er nog eens op om Twangle weer zelf te laten kiezen.</p>
+    </details>
+    <details>
+      <summary>Mijn band of orkest stemt op 442 Hz</summary>
+      <p id="reference-pitch">Stel het in bij <i>Instellingen → Stemtoon (A4)</i>, van 415 tot 466 Hz. Elke noot volgt dan: de stemmer, de referentietonen en de andere functies.</p>
+    </details>
+
+    <h2>De metronoom</h2>
+    <details>
+      <summary>De metronoom stopt vanzelf</summary>
+      <p id="metronome-stops">De metronoom speelt alleen zolang zijn scherm open is, en houdt het scherm aan zolang hij speelt. Hij stopt als het scherm uitgaat, als je naar een andere app, functie of tabblad gaat, als er gebeld wordt en als je een koptelefoon loskoppelt.</p>
+      <p>Op sommige telefoons zet een batterijbesparing of energiebesparende modus het scherm toch uit, en dan stoppen de klikken mee. Zet de batterijbesparing uit zolang je oefent, of leg de telefoon aan de lader, en tik dan weer op Start.</p>
+    </details>
+
+    <h2>De app</h2>
+    <details>
+      <summary>Het scherm gaat uit tijdens het stemmen</summary>
+      <p id="screen-off">Met <i>Instellingen → Scherm aan laten</i> (aan, tenzij je het uitzette) blijft het scherm aan zolang je speelt. Na 3 minuten zonder spelen toont Twangle <i>Scherm gaat zo uit</i>, en neemt de schermtime-out van je telefoon het over; tik op het scherm om het nog 3 minuten aan te houden.</p>
+    </details>
+    <details>
+      <summary>Hoe zet ik Twangle terug naar het begin?</summary>
+      <p id="reset">Om opnieuw te beginnen, zoals op de eerste dag: houd het pictogram van Twangle vast, tik op <i>App-info</i>, dan op <i>Opslag</i> (of <i>Opslag en cache</i>) en op <i>Opslag wissen</i> (op sommige telefoons <i>Gegevens wissen</i>). Dat wist alle instellingen en de stemmingen die je zelf hebt gemaakt, en de rondleiding verschijnt weer. De woorden verschillen een beetje per telefoon.</p>
+      <p>Verwijderen en opnieuw installeren is niet altijd genoeg: staat de back-up van Android zelf aan, dan kan die de instellingen terugzetten.</p>
+      <p>Wil je alleen de stemtoon terug, tik dan in Instellingen op <i>Terug naar 440 Hz</i> eronder.</p>
+    </details>
+    <details>
+      <summary>Is Twangle echt gratis?</summary>
+      <p id="free">Ja. Elke functie, voor altijd: geen advertenties, geen aankopen, geen account. Twangle is gemaakt door één persoon die zo'n stemmer wilde.</p>
+    </details>
+
+    <div class="ask">Staat je vraag er niet bij? Schrijf naar <a href="mailto:twangle.tuner@proton.me">twangle.tuner@proton.me</a>. Vragen die vaker komen, krijgen een antwoord op deze pagina.</div>
+  </div>

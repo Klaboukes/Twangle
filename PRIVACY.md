@@ -1,6 +1,6 @@
 # Twangle privacy policy
 
-*Effective date: 17 October 2026* · [Nederlands](PRIVACY.nl.md)
+*Effective date: 27 October 2026* · [Nederlands](PRIVACY.nl.md)
 
 Twangle is a guitar tuner for Android, with a metronome and practice tools, made by the developer Klaboukes. In short: **Twangle collects no data about you.** Nothing you play and nothing about you leaves your phone.
 
@@ -19,6 +19,11 @@ Twangle's Wear OS watch app works on its own, without the phone. It follows the 
 - Twangle has **no internet permission**, so it cannot send anything anywhere.
 - No ads, no account or sign-up, no in-app purchases, no analytics, no crash reporting and no tracking of any kind.
 - Twangle does not share data with anyone, because it has none to share.
+
+## The website
+Twangle's website, [klaboukes.github.io](https://klaboukes.github.io/), where this policy is published too, collects nothing either: no cookies, no tracking or analytics, no forms, no scripts, and nothing loaded from another site (no web fonts, no embedded videos). Links to other sites, such as Google Play or the email address, only open when you tap them.
+
+The website is hosted by GitHub (GitHub Pages). Like any web host, GitHub sees the internet address (IP address) of the device that opens a page, and keeps it for a while for security. Twangle's developer gets no list of visitors and no statistics from it. How GitHub handles it is in [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
 ## Settings stay on your phone
 Twangle remembers the choices you make in the app, and nothing else. These are stored only on your phone:

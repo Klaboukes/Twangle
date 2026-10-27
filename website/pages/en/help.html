@@ -1,0 +1,86 @@
+<!--
+title: Help · Twangle
+description: Short answers to what players run into with Twangle: the microphone, a needle that won't settle, a low string an octave off, the metronome stopping, and how to start Twangle afresh.
+nav: help
+-->
+  <div class="help">
+    <h1>Help</h1>
+    <p class="lead">Short answers to what players run into. Tap a question.</p>
+
+    <h2>The microphone</h2>
+    <details>
+      <summary>I said no to the microphone</summary>
+      <p id="microphone-refused">Twangle can't hear your strings without it, so the tuner shows <i>Twangle needs your microphone</i> instead of the meter. Tap <i>Allow microphone</i> and say yes.</p>
+      <p>After you have said no twice (on Android 10 and older, once with <i>Don't ask again</i>), Android doesn't ask any more, and the button becomes <i>Open settings</i>. Tap it, then <i>Permissions</i>, then <i>Microphone</i>, and choose to allow it while using the app. Go back to Twangle and the tuner starts listening.</p>
+      <p>The metronome's <i>Listen</i> asks the same way; there it says <i>Microphone is off</i>, with <i>Open settings</i> when only the settings can allow it.</p>
+    </details>
+    <details>
+      <summary>The microphone is allowed, but Twangle hears nothing</summary>
+      <p id="hears-nothing">From Android 12 on, the quick settings (swipe down from the top of the screen) have a <i>Microphone access</i> tile that silences the microphone for every app. Turn it back on. Android usually asks about it by itself when Twangle starts listening.</p>
+      <p>Also check that nothing covers the microphone: a case, a finger, a sticker. On most phones it is a small hole at the bottom edge.</p>
+    </details>
+    <details>
+      <summary>"Another app is using the microphone"</summary>
+      <p id="microphone-busy">Only one app can listen at a time. Close the other app (a call, a voice recorder, a video chat), then tap <i>Try again</i> in Twangle.</p>
+    </details>
+    <details>
+      <summary>Does Twangle record me?</summary>
+      <p id="recording">No. The sound is analysed live on your phone and thrown away straight after. The microphone is only on while the tuner is on the screen, or while the metronome's <i>Listen</i> runs. Twangle has no permission to use the internet, so it couldn't send anything even if it wanted to. The <a href="{root}twangle-privacy/">privacy policy</a> explains it in plain words.</p>
+    </details>
+
+    <h2>Tuning</h2>
+    <details>
+      <summary>The needle wanders in a noisy room</summary>
+      <p id="noisy-room">Twangle hears the room as well as your string, and talking, a fan or a TV shake the needle. When the noise is too much, the tuner says <i>Too noisy here</i> under the note.</p>
+      <ul>
+        <li>Hold the phone close to the instrument: near the sound hole or the body, not by the headstock.</li>
+        <li>Play one string at a time and let it ring. Rest a hand lightly on the other strings so they stay quiet.</li>
+        <li>Turn the peg while the string still rings, rather than plucking it again and again.</li>
+        <li>Move away from the noise if you can, even a few steps.</li>
+      </ul>
+      <p>To see how well Twangle hears you, turn on <i>Settings → Show signal bars</i>. Tap the bars by the note for the figures, the room's <i>Background</i> among them.</p>
+    </details>
+    <details>
+      <summary>A low string shows an octave too high</summary>
+      <p id="octave">A low string's own note is often weaker than its overtones, above all on a phone's small microphone and as the string dies away, so the note can be heard an octave up: E3 for the low E2.</p>
+      <ul>
+        <li>Pick your instrument and tuning with the headstock button above the strings, also in chromatic mode. Twangle listens lower for a bass, a cello or a 7- or 8-string guitar; with the guitar picked, a bass's low strings are below what it listens for, and you see them an octave up.</li>
+        <li>In <i>Strings</i> mode, a string Twangle is already following stays that string when it is heard an octave up, with the same cents. Tap the string to keep Twangle on it.</li>
+        <li>Pluck with the soft side of your thumb, between the sound hole and the neck, rather than with a pick close to the bridge: that brings out the string's own note.</li>
+      </ul>
+      <p>An octave up, the cents are the same, so the needle still tunes the string right.</p>
+    </details>
+    <details>
+      <summary>Twangle shows the wrong string</summary>
+      <p id="wrong-string">Check that the instrument and tuning above the strings match yours. If a string is far out of tune, Twangle may take it for its neighbour: tap the string you are tuning, and Twangle says <i>Play the A2 string</i> and listens only for that one. Tap it again to let Twangle choose.</p>
+    </details>
+    <details>
+      <summary>My band or orchestra tunes to 442 Hz</summary>
+      <p id="reference-pitch">Set it in <i>Settings → Reference pitch (A4)</i>, anywhere from 415 to 466 Hz. Every note then follows: the tuner, the reference tones and the other tools.</p>
+    </details>
+
+    <h2>The metronome</h2>
+    <details>
+      <summary>The metronome stops by itself</summary>
+      <p id="metronome-stops">The metronome plays only while its screen is open, and keeps the screen on while it plays. It stops when the screen goes off, when you switch to another app, tool or tab, when a call comes in, and when headphones are unplugged.</p>
+      <p>On some phones a battery saver or power-saving mode turns the screen off anyway, and the clicks stop with it. Turn the battery saver off while you practise, or plug the phone in, then tap Start again.</p>
+    </details>
+
+    <h2>The app</h2>
+    <details>
+      <summary>The screen turns off while I tune</summary>
+      <p id="screen-off">With <i>Settings → Keep screen on</i> (on unless you turned it off), the screen stays on while you play. After 3 minutes without playing, Twangle shows <i>Screen turns off soon</i>, and the phone's own screen timeout takes over; tap the screen to keep it on for another 3 minutes.</p>
+    </details>
+    <details>
+      <summary>How do I reset Twangle?</summary>
+      <p id="reset">To start afresh, as on the first day: touch and hold Twangle's icon, tap <i>App info</i>, then <i>Storage</i> (or <i>Storage &amp; cache</i>) and <i>Clear storage</i> (on some phones <i>Clear data</i>). That clears every setting and the tunings you made yourself, and the welcome tour shows again. The words differ a little from phone to phone.</p>
+      <p>Uninstalling and installing again may not do it: if Android's own backup is on, it can bring the settings back.</p>
+      <p>To put back only the reference pitch, tap <i>Reset to 440 Hz</i> under it in Settings.</p>
+    </details>
+    <details>
+      <summary>Is Twangle really free?</summary>
+      <p id="free">Yes. Every feature, for good: no ads, no purchases, no account. Twangle is made by one person who wanted a tuner like this.</p>
+    </details>
+
+    <div class="ask">Your question isn't here? Write to <a href="mailto:twangle.tuner@proton.me">twangle.tuner@proton.me</a>. Questions that come up more often get an answer on this page.</div>
+  </div>

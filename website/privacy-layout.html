@@ -1,0 +1,21 @@
+{% comment %}
+  The page frame of the privacy policy (https://klaboukes.github.io/twangle-privacy/), copied by
+  scripts/publish-privacy.sh to _layouts/default.html in the public repo Klaboukes/twangle-privacy.
+  It replaces the GitHub Pages theme's own frame, which loads a script from cdnjs.cloudflare.com, so
+  the policy's page keeps the website's promise too: no scripts, nothing loaded from another site.
+  It keeps the theme's stylesheet, served from the same repo.
+{% endcomment %}<!DOCTYPE html>
+<html lang="{% if page.path == 'nl.md' %}nl{% else %}en{% endif %}">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title | default: site.title }}</title>
+    <meta name="description" content="{{ site.description | escape }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      {{ content }}
+    </div>
+  </body>
+</html>
