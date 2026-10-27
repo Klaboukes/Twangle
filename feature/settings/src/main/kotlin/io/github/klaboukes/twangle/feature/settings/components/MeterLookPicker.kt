@@ -26,7 +26,7 @@ import kotlin.math.exp
 
 /**
  * A titled grid of cards ([LookCardGrid]) to pick the meter's look from, three to a row (two from
- * 1.3× system font). Each card draws its look with the same art as the tuner's meter
+ * 1.3× system font on a small window). Each card draws its look with the same art as the tuner's meter
  * ([MeterLookArt] in `core.designsystem.meter`), in the current style, moving through one short
  * loop ([MeterDemo]): flat, tuned up to the note, in tune, sharp, tuned down, in tune. The cards
  * form one selectable group for TalkBack, which reads each card as a radio button with its name.

@@ -3,6 +3,8 @@ package io.github.klaboukes.twangle.feature.settings
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,6 +63,7 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import io.github.klaboukes.twangle.feature.settings.components.A4Calibration
 import io.github.klaboukes.twangle.feature.settings.components.LanguageSetting
 import io.github.klaboukes.twangle.feature.settings.components.LinkSetting
+import io.github.klaboukes.twangle.feature.settings.components.LocalSettingsWindow
 import io.github.klaboukes.twangle.feature.settings.components.MeterLookPicker
 import io.github.klaboukes.twangle.feature.settings.components.RadioGroupSetting
 import io.github.klaboukes.twangle.feature.settings.components.StylePicker
@@ -193,7 +199,6 @@ fun SettingsContent(
  * A page of the settings: a top bar with [title] and, with [onBack], a back arrow, then [content] in a
  * scrolling column. The page is see-through, so the style's background shows behind it.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SettingsPage(
     title: String,
@@ -201,26 +206,53 @@ internal fun SettingsPage(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        // The page's size, for the look card grids' rule (three to a row on a large window at any font size).
+        CompositionLocalProvider(LocalSettingsWindow provides DpSize(maxWidth, maxHeight)) {
+            SettingsScaffold(title, onBack, content)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsScaffold(
+    title: String,
+    onBack: (() -> Unit)?,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         containerColor = Color.Transparent,
         // A see-through container gives no content colour of its own.
         contentColor = MaterialTheme.colorScheme.onBackground,
         // safeDrawing also keeps clear of the camera cutout, which is at the side when the phone is turned.
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                navigationIcon = {
-                    if (onBack != null) {
-                        TwangleIconButton(onClick = onBack) {
-                            Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
+            // The bar stands in the same centred column as the rows, so the title (and the back arrow)
+            // line up with the headings where the window is wider than the column (Phase 52: a tablet's
+            // title sat at the window's edge, 100 to 300 dp from the rows). The bar is see-through, so
+            // narrowing it shows nothing new; where the column is the whole width it is as before.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                TopAppBar(
+                    title = { Text(title) },
+                    modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth(),
+                    windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    navigationIcon = {
+                        if (onBack != null) {
+                            TwangleIconButton(onClick = onBack) {
+                                Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = stringResource(R.string.settings_back))
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
         },
     ) { innerPadding ->
         // The whole width scrolls, but the content stays in a centred column no wider than

@@ -93,6 +93,9 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val shownTools = mutableStateOf(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK))
     private val shownIntonation = mutableStateOf(true)
+
+    /** On its side: the compact layout (focus mode, TunerContent's default) or, false, the two panes. */
+    private val shownCompact = mutableStateOf(true)
     private val toolChanges = mutableListOf<Pair<String, Boolean>>()
     private val clicks = mutableListOf<String>()
 
@@ -116,6 +119,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
                         onIntonationCheckChange = { toolChanges += "intonation" to it },
                         onCheckAgain = { clicks += "again" },
                         onNextString = { clicks += "next" },
+                        compactLandscape = shownCompact.value,
                     )
                 }
             }
@@ -237,6 +241,48 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         moreTools.performClick()
         compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).performClick()
         assertEquals(listOf("strum" to true, "intonation" to false), toolChanges)
+    }
+
+    /**
+     * The "more tools" menu ends in line with its button, on a phone upright and on its side and on a tablet both
+     * ways, at the tablet's 1.3× text (Phase 52): Material opens a menu from its button's start where it fits,
+     * which on an upright tablet pushed it against the screen's edge (3 dp from it). The menu window isn't forced
+     * by [PhoneScreen], so it is measured on the screen, in px.
+     */
+    @Test
+    fun onAPhoneTheMoreToolsMenuEndsInLineWithItsButton() =
+        assertMenuEndsInLine(listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE, XIAOMI_UPRIGHT))
+
+    @Test
+    fun onATabletTheMoreToolsMenuEndsInLineWithItsButton() =
+        assertMenuEndsInLine(listOf(TABLET_UPRIGHT, TABLET_ON_ITS_SIDE))
+
+    private fun assertMenuEndsInLine(sizes: List<DpSize>) {
+        shownCompact.value = false
+        shownFontScale.value = TABLET_FONT_SCALE
+        shownSize.value = sizes.first()
+        show()
+        for (size in sizes) {
+            shownSize.value = size
+            compose.waitForIdle()
+            moreTools.performClick()
+            compose.waitForIdle()
+            val button = moreTools.fetchSemanticsNode()
+            val menu = compose.onNodeWithTag(TunerTestTags.MORE_TOOLS_MENU).fetchSemanticsNode()
+            val screen = compose.onPhoneScreen().fetchSemanticsNode()
+            val buttonEnd = button.positionOnScreen.x + button.size.width
+            val menuEnd = menu.positionOnScreen.x + menu.size.width
+            val screenEnd = screen.positionOnScreen.x + screen.size.width
+            // The button's own dp (bigger in the tablet's scaled column): Material ends the menu at the end of the
+            // button's 48 dp touch area, 2 dp past its 44 dp outline.
+            val dp = button.layoutInfo.density.density
+            val case = "$style ${size.width} x ${size.height}: menu ends at $menuEnd px, the button at $buttonEnd px"
+            if (menuEnd < buttonEnd - dp || menuEnd > buttonEnd + 3 * dp) fail("$case, not in line")
+            val margin = (screenEnd - menuEnd) / screen.layoutInfo.density.density
+            if (margin < 8f) fail("$case, $margin dp from the screen's edge")
+            compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).performClick()
+            compose.waitForIdle()
+        }
     }
 
     /** With the strum check as the only tool (a violin), its own switch shows and no "more tools". */
@@ -455,6 +501,11 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
+
+        /** A tablet (the Lenovo Tab M11) upright and on its side, and its own text size. */
+        private val TABLET_UPRIGHT = DpSize(800.dp, 1280.dp)
+        private val TABLET_ON_ITS_SIDE = DpSize(1280.dp, 800.dp)
+        private const val TABLET_FONT_SCALE = 1.3f
         private val SLACK = 0.5.dp
     }
 }

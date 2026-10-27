@@ -19,8 +19,8 @@ import io.github.klaboukes.twangle.feature.settings.R
 
 /**
  * A titled grid of cards ([LookCardGrid]) to pick the app's style from, like the meter and wave
- * looks: three to a row (two from 1.3× system font), in the owner's order. Each card is a mood
- * picture of its style ([StyleMood]) in that style's own colours, letters and shapes, light or dark
+ * looks: three to a row (two from 1.3× system font on a small window), in the owner's order. Each
+ * card is a mood picture of its style ([StyleMood]) in that style's own colours, letters and shapes, light or dark
  * as the app is now, with the style's name under it. The cards' wave strips drift gently together.
  *
  * The drift only runs while some of the cards are on screen, and each frame only redraws the

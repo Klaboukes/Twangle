@@ -35,6 +35,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.then
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -65,6 +66,7 @@ import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
 import io.github.klaboukes.twangle.feature.settings.components.meterLookCardTag
 import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
+import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -846,6 +848,98 @@ class SettingsContentTest {
         assertTrue("gaps $leftGap and $rightGap", abs((leftGap - rightGap).value) < 2f)
     }
 
+    /**
+     * The page's title lines up with the rows' column (Phase 52): on a tablet the title stayed at the window's
+     * edge while the rows stood in the centred 600 dp column, 100 dp apart upright and 300 dp on its side. On
+     * a phone the column is the whole width, so the title stays where it was.
+     */
+    @Test
+    fun onATabletUprightTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_UPRIGHT)
+
+    @Test
+    fun onATabletOnItsSideTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(TABLET_ON_ITS_SIDE)
+
+    @Test
+    fun onAPhoneTheTitleLinesUpWithTheRows() = assertSettingsTitleLinesUp(PHONE)
+
+    private fun assertSettingsTitleLinesUp(size: DpSize) {
+        show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE)
+        val start = columnStart() + ROW_INSET
+        val title = compose.onNodeWithText(context.getString(R.string.settings_title)).getBoundsInRoot()
+        val heading = compose.onNodeWithText(context.getString(R.string.settings_group_pitch)).getBoundsInRoot()
+        assertEquals("$size: the first heading at the column's start", start.value, heading.left.value, tolerance())
+        assertEquals("$size: the title in line with the heading", heading.left.value, title.left.value, tolerance())
+    }
+
+    /** On About the back arrow stands at the column's start, its arrow in line with the text, and the title after it. */
+    @Test
+    fun onATabletUprightAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_UPRIGHT)
+
+    @Test
+    fun onATabletOnItsSideAboutsBackArrowLinesUpWithTheText() = assertAboutTitleLinesUp(TABLET_ON_ITS_SIDE)
+
+    private fun assertAboutTitleLinesUp(size: DpSize) {
+        show(AppSettings(), size = size, fontScale = TABLET_FONT_SCALE, about = true)
+        val start = columnStart()
+        val back = compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).getBoundsInRoot()
+        val title = compose.onNodeWithText(context.getString(R.string.about_title)).getBoundsInRoot()
+        val text = compose.onNodeWithText(context.getString(R.string.settings_about_free_title)).getBoundsInRoot()
+        assertEquals("$size: the text at the column's start", (start + ROW_INSET).value, text.left.value, tolerance())
+        // Material's top bar keeps the 48 dp back button 4 dp in, so its 24 dp arrow starts 16 dp in, as the text.
+        assertEquals("$size: the back arrow's middle", (text.left + 12.dp).value, ((back.left + back.right) / 2).value, tolerance())
+        assertTrue("$size: the title after the arrow", title.left >= back.right)
+    }
+
+    /**
+     * How far apart two edges may be: [EDGE_TOLERANCE], or a pixel and a half where the window is drawn smaller to
+     * fit the phone's screen (a tablet's window on a phone, or on its side on the tablet upright: under 1 px a dp).
+     */
+    private fun tolerance(): Float =
+        maxOf(EDGE_TOLERANCE, 1.5f / compose.onNodeWithTag(WINDOW).fetchSemanticsNode().layoutInfo.density.density)
+
+    /** Where the rows' centred column starts in the window: at most 600 dp wide, in the middle of the safe area. */
+    private fun columnStart(): Dp {
+        val safe = safeArea()
+        return safe.left + maxOf(0.dp, (safe.right - safe.left - CONTENT_WIDTH) / 2)
+    }
+
+    /**
+     * The style, meter and wave cards come three to a row on a tablet at its 1.3× text (Phase 52), near their
+     * phone size: two to a row they were about 280 × 385 dp each on the Lenovo Tab M11, the six styles a screen
+     * and a half upright and three screens on its side. On a phone they still go to two from 1.3×.
+     */
+    @Test
+    fun onATabletUprightTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_UPRIGHT, perRow = 3)
+
+    @Test
+    fun onATabletOnItsSideTheCardsComeThreeToARow() = assertCardsPerRow(TABLET_ON_ITS_SIDE, perRow = 3)
+
+    @Test
+    fun onAPhoneAtTheTabletsTextTheCardsComeTwoToARow() = assertCardsPerRow(PHONE, perRow = 2)
+
+    private fun assertCardsPerRow(size: DpSize, perRow: Int) {
+        show(AppSettings(display = TunerDisplay.WAVE), size = size, fontScale = TABLET_FONT_SCALE)
+        val width = minOf(safeArea().let { it.right - it.left }, CONTENT_WIDTH) - ROW_INSET * 2
+        val cardWidth = (width - CARD_GAP * (perRow - 1)) / perRow
+        val grids = mapOf(
+            "style" to VisualStyle.entries.map(::styleCardTag),
+            "meter" to MeterLook.entries.map(::meterLookCardTag),
+            "wave" to WaveLook.entries.map(::waveLookCardTag),
+        )
+        for ((grid, tags) in grids) {
+            // Unclipped: the lower rows may lie below the bottom of the screen.
+            val cards = tags.map { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
+            val rows = cards.chunked(perRow)
+            for ((index, row) in rows.withIndex()) {
+                for (card in row) {
+                    assertEquals("$size $grid row $index top", row.first().top.value, card.top.value, tolerance())
+                    assertEquals("$size $grid card width", cardWidth.value, (card.right - card.left).value, tolerance())
+                }
+                if (index > 0) assertTrue("$size $grid row $index under the one before", row.first().top >= rows[index - 1].first().bottom)
+            }
+        }
+    }
+
     @Test
     fun aboutShowsTheVersionThePromiseAndThePrivacyStatement() {
         show(AppSettings(), about = true)
@@ -1109,5 +1203,20 @@ class SettingsContentTest {
 
         /** A phone on its side, as the S26 (780 × 360 dp) with a little to spare. */
         val PHONE_ON_ITS_SIDE = DpSize(800.dp, 360.dp)
+
+        /** A tablet (the Lenovo Tab M11) upright and on its side. */
+        val TABLET_UPRIGHT = DpSize(800.dp, 1280.dp)
+        val TABLET_ON_ITS_SIDE = DpSize(1280.dp, 800.dp)
+
+        /** The Lenovo Tab M11's own text size. */
+        const val TABLET_FONT_SCALE = 1.3f
+
+        /** The rows' column at most, its rows' inset and the cards' gap, as SettingsScreen and LookCardGrid set them. */
+        val CONTENT_WIDTH = 600.dp
+        val ROW_INSET = 16.dp
+        val CARD_GAP = 8.dp
+
+        /** Positions compared in dp: at the tablet's 1.5 px a dp, a pixel's rounding is 0.67 dp ([tolerance]). */
+        const val EDGE_TOLERANCE = 0.75f
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -37,9 +40,9 @@ import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 
 /**
- * A titled grid of look cards, three to a row (two from 1.3× system font), shared by the wave look
- * and meter look pickers so both work the same. Each card shows [preview] above its [label]. The
- * [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
+ * A titled grid of look cards, three to a row (two from 1.3× system font on a small window,
+ * [lookCardsPerRow]), shared by the style, wave look and meter look pickers so all three work the
+ * same. Each card shows [preview] above its [label]. The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
  * smaller rather than breaking in the middle of a word. The cards form one selectable group for
  * TalkBack, which reads each card as a radio button with its name and whether it is selected.
  *
@@ -75,7 +78,7 @@ internal fun <T> LookCardGrid(
             }
         }
     }
-    val perRow = if (LocalDensity.current.fontScale >= LARGE_FONT_SCALE) PER_ROW_LARGE_FONT else PER_ROW
+    val perRow = lookCardsPerRow(LocalDensity.current.fontScale, LocalSettingsWindow.current)
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
         Column(
@@ -173,11 +176,32 @@ internal const val MAX_STEP_SECONDS = 0.1f
 /** The previews move once this much of the grid is on screen (a sliver is enough). */
 private const val MIN_VISIBLE = 0.01f
 
+/**
+ * How many look cards a row holds at [fontScale] in a settings page of [window]: three, or two from
+ * [LARGE_FONT_SCALE] so their names stay big enough to read on a phone's narrow column (about 115 dp a
+ * card three to a row on the Xiaomi). A large window ([LARGE_WINDOW_MIN] both ways, which no phone is:
+ * the tallest on their side are about 430 dp high) keeps three at any font size (Phase 52): there the
+ * column is 600 dp, so three cards are about 184 dp across, as wide as two on a phone, where two came
+ * to about 280 × 385 dp each on the Lenovo Tab M11 at its 1.3× text and the six styles took a screen
+ * and a half upright, three screens on its side. An unknown window ([DpSize.Unspecified], a picker
+ * shown outside a settings page) counts as small.
+ */
+internal fun lookCardsPerRow(fontScale: Float, window: DpSize): Int {
+    val large = window.isSpecified && minOf(window.width, window.height) >= LARGE_WINDOW_MIN
+    return if (fontScale >= LARGE_FONT_SCALE && !large) PER_ROW_LARGE_FONT else PER_ROW
+}
+
+/** The size of the settings page the cards are in, for [lookCardsPerRow] (`SettingsPage` provides it). */
+internal val LocalSettingsWindow = staticCompositionLocalOf { DpSize.Unspecified }
+
 private const val PER_ROW = 3
 
-/** From this system font size on, two cards to a row, so their names stay big enough to read. */
+/** From this system font size on, two cards to a row on a small window, so their names stay big enough to read. */
 private const val LARGE_FONT_SCALE = 1.3f
 private const val PER_ROW_LARGE_FONT = 2
+
+/** A large window from this much both ways, as the tuner's bigger upright column and Practice's large layouts. */
+private val LARGE_WINDOW_MIN = 560.dp
 
 /**
  * The smallest a card's name gets to fit its card: at 2× text that is 12 sp's size, which French

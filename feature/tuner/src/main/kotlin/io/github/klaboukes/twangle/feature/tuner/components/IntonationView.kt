@@ -36,6 +36,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,6 +60,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -88,6 +90,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -725,7 +728,14 @@ fun MoreToolsButton(
         neon -> neonFill(scheme)
         else -> scheme.surface.copy(alpha = 0.45f)
     }
-    Box(modifier) {
+    // The menu ends in line with the button wherever it opens (Phase 52): Material opens it from the button's start
+    // where it fits, which on a tablet upright pushed it against the screen's edge (3 dp from it), and from its end
+    // elsewhere. Moved by the button's width less its own, its start-aligned place is the end-aligned one, so
+    // Material keeps it there. Its width is known once it has been measured: the first frame of the first opening,
+    // still faded out, may stand elsewhere.
+    var buttonWidth by remember { mutableIntStateOf(0) }
+    var menuWidth by remember { mutableIntStateOf(0) }
+    Box(modifier.onSizeChanged { buttonWidth = it.width }) {
         TooltipBox(
             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
             tooltip = { PlainTooltip { Text(label) } },
@@ -768,8 +778,12 @@ fun MoreToolsButton(
             containerColor = scheme.surfaceContainerHigh,
             tonalElevation = 0.dp,
             shadowElevation = MENU_LIFT,
+            offset = with(density) { DpOffset((buttonWidth - menuWidth).toDp(), 0.dp) },
             // The menu is a window of its own: UI Automator finds its rows by tag only when it says so too (as MainActivity's root does).
-            modifier = Modifier.testTag(TunerTestTags.MORE_TOOLS_MENU).semantics { testTagsAsResourceId = true },
+            modifier = Modifier
+                .onSizeChanged { menuWidth = it.width }
+                .testTag(TunerTestTags.MORE_TOOLS_MENU)
+                .semantics { testTagsAsResourceId = true },
         ) {
             ScreenDensity(density) {
                 for (tool in tools) {

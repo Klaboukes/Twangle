@@ -121,13 +121,37 @@ class SettingsStylesTest(private val style: VisualStyle) {
     }
 
     /** Shows the page at 2× text on a phone of [size] in the [dark] or light theme, then runs [check]. */
-    private fun atTwiceTheTextSize(size: DpSize, dark: Boolean, about: Boolean = false, check: (case: String) -> Unit) {
-        shownFontScale.value = 2f
+    private fun atTwiceTheTextSize(size: DpSize, dark: Boolean, about: Boolean = false, check: (case: String) -> Unit) =
+        atTextSize(2f, size, dark, about, check)
+
+    /** Shows the page at [fontScale] text in a window of [size] in the [dark] or light theme, then runs [check]. */
+    private fun atTextSize(fontScale: Float, size: DpSize, dark: Boolean, about: Boolean = false, check: (case: String) -> Unit) {
+        shownFontScale.value = fontScale
         shownSize.value = size
         shownDark.value = dark
         show(about)
-        check("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at 2x:")
+        check("$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${fontScale}x:")
     }
+
+    /**
+     * On a tablet (Phase 52) at its own 1.3× text, upright (light) and on its side (dark), and at 2× upright, where
+     * the cards come three to a row: every title, choice and card name wholly shown; About on its side too.
+     */
+    @Test
+    fun onATabletUprightEverySettingIsWhollyShownAtItsTextSize() =
+        atTextSize(TABLET_FONT_SCALE, TABLET_UPRIGHT, dark = false, check = ::assertEverySettingWhollyShown)
+
+    @Test
+    fun onATabletOnItsSideEverySettingIsWhollyShownAtItsTextSize() =
+        atTextSize(TABLET_FONT_SCALE, TABLET_ON_ITS_SIDE, dark = true, check = ::assertEverySettingWhollyShown)
+
+    @Test
+    fun onATabletUprightEverySettingIsWhollyShownAtTwiceTheTextSize() =
+        atTwiceTheTextSize(TABLET_UPRIGHT, dark = false, check = ::assertEverySettingWhollyShown)
+
+    @Test
+    fun onATabletOnItsSideAboutIsWhollyShownAtItsTextSize() =
+        atTextSize(TABLET_FONT_SCALE, TABLET_ON_ITS_SIDE, dark = true, about = true, check = ::assertAboutWhollyShown)
 
     /** Upright in the light theme; on its side in the dark one (a style's fonts are the same in both). */
     @Test
@@ -301,5 +325,10 @@ class SettingsStylesTest(private val style: VisualStyle) {
         /** A narrow phone (a Galaxy S26) upright and on its side, without the system bars. */
         private val PHONE_UPRIGHT = DpSize(360.dp, 730.dp)
         private val PHONE_ON_ITS_SIDE = DpSize(800.dp, 360.dp)
+
+        /** A tablet (the Lenovo Tab M11) upright and on its side, and its own text size. */
+        private val TABLET_UPRIGHT = DpSize(800.dp, 1280.dp)
+        private val TABLET_ON_ITS_SIDE = DpSize(1280.dp, 800.dp)
+        private const val TABLET_FONT_SCALE = 1.3f
     }
 }
