@@ -1,0 +1,293 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle New Instruments</title>
+<!--
+TWANGLE PHASE 57 (rough mock-up, 2026-10-27): the 12-string guitar, the 5-string banjo and left-handed charts.
+Plain on purpose: Contemporary only, bare elements, a one-line note each. No owner pick yet.
+12-string  A new Instrument "guitar_12", six course buttons (StringSelector, as the guitar). The picker (the
+           instrument and tuning panel) gets a "12-string guitar" chip after "8-string guitar" and, under its
+           tunings, a quiet line that the strum check and the chord name are off for it.
+           A: each button the guitar's name and octave (E2 ...), a small "8" on the lower four courses (a second
+              string an octave up).  B: the guitar's labels, no mark.
+           The high string of a pair lights the same button; the big note keeps the course's name (E2), as the
+           tuner already does for a string read an octave off (TunerInterpreter.octaveOnString).
+Banjo      A new Instrument "banjo_5", open G = G4 D3 G3 B3 D4 in instrument order (re-entrant, as the ukulele's
+           G4 C4 E4 A4), so the short 5th string comes first.  A: a little extra gap after it.  B: evenly spaced,
+           as the ukulele. Double C (G4 C3 G3 C4 D4) and double D (F#4 D3 F#3 A3 D4) shown dashed: the owner's
+           yes or no. Chords, Scales and the Capo helper show a quiet line in the chart's place, the look of
+           today's "No shape within reach in this tuning" (ChordsScreen ChartArea): there is no "instrument not
+           covered" state in the Practice tools yet, this is the nearest one.
+Left-hand  A switch "Left-handed" (SwitchSetting).  A: at the end of "Pitch and notes" (where Note names, which
+           also change the charts, live).  B: at the end of "Look". Mirrored: the chord chart's thickest string
+           on the right, the upright scale neck's too (sideways: the nut on the right). The Capo helper draws no
+           shapes (a table; a row opens the shape in Chords), so only Chords and Scales change.
+Scale      The Xiaomi 12X, 393 dp wide, at 0.8 px per dp; 16 dp side margins. Chord chart in its own units
+           (ChordChart.ChartGeometry: 22 between strings, 26 a fret row), the neck in ScaleNeck's.
+Look       Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --on-accent: #FFFFFF; --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --line: color-mix(in srgb, var(--muted) 60%, var(--bg));
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --on-accent: #10141F; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --on-accent: #10141F; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 900px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2.sec { font: 400 24px/1.2 var(--ui); margin: 44px 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 18px; display: grid; gap: 26px; }
+.cand { display: grid; gap: 8px; }
+.cand h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.ask { background: transparent; border: 1px dashed var(--muted); }
+.phones { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-start; }
+.cap { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+/* A piece of the phone: 393 dp at 0.8 px per dp, 16 dp (13 px) side margins. */
+.phone { width: 314px; border-radius: 10px; background: var(--bg); padding: 10px 13px 12px; overflow: hidden; }
+.meterhint { height: 22px; border-bottom: 1px dashed color-mix(in srgb, var(--muted) 40%, transparent);
+  font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+.reading { text-align: center; padding: 6px 0 10px; border-bottom: 1px dashed color-mix(in srgb, var(--muted) 40%, transparent); margin-bottom: 10px; }
+.reading .big { font: 400 44px/1 var(--ui); }
+.reading .big sub { font-size: 16px; }
+.reading .cents { font: 500 13px/1.4 var(--ui); color: var(--accent); }
+.reading .heard { font-size: 10px; color: var(--muted); }
+
+/* Above the strings: the instrument button (a headstock), the name, More tools (GuitarControls). */
+.ctl { display: flex; align-items: center; gap: 8px; }
+.ibtn, .tools { width: 35px; height: 35px; flex: none; border-radius: 14px; display: grid; place-items: center; color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border: 1px solid var(--line); }
+.ibtn svg, .tools svg { width: 19px; height: 19px; }
+.ctl .lbl { flex: 1; font: 500 11.2px/1.2 var(--ui); color: var(--muted); }
+
+/* The string buttons: 48 dp circles, the name with its octave as a subscript. */
+.strings { display: flex; justify-content: space-evenly; align-items: center; margin: 12px 0 4px; }
+.s { position: relative; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font: 500 13px/1 var(--ui); border: 1px solid var(--line); color: var(--muted); background: color-mix(in srgb, var(--surface) 85%, transparent); flex: none; }
+.s sub { font-size: 8px; }
+.s.hi { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.s .oct { position: absolute; top: 3px; right: 7px; font: 600 7.5px/1 var(--ui); opacity: .8; }
+.strings.apart .s:first-child { margin-right: 10px; }
+
+/* The instrument and tuning panel (InstrumentTuningPanel), cut to its top. */
+.sheet { width: 314px; border-radius: 14px 14px 0 0; background: var(--surface); padding: 10px 0 12px; overflow: hidden; }
+.sheet .title { font: 400 17.6px/1.2 var(--ui); padding: 0 13px 6px; }
+.chips { display: flex; gap: 6px; padding: 4px 13px 10px; overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.chip { font: 500 11.2px/1 var(--ui); padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line); color: var(--ink); flex: none; }
+.chip.on { border: 2px solid var(--accent); background: var(--container); }
+.trow { margin: 4px 10px 0; padding: 7px 10px; border-radius: 9px; display: flex; align-items: center; gap: 8px; }
+.trow.on { background: var(--container); }
+.trow.ask { border: 1px dashed var(--muted); }
+.trow .t { flex: 1; }
+.trow .n { font: 500 12.8px/1.3 var(--ui); }
+.trow .o { font: 400 11.2px/1.3 var(--ui); color: var(--muted); }
+.trow .tick { color: var(--accent); font-size: 14px; }
+.quiet { font: 400 11.2px/1.4 var(--ui); color: var(--muted); padding: 10px 20px 0; }
+
+/* Practice: the tool button, the tuning line, the chord's name button, the chart's room. */
+.prow { display: flex; align-items: center; gap: 6px; }
+.toolbtn { width: 128px; height: 35px; border-radius: 11px; border: 1px solid var(--line); display: flex; align-items: center; gap: 6px; padding: 0 10px;
+  font: 500 11.2px/1 var(--ui); background: color-mix(in srgb, var(--surface) 45%, var(--bg)); }
+.toolbtn .chev { margin-left: auto; color: var(--muted); font-size: 11px; }
+.namebtn { margin-top: 10px; height: 46px; border-radius: 11px; border: 1px solid var(--line); padding: 6px 12px;
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); }
+.namebtn b { font: 500 16px/1.1 var(--ui); } .namebtn span { display: block; font-size: 10px; color: var(--muted); }
+.chartroom { height: 150px; display: grid; place-items: center; text-align: center; font: 400 12.8px/1.4 var(--ui); color: var(--muted); padding: 0 24px; }
+
+/* Settings: a group's heading in the accent, rows of title and summary, a switch at the end. */
+.set { width: 314px; padding: 12px 13px 14px; border-radius: 10px; background: var(--page); border: 1px solid color-mix(in srgb, var(--line) 50%, transparent); }
+.set .gh { font: 400 17.6px/1.2 var(--ui); color: var(--accent); margin-bottom: 10px; }
+.set .r { display: flex; align-items: center; gap: 13px; padding: 7px 0; }
+.set .r + .r { border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.set .r .t { flex: 1; }
+.set .r .n { font: 500 12.8px/1.3 var(--ui); }
+.set .r .d { font: 400 11.2px/1.35 var(--ui); color: var(--muted); }
+.set .r.new { background: color-mix(in srgb, var(--accent) 7%, transparent); margin: 0 -6px; padding: 7px 6px; border-radius: 6px; }
+.sw { width: 42px; height: 26px; border-radius: 13px; border: 2px solid var(--muted); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; width: 13px; height: 13px; border-radius: 50%; background: var(--muted); top: 4.5px; left: 5px; }
+.dim { opacity: .55; }
+
+.charts { display: flex; flex-wrap: wrap; gap: 12px 22px; }
+.charts figure { margin: 0; }
+.charts figcaption { font-size: 12px; color: var(--muted); text-align: center; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 57 · rough mock-up</p>
+  <h1>12-string, banjo and left-handed charts</h1>
+  <p class="lede">Three new things, each with only the parts that change. Where there is a real choice there are two
+    options, <strong>A</strong> and <strong>B</strong>, with the one I'd pick marked. Dashed items are a yes or no
+    for you.</p>
+</header>
+
+<h2 class="sec">1. The 12-string guitar</h2>
+<div class="list" id="twelve"></div>
+
+<h2 class="sec">2. The 5-string banjo</h2>
+<div class="list" id="banjo"></div>
+
+<h2 class="sec">3. Left-handed charts</h2>
+<div class="list" id="lefty"></div>
+
+<footer>
+  <p>The tuner's own string buttons are not mirrored for left-handed players: they are a list from low to high, not
+    a picture of the guitar, so they keep their place.</p>
+  <p>Not shown: every language and 2× text, the other five styles. Those come when it is built.</p>
+</footer>
+</div>
+
+<script>
+const sub = n => { const m = n.match(/^([A-G][#b♯♭]?)(\d)$/); return `${m[1].replace("#", "♯")}<sub>${m[2]}</sub>`; };
+// The instrument button's headstock, drawn very plainly.
+const headstock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 3h6l-1 12h-4zM12 15v6"/><path d="M9 6H6M9 10H6M15 6h3M15 10h3"/></svg>`;
+const toolsIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19l8-8M14 4l6 6-3 3-6-6zM17 17l-3-3"/></svg>`;
+const chip = (name, opts = {}) => `<span class="s ${opts.hi ? "hi" : ""}">${opts.oct ? `<span class="oct">8</span>` : ""}${sub(name)}</span>`;
+const controls = label => `<div class="ctl"><span class="ibtn">${headstock}</span><span class="lbl">${label}</span><span class="tools">${toolsIcon}</span></div>`;
+const tunerPiece = (label, chips, { reading, apart } = {}) => `<div class="phone">
+  ${reading ? `<div class="reading"><div class="big">${sub(reading.note)}</div><div class="cents">${reading.cents}</div><div class="heard">${reading.heard}</div></div>`
+            : `<div class="meterhint">meter above</div>`}
+  ${controls(label)}<div class="strings ${apart ? "apart" : ""}">${chips}</div></div>`;
+const cand = (title, rec, body, note) => `<div class="cand"><h3>${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>
+  <div class="phones">${body}</div><p class="note">${note}</p></div>`;
+const capped = (cap, html) => `<div><div class="cap">${cap}</div>${html}</div>`;
+const sheet = (chips, rows, quiet) => `<div class="sheet"><div class="title">Instrument and tuning</div>
+  <div class="chips">${chips.map(([n, on]) => `<span class="chip ${on ? "on" : ""}">${n}</span>`).join("")}</div>
+  ${rows.map(r => `<div class="trow ${r.on ? "on" : ""} ${r.ask ? "ask" : ""}"><span class="t"><div class="n">${r.name}</div><div class="o">${r.open}</div></span>${r.on ? `<span class="tick">✓</span>` : ""}${r.ask ? `<span class="tag ask">yes / no?</span>` : ""}</div>`).join("")}
+  ${quiet ? `<p class="quiet">${quiet}</p>` : ""}</div>`;
+
+// 1. The 12-string: six courses, the lower four with a string an octave up.
+const COURSES = ["E2", "A2", "D3", "G3", "B3", "E4"];
+const OCTAVE_PAIR = [true, true, true, true, false, false];
+const row12 = (mark, hi) => COURSES.map((n, i) => chip(n, { oct: mark && OCTAVE_PAIR[i], hi: i === hi })).join("");
+document.getElementById("twelve").innerHTML = [
+  cand("In the instrument picker", false,
+    sheet([["Guitar"], ["12-string guitar", true], ["7-string guitar"], ["8-string guitar"], ["Bass"]],
+      [{ name: "Standard", open: "E A D G B E", on: true }],
+      "The strum check and the chord name are off for the 12-string: its twelve strings ring too close together to tell apart."),
+    "A new chip after Guitar, one tuning to start with (Standard). The quiet line under the tunings says what it can't do, so nobody looks for the strum check."),
+  cand("A. One name per button, a small 8 on the lower four", true,
+    tunerPiece("12-string guitar · Standard", row12(true)),
+    "Reads like the guitar. The little 8 says \"this pair has a second string an octave up\"; the top two pairs are in unison, so no mark."),
+  cand("B. Just the guitar's names", false,
+    tunerPiece("12-string guitar · Standard", row12(false)),
+    "Exactly the guitar's row. Calmer, but nothing shows which pairs have an octave string."),
+  cand("When the high string of a pair is heard", false,
+    capped("You pluck the thin string of the low E pair (it sounds E3)",
+      tunerPiece("12-string guitar · Standard", row12(true, 0), { reading: { note: "E2", cents: "+2 ¢", heard: "the octave string, read against E2" } })),
+    "The same button lights up and the big note keeps the pair's name; the cents are the same as for the thick string. A tone played from a button sounds both strings of the pair."),
+].join("");
+
+// 2. The banjo: open G with the short 5th string first, as the ukulele's high G.
+const OPEN_G = ["G4", "D3", "G3", "B3", "D4"];
+const banjoRow = () => OPEN_G.map(n => chip(n)).join("");
+document.getElementById("banjo").innerHTML = [
+  cand("In the instrument picker", false,
+    sheet([["Mandolin"], ["5-string banjo", true]],
+      [{ name: "Open G", open: "G D G B D", on: true },
+       { name: "Double C", open: "G C G C D", ask: true },
+       { name: "Double D", open: "F♯ D F♯ A D", ask: true }]),
+    "Added at the end of the list. Open G is its standard tuning. Double C and double D are the two other common banjo tunings: say yes or no to each. (Banjo books write the short string small, \"gDGBD\"; the app writes every note the same way, as it does for the ukulele.)"),
+  cand("A. The short 5th string set a little apart", true,
+    tunerPiece("5-string banjo · Open G", banjoRow(), { apart: true }),
+    "Same buttons, same size, only a small extra gap after the first one. It shows that string is different (it starts halfway up the neck) without a new look."),
+  cand("B. Evenly spaced", false,
+    tunerPiece("5-string banjo · Open G", banjoRow()),
+    "Like the ukulele, whose high G also comes first. Simplest; the high G₄ before D₃ is the only hint."),
+  cand("Chords, Scales and Capo for the banjo", false,
+    `<div class="phone"><div class="prow"><span class="toolbtn">▦ Chords<span class="chev">⌄</span></span><span class="ibtn">${headstock}</span><span class="lbl" style="font:500 11.2px/1.2 var(--ui);color:var(--muted)">5-string banjo · Open G</span></div>
+      <div class="namebtn dim"><b>C ⌄</b><span>C major</span></div>
+      <div class="chartroom">Chord charts don't know the banjo's short string yet. Pick another instrument with the button above.</div></div>`,
+    "The chart's place says so in the same quiet words and look as today's \"No shape within reach in this tuning\". Scales (the neck) and Capo get the same line. Nothing else moves, so switching back is instant."),
+].join("");
+
+// 3. Left-handed: the Settings row, then a C chord chart and a strip of the scale neck, normal and mirrored.
+const settingsGroup = (heading, rows) => `<div class="set"><div class="gh">${heading}</div>
+  ${rows.map(([n, d, isNew, sw]) => `<div class="r ${isNew ? "new" : ""}"><span class="t"><div class="n">${n}</div><div class="d">${d}</div></span>${sw ? `<span class="sw"></span>` : ""}</div>`).join("")}</div>`;
+const LEFTY = ["Left-handed", "Chord charts and the scale neck drawn for a guitar held the other way round", true, true];
+
+// The chord chart, in ChartGeometry's units: 22 between strings, 26 a fret row, 34 at the sides, 26 top and bottom.
+function chordChart(frets, fingers, names, mirror) {
+  const n = frets.length, GAP = 22, ROW = 26, SIDE = 34, TOP = 26, ROWS = 4;
+  const W = 2 * SIDE + (n - 1) * GAP, H = TOP + ROWS * ROW + 26;
+  const x = i => SIDE + (mirror ? n - 1 - i : i) * GAP;
+  let s = `<svg width="${W * 1.1}" height="${H * 1.1}" viewBox="0 0 ${W} ${H}" font-family="Roboto, system-ui, sans-serif">`;
+  s += `<line x1="${SIDE - 1}" y1="${TOP}" x2="${SIDE + (n - 1) * GAP + 1}" y2="${TOP}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>`;
+  for (let r = 1; r <= ROWS; r++) s += `<line x1="${SIDE}" y1="${TOP + r * ROW}" x2="${SIDE + (n - 1) * GAP}" y2="${TOP + r * ROW}" stroke="var(--muted)" stroke-opacity=".5" stroke-width="1.4"/>`;
+  for (let i = 0; i < n; i++) {
+    const w = 1 + (n - 1 - i) * 0.25; // the thick strings a little thicker, so the mirror shows
+    s += `<line x1="${x(i)}" y1="${TOP}" x2="${x(i)}" y2="${TOP + ROWS * ROW}" stroke="var(--muted)" stroke-width="${w}"/>`;
+    if (frets[i] < 0) s += `<text x="${x(i)}" y="17" font-size="11" text-anchor="middle" fill="var(--muted)">×</text>`;
+    else if (frets[i] === 0) s += `<circle cx="${x(i)}" cy="13" r="4.6" fill="none" stroke="var(--muted)" stroke-width="1.4"/>`;
+    else {
+      const y = TOP + (frets[i] - 0.5) * ROW;
+      s += `<circle cx="${x(i)}" cy="${y}" r="9" fill="var(--ink)"/><text x="${x(i)}" y="${y + 4}" font-size="11" font-weight="500" text-anchor="middle" fill="var(--page)">${fingers[i]}</text>`;
+    }
+    if (names[i]) s += `<text x="${x(i)}" y="${H - 9}" font-size="11" text-anchor="middle" fill="${names[i] === "C" ? "var(--accent)" : "var(--muted)"}" font-weight="${names[i] === "C" ? 700 : 400}">${names[i]}</text>`;
+  }
+  return s + `</svg>`;
+}
+
+// A strip of the upright scale neck (ScaleNeck units: 30 before the nut, 20.5 a fret, 19 between strings, dots 8.5 round).
+function neckStrip(mirror) {
+  const OPEN = ["E2", "A2", "D3", "G3", "B3", "E4"], PCS = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+  const CMAJ = new Set(["C", "D", "E", "F", "G", "A", "B"]);
+  const midi = s => { const m = s.match(/^([A-G])(\d)$/); return 12 * (+m[2] + 1) + PCS.indexOf(m[1]); };
+  const FRETS = 5, L = 16, OPENU = 30, FRET = 20.5, GAP = 19, n = 6;
+  const W = 2 * L + (n - 1) * GAP, H = OPENU + FRETS * FRET + 8;
+  const x = i => L + (mirror ? n - 1 - i : i) * GAP;
+  let s = `<svg width="${W * 1.25}" height="${H * 1.25}" viewBox="0 0 ${W} ${H}" font-family="Roboto, system-ui, sans-serif">`;
+  s += `<line x1="${L - 3}" y1="${OPENU}" x2="${L + (n - 1) * GAP + 3}" y2="${OPENU}" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>`;
+  for (let f = 1; f <= FRETS; f++) s += `<line x1="${L}" y1="${OPENU + f * FRET}" x2="${L + (n - 1) * GAP}" y2="${OPENU + f * FRET}" stroke="var(--muted)" stroke-opacity=".5" stroke-width="1.2"/>`;
+  for (let i = 0; i < n; i++) {
+    s += `<line x1="${x(i)}" y1="${OPENU}" x2="${x(i)}" y2="${H}" stroke="var(--muted)" stroke-width="${1 + (n - 1 - i) * 0.22}"/>`;
+    for (let f = 0; f <= FRETS - 1; f++) {
+      const pc = PCS[(midi(OPEN[i]) + f) % 12];
+      if (!CMAJ.has(pc)) continue;
+      const y = f === 0 ? OPENU / 2 : OPENU + (f - 0.5) * FRET, root = pc === "C";
+      s += `<circle cx="${x(i)}" cy="${y}" r="8.5" fill="${root ? "var(--accent)" : "var(--page)"}" stroke="${root ? "var(--accent)" : "var(--muted)"}" stroke-width="1"/>`;
+      s += `<text x="${x(i)}" y="${y + 3.5}" font-size="9" text-anchor="middle" fill="${root ? "var(--on-accent)" : "var(--ink)"}">${pc}</text>`;
+    }
+  }
+  return s + `</svg>`;
+}
+
+// C major, low E to high E: not played, 3, 2, open, 1, open.
+const C_FRETS = [-1, 3, 2, 0, 1, 0], C_FINGERS = ["", 3, 2, "", 1, ""], C_NAMES = ["", "C", "E", "G", "C", "E"];
+const fig = (svg, cap) => `<figure>${svg}<figcaption>${cap}</figcaption></figure>`;
+document.getElementById("lefty").innerHTML = [
+  cand("A. In \"Pitch and notes\", under Note names", true,
+    settingsGroup("Pitch and notes", [["A4 calibration", "440 Hz"], ["Note names", "Automatic: C D E"], ["In-tune precision", "Normal"], LEFTY]),
+    "Next to Note names, the other setting that changes what the charts show. Off at first. New row marked faintly here only."),
+  cand("B. In \"Look\"", false,
+    settingsGroup("Look", [["Style", "Contemporary"], ["Theme", "System"], ["Wallpaper colours", "Use colours from your wallpaper", false, true], LEFTY]),
+    "With the other \"how it is drawn\" settings, but Look is about colours and styles, so it is easy to miss there."),
+  cand("A chord chart: C major", false,
+    `<div class="charts">${fig(chordChart(C_FRETS, C_FINGERS, C_NAMES, false), "Off (today): thick string on the left")}${fig(chordChart(C_FRETS, C_FINGERS, C_NAMES, true), "On: mirrored, thick string on the right")}</div>`,
+    "The same shape seen as a left-handed player sees their guitar from the front. Fingers, o, × and the note names move with their strings."),
+  cand("The scale neck: C major, frets 0 to 4", false,
+    `<div class="charts">${fig(neckStrip(false), "Off (today)")}${fig(neckStrip(true), "On: mirrored")}</div>`,
+    "Upright on the phone, as the neck lies today; turned on its side it would put the nut on the right instead. The fret numbers and TalkBack's words stay the same."),
+].join("");
+</script>
