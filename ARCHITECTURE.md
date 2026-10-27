@@ -27,6 +27,7 @@ Topic files:
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
 - §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Every screen in every style · Every language · Quick and thorough UI runs
+- **[Website](docs/architecture/website.md)** (klaboukes.github.io, Phase 54): Where it lives · Pages and the frame · Nothing from another site · Languages · Pictures · Publishing
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
 
 ## 1. Tech stack

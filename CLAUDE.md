@@ -51,6 +51,9 @@ scripts/metronome-drift.sh              # metronome steadiness on the phone: 120
 ./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
 scripts/release.sh bump|notes|bundle|upload|promote|rollout|halt|listing  # a Play release: version, notes, signed bundle and tag, then (each after the owner's yes) internal track, promotion, staged rollout, store listing (see /release)
 scripts/release.sh status|health [days]|reviews [language]|listing-changes  # read only, no yes needed: what is on each Play track, crash/ANR rates per version vs Play's lines, the last week's reviews translated, what changed for the store listing since it was last sent
+python -I website/build.py              # build and check the website into website/build/ (nothing from another site, no broken link)
+scripts/publish-website.sh              # publish website/ to https://klaboukes.github.io/ after it landed on main (pushes only a change)
+scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
 ```
 ### Dev machine environment (Windows)
 - No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
@@ -96,6 +99,7 @@ scripts/release.sh status|health [days]|reviews [language]|listing-changes  # re
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
 - Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
 - **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new tool still being built stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). The release comes next: Phase 53 on Play (Phases 37 and 38 are done); fixes land on `main` as usual.
+- **The website follows the app:** a change to a tool (what it does, its name, its numbers) updates that tool's page in `website/pages/` (English and Dutch) in the same pull request, then `scripts/publish-website.sh` after the merge ([docs/architecture/website.md](docs/architecture/website.md)).
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow

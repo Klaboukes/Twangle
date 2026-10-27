@@ -1,0 +1,39 @@
+# Website
+
+Twangle's small public site (Phase 54): what Twangle is, how each tool works, and help for common problems, so a review or an email can be answered with a link. It makes the app's promise too: free (GitHub Pages, no server), no tracking, no cookies, no forms, no JavaScript, and **nothing loaded from another site**.
+
+## Where it lives
+- **Address:** https://klaboukes.github.io/ (Dutch at `/nl/`), GitHub Pages of the public repo `Klaboukes/klaboukes.github.io`, served from its `main` branch. That repo holds only the built pages; nobody edits it by hand.
+- **Source:** `website/` in this repo, so a change to a tool updates its page in the same pull request (CLAUDE.md, *Conventions*).
+- **Privacy policy:** stays where Play and the app link to it, https://klaboukes.github.io/twangle-privacy/ (Dutch `nl.html`), in its own repo `Klaboukes/twangle-privacy` (`scripts/publish-privacy.sh`, ARCHITECTURE.md §9). GitHub serves a project repo's pages under the user site's address, so the site links to it as `twangle-privacy/`, and the site itself must never have a `twangle-privacy` folder (the publish script refuses one).
+- Pages link to each other only with relative links, so moving to a domain of Twangle's own later (Phase 56) is a setting on the repo, not an edit.
+
+## Pages and the frame
+- `website/pages/<language>/<page>.html` is the inside of one page's `<main>`, plain HTML, with a header comment: `title`, `description` (the search snippet) and `nav` (which top-bar link to mark as the current one). `{play}` stands for the Play link and `{root}` for the way back to the site's root (`""` or `../`).
+- `website/build.py` (Python standard library only, `python -I website/build.py [output]`, default `website/build/`, git-ignored) wraps each page in the shared frame: head, top bar (Twangle, Tools, Help, Privacy, the other language), footer (Help, Privacy, the other language, the contact email, Google's trademark line for the badge). The frame's own words are in `WORDS` in that file, per language. A link to a page that doesn't exist yet stays out of the frame (Help appears once `help.html` does), and a tool card on the home page stays a plain box until its page is written, then becomes a link.
+- `website/static/` is copied beside the pages: `site.css`, `img/` (the app icon, Google's badges), `shots/<language>/`. The output is plain HTML with a `.nojekyll` file, so GitHub serves it as it is.
+- **Look:** from the mock-up the owner kept (`docs/design/website-preview.html`, 2026-10-27): Contemporary's colours, light or dark as the visitor's device is set, the device's own font (no web fonts), one column at phone width with no sideways scroll, words and the phone side by side on wider screens. The home page: headline, Google's *Get it on Google Play* badge, the four promises, the instruments, the tools in three groups (tuning, listening, practice), a few screenshots, the badge again.
+- **Facts stay true to the app:** names of instruments and tools as the app's `strings.xml` has them (in Dutch too), numbers from the code (e.g. the metronome's 30 to 250 BPM, `ClickTrack`). Pages explain ideas and walk through each tool rather than every button, so they stay true as the app changes.
+
+## Nothing from another site
+`website/build.py` checks the built output and fails, naming each problem, when:
+- a page or stylesheet would load something from another host: any `src`, `srcset`, `poster`, `data` or `background` attribute, any `<link href>` (stylesheets, icons, fonts), a CSS `url()` or `@import`, in `site.css`, a `<style>` or a `style=""`, pointing at a URL with a scheme (`https:`, `http:`) or at `//host`; `data:` stays on the page and is allowed;
+- a page has a `<script>` (the site works without JavaScript);
+- a link inside the site leads to a page or file that isn't there, or to an `#id` the page doesn't have (`twangle-privacy/` is the one known exception, served by its own repo);
+- a page exists in one language and not in another.
+
+Plain `<a href>` links to other sites (Google Play, the email address) are allowed: they only open when the visitor taps them. Google's badge is a local copy for the same reason. To see the check work, add `<link rel="stylesheet" href="https://example.com/a.css">` to a page and build: it fails.
+
+## Languages
+English at the root, Dutch in `nl/` (`LANGUAGES` in `build.py`); every page exists in both, with the same file name, and the language link goes to the same page in the other language. On a phone the language link is in the footer only, to keep the top bar on one line. The other 14 app languages come after launch (Phase 56): add the folder to `LANGUAGES`, its frame words to `WORDS`, a Play badge in that language, its screenshots, and translate each page. Dutch is natural and short, in the app's own words (*Strumcheck*, *Toonlijn*, *Bourdon*).
+
+## Pictures
+The store screenshots (`fastlane/.../phoneScreenshots/`) are git-ignored and about 1 MB each, so the site has its own small copies: `website/static/shots/<en|nl>/<n>.jpg`, 540 px wide JPEGs of about 60 KB, made from the screens without caption or frame that `scripts/store-screenshots.sh` leaves in `build/store-screenshots/<locale>/raw-<n>.png`. The numbers are those of the screenshot table in [docs/store-listing.md](../store-listing.md); the home page shows 1 (hero), 3, 5, 6 and 7a.
+- **Refresh them** after the store screenshots were made again (the app's look changed): `scripts/store-screenshots.sh en-US nl-NL`, then `scripts/website-pictures.sh` (also makes the 192 px icon from `fastlane/metadata/android/en-US/images/icon.png`), look at the pages, commit the pictures. It uses `website/tools/ShrinkImage.java`, run straight from Android Studio's JDK, no build.
+- **Google Play badge:** Google's own *Get it on Google Play* PNGs from its badge page (play.google.com/intl/en_us/badges), English and Dutch (*Ontdek het op Google Play*), the empty transparent margin trimmed (`ShrinkImage … trim`), otherwise unchanged as Google's rules ask, shown 60 px high (56 on a phone; at least 40), linking to the Play page, with Google's trademark line in the footer.
+- Pictures come from the app itself, no stock photos.
+
+## Publishing
+`scripts/publish-website.sh`, after a change to `website/` has landed on `main`: it builds and checks the site (a failed check stops it), clones `Klaboukes/klaboukes.github.io`, replaces its contents with the build (so a removed page goes too), and commits and pushes only when something changed, with GitHub's no-reply address (`816876+Klaboukes@users.noreply.github.com`, never a personal one: the repo is public). GitHub Pages shows the change within a few minutes. The repo was made public with GitHub Pages on its `main` branch (2026-10-27).
+
+To look at the pages before publishing: `python -I website/build.py`, then `python -I -m http.server 8754 --bind 127.0.0.1` in `website/build/`, and open http://127.0.0.1:8754/ at phone and desktop width.
