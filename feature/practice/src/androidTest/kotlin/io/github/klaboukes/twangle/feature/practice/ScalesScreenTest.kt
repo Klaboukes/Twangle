@@ -497,8 +497,10 @@ class ScalesScreenTest(private val style: VisualStyle) {
         val sound = node(PracticeTestTags.DRONE_SOUND).getBoundsInRoot()
         assertEquals("$case the drone button as tall as the name", name.height.value, play.height.value, 0.5f)
         assertEquals("$case both halves as tall", play.height.value, sound.height.value, 0.5f)
-        // Within a pixel: at the tablet's 1.5 px a dp the 120 dp split into whole pixels comes out 88 and 89 px.
-        assertEquals("$case both halves as wide", play.width.value, sound.width.value, 0.75f)
+        // Within a pixel of the shown window: split into whole pixels the halves can differ by one (at the tablet's 1.5 px
+        // a dp 88 and 89 px). A tablet's window forced onto a phone gets fewer px a dp (0.8 on the Xiaomi), so a pixel is more dp.
+        val pixel = 1f / node(PracticeTestTags.DRONE_PLAY).fetchSemanticsNode().layoutInfo.density.density
+        assertEquals("$case both halves as wide", play.width.value, sound.width.value, pixel * 1.05f)
         assertEquals("$case level with the name", name.top.value, play.top.value, 0.5f)
         assertTrue("$case after the name $name, $play, $sound", name.right <= play.left && play.right <= sound.left)
     }

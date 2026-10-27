@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.PacedSpeech
@@ -314,11 +315,16 @@ fun NoteDisplay(
                     Text(
                         text = noteText,
                         style = noteStyle(letterSize),
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = with(density) { minOf(BIG_NOTE_MIN_SIZE, letterSize).toSp() },
-                            maxFontSize = with(density) { letterSize.toSp() },
-                            stepSize = with(density) { 4.dp.toSp() },
-                        ),
+                        // Tried from the full size down: Compose's StepBased search may stop a step short of the
+                        // top through rounding, at some screen densities only (108 dp on the Xiaomi's forced
+                        // tablet window, 112 elsewhere), so the note's size depended on the device.
+                        autoSize = with(density) {
+                            OneLineAutoSize(
+                                largest = letterSize.toSp(),
+                                smallest = minOf(BIG_NOTE_MIN_SIZE, letterSize).toSp(),
+                                step = 4.dp.toSp(),
+                            )
+                        },
                         color = when {
                             readout != null -> noteColor
                             // Under the hint the ♪ only holds the slot's height.
