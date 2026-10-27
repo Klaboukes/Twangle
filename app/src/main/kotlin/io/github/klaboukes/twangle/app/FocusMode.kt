@@ -16,6 +16,13 @@ import androidx.compose.runtime.saveable.Saver
  * So when the window was upright before focus mode turned it ([uprightBefore]), it asks for upright
  * first ([turningBack]) and lets go once the window is upright again. Kept across the activity's
  * recreation on turning ([Saver]).
+ *
+ * Large screens (at least 600 dp the short way) are let go at once instead. They may answer the upright
+ * request with a letterbox, an upright window in the middle of the screen still on its side (the Lenovo
+ * Tab M11, Android 15, ignores app orientation requests that way where its rotation lock is on its side),
+ * and leaving that letterbox left a grey band behind the status bar until the tablet was turned. Let go,
+ * the tablet goes back to its rotation lock, which is upright when it was held upright: it kept the lock
+ * where it was, unlike the Xiaomi.
  */
 data class FocusTurn(
     val focusMode: Boolean,
@@ -25,12 +32,12 @@ data class FocusTurn(
     /**
      * The next state, once focus mode is [focusMode] and the window [upright]. [autoRotate] (whether
      * the phone's auto-rotate is on) is read only when focus mode goes off: with it on, the phone
-     * itself decides and nothing needs turning back.
+     * itself decides and nothing needs turning back. Nor on a [largeScreen], which is let go at once.
      */
-    fun next(focusMode: Boolean, upright: Boolean, autoRotate: () -> Boolean): FocusTurn = when {
+    fun next(focusMode: Boolean, upright: Boolean, largeScreen: Boolean, autoRotate: () -> Boolean): FocusTurn = when {
         focusMode && !this.focusMode -> FocusTurn(focusMode = true, uprightBefore = upright)
         !focusMode && this.focusMode ->
-            copy(focusMode = false, turningBack = uprightBefore && !upright && !autoRotate())
+            copy(focusMode = false, turningBack = uprightBefore && !upright && !largeScreen && !autoRotate())
         turningBack && upright -> copy(turningBack = false)
         else -> this
     }

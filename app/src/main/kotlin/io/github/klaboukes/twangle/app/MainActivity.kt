@@ -165,12 +165,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Focus mode keeps the whole app on its side, every tab (Phase 36); off, the screen follows the
-        // phone again, turned back upright first where auto-rotate is off (see FocusTurn).
-        val upright = LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE
+        // phone again, turned back upright first where auto-rotate is off (see FocusTurn), except on a
+        // large screen, which goes back to its rotation lock.
+        val configuration = LocalConfiguration.current
+        val upright = configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+        val largeScreen = configuration.smallestScreenWidthDp >= LARGE_SCREEN_DP
         var focusTurn by rememberSaveable(stateSaver = FocusTurn.Saver) {
             mutableStateOf(FocusTurn(focusMode = settings.focusMode, uprightBefore = upright))
         }
-        val nextTurn = focusTurn.next(settings.focusMode, upright, autoRotate = ::autoRotateOn)
+        val nextTurn = focusTurn.next(settings.focusMode, upright, largeScreen, autoRotate = ::autoRotateOn)
         SideEffect { if (nextTurn != focusTurn) focusTurn = nextTurn }
         val orientation = nextTurn.orientation
         DisposableEffect(orientation) {
@@ -513,6 +516,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private companion object {
+        // From this short side on, a screen may letterbox an orientation request instead of turning (FocusTurn).
+        const val LARGE_SCREEN_DP = 600
+
         // The scrims enableEdgeToEdge() uses by default behind 3-button navigation.
         val LIGHT_SCRIM = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
         val DARK_SCRIM = Color.argb(0x80, 0x1b, 0x1b, 0x1b)

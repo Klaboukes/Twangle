@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.SystemClock
 import android.provider.Settings
+import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ActivityScenario
@@ -22,7 +23,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -33,8 +36,9 @@ import org.junit.rules.Timeout
  * Focus mode (Phase 36) asks Android to keep the whole app on its side, either way round, also with
  * auto-rotate off, and the request holds on every tab. The tuner takes the whole screen (Phase 40): no
  * rail and no status bar until a tap brings back its controls and the rail; other tabs show both. Switched off, it is turned back upright (with auto-rotate off) and the request is let
- * go, so the screen follows the phone again. On the
- * phone this really turns the screen.
+ * go, so the screen follows the phone again; a large screen is let go at once. On the
+ * phone or tablet this really turns the screen. Afterwards nothing lies over the status bar: the app
+ * stays edge to edge.
  */
 class FocusModeOrientationTest {
 
@@ -46,6 +50,9 @@ class FocusModeOrientationTest {
     private val settings = ApplicationProvider.getApplicationContext<TwangleApplication>().container.settingsRepository
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private var focusModeBefore: Boolean? = null
+    private val resolver = InstrumentationRegistry.getInstrumentation().targetContext.contentResolver
+    private val autoRotateBefore = Settings.System.getInt(resolver, Settings.System.ACCELEROMETER_ROTATION, 0)
+    private val lockBefore = Settings.System.getInt(resolver, Settings.System.USER_ROTATION, 0)
 
     @Before
     fun setUp() {
@@ -60,6 +67,9 @@ class FocusModeOrientationTest {
     @After
     fun tearDown() {
         focusModeBefore?.let { runBlocking { settings.setFocusMode(it) } }
+        // The phone's rotation as it was (the large screen test moves the lock).
+        device.executeShellCommand("settings put system user_rotation $lockBefore")
+        device.executeShellCommand("settings put system accelerometer_rotation $autoRotateBefore")
     }
 
     private fun ActivityScenario<MainActivity>.requested(): Int {
@@ -84,11 +94,24 @@ class FocusModeOrientationTest {
         return condition()
     }
 
-    private fun autoRotate(): Boolean = Settings.System.getInt(
-        InstrumentationRegistry.getInstrumentation().targetContext.contentResolver,
-        Settings.System.ACCELEROMETER_ROTATION,
-        0,
-    ) == 1
+    private fun autoRotate(): Boolean = Settings.System.getInt(resolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
+
+    /** Edge to edge: the app's content starts at the screen's top, behind the status bar, with no band over it. */
+    private fun ActivityScenario<MainActivity>.edgeToEdge(): Boolean {
+        var top = -1
+        onActivity { activity ->
+            val place = IntArray(2)
+            activity.findViewById<View>(android.R.id.content).getLocationOnScreen(place)
+            top = place[1]
+        }
+        return top == 0
+    }
+
+    private fun ActivityScenario<MainActivity>.largeScreen(): Boolean {
+        var large = false
+        onActivity { large = it.resources.configuration.smallestScreenWidthDp >= LARGE_SCREEN_DP }
+        return large
+    }
 
     private fun ActivityScenario<MainActivity>.statusBarShown(): Boolean {
         var shown = true
@@ -128,7 +151,35 @@ class FocusModeOrientationTest {
             runBlocking { settings.setFocusMode(false) }
             assertTrue("off, the request is let go", waitFor { scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED })
             // With auto-rotate off (as the test run holds the phone) it is first turned back upright, as it was.
-            if (!autoRotate()) assertTrue("back upright", !scenario.onItsSide())
+            if (!autoRotate()) assertTrue("back upright", waitFor { !scenario.onItsSide() })
+            SystemClock.sleep(SETTLE_MS)
+            assertTrue("edge to edge after focus mode", scenario.edgeToEdge())
+        }
+    }
+
+    /**
+     * A large screen is let go at once when focus mode goes off: asked for upright, the Lenovo Tab M11
+     * (Android 15) gave a letterbox wherever its rotation lock was on its side, and leaving it left a
+     * grey band behind the status bar on every tab until the tablet turned. The lock is put on its side
+     * during focus mode here, as UI Automator's freeze (and its `uiautomator dump`) does.
+     */
+    @Test
+    fun aLargeScreenIsLetGoAtOnceWithNothingOverTheStatusBar() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            assumeTrue("a large screen", scenario.largeScreen())
+            runBlocking { settings.setFocusMode(true) }
+            assertTrue("focus mode turns it on its side", waitFor { scenario.onItsSide() })
+            device.freezeRotation()
+
+            runBlocking { settings.setFocusMode(false) }
+            var askedUpright = false
+            assertTrue("off, the request is let go", waitFor {
+                if (scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) askedUpright = true
+                scenario.requested() == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            })
+            SystemClock.sleep(SETTLE_MS)
+            assertFalse("never asked for upright", askedUpright)
+            assertTrue("edge to edge after focus mode", scenario.edgeToEdge())
         }
     }
 
@@ -165,6 +216,11 @@ class FocusModeOrientationTest {
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+
+        /** Long enough for a letterbox to come and go after focus mode, had there been one. */
+        const val SETTLE_MS = 2_000L
+
+        const val LARGE_SCREEN_DP = 600
 
         /** Longer than the tuner's controls stay shown after a tap (5 s), had they stayed in charge. */
         const val CONTROLS_GONE_MS = 6_000L
