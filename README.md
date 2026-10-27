@@ -19,7 +19,7 @@ Your settings stay on your device too (and in Android's own backup, if you have 
 ### Tuner
 - **Strings mode:** picks the nearest string of the selected tuning automatically, or tap a string to lock onto it.
 - **Hear the note:** hold a string to hear it as a plucked string, so you can also tune by ear. The tone follows your A4 setting and fades out by itself.
-- **Instruments:** guitar (6, 7 or 8 strings, or a 12-string tuned as six pairs), bass (4 or 5 strings), ukulele (standard, low G or baritone), violin, viola, cello and mandolin.
+- **Instruments:** guitar (6, 7 or 8 strings, or a 12-string tuned as six pairs), bass (4 or 5 strings), ukulele (standard, low G or baritone), violin, viola, cello, mandolin and 5-string banjo (open G, double C or double D).
 - **Guitar tunings:** Standard, Drop D, half-step down, full-step down, DADGAD, Open G, Open D, Open E and Open C.
 - **Lower any tuning:** by ½ to 2½ steps, your own tunings too, so Drop C, Drop B, C standard or Open G a half step down are there without a long list.
 - **Your own tunings:** make, edit and delete tunings of your own for any instrument, unison strings included.

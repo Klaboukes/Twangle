@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Barítono</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">C♯ estándar</string>
     <string name="tuning_c_standard">C estándar</string>
     <string name="tuning_b_standard">B estándar</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Violonchelo</string>
     <string name="instrument_mandolin">Mandolina</string>
+    <string name="instrument_banjo_5">Banjo de 5 cuerdas</string>
     <string name="instrument_note_guitar_12">La prueba de rasgueo y el nombre del acorde no están disponibles en la de 12 cuerdas: sus doce cuerdas suenan demasiado juntas para distinguirlas.</string>
     <string name="tuner_hint_play_string">Toca una cuerda</string>
     <string name="tuner_hint_play_note">Toca una nota</string>

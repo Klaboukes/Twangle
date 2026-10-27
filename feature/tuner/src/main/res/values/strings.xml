@@ -42,6 +42,9 @@
     <string name="tuning_low_g">Low G</string>
     <!-- The baritone ukulele: a bigger ukulele tuned D G B E, like a guitar's four highest strings. -->
     <string name="tuning_baritone">Baritone</string>
+    <!-- The 5-string banjo's two other common tunings, beside Open G (g C G C D and f♯ D F♯ A D). -->
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <!-- Names players know a lowered guitar tuning by (CommonTuning in :core:dsp; Phase 51). Standard lowered 1½ steps, then 2, 2½; Half step down and Full step down lowered 2½ steps. Write the note letters as the language's note names do (German, Polish and Russian: H for B, B for B♭). -->
     <string name="tuning_c_sharp_standard">C♯ standard</string>
     <string name="tuning_c_standard">C standard</string>
@@ -86,6 +89,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Cello</string>
     <string name="instrument_mandolin">Mandolin</string>
+    <string name="instrument_banjo_5">5-string banjo</string>
     <!-- Under the 12-string's tunings in the instrument and tuning panel: what the tuner leaves out for it, and why. -->
     <string name="instrument_note_guitar_12">The strum check and the chord name are off for the 12-string: its twelve strings ring too close together to tell apart.</string>
     <string name="tuner_hint_play_string">Play a string</string>

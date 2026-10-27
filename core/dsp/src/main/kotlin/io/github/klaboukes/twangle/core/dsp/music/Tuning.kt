@@ -24,6 +24,11 @@ import kotlin.math.abs
  * ([nearestStringIndex], [distanceToString]), and its reference tone sounds the pair. Empty on
  * every instrument with single strings or unison pairs (the mandolin).
  *
+ * [shortStrings] are the strings (by index) that start partway up the neck rather than at the nut,
+ * as a 5-string banjo's fifth (its index 0), which starts at the fifth fret: the tuner's row sets it
+ * a little apart, and the chord charts, the scale neck and the capo helper, which draw every string
+ * from the nut, don't offer the tuning ([hasShortString]). Empty on every other instrument.
+ *
  * Positions are compared as fractional MIDI note numbers (see [NoteMapper.midiOf]), so they
  * follow the user's A4 calibration and lookups are allocation-free.
  */
@@ -33,6 +38,7 @@ data class Tuning(
     val spelling: Accidental? = null,
     val loweredBy: Int = 0,
     val octaveCourses: Set<Int> = emptySet(),
+    val shortStrings: Set<Int> = emptySet(),
 ) {
 
     init {
@@ -40,6 +46,7 @@ data class Tuning(
         require(strings.isNotEmpty()) { "Tuning '$id' must have at least one string" }
         require(loweredBy in 0..MAX_LOWERED_BY) { "Tuning '$id' lowered by $loweredBy semitones" }
         require(octaveCourses.all { it in strings.indices }) { "Tuning '$id' marks octave courses $octaveCourses outside its strings" }
+        require(shortStrings.all { it in strings.indices }) { "Tuning '$id' marks short strings $shortStrings outside its strings" }
     }
 
     private val stringMidis = IntArray(strings.size) { strings[it].midi }
@@ -57,6 +64,9 @@ data class Tuning(
 
     /** Whether string [stringIndex] is a course with a second string an octave up ([octaveCourses]). */
     fun hasOctaveString(stringIndex: Int): Boolean = octaveUp[stringIndex]
+
+    /** Whether any string starts partway up the neck ([shortStrings], a banjo's fifth). */
+    val hasShortString: Boolean get() = shortStrings.isNotEmpty()
 
     /**
      * How far [midi] is from string [stringIndex], in semitones: from the string itself, or from its
@@ -117,7 +127,7 @@ data class Tuning(
             is LoweredName.Common -> named.tuning.tuning.spelling
             else -> LoweredTunings.spellingOf(notes)
         }
-        return Tuning(id, notes, spelling, loweredBy + semitones, octaveCourses)
+        return Tuning(id, notes, spelling, loweredBy + semitones, octaveCourses, shortStrings)
     }
 
     /**
@@ -178,16 +188,17 @@ object Tunings {
 /**
  * A preset tuning written as players write it, e.g. "E2 A2 D3 G3 B3 E4", strings in instrument
  * order. The tuning is spelled the way it is written: "Eb2" gives flats, "F#3" sharps.
- * [octaveCourses] marks the strings paired with one an octave up ([Tuning.octaveCourses]).
+ * [octaveCourses] marks the strings paired with one an octave up ([Tuning.octaveCourses]), and
+ * [shortStrings] those that start partway up the neck ([Tuning.shortStrings]).
  */
-internal fun tuningOf(id: String, notes: String, octaveCourses: Set<Int> = emptySet()): Tuning {
+internal fun tuningOf(id: String, notes: String, octaveCourses: Set<Int> = emptySet(), shortStrings: Set<Int> = emptySet()): Tuning {
     require(!(notes.contains('#') && notes.contains('b'))) { "Tuning '$id' mixes sharps and flats" }
     val spelling = when {
         notes.contains('#') -> Accidental.SHARP
         notes.contains('b') -> Accidental.FLAT
         else -> null
     }
-    return Tuning(id, notes.split(' ').map(::parseNote), spelling, octaveCourses = octaveCourses)
+    return Tuning(id, notes.split(' ').map(::parseNote), spelling, octaveCourses = octaveCourses, shortStrings = shortStrings)
 }
 
 // Parses scientific pitch notation, e.g. "E2", "F#3" or "Eb2" (a flat is the next key down).

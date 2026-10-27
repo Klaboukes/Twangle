@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Баритон</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">Стандарт C♯</string>
     <string name="tuning_c_standard">Стандарт C</string>
     <string name="tuning_b_standard">Стандарт H</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Альт</string>
     <string name="instrument_cello">Виолончель</string>
     <string name="instrument_mandolin">Мандолина</string>
+    <string name="instrument_banjo_5">5-струнное банджо</string>
     <string name="instrument_note_guitar_12">Проверка струн и название аккорда недоступны для 12-струнной гитары: её двенадцать струн звучат слишком близко, чтобы их различить.</string>
     <string name="tuner_hint_play_string">Сыграй струну</string>
     <string name="tuner_hint_play_note">Сыграй ноту</string>

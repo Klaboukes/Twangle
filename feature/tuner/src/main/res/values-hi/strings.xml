@@ -30,6 +30,8 @@
     <string name="tuning_open_c">ओपन C</string>
     <string name="tuning_low_g">लो G</string>
     <string name="tuning_baritone">बैरिटोन</string>
+    <string name="tuning_double_c">डबल C</string>
+    <string name="tuning_double_d">डबल D</string>
     <string name="tuning_c_sharp_standard">C♯ स्टैंडर्ड</string>
     <string name="tuning_c_standard">C स्टैंडर्ड</string>
     <string name="tuning_b_standard">B स्टैंडर्ड</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">वायोला</string>
     <string name="instrument_cello">चेलो</string>
     <string name="instrument_mandolin">मैंडोलिन</string>
+    <string name="instrument_banjo_5">5-तार बैंजो</string>
     <string name="instrument_note_guitar_12">12-तार गिटार के लिए स्ट्रम चेक और कॉर्ड का नाम बंद हैं: इसके बारह तार इतने पास-पास बजते हैं कि उन्हें अलग-अलग नहीं पहचाना जा सकता।</string>
     <string name="tuner_hint_play_string">कोई तार बजाएँ</string>
     <string name="tuner_hint_play_note">कोई नोट बजाएँ</string>

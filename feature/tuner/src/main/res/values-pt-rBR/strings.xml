@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Barítono</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">C♯ padrão</string>
     <string name="tuning_c_standard">C padrão</string>
     <string name="tuning_b_standard">B padrão</string>
@@ -67,6 +69,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Violoncelo</string>
     <string name="instrument_mandolin">Bandolim</string>
+    <string name="instrument_banjo_5">Banjo de 5 cordas</string>
     <string name="instrument_note_guitar_12">O teste com batida e o nome do acorde ficam desligados no violão de 12 cordas: suas doze cordas soam próximas demais para distingui-las.</string>
     <string name="tuner_hint_play_string">Toque uma corda</string>
     <string name="tuner_hint_play_note">Toque uma nota</string>

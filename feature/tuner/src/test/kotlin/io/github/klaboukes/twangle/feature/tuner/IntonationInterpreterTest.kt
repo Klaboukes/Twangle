@@ -183,6 +183,8 @@ class IntonationInterpreterTest {
         // The 12-string's octave strings blur a strum and a chord: only the 12th-fret check and the trail.
         assertEquals(listOf(TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR_12))
+        // The banjo: a strum and a chord read well; no 12th-fret check (its short string's octave is at the 17th).
+        assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BANJO_5))
         // Each tool follows its own switch.
         assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(intonationCheck = false), Instruments.GUITAR))
         assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false), Instruments.GUITAR))

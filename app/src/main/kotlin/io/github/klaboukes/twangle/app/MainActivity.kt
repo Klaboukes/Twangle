@@ -442,6 +442,8 @@ class MainActivity : AppCompatActivity() {
                     },
                     header = header ?: {},
                     onPickInstrument = openPanel,
+                    // The banjo's short fifth string: the capo table opens shapes Chords doesn't draw for it yet.
+                    shortString = settings.tuning.hasShortString,
                 )
             }
         }

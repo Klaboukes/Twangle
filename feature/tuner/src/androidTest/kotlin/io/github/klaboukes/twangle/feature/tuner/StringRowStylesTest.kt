@@ -262,6 +262,71 @@ class StringRowStylesTest(private val style: VisualStyle) {
         }
     }
 
+    /**
+     * The banjo's short fifth string, first in the row, stands a little apart: the gap after its button
+     * is about [SHORT_STRING_GAP] wider than the others, which are all alike. In each of its tunings,
+     * upright and on its side, at normal and 2× text; every button still fits.
+     */
+    @Test
+    fun theBanjosShortStringStandsALittleApart() {
+        show(listening = true)
+        for (scale in listOf(1f, 2f)) {
+            shownFontScale.value = scale
+            for (layout in Layout.entries) {
+                shownLayout.value = layout
+                for (tuning in Instruments.BANJO_5.tunings) {
+                    shownTuning.value = tuning
+                    compose.waitForIdle()
+                    val case = "$style $layout ${tuning.id} at ${scale}x"
+                    assertRowFits(case, tuning, Notation.SHARPS, scroll = true)
+                    assertShortStringGap(case, tuning)
+                }
+            }
+        }
+    }
+
+    /**
+     * The banjo in every language at 2× text, upright and on its side: every string's name wholly
+     * shown, the short string still set apart, and the instrument button says the banjo's name in that
+     * language.
+     */
+    @EveryLanguage
+    @Test
+    fun theBanjoFitsInEveryLanguageAtTwiceTheTextSize() {
+        val tuning = Instruments.BANJO_5.defaultTuning
+        shownTuning.value = tuning
+        shownFontScale.value = 2f
+        show(listening = true)
+        for (language in checkedLanguages) {
+            shownLocale.value = language
+            val name = localized(language, R.string.instrument_banjo_5)
+            for (layout in Layout.entries) {
+                shownLayout.value = layout
+                compose.waitForIdle()
+                val case = "$style $language $layout at 2x"
+                for (label in labels(tuning, Notation.SHARPS)) {
+                    assertWhollyShown(compose.onNode(hasText(label), useUnmergedTree = true), "$case: $label", scroll = true)
+                }
+                assertShortStringGap(case, tuning)
+                val spoken = compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
+                assertTrue("$case: the instrument button says $spoken", spoken != null && name in spoken)
+            }
+        }
+    }
+
+    /** The gap after [tuning]'s first (short) button is [SHORT_STRING_GAP] wider than the even gaps between the rest. */
+    private fun assertShortStringGap(case: String, tuning: Tuning) {
+        val chips = labels(tuning, Notation.SHARPS).map { compose.onNodeWithText(it).fetchSemanticsNode().boundsInRoot }
+        // In the forced window's own dp: a window wider than the phone (on its side, the phone held upright) gets a smaller density.
+        val windowPx = compose.onNodeWithTag(WINDOW).fetchSemanticsNode().boundsInRoot.width
+        val dpPerPx = shownLayout.value.size.width.value / windowPx
+        val gaps = (0 until chips.size - 1).map { ((chips[it + 1].left - chips[it].right) * dpPerPx).dp }
+        val even = gaps.drop(1)
+        for (gap in even) assertEquals("$case: the even gaps $gaps", even.first().value, gap.value, 1f)
+        val extra = gaps.first() - even.first()
+        assertTrue("$case: the short string's gap is ${gaps.first()}, the others ${even.first()}", (extra - SHORT_STRING_GAP).value in -2f..2f)
+    }
+
     private fun localized(language: String, id: Int): String {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val configuration = Configuration(context.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) }
@@ -334,9 +399,13 @@ class StringRowStylesTest(private val style: VisualStyle) {
         private const val TEST_TIMEOUT_SECONDS = 10L
         private val SLACK = 0.5.dp
 
-        /** 4, 5, 7 and 8 strings, the ukulele's re-entrant four and the 12-string's six courses. */
+        /** The extra gap after a banjo's short string, as StringSelector sets it. */
+        private val SHORT_STRING_GAP = 12.dp
+
+        /** 4, 5, 7 and 8 strings, the ukulele's re-entrant four, the 12-string's six courses and the banjo's five. */
         private val TUNINGS = listOf(
             Instruments.GUITAR_12.defaultTuning,
+            Instruments.BANJO_5.defaultTuning,
             Instruments.BASS_4.defaultTuning,
             Instruments.BASS_5.defaultTuning,
             Instruments.UKULELE.defaultTuning,

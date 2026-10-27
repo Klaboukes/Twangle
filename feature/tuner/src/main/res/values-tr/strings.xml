@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Bariton</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">C♯ standart</string>
     <string name="tuning_c_standard">C standart</string>
     <string name="tuning_b_standard">B standart</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Viyola</string>
     <string name="instrument_cello">Çello</string>
     <string name="instrument_mandolin">Mandolin</string>
+    <string name="instrument_banjo_5">5 telli banjo</string>
     <string name="instrument_note_guitar_12">12 telli gitarda tel kontrolü ve akor adı kapalıdır: on iki teli birbirinden ayırt edilemeyecek kadar yakın tınlar.</string>
     <string name="tuner_hint_play_string">Bir tel çal</string>
     <string name="tuner_hint_play_note">Bir nota çal</string>

@@ -11,7 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.synth.StringVoices
  * app's string resources, not from here. A mandolin's paired strings count as one course each,
  * because both strings of a pair are tuned to the same note. A 12-string guitar's pairs count as
  * one course each too, the lower four with their second string an octave up ([octaveCourses]).
- * [voice] is how its strings sound when the tuner plays a reference tone ([StringVoices]).
+ * A 5-string banjo's fifth string is short, starting at the fifth fret ([shortStrings]). [voice] is how its strings sound when the tuner plays a reference tone ([StringVoices]).
  */
 class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>, val voice: StringVoice) {
 
@@ -26,6 +26,7 @@ class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>
         }
         require(tunings.map { it.id }.toSet().size == tunings.size) { "Instrument '$id' repeats a tuning id" }
         require(tunings.all { it.octaveCourses == tunings.first().octaveCourses }) { "Instrument '$id' has tunings with different octave courses" }
+        require(tunings.all { it.shortStrings == tunings.first().shortStrings }) { "Instrument '$id' has tunings with different short strings" }
     }
 
     /**
@@ -34,6 +35,12 @@ class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>
      * tunings for it get them too.
      */
     val octaveCourses: Set<Int> get() = defaultTuning.octaveCourses
+
+    /**
+     * The strings that start partway up the neck ([Tuning.shortStrings]): how the instrument is
+     * built, so the same in every preset and in the player's own tunings for it.
+     */
+    val shortStrings: Set<Int> get() = defaultTuning.shortStrings
 
     /** The instrument's standard tuning, the first preset. */
     val defaultTuning: Tuning get() = tunings.first()
@@ -56,6 +63,9 @@ class Instrument(val id: String, val stringCount: Int, val tunings: List<Tuning>
  * The six-string guitar keeps the [Tunings] presets and their original ids.
  */
 object Instruments {
+    // The banjo's fifth string, first in instrument order.
+    private val BANJO_SHORT_STRING = setOf(0)
+
     val GUITAR = Instrument("guitar", 6, Tunings.all, StringVoices.STEEL_GUITAR)
 
     /**
@@ -116,9 +126,24 @@ object Instruments {
     /** Four courses of two strings, tuned like a violin. */
     val MANDOLIN = Instrument("mandolin", 4, listOf(tuningOf("mandolin_standard", "G3 D4 A4 E5")), StringVoices.MANDOLIN)
 
+    /**
+     * A 5-string banjo, re-entrant like the ukulele: the short fifth string, which starts at the
+     * fifth fret and sounds high, comes first in instrument order ([Tuning.shortStrings]), so open G
+     * is g D G B D, written G4 D3 G3 B3 D4. Double C and double D are the two other common tunings.
+     */
+    val BANJO_5 = Instrument(
+        "banjo_5", 5,
+        listOf(
+            tuningOf("banjo_open_g", "G4 D3 G3 B3 D4", shortStrings = BANJO_SHORT_STRING),
+            tuningOf("banjo_double_c", "G4 C3 G3 C4 D4", shortStrings = BANJO_SHORT_STRING),
+            tuningOf("banjo_double_d", "F#4 D3 F#3 A3 D4", shortStrings = BANJO_SHORT_STRING),
+        ),
+        StringVoices.BANJO,
+    )
+
     /** All instruments, in the order an instrument picker should list them. */
     val all: List<Instrument> = listOf(
-        GUITAR, GUITAR_12, GUITAR_7, GUITAR_8, BASS_4, BASS_5, UKULELE, VIOLIN, VIOLA, CELLO, MANDOLIN,
+        GUITAR, GUITAR_12, GUITAR_7, GUITAR_8, BASS_4, BASS_5, UKULELE, VIOLIN, VIOLA, CELLO, MANDOLIN, BANJO_5,
     )
 
     val DEFAULT: Instrument = GUITAR

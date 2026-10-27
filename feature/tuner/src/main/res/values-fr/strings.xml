@@ -31,6 +31,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Baryton</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">Standard C♯</string>
     <string name="tuning_c_standard">Standard C</string>
     <string name="tuning_b_standard">Standard B</string>
@@ -67,6 +69,7 @@
     <string name="instrument_viola">Alto</string>
     <string name="instrument_cello">Violoncelle</string>
     <string name="instrument_mandolin">Mandoline</string>
+    <string name="instrument_banjo_5">Banjo 5 cordes</string>
     <string name="instrument_note_guitar_12">Le test en grattant et le nom d\'accord sont désactivés pour la 12 cordes : ses douze cordes sonnent trop près les unes des autres pour être distinguées.</string>
     <string name="tuner_hint_play_string">Jouez une corde</string>
     <string name="tuner_hint_play_note">Jouez une note</string>

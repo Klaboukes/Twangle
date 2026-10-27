@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Bariton</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">Standar C♯</string>
     <string name="tuning_c_standard">Standar C</string>
     <string name="tuning_b_standard">Standar B</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Selo</string>
     <string name="instrument_mandolin">Mandolin</string>
+    <string name="instrument_banjo_5">Banjo 5 senar</string>
     <string name="instrument_note_guitar_12">Cek genjreng dan nama akor tidak tersedia untuk gitar 12 senar: kedua belas senarnya berbunyi terlalu berdekatan untuk dibedakan.</string>
     <string name="tuner_hint_play_string">Petik satu senar</string>
     <string name="tuner_hint_play_note">Mainkan nada</string>

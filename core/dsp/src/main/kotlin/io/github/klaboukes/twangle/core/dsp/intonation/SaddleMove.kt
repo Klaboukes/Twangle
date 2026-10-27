@@ -60,7 +60,9 @@ object SaddleMove {
  * Which instruments the intonation check is offered for, and which get millimetres. Only fretted
  * instruments with a saddle: the 12th fret fixes the octave's place there, and a saddle (each string's
  * own on guitars and basses, the whole bridge on a mandolin) moves to put it right. The violin family
- * has no frets, so the octave is wherever the finger is; it isn't offered there.
+ * has no frets, so the octave is wherever the finger is; it isn't offered there. Nor on the banjo yet:
+ * its short fifth string starts at the fifth fret, so that string's octave lies at the 17th fret, not
+ * the 12th the check asks for.
  */
 object IntonationInstruments {
 

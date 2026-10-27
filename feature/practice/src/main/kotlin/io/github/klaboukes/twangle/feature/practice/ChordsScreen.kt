@@ -116,6 +116,11 @@ import kotlinx.coroutines.withContext
  * polite live region, so a new shape or chord is said when it shows, and so is a scale's name (not
  * the whole neck: it is long).
  *
+ * A [tuning] with a short string ([Tuning.shortStrings], the 5-string banjo's fifth, which starts at
+ * the fifth fret) is not charted yet: the chart's or the neck's place shows a quiet line saying so
+ * ([ShortStringLine]), in the look of "No shape within reach", and nothing else moves, so picking
+ * another instrument with the button at the top brings the chart straight back.
+ *
  * On Scales with a [drone] player (Phase 48) the name shares its row with the drone button ([DroneButton]): play
  * sounds the scale's root ([droneRootHz], following [a4Hz]) as [savedDrone] says, stop stops it; the drone follows a
  * new root at once (a crossfade) and stops when Scales goes (another tool, another tab, the app or the screen off),
@@ -149,9 +154,11 @@ fun ChordsScreen(
     var scaleType by rememberSaveable { mutableStateOf(savedScaleType) }
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
-    val found = rememberShapes(chord, tuning)
+    // The banjo's short fifth string: Chords and Scales don't draw it yet.
+    val uncharted = tuning.hasShortString
+    val found = rememberShapes(chord, tuning, enabled = !uncharted)
     var index by rememberSaveable(chord, tuning) { mutableIntStateOf(0) }
-    val count = found?.shapes?.size ?: 0
+    val count = if (uncharted) 0 else found?.shapes?.size ?: 0
     val shown = index.coerceIn(0, (count - 1).coerceAtLeast(0))
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
 
@@ -258,10 +265,13 @@ fun ChordsScreen(
         )
     }
     val fill = @Composable {
-        if (scales) {
-            NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying)
-        } else {
-            ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
+        when {
+            uncharted -> ShortStringLine(
+                stringResource(if (scales) R.string.practice_scales_short_string else R.string.practice_chords_short_string),
+                Modifier.fillMaxSize(),
+            )
+            scales -> NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying)
+            else -> ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
         }
     }
     val bottom: (gap: Float) -> @Composable ColumnScope.() -> Unit = { gap ->
@@ -398,12 +408,15 @@ private const val BREATH_STILL = 0.5f
 /** Shapes of [chord] on [tuning], found off the main thread; [shapes] easiest first. */
 private class FoundShapes(val chord: Chord, val tuning: Tuning, val shapes: List<ChordShape>)
 
-/** The shapes of [chord] on [tuning], or the last ones found while the new ones are worked out (null at first). */
+/**
+ * The shapes of [chord] on [tuning], or the last ones found while the new ones are worked out (null at
+ * first); none are worked out while not [enabled] (a tuning the charts don't draw).
+ */
 @Composable
-private fun rememberShapes(chord: Chord, tuning: Tuning): FoundShapes? {
+private fun rememberShapes(chord: Chord, tuning: Tuning, enabled: Boolean = true): FoundShapes? {
     var found by remember { mutableStateOf<FoundShapes?>(null) }
-    LaunchedEffect(chord, tuning) {
-        if (found?.chord == chord && found?.tuning == tuning) return@LaunchedEffect
+    LaunchedEffect(chord, tuning, enabled) {
+        if (!enabled || (found?.chord == chord && found?.tuning == tuning)) return@LaunchedEffect
         val shapes = withContext(Dispatchers.Default) { ChordShapeFinder.shapesOf(chord, tuning) }
         found = FoundShapes(chord, tuning, shapes)
     }

@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Barytonowy</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">Standard C♯</string>
     <string name="tuning_c_standard">Standard C</string>
     <string name="tuning_b_standard">Standard H</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Altówka</string>
     <string name="instrument_cello">Wiolonczela</string>
     <string name="instrument_mandolin">Mandolina</string>
+    <string name="instrument_banjo_5">Banjo 5-strunowe</string>
     <string name="instrument_note_guitar_12">Test strun i nazwa akordu są wyłączone dla gitary 12-strunowej: jej dwanaście strun brzmi zbyt blisko siebie, by je rozróżnić.</string>
     <string name="tuner_hint_play_string">Zagraj na strunie</string>
     <string name="tuner_hint_play_note">Zagraj dźwięk</string>

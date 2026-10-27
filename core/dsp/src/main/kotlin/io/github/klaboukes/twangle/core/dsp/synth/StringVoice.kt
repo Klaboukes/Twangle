@@ -269,6 +269,32 @@ object StringVoices {
         octaveStringLevel = 0.6,
     )
 
+    /**
+     * A 5-string banjo picked with metal fingerpicks near the bridge: a drum head for a top, so the
+     * note is bright and twangy and falls fast (the head takes the string's energy quickly), its
+     * lowest modes near 330 and 720 Hz (an 11-inch head at bluegrass tension, rounded), with a sharp
+     * click of the pick and a knock of the head at the start. Light steel strings, a little stiff.
+     */
+    val BANJO = StringVoice(
+        id = "banjo",
+        pluckPoint = 0.1,
+        tilt = 0.8,
+        brightnessHz = 7_000.0,
+        stiffness = 2e-5,
+        stiffnessHz = 196.0,
+        sustainSeconds = 0.9,
+        trebleSustainSeconds = 0.18,
+        fastShare = 0.55,
+        fastRatio = 0.25,
+        body = listOf(BodyMode(330.0, 8.0, 7.0), BodyMode(720.0, 8.0, 5.0), BodyMode(1_300.0, 6.0, 4.0), BodyMode(2_800.0, 1.6, 7.0)),
+        glideCents = 3.0,
+        glideSeconds = 0.03,
+        attackNoise = 0.08,
+        attackNoiseSeconds = 0.002,
+        attackNoiseHz = 3_000.0,
+        bodyThump = 0.45,
+    )
+
     /** A violin bowed on an open string: A0 near 275 Hz, B1− and B1+ near 450 and 540 Hz, the bridge hill near 2.5 kHz. */
     val VIOLIN = StringVoice(
         id = "violin",
@@ -312,7 +338,7 @@ object StringVoices {
     )
 
     /** Every voice, each used by at least one instrument. */
-    val all: List<StringVoice> = listOf(STEEL_GUITAR, TWELVE_STRING, ELECTRIC_BASS, UKULELE, MANDOLIN, VIOLIN, VIOLA, CELLO)
+    val all: List<StringVoice> = listOf(STEEL_GUITAR, TWELVE_STRING, ELECTRIC_BASS, UKULELE, MANDOLIN, BANJO, VIOLIN, VIOLA, CELLO)
 
     /** The voice of the default instrument, the six-string guitar. */
     val DEFAULT: StringVoice = STEEL_GUITAR

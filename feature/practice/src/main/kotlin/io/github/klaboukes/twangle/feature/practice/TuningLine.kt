@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.practice
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -165,3 +169,29 @@ private val NAME_PADDING = 4.dp
 /** Between the tool button and the instrument button's touch target; the instrument button's touch target. */
 private val ROW_GAP = 8.dp
 private val INSTRUMENT_TOUCH = 48.dp
+
+/**
+ * The quiet line in the chart's, the neck's or the capo table's place for a tuning with a short string
+ * (the banjo's fifth, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings]), which Chords,
+ * Scales and Capo don't draw yet: [text], in the look of the chart's "No shape within reach in this
+ * tuning", centred in its room, set smaller where the room is short. TalkBack reads it as it is.
+ */
+@Composable
+internal fun ShortStringLine(text: String, modifier: Modifier = Modifier) {
+    Box(modifier, contentAlignment = Alignment.Center) {
+        val style = MaterialTheme.typography.bodyLarge
+        Text(
+            text,
+            // The line height relative, so it shrinks with the text.
+            style = style.copy(lineHeight = SHORT_STRING_LINE_HEIGHT),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            // Set smaller where its room is short (a phone on its side at 2x text), never cut off.
+            autoSize = TextAutoSize.StepBased(minFontSize = SHORT_STRING_MIN_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+            modifier = Modifier.padding(horizontal = 16.dp).testTag(PracticeTestTags.SHORT_STRING),
+        )
+    }
+}
+
+private val SHORT_STRING_MIN_SIZE = 10.sp
+private val SHORT_STRING_LINE_HEIGHT = 1.4.em

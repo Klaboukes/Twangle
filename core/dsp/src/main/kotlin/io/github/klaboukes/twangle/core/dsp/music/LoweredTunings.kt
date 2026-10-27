@@ -62,15 +62,16 @@ internal object LoweredTunings {
      * null. The presets are those of the instrument [id] belongs to (for the 12-string, tuned like
      * the guitar, the guitar's too: Standard lowered ½ step is Half step down there as well); the
      * player's own tunings (no preset id) are matched with the presets of the one instrument of
-     * single strings with that many, the six-string guitar, since a four-string tuning could be a
-     * ukulele's as well as a bass's.
+     * single strings, all from the nut, with that many, the six-string guitar (and the five-string
+     * bass, not the banjo with its short string), since a four-string tuning could be a ukulele's
+     * as well as a bass's.
      */
     fun namedAs(id: String, notes: List<Note>): LoweredName? {
         val owner = Instruments.ofTuning(id)
         val presets = when {
             owner === Instruments.GUITAR_12 -> owner.tunings + Instruments.GUITAR.tunings
             owner != null -> owner.tunings
-            else -> Instruments.all.singleOrNull { it.stringCount == notes.size && it.octaveCourses.isEmpty() }?.tunings ?: emptyList()
+            else -> Instruments.all.singleOrNull { it.stringCount == notes.size && it.octaveCourses.isEmpty() && it.shortStrings.isEmpty() }?.tunings ?: emptyList()
         }
         presets.firstOrNull { it.id != id && it.strings == notes }?.let { return LoweredName.Preset(it) }
         return CommonTuning.entries.firstOrNull { it.tuning.strings == notes }?.let { LoweredName.Common(it) }

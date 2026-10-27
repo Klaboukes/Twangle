@@ -33,8 +33,11 @@ data class CustomTuning(
         require(notes.all { it.midi in MIDI_RANGE }) { "Custom tuning notes must be MIDI $MIDI_RANGE" }
     }
 
-    /** The tuning the tuner uses, with this tuning's [id] and the instrument's octave strings ([Instrument.octaveCourses]). */
-    val tuning: Tuning = Tuning(id, notes, octaveCourses = instrument.octaveCourses)
+    /**
+     * The tuning the tuner uses, with this tuning's [id], the instrument's octave strings
+     * ([Instrument.octaveCourses]) and its short strings ([Instrument.shortStrings], a banjo's fifth).
+     */
+    val tuning: Tuning = Tuning(id, notes, octaveCourses = instrument.octaveCourses, shortStrings = instrument.shortStrings)
 
     companion object {
         /** Every custom tuning id starts with this; preset ids never do. */

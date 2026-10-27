@@ -72,4 +72,13 @@ class StringRowFitTest {
         val outer = 40f * fit.buttonScale + fit.ringGapDp * 2f
         assertEquals((41f - outer) / 2f + fit.ringGapDp, stringFaceInset(328f, 8, 40f, fit), 0.001f)
     }
+
+    /** A banjo's gap after its short string is no part of the spread: the even gaps shrink by a sixth of it, at both ends. */
+    @Test
+    fun faceInsetWithTheShortStringsGap() {
+        // Five 38 dp keys in 48 dp slots on a 328 dp row, 12 dp of it after the first: gaps of (328 - 12 - 240) / 6.
+        val fit = stringRowFit(availableDp = 328f - 12f, count = 5, buttonWidthDp = 38f, ringGapDp = 4f, minSlotDp = 48f)
+        assertFalse(fit.squeezed)
+        assertEquals(76f / 6f + 1f + 4f, stringFaceInset(328f, 5, 38f, fit, extraGapDp = 12f), 0.001f)
+    }
 }

@@ -630,6 +630,21 @@ class TunerContentTest {
     }
 
     @Test
+    fun theBanjoComesLastWithOpenGDoubleCAndDoubleD() {
+        val banjo = Instruments.BANJO_5
+        assertEquals(banjo, Instruments.all.last())
+        show(TunerUiState.Listening(TunerMode.AUTO, banjo.defaultTuning))
+        openPanel()
+        compose.onNodeWithText(text(R.string.instrument_banjo_5)).assertIsSelected()
+        // Open G is its standard tuning, called by its own name; no "Standard" row.
+        compose.onNodeWithText(text(R.string.tuning_standard)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.tuning_open_g)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.tuning_double_c)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.tuning_double_d)).assertIsDisplayed().performClick()
+        assertEquals(listOf(banjo.tuningById("banjo_double_d")), tuningChanges)
+    }
+
+    @Test
     fun thePanelShowsOnlyTheInstrumentsTunings() {
         val ukulele = Instruments.UKULELE
         show(TunerUiState.Listening(TunerMode.AUTO, ukulele.defaultTuning))

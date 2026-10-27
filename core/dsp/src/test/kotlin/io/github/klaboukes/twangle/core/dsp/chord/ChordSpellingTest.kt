@@ -229,6 +229,6 @@ class ChordSpellingTest {
     @Test
     fun `the chord name is offered for strummed instruments only`() {
         val offered = Instruments.all.filter(ChordInstruments::offers)
-        assertEquals(listOf(Instruments.GUITAR, Instruments.GUITAR_7, Instruments.GUITAR_8, Instruments.UKULELE, Instruments.MANDOLIN), offered)
+        assertEquals(listOf(Instruments.GUITAR, Instruments.GUITAR_7, Instruments.GUITAR_8, Instruments.UKULELE, Instruments.MANDOLIN, Instruments.BANJO_5), offered)
     }
 }

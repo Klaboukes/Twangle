@@ -325,6 +325,21 @@ class StringSynthTest {
     }
 
     @Test
+    fun `a banjo's note is brighter and dies sooner than a guitar's`() {
+        // Its drum head takes the string's energy fast, and it is picked near the bridge with metal picks.
+        val f = 146.83f // D3, the banjo's fourth string, clear of both bodies' modes
+        val banjo = renderAll(StringSynth(RATE, StringVoices.BANJO), f)
+        val guitar = renderAll(StringSynth(RATE, StringVoices.STEEL_GUITAR), f)
+        val banjoFall = rmsDb(banjo, 0.05f, 0.2f) - rmsDb(banjo, 1.5f, 0.2f)
+        val guitarFall = rmsDb(guitar, 0.05f, 0.2f) - rmsDb(guitar, 1.5f, 0.2f)
+        assertTrue("banjo falls $banjoFall dB by 1.5 s, guitar $guitarFall dB", banjoFall > guitarFall + 6)
+        // More of its sound in the upper partials: the 6th to the 16th against the fundamental.
+        val banjoBright = (6..16).sumOf { partial(banjo, it * f) } / partial(banjo, f)
+        val guitarBright = (6..16).sumOf { partial(guitar, it * f) } / partial(guitar, f)
+        assertTrue("upper partials: banjo $banjoBright, guitar $guitarBright", banjoBright > 1.5 * guitarBright)
+    }
+
+    @Test
     fun `steel strings' upper partials sit a little sharp, nylon's do not`() {
         // Partial k of a stiff string sits at k·f·√(1 + B·k²) (the fundamental exact): the bass's
         // 10th partial on the low E, B = 6·10⁻⁵, is 5.1 cents sharp; the ukulele's is harmonic.

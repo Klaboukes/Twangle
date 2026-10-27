@@ -95,6 +95,10 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * TalkBack hears the shapes button as a list ("Shapes I play: C major"), the ‹ › buttons by what
  * they do, the capo as a polite live region with the key it sounds in ("Capo on fret 3, sounds in
  * E flat major"), and each row as one button ("C major shape, sounds E flat major", "open in Chords").
+ *
+ * With [shortString] (a tuning with a short string, the 5-string banjo's, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings])
+ * the table's place shows a quiet line instead ([ShortStringLine]), since its rows open shapes Chords
+ * doesn't draw for it yet; nothing else moves.
  */
 @Composable
 fun CapoScreen(
@@ -109,6 +113,7 @@ fun CapoScreen(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     onPickInstrument: (() -> Unit)? = null,
+    shortString: Boolean = false,
 ) {
     var shapesIndex by rememberSaveable { mutableIntStateOf(CAPO_SHAPES.indexOf(capoShapesToOpen(savedShapes))) }
     var fret by rememberSaveable { mutableIntStateOf(capoFretToOpen(savedFret)) }
@@ -145,7 +150,17 @@ fun CapoScreen(
             modifier = Modifier.testTag(PracticeTestTags.CAPO_SOUNDS_IN).clearAndSetSemantics { contentDescription = spokenSoundsIn },
         )
     }
-    val table = @Composable { CapoTableView(plan, notation, speech, onOpenChord) }
+    val table = @Composable {
+        if (shortString) {
+            // As tall as the table, so nothing round it moves.
+            ShortStringLine(
+                stringResource(R.string.practice_capo_short_string),
+                Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth().heightIn(min = ROW_HEIGHT * capoChordsOf(plan.shapeKey).size + TABLE_HEADER_HEIGHT),
+            )
+        } else {
+            CapoTableView(plan, notation, speech, onOpenChord)
+        }
+    }
 
     BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(PracticeTestTags.CAPO)) {
         val layout = practiceLayoutFor(maxWidth.value, maxHeight.value)
@@ -536,6 +551,9 @@ private val TABLE_TOP_WIDE = 12.dp
 
 private val TABLE_MAX_WIDTH = 320.dp
 private val ROW_HEIGHT = 48.dp
+
+/** About the table's "Shape · Sounds" row and the gap under it, so the short-string line takes the table's height. */
+private val TABLE_HEADER_HEIGHT = 24.dp
 private val ROW_PADDING = 20.dp
 private const val BAND_ALPHA = 0.06f
 

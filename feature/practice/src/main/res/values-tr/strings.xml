@@ -32,6 +32,9 @@
     <string name="practice_shape_next">Sonraki basış</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Bu akortta erişilebilir bir basış yok</string>
+    <string name="practice_chords_short_string">Akor şemaları banjonun kısa telini henüz bilmiyor. Yukarıdan başka bir enstrüman seç.</string>
+    <string name="practice_scales_short_string">Gamlar banjonun kısa telini henüz bilmiyor. Yukarıdan başka bir enstrüman seç.</string>
+    <string name="practice_capo_short_string">Kapo tablosu banjonun kısa telini henüz bilmiyor. Yukarıdan başka bir enstrüman seç.</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, basış %2$d / %3$d</string>
     <string name="practice_spoken_string">%1$s teli</string>

@@ -26,9 +26,10 @@ class PickerNamesTest {
     }
 
     @Test
-    fun `every preset tuning has a name, every instrument's first one Standard`() {
+    fun `every preset tuning has a name, every instrument's first one Standard but the banjo's Open G`() {
         for (instrument in Instruments.all) {
-            assertEquals(instrument.id, R.string.tuning_standard, tuningNameRes(instrument.defaultTuning.id))
+            val first = if (instrument == Instruments.BANJO_5) R.string.tuning_open_g else R.string.tuning_standard
+            assertEquals(instrument.id, first, tuningNameRes(instrument.defaultTuning.id))
             for (tuning in instrument.tunings) {
                 assertNotNull("no name for ${tuning.id}", tuningNameRes(tuning.id))
             }

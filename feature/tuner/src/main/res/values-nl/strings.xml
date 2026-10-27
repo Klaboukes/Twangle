@@ -34,6 +34,8 @@
     <!-- Ukulele with its G string an octave lower than standard. -->
     <string name="tuning_low_g">Lage G</string>
     <string name="tuning_baritone">Bariton</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">C♯-standaard</string>
     <string name="tuning_c_standard">C-standaard</string>
     <string name="tuning_b_standard">B-standaard</string>
@@ -71,6 +73,7 @@
     <string name="instrument_viola">Altviool</string>
     <string name="instrument_cello">Cello</string>
     <string name="instrument_mandolin">Mandoline</string>
+    <string name="instrument_banjo_5">5-snarige banjo</string>
     <string name="instrument_note_guitar_12">Strumcheck en akkoordnaam staan uit voor de 12-snarige: de twaalf snaren klinken te dicht op elkaar om ze uit elkaar te houden.</string>
     <string name="tuner_hint_play_string">Speel een snaar</string>
     <string name="tuner_hint_play_note">Speel een noot</string>

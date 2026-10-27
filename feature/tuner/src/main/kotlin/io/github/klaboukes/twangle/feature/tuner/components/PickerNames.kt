@@ -59,8 +59,8 @@ internal fun openStrings(tuning: Tuning, notation: Notation): AnnotatedString =
 internal fun spokenOpenStrings(tuning: Tuning, notation: Notation, speech: NoteNameSpeech, separator: String): String =
     tuning.strings.joinToString(separator) { speech.name(notation.nameIn(tuning, it.pitchClass)) }
 
-/** Every instrument's first preset is its "Standard" tuning. */
-private val standardTuningIds: Set<String> = Instruments.all.mapTo(HashSet()) { it.defaultTuning.id }
+/** Every instrument's first preset is its "Standard" tuning, but the banjo's, which players call open G. */
+private val standardTuningIds: Set<String> = (Instruments.all - Instruments.BANJO_5).mapTo(HashSet()) { it.defaultTuning.id }
 
 /** The string of the preset tuning [id]'s name (also read by the home-screen widget), or null for an unknown one. */
 @StringRes
@@ -76,6 +76,9 @@ fun tuningNameRes(id: String): Int? = when (id) {
     Tunings.OPEN_C.id -> R.string.tuning_open_c
     "ukulele_low_g" -> R.string.tuning_low_g
     "ukulele_baritone" -> R.string.tuning_baritone
+    "banjo_open_g" -> R.string.tuning_open_g
+    "banjo_double_c" -> R.string.tuning_double_c
+    "banjo_double_d" -> R.string.tuning_double_d
     else -> null
 }
 
@@ -125,6 +128,7 @@ fun instrumentNameRes(id: String): Int? = when (id) {
     Instruments.VIOLA.id -> R.string.instrument_viola
     Instruments.CELLO.id -> R.string.instrument_cello
     Instruments.MANDOLIN.id -> R.string.instrument_mandolin
+    Instruments.BANJO_5.id -> R.string.instrument_banjo_5
     else -> null
 }
 

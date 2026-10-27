@@ -191,7 +191,8 @@ class ChordShapeFinderTest {
 
     @Test
     fun `every shape sounds exactly the chord on every preset`() {
-        val tunings = Instruments.all.flatMap { it.tunings }
+        // Not the banjo's: the charts don't draw its short fifth string, so Chords doesn't offer them.
+        val tunings = Instruments.all.flatMap { it.tunings }.filterNot { it.hasShortString }
         val strummedStandards = Instruments.all.filter(ChordInstruments::offers).map { it.tunings.first() }
         for (tuning in tunings) for (quality in ChordQuality.entries) for (root in PitchClass.entries) {
             val chord = Chord.of(root, quality)
@@ -239,7 +240,7 @@ class ChordShapeFinderTest {
 
     @Test
     fun `every power chord plays two or three neighbouring strings, the root lowest`() {
-        for (tuning in Instruments.all.flatMap { it.tunings }) for (root in PitchClass.entries) {
+        for (tuning in Instruments.all.flatMap { it.tunings }.filterNot { it.hasShortString }) for (root in PitchClass.entries) {
             for (shape in ChordShapeFinder.shapesOf(Chord.of(root, POWER_CHORD), tuning)) {
                 val label = "${tuning.id} ${root}5 $shape"
                 val played = shape.frets.indices.filter { !shape.isMuted(it) }

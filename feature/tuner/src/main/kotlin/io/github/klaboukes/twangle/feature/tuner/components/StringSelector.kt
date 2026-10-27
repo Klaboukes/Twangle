@@ -104,6 +104,10 @@ import io.github.klaboukes.twangle.feature.tuner.TunerTestTags
  * carries a small "8" in its button's top corner, and TalkBack says "with octave string" after its
  * name; the compact layout's small chips leave it out.
  *
+ * A string that starts partway up the neck ([Tuning.shortStrings], a 5-string banjo's fifth, first
+ * in the row) is set a little apart from the next: the same button, a small extra gap after it
+ * ([shortStringGapFor]; none where the row is squeezed).
+ *
  * With [marks] (the 12th-fret check) each string with a result carries its [StringMark] as a small
  * badge, and TalkBack says it after the string's name; [checking] makes a tap's TalkBack action
  * "Check A 2" instead of locking.
@@ -144,7 +148,8 @@ fun StringSelector(
     BoxWithConstraints(if (small) modifier else modifier.fillMaxWidth()) {
         // 4 to 8 strings: full-size buttons while they fit, else equal shares of the row, shrunk.
         val width = if (constraints.hasBoundedWidth) maxWidth else Dp.Infinity
-        val fit = stringRowFitFor(style, width, tuning.strings.size, small)
+        val shortGap = shortStringGapFor(style, width, tuning, small)
+        val fit = stringRowFitFor(style, width, tuning.strings.size, small, shortGap)
         // Low to high, left to right, in every language: like a keyboard and the meter, not mirrored
         // in right-to-left languages (Material's rule for graphs and gauges).
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -193,7 +198,12 @@ fun StringSelector(
                         index = index,
                         fit = fit,
                         small = small,
-                        modifier = if (fit.squeezed) Modifier.weight(1f) else Modifier,
+                        modifier = when {
+                            fit.squeezed -> Modifier.weight(1f)
+                            // Outside the button, so the gap is no part of it to touch.
+                            endsShortStrings(tuning, index) -> Modifier.padding(end = shortGap)
+                            else -> Modifier
+                        },
                     )
                 }
             }
@@ -201,13 +211,34 @@ fun StringSelector(
     }
 }
 
-/** How far in from each end of a full-size string row [width] wide the [count] buttons' faces are, in dp ([stringFaceInset]). */
-internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, count: Int): Float =
-    stringFaceInset(width.value, count, stringChipSize(style).width.value, stringRowFitFor(style, width, count, small = false))
+/** How far in from each end of a full-size row [width] wide of [tuning]'s string buttons the faces are, in dp ([stringFaceInset]). */
+internal fun stringFaceInsetFor(style: VisualStyle, width: Dp, tuning: Tuning): Float {
+    val gap = shortStringGapFor(style, width, tuning, small = false)
+    val count = tuning.strings.size
+    return stringFaceInset(width.value, count, stringChipSize(style).width.value, stringRowFitFor(style, width, count, small = false, gap), gap.value)
+}
 
-/** How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size buttons). */
-internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean): StringRowFit {
-    val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value
+/**
+ * The extra gap after [tuning]'s short strings ([Tuning.shortStrings], a banjo's fifth) in a row
+ * [width] wide: [SHORT_STRING_GAP] (the [small] chips' [SMALL_SHORT_STRING_GAP]) while the buttons
+ * still fit at full size with it, else none, as squeezed buttons take equal shares.
+ */
+internal fun shortStringGapFor(style: VisualStyle, width: Dp, tuning: Tuning, small: Boolean): Dp {
+    if (!tuning.hasShortString) return 0.dp
+    val gap = if (small) SMALL_SHORT_STRING_GAP else SHORT_STRING_GAP
+    return if (stringRowFitFor(style, width, tuning.strings.size, small, gap).squeezed) 0.dp else gap
+}
+
+/** Whether string [index] is the last of a run of short strings with another string after it, so the gap follows it. */
+private fun endsShortStrings(tuning: Tuning, index: Int): Boolean =
+    index in tuning.shortStrings && index + 1 < tuning.stringCount && index + 1 !in tuning.shortStrings
+
+/**
+ * How [count] string buttons in [style] fit a row [width] wide (the [small] chips or the full-size
+ * buttons), [extraGap] of it taken by the short strings' gap ([shortStringGapFor]).
+ */
+internal fun stringRowFitFor(style: VisualStyle, width: Dp, count: Int, small: Boolean, extraGap: Dp = 0.dp): StringRowFit {
+    val available = if (width == Dp.Infinity) Float.MAX_VALUE else width.value - extraGap.value
     return if (small) {
         stringRowFit(available, count, smallChipSize(style).width.value, SMALL_RING_GAP.value, minSlotDp = 0f, spacingDp = SMALL_CHIP_SPACING.value)
     } else {
@@ -488,6 +519,10 @@ private val KEY_LABEL_PADDING = 6.dp
 private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
+
+/** The extra gap after a banjo's short fifth string (option A of docs/design/phase57-preview.html), and in the small row. */
+private val SHORT_STRING_GAP = 12.dp
+private val SMALL_SHORT_STRING_GAP = 6.dp
 
 /** The sounding string's rings: how often one starts, how many at once, how far past the lock ring they reach, line and alpha. */
 private const val SOUND_RING_PERIOD_MS = 1_200

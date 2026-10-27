@@ -30,6 +30,8 @@
     <string name="tuning_open_c">오픈 C</string>
     <string name="tuning_low_g">로우 G</string>
     <string name="tuning_baritone">바리톤</string>
+    <string name="tuning_double_c">더블 C</string>
+    <string name="tuning_double_d">더블 D</string>
     <string name="tuning_c_sharp_standard">C♯ 표준</string>
     <string name="tuning_c_standard">C 표준</string>
     <string name="tuning_b_standard">B 표준</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">비올라</string>
     <string name="instrument_cello">첼로</string>
     <string name="instrument_mandolin">만돌린</string>
+    <string name="instrument_banjo_5">5현 밴조</string>
     <string name="instrument_note_guitar_12">12현 기타에서는 스트럼 체크와 코드 이름이 꺼져 있어요. 12줄이 너무 가깝게 울려서 구별할 수 없어요.</string>
     <string name="tuner_hint_play_string">줄을 튕기세요</string>
     <string name="tuner_hint_play_note">음을 연주하세요</string>

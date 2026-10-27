@@ -32,6 +32,9 @@
     <string name="practice_shape_next">अगला आकार</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">इस ट्यूनिंग में पहुँच के भीतर कोई आकार नहीं</string>
+    <string name="practice_chords_short_string">कॉर्ड चार्ट अभी बैंजो का छोटा तार नहीं जानते। ऊपर कोई दूसरा वाद्य चुनें।</string>
+    <string name="practice_scales_short_string">स्केल अभी बैंजो का छोटा तार नहीं जानते। ऊपर कोई दूसरा वाद्य चुनें।</string>
+    <string name="practice_capo_short_string">कैपो तालिका अभी बैंजो का छोटा तार नहीं जानती। ऊपर कोई दूसरा वाद्य चुनें।</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, आकार %3$d में से %2$d</string>
     <string name="practice_spoken_string">%1$s तार</string>

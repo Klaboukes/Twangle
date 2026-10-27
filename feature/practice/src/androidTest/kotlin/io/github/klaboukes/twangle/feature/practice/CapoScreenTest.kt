@@ -11,14 +11,17 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
@@ -42,6 +45,7 @@ import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -78,6 +82,7 @@ class CapoScreenTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownNotation = mutableStateOf(Notation.SHARPS)
+    private val shownShortString = mutableStateOf(false)
     private val savedShapes = mutableListOf<SongKey>()
     private val savedFrets = mutableListOf<Int>()
     private val opened = mutableListOf<Chord>()
@@ -100,6 +105,7 @@ class CapoScreenTest(private val style: VisualStyle) {
                         header = { PracticeToolButton(PracticeTool.CAPO, {}, tools) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
+                        shortString = shownShortString.value,
                     )
                 }
             }
@@ -107,6 +113,7 @@ class CapoScreenTest(private val style: VisualStyle) {
     }
 
     private fun node(tag: String) = compose.onNodeWithTag(tag)
+    private fun exists(tag: String): Boolean = compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
     private fun row(root: PitchClass, quality: ChordQuality) = node(PracticeTestTags.capoRow(Chord.of(root, quality)))
     private fun spoken(tag: String): String =
         node(tag).fetchSemanticsNode().config.getOrElse(SemanticsProperties.ContentDescription) { emptyList() }.joinToString()
@@ -325,6 +332,55 @@ class CapoScreenTest(private val style: VisualStyle) {
         }
     }
 
+
+    /**
+     * The banjo's short fifth string (Phase 57): the table's place says Capo doesn't know it yet, the shapes, the
+     * capo and "Sounds in" stay where they are; another instrument brings the table straight back. Upright and on
+     * its side, at normal and 2x text.
+     */
+    @Test
+    fun theBanjoGetsAQuietLineInTheTablesPlace() {
+        val line = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_capo_short_string)
+        show(SongKey(PitchClass.C), 3)
+        val firstRow = PracticeTestTags.capoRow(Chord.of(PitchClass.C, ChordQuality.MAJOR))
+        for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            val case = "$style $size at ${scale}x"
+            shownFontScale.value = scale
+            shownSize.value = size
+            compose.waitForIdle()
+            val soundsIn = node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot()
+            val stepper = node(PracticeTestTags.CAPO_FRET).getBoundsInRoot()
+            shownShortString.value = true
+            compose.waitForIdle()
+            assertFalse("$case: no table", exists(firstRow))
+            assertWhollyShown(node(PracticeTestTags.SHORT_STRING).assertTextEquals(line), "$case: the banjo's line", scroll = true)
+            assertEquals("$case: the capo stays", stepper, node(PracticeTestTags.CAPO_FRET).getBoundsInRoot())
+            node(PracticeTestTags.CAPO_SOUNDS_IN).assertExists()
+            shownShortString.value = false
+            compose.waitForIdle()
+            node(firstRow).assertExists()
+            assertEquals("$case: Sounds in is back in its place", soundsIn, node(PracticeTestTags.CAPO_SOUNDS_IN).getBoundsInRoot())
+        }
+    }
+
+    /** The banjo's line in every language at 2× text, upright on a 320 dp phone and on its side. Only with `--languages`. */
+    @EveryLanguage
+    @Test
+    fun theBanjosLineFitsInEveryLanguageAtTwiceTheTextSize() {
+        shownFontScale.value = 2f
+        shownShortString.value = true
+        show()
+        for (language in checkedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                compose.waitForIdle()
+                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$style $language $size at 2x: the banjo's line", scroll = true)
+                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
+                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+            }
+        }
+    }
 
     /** The instrument button before the tuning line, and the line itself, open the instrument and tuning panel. */
     @Test

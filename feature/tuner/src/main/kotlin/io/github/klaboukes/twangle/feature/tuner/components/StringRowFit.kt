@@ -51,12 +51,13 @@ internal fun stringRowFit(
  * How far in from each end of a row [availableDp] wide the first button's face starts and the last
  * one's ends, for [count] buttons [buttonWidthDp] wide laid out by [fit]: spread evenly, each in its
  * touch width, or squeezed, each in the middle of its equal share. The same at both ends. The strum
- * check's switch and the tuning's name line up with the faces, not the row's edges.
+ * check's switch and the tuning's name line up with the faces, not the row's edges. [extraGapDp] is
+ * taken by a gap between two buttons (after a banjo's short string), so it is no part of the spread.
  */
-internal fun stringFaceInset(availableDp: Float, count: Int, buttonWidthDp: Float, fit: StringRowFit): Float {
+internal fun stringFaceInset(availableDp: Float, count: Int, buttonWidthDp: Float, fit: StringRowFit, extraGapDp: Float = 0f): Float {
     val strings = count.coerceAtLeast(1)
     val outer = buttonWidthDp * fit.buttonScale + fit.ringGapDp * 2f
-    val slotStart = if (fit.squeezed) 0f else (availableDp - fit.slotDp * strings) / (strings + 1)
+    val slotStart = if (fit.squeezed) 0f else (availableDp - extraGapDp - fit.slotDp * strings) / (strings + 1)
     return slotStart + (fit.slotDp - outer) / 2f + fit.ringGapDp
 }
 

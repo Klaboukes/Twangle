@@ -30,6 +30,8 @@
     <string name="tuning_open_c">Open C</string>
     <string name="tuning_low_g">Low G</string>
     <string name="tuning_baritone">Baritono</string>
+    <string name="tuning_double_c">Double C</string>
+    <string name="tuning_double_d">Double D</string>
     <string name="tuning_c_sharp_standard">C♯ standard</string>
     <string name="tuning_c_standard">C standard</string>
     <string name="tuning_b_standard">B standard</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">Viola</string>
     <string name="instrument_cello">Violoncello</string>
     <string name="instrument_mandolin">Mandolino</string>
+    <string name="instrument_banjo_5">Banjo a 5 corde</string>
     <string name="instrument_note_guitar_12">Il controllo a pennata e il nome dell\'accordo sono disattivati per la 12 corde: le sue dodici corde suonano troppo vicine per distinguerle.</string>
     <string name="tuner_hint_play_string">Suona una corda</string>
     <string name="tuner_hint_play_note">Suona una nota</string>

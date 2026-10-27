@@ -1548,7 +1548,7 @@ private fun GuitarControls(
         val width = stringsPlaceable.width.coerceIn(constraints.minWidth, constraints.maxWidth)
         val stringsX = (width - stringsPlaceable.width) / 2
         // The first and last buttons' faces: the row spreads them evenly, the same inset at both ends.
-        val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning.strings.size).dp.roundToPx().coerceAtLeast(0)
+        val faceInset = stringFaceInsetFor(style, stringsPlaceable.width.toDp(), tuning).dp.roundToPx().coerceAtLeast(0)
         val facesStart = stringsX + faceInset
         val facesEnd = stringsX + stringsPlaceable.width - faceInset
         // Each button's outline sits inside its 48 dp touch target: the switch's ends where the last

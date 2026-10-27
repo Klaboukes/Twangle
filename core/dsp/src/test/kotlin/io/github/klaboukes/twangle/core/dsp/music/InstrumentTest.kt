@@ -26,6 +26,9 @@ class InstrumentTest {
             "viola_standard" to "C3 G3 D4 A4",
             "cello_standard" to "C2 G2 D3 A3",
             "mandolin_standard" to "G3 D4 A4 E5",
+            "banjo_open_g" to "G4 D3 G3 B3 D4",
+            "banjo_double_c" to "G4 C3 G3 C4 D4",
+            "banjo_double_d" to "F#4 D3 F#3 A3 D4",
         )
         for ((id, notes) in expected) {
             val tuning = requireNotNull(Instruments.tuningById(id)) { id }
@@ -47,6 +50,7 @@ class InstrumentTest {
             Instruments.VIOLA to 4,
             Instruments.CELLO to 4,
             Instruments.MANDOLIN to 4,
+            Instruments.BANJO_5 to 5,
         )
         assertEquals(expected.keys.toList(), Instruments.all)
         for ((instrument, count) in expected) {
@@ -102,6 +106,7 @@ class InstrumentTest {
             Instruments.VIOLA to ("C3" to "A4"),
             Instruments.CELLO to ("C2" to "A3"),
             Instruments.MANDOLIN to ("G3" to "E5"),
+            Instruments.BANJO_5 to ("C3" to "G4"),
         )
         for ((instrument, range) in expected) {
             assertEquals(instrument.id, range.first, instrument.lowestNote.toString())
@@ -130,8 +135,9 @@ class InstrumentTest {
     @Test
     fun `presets know how players spell them`() {
         assertEquals(Accidental.SHARP, Instruments.GUITAR_8.defaultTuning.spelling)
+        assertEquals(Accidental.SHARP, Instruments.BANJO_5.tuningById("banjo_double_d")!!.spelling)
         for (instrument in Instruments.all - Instruments.GUITAR - Instruments.GUITAR_8) {
-            for (tuning in instrument.tunings) assertNull(tuning.id, tuning.spelling)
+            for (tuning in instrument.tunings) if (tuning.id != "banjo_double_d") assertNull(tuning.id, tuning.spelling)
         }
     }
 
@@ -162,6 +168,7 @@ class InstrumentTest {
         assertEquals(StringVoices.TWELVE_STRING, Instruments.GUITAR_12.voice)
         assertEquals(StringVoices.ELECTRIC_BASS, Instruments.BASS_5.voice)
         assertEquals(StringVoices.UKULELE, Instruments.UKULELE.voice)
+        assertEquals(StringVoices.BANJO, Instruments.BANJO_5.voice)
         assertEquals(StringVoices.DEFAULT, Instruments.DEFAULT.voice)
     }
 
@@ -176,6 +183,9 @@ class InstrumentTest {
         val paired = four.copy(id = "paired", octaveCourses = setOf(0))
         assertThrows(IllegalArgumentException::class.java) { Instrument("mixed", 4, listOf(four, paired), StringVoices.STEEL_GUITAR) }
         assertThrows(IllegalArgumentException::class.java) { four.copy(octaveCourses = setOf(4)) }
+        val short = four.copy(id = "short", shortStrings = setOf(0))
+        assertThrows(IllegalArgumentException::class.java) { Instrument("mixed_short", 4, listOf(four, short), StringVoices.STEEL_GUITAR) }
+        assertThrows(IllegalArgumentException::class.java) { four.copy(shortStrings = setOf(-1)) }
     }
 
     @Test
@@ -213,5 +223,30 @@ class InstrumentTest {
         assertEquals(LoweredName.Preset(Tunings.HALF_STEP_DOWN), lowered.loweredName)
         assertEquals(Accidental.FLAT, lowered.spelling)
         assertEquals(LoweredName.Common(CommonTuning.C_STANDARD), Instruments.GUITAR_12.defaultTuning.lowered(4).loweredName)
+    }
+
+    @Test
+    fun `the banjo's short fifth string comes first, in every tuning, lowered too`() {
+        val banjo = Instruments.BANJO_5
+        assertEquals(setOf(0), banjo.shortStrings)
+        for (tuning in banjo.tunings) {
+            assertEquals(tuning.id, setOf(0), tuning.shortStrings)
+            assertEquals(tuning.id, true, tuning.hasShortString)
+            // Re-entrant: the short string sounds above the fourth and third.
+            assertEquals(tuning.id, true, tuning.strings[0].midi > tuning.strings[1].midi)
+            assertEquals(tuning.id, setOf(0), tuning.lowered(1).shortStrings)
+        }
+        assertEquals("open G is its standard tuning", "banjo_open_g", banjo.defaultTuning.id)
+        // No other instrument has a short string.
+        for (instrument in Instruments.all - banjo) assertEquals(instrument.id, emptySet<Int>(), instrument.shortStrings)
+    }
+
+    @Test
+    fun `a banjo tuning lowered has no other name, and the five-string bass keeps its own`() {
+        val openG = Instruments.BANJO_5.defaultTuning
+        assertEquals(LoweredName.Shifted(2), openG.lowered(2).loweredName)
+        // A five-string tuning of the player's own (no preset id) is still named against the bass, not the banjo.
+        val bass = Tuning("custom_bass", Instruments.BASS_5.defaultTuning.strings.map { Note(it.midi + 1) })
+        assertEquals(LoweredName.Preset(Instruments.BASS_5.defaultTuning), bass.lowered(1).loweredName)
     }
 }

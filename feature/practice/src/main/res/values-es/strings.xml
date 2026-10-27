@@ -32,6 +32,9 @@
     <string name="practice_shape_next">Forma siguiente</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">No hay ninguna forma al alcance en esta afinación</string>
+    <string name="practice_chords_short_string">Los diagramas de acordes aún no conocen la cuerda corta del banjo. Elige otro instrumento arriba.</string>
+    <string name="practice_scales_short_string">Las escalas aún no conocen la cuerda corta del banjo. Elige otro instrumento arriba.</string>
+    <string name="practice_capo_short_string">La tabla de cejilla aún no conoce la cuerda corta del banjo. Elige otro instrumento arriba.</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, forma %2$d de %3$d</string>
     <string name="practice_spoken_string">Cuerda %1$s</string>

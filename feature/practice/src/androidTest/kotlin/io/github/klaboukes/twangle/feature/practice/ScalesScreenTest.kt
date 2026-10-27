@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
+import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.audio.DronePlay
 import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -356,6 +357,50 @@ class ScalesScreenTest(private val style: VisualStyle) {
         closePanel()
         assertFalse("the long neck is not", neck().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         assertTrue(spokenNeck(), spokenNeck().startsWith("B flat major, notes B flat, C, D, E flat, F, G, A"))
+    }
+
+    /**
+     * The banjo's short fifth string (Phase 57): the neck's place says Scales doesn't draw it yet, the scale's name
+     * stays; another instrument brings the neck straight back. Upright and on its side, at normal and 2x text.
+     */
+    @Test
+    fun theBanjoGetsAQuietLineInTheNecksPlace() {
+        val line = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_scales_short_string)
+        show(PitchClass.G, ScaleType.MAJOR)
+        compose.waitForIdle()
+        for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            val case = "$style $size at ${scale}x"
+            shownFontScale.value = scale
+            shownSize.value = size
+            shownTuning.value = Instruments.BANJO_5.defaultTuning
+            compose.waitForIdle()
+            assertFalse("$case: no neck", exists(PracticeTestTags.NECK))
+            assertWhollyShown(node(PracticeTestTags.SHORT_STRING).assertTextEquals(line), "$case: the banjo's line", scroll = true)
+            node(PracticeTestTags.NAME_PICKER).assertExists()
+            shownTuning.value = Tunings.STANDARD
+            compose.waitForIdle()
+            neck().assertExists()
+            assertFalse("$case: the line goes", exists(PracticeTestTags.SHORT_STRING))
+        }
+    }
+
+    /** The banjo's line in every language at 2× text, upright on a 320 dp phone and on its side. Only with `--languages`. */
+    @EveryLanguage
+    @Test
+    fun theBanjosLineFitsInEveryLanguageAtTwiceTheTextSize() {
+        shownFontScale.value = 2f
+        shownTuning.value = Instruments.BANJO_5.defaultTuning
+        show()
+        for (language in checkedLanguages) {
+            shownLocale.value = language
+            for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
+                shownSize.value = size
+                compose.waitForIdle()
+                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$style $language $size at 2x: the banjo's line", scroll = true)
+                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
+                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+            }
+        }
     }
 
     @Test

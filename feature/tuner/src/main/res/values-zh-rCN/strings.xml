@@ -30,6 +30,8 @@
     <string name="tuning_open_c">开放 C</string>
     <string name="tuning_low_g">低音 G</string>
     <string name="tuning_baritone">上低音</string>
+    <string name="tuning_double_c">双 C</string>
+    <string name="tuning_double_d">双 D</string>
     <string name="tuning_c_sharp_standard">C♯ 标准</string>
     <string name="tuning_c_standard">C 标准</string>
     <string name="tuning_b_standard">B 标准</string>
@@ -66,6 +68,7 @@
     <string name="instrument_viola">中提琴</string>
     <string name="instrument_cello">大提琴</string>
     <string name="instrument_mandolin">曼陀林</string>
+    <string name="instrument_banjo_5">五弦班卓琴</string>
     <string name="instrument_note_guitar_12">十二弦吉他不提供扫弦检查和和弦名称：十二根弦的声音太接近，无法逐一分辨。</string>
     <string name="tuner_hint_play_string">弹一根弦</string>
     <string name="tuner_hint_play_note">弹一个音</string>

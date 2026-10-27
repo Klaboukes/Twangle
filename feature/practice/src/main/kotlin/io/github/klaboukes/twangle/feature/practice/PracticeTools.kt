@@ -57,6 +57,13 @@ object PracticeTestTags {
     /** The scale on the neck (one item for TalkBack). */
     const val NECK = "practice_scale_neck"
 
+    /**
+     * The quiet line in the chart's, the neck's or the capo table's place for a tuning with a short
+     * string ([io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings], the banjo's), which
+     * Chords, Scales and Capo don't draw yet.
+     */
+    const val SHORT_STRING = "practice_short_string"
+
     /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
     internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()
 
