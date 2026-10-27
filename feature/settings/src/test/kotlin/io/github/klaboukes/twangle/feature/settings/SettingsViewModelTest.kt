@@ -124,6 +124,7 @@ class SettingsViewModelTest {
         vm.setShowTuneHint(false)
         vm.setShowSignalBars(true)
         vm.setFocusMode(true)
+        vm.setLeftHanded(true)
         runCurrent()
 
         assertEquals(TunerDisplay.NEEDLE, repository.current.display)
@@ -135,5 +136,6 @@ class SettingsViewModelTest {
         assertEquals(false, repository.current.showTuneHint)
         assertEquals(true, repository.current.showSignalBars)
         assertEquals(true, repository.current.focusMode)
+        assertEquals(true, repository.current.leftHanded)
     }
 }

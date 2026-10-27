@@ -66,6 +66,8 @@
     <string name="settings_wave_look_ripples">Ripples</string>
     <string name="settings_focus_mode_title">Focus mode</string>
     <string name="settings_focus_mode_summary">Turns Twangle on its side with one big meter, easy to read from a distance</string>
+    <string name="settings_left_handed_title">Left-handed</string>
+    <string name="settings_left_handed_summary">Chord charts and the scale neck drawn for a guitar held the other way round</string>
 
     <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Keep screen on</string>

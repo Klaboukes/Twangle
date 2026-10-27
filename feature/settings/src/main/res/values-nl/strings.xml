@@ -64,6 +64,8 @@
     <string name="settings_wave_look_ripples">Rimpels</string>
     <string name="settings_focus_mode_title">Focusmodus</string>
     <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen van een afstand</string>
+    <string name="settings_left_handed_title">Linkshandig</string>
+    <string name="settings_left_handed_summary">Akkoordschema\'s en de hals bij Toonladders getekend voor een gitaar die andersom wordt vastgehouden</string>
 
     <!-- While tuning. -->
     <string name="settings_keep_screen_on_title">Scherm aan laten</string>

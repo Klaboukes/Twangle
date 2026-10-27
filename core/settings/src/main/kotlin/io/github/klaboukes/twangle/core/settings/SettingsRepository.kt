@@ -156,4 +156,7 @@ interface SettingsRepository {
 
     /** The drone an octave lower or not ([AppSettings.droneLower]). */
     suspend fun setDroneLower(lower: Boolean)
+
+    /** The chord charts and the scale neck mirrored for a left-handed player or not ([AppSettings.leftHanded]). */
+    suspend fun setLeftHanded(enabled: Boolean)
 }

@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
@@ -104,6 +105,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
     private val shownTuning = mutableStateOf(Tunings.STANDARD)
     private val shownNotation = mutableStateOf(Notation.SHARPS)
     private val shownScales = mutableStateOf(true)
+    private val shownLeftHanded = mutableStateOf(false)
     private val savedRoots = mutableListOf<PitchClass>()
     private val savedTypes = mutableListOf<ScaleType>()
     private val drone = FakeDronePlayer()
@@ -133,6 +135,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
                         a4Hz = shownA4.value,
                         savedDrone = droneChoice,
                         onDroneChange = { savedDrones += it },
+                        leftHanded = shownLeftHanded.value,
                     )
                 }
             }
@@ -710,6 +713,38 @@ class ScalesScreenTest(private val style: VisualStyle) {
         }
         closePanel()
         assertFalse("$case Back closes the panel", exists(PracticeTestTags.scale(ScaleType.MAJOR)))
+    }
+
+    /**
+     * Left-handed (Phase 57): the neck is drawn as a mirror image, upright (the thickest string and the fret numbers on
+     * the right) and sideways (the nut on the right), in the same place and size; TalkBack hears the same words.
+     */
+    @Test
+    fun leftHandedMirrorsTheNeckUprightAndSideways() {
+        show(PitchClass.G, ScaleType.MAJOR)
+        val lies = mutableSetOf<NeckLie>()
+        for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            shownLeftHanded.value = false
+            shownSize.value = size
+            compose.waitUntil(WAIT_MS) { spokenNeck().startsWith("G major") }
+            compose.waitForIdle()
+            val lie = lie()
+            lies += lie
+            val drawing = node(PracticeTestTags.neckLie(lie))
+            val spoken = spokenNeck()
+            val bounds = drawing.getBoundsInRoot()
+            val normal = drawing.captureToImage()
+            shownLeftHanded.value = true
+            compose.waitForIdle()
+            val case = "$style $size $lie"
+            assertEquals("$case: lies the same way", lie, lie())
+            assertEquals("$case: TalkBack hears the same", spoken, spokenNeck())
+            assertEquals("$case: in the same place and size", bounds, drawing.getBoundsInRoot())
+            assertMirrored(normal, drawing.captureToImage(), case)
+        }
+        assertEquals("both lies checked", NeckLie.entries.toSet(), lies)
+        shownLeftHanded.value = false
+        shownSize.value = XIAOMI
     }
 
     @Test

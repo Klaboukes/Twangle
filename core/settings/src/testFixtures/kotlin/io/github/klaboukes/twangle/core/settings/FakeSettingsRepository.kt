@@ -155,4 +155,6 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setDroneVoicing(voicing: DroneVoicing) = state.update { it.copy(droneVoicing = voicing) }
 
     override suspend fun setDroneLower(lower: Boolean) = state.update { it.copy(droneLower = lower) }
+
+    override suspend fun setLeftHanded(enabled: Boolean) = state.update { it.copy(leftHanded = enabled) }
 }

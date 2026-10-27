@@ -48,14 +48,16 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
  * its background so the style's pattern never runs through the chart.
  *
  * It takes the largest size that fits the room it is given, up to [MAX_UNIT] dp a unit, and keeps
- * its lettering in proportion to it (not to the font setting: the chart grows instead). Always drawn
- * left to right, the low string on the left, in right-to-left languages too, as charts are. It draws
- * only; [ChordsScreen] gives it its words for TalkBack.
+ * its lettering in proportion to it (not to the font setting: the chart grows instead). Drawn with the
+ * low string on the left, in right-to-left languages too, as charts are; [leftHanded] (Phase 57) mirrors
+ * it, the low string on the right, as a left-handed player sees their guitar from the front: the strings
+ * with their dots, o, × and notes swap sides, the "5fr" label stays at the left of the first row, where
+ * a label is read first. It draws only; [ChordsScreen] gives it its words for TalkBack, the same either way.
  */
 @Composable
-internal fun ChordChart(shape: ChordShape, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier) {
+internal fun ChordChart(shape: ChordShape, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier, leftHanded: Boolean = false) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val geometry = ChartGeometry(shape.stringCount)
+        val geometry = ChartGeometry(shape.stringCount, mirrored = leftHanded)
         val unit = geometry.unitFor(maxWidth.value, maxHeight.value)
         Box(
             Modifier
@@ -68,9 +70,9 @@ internal fun ChordChart(shape: ChordShape, tuning: Tuning, notation: Notation, m
 /**
  * The chart's layout in units (1 dp each at its smallest, see [ChartGeometry.unitFor]): the mock-up's
  * 22 between strings and 26 a fret row, with room at the sides for "5fr" and at the top and bottom
- * for the o × marks and the notes.
+ * for the o × marks and the notes. [mirrored] (left-handed) puts string 0, the lowest, on the right.
  */
-internal class ChartGeometry(val strings: Int) {
+internal class ChartGeometry(val strings: Int, val mirrored: Boolean = false) {
     val gridWidth: Float = (strings - 1) * STRING_GAP
     val width: Float = 2 * SIDE + gridWidth
     val height: Float = TOP + ChordShape.CHART_ROWS * ROW + BOTTOM
@@ -79,7 +81,12 @@ internal class ChartGeometry(val strings: Int) {
     fun unitFor(roomWidth: Float, roomHeight: Float): Float =
         minOf(roomWidth / width, roomHeight / height, MAX_UNIT).coerceAtLeast(0f)
 
-    fun stringX(string: Int): Float = SIDE + string * STRING_GAP
+    /** Across the chart: string [string] (0 = the lowest), on the left or, [mirrored], on the right. */
+    fun stringX(string: Int): Float = SIDE + (if (mirrored) strings - 1 - string else string) * STRING_GAP
+
+    /** The grid's left and right edges: the outer strings, whichever way round. */
+    val gridLeft: Float get() = SIDE
+    val gridRight: Float get() = SIDE + gridWidth
 
     /** The middle of fret row [row] (0 = the first row drawn). */
     fun rowY(row: Int): Float = TOP + (row + 0.5f) * ROW
@@ -185,8 +192,8 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
             scale(1f, size.height / size.width, centre) { drawCircle(field, size.width * 0.62f, centre) }
             val top = ChartGeometry.TOP * u
             val bottom = (ChartGeometry.TOP + ChordShape.CHART_ROWS * ChartGeometry.ROW) * u
-            val left = g.stringX(0) * u
-            val right = g.stringX(g.strings - 1) * u
+            val left = g.gridLeft * u
+            val right = g.gridRight * u
             val line = LINE_WIDTH * u
             // Fret lines, the top one as the nut when the chart starts at the first fret.
             for (row in 0..ChordShape.CHART_ROWS) {
@@ -218,10 +225,12 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
             val barre = shape.barre
             if (barre != null) {
                 val y = g.rowY(barre.fret - start) * u
-                val x1 = g.stringX(barre.firstString) * u
-                val x2 = g.stringX(barre.lastString) * u
+                val first = g.stringX(barre.firstString) * u
+                val last = g.stringX(barre.lastString) * u
+                val x1 = minOf(first, last)
+                val x2 = maxOf(first, last)
                 drawRoundRect(ink, Offset(x1 - radius, y - radius), Size(x2 - x1 + 2 * radius, 2 * radius), CornerRadius(radius))
-                fingerLayouts[barre.firstString]?.let { centred(it, Offset(x1, y)) }
+                fingerLayouts[barre.firstString]?.let { centred(it, Offset(first, y)) }
             }
             for (string in 0 until g.strings) {
                 val fret = shape.frets[string]

@@ -121,6 +121,9 @@ import kotlinx.coroutines.withContext
  * ([ShortStringLine]), in the look of "No shape within reach", and nothing else moves, so picking
  * another instrument with the button at the top brings the chart straight back.
  *
+ * With [leftHanded] (Phase 57, a setting) the chart and the neck are drawn mirrored ([ChordChart], [ScaleNeck]) for a
+ * guitar held the other way round; nothing else moves and TalkBack hears the same words.
+ *
  * On Scales with a [drone] player (Phase 48) the name shares its row with the drone button ([DroneButton]): play
  * sounds the scale's root ([droneRootHz], following [a4Hz]) as [savedDrone] says, stop stops it; the drone follows a
  * new root at once (a crossfade) and stops when Scales goes (another tool, another tab, the app or the screen off),
@@ -148,6 +151,7 @@ fun ChordsScreen(
     a4Hz: Float = NoteMapper.DEFAULT_A4_HZ,
     savedDrone: DroneChoice = DroneChoice(),
     onDroneChange: (DroneChoice) -> Unit = {},
+    leftHanded: Boolean = false,
 ) {
     var root by rememberSaveable { mutableStateOf(savedRoot) }
     var quality by rememberSaveable { mutableStateOf(savedQuality) }
@@ -270,8 +274,8 @@ fun ChordsScreen(
                 stringResource(if (scales) R.string.practice_scales_short_string else R.string.practice_chords_short_string),
                 Modifier.fillMaxSize(),
             )
-            scales -> NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying)
-            else -> ChartArea(found, shown, notation, step, Modifier.fillMaxSize())
+            scales -> NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying, leftHanded = leftHanded)
+            else -> ChartArea(found, shown, notation, step, Modifier.fillMaxSize(), leftHanded = leftHanded)
         }
     }
     val bottom: (gap: Float) -> @Composable ColumnScope.() -> Unit = { gap ->
@@ -367,7 +371,7 @@ fun ChordsScreen(
  * words ([spokenScale]), string by string.
  */
 @Composable
-private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier, breathing: Boolean = false) {
+private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier, breathing: Boolean = false, leftHanded: Boolean = false) {
     val speech = rememberNoteNameSpeech()
     val words = rememberScaleWords()
     val notes = remember(scale, tuning) { ScaleFinder.notesOf(scale, tuning) }
@@ -380,7 +384,7 @@ private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier:
             .semantics { contentDescription = spoken },
         contentAlignment = Alignment.Center,
     ) {
-        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize(), halo = if (breathing) rememberBreath() else null)
+        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize(), halo = if (breathing) rememberBreath() else null, leftHanded = leftHanded)
     }
 }
 
@@ -430,7 +434,7 @@ private fun rememberShapes(chord: Chord, tuning: Tuning, enabled: Boolean = true
  * item in words, a polite live region.
  */
 @Composable
-private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step: (Int) -> Unit, modifier: Modifier = Modifier) {
+private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step: (Int) -> Unit, modifier: Modifier = Modifier, leftHanded: Boolean = false) {
     val speech = rememberNoteNameSpeech()
     val words = rememberChartWords()
     val shape = found?.shapes?.getOrNull(index)
@@ -473,7 +477,7 @@ private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step:
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
-            else -> ChordChart(shape, found.tuning, notation, Modifier.fillMaxSize())
+            else -> ChordChart(shape, found.tuning, notation, Modifier.fillMaxSize(), leftHanded = leftHanded)
         }
     }
 }

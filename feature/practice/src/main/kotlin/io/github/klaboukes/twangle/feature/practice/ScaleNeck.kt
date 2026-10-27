@@ -53,8 +53,11 @@ internal enum class NeckLie {
  * It lies sideways as in the mock-up, unless lying upright in the room it is given makes it clearly
  * bigger ([NeckGeometry.lieFor], a tall room such as a tablet held upright); either way as large as
  * fits, up to [MAX_UNIT] dp a unit, its lettering in proportion (not scaled again by the font
- * setting). Always drawn with the thickest string at the bottom or on the left, in right-to-left
- * languages too, as charts are. It draws only; the Chords tool gives it its words for TalkBack.
+ * setting). Drawn with the thickest string at the bottom or on the left, in right-to-left
+ * languages too, as charts are. [leftHanded] (Phase 57) mirrors it left to right, for a guitar held the
+ * other way round: sideways the nut is on the right (the thickest string still at the bottom), upright the
+ * thickest string and the fret numbers beside it are on the right; the lettering itself isn't mirrored. It
+ * draws only; the Chords tool gives it its words for TalkBack, the same either way.
  *
  * With [halo] (while the drone sounds, Phase 48) each root's dot has a soft accent ring around it, as opaque as
  * [halo] says, read while drawing only, so its slow breathing redraws without composing or measuring again.
@@ -67,9 +70,10 @@ internal fun ScaleNeck(
     notation: Notation,
     modifier: Modifier = Modifier,
     halo: (() -> Float)? = null,
+    leftHanded: Boolean = false,
 ) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val geometry = NeckGeometry(strings)
+        val geometry = NeckGeometry(strings, mirrored = leftHanded)
         val lie = geometry.lieFor(maxWidth.value, maxHeight.value)
         val unit = geometry.unitFor(lie, maxWidth.value, maxHeight.value)
         Box(
@@ -87,8 +91,9 @@ internal fun ScaleNeck(
  * the phone): 30 before the nut for the open strings' notes, 20.5 a fret, 19 between strings, room
  * beside the thickest string for the fret numbers. Measured along the neck (from the open notes'
  * end to the 12th fret) and across it (from the thinnest string's side to the fret numbers' side).
+ * [mirrored] (left-handed) flips every [point] left to right.
  */
-internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHEST_FRET) {
+internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHEST_FRET, val mirrored: Boolean = false) {
     val along: Float = OPEN + frets * FRET + END
     val across: Float = EDGE + (strings - 1) * STRING_GAP + LABELS
 
@@ -116,9 +121,14 @@ internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHE
     /** Across the neck, from the fret numbers' side: string [string] (0 = the thickest). */
     fun stringLine(string: Int): Float = LABELS + string * STRING_GAP
 
-    /** The point [along] and [across] (from the fret numbers' side) the neck in units, as it lies [lie]. */
-    fun point(lie: NeckLie, along: Float, across: Float): Offset =
-        if (lie == NeckLie.SIDEWAYS) Offset(along, this.across - across) else Offset(across, along)
+    /**
+     * The point [along] and [across] (from the fret numbers' side) the neck in units, as it lies [lie]; [mirrored],
+     * flipped left to right (sideways the nut on the right, upright the thickest string on the right).
+     */
+    fun point(lie: NeckLie, along: Float, across: Float): Offset {
+        val point = if (lie == NeckLie.SIDEWAYS) Offset(along, this.across - across) else Offset(across, along)
+        return if (mirrored) Offset(width(lie) - point.x, point.y) else point
+    }
 
     companion object {
         const val OPEN = 30f

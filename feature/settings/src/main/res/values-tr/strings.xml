@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Halkalar</string>
     <string name="settings_focus_mode_title">Odak modu</string>
     <string name="settings_focus_mode_summary">Twangle\'ı tek büyük göstergeyle yana çevirir, uzaktan kolayca okunur</string>
+    <string name="settings_left_handed_title">Solak</string>
+    <string name="settings_left_handed_summary">Akor şemaları ve gamların klavyesi ters tutulan bir gitar için çizilir</string>
 
     <string name="settings_keep_screen_on_title">Ekranı açık tut</string>
     <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>

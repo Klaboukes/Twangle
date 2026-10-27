@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">잔물결</string>
     <string name="settings_focus_mode_title">집중 모드</string>
     <string name="settings_focus_mode_summary">Twangle을 가로로 돌려 큰 미터 하나만 보여줘요. 멀리서도 읽기 쉬워요</string>
+    <string name="settings_left_handed_title">왼손잡이</string>
+    <string name="settings_left_handed_summary">코드표와 스케일 지판을 반대로 잡은 기타에 맞게 그려요</string>
 
     <string name="settings_keep_screen_on_title">화면 켜짐 유지</string>
     <string name="settings_keep_screen_on_summary">튜닝하는 동안 화면이 꺼지지 않아요</string>

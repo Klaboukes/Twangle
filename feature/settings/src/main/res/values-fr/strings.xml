@@ -59,6 +59,8 @@
     <string name="settings_wave_look_ripples">Ondulations</string>
     <string name="settings_focus_mode_title">Mode concentration</string>
     <string name="settings_focus_mode_summary">Met Twangle à l\'horizontale avec un grand cadran, facile à lire de loin</string>
+    <string name="settings_left_handed_title">Gaucher</string>
+    <string name="settings_left_handed_summary">Diagrammes d\'accords et manche des gammes dessinés pour une guitare tenue dans l\'autre sens</string>
 
     <string name="settings_keep_screen_on_title">Garder l\'écran allumé</string>
     <string name="settings_keep_screen_on_summary">L\'écran reste allumé pendant l\'accordage</string>

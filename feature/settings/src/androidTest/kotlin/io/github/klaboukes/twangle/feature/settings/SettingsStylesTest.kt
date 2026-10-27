@@ -111,6 +111,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
                             onInTuneEffectChange = {},
                             onWaveLookChange = {},
                             onFocusModeChange = {},
+                            onLeftHandedChange = {},
                             modifier = Modifier.testTag(WINDOW),
                             dynamicColorAvailable = true,
                         )

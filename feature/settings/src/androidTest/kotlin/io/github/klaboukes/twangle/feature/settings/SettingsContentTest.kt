@@ -104,6 +104,7 @@ class SettingsContentTest {
     private val effectChanges = mutableListOf<InTuneEffect>()
     private val waveLookChanges = mutableListOf<WaveLook>()
     private val focusModeChanges = mutableListOf<Boolean>()
+    private val leftHandedChanges = mutableListOf<Boolean>()
     private var backs = 0
     private var aboutOpened = 0
     private var rates = 0
@@ -160,6 +161,7 @@ class SettingsContentTest {
                         onInTuneEffectChange = { effectChanges += it },
                         onWaveLookChange = { waveLookChanges += it },
                         onFocusModeChange = { focusModeChanges += it },
+                        onLeftHandedChange = { leftHandedChanges += it },
                         modifier = Modifier.testTag(WINDOW),
                         dynamicColorAvailable = dynamicColorAvailable,
                         onShowTour = { toursAsked++ },
@@ -401,6 +403,28 @@ class SettingsContentTest {
         val focusMode = compose.onNodeWithText(context.getString(R.string.settings_focus_mode_title))
         focusMode.performScrollTo().assertIsOn().performClick()
         assertEquals(listOf(false), focusModeChanges)
+    }
+
+    @Test
+    fun leftHandedSwitchIsOffByDefaultAndToggles() {
+        show(AppSettings())
+        val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
+        leftHanded.performScrollTo().assertIsOff().performClick()
+        assertEquals(listOf(true), leftHandedChanges)
+    }
+
+    @Test
+    fun leftHandedSwitchShowsItIsOnInPitchAndNotesUnderTheNoteNames() {
+        show(AppSettings(leftHanded = true))
+        val leftHanded = compose.onNodeWithText(context.getString(R.string.settings_left_handed_title))
+        leftHanded.performScrollTo().assertIsOn()
+        // At the end of "Pitch and notes", under Note names and In-tune precision, before the "Look" group.
+        val top = { text: Int -> compose.onNodeWithText(context.getString(text)).getUnclippedBoundsInRoot().top }
+        assertTrue("under In-tune precision", top(R.string.settings_left_handed_title) > top(R.string.settings_in_tune_precision_title))
+        assertTrue("under Note names", top(R.string.settings_left_handed_title) > top(R.string.settings_notation_title))
+        assertTrue("before Look", top(R.string.settings_left_handed_title) < top(R.string.settings_group_look))
+        leftHanded.performClick()
+        assertEquals(listOf(false), leftHandedChanges)
     }
 
     @Test

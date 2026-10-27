@@ -284,6 +284,11 @@ data class AppSettings(
     val droneVoicing: DroneVoicing = DroneVoicing.FIFTH,
     /** The whole drone an octave lower (off until the player turns it on). */
     val droneLower: Boolean = false,
+    /**
+     * Left-handed (Phase 57): the chord charts and the scale neck drawn mirrored, for a guitar held the other way
+     * round (off until the player turns it on). The tuner's string row doesn't change.
+     */
+    val leftHanded: Boolean = false,
 ) {
     /** The notation to write notes in: the player's [notationChoice], else the one usual in [language] (e.g. "de"). */
     fun notationFor(language: String): Notation = notationChoice ?: Notation.forLanguage(language)

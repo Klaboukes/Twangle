@@ -282,6 +282,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[DRONE_LOWER] = lower }
     }
 
+    override suspend fun setLeftHanded(enabled: Boolean) {
+        dataStore.edit { it[LEFT_HANDED] = enabled }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -328,6 +332,7 @@ class DataStoreSettingsRepository internal constructor(
             droneSound = enumOrNull<DroneSound>(prefs[DRONE_SOUND]) ?: defaults.droneSound,
             droneVoicing = enumOrNull<DroneVoicing>(prefs[DRONE_VOICING]) ?: defaults.droneVoicing,
             droneLower = prefs[DRONE_LOWER] ?: defaults.droneLower,
+            leftHanded = prefs[LEFT_HANDED] ?: defaults.leftHanded,
         )
     }
 
@@ -407,6 +412,7 @@ class DataStoreSettingsRepository internal constructor(
         private val DRONE_SOUND = stringPreferencesKey("drone_sound")
         private val DRONE_VOICING = stringPreferencesKey("drone_voicing")
         private val DRONE_LOWER = booleanPreferencesKey("drone_lower")
+        private val LEFT_HANDED = booleanPreferencesKey("left_handed")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

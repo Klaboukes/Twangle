@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Riak</string>
     <string name="settings_focus_mode_title">Mode fokus</string>
     <string name="settings_focus_mode_summary">Memutar Twangle ke samping dengan satu meter besar, mudah dibaca dari jauh</string>
+    <string name="settings_left_handed_title">Kidal</string>
+    <string name="settings_left_handed_summary">Diagram akor dan leher gitar Tangga nada digambar untuk gitar yang dipegang terbalik</string>
 
     <string name="settings_keep_screen_on_title">Layar tetap menyala</string>
     <string name="settings_keep_screen_on_summary">Layar tetap menyala selama Anda menyetem</string>

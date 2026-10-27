@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">波紋</string>
     <string name="settings_focus_mode_title">フォーカスモード</string>
     <string name="settings_focus_mode_summary">Twangle を横向きにして大きなメーターを 1 つだけ表示し、離れていても読みやすくします</string>
+    <string name="settings_left_handed_title">左利き</string>
+    <string name="settings_left_handed_summary">コードダイアグラムとスケールの指板を、逆向きに構えたギター用に描きます</string>
 
     <string name="settings_keep_screen_on_title">画面をオンのままにする</string>
     <string name="settings_keep_screen_on_summary">チューニング中は画面が消えません</string>

@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Increspature</string>
     <string name="settings_focus_mode_title">Modalità concentrazione</string>
     <string name="settings_focus_mode_summary">Mette Twangle in orizzontale con un grande indicatore, facile da leggere a distanza</string>
+    <string name="settings_left_handed_title">Mancino</string>
+    <string name="settings_left_handed_summary">Schemi degli accordi e manico delle scale disegnati per una chitarra tenuta al contrario</string>
 
     <string name="settings_keep_screen_on_title">Schermo sempre acceso</string>
     <string name="settings_keep_screen_on_summary">Lo schermo resta acceso durante l\'accordatura</string>

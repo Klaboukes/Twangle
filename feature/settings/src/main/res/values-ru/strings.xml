@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Рябь</string>
     <string name="settings_focus_mode_title">Режим фокуса</string>
     <string name="settings_focus_mode_summary">Поворачивает Twangle горизонтально с одним большим индикатором, который легко читать издалека</string>
+    <string name="settings_left_handed_title">Для левши</string>
+    <string name="settings_left_handed_summary">Аккордовые схемы и гриф в гаммах нарисованы для гитары, которую держат наоборот</string>
 
     <string name="settings_keep_screen_on_title">Не выключать экран</string>
     <string name="settings_keep_screen_on_summary">Экран не гаснет во время настройки</string>

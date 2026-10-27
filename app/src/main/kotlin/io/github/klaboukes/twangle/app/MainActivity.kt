@@ -422,6 +422,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     },
+                    leftHanded = settings.leftHanded,
                 )
                 PracticeTool.CAPO -> CapoScreen(
                     tuningName = practiceTuningName(settings),

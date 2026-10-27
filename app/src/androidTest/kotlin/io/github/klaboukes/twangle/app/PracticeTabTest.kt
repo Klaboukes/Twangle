@@ -18,7 +18,9 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -60,11 +62,15 @@ class PracticeTabTest {
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val drone = FakeDronePlayer()
+    private var tuningBefore: Tuning? = null
 
     @Before
     fun setUp() {
         container.testDronePlayer = drone
         runBlocking {
+            // The guitar, which every tool draws: a banjo left picked (a phone check) has no chart or neck.
+            tuningBefore = container.settingsRepository.settings.first().tuning
+            container.settingsRepository.setInstrument(Instruments.GUITAR)
             // The tour would cover the tuner and the bar.
             container.settingsRepository.setTourSeen(true)
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
@@ -92,6 +98,7 @@ class PracticeTabTest {
             container.settingsRepository.setPracticeScaleType(ScaleType.MAJOR)
             container.settingsRepository.setPracticeCapoShapes(SongKey(PitchClass.C))
             container.settingsRepository.setPracticeCapoFret(0)
+            tuningBefore?.let { container.settingsRepository.setTuning(it) }
         }
     }
 

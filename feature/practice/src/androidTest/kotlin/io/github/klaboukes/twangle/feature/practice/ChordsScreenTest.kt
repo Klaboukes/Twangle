@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.isHeading
@@ -93,6 +94,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
     private val shownLocale = mutableStateOf("en")
     private val shownTuning = mutableStateOf(Tunings.STANDARD)
     private val shownNotation = mutableStateOf(Notation.SHARPS)
+    private val shownLeftHanded = mutableStateOf(false)
     private val savedRoots = mutableListOf<PitchClass>()
     private var instrumentTaps = 0
     private val savedQualities = mutableListOf<ChordQuality>()
@@ -113,6 +115,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                         header = { PracticeToolButton(PracticeTool.CHORDS, {}, listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)) },
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
                         onPickInstrument = { instrumentTaps++ },
+                        leftHanded = shownLeftHanded.value,
                     )
                 }
             }
@@ -344,6 +347,37 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
             }
         }
+    }
+
+    /**
+     * Left-handed (Phase 57): the chart is drawn as a mirror image, the low string on the right, upright and on its side,
+     * an open chord and a barre higher up; TalkBack hears the same words, and the rest of the screen stays where it was.
+     */
+    @Test
+    fun leftHandedMirrorsTheChartAndTalkBackHearsTheSame() {
+        show(PitchClass.C, ChordQuality.MAJOR)
+        for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            for (chord in listOf("C major", "C major, shape 2 of")) {
+                shownLeftHanded.value = false
+                if (chord.contains("shape 2")) node(PracticeTestTags.NEXT).performClick()
+                val spoken = awaitChart(chord)
+                compose.waitForIdle()
+                val normal = chart().captureToImage()
+                val name = picker().getBoundsInRoot()
+                val chartBounds = chart().getBoundsInRoot()
+                shownLeftHanded.value = true
+                compose.waitForIdle()
+                val case = "$style $size $chord"
+                assertEquals("$case: TalkBack hears the same", spoken, spokenChart())
+                assertEquals("$case: the name stays", name, picker().getBoundsInRoot())
+                assertEquals("$case: the chart's room stays", chartBounds, chart().getBoundsInRoot())
+                assertMirrored(normal, chart().captureToImage(), case)
+                if (chord.contains("shape 2")) node(PracticeTestTags.PREVIOUS).performClick()
+            }
+        }
+        shownLeftHanded.value = false
+        shownSize.value = XIAOMI
     }
 
     @Test

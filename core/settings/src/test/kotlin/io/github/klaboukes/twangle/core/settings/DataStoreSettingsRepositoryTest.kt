@@ -117,6 +117,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the capo helper opens with no capo", 0, settings.practiceCapoFret)
         assertEquals("the drone is the tanpura with the fifth", DroneSound.TANPURA to DroneVoicing.FIFTH, settings.droneSound to settings.droneVoicing)
         assertEquals("the drone isn't lower until asked", false, settings.droneLower)
+        assertEquals("the charts are right-handed until asked", false, settings.leftHanded)
     }
 
     @Test
@@ -153,6 +154,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setDroneSound(DroneSound.WARM_PAD)
         repo.setDroneVoicing(DroneVoicing.FIFTH_OCTAVE)
         repo.setDroneLower(true)
+        repo.setLeftHanded(true)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -186,6 +188,7 @@ class DataStoreSettingsRepositoryTest {
             droneSound = DroneSound.WARM_PAD,
             droneVoicing = DroneVoicing.FIFTH_OCTAVE,
             droneLower = true,
+            leftHanded = true,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -226,6 +229,7 @@ class DataStoreSettingsRepositoryTest {
             setDroneSound(DroneSound.HARMONIUM)
             setDroneVoicing(DroneVoicing.ROOT)
             setDroneLower(true)
+            setLeftHanded(true)
         }
         close()
 
@@ -251,6 +255,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the capo's fret is kept", 5, settings.practiceCapoFret)
         assertEquals("the drone's sound and notes are kept", DroneSound.HARMONIUM to DroneVoicing.ROOT, settings.droneSound to settings.droneVoicing)
         assertEquals("the drone's Lower is kept", true, settings.droneLower)
+        assertEquals("left-handed is kept", true, settings.leftHanded)
     }
 
     @Test

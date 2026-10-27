@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Kręgi</string>
     <string name="settings_focus_mode_title">Tryb skupienia</string>
     <string name="settings_focus_mode_summary">Obraca Twangle poziomo z jednym dużym wskaźnikiem, łatwym do odczytania z daleka</string>
+    <string name="settings_left_handed_title">Dla leworęcznych</string>
+    <string name="settings_left_handed_summary">Diagramy akordów i gryf skal rysowane dla gitary trzymanej odwrotnie</string>
 
     <string name="settings_keep_screen_on_title">Nie wygaszaj ekranu</string>
     <string name="settings_keep_screen_on_summary">Ekran nie gaśnie podczas strojenia</string>

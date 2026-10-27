@@ -115,6 +115,7 @@ fun SettingsScreen(
         onInTuneEffectChange = viewModel::setInTuneEffect,
         onWaveLookChange = viewModel::setWaveLook,
         onFocusModeChange = viewModel::setFocusMode,
+        onLeftHandedChange = viewModel::setLeftHanded,
         modifier = modifier,
         onShowTour = onShowTour,
         languages = languageTags,
@@ -157,6 +158,7 @@ fun SettingsContent(
     onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
+    onLeftHandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     dynamicColorAvailable: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     onShowTour: (() -> Unit)? = null,
@@ -189,6 +191,7 @@ fun SettingsContent(
                 onInTuneEffectChange = onInTuneEffectChange,
                 onWaveLookChange = onWaveLookChange,
                 onFocusModeChange = onFocusModeChange,
+                onLeftHandedChange = onLeftHandedChange,
                 dynamicColorAvailable = dynamicColorAvailable,
             )
         }
@@ -309,6 +312,7 @@ private fun SettingsGroups(
     onInTuneEffectChange: (InTuneEffect) -> Unit,
     onWaveLookChange: (WaveLook) -> Unit,
     onFocusModeChange: (Boolean) -> Unit,
+    onLeftHandedChange: (Boolean) -> Unit,
     dynamicColorAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -338,6 +342,14 @@ private fun SettingsGroups(
                     selected = settings.inTunePrecision,
                     onSelect = onInTunePrecisionChange,
                 ) { stringResource(inTunePrecisionLabel(it)) }
+                HorizontalDivider()
+                // With Note names, the other setting that changes what the chord charts and the scale neck show.
+                SwitchSetting(
+                    title = stringResource(R.string.settings_left_handed_title),
+                    summary = stringResource(R.string.settings_left_handed_summary),
+                    checked = settings.leftHanded,
+                    onCheckedChange = onLeftHandedChange,
+                )
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_look)) {
@@ -583,6 +595,7 @@ private fun SettingsContentPreview() {
             onInTuneEffectChange = {},
             onWaveLookChange = {},
             onFocusModeChange = {},
+            onLeftHandedChange = {},
         )
     }
 }

@@ -84,4 +84,8 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun setFocusMode(enabled: Boolean) {
         viewModelScope.launch { repository.setFocusMode(enabled) }
     }
+
+    fun setLeftHanded(enabled: Boolean) {
+        viewModelScope.launch { repository.setLeftHanded(enabled) }
+    }
 }

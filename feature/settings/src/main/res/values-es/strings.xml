@@ -58,6 +58,8 @@
     <string name="settings_wave_look_ripples">Ondas</string>
     <string name="settings_focus_mode_title">Modo concentración</string>
     <string name="settings_focus_mode_summary">Pone Twangle en horizontal con un gran indicador, fácil de leer a distancia</string>
+    <string name="settings_left_handed_title">Zurdo</string>
+    <string name="settings_left_handed_summary">Diagramas de acordes y mástil de las escalas dibujados para una guitarra sostenida al revés</string>
 
     <string name="settings_keep_screen_on_title">Mantener la pantalla encendida</string>
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
