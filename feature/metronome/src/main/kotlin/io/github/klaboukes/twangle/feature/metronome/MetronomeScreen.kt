@@ -68,6 +68,8 @@ import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.audio.MetronomePlayer
 import io.github.klaboukes.twangle.core.designsystem.FitColumn
+import io.github.klaboukes.twangle.core.designsystem.ScaledUp
+import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.designsystem.metronome.BeatLightsArt
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
@@ -278,6 +280,12 @@ class BeatClock {
  * A [header] (the Practice tab's tool button, Phase 47) stands at the very top at the start, 8 dp
  * down as the tuner's mode switch, with the meter picker under it; on its side it stands at the top
  * of the dial's half, which the dial shrinks to leave room for, so the controls' column keeps its height.
+ *
+ * On a large upright window (a tablet held upright, Phase 52) the column is laid out as on a phone and
+ * drawn bigger, by the tuner's rule ([columnScaleFor], [ScaledUp]): the meter picker, the beat lights,
+ * the dial, the row of buttons, their text and the gaps grow together, and the Sound panel and the
+ * suggestion with them. The [header] keeps its own size there, at the start of a phone's column, as
+ * over the other Practice tools. On a phone, and on its side, nothing changes.
  */
 @Composable
 fun MetronomeContent(
@@ -342,6 +350,11 @@ fun MetronomeContent(
             val width = maxWidth
             val height = maxHeight
             val wide = width >= WIDE_MIN_WIDTH && width > height
+            // On a tablet held upright the column and the panels over it are drawn bigger, by the tuner's
+            // rule (1 on every phone, and on its side); the Practice tab's tool button keeps its own size
+            // and place there, as over Chords and Scales, so it doesn't move when the tool changes.
+            val scale = if (wide) 1f else columnScaleFor(width.value, height.value)
+            val headerAbove = header != null && scale > 1f
             val lights: @Composable (Dp) -> Unit = { height ->
                 BeatLightsArt(
                     meter = meter,
@@ -428,56 +441,72 @@ fun MetronomeContent(
                     }
                 }
             } else {
-                FitColumn(
-                    height = height,
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .widthIn(max = COLUMN_MAX_WIDTH)
-                        .padding(horizontal = 16.dp),
-                ) {
-                    if (header != null) {
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (headerAbove) {
                         Spacer(Modifier.height(HEADER_TOP))
-                        // At the start, as on the other Practice tools (Phase 47).
-                        Box(Modifier.fillMaxWidth()) { header() }
+                        // At the start of a phone's column, as on the other Practice tools on a tablet.
+                        Box(Modifier.widthIn(max = COLUMN_MAX_WIDTH).fillMaxWidth().padding(horizontal = 16.dp)) { header?.invoke() }
                     }
-                    Spacer(Modifier.height(12.dp))
-                    MeterPicker(meter, onMeterChange)
-                    Spacer(Modifier.height(8.dp))
-                    Spacer(Modifier.gap(1f))
-                    // The beat lights stand right over the dial, which takes all the height the rest leave,
-                    // up to the width; the lights grow with what a tall screen has left (the gaps share the
-                    // rest). Below the dial's smallest (very large text) the column scrolls.
-                    Shrinking { room ->
-                        LightsOverDial(room = room, widest = minOf(DIAL_LARGEST, width - 32.dp), lights = lights, line = line, dial = tempoDial)
+                    BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        // Laid out as on a phone of the room divided by the scale, then drawn that much bigger.
+                        val room = maxHeight
+                        ScaledUp(scale) {
+                            FitColumn(
+                                height = room / scale,
+                                modifier = Modifier
+                                    .verticalScroll(rememberScrollState())
+                                    .widthIn(max = COLUMN_MAX_WIDTH)
+                                    .padding(horizontal = 16.dp),
+                            ) {
+                                if (header != null && !headerAbove) {
+                                    Spacer(Modifier.height(HEADER_TOP))
+                                    // At the start, as on the other Practice tools (Phase 47).
+                                    Box(Modifier.fillMaxWidth()) { header() }
+                                }
+                                Spacer(Modifier.height(12.dp))
+                                MeterPicker(meter, onMeterChange)
+                                Spacer(Modifier.height(8.dp))
+                                Spacer(Modifier.gap(1f))
+                                // The beat lights stand right over the dial, which takes all the height the rest leave,
+                                // up to the width; the lights grow with what a tall screen has left (the gaps share the
+                                // rest). Below the dial's smallest (very large text) the column scrolls.
+                                Shrinking { room ->
+                                    LightsOverDial(room = room, widest = minOf(DIAL_LARGEST, width / scale - 32.dp), lights = lights, line = line, dial = tempoDial)
+                                }
+                                Spacer(Modifier.gap(1f))
+                                row()
+                                Spacer(Modifier.gap(1f))
+                                Spacer(Modifier.height(12.dp))
+                            }
+                        }
                     }
-                    Spacer(Modifier.gap(1f))
-                    row()
-                    Spacer(Modifier.gap(1f))
-                    Spacer(Modifier.height(12.dp))
                 }
             }
             // The suggestion and the Sound panel float on their own layer over the screen, pointing at
             // Listen and opening from Sound. The layer is always there, so its place is known before
-            // either shows (one that isn't showing has no place of its own).
-            Box(Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() }) {
-                ListenBalloon(
-                    listen = listen,
-                    anchor = listenBounds?.translate(-layerOrigin),
-                    onUse = use,
-                    onNotNow = onNotNow,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                SoundPanel(
-                    open = soundOpen,
-                    sound = sound,
-                    vibrate = vibrate,
-                    anchor = soundBounds?.translate(-layerOrigin),
-                    wide = wide,
-                    onPick = onSoundPick,
-                    onVibrateChange = onVibrateChange,
-                    onDismiss = { soundOpen = false },
-                    modifier = Modifier.fillMaxSize(),
-                )
+            // either shows (one that isn't showing has no place of its own). On an upright tablet they
+            // are drawn as big as the column, so they open from its buttons at its size.
+            ScaledUp(scale) {
+                Box(Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() }) {
+                    ListenBalloon(
+                        listen = listen,
+                        anchor = listenBounds?.translate(-layerOrigin),
+                        onUse = use,
+                        onNotNow = onNotNow,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                    SoundPanel(
+                        open = soundOpen,
+                        sound = sound,
+                        vibrate = vibrate,
+                        anchor = soundBounds?.translate(-layerOrigin),
+                        wide = wide,
+                        onPick = onSoundPick,
+                        onVibrateChange = onVibrateChange,
+                        onDismiss = { soundOpen = false },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }

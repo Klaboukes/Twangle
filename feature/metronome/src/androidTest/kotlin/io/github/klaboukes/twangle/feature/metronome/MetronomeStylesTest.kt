@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import io.github.klaboukes.twangle.core.audio.MetronomeBeat
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -41,6 +42,7 @@ import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -81,11 +83,15 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     private val shownListen = mutableStateOf(ListenUi())
     private val shownHeader = mutableStateOf(true)
     private val shownNavigation = mutableStateOf(Navigation.BUTTONS)
+
+    /** No system bars at all: the window is the tab's whole room (the tablet's case compares sizes in it). */
+    private val shownNoBars = mutableStateOf(false)
     private val clock = BeatClock()
     private var backDispatcher: OnBackPressedDispatcher? = null
 
     /** The phone's bars around the tab: the status bar, and on its side the navigation bar too. */
-    private fun bars() = SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
+    private fun bars() =
+        if (shownNoBars.value) SystemBars.NONE else SystemBars.tab(onItsSide = shownSize.value.width > shownSize.value.height, shownNavigation.value)
 
     private fun show() {
         compose.setContent {
@@ -373,6 +379,96 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     /**
+     * On a tablet held upright the column is a phone's, drawn bigger ([columnScaleFor], Phase 52, the
+     * tuner's rule): every part sits where it sits on a phone of the tablet's size divided by that
+     * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off (before, the column
+     * stopped at 480 dp and the dial at 440 dp, a wide empty band either side on the Lenovo Tab M11).
+     * The Practice tab's tool button keeps its own size and its place over Chords and Scales: at the
+     * start of a phone's 480 dp column, 8 dp down, clear of the rest. The Sound panel opens from Sound
+     * at the column's size. A phone keeps its own size (the other tests).
+     */
+    @Test
+    fun anUprightTabletShowsThePhonesColumnBigger() {
+        val grow = columnScaleFor(TABLET_UPRIGHT.width.value, TABLET_UPRIGHT.height.value)
+        assertTrue("the column grows on the tablet: $grow", grow > 1.4f)
+        val asOnAPhone = DpSize(TABLET_UPRIGHT.width / grow, TABLET_UPRIGHT.height / grow)
+        shownNoBars.value = true
+        shownHeader.value = false
+        shownFontScale.value = TABLET_FONT_SCALE
+        shownSize.value = asOnAPhone
+        show()
+        fun shown(size: DpSize): Map<String, DpRect> {
+            shownSize.value = size
+            compose.waitForIdle()
+            return parts().associate { (name, node) -> name to node.windowBounds() }
+        }
+        val phone = shown(asOnAPhone)
+        val tablet = shown(TABLET_UPRIGHT)
+        for ((part, small) in phone) {
+            val big = tablet.getValue(part)
+            // Text set at another pixel size is not quite in proportion (hinting): 1 % more room for it.
+            val across = 2f + big.width.value / 100f
+            val down = 2f + big.height.value / 100f
+            assertEquals("$style $part's left", (small.left * grow).value, big.left.value, across)
+            assertEquals("$style $part's right", (small.right * grow).value, big.right.value, across)
+            assertEquals("$style $part's top", (small.top * grow).value, big.top.value, down)
+            assertEquals("$style $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
+        }
+        val dial = tablet.getValue("dial")
+        assertTrue("$style the dial fills the tablet: $dial", dial.width > 560.dp)
+        assertTrue("$style the dial centred: $dial", abs((dial.left - (TABLET_UPRIGHT.width - dial.right)).value) < 2f)
+        compose.assertEveryTextWhollyShown("$style tablet upright at ${TABLET_FONT_SCALE}x:")
+
+        // With the tool button.
+        shownHeader.value = true
+        compose.waitForIdle()
+        val case = "$style tablet upright with the tool button:"
+        val button = compose.onNodeWithTag(HEADER).windowBounds()
+        assertEquals("$case tool button's width", 160f, button.width.value, 1f)
+        assertEquals("$case tool button's left", ((TABLET_UPRIGHT.width - 448.dp) / 2).value, button.left.value, 1f)
+        assertEquals("$case tool button's top", 8f, button.top.value, 1f)
+        val bounds = parts().map { (name, node) -> name to node.windowBounds() }
+        for ((name, rect) in bounds) {
+            assertTrue(
+                "$case $name $rect inside the window",
+                rect.left >= -SLACK && rect.top >= -SLACK && rect.right <= TABLET_UPRIGHT.width + SLACK && rect.bottom <= TABLET_UPRIGHT.height + SLACK,
+            )
+            if (name != "tool button") assertTrue("$case $name $rect under the tool button $button", rect.top >= button.bottom - TABLET_SLACK)
+        }
+        compose.assertEveryTextWhollyShown("$case at ${TABLET_FONT_SCALE}x")
+
+        // The Sound panel opens above Sound, its start in line with Sound's, inside the window.
+        compose.onNodeWithTag(MetronomeTestTags.SOUND).performClick()
+        compose.waitForIdle()
+        val sound = compose.onNodeWithTag(MetronomeTestTags.SOUND).windowBounds()
+        val panel = compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).windowBounds()
+        assertTrue("$case panel $panel above Sound $sound", panel.bottom <= sound.top + TABLET_SLACK)
+        assertEquals("$case panel's start in line with Sound's", sound.left.value, panel.left.value, 1f)
+        assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.top >= 0.dp)
+        for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$case $option", scroll = false)
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertDoesNotExist()
+    }
+
+    /**
+     * Where [this] is in the test window, in the window's dp. `getBoundsInRoot()` gives a node's bounds
+     * in its own dp, and inside the column on an upright tablet those are [columnScaleFor] times larger.
+     */
+    private fun SemanticsNodeInteraction.windowBounds(): DpRect {
+        val window = compose.onNodeWithTag(WINDOW)
+        val windowPx = window.fetchSemanticsNode().boundsInRoot
+        val pxPerDp = windowPx.width / window.getBoundsInRoot().width.value
+        val r = assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        return DpRect(
+            ((r.left - windowPx.left) / pxPerDp).dp,
+            ((r.top - windowPx.top) / pxPerDp).dp,
+            ((r.right - windowPx.left) / pxPerDp).dp,
+            ((r.bottom - windowPx.top) / pxPerDp).dp,
+        )
+    }
+
+    /**
      * The Practice tab's tool button as it stands over the metronome (Phase 47; `:feature:practice` is
      * out of reach here): a stand-in as large, 160 × 48 dp, its name set smaller where it must.
      */
@@ -439,6 +535,16 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         private val XIAOMI_UPRIGHT = DpSize(393.dp, 713.dp)
         private const val OWNER_FONT_SCALE = 1.25f
         private val SLACK = 0.5.dp
+
+        /**
+         * The Lenovo Tab M11 upright: the metronome's room under the status bar and over the app's
+         * navigation bar (as measured on it), at the tablet's own 1.3x text.
+         */
+        private val TABLET_UPRIGHT = DpSize(800.dp, 1100.dp)
+        private const val TABLET_FONT_SCALE = 1.3f
+
+        /** A px of rounding at the tablet's 1.5 px to the dp. */
+        private val TABLET_SLACK = 0.75.dp
 
         private val BUTTONS_AND_NAMES = listOf(
             MetronomeTestTags.SOUND to MetronomeTestTags.SOUND_LABEL,
