@@ -76,7 +76,7 @@
     <string name="settings_show_tour_title">Rundgang</string>
     <string name="settings_show_tour_summary">Ein kurzer Rundgang durch das Stimmgerät</string>
     <string name="about_title">Über Twangle</string>
-    <string name="settings_about_link_summary">Version %1$s, Datenschutz und Lizenzen</string>
+    <string name="settings_about_link_summary">Version %1$s, Hilfe, Datenschutz und Lizenzen</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Für immer kostenlos</string>
     <string name="settings_about_free_summary">Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Nicht jetzt, nicht später.</string>
@@ -84,6 +84,8 @@
     <string name="settings_about_privacy_summary">Twangle sammelt keine Daten über dich. Das Mikrofon ist nur an, solange das Stimmgerät offen ist. Der Ton wird live analysiert und nie aufgenommen, gespeichert oder gesendet. Twangle hat keine Internetberechtigung und kann daher nichts irgendwohin senden. Deine Einstellungen bleiben auf diesem Gerät (und in der Sicherung von Android selbst, wenn du sie eingeschaltet hast).</string>
     <string name="settings_about_rate_title">Twangle bewerten</string>
     <string name="settings_about_rate_summary">Twangle bei Google Play</string>
+    <string name="settings_about_website_title">Hilfe &amp; Website</string>
+    <string name="settings_about_website_summary">Wie jede Funktion funktioniert, und Antworten auf häufige Fragen (auf Englisch)</string>
     <string name="settings_about_credits_title">Schriften und Open-Source-Software</string>
     <string name="settings_about_credits_summary">Twangle ist damit gemacht. Tippe auf einen Eintrag, um seine Lizenz zu lesen.</string>
     <string name="settings_about_licence_open">Lizenz lesen</string>

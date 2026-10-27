@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -26,17 +27,25 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
+import io.github.klaboukes.twangle.feature.settings.websiteLink
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * The About rows: the app's name and [appVersion], the free-forever promise, the privacy statement,
- * a quiet "Rate Twangle" row ([onRate] opens the Play page; never a rating pop-up), and a credit for
+ * "Help & website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
+ * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; never a rating
+ * pop-up), and a credit for
  * every bundled font and open-source library. Tapping a credit shows its licence text, read from
  * the app's own assets (the app has no internet permission).
  */
 @Composable
-fun AboutSection(appVersion: String, onRate: () -> Unit, modifier: Modifier = Modifier) {
+fun AboutSection(
+    appVersion: String,
+    onOpenWebsite: (link: String) -> Unit,
+    onRate: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     // The open licence is remembered by credit name, so it stays open when the phone is turned.
     var shown by rememberSaveable { mutableStateOf<String?>(null) }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -51,6 +60,13 @@ fun AboutSection(appVersion: String, onRate: () -> Unit, modifier: Modifier = Mo
         AboutText(
             title = stringResource(R.string.settings_about_privacy_title),
             body = stringResource(R.string.settings_about_privacy_summary),
+        )
+        val language = LocalConfiguration.current.locales[0].language
+        LinkSetting(
+            title = stringResource(R.string.settings_about_website_title),
+            summary = stringResource(R.string.settings_about_website_summary),
+            onClick = { onOpenWebsite(websiteLink(language)) },
+            modifier = Modifier.testTag(WEBSITE_TAG),
         )
         LinkSetting(
             title = stringResource(R.string.settings_about_rate_title),
@@ -127,6 +143,9 @@ private fun LicenceDialog(credit: Credit, onDismiss: () -> Unit) {
 
 /** Test tag of a credit's row. */
 fun creditTag(name: String): String = "credit:$name"
+
+/** Test tag of the "Help & website" row. */
+const val WEBSITE_TAG = "helpAndWebsite"
 
 /** Test tag of the "Rate Twangle" row. */
 const val RATE_TAG = "rateTwangle"

@@ -138,8 +138,8 @@ listing isn't tied to a version.
 - **One icon and feature graphic** go with the default language, en-US; Play shows them in every
   language without its own.
 - **App details:** Play sets the default language, contact email and website together, so `listing`
-  sends all three: English (United States), twangle.tuner@proton.me and the privacy-policy page
-  (decision 5; `playAppDetails` in `app/build.gradle.kts`). The contact phone stays empty.
+  sends all three: English (United States), twangle.tuner@proton.me and the website's home page,
+  https://klaboukes.github.io/ (the privacy-policy page until Phase 54; decision 5; `playAppDetails` in `app/build.gradle.kts`). The contact phone stays empty.
 - It sends everything each time, also what an earlier run sent, so it puts back anything changed by
   hand in the Play Console's store listing; pictures Play already has are skipped. Languages on Play
   that the repo doesn't have are left alone. The category, tags and the rest of *Store settings*

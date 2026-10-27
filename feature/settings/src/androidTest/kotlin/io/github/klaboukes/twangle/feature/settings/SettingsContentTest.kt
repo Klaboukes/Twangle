@@ -61,6 +61,7 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.feature.settings.components.LANGUAGE_SETTING_TAG
 import io.github.klaboukes.twangle.feature.settings.components.LICENCE_TEXT_TAG
 import io.github.klaboukes.twangle.feature.settings.components.RATE_TAG
+import io.github.klaboukes.twangle.feature.settings.components.WEBSITE_TAG
 import io.github.klaboukes.twangle.feature.settings.components.languageOptionTag
 import io.github.klaboukes.twangle.feature.settings.components.creditTag
 import io.github.klaboukes.twangle.feature.settings.components.credits
@@ -108,6 +109,7 @@ class SettingsContentTest {
     private var backs = 0
     private var aboutOpened = 0
     private var rates = 0
+    private val websiteLinks = mutableListOf<String>()
     private var toursAsked = 0
     private val languageChanges = mutableListOf<String?>()
 
@@ -141,7 +143,13 @@ class SettingsContentTest {
             val content = @Composable {
                 Themed(style) {
                     if (about) {
-                        AboutScreen(appVersion = VERSION, onRate = { rates++ }, onBack = { backs++ }, modifier = Modifier.testTag(WINDOW))
+                        AboutScreen(
+                            appVersion = VERSION,
+                            onOpenWebsite = { websiteLinks += it },
+                            onRate = { rates++ },
+                            onBack = { backs++ },
+                            modifier = Modifier.testTag(WINDOW),
+                        )
                     } else SettingsContent(
                         settings,
                         appVersion = VERSION,
@@ -988,6 +996,39 @@ class SettingsContentTest {
         assertEquals(0, rates)
         compose.onNodeWithTag(RATE_TAG).performClick()
         assertEquals(1, rates)
+    }
+
+    /**
+     * "Help & website": a quiet row like "Rate Twangle", and one tap asks to open the website's home page
+     * once, in the app's language where the site has it (Dutch), else in English.
+     */
+    @Test
+    fun helpAndWebsiteIsAQuietRowThatOpensTheWebsite() {
+        show(AppSettings(), about = true)
+        compose.onNodeWithTag(WEBSITE_TAG).performScrollTo().assertIsDisplayed()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(hasText(context.getString(R.string.settings_about_website_title)))
+            .assert(hasText(context.getString(R.string.settings_about_website_summary)))
+            .assertHeightIsAtLeast(48.dp)
+        assertEquals(emptyList<String>(), websiteLinks)
+        compose.onNodeWithTag(WEBSITE_TAG).performClick()
+        assertEquals(listOf("https://klaboukes.github.io/"), websiteLinks)
+        assertEquals(0, rates)
+    }
+
+    @Test
+    fun helpAndWebsiteOpensTheDutchSiteInDutch() {
+        show(AppSettings(), about = true, locale = "nl")
+        compose.onNodeWithTag(WEBSITE_TAG).performScrollTo().performClick()
+        assertEquals(listOf("https://klaboukes.github.io/nl/"), websiteLinks)
+    }
+
+    /** The site has only English and Dutch so far: every other language gets the English site. */
+    @Test
+    fun helpAndWebsiteOpensTheEnglishSiteInGerman() {
+        show(AppSettings(), about = true, locale = "de")
+        compose.onNodeWithTag(WEBSITE_TAG).performScrollTo().performClick()
+        assertEquals(listOf("https://klaboukes.github.io/"), websiteLinks)
     }
 
     @Test

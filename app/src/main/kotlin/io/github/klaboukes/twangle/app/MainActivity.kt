@@ -70,6 +70,7 @@ import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
 import io.github.klaboukes.twangle.feature.settings.SettingsScreen
 import io.github.klaboukes.twangle.feature.settings.openPlayPage
+import io.github.klaboukes.twangle.feature.settings.openWebsite
 import io.github.klaboukes.twangle.feature.tuner.R as TunerR
 import io.github.klaboukes.twangle.feature.tuner.TunerScreen
 import io.github.klaboukes.twangle.feature.tuner.TunerTool
@@ -312,6 +313,7 @@ class MainActivity : AppCompatActivity() {
                                 )
                                 Screen.ABOUT -> AboutScreen(
                                     appVersion = BuildConfig.VERSION_NAME,
+                                    onOpenWebsite = { openWebsite(this@MainActivity, it) },
                                     onRate = { openPlayPage(this@MainActivity, BuildConfig.APPLICATION_ID) },
                                     onBack = { screen = Screen.SETTINGS },
                                 )

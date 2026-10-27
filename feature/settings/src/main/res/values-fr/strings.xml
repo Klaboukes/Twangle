@@ -77,7 +77,7 @@
     <string name="settings_show_tour_title">Visite guidée</string>
     <string name="settings_show_tour_summary">Une courte visite de l\'accordeur</string>
     <string name="about_title">À propos de Twangle</string>
-    <string name="settings_about_link_summary">Version %1$s, confidentialité et licences</string>
+    <string name="settings_about_link_summary">Version %1$s, aide, confidentialité et licences</string>
     <string name="settings_about_version">Version %1$s</string>
     <string name="settings_about_free_title">Gratuit pour toujours</string>
     <string name="settings_about_free_summary">Pas de pub, pas de compte, pas d\'achats intégrés, pas de pistage. Ni maintenant, ni plus tard.</string>
@@ -85,6 +85,8 @@
     <string name="settings_about_privacy_summary">Twangle ne collecte aucune donnée sur vous. Le micro n\'est actif que lorsque l\'écran de l\'accordeur est ouvert. Le son est analysé en direct, jamais enregistré, sauvegardé ni envoyé. Twangle n\'a pas l\'autorisation d\'accéder à Internet, il ne peut donc rien envoyer nulle part. Vos réglages restent sur cet appareil (et dans la sauvegarde d\'Android, si vous l\'avez activée).</string>
     <string name="settings_about_rate_title">Noter Twangle</string>
     <string name="settings_about_rate_summary">Twangle sur Google Play</string>
+    <string name="settings_about_website_title">Aide et site web</string>
+    <string name="settings_about_website_summary">Comment fonctionne chaque outil, et réponses aux questions fréquentes (en anglais)</string>
     <string name="settings_about_credits_title">Polices et logiciels libres</string>
     <string name="settings_about_credits_summary">Twangle est fait avec eux. Touchez-en un pour lire sa licence.</string>
     <string name="settings_about_licence_open">Lire la licence</string>

@@ -144,7 +144,7 @@ val playTexts = mapOf(
 val playAppDetails = mapOf(
     "default-language.txt" to "en-US",
     "contact-email.txt" to "twangle.tuner@proton.me",
-    "contact-website.txt" to "https://klaboukes.github.io/twangle-privacy/",
+    "contact-website.txt" to "https://klaboukes.github.io/",
 )
 // A language's pictures can go up only once Play has its listing, and the plugin sends a listing's texts
 // and pictures side by side, so a language new on Play fails with "Listing for language … not found".

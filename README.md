@@ -2,6 +2,8 @@
 
 Twangle is a free guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents. It also has tools for guitarists (strum check, intonation check, chord name, pitch trail), a metronome, chord charts, scales and a capo helper, tunes many other instruments, and comes with a home-screen widget and a Wear OS watch app.
 
+The website, **https://klaboukes.github.io/** ([Nederlands](https://klaboukes.github.io/nl/)), shows how each tool works and answers common questions ([help](https://klaboukes.github.io/help.html)).
+
 ## Free forever
 
 Twangle is and will always be **free**:

@@ -76,7 +76,7 @@
     <string name="settings_show_tour_title">Tur aplikasi</string>
     <string name="settings_show_tour_summary">Tur singkat tuner</string>
     <string name="about_title">Tentang Twangle</string>
-    <string name="settings_about_link_summary">Versi %1$s, privasi, dan lisensi</string>
+    <string name="settings_about_link_summary">Versi %1$s, bantuan, privasi, dan lisensi</string>
     <string name="settings_about_version">Versi %1$s</string>
     <string name="settings_about_free_title">Gratis selamanya</string>
     <string name="settings_about_free_summary">Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Tidak sekarang, tidak nanti.</string>
@@ -84,6 +84,8 @@
     <string name="settings_about_privacy_summary">Twangle tidak mengumpulkan data apa pun tentang Anda. Mikrofon hanya aktif saat layar tuner terbuka. Suara dianalisis langsung dan tidak pernah direkam, disimpan, atau dikirim. Twangle tidak punya izin internet, jadi tidak bisa mengirim apa pun ke mana pun. Setelan Anda tetap di perangkat ini (dan di cadangan Android sendiri, jika Anda mengaktifkannya).</string>
     <string name="settings_about_rate_title">Beri nilai Twangle</string>
     <string name="settings_about_rate_summary">Twangle di Google Play</string>
+    <string name="settings_about_website_title">Bantuan dan situs web</string>
+    <string name="settings_about_website_summary">Cara kerja setiap fitur, dan jawaban atas pertanyaan umum (dalam bahasa Inggris)</string>
     <string name="settings_about_credits_title">Font dan perangkat lunak open source</string>
     <string name="settings_about_credits_summary">Twangle dibuat dengan semua ini. Ketuk salah satunya untuk membaca lisensinya.</string>
     <string name="settings_about_licence_open">Baca lisensi</string>

@@ -96,7 +96,7 @@ None for v1.0. Maybe later: a 30-second screen recording of tuning a real guitar
 ## Being found
 - **Category:** Music & Audio.
 - **Tags:** in the Play Console (*Store settings*), up to five of Google's tags: the ones closest to tuner, metronome and musical instruments.
-- **Contact details:** the public contact email (**decision 5**) and the privacy-policy page as website; `scripts/release.sh listing` sets both, with English (United States) as the default language (`playAppDetails` in `app/build.gradle.kts`), and leaves the contact phone empty.
+- **Contact details:** the public contact email (**decision 5**) and the website's home page, https://klaboukes.github.io/, as website (the privacy-policy page until Phase 54; the policy's address in *App content* stays); `scripts/release.sh listing` sets both, with English (United States) as the default language (`playAppDetails` in `app/build.gradle.kts`), and leaves the contact phone empty.
 - **Ratings:** good ratings early help search more than anything else. Ask the closed-test testers to rate it once it is public. In Twangle, a calm "Rate Twangle" row in About that opens the Play page; no pop-up asking for a rating.
 - **Translations:** every language's title, short and full description and captions, translated by Claude and checked by a native speaker where possible (the Phase 22 owner check covers this).
 - **Accessibility communities:** once live, submit Twangle to the app directories and forums of blind and low-vision Android users (for example *Accessible Android*), where a tuner that speaks is rare. Ask the closed-test testers whether one of them uses TalkBack.

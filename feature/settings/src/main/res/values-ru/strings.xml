@@ -76,7 +76,7 @@
     <string name="settings_show_tour_title">Экскурсия</string>
     <string name="settings_show_tour_summary">Короткий обзор тюнера</string>
     <string name="about_title">О Twangle</string>
-    <string name="settings_about_link_summary">Версия %1$s, конфиденциальность и лицензии</string>
+    <string name="settings_about_link_summary">Версия %1$s, помощь, конфиденциальность и лицензии</string>
     <string name="settings_about_version">Версия %1$s</string>
     <string name="settings_about_free_title">Бесплатно навсегда</string>
     <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>
@@ -84,6 +84,8 @@
     <string name="settings_about_privacy_summary">Twangle не собирает о тебе никаких данных. Микрофон включён, только пока открыт экран тюнера. Звук анализируется на лету и никогда не записывается, не сохраняется и не отправляется. У Twangle нет разрешения на доступ к интернету, поэтому он ничего не может никуда отправить. Твои настройки хранятся на этом устройстве (и в резервной копии самого Android, если она у тебя включена).</string>
     <string name="settings_about_rate_title">Оценить Twangle</string>
     <string name="settings_about_rate_summary">Twangle в Google Play</string>
+    <string name="settings_about_website_title">Помощь и сайт</string>
+    <string name="settings_about_website_summary">Как работает каждая функция, и ответы на частые вопросы (на английском)</string>
     <string name="settings_about_credits_title">Шрифты и открытое ПО</string>
     <string name="settings_about_credits_summary">Twangle сделан с их помощью. Нажми на любой пункт, чтобы прочитать лицензию.</string>
     <string name="settings_about_licence_open">Прочитать лицензию</string>
