@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -51,6 +52,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalAccessibilityManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -65,7 +67,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.zIndex
@@ -833,16 +837,20 @@ fun TunerContent(
             )
         }
         val singleColumn = @Composable {
-            SingleColumnLayout(
-                height = maxHeight,
-                error = error,
-                onRetry = onRetry,
-                header = header,
-                gauge = gauge,
-                note = { maxHeight -> note(false, maxHeight) },
-                noteShrinks = plainMeter,
-                guitarSlot = guitarSlot,
-            )
+            // On a tablet held upright the whole column is drawn bigger, as on a phone (1 on every phone).
+            val scale = columnScaleFor(maxWidth.value, maxHeight.value)
+            ScaledUp(scale) {
+                SingleColumnLayout(
+                    height = maxHeight / scale,
+                    error = error,
+                    onRetry = onRetry,
+                    header = header,
+                    gauge = gauge,
+                    note = { maxHeight -> note(false, maxHeight) },
+                    noteShrinks = plainMeter,
+                    guitarSlot = guitarSlot,
+                )
+            }
         }
         val layout = tunerLayoutFor(maxWidth.value, maxHeight.value, compactLandscape)
         val twoPanesFit = maxWidth.value >= TWO_PANE_MIN_WIDTH_DP
@@ -995,6 +1003,32 @@ private fun SingleColumnLayout(
         }
         Spacer(Modifier.height(EDGE_INSET))
     }
+}
+
+/**
+ * Draws [content] [scale] times as big: every dp and sp in it (the meter, the note, the string
+ * buttons, the text and the gaps) grows together ([columnScaleFor]). At 1 (every phone) it gets the
+ * screen's own density, so nothing changes; the provider stays either way, so a window resized past
+ * the point keeps the column's state.
+ */
+@Composable
+private fun ScaledUp(scale: Float, content: @Composable () -> Unit) {
+    val screen = LocalDensity.current
+    val density = remember(screen, scale) { if (scale == 1f) screen else ScaledDensity(screen, scale) }
+    CompositionLocalProvider(LocalDensity provides density, content = content)
+}
+
+/**
+ * [screen] with [scale] times as many pixels to the dp. Text keeps the screen's own font scaling
+ * (Android 14+ grows large text less than linearly): sp go to dp as on [screen], then to pixels here.
+ */
+private class ScaledDensity(private val screen: Density, scale: Float) : Density {
+    override val density = screen.density * scale
+    override val fontScale = screen.fontScale
+
+    override fun TextUnit.toDp(): Dp = with(screen) { this@toDp.toDp() }
+
+    override fun Dp.toSp(): TextUnit = with(screen) { this@toSp.toSp() }
 }
 
 /**

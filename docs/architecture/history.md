@@ -64,6 +64,7 @@ Designs and measurements that have been superseded, kept for the record and take
 - **TalkBack pacing:** until 2026-10-16 each `NoteDisplay` held its own throttle, so every pluck and every "Play a string" was said at once.
 
 ## Tuner screen
+- **Upright on a tablet:** until Phase 52 (2026-10-27) the upright column stopped at 480 dp on every screen, so a tablet showed a phone-sized tuner in the middle with a wide empty band under the note (the Lenovo Tab M11: a 464 dp meter on an 800 dp screen). Now the column is drawn bigger there (`columnScaleFor`).
 - **Top corners:** the navigation bar replaced the settings gear (and a temporary metronome button beside it) in Phase 19; until then the mode switch kept clear of the gear. The palette button that opened a style sheet went in Phase 14, as did the "A4 = … Hz" line.
 - **Mode switch:** the "Strings" segment was called "Guitar" until Phase 15, when other instruments came and the instrument-and-tuning button took the instrument's name.
 - **Instrument and tuning:** Phase 15 had two menus ("Standard ▾ Guitar ▾", one-line shrinking in `PickerRow.kt`); Phase 16 replaced them with one button above the strings ("Guitar · Standard ⌄", `CombinedPicker`) that opened the panel. On 2026-10-15 the owner moved the panel's entry into the navigation bar's Instrument item. Phase 26 turned the row's start into a quiet label naming the instrument and tuning, and made the panel open scrolled to the ticked tuning (at first it asked from outside the sheet, often before the rows existed, so it opened at the top).

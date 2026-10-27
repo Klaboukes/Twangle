@@ -36,5 +36,26 @@ fun tunerLayoutFor(widthDp: Float, heightDp: Float, compactLandscape: Boolean): 
 
 const val TWO_PANE_MIN_WIDTH_DP = 600f
 
+/**
+ * How much bigger the [TunerLayout.SINGLE_COLUMN] layout is drawn in a window of [widthDp] by
+ * [heightDp]: 1 on every phone, more on a tablet held upright (Phase 52). The column is laid out as on
+ * a phone of [COLUMN_SCALE_BASE_WIDTH_DP] by [COLUMN_SCALE_BASE_HEIGHT_DP] or larger and then drawn
+ * that much bigger, so the meter, the note, the string buttons, the text and the gaps all grow
+ * together and keep the phone's proportions. Without it the column stopped at 480 dp: on a Lenovo Tab
+ * M11 upright (800 dp) the meter was 464 dp across with about 290 dp of empty screen under the note.
+ *
+ * It grows only where the window is both wider and taller than those (a phone is at most about
+ * 480 dp wide, and on its side far too short), and smoothly with the window, up to [COLUMN_MAX_SCALE].
+ */
+fun columnScaleFor(widthDp: Float, heightDp: Float): Float =
+    minOf(widthDp / COLUMN_SCALE_BASE_WIDTH_DP, heightDp / COLUMN_SCALE_BASE_HEIGHT_DP, COLUMN_MAX_SCALE).coerceAtLeast(1f)
+
+/** The phone-like window the upright column is laid out in before [columnScaleFor] makes it bigger. */
+const val COLUMN_SCALE_BASE_WIDTH_DP = 560f
+const val COLUMN_SCALE_BASE_HEIGHT_DP = 760f
+
+/** The upright column grows at most this much (on a large tablet: 720 dp across). */
+const val COLUMN_MAX_SCALE = 1.5f
+
 /** How long the controls stay after a tap in the [TunerLayout.COMPACT] layout, before TalkBack's own timeout setting. */
 const val COMPACT_CONTROLS_SHOWN_MS = 5_000L

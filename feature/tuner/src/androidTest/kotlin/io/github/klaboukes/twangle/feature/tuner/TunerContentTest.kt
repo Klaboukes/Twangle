@@ -146,6 +146,9 @@ class TunerContentTest {
     /** The state [show] shows; set it to send a new reading while the tuner is shown. */
     private val shownState = mutableStateOf<TunerUiState>(TunerUiState.PermissionRequired)
 
+    /** The window [show] gives, which a test may change (null: [PHONE]). */
+    private val shownSize = mutableStateOf<DpSize?>(null)
+
     /**
      * Shows [state] in the test window with a [fontScale] (1 unless given, whatever the phone's own
      * text size, so tests behave the same on every phone), as if the window were [size] ([PHONE] unless
@@ -174,6 +177,7 @@ class TunerContentTest {
         shownSignalBars.value = signalBars
         shownSounding.value = null
         shownPickerOpen.value = false
+        shownSize.value = size
         compose.setContent {
             val content = @Composable {
                 backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -209,7 +213,7 @@ class TunerContentTest {
                     )
                 }
             }
-            PhoneScreen(size ?: PHONE, SystemBars.NONE, fontScale ?: 1f, locale, content)
+            PhoneScreen(shownSize.value ?: PHONE, SystemBars.NONE, fontScale ?: 1f, locale, content)
         }
     }
 
@@ -1362,13 +1366,15 @@ class TunerContentTest {
     @Test
     fun uprightTabletShowsTheWaveWithoutScrolling() {
         show(detected(3f, targetString = 1), size = TABLET_PORTRAIT, display = TunerDisplay.WAVE, showTuneHint = true)
-        val window = compose.onNodeWithTag(WINDOW).getBoundsInRoot()
-        val note = compose.onNodeWithText("E").assertIsDisplayed().getBoundsInRoot()
-        val shown = wave.assertIsDisplayed().getBoundsInRoot()
-        assertWaveSize(shown)
+        val shown = wave.windowBounds()
+        // As the whole column, the wave is drawn bigger on the tablet.
+        val grow = columnScaleFor(TABLET_PORTRAIT.width.value, TABLET_PORTRAIT.height.value)
+        assertEquals("wave width", WAVE_WIDTH.value * grow, shown.width.value, 1f)
+        assertEquals("wave height", WAVE_HEIGHT.value * grow, shown.height.value, 1f)
+        val note = compose.onNodeWithText("E").windowBounds()
         assertTrue("wave under the note", shown.top >= note.bottom)
         for (label in listOf("E2", "E4")) {
-            assertTrue(stringChip(label).assertIsDisplayed().getBoundsInRoot().bottom <= window.bottom)
+            assertTrue("$label in view", stringChip(label).windowBounds().bottom <= TABLET_PORTRAIT.height)
         }
     }
 
@@ -1465,6 +1471,83 @@ class TunerContentTest {
             gauge.top - modeSwitch.bottom < strings.top - note.bottom,
         )
         compose.onNodeWithText("A4", substring = true).assertDoesNotExist()
+    }
+
+    /**
+     * On a tablet held upright the column is the phone's, drawn bigger ([columnScaleFor], Phase 52):
+     * every part sits where it sits on a phone of the tablet's size divided by that scale, that much
+     * bigger, at the tablet's own 1.3× text, so the meter, the note and the strings fill the screen
+     * (before, the column stopped at 480 dp: a 464 dp meter and about 290 dp of empty screen under the
+     * note on the Lenovo Tab M11), and no text is cut off. A phone keeps its own size.
+     */
+    @Test
+    fun anUprightTabletShowsThePhonesColumnBigger() {
+        val grow = columnScaleFor(TABLET_PORTRAIT.width.value, TABLET_PORTRAIT.height.value)
+        assertTrue("the column grows on the tablet: $grow", grow > 1.4f)
+        val asOnAPhone = DpSize(TABLET_PORTRAIT.width / grow, TABLET_PORTRAIT.height / grow)
+        val modeSwitch = context.getString(R.string.tuner_mode_strings)
+        val hint = context.getString(R.string.tuner_hint_play_string)
+        show(listening, fontScale = 1.3f, size = asOnAPhone)
+        for (state in listOf(listening, detected(-12.3f))) {
+            shownState.value = state
+            fun parts(size: DpSize): Map<String, DpRect> {
+                shownSize.value = size
+                compose.waitForIdle()
+                val shown = mutableMapOf(
+                    "meter" to compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds(),
+                    "mode switch" to compose.onNodeWithText(modeSwitch).windowBounds(),
+                    "instrument button" to compose.onNodeWithTag(TunerTestTags.INSTRUMENT_BUTTON).windowBounds(),
+                    "E2" to stringChip("E2").windowBounds(),
+                    "E4" to stringChip("E4").windowBounds(),
+                )
+                if (state == listening) {
+                    shown["hint"] = compose.onNodeWithText(hint).windowBounds()
+                    assertWholeTextShown(compose.onNodeWithText(hint))
+                } else {
+                    shown["note"] = compose.onNodeWithText("E").windowBounds()
+                    assertWholeTextShown(compose.onNodeWithText(twelveCentsFlat))
+                }
+                assertTrue("$size: strings in view", shown.getValue("E2").bottom <= size.height)
+                return shown
+            }
+            val phone = parts(asOnAPhone)
+            val tablet = parts(TABLET_PORTRAIT)
+            for ((part, small) in phone) {
+                val big = tablet.getValue(part)
+                // Text set at another pixel size is not quite in proportion (hinting): 1 % more room for it.
+                val across = 2f + big.width.value / 100f
+                val down = 2f + big.height.value / 100f
+                assertEquals("$state: $part's left", (small.left * grow).value, big.left.value, across)
+                assertEquals("$state: $part's right", (small.right * grow).value, big.right.value, across)
+                assertEquals("$state: $part's top", (small.top * grow).value, big.top.value, down)
+                assertEquals("$state: $part's bottom", (small.bottom * grow).value, big.bottom.value, down)
+            }
+            val meter = tablet.getValue("meter")
+            assertEquals("meter width", (480.dp - 16.dp).value * grow, meter.width.value, 2f)
+            assertTrue("meter centred", abs((meter.left - (TABLET_PORTRAIT.width - meter.right)).value) < 2f)
+        }
+        // A phone keeps its own column.
+        shownState.value = listening
+        shownSize.value = PHONE
+        compose.waitForIdle()
+        assertEquals("phone meter width", (PHONE.width - 16.dp).value, compose.onNodeWithTag(TunerTestTags.GAUGE).windowBounds().width.value, 1f)
+    }
+
+    /**
+     * Where [this] is in the test window, in the window's dp. `getBoundsInRoot()` gives a node's bounds
+     * in its own dp, and inside the column on an upright tablet those are [columnScaleFor] times larger.
+     */
+    private fun SemanticsNodeInteraction.windowBounds(): DpRect {
+        val window = compose.onNodeWithTag(WINDOW)
+        val windowPx = window.fetchSemanticsNode().boundsInRoot
+        val pxPerDp = windowPx.width / window.getBoundsInRoot().width.value
+        val r = assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        return DpRect(
+            ((r.left - windowPx.left) / pxPerDp).dp,
+            ((r.top - windowPx.top) / pxPerDp).dp,
+            ((r.right - windowPx.left) / pxPerDp).dp,
+            ((r.bottom - windowPx.top) / pxPerDp).dp,
+        )
     }
 
     private fun PixelMap.differsFrom(other: PixelMap): Boolean =
