@@ -152,7 +152,7 @@ fi
 
 # Say plainly that the phone is missing instead of failing after the build.
 if ! adb devices 2>/dev/null | tr -d '\r' | grep -q $'\tdevice$'; then
-    echo "No phone connected (adb devices shows none). Connect a test phone (the Xiaomi 12X or the Galaxy S26) and accept the USB-debugging prompt." >&2
+    echo "No phone connected (adb devices shows none). Connect a test device (the Xiaomi 12X, the Galaxy S26 or the Lenovo Tab M11) and accept the USB-debugging prompt." >&2
     exit 3
 fi
 
@@ -358,7 +358,7 @@ wake_phone() {
     adb shell input keyevent KEYCODE_WAKEUP > /dev/null 2>&1
     sleep 0.5
     if adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -q 'isKeyguardShowing=true'; then
-        echo "The phone is locked: unlock the Xiaomi 12X, leave its screen on, and run again." >&2
+        echo "The phone is locked: unlock it, leave its screen on, and run again." >&2
         exit 4
     fi
 }

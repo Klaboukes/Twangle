@@ -15,7 +15,7 @@ Phases 0–22, 24–38, 40, 41, 43, 45, 47, 48 and 49 are finished and moved to 
 ## Waiting on the owner
 Things only the owner can start. Claude mentions these at the start of a session while they're open.
 - ◐ **The closed test (Phase 53):** 1.0.2 is on the closed track `alpha` (live, checked 2026-10-24 with `scripts/release.sh status`). Google requires at least 12 testers who stay opted in for 14 days in a row before production access can be applied for. Tell Claude when the Play Console shows the 14 days are done, and pass on what the testers say: what they find goes into the roadmap or [IDEAS.md](IDEAS.md)
-- ☐ **Plug in the Lenovo Tab M11 (Phase 52):** turn on its developer options and USB debugging, plug it into the PC and accept the "Allow USB debugging?" prompt, then tell Claude
+- ☑ **Plug in the Lenovo Tab M11 (Phase 52):** turn on its developer options and USB debugging, plug it into the PC and accept the "Allow USB debugging?" prompt, then tell Claude
 
 ## Owner checks (live tests)
 Done by the owner by hand, with a real guitar or headset. They are not roadmap increments: `/roadmap-step` skips them.
@@ -45,7 +45,7 @@ Goal: guitarists who already have a tuner find Twangle and switch to it. Nearly 
 
 ## Phase 52 — Check on a real tablet (Lenovo Tab M11)
 Goal: Twangle looks and works right on a real tablet before v1.0, since Play offers it to tablets too. Owner, 2026-10-21: the owner has a Lenovo Tab M11 and plugs it in later. The layouts already pick their arrangement from the space (`tunerLayoutFor`), and the UI tests already include a tablet-sized screen, so this checks the real thing: the tablet's own density, microphone, speaker and navigation. It starts once the tablet is plugged in (see *Waiting on the owner*); until then `/roadmap-step` skips it, and it doesn't hold up Phase 53.
-- ☐ Twangle installed on the tablet; its details (adb serial, Android version, screen size in dp, refresh rate, navigation) and any install quirks noted in CLAUDE.md next to the two phones
+- ☑ Twangle installed on the tablet; its details (adb serial, Android version, screen size in dp, refresh rate, navigation) and any install quirks noted in CLAUDE.md next to the two phones (2026-10-27: no install quirks, first start clean with the microphone question, cold start 2.8 s in the debug build; `scripts/ui-tests.sh` runs on it)
 - ☐ Every tab checked on the tablet, upright and on its side, in a few styles: the tuner (column upright, two panes on its side), focus mode full screen, the metronome, Practice and its tools, Settings and About, the tour, and the widget on the home screen
 - ☐ The tuner reads a string through the tablet's microphone (a short test tone from the laptop), and the reference tones and metronome clicks sound through its speaker
 - ☐ What looks or works wrong fixed, each fix on its own branch and PR, with a tablet-sized case added to the matching UI test where one is missing
