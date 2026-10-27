@@ -1,0 +1,9 @@
+- Yeni enstrümanlar: 12 telli gitar ve 5 telli banjo.
+- Yeni akortlar: Open C, bariton ukulele ve 2½ tona kadar düşürülmüş her akort.
+- Gamlar artık ayrı bir araç: 14 gam ve eşlik eden bir dem.
+- Dört yeni akor türü, aralarında power chord.
+- Seçilebilir dört metronom sesi.
+- Solak şemalar, Ayarlar'da.
+- Twangle artık tablet ekranını dolduruyor.
+- Referans sesler enstrüman gibi çalıyor.
+- Daha kısa bir tanıtım turu ve birçok küçük düzeltme.

@@ -1,0 +1,9 @@
+- Instrumen baru: gitar 12 senar dan banjo 5 senar.
+- Stem baru: Open C, ukulele bariton, dan stem apa pun hingga 2½ nada lebih rendah.
+- Tangga nada kini alat tersendiri: 14 tangga nada dan drone untuk mengiringi.
+- Empat jenis akor baru, termasuk power chord.
+- Empat suara metronom untuk dipilih.
+- Diagram untuk pemain kidal, di Setelan.
+- Twangle kini memenuhi layar tablet.
+- Nada referensi terdengar seperti instrumennya.
+- Tur yang lebih singkat dan banyak perbaikan kecil.

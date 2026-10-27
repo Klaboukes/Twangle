@@ -1,0 +1,9 @@
+- Novos instrumentos: violão de 12 cordas e banjo de 5 cordas.
+- Novas afinações: Open C, ukulele barítono e qualquer afinação até 2½ tons abaixo.
+- Escalas é uma ferramenta própria: 14 escalas e um bordão de fundo.
+- Mais quatro tipos de acorde, como o power chord.
+- Quatro sons de metrônomo para escolher.
+- Diagramas para canhotos, em Configurações.
+- O Twangle ocupa a tela de um tablet.
+- Os tons de referência soam como o instrumento.
+- Tour mais curto e pequenas correções.

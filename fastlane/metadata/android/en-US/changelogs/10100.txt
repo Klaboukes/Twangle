@@ -1,0 +1,9 @@
+- New instruments: the 12-string guitar and the 5-string banjo.
+- New tunings: Open C, the baritone ukulele, and any tuning up to 2½ steps lower.
+- Scales is a tool of its own: 14 scales and a drone to play along with.
+- Four more chord types, among them the power chord.
+- Four metronome sounds to pick from.
+- Left-handed charts, in Settings.
+- Twangle now fills a tablet screen.
+- Reference tones sound like the instrument.
+- A shorter tour and many small fixes.

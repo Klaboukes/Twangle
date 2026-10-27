@@ -1,0 +1,9 @@
+- Nowe instrumenty: gitara 12-strunowa i banjo 5-strunowe.
+- Nowe stroje: Open C, ukulele barytonowe i każdy strój obniżony o maks. 2½ tonu.
+- Skale to osobne narzędzie: 14 skal i burdon do grania.
+- Cztery nowe rodzaje akordów, w tym power chord.
+- Cztery dźwięki metronomu do wyboru.
+- Diagramy dla leworęcznych, w Ustawieniach.
+- Twangle wypełnia teraz ekran tabletu.
+- Dźwięki wzorcowe brzmią jak instrument.
+- Krótsze oprowadzanie i wiele drobnych poprawek.
