@@ -2,6 +2,10 @@ package io.github.klaboukes.twangle.feature.eartraining
 
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestion
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.EarTrainingVisit
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -14,6 +18,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -703,6 +708,168 @@ class EarTrainingViewModelTest {
         runCurrent()
         assertNotNull("a new visit asks at once", vm.state.value.interval)
         assertFalse(vm.state.value.answered)
+    }
+
+    // ---- Chord type ----
+
+    private fun TestScope.chordType(settings: AppSettings = AppSettings(earExercise = Exercise.CHORD_TYPE), repository: FakeSettingsRepository = FakeSettingsRepository(settings)): EarTrainingViewModel {
+        val vm = viewModel(settings, repository)
+        vm.show()
+        runCurrent()
+        return vm
+    }
+
+    /** What a chord question's strum should sound: its shape's strings on [tuning], lowest first. */
+    private fun strumOf(question: ChordTypeQuestion, tuning: Tuning = Tunings.STANDARD): List<Float> =
+        question.shape.notesIn(tuning).filterNotNull().map { NoteMapper().frequencyOf(it) }
+
+    @Test
+    fun `Chord type asks at once, a chord of the types chosen strummed low to high, and never opens the microphone`() = runTest(dispatcher) {
+        val vm = chordType()
+        val question = vm.state.value.chord
+        assertNotNull(question)
+        assertNull("no other exercise's question", vm.state.value.interval ?: vm.state.value.notes)
+        assertTrue("major, minor or 7", question!!.quality in ChordTypeQuestions.DEFAULT)
+        assertEquals("the Chords tool's first shape", ChordShapeFinder.shapesOf(question.chord, Tunings.STANDARD).first(), question.shape)
+        assertEquals("strummed in one call", listOf(strumOf(question)), tone.together)
+        assertEquals("low string first, 40 ms apart", listOf(EarTrainingViewModel.STRUM_SECONDS), tone.strums)
+        assertEquals("no octave courses on a six-string", listOf(List(strumOf(question).size) { false }), tone.togetherPairs)
+        assertTrue("nothing one by one", tone.played.isEmpty())
+
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertFalse("no microphone for Chord type", recorder.isRecording.value)
+    }
+
+    @Test
+    fun `a twelve-string strums its courses as octave pairs`() = runTest(dispatcher) {
+        val tuning = Instruments.GUITAR_12.defaultTuning
+        chordType(AppSettings(earExercise = Exercise.CHORD_TYPE, instrument = Instruments.GUITAR_12, tuning = tuning))
+        val pairs = tone.togetherPairs.single()
+        assertTrue("some courses paired: $pairs", pairs.any { it })
+    }
+
+    @Test
+    fun `a chord type button answers once, a wrong one waits longer and comes back unmarked`() = runTest(dispatcher) {
+        val vm = chordType()
+        val first = vm.state.value.chord!!
+        vm.pickChordType(first.quality)
+        assertEquals(first.quality, vm.state.value.pickedType)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+        vm.pickChordType(ChordQuality.SUS4)
+        assertEquals("only once", Tally(right = 1, asked = 1), vm.state.value.tally)
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+        runCurrent()
+        val missed = vm.state.value.chord!!
+        assertNotEquals(first, missed)
+        assertNull("nothing picked yet", vm.state.value.pickedType)
+        assertEquals("a new strum", 2, tone.together.size)
+
+        val wrong = ChordTypeQuestions.DEFAULT.first { it != missed.quality }
+        vm.pickChordType(wrong)
+        assertEquals(Tally(right = 1, asked = 2), vm.state.value.tally)
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+        runCurrent()
+        assertEquals("still shown, so the right one can be seen", missed, vm.state.value.chord)
+        // ▶ strums it again and the next question waits until it has been heard.
+        vm.replay()
+        runCurrent()
+        assertEquals(listOf(strumOf(missed), strumOf(missed)), tone.together.takeLast(2))
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_AFTER_MISS_MILLIS)
+        runCurrent()
+        assertEquals("held back", missed, vm.state.value.chord)
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertNotEquals(missed, vm.state.value.chord)
+
+        val asked = mutableListOf<ChordTypeQuestion>()
+        repeat(EarTrainingVisit.MISSED_RETURN_MAX) {
+            val question = vm.state.value.chord!!
+            asked += question
+            vm.pickChordType(question.quality)
+            advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+            runCurrent()
+        }
+        assertTrue("came back: $asked", missed in asked)
+    }
+
+    @Test
+    fun `the chord types chosen are saved in the Chords order, never none, and a question they no longer offer gives way`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository(AppSettings(earExercise = Exercise.CHORD_TYPE))
+        val vm = chordType(repository.settings.value, repository)
+        vm.toggleChordType(ChordQuality.MAJOR)
+        vm.toggleChordType(ChordQuality.DOMINANT_SEVENTH)
+        runCurrent()
+        assertEquals(setOf(ChordQuality.MINOR), vm.state.value.chordTypes)
+        assertEquals("minor now", ChordQuality.MINOR, vm.state.value.chord!!.quality)
+        vm.toggleChordType(ChordQuality.MINOR)
+        assertEquals("the last one stays", setOf(ChordQuality.MINOR), vm.state.value.chordTypes)
+        vm.toggleChordType(ChordQuality.AUGMENTED)
+        vm.toggleChordType(ChordQuality.SUS2)
+        runCurrent()
+        assertEquals("in the Chords panel's order", listOf(ChordQuality.MINOR, ChordQuality.SUS2, ChordQuality.AUGMENTED), vm.state.value.chordTypes.toList())
+        val saved = repository.settings.value
+        assertEquals(setOf(ChordQuality.MINOR, ChordQuality.SUS2, ChordQuality.AUGMENTED), saved.earChordTypes)
+        assertEquals("the tally is never saved", Tally(), vm.state.value.tally)
+        val again = viewModel(saved, FakeSettingsRepository(saved))
+        assertEquals(listOf(ChordQuality.MINOR, ChordQuality.SUS2, ChordQuality.AUGMENTED), again.state.value.chordTypes.toList())
+    }
+
+    @Test
+    fun `on a banjo Chord type asks nothing and says why, and asks again on another instrument`() = runTest(dispatcher) {
+        val banjo = AppSettings(earExercise = Exercise.CHORD_TYPE, instrument = Instruments.BANJO_5, tuning = Instruments.BANJO_5.defaultTuning)
+        val repository = FakeSettingsRepository(banjo)
+        val vm = chordType(banjo, repository)
+        assertEquals(ChordsUnavailable.SHORT_STRING, vm.state.value.chordsUnavailable)
+        assertNull(vm.state.value.chord)
+        assertTrue("nothing strummed", tone.together.isEmpty())
+        vm.pickChordType(ChordQuality.MAJOR)
+        assertEquals(Tally(), vm.state.value.tally)
+        vm.replay()
+        runCurrent()
+        assertTrue(tone.together.isEmpty())
+
+        repository.setInstrument(Instruments.GUITAR)
+        repository.setTuning(Tunings.STANDARD)
+        runCurrent()
+        assertNull(vm.state.value.chordsUnavailable)
+        assertNotNull("asks at once on the guitar", vm.state.value.chord)
+        assertEquals(1, tone.together.size)
+
+        // Back to the banjo mid-visit: the question gives way to the line, and its sound stops.
+        repository.setInstrument(Instruments.BANJO_5)
+        repository.setTuning(Instruments.BANJO_5.defaultTuning)
+        runCurrent()
+        assertEquals(ChordsUnavailable.SHORT_STRING, vm.state.value.chordsUnavailable)
+        assertNull(vm.state.value.chord)
+        assertTrue("silenced", tone.stopCount > 0)
+    }
+
+    @Test
+    fun `another tuning strums its own shape`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository(AppSettings(earExercise = Exercise.CHORD_TYPE))
+        val vm = chordType(repository.settings.value, repository)
+        val dropD = Tunings.DROP_D
+        repository.setTuning(dropD)
+        runCurrent()
+        val question = vm.state.value.chord!!
+        assertEquals(ChordShapeFinder.shapesOf(question.chord, dropD).first(), question.shape)
+        assertEquals(strumOf(question, dropD), tone.together.last())
+    }
+
+    @Test
+    fun `leaving the tool drops Chord type's visit too`() = runTest(dispatcher) {
+        val vm = chordType()
+        vm.pickChordType(vm.state.value.chord!!.quality)
+        vm.endVisit()
+        assertNull(vm.state.value.chord)
+        assertNull(vm.state.value.pickedType)
+        assertEquals(Tally(), vm.state.value.tally)
+        vm.show()
+        runCurrent()
+        assertNotNull("a new visit asks at once", vm.state.value.chord)
     }
 
     /** The microphone for the tests: a frame per chunk of [recorder] (open only while collected), hearing the speaker's tone while it sounds. */

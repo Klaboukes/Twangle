@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -95,6 +96,7 @@ import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.touchArea
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -113,7 +115,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * (all option A, 2026-10-28): the three exercises as three icons in a row, the questions starting at
  * once, the "What is asked" button opening the choices any time, and Play it back showing the note
  * the tuner hears as the player plays. Intervals is answered with buttons and never asks for the
- * microphone.
+ * microphone; nor does Chord type, a chord strummed and named with buttons.
  *
  * The question sounds through [tonePlayer] in the voice of the instrument picked ([savedSettings], then
  * the saved settings from [settingsRepository]); Play it back hears the instrument through [listener]
@@ -162,6 +164,8 @@ fun EarTrainingScreen(
         onPickInterval = viewModel::pickInterval,
         onToggleInterval = viewModel::toggleInterval,
         onToggleDirection = viewModel::toggleDirection,
+        onPickChordType = viewModel::pickChordType,
+        onToggleChordType = viewModel::toggleChordType,
         onAllowMic = permission::request,
         onOpenSettings = permission::openSettings,
         header = header,
@@ -176,11 +180,13 @@ fun EarTrainingScreen(
  * prompt and the note [heard] (in [notation]), or "Listening…"; with the microphone not allowed ([mic]),
  * "Microphone is off" with a button that asks again ([onAllowMic]) or, refused for good, opens
  * Settings ([onOpenSettings]). Intervals' part is the question and its answer buttons ([onPickInterval],
- * [IntervalsPart]). The choices panel opens over it and keeps open across a turned phone.
+ * [IntervalsPart]), Chord type's the same with a button per chord type ([onPickChordType],
+ * [ChordTypePart]), or on the banjo the Chords tool's quiet line in its place. The choices panel opens over it and keeps open across a turned phone.
  *
  * One column, at most [COLUMN_MAX_WIDTH] wide in the middle; on its side (at least [HALVES_MIN_WIDTH]
  * wide and wider than tall) the top rows fill the start half and the question stands in the middle of
- * the end half. Each scrolls only where the window is too short (large text). Nothing moves when the tally appears or the heard note
+ * the end half. Each scrolls only where the window is too short (large text); Chord type's answers
+ * instead scroll in their own box, which takes the room under its question. Nothing moves when the tally appears or the heard note
  * changes: the tally fills room the row keeps, the note a box of steady height.
  */
 @Composable
@@ -197,6 +203,8 @@ fun EarTrainingContent(
     onPickInterval: (Interval) -> Unit,
     onToggleInterval: (Interval) -> Unit,
     onToggleDirection: (IntervalDirection) -> Unit,
+    onPickChordType: (ChordQuality) -> Unit,
+    onToggleChordType: (ChordQuality) -> Unit,
     onAllowMic: () -> Unit,
     onOpenSettings: () -> Unit,
     header: @Composable () -> Unit,
@@ -204,7 +212,7 @@ fun EarTrainingContent(
 ) {
     var choicesOpen by rememberSaveable { mutableStateOf(false) }
     if (choicesOpen) {
-        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onToggleInterval, onToggleDirection, onDismiss = { choicesOpen = false })
+        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onToggleInterval, onToggleDirection, onToggleChordType, onDismiss = { choicesOpen = false })
     }
     val topRows = @Composable {
         Spacer(Modifier.height(HEADER_TOP))
@@ -212,7 +220,10 @@ fun EarTrainingContent(
         Spacer(Modifier.height(8.dp))
         ExerciseRow(state.exercise, state.tally, onPickExercise, onOpenChoices = { choicesOpen = true })
     }
-    val question = @Composable {
+    // Chord type's answers scroll in their own box, which takes the room left under the question, so
+    // the ▶ and the question stay put; its column doesn't scroll then.
+    val answersFillRoom = state.exercise == Exercise.CHORD_TYPE && state.chord != null && state.chordsUnavailable == null
+    val question: @Composable ColumnScope.() -> Unit = {
         when (state.exercise) {
             Exercise.PLAY_IT_BACK -> if (state.notes != null) {
                 ReplayButton(onReplay)
@@ -224,21 +235,30 @@ fun EarTrainingContent(
                 Spacer(Modifier.height(8.dp))
                 IntervalsPart(state, state.interval, onPickInterval)
             }
-            // Its question and answer buttons come with its own increment (ROADMAP Phase 55).
-            Exercise.CHORD_TYPE -> Unit
+            Exercise.CHORD_TYPE -> when {
+                // The banjo, or a tuning with no shape for the types chosen: the Chords tool's quiet line, no ▶.
+                state.chordsUnavailable != null -> ChordsUnavailableLine(state.chordsUnavailable)
+                state.chord != null -> {
+                    ReplayButton(onReplay)
+                    Spacer(Modifier.height(8.dp))
+                    ChordTypePart(state, state.chord, notation, onPickChordType)
+                }
+            }
         }
     }
     BoxWithConstraints(
         modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(EarTrainingTestTags.SCREEN),
         contentAlignment = Alignment.TopCenter,
     ) {
+        val questionScroll = rememberScrollState()
+        val scrolls = if (answersFillRoom) Modifier else Modifier.verticalScroll(questionScroll)
         if (maxWidth > maxHeight && maxWidth >= HALVES_MIN_WIDTH) {
             // On its side: the top rows in the start half, the question in the middle of the end half.
             Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { topRows() }
                 Spacer(Modifier.width(16.dp))
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                    Modifier.weight(1f).fillMaxHeight().then(scrolls),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -252,7 +272,7 @@ fun EarTrainingContent(
                 Modifier
                     .widthIn(max = COLUMN_MAX_WIDTH)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .then(if (answersFillRoom) Modifier.fillMaxHeight() else scrolls)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -309,6 +329,17 @@ object EarTrainingTestTags {
     /** In the What is asked panel, Intervals: an interval's chip, e.g. "ear_ask_perfect_fifth", and a direction's, e.g. "ear_played_together". */
     fun askInterval(interval: Interval): String = "ear_ask_" + interval.name.lowercase()
     fun direction(direction: IntervalDirection): String = "ear_played_" + direction.name.lowercase()
+
+    /** Chord type: the question line, a type's answer button (e.g. "ear_answer_chord_minor_seventh") and the box they scroll in. */
+    const val CHORD_LINE = "ear_chord_line"
+    fun chordAnswer(type: ChordQuality): String = "ear_answer_chord_" + type.name.lowercase()
+    const val CHORD_ANSWERS = "ear_chord_answers"
+
+    /** In the What is asked panel, Chord type: a type's chip, e.g. "ear_ask_chord_sus4". */
+    fun askChordType(type: ChordQuality): String = "ear_ask_chord_" + type.name.lowercase()
+
+    /** Chord type where it can't ask (the banjo's short string, no shape): the quiet line in the question's place. */
+    const val CHORDS_UNAVAILABLE = "ear_chords_unavailable"
 
     /** Play it back without the microphone: "Microphone is off" and its button. */
     const val MIC_OFF = "ear_mic_off"

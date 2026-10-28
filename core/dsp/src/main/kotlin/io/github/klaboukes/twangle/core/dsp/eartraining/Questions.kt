@@ -188,6 +188,11 @@ class ChordTypeQuestions(val tuning: Tuning, val qualities: Set<ChordQuality>) :
         }
         return null
     }
+
+    companion object {
+        /** What a fresh install asks (the mock-up's): major, minor and 7, in the Chords panel's order. */
+        val DEFAULT: Set<ChordQuality> = linkedSetOf(ChordQuality.MAJOR, ChordQuality.MINOR, ChordQuality.DOMINANT_SEVENTH)
+    }
 }
 
 /** One of [items], not [avoid] when there is another to pick. */

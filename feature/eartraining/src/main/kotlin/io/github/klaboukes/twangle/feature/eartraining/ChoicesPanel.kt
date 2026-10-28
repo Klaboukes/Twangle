@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +59,7 @@ import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -78,7 +80,8 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
  * any octave counts ([onNoteMatch]), as the mock-up's panel. Intervals picks its intervals, minor
  * second to octave, from twelve chips ([onToggleInterval]) and how they are played, up, down or
  * together ([onToggleDirection]): a tap adds or takes away, and the last one picked stays. Chord type
- * adds its choices as it is built. Everything picked here is saved ([EarTrainingViewModel]).
+ * picks its types from the Chords tool's twenty, in its order ([onToggleChordType]), the same way.
+ * Everything picked here is saved ([EarTrainingViewModel]).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,6 +92,7 @@ internal fun ChoicesPanel(
     onNoteMatch: (NoteMatch) -> Unit,
     onToggleInterval: (Interval) -> Unit,
     onToggleDirection: (IntervalDirection) -> Unit,
+    onToggleChordType: (ChordQuality) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val exercise = state.exercise
@@ -150,7 +154,7 @@ internal fun ChoicesPanel(
                     GroupHeading(stringResource(R.string.ear_exercise_intervals))
                     ChipGrid(Interval.entries) { interval ->
                         Chip(
-                            text = stringResource(interval.sign),
+                            text = AnnotatedString(stringResource(interval.sign)),
                             spoken = stringResource(interval.label),
                             on = interval in state.intervals,
                             tag = EarTrainingTestTags.askInterval(interval),
@@ -159,13 +163,22 @@ internal fun ChoicesPanel(
                     GroupHeading(stringResource(R.string.ear_played))
                     ChipGrid(IntervalDirection.entries) { direction ->
                         val name = stringResource(direction.label)
-                        Chip(text = name, spoken = name, on = direction in state.directions, tag = EarTrainingTestTags.direction(direction)) {
+                        Chip(text = AnnotatedString(name), spoken = name, on = direction in state.directions, tag = EarTrainingTestTags.direction(direction)) {
                             onToggleDirection(direction)
                         }
                     }
                 }
-                // Its choices come with its own increment.
-                Exercise.CHORD_TYPE -> Unit
+                Exercise.CHORD_TYPE -> {
+                    GroupHeading(stringResource(R.string.ear_exercise_chord_type))
+                    ChipGrid(ChordQuality.inPanel) { type ->
+                        Chip(
+                            text = chordSign(type),
+                            spoken = stringResource(type.words),
+                            on = type in state.chordTypes,
+                            tag = EarTrainingTestTags.askChordType(type),
+                        ) { onToggleChordType(type) }
+                    }
+                }
             }
         }
     }
@@ -276,7 +289,7 @@ private fun <T> ChipGrid(items: List<T>, chip: @Composable (T) -> Unit) {
  * named [spoken].
  */
 @Composable
-private fun Chip(text: String, spoken: String, on: Boolean, tag: String, onClick: () -> Unit) {
+private fun Chip(text: AnnotatedString, spoken: String, on: Boolean, tag: String, onClick: () -> Unit) {
     val source = remember { MutableInteractionSource() }
     val scheme = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.small
@@ -332,6 +345,6 @@ private val LIST_PADDING = 12.dp
 private val ROW_HEIGHT = 48.dp
 private val CHECK_SIZE = 20.dp
 
-/** Intervals' chips, three to a row (twelve intervals in four rows, up · down · together in one), this far apart. */
+/** The chips, three to a row (twelve intervals in four rows, up · down · together in one, twenty chord types in seven), this far apart. */
 private const val CHIPS_PER_ROW = 3
 private val CHIP_GAP = 6.dp

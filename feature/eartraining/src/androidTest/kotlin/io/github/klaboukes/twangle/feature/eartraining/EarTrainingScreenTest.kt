@@ -30,6 +30,11 @@ import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.chord.Chord
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestion
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -41,6 +46,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
@@ -69,7 +75,8 @@ import org.junit.runners.Parameterized
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
  * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
- * Intervals' choices; and the whole screen fitting, upright and on its side, at 2× text in Dutch
+ * Intervals' choices; Chord type's question and its buttons (three in a column, all twenty scrolling
+ * in their own box), right and wrong, its chips, and the banjo's quiet line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
  * (every language with `--languages`).
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -99,6 +106,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private val intervalPicks = mutableListOf<Interval>()
     private val intervalToggles = mutableListOf<Interval>()
     private val directionToggles = mutableListOf<IntervalDirection>()
+    private val typePicks = mutableListOf<ChordQuality>()
+    private val typeToggles = mutableListOf<ChordQuality>()
     private var replays = 0
     private var micAsks = 0
     private var settingsOpened = 0
@@ -139,6 +148,12 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                             directionToggles += it
                             val now = shownState.value.directions
                             shownState.value = shownState.value.copy(directions = if (it in now) now - it else now + it)
+                        },
+                        onPickChordType = { typePicks += it },
+                        onToggleChordType = {
+                            typeToggles += it
+                            val now = shownState.value.chordTypes
+                            shownState.value = shownState.value.copy(chordTypes = if (it in now) now - it else now + it)
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
@@ -444,6 +459,157 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     }
 
     @Test
+    fun chordTypeShowsTheQuestionAndAButtonOfOneSizeForEachTypeChosen() {
+        shownState.value = CHORD_ASKED
+        show()
+        node(EarTrainingTestTags.REPLAY).assertIsDisplayed()
+        node(EarTrainingTestTags.CHORD_LINE).assert(hasText("Which kind of chord?"))
+        assertTrue("no microphone line or heard note", !exists(EarTrainingTestTags.MIC_OFF) && !exists(EarTrainingTestTags.HEARD))
+        val names = mapOf(
+            ChordQuality.MAJOR to Triple("Major", "C", "major"),
+            ChordQuality.MINOR to Triple("Minor", "Cm", "minor"),
+            ChordQuality.DOMINANT_SEVENTH to Triple("7", "C7", "seventh"),
+        )
+        val bounds = names.map { (type, words) ->
+            val (sign, symbol, spokenName) = words
+            node(EarTrainingTestTags.chordAnswer(type))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(spokenName)))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+                .assert(hasText(sign))
+                .assert(hasText(symbol))
+                .assertIsDisplayed()
+                .getBoundsInRoot()
+        }
+        assertTrue("only the types chosen", (ChordQuality.inPanel - ChordTypeQuestions.DEFAULT).none { exists(EarTrainingTestTags.chordAnswer(it)) })
+        assertTrue("one steady size ${bounds.map { it.width to it.height }}", bounds.all { abs(it.width.value - bounds[0].width.value) < 0.5f && abs(it.height.value - bounds[0].height.value) < 0.5f })
+        assertTrue("at least 56 dp high", bounds[0].height.value >= 55.5f)
+        assertEquals("three stand in one column", bounds[0].left, bounds[1].left)
+        assertTrue("the next under", bounds[1].top > bounds[0].bottom)
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.MINOR)).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(ChordQuality.MINOR), typePicks)
+
+        // Four or more: two to a row, each half the row.
+        shownState.value = CHORD_ASKED.copy(chordTypes = ChordTypeQuestions.DEFAULT + ChordQuality.SUS4)
+        compose.waitForIdle()
+        val major = node(EarTrainingTestTags.chordAnswer(ChordQuality.MAJOR)).getBoundsInRoot()
+        val minor = node(EarTrainingTestTags.chordAnswer(ChordQuality.MINOR)).getBoundsInRoot()
+        assertEquals("two to a row", major.top, minor.top)
+        assertTrue("half the width", major.width < bounds[0].width * 0.6f)
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.SUS4)).assert(hasText("sus4")).assert(hasText("Csus4"))
+    }
+
+    @Test
+    fun allTwentyChordTypesScrollInTheirOwnBoxAndTheQuestionStaysPut() {
+        shownState.value = ALL_CHORDS_ASKED
+        show()
+        val replay = node(EarTrainingTestTags.REPLAY).getBoundsInRoot()
+        val line = node(EarTrainingTestTags.CHORD_LINE).getBoundsInRoot()
+        val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
+        assertTrue("the box ends inside the window ${box.bottom}", box.bottom <= node(WINDOW).getBoundsInRoot().bottom)
+        val sizes = ChordQuality.inPanel.map { type ->
+            assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $type")
+            node(EarTrainingTestTags.chordAnswer(type)).getBoundsInRoot().let { it.width to it.height }
+        }
+        assertTrue("one steady size $sizes", sizes.all { abs(it.first.value - sizes[0].first.value) < 0.5f && abs(it.second.value - sizes[0].second.value) < 0.5f })
+        assertEquals("the play button stays where it was", replay, node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+        assertEquals("and the question", line, node(EarTrainingTestTags.CHORD_LINE).getBoundsInRoot())
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)).assert(hasText("aug")).assert(hasText("Caug"))
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.HALF_DIMINISHED)).assert(hasText("m7♭5")).assert(hasText("Cm7♭5"))
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.POWER_CHORD)).assert(hasText("Power")).assert(hasText("C5"))
+    }
+
+    @Test
+    fun chordTypeRightAndWrongAreShownGentlyAndTheRightOneComesIntoView() {
+        shownState.value = ALL_CHORDS_ASKED
+        show()
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE, EarTrainingTestTags.CHORD_ANSWERS)
+        val before = tags.map { node(it).getBoundsInRoot() }
+        // A wrong pick at the top, the answer (augmented) at the bottom of the list: it is scrolled into view.
+        shownState.value = ALL_CHORDS_ASKED.copy(answered = true, pickedType = ChordQuality.MAJOR, tally = Tally(right = 0, asked = 1))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.CHORD_LINE).assert(hasText("Not that one"))
+        assertEquals("Not that one. The answer: augmented", spoken(EarTrainingTestTags.CHORD_LINE))
+        assertWhollyShown(node(EarTrainingTestTags.chordAnswer(ChordQuality.AUGMENTED)), "$style the answer in view", scroll = false)
+        node(EarTrainingTestTags.chordAnswer(ChordQuality.MINOR)).assertIsNotEnabled().performClick()
+        compose.waitForIdle()
+        assertEquals("answered once", emptyList<ChordQuality>(), typePicks)
+        assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
+
+        shownState.value = ALL_CHORDS_ASKED.copy(answered = true, pickedType = ChordQuality.AUGMENTED, tally = Tally(right = 1, asked = 1))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.CHORD_LINE).assert(hasText("Right"))
+        assertEquals("Right", spoken(EarTrainingTestTags.CHORD_LINE))
+        assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
+    }
+
+    @Test
+    fun whatIsAskedPicksTheChordTypes() {
+        shownState.value = CHORD_ASKED
+        show()
+        // Chord type's column doesn't scroll (its answers do, in their own box).
+        node(EarTrainingTestTags.CHOICES).performClick()
+        compose.waitForIdle()
+        compose.onNode(hasText("Chord type")).assertExists()
+        val widths = ChordQuality.inPanel.map { type ->
+            val chip = node(EarTrainingTestTags.askChordType(type)).performScrollTo()
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
+            if (type in ChordTypeQuestions.DEFAULT) chip.assertIsOn() else chip.assertIsOff()
+            chip.getBoundsInRoot().width.value
+        }
+        assertTrue("steady sizes $widths", widths.all { abs(it - widths[0]) < 1f })
+        assertEquals("seventh suspended fourth", spoken(EarTrainingTestTags.askChordType(ChordQuality.SEVENTH_SUS4)))
+        node(EarTrainingTestTags.askChordType(ChordQuality.SEVENTH_SUS4)).assert(hasText("7sus4")).performScrollTo().performClick()
+        node(EarTrainingTestTags.askChordType(ChordQuality.MAJOR)).performScrollTo().performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(ChordQuality.SEVENTH_SUS4, ChordQuality.MAJOR), typeToggles)
+        node(EarTrainingTestTags.askChordType(ChordQuality.SEVENTH_SUS4)).assertIsOn()
+        node(EarTrainingTestTags.askChordType(ChordQuality.MAJOR)).assertIsOff()
+        assertTrue("no other exercise's choices here", !exists(EarTrainingTestTags.ANY_OCTAVE) && !exists(EarTrainingTestTags.askInterval(Interval.OCTAVE)))
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
+    }
+
+    @Test
+    fun onABanjoChordTypeShowsTheChordsToolsQuietLineInPlaceOfTheQuestion() {
+        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.SHORT_STRING)
+        show()
+        node(EarTrainingTestTags.CHORDS_UNAVAILABLE)
+            .assert(hasText("Chord charts don't know the banjo's short string yet. Pick another instrument at the top."))
+            .assertIsDisplayed()
+        assertTrue("no question, no play button", !exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.CHORD_LINE))
+        node(EarTrainingTestTags.CHOICES).assertIsDisplayed()
+        shownState.value = shownState.value.copy(chordsUnavailable = ChordsUnavailable.NO_SHAPE)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.CHORDS_UNAVAILABLE).assert(hasText("No shape within reach in this tuning"))
+    }
+
+    @Test
+    fun chordTypeWithAllTwentyFitsUprightAndOnItsSide() {
+        shownState.value = ALL_CHORDS_ASKED.copy(tally = Tally(right = 12, asked = 15))
+        show()
+        for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, NARROW_UPRIGHT)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val case = "$style $size, all chord types:"
+            for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE) + ChordQuality.inPanel.map(EarTrainingTestTags::chordAnswer)) {
+                assertWhollyShown(node(tag), "$case $tag")
+            }
+            compose.assertEveryTextWhollyShown(case)
+        }
+        shownSize.value = XIAOMI
+        compose.waitForIdle()
+        // The play button and the question stand where they are; the answers' box fills the room under them, inside the window.
+        for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.CHORD_LINE)) {
+            assertWhollyShown(node(tag), "$style Xiaomi all chord types $tag", scroll = false)
+        }
+        val box = node(EarTrainingTestTags.CHORD_ANSWERS).getBoundsInRoot()
+        assertTrue("$style the answers' box inside the window $box", box.bottom <= node(WINDOW).getBoundsInRoot().bottom + 0.5.dp)
+        assertTrue("$style and most of the room under the question $box", box.height > 400.dp)
+    }
+
+    @Test
     fun itFitsUprightAndOnItsSideInLightAndDark() {
         // The tallest question: four notes in a row, their dots and "Note 2 of 4".
         shownState.value = shownState.value.copy(tally = Tally(right = 12, asked = 15), notes = FOUR_NOTES, notesInRow = 4, found = 1)
@@ -541,6 +707,53 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         }
     }
 
+    @Test
+    fun dutchChordTypeAtTwiceTheTextSizeIsWhollyShownUpright() = dutchChordTypeAtTwiceTheTextSize(NARROW_UPRIGHT)
+
+    @Test
+    fun dutchChordTypeAtTwiceTheTextSizeIsWhollyShownOnItsSide() = dutchChordTypeAtTwiceTheTextSize(PHONE_LANDSCAPE)
+
+    private fun dutchChordTypeAtTwiceTheTextSize(size: DpSize) {
+        shownLocale.value = "nl"
+        shownFontScale.value = 2f
+        shownSize.value = size
+        shownState.value = shownState.value.copy(tally = Tally(right = 12, asked = 15))
+        show()
+        checkChordTypeAtTwiceTheTextSize("nl", size)
+    }
+
+    /**
+     * Chord type at 2× text in [language] on [size]: three types in a column and all twenty, the
+     * question, right and wrong, the banjo's line, and its chips in the panel, wholly shown.
+     */
+    private fun checkChordTypeAtTwiceTheTextSize(language: String, size: DpSize) {
+        val tally = shownState.value.tally
+        val states = listOf(
+            "three types" to CHORD_ASKED,
+            "which kind" to ALL_CHORDS_ASKED,
+            "right" to ALL_CHORDS_ASKED.copy(answered = true, pickedType = ChordQuality.AUGMENTED),
+            "not that one" to ALL_CHORDS_ASKED.copy(answered = true, pickedType = ChordQuality.SEVENTH_SHARP_NINE),
+        )
+        for ((name, state) in states) {
+            shownState.value = state.copy(tally = tally)
+            compose.waitForIdle()
+            // The buttons' boxes once; their texts in every state.
+            if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $language $size $name $type at 2x")
+            compose.assertEveryTextWhollyShown("$style $language $size chord type $name at 2x:")
+        }
+        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.SHORT_STRING, tally = tally)
+        compose.waitForIdle()
+        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$style $language $size banjo at 2x")
+        compose.assertEveryTextWhollyShown("$style $language $size banjo at 2x:")
+        shownState.value = ALL_CHORDS_ASKED.copy(tally = tally)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.CHOICES).performClick()
+        compose.waitForIdle()
+        for (type in ChordQuality.inPanel) assertWhollyShown(node(EarTrainingTestTags.askChordType(type)), "$style $language $size chip $type at 2x")
+        Espresso.pressBack()
+        compose.waitForIdle()
+    }
+
     /** Intervals' states with the most text, every interval asked: the question, right, and wrong. */
     private fun intervalsStates(): List<Pair<String, EarTrainingState>> {
         val base = ALL_INTERVALS_ASKED.copy(tally = shownState.value.tally)
@@ -598,6 +811,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 }
                 Espresso.pressBack()
                 compose.waitForIdle()
+                checkChordTypeAtTwiceTheTextSize(language, size)
                 shownState.value = single
                 compose.waitForIdle()
                 node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
@@ -634,6 +848,16 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             intervals = Interval.entries.toSet(),
             directions = IntervalDirection.entries.toSet(),
             interval = IntervalQuestion(Interval.PERFECT_FIFTH, IntervalDirection.TOGETHER, Note.of(PitchClass.A, 2)),
+        )
+
+        /** Chord type asking A minor (x02210), with the three a fresh install asks; and with all twenty, asking an augmented chord. */
+        private val CHORD_ASKED = EarTrainingState(
+            exercise = Exercise.CHORD_TYPE,
+            chord = Chord.of(PitchClass.A, ChordQuality.MINOR).let { ChordTypeQuestion(it, ChordShapeFinder.shapesOf(it, Tunings.STANDARD).first()) },
+        )
+        private val ALL_CHORDS_ASKED = CHORD_ASKED.copy(
+            chordTypes = ChordQuality.inPanel.toSet(),
+            chord = Chord.of(PitchClass.E, ChordQuality.AUGMENTED).let { ChordTypeQuestion(it, ChordShapeFinder.shapesOf(it, Tunings.STANDARD).first()) },
         )
 
         /** Four notes in a row, the most Play it back asks. */

@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -106,8 +107,12 @@ private fun AnswerGrid(intervals: List<Interval>, question: IntervalQuestion, st
             for (row in intervals.chunked(2)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ANSWER_GAP, Alignment.CenterHorizontally)) {
                     for (interval in row) {
+                        val name = stringResource(interval.label)
                         AnswerButton(
-                            interval = interval,
+                            sign = AnnotatedString(stringResource(interval.sign)),
+                            name = AnnotatedString(name),
+                            spoken = name,
+                            tag = EarTrainingTestTags.answer(interval),
                             lit = state.answered && interval == question.interval,
                             quiet = state.answered && interval == state.picked && interval != question.interval,
                             enabled = !state.answered,
@@ -122,14 +127,24 @@ private fun AnswerGrid(intervals: List<Interval>, question: IntervalQuestion, st
 }
 
 /**
- * One answer: the interval's sign large and its name small, on the Practice tools' see-through face,
- * [ANSWER_HEIGHT] high whatever the name (set smaller on one line where it is long). [lit]: the right
- * answer, a soft in-tune glow around it and its outline and words in the in-tune colour; [quiet]: the
- * wrong pick, faded. Both ease in and out as the tuner's glow (the halo, outline and fade read in the
- * draw phase).
+ * One answer (an interval, a chord type): its [sign] large and its [name] small, on the Practice
+ * tools' see-through face, [ANSWER_HEIGHT] high whatever the name (both set smaller on one line where
+ * they are long); TalkBack says [spoken]. [lit]: the right answer, a soft in-tune glow around it and
+ * its outline and words in the in-tune colour; [quiet]: the wrong pick, faded. Both ease in and out as
+ * the tuner's glow (the halo, outline and fade read in the draw phase).
  */
 @Composable
-private fun AnswerButton(interval: Interval, lit: Boolean, quiet: Boolean, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun AnswerButton(
+    sign: AnnotatedString,
+    name: AnnotatedString,
+    spoken: String,
+    tag: String,
+    lit: Boolean,
+    quiet: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val source = remember { MutableInteractionSource() }
     val shape = MaterialTheme.shapes.small
     val glow by animateFloatAsState(if (lit) 1f else 0f, meterGlowSpec(lit), label = "ear_answer_glow")
@@ -137,11 +152,10 @@ private fun AnswerButton(interval: Interval, lit: Boolean, quiet: Boolean, enabl
     val inTune = MaterialTheme.styleTokens.inTune
     val ink = MaterialTheme.colorScheme.onBackground
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val name = stringResource(interval.label)
     val density = LocalDensity.current
     Column(
         modifier
-            .testTag(EarTrainingTestTags.answer(interval))
+            .testTag(tag)
             .heightIn(min = ANSWER_HEIGHT)
             .graphicsLayer { alpha = fade }
             .drawBehind {
@@ -169,17 +183,19 @@ private fun AnswerButton(interval: Interval, lit: Boolean, quiet: Boolean, enabl
                 onClick()
             }
             // TalkBack says the name; the sign and name stay in the tree for the tests' checks.
-            .semantics { contentDescription = name }
+            .semantics { contentDescription = spoken }
             .padding(horizontal = 6.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         val signStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
         Text(
-            stringResource(interval.sign),
+            sign,
             style = signStyle,
             color = lerp(ink, inTune, glow),
             maxLines = 1,
+            // A long word ("Maggiore" at 2× text in a narrow column) set smaller, never cut off.
+            autoSize = TextAutoSize.StepBased(minFontSize = with(density) { NAME_MIN_SIZE.toSp() }, maxFontSize = signStyle.fontSize, stepSize = 0.5.sp),
         )
         val nameStyle = MaterialTheme.typography.labelSmall
         Text(
@@ -237,10 +253,10 @@ internal val IntervalDirection.label: Int
     }
 
 /** The answer buttons this far apart, across and down. */
-private val ANSWER_GAP = 8.dp
+internal val ANSWER_GAP = 8.dp
 
 /** Every answer this high at least (the mock-up's), whatever its name. */
-private val ANSWER_HEIGHT = 56.dp
+internal val ANSWER_HEIGHT = 56.dp
 
 /** The right answer's outline in the in-tune colour, this wide. */
 private val LIT_OUTLINE = 2.dp
@@ -251,7 +267,7 @@ private const val HALO_REACH = 0.75f
 private const val HALO_HEIGHT_SHARE = 1.4f
 
 /** Under the answers, room for the halo to fade out in (it reaches about half a button beyond the button). */
-private val HALO_ROOM = 32.dp
+internal val HALO_ROOM = 32.dp
 
 /** A wrong pick fades to this. */
 private const val QUIET_ALPHA = 0.45f

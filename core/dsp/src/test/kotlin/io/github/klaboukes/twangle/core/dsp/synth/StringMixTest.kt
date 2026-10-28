@@ -10,6 +10,7 @@ import org.junit.Test
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.log10
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -47,9 +48,45 @@ class StringMixTest {
         assertTrue("the low note sounds ($lowLevel vs $between)", lowLevel > 20 * between)
         assertTrue("the high note sounds ($highLevel vs $between)", highLevel > 20 * between)
         assertTrue("both from the first moment", partial(tone, high, 0.01f, 0.03f) > 0.3 * partial(tone, high, 0.04f, 0.03f))
-        // Half of each, so the pair is no louder than one note could be.
+        // 1/√2 of each, so the pair is about as loud as one note.
         val single = StringMix(RATE, StringVoices.STEEL_GUITAR).apply { start(floatArrayOf(low)) }.let(::renderAll)
-        assertEquals(0.5, lowLevel / partial(single, low, 0.05f), 0.05)
+        assertEquals(1 / sqrt(2.0), lowLevel / partial(single, low, 0.05f), 0.05)
+    }
+
+    @Test
+    fun `a strummed chord is about as loud as one of its notes`() {
+        // E major on a guitar in standard tuning (022100), strummed down as Chord type does.
+        val chord = floatArrayOf(82.41f, 123.47f, 164.81f, 207.65f, 246.94f, 329.63f)
+        for (voice in StringVoices.all) {
+            val strum = StringMix(RATE, voice).apply { start(chord, spreadSeconds = 0.04f) }.let(::renderAll)
+            val notes = chord.map { note -> StringMix(RATE, voice).apply { start(floatArrayOf(note)) }.let(::renderAll) }
+            val oneNote = notes.map { rms(it, 0f, 2f) }.average()
+            val db = 20 * log10(rms(strum, 0f, 2f) / oneNote)
+            println("${voice.id}: a six-string strum is ${"%.1f".format(db)} dB from one of its notes (at 1/n it was ${"%.1f".format(db - 10 * log10(6.0))})")
+            assertTrue("${voice.id}: $db dB", db in -2.0..2.0)
+            assertTrue("${voice.id}: under the peak", strum.all { abs(it) <= StringSynth.PEAK })
+        }
+    }
+
+    @Test
+    fun `the limiter leaves a mix alone below its knee and bends it smoothly under the peak above`() {
+        for (x in listOf(0f, 0.1f, -0.4f, StringMix.KNEE, -StringMix.KNEE)) assertEquals(x, StringMix.limit(x), 0f)
+        var last = StringMix.KNEE
+        for (i in 1..100) {
+            val x = StringMix.KNEE + i * 0.005f
+            val y = StringMix.limit(x)
+            assertTrue("rises at $x", y > last)
+            assertTrue("under the peak at $x", y < StringSynth.PEAK)
+            assertEquals("the same either side", -y, StringMix.limit(-x), 0f)
+            last = y
+        }
+        // No corner at the knee: just above it, the slope is still 1.
+        val step = 1e-3f
+        assertEquals(1f, (StringMix.limit(StringMix.KNEE + step) - StringMix.KNEE) / step, 0.01f)
+        // Eight notes struck at once in step, the worst case: never past the peak.
+        val unison = StringMix(RATE, StringVoices.STEEL_GUITAR).apply { start(FloatArray(StringMix.MAX_NOTES) { 196f }) }.let(::renderAll)
+        assertTrue(unison.all { abs(it) <= StringSynth.PEAK })
+        assertTrue("the limiter was needed", unison.any { abs(it) > StringMix.KNEE })
     }
 
     @Test
@@ -140,6 +177,15 @@ class StringMixTest {
             at += n
         }
         return out.copyOf(at)
+    }
+
+    /** The tone's root-mean-square level over [seconds] from [fromSeconds]. */
+    private fun rms(tone: FloatArray, fromSeconds: Float, seconds: Float): Double {
+        val from = (fromSeconds * RATE).roundToInt()
+        val to = minOf(tone.size, from + (seconds * RATE).roundToInt())
+        var sum = 0.0
+        for (n in from until to) sum += tone[n].toDouble() * tone[n]
+        return sqrt(sum / (to - from))
     }
 
     /** Magnitude of the tone's spectrum at [hz] over [seconds] from [fromSeconds] (one DFT bin, Hann-windowed so a neighbour doesn't leak in). */

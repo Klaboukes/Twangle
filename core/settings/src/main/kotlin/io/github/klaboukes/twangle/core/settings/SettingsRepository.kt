@@ -181,6 +181,9 @@ interface SettingsRepository {
     /** Up, down or together, as Intervals plays them ([AppSettings.earDirections]); none reads back as the default. */
     suspend fun setEarDirections(directions: Set<IntervalDirection>)
 
+    /** The chord types Chord type asks ([AppSettings.earChordTypes]); none reads back as the default. */
+    suspend fun setEarChordTypes(types: Set<ChordQuality>)
+
     /** The chord charts and the scale neck mirrored for a left-handed player or not ([AppSettings.leftHanded]). */
     suspend fun setLeftHanded(enabled: Boolean)
 }

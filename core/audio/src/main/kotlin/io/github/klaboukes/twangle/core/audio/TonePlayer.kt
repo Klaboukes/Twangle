@@ -30,8 +30,8 @@ interface TonePlayer {
 
     /**
      * Sounds [frequenciesHz] (one to [MAX_TOGETHER] notes, each as [play] accepts) together in
-     * [voice], each at half the loudness for two, a third for three and so on, so they never clip
-     * (`StringMix`): all at once, or with [strumSeconds] (at most half a second) one after another
+     * [voice], about as loud together as one note alone (each at 1/√n, a soft limiter keeping
+     * them from clipping, `StringMix`): all at once, or with [strumSeconds] (at most half a second) one after another
      * that far apart, in the order given, as a strum crosses the strings. Where [octavePairs] says
      * so, a note sounds as an octave pair. Otherwise as [play]: a tone still sounding fades out
      * quickly first, and [isPlaying] stays true until the last note has left the speaker.

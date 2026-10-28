@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.music.tuningOf
+import io.github.klaboukes.twangle.core.dsp.synth.StringMix
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -201,6 +202,22 @@ class EarTrainingTest {
             val asked = (1..600).map { visit.next().quality }.toSet()
             assertEquals("on ${tuning.id}", ChordQuality.inPanel.toSet(), asked)
         }
+    }
+
+    @Test
+    fun `every chord type alone can be asked on every instrument's every tuning but the banjo's`() {
+        for (instrument in Instruments.all) for (tuning in instrument.tunings.filterNot { it.hasShortString }) {
+            for (quality in ChordQuality.inPanel) {
+                val question = ChordTypeQuestions(tuning, setOf(quality)).draw(Random(3), null)
+                assertEquals("${tuning.id} $quality", quality, question.quality)
+                assertTrue("${tuning.id} $quality: at most ${StringMix.MAX_NOTES} strings", question.shape.notesIn(tuning).count { it != null } in 1..StringMix.MAX_NOTES)
+            }
+        }
+    }
+
+    @Test
+    fun `a fresh install asks major, minor and 7`() {
+        assertEquals(listOf(ChordQuality.MAJOR, ChordQuality.MINOR, ChordQuality.DOMINANT_SEVENTH), ChordTypeQuestions.DEFAULT.toList())
     }
 
     @Test

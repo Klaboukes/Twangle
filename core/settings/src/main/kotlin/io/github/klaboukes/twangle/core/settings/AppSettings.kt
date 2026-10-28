@@ -5,6 +5,7 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -305,6 +306,8 @@ data class AppSettings(
     val earIntervals: Set<Interval> = Interval.DEFAULT,
     /** How Intervals plays them, up, down or together, never none: up on a fresh install. */
     val earDirections: Set<IntervalDirection> = IntervalDirection.DEFAULT,
+    /** The chord types Chord type asks, never none: major, minor and 7 ([ChordTypeQuestions.DEFAULT]) on a fresh install. */
+    val earChordTypes: Set<ChordQuality> = ChordTypeQuestions.DEFAULT,
     /**
      * Left-handed (Phase 57): the chord charts and the scale neck drawn mirrored, for a guitar held the other way
      * round (off until the player turns it on). The tuner's string row doesn't change.

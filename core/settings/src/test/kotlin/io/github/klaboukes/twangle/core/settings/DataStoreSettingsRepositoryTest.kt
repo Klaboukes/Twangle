@@ -14,6 +14,7 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -128,6 +129,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("any octave counts", NoteMatch.ANY_OCTAVE, settings.earNoteMatch)
         assertEquals("the thirds, fourth, fifth, major sixth and octave", Interval.DEFAULT, settings.earIntervals)
         assertEquals("played up", setOf(IntervalDirection.UP), settings.earDirections)
+        assertEquals("major, minor and 7", setOf(ChordQuality.MAJOR, ChordQuality.MINOR, ChordQuality.DOMINANT_SEVENTH), settings.earChordTypes)
     }
 
     @Test
@@ -171,6 +173,7 @@ class DataStoreSettingsRepositoryTest {
         repo.setEarNoteMatch(NoteMatch.EXACT)
         repo.setEarIntervals(setOf(Interval.PERFECT_FOURTH, Interval.PERFECT_FIFTH))
         repo.setEarDirections(setOf(IntervalDirection.DOWN, IntervalDirection.TOGETHER))
+        repo.setEarChordTypes(setOf(ChordQuality.SUS2, ChordQuality.SUS4))
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -211,6 +214,7 @@ class DataStoreSettingsRepositoryTest {
             earNoteMatch = NoteMatch.EXACT,
             earIntervals = setOf(Interval.PERFECT_FOURTH, Interval.PERFECT_FIFTH),
             earDirections = setOf(IntervalDirection.DOWN, IntervalDirection.TOGETHER),
+            earChordTypes = setOf(ChordQuality.SUS2, ChordQuality.SUS4),
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -258,6 +262,7 @@ class DataStoreSettingsRepositoryTest {
             setEarNoteMatch(NoteMatch.EXACT)
             setEarIntervals(setOf(Interval.OCTAVE, Interval.MINOR_SECOND))
             setEarDirections(setOf(IntervalDirection.TOGETHER))
+            setEarChordTypes(setOf(ChordQuality.AUGMENTED, ChordQuality.MINOR))
         }
         close()
 
@@ -289,6 +294,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("only the exact note, as chosen", NoteMatch.EXACT, settings.earNoteMatch)
         assertEquals("the intervals asked are kept, smallest first", listOf(Interval.MINOR_SECOND, Interval.OCTAVE), settings.earIntervals.toList())
         assertEquals("together, as chosen", setOf(IntervalDirection.TOGETHER), settings.earDirections)
+        assertEquals("the chord types asked are kept", setOf(ChordQuality.MINOR, ChordQuality.AUGMENTED), settings.earChordTypes)
     }
 
     @Test
@@ -296,8 +302,10 @@ class DataStoreSettingsRepositoryTest {
         val repo = repository()
         repo.setEarIntervals(emptySet())
         repo.setEarDirections(emptySet())
+        repo.setEarChordTypes(emptySet())
         assertEquals(Interval.DEFAULT, repo.settings.first().earIntervals)
         assertEquals(IntervalDirection.DEFAULT, repo.settings.first().earDirections)
+        assertEquals(ChordTypeQuestions.DEFAULT, repo.settings.first().earChordTypes)
         val fake = FakeSettingsRepository()
         fake.setEarIntervals(emptySet())
         assertEquals("the fake keeps them so too", Interval.DEFAULT, fake.settings.first().earIntervals)

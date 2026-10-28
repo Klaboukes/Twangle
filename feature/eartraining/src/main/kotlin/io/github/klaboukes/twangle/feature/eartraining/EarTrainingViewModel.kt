@@ -3,6 +3,9 @@ package io.github.klaboukes.twangle.feature.eartraining
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestion
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.EarTrainingVisit
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.HeldNote
@@ -22,6 +25,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
+import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -52,7 +56,7 @@ import kotlin.random.Random
  * What the Ear training screen shows of the [exercise] picked: its question and this visit's [tally]
  * of it ("7 of 9", in memory only, never saved), whether the question was [answered] (the next one
  * comes by itself [EarTrainingViewModel.NEXT_DELAY_MILLIS] later), and what the player chose to be
- * asked. Chord type adds its question here as it is built.
+ * asked.
  */
 data class EarTrainingState(
     val exercise: Exercise = Exercise.DEFAULT,
@@ -75,9 +79,26 @@ data class EarTrainingState(
     /** Intervals' choices (saved): which intervals are asked, and played up, down or together; never none. */
     val intervals: Set<Interval> = Interval.DEFAULT,
     val directions: Set<IntervalDirection> = IntervalDirection.DEFAULT,
+    /** Chord type's question: a chord strummed. Null before the first, in the other exercises, and where it can't be asked ([chordsUnavailable]). */
+    val chord: ChordTypeQuestion? = null,
+    /** Chord type: the button the player picked for [chord], once answered; null before. */
+    val pickedType: ChordQuality? = null,
+    /** Chord type's choice (saved): which of the Chords tool's twenty types are asked, in its order; never none. */
+    val chordTypes: Set<ChordQuality> = ChordTypeQuestions.DEFAULT,
+    /** Chord type can't be asked on the tuning picked: why, shown in the question's place; null where it can. */
+    val chordsUnavailable: ChordsUnavailable? = null,
 ) {
     /** Play it back's question was found, every note of it: "Right", glowing softly. */
     val allFound: Boolean get() = notes != null && found == notes.notes.size
+}
+
+/** Why Chord type asks nothing on a tuning, as the Chords tool would say it. */
+enum class ChordsUnavailable {
+    /** A string that starts partway up the neck (the banjo's fifth), which the chord charts don't draw yet. */
+    SHORT_STRING,
+
+    /** None of the chord types chosen has a shape within reach on the tuning (a player's own tuning). */
+    NO_SHAPE,
 }
 
 /**
@@ -102,6 +123,13 @@ data class EarTrainingState(
  *
  * **Intervals** needs no microphone: the player names the interval with a button ([pickInterval]);
  * its choices are which intervals ([toggleInterval]) and up, down or together ([toggleDirection]).
+ *
+ * **Chord type** needs none either: a chord of the types chosen ([toggleChordType]) on a new root
+ * each time, strummed low string to high [STRUM_SECONDS] apart in the instrument's voice from the
+ * Chords tool's first shape for the tuning picked ([ChordTypeQuestions]), octave courses as pairs;
+ * the player names its type with a button ([pickChordType]). On a tuning with a short string (the
+ * banjo), or one where none of the types chosen has a shape, it asks nothing and says why
+ * ([EarTrainingState.chordsUnavailable]).
  *
  * **Listening.** Only Play it back listens ([Exercise.listens]), and only while the microphone is
  * allowed ([setMicAllowed]) and [heard] is collected: `WhileSubscribed(5 s)`, as the tuner, so the
@@ -144,6 +172,7 @@ class EarTrainingViewModel(
             noteMatch = savedSettings.earNoteMatch,
             intervals = savedSettings.earIntervals.ifEmpty { Interval.DEFAULT },
             directions = savedSettings.earDirections.ifEmpty { IntervalDirection.DEFAULT },
+            chordTypes = inPanelOrder(savedSettings.earChordTypes.ifEmpty { ChordTypeQuestions.DEFAULT }),
         ),
     )
 
@@ -161,6 +190,11 @@ class EarTrainingViewModel(
     // Intervals' questions this visit, and the button picked for its current one.
     private var intervalVisit: EarTrainingVisit<IntervalQuestion>? = null
     private var intervalPick: Interval? = null
+
+    // Chord type's questions this visit (null too where it can't ask, and why), and the button picked.
+    private var chordVisit: EarTrainingVisit<ChordTypeQuestion>? = null
+    private var chordPick: ChordQuality? = null
+    private var chordsUnavailable: ChordsUnavailable? = null
 
     private var soundJob: Job? = null
     private var nextJob: Job? = null
@@ -195,6 +229,7 @@ class EarTrainingViewModel(
             settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
                 changeNotes()
                 changeIntervals()
+                changeChordTypes()
             }
         }
     }
@@ -265,9 +300,21 @@ class EarTrainingViewModel(
         changeIntervals()
     }
 
+    /** Chord type asks [type] too, or no longer (saved); the last one chosen stays. A question no longer offered gives way at once. */
+    fun toggleChordType(type: ChordQuality) {
+        val now = shown.value.chordTypes
+        val next = if (type in now) now - type else now + type
+        if (next.isEmpty()) return
+        val ordered = inPanelOrder(next)
+        shown.value = shown.value.copy(chordTypes = ordered)
+        viewModelScope.launch { settingsRepository.setEarChordTypes(ordered) }
+        changeChordTypes()
+    }
+
     /**
      * Sounds the question again (the ▶), from its first note; Play it back's notes found so far stay
-     * found. After an Intervals answer, the next question waits until it has been heard again.
+     * found. After a button's answer (Intervals, Chord type), the next question waits until it has
+     * been heard again.
      */
     fun replay() {
         when (shown.value.exercise) {
@@ -279,16 +326,23 @@ class EarTrainingViewModel(
             Exercise.INTERVALS -> intervalVisit?.let { visit ->
                 val question = visit.current ?: return
                 sound(question)
-                if (visit.answered) {
-                    nextJob?.cancel()
-                    nextJob = viewModelScope.launch {
-                        delay(NOTE_SPACING_MILLIS * (question.notes.size - 1) + NEXT_DELAY_AFTER_MISS_MILLIS)
-                        ask(visit)
-                    }
-                }
+                holdNextBack(visit, NOTE_SPACING_MILLIS * (question.notes.size - 1))
             }
-            // Its question comes with its own increment.
-            Exercise.CHORD_TYPE -> Unit
+            Exercise.CHORD_TYPE -> chordVisit?.let { visit ->
+                val question = visit.current ?: return
+                val strings = strum(question)
+                holdNextBack(visit, (STRUM_SECONDS * 1000 * (strings - 1)).toLong())
+            }
+        }
+    }
+
+    /** After a button's answer, the next question of [visit] waits until a question sounded again ([soundingMillis] of notes still to start) has been heard. */
+    private fun holdNextBack(visit: EarTrainingVisit<*>, soundingMillis: Long) {
+        if (!visit.answered) return
+        nextJob?.cancel()
+        nextJob = viewModelScope.launch {
+            delay(soundingMillis + NEXT_DELAY_AFTER_MISS_MILLIS)
+            ask(visit)
         }
     }
 
@@ -299,6 +353,16 @@ class EarTrainingViewModel(
         val question = visit.current ?: return
         if (visit.answered) return
         intervalPick = answer
+        answer(question.isRight(answer))
+    }
+
+    /** Chord type: the player names the type heard with its button, once per question: right or not, and the one picked shown. */
+    fun pickChordType(answer: ChordQuality) {
+        if (shown.value.exercise != Exercise.CHORD_TYPE) return
+        val visit = chordVisit ?: return
+        val question = visit.current ?: return
+        if (visit.answered) return
+        chordPick = answer
         answer(question.isRight(answer))
     }
 
@@ -345,7 +409,11 @@ class EarTrainingViewModel(
         playAnswer = null
         intervalVisit = null
         intervalPick = null
-        shown.value = shown.value.copy(notes = null, tally = Tally(), answered = false, found = 0, wrongHeld = false, interval = null, picked = null)
+        chordVisit = null
+        chordPick = null
+        shown.value = shown.value.copy(
+            notes = null, tally = Tally(), answered = false, found = 0, wrongHeld = false, interval = null, picked = null, chord = null, pickedType = null,
+        )
     }
 
     override fun onCleared() {
@@ -355,7 +423,7 @@ class EarTrainingViewModel(
     private fun visitOf(exercise: Exercise): EarTrainingVisit<*>? = when (exercise) {
         Exercise.PLAY_IT_BACK -> playBack
         Exercise.INTERVALS -> intervalVisit
-        Exercise.CHORD_TYPE -> null
+        Exercise.CHORD_TYPE -> chordVisit
     }
 
     /** Play it back's questions as the player chose them, on the tuning picked. */
@@ -394,6 +462,36 @@ class EarTrainingViewModel(
         }
     }
 
+    /**
+     * The chord types asked changed (choice, tuning): a question the new choices don't offer gives
+     * way to a new one. A tuning with a short string ends Chord type's visit; one that can ask again
+     * starts a new visit when Chord type is shown.
+     */
+    private fun changeChordTypes() {
+        val tuning = settings.value.tuning
+        val visit = chordVisit
+        val showing = shown.value.exercise == Exercise.CHORD_TYPE
+        if (visit == null || tuning.hasShortString) {
+            chordVisit = null
+            if (showing) {
+                nextJob?.cancel()
+                stopSound()
+                start(Exercise.CHORD_TYPE)
+            }
+            return
+        }
+        visit.change(ChordTypeQuestions(tuning, shown.value.chordTypes))
+        val current = visit.current
+        if (current == null || !visit.source.offers(current)) {
+            if (showing) {
+                nextJob?.cancel()
+                ask(visit)
+            } else {
+                publish()
+            }
+        }
+    }
+
     private fun start(exercise: Exercise) {
         when (exercise) {
             Exercise.PLAY_IT_BACK -> {
@@ -406,20 +504,42 @@ class EarTrainingViewModel(
                 intervalVisit = visit
                 ask(visit)
             }
-            // Chord type asks nothing yet: its questions come with its own increment.
-            Exercise.CHORD_TYPE -> publish()
+            Exercise.CHORD_TYPE -> {
+                val tuning = settings.value.tuning
+                if (tuning.hasShortString) {
+                    // The chord charts don't draw the banjo's short string yet, so there is nothing to strum.
+                    chordsUnavailable = ChordsUnavailable.SHORT_STRING
+                    publish()
+                    return
+                }
+                chordsUnavailable = null
+                val visit = EarTrainingVisit(ChordTypeQuestions(tuning, shown.value.chordTypes), random())
+                chordVisit = visit
+                ask(visit)
+            }
         }
     }
 
     /** The next question of [visit], shown and sounded. */
     private fun ask(visit: EarTrainingVisit<*>) {
-        val question = visit.next()
+        val question = try {
+            visit.next()
+        } catch (none: IllegalStateException) {
+            // No chord type chosen has a shape on this tuning (a player's own): said, not asked.
+            if (visit !== chordVisit) throw none
+            chordVisit = null
+            chordsUnavailable = ChordsUnavailable.NO_SHAPE
+            publish()
+            return
+        }
         if (question is NoteQuestion) playAnswer = PlayBackAnswer(question)
         if (question is IntervalQuestion) intervalPick = null
+        if (question is ChordTypeQuestion) chordPick = null
         publish()
         when (question) {
             is NoteQuestion -> sound(question.notes)
             is IntervalQuestion -> sound(question)
+            is ChordTypeQuestion -> strum(question)
         }
     }
 
@@ -443,9 +563,13 @@ class EarTrainingViewModel(
         val visit = visitOf(state.exercise)
         val playing = state.exercise == Exercise.PLAY_IT_BACK
         val naming = state.exercise == Exercise.INTERVALS
+        val chording = state.exercise == Exercise.CHORD_TYPE
         shown.value = state.copy(
             interval = if (naming) intervalVisit?.current else null,
             picked = if (naming) intervalPick else null,
+            chord = if (chording) chordVisit?.current else null,
+            pickedType = if (chording) chordPick else null,
+            chordsUnavailable = if (chording && chordVisit == null) chordsUnavailable else null,
             notes = if (playing) playBack?.current else null,
             tally = visit?.tally ?: Tally(),
             answered = visit?.answered ?: false,
@@ -458,7 +582,38 @@ class EarTrainingViewModel(
     private fun sound(question: IntervalQuestion) = sound(question.notes, together = question.direction == IntervalDirection.TOGETHER)
 
     /** Sounds [notes] one after another in the instrument's voice, at its A4, or all at once ([together]). */
-    private fun sound(notes: List<Note>, together: Boolean = false) {
+    private fun sound(notes: List<Note>, together: Boolean = false) = sound { mapper, voice ->
+        if (together) {
+            tonePlayer.playTogether(notes.map { mapper.frequencyOf(it) }, voice)
+        } else {
+            notes.forEachIndexed { index, note ->
+                if (index > 0) delay(NOTE_SPACING_MILLIS)
+                tonePlayer.play(mapper.frequencyOf(note), voice)
+            }
+        }
+    }
+
+    /**
+     * Strums [question]'s chord: the strings its shape sounds on the tuning it was asked on, lowest
+     * string first, [STRUM_SECONDS] apart, an octave course as its pair. Returns how many strings.
+     */
+    private fun strum(question: ChordTypeQuestion): Int {
+        val tuning = (chordVisit?.source as? ChordTypeQuestions)?.tuning ?: settings.value.tuning
+        val notes = question.shape.notesIn(tuning)
+        val strings = notes.indices.filter { notes[it] != null }
+        sound { mapper, voice ->
+            tonePlayer.playTogether(
+                strings.map { mapper.frequencyOf(notes[it]!!) },
+                voice,
+                strumSeconds = STRUM_SECONDS,
+                octavePairs = strings.map(tuning::hasOctaveString),
+            )
+        }
+        return strings.size
+    }
+
+    /** Sounds the question through [play], in the instrument's voice at its A4, the microphone setting it aside meanwhile. */
+    private fun sound(play: suspend (NoteMapper, StringVoice) -> Unit) {
         soundJob?.cancel()
         val current = settings.value
         val mapper = NoteMapper(current.a4Hz)
@@ -467,14 +622,7 @@ class EarTrainingViewModel(
         awaitingAside = true
         soundJob = viewModelScope.launch {
             try {
-                if (together) {
-                    tonePlayer.playTogether(notes.map { mapper.frequencyOf(it) }, voice)
-                } else {
-                    notes.forEachIndexed { index, note ->
-                        if (index > 0) delay(NOTE_SPACING_MILLIS)
-                        tonePlayer.play(mapper.frequencyOf(note), voice)
-                    }
-                }
+                play(mapper, voice)
             } finally {
                 questionStarting.value = false
             }
@@ -532,6 +680,9 @@ class EarTrainingViewModel(
         }
     }.flowOn(dspDispatcher)
 
+    /** [types] in the Chords panel's order, the most used first. */
+    private fun inPanelOrder(types: Set<ChordQuality>): Set<ChordQuality> = ChordQuality.inPanel.filterTo(LinkedHashSet()) { it in types }
+
     private fun rangeOf(settings: AppSettings): PitchRange =
         PitchRange.forLowestNote(NoteMapper(settings.a4Hz).frequencyOf(settings.tuning.lowestNote))
 
@@ -552,6 +703,9 @@ class EarTrainingViewModel(
 
         /** Two to four notes in a row start this far apart. */
         const val NOTE_SPACING_MILLIS = 700L
+
+        /** Chord type's strum: each string starts this long after the one below, an unhurried downstroke. */
+        const val STRUM_SECONDS = 0.04f
 
         /**
          * After the question has left the speaker, the microphone is set aside this much longer, so the

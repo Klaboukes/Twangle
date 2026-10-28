@@ -20,6 +20,7 @@ import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.ChordTypeQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
@@ -102,7 +103,7 @@ class PracticeTabTest {
 
     /**
      * Ear training as on a fresh install: Play it back, one open string at a time, any octave; Intervals'
-     * six and up. A phone check that left three notes in a row would otherwise play three tones a question.
+     * six and up; Chord type's major, minor and 7. A phone check that left three notes in a row would otherwise play three tones a question.
      */
     private suspend fun resetEarTraining() {
         container.settingsRepository.setEarExercise(Exercise.DEFAULT)
@@ -111,6 +112,7 @@ class PracticeTabTest {
         container.settingsRepository.setEarNoteMatch(NoteMatch.ANY_OCTAVE)
         container.settingsRepository.setEarIntervals(Interval.DEFAULT)
         container.settingsRepository.setEarDirections(IntervalDirection.DEFAULT)
+        container.settingsRepository.setEarChordTypes(ChordTypeQuestions.DEFAULT)
     }
 
     @After

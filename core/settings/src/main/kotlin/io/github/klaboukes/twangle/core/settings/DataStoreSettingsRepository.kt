@@ -317,6 +317,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[EAR_DIRECTIONS] = directions.mapTo(HashSet()) { direction -> direction.name } }
     }
 
+    override suspend fun setEarChordTypes(types: Set<ChordQuality>) {
+        dataStore.edit { it[EAR_CHORD_TYPES] = types.mapTo(HashSet()) { type -> type.name } }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -370,6 +374,7 @@ class DataStoreSettingsRepository internal constructor(
             earNoteMatch = enumOrNull<NoteMatch>(prefs[EAR_NOTE_MATCH]) ?: defaults.earNoteMatch,
             earIntervals = enumSetOrNull<Interval>(prefs[EAR_INTERVALS]) ?: defaults.earIntervals,
             earDirections = enumSetOrNull<IntervalDirection>(prefs[EAR_DIRECTIONS]) ?: defaults.earDirections,
+            earChordTypes = enumSetOrNull<ChordQuality>(prefs[EAR_CHORD_TYPES]) ?: defaults.earChordTypes,
         )
     }
 
@@ -463,6 +468,7 @@ class DataStoreSettingsRepository internal constructor(
         /** Intervals' [Interval]s and [IntervalDirection]s asked, by their names; none known reads as the default. */
         private val EAR_INTERVALS = stringSetPreferencesKey("ear_intervals")
         private val EAR_DIRECTIONS = stringSetPreferencesKey("ear_directions")
+        private val EAR_CHORD_TYPES = stringSetPreferencesKey("ear_chord_types")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

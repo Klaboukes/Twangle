@@ -1,11 +1,18 @@
 package io.github.klaboukes.twangle.core.dsp.synth
 
+import kotlin.math.abs
+import kotlin.math.sqrt
+import kotlin.math.tanh
+
 /**
  * A few notes of one [voice] sounding together, for the reference-tone player: an interval's two
  * notes at once (Ear training's Intervals), or a chord's strings strummed one after another (Chord
- * type). Each note is a [StringSynth] of its own; the mix is their sum scaled by 1 / the number of
- * notes, so, each note staying under [StringSynth.PEAK], the mix never clips. One note is exactly
- * a [StringSynth]'s tone, sample for sample, so the tuner's reference tone sounds as before.
+ * type). Each note is a [StringSynth] of its own; the mix is their sum scaled by 1/√n for n notes,
+ * so a chord is about as loud as one note (n notes that aren't in step add in power, not in
+ * amplitude), where 1/n made a six-string strum 8 dB quieter. Where the notes' peaks do line up, a
+ * soft limiter above [KNEE] bends the sum smoothly up to [StringSynth.PEAK] at most (tanh, so it never
+ * clips and never clicks); in practice only a strum's first strings touch it. One note is exactly a
+ * [StringSynth]'s tone, sample for sample, so the tuner's reference tone sounds as before.
  *
  * With a spread ([start]'s `spreadSeconds`), note i begins i × spread after the first, as a pick
  * crossing the strings does. Every note ends by itself ([StringSynth.durationSeconds] after it
@@ -72,7 +79,7 @@ class StringMix(
         // Notes of an earlier, larger tone are left out from here on.
         notes = count
         position = 0
-        scale = 1f / count
+        scale = 1f / sqrt(count.toFloat())
     }
 
     /**
@@ -118,6 +125,7 @@ class StringMix(
             }
             written = maxOf(written, at)
         }
+        for (k in offset until offset + written) out[k] = limit(out[k])
         position += written
         return written
     }
@@ -133,6 +141,23 @@ class StringMix(
         /** The widest spread between notes: a slow strum. */
         const val MAX_SPREAD_SECONDS = 0.5f
 
+        /** The soft limiter leaves a mix alone up to this level ([limit]). */
+        val KNEE: Float = 0.75f * StringSynth.PEAK.toFloat()
+
+        private val LIMIT_ROOM: Float = StringSynth.PEAK.toFloat() - KNEE
+
         private const val SCRATCH_FRAMES = 256
+
+        /**
+         * [x] unchanged up to [KNEE], above it bent smoothly towards [StringSynth.PEAK], never past it:
+         * `KNEE + (PEAK − KNEE)·tanh((|x| − KNEE) / (PEAK − KNEE))`, whose slope is 1 at the knee, so
+         * nothing changes abruptly (a tanh soft clipper, Zölzer, *DAFX*, 2nd ed. 2011, ch. 4, nonlinear processing).
+         */
+        fun limit(x: Float): Float {
+            val size = abs(x)
+            if (size <= KNEE) return x
+            val bent = KNEE + LIMIT_ROOM * tanh((size - KNEE) / LIMIT_ROOM)
+            return if (x < 0f) -bent else bent
+        }
     }
 }
