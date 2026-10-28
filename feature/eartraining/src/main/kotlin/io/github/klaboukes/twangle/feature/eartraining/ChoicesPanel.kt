@@ -1,6 +1,12 @@
 package io.github.klaboukes.twangle.feature.eartraining
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,10 +46,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
@@ -51,6 +59,8 @@ import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
@@ -65,8 +75,10 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
  *
  * Play it back picks its notes (the open strings, the natural notes to the 5th fret, or every note to
  * the 12th, on the instrument and tuning picked), how many in a row (1 to 4, [onNotesInRow]) and whether
- * any octave counts ([onNoteMatch]), as the mock-up's panel. Intervals and Chord type add theirs as
- * they are built. Everything picked here is saved ([EarTrainingViewModel]).
+ * any octave counts ([onNoteMatch]), as the mock-up's panel. Intervals picks its intervals, minor
+ * second to octave, from twelve chips ([onToggleInterval]) and how they are played, up, down or
+ * together ([onToggleDirection]): a tap adds or takes away, and the last one picked stays. Chord type
+ * adds its choices as it is built. Everything picked here is saved ([EarTrainingViewModel]).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +87,8 @@ internal fun ChoicesPanel(
     onNoteChoice: (NoteChoice) -> Unit,
     onNotesInRow: (Int) -> Unit,
     onNoteMatch: (NoteMatch) -> Unit,
+    onToggleInterval: (Interval) -> Unit,
+    onToggleDirection: (IntervalDirection) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val exercise = state.exercise
@@ -132,8 +146,26 @@ internal fun ChoicesPanel(
                         tag = EarTrainingTestTags.ANY_OCTAVE,
                     ) { onNoteMatch(if (it) NoteMatch.ANY_OCTAVE else NoteMatch.EXACT) }
                 }
-                // Their choices come with their own increments.
-                Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
+                Exercise.INTERVALS -> {
+                    GroupHeading(stringResource(R.string.ear_exercise_intervals))
+                    ChipGrid(Interval.entries) { interval ->
+                        Chip(
+                            text = stringResource(interval.sign),
+                            spoken = stringResource(interval.label),
+                            on = interval in state.intervals,
+                            tag = EarTrainingTestTags.askInterval(interval),
+                        ) { onToggleInterval(interval) }
+                    }
+                    GroupHeading(stringResource(R.string.ear_played))
+                    ChipGrid(IntervalDirection.entries) { direction ->
+                        val name = stringResource(direction.label)
+                        Chip(text = name, spoken = name, on = direction in state.directions, tag = EarTrainingTestTags.direction(direction)) {
+                            onToggleDirection(direction)
+                        }
+                    }
+                }
+                // Its choices come with its own increment.
+                Exercise.CHORD_TYPE -> Unit
             }
         }
     }
@@ -221,6 +253,64 @@ private fun SwitchRow(text: String, checked: Boolean, tag: String, onCheckedChan
     }
 }
 
+/** [items] as chips three to a row, every chip the same width and each row as high as its tallest. */
+@Composable
+private fun <T> ChipGrid(items: List<T>, chip: @Composable (T) -> Unit) {
+    Column(
+        Modifier.padding(start = PANEL_PADDING - LIST_PADDING, top = 6.dp).fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(CHIP_GAP),
+    ) {
+        for (row in items.chunked(CHIPS_PER_ROW)) {
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(CHIP_GAP)) {
+                for (item in row) Box(Modifier.weight(1f).fillMaxHeight()) { chip(item) }
+                repeat(CHIPS_PER_ROW - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+/**
+ * One choice that is [on] or off among several (an interval, up, down or together), as the mock-up's
+ * chips: picked ones with the accent's 2 dp outline on the container colour, the others muted on the
+ * see-through face. Its [text] on one line, set smaller where it is long. TalkBack hears a checkbox
+ * named [spoken].
+ */
+@Composable
+private fun Chip(text: String, spoken: String, on: Boolean, tag: String, onClick: () -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    val scheme = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.small
+    val style = MaterialTheme.typography.labelLarge
+    Box(
+        Modifier
+            .testTag(tag)
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .heightIn(min = ROW_HEIGHT)
+            .pressFeedback(
+                source,
+                shape,
+                fill = if (on) scheme.primaryContainer else faceFill(),
+                outline = if (on) BorderStroke(2.dp, scheme.primary) else faceOutline(),
+            )
+            .toggleable(value = on, interactionSource = source, indication = null, role = Role.Checkbox) {
+                source.pressFlash()
+                onClick()
+            }
+            .semantics { contentDescription = spoken }
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = style.copy(fontWeight = FontWeight.Medium),
+            color = if (on) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+        )
+    }
+}
+
 /** Play it back's choice of notes in a row: one to four. */
 private val NOTES_IN_ROW = (1..NoteQuestions.MAX_LENGTH).toList()
 
@@ -241,3 +331,7 @@ private val PANEL_PADDING = 20.dp
 private val LIST_PADDING = 12.dp
 private val ROW_HEIGHT = 48.dp
 private val CHECK_SIZE = 20.dp
+
+/** Intervals' chips, three to a row (twelve intervals in four rows, up · down · together in one), this far apart. */
+private const val CHIPS_PER_ROW = 3
+private val CHIP_GAP = 6.dp

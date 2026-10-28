@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
@@ -19,6 +20,8 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
@@ -306,6 +309,14 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[EAR_NOTE_MATCH] = match.name }
     }
 
+    override suspend fun setEarIntervals(intervals: Set<Interval>) {
+        dataStore.edit { it[EAR_INTERVALS] = intervals.mapTo(HashSet()) { interval -> interval.name } }
+    }
+
+    override suspend fun setEarDirections(directions: Set<IntervalDirection>) {
+        dataStore.edit { it[EAR_DIRECTIONS] = directions.mapTo(HashSet()) { direction -> direction.name } }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -357,6 +368,8 @@ class DataStoreSettingsRepository internal constructor(
             earNoteChoice = enumOrNull<NoteChoice>(prefs[EAR_NOTE_CHOICE]) ?: defaults.earNoteChoice,
             earNotesInRow = prefs[EAR_NOTES_IN_ROW]?.takeIf { it in 1..NoteQuestions.MAX_LENGTH } ?: defaults.earNotesInRow,
             earNoteMatch = enumOrNull<NoteMatch>(prefs[EAR_NOTE_MATCH]) ?: defaults.earNoteMatch,
+            earIntervals = enumSetOrNull<Interval>(prefs[EAR_INTERVALS]) ?: defaults.earIntervals,
+            earDirections = enumSetOrNull<IntervalDirection>(prefs[EAR_DIRECTIONS]) ?: defaults.earDirections,
         )
     }
 
@@ -447,6 +460,10 @@ class DataStoreSettingsRepository internal constructor(
         private val EAR_NOTES_IN_ROW = intPreferencesKey("ear_notes_in_row")
         private val EAR_NOTE_MATCH = stringPreferencesKey("ear_note_match")
 
+        /** Intervals' [Interval]s and [IntervalDirection]s asked, by their names; none known reads as the default. */
+        private val EAR_INTERVALS = stringSetPreferencesKey("ear_intervals")
+        private val EAR_DIRECTIONS = stringSetPreferencesKey("ear_directions")
+
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")
 
@@ -530,6 +547,12 @@ class DataStoreSettingsRepository internal constructor(
         /** The saved style, with the old Prehistoric and Middle Ages read as Ancient, which replaced both. */
         private fun styleOrNull(name: String?): VisualStyle? =
             if (name in OLD_ANCIENT_STYLES) VisualStyle.ANCIENT else enumOrNull<VisualStyle>(name)
+
+        /** The constants [names] gives that this version knows, in their own order; null for none (missing, empty or all unknown). */
+        private inline fun <reified E : Enum<E>> enumSetOrNull(names: Set<String>?): Set<E>? =
+            names?.mapNotNullTo(LinkedHashSet()) { enumOrNull<E>(it) }?.takeIf { it.isNotEmpty() }?.let { known ->
+                enumValues<E>().filterTo(LinkedHashSet()) { it in known }
+            }
 
         private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? =
             enumValues<E>().firstOrNull { it.name == name }

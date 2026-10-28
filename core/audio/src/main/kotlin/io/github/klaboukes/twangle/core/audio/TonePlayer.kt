@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.core.audio
 
+import io.github.klaboukes.twangle.core.dsp.synth.StringMix
 import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
 import kotlinx.coroutines.flow.StateFlow
 
@@ -9,8 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
  * dies away or is lifted and stops by itself after a few seconds (`StringSynth` in `:core:dsp`).
  *
  * Callers turn a note into Hz with their `NoteMapper`, so the tone follows the A4 calibration, and
- * pass the instrument's `StringVoice`. [play] and [stop] return at once and may be called from the
- * main thread.
+ * pass the instrument's `StringVoice`. [play], [playTogether] and [stop] return at once and may be
+ * called from the main thread.
  */
 interface TonePlayer {
 
@@ -27,6 +28,26 @@ interface TonePlayer {
      */
     fun play(frequencyHz: Float, voice: StringVoice, octavePair: Boolean = false)
 
+    /**
+     * Sounds [frequenciesHz] (one to [MAX_TOGETHER] notes, each as [play] accepts) together in
+     * [voice], each at half the loudness for two, a third for three and so on, so they never clip
+     * (`StringMix`): all at once, or with [strumSeconds] (at most half a second) one after another
+     * that far apart, in the order given, as a strum crosses the strings. Where [octavePairs] says
+     * so, a note sounds as an octave pair. Otherwise as [play]: a tone still sounding fades out
+     * quickly first, and [isPlaying] stays true until the last note has left the speaker.
+     */
+    fun playTogether(
+        frequenciesHz: List<Float>,
+        voice: StringVoice,
+        strumSeconds: Float = 0f,
+        octavePairs: List<Boolean> = emptyList(),
+    )
+
     /** Fades the current tone out quickly (a few tens of ms). Does nothing when nothing plays. */
     fun stop()
+
+    companion object {
+        /** Most notes [playTogether] sounds at once: an 8-string guitar's chord. */
+        const val MAX_TOGETHER = StringMix.MAX_NOTES
+    }
 }

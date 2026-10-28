@@ -69,6 +69,21 @@ class AndroidTonePlayerTest {
         assertFalse(player.isPlaying.value)
     }
 
+    /** Ear training's interval together, then a strum in its place: both play and the last ends by itself. */
+    @Test
+    fun notesTogetherReplaceTheToneAndEndByThemselves() = runBlocking {
+        player.playTogether(listOf(220f, 329.63f), StringVoices.STEEL_GUITAR)
+        assertTrue(player.isPlaying.value)
+        delay(300)
+        val strummed = SystemClock.uptimeMillis()
+        player.playTogether(listOf(110f, 164.81f, 220f, 261.63f, 329.63f), StringVoices.STEEL_GUITAR, strumSeconds = 0.035f)
+        delay(200)
+        assertTrue(player.isPlaying.value)
+
+        withTimeout(toneMillis + SLACK_MILLIS) { player.isPlaying.first { !it } }
+        assertTrue("the strum sounds its whole tone", SystemClock.uptimeMillis() - strummed >= toneMillis)
+    }
+
     /** Another app taking audio focus for good (here: the test, as another focus owner) stops the tone. */
     @Test
     fun losingAudioFocusStopsTheTone() = runBlocking {

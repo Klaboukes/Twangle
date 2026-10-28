@@ -21,6 +21,10 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -92,7 +96,21 @@ class PracticeTabTest {
             container.settingsRepository.setDroneSound(DroneSound.TANPURA)
             container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
             container.settingsRepository.setDroneLower(false)
+            resetEarTraining()
         }
+    }
+
+    /**
+     * Ear training as on a fresh install: Play it back, one open string at a time, any octave; Intervals'
+     * six and up. A phone check that left three notes in a row would otherwise play three tones a question.
+     */
+    private suspend fun resetEarTraining() {
+        container.settingsRepository.setEarExercise(Exercise.DEFAULT)
+        container.settingsRepository.setEarNoteChoice(NoteChoice.OPEN_STRINGS)
+        container.settingsRepository.setEarNotesInRow(1)
+        container.settingsRepository.setEarNoteMatch(NoteMatch.ANY_OCTAVE)
+        container.settingsRepository.setEarIntervals(Interval.DEFAULT)
+        container.settingsRepository.setEarDirections(IntervalDirection.DEFAULT)
     }
 
     @After
@@ -104,6 +122,7 @@ class PracticeTabTest {
             container.settingsRepository.setDroneSound(DroneSound.TANPURA)
             container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
             container.settingsRepository.setDroneLower(false)
+            resetEarTraining()
             container.settingsRepository.setPracticeTool(PracticeTool.METRONOME)
             container.settingsRepository.setPracticeRoot(PitchClass.C)
             container.settingsRepository.setPracticeChordQuality(ChordQuality.MAJOR)

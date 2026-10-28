@@ -6,6 +6,8 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
@@ -169,4 +171,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setEarNotesInRow(count: Int) = state.update { it.copy(earNotesInRow = count.coerceIn(1, NoteQuestions.MAX_LENGTH)) }
 
     override suspend fun setEarNoteMatch(match: NoteMatch) = state.update { it.copy(earNoteMatch = match) }
+
+    override suspend fun setEarIntervals(intervals: Set<Interval>) =
+        state.update { it.copy(earIntervals = intervals.ifEmpty { Interval.DEFAULT }) }
+
+    override suspend fun setEarDirections(directions: Set<IntervalDirection>) =
+        state.update { it.copy(earDirections = directions.ifEmpty { IntervalDirection.DEFAULT }) }
 }

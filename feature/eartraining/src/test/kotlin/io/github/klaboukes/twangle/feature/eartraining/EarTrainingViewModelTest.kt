@@ -4,6 +4,8 @@ import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.eartraining.EarTrainingVisit
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
@@ -553,6 +555,154 @@ class EarTrainingViewModelTest {
         assertEquals(2, state.notes!!.notes.size)
         assertTrue(state.notes!!.notes.all { it in NoteChoice.NATURALS_TO_5TH.notesOn(Tunings.STANDARD) })
         assertEquals(Tally(), state.tally)
+    }
+
+    // ---- Intervals ----
+
+    private fun TestScope.intervals(settings: AppSettings = AppSettings(earExercise = Exercise.INTERVALS), repository: FakeSettingsRepository = FakeSettingsRepository(settings)): EarTrainingViewModel {
+        val vm = viewModel(settings, repository)
+        vm.show()
+        runCurrent()
+        return vm
+    }
+
+    private fun frequenciesOf(first: Note, second: Note? = null): List<Float> = listOfNotNull(first, second).map { NoteMapper().frequencyOf(it) }
+
+    @Test
+    fun `Intervals asks at once, two notes up in the instrument's voice, and never opens the microphone`() = runTest(dispatcher) {
+        val vm = intervals()
+        val question = vm.state.value.interval
+        assertNotNull(question)
+        assertNull("no Play it back question", vm.state.value.notes)
+        assertTrue("one of the intervals chosen", question!!.interval in Interval.DEFAULT)
+        assertEquals(IntervalDirection.UP, question.direction)
+        assertEquals("the lower note first", frequenciesOf(question.low), tone.played)
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS)
+        runCurrent()
+        assertEquals("then the higher, 0.7 s after", frequenciesOf(question.low, question.high), tone.played)
+        assertEquals(listOf(Instruments.GUITAR.voice, Instruments.GUITAR.voice), tone.voices)
+
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertFalse("no microphone for Intervals", recorder.isRecording.value)
+    }
+
+    @Test
+    fun `down plays the higher note first, and together both at once`() = runTest(dispatcher) {
+        val down = intervals(AppSettings(earExercise = Exercise.INTERVALS, earDirections = setOf(IntervalDirection.DOWN)))
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS)
+        runCurrent()
+        val asked = down.state.value.interval!!
+        assertEquals(frequenciesOf(asked.high, asked.low), tone.played)
+
+        val together = intervals(AppSettings(earExercise = Exercise.INTERVALS, earDirections = setOf(IntervalDirection.TOGETHER)))
+        val both = together.state.value.interval!!
+        assertEquals(IntervalDirection.TOGETHER, both.direction)
+        assertEquals("both in one call", listOf(frequenciesOf(both.low, both.high)), tone.together)
+        assertEquals("not one after the other", 2, tone.played.size)
+        assertEquals("struck at once", listOf(0f), tone.strums)
+    }
+
+    @Test
+    fun `a button answers once, right in the tally, the next question 1½ s later`() = runTest(dispatcher) {
+        val vm = intervals()
+        val first = vm.state.value.interval!!
+        vm.pickInterval(first.interval)
+        assertTrue(vm.state.value.answered)
+        assertEquals(first.interval, vm.state.value.picked)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+        vm.pickInterval(Interval.entries.first { it != first.interval })
+        assertEquals("only once", Tally(right = 1, asked = 1), vm.state.value.tally)
+
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS - 100)
+        runCurrent()
+        assertEquals(first, vm.state.value.interval)
+        advanceTimeBy(200)
+        runCurrent()
+        assertFalse("a new question", vm.state.value.answered)
+        assertNull("nothing picked yet", vm.state.value.picked)
+        assertNotEquals(first, vm.state.value.interval)
+    }
+
+    @Test
+    fun `a wrong button shows the pick, waits longer, comes back unmarked, and ▶ holds the next one back`() = runTest(dispatcher) {
+        val vm = intervals()
+        val missed = vm.state.value.interval!!
+        val wrong = Interval.DEFAULT.first { it != missed.interval }
+        vm.pickInterval(wrong)
+        assertEquals(wrong, vm.state.value.picked)
+        assertEquals(Tally(right = 0, asked = 1), vm.state.value.tally)
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+        runCurrent()
+        assertEquals("still shown, so the right one can be seen", missed, vm.state.value.interval)
+
+        // ▶ sounds it again and the next question waits until it has been heard.
+        val sounded = tone.played.size
+        vm.replay()
+        runCurrent()
+        assertEquals(sounded + 1, tone.played.size)
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_AFTER_MISS_MILLIS)
+        runCurrent()
+        assertEquals("held back", missed, vm.state.value.interval)
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS + 100)
+        runCurrent()
+        assertNotEquals(missed, vm.state.value.interval)
+
+        // It comes back 3 to 5 questions later, the same notes, nothing marking it.
+        val asked = mutableListOf<Any>()
+        repeat(EarTrainingVisit.MISSED_RETURN_MAX) {
+            val question = vm.state.value.interval!!
+            asked += question
+            vm.pickInterval(question.interval)
+            advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+            runCurrent()
+        }
+        assertTrue("came back: $asked", missed in asked)
+    }
+
+    @Test
+    fun `the intervals and directions chosen are saved, never none, and a question they no longer offer gives way`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository(AppSettings(earExercise = Exercise.INTERVALS))
+        val vm = intervals(repository.settings.value, repository)
+        // Down to the fifth alone: everything else taken away.
+        for (interval in Interval.DEFAULT - Interval.PERFECT_FIFTH) vm.toggleInterval(interval)
+        runCurrent()
+        assertEquals(setOf(Interval.PERFECT_FIFTH), vm.state.value.intervals)
+        assertEquals(Interval.PERFECT_FIFTH, vm.state.value.interval!!.interval)
+        vm.toggleInterval(Interval.PERFECT_FIFTH)
+        assertEquals("the last one stays", setOf(Interval.PERFECT_FIFTH), vm.state.value.intervals)
+        vm.toggleInterval(Interval.PERFECT_FOURTH)
+        vm.toggleDirection(IntervalDirection.TOGETHER)
+        vm.toggleDirection(IntervalDirection.UP)
+        runCurrent()
+        assertEquals(setOf(IntervalDirection.TOGETHER), vm.state.value.directions)
+        assertEquals("together now", IntervalDirection.TOGETHER, vm.state.value.interval!!.direction)
+        vm.toggleDirection(IntervalDirection.TOGETHER)
+        assertEquals("the last one stays", setOf(IntervalDirection.TOGETHER), vm.state.value.directions)
+
+        val saved = repository.settings.value
+        assertEquals(listOf(Interval.PERFECT_FOURTH, Interval.PERFECT_FIFTH), saved.earIntervals.toList())
+        assertEquals(setOf(IntervalDirection.TOGETHER), saved.earDirections)
+        assertEquals("the tally is never saved", Tally(), vm.state.value.tally)
+        val again = viewModel(saved, FakeSettingsRepository(saved))
+        assertEquals(saved.earIntervals, again.state.value.intervals)
+        assertEquals(saved.earDirections, again.state.value.directions)
+    }
+
+    @Test
+    fun `leaving the tool drops Intervals' visit too`() = runTest(dispatcher) {
+        val vm = intervals()
+        vm.pickInterval(vm.state.value.interval!!.interval)
+        vm.endVisit()
+        assertNull(vm.state.value.interval)
+        assertNull(vm.state.value.picked)
+        assertEquals(Tally(), vm.state.value.tally)
+        vm.show()
+        runCurrent()
+        assertNotNull("a new visit asks at once", vm.state.value.interval)
+        assertFalse(vm.state.value.answered)
     }
 
     /** The microphone for the tests: a frame per chunk of [recorder] (open only while collected), hearing the speaker's tone while it sounds. */

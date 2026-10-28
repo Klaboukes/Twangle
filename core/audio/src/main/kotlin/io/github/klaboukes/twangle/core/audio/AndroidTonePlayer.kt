@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
+import io.github.klaboukes.twangle.core.dsp.synth.StringMix
 import io.github.klaboukes.twangle.core.dsp.synth.StringSynth
 import io.github.klaboukes.twangle.core.dsp.synth.StringVoice
 import kotlinx.coroutines.CancellationException
@@ -26,14 +27,16 @@ import kotlinx.coroutines.launch
 /**
  * [TonePlayer] backed by a streaming `android.media.AudioTrack`: mono `ENCODING_PCM_FLOAT` at the
  * phone's native output rate, `USAGE_MEDIA` / `CONTENT_TYPE_MUSIC`, so the tone follows the media
- * volume. The samples come from a [StringSynth] per voice, made the first time an instrument's
- * voice is asked for and kept.
+ * volume. The samples come from a [StringMix] per voice (one [StringSynth] per note sounding
+ * together, a single note being exactly its synth's), made the first time an instrument's voice is
+ * asked for and kept; a synth for each further note is made the first time that many notes sound
+ * together, and kept.
  *
  * The track exists only while a tone sounds. [play] starts a session on a dedicated single thread
  * (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer allocated per
  * session, so playing creates no garbage. Requests reach it through a field it checks every chunk:
- * a new note releases the old one over [StringSynth.STOP_FADE_SECONDS] and then starts (in its own
- * voice's synth), [stop] only releases. When the tone has ended the session pads the track with one
+ * a new note (or notes, [playTogether]) releases the old ones over [StringSynth.STOP_FADE_SECONDS]
+ * and then starts (in its own voice's mix), [stop] only releases. When the tone has ended the session pads the track with one
  * buffer of silence (so a very short tone still starts playing), waits until the last sample has
  * been played, then releases the track and [isPlaying] turns false. A failing track ends the
  * session the same way, quietly.
@@ -53,8 +56,8 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
     /** Highest frequency [play] accepts. */
     val maxFrequencyHz: Float = StringSynth.maxFrequencyHz(sampleRate)
 
-    // Used only on the writer thread: one synth per voice heard so far.
-    private val synths = HashMap<StringVoice, StringSynth>()
+    // Used only on the writer thread: one mix per voice heard so far.
+    private val mixes = HashMap<StringVoice, StringMix>()
     private val chunkFrames = sampleRate / CHUNKS_PER_SECOND
 
     private val scope = CoroutineScope(SupervisorJob())
@@ -91,7 +94,16 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         require(frequencyHz > 0f && frequencyHz <= maxFrequencyHz) {
             "frequencyHz must be in (0, $maxFrequencyHz], was $frequencyHz"
         }
-        request(Request.Play(frequencyHz, voice, octavePair))
+        request(Request.Play(floatArrayOf(frequencyHz), voice, booleanArrayOf(octavePair), strumSeconds = 0f))
+    }
+
+    override fun playTogether(frequenciesHz: List<Float>, voice: StringVoice, strumSeconds: Float, octavePairs: List<Boolean>) {
+        require(frequenciesHz.size in 1..TonePlayer.MAX_TOGETHER) { "One to ${TonePlayer.MAX_TOGETHER} notes, not ${frequenciesHz.size}" }
+        for (f in frequenciesHz) require(f > 0f && f <= maxFrequencyHz) { "frequencyHz must be in (0, $maxFrequencyHz], was $f" }
+        require(strumSeconds in 0f..StringMix.MAX_SPREAD_SECONDS) { "strumSeconds must be in 0..${StringMix.MAX_SPREAD_SECONDS}, was $strumSeconds" }
+        // Copied here, on the caller's thread, so the writer thread allocates nothing for it.
+        val pairs = BooleanArray(frequenciesHz.size) { octavePairs.getOrElse(it) { false } }
+        request(Request.Play(frequenciesHz.toFloatArray(), voice, pairs, strumSeconds))
     }
 
     override fun stop() = request(Request.Stop)
@@ -120,8 +132,8 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         true
     }
 
-    /** The synth for [voice], made on its first tone (on the writer thread). */
-    private fun synthFor(voice: StringVoice): StringSynth = synths.getOrPut(voice) { StringSynth(sampleRate, voice) }
+    /** The mix for [voice], made on its first tone (on the writer thread). */
+    private fun mixFor(voice: StringVoice): StringMix = mixes.getOrPut(voice) { StringMix(sampleRate, voice) }
 
     private suspend fun session() {
         var track: AudioTrack? = null
@@ -139,7 +151,7 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
             opened.play()
             val buffer = FloatArray(chunkFrames)
             var framesWritten = 0L
-            var synth: StringSynth? = null
+            var synth: StringMix? = null
             var next: Request.Play? = null
             while (true) {
                 currentCoroutineContext().ensureActive()
@@ -154,13 +166,13 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
                         current.release()
                         next = request
                     } else {
-                        synth = synthFor(request.voice).also { it.start(request.frequencyHz, request.octavePair) }
+                        synth = mixFor(request.voice).also(request::startIn)
                     }
                     null -> Unit
                 }
                 val queued = next
                 if (queued != null && synth?.isSounding != true) {
-                    synth = synthFor(queued.voice).also { it.start(queued.frequencyHz, queued.octavePair) }
+                    synth = mixFor(queued.voice).also(queued::startIn)
                     next = null
                 }
                 val count = synth?.render(buffer) ?: 0
@@ -214,10 +226,12 @@ class AndroidTonePlayer(context: Context) : TonePlayer {
         }
     }
 
-    /** What [play] and [stop] ask the session for. */
+    /** What [play], [playTogether] and [stop] ask the session for. */
     private sealed interface Request {
         data object Stop : Request
-        class Play(val frequencyHz: Float, val voice: StringVoice, val octavePair: Boolean) : Request
+        class Play(val frequenciesHz: FloatArray, val voice: StringVoice, val octavePairs: BooleanArray, val strumSeconds: Float) : Request {
+            fun startIn(mix: StringMix) = mix.start(frequenciesHz, frequenciesHz.size, strumSeconds, octavePairs)
+        }
     }
 
     private companion object {

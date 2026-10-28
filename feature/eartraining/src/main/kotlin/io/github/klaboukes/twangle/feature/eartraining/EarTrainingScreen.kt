@@ -96,6 +96,8 @@ import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.touchArea
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
@@ -110,7 +112,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/ear-training-preview.html
  * (all option A, 2026-10-28): the three exercises as three icons in a row, the questions starting at
  * once, the "What is asked" button opening the choices any time, and Play it back showing the note
- * the tuner hears as the player plays.
+ * the tuner hears as the player plays. Intervals is answered with buttons and never asks for the
+ * microphone.
  *
  * The question sounds through [tonePlayer] in the voice of the instrument picked ([savedSettings], then
  * the saved settings from [settingsRepository]); Play it back hears the instrument through [listener]
@@ -156,6 +159,9 @@ fun EarTrainingScreen(
         onNoteChoice = viewModel::setNoteChoice,
         onNotesInRow = viewModel::setNotesInRow,
         onNoteMatch = viewModel::setNoteMatch,
+        onPickInterval = viewModel::pickInterval,
+        onToggleInterval = viewModel::toggleInterval,
+        onToggleDirection = viewModel::toggleDirection,
         onAllowMic = permission::request,
         onOpenSettings = permission::openSettings,
         header = header,
@@ -169,7 +175,8 @@ fun EarTrainingScreen(
  * ▶ that sounds the question again and the exercise's own part under it. Play it back's part is the
  * prompt and the note [heard] (in [notation]), or "Listening…"; with the microphone not allowed ([mic]),
  * "Microphone is off" with a button that asks again ([onAllowMic]) or, refused for good, opens
- * Settings ([onOpenSettings]). The choices panel opens over it and keeps open across a turned phone.
+ * Settings ([onOpenSettings]). Intervals' part is the question and its answer buttons ([onPickInterval],
+ * [IntervalsPart]). The choices panel opens over it and keeps open across a turned phone.
  *
  * One column, at most [COLUMN_MAX_WIDTH] wide in the middle; on its side (at least [HALVES_MIN_WIDTH]
  * wide and wider than tall) the top rows fill the start half and the question stands in the middle of
@@ -187,6 +194,9 @@ fun EarTrainingContent(
     onNoteChoice: (NoteChoice) -> Unit,
     onNotesInRow: (Int) -> Unit,
     onNoteMatch: (NoteMatch) -> Unit,
+    onPickInterval: (Interval) -> Unit,
+    onToggleInterval: (Interval) -> Unit,
+    onToggleDirection: (IntervalDirection) -> Unit,
     onAllowMic: () -> Unit,
     onOpenSettings: () -> Unit,
     header: @Composable () -> Unit,
@@ -194,7 +204,7 @@ fun EarTrainingContent(
 ) {
     var choicesOpen by rememberSaveable { mutableStateOf(false) }
     if (choicesOpen) {
-        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onDismiss = { choicesOpen = false })
+        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onToggleInterval, onToggleDirection, onDismiss = { choicesOpen = false })
     }
     val topRows = @Composable {
         Spacer(Modifier.height(HEADER_TOP))
@@ -209,8 +219,13 @@ fun EarTrainingContent(
                 Spacer(Modifier.height(8.dp))
                 PlayItBackPart(state, state.notes, heard, notation, mic, onAllowMic, onOpenSettings)
             }
-            // Their questions and answer buttons come with their own increments (ROADMAP Phase 55).
-            Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
+            Exercise.INTERVALS -> if (state.interval != null) {
+                ReplayButton(onReplay)
+                Spacer(Modifier.height(8.dp))
+                IntervalsPart(state, state.interval, onPickInterval)
+            }
+            // Its question and answer buttons come with its own increment (ROADMAP Phase 55).
+            Exercise.CHORD_TYPE -> Unit
         }
     }
     BoxWithConstraints(
@@ -283,6 +298,17 @@ object EarTrainingTestTags {
 
     /** Play it back with notes in a row: a dot for each, the ones found filled in the in-tune colour. */
     const val DOTS = "ear_dots"
+
+    /** Intervals: up, down or together over the question; the question line ("Which interval?", "Right", "Not that one"). */
+    const val DIRECTION = "ear_direction"
+    const val INTERVAL_LINE = "ear_interval_line"
+
+    /** Intervals: an interval's answer button, e.g. "ear_answer_perfect_fifth". */
+    fun answer(interval: Interval): String = "ear_answer_" + interval.name.lowercase()
+
+    /** In the What is asked panel, Intervals: an interval's chip, e.g. "ear_ask_perfect_fifth", and a direction's, e.g. "ear_played_together". */
+    fun askInterval(interval: Interval): String = "ear_ask_" + interval.name.lowercase()
+    fun direction(direction: IntervalDirection): String = "ear_played_" + direction.name.lowercase()
 
     /** Play it back without the microphone: "Microphone is off" and its button. */
     const val MIC_OFF = "ear_mic_off"
@@ -555,14 +581,14 @@ private fun NoteDots(count: Int, found: Int) {
 
 /** A see-through button's face, as the Practice tools' buttons: Futuristic's a neon tint. */
 @Composable
-private fun faceFill(): Color {
+internal fun faceFill(): Color {
     val scheme = MaterialTheme.colorScheme
     return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) neonFill(scheme) else scheme.surface.copy(alpha = 0.45f)
 }
 
 /** Its outline: muted, Futuristic's in the accent. */
 @Composable
-private fun faceOutline(): BorderStroke {
+internal fun faceOutline(): BorderStroke {
     val scheme = MaterialTheme.colorScheme
     return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) {
         BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))

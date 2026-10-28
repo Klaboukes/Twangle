@@ -27,6 +27,18 @@ class FakeTonePlayerTest {
     }
 
     @Test
+    fun `records notes played together apart from single notes`() {
+        player.playTogether(listOf(220f, 329.63f), StringVoices.STEEL_GUITAR)
+        assertTrue(player.isPlaying.value)
+        player.playTogether(listOf(110f, 164.81f, 220f), StringVoices.STEEL_GUITAR, strumSeconds = 0.035f)
+
+        assertEquals(listOf(listOf(220f, 329.63f), listOf(110f, 164.81f, 220f)), player.together)
+        assertEquals(listOf(0f, 0.035f), player.strums)
+        assertEquals("not single notes", emptyList<Float>(), player.played)
+        assertThrows(IllegalArgumentException::class.java) { player.playTogether(emptyList(), StringVoices.VIOLIN) }
+    }
+
+    @Test
     fun `finish ends the tone as if it died away`() {
         player.play(440f, StringVoices.VIOLIN)
         player.finish()

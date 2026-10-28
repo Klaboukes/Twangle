@@ -18,7 +18,23 @@ enum class Interval(val semitones: Int) {
     MINOR_SEVENTH(10),
     MAJOR_SEVENTH(11),
     OCTAVE(12),
+    ;
+
+    companion object {
+        /** What Intervals asks on a fresh install: the thirds, the fourth and fifth, the major sixth and the octave (the mock-up's six). */
+        val DEFAULT: Set<Interval> = setOf(MINOR_THIRD, MAJOR_THIRD, PERFECT_FOURTH, PERFECT_FIFTH, MAJOR_SIXTH, OCTAVE)
+    }
 }
 
 /** How an interval's two notes are played: the lower first ([UP]), the higher first ([DOWN]), or both at once. */
-enum class IntervalDirection { UP, DOWN, TOGETHER }
+enum class IntervalDirection {
+    UP,
+    DOWN,
+    TOGETHER,
+    ;
+
+    companion object {
+        /** On a fresh install, the lower note first. */
+        val DEFAULT: Set<IntervalDirection> = setOf(UP)
+    }
+}

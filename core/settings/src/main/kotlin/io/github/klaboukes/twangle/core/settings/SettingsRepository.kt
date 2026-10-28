@@ -6,6 +6,8 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
@@ -172,6 +174,12 @@ interface SettingsRepository {
 
     /** Any octave or only the exact note asked counts in Play it back ([AppSettings.earNoteMatch]). */
     suspend fun setEarNoteMatch(match: NoteMatch)
+
+    /** The intervals Intervals asks ([AppSettings.earIntervals]); none reads back as the default. */
+    suspend fun setEarIntervals(intervals: Set<Interval>)
+
+    /** Up, down or together, as Intervals plays them ([AppSettings.earDirections]); none reads back as the default. */
+    suspend fun setEarDirections(directions: Set<IntervalDirection>)
 
     /** The chord charts and the scale neck mirrored for a left-handed player or not ([AppSettings.leftHanded]). */
     suspend fun setLeftHanded(enabled: Boolean)

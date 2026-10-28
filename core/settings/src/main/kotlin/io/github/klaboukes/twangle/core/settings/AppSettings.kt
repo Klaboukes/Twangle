@@ -6,6 +6,8 @@ import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
@@ -299,6 +301,10 @@ data class AppSettings(
     val earNotesInRow: Int = 1,
     /** Whether Play it back takes the note asked in any octave ("Any octave counts", on a fresh install) or only the exact one. */
     val earNoteMatch: NoteMatch = NoteMatch.ANY_OCTAVE,
+    /** The intervals Intervals asks, never none: [Interval.DEFAULT] (thirds, fourth, fifth, major sixth, octave) on a fresh install. */
+    val earIntervals: Set<Interval> = Interval.DEFAULT,
+    /** How Intervals plays them, up, down or together, never none: up on a fresh install. */
+    val earDirections: Set<IntervalDirection> = IntervalDirection.DEFAULT,
     /**
      * Left-handed (Phase 57): the chord charts and the scale neck drawn mirrored, for a guitar held the other way
      * round (off until the player turns it on). The tuner's string row doesn't change.

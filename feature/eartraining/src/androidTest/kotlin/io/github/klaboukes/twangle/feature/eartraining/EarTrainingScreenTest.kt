@@ -11,6 +11,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotSelected
@@ -20,6 +22,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
@@ -28,6 +31,9 @@ import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalQuestion
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
@@ -47,6 +53,7 @@ import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -60,8 +67,10 @@ import org.junit.runners.Parameterized
  * The Ear training screen (Phase 55) in each style, from its state alone: the three exercises as icons
  * TalkBack names, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
- * "Microphone is off" with its button; the "What is asked" panel and its choice of notes; and the
- * whole screen fitting, upright and on its side, at 2× text in Dutch (every language with `--languages`).
+ * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
+ * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
+ * Intervals' choices; and the whole screen fitting, upright and on its side, at 2× text in Dutch
+ * (every language with `--languages`).
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -87,6 +96,9 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private val choices = mutableListOf<NoteChoice>()
     private val inRow = mutableListOf<Int>()
     private val matches = mutableListOf<NoteMatch>()
+    private val intervalPicks = mutableListOf<Interval>()
+    private val intervalToggles = mutableListOf<Interval>()
+    private val directionToggles = mutableListOf<IntervalDirection>()
     private var replays = 0
     private var micAsks = 0
     private var settingsOpened = 0
@@ -116,6 +128,17 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                         onNoteMatch = {
                             matches += it
                             shownState.value = shownState.value.copy(noteMatch = it)
+                        },
+                        onPickInterval = { intervalPicks += it },
+                        onToggleInterval = {
+                            intervalToggles += it
+                            val now = shownState.value.intervals
+                            shownState.value = shownState.value.copy(intervals = if (it in now) now - it else now + it)
+                        },
+                        onToggleDirection = {
+                            directionToggles += it
+                            val now = shownState.value.directions
+                            shownState.value = shownState.value.copy(directions = if (it in now) now - it else now + it)
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
@@ -152,7 +175,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
         assertEquals("the icons keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
         assertEquals("one steady width each", 56f, before[0].width.value, 0.5f)
-        // Intervals asks nothing yet: no ▶ and no Play it back prompt.
+        // Until Intervals' first question is in the state, nothing shows under the row.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
     }
 
@@ -257,7 +280,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     @Test
     fun theChoicesButtonOpensWhatIsAskedAndAPickIsPassedOn() {
         show()
-        node(EarTrainingTestTags.CHOICES).performClick()
+        node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
         node(EarTrainingTestTags.CHOICES_PANEL).assertExists()
         compose.onNode(hasText("What is asked")).assertIsDisplayed()
@@ -309,6 +332,118 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     }
 
     @Test
+    fun intervalsShowsTheQuestionAndAButtonOfOneSizeForEachIntervalChosen() {
+        shownState.value = INTERVALS_ASKED
+        show()
+        node(EarTrainingTestTags.REPLAY).assertIsDisplayed()
+        node(EarTrainingTestTags.DIRECTION).assert(hasText("Up"))
+        node(EarTrainingTestTags.INTERVAL_LINE).assert(hasText("Which interval?"))
+        assertTrue("no microphone line or heard note", !exists(EarTrainingTestTags.MIC_OFF) && !exists(EarTrainingTestTags.HEARD))
+        val names = mapOf(
+            Interval.MINOR_THIRD to ("m3" to "minor 3rd"), Interval.MAJOR_THIRD to ("M3" to "major 3rd"),
+            Interval.PERFECT_FOURTH to ("P4" to "4th"), Interval.PERFECT_FIFTH to ("P5" to "5th"),
+            Interval.MAJOR_SIXTH to ("M6" to "major 6th"), Interval.OCTAVE to ("P8" to "octave"),
+        )
+        val bounds = Interval.DEFAULT.map { interval ->
+            val (sign, name) = names.getValue(interval)
+            node(EarTrainingTestTags.answer(interval))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(name)))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+                .assert(hasText(sign, substring = true))
+                .assertIsDisplayed()
+                .getBoundsInRoot()
+        }
+        assertTrue("only the intervals chosen", (Interval.entries - Interval.DEFAULT).none { exists(EarTrainingTestTags.answer(it)) })
+        assertTrue("one steady size ${bounds.map { it.width to it.height }}", bounds.all { abs(it.width.value - bounds[0].width.value) < 0.5f && abs(it.height.value - bounds[0].height.value) < 0.5f })
+        assertTrue("at least 56 dp high", bounds[0].height.value >= 55.5f)
+        assertEquals("two to a row", bounds[0].top, bounds[1].top)
+        assertTrue("the next row under", bounds[2].top > bounds[0].bottom)
+
+        node(EarTrainingTestTags.answer(Interval.PERFECT_FOURTH)).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(Interval.PERFECT_FOURTH), intervalPicks)
+
+        // One interval only: its one button keeps the same size, in the middle.
+        shownState.value = INTERVALS_ASKED.copy(intervals = setOf(Interval.PERFECT_FIFTH))
+        compose.waitForIdle()
+        val alone = node(EarTrainingTestTags.answer(Interval.PERFECT_FIFTH)).getBoundsInRoot()
+        assertEquals(bounds[0].width.value, alone.width.value, 0.5f)
+        val screen = node(WINDOW).getBoundsInRoot()
+        assertEquals("centred", (screen.left + screen.right).value / 2, (alone.left + alone.right).value / 2, 1f)
+    }
+
+    @Test
+    fun rightAndWrongAreShownGentlyAndNothingMoves() {
+        shownState.value = INTERVALS_ASKED
+        show()
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.DIRECTION, EarTrainingTestTags.INTERVAL_LINE) + Interval.DEFAULT.map(EarTrainingTestTags::answer)
+        val before = tags.map { node(it).getBoundsInRoot() }
+
+        // Right: "Right", and no button can answer again.
+        shownState.value = INTERVALS_ASKED.copy(answered = true, picked = Interval.PERFECT_FIFTH, tally = Tally(right = 1, asked = 1))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.INTERVAL_LINE).assert(hasText("Right"))
+        assertEquals("Right", spoken(EarTrainingTestTags.INTERVAL_LINE))
+        node(EarTrainingTestTags.answer(Interval.PERFECT_FOURTH)).assertIsNotEnabled().performClick()
+        compose.waitForIdle()
+        assertEquals("answered once", emptyList<Interval>(), intervalPicks)
+        assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
+
+        // Wrong: quietly said, and TalkBack hears the answer.
+        shownState.value = INTERVALS_ASKED.copy(answered = true, picked = Interval.PERFECT_FOURTH, tally = Tally(right = 0, asked = 1))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.INTERVAL_LINE).assert(hasText("Not that one"))
+        assertEquals("Not that one. The answer: 5th", spoken(EarTrainingTestTags.INTERVAL_LINE))
+        assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
+
+        // The next question: every button answers again.
+        shownState.value = INTERVALS_ASKED.copy(interval = IntervalQuestion(Interval.OCTAVE, IntervalDirection.TOGETHER, Note.of(PitchClass.E, 2)))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.DIRECTION).assert(hasText("Together"))
+        node(EarTrainingTestTags.INTERVAL_LINE).assert(hasText("Which interval?"))
+        node(EarTrainingTestTags.answer(Interval.PERFECT_FOURTH)).assertIsEnabled()
+        assertEquals(before.drop(1).map { it.top }, tags.drop(1).map { node(it).getBoundsInRoot().top })
+    }
+
+    @Test
+    fun whatIsAskedPicksTheIntervalsAndHowTheyArePlayed() {
+        shownState.value = INTERVALS_ASKED
+        show()
+        node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNode(hasText("Intervals")).assertExists()
+        compose.onNode(hasText("Played")).assertExists()
+        val widths = Interval.entries.map { interval ->
+            val chip = node(EarTrainingTestTags.askInterval(interval))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
+            if (interval in Interval.DEFAULT) chip.assertIsOn() else chip.assertIsOff()
+            chip.getBoundsInRoot().width.value
+        }
+        assertTrue("steady sizes $widths", widths.all { abs(it - widths[0]) < 1f })
+        assertEquals("minor 2nd", spoken(EarTrainingTestTags.askInterval(Interval.MINOR_SECOND)))
+        node(EarTrainingTestTags.askInterval(Interval.MINOR_SECOND)).assert(hasText("m2")).performClick()
+        node(EarTrainingTestTags.askInterval(Interval.OCTAVE)).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(Interval.MINOR_SECOND, Interval.OCTAVE), intervalToggles)
+        node(EarTrainingTestTags.askInterval(Interval.MINOR_SECOND)).assertIsOn()
+        node(EarTrainingTestTags.askInterval(Interval.OCTAVE)).assertIsOff()
+
+        val names = mapOf(IntervalDirection.UP to "Up", IntervalDirection.DOWN to "Down", IntervalDirection.TOGETHER to "Together")
+        for ((direction, name) in names) {
+            node(EarTrainingTestTags.direction(direction)).assert(hasText(name)).assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
+        }
+        node(EarTrainingTestTags.direction(IntervalDirection.UP)).assertIsOn()
+        node(EarTrainingTestTags.direction(IntervalDirection.TOGETHER)).assertIsOff().performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(IntervalDirection.TOGETHER), directionToggles)
+        node(EarTrainingTestTags.direction(IntervalDirection.TOGETHER)).assertIsOn()
+        assertTrue("no Play it back choices here", !exists(EarTrainingTestTags.ANY_OCTAVE))
+        Espresso.pressBack()
+        compose.waitForIdle()
+        assertTrue(!exists(EarTrainingTestTags.CHOICES_PANEL))
+    }
+
+    @Test
     fun itFitsUprightAndOnItsSideInLightAndDark() {
         // The tallest question: four notes in a row, their dots and "Note 2 of 4".
         shownState.value = shownState.value.copy(tally = Tally(right = 12, asked = 15), notes = FOUR_NOTES, notesInRow = 4, found = 1)
@@ -330,6 +465,25 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             assertTrue("$case the exercises under it $row", row.top >= header.bottom)
             compose.assertEveryTextWhollyShown("$case")
         }
+        // Intervals with all twelve: the end half or the column scrolls where it must, and everything shows.
+        shownState.value = ALL_INTERVALS_ASKED.copy(tally = Tally(right = 12, asked = 15))
+        for (dark in listOf(false, true)) for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, NARROW_UPRIGHT)) {
+            shownDark.value = dark
+            shownSize.value = size
+            compose.waitForIdle()
+            val case = "$style $size dark $dark, all intervals:"
+            for (tag in listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.DIRECTION, EarTrainingTestTags.INTERVAL_LINE) + Interval.entries.map(EarTrainingTestTags::answer)) {
+                assertWhollyShown(node(tag), "$case $tag")
+            }
+            compose.assertEveryTextWhollyShown(case)
+        }
+        shownSize.value = XIAOMI
+        shownDark.value = false
+        compose.waitForIdle()
+        // On the Xiaomi six answers fit without scrolling.
+        shownState.value = INTERVALS_ASKED
+        compose.waitForIdle()
+        for (tag in Interval.DEFAULT.map(EarTrainingTestTags::answer)) assertWhollyShown(node(tag), "$style Xiaomi six answers $tag", scroll = false)
     }
 
     @Test
@@ -355,14 +509,46 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "$style nl $size $name at 2x")
                 compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
             }
-            shownState.value = shownState.value.copy(notes = NoteQuestion(listOf(Note.of(PitchClass.G, 3))), notesInRow = 1, found = 0, wrongHeld = false, answered = false)
+            for ((name, state) in intervalsStates()) {
+                shownState.value = state
+                compose.waitForIdle()
+                for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style nl $size $name $interval at 2x")
+                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+            }
+            node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
+            compose.waitForIdle()
+            for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
+                assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+            }
+            Espresso.pressBack()
+            compose.waitForIdle()
+            shownState.value = shownState.value.copy(
+                exercise = Exercise.PLAY_IT_BACK,
+                notes = NoteQuestion(listOf(Note.of(PitchClass.G, 3))),
+                notesInRow = 1,
+                found = 0,
+                wrongHeld = false,
+                answered = false,
+                interval = null,
+                picked = null,
+            )
             // The panel, with its new rows.
-            node(EarTrainingTestTags.CHOICES).performClick()
+            node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
             compose.waitForIdle()
             for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
             Espresso.pressBack()
             compose.waitForIdle()
         }
+    }
+
+    /** Intervals' states with the most text, every interval asked: the question, right, and wrong. */
+    private fun intervalsStates(): List<Pair<String, EarTrainingState>> {
+        val base = ALL_INTERVALS_ASKED.copy(tally = shownState.value.tally)
+        return listOf(
+            "which interval" to base,
+            "right" to base.copy(answered = true, picked = Interval.PERFECT_FIFTH),
+            "not that one" to base.copy(answered = true, picked = Interval.MAJOR_SEVENTH),
+        )
     }
 
     /** Play it back's states with the most text: a wrong note held in a row of four, the note looked for, and right. */
@@ -399,9 +585,22 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                     compose.waitForIdle()
                     compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
                 }
+                for ((name, state) in intervalsStates()) {
+                    shownState.value = state
+                    compose.waitForIdle()
+                    for (interval in Interval.entries) assertWhollyShown(node(EarTrainingTestTags.answer(interval)), "$style $language $size $name $interval at 2x")
+                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                }
+                node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
+                compose.waitForIdle()
+                for (tag in Interval.entries.map(EarTrainingTestTags::askInterval) + IntervalDirection.entries.map(EarTrainingTestTags::direction)) {
+                    assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
+                }
+                Espresso.pressBack()
+                compose.waitForIdle()
                 shownState.value = single
                 compose.waitForIdle()
-                node(EarTrainingTestTags.CHOICES).performClick()
+                node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
                 compose.waitForIdle()
                 for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$style $language $size $choice at 2x")
                 for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
@@ -425,6 +624,17 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
+
+        /** Intervals asking a fifth up from A2, with the six intervals asked on a fresh install; and with all twelve. */
+        private val INTERVALS_ASKED = EarTrainingState(
+            exercise = Exercise.INTERVALS,
+            interval = IntervalQuestion(Interval.PERFECT_FIFTH, IntervalDirection.UP, Note.of(PitchClass.A, 2)),
+        )
+        private val ALL_INTERVALS_ASKED = INTERVALS_ASKED.copy(
+            intervals = Interval.entries.toSet(),
+            directions = IntervalDirection.entries.toSet(),
+            interval = IntervalQuestion(Interval.PERFECT_FIFTH, IntervalDirection.TOGETHER, Note.of(PitchClass.A, 2)),
+        )
 
         /** Four notes in a row, the most Play it back asks. */
         private val FOUR_NOTES = NoteQuestion(listOf(PitchClass.E, PitchClass.G, PitchClass.A, PitchClass.D).map { Note.of(it, 3) })

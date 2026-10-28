@@ -45,4 +45,40 @@
     <string name="ear_notes_in_row">Notes in a row</string>
     <!-- In that panel: a switch; on, the note asked counts in any octave (a G on any string answers a G). -->
     <string name="ear_any_octave">Any octave counts</string>
+    <!-- Intervals (Phase 55): under the play button, the question. Two notes sounded; the player names the interval between them with a button. -->
+    <string name="ear_interval_prompt">Which interval?</string>
+    <!-- Intervals: how the two notes were played, small over the question, and the three choices under "Played" in the What is asked panel: the lower note first, the higher note first, or both at once. -->
+    <string name="ear_direction_up">Up</string>
+    <string name="ear_direction_down">Down</string>
+    <string name="ear_direction_together">Together</string>
+    <!-- In the What is asked panel, Intervals: the heading over up, down and together. -->
+    <string name="ear_played">Played</string>
+    <!-- TalkBack, after a wrong answer, following "Not that one": the right interval, %1$s its name ("5th"). -->
+    <string name="ear_answer_was">The answer: %1$s</string>
+    <!-- The intervals' signs, large on the answer buttons and on the chips in the What is asked panel, minor second to octave: this language's usual ones (English: m minor, M major, P perfect, TT the tritone, P8 the octave). At most 3 characters. -->
+    <string name="ear_interval_short_minor_second">m2</string>
+    <string name="ear_interval_short_major_second">M2</string>
+    <string name="ear_interval_short_minor_third">m3</string>
+    <string name="ear_interval_short_major_third">M3</string>
+    <string name="ear_interval_short_perfect_fourth">P4</string>
+    <string name="ear_interval_short_tritone">TT</string>
+    <string name="ear_interval_short_perfect_fifth">P5</string>
+    <string name="ear_interval_short_minor_sixth">m6</string>
+    <string name="ear_interval_short_major_sixth">M6</string>
+    <string name="ear_interval_short_minor_seventh">m7</string>
+    <string name="ear_interval_short_major_seventh">M7</string>
+    <string name="ear_interval_short_octave">P8</string>
+    <!-- The intervals' names, small under the sign on each answer button, and what TalkBack says for a button or chip: minor second to octave (a fourth, fifth and octave are perfect; the tritone is the augmented fourth). -->
+    <string name="ear_interval_minor_second">minor 2nd</string>
+    <string name="ear_interval_major_second">major 2nd</string>
+    <string name="ear_interval_minor_third">minor 3rd</string>
+    <string name="ear_interval_major_third">major 3rd</string>
+    <string name="ear_interval_perfect_fourth">4th</string>
+    <string name="ear_interval_tritone">tritone</string>
+    <string name="ear_interval_perfect_fifth">5th</string>
+    <string name="ear_interval_minor_sixth">minor 6th</string>
+    <string name="ear_interval_major_sixth">major 6th</string>
+    <string name="ear_interval_minor_seventh">minor 7th</string>
+    <string name="ear_interval_major_seventh">major 7th</string>
+    <string name="ear_interval_octave">octave</string>
 </resources>

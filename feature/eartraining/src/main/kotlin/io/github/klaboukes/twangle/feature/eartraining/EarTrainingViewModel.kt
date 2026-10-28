@@ -7,6 +7,10 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.EarTrainingVisit
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.HeldNote
 import io.github.klaboukes.twangle.core.dsp.eartraining.Hold
+import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalQuestion
+import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
@@ -48,7 +52,7 @@ import kotlin.random.Random
  * What the Ear training screen shows of the [exercise] picked: its question and this visit's [tally]
  * of it ("7 of 9", in memory only, never saved), whether the question was [answered] (the next one
  * comes by itself [EarTrainingViewModel.NEXT_DELAY_MILLIS] later), and what the player chose to be
- * asked. Intervals and Chord type add their questions here as they are built.
+ * asked. Chord type adds its question here as it is built.
  */
 data class EarTrainingState(
     val exercise: Exercise = Exercise.DEFAULT,
@@ -64,6 +68,13 @@ data class EarTrainingState(
     val noteChoice: NoteChoice = NoteChoice.OPEN_STRINGS,
     val notesInRow: Int = 1,
     val noteMatch: NoteMatch = NoteMatch.ANY_OCTAVE,
+    /** Intervals' question: two notes, up, down or together. Null before the first and in the other exercises. */
+    val interval: IntervalQuestion? = null,
+    /** Intervals: the button the player picked for [interval], once answered; null before. */
+    val picked: Interval? = null,
+    /** Intervals' choices (saved): which intervals are asked, and played up, down or together; never none. */
+    val intervals: Set<Interval> = Interval.DEFAULT,
+    val directions: Set<IntervalDirection> = IntervalDirection.DEFAULT,
 ) {
     /** Play it back's question was found, every note of it: "Right", glowing softly. */
     val allFound: Boolean get() = notes != null && found == notes.notes.size
@@ -77,14 +88,20 @@ data class EarTrainingState(
  * ([endVisit]), which drops every question and tally: a tool, not a game. Each exercise keeps its own
  * [EarTrainingVisit] for the visit (seeded with [random], so tests repeat a visit), so a missed
  * question comes back a few questions later, unmarked (the owner's pick A). After an answer
- * ([answer]) the next question comes by itself after [NEXT_DELAY_MILLIS] (pick A).
+ * ([answer]) the next question comes by itself after [NEXT_DELAY_MILLIS] (pick A), or
+ * [NEXT_DELAY_AFTER_MISS_MILLIS] after a wrong button, so there is time to see the right one (and
+ * longer again if ▶ sounds it once more).
  *
  * **Saved.** The exercise picked and the player's choices of what is asked are settings (from
  * [savedSettings], saved through [settingsRepository] when changed), never the tally or the questions.
  *
  * **The sound.** A question sounds in the voice of the instrument picked ([AppSettings.instrument],
- * at its A4) through [tonePlayer], note after note ([NOTE_SPACING_MILLIS] apart); [replay] sounds it
+ * at its A4) through [tonePlayer], note after note ([NOTE_SPACING_MILLIS] apart), or an interval's
+ * two notes at once ([IntervalDirection.TOGETHER], [TonePlayer.playTogether]); [replay] sounds it
  * again.
+ *
+ * **Intervals** needs no microphone: the player names the interval with a button ([pickInterval]);
+ * its choices are which intervals ([toggleInterval]) and up, down or together ([toggleDirection]).
  *
  * **Listening.** Only Play it back listens ([Exercise.listens]), and only while the microphone is
  * allowed ([setMicAllowed]) and [heard] is collected: `WhileSubscribed(5 s)`, as the tuner, so the
@@ -125,6 +142,8 @@ class EarTrainingViewModel(
             noteChoice = savedSettings.earNoteChoice,
             notesInRow = savedSettings.earNotesInRow.coerceIn(1, NoteQuestions.MAX_LENGTH),
             noteMatch = savedSettings.earNoteMatch,
+            intervals = savedSettings.earIntervals.ifEmpty { Interval.DEFAULT },
+            directions = savedSettings.earDirections.ifEmpty { IntervalDirection.DEFAULT },
         ),
     )
 
@@ -138,6 +157,10 @@ class EarTrainingViewModel(
     // Play it back's questions this visit, null until it starts and after the visit ends; the answer to its current one.
     private var playBack: EarTrainingVisit<NoteQuestion>? = null
     private var playAnswer: PlayBackAnswer? = null
+
+    // Intervals' questions this visit, and the button picked for its current one.
+    private var intervalVisit: EarTrainingVisit<IntervalQuestion>? = null
+    private var intervalPick: Interval? = null
 
     private var soundJob: Job? = null
     private var nextJob: Job? = null
@@ -169,7 +192,10 @@ class EarTrainingViewModel(
     init {
         // Another tuning (or instrument) asks its own notes; a question the new one can't ask gives way to a new one.
         viewModelScope.launch {
-            settings.map { it.tuning }.distinctUntilChanged().drop(1).collect { changeNotes() }
+            settings.map { it.tuning }.distinctUntilChanged().drop(1).collect {
+                changeNotes()
+                changeIntervals()
+            }
         }
     }
 
@@ -217,7 +243,32 @@ class EarTrainingViewModel(
         viewModelScope.launch { settingsRepository.setEarNoteMatch(match) }
     }
 
-    /** Sounds the question again (the ▶), from its first note; the notes found so far stay found. */
+    /** Intervals asks [interval] too, or no longer (saved); the last one chosen stays. A question no longer offered gives way at once. */
+    fun toggleInterval(interval: Interval) {
+        val now = shown.value.intervals
+        val next = if (interval in now) now - interval else now + interval
+        if (next.isEmpty()) return
+        val ordered = Interval.entries.filterTo(LinkedHashSet()) { it in next }
+        shown.value = shown.value.copy(intervals = ordered)
+        viewModelScope.launch { settingsRepository.setEarIntervals(ordered) }
+        changeIntervals()
+    }
+
+    /** Intervals plays its notes [direction] too, or no longer (saved); the last one chosen stays. */
+    fun toggleDirection(direction: IntervalDirection) {
+        val now = shown.value.directions
+        val next = if (direction in now) now - direction else now + direction
+        if (next.isEmpty()) return
+        val ordered = IntervalDirection.entries.filterTo(LinkedHashSet()) { it in next }
+        shown.value = shown.value.copy(directions = ordered)
+        viewModelScope.launch { settingsRepository.setEarDirections(ordered) }
+        changeIntervals()
+    }
+
+    /**
+     * Sounds the question again (the ▶), from its first note; Play it back's notes found so far stay
+     * found. After an Intervals answer, the next question waits until it has been heard again.
+     */
     fun replay() {
         when (shown.value.exercise) {
             Exercise.PLAY_IT_BACK -> playBack?.current?.let {
@@ -225,9 +276,30 @@ class EarTrainingViewModel(
                 publish()
                 sound(it.notes)
             }
-            // Their questions come with their own increments.
-            Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
+            Exercise.INTERVALS -> intervalVisit?.let { visit ->
+                val question = visit.current ?: return
+                sound(question)
+                if (visit.answered) {
+                    nextJob?.cancel()
+                    nextJob = viewModelScope.launch {
+                        delay(NOTE_SPACING_MILLIS * (question.notes.size - 1) + NEXT_DELAY_AFTER_MISS_MILLIS)
+                        ask(visit)
+                    }
+                }
+            }
+            // Its question comes with its own increment.
+            Exercise.CHORD_TYPE -> Unit
         }
+    }
+
+    /** Intervals: the player names the interval heard with its button, once per question: right or not, and the one picked shown. */
+    fun pickInterval(answer: Interval) {
+        if (shown.value.exercise != Exercise.INTERVALS) return
+        val visit = intervalVisit ?: return
+        val question = visit.current ?: return
+        if (visit.answered) return
+        intervalPick = answer
+        answer(question.isRight(answer))
     }
 
     /**
@@ -239,9 +311,11 @@ class EarTrainingViewModel(
         if (visit.current == null || visit.answered) return
         visit.answer(right)
         publish()
+        // A wrong button leaves a moment longer to see the right one; Play it back's player has found it by now.
+        val wait = if (right || shown.value.exercise.listens) NEXT_DELAY_MILLIS else NEXT_DELAY_AFTER_MISS_MILLIS
         nextJob?.cancel()
         nextJob = viewModelScope.launch {
-            delay(NEXT_DELAY_MILLIS)
+            delay(wait)
             ask(visit)
         }
     }
@@ -269,7 +343,9 @@ class EarTrainingViewModel(
         stopSound()
         playBack = null
         playAnswer = null
-        shown.value = shown.value.copy(notes = null, tally = Tally(), answered = false, found = 0, wrongHeld = false)
+        intervalVisit = null
+        intervalPick = null
+        shown.value = shown.value.copy(notes = null, tally = Tally(), answered = false, found = 0, wrongHeld = false, interval = null, picked = null)
     }
 
     override fun onCleared() {
@@ -278,7 +354,8 @@ class EarTrainingViewModel(
 
     private fun visitOf(exercise: Exercise): EarTrainingVisit<*>? = when (exercise) {
         Exercise.PLAY_IT_BACK -> playBack
-        Exercise.INTERVALS, Exercise.CHORD_TYPE -> null
+        Exercise.INTERVALS -> intervalVisit
+        Exercise.CHORD_TYPE -> null
     }
 
     /** Play it back's questions as the player chose them, on the tuning picked. */
@@ -299,6 +376,24 @@ class EarTrainingViewModel(
         }
     }
 
+    /** Intervals' questions as the player chose them, on the tuning picked. */
+    private fun intervalQuestions(): IntervalQuestions = shown.value.let { IntervalQuestions(settings.value.tuning, it.intervals, it.directions) }
+
+    /** The intervals asked changed (choice, direction, tuning): a question the new choices don't offer gives way to a new one. */
+    private fun changeIntervals() {
+        val visit = intervalVisit ?: return
+        visit.change(intervalQuestions())
+        val current = visit.current
+        if (current == null || !visit.source.offers(current)) {
+            if (shown.value.exercise == Exercise.INTERVALS) {
+                nextJob?.cancel()
+                ask(visit)
+            } else {
+                publish()
+            }
+        }
+    }
+
     private fun start(exercise: Exercise) {
         when (exercise) {
             Exercise.PLAY_IT_BACK -> {
@@ -306,8 +401,13 @@ class EarTrainingViewModel(
                 playBack = visit
                 ask(visit)
             }
-            // Intervals and Chord type ask nothing yet: their questions come with their own increments.
-            Exercise.INTERVALS, Exercise.CHORD_TYPE -> publish()
+            Exercise.INTERVALS -> {
+                val visit = EarTrainingVisit(intervalQuestions(), random())
+                intervalVisit = visit
+                ask(visit)
+            }
+            // Chord type asks nothing yet: its questions come with its own increment.
+            Exercise.CHORD_TYPE -> publish()
         }
     }
 
@@ -315,8 +415,12 @@ class EarTrainingViewModel(
     private fun ask(visit: EarTrainingVisit<*>) {
         val question = visit.next()
         if (question is NoteQuestion) playAnswer = PlayBackAnswer(question)
+        if (question is IntervalQuestion) intervalPick = null
         publish()
-        if (question is NoteQuestion) sound(question.notes)
+        when (question) {
+            is NoteQuestion -> sound(question.notes)
+            is IntervalQuestion -> sound(question)
+        }
     }
 
     /** Judges a change in what Play it back hears against its question, on the main thread. */
@@ -338,7 +442,10 @@ class EarTrainingViewModel(
         val state = shown.value
         val visit = visitOf(state.exercise)
         val playing = state.exercise == Exercise.PLAY_IT_BACK
+        val naming = state.exercise == Exercise.INTERVALS
         shown.value = state.copy(
+            interval = if (naming) intervalVisit?.current else null,
+            picked = if (naming) intervalPick else null,
             notes = if (playing) playBack?.current else null,
             tally = visit?.tally ?: Tally(),
             answered = visit?.answered ?: false,
@@ -347,8 +454,11 @@ class EarTrainingViewModel(
         )
     }
 
-    /** Sounds [notes] one after another in the instrument's voice, at its A4. */
-    private fun sound(notes: List<Note>) {
+    /** Sounds an interval: its two notes one after the other, or both at once. */
+    private fun sound(question: IntervalQuestion) = sound(question.notes, together = question.direction == IntervalDirection.TOGETHER)
+
+    /** Sounds [notes] one after another in the instrument's voice, at its A4, or all at once ([together]). */
+    private fun sound(notes: List<Note>, together: Boolean = false) {
         soundJob?.cancel()
         val current = settings.value
         val mapper = NoteMapper(current.a4Hz)
@@ -357,9 +467,13 @@ class EarTrainingViewModel(
         awaitingAside = true
         soundJob = viewModelScope.launch {
             try {
-                notes.forEachIndexed { index, note ->
-                    if (index > 0) delay(NOTE_SPACING_MILLIS)
-                    tonePlayer.play(mapper.frequencyOf(note), voice)
+                if (together) {
+                    tonePlayer.playTogether(notes.map { mapper.frequencyOf(it) }, voice)
+                } else {
+                    notes.forEachIndexed { index, note ->
+                        if (index > 0) delay(NOTE_SPACING_MILLIS)
+                        tonePlayer.play(mapper.frequencyOf(note), voice)
+                    }
                 }
             } finally {
                 questionStarting.value = false
@@ -432,6 +546,9 @@ class EarTrainingViewModel(
     companion object {
         /** After an answer, the next question comes by itself this much later (the owner's pick A: about 1½ s). */
         const val NEXT_DELAY_MILLIS = 1_500L
+
+        /** After a wrong button, a little longer (the mock-up's 2½ s), to see the right one glow. */
+        const val NEXT_DELAY_AFTER_MISS_MILLIS = 2_500L
 
         /** Two to four notes in a row start this far apart. */
         const val NOTE_SPACING_MILLIS = 700L
