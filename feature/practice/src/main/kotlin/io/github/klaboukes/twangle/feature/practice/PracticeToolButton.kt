@@ -180,6 +180,7 @@ internal val PracticeTool.label: Int
         PracticeTool.CHORDS -> R.string.practice_tool_chords
         PracticeTool.SCALES -> R.string.practice_tool_scales
         PracticeTool.CAPO -> R.string.practice_tool_capo
+        PracticeTool.EAR_TRAINING -> R.string.practice_tool_ear_training
     }
 
 /** The button's width, the same for every tool and language; its outline [FACE_HEIGHT] tall in a 48 dp touch target. */

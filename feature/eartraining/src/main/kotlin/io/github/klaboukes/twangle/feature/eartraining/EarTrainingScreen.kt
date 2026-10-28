@@ -1,0 +1,530 @@
+package io.github.klaboukes.twangle.feature.eartraining
+
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
+import io.github.klaboukes.twangle.core.audio.TonePlayer
+import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
+import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
+import io.github.klaboukes.twangle.core.designsystem.musicText
+import io.github.klaboukes.twangle.core.designsystem.neonFill
+import io.github.klaboukes.twangle.core.designsystem.pressFeedback
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.designsystem.touchArea
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
+import io.github.klaboukes.twangle.core.dsp.music.Notation
+import io.github.klaboukes.twangle.core.dsp.music.Note
+import io.github.klaboukes.twangle.core.settings.AppSettings
+import io.github.klaboukes.twangle.core.settings.SettingsRepository
+import io.github.klaboukes.twangle.core.settings.VisualStyle
+
+/**
+ * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/ear-training-preview.html
+ * (all option A, 2026-10-28): the three exercises as three icons in a row, the questions starting at
+ * once, the "What is asked" button opening the choices any time, and Play it back showing the note
+ * the tuner hears as the player plays.
+ *
+ * The question sounds through [tonePlayer] in the voice of the instrument picked ([savedSettings], then
+ * the saved settings from [settingsRepository]); Play it back hears the instrument through [listener]
+ * (the tuner's pipeline), asking for the microphone the first time it is shown, as the tuner does. The
+ * microphone is held only while this screen is shown. The question stops sounding when the screen is
+ * hidden; leaving the tool ends the visit (its tally and questions are dropped, never saved), while a
+ * turned phone keeps it. [header] is the top row (the tool button, the instrument button and the
+ * tuning line), which `:app` builds; note names follow [notation].
+ */
+@Composable
+fun EarTrainingScreen(
+    listener: PitchListener,
+    tonePlayer: TonePlayer,
+    settingsRepository: SettingsRepository,
+    notation: Notation,
+    header: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    savedSettings: AppSettings = AppSettings(),
+) {
+    val viewModel: EarTrainingViewModel = viewModel {
+        EarTrainingViewModel(listener, tonePlayer, settingsRepository, savedSettings)
+    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val heard by viewModel.heard.collectAsStateWithLifecycle()
+    val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
+    val permission = rememberEarMicPermission(
+        needed = state.exercise.listens,
+        refusedBefore = micRefused,
+        onRefused = viewModel::onMicRefused,
+    )
+    val allowed = permission.status == MicPermissionStatus.GRANTED
+    LaunchedEffect(allowed) { viewModel.setMicAllowed(allowed) }
+    LaunchedEffect(viewModel) { viewModel.show() }
+    EndVisitWhenLeft(onHidden = viewModel::stopSound, onLeft = viewModel::endVisit)
+
+    EarTrainingContent(
+        state = state,
+        heard = heard,
+        notation = notation,
+        mic = permission.status,
+        onPickExercise = viewModel::pickExercise,
+        onReplay = viewModel::replay,
+        onNoteChoice = viewModel::setNoteChoice,
+        onAllowMic = permission::request,
+        onOpenSettings = permission::openSettings,
+        header = header,
+        modifier = modifier,
+    )
+}
+
+/**
+ * The Ear training screen as it is drawn, from [state] alone (stateless, for the tests): the top row
+ * ([header]), the exercise row (the three icons, this visit's tally, the "What is asked" button), the
+ * ▶ that sounds the question again and the exercise's own part under it. Play it back's part is the
+ * prompt and the note [heard] (in [notation]), or "Listening…"; with the microphone not allowed ([mic]),
+ * "Microphone is off" with a button that asks again ([onAllowMic]) or, refused for good, opens
+ * Settings ([onOpenSettings]). The choices panel opens over it and keeps open across a turned phone.
+ *
+ * One column, at most [COLUMN_MAX_WIDTH] wide in the middle; on its side (at least [HALVES_MIN_WIDTH]
+ * wide and wider than tall) the top rows fill the start half and the question stands in the middle of
+ * the end half. Each scrolls only where the window is too short (large text). Nothing moves when the tally appears or the heard note
+ * changes: the tally fills room the row keeps, the note a box of steady height.
+ */
+@Composable
+fun EarTrainingContent(
+    state: EarTrainingState,
+    heard: Note?,
+    notation: Notation,
+    mic: MicPermissionStatus,
+    onPickExercise: (Exercise) -> Unit,
+    onReplay: () -> Unit,
+    onNoteChoice: (NoteChoice) -> Unit,
+    onAllowMic: () -> Unit,
+    onOpenSettings: () -> Unit,
+    header: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var choicesOpen by rememberSaveable { mutableStateOf(false) }
+    if (choicesOpen) {
+        ChoicesPanel(state.exercise, state.noteChoice, onNoteChoice, onDismiss = { choicesOpen = false })
+    }
+    val topRows = @Composable {
+        Spacer(Modifier.height(HEADER_TOP))
+        header()
+        Spacer(Modifier.height(8.dp))
+        ExerciseRow(state.exercise, state.tally, onPickExercise, onOpenChoices = { choicesOpen = true })
+    }
+    val question = @Composable {
+        when (state.exercise) {
+            Exercise.PLAY_IT_BACK -> if (state.notes != null) {
+                ReplayButton(onReplay)
+                Spacer(Modifier.height(8.dp))
+                PlayItBackPart(heard, notation, mic, onAllowMic, onOpenSettings)
+            }
+            // Their questions and answer buttons come with their own increments (ROADMAP Phase 55).
+            Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
+        }
+    }
+    BoxWithConstraints(
+        modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).testTag(EarTrainingTestTags.SCREEN),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        if (maxWidth > maxHeight && maxWidth >= HALVES_MIN_WIDTH) {
+            // On its side: the top rows in the start half, the question in the middle of the end half.
+            Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) { topRows() }
+                Spacer(Modifier.width(16.dp))
+                Column(
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Spacer(Modifier.height(8.dp))
+                    question()
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+        } else {
+            Column(
+                Modifier
+                    .widthIn(max = COLUMN_MAX_WIDTH)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                topRows()
+                Spacer(Modifier.height(QUESTION_TOP))
+                question()
+                Spacer(Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
+/** Test tags for UI tests (as resource ids in the app). */
+object EarTrainingTestTags {
+    /** The Ear training tool's screen. */
+    const val SCREEN = "ear_training"
+
+    /** An exercise's icon in the row, e.g. "ear_exercise_play_it_back". */
+    fun exercise(exercise: Exercise): String = "ear_exercise_" + exercise.name.lowercase()
+
+    /** This visit's tally ("7 of 9"), at the end of the exercise row. */
+    const val TALLY = "ear_tally"
+
+    /** The "What is asked" button (sliders), and the panel it opens. */
+    const val CHOICES = "ear_choices"
+    const val CHOICES_PANEL = "ear_choices_panel"
+
+    /** A choice of notes in that panel, e.g. "ear_notes_open_strings". */
+    fun noteChoice(choice: NoteChoice): String = "ear_notes_" + choice.name.lowercase()
+
+    /** The round ▶ that sounds the question again. */
+    const val REPLAY = "ear_replay"
+
+    /** Play it back: the note the tuner hears (or "Listening…"). */
+    const val HEARD = "ear_heard"
+
+    /** Play it back without the microphone: "Microphone is off" and its button. */
+    const val MIC_OFF = "ear_mic_off"
+    const val MIC_BUTTON = "ear_mic_button"
+}
+
+/**
+ * The exercise row: the three exercises as icons in one switch (each [EXERCISE_WIDTH] wide, named for
+ * TalkBack), this visit's [tally] once a question was answered, quiet, at the end, and the "What is
+ * asked" button. The icons and the button never move: the tally takes the room between them.
+ */
+@Composable
+private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> Unit, onOpenChoices: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+        ExerciseSwitch(exercise, onPick)
+        Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
+            if (tally.asked > 0) {
+                val spoken = stringResource(R.string.ear_tally_spoken, tally.right, tally.asked)
+                val style = MaterialTheme.typography.bodyMedium
+                Text(
+                    stringResource(R.string.ear_tally, tally.right, tally.asked),
+                    style = style,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    // Set smaller where the room between the icons and the button is short (2× text on a narrow phone).
+                    autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+                    modifier = Modifier.testTag(EarTrainingTestTags.TALLY).semantics {
+                        contentDescription = spoken
+                        liveRegion = LiveRegionMode.Polite
+                    },
+                )
+            }
+        }
+        val choices = stringResource(R.string.ear_choices)
+        TwangleIconButton(onClick = onOpenChoices, modifier = Modifier.testTag(EarTrainingTestTags.CHOICES)) {
+            Icon(ChoicesIcon, contentDescription = choices, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** The three exercises in a segmented switch of icons, the picked one in the accent container as the tuner's mode switch. */
+@Composable
+private fun ExerciseSwitch(selected: Exercise, onPick: (Exercise) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
+    val group = stringResource(R.string.ear_exercises)
+    OwnTouchArea { touch ->
+        SingleChoiceSegmentedButtonRow(Modifier.semantics { contentDescription = group }) {
+            Exercise.entries.forEachIndexed { index, exercise ->
+                val shape = SegmentedButtonDefaults.itemShape(index, Exercise.entries.size)
+                val press = remember { MutableInteractionSource() }
+                val name = stringResource(exercise.label)
+                SegmentedButton(
+                    selected = exercise == selected,
+                    onClick = {
+                        press.pressFlash()
+                        onPick(exercise)
+                    },
+                    shape = shape,
+                    interactionSource = press,
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = scheme.primaryContainer,
+                        activeContentColor = scheme.onPrimaryContainer,
+                        inactiveContainerColor = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.6f),
+                        inactiveContentColor = scheme.onSurfaceVariant,
+                        activeBorderColor = if (neon) scheme.primary else scheme.outline,
+                        inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
+                    ),
+                    icon = {},
+                    modifier = Modifier
+                        .testTag(EarTrainingTestTags.exercise(exercise))
+                        .width(EXERCISE_WIDTH)
+                        .touchArea(touch)
+                        .pressFeedback(press, shape, above = true)
+                        .semantics { contentDescription = name },
+                ) {
+                    Icon(exerciseIcon(exercise), contentDescription = null, modifier = Modifier.size(ICON_SIZE))
+                }
+            }
+        }
+    }
+}
+
+/** Each exercise's name, as TalkBack says its icon. A new exercise needs its name here (the `when` says so). */
+internal val Exercise.label: Int
+    get() = when (this) {
+        Exercise.PLAY_IT_BACK -> R.string.ear_exercise_play_back
+        Exercise.INTERVALS -> R.string.ear_exercise_intervals
+        Exercise.CHORD_TYPE -> R.string.ear_exercise_chord_type
+    }
+
+/** The round ▶, [REPLAY_SIZE] across, that sounds the question again. */
+@Composable
+private fun ReplayButton(onReplay: () -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    val spoken = stringResource(R.string.ear_replay)
+    Box(
+        Modifier
+            .testTag(EarTrainingTestTags.REPLAY)
+            .size(REPLAY_SIZE)
+            .pressFeedback(source, CircleShape, fill = faceFill(), outline = faceOutline())
+            .clickable(interactionSource = source, indication = null) {
+                source.pressFlash()
+                onReplay()
+            }
+            .semantics {
+                role = Role.Button
+                contentDescription = spoken
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        // Nudged right, so the triangle looks centred in the circle.
+        Icon(PLAY_ICON, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
+    }
+}
+
+/**
+ * Play it back under the ▶: "Play it on your instrument", then the note the tuner hears as the
+ * player plays, large ("F♯" with its octave small), or "Listening…" while nothing is heard, in a box
+ * of steady height; with the microphone not allowed, "Microphone is off" and its button in that box.
+ */
+@Composable
+private fun PlayItBackPart(
+    heard: Note?,
+    notation: Notation,
+    mic: MicPermissionStatus,
+    onAllowMic: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    Text(
+        stringResource(R.string.ear_play_prompt),
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+    )
+    Spacer(Modifier.height(16.dp))
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = HEARD_HEIGHT),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (mic != MicPermissionStatus.GRANTED) {
+            Text(
+                stringResource(R.string.ear_mic_off),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.testTag(EarTrainingTestTags.MIC_OFF),
+            )
+            val forGood = mic == MicPermissionStatus.PERMANENTLY_DENIED
+            TwangleTextButton(onClick = if (forGood) onOpenSettings else onAllowMic, modifier = Modifier.testTag(EarTrainingTestTags.MIC_BUTTON)) {
+                Text(stringResource(if (forGood) R.string.ear_open_settings else R.string.ear_mic_allow), textAlign = TextAlign.Center)
+            }
+        } else if (heard == null) {
+            Text(
+                stringResource(R.string.ear_listening),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.testTag(EarTrainingTestTags.HEARD),
+            )
+        } else {
+            val speech = rememberNoteNameSpeech()
+            val name = notation.nameOf(heard.pitchClass)
+            val spoken = stringResource(R.string.ear_spoken_heard, speech.name(name) + " " + heard.octave)
+            Text(
+                buildAnnotatedString {
+                    append(musicText(name))
+                    withStyle(SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)) { append(heard.octave.toString()) }
+                },
+                style = MaterialTheme.typography.displayMedium.copy(textDirection = TextDirection.Ltr),
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                // Its text stays in the tree for the tests' checks; TalkBack says the description.
+                modifier = Modifier.testTag(EarTrainingTestTags.HEARD).semantics {
+                    contentDescription = spoken
+                    liveRegion = LiveRegionMode.Polite
+                },
+            )
+        }
+    }
+}
+
+/** A see-through button's face, as the Practice tools' buttons: Futuristic's a neon tint. */
+@Composable
+private fun faceFill(): Color {
+    val scheme = MaterialTheme.colorScheme
+    return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) neonFill(scheme) else scheme.surface.copy(alpha = 0.45f)
+}
+
+/** Its outline: muted, Futuristic's in the accent. */
+@Composable
+private fun faceOutline(): BorderStroke {
+    val scheme = MaterialTheme.colorScheme
+    return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) {
+        BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))
+    } else {
+        BorderStroke(1.dp, scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA))
+    }
+}
+
+/**
+ * The question stops sounding when the screen is hidden ([onHidden]: the app goes to the background,
+ * or another tool or tab takes its place), and the visit ends when the tool is left ([onLeft]), but
+ * not when the activity is only recreated (the phone turns, dark mode switches): then the visit goes on.
+ */
+@Composable
+private fun EndVisitWhenLeft(onHidden: () -> Unit, onLeft: () -> Unit) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val activity = LocalContext.current.findActivity()
+    val currentOnHidden by rememberUpdatedState(onHidden)
+    val currentOnLeft by rememberUpdatedState(onLeft)
+    DisposableEffect(lifecycle, activity) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) currentOnHidden() }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+            if (activity?.isChangingConfigurations != true) currentOnLeft()
+        }
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+/** ▶, filled, its corners softened (as the drone button's). */
+private val PLAY_ICON: ImageVector = ImageVector.Builder(
+    name = "ear_replay",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f,
+).addPath(
+    pathData = addPathNodes("M8,5.5L19,12L8,18.5z"),
+    fill = SolidColor(Color.Black),
+    stroke = SolidColor(Color.Black),
+    strokeLineWidth = 2f,
+    strokeLineJoin = StrokeJoin.Round,
+).build()
+
+private const val NEON_OUTLINE_ALPHA = 0.55f
+private const val MUTED_OUTLINE_ALPHA = 0.6f
+
+private val HEADER_TOP = 8.dp
+private val QUESTION_TOP = 24.dp
+
+/** The column at most this wide, in the middle of a tablet. */
+private val COLUMN_MAX_WIDTH = 480.dp
+
+/** From this wide, a window wider than tall is laid out in two halves (as the Practice tools on their side). */
+private val HALVES_MIN_WIDTH = 600.dp
+
+/** Each exercise's segment, the same whatever the language (icons only); its icon. */
+private val EXERCISE_WIDTH = 56.dp
+private val ICON_SIZE = 24.dp
+
+/** The ▶: as the mock-up's, a round button this big, its triangle this big. */
+private val REPLAY_SIZE = 72.dp
+private val REPLAY_ICON_SIZE = 32.dp
+
+/** The heard note's box: tall enough for the big note, so nothing moves when it comes and goes. */
+private val HEARD_HEIGHT = 96.dp
+
+/** The tally set no smaller than this to fit; in dp, so it holds at any font size. */
+private val TALLY_MIN_SIZE = 8.dp
+
+/** The octave after the note's name, relative to it. */
+private val OCTAVE_SIZE = 0.45.em

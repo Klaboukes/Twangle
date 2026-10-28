@@ -241,6 +241,7 @@ dependencies {
     implementation(project(":feature:settings"))
     implementation(project(":feature:metronome"))
     implementation(project(":feature:practice"))
+    implementation(project(":feature:eartraining"))
     implementation(project(":core:audio"))
     implementation(project(":core:dsp"))
     implementation(project(":core:settings"))

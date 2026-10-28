@@ -4,6 +4,8 @@
     <string name="practice_tool_metronome">Metronome</string>
     <string name="practice_tool_chords">Chords</string>
     <string name="practice_tool_scales">Scales</string>
+    <!-- Phase 55: Ear training, a Practice tool of its own (Play it back, Intervals, Chord type). -->
+    <string name="practice_tool_ear_training">Ear training</string>
     <!-- TalkBack (Phase 47): the tool button at the top of Practice, said before the tool picked ("Tool, Chords, drop-down list"), and the list of tools it opens. -->
     <string name="practice_tool_button">Tool</string>
     <string name="practice_tool_list">Tools</string>

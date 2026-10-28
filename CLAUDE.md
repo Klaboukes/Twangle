@@ -19,12 +19,13 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools under the Practice tab, draws the style's background), `TwangleApplication`, `AppContainer` (DI), the home-screen widget (`widget/`) |
+| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools (Ear training too) under the Practice tab, draws the style's background), `TwangleApplication`, `AppContainer` (DI, incl. the build's `ToolSwitches`), the home-screen widget (`widget/`) |
 | `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
 | `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`), Chords and Scales (`ChordsScreen`, `ScaleNeck`), the drone button (`DroneButton`) and the Capo helper (`CapoScreen`); `:app` puts the metronome and these tools under it |
+| `:feature:eartraining` | Android library | Ear training (Phase 55, a Practice tool behind its switch, debug builds only until its check): `EarTrainingScreen`, `EarTrainingViewModel` (the visit, the question's sound through `TonePlayer`, the microphone through `PitchListener`, which `:app` backs with the tuner's `PitchPipeline`), the "What is asked" panel |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones), `MetronomePlayer` (clicks) and `DronePlayer` (the drone under Scales) through `AudioTrack` |
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |

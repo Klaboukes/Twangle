@@ -44,7 +44,7 @@ MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
 DAY_LANGUAGES="${DAY_LANGUAGES:-en,nl}"
 COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
-UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :core:audio :app)
+UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
 usage() { sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
@@ -59,7 +59,7 @@ affected_modules() {
     local base="${1:-}" changed
     [ -n "$base" ] || base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
     changed="$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)"
-    local testing=0 tuner=0 settings=0 metronome=0 practice=0 audio=0 app=0 path
+    local testing=0 tuner=0 settings=0 metronome=0 practice=0 ears=0 audio=0 app=0 path
     while IFS= read -r path; do
         [ -z "$path" ] && continue
         case "$path" in
@@ -68,19 +68,21 @@ affected_modules() {
             feature/settings/src/androidTest/*) settings=1 ;;
             feature/metronome/src/androidTest/*) metronome=1 ;;
             feature/practice/src/androidTest/*) practice=1 ;;
+            feature/eartraining/src/androidTest/*) ears=1 ;;
             core/audio/src/androidTest/*) audio=1 ;;
             app/src/androidTest/*) app=1 ;;
             feature/tuner/*) tuner=1; app=1 ;;
             feature/settings/*) settings=1; app=1 ;;
             feature/metronome/*) metronome=1; app=1 ;;
             feature/practice/*) practice=1; app=1 ;;
-            core/audio/*) audio=1; tuner=1; metronome=1; app=1 ;;
-            core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; metronome=1; practice=1; app=1 ;;
-            core/testing/*) testing=1; tuner=1; settings=1; metronome=1; practice=1; app=1 ;;
+            feature/eartraining/*) ears=1; app=1 ;;
+            core/audio/*) audio=1; tuner=1; metronome=1; ears=1; app=1 ;;
+            core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; metronome=1; practice=1; ears=1; app=1 ;;
+            core/testing/*) testing=1; tuner=1; settings=1; metronome=1; practice=1; ears=1; app=1 ;;
             app/*) app=1 ;;
             baselineprofile/*) ;;
             wear/*) ;; # the watch app: checked on a Wear OS emulator, not on the phone
-            *) testing=1; tuner=1; settings=1; metronome=1; practice=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
+            *) testing=1; tuner=1; settings=1; metronome=1; practice=1; ears=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
         esac
     done <<< "$changed"
     [ $testing = 1 ] && echo :core:testing
@@ -88,6 +90,7 @@ affected_modules() {
     [ $settings = 1 ] && echo :feature:settings
     [ $metronome = 1 ] && echo :feature:metronome
     [ $practice = 1 ] && echo :feature:practice
+    [ $ears = 1 ] && echo :feature:eartraining
     [ $audio = 1 ] && echo :core:audio
     [ $app = 1 ] && echo :app
 }

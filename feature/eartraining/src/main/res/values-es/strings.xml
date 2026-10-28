@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ear_exercises">Ejercicio</string>
+    <string name="ear_exercise_play_back">Repítela</string>
+    <string name="ear_exercise_intervals">Intervalos</string>
+    <string name="ear_exercise_chord_type">Tipo de acorde</string>
+    <string name="ear_replay">Escuchar otra vez</string>
+    <string name="ear_play_prompt">Tócala en tu instrumento</string>
+    <string name="ear_listening">Escuchando…</string>
+    <string name="ear_spoken_heard">Se oye: %1$s</string>
+    <string name="ear_tally">%1$d de %2$d</string>
+    <string name="ear_tally_spoken">%1$d de %2$d bien</string>
+    <string name="ear_choices">Qué se pregunta</string>
+    <string name="ear_notes">Notas</string>
+    <string name="ear_notes_open_strings">Cuerdas al aire</string>
+    <string name="ear_notes_naturals">Notas naturales hasta el traste 5</string>
+    <string name="ear_notes_all">Todas las notas hasta el traste 12</string>
+    <string name="ear_mic_off">Micrófono desactivado</string>
+    <string name="ear_mic_allow">Permitir micrófono</string>
+    <string name="ear_open_settings">Abrir ajustes</string>
+</resources>

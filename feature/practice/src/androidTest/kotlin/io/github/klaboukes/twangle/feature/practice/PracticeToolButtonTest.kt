@@ -76,9 +76,12 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
     private val shownDark = mutableStateOf(false)
     private val shownLocale = mutableStateOf("en")
     private val shownTool = mutableStateOf(PracticeTool.CHORDS)
-    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO)
+    private val tools = listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO, PracticeTool.EAR_TRAINING)
 
-    /** Chords or Scales, or the capo helper with Capo picked; the metronome lives in its own module, so Chords stands in for it. */
+    /**
+     * Chords or Scales, or the capo helper with Capo picked; the metronome and Ear training live in their
+     * own modules, so Chords stands in for them.
+     */
     private fun show() {
         compose.setContent {
             PhoneScreen(shownSize.value, bars(), shownFontScale.value, shownLocale.value) {
@@ -267,7 +270,10 @@ class PracticeToolButtonTest(private val style: VisualStyle) {
         @Parameterized.Parameters(name = "{0}")
         fun styles(): List<VisualStyle> = allIfThorough(VisualStyle.entries, VisualStyle.DEFAULT)
 
-        private val LABELS = mapOf(PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo")
+        private val LABELS = mapOf(
+            PracticeTool.METRONOME to "Metronome", PracticeTool.CHORDS to "Chords", PracticeTool.SCALES to "Scales", PracticeTool.CAPO to "Capo",
+            PracticeTool.EAR_TRAINING to "Ear training",
+        )
 
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L

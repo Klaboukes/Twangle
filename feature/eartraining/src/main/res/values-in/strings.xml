@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ear_exercises">Latihan</string>
+    <string name="ear_exercise_play_back">Mainkan kembali</string>
+    <string name="ear_exercise_intervals">Interval</string>
+    <string name="ear_exercise_chord_type">Jenis akor</string>
+    <string name="ear_replay">Dengarkan lagi</string>
+    <string name="ear_play_prompt">Mainkan di alat musik Anda</string>
+    <string name="ear_listening">Mendengarkan…</string>
+    <string name="ear_spoken_heard">Terdengar: %1$s</string>
+    <string name="ear_tally">%1$d dari %2$d</string>
+    <string name="ear_tally_spoken">%1$d benar dari %2$d</string>
+    <string name="ear_choices">Yang ditanyakan</string>
+    <string name="ear_notes">Nada</string>
+    <string name="ear_notes_open_strings">Senar terbuka</string>
+    <string name="ear_notes_naturals">Nada natural sampai fret 5</string>
+    <string name="ear_notes_all">Semua nada sampai fret 12</string>
+    <string name="ear_mic_off">Mikrofon mati</string>
+    <string name="ear_mic_allow">Izinkan mikrofon</string>
+    <string name="ear_open_settings">Buka setelan</string>
+</resources>

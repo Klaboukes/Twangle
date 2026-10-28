@@ -69,6 +69,8 @@ Topic files:
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
 :feature:practice  Practice tab (Phase 32, behind its switch): the tool button, Chords and Scales (charts, the neck, the
                    drone button), the Capo helper
+:feature:eartraining Ear training (Phase 55, a Practice tool behind its switch): Play it back, Intervals, Chord type;
+                   EarTrainingViewModel, the screen, the choices panel; the one Practice tool that listens
 :core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones, metronome clicks and the drone
                    (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
@@ -91,6 +93,8 @@ Dependencies ("→" = depends on):
 :feature:settings  → :core:settings, :core:designsystem (and through them :core:dsp)
 :feature:metronome → :core:audio, :core:settings, :core:designsystem, :core:dsp
 :feature:practice  → :core:audio (only DronePlayer, playback: no microphone), :core:settings, :core:designsystem, :core:dsp
+:feature:eartraining → :core:audio (TonePlayer, MicPermissionRules; the microphone through PitchListener, which :app
+                     backs with the tuner's PitchPipeline), :core:settings, :core:designsystem, :core:dsp
 :core:designsystem → :core:settings (VisualStyle, ThemeMode), :core:dsp (StrobeMotion for the wave)
 :core:settings     → :core:dsp
 :core:audio        → :core:dsp (api: StringSynth makes the reference tone's samples, ClickTrack the metronome's,
@@ -199,6 +203,10 @@ feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     ScaleNeck, ScaleSpeech, DroneButton, TuningLine, PracticeLayout (practiceLayoutFor),
     CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)
 
+feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartraining/
+    EarTrainingScreen (+ EarTrainingContent, EarTrainingTestTags), EarTrainingViewModel (+ EarTrainingState), Exercise,
+    PitchListener (+ HeardFrame), ChoicesPanel, EarMicPermission (rememberEarMicPermission), EarTrainingIcons
+
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage
     components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
@@ -206,6 +214,7 @@ feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
     TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour, SystemBars,
+    BuildToolSwitches (toolSwitchesFor), TunerPitchListener (Ear training's ears: the tuner's PitchPipeline),
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState

@@ -35,6 +35,11 @@ private fun draw(tool: PracticeTool): ImageVector {
             "M5.75,9.5h12.5a2.25,2.25 0,0 1,0,4.5h-12.5a2.25,2.25 0,0 1,0,-4.5z",
             "M20.3,12.6c1.3,1 1.4,3 0.4,4.4",
         ) to emptyList()
+        // An ear, as the mock-up's (docs/design/ear-training-preview.html): the outer curl down to the lobe, and the inner fold.
+        PracticeTool.EAR_TRAINING -> listOf(
+            "M7,9.5a5,5 0,0 1,10,0c0,3 -2.6,3.8 -3.4,5.8c-0.6,1.6 -0.8,3.2 -2.6,4.2c-1.4,0.7 -3,0 -3.5,-1.2",
+            "M10,10a2,2 0,0 1,4,0c0,1.2 -1.2,1.5 -1.6,2.6",
+        ) to emptyList()
     }
     val builder = ImageVector.Builder(
         name = "practice_" + tool.name.lowercase(),

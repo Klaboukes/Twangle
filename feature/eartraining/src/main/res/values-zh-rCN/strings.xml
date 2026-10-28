@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ear_exercises">练习</string>
+    <string name="ear_exercise_play_back">听音弹奏</string>
+    <string name="ear_exercise_intervals">音程</string>
+    <string name="ear_exercise_chord_type">和弦类型</string>
+    <string name="ear_replay">再听一次</string>
+    <string name="ear_play_prompt">在你的乐器上弹出来</string>
+    <string name="ear_listening">正在聆听…</string>
+    <string name="ear_spoken_heard">听到：%1$s</string>
+    <string name="ear_tally">%1$d / %2$d</string>
+    <string name="ear_tally_spoken">%2$d 题中答对 %1$d 题</string>
+    <string name="ear_choices">出题范围</string>
+    <string name="ear_notes">音</string>
+    <string name="ear_notes_open_strings">空弦</string>
+    <string name="ear_notes_naturals">5 品以内的自然音</string>
+    <string name="ear_notes_all">12 品以内的所有音</string>
+    <string name="ear_mic_off">麦克风已关闭</string>
+    <string name="ear_mic_allow">允许使用麦克风</string>
+    <string name="ear_open_settings">打开设置</string>
+</resources>

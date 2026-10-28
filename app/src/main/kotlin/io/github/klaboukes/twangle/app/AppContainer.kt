@@ -13,6 +13,7 @@ import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
+import io.github.klaboukes.twangle.feature.eartraining.PitchListener
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -49,8 +50,35 @@ class AppContainer(private val appContext: Context) {
         if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
     }
 
+    /**
+     * The microphone for Ear training's Play it back (Phase 55), open only while it is shown and
+     * listening. Its own recorder, as Listen's: the tuner's keeps the microphone 5 s after the tuner
+     * leaves, and one recorder reads on a single thread.
+     */
+    val earTrainingRecorder: AudioRecorder
+        get() = testEarTrainingRecorder ?: earMicRecorder
+
+    private val earMicRecorder: AudioRecorder by lazy {
+        if (BuildConfig.SYNTHETIC_AUDIO) SyntheticAudioRecorder() else AndroidAudioRecorder(appContext)
+    }
+
+    /** A test's stand-in for Ear training's microphone, or null for the real one (see [testAudioRecorder]). */
+    @VisibleForTesting
+    var testEarTrainingRecorder: AudioRecorder? = null
+
+    /** Ear training's ears: the tuner's pipeline on [earTrainingRecorder] (each screen's ViewModel takes one when it is made). */
+    val earTrainingListener: PitchListener
+        get() = TunerPitchListener(earTrainingRecorder)
+
     /** Reference tones (Phase 17). Holds the speaker and audio focus only while a tone sounds. */
-    val tonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
+    val tonePlayer: TonePlayer
+        get() = testTonePlayer ?: referenceTonePlayer
+
+    private val referenceTonePlayer: TonePlayer by lazy { AndroidTonePlayer(appContext) }
+
+    /** A test's silent stand-in for the reference tones and Ear training's questions, or null for the real ones (see [testAudioRecorder]). */
+    @VisibleForTesting
+    var testTonePlayer: TonePlayer? = null
 
     /** The metronome's clicks (Phase 19). Holds the speaker only while it plays, over other apps' music. */
     val metronomePlayer: MetronomePlayer
@@ -79,9 +107,10 @@ class AppContainer(private val appContext: Context) {
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }
 
     /**
-     * Which music tools show (Phase 28): every one, in every build, since they went live in v1.0
-     * (Phase 34). `MainActivity` hands them to the screens. A tool still being built would stay
-     * hidden in release builds here (docs/architecture/performance.md, *Release build*).
+     * Which music tools show (Phase 28): every live one in every build (they went live in v1.0, Phase
+     * 34); a tool still being built, Ear training (Phase 55), only in debug builds until the owner's
+     * check passes ([toolSwitchesFor]; docs/architecture/performance.md, *Release build*).
+     * `MainActivity` hands them to the screens.
      */
-    val toolSwitches: ToolSwitches = ToolSwitches.ALL_ON
+    val toolSwitches: ToolSwitches = toolSwitchesFor(debugBuild = BuildConfig.DEBUG)
 }

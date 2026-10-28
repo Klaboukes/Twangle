@@ -12,7 +12,9 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import io.github.klaboukes.twangle.app.navigation.Destination
 import io.github.klaboukes.twangle.app.navigation.NavigationTestTags
+import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
+import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -23,6 +25,8 @@ import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 import io.github.klaboukes.twangle.core.settings.PracticeTool
+import io.github.klaboukes.twangle.feature.eartraining.EarTrainingTestTags
+import io.github.klaboukes.twangle.feature.eartraining.Exercise
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.practice.PracticeTestTags
 import io.github.klaboukes.twangle.feature.practice.R as PracticeR
@@ -47,7 +51,9 @@ import org.junit.rules.Timeout
  * the Chords tool's chord picked is saved too and comes back with it, and so is the Scales tool's
  * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
  * tapped opens its shape in Chords. The drone on Scales (Phase 48, a silent stand-in here) saves its panel's picks and
- * stops when another tab takes Practice's place or the app goes to the background.
+ * stops when another tab takes Practice's place or the app goes to the background. Ear training (Phase 55,
+ * debug builds only for now, a silent speaker and microphone here) asks its first question at once and
+ * holds the microphone only while it is shown.
  */
 class PracticeTabTest {
 
@@ -62,11 +68,15 @@ class PracticeTabTest {
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val drone = FakeDronePlayer()
+    private val tone = FakeTonePlayer()
+    private val ears = FakeAudioRecorder.silence()
     private var tuningBefore: Tuning? = null
 
     @Before
     fun setUp() {
         container.testDronePlayer = drone
+        container.testTonePlayer = tone
+        container.testEarTrainingRecorder = ears
         runBlocking {
             // The guitar, which every tool draws: a banjo left picked (a phone check) has no chart or neck.
             tuningBefore = container.settingsRepository.settings.first().tuning
@@ -88,6 +98,8 @@ class PracticeTabTest {
     @After
     fun tearDown() {
         container.testDronePlayer = null
+        container.testTonePlayer = null
+        container.testEarTrainingRecorder = null
         runBlocking {
             container.settingsRepository.setDroneSound(DroneSound.TANPURA)
             container.settingsRepository.setDroneVoicing(DroneVoicing.FIFTH)
@@ -186,7 +198,7 @@ class PracticeTabTest {
             click(PracticeTestTags.TOOL_BUTTON)
             assertTrue(
                 "the list has every tool",
-                listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.SCALES, PracticeTool.CAPO).all { shown(PracticeTestTags.tool(it)) },
+                PracticeTool.entries.all { shown(PracticeTestTags.tool(it)) },
             )
             assertTrue("the metronome picked", checked(PracticeTestTags.tool(PracticeTool.METRONOME)))
             click(PracticeTestTags.tool(PracticeTool.CHORDS))
@@ -324,6 +336,32 @@ class PracticeTabTest {
         }
     }
 
+    @Test
+    fun earTrainingAsksAtOnceAndHoldsTheMicrophoneOnlyWhileItIsShown() {
+        ActivityScenario.launch(MainActivity::class.java).use {
+            openPractice()
+            pickTool(PracticeTool.EAR_TRAINING)
+            assertTrue("Ear training shows", shown(EarTrainingTestTags.SCREEN))
+            assertTrue("with its three exercises", Exercise.entries.all { shown(EarTrainingTestTags.exercise(it)) })
+            assertEquals("the pick is saved", PracticeTool.EAR_TRAINING, waitForSaved(PracticeTool.EAR_TRAINING))
+            assertTrue("its first question sounds at once", waitFor { tone.played.size == 1 })
+            assertTrue("in the guitar's voice", tone.voices.single() == Instruments.GUITAR.voice)
+            assertTrue("Play it back listens", waitFor { ears.isRecording.value })
+
+            // Another tool takes its place: the microphone is let go (5 s later, as the tuner's).
+            pickTool(PracticeTool.CHORDS)
+            assertTrue(shown(PracticeTestTags.CHORDS))
+            val end = SystemClock.uptimeMillis() + MIC_RELEASE_MS
+            while (ears.isRecording.value && SystemClock.uptimeMillis() < end) SystemClock.sleep(50)
+            assertFalse("the microphone let go", ears.isRecording.value)
+
+            // Back on it, a new visit asks at once.
+            pickTool(PracticeTool.EAR_TRAINING)
+            assertTrue(shown(EarTrainingTestTags.SCREEN))
+            assertTrue("a new visit asks at once", waitFor { tone.played.size == 2 })
+        }
+    }
+
     private fun savedDrone(): Triple<DroneSound, DroneVoicing, Boolean> =
         runBlocking { container.settingsRepository.settings.first().let { Triple(it.droneSound, it.droneVoicing, it.droneLower) } }
 
@@ -348,5 +386,8 @@ class PracticeTabTest {
     private companion object {
         const val TEST_TIMEOUT_SECONDS = 40L
         const val WAIT_MS = 5_000L
+
+        /** Ear training keeps the microphone 5 s after its screen goes (a turning phone), as the tuner does. */
+        const val MIC_RELEASE_MS = 9_000L
     }
 }

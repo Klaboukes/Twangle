@@ -3,6 +3,7 @@
     <string name="practice_tool_metronome">节拍器</string>
     <string name="practice_tool_chords">和弦</string>
     <string name="practice_tool_scales">音阶</string>
+    <string name="practice_tool_ear_training">练耳</string>
     <string name="practice_tool_button">工具</string>
     <string name="practice_tool_list">工具列表</string>
     <string name="practice_root">根音</string>

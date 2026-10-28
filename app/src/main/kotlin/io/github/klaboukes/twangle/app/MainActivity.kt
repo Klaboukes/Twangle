@@ -60,11 +60,13 @@ import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
+import io.github.klaboukes.twangle.feature.eartraining.EarTrainingScreen
 import io.github.klaboukes.twangle.feature.metronome.MetronomeScreen
 import io.github.klaboukes.twangle.feature.practice.CapoScreen
 import io.github.klaboukes.twangle.feature.practice.ChordsScreen
 import io.github.klaboukes.twangle.feature.practice.DroneChoice
 import io.github.klaboukes.twangle.feature.practice.PracticeToolButton
+import io.github.klaboukes.twangle.feature.practice.ToolAndTuningRow
 import io.github.klaboukes.twangle.feature.practice.practiceToolToOpen
 import io.github.klaboukes.twangle.feature.practice.practiceToolsFor
 import io.github.klaboukes.twangle.feature.settings.AboutScreen
@@ -346,7 +348,9 @@ class MainActivity : AppCompatActivity() {
      * button in Chords and the capo helper opens the instrument and tuning panel over the tool
      * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
      * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
-     * drone itself when it goes.
+     * drone itself when it goes. Ear training (Phase 55, behind its own switch, on in debug builds only
+     * until it goes live) gets the reference tones and its own microphone through the tuner's pipeline
+     * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo.
      */
     @Composable
     private fun PracticeTab(
@@ -452,6 +456,25 @@ class MainActivity : AppCompatActivity() {
                     // The banjo's short fifth string: the capo table opens shapes Chords doesn't draw for it yet.
                     shortString = settings.tuning.hasShortString,
                 )
+                PracticeTool.EAR_TRAINING -> {
+                    // The volume keys set the questions' loudness (the media volume).
+                    MediaVolumeKeys()
+                    EarTrainingScreen(
+                        listener = container.earTrainingListener,
+                        tonePlayer = container.tonePlayer,
+                        settingsRepository = container.settingsRepository,
+                        notation = settings.notationFor(appLanguage()),
+                        header = {
+                            ToolAndTuningRow(
+                                toolButton = header ?: {},
+                                tuningName = practiceTuningName(settings),
+                                spokenTuningName = spokenTuning(settings),
+                                onPickInstrument = openPanel,
+                            )
+                        },
+                        savedSettings = settings,
+                    )
+                }
             }
         }
     }

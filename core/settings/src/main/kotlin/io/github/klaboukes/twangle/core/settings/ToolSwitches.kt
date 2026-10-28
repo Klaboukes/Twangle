@@ -4,7 +4,8 @@ package io.github.klaboukes.twangle.core.settings
  * Which tools the app shows, one switch per tool: each tuner tool and each Practice tool. The music
  * tools (ROADMAP Phases 29–33) landed on `main` hidden in release builds while they were built (Phase
  * 28) and went live in v1.0 (Phase 34), so `:app` (`AppContainer.toolSwitches`) now turns every one on
- * in every build and hands them down to the screens and ViewModels. Every tool keeps its switch once
+ * in every build (but Ear training, Phase 55, still being built: debug builds only) and hands them
+ * down to the screens and ViewModels. Every tool keeps its switch once
  * live (owner, 2026-10-28): if a tool goes wrong on players' phones, a quick release with its switch
  * off hides it while the fix is made. A tool whose switch is off leaves no trace on screen: no mode,
  * tab, setting, tour step or text; the JVM tests check that with [ALL_OFF]. What lives only inside a
@@ -31,6 +32,11 @@ data class ToolSwitches(
     val scales: Boolean,
     /** Phase 33: the capo helper, in Practice, so only with [practiceTab] and [chords]. */
     val capoHelper: Boolean,
+    /**
+     * Phase 55: Ear training, in Practice, so only with [practiceTab]. Still being built: on in debug
+     * builds, off in release builds until the owner's check passes (`AppContainer.toolSwitches`).
+     */
+    val earTraining: Boolean,
 ) {
     /** Every switch by name, so a test can check them all (ToolSwitchesTest keeps it complete). */
     val byName: Map<String, Boolean>
@@ -43,19 +49,20 @@ data class ToolSwitches(
             "chords" to chords,
             "scales" to scales,
             "capoHelper" to capoHelper,
+            "earTraining" to earTraining,
         )
 
     companion object {
-        /** Every tool shows: every build, and the default of the ViewModels' tests. */
+        /** Every tool shows: debug builds, and the default of the ViewModels' tests. */
         val ALL_ON = ToolSwitches(
             strumCheck = true, intonationCheck = true, chordNaming = true, pitchTrail = true,
-            practiceTab = true, chords = true, scales = true, capoHelper = true,
+            practiceTab = true, chords = true, scales = true, capoHelper = true, earTraining = true,
         )
 
         /** Every tool hidden: tests that a tool switched off leaves no trace. */
         val ALL_OFF = ToolSwitches(
             strumCheck = false, intonationCheck = false, chordNaming = false, pitchTrail = false,
-            practiceTab = false, chords = false, scales = false, capoHelper = false,
+            practiceTab = false, chords = false, scales = false, capoHelper = false, earTraining = false,
         )
     }
 }

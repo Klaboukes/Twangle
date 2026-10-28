@@ -191,6 +191,9 @@ enum class PracticeTool {
 
     /** The capo helper (Phase 33, with its own switch, [ToolSwitches.capoHelper]). */
     CAPO,
+
+    /** Ear training (Phase 55, with its own switch, [ToolSwitches.earTraining]): Play it back, Intervals and Chord type. */
+    EAR_TRAINING,
     ;
 
     companion object {

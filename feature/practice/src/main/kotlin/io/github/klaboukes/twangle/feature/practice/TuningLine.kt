@@ -109,10 +109,11 @@ internal fun TuningLine(
  * docs/design/tool-button-preview.html): the tool button ([toolButton], [TOOL_BUTTON_WIDTH] wide)
  * at the start, then the instrument and tuning line ([TuningLine]) in the room left, its name on up
  * to two lines. Where even two lines can't hold the name without breaking a word (a 320 dp phone at
- * 2× text), the tuning line goes on a line of its own under the button, at the start too.
+ * 2× text), the tuning line goes on a line of its own under the button, at the start too. Public for
+ * the tools of other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
  */
 @Composable
-internal fun ToolAndTuningRow(
+fun ToolAndTuningRow(
     toolButton: @Composable () -> Unit,
     tuningName: String,
     spokenTuningName: String,
