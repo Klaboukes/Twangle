@@ -38,6 +38,11 @@ OTHER_REPOS = ("twangle-privacy/",)
 PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle"
 EMAIL = "twangle.tuner@proton.me"
 
+# The owner's Buy Me a Coffee page, once they have made one (ROADMAP.md, *Waiting on the owner*).
+# While it is empty, the footer's link and the home page's data-coffee line stay out, so no link
+# is ever broken (as Help stays out until help.html exists).
+COFFEE_URL = ""
+
 # The words of the shared frame, per language. Page text lives in the pages themselves.
 WORDS = {
     "en": {
@@ -49,6 +54,7 @@ WORDS = {
         "privacy": "Privacy",
         "privacy_page": "twangle-privacy/",
         "made_by": "Made by one person. Free forever.",
+        "coffee": "Buy me a coffee",
         "trademark": "Google Play and the Google Play logo are trademarks of Google LLC.",
         "skip": "Skip to the page",
     },
@@ -61,6 +67,7 @@ WORDS = {
         "privacy": "Privacy",
         "privacy_page": "twangle-privacy/nl.html",
         "made_by": "Gemaakt door één persoon. Voor altijd gratis.",
+        "coffee": "Trakteer me op een koffie",
         "trademark": "Google Play en het Google Play-logo zijn handelsmerken van Google LLC.",
         "skip": "Naar de pagina",
     },
@@ -90,7 +97,7 @@ FRAME = """<!doctype html>
 </div></main>
 
 <footer><div class="wrap">
-  <span>{made_by}</span>
+  <span>{made_by}{coffee}</span>
   {footer_links}<a href="{other_href}" hreflang="{other_lang}" lang="{other_lang}">{other_name}</a><a href="mailto:{email}">{email}</a>
   <small>{trademark}</small>
 </div></footer>
@@ -153,6 +160,18 @@ def tool_cards(body, exists):
     return CARD.sub(card, body)
 
 
+COFFEE_LINE = re.compile(r"[ \t]*<(\w+)[^>]* data-coffee>.*?</\1>\n?", re.S)
+
+
+def coffee_line(body):
+    """A block marked data-coffee (the home page's line about buying a coffee, with {coffee} for the
+    address; the mark is the element's last attribute) stays out until COFFEE_URL names the owner's
+    page, so no link is ever broken. Once it does, the mark goes and {coffee} becomes the address."""
+    if not COFFEE_URL:
+        return COFFEE_LINE.sub("", body)
+    return COFFEE_LINE.sub(lambda m: m.group(0).replace(" data-coffee", "", 1), body).replace("{coffee}", COFFEE_URL)
+
+
 def build(out):
     if out.exists():
         shutil.rmtree(out)
@@ -192,9 +211,10 @@ def build(out):
                 other_href=href(root, LANGUAGES[other], name),
                 other_lang=other,
                 other_name=WORDS[other]["language_name"],
-                body=tool_cards(body, lambda n: (PAGES / lang / n).exists())
+                body=coffee_line(tool_cards(body, lambda n: (PAGES / lang / n).exists()))
                 .replace("{play}", PLAY_URL).replace("{root}", root),
                 made_by=w["made_by"],
+                coffee=' <a href="{}">{}</a>'.format(COFFEE_URL, w["coffee"]) if COFFEE_URL else "",
                 footer_links="".join(footer),
                 email=EMAIL,
                 trademark=w["trademark"],

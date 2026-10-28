@@ -58,6 +58,8 @@ p { margin: 0 0 14px; }
 .tools a b::after { content: " →"; color: var(--accent); }
 .tools a:hover, .tools a:focus-visible { background: var(--container); }
 .group { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
+/* Home, at the end: the line about buying the maker a coffee (build.py leaves it out until the owner's page exists) */
+.support { background: var(--container); border-radius: 14px; padding: 16px 18px; margin-top: 36px; }
 
 /* Tool page: text column with the screenshot beside it */
 .crumb { font-size: 15px; color: var(--muted); margin-bottom: 10px; }
