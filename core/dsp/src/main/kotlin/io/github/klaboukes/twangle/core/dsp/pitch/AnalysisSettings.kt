@@ -52,19 +52,23 @@ data class AnalysisSettings(
      */
     fun newSustainCheck(): SustainCheck = SustainCheck(maxOf(hopSize, ceil(sampleRate / minFrequencyHz).toInt()))
 
-    /** A pitch detector for frames of [windowSize] samples at [sampleRate]: YIN, upsampled if needed. */
-    fun newPitchDetector(): PitchDetector {
-        if (upsampleFactor == 1) return yin(windowSize)
+    /**
+     * A pitch detector for frames of [windowSize] samples at [sampleRate]: YIN, upsampled if needed.
+     * [refineOnLowestPartials] as [YinPitchDetector] has it: on for the tuner.
+     */
+    fun newPitchDetector(refineOnLowestPartials: Boolean = true): PitchDetector {
+        if (upsampleFactor == 1) return yin(windowSize, refineOnLowestPartials)
         val halfTaps = UPSAMPLER_HALF_TAPS
-        return UpsamplingPitchDetector(upsampleFactor, yin((windowSize - 2 * halfTaps) * upsampleFactor), halfTaps)
+        return UpsamplingPitchDetector(upsampleFactor, yin((windowSize - 2 * halfTaps) * upsampleFactor, refineOnLowestPartials), halfTaps)
     }
 
-    private fun yin(window: Int) = YinPitchDetector(
+    private fun yin(window: Int, refineOnLowestPartials: Boolean) = YinPitchDetector(
         sampleRate = analysisRate,
         windowSize = window,
         minFrequencyHz = minFrequencyHz,
         maxFrequencyHz = maxFrequencyHz,
         lowPassHz = lowPassHz,
+        refineOnLowestPartials = refineOnLowestPartials,
     )
 
     companion object {

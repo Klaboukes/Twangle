@@ -1,15 +1,17 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.sqrt
 
 /**
  * The YIN fundamental-frequency estimator (de Cheveigné & Kawahara 2002, "YIN, a fundamental
- * frequency estimator for speech and music", JASA 111(4)), steps 2–5, plus a low-pass pre-filter
- * and a noise-robust period refinement:
+ * frequency estimator for speech and music", JASA 111(4)), steps 2–5, plus a low-pass pre-filter,
+ * a noise-robust period refinement and a second refinement on the lowest partials for stiff strings:
  *
  * 1. pre-filter: 4th-order Butterworth low-pass at [lowPassHz] into a scratch buffer (the caller's
  *    frame is not modified). This keeps the dip of `d(τ)` smooth at the sample scale even for very
@@ -36,6 +38,16 @@ import kotlin.math.sqrt
  *    (bright tone) uses k = 1, the classic 3-point parabolic interpolation. A broad dip (pure, low
  *    note) uses up to τ/16 lags on each side, which averages out the noise that would otherwise
  *    swamp its very shallow curvature.
+ * 6. the same refinement again on the note's lowest partials ([refineOnLowestPartials]). A real
+ *    string is stiff: partial k sits at `k·f0·√(1 + B·k²)` (Fletcher 1964), sharp of `k·f0`, and
+ *    step 5, which uses the whole waveform, is pulled sharp with them, by several cents just after a
+ *    hard pick on a low string. So the frame is limited to below about 3.5·f0 (partials 1 and 2,
+ *    and the 3rd faintly) through the spectrum [FftDifference] already holds, and the minimum of
+ *    that band's difference function is found near τ, at a few lags, with the same cubic fit. The
+ *    whole period τ and every octave decision of step 4 stay as they were. It counts in full for a
+ *    note that rings on; less while the window still holds the attack, where it strays; and not
+ *    where the band itself doesn't repeat at τ (a chord whose notes aren't all this note's
+ *    partials, mains hum under a low string), which step 5 reads better.
  *
  * Lags are searched from `sampleRate / maxFrequencyHz` to `sampleRate / minFrequencyHz`. A few
  * extra lags past that give the refinement room on the right. The integration window `W` is the
@@ -54,6 +66,12 @@ class YinPitchDetector(
     val maxFrequencyHz: Float = DEFAULT_MAX_FREQUENCY_HZ,
     val threshold: Float = DEFAULT_THRESHOLD,
     val lowPassHz: Float = DEFAULT_LOW_PASS_HZ,
+    /**
+     * Whether step 6 runs. Without it a sound reads at the period of its whole waveform, which suits
+     * a sustained sound of detuned voices (a drone's reeds or chorus) better than a stiff string: a
+     * few partials follow their slow beating, and lean towards the louder voice, more than all of them.
+     */
+    val refineOnLowestPartials: Boolean = true,
 ) : PitchDetector {
 
     private val tauMin: Int
@@ -92,6 +110,11 @@ class YinPitchDetector(
     private val differenceFunction = FftDifference(integrationLength, lastLag)
     private val normalized = DoubleArray(lastLag + 1)
 
+    // The band-limited refinement's gains per FFT bin and its d̃(τ) (only the lags it needs).
+    private val bandGains = DoubleArray(differenceFunction.size / 2 + 1)
+    private val bandDifference = DoubleArray(lastLag + 1)
+    private var bandClarity = 0.0
+
     override fun detect(frame: FloatArray): PitchResult {
         require(frame.size >= windowSize) { "Frame must hold $windowSize samples, was ${frame.size}" }
         lowPass.process(frame, filtered, windowSize)
@@ -101,7 +124,8 @@ class YinPitchDetector(
         if (firstDip < 0) return PitchResult.NONE
         val tau = checkLongerPeriods(checkShorterPeriods(firstDip))
         if (isAboveRange(tau)) return PitchResult.NONE
-        val period = tau + refineOffset(tau)
+        val wholePeriod = tau + refineOffset(tau)
+        val period = if (refineOnLowestPartials) lowestPartialsPeriod(tau, wholePeriod) else wholePeriod
         val confidence = (1.0 - normalized[tau]).coerceIn(0.0, 1.0)
         return PitchResult.of((sampleRate / period).toFloat(), confidence.toFloat())
     }
@@ -244,7 +268,88 @@ class YinPitchDetector(
         val maxHalfWidth = minOf(tau - 1, lastLag - tau, max(1, (tau * FIT_MAX_FRACTION).toInt()))
         var k = 1
         while (k < maxHalfWidth && difference[tau - k - 1] <= level && difference[tau + k + 1] <= level) k++
-        return fitMinimum(tau, k)
+        return fitMinimum(difference, tau, k)
+    }
+
+    // Step 6. The period from the note's lowest partials, counting as much as settledWeight and the
+    // band's clarity allow; [whole], step 5's period, where it doesn't count at all.
+    private fun lowestPartialsPeriod(tau: Int, whole: Double): Double {
+        val settled = settledWeight()
+        if (settled == 0.0) return whole
+        val banded = bandLimitedPeriod(tau)
+        return if (banded.isNaN()) whole else whole + settled * bandClarity * (banded - whole)
+    }
+
+    // How much the lowest partials' period counts as far as the attack goes: fully for a note that
+    // decays or holds steady over the window, not at all once its first half is ATTACK_MARGIN quieter
+    // than its second (the window holds the attack, where that period strays by up to 20 cents), and
+    // linearly in between.
+    private fun settledWeight(): Double {
+        val half = integrationLength / 2
+        var first = 0.0
+        var second = 0.0
+        for (j in 0 until half) {
+            val a = filtered[settle + j].toDouble()
+            val b = filtered[settle + half + j].toDouble()
+            first += a * a
+            second += b * b
+        }
+        if (!(second > 0.0)) return 0.0
+        return ((first / second - (1 - ATTACK_MARGIN)) / ATTACK_MARGIN).coerceIn(0.0, 1.0)
+    }
+
+    // Step 5 again, on the note's lowest partials: the sound limited to below about BAND_STOP × f0
+    // (gains 1 up to BAND_PASS × f0, then a raised-cosine fall), its tapered difference function at
+    // the lags around τ, and the sub-sample minimum of that by the same cubic fit. Sets bandClarity.
+    // NaN where there is no such minimum near τ.
+    private fun bandLimitedPeriod(tau: Int): Double {
+        val n = differenceFunction.size
+        val f0Bin = n.toDouble() / tau
+        val passBin = BAND_PASS * f0Bin
+        val stopBin = BAND_STOP * f0Bin
+        val bins = minOf(n / 2 - FftDifference.TAPER_ORDER - 1, ceil(stopBin).toInt())
+        for (k in 1 until bins) {
+            bandGains[k] = if (k <= passBin) 1.0 else {
+                val c = cos(PI / 2 * (k - passBin) / (stopBin - passBin))
+                c * c
+            }
+        }
+        differenceFunction.selectBand(bandGains, bins)
+        // d_g(τ) = e_g(0) + e_g(τ) − 2 r_g(τ), the tapered difference function of the band-limited
+        // sound. Its energy e_g(0) is r_g(0); how e_g changes with the lag (the sound's decay or onset)
+        // is taken from the whole sound's tapered energy, at either end of the lags fitted and linear
+        // in between.
+        val e0 = differenceFunction.bandCorrelation(0)
+        val reach = ceil(tau * (FIT_MAX_FRACTION + BAND_SEARCH_FRACTION)).toInt() + 2
+        val lo = max(1, tau - reach)
+        val hi = minOf(lastLag, tau + reach)
+        val whole = differenceFunction.taperedEnergy(filtered, settle, 0)
+        if (!(e0 > 0.0 && whole > 0.0)) return Double.NaN
+        val eLo = e0 * differenceFunction.taperedEnergy(filtered, settle, lo) / whole
+        val eHi = e0 * differenceFunction.taperedEnergy(filtered, settle, hi) / whole
+        for (lag in lo..hi) {
+            val shifted = eLo + (eHi - eLo) * (lag - lo) / (hi - lo)
+            bandDifference[lag] = e0 + shifted - 2 * differenceFunction.bandCorrelation(lag)
+        }
+        var t = tau
+        while (t > lo + 1 && bandDifference[t - 1] < bandDifference[t]) t--
+        while (t < hi - 1 && bandDifference[t + 1] < bandDifference[t]) t++
+        if (t <= lo + 1 || t >= hi - 1) return Double.NaN
+        val dip = bandDifference[t]
+        // d̃'s mean over a period: the energies, as the correlation averages out.
+        val mean = e0 + eLo + (eHi - eLo) * (t - lo) / (hi - lo)
+        // A band that doesn't repeat at this period has no clean dip, and its period is not this
+        // note's: a chord or drone whose notes aren't all partials of this one, or mains hum under a
+        // low string. A note's own band, even 10 dB above white noise, leaves well under 1 % of the
+        // mean of d̃ at the dip; hum 10 dB under a low string, 10–20 %; a tanpura read at its root,
+        // whose Pa isn't a partial of it, 30 %.
+        bandClarity = ((CLARITY_OFF - dip / mean) / (CLARITY_OFF - CLARITY_ON)).coerceIn(0.0, 1.0)
+        if (bandClarity == 0.0) return Double.NaN
+        val level = dip + FIT_LEVEL * (mean - dip)
+        val maxHalfWidth = minOf(t - lo - 1, hi - t - 1, max(1, (t * FIT_MAX_FRACTION).toInt()))
+        var k = 1
+        while (k < maxHalfWidth && bandDifference[t - k - 1] <= level && bandDifference[t + k + 1] <= level) k++
+        return t + fitMinimum(bandDifference, t, k)
     }
 
     // Minimum of the least-squares cubic y = c + b·i + a·i² + e·i³ through d(tau + i), i in −k..k.
@@ -254,7 +359,7 @@ class YinPitchDetector(
     // A plain parabola would turn that into a bias of a few tenths of a cent on low notes.
     // For k = 1 there are only three points, so e = 0 and this is the usual 3-point parabola
     // (y₋₁ − y₁) / (2(y₋₁ − 2y₀ + y₁)).
-    private fun fitMinimum(tau: Int, k: Int): Double {
+    private fun fitMinimum(difference: DoubleArray, tau: Int, k: Int): Double {
         val n = 2.0 * k + 1
         var s2 = 0.0
         var s4 = 0.0
@@ -337,5 +442,23 @@ class YinPitchDetector(
         // A dip floor under 0.2 % of the mean of d is a tone repeating at that lag: the interpolated
         // floor of a clean tone's dip is accurate to about 0.02 % (4 kHz low-pass, at 48 kHz).
         private const val LONGER_PERIOD_MIN_FLOOR = 0.002
+
+        // The lowest partials: gains 1 up to 2 × f0 and down to 0 at 3.5 × f0 (a raised cosine), so
+        // partials 1 and 2 pass whole and the 3rd at a quarter of its level. A low E picked hard at three times
+        // the usual stiffness reads +0.6 cents at 0.5 s from them, against +6 from the whole sound.
+        private const val BAND_PASS = 2.0
+        private const val BAND_STOP = 3.5
+
+        // The band's minimum may lie a little from τ: a stiff string's whole-sound period is up to
+        // ≈ 1 % short just after the pick. Lags that far plus the fit's are worked out.
+        private const val BAND_SEARCH_FRACTION = 0.02
+
+        // A window whose first half is 10 % quieter than its second holds the attack.
+        private const val ATTACK_MARGIN = 0.1
+
+        // The band's dip floor, as a share of its mean, up to which its period counts in full
+        // (CLARITY_ON) and from which it doesn't count (CLARITY_OFF).
+        private const val CLARITY_ON = 0.03
+        private const val CLARITY_OFF = 0.06
     }
 }

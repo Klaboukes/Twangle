@@ -12,6 +12,7 @@ import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchDetector
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.TunerChain
+import io.github.klaboukes.twangle.core.dsp.strum.StrumChords
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -150,6 +151,38 @@ class IntonationTest {
         }
     }
 
+    @Test
+    fun `a well set-up guitar with stiff strings is fine on every string, picked or plucked with a finger`() {
+        // Half the string's length is four times its inharmonicity B, so the 12th fret's partials
+        // sit further sharp than the open string's. Read the way the check reads (the tuner chain,
+        // then SettledPitch's steady median), a picked low E used to come out +4.3 cents: "move the
+        // saddle back". The fundamentals themselves are an octave apart within half a cent.
+        val chain = TunerChain()
+        for ((touch, gain) in TOUCHES) for ((string, note) in Tunings.STANDARD.strings.withIndex()) {
+            val openHz = mapper.frequencyOf(note)
+            val b = STRING_STIFFNESS[string]
+            val open = settledStiff(chain, openHz, b, gain)
+            val fret = settledStiff(chain, 2 * openHz, 4 * b, gain)
+            val result = Intonation.check(open, fret)
+            assertEquals("$touch-plucked $note: $result", FINE, result.verdict)
+            assertTrue("$touch-plucked $note: $result", abs(result.offsetCents) <= Intonation.DEFAULT_TOLERANCE_CENTS)
+        }
+    }
+
+    /** What [SettledPitch] takes from the tuner chain for a stiff string at [hz] plucked hard or softly. */
+    private fun settledStiff(chain: TunerChain, hz: Float, b: Double, gain: (Int) -> Double): Float {
+        val pluck = StrumChords.stiffStrum(
+            floatArrayOf(hz), length = 2 * TestSignals.SAMPLE_RATE, inharmonicity = doubleArrayOf(b),
+            harmonicGain = { _, k -> gain(k) }, fromSeconds = 0.0,
+        )
+        val settled = SettledPitch(chain.settings.hopSeconds)
+        for (frame in chain.run(pluck)) {
+            if (settled.update(if (frame.isShown) mapper.midiOf(frame.shownHz) else Float.NaN)) break
+        }
+        assertTrue("no settled pitch for $hz Hz at B = $b", settled.done)
+        return mapper.frequencyOf(settled.midi)
+    }
+
     /** The median of what the tuner shows over 1.5 s of a pluck, as the mode will read a step. */
     private fun settled(chain: TunerChain, hz: Float): Float {
         val shown = chain.run(TestSignals.pluck(hz, length = 72_000, decaySeconds = 1.0))
@@ -193,5 +226,14 @@ class IntonationTest {
         /** Two readings, each within the ±1 cent target, measured well inside it. */
         const val READING_ERROR_CENTS = 1f
         const val MAX_DETECTED_HZ = 1500f
+
+        /** The open strings' inharmonicity B, low E to high E, as the strum tests assume. */
+        val STRING_STIFFNESS = doubleArrayOf(1.5e-4, 1e-4, 6e-5, 4e-5, 3e-5, 2e-5)
+
+        /** Partial k's starting level: a pick's sharp attack (1/k) or a finger's soft one (1/k²). */
+        val TOUCHES: Map<String, (Int) -> Double> = mapOf(
+            "pick" to { k -> 1.0 / k },
+            "finger" to { k -> 1.0 / (k * k) },
+        )
     }
 }

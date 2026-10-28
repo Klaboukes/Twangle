@@ -1,8 +1,10 @@
 package io.github.klaboukes.twangle.core.dsp.pitch
 
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.music.centsBetween
 import io.github.klaboukes.twangle.core.dsp.music.nearestNote
+import io.github.klaboukes.twangle.core.dsp.strum.StrumChords
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -10,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * Real-world edge cases (ROADMAP phase 5), each fed through the whole chain the app runs (frame
@@ -105,6 +108,34 @@ class EdgeCaseTest {
         for (snr in listOf(99f, 30f, 20f, 10f)) {
             for (tone in listOf(TestSignals.sine(392f), TestSignals.sawtooth(392f), TestSignals.weakFundamental(392f))) {
                 assertWithin("G4 at $snr dB", 392f, yin.detect(TestSignals.withNoise(tone, snr, seed = 3)), 5f)
+            }
+        }
+    }
+
+    // ---- Stiff strings ----
+
+    @Test
+    fun `a stiff string reads its fundamental within 1 cent half a second and a second after the pluck`() {
+        // A real string's partial k sits at k·f·√(1 + B·k²) (Fletcher 1964), sharp of k·f, and the
+        // whole waveform used to pull the reading sharp with them: the low E plucked hard read +3.6
+        // cents at 0.5 s. Every string of the standard tuning at the strum tests' stiffness and at
+        // three times it, plucked with a pick (partials at 1/k) and a finger (1/k²).
+        val standard = Tunings.STANDARD.strings.map { mapper.frequencyOf(it) }
+        for (stiffer in listOf(1.0, 3.0)) for ((touch, gain) in TOUCHES) for ((string, f) in standard.withIndex()) {
+            val b = STRING_STIFFNESS[string] * stiffer
+            val pluck = StrumChords.stiffStrum(
+                floatArrayOf(f), length = 3 * RATE / 2, inharmonicity = doubleArrayOf(b),
+                harmonicGain = { _, k -> gain(k) }, fromSeconds = 0.0,
+            )
+            val frames = TunerChain().run(pluck)
+            // Partial 1 itself, as StrumDetectorTest defines a stiff string's fundamental.
+            val fundamental = (f * sqrt(1 + b)).toFloat()
+            for (seconds in listOf(0.5f, 1f)) {
+                val frame = frames.first { it.endSample >= seconds * RATE }
+                val at = "$touch-plucked ${Tunings.STANDARD.strings[string]} at B = $b, $seconds s after the pluck"
+                assertTrue("$at: nothing shown", frame.isShown)
+                val error = NoteMapper.centsBetween(frame.shownHz, fundamental)
+                assertTrue("$at: off by $error cents", abs(error) <= 1f)
             }
         }
     }
@@ -298,6 +329,18 @@ class EdgeCaseTest {
 
         /** Drop D low string to the high E string's 12th fret and beyond. */
         val GUITAR_RANGE = listOf(73.42f, 82.41f, 110f, 196f, 246.94f, 329.63f, 493.88f, 659.26f, 1046.5f)
+
+        /**
+         * Inharmonicity B of the standard tuning's strings, low E to high E, as the strum tests
+         * assume (`StrumDetectorTest`): a wound low E is the stiffest.
+         */
+        val STRING_STIFFNESS = doubleArrayOf(1.5e-4, 1e-4, 6e-5, 4e-5, 3e-5, 2e-5)
+
+        /** Partial k's starting level: a pick's sharp attack (1/k) or a finger's soft one (1/k²). */
+        val TOUCHES: Map<String, (Int) -> Double> = mapOf(
+            "pick" to { k -> 1.0 / k },
+            "finger" to { k -> 1.0 / (k * k) },
+        )
 
         const val CLICK_PEAK = 0.9f
 

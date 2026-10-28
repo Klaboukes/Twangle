@@ -55,11 +55,14 @@ internal object DroneMeasures {
      * What the app's own detector reads from [x] every 0.1 s over [span], each in cents from [rootHz]
      * folded into the octave and taken to the nearer of the drone's two pitch classes, the root and
      * the pure fifth (the tanpura's Pa is the fifth's pitch class): readings of any octave of either
-     * count. Unpitched frames are left out.
+     * count. Unpitched frames are left out. It reads at the period of the whole waveform, without the
+     * refinement on the lowest partials, which is for stiff strings: a few partials of the harmonium's
+     * two reeds or the pad's five voices follow their slow beating and lean towards the louder voice
+     * (the harmonium's fifth reads about −1 cent even over 30 s), where all of them average it out.
      */
     fun readings(x: FloatArray, rate: Int, rootHz: Double, span: IntRange): List<Double> {
         val settings = AnalysisSettings.forSampleRate(rate, PitchRange.forLowestNote((rootHz / 4).toFloat().coerceAtLeast(20f)))
-        val detector = settings.newPitchDetector()
+        val detector = settings.newPitchDetector(refineOnLowestPartials = false)
         val window = FloatArray(settings.windowSize)
         val fifth = 1200 * log2(1.5)
         return (span.first until span.last - settings.windowSize step rate / 10).mapNotNull { from ->

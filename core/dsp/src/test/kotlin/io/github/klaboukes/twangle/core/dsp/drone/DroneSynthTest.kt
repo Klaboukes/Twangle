@@ -91,7 +91,7 @@ class DroneSynthTest {
             val x = steady(Drone(root, sound, DroneVoicing.ROOT, lower = true), 4.0)
             val settings = AnalysisSettings.forSampleRate(rate, PitchRange.LOW)
             val window = x.copyOfRange(seconds(2.5), seconds(2.5) + settings.windowSize)
-            val reading = settings.newPitchDetector().detect(window)
+            val reading = settings.newPitchDetector(refineOnLowestPartials = false).detect(window)
             assertTrue("$sound unpitched", reading.isPitched)
             assertEquals("$sound", 0.0, 1200 * log2(reading.frequencyHz / (root / 2.0)), 1.0)
         }

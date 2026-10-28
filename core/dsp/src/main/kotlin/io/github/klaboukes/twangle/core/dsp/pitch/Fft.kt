@@ -34,6 +34,12 @@ internal class Fft(val size: Int) {
     /** `x[j] = Σ_k X[k] · e^(+2πi·jk/N)`, in place and unscaled: the result is N times the original. */
     fun inverse(re: DoubleArray, im: DoubleArray) = transform(re, im, sign = 1.0)
 
+    /** `cos(2π·m / size)` for m in 0 until size, from the table. */
+    fun cosOf(m: Int): Double = if (m < size / 2) cosTable[m] else -cosTable[m - size / 2]
+
+    /** `sin(2π·m / size)` for m in 0 until size, from the table. */
+    fun sinOf(m: Int): Double = if (m < size / 2) sinTable[m] else -sinTable[m - size / 2]
+
     private fun transform(re: DoubleArray, im: DoubleArray, sign: Double) {
         require(re.size >= size && im.size >= size) { "Arrays must hold $size values" }
         for (i in 0 until size) {
