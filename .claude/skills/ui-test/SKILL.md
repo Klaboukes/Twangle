@@ -19,7 +19,7 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 | Iterating on one test or a few | `scripts/ui-tests.sh :feature:tuner -c TunerContentTest#someTest` | ~15 s | 120000 |
 | Iterating on one area | `scripts/ui-tests.sh :feature:tuner -f 'Tip\|Hint'` | ~30 s | 180000 |
 | **Once before landing** (when the owner hasn't left UI tests for the night) | `scripts/ui-tests.sh` (the modules this branch touches, default style) | 1–3 min | 300000 |
-| Build files or version catalog changed | `scripts/ui-tests.sh --all` | ~3 min | 300000 |
+| Build files or version catalog changed | `scripts/ui-tests.sh`, as above: it widens to the modules a build file touches by itself. Never `--all` by day; every module runs in the overnight run (owner, 2026-10-28) | 1–5 min | 420000 |
 | Before a release (the [release skill](../release/SKILL.md)) | `scripts/ui-tests.sh --since-pass`: the modules changed since they last passed whole on this PC | 0–5 min | 420000 |
 | Every style, every double check | only in the overnight run: `scripts/overnight-ui-tests.sh` (the [overnight-run skill](../overnight-run/SKILL.md)), never during the day | ~1½ h | in the background |
 | Texts changed or added (any language) | `scripts/ui-tests.sh <module> --languages -f 'everyLanguage'` (default style, English and Dutch only) | ~1 min per module | 300000 |
