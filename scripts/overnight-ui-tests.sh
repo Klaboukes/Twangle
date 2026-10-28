@@ -92,8 +92,8 @@ if [ $languages = 1 ]; then
     done
 fi
 if [ $store = 1 ]; then
-    wait_cool | tee -a "$OUT/store.txt"
     echo "== Store screenshots in every language ($(date +%H:%M))" | tee "$OUT/store.txt"
+    wait_cool | tee -a "$OUT/store.txt"
     scripts/store-screenshots.sh 2>&1 | tee -a "$OUT/store.txt"
     [ "${PIPESTATUS[0]}" = 0 ] || status=1
 fi

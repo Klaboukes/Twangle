@@ -71,7 +71,7 @@ data class AnalysisSettings(
         /** Lowest supported rate: Bluetooth narrowband (CVSD) audio. */
         const val MIN_SAMPLE_RATE = 8_000
 
-        /** Highest supported rate. Above it the direct difference function would cost too much. */
+        /** Highest supported rate, the highest the tests check (every rate from 8 to 96 kHz within 1 cent). */
         const val MAX_SAMPLE_RATE = 96_000
 
         /** Rates below this are upsampled to at least this rate before YIN. */

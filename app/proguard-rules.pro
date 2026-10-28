@@ -14,3 +14,10 @@
 -keepclassmembers enum io.github.klaboukes.twangle.core.settings.InTuneEffect { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.Meter { public static final ** *; }
 -keepclassmembers enum io.github.klaboukes.twangle.core.dsp.music.Notation { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.metronome.ClickSound { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.settings.PracticeTool { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.music.PitchClass { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.chord.ChordQuality { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.scale.ScaleType { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.drone.DroneSound { public static final ** *; }
+-keepclassmembers enum io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing { public static final ** *; }

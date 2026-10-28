@@ -19,7 +19,7 @@ Finish every remaining ☐ item of phase N in this session. This session is the 
 
 **Sub-agent prompt** (fill in the angle brackets):
 ```
-You are doing ONE increment of the Twangle roadmap, end to end, in C:\source\Twangle.
+You are doing ONE increment of the Twangle roadmap, end to end, in <this machine's repo root: the working directory, D:\source\Twangle on the desktop>.
 Increment: phase <N>, "<roadmap item text>" (<plain-language goal, as announced to the owner>).
 Follow steps 3–7 of .claude/skills/roadmap-step/SKILL.md for this increment only: branch from freshly
 pulled main, build, verify (including UI tests and the phone check when the owner can see or hear it),

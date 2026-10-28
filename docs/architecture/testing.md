@@ -5,6 +5,7 @@ Part of §8 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 ## Contents
 - [Test layers](#test-layers)
 - [Fast UI tests](#fast-ui-tests)
+- [Any phone](#any-phone)
 - [Every screen in every style](#every-screen-in-every-style)
 - [Every language](#every-language)
 - [Quick and thorough UI runs](#quick-and-thorough-ui-runs)

@@ -12,23 +12,23 @@ The app was called InTune until October 2026. The app ID is `io.github.klaboukes
 
 ## Tech stack
 Kotlin 2.4 · Jetpack Compose + Material 3 · Coroutines/Flow · AndroidX ViewModel · `AudioRecord` · manual DI · DataStore · Gradle 9 Kotlin DSL with version catalog · JUnit 4.
-minSdk 26, targetSdk/compileSdk 37, JVM toolchain 17.
+minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JVM toolchain 17.
 
 **AGP 9 uses built-in Kotlin:** Android modules must NOT apply `org.jetbrains.kotlin.android`. Only `:core:dsp` applies `kotlin-jvm`, and Compose modules apply `kotlin-compose`. The `kotlin-jvm` entry in the root `build.gradle.kts` pins the Kotlin compiler version.
 
 ## Modules
 | Module | Type | Purpose |
 |---|---|---|
-| `:app` | Android app | `MainActivity` (switches tuner ↔ metronome ↔ settings ↔ About through the navigation bar or rail, draws the style's background), `TwangleApplication`, `AppContainer` (DI), the home-screen widget (`widget/`) |
+| `:app` | Android app | `MainActivity` (switches Tuner ↔ Practice ↔ Settings through the navigation bar or rail, opens About and the tuning editor, puts the metronome and the Practice tools under the Practice tab, draws the style's background), `TwangleApplication`, `AppContainer` (DI), the home-screen widget (`widget/`) |
 | `:wear` | Android app (Wear OS) | The standalone watch tuner, same app ID as `:app`: `WatchActivity`, `WatchTunerViewModel`, `WatchPitchPipeline` (reuses `:core:dsp` and `:core:audio`), Compose for Wear OS |
 | `:feature:tuner` | Android library | Tuner screen UI, `TunerViewModel`, `TunerUiState` |
 | `:feature:settings` | Android library | Settings and About screen UI (incl. the style, meter and wave look card grids), `SettingsViewModel` |
 | `:feature:metronome` | Android library | Metronome screen UI (meter picker, beat lights, tempo dial, tap tempo), `MetronomeViewModel` |
-| `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`) and the Chords tool (`ChordsScreen`); `:app` puts the metronome and chords under it |
+| `:feature:practice` | Android library | Practice tab (Phase 32, behind its switch): the tool button (`PracticeToolButton`), Chords and Scales (`ChordsScreen`, `ScaleNeck`), the drone button (`DroneButton`) and the Capo helper (`CapoScreen`); `:app` puts the metronome and these tools under it |
 | `:core:audio` | Android library | `AudioRecorder` → `Flow<FloatArray>` microphone frames; `TonePlayer` (reference tones), `MetronomePlayer` (clicks) and `DronePlayer` (the drone under Scales) through `AudioTrack` |
-| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/vibration, Practice tool used last |
+| `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
-| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, string synthesis (the reference tones), metronome click track and tap tempo |
+| `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, strum check and chord naming, chord, scale and capo charts, string synthesis (the reference tones), the drone's synthesis, metronome click track and tap tempo |
 | `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
@@ -48,13 +48,18 @@ scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the ph
 scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
-./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~5 min); commit app/src/release/generated/
+./gradlew :app:generateBaselineProfile  # regenerate the Baseline Profile (device, ~15 min; class filter and uninstall first: performance.md, *Baseline Profile*); commit app/src/release/generated/
 scripts/release.sh bump|notes|bundle|upload|promote|rollout|halt|listing  # a Play release: version, notes, signed bundle and tag, then (each after the owner's yes) internal track, promotion, staged rollout, store listing (see /release)
 scripts/release.sh status|health [days]|reviews [language]|listing-changes  # read only, no yes needed: what is on each Play track, crash/ANR rates per version vs Play's lines, the last week's reviews translated, what changed for the store listing since it was last sent
 python -I website/build.py              # build and check the website into website/build/ (nothing from another site, no broken link)
 scripts/publish-website.sh              # publish website/ to https://klaboukes.github.io/ after it landed on main (pushes only a change)
 scripts/website-pictures.sh             # the website's small screenshots and icon, from the last store-screenshot run (commit them)
+scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
+scripts/store-graphics.sh               # the Play Store's icon and feature graphic, drawn on the phone (docs/store-listing.md)
+scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
+scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 ```
+`scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
   `export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"` (Git Bash) or
@@ -76,36 +81,38 @@ scripts/website-pictures.sh             # the website's small screenshots and ic
   - Leave every other setting on the phone as it was, above all on the S26, the owner's daily phone: put back anything a check changes (font size, rotation, screen timeout, developer options); `scripts/ui-tests.sh` restores the rotation itself.
   - **Play Protect's "Send app for a security check?"** can cover the screen after an install from this PC (seen on the tablet for the test helper `io.github.klaboukes.twangle.test`, 2026-10-27), and a covered screen fails UI tests and spoils store screenshots. The owner's standing rule, on every device and either PC: tap **Don't send** (screencap first to find it), never *Send this time* or *Always send*, and leave Play Protect itself on. Then check the run's results and redo what the dialog covered.
   - `adb devices` empty or `unauthorized`: accept the USB-debugging prompt on the phone and set the USB mode to *File transfer*.
+  - **More than one device plugged in** (a phone and the tablet, say): `adb` and the scripts stop with "more than one device". Pick one with `export ANDROID_SERIAL=<serial>` (serials above) before the script or Gradle task; `adb`, every script in `scripts/` and Gradle's device tasks all follow it.
 
 ### CI
 `.github/workflows/android.yml` runs `test`, `lint`, `assembleDebug` and an unsigned `assembleRelease bundleRelease` (the watch app included) **once a night** at 03:00 UTC on `main`, plus by hand through *Run workflow*, never per push or PR: the local run is the gate. A run per merge repeated that check and used up the free plan's 2,000 minutes a month in one week (2026-10-16). The nightly run covers everything merged since the last successful run and skips the build when only `*.md`, `docs/`, `.claude/` or `scripts/` changed. A run GitHub refused to start (spending limit, storage quota) is not a code failure. It uploads no APK (nobody downloaded it, and the free plan's artifact storage is small), only build reports when it fails (kept 3 days).
 
 ## Hard rules
 1. **`:core:dsp` must never depend on Android.** No `android.*` imports and no Android library dependencies. It is a `kotlin("jvm")` module so it stays fast to test and portable.
-2. **No allocations in the audio/DSP hot loop.** Preallocate buffers (ring buffer, YIN scratch arrays) and reuse them. The loop runs ~47×/s.
-3. **Never block the main thread.** `AudioRecord.read()` runs on a dedicated single-thread dispatcher. DSP runs on `Dispatchers.Default`.
-4. **Hold the mic only while the tuner is visible.** Use `SharingStarted.WhileSubscribed(5_000)` plus `collectAsStateWithLifecycle()`. No foreground service.
+2. **No allocations in the audio/DSP hot loop.** Preallocate buffers (ring buffer, YIN scratch arrays) and reuse them. The loop runs ~47×/s. The one exception is the small immutable result each frame hands to the UI (`PitchReading`, then `TunerUiState`); nothing sample-sized or per-sample is ever allocated.
+3. **Never block the main thread.** `AudioRecord.read()` runs on its own one-at-a-time dispatcher (`Dispatchers.IO.limitedParallelism(1)`), and each sound's blocking `AudioTrack.write()` has its own thread. DSP runs on `Dispatchers.Default`.
+4. **Hold the mic only while a screen that listens is visible** (the tuner, the metronome's Listen). The tuner uses `SharingStarted.WhileSubscribed(5_000)` plus `collectAsStateWithLifecycle()`; Listen stops when its screen is left. No foreground service.
 5. **Never use `AudioSource.MIC` or `VOICE_COMMUNICATION`.** Use `UNPROCESSED`, falling back to `VOICE_RECOGNITION`. AGC and noise suppression corrupt pitch.
 6. **Any DSP change needs tests.** Add or adjust synthetic-signal tests in `core/dsp/src/test`. Accuracy target: ±1 cent on synthetic signals.
 7. **Privacy:** audio is never written to disk or sent anywhere. Do not add the `INTERNET` permission.
-8. Dependency versions live only in `gradle/libs.versions.toml`. Never hard-code versions in module build files.
+8. Dependency versions live only in `gradle/libs.versions.toml`. Never hard-code versions in module build files. The one exception is the foojay plugin in `settings.gradle.kts`, whose `plugins` block can't read the catalog.
 9. **Free forever:** no ads, no account creation, no in-app purchases, no analytics or tracking SDKs. This promise is stated in README.md.
 
 ## Conventions
 - Kotlin official code style (`kotlin.code.style=official`), 4-space indent, see `.editorconfig`.
 - Packages: `io.github.klaboukes.twangle.<module path>`, e.g. `io.github.klaboukes.twangle.core.dsp.pitch`. Source sets use `src/main/kotlin`.
-- UI state: one immutable `TunerUiState` sealed interface exposed as `StateFlow` from the ViewModel. Composables are stateless and take state plus lambdas.
+- UI state: the tuner's reading is one immutable `TunerUiState` sealed interface exposed as `StateFlow` from `TunerViewModel`; its options (notation, tuning, tools and so on) are their own `StateFlow`s next to it. Each screen's top composable makes its ViewModel; every composable below it is stateless and takes state plus lambdas.
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
-- Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; today Dutch), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
-- **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new tool still being built stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build*). The release comes next: Phase 53 on Play (Phases 37 and 38 are done); fixes land on `main` as usual.
+- Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; 16 languages today), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
+- **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new **tool**, something the player picks on its own (a tuner mode, a Practice tool, a tab), stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build* says how). A new option inside a tool that is already live (a sound, a tuning, an instrument, left-handed charts) needs no switch. The owner decides when a version goes to Play (ROADMAP.md, *Where things stand*); fixes land on `main` as usual.
+- **The privacy policy is public:** after a change to `PRIVACY.md` or `PRIVACY.nl.md` lands on `main`, run `scripts/publish-privacy.sh`.
 - **The website follows the app:** a change to a tool (what it does, its name, its numbers) updates that tool's page in `website/pages/` (English and Dutch) in the same pull request, then `scripts/publish-website.sh` after the merge ([docs/architecture/website.md](docs/architecture/website.md)).
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
 
 ## Workflow
 - **Use the `/roadmap-step` skill** (`.claude/skills/roadmap-step/SKILL.md`) to do roadmap work. Without an argument it runs one increment: announce in plain language → branch → build → verify → land. `/roadmap-step <N>` finishes every remaining item of phase N in one session, still one branch and PR per increment; each increment runs in its own sub-agent so the session stays small.
-- Work through ROADMAP phases in order. Phase N+1 work should not start while phase N's builds or tests are broken.
-- Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in).
+- Work through ROADMAP phases in the order ROADMAP.md lists them, not by number; the owner may move a phase ahead. Don't start the next phase while `main`'s build or tests are broken.
+- Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in), and on the Lenovo tablet when the change is about a tablet layout.
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
 - **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md).

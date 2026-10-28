@@ -119,7 +119,7 @@ moves on.
   version can't be uploaded again). A false alarm: `rollout <percent>` starts it again, also behind a yes.
 - **The rollout watch:** after the promotion to production, offer a daily look while the rollout
   runs. On a yes, make a scheduled task (`create_scheduled_task`, taskId `twangle-rollout-watch`,
-  cron `0 9 * * *`) whose prompt stands on its own: in `C:\source\Twangle`, run
+  cron `0 9 * * *`) whose prompt stands on its own: in this machine's repo root (the working directory, written out in full: `D:\source\Twangle` on the desktop), run
   `scripts/release.sh status`, `health` and `reviews`; tell the owner in plain words how Twangle
   <version> is doing; say a raise looks fine only after two quiet days at the current step, and urge a
   halt when a rate is over Play's line; never run `upload`, `promote`, `rollout`, `halt` or `listing`.

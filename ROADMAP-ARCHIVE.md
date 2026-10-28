@@ -55,6 +55,9 @@ The ☐ items below are live tests the owner does by hand. They are tracked unde
 - [Phase 47 — Practice: one tool button, Scales a tool of its own](#phase-47--practice-one-tool-button-scales-a-tool-of-its-own-more-scales-owner-2026-10-26)
 - [Phase 49 — Four more chord types, two more scales](#phase-49--four-more-chord-types-two-more-scales-owner-2026-10-26)
 - [Phase 48 — A drone under the scales](#phase-48--a-drone-under-the-scales-owner-2026-10-26)
+- [Phase 51 — Tunings players ask for](#phase-51--tunings-players-ask-for-the-comparison-of-2026-10-25-reviewed-2026-10-26)
+- [Phase 52 — Check on a real tablet](#phase-52--check-on-a-real-tablet-lenovo-tab-m11)
+- [Phase 57 — The 12-string, the banjo and left-handed charts](#phase-57--the-12-string-the-banjo-and-left-handed-charts-built-before-launch-2026-10-27)
 - [Phase 54 — The Twangle website](#phase-54--the-twangle-website-small-before-launch-owner-2026-10-27)
 
 ---

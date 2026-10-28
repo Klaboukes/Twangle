@@ -398,34 +398,38 @@ class MainActivity : AppCompatActivity() {
                         header = header,
                     )
                 }
-                PracticeTool.CHORDS, PracticeTool.SCALES -> ChordsScreen(
-                    tuning = settings.tuning,
-                    tuningName = practiceTuningName(settings),
-                    spokenTuningName = spokenTuning(settings),
-                    notation = settings.notationFor(appLanguage()),
-                    savedRoot = opened?.root ?: settings.practiceRoot,
-                    savedQuality = opened?.quality ?: settings.practiceChordQuality,
-                    onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
-                    onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
-                    header = header ?: {},
-                    scales = tool == PracticeTool.SCALES,
-                    savedScaleType = settings.practiceScaleType,
-                    onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
-                    onPickInstrument = openPanel,
-                    drone = container.dronePlayer,
-                    a4Hz = settings.a4Hz,
-                    savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
-                    onDroneChange = { picked ->
-                        lifecycleScope.launch {
-                            with(container.settingsRepository) {
-                                setDroneSound(picked.sound)
-                                setDroneVoicing(picked.voicing)
-                                setDroneLower(picked.lower)
+                PracticeTool.CHORDS, PracticeTool.SCALES -> {
+                    // On Scales the volume keys set the drone's loudness (the media volume).
+                    if (tool == PracticeTool.SCALES) MediaVolumeKeys()
+                    ChordsScreen(
+                        tuning = settings.tuning,
+                        tuningName = practiceTuningName(settings),
+                        spokenTuningName = spokenTuning(settings),
+                        notation = settings.notationFor(appLanguage()),
+                        savedRoot = opened?.root ?: settings.practiceRoot,
+                        savedQuality = opened?.quality ?: settings.practiceChordQuality,
+                        onRootChange = { lifecycleScope.launch { container.settingsRepository.setPracticeRoot(it) } },
+                        onQualityChange = { lifecycleScope.launch { container.settingsRepository.setPracticeChordQuality(it) } },
+                        header = header ?: {},
+                        scales = tool == PracticeTool.SCALES,
+                        savedScaleType = settings.practiceScaleType,
+                        onScaleTypeChange = { lifecycleScope.launch { container.settingsRepository.setPracticeScaleType(it) } },
+                        onPickInstrument = openPanel,
+                        drone = container.dronePlayer,
+                        a4Hz = settings.a4Hz,
+                        savedDrone = DroneChoice(settings.droneSound, settings.droneVoicing, settings.droneLower),
+                        onDroneChange = { picked ->
+                            lifecycleScope.launch {
+                                with(container.settingsRepository) {
+                                    setDroneSound(picked.sound)
+                                    setDroneVoicing(picked.voicing)
+                                    setDroneLower(picked.lower)
+                                }
                             }
-                        }
-                    },
-                    leftHanded = settings.leftHanded,
-                )
+                        },
+                        leftHanded = settings.leftHanded,
+                    )
+                }
                 PracticeTool.CAPO -> CapoScreen(
                     tuningName = practiceTuningName(settings),
                     spokenTuningName = spokenTuning(settings),
@@ -515,7 +519,7 @@ class MainActivity : AppCompatActivity() {
     private fun autoRotateOn(): Boolean =
         Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
 
-    /** While this is in the composition, the volume keys set the media volume (the tone's and the clicks' loudness). */
+    /** While this is in the composition, the volume keys set the media volume (the tone's, the clicks' and the drone's loudness). */
     @Composable
     private fun MediaVolumeKeys() {
         DisposableEffect(Unit) {

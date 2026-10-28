@@ -70,6 +70,7 @@ What each does:
 | `waveLook` | `RIBBON` | `WaveLook`: `STROBE`, `RIBBON`, `DOTS`, `FIREFLIES`, `LOOP`, `RIPPLES`; key `wave_look` |
 | `focusMode` | false | Key `focus_mode`: "Focus mode", the whole app on its side and the tuner full screen with one big meter ([UI](ui.md), *Landscape and wide screens*) |
 | `tourSeen` | false | Key `tour_seen`: the first-start tour was skipped or finished; no switch ("Show me around" starts it without touching it). Without the key, any other saved key reads as seen (also `string_lock_tip_seen` and `wave_breathes_in_tune`, left in older installs' files and no longer read); `decideTourOnce` saves the decision at the app's start ([Tuner screen and tour](ui-tuner.md), *Tour*) |
+| `micRefused` | false | Key `mic_refused` (boolean): the microphone was refused in Android's dialog at least once, so a later refusal can be told from a dismissed dialog (*Microphone, permission and lifetime* above) |
 | `metronomeBpm` | 120 | Key `metronome_bpm` (int); clamped to 30–250 in the setter and when read |
 | `metronomeMeter` | `FOUR_FOUR` | `Meter` (`:core:dsp`) by name; key `metronome_meter`; unknown gives 4/4 |
 | `metronomeVibrate` | false | Key `metronome_vibrate`: "Vibrate on the beat" |

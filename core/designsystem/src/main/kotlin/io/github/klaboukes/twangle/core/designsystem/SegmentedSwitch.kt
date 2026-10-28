@@ -79,7 +79,7 @@ fun <T> SegmentedSwitch(
                         activeBorderColor = if (neon) scheme.primary else scheme.outline,
                         inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
                     ),
-                    // Three segments (Practice's Metronome · Chords · Capo) keep less padding, so Dutch
+                    // Three segments (Practice's tool switch until Phase 47; none today) keep less padding, so Dutch
                     // "Metronoom" still fits a 320 dp phone at 2× text. Two keep Material's 12 dp where
                     // the labels fit at full size; where they don't, the padding gives way down to the
                     // three segments' 6 dp before a label shrinks (the label's [segmentLabel] holds the

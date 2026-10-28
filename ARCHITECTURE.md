@@ -26,7 +26,7 @@ Topic files:
   - **[Meter, wave and styles](docs/architecture/ui-meter-and-styles.md)**: Meter · Meter art language · Wave view · Strobe look · Wave looks · Visual styles
   - **[Metronome, widget and watch](docs/architecture/ui-other-screens.md)**: Metronome screen · Practice tab · Home-screen widget · Watch app (Wear OS)
   - **[Languages](docs/architecture/languages.md)**: Languages and registers · One language list · In-app language (Settings → Language) · Per-app language (Android 13+) · Formatting · Right to left (Arabic) · Guard · Adding a language
-- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Every screen in every style · Every language · Quick and thorough UI runs
+- §8 **[Testing strategy](docs/architecture/testing.md)**: Test layers · Fast UI tests · Any phone · Every screen in every style · Every language · Quick and thorough UI runs
 - **[Website](docs/architecture/website.md)** (klaboukes.github.io, Phase 54): Where it lives · Pages and the frame · Nothing from another site · Languages · Pictures · Publishing
 - **[History](docs/architecture/history.md)**: Overview · Threading and performance · Lifecycle, permissions and settings · UI basics · Tuner screen · Meter, wave and styles · Metronome, widget and watch · Strum check and metronome · Languages · Testing
 
@@ -67,13 +67,17 @@ Topic files:
 :feature:tuner     Tuner screen: Compose UI, TunerViewModel, UI state, meter frame, wave view
 :feature:settings  Settings and About screens, SettingsViewModel
 :feature:metronome Metronome screen: Compose UI, MetronomeViewModel
-:feature:practice  Practice tab (Phase 32, behind its switch): the tool button, the Chords tool (chord charts, scales)
-:core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones and metronome clicks (AudioTrack)
+:feature:practice  Practice tab (Phase 32, behind its switch): the tool button, Chords and Scales (charts, the neck, the
+                   drone button), the Capo helper
+:core:audio        Microphone capture (AudioRecord → Flow<FloatArray>), reference tones, metronome clicks and the drone
+                   (AudioTrack)
 :core:settings     Saved user settings: SettingsRepository backed by DataStore
 :core:designsystem Visual styles: TwangleTheme, palettes, fonts, backgrounds, style mood pictures, meter and wave looks
 :core:dsp          Pure Kotlin/JVM (NO Android deps): pitch detection, levels, note math, tunings, smoothing,
-                   string synthesis (the reference tone in each instrument's voice), metronome click track
-:core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough
+                   strum check, chord naming, chord/scale/capo charts, string synthesis (the reference tone in
+                   each instrument's voice), the drone's synthesis, metronome click track and tempo
+:core:testing      UI test helpers only (androidTestImplementation): shared-activity Compose rule and runner, @Thorough,
+                   @EveryLanguage, assertWhollyShown, PhoneScreen
 :baselineprofile   Android test module: Baseline Profile generator, startup and meter-frame benchmarks
 ```
 
@@ -113,20 +117,24 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
                 AnalysisSettings, PitchRange, LowPassFilter, SignalGate, SustainCheck, FftDifference,
                 Fft, Clarity
     level/      NoiseFloorTracker, ReceptionTracker
-    music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling
+    music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling,
+                LoweredTunings (any tuning lowered by up to 2½ steps)
     smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector
     strobe/     StrobeMotion
     trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
                 (PluckSynth, the tests' ideal plucked string, is in testFixtures)
+    drone/      DroneSynth, DroneSound, DroneEngines, PartialBank (the drone under Scales)
     metronome/  ClickTrack (+ BeatListener), ClickSounds (+ ClickSound, ClickRecipes, PercussionSynth, Resampler), Meter (+ BeatAccent), TapTempo (+ TempoMarking),
                 TempoDetector (+ TempoStatus), OnsetTempoDetector (tempo from music)
-    strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict (strum check)
-    chord/      ChordDetector, ChordResult, ChordNamer, Chord, ChordQuality (chord naming from a strum);
+    strum/      StrumDetector (+ PartialFit), StrumResult, StrumListener, StrumVerdict, StrumInstruments (strum check)
+    chord/      ChordDetector, ChordResult, ChordNamer, ChordSettler, Chord, ChordQuality, ChordSpelling,
+                ChordInstruments (chord naming from a strum);
                 ChordShapeFinder, ChordShape, Barre (finger shapes for the chord charts)
     scale/      Scale, ScaleType, ScaleFinder, FretNote (scales on the neck)
     capo/       Capo, CapoPlan, SongKey (the capo helper's maths: fret for a key and shapes, what shapes sound)
-    intonation/ Intonation (+ IntonationResult, IntonationVerdict): 12th fret against the open string
+    intonation/ Intonation (+ IntonationResult, IntonationVerdict), SettledPitch, SaddleMove: 12th fret against the
+                open string
     buffer/     FrameAssembler
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)
@@ -135,7 +143,7 @@ core/audio/src/main/kotlin/io/github/klaboukes/twangle/core/audio/
     AudioRecorder (interface), AndroidAudioRecorder, AudioConfig, AudioRecorderException,
     AudioSourceSelector (+ AudioInput), SampleRateSelector, InputDeviceSelector,
     ChunkReader (+ MicInput: busy, silenced and stuck mics), MicOpener (openFirst: rate fallback),
-    BlockingTransfer (transferFully: read/write loops that fail instead of spinning),
+    BlockingTransfer (transferFully: read/write loops that fail instead of spinning), MicPermissionRules,
     TonePlayer (interface), AndroidTonePlayer, MetronomePlayer (interface, + MetronomeBeat),
     AndroidMetronomePlayer, DronePlayer (interface), AndroidDronePlayer,
     AudioOutput (shared AudioTrack helpers)
@@ -143,31 +151,36 @@ core/audio/src/testFixtures/…/core/audio/   FakeAudioRecorder, FakeTonePlayer,
 
 core/settings/src/main/kotlin/io/github/klaboukes/twangle/core/settings/
     AppSettings (+ TunerMode, InTunePrecision, ThemeMode, VisualStyle, MeterLook, WaveLook, …),
-    SettingsRepository (interface), DataStoreSettingsRepository, ToolSwitches (music tools shown)
+    SettingsRepository (interface), DataStoreSettingsRepository, CustomTuning, ToolSwitches (music tools shown)
 core/settings/src/testFixtures/…/core/settings/   FakeSettingsRepository
 
 core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     TwangleTheme (+ StyleTokens), StylePalettes, StyleTypography, StyleBackdrop, StyleMood,
     MusicSigns, NoteNameSpeech, SpokenReadingThrottle (+ PacedSpeech), FontCredits,
-    PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...)
+    PressFeedback (Modifier.pressFeedback, pressSink, PressIndication, PressTone), PressButtons (TwangleTextButton, TwangleButton, TwangleIconButton ...),
+    SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
+    AnimationsOff, AppLanguage, LocalDigits
     dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
     meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, LightArc, LightArcHeat, SpiritLevel,
-                Eclipse, Arrows, LightBars
+                Eclipse, Arrows, LightBars, MeterFinish
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
-    SharedActivityComposeRule, SharedActivityTestRunner, Thorough (+ allIfThorough)
+    SharedActivityComposeRule, SharedActivityTestRunner, Thorough (+ allIfThorough), EveryLanguage, WhollyShown,
+    PhoneScreen, MenuPosition
 
 feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     TunerViewModel, TunerUiState, TunerOptions, TunerInterpreter, TunerLayout, TunerScreen,
     PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision), InTuneTickRule,
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
     SignalBars (+ SignalFigures),
-    StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis)
+    StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
+    IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake (+ ScreenAwakeRule)
     components/ MeterFrame, NoteDisplay, WaveView, ChromaticReadout, StringSelector (+ StringRowFit),
                 InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
-                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle)
-    editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft)
+                SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
+                IntonationView, ChordView, PitchTrailView, FocusModeButton, PillTint
+    editor/     TuningEditorScreen (+ TuningEditor), TuningDraft (+ EDITOR_NOTE_RANGE, saveDraft), TuningEditorSaver
     tour/       TourHost + TourOverlay (dim, spotlight, balloon), TourTargets (+ tourTarget), TourPart, TourGeometry (pure)
 
 feature/metronome/src/main/kotlin/io/github/klaboukes/twangle/feature/metronome/
@@ -181,15 +194,16 @@ feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
     PracticeTools (practiceToolsFor, practiceToolToOpen, PracticeTestTags), PracticeToolButton, PracticeToolIcons,
     ChordsScreen (root and type pickers, chart, ‹ › pager), ChordPicker (RootPicker, ChordTypePicker),
     ChordChart (+ ChartGeometry), ChordSpeech (chordWords, spokenChart),
+    ScaleNeck, ScaleSpeech, DroneButton, TuningLine, PracticeLayout (practiceLayoutFor),
     CapoScreen (shapes list, capo ‹ ›, the shape → sounds table), CapoTable (CAPO_SHAPES, capoChordsOf, capoPlanOf)
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
-    SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel
+    SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage
     components/ A4Calibration, RadioGroupSetting, SwitchSetting, LinkSetting, AboutSection, Credits,
-                LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker
+                LookCardGrid (+ LookDemo), StylePicker, MeterLookPicker (+ MeterDemo), WaveLookPicker, LanguageSetting
 
 app/src/main/kotlin/io/github/klaboukes/twangle/app/
-    TwangleApplication, AppContainer, MainActivity (+ PracticeTab),
+    TwangleApplication, AppContainer, MainActivity (+ PracticeTab), FocusMode, FirstStartTour, SystemBars,
     SyntheticAudioRecorder (benchmark build only)
     navigation/ Navigation (Screen, Destination, back, useRail), NavigationBar (AppNavigationFrame, bar, rail), NavIcons
     widget/     TuningWidget (RemoteViews, colours, tap), TuningWidgetReceiver, WidgetState

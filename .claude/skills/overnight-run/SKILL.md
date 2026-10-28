@@ -1,7 +1,7 @@
 ---
 name: overnight-run
-description: Run Twangle's overnight on-device check while the owner sleeps — every UI test in every style, then every language at 2× text — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
-argument-hint: "[optional: --sweep or --languages to run only one part]"
+description: Run Twangle's overnight on-device check while the owner sleeps — every UI test in every style, then every language at 2× text, then the store screenshots — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
+argument-hint: "[optional: --sweep, --languages or --store to run only one part]"
 ---
 
 # The overnight run
@@ -9,19 +9,22 @@ argument-hint: "[optional: --sweep or --languages to run only one part]"
 The owner starts it at bedtime with a test phone on USB and goes to sleep, taking turns between the
 Xiaomi 12X and the Galaxy S26 from one night to the next; say in the summary which phone it was. It runs for hours, so
 the owner can't be asked anything: take the recommended answer to every question, note it, and put
-it in the morning summary for them to double-check. CLAUDE.md's hard rules, Git workflow and
+it in the morning summary for them to double-check. That never covers a step that reaches Google Play
+(`scripts/release.sh upload`, `promote`, `rollout`, `halt`, `listing`) or publishes anything (the website,
+the privacy policy): those wait for the owner's yes in the morning. CLAUDE.md's hard rules, Git workflow and
 environment notes apply; the [ui-test skill](../ui-test/SKILL.md) says how to read results and
 what the phone's failures mean.
 
 ## 1. Pre-flight (a few minutes, no phone run yet)
 
 ```bash
+ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (CLAUDE.md)
 git status --short && git switch main && git pull
 gh run list --branch main --limit 3          # a failed nightly run is fixed first (not one GitHub didn't run: roadmap-step, step 0)
-adb devices                                   # f813c98c or R3GL502L08P, "device"
-adb shell dumpsys battery | grep -E "temp|AC" # charging, below ~35 °C
-adb shell settings get system font_scale      # 1.0
-adb shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
+"$ADB" devices                                # f813c98c or R3GL502L08P, "device"; more than one: export ANDROID_SERIAL
+"$ADB" shell dumpsys battery | grep -E "temp|AC"   # charging, below ~35 °C
+"$ADB" shell settings get system font_scale   # 1.0
+"$ADB" shell settings get global stay_on_while_plugged_in   # non-zero: the screen stays on
 ```
 - The script keeps Windows awake while it runs (a sleeping PC drops the phone: on 2026-10-19 it
   cost the night, and on 2026-10-27 again, as the keep-awake never loaded until it was fixed that

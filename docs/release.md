@@ -8,8 +8,9 @@ since it changes what people get or see. The owner checks every build on the Xia
 further, and does the few things only the Play Console can do (the checklist below).
 
 ## The idea
-- **Not every change is a release.** Fixes and features land on `main` as usual. Every week or two, or
-  sooner for a bad bug, what is on `main` goes out as one release.
+- **Not every change is a release.** Fixes and features land on `main` as usual. When the owner asks
+  (the owner decides when a version goes to Play, ROADMAP.md *Where things stand*), what is on `main`
+  goes out as one release. Claude may suggest one when a bad bug is fixed or much has gathered.
 - **Every upload has a higher version.** Play refuses a version it has seen. One place holds it:
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's
@@ -117,7 +118,8 @@ install). They need the same key as `upload`; without it they stop, saying it is
 ## The store listing
 `scripts/release.sh listing` sends the whole store listing to Google Play in every language at once,
 from `fastlane/metadata/android/` as it is on `main` ([store-listing.md](store-listing.md)): the
-title, short and full description and the eight phone screenshots of each language, the icon and the
+title, short and full description and the eight phone screenshots of each language (and the 10-inch
+tablet set where the languages have one, the same set in every language), the icon and the
 feature graphic, and Play's app details. It needs the same key as `upload`, but no release: the
 listing isn't tied to a version.
 - **What changed since the last send:** each send is tagged `listing/<date-time>` on the commit it
