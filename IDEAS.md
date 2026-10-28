@@ -9,9 +9,11 @@ Let people make their own look on top of the six styles. **Condition:** start on
 3. ☐ **On the shelf, only if 1 and 2 prove popular:** a theme code (a short text to save and share themes; a theme with a photo needs a small file instead) and a round trip with the user's own AI app: Twangle shares instructions through Android's share menu, the user chats with any AI, copies the code it gives, and Twangle offers to preview it from the clipboard. Never a live connection (that would need internet and an account).
 
 ## After the drone and ear training (idea, 2026-10-26)
-What is left of these two ideas now that they are Phases 48 and 54. **Condition:** only once both have landed, and if players use them.
+What is left of these two ideas now that they are Phases 48 and 55. **Condition:** only once both have landed, and if players use them. Items 3 and 4 were part of Phase 55 until the owner made it smaller on 2026-10-28: button quizzes are common in other apps and don't use what sets Twangle apart, the microphone. If they come back, they follow Phase 55's rules: a tool, not a game, no scores kept, no rounds or levels.
 1. ☐ **The drone and the metronome together:** both sounding while you practise, which needs them on one screen (leaving the metronome stops its clicks today)
 2. ☐ **A scale or mode by ear:** Twangle plays a scale over the drone, the player names it (major, Dorian, Mixolydian, …)
+3. ☐ **Intervals by ear:** two notes (minor second to octave, up, down or together), the player picks the interval from buttons (steady sizes, the names in every language, TalkBack)
+4. ☐ **Chord type by ear:** a chord strummed in the string voice from `ChordShapeFinder`'s shapes for the tuning picked; the player picks its type, from a few (major, minor, 7) up to all sixteen
 
 ## Twangle on the iPhone (idea, 2026-10-26)
 One codebase for both phones: Kotlin Multiplatform, with Compose Multiplatform drawing the screens on the iPhone. **Condition:** only after v1.0 is on Play; the restructuring is the wrong thing to do in the weeks before a release. A friend of the owner has offered to build the iPhone side (2026-10-26): he has the Mac, the iPhone and the Apple developer account, which removes the cost, so after the launch this becomes a phase on the owner's say-so rather than waiting for reviews to ask for it (the feasibility look of 2026-10-26).
