@@ -61,10 +61,12 @@ scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's s
 ```
 `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
-- No system-wide Java. Use Android Studio's bundled JDK for every Gradle command:
-  `export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"` (Git Bash) or
-  `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"` (PowerShell).
-  Gradle runs on JBR (JDK 25). The foojay plugin auto-provisions JDK 17 for compilation.
+- Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
+  `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.
+  If `JAVA_HOME` is empty (a new PC, or a session started before the variable was set), set it for that command
+  (`export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"` in Git Bash) and ask the owner to set it once in PowerShell,
+  `[Environment]::SetEnvironmentVariable('JAVA_HOME', 'C:\Program Files\Android\Android Studio\jbr', 'User')`, then restart the Claude app.
+  The foojay plugin auto-provisions JDK 17 for compilation.
 - Android SDK: `%LOCALAPPDATA%\Android\Sdk`. `adb` is at `<sdk>/platform-tools/adb.exe` and is not on PATH.
 - `local.properties` (git-ignored) holds `sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk`. The colon must be escaped or lint fails.
 - Emulator AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
