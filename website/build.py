@@ -38,10 +38,10 @@ OTHER_REPOS = ("twangle-privacy/",)
 PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.klaboukes.twangle"
 EMAIL = "twangle.tuner@proton.me"
 
-# The owner's Buy Me a Coffee page (made 2026-10-28). Were it empty, the footer's link and the
-# home page's data-coffee line would stay out, so no link is ever broken (as Help stays out
-# until help.html exists).
-COFFEE_URL = "https://buymeacoffee.com/klaboukes"
+# The owner's page for a coffee, empty until their Ko-fi page exists (Buy Me a Coffee's payouts
+# need a KvK number, 2026-10-28). While it is empty, the footer's link and the home page's
+# data-coffee line stay out, so no link is ever broken (as Help stays out until help.html exists).
+COFFEE_URL = ""
 
 # The words of the shared frame, per language. Page text lives in the pages themselves.
 WORDS = {
