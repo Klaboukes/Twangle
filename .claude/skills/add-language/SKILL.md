@@ -8,7 +8,7 @@ argument-hint: "<language, e.g. Swedish or sv>"
 
 One language (or a few closely related ones) per branch and PR. CLAUDE.md's hard rules, environment notes and Git workflow apply; [docs/architecture/languages.md](../../../docs/architecture/languages.md) is the design this follows. Read it before starting, because it holds the current language list, the register each language uses and the rules below in more detail.
 
-The owner doesn't write code. Tell them in plain language what changed and what to try.
+The owner is an experienced software engineer, new to Android, who leaves the code to Claude. Tell them in plain language what changed and what to try.
 
 ## 0. Pre-flight
 Same as the roadmap-step skill's step 0: your own worktree, clean tree, `git switch main && git pull`, no leftover open PR, the last nightly CI run on `main` passed (or GitHub didn't run it, see that step). Branch `chore/language-<code>`, or `phase-<N>/...` when a roadmap item asks for the language.

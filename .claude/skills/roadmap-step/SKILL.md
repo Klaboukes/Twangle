@@ -14,7 +14,7 @@ Take one [ROADMAP.md](../../../ROADMAP.md) increment from start to finish: pick 
 | `/roadmap-step <text>` | **One increment**: the named item, then stop. |
 | `/roadmap-step <number>` | **Phase mode**: the number is always a phase, never an item. Finish every remaining ☐ item of that phase. Read [phase-mode.md](phase-mode.md) and follow it instead of the steps below. |
 
-The owner doesn't write code. Every message to them says, in plain language, what changed for the app and what they need to do, if anything. Code details go in the PR.
+The owner is an experienced software engineer, new to Android, who leaves the code to Claude. Every message to them says, in plain language, what changed for the app and what they need to do, if anything; technical detail only where it matters for them to know. Code details go in the PR.
 
 ## 0. Pre-flight
 

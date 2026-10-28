@@ -123,7 +123,7 @@ scripts/record-plucks.sh                # records plucked strings on the phone i
 - **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md). A release waits for a clean overnight run over the code it releases: nothing (not even the version number) changes before that.
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
-- The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
+- The project owner is a professional software engineer (20+ years: .NET, web, scripting, SQL) but new to Android and Kotlin, and leaves the code here to Claude. Talk to them in plain language about outcomes and the actions they need to take; go technical only where a detail matters for them to know (a tradeoff to weigh, a risk, why something failed). Brief sub-agents the same way, never as "non-coder" (owner, 2026-10-28).
 - Open every mock-up and preview page (`docs/design/*.html`) for the owner in Firefox (`C:\Program Files\Mozilla Firefox\firefox.exe <full path>`), never in the app's built-in browser, which doesn't play their sounds (owner, 2026-10-26).
 
 ## Git & GitHub
