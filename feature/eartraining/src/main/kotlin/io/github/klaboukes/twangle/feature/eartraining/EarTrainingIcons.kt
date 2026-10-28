@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 
 /**
  * Ear training's icons, drawn as the Practice tools' (1.8 dp round-ended lines on a 24 dp grid, note

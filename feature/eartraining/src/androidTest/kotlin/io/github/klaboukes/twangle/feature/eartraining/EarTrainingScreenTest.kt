@@ -11,6 +11,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
@@ -25,7 +27,9 @@ import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
 import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -81,6 +85,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     private val shownMic = mutableStateOf(MicPermissionStatus.GRANTED)
     private val picked = mutableListOf<Exercise>()
     private val choices = mutableListOf<NoteChoice>()
+    private val inRow = mutableListOf<Int>()
+    private val matches = mutableListOf<NoteMatch>()
     private var replays = 0
     private var micAsks = 0
     private var settingsOpened = 0
@@ -102,6 +108,14 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                         onNoteChoice = {
                             choices += it
                             shownState.value = shownState.value.copy(noteChoice = it)
+                        },
+                        onNotesInRow = {
+                            inRow += it
+                            shownState.value = shownState.value.copy(notesInRow = it)
+                        },
+                        onNoteMatch = {
+                            matches += it
+                            shownState.value = shownState.value.copy(noteMatch = it)
                         },
                         onAllowMic = { micAsks++ },
                         onOpenSettings = { settingsOpened++ },
@@ -173,16 +187,54 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     @Test
     fun playItBackShowsTheNoteHeardOrListeningAndNothingMoves() {
         show()
-        node(EarTrainingTestTags.HEARD).assert(hasText("Listening…"))
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Listening…"))
+        assertEquals("the dash says nothing", "", spoken(EarTrainingTestTags.HEARD))
         compose.onNode(hasText("Play it on your instrument")).assertIsDisplayed()
-        val replay = node(EarTrainingTestTags.REPLAY).getBoundsInRoot()
+        val tags = listOf(EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.HEARD_LINE)
+        val before = tags.map { node(it).getBoundsInRoot() }
         val prompt = compose.onNode(hasText("Play it on your instrument")).getBoundsInRoot()
         shownHeard.value = Note.of(PitchClass.F_SHARP, 3)
         compose.waitForIdle()
         assertEquals("Heard: F sharp 3", spoken(EarTrainingTestTags.HEARD))
         node(EarTrainingTestTags.HEARD).assert(hasText("F♯3")).assertIsDisplayed()
-        assertEquals(replay, node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Hold the note you heard"))
         assertEquals(prompt, compose.onNode(hasText("Play it on your instrument")).getBoundsInRoot())
+        assertTrue("no dots for one note", !exists(EarTrainingTestTags.DOTS))
+
+        // A wrong note held: said quietly, nothing moves.
+        shownState.value = shownState.value.copy(wrongHeld = true)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Not that one"))
+        // The right one: "Right", softly, and nothing moves either.
+        shownHeard.value = Note.of(PitchClass.G, 2)
+        shownState.value = shownState.value.copy(wrongHeld = false, found = 1, answered = true, tally = Tally(right = 0, asked = 1))
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Right")).assertIsDisplayed()
+        node(EarTrainingTestTags.HEARD).assert(hasText("G2"))
+        assertEquals("nothing moves", before.map { it.top }, tags.map { node(it).getBoundsInRoot().top })
+        assertEquals(before[0], node(EarTrainingTestTags.REPLAY).getBoundsInRoot())
+    }
+
+    @Test
+    fun notesInARowShowADotForEachAndWhichNoteIsLookedFor() {
+        val notes = NoteQuestion(listOf(Note.of(PitchClass.E, 3), Note.of(PitchClass.G, 3), Note.of(PitchClass.A, 3)))
+        shownState.value = shownState.value.copy(notes = notes, notesInRow = 3)
+        show()
+        compose.onNode(hasText("Play them on your instrument")).assertIsDisplayed()
+        node(EarTrainingTestTags.DOTS).assertIsDisplayed()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Note 1 of 3"))
+        val dots = node(EarTrainingTestTags.DOTS).getBoundsInRoot()
+        assertEquals("three dots, 10 dp apart by 8", 3 * 10f + 2 * 8f, dots.width.value, 0.5f)
+        val line = node(EarTrainingTestTags.HEARD_LINE).getBoundsInRoot()
+        shownState.value = shownState.value.copy(found = 2)
+        shownHeard.value = Note.of(PitchClass.G, 3)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Note 3 of 3"))
+        shownState.value = shownState.value.copy(found = 3, answered = true)
+        compose.waitForIdle()
+        node(EarTrainingTestTags.HEARD_LINE).assert(hasText("Right"))
+        assertEquals("nothing moves", dots, node(EarTrainingTestTags.DOTS).getBoundsInRoot())
+        assertEquals(line.top, node(EarTrainingTestTags.HEARD_LINE).getBoundsInRoot().top)
     }
 
     @Test
@@ -225,6 +277,31 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         assertEquals(listOf(NoteChoice.NATURALS_TO_5TH), choices)
         node(EarTrainingTestTags.noteChoice(NoteChoice.NATURALS_TO_5TH)).assertIsSelected()
         node(EarTrainingTestTags.noteChoice(NoteChoice.OPEN_STRINGS)).assertIsNotSelected()
+
+        // How many notes in a row: one to four, one picked, each the same width.
+        compose.onNode(hasText("Notes in a row")).assertExists()
+        val widths = (1..4).map { count ->
+            node(EarTrainingTestTags.notesInRow(count))
+                .assert(hasText(count.toString()))
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+                .getBoundsInRoot().width.value
+        }
+        assertTrue("steady sizes $widths", widths.all { kotlin.math.abs(it - widths[0]) < 1f })
+        node(EarTrainingTestTags.notesInRow(1)).assertIsSelected()
+        node(EarTrainingTestTags.notesInRow(3)).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(3), inRow)
+        node(EarTrainingTestTags.notesInRow(3)).assertIsSelected()
+
+        // Any octave counts: a switch, on until turned off.
+        node(EarTrainingTestTags.ANY_OCTAVE)
+            .assert(hasText("Any octave counts", substring = true))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
+            .assertIsOn()
+            .performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(NoteMatch.EXACT), matches)
+        node(EarTrainingTestTags.ANY_OCTAVE).assertIsOff()
         // It stays open for more, and Back closes it.
         Espresso.pressBack()
         compose.waitForIdle()
@@ -233,7 +310,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
 
     @Test
     fun itFitsUprightAndOnItsSideInLightAndDark() {
-        shownState.value = shownState.value.copy(tally = Tally(right = 12, asked = 15))
+        // The tallest question: four notes in a row, their dots and "Note 2 of 4".
+        shownState.value = shownState.value.copy(tally = Tally(right = 12, asked = 15), notes = FOUR_NOTES, notesInRow = 4, found = 1)
         shownHeard.value = Note.of(PitchClass.A_SHARP, 2)
         show()
         for (dark in listOf(false, true)) for (size in listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE, NARROW_UPRIGHT)) {
@@ -242,7 +320,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             compose.waitForIdle()
             val case = "$style $size dark $dark:"
             val window = bars().safeArea(size)
-            for (tag in listOf(HEADER, EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD) +
+            for (tag in listOf(HEADER, EarTrainingTestTags.TALLY, EarTrainingTestTags.CHOICES, EarTrainingTestTags.REPLAY, EarTrainingTestTags.HEARD, EarTrainingTestTags.DOTS, EarTrainingTestTags.HEARD_LINE) +
                 Exercise.entries.map(EarTrainingTestTags::exercise)) {
                 assertWhollyShown(node(tag), "$case $tag", scroll = false)
             }
@@ -270,7 +348,32 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 }
                 compose.assertEveryTextWhollyShown("$style nl $size $mic at 2x:")
             }
+            shownMic.value = MicPermissionStatus.GRANTED
+            for ((name, state) in playItBackStates()) {
+                shownState.value = state
+                compose.waitForIdle()
+                assertWhollyShown(node(EarTrainingTestTags.HEARD_LINE), "$style nl $size $name at 2x")
+                compose.assertEveryTextWhollyShown("$style nl $size $name at 2x:")
+            }
+            shownState.value = shownState.value.copy(notes = NoteQuestion(listOf(Note.of(PitchClass.G, 3))), notesInRow = 1, found = 0, wrongHeld = false, answered = false)
+            // The panel, with its new rows.
+            node(EarTrainingTestTags.CHOICES).performClick()
+            compose.waitForIdle()
+            for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style nl $size $tag at 2x")
+            Espresso.pressBack()
+            compose.waitForIdle()
         }
+    }
+
+    /** Play it back's states with the most text: a wrong note held in a row of four, the note looked for, and right. */
+    private fun playItBackStates(): List<Pair<String, EarTrainingState>> {
+        val base = shownState.value.copy(notes = FOUR_NOTES, notesInRow = 4)
+        return listOf(
+            "not that one" to base.copy(found = 1, wrongHeld = true),
+            "note 2 of 4" to base.copy(found = 1),
+            "right" to base.copy(found = 4, answered = true),
+            "hold it" to base.copy(notes = NoteQuestion(listOf(Note.of(PitchClass.G, 3))), notesInRow = 1),
+        )
     }
 
     /** Every language at 2× text, upright on a 320 dp phone and on its side, the microphone on and off, and the panel. Only with `--languages`. */
@@ -290,9 +393,18 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                     compose.assertEveryTextWhollyShown("$style $language $size $mic at 2x:")
                 }
                 shownMic.value = MicPermissionStatus.GRANTED
+                val single = shownState.value
+                for ((name, state) in playItBackStates()) {
+                    shownState.value = state
+                    compose.waitForIdle()
+                    compose.assertEveryTextWhollyShown("$style $language $size $name at 2x:")
+                }
+                shownState.value = single
+                compose.waitForIdle()
                 node(EarTrainingTestTags.CHOICES).performClick()
                 compose.waitForIdle()
                 for (choice in NoteChoice.entries) assertWhollyShown(node(EarTrainingTestTags.noteChoice(choice)), "$style $language $size $choice at 2x")
+                for (tag in (1..4).map(EarTrainingTestTags::notesInRow) + EarTrainingTestTags.ANY_OCTAVE) assertWhollyShown(node(tag), "$style $language $size $tag at 2x")
                 Espresso.pressBack()
                 compose.waitForIdle()
             }
@@ -313,5 +425,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         private val PHONE_UPRIGHT = DpSize(360.dp, 570.dp)
         private val PHONE_LANDSCAPE = DpSize(700.dp, 330.dp)
         private val NARROW_UPRIGHT = DpSize(320.dp, 640.dp)
+
+        /** Four notes in a row, the most Play it back asks. */
+        private val FOUR_NOTES = NoteQuestion(listOf(PitchClass.E, PitchClass.G, PitchClass.A, PitchClass.D).map { Note.of(it, 3) })
     }
 }

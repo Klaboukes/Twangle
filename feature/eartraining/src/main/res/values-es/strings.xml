@@ -18,4 +18,11 @@
     <string name="ear_mic_off">Micrófono desactivado</string>
     <string name="ear_mic_allow">Permitir micrófono</string>
     <string name="ear_open_settings">Abrir ajustes</string>
+    <string name="ear_play_prompt_many">Tócalas en tu instrumento</string>
+    <string name="ear_hold">Mantén la nota que oíste</string>
+    <string name="ear_note_of">Nota %1$d de %2$d</string>
+    <string name="ear_right">Correcto</string>
+    <string name="ear_not_that_one">Esa no</string>
+    <string name="ear_notes_in_row">Notas seguidas</string>
+    <string name="ear_any_octave">Cuenta cualquier octava</string>
 </resources>

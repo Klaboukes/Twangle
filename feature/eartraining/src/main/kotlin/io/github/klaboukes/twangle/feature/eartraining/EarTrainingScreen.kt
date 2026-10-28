@@ -3,7 +3,9 @@ package io.github.klaboukes.twangle.feature.eartraining
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -45,9 +47,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.platform.LocalContext
@@ -56,12 +62,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
@@ -79,6 +87,7 @@ import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
+import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -86,7 +95,10 @@ import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.designsystem.touchArea
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
 import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
@@ -142,6 +154,8 @@ fun EarTrainingScreen(
         onPickExercise = viewModel::pickExercise,
         onReplay = viewModel::replay,
         onNoteChoice = viewModel::setNoteChoice,
+        onNotesInRow = viewModel::setNotesInRow,
+        onNoteMatch = viewModel::setNoteMatch,
         onAllowMic = permission::request,
         onOpenSettings = permission::openSettings,
         header = header,
@@ -171,6 +185,8 @@ fun EarTrainingContent(
     onPickExercise: (Exercise) -> Unit,
     onReplay: () -> Unit,
     onNoteChoice: (NoteChoice) -> Unit,
+    onNotesInRow: (Int) -> Unit,
+    onNoteMatch: (NoteMatch) -> Unit,
     onAllowMic: () -> Unit,
     onOpenSettings: () -> Unit,
     header: @Composable () -> Unit,
@@ -178,7 +194,7 @@ fun EarTrainingContent(
 ) {
     var choicesOpen by rememberSaveable { mutableStateOf(false) }
     if (choicesOpen) {
-        ChoicesPanel(state.exercise, state.noteChoice, onNoteChoice, onDismiss = { choicesOpen = false })
+        ChoicesPanel(state, onNoteChoice, onNotesInRow, onNoteMatch, onDismiss = { choicesOpen = false })
     }
     val topRows = @Composable {
         Spacer(Modifier.height(HEADER_TOP))
@@ -191,7 +207,7 @@ fun EarTrainingContent(
             Exercise.PLAY_IT_BACK -> if (state.notes != null) {
                 ReplayButton(onReplay)
                 Spacer(Modifier.height(8.dp))
-                PlayItBackPart(heard, notation, mic, onAllowMic, onOpenSettings)
+                PlayItBackPart(state, state.notes, heard, notation, mic, onAllowMic, onOpenSettings)
             }
             // Their questions and answer buttons come with their own increments (ROADMAP Phase 55).
             Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
@@ -252,11 +268,21 @@ object EarTrainingTestTags {
     /** A choice of notes in that panel, e.g. "ear_notes_open_strings". */
     fun noteChoice(choice: NoteChoice): String = "ear_notes_" + choice.name.lowercase()
 
+    /** A choice of notes in a row in that panel, 1 to 4, e.g. "ear_in_row_2"; and the "Any octave counts" switch. */
+    fun notesInRow(count: Int): String = "ear_in_row_$count"
+    const val ANY_OCTAVE = "ear_any_octave"
+
     /** The round ▶ that sounds the question again. */
     const val REPLAY = "ear_replay"
 
-    /** Play it back: the note the tuner hears (or "Listening…"). */
+    /** Play it back: the note the tuner hears (a dimmed dash while none, hidden from TalkBack). */
     const val HEARD = "ear_heard"
+
+    /** Play it back: the small line under it ("Listening…", "Hold the note you heard", "Note 2 of 3", "Right", "Not that one"). */
+    const val HEARD_LINE = "ear_heard_line"
+
+    /** Play it back with notes in a row: a dot for each, the ones found filled in the in-tune colour. */
+    const val DOTS = "ear_dots"
 
     /** Play it back without the microphone: "Microphone is off" and its button. */
     const val MIC_OFF = "ear_mic_off"
@@ -374,24 +400,34 @@ private fun ReplayButton(onReplay: () -> Unit) {
 }
 
 /**
- * Play it back under the ▶: "Play it on your instrument", then the note the tuner hears as the
- * player plays, large ("F♯" with its octave small), or "Listening…" while nothing is heard, in a box
- * of steady height; with the microphone not allowed, "Microphone is off" and its button in that box.
+ * Play it back under the ▶: "Play it on your instrument" ("Play them…" for notes in a row, with a dot
+ * for each, those found filled in the in-tune colour), then the note the tuner hears as the player
+ * plays, large ("F♯" with its octave small), or a dimmed dash while nothing is heard, and a small
+ * line under it ([HeardLine]). Once every note is found, a soft glow in the in-tune colour eases in
+ * behind the note as the tuner's glow does (0.4 s in, 0.6 s out). All in a box of steady height, so
+ * nothing moves; with the microphone not allowed, "Microphone is off" and its button in that box.
  */
 @Composable
 private fun PlayItBackPart(
+    state: EarTrainingState,
+    question: NoteQuestion,
     heard: Note?,
     notation: Notation,
     mic: MicPermissionStatus,
     onAllowMic: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
+    val many = question.notes.size > 1
     Text(
-        stringResource(R.string.ear_play_prompt),
+        stringResource(if (many) R.string.ear_play_prompt_many else R.string.ear_play_prompt),
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
     )
+    if (many) {
+        Spacer(Modifier.height(14.dp))
+        NoteDots(question.notes.size, state.found)
+    }
     Spacer(Modifier.height(16.dp))
     Column(
         Modifier.fillMaxWidth().heightIn(min = HEARD_HEIGHT),
@@ -410,32 +446,109 @@ private fun PlayItBackPart(
             TwangleTextButton(onClick = if (forGood) onOpenSettings else onAllowMic, modifier = Modifier.testTag(EarTrainingTestTags.MIC_BUTTON)) {
                 Text(stringResource(if (forGood) R.string.ear_open_settings else R.string.ear_mic_allow), textAlign = TextAlign.Center)
             }
-        } else if (heard == null) {
-            Text(
-                stringResource(R.string.ear_listening),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.testTag(EarTrainingTestTags.HEARD),
-            )
         } else {
-            val speech = rememberNoteNameSpeech()
-            val name = notation.nameOf(heard.pitchClass)
-            val spoken = stringResource(R.string.ear_spoken_heard, speech.name(name) + " " + heard.octave)
-            Text(
-                buildAnnotatedString {
-                    append(musicText(name))
-                    withStyle(SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)) { append(heard.octave.toString()) }
-                },
-                style = MaterialTheme.typography.displayMedium.copy(textDirection = TextDirection.Ltr),
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                // Its text stays in the tree for the tests' checks; TalkBack says the description.
-                modifier = Modifier.testTag(EarTrainingTestTags.HEARD).semantics {
-                    contentDescription = spoken
-                    liveRegion = LiveRegionMode.Polite
-                },
+            HeardNote(heard, notation, glowing = state.allFound)
+            Spacer(Modifier.height(4.dp))
+            HeardLine(state, question, heard)
+        }
+    }
+}
+
+/** The note heard, large, with a soft in-tune glow behind it while [glowing]; a dimmed dash (silent for TalkBack) while none. */
+@Composable
+private fun HeardNote(heard: Note?, notation: Notation, glowing: Boolean) {
+    val glow by animateFloatAsState(if (glowing) 1f else 0f, meterGlowSpec(glowing), label = "ear_right_glow")
+    val inTune = MaterialTheme.styleTokens.inTune
+    val style = MaterialTheme.typography.displayMedium.copy(textDirection = TextDirection.Ltr)
+    val glowModifier = Modifier.drawBehind {
+        // Read here, in the draw phase, so the glow easing in redraws without recomposing.
+        val alpha = glow
+        if (alpha > 0f) {
+            val radius = size.maxDimension * GLOW_REACH
+            drawCircle(
+                Brush.radialGradient(listOf(inTune.copy(alpha = GLOW_ALPHA * alpha), Color.Transparent), center, radius),
+                radius,
+                center,
             )
+        }
+    }
+    if (heard == null) {
+        // An unseen octave digit either side, so the dash's line is as tall as a note's with its octave and stays centred: nothing moves.
+        val unseen = SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript, color = Color.Transparent)
+        Text(
+            buildAnnotatedString {
+                withStyle(unseen) { append("0") }
+                append("—")
+                withStyle(unseen) { append("0") }
+            },
+            style = style,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DASH_ALPHA),
+            maxLines = 1,
+            modifier = Modifier.testTag(EarTrainingTestTags.HEARD).then(glowModifier).clearAndSetSemantics {},
+        )
+    } else {
+        val speech = rememberNoteNameSpeech()
+        val name = notation.nameOf(heard.pitchClass)
+        val spoken = stringResource(R.string.ear_spoken_heard, speech.name(name) + " " + heard.octave)
+        Text(
+            buildAnnotatedString {
+                append(musicText(name))
+                withStyle(SpanStyle(fontSize = OCTAVE_SIZE, baselineShift = BaselineShift.Subscript)) { append(heard.octave.toString()) }
+            },
+            style = style,
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1,
+            // Its text stays in the tree for the tests' checks; TalkBack says the description.
+            modifier = Modifier.testTag(EarTrainingTestTags.HEARD).then(glowModifier).semantics {
+                contentDescription = spoken
+                liveRegion = LiveRegionMode.Polite
+            },
+        )
+    }
+}
+
+/**
+ * The small line under the note heard, one at a time: "Right" in the in-tune colour once every note
+ * is found; "Not that one" after a wrong note held, until a right one (never red); for notes in a row
+ * "Note 2 of 3"; else "Hold the note you heard" while a note is heard, "Listening…" while none.
+ */
+@Composable
+private fun HeardLine(state: EarTrainingState, question: NoteQuestion, heard: Note?) {
+    val size = question.notes.size
+    val text = when {
+        state.allFound -> stringResource(R.string.ear_right)
+        state.wrongHeld -> stringResource(R.string.ear_not_that_one)
+        size > 1 -> stringResource(R.string.ear_note_of, (state.found + 1).coerceAtMost(size), size)
+        heard != null -> stringResource(R.string.ear_hold)
+        else -> stringResource(R.string.ear_listening)
+    }
+    val right = state.allFound
+    Text(
+        text,
+        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = if (right) FontWeight.Medium else FontWeight.Normal),
+        color = if (right) MaterialTheme.styleTokens.inTune else MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.testTag(EarTrainingTestTags.HEARD_LINE).semantics { liveRegion = LiveRegionMode.Polite },
+    )
+}
+
+/** A dot for each of [count] notes in a row: the [found] ones filled in the in-tune colour, the one looked for in the muted colour, the rest open. */
+@Composable
+private fun NoteDots(count: Int, found: Int) {
+    val inTune = MaterialTheme.styleTokens.inTune
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Canvas(Modifier.testTag(EarTrainingTestTags.DOTS).size(DOT_SIZE * count + DOT_GAP * (count - 1), DOT_SIZE)) {
+        val dot = DOT_SIZE.toPx()
+        val step = dot + DOT_GAP.toPx()
+        val stroke = 1.dp.toPx()
+        for (i in 0 until count) {
+            // Left to right in every language, as the notes are played.
+            val centre = Offset(dot / 2 + i * step, dot / 2)
+            when {
+                i < found -> drawCircle(inTune, dot / 2, centre)
+                i == found -> drawCircle(muted, dot / 2, centre)
+                else -> drawCircle(muted, dot / 2 - stroke / 2, centre, style = Stroke(stroke))
+            }
         }
     }
 }
@@ -520,8 +633,19 @@ private val ICON_SIZE = 24.dp
 private val REPLAY_SIZE = 72.dp
 private val REPLAY_ICON_SIZE = 32.dp
 
-/** The heard note's box: tall enough for the big note, so nothing moves when it comes and goes. */
+/** The heard note's box: tall enough for the big note and its line, so nothing moves when they change. */
 private val HEARD_HEIGHT = 96.dp
+
+/** The dash while no note is heard, this opaque in the muted colour. */
+private const val DASH_ALPHA = 0.55f
+
+/** The right note's glow: the in-tune colour this opaque at its middle, fading out this far beyond the note's box (as the mock-up's). */
+private const val GLOW_ALPHA = 0.34f
+private const val GLOW_REACH = 0.9f
+
+/** Notes in a row: each dot this big, this far apart. */
+private val DOT_SIZE = 10.dp
+private val DOT_GAP = 8.dp
 
 /** The tally set no smaller than this to fit; in dp, so it holds at any font size. */
 private val TALLY_MIN_SIZE = 8.dp

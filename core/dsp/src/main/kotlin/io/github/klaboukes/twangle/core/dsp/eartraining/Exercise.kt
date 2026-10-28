@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.eartraining
+package io.github.klaboukes.twangle.core.dsp.eartraining
 
 /**
  * Ear training's three exercises (Phase 55), picked with three icons in a row (the owner's pick A in

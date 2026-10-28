@@ -18,6 +18,10 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -286,6 +290,22 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[LEFT_HANDED] = enabled }
     }
 
+    override suspend fun setEarExercise(exercise: Exercise) {
+        dataStore.edit { it[EAR_EXERCISE] = exercise.name }
+    }
+
+    override suspend fun setEarNoteChoice(choice: NoteChoice) {
+        dataStore.edit { it[EAR_NOTE_CHOICE] = choice.name }
+    }
+
+    override suspend fun setEarNotesInRow(count: Int) {
+        dataStore.edit { it[EAR_NOTES_IN_ROW] = count.coerceIn(1, NoteQuestions.MAX_LENGTH) }
+    }
+
+    override suspend fun setEarNoteMatch(match: NoteMatch) {
+        dataStore.edit { it[EAR_NOTE_MATCH] = match.name }
+    }
+
     private fun toSettings(prefs: Preferences): AppSettings {
         val defaults = AppSettings()
         // The strobe used to be a display of its own; now it is the wave's strobe look.
@@ -333,6 +353,10 @@ class DataStoreSettingsRepository internal constructor(
             droneVoicing = enumOrNull<DroneVoicing>(prefs[DRONE_VOICING]) ?: defaults.droneVoicing,
             droneLower = prefs[DRONE_LOWER] ?: defaults.droneLower,
             leftHanded = prefs[LEFT_HANDED] ?: defaults.leftHanded,
+            earExercise = enumOrNull<Exercise>(prefs[EAR_EXERCISE]) ?: defaults.earExercise,
+            earNoteChoice = enumOrNull<NoteChoice>(prefs[EAR_NOTE_CHOICE]) ?: defaults.earNoteChoice,
+            earNotesInRow = prefs[EAR_NOTES_IN_ROW]?.takeIf { it in 1..NoteQuestions.MAX_LENGTH } ?: defaults.earNotesInRow,
+            earNoteMatch = enumOrNull<NoteMatch>(prefs[EAR_NOTE_MATCH]) ?: defaults.earNoteMatch,
         )
     }
 
@@ -413,6 +437,15 @@ class DataStoreSettingsRepository internal constructor(
         private val DRONE_VOICING = stringPreferencesKey("drone_voicing")
         private val DRONE_LOWER = booleanPreferencesKey("drone_lower")
         private val LEFT_HANDED = booleanPreferencesKey("left_handed")
+
+        /**
+         * Ear training (Phase 55): the exercise used last, Play it back's [NoteChoice] and [NoteMatch] by their
+         * names, and its notes in a row. What the player chose to be asked, never a score: the tally isn't saved.
+         */
+        private val EAR_EXERCISE = stringPreferencesKey("ear_exercise")
+        private val EAR_NOTE_CHOICE = stringPreferencesKey("ear_note_choice")
+        private val EAR_NOTES_IN_ROW = intPreferencesKey("ear_notes_in_row")
+        private val EAR_NOTE_MATCH = stringPreferencesKey("ear_note_match")
 
         /** Every custom tuning in one string, in [CustomTuningCodec]'s form. */
         private val CUSTOM_TUNINGS = stringPreferencesKey("custom_tunings")

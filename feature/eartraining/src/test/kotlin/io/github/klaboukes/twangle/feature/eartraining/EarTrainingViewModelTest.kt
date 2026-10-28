@@ -3,7 +3,9 @@ package io.github.klaboukes.twangle.feature.eartraining
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.audio.FakeTonePlayer
 import io.github.klaboukes.twangle.core.dsp.eartraining.EarTrainingVisit
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestion
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
@@ -348,6 +350,211 @@ class EarTrainingViewModelTest {
         assertTrue(vm.micRefused.value)
     }
 
+    // ---------- Play it back: the player's answer ----------
+
+    /** A listening Play it back, its first question sounded and faded. */
+    private fun TestScope.listening(settings: AppSettings = AppSettings(), repository: FakeSettingsRepository = FakeSettingsRepository(settings)): EarTrainingViewModel {
+        val vm = viewModel(settings, repository)
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        soundAndFade()
+        return vm
+    }
+
+    /** Lets every note of the question start, then fade, then waits out the tail after it. */
+    private fun TestScope.soundAndFade() {
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS * 4)
+        runCurrent()
+        fade()
+    }
+
+    /** The player plays [note] for [millis], then lets it ring out. */
+    private fun TestScope.play(note: Note, millis: Long) {
+        ears.playedHz = NoteMapper().frequencyOf(note)
+        advanceTimeBy(millis)
+        runCurrent()
+        ears.playedHz = 0f
+        advanceTimeBy(QUIET_MILLIS)
+        runCurrent()
+    }
+
+    /** A note of another pitch class than [note], a whole tone up. */
+    private fun wrongFor(note: Note): Note = Note(note.midi + 2)
+
+    @Test
+    fun `the right note held steady is right, and the next question comes by itself`() = runTest(dispatcher) {
+        val vm = listening()
+        val asked = vm.state.value.notes!!.notes.single()
+        ears.playedHz = NoteMapper().frequencyOf(asked)
+        advanceTimeBy(150)
+        runCurrent()
+        assertFalse("not held long enough yet", vm.state.value.answered)
+        advanceTimeBy(STEADY_MILLIS)
+        runCurrent()
+        assertTrue("right once steady", vm.state.value.answered && vm.state.value.allFound)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+        assertFalse(vm.state.value.wrongHeld)
+
+        // Held on, it doesn't count again; the next question sounds 1½ s after.
+        advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS - 600)
+        runCurrent()
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+        ears.playedHz = 0f
+        advanceTimeBy(700)
+        runCurrent()
+        assertFalse("a new question", vm.state.value.answered)
+        assertEquals(0, vm.state.value.found)
+        assertEquals(2, tone.played.size)
+    }
+
+    @Test
+    fun `the right note in another octave counts`() = runTest(dispatcher) {
+        val vm = listening(AppSettings(earNoteChoice = NoteChoice.ALL_TO_12TH))
+        play(octaveAway(vm.state.value.notes!!.notes.single()), HOLD_STEADY_MILLIS)
+        assertTrue("any octave counts", vm.state.value.allFound)
+        assertEquals(Tally(right = 1, asked = 1), vm.state.value.tally)
+    }
+
+    @Test
+    fun `only the exact note counts when that is asked`() = runTest(dispatcher) {
+        val vm = listening(AppSettings(earNoteChoice = NoteChoice.ALL_TO_12TH, earNoteMatch = NoteMatch.EXACT))
+        val asked = vm.state.value.notes!!.notes.single()
+        play(octaveAway(asked), HOLD_SETTLED_MILLIS)
+        assertFalse("not the exact note", vm.state.value.answered)
+        assertTrue(vm.state.value.wrongHeld)
+        play(asked, HOLD_STEADY_MILLIS)
+        assertTrue(vm.state.value.allFound)
+        assertEquals(Tally(right = 0, asked = 1), vm.state.value.tally)
+    }
+
+    private fun octaveAway(note: Note): Note = Note(if (note.midi >= 52) note.midi - 12 else note.midi + 12)
+
+    @Test
+    fun `a wrong note held is not right, the question can be heard again, and it comes back missed`() = runTest(dispatcher) {
+        val vm = listening(AppSettings(earNoteChoice = NoteChoice.ALL_TO_12TH))
+        val question = vm.state.value.notes!!
+        val asked = question.notes.single()
+
+        // Passing a wrong note on the way (under 1 s) says nothing.
+        play(wrongFor(asked), HOLD_STEADY_MILLIS)
+        assertFalse(vm.state.value.wrongHeld)
+
+        play(wrongFor(asked), HOLD_SETTLED_MILLIS)
+        assertTrue("Not that one", vm.state.value.wrongHeld)
+        assertFalse("the question stays", vm.state.value.answered)
+        assertEquals("nothing counted yet", Tally(), vm.state.value.tally)
+        assertEquals(question, vm.state.value.notes)
+
+        // ▶: the question sounds again, "Not that one" goes, and its own sound isn't taken for the answer.
+        vm.replay()
+        runCurrent()
+        assertEquals(2, tone.played.size)
+        assertFalse(vm.state.value.wrongHeld)
+        advanceTimeBy(3_000)
+        runCurrent()
+        assertFalse("its sound is no answer", vm.state.value.answered)
+        fade()
+
+        play(asked, HOLD_STEADY_MILLIS)
+        assertTrue("found in the end", vm.state.value.allFound)
+        assertEquals("but missed first", Tally(right = 0, asked = 1), vm.state.value.tally)
+
+        // It comes back a few questions later.
+        val asks = mutableListOf<NoteQuestion>()
+        repeat(EarTrainingVisit.MISSED_RETURN_MAX) {
+            advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS)
+            runCurrent()
+            soundAndFade()
+            val now = vm.state.value.notes!!
+            asks += now
+            play(now.notes.single(), HOLD_STEADY_MILLIS)
+            assertTrue(vm.state.value.answered)
+        }
+        assertTrue("back as the 3rd to 5th question after it: $asks", question in asks.drop(EarTrainingVisit.MISSED_RETURN_MIN - 1))
+        assertEquals(Tally(right = EarTrainingVisit.MISSED_RETURN_MAX, asked = EarTrainingVisit.MISSED_RETURN_MAX + 1), vm.state.value.tally)
+    }
+
+    @Test
+    fun `nothing is counted while the question plays, even the right note`() = runTest(dispatcher) {
+        val vm = viewModel(AppSettings(earNotesInRow = 2))
+        vm.setMicAllowed(true)
+        backgroundScope.launch { vm.heard.collect {} }
+        vm.show()
+        runCurrent()
+        // The microphone hears the question's own notes, each the right one, for as long as they ring.
+        advanceTimeBy(5_000)
+        runCurrent()
+        assertEquals(2, tone.played.size)
+        assertEquals("not one note found", 0, vm.state.value.found)
+        assertFalse(vm.state.value.wrongHeld)
+        fade()
+        assertEquals(0, vm.state.value.found)
+        assertEquals(Tally(), vm.state.value.tally)
+    }
+
+    @Test
+    fun `two to four notes in a row are found one after another, in order`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository()
+        val vm = listening(repository = repository)
+        vm.setNotesInRow(3)
+        runCurrent()
+        assertEquals("saved", 3, repository.settings.value.earNotesInRow)
+        val question = vm.state.value.notes!!
+        assertEquals("a question that long at once", 3, question.notes.size)
+        advanceTimeBy(EarTrainingViewModel.NOTE_SPACING_MILLIS * 3)
+        runCurrent()
+        assertEquals("its notes sound one after another, after the first question's one", 4, tone.played.size)
+        assertEquals(question.notes.map { NoteMapper().frequencyOf(it) }, tone.played.takeLast(3))
+        fade()
+
+        play(question.notes[1], HOLD_SETTLED_MILLIS)
+        assertEquals("the second first is no use", 0, vm.state.value.found)
+        play(question.notes[0], HOLD_STEADY_MILLIS)
+        assertEquals(1, vm.state.value.found)
+        play(question.notes[1], HOLD_STEADY_MILLIS)
+        assertEquals(2, vm.state.value.found)
+        assertFalse(vm.state.value.answered)
+        play(question.notes[2], HOLD_STEADY_MILLIS)
+        assertTrue(vm.state.value.allFound && vm.state.value.answered)
+        assertEquals(Tally(right = 0, asked = 1), vm.state.value.tally)
+
+        vm.setNotesInRow(9)
+        runCurrent()
+        assertEquals("four at most", 4, vm.state.value.notesInRow)
+        assertEquals(4, vm.state.value.notes!!.notes.size)
+    }
+
+    @Test
+    fun `the exercise and the choices of what is asked are saved and come back`() = runTest(dispatcher) {
+        val repository = FakeSettingsRepository()
+        val vm = viewModel(repository = repository)
+        vm.show()
+        runCurrent()
+        vm.setNoteChoice(NoteChoice.NATURALS_TO_5TH)
+        vm.setNotesInRow(2)
+        vm.setNoteMatch(NoteMatch.EXACT)
+        vm.pickExercise(Exercise.INTERVALS)
+        runCurrent()
+        val saved = repository.settings.value
+        assertEquals(Exercise.INTERVALS, saved.earExercise)
+        assertEquals(NoteChoice.NATURALS_TO_5TH, saved.earNoteChoice)
+        assertEquals(2, saved.earNotesInRow)
+        assertEquals(NoteMatch.EXACT, saved.earNoteMatch)
+
+        // The next time the tool opens, it starts where the player left it.
+        val again = viewModel(saved, FakeSettingsRepository(saved))
+        assertEquals(Exercise.INTERVALS, again.state.value.exercise)
+        again.pickExercise(Exercise.PLAY_IT_BACK)
+        runCurrent()
+        val state = again.state.value
+        assertEquals(Triple(NoteChoice.NATURALS_TO_5TH, 2, NoteMatch.EXACT), Triple(state.noteChoice, state.notesInRow, state.noteMatch))
+        assertEquals(2, state.notes!!.notes.size)
+        assertTrue(state.notes!!.notes.all { it in NoteChoice.NATURALS_TO_5TH.notesOn(Tunings.STANDARD) })
+        assertEquals(Tally(), state.tally)
+    }
+
     /** The microphone for the tests: a frame per chunk of [recorder] (open only while collected), hearing the speaker's tone while it sounds. */
     private class FakeEars(private val recorder: FakeAudioRecorder, private val tone: FakeTonePlayer) : PitchListener {
 
@@ -373,5 +580,15 @@ class EarTrainingViewModelTest {
 
         /** The tail after a tone (0.3 s) and a few frames more. */
         const val TAIL_AND_SOME_MILLIS = 600L
+
+        /** The in-tune hold (0.3 s) and a little more, after the smoothing's first frames. */
+        const val STEADY_MILLIS = 300L
+
+        /** A note played long enough to be right, but not to be wrong (1 s); and long enough to be wrong. */
+        const val HOLD_STEADY_MILLIS = 600L
+        const val HOLD_SETTLED_MILLIS = 1_400L
+
+        /** Long enough for a let-go string to be heard as gone. */
+        const val QUIET_MILLIS = 600L
     }
 }

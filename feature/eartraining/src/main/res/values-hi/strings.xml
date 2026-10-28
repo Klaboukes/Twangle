@@ -18,4 +18,11 @@
     <string name="ear_mic_off">माइक्रोफ़ोन बंद है</string>
     <string name="ear_mic_allow">माइक्रोफ़ोन की अनुमति दें</string>
     <string name="ear_open_settings">सेटिंग्स खोलें</string>
+    <string name="ear_play_prompt_many">इन्हें अपने वाद्य पर बजाएँ</string>
+    <string name="ear_hold">सुना हुआ सुर बजाए रखें</string>
+    <string name="ear_note_of">%2$d में से सुर %1$d</string>
+    <string name="ear_right">सही</string>
+    <string name="ear_not_that_one">यह नहीं</string>
+    <string name="ear_notes_in_row">लगातार सुर</string>
+    <string name="ear_any_octave">कोई भी सप्तक चलेगा</string>
 </resources>

@@ -14,6 +14,9 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -118,6 +121,9 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the drone is the tanpura with the fifth", DroneSound.TANPURA to DroneVoicing.FIFTH, settings.droneSound to settings.droneVoicing)
         assertEquals("the drone isn't lower until asked", false, settings.droneLower)
         assertEquals("the charts are right-handed until asked", false, settings.leftHanded)
+        assertEquals("ear training opens on Play it back", Exercise.PLAY_IT_BACK, settings.earExercise)
+        assertEquals("asking the open strings, one at a time", NoteChoice.OPEN_STRINGS to 1, settings.earNoteChoice to settings.earNotesInRow)
+        assertEquals("any octave counts", NoteMatch.ANY_OCTAVE, settings.earNoteMatch)
     }
 
     @Test
@@ -155,6 +161,10 @@ class DataStoreSettingsRepositoryTest {
         repo.setDroneVoicing(DroneVoicing.FIFTH_OCTAVE)
         repo.setDroneLower(true)
         repo.setLeftHanded(true)
+        repo.setEarExercise(Exercise.INTERVALS)
+        repo.setEarNoteChoice(NoteChoice.ALL_TO_12TH)
+        repo.setEarNotesInRow(3)
+        repo.setEarNoteMatch(NoteMatch.EXACT)
 
         val expected = AppSettings(
             a4Hz = 432f,
@@ -189,6 +199,10 @@ class DataStoreSettingsRepositoryTest {
             droneVoicing = DroneVoicing.FIFTH_OCTAVE,
             droneLower = true,
             leftHanded = true,
+            earExercise = Exercise.INTERVALS,
+            earNoteChoice = NoteChoice.ALL_TO_12TH,
+            earNotesInRow = 3,
+            earNoteMatch = NoteMatch.EXACT,
         )
         assertEquals(expected, repo.settings.first())
     }
@@ -230,6 +244,10 @@ class DataStoreSettingsRepositoryTest {
             setDroneVoicing(DroneVoicing.ROOT)
             setDroneLower(true)
             setLeftHanded(true)
+            setEarExercise(Exercise.CHORD_TYPE)
+            setEarNoteChoice(NoteChoice.NATURALS_TO_5TH)
+            setEarNotesInRow(4)
+            setEarNoteMatch(NoteMatch.EXACT)
         }
         close()
 
@@ -256,6 +274,21 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the drone's sound and notes are kept", DroneSound.HARMONIUM to DroneVoicing.ROOT, settings.droneSound to settings.droneVoicing)
         assertEquals("the drone's Lower is kept", true, settings.droneLower)
         assertEquals("left-handed is kept", true, settings.leftHanded)
+        assertEquals("the ear training exercise used last is kept", Exercise.CHORD_TYPE, settings.earExercise)
+        assertEquals("what Play it back asks is kept", NoteChoice.NATURALS_TO_5TH to 4, settings.earNoteChoice to settings.earNotesInRow)
+        assertEquals("only the exact note, as chosen", NoteMatch.EXACT, settings.earNoteMatch)
+    }
+
+    @Test
+    fun `Play it back's notes in a row are kept within 1 to 4`() = runTest {
+        val repo = repository()
+        repo.setEarNotesInRow(7)
+        assertEquals(4, repo.settings.first().earNotesInRow)
+        repo.setEarNotesInRow(0)
+        assertEquals(1, repo.settings.first().earNotesInRow)
+        val fake = FakeSettingsRepository()
+        fake.setEarNotesInRow(9)
+        assertEquals("the fake keeps them so too", 4, fake.settings.first().earNotesInRow)
     }
 
     @Test

@@ -5,6 +5,10 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
@@ -156,6 +160,18 @@ interface SettingsRepository {
 
     /** The drone an octave lower or not ([AppSettings.droneLower]). */
     suspend fun setDroneLower(lower: Boolean)
+
+    /** Ear training's exercise picked last ([AppSettings.earExercise]). */
+    suspend fun setEarExercise(exercise: Exercise)
+
+    /** The notes Play it back asks for ([AppSettings.earNoteChoice]). */
+    suspend fun setEarNoteChoice(choice: NoteChoice)
+
+    /** How many notes Play it back plays in a row, kept within 1..[NoteQuestions.MAX_LENGTH] ([AppSettings.earNotesInRow]). */
+    suspend fun setEarNotesInRow(count: Int)
+
+    /** Any octave or only the exact note asked counts in Play it back ([AppSettings.earNoteMatch]). */
+    suspend fun setEarNoteMatch(match: NoteMatch)
 
     /** The chord charts and the scale neck mirrored for a left-handed player or not ([AppSettings.leftHanded]). */
     suspend fun setLeftHanded(enabled: Boolean)

@@ -18,4 +18,11 @@
     <string name="ear_mic_off">마이크가 꺼져 있어요</string>
     <string name="ear_mic_allow">마이크 허용</string>
     <string name="ear_open_settings">설정 열기</string>
+    <string name="ear_play_prompt_many">악기로 차례대로 연주해 보세요</string>
+    <string name="ear_hold">들은 음을 길게 울려 보세요</string>
+    <string name="ear_note_of">%2$d음 중 %1$d번째</string>
+    <string name="ear_right">정답</string>
+    <string name="ear_not_that_one">그 음이 아니에요</string>
+    <string name="ear_notes_in_row">연속으로 낼 음 수</string>
+    <string name="ear_any_octave">어느 옥타브든 정답</string>
 </resources>

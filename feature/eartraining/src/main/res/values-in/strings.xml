@@ -18,4 +18,11 @@
     <string name="ear_mic_off">Mikrofon mati</string>
     <string name="ear_mic_allow">Izinkan mikrofon</string>
     <string name="ear_open_settings">Buka setelan</string>
+    <string name="ear_play_prompt_many">Mainkan nada-nada itu di alat musik Anda</string>
+    <string name="ear_hold">Tahan nada yang Anda dengar</string>
+    <string name="ear_note_of">Nada %1$d dari %2$d</string>
+    <string name="ear_right">Benar</string>
+    <string name="ear_not_that_one">Bukan yang itu</string>
+    <string name="ear_notes_in_row">Nada berturut-turut</string>
+    <string name="ear_any_octave">Oktaf mana pun dihitung</string>
 </resources>

@@ -1,6 +1,6 @@
 # Privacybeleid van Twangle
 
-*Ingangsdatum: 27 oktober 2026* · [English](PRIVACY.md)
+*Ingangsdatum: 28 oktober 2026* · [English](PRIVACY.md)
 
 Twangle is een gitaarstemmer voor Android, met een metronoom en oefentools, gemaakt door de ontwikkelaar Klaboukes. Kort gezegd: **Twangle verzamelt geen gegevens over jou.** Niets van wat je speelt en niets over jou verlaat je telefoon.
 
@@ -30,7 +30,7 @@ Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan al
 - **Stemmen:** het instrument en de stemming (en hoeveel lager je die hebt gezet), stemmingen die je zelf hebt gemaakt, snaar- of chromatische modus, de A4-stemtoon, hoe nootnamen worden geschreven en hoe precies "gestemd" is.
 - **Uiterlijk:** de stijl, licht of donker, kleuren van je achtergrond, het uiterlijk van de meter en het effect bij gestemd, de weergave (naald of golf), het uiterlijk van de golf, of de focusmodus aan staat, of de signaalstreepjes te zien zijn, en de taal van de app als je die hebt gekozen.
 - **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
-- **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom en of hij trilt op de tel; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; en of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend.
+- **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom en of hij trilt op de tel; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt), nooit je antwoorden of een score.
 - Of je de rondleiding al hebt gezien, zodat die niet opnieuw verschijnt, en of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.
 
 De widget op je startscherm laat het instrument en de stemming zien die je hebt gekozen. Hij gebruikt nooit de microfoon.

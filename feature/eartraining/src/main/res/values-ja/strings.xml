@@ -18,4 +18,11 @@
     <string name="ear_mic_off">マイクがオフです</string>
     <string name="ear_mic_allow">マイクを許可</string>
     <string name="ear_open_settings">設定を開く</string>
+    <string name="ear_play_prompt_many">楽器で順に弾いてください</string>
+    <string name="ear_hold">聞こえた音を伸ばしてください</string>
+    <string name="ear_note_of">%2$d 音中 %1$d 音目</string>
+    <string name="ear_right">正解</string>
+    <string name="ear_not_that_one">その音ではありません</string>
+    <string name="ear_notes_in_row">続けて出す音の数</string>
+    <string name="ear_any_octave">どのオクターブでも可</string>
 </resources>

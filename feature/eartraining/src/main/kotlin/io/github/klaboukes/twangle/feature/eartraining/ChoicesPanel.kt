@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.eartraining
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,9 +24,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,8 +44,16 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
+import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.localDigits
+import io.github.klaboukes.twangle.core.designsystem.pressFeedback
+import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 
@@ -51,12 +63,21 @@ import io.github.klaboukes.twangle.core.designsystem.R as DesignR
  * pick takes effect at once ([onNoteChoice]: a question the new choice doesn't offer gives way to a new
  * one) and the panel stays open for more; a tap beside it, a swipe down or Back closes it ([onDismiss]).
  *
- * Play it back picks its notes: the open strings, the natural notes to the 5th fret, or every note to
- * the 12th, on the instrument and tuning picked. Intervals and Chord type add theirs as they are built.
+ * Play it back picks its notes (the open strings, the natural notes to the 5th fret, or every note to
+ * the 12th, on the instrument and tuning picked), how many in a row (1 to 4, [onNotesInRow]) and whether
+ * any octave counts ([onNoteMatch]), as the mock-up's panel. Intervals and Chord type add theirs as
+ * they are built. Everything picked here is saved ([EarTrainingViewModel]).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ChoicesPanel(exercise: Exercise, noteChoice: NoteChoice, onNoteChoice: (NoteChoice) -> Unit, onDismiss: () -> Unit) {
+internal fun ChoicesPanel(
+    state: EarTrainingState,
+    onNoteChoice: (NoteChoice) -> Unit,
+    onNotesInRow: (Int) -> Unit,
+    onNoteMatch: (NoteMatch) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val exercise = state.exercise
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scheme = MaterialTheme.colorScheme
     // The whole panel, with its handle and the room for the navigation bar under it.
@@ -90,11 +111,26 @@ internal fun ChoicesPanel(exercise: Exercise, noteChoice: NoteChoice, onNoteChoi
                     GroupHeading(stringResource(R.string.ear_notes))
                     Column(Modifier.selectableGroup()) {
                         for (choice in NoteChoice.entries) {
-                            ChoiceRow(stringResource(choice.label), selected = choice == noteChoice, tag = EarTrainingTestTags.noteChoice(choice)) {
+                            ChoiceRow(stringResource(choice.label), selected = choice == state.noteChoice, tag = EarTrainingTestTags.noteChoice(choice)) {
                                 onNoteChoice(choice)
                             }
                         }
                     }
+                    GroupHeading(stringResource(R.string.ear_notes_in_row))
+                    val locale = appLocale()
+                    SegmentedSwitch(
+                        options = NOTES_IN_ROW,
+                        selected = state.notesInRow,
+                        onSelect = onNotesInRow,
+                        label = { localDigits(it, locale) },
+                        tag = EarTrainingTestTags::notesInRow,
+                        modifier = Modifier.padding(start = PANEL_PADDING - LIST_PADDING, top = 6.dp).fillMaxWidth(),
+                    )
+                    SwitchRow(
+                        text = stringResource(R.string.ear_any_octave),
+                        checked = state.noteMatch == NoteMatch.ANY_OCTAVE,
+                        tag = EarTrainingTestTags.ANY_OCTAVE,
+                    ) { onNoteMatch(if (it) NoteMatch.ANY_OCTAVE else NoteMatch.EXACT) }
                 }
                 // Their choices come with their own increments.
                 Exercise.INTERVALS, Exercise.CHORD_TYPE -> Unit
@@ -155,6 +191,38 @@ private fun ChoiceRow(text: String, selected: Boolean, tag: String, onClick: () 
         }
     }
 }
+
+/** A choice that is on or off: its [text] with a switch at the end; the whole row toggles it (as the drone's Lower). */
+@Composable
+private fun SwitchRow(text: String, checked: Boolean, tag: String, onCheckedChange: (Boolean) -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    Row(
+        Modifier
+            .testTag(tag)
+            .padding(top = 10.dp)
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .pressFeedback(source, MaterialTheme.shapes.medium)
+            .toggleable(value = checked, interactionSource = source, indication = null, role = Role.Switch) {
+                source.pressFlash()
+                onCheckedChange(it)
+            }
+            .padding(start = 12.dp, end = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f).padding(vertical = 6.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
+/** Play it back's choice of notes in a row: one to four. */
+private val NOTES_IN_ROW = (1..NoteQuestions.MAX_LENGTH).toList()
 
 /** The panel's top corners, as the instrument and tuning panel's: the style's card corners, at least 14 dp. */
 private fun panelShape(style: VisualStyle): Shape = when (style) {

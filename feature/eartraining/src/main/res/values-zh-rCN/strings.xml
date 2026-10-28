@@ -18,4 +18,11 @@
     <string name="ear_mic_off">麦克风已关闭</string>
     <string name="ear_mic_allow">允许使用麦克风</string>
     <string name="ear_open_settings">打开设置</string>
+    <string name="ear_play_prompt_many">在你的乐器上依次弹出来</string>
+    <string name="ear_hold">保持你听到的那个音</string>
+    <string name="ear_note_of">第 %1$d 个音，共 %2$d 个</string>
+    <string name="ear_right">正确</string>
+    <string name="ear_not_that_one">不是这个音</string>
+    <string name="ear_notes_in_row">连续几个音</string>
+    <string name="ear_any_octave">任何八度都算</string>
 </resources>

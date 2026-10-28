@@ -5,6 +5,10 @@ import io.github.klaboukes.twangle.core.dsp.capo.SongKey
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.drone.DroneSound
 import io.github.klaboukes.twangle.core.dsp.drone.DroneVoicing
+import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
+import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
@@ -287,6 +291,14 @@ data class AppSettings(
     val droneVoicing: DroneVoicing = DroneVoicing.FIFTH,
     /** The whole drone an octave lower (off until the player turns it on). */
     val droneLower: Boolean = false,
+    /** Ear training's exercise used last (Phase 55), which the tool opens on: Play it back on a fresh install. */
+    val earExercise: Exercise = Exercise.DEFAULT,
+    /** The notes Play it back asks for, as the player chose them: the open strings on a fresh install. */
+    val earNoteChoice: NoteChoice = NoteChoice.OPEN_STRINGS,
+    /** How many notes Play it back plays in a row, 1 to [NoteQuestions.MAX_LENGTH]: one on a fresh install. */
+    val earNotesInRow: Int = 1,
+    /** Whether Play it back takes the note asked in any octave ("Any octave counts", on a fresh install) or only the exact one. */
+    val earNoteMatch: NoteMatch = NoteMatch.ANY_OCTAVE,
     /**
      * Left-handed (Phase 57): the chord charts and the scale neck drawn mirrored, for a guitar held the other way
      * round (off until the player turns it on). The tuner's string row doesn't change.

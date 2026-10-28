@@ -18,4 +18,11 @@
     <string name="ear_mic_off">Mikrofon wyłączony</string>
     <string name="ear_mic_allow">Zezwól na mikrofon</string>
     <string name="ear_open_settings">Otwórz ustawienia</string>
+    <string name="ear_play_prompt_many">Zagraj te dźwięki na swoim instrumencie</string>
+    <string name="ear_hold">Przytrzymaj usłyszany dźwięk</string>
+    <string name="ear_note_of">Dźwięk %1$d z %2$d</string>
+    <string name="ear_right">Dobrze</string>
+    <string name="ear_not_that_one">Nie ten</string>
+    <string name="ear_notes_in_row">Dźwięki po kolei</string>
+    <string name="ear_any_octave">Liczy się każda oktawa</string>
 </resources>

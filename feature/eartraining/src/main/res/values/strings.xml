@@ -31,4 +31,18 @@
     <string name="ear_mic_off">Microphone is off</string>
     <string name="ear_mic_allow">Allow microphone</string>
     <string name="ear_open_settings">Open settings</string>
+    <!-- Play it back with two to four notes in a row: the prompt under the play button, for the notes just heard. -->
+    <string name="ear_play_prompt_many">Play them on your instrument</string>
+    <!-- Play it back, under the note heard: keep the note sounding until the tuner calls it. -->
+    <string name="ear_hold">Hold the note you heard</string>
+    <!-- Play it back with notes in a row: which note is being looked for, %1$d of the %2$d notes asked. -->
+    <string name="ear_note_of">Note %1$d of %2$d</string>
+    <!-- Play it back: the note held is the one asked, shown softly in the in-tune colour. -->
+    <string name="ear_right">Right</string>
+    <!-- Play it back: the note held is not the one asked; the player plays on (never red). -->
+    <string name="ear_not_that_one">Not that one</string>
+    <!-- In the What is asked panel, Play it back: the heading over the choice of 1 to 4 notes asked in a row. -->
+    <string name="ear_notes_in_row">Notes in a row</string>
+    <!-- In that panel: a switch; on, the note asked counts in any octave (a G on any string answers a G). -->
+    <string name="ear_any_octave">Any octave counts</string>
 </resources>
