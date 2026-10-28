@@ -40,7 +40,7 @@ enum class TunerTool {
 
 /**
  * The tools the tuner offers for [instrument] in a build with [tools] switched on, in the menu's
- * order: the strum check where it can tell the strings apart ([StrumInstruments.offers]: not on the
+ * order: the strum check where its switch is on and it can tell the strings apart ([StrumInstruments.offers]: not on the
  * 12-string), the 12th-fret check where its switch is on and the instrument has
  * frets and a saddle ([IntonationInstruments.offers]), the chord name where its switch is on and the
  * instrument is strummed in chords ([ChordInstruments.offers]), and the pitch trail where its switch is on
@@ -48,7 +48,7 @@ enum class TunerTool {
  * switch as in v1.0; with any other tool or more, one "more tools" button opens a menu of them.
  */
 fun tunerToolsFor(tools: ToolSwitches, instrument: Instrument): List<TunerTool> = buildList {
-    if (StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
+    if (tools.strumCheck && StrumInstruments.offers(instrument)) add(TunerTool.STRUM_CHECK)
     if (tools.intonationCheck && IntonationInstruments.offers(instrument)) add(TunerTool.INTONATION_CHECK)
     if (tools.chordNaming && ChordInstruments.offers(instrument)) add(TunerTool.CHORD_NAME)
     if (tools.pitchTrail) add(TunerTool.PITCH_TRAIL)

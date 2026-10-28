@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.practice
 import io.github.klaboukes.twangle.core.settings.PracticeTool
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class PracticeToolsTest {
@@ -23,7 +24,25 @@ class PracticeToolsTest {
     @Test
     fun `with its switch off there is no Practice, only the metronome tab`() {
         assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_OFF))
-        assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(practiceTab = false, capoHelper = false)))
+        assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(practiceTab = false)))
+    }
+
+    @Test
+    fun `each Practice tool follows its own switch`() {
+        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.SCALES), practiceToolsFor(ToolSwitches.ALL_ON.copy(chords = false)))
+        assertEquals(listOf(PracticeTool.METRONOME, PracticeTool.CHORDS, PracticeTool.CAPO), practiceToolsFor(ToolSwitches.ALL_ON.copy(scales = false)))
+        val offered = practiceToolsFor(ToolSwitches.ALL_ON.copy(scales = false))
+        assertEquals("a saved Scales opens the metronome", PracticeTool.METRONOME, practiceToolToOpen(PracticeTool.SCALES, offered))
+    }
+
+    @Test
+    fun `the capo helper goes with Chords, whose charts its rows open`() {
+        assertFalse(PracticeTool.CAPO in practiceToolsFor(ToolSwitches.ALL_ON.copy(chords = false)))
+    }
+
+    @Test
+    fun `with the metronome as the only tool there is no Practice, only the metronome tab`() {
+        assertEquals(emptyList<PracticeTool>(), practiceToolsFor(ToolSwitches.ALL_ON.copy(chords = false, scales = false)))
     }
 
     @Test

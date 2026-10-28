@@ -93,7 +93,8 @@ affected_modules() {
 }
 
 # A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>".
-PASSED="$ROOT/build/ui-tests-passed"
+# Kept in the main folder, so a pass in a session's own worktree counts for every checkout of this PC.
+PASSED="$(cd "$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir)/.." && pwd)/build/ui-tests-passed"
 pass_file() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
 
 # The UI test modules no pass vouches for: never passed whole on this PC, passed at a commit this

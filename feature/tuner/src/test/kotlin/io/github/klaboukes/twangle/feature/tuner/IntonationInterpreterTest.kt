@@ -179,7 +179,7 @@ class IntonationInterpreterTest {
         // Basses aren't strummed in chords; the violin has neither frets nor chords; the pitch trail draws any note.
         assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.BASS_4))
         assertEquals(listOf(TunerTool.STRUM_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.VIOLIN))
-        assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR))
         // The 12-string's octave strings blur a strum and a chord: only the 12th-fret check and the trail.
         assertEquals(listOf(TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON, Instruments.GUITAR_12))
         assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_OFF, Instruments.GUITAR_12))
@@ -190,6 +190,8 @@ class IntonationInterpreterTest {
         assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(chordNaming = false), Instruments.GUITAR))
         assertEquals(listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.GUITAR))
         assertEquals(listOf(TunerTool.STRUM_CHECK), tunerToolsFor(ToolSwitches.ALL_ON.copy(pitchTrail = false), Instruments.VIOLIN))
+        assertEquals(listOf(TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME, trail), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false), Instruments.GUITAR))
+        assertEquals(emptyList<TunerTool>(), tunerToolsFor(ToolSwitches.ALL_ON.copy(strumCheck = false, pitchTrail = false), Instruments.VIOLIN))
     }
 
     @Test

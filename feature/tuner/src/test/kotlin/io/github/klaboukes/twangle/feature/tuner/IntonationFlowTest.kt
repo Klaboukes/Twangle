@@ -158,7 +158,7 @@ class IntonationFlowTest {
         val vm = viewModel(FakeAudioRecorder.silence(), tools = ToolSwitches.ALL_OFF)
         vm.onPermissionChanged(true)
         backgroundScope.launch { vm.state.collect {} }
-        assertEquals(listOf(TunerTool.STRUM_CHECK), vm.tunerTools.value)
+        assertEquals(emptyList<TunerTool>(), vm.tunerTools.value)
         vm.setIntonationCheck(true)
         advanceTimeBy(100)
         assertFalse(vm.intonationCheck.value)

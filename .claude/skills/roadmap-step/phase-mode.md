@@ -6,7 +6,7 @@ Finish every remaining ☐ item of phase N in this session. This session is the 
 2. **Announce the whole phase once.** List the remaining items in plain language, grouped into the planned increments, plus anything the owner must do along the way (e.g. "keep the phone connected for the last two").
 3. **For each increment, one after another:**
    - Post the SKILL.md step-2 announcement.
-   - Launch one `general-purpose` sub-agent in the foreground (`run_in_background: false`) with the prompt below. Never run two at once: they share `main`, the phone and the Gradle daemon.
+   - Launch one `general-purpose` sub-agent in the foreground (`run_in_background: false`) with the prompt below. Never run two at once: they share this session's worktree, the phone and the Gradle daemon.
    - If it reports **BLOCKED**, ask the owner here, since sub-agents can't. Then send the answer back to the same agent with `SendMessage`.
    - Pass its carry-over facts into the next prompt, and post a one-line progress note (e.g. "3 of 6 done: tunings and string lookup are in, <PR link>").
 4. **Stop early only when blocked** by something only the owner can provide, or by a failure you can't fix. Land what's finished, then say plainly what's left and what you need.

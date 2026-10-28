@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.TunerMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -89,8 +90,20 @@ class StrumCheckFlowTest {
     private val settings = FakeSettingsRepository()
     private val tones = FakeTonePlayer()
 
-    private fun TestScope.viewModel(recorder: FakeAudioRecorder) =
-        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler))
+    private fun TestScope.viewModel(recorder: FakeAudioRecorder, tools: ToolSwitches = ToolSwitches.ALL_ON) =
+        TunerViewModel(recorder, settings, tones, StandardTestDispatcher(testScheduler), tools = tools)
+
+    @Test
+    fun `with its switch off the strum check is not offered`() = runTest(dispatcher) {
+        val vm = viewModel(FakeAudioRecorder(strum, loop = true), ToolSwitches.ALL_ON.copy(strumCheck = false))
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        assertFalse(TunerTool.STRUM_CHECK in vm.tunerTools.value)
+        vm.setStrumCheck(true)
+        advanceTimeBy(500)
+        assertFalse(vm.strumCheck.value)
+        assertFalse(vm.state.value is TunerUiState.StrumCheck)
+    }
 
     private fun TunerViewModel.strumCheckState(): TunerUiState.StrumCheck {
         val state = state.value

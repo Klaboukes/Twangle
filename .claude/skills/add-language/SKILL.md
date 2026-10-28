@@ -11,7 +11,7 @@ One language (or a few closely related ones) per branch and PR. CLAUDE.md's hard
 The owner doesn't write code. Tell them in plain language what changed and what to try.
 
 ## 0. Pre-flight
-Same as the roadmap-step skill's step 0: clean tree, `git switch main && git pull`, no leftover open PR, the last nightly CI run on `main` passed (or GitHub didn't run it, see that step). Branch `chore/language-<code>`, or `phase-<N>/...` when a roadmap item asks for the language.
+Same as the roadmap-step skill's step 0: your own worktree, clean tree, `git switch main && git pull`, no leftover open PR, the last nightly CI run on `main` passed (or GitHub didn't run it, see that step). Branch `chore/language-<code>`, or `phase-<N>/...` when a roadmap item asks for the language.
 
 ## 1. Pick the qualifier
 Android resource qualifier form, which is also what `twangle.languages` uses: `sv`, `pt-rBR`, `zh-rTW`, `b+sr+Latn`. Old codes still apply: Indonesian is `in` (a phone set to `id` finds it), Hebrew `iw`, Yiddish `ji`. Add a region only when it really differs (Brazilian vs European Portuguese).

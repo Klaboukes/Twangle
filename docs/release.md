@@ -11,6 +11,9 @@ further, and does the few things only the Play Console can do (the checklist bel
 - **Not every change is a release.** Fixes and features land on `main` as usual. When the owner asks
   (the owner decides when a version goes to Play, ROADMAP.md *Where things stand*), what is on `main`
   goes out as one release. Claude may suggest one when a bad bug is fixed or much has gathered.
+- **After a clean overnight run** (owner, 2026-10-28): a release starts only once the overnight run
+  (`/overnight-run`) has passed on the code it releases; until then `/release` stops before it raises
+  the version or writes a note, and says it waits for that night's run.
 - **Every upload has a higher version.** Play refuses a version it has seen. One place holds it:
   `twangle.version` in `gradle.properties`. Fixes raise the last number (1.0.0 → 1.0.1), new features
   the middle one (1.0.1 → 1.1.0), something big the first (2.0.0). The build turns it into Play's

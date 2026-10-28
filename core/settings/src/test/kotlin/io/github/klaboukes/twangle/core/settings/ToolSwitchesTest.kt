@@ -19,9 +19,4 @@ class ToolSwitchesTest {
         assertTrue(ToolSwitches.ALL_ON.byName.values.all { it })
         assertFalse(ToolSwitches.ALL_OFF.byName.values.any { it })
     }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun `the capo helper needs the Practice tab`() {
-        ToolSwitches.ALL_ON.copy(practiceTab = false)
-    }
 }

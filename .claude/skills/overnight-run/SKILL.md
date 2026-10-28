@@ -16,6 +16,9 @@ environment notes apply; the [ui-test skill](../ui-test/SKILL.md) says how to re
 what the phone's failures mean.
 
 ## 1. Pre-flight (a few minutes, no phone run yet)
+Run it in the main folder, which belongs to the overnight run and releases (CLAUDE.md, *One worktree
+per session that changes files*): the release reads its summary there. If another session has the
+main folder on a branch, wait for it or ask in the morning summary; never switch it away under them.
 
 ```bash
 ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"   # adb is not on PATH (CLAUDE.md)

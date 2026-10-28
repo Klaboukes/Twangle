@@ -104,7 +104,7 @@ scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's s
 - Implementations go behind interfaces (`PitchDetector`, `AudioRecorder`) so they can be swapped (fake recorder, FFT-based YIN, NDK).
 - Frequencies are `Float` in Hz, deviations are `Float` in cents, and sample buffers are `FloatArray` in −1..1.
 - Strings shown to users go in `res/values/strings.xml` with a translation in `res/values-<language>/strings.xml` for every language in `twangle.languages` (`gradle.properties`; 16 languages today), never hard-coded in Composables (`LocalizationTest` checks both). Adding a language: [docs/architecture/languages.md](docs/architecture/languages.md).
-- **The music tools (Phases 29–33) are live in every build since Phase 34** (owner, 2026-10-17); each keeps its switch (`ToolSwitches`, all on). A new **tool**, something the player picks on its own (a tuner mode, a Practice tool, a tab), stays hidden in release builds behind its own switch until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build* says how). A new option inside a tool that is already live (a sound, a tuning, an instrument, left-handed charts) needs no switch. The owner decides when a version goes to Play (ROADMAP.md, *Where things stand*); fixes land on `main` as usual.
+- **Every tool has a switch and keeps it** (`ToolSwitches`, all on; owner, 2026-10-28). A **tool** is something the player picks on its own: a tuner tool (strum check, 12th-fret check, chord name, pitch trail) or a Practice tool (Chords, Scales with its drone, Capo; the metronome is what the tab falls back to and has none). If a tool goes wrong on players' phones, a release with its switch off hides it while the fix is made; Twangle has no internet, so a switch changes only with a new version, and the quick brake on a bad version is halting its staged rollout (`scripts/release.sh halt`). A new tool stays off in release builds until the owner's check passes ([docs/architecture/performance.md](docs/architecture/performance.md) *Release build* says how) and keeps its switch after. A new option inside a tool (a sound, a tuning, an instrument, left-handed charts) goes with its tool's switch and needs none of its own. The owner decides when a version goes to Play (ROADMAP.md, *Where things stand*); fixes land on `main` as usual.
 - **The privacy policy is public:** after a change to `PRIVACY.md` or `PRIVACY.nl.md` lands on `main`, run `scripts/publish-privacy.sh`.
 - **The website follows the app:** a change to a tool (what it does, its name, its numbers) updates that tool's page in `website/pages/` (English and Dutch) in the same pull request, then `scripts/publish-website.sh` after the merge ([docs/architecture/website.md](docs/architecture/website.md)).
 - Keep functions small and pure in `:core:dsp`. Document any formula with a short comment that cites its source (e.g. de Cheveigné & Kawahara 2002 for YIN).
@@ -115,7 +115,7 @@ scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's s
 - Before calling a task done, run `./gradlew test lint assembleDebug`. Changes the user can see or hear also get an on-device check on a test phone (the Xiaomi 12X, or the S26 when it is plugged in), and on the Lenovo tablet when the change is about a tablet layout.
 - **Use the `/ui-test` skill** (`.claude/skills/ui-test/SKILL.md`) for on-device UI tests: only the tests you're working on while iterating, the affected modules in full once before landing. Never call `connectedDebugAndroidTest` directly.
 - **Use the `/overnight-run` skill** (`.claude/skills/overnight-run/SKILL.md`) when the owner starts the overnight run: every UI test in every style and every language, fixed and landed without asking them anything (questions go in the morning summary).
-- **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md).
+- **Use the `/release` skill** (`.claude/skills/release/SKILL.md`) to put what is on `main` on Google Play: version, release notes in every language, signed bundle, tag; the owner's Play Console steps are in [docs/release.md](docs/release.md). A release waits for a clean overnight run over the code it releases: nothing (not even the version number) changes before that.
 - **Use the `/add-language` skill** (`.claude/skills/add-language/SKILL.md`) to add a language: translations, language list, note-name default, fonts, right-to-left, phone check.
 - When a design decision changes, update the matching architecture file (ARCHITECTURE.md or its topic file) in the same change.
 - The project owner doesn't write code. Talk to them in plain language about outcomes and the actions they need to take.
@@ -125,12 +125,21 @@ scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's s
 Remote: `https://github.com/Klaboukes/Twangle` (private, free plan). Default branch: `main`.
 
 **Every change goes through its own branch and pull request. Never commit directly to `main`.**
-1. `git switch main && git pull`
+1. `git switch main && git pull` (in a worktree: see *One worktree per session* below)
 2. Branch: `phase-<N>/<short-kebab-topic>` for roadmap work (e.g. `phase-1/yin-detector`), `fix/<topic>` for repairs, `chore/<topic>` for tooling and docs, `release/v<version>` for a release's version and notes.
 3. Commit in small, focused commits (imperative subject line, ≤ 72 chars).
 4. Tick the finished items in ROADMAP.md (☐ → ☑) in the same branch.
 5. Verify locally (see Workflow). **The local run is the merge gate.** The free plan for private repos has no branch protection or auto-merge, so nothing on GitHub blocks a bad merge.
 6. `git push -u origin <branch>`, then `gh pr create --base main` (title = increment name, body = what changed + how it was verified).
 7. `gh pr merge --squash --delete-branch`, then `git switch main && git pull`. Merging right away is the owner's chosen policy. CI checks `main` overnight, and the next iteration checks the last run first and fixes any failure before anything else.
+
+### One worktree per session that changes files
+Owner, 2026-10-28: two sessions in one folder switch branches under each other (that day a commit landed on the wrong branch).
+- **The main folder** (`D:\source\Twangle` on the desktop) belongs to the overnight run and releases (`/overnight-run`, `/release`), one at a time: their records are git-ignored and live there (`build/overnight/`, the store screenshots under `fastlane/`). A session that only reads may stay there too.
+- **Every other session that will edit, build or commit** works in a git worktree of its own: start it with the desktop app's worktree option, or make one first thing (`EnterWorktree`, under `.claude/worktrees/`, git-ignored).
+- **In a new worktree:** copy `local.properties` from the main folder (git-ignored; the build needs it) and give the branch its name from the list above (`git branch -m <branch>`). The first build there takes a few minutes longer.
+- **`main` stays in the main folder**, so in a worktree read `git switch main && git pull` (here and in the skills) as `git fetch -q origin && git switch --detach origin/main`, then branch from there.
+- **After the merge**, remove the worktree (`ExitWorktree` with *remove*, or `git worktree remove <path>`), then `git pull` in the main folder if it is on `main` and no run is going.
+- **The phone stays shared:** `scripts/ui-tests.sh` locks it, and its exit code 5 means another run has it: wait, never force it. Its notes of passed modules (`build/ui-tests-passed/`) are kept in the main folder for every worktree.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.

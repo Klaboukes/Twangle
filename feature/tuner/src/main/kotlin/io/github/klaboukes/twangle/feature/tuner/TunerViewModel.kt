@@ -245,7 +245,7 @@ class TunerViewModel(
                 lockedString = locked,
                 notation = settings.notationFor(language),
                 inTunePrecision = settings.inTunePrecision,
-                strumCheck = tool.strum && StrumInstruments.offers(settings.instrument),
+                strumCheck = tool.strum && tools.strumCheck && StrumInstruments.offers(settings.instrument),
                 intonationCheck = tool.intonation && tools.intonationCheck && IntonationInstruments.offers(settings.instrument),
                 intonationString = tool.choice.string,
                 intonationAttempt = tool.choice.attempt,

@@ -26,6 +26,8 @@ play-service-account*.json
 
 # Claude Code per-user settings (shared skills in .claude/skills ARE committed)
 .claude/settings.local.json
+# The sessions' own git worktrees (CLAUDE.md, One worktree per session that changes files).
+.claude/worktrees/
 
 # Play Store screenshots: made on the phone by scripts/store-screenshots.sh, sent by scripts/release.sh listing.
 # The icon and feature graphic (scripts/store-graphics.sh) have no words and are small: committed.

@@ -44,8 +44,19 @@ A new release, as steps on the task list:
 Steps 6–8 follow later, each on the owner's word.
 
 ## 1. Is main ready?
+- Work in the main folder, which belongs to releases and the overnight run (CLAUDE.md, *One worktree
+  per session that changes files*): the overnight summary and the store screenshots are there.
 - `git switch main && git pull`, then `git describe --tags --abbrev=0`. If nothing a player would
   notice changed since that tag, say so and stop.
+- **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
+  (every UI test in every style, every language, the store screenshots) hasn't passed. The first line
+  of `build/overnight/summary.txt` says which commit it ran on and whether everything passed. It counts
+  when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (the
+  morning summary says so), and `git diff --stat <that commit>..main` shows no code change since but
+  that fix, docs, `.claude/` or `scripts/`. Otherwise **stop here, before any branch, version or note**:
+  tell the owner in one line that the release waits for a clean overnight run, and that `/release`
+  picks it up the morning after. The summary is git-ignored, so on the other PC (or with none) the
+  answer is also: wait for the overnight run.
 - The build checks: `gh run list --workflow android.yml --branch main --limit 1 --json headSha,conclusion`.
   A success on this very commit (`headSha` is `git rev-parse HEAD`) already ran test, lint and the
   builds: skip them. Otherwise (an older commit, a failure, a run GitHub refused to start) run

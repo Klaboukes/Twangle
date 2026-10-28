@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity() {
                             screen = it.screen
                         },
                         onReselect = { if (it == Destination.TUNER) closeTunerToolsRequests++ },
-                        practice = tools.practiceTab,
+                        practice = practiceToolsFor(tools).isNotEmpty(),
                         navigationHidden = fullScreen,
                     ) {
                         saveableState.SaveableStateProvider(screen.name) {
@@ -334,10 +334,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab]) it
-     * is the metronome alone. With it on it is Practice
-     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome, chords, scales
-     * or, with its own switch ([ToolSwitches.capoHelper]), the capo helper (Phase 33), and the tab
+     * The bar's Metronome tab. With the Practice tab's switch off ([ToolSwitches.practiceTab]), or
+     * every Practice tool's switch off, it is the metronome alone. Otherwise it is Practice
+     * (Phase 32): the tool button at the top of each tool (Phase 47) picks the metronome and, each with
+     * its own switch, chords, scales or the capo helper (Phase 33; [practiceToolsFor]), and the tab
      * opens on the tool used last ([AppSettings.practiceTool], saved as soon as it is picked). Each
      * tool keeps its own saved UI state while another shows, but for Chords and Scales, one screen that
      * shares it (one root for both); leaving the metronome stops it, as

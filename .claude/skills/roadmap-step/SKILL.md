@@ -24,6 +24,7 @@ git switch main && git pull
 gh pr list --state open               # a leftover from an earlier session?
 gh run list --branch main --limit 1   # did last night's CI run pass?
 ```
+- **Your own worktree** (CLAUDE.md, *One worktree per session that changes files*): this skill edits, so it never works in the main folder. In a worktree the `git switch main && git pull` above is `git fetch -q origin && git switch --detach origin/main`.
 - **An open PR from an unfinished step:** finish and land it instead of starting something new. Check out its branch and continue from step 4.
 - **The last CI run on `main` failed:** first read `gh run view <id>`. If its annotation says GitHub didn't run it ("not started because… spending limit", "payments have failed", "storage quota has been hit"), the code isn't at fault: tell the owner in one line that the free GitHub minutes or storage are used up (unless they already know, until the month's minutes come back) and carry on. Otherwise fixing it is this iteration: read `gh run view <id> --log-failed`, branch `fix/<topic>`, then go to step 4.
 - CI runs once a night (03:00 UTC), not after each merge, so it covers everything merged the day before. Don't start it by hand (`gh workflow run`) unless the owner asks: the free plan's minutes are scarce.
