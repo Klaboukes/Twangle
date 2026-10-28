@@ -105,7 +105,12 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val container = (application as TwangleApplication).container
         // A fresh install is due the first-start tour; an update from before the tour is not. Decided once.
-        lifecycleScope.launch { container.settingsRepository.decideTourOnce() }
+        // Then the first use is noted once (after the tour's decision, which looks for saved settings):
+        // Google's rating window never comes on the first day.
+        lifecycleScope.launch {
+            container.settingsRepository.decideTourOnce()
+            container.settingsRepository.noteFirstUseOnce(System.currentTimeMillis())
+        }
         setContent {
             // Nothing is drawn for the few milliseconds until the settings are read, so the app
             // never flashes the wrong theme. The opening screen covers that gap.
@@ -295,6 +300,7 @@ class MainActivity : AppCompatActivity() {
                                         savedMicRefused = settings.micRefused,
                                         closeToolsRequest = closeTunerToolsRequests,
                                         onFullScreenChange = { tunerFullScreen = it },
+                                        ratingWindow = container.ratingWindow,
                                     )
                                 }
                                 Screen.METRONOME -> PracticeTab(container, settings, tools) { instrument, customTuningId ->

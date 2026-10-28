@@ -20,6 +20,11 @@ De app van Twangle voor Wear OS-horloges werkt zelfstandig, zonder de telefoon. 
 - Geen advertenties, geen account of registratie, geen aankopen in de app, geen analytics, geen crashrapportage en geen enkele vorm van tracking.
 - Twangle deelt geen gegevens met wie dan ook, want het heeft er geen.
 
+## Twangle beoordelen
+- "Beoordeel Twangle" bij Over opent de pagina van Twangle in de Google Play Store-app.
+- Hooguit één keer kan Twangle Google Play ook vragen om zijn eigen beoordelingsvenster te tonen: direct nadat elke snaar gestemd is geweest, nooit op de eerste dag dat je Twangle gebruikt. Google Play beslist of het echt verschijnt, en misschien verschijnt het helemaal niet.
+- Dat venster is **van Google Play zelf**, geregeld door de Play Store-app op je telefoon, niet door Twangle. Twangle stuurt er niets naartoe en hoort nooit of het verscheen, of je een beoordeling gaf of welke. Een beoordeling of recensie die je geeft gaat naar Google Play onder je Google-account, net als wanneer je op de pagina in de Play Store beoordeelt, en is daar openbaar; daarvoor geldt [het privacybeleid van Google](https://policies.google.com/privacy?hl=nl).
+
 ## De website
 De website van Twangle, [klaboukes.github.io/nl](https://klaboukes.github.io/nl/), waar ook dit beleid staat, verzamelt evenmin iets: geen cookies, geen tracking of analytics, geen formulieren, geen scripts, en niets wat van een andere site wordt geladen (geen webfonts, geen ingesloten video's). Links naar andere sites, zoals Google Play of het e-mailadres, gaan pas open als je erop tikt.
 
@@ -32,6 +37,7 @@ Twangle onthoudt de keuzes die je in de app maakt, en verder niets. Die staan al
 - **Tijdens het stemmen:** scherm aan houden, trillen bij gestemd en de hint om hoger of lager te stemmen.
 - **Oefenen:** de tool die je het laatst gebruikte; het tempo, de maatsoort en het klikgeluid van de metronoom en of hij trilt op de tel; het akkoord of de toonladder die je het laatst bekeek; het geluid van de bourdon, zijn noten en of hij een octaaf lager klinkt; de toonsoort en fret van de capohulp; of de akkoordschema's en de hals bij Toonladders linkshandig worden getekend; en de oefening van Gehoortraining die je het laatst deed met wat die vraagt (welke tonen, hoeveel achter elkaar en of elk octaaf telt; welke intervallen, en of ze omhoog, omlaag of samen klinken; welke akkoordsoorten), nooit je antwoorden of een score.
 - Of je de rondleiding al hebt gezien, zodat die niet opnieuw verschijnt, en of je ooit nee hebt gezegd tegen de microfoon, zodat Twangle weet of Android het je nog kan vragen.
+- Wanneer je Twangle voor het eerst opende, en of het beoordelingsvenster van Google Play al is gevraagd, zodat het hooguit één keer komt en nooit op de eerste dag.
 
 De widget op je startscherm laat het instrument en de stemming zien die je hebt gekozen. Hij gebruikt nooit de microfoon.
 

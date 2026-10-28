@@ -1154,4 +1154,21 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(true, reopened.micRefused)
         assertEquals("the tour is still due", false, reopened.tourSeen)
     }
+
+    @Test
+    fun `the first use is noted once, after the tour's decision, and the rating ask is remembered`() = runTest {
+        val repo = repository()
+        assertEquals("not noted on a fresh install", 0L, repo.settings.first().firstUseMillis)
+        assertEquals(false, repo.settings.first().ratingAsked)
+        repo.decideTourOnce()
+        repo.noteFirstUseOnce(1_000L)
+        repo.noteFirstUseOnce(9_000L)
+        repo.setRatingAsked(true)
+        close()
+
+        val reopened = repository().settings.first()
+        assertEquals("the first one stays", 1_000L, reopened.firstUseMillis)
+        assertEquals(true, reopened.ratingAsked)
+        assertEquals("the tour is still due", false, reopened.tourSeen)
+    }
 }

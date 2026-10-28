@@ -1,0 +1,288 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Rating Moment</title>
+<!--
+TWANGLE: HOW TO ASK FOR A RATING (Phase 50 preview). ROUGH, plain on purpose: one style (Contemporary), one row per idea.
+OWNER'S PICK, 2026-10-28: B, the About row plus Google's own window, once, as drawn.
+The ask  Ratings weigh most in Play search. The owner picks between
+         A  today: the calm "Rate Twangle" row in About (AboutSection.kt: a LinkSetting, title "Rate Twangle", summary
+            "Twangle on Google Play", a chevron), which opens Twangle's page in the Play Store app; nothing pops up.
+         B  A, plus Google's own rating window (Play's In-App Review), at most once, right after every string of the
+            tuning has been in tune in one go; never while tuning, never on the first day, no question before it.
+As drawn About as built: the "About Twangle" bar with a back arrow, the rows (name and version, Free forever, Privacy,
+         Help & website, Rate Twangle, the credits), the navigation bar with Settings picked. The tuner as in the other
+         rough previews (Strings mode, the Classic meter, the note, the cents pill, "Guitar · Standard", the strings).
+         The green rings on the strings only show the moment here: the app adds no marks. Google's window is drawn
+         roughly, in Google's look and not Twangle's; Google draws the real one and may change it.
+Sizes    The Xiaomi 12X's 393 dp at 0.8 px per dp.
+Look     Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --track: #CDD3E3;
+  --accent: #3A4FD6; --intune: #15763B; --onintune: #FFFFFF;
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA); --line: color-mix(in srgb, #4A5268 35%, #E3E7F0);
+  /* Google's window: Google's own colours, not Twangle's. */
+  --g-sheet: #FFFFFF; --g-ink: #1F1F1F; --g-muted: #444746; --g-star: #747775; --g-green: #01875F; --g-off: #E3E3E3; --g-offink: #8E918F;
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gfont: "Google Sans", "Product Sans", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #2B3350;
+    --accent: #A6ADFF; --intune: #6DD58C; --onintune: #00391A;
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 30%, #171D2E);
+    --g-sheet: #1F1F1F; --g-ink: #E3E3E3; --g-muted: #C4C7C5; --g-star: #8E918F; --g-green: #5BB974; --g-off: #333537; --g-offink: #8E918F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --track: #2B3350;
+  --accent: #A6ADFF; --intune: #6DD58C; --onintune: #00391A;
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); --line: color-mix(in srgb, #A6AECB 30%, #171D2E);
+  --g-sheet: #1F1F1F; --g-ink: #E3E3E3; --g-muted: #C4C7C5; --g-star: #8E918F; --g-green: #5BB974; --g-off: #333537; --g-offink: #8E918F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1000px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 72ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.cand { margin-top: 36px; display: grid; gap: 10px; }
+.cand h2 { font: 400 22px/1.25 var(--ui); margin: 0; }
+.cand h2 b { color: var(--accent); font-weight: 500; margin-right: 8px; }
+.frames { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.cap { font-size: 12px; color: var(--muted); margin-bottom: 6px; max-width: 314px; }
+.facts { margin: 4px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; max-width: 72ch; display: grid; gap: 4px; }
+.facts strong { color: var(--ink); font-weight: 500; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 72ch; }
+footer strong { color: var(--ink); font-weight: 500; }
+
+/* The phone: 393 dp wide at 0.8 px per dp. */
+.phone { width: 314px; height: 600px; border-radius: 22px; background: var(--bg); position: relative; overflow: hidden;
+  display: flex; flex-direction: column; }
+.nav { margin-top: auto; height: 64px; display: flex; justify-content: space-around; align-items: center;
+  background: var(--surface); flex: none; }
+.nav span { display: grid; justify-items: center; gap: 4px; font: 500 9.6px/1 var(--ui); color: var(--muted); }
+.nav i { width: 51px; height: 26px; border-radius: 999px; display: grid; place-items: center; }
+.nav i::after { content: ""; width: 16px; height: 16px; border-radius: 4px; border: 1.6px solid currentColor; }
+.nav span.on { color: var(--ink); }
+.nav span.on i { background: var(--container); }
+
+/* About, as built. */
+.bar { height: 51px; display: flex; align-items: center; gap: 14px; padding: 0 13px; font: 400 17.6px/1 var(--ui); flex: none; }
+.bar .back { font-size: 18px; }
+.about { padding: 2px 13px 0; display: grid; gap: 13px; overflow: hidden; }
+.about .t { font: 500 12.8px/1.3 var(--ui); }
+.about .b { font: 400 11.2px/1.4 var(--ui); color: var(--muted); }
+.link { display: flex; align-items: center; gap: 13px; min-height: 38px; border-radius: 10px; }
+.link > div { flex: 1; }
+.link .chev { color: var(--ink); font-size: 16px; }
+.link.tap { box-shadow: 0 0 0 6px var(--bg), 0 0 0 8px var(--accent); }
+.rule { height: 1px; background: var(--line); }
+
+/* Google Play's page, a placeholder. */
+.play { padding: 16px 13px; display: grid; gap: 12px; align-content: start; }
+.play .top { display: flex; gap: 12px; align-items: center; }
+.play .nm { font: 500 15px/1.2 var(--gfont); color: var(--ink); }
+.play .by { font: 400 11px/1.3 var(--gfont); color: var(--g-green); }
+.play .ph { height: 12px; border-radius: 6px; background: var(--line); }
+.play .btnrow { display: flex; gap: 8px; }
+.play .pill { flex: 1; height: 30px; border-radius: 999px; background: var(--g-green); color: #fff; font: 500 11px/30px var(--gfont); text-align: center; }
+.play .rate { display: grid; gap: 6px; margin-top: 6px; }
+.play .rate .t { font: 500 12.5px/1.2 var(--gfont); color: var(--ink); }
+.play .shots { display: flex; gap: 6px; }
+.play .shots i { width: 70px; height: 124px; border-radius: 8px; background: var(--line); }
+
+/* The tuner, as in the other rough previews. */
+.tuner { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px 0 12px; }
+.seg { display: flex; border-radius: 999px; overflow: hidden; margin-top: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 55%, var(--bg)); }
+.seg span { font: 500 11px/1 var(--ui); padding: 9px 18px; color: var(--ink); }
+.seg span.on { background: var(--container); }
+.gapTop { flex: 1; min-height: 14px; }
+.gapLow { flex: 2; min-height: 14px; }
+.meter { width: 302px; height: 151px; display: block; }
+.noteName { font: 300 62px/1 var(--ui); margin-top: 4px; color: var(--intune); }
+.noteName sub { font-size: .42em; vertical-align: baseline; margin-left: 1px; }
+.cents { font: 400 12px/1 var(--ui); padding: 7px 14px; border-radius: 999px; margin-top: 8px; min-width: 128px; text-align: center;
+  background: var(--intune); color: var(--onintune); }
+.ctrl { width: 314px; padding: 0 13px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.ctrl .lbl { font: 500 11.2px/1 var(--ui); color: var(--muted); }
+.tools { width: 35px; height: 35px; border-radius: 14px; display: grid; place-items: center; color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border: 1px solid color-mix(in srgb, var(--muted) 60%, var(--bg)); }
+.tools svg { width: 19px; height: 19px; fill: currentColor; }
+.strings { width: 314px; display: flex; justify-content: space-evenly; }
+.str { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 400 12px/1 var(--ui);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 55%, var(--bg)); color: var(--ink); position: relative; }
+.str sub { font-size: .7em; }
+.str.ok { box-shadow: inset 0 0 0 2px var(--intune); }
+.str.ok.on { background: color-mix(in srgb, var(--intune) 18%, var(--bg)); }
+
+/* Google's window: a bottom sheet over a dimmed screen. */
+.scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .32); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--g-sheet); color: var(--g-ink);
+  border-radius: 22px 22px 0 0; padding: 8px 18px 18px; font-family: var(--gfont); display: grid; gap: 12px; }
+.sheet .grab { width: 26px; height: 3px; border-radius: 2px; background: var(--g-star); opacity: .5; justify-self: center; }
+.sheet .app { display: flex; gap: 10px; align-items: center; }
+.icon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #3A4FD6, #6C7CF0); display: grid; place-items: center; flex: none; }
+.icon::after { content: ""; width: 12px; height: 15px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; background: #fff; }
+.play .icon { width: 48px; height: 48px; border-radius: 12px; }
+.sheet .app .nm { font: 500 13px/1.2 var(--gfont); }
+.sheet .app .sub { font: 400 10.5px/1.2 var(--gfont); color: var(--g-muted); }
+.sheet .h { font: 400 17px/1.2 var(--gfont); }
+.sheet .q { font: 400 11px/1.3 var(--gfont); color: var(--g-muted); margin-top: -8px; }
+.stars { display: flex; justify-content: space-between; padding: 0 6px; }
+.stars svg { width: 32px; height: 32px; fill: none; stroke: var(--g-star); stroke-width: 1.6; stroke-linejoin: round; }
+.sheet .who { display: flex; gap: 8px; align-items: center; font: 400 10px/1.3 var(--gfont); color: var(--g-muted); }
+.sheet .who i { width: 18px; height: 18px; border-radius: 50%; background: var(--g-star); opacity: .5; flex: none; }
+.sheet .btns { display: flex; justify-content: flex-end; gap: 8px; }
+.sheet .btns span { font: 500 11.5px/1 var(--gfont); padding: 10px 16px; border-radius: 999px; }
+.sheet .btns .later { color: var(--g-green); }
+.sheet .btns .send { background: var(--g-off); color: var(--g-offink); }
+.slide .scrim { animation: fade .4s ease-out 1.2s both; }
+.slide .sheet { animation: rise .45s cubic-bezier(.2, .8, .2, 1) 1.2s both; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .slide .scrim, .slide .sheet { animation: none; } }
+.again { margin-top: 8px; font: 500 12px/1 var(--ui); color: var(--accent); background: none; border: 1px solid var(--line);
+  border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.arrow { align-self: center; color: var(--muted); font-size: 22px; padding: 0 2px; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 50 · rough mock-up</p>
+  <h1>How should Twangle ask for a rating?</h1>
+  <p class="lede"><strong>Owner picked B on 2026-10-28</strong>: the About row stays, and Google's window comes once, as drawn.</p>
+  <p class="lede">Ratings weigh most in Play search. Today the only way to rate is a quiet row in About.
+    <strong>B</strong> adds Google's own rating window, once, at a good moment. <strong>Pick A or B.</strong></p>
+</header>
+
+<section class="cand">
+  <h2><b>A</b>Today: a quiet row in About</h2>
+  <div class="frames">
+    <div>
+      <p class="cap">Settings → About: the player taps "Rate Twangle".</p>
+      <div class="phone">
+        <div class="bar"><span class="back">←</span>About Twangle</div>
+        <div class="about">
+          <div><div class="t">Twangle</div><div class="b">Version 1.0.2</div></div>
+          <div><div class="t">Free forever</div><div class="b">No ads, no account, no in-app purchases and no tracking. Not now, not later.</div></div>
+          <div><div class="t">Privacy</div><div class="b">Twangle collects no data about you. The microphone is only on while the tuner screen is open. The sound is analysed live and never recorded, saved or sent. Twangle has no internet permission, so it cannot send anything anywhere. Your settings stay on this device (and in Android's own backup, if you have turned it on).</div></div>
+          <div class="link"><div><div class="t">Help &amp; website</div><div class="b">How each tool works, and answers to common questions</div></div><span class="chev">›</span></div>
+          <div class="link tap"><div><div class="t">Rate Twangle</div><div class="b">Twangle on Google Play</div></div><span class="chev">›</span></div>
+          <div class="rule"></div>
+          <div><div class="t">Fonts and open-source software</div><div class="b">Twangle is made with these. Tap one to read its licence.</div></div>
+        </div>
+        <div class="nav"><span><i></i>Tuner</span><span><i></i>Practice</span><span class="on"><i></i>Settings</span></div>
+      </div>
+    </div>
+    <span class="arrow">→</span>
+    <div>
+      <p class="cap">The Play Store app opens on Twangle's page (a placeholder here); the player scrolls to the stars.</p>
+      <div class="phone">
+        <div class="play">
+          <div class="top"><span class="icon"></span><div><div class="nm">Twangle</div><div class="by">Klaboukes</div></div></div>
+          <div class="btnrow"><span class="pill">Open</span></div>
+          <div class="shots"><i></i><i></i><i></i><i></i></div>
+          <div class="ph" style="width:90%"></div><div class="ph" style="width:70%"></div>
+          <div class="rate"><div class="t">Rate this app</div><div class="stars" id="starsA"></div></div>
+          <div class="ph" style="width:80%"></div><div class="ph" style="width:60%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><strong>Nothing ever pops up</strong>, as the store-listing plan says today. Only players who open About find it.</li>
+    <li>Rating means leaving Twangle for the Play Store app, then scrolling to the stars.</li>
+    <li>Nothing to build or check: it is on Play already.</li>
+  </ul>
+</section>
+
+<section class="cand">
+  <h2><b>B</b>A, plus Google's own window, once</h2>
+  <div class="frames">
+    <div>
+      <p class="cap">Every string has been in tune in one go (the green rings only show that here; the app adds no marks).</p>
+      <div class="phone" id="tunerOnly"></div>
+    </div>
+    <span class="arrow">→</span>
+    <div>
+      <p class="cap">A moment later, Google's window slides up. It is Google's, in Google's look, not Twangle's.</p>
+      <div class="phone slide" id="withSheet"></div>
+      <button class="again" id="again">Play again</button>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><strong>At most once</strong>, right after the last string is in tune; never while tuning, never on the first
+      day, and no "Do you like Twangle?" first (Google forbids filtering out unhappy players).</li>
+    <li><strong>Google decides whether it shows</strong>: it limits how often, so it may not appear at all, and it never
+      appears in an install from the PC. Twangle can't tell whether it showed or what was given.</li>
+    <li>The rating is given <strong>without leaving the app</strong>; it is public on Play under the player's Google name, as in A.</li>
+    <li>Before building: Google's library must add no permission (internet would break Twangle's no-internet promise).
+      The privacy policy would say the window is Google's. The About row stays.</li>
+  </ul>
+</section>
+
+<footer>
+  <p><strong>Either way</strong>, the closed testers are asked to rate Twangle once it is public, and "Rate Twangle" stays in About.</p>
+</footer>
+</div>
+
+<script>
+const HANDYMAN = "M754-81q-8 0-15-2.5T726-92L522-296q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l85-85q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l204 204q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13l-85 85q-6 6-13 8.5T754-81Zm0-95 29-29-147-147-29 29 147 147ZM205-80q-8 0-15.5-3T176-92l-84-84q-6-6-9-13.5T80-205q0-8 3-15t9-13l212-212h85l34-34-165-165h-57L80-765l113-113 121 121v57l165 165 116-116-43-43 56-56H495l-28-28 142-142 28 28v113l56-56 142 142q17 17 26 38.5t9 45.5q0 24-9 46t-26 39l-85-85-56 56-42-42-207 207v84L233-92q-6 6-13 9t-15 3Zm0-96 170-170v-29h-29L176-205l29 29Zm0 0-29-29 15 14 14 15Zm549 0 29-29-29 29Z";
+const STAR = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.7l-5.4 3 1.2-6-4.5-4.2 6.1-.7z"/></svg>`;
+const stars = STAR.repeat(5);
+
+// The Classic meter at rest in the middle: an arc of ticks, the needle straight up in the in-tune colour.
+function meter() {
+  const cx = 151, cy = 146, r = 128; let ticks = "";
+  for (let c = -50; c <= 50; c += 5) {
+    const a = (c / 50) * (Math.PI * 0.42), long = c % 25 === 0, r1 = r - (long ? 14 : 8);
+    const x0 = cx + Math.sin(a) * r, y0 = cy - Math.cos(a) * r, x1 = cx + Math.sin(a) * r1, y1 = cy - Math.cos(a) * r1;
+    ticks += `<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}"
+      stroke="var(--${Math.abs(c) <= 5 ? "intune" : "muted"})" stroke-width="${long ? 2 : 1.2}" stroke-linecap="round" opacity="${Math.abs(c) <= 5 ? 1 : .6}"/>`;
+  }
+  return `<svg class="meter" viewBox="0 0 302 151" aria-hidden="true">${ticks}
+    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - r + 20}" stroke="var(--intune)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="var(--intune)"/></svg>`;
+}
+function tuner() {
+  const strings = ["E", "A", "D", "G", "B", "E"].map((n, k) =>
+    `<div class="str ok${k === 5 ? " on" : ""}">${n}<sub>${[2, 2, 3, 3, 3, 4][k]}</sub></div>`).join("");
+  return `<div class="tuner">
+      <div class="seg"><span class="on">Strings</span><span>Chromatic</span></div>
+      <div class="gapTop"></div>${meter()}
+      <div class="noteName">E<sub>4</sub></div>
+      <div class="cents">in tune</div>
+      <div class="gapLow"></div>
+      <div class="ctrl"><span class="lbl">Guitar · Standard</span>
+        <div class="tools"><svg viewBox="0 -960 960 960"><path d="${HANDYMAN}"/></svg></div></div>
+      <div class="strings">${strings}</div>
+    </div>
+    <div class="nav"><span class="on"><i></i>Tuner</span><span><i></i>Practice</span><span><i></i>Settings</span></div>`;
+}
+const sheet = `<div class="scrim"></div><div class="sheet" role="img" aria-label="Google's rating window">
+  <span class="grab"></span>
+  <div class="app"><span class="icon"></span><div><div class="nm">Twangle</div><div class="sub">Klaboukes</div></div></div>
+  <div class="h">Rate this app</div>
+  <div class="q">Tell others what you think</div>
+  <div class="stars">${stars}</div>
+  <div class="who"><i></i>Reviews are public and include your account and device info.</div>
+  <div class="btns"><span class="later">Not now</span><span class="send">Submit</span></div>
+</div>`;
+document.getElementById("tunerOnly").innerHTML = tuner();
+const withSheet = document.getElementById("withSheet");
+withSheet.innerHTML = tuner() + sheet;
+document.getElementById("starsA").innerHTML = stars;
+document.getElementById("again").addEventListener("click", () => {
+  withSheet.classList.remove("slide"); void withSheet.offsetWidth; withSheet.classList.add("slide");
+});
+</script>

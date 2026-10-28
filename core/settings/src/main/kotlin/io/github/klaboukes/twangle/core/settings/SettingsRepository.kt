@@ -126,6 +126,15 @@ interface SettingsRepository {
     /** Remembers that the player refused the microphone in Android's dialog ([AppSettings.micRefused]). */
     suspend fun setMicRefused(refused: Boolean)
 
+    /**
+     * Notes [nowMillis] as the first use ([AppSettings.firstUseMillis]) unless one is noted already.
+     * Called at the app's start after [decideTourOnce], so a fresh install still gets its tour.
+     */
+    suspend fun noteFirstUseOnce(nowMillis: Long)
+
+    /** Remembers that Google's rating window was asked for ([AppSettings.ratingAsked]). */
+    suspend fun setRatingAsked(asked: Boolean)
+
     /** The metronome's tempo, clamped to 30–250 BPM (`ClickTrack.clampBpm`). */
     suspend fun setMetronomeBpm(bpm: Int)
 

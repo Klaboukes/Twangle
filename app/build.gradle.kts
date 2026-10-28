@@ -268,6 +268,8 @@ dependencies {
     // Installs the Baseline Profile (src/release/generated/baselineProfiles) when the app is installed
     // from somewhere other than the Play Store, e.g. adb or a sideloaded APK.
     implementation(libs.androidx.profileinstaller)
+    // Google Play's own rating window (In-App Review, Phase 50): PlayRatingWindow. No permission of its own.
+    implementation(libs.play.review)
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Generates the profile on demand: ./gradlew :app:generateBaselineProfile (device required).
     baselineProfile(project(":baselineprofile"))

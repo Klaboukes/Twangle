@@ -14,6 +14,7 @@ import io.github.klaboukes.twangle.core.settings.DataStoreSettingsRepository
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.eartraining.PitchListener
+import io.github.klaboukes.twangle.feature.tuner.RatingWindow
 
 /**
  * Manual dependency injection: the only place where concrete implementations are created and wired together.
@@ -102,6 +103,19 @@ class AppContainer(private val appContext: Context) {
     /** A test's silent stand-in for the drone, or null for the real one (see [testAudioRecorder]). */
     @VisibleForTesting
     var testDronePlayer: DronePlayer? = null
+
+    /**
+     * Google Play's own rating window (Phase 50), which the tuner asks for at most once, at a good
+     * moment. Nothing of it runs until then.
+     */
+    val ratingWindow: RatingWindow
+        get() = testRatingWindow ?: playRatingWindow
+
+    private val playRatingWindow: RatingWindow by lazy { PlayRatingWindow(appContext) }
+
+    /** A test's stand-in for Google's rating window, or null for the real one (see [testAudioRecorder]). */
+    @VisibleForTesting
+    var testRatingWindow: RatingWindow? = null
 
     /** The user's saved settings. One instance per process, as DataStore requires. */
     val settingsRepository: SettingsRepository by lazy { DataStoreSettingsRepository.create(appContext) }

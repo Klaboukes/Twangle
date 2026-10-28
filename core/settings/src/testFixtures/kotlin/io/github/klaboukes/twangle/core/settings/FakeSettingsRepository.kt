@@ -137,6 +137,11 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
 
     override suspend fun setMicRefused(refused: Boolean) = state.update { it.copy(micRefused = refused) }
 
+    override suspend fun noteFirstUseOnce(nowMillis: Long) =
+        state.update { if (it.firstUseMillis == 0L) it.copy(firstUseMillis = nowMillis) else it }
+
+    override suspend fun setRatingAsked(asked: Boolean) = state.update { it.copy(ratingAsked = asked) }
+
     override suspend fun setMetronomeBpm(bpm: Int) = state.update { it.copy(metronomeBpm = ClickTrack.clampBpm(bpm)) }
 
     override suspend fun setMetronomeMeter(meter: Meter) = state.update { it.copy(metronomeMeter = meter) }

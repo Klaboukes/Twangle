@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
@@ -230,6 +231,14 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[MIC_REFUSED] = refused }
     }
 
+    override suspend fun noteFirstUseOnce(nowMillis: Long) {
+        dataStore.edit { if (FIRST_USE_MILLIS !in it) it[FIRST_USE_MILLIS] = nowMillis }
+    }
+
+    override suspend fun setRatingAsked(asked: Boolean) {
+        dataStore.edit { it[RATING_ASKED] = asked }
+    }
+
     override suspend fun setMetronomeBpm(bpm: Int) {
         dataStore.edit { it[METRONOME_BPM] = ClickTrack.clampBpm(bpm) }
     }
@@ -353,6 +362,8 @@ class DataStoreSettingsRepository internal constructor(
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             tourSeen = tourSeen(prefs),
             micRefused = prefs[MIC_REFUSED] ?: defaults.micRefused,
+            firstUseMillis = prefs[FIRST_USE_MILLIS] ?: defaults.firstUseMillis,
+            ratingAsked = prefs[RATING_ASKED] ?: defaults.ratingAsked,
             metronomeBpm = prefs[METRONOME_BPM]?.let(ClickTrack::clampBpm) ?: defaults.metronomeBpm,
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
@@ -419,6 +430,10 @@ class DataStoreSettingsRepository internal constructor(
 
         /** Whether the microphone was ever refused in Android's dialog ([AppSettings.micRefused]). */
         private val MIC_REFUSED = booleanPreferencesKey("mic_refused")
+
+        /** When the app was first used ([AppSettings.firstUseMillis]), and whether Google's rating window was asked for. */
+        private val FIRST_USE_MILLIS = longPreferencesKey("first_use_millis")
+        private val RATING_ASKED = booleanPreferencesKey("rating_asked")
         private val FOCUS_MODE = booleanPreferencesKey("focus_mode")
         private val METRONOME_BPM = intPreferencesKey("metronome_bpm")
 

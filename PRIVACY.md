@@ -20,6 +20,11 @@ Twangle's Wear OS watch app works on its own, without the phone. It follows the 
 - No ads, no account or sign-up, no in-app purchases, no analytics, no crash reporting and no tracking of any kind.
 - Twangle does not share data with anyone, because it has none to share.
 
+## Rating Twangle
+- "Rate Twangle" in About opens Twangle's page in the Google Play Store app.
+- Once, at most, Twangle may also ask Google Play to show its own rating window: right after every string has been in tune, never on the first day you use Twangle. Google Play decides whether it really shows, and it may not show at all.
+- That window is **Google Play's own**, run by the Play Store app on your phone, not by Twangle. Twangle sends nothing to it and never learns whether it showed, or whether or how you rated. A rating or review you give goes to Google Play under your Google account, as when you rate on the Play Store page, and is public there; [Google's privacy policy](https://policies.google.com/privacy) covers it.
+
 ## The website
 Twangle's website, [klaboukes.github.io](https://klaboukes.github.io/), where this policy is published too, collects nothing either: no cookies, no tracking or analytics, no forms, no scripts, and nothing loaded from another site (no web fonts, no embedded videos). Links to other sites, such as Google Play or the email address, only open when you tap them.
 
@@ -32,6 +37,7 @@ Twangle remembers the choices you make in the app, and nothing else. These are s
 - **While tuning:** keep screen on, vibrate when in tune and the tune up/down hint.
 - **Practice:** the tool you used last; the metronome's tempo, meter, click sound and whether it vibrates on the beat; the chord or scale you looked at last; the drone's sound, its notes and whether it plays an octave lower; the Capo helper's key and fret; whether the chord charts and the scale neck are drawn left-handed; and the Ear training exercise you used last with what it asks (which notes, how many in a row and whether any octave counts; which intervals, and whether they are played up, down or together; which chord types), never your answers or a score.
 - Whether you have already seen the welcome tour, so it isn't shown again, and whether you once said no to the microphone, so Twangle knows whether Android can still ask you.
+- When you first opened Twangle, and whether Google Play's rating window was asked for, so it comes at most once and never on the first day.
 
 The home-screen widget shows the instrument and tuning you chose. It never uses the microphone.
 

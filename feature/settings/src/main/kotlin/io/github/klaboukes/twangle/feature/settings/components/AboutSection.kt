@@ -34,8 +34,8 @@ import kotlinx.coroutines.withContext
 /**
  * The About rows: the app's name and [appVersion], the free-forever promise, the privacy statement,
  * "Help & website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
- * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; never a rating
- * pop-up), and a credit for
+ * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; Google's own
+ * rating window is asked for once from the tuner, Phase 50), and a credit for
  * every bundled font and open-source library. Tapping a credit shows its licence text, read from
  * the app's own assets (the app has no internet permission).
  */

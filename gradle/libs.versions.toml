@@ -25,6 +25,9 @@ wearCompose = "1.7.1"
 # Gradle Play Publisher (Triple-T): uploads to Google Play from the PC (scripts/release.sh upload).
 # 4.x is the line for AGP 9 and Gradle 9; build-time only, nothing of it goes into the app.
 playPublisher = "4.1.1"
+# Google Play's own rating window (In-App Review), shown once at a good moment (Phase 50).
+# Adds no permission (checked in the merged manifest); the window runs in the Play Store app.
+playReview = "2.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -58,6 +61,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+play-review = { group = "com.google.android.play", name = "review", version.ref = "playReview" }
 
 [plugins]
 # AGP 9 compiles Kotlin itself ("built-in Kotlin"), so Android modules don't apply a Kotlin plugin.

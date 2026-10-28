@@ -25,6 +25,8 @@ import io.github.klaboukes.twangle.core.settings.WaveLook
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,6 +43,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
@@ -65,6 +69,11 @@ import kotlin.math.ceil
  *
  * [tools] says which music tools show (Phase 28): the tuner modes of Phases 29–31 come only
  * with their switches. Tests get every tool unless they say otherwise; the app passes its build's.
+ *
+ * [ratingDue] turns true, at most once ever, when Google's rating window may be asked for (Phase 50,
+ * [RatingMoment]): every string of the tuning has been in tune in one go, the strings have fallen quiet
+ * for [RatingMoment.QUIET_MILLIS], it is past the first day (by [clock]) and it was never asked before.
+ * The screen then asks Google ([RatingWindow]) and calls [onRatingAsked].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -79,6 +88,7 @@ class TunerViewModel(
     language: String = "",
     savedMicRefused: Boolean = AppSettings().micRefused,
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     /** The app's language, whose usual notation is used while the player hasn't picked one. */
@@ -267,6 +277,24 @@ class TunerViewModel(
     val micRefused: StateFlow<Boolean> = settingsRepository.settings
         .map { it.micRefused }
         .stateIn(viewModelScope, SharingStarted.Eagerly, savedMicRefused)
+
+    /** When the app was first used and whether the rating window was asked for (saved settings); null until loaded. */
+    private val ratingRecord: StateFlow<RatingRecord?> = settingsRepository.settings
+        .map { RatingRecord(it.firstUseMillis, it.ratingAsked) }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** Set at once by [onRatingAsked], so the window is never asked for twice while the save is under way. */
+    @Volatile
+    private var ratingAskedNow = false
+
+    private val ratingDueNow = MutableStateFlow(false)
+
+    /** Google's rating window may be asked for now (see the class comment); false again after [onRatingAsked]. */
+    val ratingDue: StateFlow<Boolean> = ratingDueNow
+
+    /** The wait for the strings to fall quiet after the last one came in tune; touched only on the DSP thread. */
+    private var ratingWait: Job? = null
 
     /** The string whose tone was played last, while its tone may still sound. */
     private val playedString = MutableStateFlow<Int?>(null)
@@ -518,6 +546,41 @@ class TunerViewModel(
         viewModelScope.launch { settingsRepository.deleteCustomTuning(id) }
     }
 
+    /** The screen asked Google for its rating window: saved, so it is never asked for again. */
+    fun onRatingAsked() {
+        ratingAskedNow = true
+        ratingDueNow.value = false
+        viewModelScope.launch { settingsRepository.setRatingAsked(true) }
+    }
+
+    private fun mayAskRating(): Boolean {
+        val record = ratingRecord.value ?: return false
+        return RatingMoment.mayAsk(record.firstUseMillis, record.asked || ratingAskedNow, clock())
+    }
+
+    /**
+     * Follows every state of a listening session on the DSP thread, for Google's rating window: once
+     * [allInTune] completes the tuning while the window may be asked for ([armed] true, returned), the
+     * first stretch of [RatingMoment.QUIET_MILLIS] without a note makes [ratingDue] true. A note heard
+     * meanwhile starts the wait again, so the window never comes mid-tuning. Allocates nothing per state.
+     */
+    private fun followRatingMoment(shown: TunerUiState, allInTune: AllStringsInTune, armed: Boolean): Boolean {
+        val nowArmed = armed || (allInTune.update(shown) && mayAskRating())
+        if (!nowArmed) return false
+        if (shown is TunerUiState.Listening) {
+            if (ratingWait?.isActive != true) {
+                ratingWait = viewModelScope.launch {
+                    delay(RatingMoment.QUIET_MILLIS)
+                    if (mayAskRating()) ratingDueNow.value = true
+                }
+            }
+        } else {
+            ratingWait?.cancel()
+            ratingWait = null
+        }
+        return true
+    }
+
     /** Opens the microphone again after an error. */
     fun retry() {
         attempt.value++
@@ -539,6 +602,9 @@ class TunerViewModel(
         val strumInterpreter = StrumCheckInterpreter()
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val chordInterpreter = ChordNameInterpreter()
+        // Google's rating window (Phase 50): this session's strings in tune, and whether the set is complete.
+        val allInTune = AllStringsInTune()
+        var ratingArmed = false
         val initial = options.filterNotNull().first()
         emit(
             when {
@@ -630,9 +696,14 @@ class TunerViewModel(
                     )
                 }
                 state
-            },
+            }.onEach { ratingArmed = followRatingMoment(it, allInTune, ratingArmed) },
         )
     }
+        // Leaving the tuner ends the wait: the window comes only right after the tuning, never on coming back.
+        .onCompletion {
+            ratingWait?.cancel()
+            ratingWait = null
+        }
         // Most frames look the same on screen as the last state sent: an equal Listening state in
         // silence, or a note whose readout and needle moved less than the screen shows. Dropping
         // them here, on the DSP thread, keeps them from waking the main thread ~47 times a second.
@@ -646,6 +717,9 @@ private data class IntonationChoice(val string: Int?, val attempt: Int)
 
 /** Which tool is on, and the 12th-fret check's [choice]; one value, so the options combine stays small. */
 private data class ToolChoice(val strum: Boolean, val intonation: Boolean, val choice: IntonationChoice, val chord: Boolean)
+
+/** When the app was first used and whether Google's rating window was asked for (saved settings). */
+private data class RatingRecord(val firstUseMillis: Long, val asked: Boolean)
 
 /** A tuning as the instrument and tuning panel shows it: its notes named in [notation]. */
 data class PanelTuning(val tuning: Tuning, val notation: Notation)

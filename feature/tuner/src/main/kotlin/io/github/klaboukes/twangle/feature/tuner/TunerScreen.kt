@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
@@ -173,6 +174,8 @@ import kotlin.math.min
  * [closeToolsRequest] (a tap on the navigation bar's Tuner tab, or "Show me around") turns the tool that is on off.
  * [onFullScreenChange] says when focus mode's compact layout shows without its controls, so the app
  * can hide the rail and the system bars around it.
+ * [ratingWindow] is Google Play's own rating window (Phase 50), asked for at most once when
+ * [TunerViewModel.ratingDue] says the moment has come, never while the tour or the panel is open.
  */
 @Composable
 fun TunerScreen(
@@ -193,6 +196,7 @@ fun TunerScreen(
     savedMicRefused: Boolean = false,
     closeToolsRequest: Int = 0,
     onFullScreenChange: (Boolean) -> Unit = {},
+    ratingWindow: RatingWindow = RatingWindow.NONE,
 ) {
     val language = appLanguage()
     val viewModel: TunerViewModel = viewModel {
@@ -213,6 +217,14 @@ fun TunerScreen(
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
     val mic = rememberMicPermissionState(refusedBefore = micRefused, onRefused = viewModel::onMicRefused)
     LaunchedEffect(language) { viewModel.setLanguage(language) }
+    val ratingDue by viewModel.ratingDue.collectAsStateWithLifecycle()
+    val activity = LocalActivity.current
+    LaunchedEffect(ratingDue, tourOpen, pickerOpen) {
+        if (ratingDue && !tourOpen && !pickerOpen && activity != null) {
+            viewModel.onRatingAsked()
+            ratingWindow.show(activity)
+        }
+    }
     val readings = viewModel.state.collectAsStateWithLifecycle()
     // The ViewModel only sends readings that look different, but most of them just move the needle.
     // Composing from the state as its text shows it recomposes only when the text changes; the

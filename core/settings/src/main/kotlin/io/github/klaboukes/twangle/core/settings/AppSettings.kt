@@ -268,6 +268,14 @@ data class AppSettings(
      * dialog that was only dismissed (ask again) from one Android no longer shows (only Settings helps).
      */
     val micRefused: Boolean = false,
+    /**
+     * When Twangle was first opened on this install (or first opened in a version that noted it), in
+     * ms since 1970; 0 until noted ([SettingsRepository.noteFirstUseOnce]). Google's rating window
+     * never comes on the first day (Phase 50).
+     */
+    val firstUseMillis: Long = 0L,
+    /** Google's rating window was asked for once (Phase 50), so it is never asked for again. */
+    val ratingAsked: Boolean = false,
     /** The metronome's tempo, whole BPM from [ClickTrack.MIN_BPM] to [ClickTrack.MAX_BPM]. */
     val metronomeBpm: Int = ClickTrack.DEFAULT_BPM,
     /** The metronome's time signature. */
