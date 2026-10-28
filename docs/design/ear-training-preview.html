@@ -1,0 +1,425 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Ear Training</title>
+<!--
+TWANGLE PHASE 55 (rough mock-up, 2026-10-28): Ear training, one Practice tool with three exercises.
+Plain on purpose: Contemporary only, bare elements, a one-line note each. No owner pick yet.
+The tool  A fifth row in the Practice tool list (PracticeToolButton, Phase 47), an ear icon, "Ear training". The top
+          row stays as Chords': the tool button (160 dp), the instrument button and the tuning line (the tuning sets
+          the notes' range and the chord shapes).
+Exercise  Play it back · Intervals · Chord type.  A: a switch of three icons (SegmentedSwitch, each named for
+          TalkBack) under the top row.  B: a second drop-down button with icon and name, as the tool button.
+          Both end in the "What is asked" button (a sliders icon), which opens a panel (as the instrument panel).
+Question  A round ▶ (72 dp) to hear it again, the prompt under it, the answer area. Answer buttons are one steady
+          size (2 columns of 2 lines, the short name large, the words small), only the kinds the player chose; no
+          row of 4. Play it back shows "Play it on your instrument" and, A: the note the tuner hears live; B: only
+          "listening" until it is steady.
+Right     The in-tune colour as the tuner's glow: a soft halo eased 0.4 s in, 0.6 s out, no burst. Wrong: the
+          tapped button goes quiet, the right one glows softly, the ▶ offers it again. Next: A by itself after
+          about 1.5 s; B a Next button.
+Tally     "7 of 9", quiet, at the end of the exercise row; this visit only, gone when the tool closes. A missed
+          question comes back 3 to 5 questions later: A no mark; B a small "again" over the ▶.
+Choices   The panel: notes (open strings / natural notes to the 5th fret / every note to the 12th), 1 to 4 notes
+          in a row, any octave counts; intervals (minor 2nd to octave) and up / down / together; chord types
+          (a few to all twenty). Questions start at once with the last choices.
+Sound     The ▶ plays a short plucked tone in WebAudio (about 1.5 s, stops by itself, never loops).
+Scale     The Xiaomi 12X, 393 dp wide, at 0.8 px per dp; 16 dp side margins.
+Look      Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --on-accent: #FFFFFF; --tune: #15763B; --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --line: color-mix(in srgb, var(--muted) 60%, var(--bg));
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --on-accent: #10141F; --tune: #6DD58C; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --on-accent: #10141F; --tune: #6DD58C; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 1000px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2.sec { font: 400 24px/1.2 var(--ui); margin: 44px 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.list { margin-top: 18px; display: grid; gap: 26px; }
+.cand { display: grid; gap: 8px; }
+.cand h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.phones { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-start; }
+.cap { font-size: 12px; color: var(--muted); margin-bottom: 4px; max-width: 314px; }
+
+/* A phone, from under the status bar down to the navigation bar: 393 dp at 0.8 px per dp, 16 dp (13 px) margins. */
+.phone { width: 314px; min-height: 470px; border-radius: 12px; background: var(--bg); padding: 6px 13px 0; position: relative;
+  display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex: none; }
+.bar { margin: auto -13px 0; display: grid; grid-template-columns: repeat(3, 1fr); height: 52px; align-content: center;
+  text-align: center; font: 500 11px/1.2 var(--ui); color: var(--muted); }
+.bar .on { color: var(--accent); }
+
+/* Buttons: the app's see-through face with a muted outline. */
+.btn { border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 45%, var(--bg)); border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; color: var(--ink); flex: none; font: 500 12.5px/1 var(--ui); }
+button.btn { cursor: pointer; }
+.ico { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ico .f { fill: currentColor; stroke: none; }
+.chev { color: var(--muted); font-size: 11px; margin-left: auto; }
+
+/* The top row, as Chords': tool button, instrument button, tuning line. */
+.toprow { display: flex; align-items: center; height: 38px; }
+.toolbtn { width: 128px; height: 35px; gap: 6px; padding: 0 8px; justify-content: flex-start; }
+.inst { width: 35px; height: 35px; color: var(--muted); margin-left: 8px; }
+.tuning { font: 400 11.2px/1.3 var(--ui); color: var(--muted); margin-left: 5px; }
+
+/* The tool list, open. */
+.menu { position: absolute; top: 46px; left: 13px; width: 168px; background: var(--surface); border-radius: 16px; padding: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .18), 0 1px 4px rgb(0 0 0 / .08); display: grid; gap: 2px; z-index: 2; }
+.menu div { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 12px; font: 400 12.5px/1 var(--ui); }
+.menu .on { background: var(--container); outline: 2px solid var(--accent); outline-offset: -2px; font-weight: 500; }
+.menu .new { box-shadow: inset 0 0 0 1px var(--muted); }
+.scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .06); z-index: 1; }
+
+/* The exercise row: A three icons, or B a drop-down; then the tally and the "What is asked" button. */
+.exrow { display: flex; align-items: center; gap: 8px; height: 38px; }
+.seg { display: flex; height: 35px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: none; }
+.seg span { width: 52px; display: grid; place-items: center; color: var(--muted); }
+.seg span + span { border-left: 1px solid var(--line); }
+.seg .on { background: var(--container); color: var(--ink); }
+.exbtn { width: 150px; height: 35px; gap: 6px; padding: 0 8px; justify-content: flex-start; }
+.tally { margin-left: auto; font: 400 11.2px/1 var(--ui); color: var(--muted); white-space: nowrap; }
+.ask { width: 35px; height: 35px; color: var(--muted); }
+
+/* The question: a round ▶, the prompt, the answer area. */
+.q { display: grid; justify-items: center; gap: 6px; padding-top: 18px; position: relative; }
+.play { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 45%, var(--bg)); color: var(--ink); cursor: pointer; font-size: 20px; padding: 0 0 0 4px; }
+.again { position: absolute; top: 4px; font: 500 9.5px/1 var(--ui); color: var(--muted); padding: 3px 7px; border-radius: 999px; border: 1px solid var(--line); }
+.prompt { font: 400 12.8px/1.35 var(--ui); color: var(--muted); text-align: center; }
+.dir { font: 500 10.4px/1 var(--ui); color: var(--muted); letter-spacing: .04em; }
+
+/* Play it back: the note the tuner hears. */
+.heard { margin-top: 18px; display: grid; justify-items: center; gap: 4px; position: relative; padding: 14px 0; }
+.heard .big { font: 400 46px/1 var(--ui); position: relative; z-index: 1; }
+.heard .big sub { font-size: 17px; }
+.heard .big.dimmed { color: var(--muted); opacity: .55; }
+.heard .sm { font: 400 11.2px/1.3 var(--ui); color: var(--muted); position: relative; z-index: 1; }
+.heard .sm.ok { color: var(--tune); font-weight: 500; }
+.dots { display: flex; gap: 6px; justify-content: center; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--muted); }
+.dots i.done { background: var(--tune); border-color: var(--tune); }
+.dots i.now { background: var(--muted); }
+
+/* The calm in-tune glow: eased 0.4 s in, 0.6 s out. */
+.glowable { position: relative; isolation: isolate; }
+.glowable::before { content: ""; position: absolute; inset: -18px; border-radius: 50%; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tune) 34%, transparent), transparent);
+  opacity: 0; transition: opacity .6s ease; }
+.glowable.lit::before { opacity: 1; transition: opacity .4s ease; }
+
+/* Answer buttons: one steady size, 2 columns, two lines (short name large, the words small). */
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.answers.three { grid-template-columns: 1fr; }
+.ans { height: 46px; flex-direction: column; gap: 3px; border-radius: 11px; font: 500 15px/1 var(--ui); width: 100%;
+  transition: color .6s, border-color .6s, opacity .6s, box-shadow .6s; }
+.ans small { font: 400 10px/1 var(--ui); color: var(--muted); }
+.ans.lit { border-color: var(--tune); color: var(--tune); box-shadow: 0 0 16px 2px color-mix(in srgb, var(--tune) 30%, transparent);
+  transition: color .4s, border-color .4s, opacity .4s, box-shadow .4s; }
+.ans.lit small { color: var(--tune); }
+.ans.quiet { opacity: .45; }
+.answers.scroll { max-height: 216px; overflow-y: auto; padding-right: 2px; }
+.next { margin-top: 10px; align-self: center; width: 120px; height: 38px; }
+
+/* The "What is asked" panel (as the instrument panel): rows to pick one, chips to pick many, a switch. */
+.sheet { width: 314px; border-radius: 14px 14px 0 0; background: var(--surface); padding: 12px 13px 14px; display: grid; gap: 8px; flex: none; }
+.sheet .title { font: 400 17.6px/1.2 var(--ui); }
+.sheet .gh { font: 500 11.2px/1.2 var(--ui); color: var(--accent); margin-top: 6px; }
+.row1 { padding: 8px 10px; border-radius: 9px; display: flex; align-items: center; font: 500 12.8px/1.3 var(--ui); }
+.row1 small { display: block; font: 400 10.4px/1.3 var(--ui); color: var(--muted); }
+.row1.on { background: var(--container); }
+.row1 .tick { margin-left: auto; color: var(--accent); }
+.chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.chips.four { grid-template-columns: repeat(4, 1fr); }
+.chip { height: 32px; border-radius: 9px; border: 1px solid var(--line); display: grid; place-items: center; font: 500 11.2px/1 var(--ui); color: var(--muted); }
+.chip.on { border: 2px solid var(--accent); background: var(--container); color: var(--ink); }
+.swrow { display: flex; align-items: center; gap: 10px; font: 500 12.8px/1.3 var(--ui); }
+.swrow small { display: block; font: 400 10.4px/1.3 var(--ui); color: var(--muted); }
+.sw { margin-left: auto; width: 40px; height: 24px; border-radius: 12px; background: var(--accent); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: var(--on-accent); top: 4px; right: 4px; }
+.quick { font: 400 10.4px/1.3 var(--ui); color: var(--muted); }
+
+.timeline { display: flex; gap: 6px; flex-wrap: wrap; font: 400 12px/1 var(--ui); }
+.timeline span { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); color: var(--muted); }
+.timeline .miss { border-color: var(--muted); color: var(--ink); border-style: dashed; }
+.timeline .back { border-color: var(--tune); color: var(--tune); }
+
+footer { margin-top: 44px; display: grid; gap: 10px; max-width: 70ch; }
+footer h2 { font: 400 24px/1.2 var(--ui); margin: 0 0 4px; }
+footer ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+footer .small { color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 55 · rough mock-up</p>
+  <h1>Ear training</h1>
+  <p class="lede">One Practice tool with three exercises: <strong>Play it back</strong>, <strong>Intervals</strong> and
+    <strong>Chord type</strong>. A tool, not a game: no scores kept, only a quiet tally for this visit. Where there is a
+    real choice there are options <strong>A</strong> and <strong>B</strong>, the one I'd pick marked. Tap a ▶ to hear
+    it (a short tone that stops by itself); the answer buttons in section 3 work.</p>
+</header>
+
+<h2 class="sec">1. Finding it and picking an exercise</h2>
+<div class="list" id="pick"></div>
+
+<h2 class="sec">2. One question of each</h2>
+<div class="list" id="questions"></div>
+
+<h2 class="sec">3. Right and wrong</h2>
+<div class="list" id="rightwrong"></div>
+
+<h2 class="sec">4. The tally, and a missed question coming back</h2>
+<div class="list" id="tally"></div>
+
+<h2 class="sec">5. Choosing what is asked</h2>
+<div class="list" id="choices"></div>
+
+<footer>
+  <h2>Questions for you</h2>
+  <ol>
+    <li><strong>Picking the exercise:</strong> A, three icons in a row; or B, a second drop-down button with the name.</li>
+    <li><strong>Play it back, while you play:</strong> A, the note the tuner hears is shown as you play; or B, only "listening" until you hold a note, then right or not yet.</li>
+    <li><strong>After an answer:</strong> A, the next question comes by itself after about 1½ seconds; or B, a Next button.</li>
+    <li><strong>A missed question coming back:</strong> A, no mark, it is simply asked again; or B, a small "again" over the ▶.</li>
+    <li><strong>Choosing what is asked:</strong> A, questions start at once and a button opens the choices any time; or B, a short start page with the choices and a Start button each visit.</li>
+  </ol>
+  <p class="small">Not shown: every language and 2× text, the other five styles, the phone on its side. Those come when it
+    is built. The roadmap says sixteen chord types; the Chords tool has twenty since Phase 49, so the choice offers all twenty.</p>
+</footer>
+</div>
+
+<script>
+// Rough icons on a 24 grid, 1.8 round lines (placeholders, as tool-button-preview.html's).
+const ICON = {
+  metronome: `<path d="M7.5 21h9L13.9 4.2a1 1 0 0 0-1-.7h-1.8a1 1 0 0 0-1 .7Z"/><path d="M12 17l4.5-9.5"/><circle class="f" cx="15.6" cy="9.4" r="1.6"/>`,
+  chords: `<path d="M6 4.5h12M6 4.5v15M10 4.5v15M14 4.5v15M18 4.5v15M6 9.5h12M6 14.5h12M6 19.5h12"/><circle class="f" cx="10" cy="12" r="2"/><circle class="f" cx="14" cy="7" r="2"/>`,
+  scales: `<path d="M3.5 19.5h4.25v-4.25h4.25V11h4.25V6.75h4.25"/>`,
+  capo: `<path d="M8 2.5v19M16 2.5v19"/><rect x="4.5" y="9.5" width="15" height="3.6" rx="1.8"/><path d="M19.5 11.3c1.6.6 1.9 2.6 1.1 4.2"/>`,
+  ear: `<path d="M7 9.5a5 5 0 0 1 10 0c0 3-2.6 3.8-3.4 5.8-.6 1.6-.8 3.2-2.6 4.2-1.4.7-3 0-3.5-1.2"/><path d="M10 10a2 2 0 0 1 4 0c0 1.2-1.2 1.5-1.6 2.6"/>`,
+  instrument: `<path d="M10.5 21.5v-6l-2-2V4A1.5 1.5 0 0 1 10 2.5h4A1.5 1.5 0 0 1 15.5 4v9.5l-2 2v6M5 5.5h3.5M5 9h3.5M5 12.5h3.5M15.5 5.5H19M15.5 9H19M15.5 12.5H19"/>`,
+  // The exercises: a note with an arrow back (play it back), two notes a step apart (interval), three stacked (chord).
+  playback: `<ellipse class="f" cx="6.5" cy="18" rx="2.9" ry="2.2" transform="rotate(-20 6.5 18)"/><path d="M9.2 17.3V4.5l3 2"/><path d="M14 9h4a3.2 3.2 0 0 1 0 6.4h-4.5"/><path d="M15.6 13.4l-2.1 2 2.1 2"/>`,
+  intervals: `<ellipse class="f" cx="6.5" cy="18" rx="2.9" ry="2.2" transform="rotate(-20 6.5 18)"/><path d="M9.2 17.3V7"/><ellipse class="f" cx="15.5" cy="11" rx="2.9" ry="2.2" transform="rotate(-20 15.5 11)"/><path d="M18.2 10.3V2.5"/>`,
+  chordtype: `<ellipse class="f" cx="10" cy="19" rx="2.9" ry="2.2" transform="rotate(-20 10 19)"/><ellipse class="f" cx="10" cy="14.6" rx="2.9" ry="2.2" transform="rotate(-20 10 14.6)"/><ellipse class="f" cx="10" cy="10.2" rx="2.9" ry="2.2" transform="rotate(-20 10 10.2)"/><path d="M12.7 18.3V2.5"/>`,
+  sliders: `<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>`,
+};
+const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+const EX = { playback: "Play it back", intervals: "Intervals", chordtype: "Chord type" };
+const sub = n => { const m = n.match(/^([A-G][#♯]?)(\d)$/); return `${m[1].replace("#", "♯")}<sub>${m[2]}</sub>`; };
+
+const toprow = name => `<div class="toprow"><span class="btn toolbtn">${ico(name === "Ear training" ? "ear" : "chords")}${name}<span class="chev">⌄</span></span>
+  <span class="btn inst">${ico("instrument")}</span><span class="tuning">Guitar · Standard</span></div>`;
+const exrow = (ex, { style = "A", tally = "7 of 9" } = {}) => `<div class="exrow">${style === "A"
+    ? `<span class="seg">${Object.keys(EX).map(k => `<span class="${k === ex ? "on" : ""}" title="${EX[k]}">${ico(k)}</span>`).join("")}</span>`
+    : `<span class="btn exbtn">${ico(ex)}${EX[ex]}<span class="chev">⌄</span></span>`}
+  <span class="tally">${tally}</span><span class="btn ask" title="What is asked">${ico("sliders")}</span></div>`;
+const bar = `<div class="bar"><span>Tuner</span><span class="on">Practice</span><span>Settings</span></div>`;
+const phone = (inner, extra = "") => `<div class="phone">${inner}${bar}${extra}</div>`;
+const cand = (title, rec, body, note) => `<div class="cand"><h3>${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>
+  <div class="phones">${body}</div><p class="note">${note}</p></div>`;
+const capped = (cap, html) => `<div><div class="cap">${cap}</div>${html}</div>`;
+const playBtn = (sound, again) => `<div class="q">${again ? `<span class="again">again</span>` : ""}
+  <button class="play" data-sound="${sound}" aria-label="Hear it again">▶</button>`;
+
+// The answer kinds.
+const INTERVALS = [["m2", "minor 2nd"], ["M2", "major 2nd"], ["m3", "minor 3rd"], ["M3", "major 3rd"], ["P4", "4th"], ["TT", "tritone"],
+  ["P5", "5th"], ["m6", "minor 6th"], ["M6", "major 6th"], ["m7", "minor 7th"], ["M7", "major 7th"], ["P8", "octave"]];
+const CHORDS = [["Major", "C"], ["Minor", "Cm"], ["7", "C7"], ["maj7", "Cmaj7"], ["m7", "Cm7"], ["sus2", "Csus2"], ["sus4", "Csus4"],
+  ["7sus4", "C7sus4"], ["6", "C6"], ["m6", "Cm6"], ["add9", "Cadd9"], ["9", "C9"], ["dim", "Cdim"], ["dim7", "Cdim7"], ["m7♭5", "Cm7♭5"],
+  ["aug", "Caug"], ["Power", "C5"], ["7♯9", "C7♯9"], ["m9", "Cm9"], ["maj9", "Cmaj9"]];
+const answers = (items, { cls = "", lit, quiet, live = "" } = {}) => `<div class="answers ${cls}" ${live}>${items.map(([s, w]) =>
+  `<button class="btn ans ${s === lit ? "lit" : ""} ${s === quiet ? "quiet" : ""}" data-a="${s}">${s}<small>${w}</small></button>`).join("")}</div>`;
+const pick = keys => INTERVALS.filter(([s]) => keys.includes(s));
+const pickC = keys => CHORDS.filter(([s]) => keys.includes(s));
+
+// ---------- 1. Finding it and picking an exercise ----------
+const TOOLS = [["metronome", "Metronome"], ["chords", "Chords"], ["scales", "Scales"], ["capo", "Capo"], ["ear", "Ear training"]];
+const menu = `<div class="scrim"></div><div class="menu">${TOOLS.map(([t, n]) => `<div class="${t === "ear" ? "on" : ""}">${ico(t)}${n}</div>`).join("")}</div>`;
+const playbackBody = (heard = { note: "—", sm: "Listening…", dim: true }) => `${playBtn("g3")}<p class="prompt">Play it on your instrument</p></div>
+  <div class="heard"><div class="big ${heard.dim ? "dimmed" : ""}">${heard.note === "—" ? "—" : sub(heard.note)}</div><div class="sm">${heard.sm}</div></div>`;
+
+document.getElementById("pick").innerHTML = [
+  cand("In the Practice tool list", false,
+    capped("After a tap on the tool button", phone(toprow("Chords") + `<div style="height:300px"></div>`, menu)),
+    "Ear training is a fifth row in the list that is already there, with an ear icon. Nothing is added to the navigation bar."),
+  cand("A. The three exercises as icons", true,
+    capped("Play it back picked", phone(toprow("Ear training") + exrow("playback") + playbackBody())) +
+    capped("Intervals picked", phone(toprow("Ear training") + exrow("intervals") + `${playBtn("p5")}<p class="prompt">Which interval?</p></div>` +
+      answers(pick(["m3", "M3", "P4", "P5", "M6", "P8"])))),
+    "One row: a note with an arrow back, two notes apart, three notes stacked. TalkBack says each name. The tally and the \"What is asked\" button (sliders) end the row."),
+  cand("B. A second drop-down button", false,
+    capped("Play it back picked", phone(toprow("Ear training") + exrow("playback", { style: "B" }) + playbackBody())),
+    "The same look as the tool button above it, with the exercise's name. Clearer to a first-timer, but two drop-downs stacked."),
+].join("");
+
+// ---------- 2. One question of each ----------
+document.getElementById("questions").innerHTML = [
+  cand("Play it back, A: the note the tuner hears, as you play", true,
+    capped("Playing F♯3: shown, not yet right", phone(toprow("Ear training") + exrow("playback") +
+      playbackBody({ note: "F#3", sm: "Hold the note you heard" }))) +
+    capped("Two to four notes in a row (when chosen): a dot for each", phone(toprow("Ear training") + exrow("playback") +
+      `${playBtn("seq")}<p class="prompt">Play them on your instrument</p></div><div class="dots" style="margin-top:14px"><i class="done"></i><i class="now"></i><i></i></div>` +
+      `<div class="heard"><div class="big">${sub("A3")}</div><div class="sm">Note 2 of 3</div></div>`)),
+    "You see what you're playing, the way the tuner shows it, so you can walk towards the right note. The big note waits until it is steady (the strings mode's rules), so nothing flickers."),
+  cand("Play it back, B: only listening, until you hold a note", false,
+    capped("Playing: no name shown", phone(toprow("Ear training") + exrow("playback") +
+      playbackBody({ note: "—", sm: "Listening…", dim: true }))) +
+    capped("Held a wrong note", phone(toprow("Ear training") + exrow("playback") +
+      playbackBody({ note: "—", sm: "Not that one. ▶ to hear it again", dim: true }))),
+    "Purely by ear: no name to look at until you hold a note. Harder, and a beginner gets less help finding it."),
+  cand("Intervals", false,
+    capped("Fourths and fifths only, \"up\" chosen", phone(toprow("Ear training") + exrow("intervals") +
+      `${playBtn("p5")}<span class="dir">UP</span><p class="prompt">Which interval?</p></div>` + answers(pick(["P4", "P5"])))) +
+    capped("Every interval: twelve buttons, two across", phone(toprow("Ear training") + exrow("intervals") +
+      `${playBtn("p5")}<span class="dir">TOGETHER</span><p class="prompt">Which interval?</p></div>` + answers(INTERVALS, { cls: "scroll" }))),
+    "Only the intervals you chose get a button, every button the same size whatever its name. Up, down or together is said above the question."),
+  cand("Chord type", false,
+    capped("A few: major, minor, 7", phone(toprow("Ear training") + exrow("chordtype") +
+      `${playBtn("am")}<p class="prompt">Which kind of chord?</p></div>` + answers(pickC(["Major", "Minor", "7"]), { cls: "three" }))) +
+    capped("All twenty: the list scrolls", phone(toprow("Ear training") + exrow("chordtype") +
+      `${playBtn("am")}<p class="prompt">Which kind of chord?</p></div>` + answers(CHORDS, { cls: "scroll" }))),
+    "The chord is strummed in the string voice from a shape for your tuning; its root changes every time. Three choices stack in one column, more go two across."),
+].join("");
+
+// ---------- 3. Right and wrong (these work: tap an answer) ----------
+const live = (id, ex, items, right, sound, prompt, nextB) => phone(toprow("Ear training") + `<div id="${id}-ex">${exrow(ex, { tally: "7 of 9" })}</div>` +
+  `${playBtn(sound)}<p class="prompt" id="${id}-p">${prompt}</p></div>` +
+  answers(items, { live: `data-live="${id}" data-right="${right}" data-next="${nextB ? "B" : "A"}"` }) +
+  (nextB ? `<button class="btn next" id="${id}-next" style="visibility:hidden">Next</button>` : ""));
+document.getElementById("rightwrong").innerHTML = [
+  cand("Right: a soft glow, the tuner's in-tune colour", false,
+    capped("Playing G3: right", phone(toprow("Ear training") + exrow("playback", { tally: "8 of 10" }) +
+      `${playBtn("g3")}<p class="prompt">Play it on your instrument</p></div><div class="heard glowable lit"><div class="big">${sub("G3")}</div><div class="sm ok">Right</div></div>`)) +
+    capped("Wrong: yours goes quiet, the right one glows", phone(toprow("Ear training") + exrow("intervals", { tally: "7 of 10" }) +
+      `${playBtn("p5")}<span class="dir">UP</span><p class="prompt">It was a 5th. ▶ to hear it again</p></div>` + answers(pick(["m3", "M3", "P4", "P5", "M6", "P8"]), { lit: "P5", quiet: "P4" }))),
+    "The glow eases in and out like the tuner's (0.4 s in, 0.6 s out), no burst or sound effect. A wrong answer is never red: the right one is shown, with the ▶ to hear it again."),
+  cand("A. The next question comes by itself", true,
+    capped("Try it: the answer is a 5th", live("na", "intervals", pick(["m3", "M3", "P4", "P5", "M6", "P8"]), "P5", "p5", "Which interval?", false)),
+    "About 1½ seconds after a right answer (a little longer after a wrong one), the next question plays. Nothing to tap but the answers."),
+  cand("B. A Next button", false,
+    capped("Try it: the answer is minor", live("nb", "chordtype", pickC(["Major", "Minor", "7"]), "Minor", "am", "Which kind of chord?", true)),
+    "You decide when to go on, so there is time to replay it after a miss. One more tap for every question."),
+].join("");
+
+// ---------- 4. The tally and a missed question coming back ----------
+document.getElementById("tally").innerHTML = [
+  cand("The tally for this visit", false,
+    capped("Quiet, at the end of the exercise row", phone(toprow("Ear training") + exrow("intervals", { tally: "7 of 9" }) +
+      `${playBtn("p5")}<span class="dir">UP</span><p class="prompt">Which interval?</p></div>` + answers(pick(["P4", "P5"])))),
+    "Right answers of questions asked, for this exercise, this visit. It starts again at \"0 of 0\" when you leave the tool and is never saved. No best, no percentage."),
+  cand("A missed question comes back", false,
+    `<div class="timeline"><span>P5</span><span class="miss">P4 ✗</span><span>P5</span><span>P4</span><span>P5</span><span class="back">P4 again ✓</span><span>P5</span></div>`,
+    "A missed question is asked again three to five questions later (with the same notes), then mixed in as usual."),
+  cand("A. No mark", true,
+    capped("The 4th, asked again", phone(toprow("Ear training") + exrow("intervals", { tally: "5 of 6" }) +
+      `${playBtn("p4")}<span class="dir">UP</span><p class="prompt">Which interval?</p></div>` + answers(pick(["P4", "P5"])))),
+    "It looks like any other question, so nothing hints at the answer and the screen stays calm."),
+  cand("B. A small \"again\" over the ▶", false,
+    capped("The 4th, asked again", phone(toprow("Ear training") + exrow("intervals", { tally: "5 of 6" }) +
+      `${playBtn("p4", true)}<span class="dir">UP</span><p class="prompt">Which interval?</p></div>` + answers(pick(["P4", "P5"])))),
+    "You know it is the one you missed. But it gives a hint, and is one more thing on screen."),
+].join("");
+
+// ---------- 5. Choosing what is asked ----------
+const rows1 = (items, on) => items.map(([n, d], i) => `<div class="row1 ${i === on ? "on" : ""}"><span>${n}<small>${d}</small></span>${i === on ? `<span class="tick">✓</span>` : ""}</div>`).join("");
+const chips = (items, on, cls = "") => `<div class="chips ${cls}">${items.map(s => `<span class="chip ${on.includes(s) ? "on" : ""}">${s}</span>`).join("")}</div>`;
+document.getElementById("choices").innerHTML = [
+  cand("A. Questions start at once; the sliders button opens the choices", true,
+    capped("Play it back", `<div class="sheet"><div class="title">What is asked</div><div class="gh">Notes</div>` +
+      rows1([["Open strings", "E A D G B E"], ["Natural notes up to the 5th fret", "no sharps or flats"], ["Every note up to the 12th fret", "the whole lower neck"]], 1) +
+      `<div class="gh">Notes in a row</div>${chips(["1", "2", "3", "4"], ["1"], "four")}` +
+      `<div class="swrow" style="margin-top:6px"><span>Any octave counts<small>G on any string is right for a G</small></span><span class="sw"></span></div></div>`) +
+    capped("Intervals", `<div class="sheet"><div class="title">What is asked</div><div class="gh">Intervals</div>` +
+      chips(INTERVALS.map(i => i[0]), ["P4", "P5"]) + `<p class="quick">Tap to add or take away; at least one stays.</p>` +
+      `<div class="gh">Played</div>${chips(["Up", "Down", "Together"], ["Up"])}</div>`) +
+    capped("Chord type", `<div class="sheet"><div class="title">What is asked</div><div class="gh">Chord types</div>` +
+      chips(CHORDS.map(c => c[0]), ["Major", "Minor", "7"]) + `<p class="quick">Major, minor and 7 to start with.</p></div>`),
+    "One panel per exercise, from the bottom like the instrument panel. Your choices are kept for next time (settings, not scores), so a teacher's \"fourths and fifths this week\" stays set."),
+  cand("B. A short start page each visit", false,
+    capped("Intervals, before the first question", phone(toprow("Ear training") + exrow("intervals", { tally: "" }) +
+      `<div class="sheet" style="width:auto;margin:6px -13px 0;border-radius:12px"><div class="gh" style="margin-top:0">Intervals</div>${chips(INTERVALS.map(i => i[0]), ["P4", "P5"])}` +
+      `<div class="gh">Played</div>${chips(["Up", "Down", "Together"], ["Up"])}</div>` +
+      `<button class="btn next" style="margin-top:14px">Start</button>`)),
+    "The choices are in front of you every time, then Start. Clear for a new player, but one more step on every visit."),
+].join("");
+
+// ---------- Sound: short plucked tones, each stops by itself; never loops. ----------
+let ctx;
+const hz = midi => 440 * Math.pow(2, (midi - 69) / 12);
+function pluck(midi, t0, dur = 1.5, gain = 0.22) {
+  const f = hz(midi), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+  lp.type = "lowpass"; lp.frequency.setValueAtTime(Math.min(6000, f * 8), t0); lp.frequency.exponentialRampToValueAtTime(f * 2, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  for (const [mult, type, lvl] of [[1, "triangle", 1], [2, "sine", 0.35], [3, "sine", 0.12]]) {
+    const o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = type; o.frequency.value = f * mult; og.gain.value = lvl;
+    o.connect(og).connect(lp); o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  lp.connect(g).connect(ctx.destination);
+}
+const SOUNDS = {
+  g3: t => pluck(55, t),
+  seq: t => { pluck(55, t, 1.1); pluck(57, t + 0.7, 1.1); pluck(59, t + 1.4, 1.3); },
+  p5: t => { pluck(57, t, 1.2); pluck(64, t + 0.8, 1.4); },
+  p4: t => { pluck(57, t, 1.2); pluck(62, t + 0.8, 1.4); },
+  am: t => [45, 52, 57, 60, 64].forEach((m, i) => pluck(m, t + i * 0.035, 1.8, 0.11)), // A minor, open shape, strummed
+};
+document.addEventListener("click", e => {
+  const b = e.target.closest(".play");
+  if (!b) return;
+  ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume();
+  SOUNDS[b.dataset.sound](ctx.currentTime + 0.03);
+});
+
+// ---------- The working answers in section 3 ----------
+const tallies = { na: [7, 9], nb: [7, 9] };
+function nextQuestion(box) {
+  box.querySelectorAll(".ans").forEach(a => a.classList.remove("lit", "quiet"));
+  const id = box.dataset.live;
+  document.getElementById(`${id}-p`).textContent = id === "na" ? "Which interval?" : "Which kind of chord?";
+  const nb = document.getElementById(`${id}-next`); if (nb) nb.style.visibility = "hidden";
+  box.dataset.done = "";
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest(".ans"), box = a && a.closest("[data-live]");
+  if (box && !box.dataset.done) {
+    box.dataset.done = "1";
+    const id = box.dataset.live, right = box.dataset.right, ok = a.dataset.a === right;
+    box.querySelector(`[data-a="${right}"]`).classList.add("lit");
+    if (!ok) a.classList.add("quiet");
+    tallies[id][1]++; if (ok) tallies[id][0]++;
+    document.querySelector(`#${id}-ex .tally`).textContent = `${tallies[id][0]} of ${tallies[id][1]}`;
+    const name = right === "P5" ? "a 5th" : "minor";
+    document.getElementById(`${id}-p`).textContent = ok ? "Right" : `It was ${name}. ▶ to hear it again`;
+    document.getElementById(`${id}-p`).style.color = ok ? "var(--tune)" : "";
+    if (box.dataset.next === "A") setTimeout(() => { document.getElementById(`${id}-p`).style.color = ""; nextQuestion(box); }, ok ? 1500 : 2500);
+    else document.getElementById(`${id}-next`).style.visibility = "visible";
+    return;
+  }
+  const n = e.target.closest(".next[id]");
+  if (n) { const id = n.id.split("-")[0]; document.getElementById(`${id}-p`).style.color = ""; nextQuestion(document.querySelector(`[data-live="${id}"]`)); }
+});
+</script>
