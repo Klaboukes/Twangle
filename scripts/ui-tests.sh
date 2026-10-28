@@ -200,7 +200,7 @@ for line in text.split('\n'):
         name = f"{status.get('class', '?').rsplit('.', 1)[-1]}#{status.get('test', '?')}"
         if code == 1:
             running = name
-        else:
+        elif code <= 0:  # a result; other codes are a test's own lines (PluckRecorder's prompts)
             running = None
             tests += 1
             if code in (-3, -4):  # @Ignore'd, or an assumption that did not hold
@@ -302,7 +302,7 @@ take_lock() {
     # the beat has only its own age).
     read -r age limit <<< "$(adb shell "if [ -e $LOCK/beat ]; then echo \$((\$(date +%s) - \$(stat -c %Y $LOCK/beat))) $STALE_AFTER; else echo \$((\$(date +%s) - \$(stat -c %Y $LOCK))) $LOCK_MAX_AGE; fi" 2>/dev/null | tr -d '\r')"
     if [[ "$age" =~ ^[0-9]+$ ]] && [ "$age" -lt "$limit" ]; then
-        echo "Another UI test run is using the phone (its last sign of life ${age}s ago), maybe from another session. Wait for it to finish and run again." >&2
+        echo "Another UI test run (or a recording, scripts/record-plucks.sh) is using the phone (its last sign of life ${age}s ago), maybe from another session. Wait for it to finish and run again." >&2
         exit 5
     fi
     echo "Taking over the phone from a UI test run that was cut off (no sign of life for ${age:-?}s); putting back what it left."

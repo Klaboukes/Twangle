@@ -62,7 +62,7 @@ Part of §3 of [ARCHITECTURE.md](../../ARCHITECTURE.md), which lists every topic
 - **Hop:** 1024 samples (≈ 21 ms), ~47 estimates per second.
 - **Detection range:** 62–1500 Hz for guitar (τ_max = sampleRate / f_min). The floor sits above 60 Hz mains hum and below drop C (65.4 Hz). With the low-note window: **28–1500 Hz**, so B0 (30.9 Hz) reads even a semitone flat.
 - **YIN threshold:** 0.15 (the paper suggests 0.10–0.15).
-- **Accuracy target:** ±1 cent on synthetic signals, ±3 cents on recorded guitar (no recordings are in the tests yet: Phase 46).
+- **Accuracy target:** ±1 cent on synthetic signals, ±3 cents on recorded guitar (no recordings are in the tests yet: Phase 46; the recorder, `scripts/record-plucks.sh`, is ready, [Testing](testing.md), *Real recordings*).
 - **"In tune":** |cents| ≤ 5 held for 300 ms (15 hops at 48 kHz), released past 7 cents, so a note hovering at 5 doesn't flicker. That is **Relaxed**, the default; **Precise** is ≤ 2, released past 3 ([Lifecycle](lifecycle.md), *Settings*). The shown "in tune" goes through the steady hint line (see [Notes, tunings and audio](notes-and-audio.md), *Audio capture*), so it also lasts at least 0.5 s.
 
 ## Other sample rates

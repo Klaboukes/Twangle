@@ -30,7 +30,7 @@ minSdk 26 (the watch app 30, `:baselineprofile` 28), targetSdk/compileSdk 37, JV
 | `:core:settings` | Android library | `SettingsRepository` (DataStore): A4, tuning, notation, style, theme, keep screen on, metronome tempo/meter/click/vibration, the Practice tool used last with its chord, scale and drone; also `ToolSwitches` (which tools show, not saved) |
 | `:core:designsystem` | Android library | `TwangleTheme` and the six visual styles: palettes, bundled fonts, backgrounds, style mood cards (`StyleMood`), meter and wave looks, the metronome's tempo dial and beat lights, the segmented switch (`SegmentedSwitch`) |
 | `:core:dsp` | **Pure Kotlin/JVM** | Pitch detection (YIN), note math, tunings, smoothing, strum check and chord naming, chord, scale and capo charts, Ear training's questions, string synthesis (the reference tones), the drone's synthesis, metronome click track and tap tempo |
-| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone) |
+| `:core:testing` | Android library | UI test helpers only: `createSharedActivityComposeRule()` and `SharedActivityTestRunner` (one activity for the whole run, much faster), `@Thorough` and `allIfThorough` (double checks, only in `--thorough` runs, i.e. overnight), `@EveryLanguage` and `assertEveryTextWhollyShown` (every language, overnight), `assertWhollyShown` (nothing clipped or cut off), `PhoneScreen` (a forced window size with fake system bars, the same on every phone); in its own on-device tests `PluckRecorder`, which records plucked strings for `:core:dsp`'s test fixtures (`scripts/record-plucks.sh`, never part of the app) |
 | `:baselineprofile` | Android test | Generates the Baseline Profile and measures startup (on demand, device required) |
 
 ## Commands
@@ -60,6 +60,7 @@ scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md t
 scripts/store-graphics.sh               # the Play Store's icon and feature graphic, drawn on the phone (docs/store-listing.md)
 scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
+scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
 ```
 `scripts/ui-test-scope.py`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)

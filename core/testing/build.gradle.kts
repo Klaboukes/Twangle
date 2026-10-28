@@ -39,4 +39,7 @@ dependencies {
     // Its own checks (PhoneScreenTest) lay out with insets padding, from foundation.
     androidTestImplementation(libs.androidx.compose.material3)
     androidTestImplementation(libs.androidx.compose.ui.test.manifest)
+    // PluckRecorder (scripts/record-plucks.sh) records through the tuner's own recorder, so the files
+    // hold what Twangle hears. Its test APK only: the app gains nothing.
+    androidTestImplementation(project(":core:audio"))
 }
