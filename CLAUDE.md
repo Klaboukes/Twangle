@@ -43,6 +43,7 @@ Run from the repo root. On Windows use `gradlew.bat`, or `./gradlew` in Git Bash
 ./gradlew :core:dsp:benchmark           # DSP timing benchmarks (on demand, not in CI)
 ./gradlew lint                          # Android lint
 scripts/ui-tests.sh                     # on-device UI tests, only the modules this branch touches (see /ui-test)
+scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
 scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language, then the store screenshots (~2–3 h, see /overnight-run)
 scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2–3 min a language; git-ignored, docs/store-listing.md)
@@ -60,7 +61,7 @@ scripts/store-graphics.sh               # the Play Store's icon and feature grap
 scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 ```
-`scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
+`scripts/ui-test-scope.py`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
   `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.

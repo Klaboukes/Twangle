@@ -19,6 +19,8 @@
 #                                                languages only (DAY_LANGUAGES, default en,nl): daytime
 #   scripts/ui-tests.sh --all-languages ...      the @EveryLanguage tests in every language Twangle
 #                                                ships (long; the overnight run)
+#   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
+#                                                no phone)
 #
 # A normal run is quick and leaves out the double checks: the style tests run in the default style
 # only, and tests marked @Thorough (:core:testing) are skipped. The overnight run
@@ -46,53 +48,27 @@ COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)
 
-usage() { sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 # Git Bash turns arguments that look like paths ("/sdcard/...") into Windows paths for adb.exe; the
 # phone's paths must pass unchanged. Local files are therefore always given relative to the repo.
 adb() { MSYS_NO_PATHCONV=1 "$ADB_EXE" "$@"; }
 
-# Maps changed paths to the UI test modules that can see the change (a module's own sources, or
-# anything it depends on), since commit [base] (by default where this branch left main). Docs, CI
-# files, the Play Store texts (fastlane/) and JVM unit tests need no device run.
+# Where this branch left main.
+branch_base() { git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main; }
+
+# The UI test modules a change since commit [base] (by default where this branch left main) can
+# reach, uncommitted work included: scripts/ui-test-scope.py follows what changed in the core modules
+# to the modules that use it. Docs, CI files, the Play Store texts and JVM unit tests need no device
+# run. With --why, each module comes with its reason. If the helper fails, every module.
 affected_modules() {
-    local base="${1:-}" changed
-    [ -n "$base" ] || base="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main)"
-    changed="$( { git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u)"
-    local testing=0 tuner=0 settings=0 metronome=0 practice=0 ears=0 audio=0 app=0 path
-    while IFS= read -r path; do
-        [ -z "$path" ] && continue
-        case "$path" in
-            *.md | .github/* | .claude/* | scripts/* | docs/* | fastlane/* | */src/test/* | core/dsp/src/benchmark/*) ;;
-            feature/tuner/src/androidTest/*) tuner=1 ;;
-            feature/settings/src/androidTest/*) settings=1 ;;
-            feature/metronome/src/androidTest/*) metronome=1 ;;
-            feature/practice/src/androidTest/*) practice=1 ;;
-            feature/eartraining/src/androidTest/*) ears=1 ;;
-            core/audio/src/androidTest/*) audio=1 ;;
-            app/src/androidTest/*) app=1 ;;
-            feature/tuner/*) tuner=1; app=1 ;;
-            feature/settings/*) settings=1; app=1 ;;
-            feature/metronome/*) metronome=1; app=1 ;;
-            feature/practice/*) practice=1; app=1 ;;
-            feature/eartraining/*) ears=1; app=1 ;;
-            core/audio/*) audio=1; tuner=1; metronome=1; ears=1; app=1 ;;
-            core/dsp/* | core/settings/* | core/designsystem/*) tuner=1; settings=1; metronome=1; practice=1; ears=1; app=1 ;;
-            core/testing/*) testing=1; tuner=1; settings=1; metronome=1; practice=1; ears=1; app=1 ;;
-            app/*) app=1 ;;
-            baselineprofile/*) ;;
-            wear/*) ;; # the watch app: checked on a Wear OS emulator, not on the phone
-            *) testing=1; tuner=1; settings=1; metronome=1; practice=1; ears=1; audio=1; app=1 ;; # build files, version catalog, Gradle wrapper
-        esac
-    done <<< "$changed"
-    [ $testing = 1 ] && echo :core:testing
-    [ $tuner = 1 ] && echo :feature:tuner
-    [ $settings = 1 ] && echo :feature:settings
-    [ $metronome = 1 ] && echo :feature:metronome
-    [ $practice = 1 ] && echo :feature:practice
-    [ $ears = 1 ] && echo :feature:eartraining
-    [ $audio = 1 ] && echo :core:audio
-    [ $app = 1 ] && echo :app
+    local base="${1:-}"
+    [ $# -gt 0 ] && shift
+    [ -n "$base" ] || base="$(branch_base)"
+    { python -I scripts/ui-test-scope.py "$@" "$base" || {
+        echo "Could not work out which modules the change reaches: taking every one." >&2
+        printf '%s\n' "${UI_MODULES[@]}"
+    }; } | tr -d '\r'
 }
 
 # A module's last whole pass on this PC: build/ui-tests-passed/feature-tuner holds "<commit> <date>".
@@ -104,16 +80,21 @@ pass_file() { local m="${1#:}"; echo "$PASSED/${m//:/-}"; }
 # clone no longer has, or changed since in a way the module can see.
 unproven_modules() {
     local module commit
+    local -A reached=()
     for module in "${UI_MODULES[@]}"; do
         commit="$(cut -d' ' -f1 "$(pass_file "$module")" 2>/dev/null)"
+        if [ -n "$commit" ] && git cat-file -e "$commit^{commit}" 2>/dev/null; then
+            # Modules passed at the same commit (the overnight run's) share one look at the change.
+            [ -n "${reached[$commit]+set}" ] || reached[$commit]=" $(affected_modules "$commit" | tr '\n' ' ')"
+        fi
         if [ -z "$commit" ] || ! git cat-file -e "$commit^{commit}" 2>/dev/null ||
-            affected_modules "$commit" | grep -qx -- "$module"; then
+            [[ "${reached[$commit]}" == *" $module "* ]]; then
             echo "$module"
         fi
     done
 }
 
-modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0 since_pass=0
+modules=() filter="" class="" extra=() thorough=0 cool=0 languages=0 since_pass=0 dry_run=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --all) modules=("${UI_MODULES[@]}") ;;
@@ -123,6 +104,7 @@ while [ $# -gt 0 ]; do
         --cool) cool=1 ;;
         --languages) languages=1 ;;
         --all-languages) languages=2 ;;
+        --dry-run) dry_run=1 ;;
         -f | --filter) filter="$2"; shift ;;
         -c | --class) class="$2"; shift ;;
         -a | --arg) extra+=("$2"); shift ;;
@@ -145,13 +127,21 @@ if [ $since_pass = 1 ]; then
         exit 0
     fi
     echo "To run: ${modules[*]}"
+elif [ ${#modules[@]} -eq 0 ] && [ $dry_run = 1 ]; then
+    echo "Would run, for the change since $(git rev-parse --short "$(branch_base)") (uncommitted work included):"
+    affected_modules "" --why | grep . || echo "nothing (only docs, CI or unit tests changed, or nothing a UI test uses)"
+    exit 0
 elif [ ${#modules[@]} -eq 0 ]; then
     mapfile -t modules < <(affected_modules)
     if [ ${#modules[@]} -eq 0 ]; then
-        echo "No UI tests affected (only docs, CI or unit tests changed)."
+        echo "No UI tests affected (only docs, CI or unit tests changed, or nothing a UI test uses)."
         exit 0
     fi
-    echo "Affected: ${modules[*]}"
+    echo "Affected: ${modules[*]} (why: --dry-run)"
+fi
+if [ $dry_run = 1 ]; then
+    echo "Would run: ${modules[*]}"
+    exit 0
 fi
 
 # Say plainly that the phone is missing instead of failing after the build.

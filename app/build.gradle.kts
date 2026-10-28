@@ -24,7 +24,8 @@ android {
         // twangle.version in gradle.properties; the watch app gets the same version.
         versionCode = rootProject.extra["twangleVersionCode"] as Int
         versionName = rootProject.extra["twangleVersionName"] as String
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Leaves the window of createSharedActivityComposeRule() open between tests (:core:testing).
+        testInstrumentationRunner = "io.github.klaboukes.twangle.core.testing.SharedActivityTestRunner"
         // The languages of the Language setting: the same list as localeFilters below, as resource
         // qualifiers (e.g. "pt-rBR"), comma-separated.
         buildConfigField("String", "LANGUAGES", "\"${providers.gradleProperty("twangle.languages").get()}\"")

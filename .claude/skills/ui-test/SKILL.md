@@ -1,14 +1,14 @@
 ---
 name: ui-test
 description: Run Twangle's on-device UI tests on a test phone (Xiaomi 12X or Galaxy S26), scoped to what changed, with tight timeouts and a short summary. Use whenever UI or instrumented tests need to run, while iterating on a UI change, before landing a change the user can see or hear, or when the user says "run the UI tests", "/ui-test", or "/ui-test <filter>".
-argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --thorough, --cool, --languages or --all-languages]"
+argument-hint: "[optional: test-name regex, a :module, --all, --since-pass, --thorough, --cool, --languages, --all-languages or --dry-run]"
 ---
 
 # UI tests on the phone
 
 Always go through `scripts/ui-tests.sh`, never `./gradlew connectedDebugAndroidTest`. Gradle's task is slower, uninstalls the app (wiping the owner's settings) and floods the session with log lines. The script builds once, runs each module with `am instrument` under a time limit, and prints one line per module.
 
-**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool`, `--languages` or `--all-languages` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
+**As a command:** `/ui-test` runs `scripts/ui-tests.sh`. A `:module`, `--all`, `--since-pass`, `--thorough`, `--cool`, `--languages`, `--all-languages` or `--dry-run` argument is passed on unchanged. Any other text is a name filter: `scripts/ui-tests.sh <module> -f '<text>'` on the module that has those tests (usually `:feature:tuner`). Report the result in plain language.
 
 ## Pick the smallest run
 
@@ -28,7 +28,8 @@ Run each one as a single foreground Bash call with the timeout shown, never more
 - `--cool` runs one test class at a time and waits while the phone is 37 °C or warmer (`COOL_BELOW`); use it for anything longer than a few minutes. `--languages` adds the `@EveryLanguage` checks at 2× text in the testers' languages only, English and Dutch (`DAY_LANGUAGES`); `--all-languages` runs them in all 16 (about 20 minutes per style) and belongs to the overnight run, never the day: the owner has testers only for English and Dutch, so a text too long in another language may wait for the night (2026-10-26). A screen that didn't fit is saved as a picture under the module's `build/outputs/connected_android_test_additional_output`.
 - **The phone heats up.** About 15 minutes of thorough tests, or long screenshot and tone sessions, took the Xiaomi to 45 °C (`adb shell dumpsys battery | grep temp`, in tenths of a degree); then the pixel tests run past their 10 s limits and the owner notices the heat. Use `--cool` for long runs (it keeps the screen on while it waits: turned off, the phone may lock and stop the run), and never re-run a whole sweep that a smaller run already covers. With `--cool` the whole thorough sweep (~1 h) stayed below 37 °C on 2026-10-16.
 - A normal run is quick: the style tests run in the default style only and `@Thorough` tests are skipped. Naming a `@Thorough` test with `-c` runs nothing unless you add `--thorough`. The full suite (`--thorough`, every style) is for the overnight run only: the owner wants limited tests during normal work, so they never wait for long runs (2026-10-16).
-- With no module given, the script picks the affected modules itself. If only docs, scripts or unit tests changed, it says so and exits 0.
+- With no module given, the script picks the affected modules itself (`scripts/ui-test-scope.py`): a module's own sources reach it, a feature's main sources also `:app`, and a change in `:core:dsp`, `:core:settings`, `:core:audio` or `:core:designsystem` Kotlin only the modules whose code uses what changed (the changed member, e.g. `SettingsRepository.setEarExercise`, or the whole declaration), following core code that uses it in turn. The Play it back increment (Phase 55), which touched `:core:dsp` and `:core:settings`, ran six modules (~12 min on the phone) and now runs `:feature:eartraining` and `:app`. The broad set stays for core resources and build files, `:core:testing` and `TwangleTheme`. If only docs, scripts or unit tests changed, or nothing a UI test uses, it says so and exits 0.
+- **`--dry-run`** says which modules would run and why, with no build and no phone (seconds). Use it when the pick looks wrong; `python -I scripts/ui-test-scope.py --why <base> [<head>]` does the same for any two commits, and `--self-check` checks the helper. It reads names, not types, so a name used elsewhere too only widens the pick; anything it misses still runs overnight.
 - After the full run, a fix needs only the failed tests plus its area (`-f`). Run the full set again only if the fix touched shared layout code (`TunerContent`, `GuitarControls`, `ModeSlot`, the theme).
 
 ## Reading results
