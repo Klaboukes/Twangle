@@ -138,8 +138,12 @@ Owner, 2026-10-28: two sessions in one folder switch branches under each other (
 - **The main folder** (`D:\source\Twangle` on the desktop) belongs to the overnight run and releases (`/overnight-run`, `/release`), one at a time: their records are git-ignored and live there (`build/overnight/`, the store screenshots under `fastlane/`). A session that only reads may stay there too.
 - **Every other session that will edit, build or commit** works in a git worktree of its own: start it with the desktop app's worktree option, or make one first thing (`EnterWorktree`, under `.claude/worktrees/`, git-ignored).
 - **In a new worktree:** copy `local.properties` from the main folder (git-ignored; the build needs it) and give the branch its name from the list above (`git branch -m <branch>`). The first build there takes a few minutes longer.
-- **`main` stays in the main folder**, so in a worktree read `git switch main && git pull` (here and in the skills) as `git fetch -q origin && git switch --detach origin/main`, then branch from there.
-- **After the merge**, remove the worktree (`ExitWorktree` with *remove*, or `git worktree remove <path>`), then `git pull` in the main folder if it is on `main` and no run is going.
+- **`main` stays in the main folder**, so in a worktree read `git switch main && git pull` (here and in the skills) as `git fetch -q origin && git switch --detach origin/main`, then branch from there. Merge with `gh pr merge --squash` alone (`--delete-branch` would try to switch the worktree to `main`) and delete the GitHub branch with `git push origin --delete <branch>`.
+- **When the work is merged, finish it without asking** (owner, 2026-10-28: "I just want sessions not to clash and update main locally and on GitHub once done"; git is not the owner's thing, so never ask them about it):
+  1. Leave and remove the worktree: `ExitWorktree` with *remove*. It warns that the branch has a commit `main` lacks; after a squash merge that commit is in `main` under another name, so remove it anyway (`discard_changes: true`). The branch stays on the PC until step 3.
+  2. In the main folder, if it is on `main` and no run is going: `git pull`. If it is on another branch, a run or another session has it: leave it, since GitHub has the work and the next session there pulls it.
+  3. Delete the merged local branch (`git branch -D <branch>`).
+  Mention git to the owner only when something went wrong.
 - **The phone stays shared:** `scripts/ui-tests.sh` locks it, and its exit code 5 means another run has it: wait, never force it. Its notes of passed modules (`build/ui-tests-passed/`) are kept in the main folder for every worktree.
 
 `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`. Terminals opened before the install may not have it on PATH.

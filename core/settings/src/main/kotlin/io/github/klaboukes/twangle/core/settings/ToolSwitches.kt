@@ -32,7 +32,6 @@ data class ToolSwitches(
     /** Phase 33: the capo helper, in Practice, so only with [practiceTab] and [chords]. */
     val capoHelper: Boolean,
 ) {
-
     /** Every switch by name, so a test can check them all (ToolSwitchesTest keeps it complete). */
     val byName: Map<String, Boolean>
         get() = mapOf(
