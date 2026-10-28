@@ -7,11 +7,14 @@ import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 /**
  * The per-frame DSP chain as the app runs it (frame assembly → gate → sustain check → YIN →
  * smoother, plus the noise floor and clarity), for tests that feed whole recordings through it. Mirrors
- * `PitchPipeline` plus `TunerInterpreter`.
+ * `PitchPipeline` plus `TunerInterpreter`: in the low range, mains hum is cancelled on the way into the
+ * frames ([MainsHumCanceller]) and a pitch at mains hum's own frequency is no note.
  */
 internal class TunerChain(
     val settings: AnalysisSettings = AnalysisSettings.forSampleRate(YinPitchDetector.DEFAULT_SAMPLE_RATE),
     private val mapper: NoteMapper = NoteMapper(),
+    /** The hum canceller, as the range has it (none in the standard range); null for none, to compare. */
+    private val humCanceller: () -> MainsHumCanceller? = { settings.newHumCanceller() },
 ) {
     /** What the chain produced for one frame. */
     class Frame(
@@ -39,6 +42,7 @@ internal class TunerChain(
     /** Feeds [stream] in chunks of [chunkSize] samples and returns one [Frame] per hop. */
     fun run(stream: FloatArray, chunkSize: Int = settings.hopSize): List<Frame> {
         val assembler = settings.newFrameAssembler()
+        assembler.filter = humCanceller()
         val gate = SignalGate()
         val sustain = settings.newSustainCheck()
         val detector = settings.newPitchDetector()
@@ -59,7 +63,8 @@ internal class TunerChain(
                 assembler.readFrame(window)
                 val open = gate.process(window)
                 val sustained = !open || sustain.isSustained(window, floorDbfs = noise.floorDbfs)
-                val pitch = if (open && sustained) detector.detect(window) else PitchResult.NONE
+                val heard = if (open && sustained) detector.detect(window) else PitchResult.NONE
+                val pitch = if (assembler.filter != null && MainsHumCanceller.isMainsPitch(heard.frequencyHz)) PitchResult.NONE else heard
                 if (pitch.isPitched) smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold) else smoother.noReading(sustained)
                 val shown = if (smoother.hasReading) mapper.frequencyOf(smoother.midi) else 0f
                 noise.update(gate.levelDbfs, pitch.isPitched)

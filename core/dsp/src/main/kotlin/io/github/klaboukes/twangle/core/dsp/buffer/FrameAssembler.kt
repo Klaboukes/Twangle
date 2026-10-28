@@ -8,7 +8,8 @@ package io.github.klaboukes.twangle.core.dsp.buffer
  * samples, so consecutive frames overlap by `windowSize − hopSize` samples. A larger [capacity]
  * lets the caller read a longer window at the same moments (`readFrame(out, length)`, once
  * [available] reaches that length), e.g. the low-note window, and switch between the two without
- * losing audio. Nothing allocates after construction.
+ * losing audio. While a [filter] is set, samples pass through it on their way into the ring (the
+ * low-note window's mains hum canceller). Nothing allocates after construction.
  *
  * Typical loop for one incoming chunk:
  * ```
@@ -44,6 +45,17 @@ class FrameAssembler(
     var available: Int = 0
         private set
 
+    /**
+     * Runs over every sample pushed while it is set, in place in the ring, so frames hold its output;
+     * the caller's chunks are left as they are. Setting another filter (not the same one again)
+     * [resets][SampleFilter.reset] it, since it missed the audio in between.
+     */
+    var filter: SampleFilter? = null
+        set(value) {
+            if (value !== field) value?.reset()
+            field = value
+        }
+
     // Samples still needed before the next frame is ready: a full window at first, then one hop.
     private var samplesUntilFrame = windowSize
 
@@ -68,6 +80,7 @@ class FrameAssembler(
         while (copied < count) {
             val chunk = minOf(count - copied, capacity - writePos)
             System.arraycopy(samples, offset + copied, ring, writePos, chunk)
+            filter?.process(ring, writePos, chunk)
             writePos = (writePos + chunk) % capacity
             copied += chunk
         }

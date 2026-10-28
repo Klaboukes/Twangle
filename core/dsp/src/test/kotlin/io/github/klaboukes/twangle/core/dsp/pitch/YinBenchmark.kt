@@ -51,6 +51,21 @@ class YinBenchmark {
     }
 
     @Test
+    fun `the low range's hum canceller takes a small part of a frame`() {
+        val canceller = MainsHumCanceller(48_000)
+        val stream = TestSignals.mix(TestSignals.pluck(41.2f, 48_000), TestSignals.hum(50f, 48_000), 6f)
+        val hop = FloatArray(FrameAssembler.DEFAULT_HOP_SIZE)
+        val stats = time { i ->
+            val start = (i * hop.size) % (stream.size - hop.size)
+            stream.copyInto(hop, 0, start, start + hop.size)
+            canceller.process(hop, 0, hop.size)
+            canceller.isLearning
+        }
+        report("hum canceller, one hop (1024)", stats)
+        assertTrue("median ${stats.medianMs} ms", stats.medianMs < BUDGET_MS / 4)
+    }
+
+    @Test
     fun `8 kHz headset audio, upsampled to 32 kHz, takes under 2 ms per frame`() {
         val settings = AnalysisSettings.forSampleRate(8_000)
         val detector = settings.newPitchDetector()

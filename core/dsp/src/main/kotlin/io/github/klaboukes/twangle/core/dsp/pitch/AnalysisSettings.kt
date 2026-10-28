@@ -53,6 +53,13 @@ data class AnalysisSettings(
     fun newSustainCheck(): SustainCheck = SustainCheck(maxOf(hopSize, ceil(sampleRate / minFrequencyHz).toInt()))
 
     /**
+     * The mains hum canceller for this range, to set as the [FrameAssembler]'s filter: in the low
+     * range, where 50 and 60 Hz are notes YIN would read; none in the standard range, whose 62 Hz floor
+     * keeps hum out. With it, a pitch at mains frequency is no note ([MainsHumCanceller.isMainsPitch]).
+     */
+    fun newHumCanceller(): MainsHumCanceller? = if (range == PitchRange.LOW) MainsHumCanceller(sampleRate) else null
+
+    /**
      * A pitch detector for frames of [windowSize] samples at [sampleRate]: YIN, upsampled if needed.
      * [refineOnLowestPartials] as [YinPitchDetector] has it: on for the tuner.
      */

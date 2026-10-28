@@ -56,9 +56,11 @@ class PitchPipelineTest {
     fun `switching range mid-note takes effect on the next hop without a gap`() = runTest {
         val e1 = 41.2f
         val signal = TestSignals.sine(e1, length = 24 * 1024)
-        var frames = 0
+        // The range is asked once a hop (it decides whether the hop goes through the low range's
+        // hum canceller); the first 3 hops only fill the window, so 11 hops make 8 frames.
+        var hops = 0
         val readings = PitchPipeline(FakeAudioRecorder(signal), StandardTestDispatcher(testScheduler))
-            .readings { if (frames++ < 8) PitchRange.STANDARD else PitchRange.LOW }.toList()
+            .readings { if (hops++ < 11) PitchRange.STANDARD else PitchRange.LOW }.toList()
 
         // Same pace as the standard range throughout: the long window had already filled.
         assertEquals(21, readings.size)

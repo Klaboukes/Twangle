@@ -47,6 +47,20 @@ object DspPhoneBenchmark {
             )
             val detector = settings.newPitchDetector()
             report("$range detect ($n)", time { i -> detector.detect(frames[i % frames.size]).isPitched })
+            // The low range's mains hum canceller runs over each hop's new samples (Phase 46).
+            val humCanceller = settings.newHumCanceller()
+            val hop = FloatArray(settings.hopSize)
+            if (humCanceller != null) {
+                val humStream = TestSignals.mix(TestSignals.pluck(41.2f, 48_000), TestSignals.hum(50f, 48_000), 6f)
+                report(
+                    "$range hum canceller (${settings.hopSize})",
+                    time { i ->
+                        humStream.copyInto(hop, 0, (i * hop.size) % (humStream.size - hop.size), (i * hop.size) % (humStream.size - hop.size) + hop.size)
+                        humCanceller.process(hop, 0, hop.size)
+                        humCanceller.isLearning
+                    },
+                )
+            }
 
             val gate = SignalGate()
             val sustain = settings.newSustainCheck()
@@ -54,9 +68,10 @@ object DspPhoneBenchmark {
             val smoother = PitchSmoother()
             val window = FloatArray(n)
             report(
-                "$range gate+sustain+detect+smoother",
+                if (humCanceller != null) "$range hum+gate+sustain+detect+smoother" else "$range gate+sustain+detect+smoother",
                 time { i ->
                     frames[i % frames.size].copyInto(window)
+                    humCanceller?.process(window, n - hop.size, hop.size)
                     val result = if (gate.process(window) && sustain.isSustained(window)) detector.detect(window) else PitchResult.NONE
                     if (result.isPitched) smoother.update(mapper.midiOf(result.frequencyHz), result.confidence) else smoother.noReading()
                     smoother.hasReading

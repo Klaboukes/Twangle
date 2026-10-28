@@ -6,6 +6,7 @@ import io.github.klaboukes.twangle.core.dsp.buffer.FrameAssembler
 import io.github.klaboukes.twangle.core.dsp.level.NoiseFloorTracker
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.Clarity
+import io.github.klaboukes.twangle.core.dsp.pitch.MainsHumCanceller
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchResult
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
@@ -46,7 +47,7 @@ data class PitchReading(
 }
 
 /**
- * Microphone → [FrameAssembler] → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
+ * Microphone → [FrameAssembler] (in the low range through the [MainsHumCanceller]) → [SignalGate] → [SustainCheck] → [YinPitchDetector], one [PitchReading] per hop
  * (~47 per second), with the room's noise floor and the note's SNR ([NoiseFloorTracker]) and
  * clarity ([Clarity]). See docs/architecture/signal-pipeline.md.
  *
@@ -144,16 +145,21 @@ class PitchPipeline(
                 return@collect
             }
             if (strumming || naming) {
-                // Back to the tuner: its window starts afresh rather than joining audio from before.
+                // Back to the tuner: its window starts afresh rather than joining audio from before,
+                // and the hum canceller learns the hum afresh (it missed the audio in between).
                 strumming = false
                 naming = false
                 assembler.reset()
+                assembler.filter = null
             }
             var pos = 0
             while (pos < chunk.size) {
+                // The low range hears 50 and 60 Hz, so its audio goes through the hum canceller.
+                val lowRange = range() == PitchRange.LOW
+                assembler.filter = if (lowRange) tuner.humCanceller else null
                 pos += assembler.push(chunk, pos, chunk.size - pos)
                 if (assembler.isFrameReady) {
-                    val analysis = if (range() == PitchRange.LOW) low else standard
+                    val analysis = if (lowRange) low else standard
                     if (assembler.available < analysis.windowSize) {
                         // The mic opened less than one long window ago: wait for the next hop.
                         assembler.skipFrame()
@@ -166,7 +172,9 @@ class PitchPipeline(
                     val open = gate.process(frame)
                     // A tick that has already died away is not a note (see SustainCheck).
                     val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
-                    val pitch = if (open && sustained) detector.detect(frame) else PitchResult.NONE
+                    val heard = if (open && sustained) detector.detect(frame) else PitchResult.NONE
+                    // Hum the canceller hasn't learned yet reads at mains frequency: no note.
+                    val pitch = if (lowRange && MainsHumCanceller.isMainsPitch(heard.frequencyHz)) PitchResult.NONE else heard
                     noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
                     emit(
                         PitchReading(
@@ -189,6 +197,7 @@ class PitchPipeline(
         val standard = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.STANDARD))
         val low = Analysis(AnalysisSettings.forSampleRate(rate, PitchRange.LOW))
         val assembler = FrameAssembler(standard.windowSize, standard.settings.hopSize, capacity = low.windowSize)
+        val humCanceller = low.settings.newHumCanceller()
         val gate = SignalGate()
         val noise = standard.settings.newNoiseFloorTracker()
     }
