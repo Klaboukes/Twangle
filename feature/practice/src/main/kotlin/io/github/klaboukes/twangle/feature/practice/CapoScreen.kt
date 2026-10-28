@@ -412,12 +412,13 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
                 Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
                     Text(
                         none,
-                        // The line height in em, so it shrinks with the text.
+                        // The line height in em, so it shrinks with the text. Below MIN_LABEL_SIZE only where it
+                        // would otherwise be cut off (Italian "Senza capotasto" in Space Age at 2× text on a 320 dp phone).
                         style = MaterialTheme.typography.titleLarge.copy(lineHeight = 1.2.em),
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
-                        autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleLarge.fontSize, stepSize = 0.5.sp),
+                        autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleLarge.fontSize, stepSize = 0.5.sp),
                         modifier = Modifier.fillMaxWidth().testTag(PracticeTestTags.CAPO_NONE).semantics { hideFromAccessibility() },
                     )
                 }
