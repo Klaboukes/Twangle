@@ -57,6 +57,13 @@ Steps 6–8 follow later, each on the owner's word.
   tell the owner in one line that the release waits for a clean overnight run, and that `/release`
   picks it up the morning after. The summary is git-ignored, so on the other PC (or with none) the
   answer is also: wait for the overnight run.
+- **Every language complete and up to date** (owner, 2026-10-28): by day only English and Dutch are
+  written, and the overnight run's first step translates the rest (`/translate`). Run
+  `./gradlew :app:testDebugUnitTest --tests '*LocalizationTest' -Ptwangle.strictTranslations=true`
+  (`scripts/release.sh bundle` runs it again and refuses to build otherwise). If it fails, a language
+  lacks a text or has a stale one (`python -I scripts/translations.py status` lists them): stop here
+  as for the overnight run, since new translations need that night's language tests too, and tell the
+  owner in one line that the release waits for the next overnight run.
 - The build checks: `gh run list --workflow android.yml --branch main --limit 1 --json headSha,conclusion`.
   A success on this very commit (`headSha` is `git rev-parse HEAD`) already ran test, lint and the
   builds: skip them. Otherwise (an older commit, a failure, a run GitHub refused to start) run

@@ -1,6 +1,6 @@
 ---
 name: overnight-run
-description: Run Twangle's overnight on-device check while the owner sleeps — every UI test in every style, then every language at 2× text, then the store screenshots — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
+description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test in every style, then every language at 2× text, then the store screenshots — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
 argument-hint: "[optional: --sweep, --languages or --store to run only one part]"
 ---
 
@@ -43,6 +43,11 @@ gh run list --branch main --limit 3          # a failed nightly run is fixed fir
   takes a lock on the phone and exits 5 if another run has it).
 - Read ROADMAP.md: phases may have items marked "Runs overnight", and *Waiting on the owner* may
   have an open overnight item. The run below covers all of them; note which items it closes.
+- **Translations first** (owner, 2026-10-28): run the [translate skill](../translate/SKILL.md) on
+  `main`. By day texts are written only in English and Dutch; it translates what the other languages
+  lack or have stale and lands that through its own PR, so tonight's `@EveryLanguage` checks see the new
+  texts. When `scripts/translations.py status` says every language is up to date it does nothing. Then
+  `git switch main && git pull` again. Its report goes into the morning summary.
 - Branch `chore/overnight-<date>` (or `phase-<N>/<topic>` when it closes a phase's item).
 - `./gradlew test lint assembleDebug` must pass before the phone run.
 
@@ -79,7 +84,7 @@ For each failure decide first: **app bug or outdated test?**
 - Read the test and the code. Reproduce with the smallest run (`scripts/ui-tests.sh <module> -c
   Class#method`, `-f` for parameterized names like `test[ANCIENT]`, `--thorough` for style
   variants, `DAY_LANGUAGES=<tag> … --languages` for the failing language's checks, `--all-languages`
-  for all 16).
+  for all of them).
 - When it isn't clear, add a temporary probe (a `Log.i("PROBE", …)` read back with
   `adb logcat -d -s PROBE`, or a screenshot to the extra output) and remove it before committing.
 - A real bug: fix the app, keep the test. A test that is wrong about the app (a tag on the wrong

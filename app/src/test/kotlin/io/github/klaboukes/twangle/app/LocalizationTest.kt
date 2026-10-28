@@ -3,17 +3,17 @@ package io.github.klaboukes.twangle.app
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.w3c.dom.Element
 import java.io.File
 import java.util.Properties
-import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * Guards the translations. The supported languages are listed once, as `twangle.languages` in
- * gradle.properties (the first is the default, in `res/values/`). Every module's default strings must
- * have a copy in each other language with the same placeholders, no folder may hold a language that
- * isn't listed, and Kotlin code must not show hard-coded text. Lint's MissingTranslation only works
- * once a module has a translation folder, and it doesn't look inside Composables at all.
+ * gradle.properties (the first is the default, in `res/values/`). Every translation must have the
+ * placeholders of its English text ([TranslationCheck]); the day languages (`twangle.dayLanguages`,
+ * English and Dutch) must have every text, the others are translated at night and may lag behind
+ * unless `-Ptwangle.strictTranslations=true` (the release gate), which also holds them to the record in
+ * `translations/`. No folder may hold a language that isn't listed, and Kotlin code must not show
+ * hard-coded text. Lint's MissingTranslation (a warning by day) doesn't look inside Composables at all.
  */
 class LocalizationTest {
 
@@ -26,12 +26,15 @@ class LocalizationTest {
             .filter { File(it, "src/main").isDirectory }
 
     /** `twangle.languages` from gradle.properties: the default language first, then the translations. */
-    private val languages: List<String> = Properties()
-        .apply { File(root, "gradle.properties").reader().use { load(it) } }
-        .getProperty("twangle.languages").orEmpty()
-        .split(",").map { it.trim() }.filter { it.isNotEmpty() }
+    private val languages: List<String> = gradleProperty("twangle.languages")
 
     private val translations: List<String> get() = languages.drop(1)
+
+    /** `twangle.dayLanguages`: English and Dutch, written by day; the rest are translated at night. */
+    private val dayLanguages: List<String> = gradleProperty("twangle.dayLanguages")
+
+    /** `-Ptwangle.strictTranslations=true` (the release gate): every language complete and up to date. */
+    private val strict: Boolean = System.getProperty("twangle.strictTranslations").toBoolean()
 
     @Test
     fun `the language list starts with the default language and has no repeats`() {
@@ -88,31 +91,20 @@ class LocalizationTest {
     }
 
     @Test
-    fun `every translatable string has a translation with the same placeholders in every language`() {
+    fun `the day languages start with the default language and are listed`() {
+        assertEquals("twangle.dayLanguages must start with the default language", languages.first(), dayLanguages.firstOrNull())
+        assertTrue("twangle.dayLanguages must be in twangle.languages", languages.containsAll(dayLanguages))
+        assertTrue(
+            "scripts/ui-tests.sh must take its day languages from twangle.dayLanguages",
+            File(root, "scripts/ui-tests.sh").readText().contains("twangle.dayLanguages"),
+        )
+    }
+
+    @Test
+    fun `the translations have the English placeholders, and the day languages are complete`() {
         assertTrue("Only the default language is listed; nothing to check", translations.isNotEmpty())
-        var checked = 0
-        for (module in modules) {
-            val english = translatableStrings(File(module, "src/main/res/values/strings.xml"))
-            if (english.isEmpty()) continue
-            for (language in translations) {
-                val where = "values-$language/strings.xml in ${module.name}"
-                val translated = translatableStrings(File(module, "src/main/res/values-$language/strings.xml"))
-                assertEquals("Strings in $where", english.keys, translated.keys)
-                english.forEach { (name, text) ->
-                    val other = translated.getValue(name)
-                    assertEquals("Placeholders of $name in $where", placeholders(text.main), placeholders(other.main))
-                    other.quantities.forEach { (quantity, item) ->
-                        assertTrue("Plural quantity \"$quantity\" of $name in $where", quantity in QUANTITIES)
-                        assertTrue(
-                            "Placeholders of $name ($quantity) in $where must be among those of \"other\"",
-                            placeholders(text.main).containsAll(placeholders(item)),
-                        )
-                    }
-                }
-                checked += english.size
-            }
-        }
-        assertTrue("No strings found; is the repo root right?", checked > 0)
+        val problems = TranslationCheck(root, modules, languages, dayLanguages, strict).problems()
+        assertTrue(problems.joinToString("\n"), problems.isEmpty())
     }
 
     @Test
@@ -129,45 +121,14 @@ class LocalizationTest {
         assertTrue("Move these texts to res/values/strings.xml:\n" + offenders.joinToString("\n"), offenders.isEmpty())
     }
 
-    /**
-     * One translatable text: a `<string>`'s text, or a `<plurals>`' "other" item as [main] with every
-     * item by quantity in [quantities].
-     */
-    private class Text(val main: String, val quantities: Map<String, String> = emptyMap())
-
-    /** Name → text of each translatable `<string>` and `<plurals>`. */
-    private fun translatableStrings(file: File): Map<String, Text> {
-        if (!file.isFile) return emptyMap()
-        val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
-        val result = mutableMapOf<String, Text>()
-        doc.documentElement.childElements().filter { it.getAttribute("translatable") != "false" }.forEach { e ->
-            val name = e.getAttribute("name")
-            when (e.tagName) {
-                "string" -> result[name] = Text(e.textContent)
-                "plurals" -> {
-                    val items = e.childElements().associate { it.getAttribute("quantity") to it.textContent }
-                    val other = items["other"]
-                    assertTrue("Plurals $name in ${file.relativeTo(root)} has no \"other\" item", other != null)
-                    result[name] = Text(other!!, items)
-                }
-            }
-        }
-        return result
-    }
-
-    private fun Element.childElements(): List<Element> =
-        (0 until childNodes.length).map { childNodes.item(it) }.filterIsInstance<Element>()
-
-    private fun placeholders(text: String): List<String> = PLACEHOLDER.findAll(text).map { it.value }.sorted().toList()
+    private fun gradleProperty(name: String): List<String> = Properties()
+        .apply { File(root, "gradle.properties").reader().use { load(it) } }
+        .getProperty(name).orEmpty()
+        .split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
     private companion object {
         /** A language as a resource qualifier: `nl`, `pt-rBR`, or BCP 47 like `b+sr+Latn`. */
         val LANGUAGE_QUALIFIER = Regex("""[a-z]{2,3}(-r[A-Z]{2})?|b(\+[A-Za-z0-9]+)+""")
-
-        /** The plural quantities Android knows. */
-        val QUANTITIES = setOf("zero", "one", "two", "few", "many", "other")
-
-        val PLACEHOLDER = Regex("""%(\d+\$)?[-#+ 0,(]*\d*(\.\d+)?[a-zA-Z]""")
 
         /** A string literal with at least one letter, passed where users would see or hear it. */
         val HARD_CODED_TEXT = listOf(

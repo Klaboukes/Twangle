@@ -16,7 +16,7 @@
 #   scripts/ui-tests.sh --cool ...               one test class at a time, waiting while the phone is
 #                                                warmer than COOL_BELOW (default 37 °C): long runs
 #   scripts/ui-tests.sh --languages ...          also the @EveryLanguage tests, in the testers'
-#                                                languages only (DAY_LANGUAGES, default en,nl): daytime
+#                                                languages only (DAY_LANGUAGES, default en,nl from gradle.properties): daytime
 #   scripts/ui-tests.sh --all-languages ...      the @EveryLanguage tests in every language Twangle
 #                                                ships (long; the overnight run)
 #   scripts/ui-tests.sh --dry-run ...            only say which modules would run, and why (no build,
@@ -42,8 +42,9 @@ cd "$ROOT"
 export JAVA_HOME="${JAVA_HOME:-/c/Program Files/Android/Android Studio/jbr}"
 ADB_EXE="${LOCALAPPDATA:-}/Android/Sdk/platform-tools/adb.exe"
 MODULE_TIMEOUT="${MODULE_TIMEOUT:-600}"
-# The languages a daytime --languages run checks: the ones with testers. The overnight run checks all.
-DAY_LANGUAGES="${DAY_LANGUAGES:-en,nl}"
+# The languages a daytime --languages run checks: twangle.dayLanguages in gradle.properties (en,nl),
+# the ones written by day, as language tags (pt-rBR -> pt-BR). The overnight run checks all.
+DAY_LANGUAGES="${DAY_LANGUAGES:-$(sed -n 's/^twangle\.dayLanguages=//p' gradle.properties | sed 's/-r/-/g')}"
 COOL_BELOW="${COOL_BELOW:-37}"
 BUILD_TIMEOUT="${BUILD_TIMEOUT:-600}"
 UI_MODULES=(:core:testing :feature:tuner :feature:settings :feature:metronome :feature:practice :feature:eartraining :core:audio :app)

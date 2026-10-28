@@ -8,8 +8,9 @@
 #       Prints the release notes of the current version as one block for the Play Console's
 #       "Release notes" box (<en-US> ... </en-US> and so on for every language).
 #   scripts/release.sh bundle
-#       On main, once the version bump has landed: builds the phone app's bundle signed with the upload
-#       key, checks the signature, puts it with its notes in release/ (git-ignored), then tags the commit
+#       On main, once the version bump has landed: checks that every language is complete and up to
+#       date (LocalizationTest in strict mode, docs/architecture/languages.md, *Day and night*), builds
+#       the phone app's bundle signed with the upload key, checks the signature, puts it with its notes in release/ (git-ignored), then tags the commit
 #       v<version> and pushes the tag. Refuses a version that already has a tag.
 #   scripts/release.sh upload [draft|completed]
 #       After bundle: sends release/Twangle-<version>.aab and its notes in every language to the
@@ -140,6 +141,12 @@ bundle() {
     fi
     notes_block "$code" >/dev/null
     use_java
+
+    # By day only English and Dutch are written; the overnight run's /translate does the rest. A
+    # release ships nothing half translated.
+    echo "Checking that every language is complete and up to date..."
+    ./gradlew --quiet :app:testDebugUnitTest --tests '*LocalizationTest' -Ptwangle.strictTranslations=true ||
+        fail "a language lacks a text or has a stale one (above; python -I scripts/translations.py status lists them): the overnight run translates them (/translate), release after it"
 
     echo "Building Twangle $v (versionCode $code)..."
     ./gradlew --quiet :app:bundleRelease

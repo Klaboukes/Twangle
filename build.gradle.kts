@@ -39,3 +39,18 @@ extra["twangleKeystoreProperties"] = providers.gradleProperty("twangle.keystoreP
     .flatMap { path -> providers.fileContents(layout.projectDirectory.file(path)).asText }
     .map { text -> Properties().apply { load(text.reader()) } }
     .orNull
+
+// Translations: English and Dutch are written by day, the other languages at night (/translate), so
+// on an ordinary day lint reports a text still missing in a night language as a warning, not an
+// error. -Ptwangle.strictTranslations=true (the release gate) keeps it an error, like LocalizationTest's
+// strict mode (docs/architecture/languages.md, *Day and night*).
+val strictTranslations = providers.gradleProperty("twangle.strictTranslations").map { it.toBoolean() }.getOrElse(false)
+subprojects {
+    listOf("com.android.application", "com.android.library").forEach { id ->
+        pluginManager.withPlugin(id) {
+            extensions.configure<com.android.build.api.dsl.CommonExtension> {
+                if (!strictTranslations) lint.warning += "MissingTranslation"
+            }
+        }
+    }
+}

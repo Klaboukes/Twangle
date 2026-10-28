@@ -52,6 +52,8 @@ Then carry on without waiting for approval, unless step 1 found something that n
 
 `git switch -c phase-<N>/<short-kebab-topic>`, then build it in small commits. Update the architecture docs (ARCHITECTURE.md or its topic file) in the same branch if the design changes.
 
+**Texts:** a new or reworded text goes in English (`res/values/strings.xml`) and Dutch (`values-nl`) only; the other languages are translated at night by the [translate skill](../translate/SKILL.md) (docs/architecture/languages.md, *Day and night*). Every new English text gets a translator note right above it, a short XML comment saying what it means and where it shows: `<!-- Under the meter when the string is in tune. -->`. A text removed from English is removed from every language.
+
 ## 5. Verify (the local run is the merge gate)
 
 1. `./gradlew test lint assembleDebug --console=plain` must pass with no new lint warnings.

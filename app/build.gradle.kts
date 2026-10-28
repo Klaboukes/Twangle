@@ -223,13 +223,18 @@ androidComponents {
     }
 }
 
-// LocalizationTest reads every module's texts and Kotlin code, the build files and the language list
-// in gradle.properties; StoreListingTest reads the Play Store texts in fastlane/. Declaring them as
-// inputs makes a change there rerun the unit tests instead of reusing an earlier result.
+// LocalizationTest reads every module's texts and Kotlin code, the build files, the language lists
+// in gradle.properties, the translation record in translations/ and scripts/ui-tests.sh;
+// StoreListingTest reads the Play Store texts in fastlane/. Declaring them as inputs makes a change
+// there rerun the unit tests instead of reusing an earlier result. -Ptwangle.strictTranslations=true
+// holds every language to complete and up to date (the release gate, docs/architecture/languages.md).
+val strictTranslations = providers.gradleProperty("twangle.strictTranslations").map { it.toBoolean() }.orElse(false)
 tasks.withType<Test>().configureEach {
+    inputs.property("strictTranslations", strictTranslations)
+    systemProperty("twangle.strictTranslations", strictTranslations.get())
     inputs.files(
         fileTree(rootDir) {
-            include("gradle.properties", "fastlane/metadata/**")
+            include("gradle.properties", "fastlane/metadata/**", "translations/**", "scripts/ui-tests.sh")
             listOf("app", "wear", "feature/*", "core/*").forEach { module ->
                 include("$module/build.gradle.kts", "$module/src/main/res/**", "$module/src/main/kotlin/**")
             }
