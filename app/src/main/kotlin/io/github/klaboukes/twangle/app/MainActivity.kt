@@ -348,8 +348,7 @@ class MainActivity : AppCompatActivity() {
      * button in Chords and the capo helper opens the instrument and tuning panel over the tool
      * ([PracticeTuningPanel]); its New tuning and Edit open the tuning editor ([onOpenTuningEditor]).
      * Scales gets the drone ([AppContainer.dronePlayer], Phase 48) and its saved choices; it stops the
-     * drone itself when it goes. Ear training (Phase 55, behind its own switch, on in debug builds only
-     * until it goes live) gets the reference tones and its own microphone through the tuner's pipeline
+     * drone itself when it goes. Ear training (Phase 55, behind its own switch) gets the reference tones and its own microphone through the tuner's pipeline
      * ([AppContainer.earTrainingListener]), and the same top row as Chords and Capo.
      */
     @Composable

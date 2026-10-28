@@ -57,7 +57,7 @@ import org.junit.rules.Timeout
  * scale, on the same root. The capo helper (Phase 33) saves its shapes and fret, and a row
  * tapped opens its shape in Chords. The drone on Scales (Phase 48, a silent stand-in here) saves its panel's picks and
  * stops when another tab takes Practice's place or the app goes to the background. Ear training (Phase 55,
- * debug builds only for now, a silent speaker and microphone here) asks its first question at once and
+ * a silent speaker and microphone here) asks its first question at once and
  * holds the microphone only while it is shown.
  */
 class PracticeTabTest {

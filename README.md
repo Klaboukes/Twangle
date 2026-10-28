@@ -1,6 +1,6 @@
 # Twangle
 
-Twangle is a free guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents. It also has tools for guitarists (strum check, intonation check, chord name, pitch trail), a metronome, chord charts, scales and a capo helper, tunes many other instruments, and comes with a home-screen widget and a Wear OS watch app.
+Twangle is a free guitar tuner for Android. Play a string, and Twangle shows which note you played and how far it is from being in tune, on a meter measured in cents. It also has tools for guitarists (strum check, intonation check, chord name, pitch trail), a metronome, chord charts, scales, a capo helper and ear training, tunes many other instruments, and comes with a home-screen widget and a Wear OS watch app.
 
 The website, **https://klaboukes.github.io/** ([Nederlands](https://klaboukes.github.io/nl/)), shows how each tool works and answers common questions ([help](https://klaboukes.github.io/help.html)).
 
@@ -46,6 +46,7 @@ From the tools button above the strings, one at a time:
 - **Chord charts:** 20 chord types on any root, the power chord and 9ths included, drawn as in a songbook with fingers and barres, several shapes for each chord, for the tuning you picked, your own tunings included.
 - **Scales:** the seven modes (major, Dorian, Phrygian, Lydian, Mixolydian, natural minor, Locrian), harmonic and melodic minor, Phrygian dominant, major and minor pentatonic, and blues and major blues, with every note on the neck up to the 12th fret and each mode's own colour note ringed. Left-handed players can have the chord charts and the neck drawn mirrored (a switch in Settings).
 - **Capo helper:** pick the chord shapes you know and move the capo, and see which chords they sound as and in which key. A tap opens the shape in the chord charts.
+- **Ear training:** play back a note Twangle plays while the tuner listens, or name intervals and chord types by ear with buttons. You choose what is asked; no scores are kept, and the microphone is used only by *Play it back*, only while it is on the screen.
 
 ### Make it yours
 - **Six visual styles:** Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own colours, lettering and background.

@@ -3,8 +3,8 @@ package io.github.klaboukes.twangle.core.settings
 /**
  * Which tools the app shows, one switch per tool: each tuner tool and each Practice tool. The music
  * tools (ROADMAP Phases 29–33) landed on `main` hidden in release builds while they were built (Phase
- * 28) and went live in v1.0 (Phase 34), so `:app` (`AppContainer.toolSwitches`) now turns every one on
- * in every build (but Ear training, Phase 55, still being built: debug builds only) and hands them
+ * 28) and went live in v1.0 (Phase 34), and Ear training (Phase 55) after its check, so `:app`
+ * (`AppContainer.toolSwitches`) now turns every one on in every build and hands them
  * down to the screens and ViewModels. Every tool keeps its switch once
  * live (owner, 2026-10-28): if a tool goes wrong on players' phones, a quick release with its switch
  * off hides it while the fix is made. A tool whose switch is off leaves no trace on screen: no mode,
@@ -33,8 +33,8 @@ data class ToolSwitches(
     /** Phase 33: the capo helper, in Practice, so only with [practiceTab] and [chords]. */
     val capoHelper: Boolean,
     /**
-     * Phase 55: Ear training, in Practice, so only with [practiceTab]. Still being built: on in debug
-     * builds, off in release builds until the owner's check passes (`AppContainer.toolSwitches`).
+     * Phase 55: Ear training, in Practice, so only with [practiceTab]. Live in every build since the
+     * owner's check passed (2026-10-28).
      */
     val earTraining: Boolean,
 ) {

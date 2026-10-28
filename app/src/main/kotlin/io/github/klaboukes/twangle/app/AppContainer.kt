@@ -108,8 +108,8 @@ class AppContainer(private val appContext: Context) {
 
     /**
      * Which music tools show (Phase 28): every live one in every build (they went live in v1.0, Phase
-     * 34); a tool still being built, Ear training (Phase 55), only in debug builds until the owner's
-     * check passes ([toolSwitchesFor]; docs/architecture/performance.md, *Release build*).
+     * 34, and Ear training after its check, Phase 55); a tool still being built only in debug builds
+     * until the owner's check passes ([toolSwitchesFor]; docs/architecture/performance.md, *Release build*).
      * `MainActivity` hands them to the screens.
      */
     val toolSwitches: ToolSwitches = toolSwitchesFor(debugBuild = BuildConfig.DEBUG)
