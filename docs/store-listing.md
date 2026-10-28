@@ -102,3 +102,23 @@ None for v1.0. Maybe later: a 30-second screen recording of tuning a real guitar
 - **Accessibility communities:** once live, submit Twangle to the app directories and forums of blind and low-vision Android users (for example *Accessible Android*), where a tuner that speaks is rare. Ask the closed-test testers whether one of them uses TalkBack.
 - **After launch:** Play's *store listing experiments* can compare the chosen short description with the TalkBack one or the first screenshot; *custom store listings* can give e.g. bass players their own listing later.
 - **"What's new":** short release notes in every language with each update, in the same plain style.
+
+### Timing: Christmas (Phase 50, checked 2026-10-28)
+Google Trends, web search, the last 5 years (weekly), read 2026-10-28. Trends gives an index (100 = the busiest week of the chart), not a number of searches, and it measures Google search, not Play's own search; Play Console's search-term report tells the real story after launch. "Normal" below is the median week of September to November that year.
+
+| Search, country | Christmas week vs normal (2022 → 2025) | Notes |
+|---|---|---|
+| guitar tuner, worldwide | 71/51, 80/55, 92/62, 100/66: **1.4–1.5×** | The 5 busiest weeks of the chart are the Christmas weeks of 2025, 2024 and 2023 and two odd spikes in 2026; the base rises every year (40 → 66) |
+| guitar tuner, US | 87/45, 84/46, 91/47, 100/53: **1.8–1.9×** | The 4 busiest weeks are all Christmas weeks |
+| guitar tuner, UK | 26/16, 26/15, 25/16, 29/19: **about 1.6×** | A one-off spike in February 2026 tops the chart (100) |
+| accordeur guitare, France | 85/52, 100/53, 100/59, 91/58: **1.6–1.9×** | The 5 busiest weeks are all Christmas weeks |
+| afinador guitarra, Spain | 83/48, 98/59, 100/58, 96/64: **1.5–1.7×** | The 4 busiest weeks are all Christmas weeks |
+| afinador guitarra, Mexico | 100/72, 96/66, 81/63, 88/63: **1.3–1.5×** | Christmas is high, but Easter and July weeks come close |
+| afinador violão, Brazil | 68/48, 94/65, 92/67, 100/74: **1.35–1.45×** | The week after Christmas stays almost as high |
+| Stimmgerät Gitarre, Germany | 44/38, 83/35, 66/40, 100/47: **1.2–2.4×**, uneven | Few searches (25 weeks read 0), so the figures jump |
+| gitaar stemmen, Netherlands | 79/54, 58/54, 100/45, 97/55: **1.1–2.2×**, uneven | Few searches (55 weeks read 0); *gitaarstemmer* is too rare to show at all |
+| gitar tuner, Indonesia | 59/53, 69/62, 89/74, 80/73: **about 1.1×**, hardly any | Busiest weeks are September–October 2026 |
+
+**Which days:** the daily figures for 2025 show it is Christmas Day itself: worldwide 100 on 25 December against 40–60 on an ordinary day (about 2×), in the US 100 against about 33 (3×); 26–28 December stay about 1.2–1.6× normal, and by 2 January it is an ordinary day again. So "late December into January" is really **one sharp week**, 24–28 December: new guitars unwrapped, tuners searched for that day. January is no busier than autumn.
+
+**What it means for launch:** Twangle has to be in production, and high in Play search, *before* 24 December; ratings gathered after Christmas come too late for that week. By Phase 53's dates the date itself looks safe: the closed test's 14 days end around 5–6 November (1.0.1 on the closed track since 22 October), Google's review of the production-access application takes up to about a week, so production around mid-November, with the staged rollout at 100 % before December. The tighter part is the next version, 1.1.0, which waits for a clean overnight run and every language complete; if the new languages or Phase 46's recordings would push it past early December, send **1.0.2, already on Play, to production first** and put 1.1.0 out as its first update. A few hundred ratings by Christmas is the harder goal: it takes a few thousand installs in the first weeks, so the closed testers' ratings and Phase 50's listing work matter more than the exact date.
