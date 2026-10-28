@@ -70,7 +70,7 @@ Then carry on without waiting for approval, unless step 1 found something that n
 
 ## 6. Update the roadmap
 
-Tick ☐ → ☑, with a short note if useful (a measured accuracy or timing). If an item turned out bigger than expected, split it into new ☐ sub-items rather than ticking it half done. When this ticks a phase's last item, move the phase to ROADMAP-ARCHIVE.md in the same branch (its section and a line in the archive's Contents), and update the list of finished phases and *Where things stand* at the top of ROADMAP.md.
+Tick ☐ → ☑, with a short note if useful (a measured accuracy or timing). If an item turned out bigger than expected, split it into new ☐ sub-items rather than ticking it half done. When this ticks a phase's last item, move the phase to ROADMAP-ARCHIVE.md in the same branch (its section and a line in the archive's Contents), and update *Where things stand* at the top of ROADMAP.md (a few short lines about what is open now, not a history: the archive keeps that).
 
 ## 7. Land it
 
