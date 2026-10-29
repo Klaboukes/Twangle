@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Viritin</string>
+    <string name="nav_metronome">Metronomi</string>
+    <string name="nav_practice">Harjoitus</string>
+    <string name="nav_settings">Asetukset</string>
+    <string name="widget_name">Viritin</string>
+    <string name="widget_description">Näyttää soittimesi ja virityksesi. Yksi napautus avaa virittimen.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Avaa viritin</string>
+    <string name="widget_preview_title">Kitara · Standardi</string>
+</resources>

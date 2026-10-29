@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Iskuja tahdissa</string>
+    <string name="metronome_tempo">Tempo, muuta vetämällä</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d isku minuutissa, %2$s</item>
+        <item quantity="other">%1$d iskua minuutissa, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Hitaammin</string>
+    <string name="metronome_faster">Nopeammin</string>
+    <string name="metronome_tap">Napauta tempo</string>
+    <string name="metronome_start">Käynnistä</string>
+    <string name="metronome_stop">Pysäytä</string>
+    <string name="metronome_vibrate">Värinä joka iskulla</string>
+    <string name="metronome_sound">Ääni</string>
+    <string name="metronome_sound_wood_block">Puupalikka</string>
+    <string name="metronome_sound_cowbell">Lehmänkello</string>
+    <string name="metronome_sound_claves">Klaavit</string>
+    <string name="metronome_sound_rim_click">Vannelyönti</string>
+    <string name="metronome_sound_spoken">Ääni: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Ääni: %1$s, värisee joka iskulla</string>
+
+    <string name="metronome_meter_2_4_spoken">Kaksi neljäsosaa</string>
+    <string name="metronome_meter_3_4_spoken">Kolme neljäsosaa</string>
+    <string name="metronome_meter_4_4_spoken">Neljä neljäsosaa</string>
+    <string name="metronome_meter_5_4_spoken">Viisi neljäsosaa</string>
+    <string name="metronome_meter_6_8_spoken">Kuusi kahdeksasosaa</string>
+    <string name="metronome_meter_7_8_spoken">Seitsemän kahdeksasosaa</string>
+
+    <string name="metronome_listen">Kuuntele</string>
+    <string name="metronome_listen_stop_spoken">Lopeta kuuntelu</string>
+    <string name="metronome_listening">Kuunnellaan…</string>
+    <string name="metronome_heard">Kuultu</string>
+    <string name="metronome_use">Käytä</string>
+    <string name="metronome_not_now">Ei nyt</string>
+    <string name="metronome_listen_speed">Nopeus</string>
+    <string name="metronome_pick_half">Puolet</string>
+    <string name="metronome_pick_as_heard">Kuten kuultu</string>
+    <string name="metronome_pick_double">Tupla</string>
+    <string name="metronome_no_beat">Tasaista sykettä ei kuulunut</string>
+    <string name="metronome_try_again">Yritä uudelleen</string>
+    <string name="metronome_mic_off">Mikrofoni on pois päältä</string>
+    <string name="metronome_open_settings">Avaa asetukset</string>
+</resources>

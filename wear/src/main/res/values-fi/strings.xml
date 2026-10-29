@@ -1,0 +1,15 @@
+<resources>
+    <string name="wear_play_note">Soita sävel</string>
+    <!-- Luvun jälkeen partitiivi: 1 sentti, 12 senttiä. -->
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s sentti</item>
+        <item quantity="other">%1$s senttiä</item>
+    </plurals>
+    <string name="wear_in_tune">vireessä</string>
+    <string name="wear_mic_needed">Twangle kuuntelee soitintasi kellon mikrofonilla.</string>
+    <string name="wear_allow_mic">Salli mikrofoni</string>
+    <string name="wear_open_settings">Avaa asetukset</string>
+    <string name="wear_mic_busy">Toinen sovellus käyttää mikrofonia.</string>
+    <string name="wear_mic_unavailable">Mikrofonia ei voi avata.</string>
+    <string name="wear_try_again">Yritä uudelleen</string>
+</resources>

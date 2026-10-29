@@ -1,0 +1,1 @@
+- Lyhyemmän näytön puhelimissa mittari pitää nyt aina täyden leveytensä; sen yllä oleva sävel pienenee sen sijaan hieman.

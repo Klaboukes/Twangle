@@ -1,0 +1,1 @@
+- Ensikäynnistyksen esittelyssä Ohita esittely ja Seuraava toimivat nyt ensimmäisellä napautuksella.
