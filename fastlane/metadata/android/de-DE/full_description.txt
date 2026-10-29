@@ -1,6 +1,6 @@
-Twangle ist ein Gitarrenstimmgerät, das einfach zu bedienen ist und auf den Cent genau stimmt. Spiel eine Saite, und Twangle zeigt auf einer großen, klaren Anzeige den Ton und wie weit er von der richtigen Stimmung entfernt ist. „Höher stimmen“ oder „Tiefer stimmen“ sagt dir, in welche Richtung du den Wirbel drehst. Ist alles gestimmt, hilft dir Twangle beim Spielen: Es erkennt die Akkorde, die du anschlägst, zeigt Akkordgriffe und Tonleitern, rechnet den Kapo aus und hält den Takt.
+Twangle ist ein Gitarrenstimmgerät, auch für Bass, Ukulele, Geige und mehr, und jede Funktion ist kostenlos. Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Twangle hat nicht einmal die Berechtigung, das Internet zu nutzen: Der Ton deines Mikrofons wird live auf deinem Handy analysiert und nie aufgenommen oder irgendwohin gesendet.
 
-Keine Werbung, kein Konto, keine In-App-Käufe und kein Tracking. Twangle hat nicht einmal die Berechtigung, das Internet zu nutzen: Der Ton deines Mikrofons wird live auf deinem Handy analysiert und nie aufgenommen oder irgendwohin gesendet.
+Twangle ist einfach zu bedienen und stimmt auf den Cent genau. Spiel eine Saite, und Twangle zeigt auf einer großen, klaren Anzeige den Ton und wie weit er von der richtigen Stimmung entfernt ist. „Höher stimmen“ oder „Tiefer stimmen“ sagt dir, in welche Richtung du den Wirbel drehst. Ist alles gestimmt, hilft dir Twangle beim Spielen: Es erkennt die Akkorde, die du anschlägst, zeigt Akkordgriffe und Tonleitern, rechnet den Kapo aus und hält den Takt.
 
 JEDES INSTRUMENT STIMMEN
 • Gitarre (6, 7 oder 8 Saiten), Bass (4 oder 5 Saiten), Ukulele (auch Bariton), Geige, Bratsche, Cello und Mandoline
@@ -41,4 +41,4 @@ AUSSERDEM
 • Ein Widget für den Startbildschirm, das das Stimmgerät mit einem Tippen öffnet
 • Lässt den Bildschirm an, während du stimmst
 
-Twangle funktioniert komplett offline und bleibt kostenlos: keine Werbung, kein Konto, keine Käufe, niemals.
+Twangle bleibt kostenlos und offline, für immer.

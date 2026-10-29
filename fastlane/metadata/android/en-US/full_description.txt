@@ -1,6 +1,6 @@
-Twangle is a guitar tuner that is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo and keeps time.
+Twangle is a guitar tuner that also tunes bass, ukulele, violin and more, with every feature free. No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
 
-No ads, no account, no in-app purchases and no tracking. Twangle doesn't even have permission to use the internet: the sound from your microphone is analysed live on your phone and never recorded or sent anywhere.
+Twangle is simple to use and precise to a single cent. Play a string, and Twangle shows the note and how far it is from being in tune, on a big clear meter. "Tune up" or "Tune down" tells you which way to turn the peg. Once you're in tune, Twangle helps you play: it names the chords you strum, shows chord charts and scales, works out the capo and keeps time.
 
 TUNE ANY INSTRUMENT
 • Guitar (6, 7 or 8 strings), bass (4 or 5 strings), ukulele (baritone too), violin, viola, cello and mandolin
@@ -41,4 +41,4 @@ ALSO
 • A home-screen widget that opens the tuner with one tap
 • Keeps the screen on while you tune
 
-Twangle works fully offline and will stay free: no ads, no account, no purchases, ever.
+Twangle will stay free and offline, for good.

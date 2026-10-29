@@ -1,6 +1,6 @@
-Twangle is een gitaarstemmer die eenvoudig werkt en precies is tot op de cent. Speel een snaar, en Twangle laat op een grote, duidelijke meter zien welke noot het is en hoe ver die van zuiver zit. "Hoger stemmen" of "Lager stemmen" zegt welke kant je de stemknop op draait. Ben je eenmaal gestemd, dan helpt Twangle je spelen: het noemt de akkoorden die je aanslaat, toont akkoordschema's en toonladders, rekent de capo uit en houdt de maat.
+Twangle is een gitaarstemmer, ook voor bas, ukelele, viool en meer, en elke functie is gratis. Geen advertenties, geen account, geen aankopen in de app en geen tracking. Twangle heeft zelfs geen toestemming om internet te gebruiken: het geluid van je microfoon wordt live op je telefoon geanalyseerd en nooit opgenomen of verstuurd.
 
-Geen advertenties, geen account, geen aankopen in de app en geen tracking. Twangle heeft zelfs geen toestemming om internet te gebruiken: het geluid van je microfoon wordt live op je telefoon geanalyseerd en nooit opgenomen of verstuurd.
+Twangle werkt eenvoudig en is precies tot op de cent. Speel een snaar, en Twangle laat op een grote, duidelijke meter zien welke noot het is en hoe ver die van zuiver zit. "Hoger stemmen" of "Lager stemmen" zegt welke kant je de stemknop op draait. Ben je eenmaal gestemd, dan helpt Twangle je spelen: het noemt de akkoorden die je aanslaat, toont akkoordschema's en toonladders, rekent de capo uit en houdt de maat.
 
 ELK INSTRUMENT STEMMEN
 • Gitaar (6, 7 of 8 snaren), bas (4 of 5 snaren), ukelele (ook bariton), viool, altviool, cello en mandoline
@@ -41,4 +41,4 @@ VERDER
 • Een widget op je startscherm die de stemmer met één tik opent
 • Houdt het scherm aan terwijl je stemt
 
-Twangle werkt volledig offline en blijft gratis: geen advertenties, geen account, geen aankopen, nooit.
+Twangle blijft gratis en offline, voorgoed.

@@ -1,6 +1,6 @@
-O Twangle é um afinador de violão fácil de usar e preciso até o cent. Toque uma corda e o Twangle mostra a nota e quanto ela está fora da afinação, em um medidor grande e claro. "Subir" ou "Baixar" diz para que lado girar a tarraxa. Depois de afinar, o Twangle ajuda você a tocar: reconhece os acordes que você toca, mostra diagramas de acordes e escalas, calcula onde vai o capotraste e marca o tempo.
+O Twangle é um afinador de violão, também para guitarra, baixo, ukulele, violino e mais, e todos os recursos são gratuitos. Sem anúncios, sem conta, sem compras no app e sem rastreamento. O Twangle nem sequer tem permissão para usar a internet: o som do microfone é analisado ao vivo no seu celular e nunca é gravado nem enviado.
 
-Sem anúncios, sem conta, sem compras no app e sem rastreamento. O Twangle nem sequer tem permissão para usar a internet: o som do microfone é analisado ao vivo no seu celular e nunca é gravado nem enviado.
+O Twangle é fácil de usar e preciso até o cent. Toque uma corda e o Twangle mostra a nota e quanto ela está fora da afinação, em um medidor grande e claro. "Subir" ou "Baixar" diz para que lado girar a tarraxa. Depois de afinar, o Twangle ajuda você a tocar: reconhece os acordes que você toca, mostra diagramas de acordes e escalas, calcula onde vai o capotraste e marca o tempo.
 
 AFINE QUALQUER INSTRUMENTO
 • Violão e guitarra (6, 7 ou 8 cordas), baixo (4 ou 5 cordas), ukulele (também barítono), violino, viola, violoncelo e bandolim
@@ -41,4 +41,4 @@ E MAIS
 • Um widget para a tela inicial que abre o afinador com um toque
 • Mantém a tela ligada enquanto você afina
 
-O Twangle funciona totalmente offline e vai continuar gratuito: sem anúncios, sem conta, sem compras, nunca.
+O Twangle vai continuar gratuito e offline, para sempre.

@@ -1,6 +1,6 @@
-Twangle to stroik do gitary, prosty w obsłudze i dokładny co do centa. Zagraj na strunie, a Twangle pokaże na dużym, czytelnym wskaźniku dźwięk i to, jak daleko mu do czystego stroju. „Podciągnij” albo „Popuść” podpowie, w którą stronę kręcić kluczem. Gdy już nastroisz, Twangle pomaga grać: nazywa akordy, które grasz, pokazuje chwyty akordów i skale, wylicza, gdzie założyć kapodaster, i trzyma tempo.
+Twangle to stroik do gitary, a także do basu, ukulele, skrzypiec i innych instrumentów, a wszystkie jego funkcje są darmowe. Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Twangle nie ma nawet uprawnienia do korzystania z internetu: dźwięk z mikrofonu jest analizowany na bieżąco w telefonie i nigdy nie jest nagrywany ani nigdzie wysyłany.
 
-Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Twangle nie ma nawet uprawnienia do korzystania z internetu: dźwięk z mikrofonu jest analizowany na bieżąco w telefonie i nigdy nie jest nagrywany ani nigdzie wysyłany.
+Twangle jest prosty w obsłudze i dokładny co do centa. Zagraj na strunie, a Twangle pokaże na dużym, czytelnym wskaźniku dźwięk i to, jak daleko mu do czystego stroju. „Podciągnij” albo „Popuść” podpowie, w którą stronę kręcić kluczem. Gdy już nastroisz, Twangle pomaga grać: nazywa akordy, które grasz, pokazuje chwyty akordów i skale, wylicza, gdzie założyć kapodaster, i trzyma tempo.
 
 NASTRÓJ KAŻDY INSTRUMENT
 • Gitara (6, 7 lub 8 strun), bas (4 lub 5 strun), ukulele (także barytonowe), skrzypce, altówka, wiolonczela i mandolina
@@ -41,4 +41,4 @@ PONADTO
 • Widżet na ekran główny, który otwiera stroik jednym dotknięciem
 • Nie wygasza ekranu, gdy stroisz
 
-Twangle działa całkowicie offline i pozostanie darmowy: bez reklam, bez konta, bez zakupów, nigdy.
+Twangle pozostanie darmowy i offline, na zawsze.

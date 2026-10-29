@@ -1,6 +1,6 @@
-Twangle adalah tuner gitar yang mudah digunakan dan akurat hingga satu sen. Petik satu senar, dan Twangle menampilkan nada serta seberapa jauh nada itu dari pas, pada meter yang besar dan jelas. "Naikkan" atau "Turunkan" memberi tahu ke arah mana dryer diputar. Setelah pas, Twangle membantu Anda bermain: menyebutkan akor yang Anda genjreng, menampilkan diagram akor dan tangga nada, menghitung posisi kapo, dan menjaga tempo.
+Twangle adalah tuner gitar yang juga bisa untuk bass, ukulele, biola, dan lainnya, dengan semua fitur gratis. Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Twangle bahkan tidak punya izin untuk memakai internet: suara dari mikrofon Anda dianalisis langsung di ponsel dan tidak pernah direkam atau dikirim ke mana pun.
 
-Tanpa iklan, tanpa akun, tanpa pembelian dalam aplikasi, dan tanpa pelacakan. Twangle bahkan tidak punya izin untuk memakai internet: suara dari mikrofon Anda dianalisis langsung di ponsel dan tidak pernah direkam atau dikirim ke mana pun.
+Twangle mudah digunakan dan akurat hingga satu sen. Petik satu senar, dan Twangle menampilkan nada serta seberapa jauh nada itu dari pas, pada meter yang besar dan jelas. "Naikkan" atau "Turunkan" memberi tahu ke arah mana dryer diputar. Setelah pas, Twangle membantu Anda bermain: menyebutkan akor yang Anda genjreng, menampilkan diagram akor dan tangga nada, menghitung posisi kapo, dan menjaga tempo.
 
 STEM INSTRUMEN APA PUN
 • Gitar (6, 7, atau 8 senar), bass (4 atau 5 senar), ukulele (juga bariton), biola, viola, selo, dan mandolin
@@ -41,4 +41,4 @@ LAINNYA
 • Widget layar utama yang membuka tuner dengan sekali ketuk
 • Layar tetap menyala selama Anda menyetem
 
-Twangle bekerja sepenuhnya offline dan akan tetap gratis: tanpa iklan, tanpa akun, tanpa pembelian, selamanya.
+Twangle akan tetap gratis dan offline, selamanya.

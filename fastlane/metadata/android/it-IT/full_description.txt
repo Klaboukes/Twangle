@@ -1,6 +1,6 @@
-Twangle è un accordatore per chitarra semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Alza» o «Abbassa» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto e tiene il tempo.
+Twangle è un accordatore per chitarra, ma anche per basso, ukulele, violino e altro, e ogni funzione è gratis. Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
 
-Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Twangle non ha nemmeno il permesso di usare internet: il suono del microfono viene analizzato dal vivo sul telefono e mai registrato o inviato.
+Twangle è semplice da usare e preciso al cent. Suona una corda e Twangle mostra la nota e quanto è lontana dall'intonazione giusta, su un indicatore grande e chiaro. «Alza» o «Abbassa» ti dice in che verso girare la meccanica. Una volta accordato, Twangle ti aiuta a suonare: riconosce gli accordi che suoni, mostra diagrammi degli accordi e scale, calcola dove va il capotasto e tiene il tempo.
 
 ACCORDA OGNI STRUMENTO
 • Chitarra (6, 7 o 8 corde), basso (4 o 5 corde), ukulele (anche baritono), violino, viola, violoncello e mandolino
@@ -41,4 +41,4 @@ INOLTRE
 • Un widget per la schermata Home che apre l'accordatore con un tocco
 • Tiene lo schermo acceso mentre accordi
 
-Twangle funziona completamente offline e resterà gratis: niente pubblicità, niente account, niente acquisti, mai.
+Twangle resterà gratis e offline, per sempre.

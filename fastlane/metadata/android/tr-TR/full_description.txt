@@ -1,6 +1,6 @@
-Twangle, kullanımı kolay ve bir sente kadar hassas bir gitar akort cihazıdır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar ve tempoyu tutar.
+Twangle bir gitar akort cihazıdır; bas, ukulele, keman ve daha fazlası için de çalışır ve tüm özellikleri ücretsizdir. Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
 
-Reklam yok, hesap yok, uygulama içi satın alma yok, izleme yok. Twangle'ın internet kullanma izni bile yok: mikrofonundan gelen ses canlı olarak telefonunda analiz edilir; asla kaydedilmez ve hiçbir yere gönderilmez.
+Twangle'ın kullanımı kolaydır ve bir sente kadar hassastır. Bir tel çal; Twangle notayı ve doğru akordan ne kadar uzak olduğunu büyük, net bir göstergede gösterir. "Yükselt" ya da "Düşür", burguyu hangi yöne çevireceğini söyler. Akort bitince Twangle çalmana da yardım eder: çaldığın akorların adını söyler, akor şemalarını ve gamları gösterir, kaponun yerini hesaplar ve tempoyu tutar.
 
 HER ENSTRÜMANI AKORT ET
 • Gitar (6, 7 veya 8 tel), bas (4 veya 5 tel), ukulele (bariton da), keman, viyola, çello ve mandolin
@@ -41,4 +41,4 @@ AYRICA
 • Akort ekranını tek dokunuşla açan bir ana ekran widget'ı
 • Akort ederken ekranı açık tutar
 
-Twangle tamamen çevrimdışı çalışır ve ücretsiz kalacak: reklam yok, hesap yok, satın alma yok, asla.
+Twangle her zaman ücretsiz ve çevrimdışı kalacak.

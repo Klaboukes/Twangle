@@ -1,6 +1,6 @@
-Twangle est un accordeur de guitare simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Plus haut » ou « Plus bas » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo et garde le tempo.
+Twangle est un accordeur de guitare, aussi pour la basse, le ukulélé, le violon et bien plus, et toutes ses fonctions sont gratuites. Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
 
-Pas de pub, pas de compte, pas d'achats intégrés, pas de pistage. Twangle n'a même pas l'autorisation d'accéder à Internet : le son de votre micro est analysé en direct sur votre téléphone, jamais enregistré ni envoyé.
+Twangle est simple à utiliser et précis au cent près. Jouez une corde : Twangle affiche la note et son écart avec la justesse sur un grand cadran bien lisible. « Plus haut » ou « Plus bas » vous indique dans quel sens tourner la mécanique. Une fois accordé, Twangle vous aide à jouer : il nomme les accords que vous grattez, affiche des diagrammes d'accords et des gammes, calcule la place du capo et garde le tempo.
 
 ACCORDEZ TOUS VOS INSTRUMENTS
 • Guitare (6, 7 ou 8 cordes), basse (4 ou 5 cordes), ukulélé (baryton aussi), violon, alto, violoncelle et mandoline
@@ -41,4 +41,4 @@ AUSSI
 • Un widget pour l'écran d'accueil qui ouvre l'accordeur d'une seule touche
 • Garde l'écran allumé pendant que vous accordez
 
-Twangle fonctionne entièrement hors ligne et restera gratuit : pas de pub, pas de compte, pas d'achats, jamais.
+Twangle restera gratuit et hors ligne, pour de bon.
