@@ -2,7 +2,7 @@
     <string name="mic_permission_title">Twangle braucht dein Mikrofon</string>
     <string name="mic_permission_intro">Zum Stimmen hört Twangle deinem Instrument zu. Der Ton wird auf deinem Gerät analysiert und nie aufgenommen oder gesendet.</string>
     <string name="mic_permission_rationale">Ohne Mikrofon hört Twangle deine Saiten nicht und kann nicht sagen, ob sie gestimmt sind. Der Ton verlässt nie dein Gerät.</string>
-    <string name="mic_permission_settings_hint">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen, dann auf Mikrofon, und erlaube den Zugriff während der Nutzung der App.</string>
+    <string name="mic_permission_settings_hint">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen, dann auf Mikrofon und wähle „Nur während der Nutzung der App zulassen“.</string>
     <string name="mic_permission_settings_hint_switch">Der Mikrofonzugriff ist für Twangle ausgeschaltet. Öffne die Einstellungen, tippe auf Berechtigungen und schalte Mikrofon ein.</string>
     <string name="mic_permission_allow">Mikrofon erlauben</string>
     <string name="mic_permission_open_settings">Einstellungen öffnen</string>
@@ -10,7 +10,7 @@
     <string name="error_mic_permission">Der Mikrofonzugriff wurde ausgeschaltet. Erlaube ihn wieder, um weiter zu stimmen.</string>
     <string name="error_mic_busy">Eine andere App nutzt das Mikrofon. Schließe sie und versuche es erneut.</string>
     <string name="error_mic_unavailable">Das Mikrofon ließ sich auf diesem Gerät nicht öffnen.</string>
-    <string name="error_mic_stopped">Das Mikrofon hat unerwartet aufgehört.</string>
+    <string name="error_mic_stopped">Das Mikrofon ist unerwartet ausgefallen.</string>
     <string name="error_retry">Erneut versuchen</string>
 
     <string name="tuner_mode_strings">Saiten</string>
@@ -162,7 +162,7 @@
     <string name="tour_title">Rundgang</string>
     <string name="tour_step_count">%1$d von %2$d</string>
     <string name="tour_step_spoken">Schritt %1$d von %2$d. %3$s.</string>
-    <string name="tour_readout">Wie weit daneben, und welcher Ton</string>
+    <string name="tour_readout">Wie weit daneben und welcher Ton</string>
     <string name="tour_strum">Anschlagen und alle Saiten prüfen</string>
     <string name="tour_strings">Tippen zum Festlegen, halten zum Anhören</string>
     <string name="tour_picker">Instrument und Stimmung wählen</string>
@@ -224,21 +224,21 @@
     <string name="tuner_chord_slash">%1$s, %2$s im Bass</string>
     <string name="tuner_chord_bass">Bass</string>
     <string name="tuner_chord_strum">Schlag einen Akkord an</string>
-    <string name="tuner_chord_strum_detail">Mit allen seinen Saiten</string>
+    <string name="tuner_chord_strum_detail">Mit allen Saiten des Akkords</string>
     <string name="tuner_chord_next">Schlag den nächsten an</string>
     <string name="tuner_chord_let_ring">Lass ihn klingen</string>
     <string name="tuner_chord_unclear">Kein klarer Akkord</string>
-    <string name="tuner_chord_unclear_detail">Schlag alle seine Saiten an</string>
+    <string name="tuner_chord_unclear_detail">Schlag alle Saiten des Akkords an</string>
     <string name="tuner_chord_none">Noch kein Akkord</string>
     <string name="tuner_chord_spoken_notes">Töne %1$s</string>
     <string name="tuner_chord_spoken_recent">davor %1$s</string>
-    <string name="tuner_pitch_trail">Tonspur</string>
-    <string name="tuner_trail_spoken">Tonspur, %1$s</string>
+    <string name="tuner_pitch_trail">Tonverlauf</string>
+    <string name="tuner_trail_spoken">Tonverlauf, %1$s</string>
     <string name="tuner_trail_no_note">kein Ton</string>
     <string name="tuner_trail_steady">stabil, %1$s</string>
     <string name="tuner_trail_wavering">schwankend, %1$s</string>
     <string name="tuner_trail_bending_up">zieht nach oben</string>
     <string name="tuner_trail_bending_down">zieht nach unten</string>
     <string name="tuner_screen_off_soon">Bildschirm geht gleich aus</string>
-    <string name="tuner_screen_off_keep_on">Tippe, damit er an bleibt</string>
+    <string name="tuner_screen_off_keep_on">Tippe, damit er anbleibt</string>
 </resources>

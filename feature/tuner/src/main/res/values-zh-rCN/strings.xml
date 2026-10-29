@@ -2,7 +2,7 @@
     <string name="mic_permission_title">Twangle 需要使用麦克风</string>
     <string name="mic_permission_intro">调音时，Twangle 会聆听你的乐器。声音在设备上分析，从不录制，也不会发送到任何地方。</string>
     <string name="mic_permission_rationale">没有麦克风，Twangle 就听不到你的琴弦，也就无法判断音准。声音永远不会离开你的设备。</string>
-    <string name="mic_permission_settings_hint">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，再点按“麦克风”，然后选择仅在使用该应用时允许。</string>
+    <string name="mic_permission_settings_hint">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，再点按“麦克风”，然后选择“仅在使用该应用时允许”。</string>
     <string name="mic_permission_settings_hint_switch">Twangle 的麦克风权限已关闭。打开设置，点按“权限”，然后开启“麦克风”。</string>
     <string name="mic_permission_allow">允许使用麦克风</string>
     <string name="mic_permission_open_settings">打开设置</string>
@@ -43,17 +43,17 @@
     <string name="tuning_drop_b_flat">Drop B♭</string>
     <string name="tuning_drop_a">Drop A</string>
     <string name="tuning_lowered_1">%1$s，降半音</string>
-    <string name="tuning_lowered_2">%1$s，降一个全音</string>
-    <string name="tuning_lowered_3">%1$s，降一个半全音</string>
-    <string name="tuning_lowered_4">%1$s，降两个全音</string>
-    <string name="tuning_lowered_5">%1$s，降两个半全音</string>
+    <string name="tuning_lowered_2">%1$s，降 1 个全音</string>
+    <string name="tuning_lowered_3">%1$s，降 1½ 个全音</string>
+    <string name="tuning_lowered_4">%1$s，降 2 个全音</string>
+    <string name="tuning_lowered_5">%1$s，降 2½ 个全音</string>
     <string name="tuner_lower_by">降低</string>
     <string name="tuner_lowered_none">不降</string>
     <string name="tuner_lowered_1">半音</string>
-    <string name="tuner_lowered_2">一个全音</string>
-    <string name="tuner_lowered_3">一个半全音</string>
-    <string name="tuner_lowered_4">两个全音</string>
-    <string name="tuner_lowered_5">两个半全音</string>
+    <string name="tuner_lowered_2">1 个全音</string>
+    <string name="tuner_lowered_3">1½ 个全音</string>
+    <string name="tuner_lowered_4">2 个全音</string>
+    <string name="tuner_lowered_5">2½ 个全音</string>
     <string name="tuner_lower_more">降低半音</string>
     <string name="tuner_lower_less">升回半音</string>
 
@@ -144,13 +144,13 @@
     <string name="tuner_strum_waiting_detail">每根弦都会显示偏低、已调准或偏高</string>
     <string name="tuner_strum_hearing">正在聆听…</string>
     <plurals name="tuner_strum_to_tune">
-        <item quantity="other">%1$d 根弦需要调</item>
+        <item quantity="other">%1$d 根弦需要调音</item>
     </plurals>
     <string name="tuner_strum_not_all_heard">有的弦没听到</string>
     <string name="tuner_strum_all_in_tune">所有弦都已调准</string>
     <string name="tuner_strum_tap_to_tune">点按一根弦来调音</string>
     <string name="tuner_strum_again">再扫一次，或点按一根弦来调音</string>
-    <string name="tuner_strum_tune_string">调 %1$s</string>
+    <string name="tuner_strum_tune_string">调 %1$s 弦</string>
     <string name="tuner_strum_spoken_string">%1$s，%2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s，没听到</string>
     <string name="tuner_strum_spoken_waiting">%1$s，还没扫弦</string>
@@ -160,7 +160,7 @@
     <string name="tour_step_spoken">第 %1$d 步，共 %2$d 步。%3$s。</string>
     <string name="tour_readout">偏了多少，是哪个音</string>
     <string name="tour_strum">扫弦，检查每根弦</string>
-    <string name="tour_strings">轻触锁定，长按试听</string>
+    <string name="tour_strings">点按锁定，长按试听</string>
     <string name="tour_picker">选择乐器和定弦</string>
     <string name="tour_skip">跳过导览</string>
     <string name="tour_next">下一步</string>
@@ -192,13 +192,13 @@
     <string name="tuner_intonation_check_again">再检查一次</string>
     <string name="tuner_intonation_next_string">下一根弦</string>
     <plurals name="tuner_intonation_to_move">
-        <item quantity="other">%1$d 个弦鞍要移</item>
+        <item quantity="other">%1$d 个弦鞍需要移动</item>
     </plurals>
     <string name="tuner_intonation_all_fine">已检查的弦都没问题</string>
     <string name="tuner_intonation_tap_string">点按一根弦来检查</string>
     <string name="tuner_intonation_neck">琴颈</string>
     <string name="tuner_intonation_saddle">弦鞍</string>
-    <string name="tuner_intonation_check_string">检查 %1$s</string>
+    <string name="tuner_intonation_check_string">检查 %1$s 弦</string>
     <string name="tuner_intonation_mark_fine">弦鞍没问题</string>
     <string name="tuner_intonation_mark_back">弦鞍往后移</string>
     <string name="tuner_intonation_mark_forward">弦鞍往前移</string>
@@ -222,18 +222,18 @@
     <string name="tuner_chord_strum_detail">扫到它的所有弦</string>
     <string name="tuner_chord_next">再扫一次，看下一个</string>
     <string name="tuner_chord_let_ring">让它持续发声</string>
-    <string name="tuner_chord_unclear">不是清晰的和弦</string>
+    <string name="tuner_chord_unclear">和弦不够清晰</string>
     <string name="tuner_chord_unclear_detail">把它的所有弦都扫到</string>
     <string name="tuner_chord_none">还没有和弦</string>
     <string name="tuner_chord_spoken_notes">音符 %1$s</string>
-    <string name="tuner_chord_spoken_recent">之前 %1$s</string>
+    <string name="tuner_chord_spoken_recent">之前是 %1$s</string>
     <string name="tuner_pitch_trail">音高轨迹</string>
     <string name="tuner_trail_spoken">音高轨迹，%1$s</string>
     <string name="tuner_trail_no_note">没有音</string>
     <string name="tuner_trail_steady">平稳，%1$s</string>
     <string name="tuner_trail_wavering">摆动，%1$s</string>
-    <string name="tuner_trail_bending_up">向上推弦</string>
-    <string name="tuner_trail_bending_down">向下滑</string>
+    <string name="tuner_trail_bending_up">音高上升</string>
+    <string name="tuner_trail_bending_down">音高下降</string>
     <string name="tuner_screen_off_soon">屏幕即将关闭</string>
-    <string name="tuner_screen_off_keep_on">轻触以保持常亮</string>
+    <string name="tuner_screen_off_keep_on">点按以保持常亮</string>
 </resources>

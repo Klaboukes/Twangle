@@ -48,7 +48,7 @@
     <string name="settings_in_tune_effect_bold">Marqué</string>
 
     <string name="settings_display_title">Sous la note</string>
-    <string name="settings_display_numbers">Chiffres : l\'écart en cents</string>
+    <string name="settings_display_numbers">Chiffres : l\'écart en cents</string>
     <string name="settings_display_wave">Onde : une image animée, dans le style choisi</string>
     <string name="settings_wave_look_title">Style d\'onde</string>
     <string name="settings_wave_look_strobe">Stroboscope</string>
@@ -88,7 +88,7 @@
     <string name="settings_about_website_title">Aide et site web</string>
     <string name="settings_about_website_summary">Comment fonctionne chaque outil, et réponses aux questions fréquentes (en anglais)</string>
     <string name="settings_about_credits_title">Polices et logiciels libres</string>
-    <string name="settings_about_credits_summary">Twangle est fait avec eux. Touchez-en un pour lire sa licence.</string>
+    <string name="settings_about_credits_summary">Twangle les utilise. Touchez un nom pour lire sa licence.</string>
     <string name="settings_about_licence_open">Lire la licence</string>
     <string name="settings_about_licence_close">Fermer</string>
 </resources>

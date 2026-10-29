@@ -2,7 +2,7 @@
     <string name="settings_title">Ayarlar</string>
     <string name="settings_back">Geri</string>
 
-    <string name="settings_group_pitch">Perde ve notalar</string>
+    <string name="settings_group_pitch">Ses ve notalar</string>
     <string name="settings_group_look">Görünüm</string>
     <string name="settings_group_tuner_screen">Akort ekranı</string>
     <string name="settings_group_while_tuning">Akort sırasında</string>
@@ -59,12 +59,12 @@
     <string name="settings_focus_mode_title">Odak modu</string>
     <string name="settings_focus_mode_summary">Twangle\'ı tek büyük göstergeyle yana çevirir, uzaktan kolayca okunur</string>
     <string name="settings_left_handed_title">Solak</string>
-    <string name="settings_left_handed_summary">Akor şemaları ve gamların klavyesi ters tutulan bir gitar için çizilir</string>
+    <string name="settings_left_handed_summary">Akor şemaları ve gam klavyesi ters tutulan bir gitar için çizilir</string>
 
     <string name="settings_keep_screen_on_title">Ekranı açık tut</string>
     <string name="settings_keep_screen_on_summary">Akort ederken ekran kapanmaz</string>
     <string name="settings_vibrate_in_tune_title">Akortlu olunca titreş</string>
-    <string name="settings_vibrate_in_tune_summary">Nota doğru perdeye ulaşınca kısa bir titreşim</string>
+    <string name="settings_vibrate_in_tune_summary">Nota akortlu olunca kısa bir titreşim</string>
     <string name="settings_show_tune_hint_title">Yükselt/düşür ipucunu göster</string>
     <string name="settings_show_tune_hint_summary">Nota akortsuzken burgunun hangi yöne çevrileceğini söyler</string>
     <string name="settings_show_signal_bars_title">Sinyal çubuklarını göster</string>

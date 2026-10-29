@@ -47,7 +47,7 @@
     <string name="tuning_lowered_3">%1$s、1音半下げ</string>
     <string name="tuning_lowered_4">%1$s、2音下げ</string>
     <string name="tuning_lowered_5">%1$s、2音半下げ</string>
-    <string name="tuner_lower_by">下げる</string>
+    <string name="tuner_lower_by">下げ幅</string>
     <string name="tuner_lowered_none">なし</string>
     <string name="tuner_lowered_1">半音</string>
     <string name="tuner_lowered_2">全音</string>
@@ -176,7 +176,7 @@
     <string name="tuner_intonation_let_ring">そのまま鳴らしてください</string>
     <string name="tuner_intonation_tune_first">先に %1$s 弦をチューニングしてください</string>
     <string name="tuner_intonation_press_fret">次に12フレットを押さえてください</string>
-    <string name="tuner_intonation_press_detail">軽く触れずにしっかり押さえて</string>
+    <string name="tuner_intonation_press_detail">軽く触れず、しっかり押さえてください</string>
     <string name="tuner_intonation_not_octave">オクターブではありません</string>
     <string name="tuner_intonation_not_octave_detail">12フレットを押さえてもう一度弾いてください</string>
     <string name="tuner_intonation_fine">良好</string>
@@ -219,14 +219,14 @@
     <string name="tuner_chord_slash">%1$s、ベースは %2$s</string>
     <string name="tuner_chord_bass">ベース</string>
     <string name="tuner_chord_strum">コードを弾いてください</string>
-    <string name="tuner_chord_strum_detail">全部の弦を鳴らして</string>
+    <string name="tuner_chord_strum_detail">全部の弦で</string>
     <string name="tuner_chord_next">次のコードも弾いてください</string>
     <string name="tuner_chord_let_ring">そのまま鳴らしてください</string>
-    <string name="tuner_chord_unclear">はっきりしたコードではありません</string>
+    <string name="tuner_chord_unclear">コードを判別できません</string>
     <string name="tuner_chord_unclear_detail">全部の弦を弾いてください</string>
     <string name="tuner_chord_none">まだコードはありません</string>
-    <string name="tuner_chord_spoken_notes">音 %1$s</string>
-    <string name="tuner_chord_spoken_recent">その前 %1$s</string>
+    <string name="tuner_chord_spoken_notes">構成音 %1$s</string>
+    <string name="tuner_chord_spoken_recent">その前は %1$s</string>
     <string name="tuner_pitch_trail">ピッチの軌跡</string>
     <string name="tuner_trail_spoken">ピッチの軌跡、%1$s</string>
     <string name="tuner_trail_no_note">音なし</string>

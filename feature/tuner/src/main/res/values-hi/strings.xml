@@ -48,7 +48,7 @@
     <string name="tuning_lowered_4">%1$s, 2 स्टेप नीचे</string>
     <string name="tuning_lowered_5">%1$s, 2½ स्टेप नीचे</string>
     <string name="tuner_lower_by">इतना नीचे</string>
-    <string name="tuner_lowered_none">बिल्कुल नहीं</string>
+    <string name="tuner_lowered_none">कोई नहीं</string>
     <string name="tuner_lowered_1">½ स्टेप</string>
     <string name="tuner_lowered_2">1 स्टेप</string>
     <string name="tuner_lowered_3">1½ स्टेप</string>
@@ -102,7 +102,7 @@
     <string name="tuner_signal_show_figures">आँकड़े दिखाएँ</string>
     <string name="tuner_signal_title">Twangle आपको कितनी अच्छी तरह सुनता है</string>
     <string name="tuner_signal_volume">वॉल्यूम</string>
-    <string name="tuner_signal_background">पृष्ठभूमि शोर</string>
+    <string name="tuner_signal_background">बैकग्राउंड शोर</string>
     <string name="tuner_signal_clarity">स्पष्टता</string>
 
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
@@ -161,7 +161,7 @@
     <string name="tour_title">ऐप का टूर</string>
     <string name="tour_step_count">%2$d में से %1$d</string>
     <string name="tour_step_spoken">%2$d में से चरण %1$d। %3$s।</string>
-    <string name="tour_readout">आप कितना हटकर हैं, और कौन सा नोट</string>
+    <string name="tour_readout">आप कितना हटकर हैं, और कौन-सा नोट</string>
     <string name="tour_strum">हर तार जाँचने के लिए स्ट्रम करें</string>
     <string name="tour_strings">लॉक करने के लिए टैप करें, सुनने के लिए दबाए रखें</string>
     <string name="tour_picker">वाद्य और ट्यूनिंग चुनें</string>
@@ -180,7 +180,7 @@
     <string name="tuner_intonation_tune_first">पहले %1$s तार ट्यून करें</string>
     <string name="tuner_intonation_press_fret">अब इसे 12वें फ़्रेट पर दबाएँ</string>
     <string name="tuner_intonation_press_detail">हल्के से छूएँ नहीं, दबाएँ</string>
-    <string name="tuner_intonation_not_octave">यह सप्तक नहीं था</string>
+    <string name="tuner_intonation_not_octave">यह ऑक्टेव नहीं था</string>
     <string name="tuner_intonation_not_octave_detail">12वें फ़्रेट पर दबाकर फिर बजाएँ</string>
     <string name="tuner_intonation_fine">ठीक है</string>
     <string name="tuner_intonation_fine_detail">सैडल को वहीं रहने दें</string>

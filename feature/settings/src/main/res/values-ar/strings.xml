@@ -2,7 +2,7 @@
     <string name="settings_title">الإعدادات</string>
     <string name="settings_back">رجوع</string>
 
-    <string name="settings_group_pitch">طبقة الصوت والنوتات</string>
+    <string name="settings_group_pitch">طبقة الصوت والنغمات</string>
     <string name="settings_group_look">المظهر</string>
     <string name="settings_group_tuner_screen">شاشة الموالف</string>
     <string name="settings_group_while_tuning">أثناء الضبط</string>
@@ -42,11 +42,11 @@
     <string name="settings_meter_look_arrows">أسهم</string>
     <string name="settings_meter_look_light_bars">أشرطة ضوئية</string>
     <string name="settings_in_tune_effect_title">تأثير الضبط</string>
-    <string name="settings_in_tune_effect_summary">مدى توهّج المقياس عندما تُضبط النوتة</string>
+    <string name="settings_in_tune_effect_summary">مدى توهّج المقياس عندما تكون النغمة مضبوطة</string>
     <string name="settings_in_tune_effect_calm">هادئ</string>
-    <string name="settings_in_tune_effect_bold">جريء</string>
+    <string name="settings_in_tune_effect_bold">قوي</string>
 
-    <string name="settings_display_title">تحت النوتة</string>
+    <string name="settings_display_title">تحت النغمة</string>
     <string name="settings_display_numbers">أرقام: مقدار الانحراف بالسنتات</string>
     <string name="settings_display_wave">موجة: صورة متحركة بالشكل الذي تختاره</string>
     <string name="settings_wave_look_title">شكل الموجة</string>

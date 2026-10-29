@@ -73,7 +73,7 @@
     <string name="practice_scale_harmonic_minor">%1$s minore armonica</string>
     <string name="practice_scale_melodic_minor">%1$s minore melodica</string>
     <string name="practice_spoken_scale_notes">%1$s, note %2$s</string>
-    <string name="practice_spoken_scale_open">a vuoto %1$s</string>
+    <string name="practice_spoken_scale_open">%1$s a vuoto</string>
     <string name="practice_spoken_scale_fret">tasto %1$d %2$s</string>
     <string name="practice_spoken_scale_root">%1$s, fondamentale</string>
     <string name="practice_spoken_scale_colour">%1$s, nota caratteristica</string>
@@ -89,7 +89,7 @@
     <string name="practice_capo_sounds_column">Suona</string>
     <string name="practice_capo_sounds_in">Suona in %1$s</string>
     <string name="practice_capo_row_spoken">Diteggiatura di %1$s, suona %2$s</string>
-    <string name="practice_capo_open_chord">apri in Accordi</string>
+    <string name="practice_capo_open_chord">aprire in Accordi</string>
     <string name="practice_drone">Bordone</string>
     <string name="practice_drone_play">Suona il bordone</string>
     <string name="practice_drone_stop">Ferma il bordone</string>

@@ -1,6 +1,6 @@
 <resources>
     <string name="mic_permission_title">Twangle нужен твой микрофон</string>
-    <string name="mic_permission_intro">Чтобы настраивать, Twangle слушает твой инструмент. Звук анализируется на устройстве и никогда не записывается и никуда не отправляется.</string>
+    <string name="mic_permission_intro">Для настройки Twangle слушает твой инструмент. Звук анализируется на устройстве и никогда не записывается и никуда не отправляется.</string>
     <string name="mic_permission_rationale">Без микрофона Twangle не слышит твои струны и не может сказать, настроены ли они. Звук не покидает устройство.</string>
     <string name="mic_permission_settings_hint">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения», затем «Микрофон» и разреши доступ во время использования приложения.</string>
     <string name="mic_permission_settings_hint_switch">Доступ к микрофону для Twangle выключен. Открой «Настройки», нажми «Разрешения» и включи «Микрофон».</string>
@@ -55,7 +55,7 @@
     <string name="tuner_lowered_4">2 тона</string>
     <string name="tuner_lowered_5">2½ тона</string>
     <string name="tuner_lower_more">Ниже на полтона</string>
-    <string name="tuner_lower_less">Обратно выше на полтона</string>
+    <string name="tuner_lower_less">Вернуть на полтона выше</string>
 
     <string name="instrument_guitar">Гитара</string>
     <string name="instrument_guitar_12">12-струнная гитара</string>
@@ -164,13 +164,13 @@
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, не слышно</string>
     <string name="tuner_strum_spoken_waiting">%1$s, ещё не звучала</string>
-    <string name="tuner_strum_spoken_less_sure">%1$s, менее точно</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, не наверняка</string>
     <string name="tour_title">Экскурсия</string>
     <string name="tour_step_count">%1$d из %2$d</string>
     <string name="tour_step_spoken">Шаг %1$d из %2$d. %3$s.</string>
-    <string name="tour_readout">Отклонение и какая нота</string>
+    <string name="tour_readout">Нота и её отклонение</string>
     <string name="tour_strum">Проведи по струнам, чтобы проверить все</string>
-    <string name="tour_strings">Нажми, чтобы закрепить, удерживай, чтобы послушать</string>
+    <string name="tour_strings">Нажми — закрепить, удерживай — послушать</string>
     <string name="tour_picker">Выбери инструмент и строй</string>
     <string name="tour_skip">Пропустить</string>
     <string name="tour_next">Далее</string>
@@ -233,15 +233,15 @@
     <string name="tuner_chord_bass">бас</string>
     <string name="tuner_chord_strum">Сыграй аккорд</string>
     <string name="tuner_chord_strum_detail">Всеми его струнами</string>
-    <string name="tuner_chord_next">Сыграй ещё раз для следующего</string>
+    <string name="tuner_chord_next">Сыграй следующий</string>
     <string name="tuner_chord_let_ring">Дай ему прозвучать</string>
-    <string name="tuner_chord_unclear">Аккорд неясен</string>
+    <string name="tuner_chord_unclear">Аккорд не распознан</string>
     <string name="tuner_chord_unclear_detail">Проведи по всем его струнам</string>
     <string name="tuner_chord_none">Пока нет аккорда</string>
     <string name="tuner_chord_spoken_notes">ноты %1$s</string>
     <string name="tuner_chord_spoken_recent">до этого %1$s</string>
-    <string name="tuner_pitch_trail">След высоты</string>
-    <string name="tuner_trail_spoken">След высоты, %1$s</string>
+    <string name="tuner_pitch_trail">График высоты</string>
+    <string name="tuner_trail_spoken">График высоты, %1$s</string>
     <string name="tuner_trail_no_note">нет ноты</string>
     <string name="tuner_trail_steady">ровно, %1$s</string>
     <string name="tuner_trail_wavering">колеблется, %1$s</string>

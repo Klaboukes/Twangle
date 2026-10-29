@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="metronome_beats_in_bar">Pulsos por compás</string>
+    <string name="metronome_beats_in_bar">Tiempos por compás</string>
     <string name="metronome_tempo">Tempo, arrastra para cambiar</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d pulso por minuto, %2$s</item>
@@ -30,7 +30,7 @@
     <string name="metronome_listen">Escuchar</string>
     <string name="metronome_listen_stop_spoken">Dejar de escuchar</string>
     <string name="metronome_listening">Escuchando…</string>
-    <string name="metronome_heard">Oído</string>
+    <string name="metronome_heard">Detectado</string>
     <string name="metronome_use">Usar</string>
     <string name="metronome_not_now">Ahora no</string>
     <string name="metronome_listen_speed">Velocidad</string>

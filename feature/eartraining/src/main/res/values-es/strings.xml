@@ -9,7 +9,7 @@
     <string name="ear_listening">Escuchando…</string>
     <string name="ear_spoken_heard">Se oye: %1$s</string>
     <string name="ear_tally">%1$d de %2$d</string>
-    <string name="ear_tally_spoken">%1$d de %2$d bien</string>
+    <string name="ear_tally_spoken">%1$d de %2$d correctas</string>
     <string name="ear_choices">Qué se pregunta</string>
     <string name="ear_notes">Notas</string>
     <string name="ear_notes_open_strings">Cuerdas al aire</string>
@@ -29,7 +29,7 @@
     <string name="ear_direction_up">Ascendente</string>
     <string name="ear_direction_down">Descendente</string>
     <string name="ear_direction_together">Juntas</string>
-    <string name="ear_played">Tocado</string>
+    <string name="ear_played">Cómo suenan</string>
     <string name="ear_answer_was">La respuesta: %1$s</string>
     <string name="ear_interval_short_minor_second">2m</string>
     <string name="ear_interval_short_major_second">2M</string>

@@ -32,10 +32,10 @@
     <string name="practice_shape_previous">上一个指法</string>
     <string name="practice_shape_next">下一个指法</string>
     <string name="practice_chart_fret">%1$d品</string>
-    <string name="practice_chord_none">此调弦下没有可按的指法</string>
-    <string name="practice_chords_short_string">和弦图还不认识班卓琴的短弦。请在顶部选择其他乐器。</string>
-    <string name="practice_scales_short_string">音阶还不认识班卓琴的短弦。请在顶部选择其他乐器。</string>
-    <string name="practice_capo_short_string">变调夹表还不认识班卓琴的短弦。请在顶部选择其他乐器。</string>
+    <string name="practice_chord_none">此定弦下没有可按的指法</string>
+    <string name="practice_chords_short_string">和弦图暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
+    <string name="practice_scales_short_string">音阶暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
+    <string name="practice_capo_short_string">变调夹表暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
     <string name="practice_spoken_separator">，</string>
     <string name="practice_spoken_shape">%1$s，指法 %2$d / %3$d</string>
     <string name="practice_spoken_string">%1$s 弦</string>
@@ -52,7 +52,7 @@
     <string name="practice_scale_type_major_blues">大调布鲁斯</string>
     <string name="practice_scale_type_dorian">多利亚</string>
     <string name="practice_scale_type_phrygian">弗里几亚</string>
-    <string name="practice_scale_type_phrygian_dominant">弗里几亚属音</string>
+    <string name="practice_scale_type_phrygian_dominant">弗里几亚属音阶</string>
     <string name="practice_scale_type_lydian">利底亚</string>
     <string name="practice_scale_type_mixolydian">混合利底亚</string>
     <string name="practice_scale_type_locrian">洛克里亚</string>
@@ -66,7 +66,7 @@
     <string name="practice_scale_major_blues">%1$s 大调布鲁斯</string>
     <string name="practice_scale_dorian">%1$s 多利亚</string>
     <string name="practice_scale_phrygian">%1$s 弗里几亚</string>
-    <string name="practice_scale_phrygian_dominant">%1$s 弗里几亚属音</string>
+    <string name="practice_scale_phrygian_dominant">%1$s 弗里几亚属音阶</string>
     <string name="practice_scale_lydian">%1$s 利底亚</string>
     <string name="practice_scale_mixolydian">%1$s 混合利底亚</string>
     <string name="practice_scale_locrian">%1$s 洛克里亚</string>
@@ -78,8 +78,8 @@
     <string name="practice_spoken_scale_root">%1$s，根音</string>
     <string name="practice_spoken_scale_colour">%1$s，特征音</string>
     <string name="practice_tool_capo">变调夹</string>
-    <string name="practice_capo_shapes">我弹的指法</string>
-    <string name="practice_capo_shapes_spoken">我弹的指法：%1$s</string>
+    <string name="practice_capo_shapes">我会的指法</string>
+    <string name="practice_capo_shapes_spoken">我会的指法：%1$s</string>
     <string name="practice_capo_label">变调夹</string>
     <string name="practice_capo_none">不用变调夹</string>
     <string name="practice_capo_on_fret">变调夹在第 %1$d 品</string>
@@ -87,9 +87,9 @@
     <string name="practice_capo_higher">变调夹升高一品</string>
     <string name="practice_capo_shape_column">指法</string>
     <string name="practice_capo_sounds_column">实际发声</string>
-    <string name="practice_capo_sounds_in">听起来是 %1$s</string>
+    <string name="practice_capo_sounds_in">听起来是 %1$s 调</string>
     <string name="practice_capo_row_spoken">%1$s 指法，发声为 %2$s</string>
-    <string name="practice_capo_open_chord">在和弦中打开</string>
+    <string name="practice_capo_open_chord">在“和弦”中打开</string>
     <string name="practice_drone">持续音</string>
     <string name="practice_drone_play">播放持续音</string>
     <string name="practice_drone_stop">停止持续音</string>
@@ -98,7 +98,7 @@
     <string name="practice_drone_tanpura">坦普拉琴</string>
     <string name="practice_drone_harmonium">簧风琴</string>
     <string name="practice_drone_flute_organ">笛管风琴</string>
-    <string name="practice_drone_warm_pad">温暖音垫</string>
+    <string name="practice_drone_warm_pad">温暖铺底</string>
     <string name="practice_drone_notes">音符</string>
     <string name="practice_drone_root">根音</string>
     <string name="practice_drone_fifth">+ 五度</string>

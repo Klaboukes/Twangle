@@ -53,7 +53,7 @@
 
     <!-- Display: what shows how far off a note is, under the note (in the Look group). -->
     <string name="settings_display_title">Onder de noot</string>
-    <string name="settings_display_numbers">Getallen: hoeveel cents ernaast</string>
+    <string name="settings_display_numbers">Getallen: hoeveel cent ernaast</string>
     <string name="settings_display_wave">Golf: een bewegend beeld, in de vorm die je kiest</string>
     <string name="settings_wave_look_title">Vorm van de golf</string>
     <string name="settings_wave_look_strobe">Stroboscoop</string>
@@ -63,7 +63,7 @@
     <string name="settings_wave_look_loop">Lus</string>
     <string name="settings_wave_look_ripples">Rimpels</string>
     <string name="settings_focus_mode_title">Focusmodus</string>
-    <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen van een afstand</string>
+    <string name="settings_focus_mode_summary">Draait Twangle op zijn kant met één grote meter, goed te lezen op afstand</string>
     <string name="settings_left_handed_title">Linkshandig</string>
     <string name="settings_left_handed_summary">Akkoordschema\'s en de hals bij Toonladders getekend voor een gitaar die andersom wordt vastgehouden</string>
 

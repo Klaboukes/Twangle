@@ -54,7 +54,7 @@
     <string name="settings_wave_look_ribbon">Fita</string>
     <string name="settings_wave_look_dots">Pontos</string>
     <string name="settings_wave_look_fireflies">Vaga-lumes</string>
-    <string name="settings_wave_look_loop">Laço</string>
+    <string name="settings_wave_look_loop">Aro</string>
     <string name="settings_wave_look_ripples">Ondulações</string>
     <string name="settings_focus_mode_title">Modo foco</string>
     <string name="settings_focus_mode_summary">Deixa o Twangle na horizontal com um medidor grande, fácil de ler de longe</string>
@@ -64,7 +64,7 @@
     <string name="settings_keep_screen_on_title">Manter a tela ligada</string>
     <string name="settings_keep_screen_on_summary">A tela fica ligada enquanto você afina</string>
     <string name="settings_vibrate_in_tune_title">Vibrar quando afinado</string>
-    <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota chega ao tom</string>
+    <string name="settings_vibrate_in_tune_summary">Uma vibração curta quando a nota fica afinada</string>
     <string name="settings_show_tune_hint_title">Mostrar se é para subir ou baixar</string>
     <string name="settings_show_tune_hint_summary">Diz para que lado girar a tarraxa enquanto uma nota está desafinada</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de sinal</string>

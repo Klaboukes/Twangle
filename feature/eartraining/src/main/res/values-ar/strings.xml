@@ -19,7 +19,7 @@
     <string name="ear_mic_allow">اسمح بالميكروفون</string>
     <string name="ear_open_settings">افتح الإعدادات</string>
     <string name="ear_play_prompt_many">اعزفها على آلتك بالترتيب</string>
-    <string name="ear_hold">أمسك النغمة التي سمعتها</string>
+    <string name="ear_hold">أطِل النغمة التي سمعتها</string>
     <string name="ear_note_of">النغمة %1$d من %2$d</string>
     <string name="ear_right">صحيح</string>
     <string name="ear_not_that_one">ليست هذه</string>
@@ -80,5 +80,5 @@
     <string name="ear_chord_half_diminished">نصف ناقص</string>
     <string name="ear_chord_augmented">زائد</string>
     <string name="ear_chord_short_string">مخططات الكوردات لا تعرف وتر البانجو القصير بعد. اختر آلة أخرى من الأعلى.</string>
-    <string name="ear_chord_none">لا يوجد شكل في المتناول بهذا الضبط</string>
+    <string name="ear_chord_none">لا يوجد شكل في المتناول بهذا الدوزان</string>
 </resources>

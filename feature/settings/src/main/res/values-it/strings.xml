@@ -16,14 +16,14 @@
 
     <string name="settings_notation_title">Nomi delle note</string>
     <string name="settings_notation_sharps">Diesis: C, C♯, D …</string>
-    <string name="settings_notation_flats">Bemolle: C, D♭, D …</string>
+    <string name="settings_notation_flats">Bemolli: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
     <string name="settings_notation_automatic">Automatico: %1$s</string>
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">Tedesco: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Precisione d\'intonazione</string>
-    <string name="settings_in_tune_precision_relaxed">Morbida: entro 5 cent</string>
+    <string name="settings_in_tune_precision_relaxed">Tollerante: entro 5 cent</string>
     <string name="settings_in_tune_precision_precise">Precisa: entro 2 cent</string>
 
     <string name="settings_style_title">Stile</string>
@@ -41,7 +41,7 @@
     <string name="settings_meter_look_eclipse">Eclissi</string>
     <string name="settings_meter_look_arrows">Frecce</string>
     <string name="settings_meter_look_light_bars">Barre di luce</string>
-    <string name="settings_in_tune_effect_title">Effetto intonato</string>
+    <string name="settings_in_tune_effect_title">Effetto d\'intonazione</string>
     <string name="settings_in_tune_effect_summary">Quanto si illumina l\'indicatore quando la nota è intonata</string>
     <string name="settings_in_tune_effect_calm">Calmo</string>
     <string name="settings_in_tune_effect_bold">Deciso</string>
@@ -66,7 +66,7 @@
     <string name="settings_vibrate_in_tune_title">Vibra quando è intonato</string>
     <string name="settings_vibrate_in_tune_summary">Una breve vibrazione quando la nota è intonata</string>
     <string name="settings_show_tune_hint_title">Indica se alzare o abbassare</string>
-    <string name="settings_show_tune_hint_summary">Dice in che verso girare la chiavetta finché una nota è stonata</string>
+    <string name="settings_show_tune_hint_summary">Dice in che verso girare la chiavetta quando una nota è stonata</string>
     <string name="settings_show_signal_bars_title">Mostra le barre del segnale</string>
     <string name="settings_show_signal_bars_summary">Per i curiosi: piccole barre vicino alla nota mostrano quanto bene ti sente l\'accordatore. Toccale per vedere i valori</string>
 
@@ -85,9 +85,9 @@
     <string name="settings_about_rate_title">Valuta Twangle</string>
     <string name="settings_about_rate_summary">Twangle su Google Play</string>
     <string name="settings_about_website_title">Aiuto e sito web</string>
-    <string name="settings_about_website_summary">Come funziona ogni funzione e risposte alle domande frequenti (in inglese)</string>
+    <string name="settings_about_website_summary">Come si usa ogni funzione e risposte alle domande frequenti (in inglese)</string>
     <string name="settings_about_credits_title">Font e software open source</string>
     <string name="settings_about_credits_summary">Twangle è fatto con questi. Toccane uno per leggerne la licenza.</string>
-    <string name="settings_about_licence_open">Leggi la licenza</string>
+    <string name="settings_about_licence_open">Leggere la licenza</string>
     <string name="settings_about_licence_close">Chiudi</string>
 </resources>

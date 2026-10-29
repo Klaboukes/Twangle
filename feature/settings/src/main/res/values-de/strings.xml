@@ -36,7 +36,7 @@
 
     <string name="settings_meter_look_title">Anzeige</string>
     <string name="settings_meter_look_classic">Klassisch</string>
-    <string name="settings_meter_look_light_arc">Lichtbogen</string>
+    <string name="settings_meter_look_light_arc">Lichterbogen</string>
     <string name="settings_meter_look_spirit_level">Wasserwaage</string>
     <string name="settings_meter_look_eclipse">Finsternis</string>
     <string name="settings_meter_look_arrows">Pfeile</string>
@@ -64,7 +64,7 @@
     <string name="settings_keep_screen_on_title">Bildschirm anlassen</string>
     <string name="settings_keep_screen_on_summary">Der Bildschirm bleibt beim Stimmen an</string>
     <string name="settings_vibrate_in_tune_title">Vibrieren, wenn gestimmt</string>
-    <string name="settings_vibrate_in_tune_summary">Ein kurzes Summen, wenn der Ton stimmt</string>
+    <string name="settings_vibrate_in_tune_summary">Kurzes Vibrieren, sobald der Ton stimmt</string>
     <string name="settings_show_tune_hint_title">Hinweis höher/tiefer zeigen</string>
     <string name="settings_show_tune_hint_summary">Zeigt, wohin du den Wirbel drehen musst, solange ein Ton nicht stimmt</string>
     <string name="settings_show_signal_bars_title">Signalbalken zeigen</string>
@@ -85,7 +85,7 @@
     <string name="settings_about_rate_title">Twangle bewerten</string>
     <string name="settings_about_rate_summary">Twangle bei Google Play</string>
     <string name="settings_about_website_title">Hilfe &amp; Website</string>
-    <string name="settings_about_website_summary">Wie jede Funktion funktioniert, und Antworten auf häufige Fragen (auf Englisch)</string>
+    <string name="settings_about_website_summary">Wie jedes Werkzeug funktioniert, und Antworten auf häufige Fragen (auf Englisch)</string>
     <string name="settings_about_credits_title">Schriften und Open-Source-Software</string>
     <string name="settings_about_credits_summary">Twangle ist damit gemacht. Tippe auf einen Eintrag, um seine Lizenz zu lesen.</string>
     <string name="settings_about_licence_open">Lizenz lesen</string>

@@ -219,12 +219,12 @@
     <string name="tuner_chord_slash">%1$s, 베이스 %2$s</string>
     <string name="tuner_chord_bass">베이스</string>
     <string name="tuner_chord_strum">코드를 치세요</string>
-    <string name="tuner_chord_strum_detail">코드의 모든 현을</string>
+    <string name="tuner_chord_strum_detail">코드의 모든 줄을</string>
     <string name="tuner_chord_next">다음 코드도 치세요</string>
     <string name="tuner_chord_let_ring">울리게 두세요</string>
-    <string name="tuner_chord_unclear">뚜렷한 코드가 아닙니다</string>
-    <string name="tuner_chord_unclear_detail">모든 현을 치세요</string>
-    <string name="tuner_chord_none">아직 코드가 없습니다</string>
+    <string name="tuner_chord_unclear">뚜렷한 코드가 아니에요</string>
+    <string name="tuner_chord_unclear_detail">코드의 모든 줄을 치세요</string>
+    <string name="tuner_chord_none">아직 코드가 없어요</string>
     <string name="tuner_chord_spoken_notes">음 %1$s</string>
     <string name="tuner_chord_spoken_recent">이전 %1$s</string>
     <string name="tuner_pitch_trail">음높이 궤적</string>

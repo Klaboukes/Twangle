@@ -24,7 +24,7 @@
     <string name="ear_right">सही</string>
     <string name="ear_not_that_one">यह नहीं</string>
     <string name="ear_notes_in_row">लगातार सुर</string>
-    <string name="ear_any_octave">कोई भी सप्तक चलेगा</string>
+    <string name="ear_any_octave">कोई भी ऑक्टेव चलेगा</string>
     <string name="ear_interval_prompt">कौन-सा अंतराल?</string>
     <string name="ear_direction_up">ऊपर</string>
     <string name="ear_direction_down">नीचे</string>
@@ -80,5 +80,5 @@
     <string name="ear_chord_half_diminished">हाफ़-डिमिनिश्ड</string>
     <string name="ear_chord_augmented">ऑगमेंटेड</string>
     <string name="ear_chord_short_string">कॉर्ड चार्ट अभी बैंजो का छोटा तार नहीं जानते। ऊपर कोई दूसरा वाद्य चुनें।</string>
-    <string name="ear_chord_none">इस ट्यूनिंग में पहुँच के भीतर कोई आकार नहीं</string>
+    <string name="ear_chord_none">इस ट्यूनिंग में कोई शेप पहुँच में नहीं</string>
 </resources>

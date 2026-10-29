@@ -64,8 +64,8 @@
     <string name="settings_keep_screen_on_title">Mantener la pantalla encendida</string>
     <string name="settings_keep_screen_on_summary">La pantalla sigue encendida mientras afinas</string>
     <string name="settings_vibrate_in_tune_title">Vibrar al estar afinado</string>
-    <string name="settings_vibrate_in_tune_summary">Una vibración corta cuando la nota llega al tono</string>
-    <string name="settings_show_tune_hint_title">Indicar subir o bajar</string>
+    <string name="settings_vibrate_in_tune_summary">Una vibración breve cuando la nota queda afinada</string>
+    <string name="settings_show_tune_hint_title">Indicar si subir o bajar</string>
     <string name="settings_show_tune_hint_summary">Indica hacia dónde girar la clavija mientras una nota está desafinada</string>
     <string name="settings_show_signal_bars_title">Mostrar barras de señal</string>
     <string name="settings_show_signal_bars_summary">Para curiosos: unas barras junto a la nota muestran lo bien que te oye el afinador. Tócalas para ver las cifras</string>
@@ -87,7 +87,7 @@
     <string name="settings_about_website_title">Ayuda y sitio web</string>
     <string name="settings_about_website_summary">Cómo funciona cada herramienta y respuestas a preguntas frecuentes (en inglés)</string>
     <string name="settings_about_credits_title">Fuentes y software libre</string>
-    <string name="settings_about_credits_summary">Twangle está hecho con esto. Toca uno para leer su licencia.</string>
+    <string name="settings_about_credits_summary">Twangle está hecho con ellos. Toca uno para leer su licencia.</string>
     <string name="settings_about_licence_open">Leer la licencia</string>
     <string name="settings_about_licence_close">Cerrar</string>
 </resources>

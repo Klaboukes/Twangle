@@ -28,7 +28,7 @@
 
     <string name="settings_style_title">Styl</string>
     <string name="settings_theme_title">Jasny czy ciemny</string>
-    <string name="settings_theme_system">Domyślny systemu</string>
+    <string name="settings_theme_system">Jak w systemie</string>
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_dark">Ciemny</string>
     <string name="settings_dynamic_color_title">Kolory tapety</string>
@@ -66,7 +66,7 @@
     <string name="settings_vibrate_in_tune_title">Wibruj po nastrojeniu</string>
     <string name="settings_vibrate_in_tune_summary">Krótka wibracja, gdy dźwięk osiągnie właściwą wysokość</string>
     <string name="settings_show_tune_hint_title">Podpowiedź podciągnij/popuść</string>
-    <string name="settings_show_tune_hint_summary">Mówi, w którą stronę kręcić kluczem, gdy dźwięk nie stroi</string>
+    <string name="settings_show_tune_hint_summary">Pokazuje, w którą stronę kręcić kluczem, gdy dźwięk nie stroi</string>
     <string name="settings_show_signal_bars_title">Pokazuj paski sygnału</string>
     <string name="settings_show_signal_bars_summary">Dla ciekawskich: małe paski przy dźwięku pokazują, jak dobrze stroik cię słyszy. Dotknij ich, aby zobaczyć wartości</string>
 

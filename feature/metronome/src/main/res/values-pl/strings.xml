@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="metronome_beats_in_bar">Uderzeń w takcie</string>
+    <string name="metronome_beats_in_bar">Metrum</string>
     <string name="metronome_tempo">Tempo, przeciągnij, aby zmienić</string>
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d uderzenie na minutę, %2$s</item>
@@ -18,7 +18,7 @@
     <string name="metronome_sound_wood_block">Wood block</string>
     <string name="metronome_sound_cowbell">Krowi dzwonek</string>
     <string name="metronome_sound_claves">Klawesy</string>
-    <string name="metronome_sound_rim_click">Rimclick</string>
+    <string name="metronome_sound_rim_click">Rim click</string>
     <string name="metronome_sound_spoken">Dźwięk: %1$s</string>
     <string name="metronome_sound_spoken_vibrating">Dźwięk: %1$s, wibruje w rytm</string>
     <string name="metronome_meter_2_4_spoken">Metrum dwie czwarte</string>

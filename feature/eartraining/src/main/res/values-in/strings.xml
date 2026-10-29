@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ear_exercises">Latihan</string>
-    <string name="ear_exercise_play_back">Mainkan kembali</string>
+    <string name="ear_exercise_play_back">Tirukan nada</string>
     <string name="ear_exercise_intervals">Interval</string>
     <string name="ear_exercise_chord_type">Jenis akor</string>
     <string name="ear_replay">Dengarkan lagi</string>
-    <string name="ear_play_prompt">Mainkan di alat musik Anda</string>
+    <string name="ear_play_prompt">Mainkan di instrumen Anda</string>
     <string name="ear_listening">Mendengarkan…</string>
     <string name="ear_spoken_heard">Terdengar: %1$s</string>
     <string name="ear_tally">%1$d dari %2$d</string>
     <string name="ear_tally_spoken">%1$d benar dari %2$d</string>
     <string name="ear_choices">Yang ditanyakan</string>
     <string name="ear_notes">Nada</string>
-    <string name="ear_notes_open_strings">Senar terbuka</string>
+    <string name="ear_notes_open_strings">Senar lepas</string>
     <string name="ear_notes_naturals">Nada natural sampai fret 5</string>
     <string name="ear_notes_all">Semua nada sampai fret 12</string>
     <string name="ear_mic_off">Mikrofon mati</string>
     <string name="ear_mic_allow">Izinkan mikrofon</string>
     <string name="ear_open_settings">Buka setelan</string>
-    <string name="ear_play_prompt_many">Mainkan nada-nada itu di alat musik Anda</string>
+    <string name="ear_play_prompt_many">Mainkan nada-nada itu di instrumen Anda</string>
     <string name="ear_hold">Tahan nada yang Anda dengar</string>
     <string name="ear_note_of">Nada %1$d dari %2$d</string>
     <string name="ear_right">Benar</string>
     <string name="ear_not_that_one">Bukan yang itu</string>
     <string name="ear_notes_in_row">Nada berturut-turut</string>
-    <string name="ear_any_octave">Oktaf mana pun dihitung</string>
+    <string name="ear_any_octave">Oktaf apa pun berlaku</string>
     <string name="ear_interval_prompt">Interval apa?</string>
     <string name="ear_direction_up">Naik</string>
     <string name="ear_direction_down">Turun</string>
@@ -80,5 +80,5 @@
     <string name="ear_chord_half_diminished">half-diminished</string>
     <string name="ear_chord_augmented">augmented</string>
     <string name="ear_chord_short_string">Diagram akor belum mengenal senar pendek banjo. Pilih instrumen lain di atas.</string>
-    <string name="ear_chord_none">Tidak ada bentuk yang terjangkau di stelan ini</string>
+    <string name="ear_chord_none">Tidak ada bentuk yang terjangkau di stem ini</string>
 </resources>

@@ -92,7 +92,7 @@
     <string name="tuner_in_tune">pas</string>
     <string name="tuner_tune_up">Naikkan ↑</string>
     <string name="tuner_tune_down">Turunkan ↓</string>
-    <string name="tuner_tip_too_soft">Main sedikit lebih keras</string>
+    <string name="tuner_tip_too_soft">Mainkan lebih keras</string>
     <string name="tuner_tip_too_noisy">Terlalu bising di sini</string>
     <string name="tuner_tip_too_loud">Terlalu keras, jauhkan ponsel</string>
     <string name="tuner_signal_bars">Bar sinyal: %1$d dari %2$d</string>
@@ -218,7 +218,7 @@
     <string name="tuner_chord_major_ninth">%1$s mayor nona</string>
     <string name="tuner_chord_slash">%1$s, bas %2$s</string>
     <string name="tuner_chord_bass">bas</string>
-    <string name="tuner_chord_strum">Genjreng sebuah akor</string>
+    <string name="tuner_chord_strum">Genjreng satu akor</string>
     <string name="tuner_chord_strum_detail">Dengan semua senarnya</string>
     <string name="tuner_chord_next">Genjreng lagi untuk berikutnya</string>
     <string name="tuner_chord_let_ring">Biarkan berbunyi</string>

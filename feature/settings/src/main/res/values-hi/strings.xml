@@ -2,12 +2,12 @@
     <string name="settings_title">सेटिंग्स</string>
     <string name="settings_back">वापस</string>
 
-    <string name="settings_group_pitch">पिच और सुर</string>
-    <string name="settings_group_look">दिखावट</string>
+    <string name="settings_group_pitch">पिच और नोट</string>
+    <string name="settings_group_look">रूप-रंग</string>
     <string name="settings_group_tuner_screen">ट्यूनर स्क्रीन</string>
     <string name="settings_group_while_tuning">ट्यून करते समय</string>
 
-    <string name="settings_a4_title">संदर्भ पिच (A4)</string>
+    <string name="settings_a4_title">रेफ़रेंस पिच (A4)</string>
     <string name="settings_a4_value">%1$d\u00A0Hz</string>
     <string name="settings_a4_summary">ज़्यादातर संगीत 440\u00A0Hz पर होता है। ऑर्केस्ट्रा अक्सर 442\u00A0Hz पर और बारोक समूह 415\u00A0Hz पर ट्यून करते हैं।</string>
     <string name="settings_a4_lower">A4 को 1\u00A0Hz घटाएँ</string>
@@ -18,7 +18,7 @@
     <string name="settings_notation_sharps">शार्प: C, C♯, D …</string>
     <string name="settings_notation_flats">फ़्लैट: C, D♭, D …</string>
     <string name="settings_notation_solfege">Do Re Mi: Do, Do♯, Re …</string>
-    <string name="settings_notation_automatic">स्वचालित: %1$s</string>
+    <string name="settings_notation_automatic">ऑटोमैटिक: %1$s</string>
     <string name="settings_notation_sample">%1$s, %2$s, %3$s … %4$s</string>
     <string name="settings_notation_german">जर्मन: C, C♯, D … H</string>
 
@@ -36,19 +36,19 @@
 
     <string name="settings_meter_look_title">मीटर</string>
     <string name="settings_meter_look_classic">क्लासिक</string>
-    <string name="settings_meter_look_light_arc">रोशनी का चाप</string>
+    <string name="settings_meter_look_light_arc">लाइट आर्क</string>
     <string name="settings_meter_look_spirit_level">स्पिरिट लेवल</string>
     <string name="settings_meter_look_eclipse">ग्रहण</string>
     <string name="settings_meter_look_arrows">तीर</string>
-    <string name="settings_meter_look_light_bars">रोशनी की पट्टियाँ</string>
+    <string name="settings_meter_look_light_bars">लाइट बार</string>
     <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
     <string name="settings_in_tune_effect_summary">सुर में आने पर मीटर कितना चमके</string>
     <string name="settings_in_tune_effect_calm">शांत</string>
     <string name="settings_in_tune_effect_bold">ज़ोरदार</string>
 
-    <string name="settings_display_title">सुर के नीचे</string>
+    <string name="settings_display_title">नोट के नीचे</string>
     <string name="settings_display_numbers">अंक: कितने सेंट का अंतर</string>
-    <string name="settings_display_wave">तरंग: आपकी चुनी शैली में चलती तस्वीर</string>
+    <string name="settings_display_wave">तरंग: आपके चुने रूप में चलती तस्वीर</string>
     <string name="settings_wave_look_title">तरंग का रूप</string>
     <string name="settings_wave_look_strobe">स्ट्रोब</string>
     <string name="settings_wave_look_ribbon">रिबन</string>
@@ -58,7 +58,7 @@
     <string name="settings_wave_look_ripples">लहरें</string>
     <string name="settings_focus_mode_title">फ़ोकस मोड</string>
     <string name="settings_focus_mode_summary">Twangle को आड़ा करके एक बड़ा मीटर दिखाता है, जिसे दूर से भी आसानी से पढ़ सकें</string>
-    <string name="settings_left_handed_title">बाएँ हाथ से बजाने वाले</string>
+    <string name="settings_left_handed_title">बाएँ हाथ वाले</string>
     <string name="settings_left_handed_summary">कॉर्ड चार्ट और स्केल का फ़िंगरबोर्ड उलटी तरफ़ पकड़े गिटार के लिए बनते हैं</string>
 
     <string name="settings_keep_screen_on_title">स्क्रीन चालू रखें</string>

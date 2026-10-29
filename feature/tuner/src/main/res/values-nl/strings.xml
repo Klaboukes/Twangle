@@ -243,7 +243,7 @@
     <string name="tuner_chord_spoken_recent">daarvoor %1$s</string>
     <string name="tuner_pitch_trail">Toonlijn</string>
     <string name="tuner_trail_spoken">Toonlijn, %1$s</string>
-    <string name="tuner_trail_no_note">geen toon</string>
+    <string name="tuner_trail_no_note">geen noot</string>
     <string name="tuner_trail_steady">stabiel, %1$s</string>
     <string name="tuner_trail_wavering">wisselend, %1$s</string>
     <string name="tuner_trail_bending_up">buigt omhoog</string>

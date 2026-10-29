@@ -32,7 +32,7 @@
     <string name="practice_shape_previous">الشكل السابق</string>
     <string name="practice_shape_next">الشكل التالي</string>
     <string name="practice_chart_fret">%1$d</string>
-    <string name="practice_chord_none">لا يوجد شكل في المتناول بهذا الضبط</string>
+    <string name="practice_chord_none">لا يوجد شكل في المتناول بهذا الدوزان</string>
     <string name="practice_chords_short_string">مخططات الكوردات لا تعرف وتر البانجو القصير بعد. اختر آلة أخرى من الأعلى.</string>
     <string name="practice_scales_short_string">السلالم لا تعرف وتر البانجو القصير بعد. اختر آلة أخرى من الأعلى.</string>
     <string name="practice_capo_short_string">جدول الكابو لا يعرف وتر البانجو القصير بعد. اختر آلة أخرى من الأعلى.</string>
@@ -83,10 +83,10 @@
     <string name="practice_capo_label">الكابو</string>
     <string name="practice_capo_none">بدون كابو</string>
     <string name="practice_capo_on_fret">الكابو على الدستان %1$d</string>
-    <string name="practice_capo_lower">الكابو دستانًا إلى الأسفل</string>
-    <string name="practice_capo_higher">الكابو دستانًا إلى الأعلى</string>
+    <string name="practice_capo_lower">أنزِل الكابو دستانًا</string>
+    <string name="practice_capo_higher">ارفع الكابو دستانًا</string>
     <string name="practice_capo_shape_column">الشكل</string>
-    <string name="practice_capo_sounds_column">الصوت</string>
+    <string name="practice_capo_sounds_column">يُسمَع</string>
     <string name="practice_capo_sounds_in">يُسمَع في %1$s</string>
     <string name="practice_capo_row_spoken">شكل %1$s، يُسمَع %2$s</string>
     <string name="practice_capo_open_chord">افتح في الكوردات</string>

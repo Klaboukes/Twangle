@@ -23,8 +23,8 @@
     <string name="settings_notation_german">Немецкие: C, C♯, D … H</string>
 
     <string name="settings_in_tune_precision_title">Точность настройки</string>
-    <string name="settings_in_tune_precision_relaxed">Свободно: до 5 центов</string>
-    <string name="settings_in_tune_precision_precise">Точно: до 2 центов</string>
+    <string name="settings_in_tune_precision_relaxed">Нестрого: до 5 центов</string>
+    <string name="settings_in_tune_precision_precise">Строго: до 2 центов</string>
 
     <string name="settings_style_title">Стиль</string>
     <string name="settings_theme_title">Светлая или тёмная тема</string>
@@ -47,7 +47,7 @@
     <string name="settings_in_tune_effect_bold">Яркий</string>
 
     <string name="settings_display_title">Под нотой</string>
-    <string name="settings_display_numbers">Числа: на сколько центов отклонение</string>
+    <string name="settings_display_numbers">Числа: отклонение в центах</string>
     <string name="settings_display_wave">Волна: движущаяся картинка в выбранном виде</string>
     <string name="settings_wave_look_title">Вид волны</string>
     <string name="settings_wave_look_strobe">Строб</string>
@@ -85,7 +85,7 @@
     <string name="settings_about_rate_title">Оценить Twangle</string>
     <string name="settings_about_rate_summary">Twangle в Google Play</string>
     <string name="settings_about_website_title">Помощь и сайт</string>
-    <string name="settings_about_website_summary">Как работает каждая функция, и ответы на частые вопросы (на английском)</string>
+    <string name="settings_about_website_summary">Как работает каждая функция и ответы на частые вопросы (на английском)</string>
     <string name="settings_about_credits_title">Шрифты и открытое ПО</string>
     <string name="settings_about_credits_summary">Twangle сделан с их помощью. Нажми на любой пункт, чтобы прочитать лицензию.</string>
     <string name="settings_about_licence_open">Прочитать лицензию</string>

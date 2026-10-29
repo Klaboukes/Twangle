@@ -1,6 +1,6 @@
 <resources>
     <string name="mic_permission_title">يحتاج Twangle إلى الميكروفون</string>
-    <string name="mic_permission_intro">ليضبط الدوزان، يستمع Twangle إلى آلتك. يُحلَّل الصوت على جهازك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
+    <string name="mic_permission_intro">لضبط آلتك، يستمع Twangle إليها. يُحلَّل الصوت على جهازك ولا يُسجَّل ولا يُرسَل إلى أي مكان أبدًا.</string>
     <string name="mic_permission_rationale">بدون الميكروفون لا يسمع Twangle أوتارك، فلا يعرف إن كانت مضبوطة. الصوت لا يغادر جهازك أبدًا.</string>
     <string name="mic_permission_settings_hint">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، ثم «الميكروفون»، واسمح بالوصول أثناء استخدام التطبيق.</string>
     <string name="mic_permission_settings_hint_switch">وصول Twangle إلى الميكروفون متوقف. افتح الإعدادات، ثم «الأذونات»، وشغّل «الميكروفون».</string>
@@ -128,7 +128,7 @@
 
     <string name="tuner_new_tuning">دوزان جديد</string>
 
-    <string name="tuning_editor_title_edit">عدّل الدوزان</string>
+    <string name="tuning_editor_title_edit">تعديل الدوزان</string>
     <string name="tuning_editor_close">أغلق دون حفظ</string>
     <string name="tuning_editor_save">حفظ</string>
     <string name="tuning_editor_instrument">الآلة: %1$s</string>
@@ -240,14 +240,14 @@
     <string name="tuner_chord_major_ninth">%1$s ماجور تاسعة</string>
     <string name="tuner_chord_slash">%1$s، و%2$s في الباص</string>
     <string name="tuner_chord_bass">الباص</string>
-    <string name="tuner_chord_strum">اعزف كوردًا</string>
+    <string name="tuner_chord_strum">اضرب كوردًا</string>
     <string name="tuner_chord_strum_detail">بكل أوتاره</string>
-    <string name="tuner_chord_next">اعزف مجددًا للتالي</string>
+    <string name="tuner_chord_next">اضرب مجددًا للتالي</string>
     <string name="tuner_chord_let_ring">دعه يرنّ</string>
     <string name="tuner_chord_unclear">ليس كوردًا واضحًا</string>
     <string name="tuner_chord_unclear_detail">اضرب كل أوتاره</string>
     <string name="tuner_chord_none">لا كورد بعد</string>
-    <string name="tuner_chord_spoken_notes">النوتات %1$s</string>
+    <string name="tuner_chord_spoken_notes">النغمات %1$s</string>
     <string name="tuner_chord_spoken_recent">قبل ذلك %1$s</string>
     <string name="tuner_pitch_trail">أثر النغمة</string>
     <string name="tuner_trail_spoken">أثر النغمة، %1$s</string>

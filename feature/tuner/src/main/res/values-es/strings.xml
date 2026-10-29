@@ -154,8 +154,8 @@
     </plurals>
     <string name="tuner_strum_not_all_heard">No se oyeron todas las cuerdas</string>
     <string name="tuner_strum_all_in_tune">Todas las cuerdas afinadas</string>
-    <string name="tuner_strum_tap_to_tune">Toca una cuerda para afinarla</string>
-    <string name="tuner_strum_again">Rasguea otra vez o toca una cuerda para afinarla</string>
+    <string name="tuner_strum_tap_to_tune">Elige una cuerda para afinarla</string>
+    <string name="tuner_strum_again">Rasguea otra vez o elige una cuerda para afinarla</string>
     <string name="tuner_strum_tune_string">Afinar %1$s</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, no se oyó</string>
@@ -182,7 +182,7 @@
     <string name="tuner_intonation_let_ring">Déjala sonar</string>
     <string name="tuner_intonation_tune_first">Afina primero la cuerda %1$s</string>
     <string name="tuner_intonation_press_fret">Ahora písala en el traste 12</string>
-    <string name="tuner_intonation_press_detail">Písala bien, no solo la rozes</string>
+    <string name="tuner_intonation_press_detail">Písala bien, no solo la roces</string>
     <string name="tuner_intonation_not_octave">Eso no era la octava</string>
     <string name="tuner_intonation_not_octave_detail">Pisa el traste 12 y toca otra vez</string>
     <string name="tuner_intonation_fine">Bien</string>
@@ -203,7 +203,7 @@
         <item quantity="other">%1$d selletas por mover</item>
     </plurals>
     <string name="tuner_intonation_all_fine">Todas las cuerdas revisadas están bien</string>
-    <string name="tuner_intonation_tap_string">Toca una cuerda para revisarla</string>
+    <string name="tuner_intonation_tap_string">Elige una cuerda para revisarla</string>
     <string name="tuner_intonation_neck">mástil</string>
     <string name="tuner_intonation_saddle">selleta</string>
     <string name="tuner_intonation_check_string">Revisar %1$s</string>

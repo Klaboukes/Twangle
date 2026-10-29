@@ -23,7 +23,7 @@
     <string name="ear_note_of">Nota %1$d / %2$d</string>
     <string name="ear_right">Doğru</string>
     <string name="ear_not_that_one">O değil</string>
-    <string name="ear_notes_in_row">Art arda nota</string>
+    <string name="ear_notes_in_row">Art arda notalar</string>
     <string name="ear_any_octave">Her oktav geçerli</string>
     <string name="ear_interval_prompt">Hangi aralık?</string>
     <string name="ear_direction_up">Yukarı</string>

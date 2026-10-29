@@ -7,7 +7,7 @@
     <string name="mic_permission_allow">Mikrofona izin ver</string>
     <string name="mic_permission_open_settings">Ayarları aç</string>
 
-    <string name="error_mic_permission">Mikrofon erişimi kapatıldı. Akorda devam etmek için yeniden izin ver.</string>
+    <string name="error_mic_permission">Mikrofon erişimi kapatıldı. Akort etmeye devam etmek için yeniden izin ver.</string>
     <string name="error_mic_busy">Mikrofonu başka bir uygulama kullanıyor. Onu kapat ve tekrar dene.</string>
     <string name="error_mic_unavailable">Bu cihazda mikrofon açılamadı.</string>
     <string name="error_mic_stopped">Mikrofon beklenmedik şekilde durdu.</string>
@@ -76,11 +76,11 @@
     <string name="tuner_hint_playing">%1$s çalıyor</string>
     <string name="tuner_string_lock">Bu tele sabitle</string>
     <string name="tuner_string_unlock">Telleri otomatik seç</string>
-    <string name="tuner_string_locked">Sabit</string>
+    <string name="tuner_string_locked">Sabitlendi</string>
     <string name="tuner_string_play">%1$s çal</string>
     <string name="tuner_string_stop_tone">Sesi durdur</string>
     <string name="tuner_string_sounding">Çalıyor</string>
-    <string name="tuner_string_locked_sounding">Sabit, çalıyor</string>
+    <string name="tuner_string_locked_sounding">Sabitlendi, çalıyor</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- Sayıdan sonra isim tekil kalır: "12 sent". -->
     <string name="tuner_cents_zero">0 sent</string>
@@ -150,7 +150,7 @@
         <item quantity="one">Akort edilecek %1$d tel</item>
         <item quantity="other">Akort edilecek %1$d tel</item>
     </plurals>
-    <string name="tuner_strum_not_all_heard">Tüm teller duyulmadı</string>
+    <string name="tuner_strum_not_all_heard">Bazı teller duyulmadı</string>
     <string name="tuner_strum_all_in_tune">Tüm teller akortlu</string>
     <string name="tuner_strum_tap_to_tune">Akort etmek için bir tele dokun</string>
     <string name="tuner_strum_again">Yeniden vur ya da akort etmek için bir tele dokun</string>
@@ -177,7 +177,7 @@
     <string name="tuner_intonation_choose">Bir tel seç</string>
     <string name="tuner_intonation_choose_detail">Önce akort et, sonra kontrol et</string>
     <string name="tuner_intonation_play_open">%1$s telini boş çal</string>
-    <string name="tuner_intonation_let_ring">Çınlamaya bırak</string>
+    <string name="tuner_intonation_let_ring">Bırak çınlasın</string>
     <string name="tuner_intonation_tune_first">Önce %1$s telini akort et</string>
     <string name="tuner_intonation_press_fret">Şimdi 12. perdeye bas</string>
     <string name="tuner_intonation_press_detail">Hafifçe değil, bastırarak</string>
@@ -226,14 +226,14 @@
     <string name="tuner_chord_strum">Bir akora vur</string>
     <string name="tuner_chord_strum_detail">Tüm telleriyle</string>
     <string name="tuner_chord_next">Sonraki için yine vur</string>
-    <string name="tuner_chord_let_ring">Çınlamaya bırak</string>
+    <string name="tuner_chord_let_ring">Bırak çınlasın</string>
     <string name="tuner_chord_unclear">Net bir akor değil</string>
     <string name="tuner_chord_unclear_detail">Tüm tellerine vur</string>
     <string name="tuner_chord_none">Henüz akor yok</string>
     <string name="tuner_chord_spoken_notes">notalar %1$s</string>
-    <string name="tuner_chord_spoken_recent">önceki %1$s</string>
-    <string name="tuner_pitch_trail">Perde izi</string>
-    <string name="tuner_trail_spoken">Perde izi, %1$s</string>
+    <string name="tuner_chord_spoken_recent">öncesinde %1$s</string>
+    <string name="tuner_pitch_trail">Ses izi</string>
+    <string name="tuner_trail_spoken">Ses izi, %1$s</string>
     <string name="tuner_trail_no_note">nota yok</string>
     <string name="tuner_trail_steady">sabit, %1$s</string>
     <string name="tuner_trail_wavering">dalgalı, %1$s</string>

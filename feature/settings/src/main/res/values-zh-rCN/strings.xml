@@ -76,7 +76,7 @@
     <string name="settings_show_tour_title">带我看看</string>
     <string name="settings_show_tour_summary">调音器简短导览</string>
     <string name="about_title">关于 Twangle</string>
-    <string name="settings_about_link_summary">版本 %1$s、帮助、隐私和许可</string>
+    <string name="settings_about_link_summary">版本 %1$s、帮助、隐私和许可证</string>
     <string name="settings_about_version">版本 %1$s</string>
     <string name="settings_about_free_title">永久免费</string>
     <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>
@@ -87,7 +87,7 @@
     <string name="settings_about_website_title">帮助与网站</string>
     <string name="settings_about_website_summary">各项功能的使用方法，以及常见问题解答（英文）</string>
     <string name="settings_about_credits_title">字体和开源软件</string>
-    <string name="settings_about_credits_summary">Twangle 用到了以下这些。点按一项即可阅读其许可。</string>
-    <string name="settings_about_licence_open">阅读许可</string>
+    <string name="settings_about_credits_summary">Twangle 用到了以下这些。点按一项即可阅读其许可证。</string>
+    <string name="settings_about_licence_open">阅读许可证</string>
     <string name="settings_about_licence_close">关闭</string>
 </resources>

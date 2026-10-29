@@ -30,14 +30,14 @@
     <string name="metronome_listen">Ouvir</string>
     <string name="metronome_listen_stop_spoken">Parar de ouvir</string>
     <string name="metronome_listening">Ouvindo…</string>
-    <string name="metronome_heard">Ouvido</string>
+    <string name="metronome_heard">Detectado</string>
     <string name="metronome_use">Usar</string>
     <string name="metronome_not_now">Agora não</string>
     <string name="metronome_listen_speed">Velocidade</string>
     <string name="metronome_pick_half">Metade</string>
     <string name="metronome_pick_as_heard">Como ouvido</string>
     <string name="metronome_pick_double">Dobro</string>
-    <string name="metronome_no_beat">Nenhum ritmo claro</string>
+    <string name="metronome_no_beat">Sem pulso regular</string>
     <string name="metronome_try_again">Tentar de novo</string>
     <string name="metronome_mic_off">Microfone desligado</string>
     <string name="metronome_open_settings">Abrir configurações</string>

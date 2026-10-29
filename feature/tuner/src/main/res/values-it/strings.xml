@@ -2,7 +2,7 @@
     <string name="mic_permission_title">Twangle ha bisogno del microfono</string>
     <string name="mic_permission_intro">Per accordare, Twangle ascolta il tuo strumento. Il suono viene analizzato sul dispositivo e mai registrato o inviato.</string>
     <string name="mic_permission_rationale">Senza microfono Twangle non sente le tue corde, quindi non può dirti se sono intonate. Il suono non lascia mai il dispositivo.</string>
-    <string name="mic_permission_settings_hint">L\'accesso al microfono è disattivato per Twangle. Apri Impostazioni, tocca Autorizzazioni, poi Microfono, e consentilo durante l\'utilizzo dell\'app.</string>
+    <string name="mic_permission_settings_hint">L\'accesso al microfono è disattivato per Twangle. Apri Impostazioni, tocca Autorizzazioni, poi Microfono, e scegli di consentirlo solo mentre l\'app è in uso.</string>
     <string name="mic_permission_settings_hint_switch">L\'accesso al microfono è disattivato per Twangle. Apri Impostazioni, tocca Autorizzazioni e attiva Microfono.</string>
     <string name="mic_permission_allow">Consenti microfono</string>
     <string name="mic_permission_open_settings">Apri impostazioni</string>
@@ -74,11 +74,11 @@
     <string name="tuner_hint_play_note">Suona una nota</string>
     <string name="tuner_hint_play_locked_string">Suona la corda %1$s</string>
     <string name="tuner_hint_playing">In riproduzione: %1$s</string>
-    <string name="tuner_string_lock">Blocca su questa corda</string>
-    <string name="tuner_string_unlock">Scegli le corde in automatico</string>
+    <string name="tuner_string_lock">Bloccare su questa corda</string>
+    <string name="tuner_string_unlock">Scegliere le corde in automatico</string>
     <string name="tuner_string_locked">Bloccata</string>
-    <string name="tuner_string_play">Riproduci %1$s</string>
-    <string name="tuner_string_stop_tone">Ferma il suono</string>
+    <string name="tuner_string_play">Riprodurre %1$s</string>
+    <string name="tuner_string_stop_tone">Fermare il suono</string>
     <string name="tuner_string_sounding">In riproduzione</string>
     <string name="tuner_string_locked_sounding">Bloccata, in riproduzione</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
@@ -102,7 +102,7 @@
     <string name="tuner_tip_too_loud">Troppo forte, allontana il telefono</string>
     <string name="tuner_signal_bars">Barre del segnale: %1$d di %2$d</string>
     <string name="tuner_signal_no_note">Segnale: ancora nessuna nota</string>
-    <string name="tuner_signal_show_figures">mostra i valori</string>
+    <string name="tuner_signal_show_figures">mostrare i valori</string>
     <string name="tuner_signal_title">Quanto bene ti sente Twangle</string>
     <string name="tuner_signal_volume">Volume</string>
     <string name="tuner_signal_background">Rumore di fondo</string>
@@ -157,11 +157,11 @@
     <string name="tuner_strum_all_in_tune">Tutte le corde sono intonate</string>
     <string name="tuner_strum_tap_to_tune">Tocca una corda per accordarla</string>
     <string name="tuner_strum_again">Fai un\'altra pennata o tocca una corda per accordarla</string>
-    <string name="tuner_strum_tune_string">Accorda %1$s</string>
+    <string name="tuner_strum_tune_string">Accordare %1$s</string>
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, non sentita</string>
     <string name="tuner_strum_spoken_waiting">%1$s, non ancora suonata</string>
-    <string name="tuner_strum_spoken_less_sure">%1$s, meno sicuro</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, meno sicura</string>
     <string name="tour_title">Tour guidato</string>
     <string name="tour_step_count">%1$d di %2$d</string>
     <string name="tour_step_spoken">Passo %1$d di %2$d. %3$s.</string>
@@ -207,7 +207,7 @@
     <string name="tuner_intonation_tap_string">Tocca una corda per controllarla</string>
     <string name="tuner_intonation_neck">manico</string>
     <string name="tuner_intonation_saddle">selletta</string>
-    <string name="tuner_intonation_check_string">Controlla %1$s</string>
+    <string name="tuner_intonation_check_string">Controllare %1$s</string>
     <string name="tuner_intonation_mark_fine">selletta a posto</string>
     <string name="tuner_intonation_mark_back">selletta indietro</string>
     <string name="tuner_intonation_mark_forward">selletta in avanti</string>

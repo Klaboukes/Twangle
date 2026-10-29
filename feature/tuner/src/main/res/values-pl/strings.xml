@@ -2,7 +2,7 @@
     <string name="mic_permission_title">Twangle potrzebuje twojego mikrofonu</string>
     <string name="mic_permission_intro">Aby stroić, Twangle słucha twojego instrumentu. Dźwięk jest analizowany na urządzeniu i nigdy nie jest nagrywany ani nigdzie wysyłany.</string>
     <string name="mic_permission_rationale">Bez mikrofonu Twangle nie słyszy twoich strun, więc nie wie, czy są nastrojone. Dźwięk nigdy nie opuszcza urządzenia.</string>
-    <string name="mic_permission_settings_hint">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia, potem Mikrofon, i zezwól podczas korzystania z aplikacji.</string>
+    <string name="mic_permission_settings_hint">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia, potem Mikrofon i zezwól tylko podczas używania aplikacji.</string>
     <string name="mic_permission_settings_hint_switch">Dostęp do mikrofonu dla Twangle jest wyłączony. Otwórz Ustawienia, dotknij Uprawnienia i włącz Mikrofon.</string>
     <string name="mic_permission_allow">Zezwól na mikrofon</string>
     <string name="mic_permission_open_settings">Otwórz ustawienia</string>
@@ -48,7 +48,7 @@
     <string name="tuning_lowered_4">%1$s, 2 tony niżej</string>
     <string name="tuning_lowered_5">%1$s, 2½ tonu niżej</string>
     <string name="tuner_lower_by">Obniż o</string>
-    <string name="tuner_lowered_none">Wcale</string>
+    <string name="tuner_lowered_none">Brak</string>
     <string name="tuner_lowered_1">½ tonu</string>
     <string name="tuner_lowered_2">1 ton</string>
     <string name="tuner_lowered_3">1½ tonu</string>
@@ -73,14 +73,14 @@
     <string name="tuner_hint_play_string">Zagraj na strunie</string>
     <string name="tuner_hint_play_note">Zagraj dźwięk</string>
     <string name="tuner_hint_play_locked_string">Zagraj na strunie %1$s</string>
-    <string name="tuner_hint_playing">Gra %1$s</string>
+    <string name="tuner_hint_playing">Brzmi %1$s</string>
     <string name="tuner_string_lock">Zablokuj tę strunę</string>
     <string name="tuner_string_unlock">Wybieraj struny automatycznie</string>
     <string name="tuner_string_locked">Zablokowana</string>
     <string name="tuner_string_play">Zagraj %1$s</string>
     <string name="tuner_string_stop_tone">Zatrzymaj dźwięk</string>
-    <string name="tuner_string_sounding">Gra</string>
-    <string name="tuner_string_locked_sounding">Zablokowana, gra</string>
+    <string name="tuner_string_sounding">Brzmi</string>
+    <string name="tuner_string_locked_sounding">Zablokowana, brzmi</string>
     <string name="tuner_frequency">%1$.1f Hz</string>
     <!-- 1 cent; 2–4, 22–24 … centy (ale 12–14 centów); 0, 5–21, 25 … centów. -->
     <string name="tuner_cents_zero">0 centów</string>
@@ -164,7 +164,7 @@
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
     <string name="tuner_strum_spoken_not_heard">%1$s, niesłyszalna</string>
     <string name="tuner_strum_spoken_waiting">%1$s, jeszcze nie zagrana</string>
-    <string name="tuner_strum_spoken_less_sure">%1$s, mniej pewne</string>
+    <string name="tuner_strum_spoken_less_sure">%1$s, odczyt niepewny</string>
     <string name="tour_title">Oprowadź mnie</string>
     <string name="tour_step_count">%1$d z %2$d</string>
     <string name="tour_step_spoken">Krok %1$d z %2$d. %3$s.</string>
@@ -235,7 +235,7 @@
     <string name="tuner_chord_strum_detail">Wszystkimi jego strunami</string>
     <string name="tuner_chord_next">Zagraj znowu, aby zobaczyć następny</string>
     <string name="tuner_chord_let_ring">Niech wybrzmi</string>
-    <string name="tuner_chord_unclear">To nie jest wyraźny akord</string>
+    <string name="tuner_chord_unclear">Niewyraźny akord</string>
     <string name="tuner_chord_unclear_detail">Uderz we wszystkie jego struny</string>
     <string name="tuner_chord_none">Jeszcze brak akordu</string>
     <string name="tuner_chord_spoken_notes">dźwięki %1$s</string>
@@ -245,8 +245,8 @@
     <string name="tuner_trail_no_note">brak dźwięku</string>
     <string name="tuner_trail_steady">stabilnie, %1$s</string>
     <string name="tuner_trail_wavering">faluje, %1$s</string>
-    <string name="tuner_trail_bending_up">podciąga w górę</string>
-    <string name="tuner_trail_bending_down">opada w dół</string>
+    <string name="tuner_trail_bending_up">wznosi się</string>
+    <string name="tuner_trail_bending_down">opada</string>
     <string name="tuner_screen_off_soon">Ekran zaraz zgaśnie</string>
     <string name="tuner_screen_off_keep_on">Dotknij, aby nie gasł</string>
 </resources>

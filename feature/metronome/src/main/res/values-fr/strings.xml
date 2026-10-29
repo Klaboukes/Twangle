@@ -18,8 +18,8 @@
     <string name="metronome_sound_cowbell">Cloche de vache</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rim click</string>
-    <string name="metronome_sound_spoken">Son : %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Son : %1$s, vibre sur le temps</string>
+    <string name="metronome_sound_spoken">Son : %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Son : %1$s, vibre sur le temps</string>
     <string name="metronome_meter_2_4_spoken">Mesure à deux-quatre</string>
     <string name="metronome_meter_3_4_spoken">Mesure à trois-quatre</string>
     <string name="metronome_meter_4_4_spoken">Mesure à quatre-quatre</string>
@@ -29,7 +29,7 @@
 
     <string name="metronome_listen">Écouter</string>
     <string name="metronome_listen_stop_spoken">Arrêter l\'écoute</string>
-    <string name="metronome_listening">Écoute…</string>
+    <string name="metronome_listening">À l\'écoute…</string>
     <string name="metronome_heard">Entendu</string>
     <string name="metronome_use">Utiliser</string>
     <string name="metronome_not_now">Plus tard</string>

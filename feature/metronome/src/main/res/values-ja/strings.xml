@@ -28,7 +28,7 @@
     <string name="metronome_listen">聞き取る</string>
     <string name="metronome_listen_stop_spoken">聞き取りを停止</string>
     <string name="metronome_listening">聞き取り中…</string>
-    <string name="metronome_heard">聞き取った速さ</string>
+    <string name="metronome_heard">聞き取ったテンポ</string>
     <string name="metronome_use">使う</string>
     <string name="metronome_not_now">今はしない</string>
     <string name="metronome_listen_speed">速さ</string>

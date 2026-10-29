@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="ear_exercises">练习</string>
+    <string name="ear_exercises">练习项目</string>
     <string name="ear_exercise_play_back">听音弹奏</string>
     <string name="ear_exercise_intervals">音程</string>
     <string name="ear_exercise_chord_type">和弦类型</string>
@@ -55,7 +55,7 @@
     <string name="ear_interval_minor_seventh">小七度</string>
     <string name="ear_interval_major_seventh">大七度</string>
     <string name="ear_interval_octave">纯八度</string>
-    <string name="ear_chord_prompt">是什么和弦类型？</string>
+    <string name="ear_chord_prompt">是哪种和弦？</string>
     <string name="ear_chord_sign_major">大三</string>
     <string name="ear_chord_sign_minor">小三</string>
     <string name="ear_chord_sign_power">强力</string>
@@ -79,6 +79,6 @@
     <string name="ear_chord_diminished_seventh">减七和弦</string>
     <string name="ear_chord_half_diminished">半减七和弦</string>
     <string name="ear_chord_augmented">增三和弦</string>
-    <string name="ear_chord_short_string">和弦图还不认识班卓琴的短弦。请在顶部选择其他乐器。</string>
-    <string name="ear_chord_none">此调弦下没有可按的指法</string>
+    <string name="ear_chord_short_string">和弦图暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
+    <string name="ear_chord_none">此定弦下没有可按的指法</string>
 </resources>
