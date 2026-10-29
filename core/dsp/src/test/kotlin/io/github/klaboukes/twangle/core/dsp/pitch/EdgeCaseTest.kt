@@ -4,6 +4,7 @@ import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.music.centsBetween
 import io.github.klaboukes.twangle.core.dsp.music.nearestNote
+import io.github.klaboukes.twangle.core.dsp.smoothing.PitchSmoother
 import io.github.klaboukes.twangle.core.dsp.strum.StrumChords
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import org.junit.Assert.assertEquals
@@ -210,6 +211,45 @@ class EdgeCaseTest {
             val lastShown = frames.indexOfLast { it.isShown }
             assertTrue("$f Hz: still shown at the end", lastShown < frames.size - 50)
         }
+    }
+
+    @Test
+    fun `a pluck sinking into a murmur holds its note and then goes blank, never a note a whole number of periods away`() {
+        // Phase 46's recordings with a TV across the room, 20–25 dB under the pluck: as a string sank
+        // to within about 8 dB of it, the detector read a whole number of the string's periods for
+        // 7–16 frames above the gate (G2 and then C2 for the G string, B2 for the B, A2 for the high
+        // E), and the needle showed them before going blank. Here the room is a murmur, speech-band
+        // noise (80–600 or 150–400 Hz) at −44 or −48 dBFS, on its own never a pitch; each pluck
+        // (peak −15 dBFS) sinks into it, and on the way the detector reads an octave or a twelfth
+        // off in a few frames, down or up (the fundamental going ahead of the 2nd partial). The
+        // smoother used to follow those after three frames; now a jump without an attack is held,
+        // and what is left of a lost note can't start a reading. The old rule is run beside it to
+        // show the flaw is there to catch.
+        val rate = RATE
+        val lead = rate / 2
+        val n = 4 * rate + lead
+        val oldRule: () -> PitchSmoother = { PitchSmoother(octaveHoldFrames = PitchSmoother.DEFAULT_OCTAVE_CONFIRM_FRAMES) }
+        val flawed = HashSet<Float>()
+        for (seed in listOf(3L, 4L)) for ((low, high) in listOf(80f to 600f, 150f to 400f)) for (roomDbfs in listOf(-44f, -48f)) {
+            val raw = TestSignals.bandLimit(TestSignals.noise(n, rms = 0.1f, seed = seed), rate, lowHz = low, highHz = high)
+            val scale = (10.0.pow(roomDbfs / 20.0) / TestSignals.rms(raw)).toFloat()
+            val room = FloatArray(n) { raw[it] * scale }
+            val murmur = "a $low–$high Hz murmur at $roomDbfs dBFS (seed $seed)"
+            assertFalse("$murmur alone showed a note", TunerChain().run(room).any { it.isShown })
+            for (f in listOf(196f, 246.94f, 329.63f, 392f)) for (decay in listOf(0.6, 0.8)) {
+                val pluck = TestSignals.pluck(f, length = n - lead, amplitude = 0.18f, decaySeconds = decay)
+                val stream = FloatArray(n) { room[it] + if (it >= lead) pluck[it - lead] else 0f }
+                val frames = TunerChain().run(stream)
+                val at = "$f Hz (decay $decay s) into $murmur"
+                val first = frames.first { it.isShown }
+                assertTrue("$at: first shown ${(first.endSample - lead) / rate.toFloat()} s after the pluck", first.endSample - lead <= 0.15f * rate)
+                assertShownWithin(at, f, frames, 20f)
+                val last = frames.last { it.isShown }
+                assertTrue("$at: shown again after the needle went blank", frames.none { it.isShown && it.endSample > last.endSample })
+                if (TunerChain(smoother = oldRule).run(stream).any { it.isShown && mapper.nearestNote(it.shownHz) != mapper.nearestNote(f) }) flawed += f
+            }
+        }
+        assertEquals("the strings on which the old rule showed another note", setOf(196f, 246.94f, 329.63f, 392f), flawed)
     }
 
     // ---- Ticks, knocks and clicks ----

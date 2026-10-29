@@ -25,12 +25,14 @@ internal class RealPluckReport {
         println("    'end' past the file. Three rows a take: 'shown', what the tuner shows; 'partial 1', the string's own fundamental")
         println("    (the recording low-passed at 1.3 × the pitch, twice, read by YIN: exact on a lone partial, but a real string's")
         println("    partial 1 beats between its two planes of vibration, so single frames stray); 'whole', the chain without the")
-        println("    refinement on the lowest partials. first: when the first reading shows after the onset, and what. settled:")
+        println("    refinement on the lowest partials. first: when the first reading shows after the onset, and what. settles:")
+        println("    from when every reading stays within ${SETTLE_WITHIN_CENTS} cents of the settled one (RealPlucks.settleSeconds). settled:")
         println("    the reading 2 s in (or the last one shown from 1.5 s, where the file ends or the string was muted first).")
         println("    |0.5s−settled|: the roadmap's figure, 2 cents asked; worst: the most any reading from 0.5 s to the settled one")
-        println("    strays from it (RealPluckTest's limits). wrong: shown frames with another note, and the first of them.")
+        println("    strays from it (RealPluckTest's limits). wrong: shown frames with another note, and the first of them;")
+        println("    multiples: frames the detector read a whole number of periods from the string, which the smoother held.")
         println()
-        val header = "%-26s %-9s %5s %6s %6s %15s".format("take", "", "onset", "peak", "room", "first")
+        val header = "%-26s %-9s %5s %6s %6s %15s %7s".format("take", "", "onset", "peak", "room", "first", "settles")
         println(header + TIMES.joinToString("") { "%8s".format("${it}s") } + "  settled        |0.5s−settled| worst  wrong")
         for (pluck in RealPlucks.all) {
             val frames = pluck.frames()
@@ -39,10 +41,15 @@ internal class RealPluckReport {
             val first = frames.firstOrNull { it.isShown }
             val firstText = if (first == null) "never" else "%.3f %s".format(pluck.secondsOf(first), cell(first, nominal, pluck))
             val wrongFrames = frames.filter { it.isShown && mapper.nearestNote(it.shownHz) != pluck.string }
-            val wrongText = if (wrongFrames.isEmpty()) "0" else {
+            val multiples = frames.filter { it.rawHz > 0f && pluck.secondsOf(it) >= 0f && mapper.nearestNote(it.rawHz) != pluck.string }
+            val wrongText = (if (wrongFrames.isEmpty()) "0" else {
                 val w = wrongFrames.first()
                 "%d, first at %.2f s: %s (raw %.1f Hz)".format(wrongFrames.size, pluck.secondsOf(w), mapper.nearestNote(w.shownHz), w.rawHz)
+            }) + if (multiples.isEmpty()) "" else {
+                val m = multiples.first()
+                "; multiples %d (%s from %.2f s)".format(multiples.size, multiples.map { mapper.nearestNote(it.rawHz) }.distinct().joinToString(" "), pluck.secondsOf(m))
             }
+            val settleText = pluck.settleSeconds(frames, SETTLE_WITHIN_CENTS).let { if (it.isNaN()) "-" else "%.2f".format(it) }
             val settled = pluck.settled(frames)
             val settledText = if (settled == null) "-" else "%s at %.2f s".format(cell(settled, nominal, pluck), pluck.secondsOf(settled))
             val half = pluck.shownAt(frames, 0.5f)
@@ -52,17 +59,30 @@ internal class RealPluckReport {
                     .maxOfOrNull { abs(NoteMapper.centsBetween(it.shownHz, settled.shownHz)) }?.let { "%.1f".format(it) } ?: "-"
             }
             println(
-                "%-26s %-9s %5.2f %6.1f %6.1f %15s".format(pluck.name, "shown", pluck.onsetSeconds, pluck.peakDbfs, pluck.roomDbfs, firstText) +
+                "%-26s %-9s %5.2f %6.1f %6.1f %15s %7s".format(pluck.name, "shown", pluck.onsetSeconds, pluck.peakDbfs, pluck.roomDbfs, firstText, settleText) +
                     TIMES.joinToString("") { "%8s".format(cell(pluck.shownAt(frames, it), nominal, pluck)) } +
                     "  %-14s %6s %6s  %s".format(settledText, delta, worst, wrongText),
             )
             println(
-                "%-26s %-9s %5s %6s %6s %15s".format("", "partial 1", "", "", "", "") +
+                "%-26s %-9s %5s %6s %6s %15s %7s".format("", "partial 1", "", "", "", "", "") +
                     TIMES.joinToString("") { "%8s".format(centsCell(pluck.fundamentalAt(it), nominal, pluck)) },
             )
             println(
-                "%-26s %-9s %5s %6s %6s %15s".format("", "whole", "", "", "", "") +
+                "%-26s %-9s %5s %6s %6s %15s %7s".format("", "whole", "", "", "", "", "") +
                     TIMES.joinToString("") { "%8s".format(cell(pluck.shownAt(whole, it), nominal, pluck)) },
+            )
+        }
+        println()
+        println("The noisy room: when the needle last showed the string, and what came after (held, then blank, is the aim):")
+        for (pluck in RealPlucks.all.filter { !it.touch.quietRoom }) {
+            val frames = pluck.frames()
+            val last = frames.lastOrNull { it.isShown }
+            val after = if (last == null) emptyList() else frames.filter { it.endSample > last.endSample && it.rawHz > 0f }
+            println(
+                "  %-26s last shown %s; after it the detector found a pitch in %d frames (%s)".format(
+                    pluck.name, if (last == null) "never" else "at %.2f s".format(pluck.secondsOf(last)), after.size,
+                    after.map { mapper.nearestNote(it.rawHz) }.distinct().joinToString(" ").ifEmpty { "-" },
+                ),
             )
         }
         println()
@@ -168,6 +188,9 @@ internal class RealPluckReport {
 
     private companion object {
         val TIMES = listOf(0.1f, 0.25f, 0.5f, 1f, 1.5f, 2f, 3f)
+
+        /** The Precise in-tune window: the needle has settled once it stays this close to where it ends up. */
+        const val SETTLE_WITHIN_CENTS = 2f
         val PARTIAL_TIMES = doubleArrayOf(0.15, 1.0)
         const val SHOWN_PARTIALS = 8
     }

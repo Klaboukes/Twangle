@@ -80,9 +80,9 @@ class WatchPitchPipeline(
                 val pitch = if (open && sustained) detector.detect(frame) else PitchResult.NONE
                 noise.update(gate.levelDbfs, noteSounding = pitch.isPitched)
                 if (pitch.isPitched) {
-                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold)
+                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold, gate.levelDbfs)
                 } else {
-                    smoother.noReading(sustained)
+                    smoother.noReading(sustained, gate.levelDbfs)
                 }
                 if (!smoother.hasReading && shownMidi != NO_NOTE && lostFrames < holdFrames) {
                     // The note is lost for a moment: keep showing it, glow and all, so a brief

@@ -161,6 +161,98 @@ class PitchSmootherTest {
     }
 
     @Test
+    fun `a string sinking into a noisy room reads a multiple of its period without an attack, and the needle holds`() {
+        // Phase 46's recordings, a TV across the room: the high E, 1.3 s in and within 8 dB of the
+        // TV, read A2 (three of its periods) for 16 frames at −42 dBFS, above the gate, with its
+        // level falling or flat; the G string read G2 and then C2, the B string B2. Then nothing.
+        var level = -26f
+        repeat(10) { smoother.update(E4 + 0.02f, levelDbfs = level); level -= 0.3f }
+        level = -42f
+        repeat(16) { assertFalse(smoother.update(E4 - TWELFTH + 0.01f, loudEnough = true, levelDbfs = level)); level -= 0.1f }
+        assertEquals(Note(64), smoother.note)
+        assertEquals(2f, smoother.cents, 0.01f)
+        // As the G string went: an octave down (G2), a gap, then a twelfth down (C2, three periods).
+        repeat(2) { assertFalse(smoother.update(E4 - 12f, levelDbfs = -42f)) }
+        repeat(3) { smoother.noReading(levelDbfs = -42.5f) }
+        repeat(5) { assertFalse(smoother.update(E4 - TWELFTH, levelDbfs = -43f)) }
+        assertEquals(Note(64), smoother.note)
+        // Lost for good: the needle goes blank, and nothing else was shown.
+        repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES + 1) { smoother.noReading(levelDbfs = -44f) }
+        assertFalse(smoother.hasReading)
+    }
+
+    @Test
+    fun `a new note an octave away comes with an attack and is followed within three frames`() {
+        // The 12th-fret harmonic after the open string: the touch mutes the string for a frame or
+        // two, then the pluck rises well over that; or the next string plucked over the last one's tail.
+        repeat(10) { smoother.update(E2, levelDbfs = -30f) }
+        repeat(2) { smoother.noReading(levelDbfs = -52f) }
+        assertFalse(smoother.update(E2 + 12.05f, levelDbfs = -36f))
+        assertFalse(smoother.update(E2 + 12.05f, levelDbfs = -36.2f))
+        assertTrue(smoother.update(E2 + 12.05f, levelDbfs = -36.4f))
+        assertEquals(Note(52), smoother.note)
+        assertEquals(5f, smoother.cents, 0.01f)
+        // A twelfth up, plucked 12 dB over the ringing note: followed too.
+        repeat(10) { smoother.update(E2 + 12f, levelDbfs = -36f) }
+        repeat(2) { assertFalse(smoother.update(E2 + 12f + TWELFTH, levelDbfs = -24f)) }
+        assertTrue(smoother.update(E2 + 12f + TWELFTH, levelDbfs = -24.3f))
+        assertEquals(Note(71), smoother.note)
+    }
+
+    @Test
+    fun `a lasting reading a whole number of periods away is followed after a second even without an attack`() {
+        // A sound that holds an octave down for a second is a sound of its own (a TV singing it, a
+        // bowed string slurring down), so the needle follows it in the end.
+        repeat(10) { smoother.update(E4, levelDbfs = -30f) }
+        repeat(PitchSmoother.DEFAULT_OCTAVE_HOLD_FRAMES - 1) { assertFalse(smoother.update(E4 - 12f, levelDbfs = -30f)) }
+        assertEquals(Note(64), smoother.note)
+        assertTrue(smoother.update(E4 - 12f, levelDbfs = -30f))
+        assertEquals(Note(52), smoother.note)
+        // A rise that the room's talk makes (6 dB) is no attack; a pluck's (10 dB and more) is.
+        smoother.reset()
+        repeat(10) { smoother.update(E4, levelDbfs = -30f) }
+        repeat(3) { assertFalse(smoother.update(E4 - 12f, levelDbfs = -24f)) }
+        assertEquals(Note(64), smoother.note)
+        // The attack comes: the three frames pending already are enough.
+        assertTrue(smoother.update(E4 - 12f, levelDbfs = -20f))
+        assertEquals(Note(52), smoother.note)
+    }
+
+    @Test
+    fun `what is left of a lost note cannot start a reading at a multiple of its period for a second, unless an attack comes`() {
+        // A synthetic high E sinking into a murmur (EdgeCaseTest): once the reading was lost, the
+        // detector read E2 and E3 from what was left of it for a few frames, and the needle came
+        // back with E2. Only something with an attack, or a note that is no multiple, starts afresh.
+        repeat(10) { smoother.update(E4, levelDbfs = -40f) }
+        repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES + 1) { smoother.noReading(levelDbfs = -46f) }
+        assertFalse(smoother.hasReading)
+        repeat(10) { assertFalse(smoother.update(E4 - 24f, levelDbfs = -46f)) }
+        repeat(10) { assertFalse(smoother.update(E4 - 12f, levelDbfs = -46.5f)) }
+        assertFalse(smoother.hasReading)
+        // A fifth away is another note: it starts as ever.
+        repeat(3) { assertTrue(smoother.update(E4 - 5f, levelDbfs = -46f)) }
+        assertEquals(Note(59), smoother.note)
+        // Lost again; a second later the octave below is a note of its own.
+        repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES + 1) { smoother.noReading(levelDbfs = -46f) }
+        repeat(PitchSmoother.DEFAULT_OCTAVE_HOLD_FRAMES) { smoother.noReading(levelDbfs = -46f) }
+        repeat(3) { assertTrue(smoother.update(E4 - 5f - 12f, levelDbfs = -46f)) }
+        assertEquals(Note(47), smoother.note)
+        // Lost once more; the octave below with an attack (a new pluck) starts at once.
+        repeat(PitchSmoother.DEFAULT_MAX_MISSED_FRAMES + 1) { smoother.noReading(levelDbfs = -46f) }
+        repeat(3) { assertTrue(smoother.update(E4 - 5f - 24f, levelDbfs = -30f)) }
+        assertEquals(Note(35), smoother.note)
+    }
+
+    @Test
+    fun `a fifth or a fourth away is another string and is snapped to at once, attack or not`() {
+        repeat(10) { smoother.update(E2, levelDbfs = -30f) }
+        repeat(3) { smoother.update(A2, levelDbfs = -34f) }
+        assertEquals(Note(45), smoother.note)
+        repeat(3) { smoother.update(E2 + 7f, levelDbfs = -36f) }
+        assertEquals(Note(47), smoother.note)
+    }
+
+    @Test
     fun `plucking another string jumps straight to it`() {
         repeat(10) { smoother.update(E2) }
         val readings = mutableListOf<Float>()
@@ -259,6 +351,7 @@ class PitchSmootherTest {
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(emaAlpha = 0f) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(hysteresisCents = 60f) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(octaveConfirmFrames = 0) }
+        assertThrows(IllegalArgumentException::class.java) { PitchSmoother(octaveConfirmFrames = 3, octaveHoldFrames = 2) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(onsetFrames = 0) }
         assertThrows(IllegalArgumentException::class.java) { PitchSmoother(onsetFrames = 6) }
         assertThrows(IllegalArgumentException::class.java) { smoother.update(Float.NaN) }
@@ -273,5 +366,8 @@ class PitchSmootherTest {
         const val E2 = 40f
         const val A2 = 45f
         const val E4 = 64f
+
+        /** Three periods: 12 · log2(3) semitones. */
+        const val TWELFTH = 19.0196f
     }
 }

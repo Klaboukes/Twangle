@@ -17,6 +17,8 @@ internal class TunerChain(
     private val humCanceller: () -> MainsHumCanceller? = { settings.newHumCanceller() },
     /** The refinement on the lowest partials, as the tuner has it; false to compare (the whole waveform). */
     private val refineOnLowestPartials: Boolean = true,
+    /** The smoother, as the tuner has it; another to compare (e.g. one that follows an octave without an attack). */
+    private val smoother: () -> PitchSmoother = { PitchSmoother() },
 ) {
     /** What the chain produced for one frame. */
     class Frame(
@@ -48,7 +50,7 @@ internal class TunerChain(
         val gate = SignalGate()
         val sustain = settings.newSustainCheck()
         val detector = settings.newPitchDetector(refineOnLowestPartials)
-        val smoother = PitchSmoother()
+        val smoother = smoother()
         val noise = settings.newNoiseFloorTracker()
         val window = FloatArray(settings.windowSize)
         val frames = ArrayList<Frame>()
@@ -67,7 +69,11 @@ internal class TunerChain(
                 val sustained = !open || sustain.isSustained(window, floorDbfs = noise.floorDbfs)
                 val heard = if (open && sustained) detector.detect(window) else PitchResult.NONE
                 val pitch = if (assembler.filter != null && MainsHumCanceller.isMainsPitch(heard.frequencyHz)) PitchResult.NONE else heard
-                if (pitch.isPitched) smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold) else smoother.noReading(sustained)
+                if (pitch.isPitched) {
+                    smoother.update(mapper.midiOf(pitch.frequencyHz), pitch.confidence, gate.isAboveThreshold, gate.levelDbfs)
+                } else {
+                    smoother.noReading(sustained, gate.levelDbfs)
+                }
                 val shown = if (smoother.hasReading) mapper.frequencyOf(smoother.midi) else 0f
                 noise.update(gate.levelDbfs, pitch.isPitched)
                 frames += Frame(

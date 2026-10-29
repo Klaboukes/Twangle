@@ -66,11 +66,11 @@ class TunerInterpreter(
         }
         if (reading.isPitched) {
             val loudEnough = reading.levelDbfs >= SignalGate.DEFAULT_THRESHOLD_DBFS
-            smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence, loudEnough)
+            smoother.update(noteMapper.midiOf(reading.frequencyHz), reading.confidence, loudEnough, reading.levelDbfs)
             reception.update(reading.levelDbfs, reading.snrDb, reading.clarity)
         } else {
             // A tick that has passed can't start a note, nor end the one shown.
-            smoother.noReading(reading.sustained)
+            smoother.noReading(reading.sustained, reading.levelDbfs)
         }
         val tip = tipLine.update(tipCue.update(reading, smoother.hasReading, frameSeconds), frameSeconds)
         if (!smoother.hasReading) {

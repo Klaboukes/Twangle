@@ -286,10 +286,13 @@ class TunerInterpreterTest {
         // Fresh, G4 is nearest high E, as before: there is no string being tuned to keep.
         play(silent, frames = 10)
         assertEquals(5, play(pitched(hz(67f))).detected().targetString)
-        // In open D the D3 string is an octave above D2: plucking it is that string, not D2.
+        // In open D the D3 string is an octave above D2: plucking it is that string, not D2. The
+        // pluck comes with an attack (here over two frames in which the D2 was muted); an octave
+        // without one is the note sinking into the room and is held (PitchSmoother).
         val options = TunerOptions(TunerMode.AUTO, Tunings.OPEN_D)
         play(silent, frames = 10)
         repeat(40) { interpreter.interpret(pitched(hz(38f)), options) }
+        repeat(2) { interpreter.interpret(silent, options) }
         var state: TunerUiState? = null
         repeat(40) { state = interpreter.interpret(pitched(hz(50f)), options) }
         assertEquals(2, state!!.detected().targetString)

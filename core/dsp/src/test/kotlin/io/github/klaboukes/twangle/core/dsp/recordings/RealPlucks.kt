@@ -3,11 +3,13 @@ package io.github.klaboukes.twangle.core.dsp.recordings
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
+import io.github.klaboukes.twangle.core.dsp.music.centsBetween
 import io.github.klaboukes.twangle.core.dsp.pitch.AnalysisSettings
 import io.github.klaboukes.twangle.core.dsp.pitch.SignalGate
 import io.github.klaboukes.twangle.core.dsp.pitch.TunerChain
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
 import java.io.File
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** How a recorded string was played, as `scripts/record-plucks.sh` names the files. */
@@ -82,6 +84,23 @@ internal class RealPluck(
 
     /** Seconds after the onset at which [frame]'s window ends. */
     fun secondsOf(frame: TunerChain.Frame): Float = (frame.endSample - onsetSample) / sampleRate.toFloat()
+
+    /** The first frame shown after the onset, or null when nothing is. */
+    fun firstShown(frames: List<TunerChain.Frame>): TunerChain.Frame? = frames.firstOrNull { it.isShown && secondsOf(it) >= 0f }
+
+    /**
+     * When the needle settles: seconds after the onset from which every shown reading up to the
+     * [settled] one stays within [withinCents] of it (the first frame of that final stretch), or
+     * NaN without a settled reading. A string's own glide counts: a hard pick on a low string
+     * settles with its partials, over a second or two.
+     */
+    fun settleSeconds(frames: List<TunerChain.Frame>, withinCents: Float): Float {
+        val settled = settled(frames) ?: return Float.NaN
+        val shown = frames.filter { it.isShown && secondsOf(it) >= 0f && it.endSample <= settled.endSample }
+        var from = shown.size - 1
+        while (from > 0 && abs(NoteMapper.centsBetween(shown[from - 1].shownHz, settled.shownHz)) <= withinCents) from--
+        return secondsOf(shown[from])
+    }
 
     /**
      * The string's own fundamental, partial 1 alone, in the window ending [seconds] after the pluck:

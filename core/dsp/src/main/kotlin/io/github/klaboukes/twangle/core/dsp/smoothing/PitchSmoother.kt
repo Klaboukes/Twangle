@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.dsp.smoothing
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -16,11 +17,21 @@ import kotlin.math.roundToInt
  *    at a pitch gives one or two such frames before `SustainCheck` sees it has died away; a string
  *    gives one every frame. The first reading shown is then already the median of those frames,
  *    rather than the attack's single estimate.
- * 1. **Octave-jump rejection.** A reading a whole number of octaves (±[octaveToleranceCents]) away
- *    from the recent median is dropped. That is the classic detector glitch on decaying or
- *    weak-fundamental notes. If it repeats for [octaveConfirmFrames] frames loud enough to start a
- *    reading (`loudEnough`), it's a real change and is accepted; in quieter frames it is the
- *    fundamental dying away ahead of the 2nd partial, and the reading stays.
+ * 1. **Octave-jump rejection.** A reading a whole number of periods from the recent median, an
+ *    octave or more or a twelfth, up or down (±[octaveToleranceCents]), is dropped. That is the
+ *    classic detector glitch on decaying or weak-fundamental notes, and what a string reads as
+ *    while it sinks into a noisy room: for a few tenths of a second the string and the room (a TV's
+ *    voice, say) repeat together at a multiple of the string's period, until the detector loses the
+ *    string. A new note comes with an attack, so the jump is followed after [octaveConfirmFrames]
+ *    frames loud enough to start a reading (`loudEnough`) when one of those frames rose [ATTACK_DB]
+ *    over the quietest of the [ATTACK_LOOKBACK_FRAMES] frames before it (`levelDbfs`; a muted
+ *    string before the 12th-fret harmonic makes the rise bigger, not smaller); without an attack
+ *    only once it has lasted [octaveHoldFrames], about a second, by when it is a sound of its own.
+ *    Until then the reading stays, so the needle holds the note as it sinks and then goes blank.
+ *    In frames too quiet to start a reading the jump is never followed: that is the fundamental
+ *    dying away ahead of the 2nd partial. Once the needle has gone blank, the same readings can't
+ *    start a reading either for [octaveHoldFrames], unless an attack came in between: what is left
+ *    of the note in the room is not a new note.
  * 2. **Median** of the last [medianSize] readings removes other one-frame outliers.
  * 3. **EMA** with [emaAlpha] averages out remaining jitter. When the median is more than
  *    [snapCents] away (a new string was plucked), it snaps instead of sliding the needle across.
@@ -42,6 +53,7 @@ class PitchSmoother(
     val hysteresisCents: Float = DEFAULT_HYSTERESIS_CENTS,
     val octaveToleranceCents: Float = DEFAULT_OCTAVE_TOLERANCE_CENTS,
     val octaveConfirmFrames: Int = DEFAULT_OCTAVE_CONFIRM_FRAMES,
+    val octaveHoldFrames: Int = DEFAULT_OCTAVE_HOLD_FRAMES,
     val maxMissedFrames: Int = DEFAULT_MAX_MISSED_FRAMES,
     val onsetFrames: Int = DEFAULT_ONSET_FRAMES,
 ) {
@@ -51,6 +63,7 @@ class PitchSmoother(
         require(hysteresisCents in 0f..50f) { "hysteresisCents must be in 0..50, was $hysteresisCents" }
         require(octaveToleranceCents in 0f..100f) { "octaveToleranceCents must be in 0..100, was $octaveToleranceCents" }
         require(octaveConfirmFrames >= 1) { "octaveConfirmFrames must be at least 1, was $octaveConfirmFrames" }
+        require(octaveHoldFrames >= octaveConfirmFrames) { "octaveHoldFrames must be at least octaveConfirmFrames, was $octaveHoldFrames" }
         require(maxMissedFrames >= 0) { "maxMissedFrames must not be negative, was $maxMissedFrames" }
         require(onsetFrames in 1..medianSize) { "onsetFrames must be in 1..$medianSize, was $onsetFrames" }
     }
@@ -60,7 +73,19 @@ class PitchSmoother(
     private var noteMidi = 0
     private var hasNote = false
     private var pendingOctaveFrames = 0
+    private var pendingAttack = false
     private var missedFrames = 0
+
+    // The reading last lost to dropouts, how many frames ago, and whether an attack came since: what
+    // is left of it in the room can't start a reading at a multiple of its period for a while.
+    private var lostMidi = Float.NaN
+    private var lostFrames = 0
+    private var attackSinceLost = false
+
+    // Levels of the last frames (dBFS), as a ring, to see a new note's attack.
+    private val recentLevels = FloatArray(ATTACK_LOOKBACK_FRAMES)
+    private var recentLevelCount = 0
+    private var recentLevelNext = 0
     private var onsetCount = 0
     private var lastOnsetMidi = 0f
 
@@ -82,15 +107,22 @@ class PitchSmoother(
      * the signal gate by itself (`SignalGate.thresholdDbfs`); a frame that isn't can keep a reading
      * going but not start one. The gate's hysteresis is there so a fading note doesn't flicker; on
      * the phone it also kept the gate open for a laptop speaker ringing on after a tick.
+     * [levelDbfs] is the frame's level, which tells a new note's attack from a note sinking into the
+     * room (stage 1); NaN when the caller has none, and then an octave is followed as if it came
+     * with an attack.
      *
      * @return false if it was rejected as an octave glitch or too quiet to start a reading, true if
      * it was used (which, before a reading starts, may only count towards [onsetFrames]).
      */
-    fun update(midi: Float, confidence: Float = 1f, loudEnough: Boolean = true): Boolean {
+    fun update(midi: Float, confidence: Float = 1f, loudEnough: Boolean = true, levelDbfs: Float = Float.NaN): Boolean {
         require(midi.isFinite()) { "midi must be finite, was $midi" }
+        val attack = isAttack(levelDbfs)
+        if (attack) attackSinceLost = true
+        rememberLevel(levelDbfs)
         missedFrames = 0
         if (!hasReading) {
-            if (!loudEnough) {
+            if (lostFrames < octaveHoldFrames) lostFrames++
+            if (!loudEnough || isRemainsOfLostNote(midi)) {
                 medianFilter.reset()
                 onsetCount = 0
                 return false
@@ -98,19 +130,24 @@ class PitchSmoother(
             confirmOnset(midi)
             return true
         }
-        if (medianFilter.count > 0 && isOctaveJump(midi - medianFilter.median)) {
+        if (medianFilter.count > 0 && isPeriodMultipleJump(midi - medianFilter.median)) {
             // A frame too quiet to start a reading can't move it an octave either: that is the
             // fundamental dying into the room's noise ahead of the 2nd partial, as a picked high E
             // does about 2 s in (Phase 46's recordings), not a new note, which comes with an attack.
             if (!loudEnough) return false
             pendingOctaveFrames++
-            if (pendingOctaveFrames < octaveConfirmFrames) return false
+            if (attack) pendingAttack = true
+            // Without an attack it is the note sinking into the room, read at a multiple of its
+            // period (the same recordings, a TV on: G2 for the G string, A2 for the high E), unless
+            // it goes on for about a second.
+            if (pendingOctaveFrames < (if (pendingAttack) octaveConfirmFrames else octaveHoldFrames)) return false
             // The jump persisted, so the player really did move by an octave: start over there.
             medianFilter.reset()
             ema.reset()
             hasNote = false
         }
         pendingOctaveFrames = 0
+        pendingAttack = false
 
         val median = medianFilter.add(midi)
         val current = ema.value
@@ -128,28 +165,58 @@ class PitchSmoother(
      * not analysed because its sound had died away by its end (`SustainCheck`). Before a reading
      * starts, any such frame starts the onset over. While one is shown, a frame that isn't sustained
      * doesn't count as a dropout: a tick louder than the string is in its window, hiding the string
-     * until it leaves the window a few frames later.
+     * until it leaves the window a few frames later. [levelDbfs] as in [update]: a muted string's
+     * quiet frames are what the next note's attack rises over.
      */
-    fun noReading(sustained: Boolean = true) {
+    fun noReading(sustained: Boolean = true, levelDbfs: Float = Float.NaN) {
+        if (isAttack(levelDbfs)) attackSinceLost = true
+        rememberLevel(levelDbfs)
         if (!hasReading) {
+            if (lostFrames < octaveHoldFrames) lostFrames++
             medianFilter.reset()
             onsetCount = 0
             return
         }
         if (!sustained) return
         missedFrames++
-        if (missedFrames > maxMissedFrames) reset()
+        if (missedFrames > maxMissedFrames) lose()
     }
 
     /** Clears everything, e.g. when the tuner screen restarts listening. */
     fun reset() {
+        clearReading()
+        recentLevelCount = 0
+        recentLevelNext = 0
+        lostMidi = Float.NaN
+        lostFrames = 0
+        attackSinceLost = false
+    }
+
+    // The reading is gone (too many frames without a pitch): clear it, remembering what it was.
+    // The recent levels stay, so the next frames are judged for an attack against the frames before.
+    private fun lose() {
+        val lost = ema.value
+        clearReading()
+        lostMidi = lost
+        lostFrames = 0
+        attackSinceLost = false
+    }
+
+    private fun clearReading() {
         medianFilter.reset()
         ema.reset()
         hasNote = false
         pendingOctaveFrames = 0
+        pendingAttack = false
         missedFrames = 0
         onsetCount = 0
     }
+
+    // True for a reading a whole number of periods from the note lost less than octaveHoldFrames
+    // ago, with no attack since: what is left of that note in the room (its 2nd partial, or the
+    // period it shares with the room's talk), not a new note. Never after a frame without a level.
+    private fun isRemainsOfLostNote(midi: Float): Boolean =
+        !lostMidi.isNaN() && lostFrames < octaveHoldFrames && !attackSinceLost && isPeriodMultipleJump(midi - lostMidi)
 
     // Stage 0: collects agreeing readings in the median filter and starts the reading once there
     // are onsetFrames of them in a row. One that disagrees with the last starts the count afresh.
@@ -163,6 +230,7 @@ class PitchSmoother(
         if (++onsetCount < onsetFrames) return
         onsetCount = 0
         pendingOctaveFrames = 0
+        lostMidi = Float.NaN
         ema.snapTo(median)
         updateNote(median)
     }
@@ -172,10 +240,29 @@ class PitchSmoother(
     private fun weightOf(confidence: Float): Float =
         ((confidence - UNSURE) / (CONFIDENT - UNSURE)).coerceIn(MIN_WEIGHT, 1f)
 
-    private fun isOctaveJump(semitones: Float): Boolean {
+    // A whole number of octaves or a twelfth (three periods), either way: the periods the detector's
+    // whole-period checks can land on (2τ or 3τ, τ/k) when a sound nearly repeats there.
+    private fun isPeriodMultipleJump(semitones: Float): Boolean {
         val octaves = (semitones / SEMITONES_PER_OCTAVE).roundToInt()
-        if (octaves == 0) return false
-        return CENTS_PER_SEMITONE * abs(semitones - octaves * SEMITONES_PER_OCTAVE) <= octaveToleranceCents
+        if (octaves != 0 && CENTS_PER_SEMITONE * abs(semitones - octaves * SEMITONES_PER_OCTAVE) <= octaveToleranceCents) return true
+        return CENTS_PER_SEMITONE * abs(abs(semitones) - TWELFTH_SEMITONES) <= octaveToleranceCents
+    }
+
+    // True when [levelDbfs] rose ATTACK_DB over the quietest of the last frames, as a new note's
+    // first readings do (a pluck rises 15–40 dB within a frame or two; a sinking string falls, a
+    // TV's talk wobbles a few dB). Without a level, or before any, an attack is assumed.
+    private fun isAttack(levelDbfs: Float): Boolean {
+        if (levelDbfs.isNaN() || recentLevelCount == 0) return true
+        var lowest = Float.MAX_VALUE
+        for (i in 0 until recentLevelCount) lowest = min(lowest, recentLevels[i])
+        return levelDbfs >= lowest + ATTACK_DB
+    }
+
+    private fun rememberLevel(levelDbfs: Float) {
+        if (levelDbfs.isNaN()) return
+        recentLevels[recentLevelNext] = levelDbfs
+        recentLevelNext = (recentLevelNext + 1) % recentLevels.size
+        if (recentLevelCount < recentLevels.size) recentLevelCount++
     }
 
     private fun updateNote(smoothed: Float) {
@@ -197,6 +284,19 @@ class PitchSmoother(
         /** 3 frames ≈ 64 ms: long enough to outlast a glitch, short enough to feel instant. */
         const val DEFAULT_OCTAVE_CONFIRM_FRAMES = 3
 
+        /**
+         * 47 frames ≈ 1 s: how long a reading a whole number of periods away must last to be followed
+         * without an attack. A string sinking into a TV's talk read a multiple of its period for 7 to
+         * 16 frames (Phase 46's recordings), and a slow low string sinks for longer.
+         */
+        const val DEFAULT_OCTAVE_HOLD_FRAMES = 47
+
+        /** A new note's first readings come within this many frames of its attack (a low string's later than a high one's). */
+        const val ATTACK_LOOKBACK_FRAMES = 10
+
+        /** A rise over the quietest recent frame that only an attack makes; a TV's talk rose 6 dB in the recordings. */
+        const val ATTACK_DB = 10f
+
         /** 4 frames ≈ 85 ms of dropout before the reading is cleared. */
         const val DEFAULT_MAX_MISSED_FRAMES = 4
 
@@ -216,5 +316,8 @@ class PitchSmoother(
 
         private const val CENTS_PER_SEMITONE = 100f
         private const val SEMITONES_PER_OCTAVE = 12f
+
+        /** 12 · log2(3): three periods, an octave and a fifth. */
+        private const val TWELFTH_SEMITONES = 19.019550f
     }
 }
