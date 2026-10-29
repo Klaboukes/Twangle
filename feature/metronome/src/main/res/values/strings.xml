@@ -4,34 +4,50 @@
     <string name="metronome_beats_in_bar">Beats in a bar</string>
     <!-- The tempo dial, for TalkBack: what it is, and what it is set to. -->
     <string name="metronome_tempo">Tempo, drag to change</string>
+    <!-- TalkBack: the tempo dial's value. %1$d is the number of beats per minute, %2$s the Italian tempo marking (e.g. "Andante", not translated). -->
     <plurals name="metronome_tempo_value">
         <item quantity="one">%1$d beat per minute, %2$s</item>
         <item quantity="other">%1$d beats per minute, %2$s</item>
     </plurals>
     <string name="metronome_bpm" translatable="false">BPM</string>
+    <!-- TalkBack name of the − button inside the tempo dial: one beat per minute slower. -->
     <string name="metronome_slower">Slower</string>
+    <!-- TalkBack name of the + button inside the tempo dial: one beat per minute faster. -->
     <string name="metronome_faster">Faster</string>
+    <!-- Button under the tempo dial: tap it in time and the tempo follows your taps. Its word under the button (short, one line in a row of three) and its TalkBack name. -->
     <string name="metronome_tap">Tap tempo</string>
+    <!-- TalkBack name of the big play button that starts the clicks (an icon, no word shown). -->
     <string name="metronome_start">Start</string>
+    <!-- TalkBack name of the big button while the clicks play: stops them (an icon, no word shown). -->
     <string name="metronome_stop">Stop</string>
+    <!-- Switch in the Sound panel: the phone vibrates on every beat as well. One line. -->
     <string name="metronome_vibrate">Vibrate on the beat</string>
     <!-- The Sound button, first under the dial: the word under it (always this, whatever is picked), and its panel's name. -->
     <string name="metronome_sound">Sound</string>
     <!-- The four click sounds, in the Sound panel: each instrument's common name. -->
     <string name="metronome_sound_wood_block">Wood block</string>
+    <!-- Click sound in the Sound panel: the cowbell (percussion instrument). -->
     <string name="metronome_sound_cowbell">Cowbell</string>
+    <!-- Click sound in the Sound panel: claves (two wooden sticks struck together). -->
     <string name="metronome_sound_claves">Claves</string>
+    <!-- Click sound in the Sound panel: a rim click (a drumstick laid on the snare drum, its rim struck). -->
     <string name="metronome_sound_rim_click">Rim click</string>
     <!-- The Sound button for TalkBack: the sound picked, and whether it vibrates on the beat. -->
     <string name="metronome_sound_spoken">Sound: %1$s</string>
+    <!-- TalkBack: the Sound button while vibration is on. %1$s is the sound picked, e.g. "Cowbell". -->
     <string name="metronome_sound_spoken_vibrating">Sound: %1$s, vibrates on the beat</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
     <string name="metronome_meter_2_4_spoken">Two-four time</string>
+    <!-- TalkBack: the 3/4 time signature, as a musician says it. -->
     <string name="metronome_meter_3_4_spoken">Three-four time</string>
+    <!-- TalkBack: the 4/4 time signature, as a musician says it. -->
     <string name="metronome_meter_4_4_spoken">Four-four time</string>
+    <!-- TalkBack: the 5/4 time signature, as a musician says it. -->
     <string name="metronome_meter_5_4_spoken">Five-four time</string>
+    <!-- TalkBack: the 6/8 time signature, as a musician says it. -->
     <string name="metronome_meter_6_8_spoken">Six-eight time</string>
+    <!-- TalkBack: the 7/8 time signature, as a musician says it. -->
     <string name="metronome_meter_7_8_spoken">Seven-eight time</string>
 
     <!-- Italian tempo markings under the tempo: the same in every language. -->
@@ -61,12 +77,16 @@
     <string name="metronome_listen_speed">Speed</string>
     <!-- TalkBack's names for ½×, 1× and 2× in the balloon. -->
     <string name="metronome_pick_half">Half</string>
+    <!-- TalkBack: the 1× choice in the Listen balloon: use the tempo as it was heard. -->
     <string name="metronome_pick_as_heard">As heard</string>
+    <!-- TalkBack: the 2× choice in the Listen balloon: twice the tempo heard. -->
     <string name="metronome_pick_double">Double</string>
     <!-- The status line when listening heard no steady beat; Try again follows it on the same line. -->
     <string name="metronome_no_beat">No steady beat heard</string>
+    <!-- Action after "No steady beat heard" on the same status line: listens again. Short. -->
     <string name="metronome_try_again">Try again</string>
     <!-- The status line when the microphone was refused; Open settings may follow it on the same line. -->
     <string name="metronome_mic_off">Microphone is off</string>
+    <!-- Action after "Microphone is off" on the same status line: opens the app's system settings. Short. -->
     <string name="metronome_open_settings">Open settings</string>
 </resources>

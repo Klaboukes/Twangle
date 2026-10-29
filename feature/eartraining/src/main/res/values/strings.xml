@@ -4,6 +4,7 @@
     <string name="ear_exercises">Exercise</string>
     <!-- The three exercises, each an icon; TalkBack says these names. Play it back: Twangle plays a note, the player finds it on the instrument. -->
     <string name="ear_exercise_play_back">Play it back</string>
+    <!-- Ear training: TalkBack name of the exercise where two notes sound and the player names the interval between them. -->
     <string name="ear_exercise_intervals">Intervals</string>
     <!-- As practice_chord_type in the Chords tool. -->
     <string name="ear_exercise_chord_type">Chord type</string>
@@ -23,13 +24,17 @@
     <string name="ear_choices">What is asked</string>
     <!-- In that panel, Play it back: the heading over the three choices of notes asked. -->
     <string name="ear_notes">Notes</string>
+    <!-- What is asked panel, Play it back: choice under Notes; only the instrument's open strings are asked. -->
     <string name="ear_notes_open_strings">Open strings</string>
     <!-- The notes without a sharp or flat (C D E F G A B) on every string up to the 5th fret. -->
     <string name="ear_notes_naturals">Natural notes to the 5th fret</string>
+    <!-- What is asked panel, Play it back: choice under Notes; any note on any string up to the 12th fret is asked. -->
     <string name="ear_notes_all">Every note to the 12th fret</string>
     <!-- Play it back without the microphone: the status line, then a button that asks for it again or opens Settings. -->
     <string name="ear_mic_off">Microphone is off</string>
+    <!-- Play it back without the microphone: button under "Microphone is off" that asks for the microphone permission. Short. -->
     <string name="ear_mic_allow">Allow microphone</string>
+    <!-- Play it back with the microphone refused for good: button under "Microphone is off" that opens the app's system settings. Short. -->
     <string name="ear_open_settings">Open settings</string>
     <!-- Play it back with two to four notes in a row: the prompt under the play button, for the notes just heard. -->
     <string name="ear_play_prompt_many">Play them on your instrument</string>
@@ -49,7 +54,9 @@
     <string name="ear_interval_prompt">Which interval?</string>
     <!-- Intervals: how the two notes were played, small over the question, and the three choices under "Played" in the What is asked panel: the lower note first, the higher note first, or both at once. -->
     <string name="ear_direction_up">Up</string>
+    <!-- Intervals: the higher note was played first, then the lower one. Small over the question, and a choice under Played. One short word. -->
     <string name="ear_direction_down">Down</string>
+    <!-- Intervals: both notes were played at once. Small over the question, and a choice under Played. One short word. -->
     <string name="ear_direction_together">Together</string>
     <!-- In the What is asked panel, Intervals: the heading over up, down and together. -->
     <string name="ear_played">Played</string>
@@ -57,56 +64,99 @@
     <string name="ear_answer_was">The answer: %1$s</string>
     <!-- The intervals' signs, large on the answer buttons and on the chips in the What is asked panel, minor second to octave: this language's usual ones (English: m minor, M major, P perfect, TT the tritone, P8 the octave). At most 3 characters. -->
     <string name="ear_interval_short_minor_second">m2</string>
+    <!-- Intervals: the sign for a major second on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_major_second">M2</string>
+    <!-- Intervals: the sign for a minor third on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_minor_third">m3</string>
+    <!-- Intervals: the sign for a major third on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_major_third">M3</string>
+    <!-- Intervals: the sign for a perfect fourth on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_perfect_fourth">P4</string>
+    <!-- Intervals: the sign for a tritone (augmented fourth) on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_tritone">TT</string>
+    <!-- Intervals: the sign for a perfect fifth on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_perfect_fifth">P5</string>
+    <!-- Intervals: the sign for a minor sixth on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_minor_sixth">m6</string>
+    <!-- Intervals: the sign for a major sixth on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_major_sixth">M6</string>
+    <!-- Intervals: the sign for a minor seventh on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_minor_seventh">m7</string>
+    <!-- Intervals: the sign for a major seventh on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_major_seventh">M7</string>
+    <!-- Intervals: the sign for a octave on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_octave">P8</string>
     <!-- The intervals' names, small under the sign on each answer button, and what TalkBack says for a button or chip: minor second to octave (a fourth, fifth and octave are perfect; the tritone is the augmented fourth). -->
     <string name="ear_interval_minor_second">minor 2nd</string>
+    <!-- Intervals: the name of a major second, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_major_second">major 2nd</string>
+    <!-- Intervals: the name of a minor third, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_minor_third">minor 3rd</string>
+    <!-- Intervals: the name of a major third, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_major_third">major 3rd</string>
+    <!-- Intervals: the name of a perfect fourth, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_perfect_fourth">4th</string>
+    <!-- Intervals: the name of a tritone (augmented fourth), small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_tritone">tritone</string>
+    <!-- Intervals: the name of a perfect fifth, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_perfect_fifth">5th</string>
+    <!-- Intervals: the name of a minor sixth, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_minor_sixth">minor 6th</string>
+    <!-- Intervals: the name of a major sixth, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_major_sixth">major 6th</string>
+    <!-- Intervals: the name of a minor seventh, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_minor_seventh">minor 7th</string>
+    <!-- Intervals: the name of a major seventh, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_major_seventh">major 7th</string>
+    <!-- Intervals: the name of a octave, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_octave">octave</string>
     <!-- Chord type (Phase 55): under the play button, the question. A chord strummed; the player names its type with a button. -->
     <string name="ear_chord_prompt">Which kind of chord?</string>
     <!-- Chord type: large on the answer buttons and on the chips in the What is asked panel, the types whose chord symbol has no letters of its own: major (C), minor (Cm) and the power chord (C5). One short word each; the other types show their symbol (7, maj7, m7, sus2 …). -->
     <string name="ear_chord_sign_major">Major</string>
+    <!-- Chord type: large on the answer button and chip for a minor chord (symbol Cm). One short word. -->
     <string name="ear_chord_sign_minor">Minor</string>
+    <!-- Chord type: large on the answer button and chip for a power chord (root and fifth only, symbol C5). One short word. -->
     <string name="ear_chord_sign_power">Power</string>
     <!-- Chord type: each type in words, without a root, as TalkBack says its button or chip and after a wrong answer ("The answer: minor seventh"). As practice_chord_* in the Chords tool, without the root. -->
     <string name="ear_chord_major">major</string>
+    <!-- Chord type: the minor chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_minor">minor</string>
+    <!-- Chord type: the power chord (root and fifth only) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_power_chord">power chord</string>
+    <!-- Chord type: the seventh (dominant seventh, C7) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_seventh">seventh</string>
+    <!-- Chord type: the major seventh (Cmaj7) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_major_seventh">major seventh</string>
+    <!-- Chord type: the minor seventh (Cm7) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_minor_seventh">minor seventh</string>
+    <!-- Chord type: the suspended second (Csus2) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_sus2">suspended second</string>
+    <!-- Chord type: the suspended fourth (Csus4) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_sus4">suspended fourth</string>
+    <!-- Chord type: the seventh suspended fourth (C7sus4) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_seventh_sus4">seventh suspended fourth</string>
+    <!-- Chord type: the sixth (C6) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_sixth">sixth</string>
+    <!-- Chord type: the minor sixth (Cm6) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_minor_sixth">minor sixth</string>
+    <!-- Chord type: the added ninth (Cadd9) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_add9">added ninth</string>
+    <!-- Chord type: the ninth (C9) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_ninth">ninth</string>
+    <!-- Chord type: the minor ninth (Cm9) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_minor_ninth">minor ninth</string>
+    <!-- Chord type: the major ninth (Cmaj9) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_major_ninth">major ninth</string>
+    <!-- Chord type: the seven sharp nine (C7#9, the "Hendrix chord") chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_seventh_sharp_nine">seven sharp nine</string>
+    <!-- Chord type: the diminished (Cdim) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_diminished">diminished</string>
+    <!-- Chord type: the diminished seventh (Cdim7) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_diminished_seventh">diminished seventh</string>
+    <!-- Chord type: the half-diminished (Cm7b5) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_half_diminished">half-diminished</string>
+    <!-- Chord type: the augmented (Caug) chord type in words, without a root; TalkBack says it for its button and chip and after a wrong answer. -->
     <string name="ear_chord_augmented">augmented</string>
     <!-- Chord type on an instrument with a short string (the banjo), in place of the question: as practice_chords_short_string in the Chords tool. -->
     <string name="ear_chord_short_string">Chord charts don\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>

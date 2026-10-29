@@ -11,10 +11,14 @@
     <string name="wear_in_tune">in tune</string>
     <!-- Microphone permission on the watch. -->
     <string name="wear_mic_needed">Twangle listens to your instrument with the watch\'s microphone.</string>
+    <!-- Watch: button under the microphone message that asks for the microphone permission. Short (small round screen). -->
     <string name="wear_allow_mic">Allow microphone</string>
+    <!-- Watch: button under the microphone message when the permission was refused for good; opens the watch's app settings. Short. -->
     <string name="wear_open_settings">Open settings</string>
     <!-- When the microphone can't be used. -->
     <string name="wear_mic_busy">Another app is using the microphone.</string>
+    <!-- Watch: message when the microphone can't be started for another reason (not busy, not refused). -->
     <string name="wear_mic_unavailable">The microphone can\'t be opened.</string>
+    <!-- Watch: button under a microphone message that tries to start listening again. Short. -->
     <string name="wear_try_again">Try again</string>
 </resources>

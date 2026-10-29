@@ -2,15 +2,21 @@
     <string name="app_name" translatable="false">Twangle</string>
     <!-- The navigation bar's three tabs. -->
     <string name="nav_tuner">Tuner</string>
+    <!-- Navigation bar tab (one short word) that opens the metronome; shown instead of "Practice" when the Practice tab is switched off. -->
     <string name="nav_metronome">Metronome</string>
     <!-- The Metronome tab's name with the Practice tab's switch on (Phase 32): it holds the metronome and the chord charts. -->
     <string name="nav_practice">Practice</string>
+    <!-- Navigation bar tab (one short word) that opens the Settings screen. -->
     <string name="nav_settings">Settings</string>
     <!-- The home-screen widget: its name and description in the widget picker, its line (instrument ·
          tuning), the line under it, and the picker's preview text. -->
     <string name="widget_name">Tuner</string>
+    <!-- Home-screen widget: its description in the phone's widget picker. -->
     <string name="widget_description">Shows your instrument and tuning. One tap opens the tuner.</string>
+    <!-- Home-screen widget's main line: %1$s is the instrument (e.g. "Guitar"), %2$s the tuning (e.g. "Standard"). Keep the dot unless your language separates them otherwise. -->
     <string name="widget_title">%1$s · %2$s</string>
+    <!-- Home-screen widget: the small line under the instrument and tuning, saying what a tap does. One short line. -->
     <string name="widget_open_tuner">Open the tuner</string>
+    <!-- Home-screen widget: the sample line in the widget picker's preview (instrument · tuning); translate "Guitar" and "Standard" as in the app's instrument and tuning names. -->
     <string name="widget_preview_title">Guitar · Standard</string>
 </resources>

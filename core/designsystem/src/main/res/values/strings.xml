@@ -1,10 +1,15 @@
 <resources>
     <!-- Visual styles, under their cards in Settings → Style. -->
     <string name="style_ancient">Ancient</string>
+    <!-- Visual style name under its card in Settings → Style: a classic, finely made look (watch hands, engraved lines). One or two words. -->
     <string name="style_classic">Classic</string>
+    <!-- Visual style name under its card in Settings → Style: a 1970s electronics look (VU meters, glowing screens). One or two words. -->
     <string name="style_retro">Retro</string>
+    <!-- Visual style name under its card in Settings → Style: today's clean, modern look. One or two words. -->
     <string name="style_contemporary">Contemporary</string>
+    <!-- Visual style name under its card in Settings → Style: a neon, science-fiction look. One or two words. -->
     <string name="style_futuristic">Futuristic</string>
+    <!-- Visual style name under its card in Settings → Style: the 1960s space-age look (planets, stars). One or two words. -->
     <string name="style_space_age">Space Age</string>
     <!-- The big letter and the two string buttons on a style card; note names, the same in every language. -->
     <string name="style_card_note" translatable="false">A</string>
@@ -14,6 +19,7 @@
          e.g. "C", "Sol". Languages that say letter names in one word (see bools.xml) use these
          only for Do Re Mi. -->
     <string name="spoken_sharp">%1$s sharp</string>
+    <!-- A note name with a flat, read aloud by TalkBack (e.g. "B flat"). %1$s is the letter or syllable, e.g. "B", "Si". -->
     <string name="spoken_flat">%1$s flat</string>
 
     <!-- The unit printed on the Classic meter's dial, above the needle's pivot (in capitals, as on a real meter). -->
@@ -22,5 +28,6 @@
     <!-- The instrument and tuning button (a headstock, no word) above the tuner's strings and in the
          Practice tools: its name (tooltip, TalkBack) and what a double-tap does. -->
     <string name="instrument_button">Instrument</string>
+    <!-- TalkBack: what double-tapping the instrument and tuning button does ("Double-tap to …" is added by Android). -->
     <string name="instrument_button_action">Change instrument or tuning</string>
 </resources>

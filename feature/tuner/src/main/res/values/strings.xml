@@ -1,42 +1,62 @@
 <resources>
     <string name="tuner_placeholder_note" translatable="false">♪</string>
 
+    <!-- Microphone permission screen (in the tuner's place before the permission is given): its title. -->
     <string name="mic_permission_title">Twangle needs your microphone</string>
+    <!-- Microphone permission screen: the text under the title, before the player has been asked. -->
     <string name="mic_permission_intro">To tune, Twangle listens to your instrument. Sound is analysed on your device and never recorded or sent anywhere.</string>
+    <!-- Microphone permission screen: the text after the player refused once, saying why the tuner needs it. -->
     <string name="mic_permission_rationale">Without the microphone Twangle can\'t hear your strings, so it can\'t tell whether they\'re in tune. Sound never leaves your device.</string>
+    <!-- Microphone permission screen after it was refused for good (Android 11 and later): how to allow it in the phone's settings. Use the words your language's Android shows for Permissions, Microphone and "Allow only while using the app". -->
     <string name="mic_permission_settings_hint">Microphone access is turned off for Twangle. Open Settings, tap Permissions, then Microphone, and choose to allow it while using the app.</string>
+    <!-- The same for Android 8 to 10, where the microphone permission is a switch: how to turn it on in the phone's settings. Use your language's Android words. -->
     <string name="mic_permission_settings_hint_switch">Microphone access is turned off for Twangle. Open Settings, tap Permissions, and turn on Microphone.</string>
+    <!-- Microphone permission screen: the button that asks for the permission. Short. -->
     <string name="mic_permission_allow">Allow microphone</string>
+    <!-- Microphone permission screen after it was refused for good: the button that opens the app's page in the phone's settings. Short. -->
     <string name="mic_permission_open_settings">Open settings</string>
 
     <!-- Errors when the microphone can't be used. -->
     <string name="error_mic_permission">Microphone access was turned off. Allow it again to keep tuning.</string>
+    <!-- Tuner: message in the tuner's place when another app holds the microphone. -->
     <string name="error_mic_busy">Another app is using the microphone. Close it, then try again.</string>
+    <!-- Tuner: message in the tuner's place when the microphone can't be started on this phone. -->
     <string name="error_mic_unavailable">The microphone could not be opened on this device.</string>
+    <!-- Tuner: message in the tuner's place when the microphone stops in the middle of tuning. -->
     <string name="error_mic_stopped">The microphone stopped unexpectedly.</string>
+    <!-- Tuner: the button under a microphone error message that starts listening again. Short. -->
     <string name="error_retry">Try again</string>
 
     <!-- Tuner screen. -->
     <!-- Mode switch: the picked instrument's strings, or any note (Chromatic). -->
     <string name="tuner_mode_strings">Strings</string>
+    <!-- Mode switch above the tuner, its second half: any note is shown, not only the instrument's strings. One short word; also the home-screen widget's line in this mode. -->
     <string name="tuner_mode_chromatic">Chromatic</string>
-    <!-- Temporary, until the bottom bar: opens the metronome. -->
     <!-- The compact landscape layout hides the controls; tapping the screen (or this TalkBack button) brings them back. -->
     <string name="tuner_show_controls">Show controls</string>
+    <!-- TalkBack name of the full-screen button at the end of the mode switch's row: turns focus mode on (the tuner sideways, one big meter). -->
     <string name="tuner_focus_mode">Focus mode</string>
+    <!-- TalkBack name of the button in the corner of focus mode: leaves focus mode. -->
     <string name="tuner_exit_focus_mode">Exit focus mode</string>
     <!-- TalkBack: among focus mode's controls, the button that takes them away, back to the full-screen tuner. -->
     <string name="tuner_hide_controls">Hide controls</string>
 
     <!-- Tuning presets, see Tunings in :core:dsp. -->
     <string name="tuning_standard">Standard</string>
+    <!-- Tuning name: standard with the lowest string lowered a whole step to D. Players' usual name (often kept in English). -->
     <string name="tuning_drop_d">Drop D</string>
+    <!-- Tuning name: every string a semitone (half step) lower than standard. Players' usual name. -->
     <string name="tuning_half_step_down">Half step down</string>
+    <!-- Tuning name: every string a whole step (two semitones) lower than standard. Players' usual name. -->
     <string name="tuning_full_step_down">Full step down</string>
     <string name="tuning_dadgad" translatable="false">DADGAD</string>
+    <!-- Tuning name: the open strings sound a G major chord. Players' usual name. -->
     <string name="tuning_open_g">Open G</string>
+    <!-- Tuning name: the open strings sound a D major chord. Players' usual name. -->
     <string name="tuning_open_d">Open D</string>
+    <!-- Tuning name: the open strings sound an E major chord. Players' usual name. -->
     <string name="tuning_open_e">Open E</string>
+    <!-- Tuning name: the open strings sound a C major chord. Players' usual name. -->
     <string name="tuning_open_c">Open C</string>
     <!-- Ukulele with its G string an octave lower than standard. -->
     <string name="tuning_low_g">Low G</string>
@@ -44,62 +64,98 @@
     <string name="tuning_baritone">Baritone</string>
     <!-- The 5-string banjo's two other common tunings, beside Open G (g C G C D and f♯ D F♯ A D). -->
     <string name="tuning_double_c">Double C</string>
+    <!-- Tuning name for the 5-string banjo: Double D (a D A D E). Players' usual name. -->
     <string name="tuning_double_d">Double D</string>
     <!-- Names players know a lowered guitar tuning by (CommonTuning in :core:dsp; Phase 51). Standard lowered 1½ steps, then 2, 2½; Half step down and Full step down lowered 2½ steps. Write the note letters as the language's note names do (German, Polish and Russian: H for B, B for B♭). -->
     <string name="tuning_c_sharp_standard">C♯ standard</string>
+    <!-- Tuning name: standard lowered two whole steps, its lowest string a C. Write the letter as your note names do. -->
     <string name="tuning_c_standard">C standard</string>
+    <!-- Tuning name: standard lowered 2½ steps, its lowest string a B. Write the letter as your note names do (H in German, Polish, Russian). -->
     <string name="tuning_b_standard">B standard</string>
+    <!-- Tuning name: standard lowered three whole steps, its lowest string a B♭. Write the note as your note names do (B in German, Polish, Russian). -->
     <string name="tuning_b_flat_standard">B♭ standard</string>
+    <!-- Tuning name: standard lowered 3½ steps, its lowest string an A. Write the letter as your note names do. -->
     <string name="tuning_a_standard">A standard</string>
     <!-- Drop D lowered ½ step, then 1, 1½, 2 and 2½ steps. -->
     <string name="tuning_drop_c_sharp">Drop C♯</string>
+    <!-- Tuning name: Drop D lowered a whole step, its lowest string a C. Write the letter as your note names do. -->
     <string name="tuning_drop_c">Drop C</string>
+    <!-- Tuning name: Drop D lowered 1½ steps, its lowest string a B. Write the letter as your note names do (H in German, Polish, Russian). -->
     <string name="tuning_drop_b">Drop B</string>
+    <!-- Tuning name: Drop D lowered two whole steps, its lowest string a B♭. Write the note as your note names do (B in German, Polish, Russian). -->
     <string name="tuning_drop_b_flat">Drop B♭</string>
+    <!-- Tuning name: Drop D lowered 2½ steps, its lowest string an A. Write the letter as your note names do. -->
     <string name="tuning_drop_a">Drop A</string>
     <!-- A lowered tuning without a name of its own: %1$s its name ("Open G"), then how far down, ½ step being a semitone. -->
     <string name="tuning_lowered_1">%1$s, ½ step down</string>
+    <!-- A tuning lowered a whole step, without a name of its own. %1$s is its name ("Open G"). -->
     <string name="tuning_lowered_2">%1$s, 1 step down</string>
+    <!-- A tuning lowered 1½ steps, without a name of its own. %1$s is its name ("Open G"). -->
     <string name="tuning_lowered_3">%1$s, 1½ steps down</string>
+    <!-- A tuning lowered two whole steps, without a name of its own. %1$s is its name ("Open G"). -->
     <string name="tuning_lowered_4">%1$s, 2 steps down</string>
+    <!-- A tuning lowered 2½ steps, without a name of its own. %1$s is its name ("Open G"). -->
     <string name="tuning_lowered_5">%1$s, 2½ steps down</string>
     <!-- The "Lower by" row at the bottom of the instrument and tuning panel: its label, then how far the picked tuning is lowered (none, then ½ step to 2½ steps), between an up and a down button. -->
     <string name="tuner_lower_by">Lower by</string>
+    <!-- "Lower by" row of the instrument and tuning panel: the tuning is not lowered. One short word. -->
     <string name="tuner_lowered_none">None</string>
+    <!-- "Lower by" row: lowered half a step (one semitone). Short. -->
     <string name="tuner_lowered_1">½ step</string>
+    <!-- "Lower by" row: lowered a whole step (two semitones). Short. -->
     <string name="tuner_lowered_2">1 step</string>
+    <!-- "Lower by" row: lowered 1½ steps (three semitones). Short. -->
     <string name="tuner_lowered_3">1½ steps</string>
+    <!-- "Lower by" row: lowered two whole steps (four semitones). Short. -->
     <string name="tuner_lowered_4">2 steps</string>
+    <!-- "Lower by" row: lowered 2½ steps (five semitones). Short. -->
     <string name="tuner_lowered_5">2½ steps</string>
     <!-- TalkBack: the row's label and its amount, "Lower by, ½ step". -->
     <string name="tuner_spoken_lower_by" translatable="false">%1$s, %2$s</string>
     <!-- TalkBack: the row's down button and its up button. -->
     <string name="tuner_lower_more">Lower a half step</string>
+    <!-- TalkBack name of the "Lower by" row's up button: raises the tuning back up a semitone. -->
     <string name="tuner_lower_less">Back up a half step</string>
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->
     <string name="instrument_guitar">Guitar</string>
+    <!-- Instrument name in the instrument and tuning panel's row of instruments: the 12-string guitar. -->
     <string name="instrument_guitar_12">12-string guitar</string>
+    <!-- Instrument name in the panel's row of instruments: the 7-string guitar. -->
     <string name="instrument_guitar_7">7-string guitar</string>
+    <!-- Instrument name in the panel's row of instruments: the 8-string guitar. -->
     <string name="instrument_guitar_8">8-string guitar</string>
+    <!-- Instrument name in the panel's row of instruments: the (4-string) bass guitar. -->
     <string name="instrument_bass_4">Bass</string>
+    <!-- Instrument name in the panel's row of instruments: the 5-string bass guitar. -->
     <string name="instrument_bass_5">5-string bass</string>
+    <!-- Instrument name in the panel's row of instruments: the ukulele. -->
     <string name="instrument_ukulele">Ukulele</string>
+    <!-- Instrument name in the panel's row of instruments: the violin. -->
     <string name="instrument_violin">Violin</string>
+    <!-- Instrument name in the panel's row of instruments: the viola. -->
     <string name="instrument_viola">Viola</string>
+    <!-- Instrument name in the panel's row of instruments: the cello. -->
     <string name="instrument_cello">Cello</string>
+    <!-- Instrument name in the panel's row of instruments: the mandolin. -->
     <string name="instrument_mandolin">Mandolin</string>
+    <!-- Instrument name in the panel's row of instruments: the 5-string banjo. -->
     <string name="instrument_banjo_5">5-string banjo</string>
     <!-- Under the 12-string's tunings in the instrument and tuning panel: what the tuner leaves out for it, and why. -->
     <string name="instrument_note_guitar_12">The strum check and the chord name are off for the 12-string: its twelve strings ring too close together to tell apart.</string>
+    <!-- Tuner, in the note's place while nothing is heard (Strings mode): asks the player to play a string. Short. -->
     <string name="tuner_hint_play_string">Play a string</string>
+    <!-- Tuner, in the note's place while nothing is heard (Chromatic mode): asks the player to play any note. Short. -->
     <string name="tuner_hint_play_note">Play a note</string>
     <!-- %1$s is a string's note and octave, e.g. "A2". -->
     <string name="tuner_hint_play_locked_string">Play the %1$s string</string>
     <!-- While a string's reference tone sounds (a long-press on the string). %1$s is its note and octave, e.g. "D3". -->
     <string name="tuner_hint_playing">Playing %1$s</string>
+    <!-- TalkBack: what tapping a string button does: the tuner listens for that string only ("Double-tap to …" is added by Android). -->
     <string name="tuner_string_lock">Lock to this string</string>
+    <!-- TalkBack: what tapping the locked string button does: the tuner goes back to finding the string by itself. -->
     <string name="tuner_string_unlock">Pick strings automatically</string>
+    <!-- TalkBack: the state of the string button the tuner is locked to. -->
     <string name="tuner_string_locked">Locked</string>
     <!-- TalkBack: a long-press on a string plays its note; %1$s is the string as spoken, e.g. "A 2". -->
     <string name="tuner_string_play">Play %1$s</string>
@@ -107,33 +163,47 @@
     <string name="tuner_string_stop_tone">Stop the tone</string>
     <!-- TalkBack: the state of the string whose reference tone sounds now. -->
     <string name="tuner_string_sounding">Playing</string>
+    <!-- TalkBack: the state of the locked string button while its reference tone sounds. -->
     <string name="tuner_string_locked_sounding">Locked, playing</string>
+    <!-- Tuner: the note's frequency in small type under the note. %1$.1f is the frequency in hertz with one decimal, e.g. "110.0". -->
     <string name="tuner_frequency">%1$.1f Hz</string>
+    <!-- Tuner: the cents pill under the note when it is exactly on pitch. -->
     <string name="tuner_cents_zero">0 cents</string>
+    <!-- Tuner: the cents pill under the note (and TalkBack) when the note is low. %1$d is how many cents (hundredths of a semitone) too low. -->
     <plurals name="tuner_cents_flat">
         <item quantity="one">%1$d cent flat</item>
         <item quantity="other">%1$d cents flat</item>
     </plurals>
+    <!-- Tuner: the cents pill under the note (and TalkBack) when the note is high. %1$d is how many cents too high. -->
     <plurals name="tuner_cents_sharp">
         <item quantity="one">%1$d cent sharp</item>
         <item quantity="other">%1$d cents sharp</item>
     </plurals>
+    <!-- Tuner: the cents pill under the note (capitalised there) and TalkBack's word when the note is in tune. Lower case here. -->
     <string name="tuner_in_tune">in tune</string>
     <!-- Which way to turn the peg while a note is off pitch. -->
     <string name="tuner_tune_up">Tune up ↑</string>
+    <!-- Hint under the meter while the note is too high: turn the peg to lower it. Keep the arrow. Short, one line. -->
     <string name="tuner_tune_down">Tune down ↓</string>
     <!-- Tips shown only when the player can fix how the tuner hears them (also read out by TalkBack). -->
     <string name="tuner_tip_too_soft">Play a bit louder</string>
+    <!-- Tip under the note when there is too much background noise to hear the note well. Short, one line. -->
     <string name="tuner_tip_too_noisy">Too noisy here</string>
+    <!-- Tip under the note when the sound is so loud it distorts: hold the phone further away. Short, one line. -->
     <string name="tuner_tip_too_loud">Too loud, move the phone back</string>
     <!-- The optional signal bars by the note: %1$d bars lit of %2$d (TalkBack). -->
     <string name="tuner_signal_bars">Signal bars: %1$d of %2$d</string>
+    <!-- TalkBack: the signal bars by the note while no note is heard yet. -->
     <string name="tuner_signal_no_note">Signal: no note yet</string>
+    <!-- TalkBack: what tapping the signal bars does: opens the panel with the figures ("Double-tap to …" is added by Android). Lower case. -->
     <string name="tuner_signal_show_figures">show the figures</string>
     <!-- The panel a tap on the signal bars opens. -->
     <string name="tuner_signal_title">How well Twangle hears you</string>
+    <!-- Signal panel: the row with how loud the note is heard (in dB). -->
     <string name="tuner_signal_volume">Volume</string>
+    <!-- Signal panel: the row with how loud the background noise is (in dB). -->
     <string name="tuner_signal_background">Background</string>
+    <!-- Signal panel: the row with how clear the pitch is (in %). -->
     <string name="tuner_signal_clarity">Clarity</string>
     <string name="tuner_signal_db" translatable="false">%1$d dB</string>
     <string name="tuner_signal_percent" translatable="false">%1$d%%</string>
@@ -143,7 +213,9 @@
     <string name="tuner_spoken_reading">%1$s %2$d, %3$s</string>
     <!-- The same plus which way to turn the peg, %4$s is "tune up" or "tune down". -->
     <string name="tuner_spoken_reading_hint">%1$s %2$d, %3$s, %4$s</string>
+    <!-- TalkBack, after the reading while the note is too low: turn the peg up. Lower case. -->
     <string name="tuner_spoken_tune_up">tune up</string>
+    <!-- TalkBack, after the reading while the note is too high: turn the peg down. Lower case. -->
     <string name="tuner_spoken_tune_down">tune down</string>
     <!-- What TalkBack says between the parts of a list: "E flat, A flat, ...", "12 cents flat, tune up". Quoted to keep the space. -->
     <string name="tuner_spoken_separator">", "</string>
@@ -156,6 +228,7 @@
     <string name="tuner_spoken_tuning">%1$s, %2$s</string>
     <!-- The button above the strings ("Guitar · Standard") as TalkBack says it: %1$s the instrument, %2$s its tuning. -->
     <string name="tuner_spoken_picker">%1$s, %2$s</string>
+    <!-- The name beside the instrument button (and in the Practice tools): %1$s the instrument ("Guitar"), %2$s its tuning ("Standard"). Keep the dot unless your language separates them otherwise. -->
     <string name="tuner_tuning_name">%1$s · %2$s</string>
     <!-- Title of the panel that opens from the bottom, with the instruments and their tunings. -->
     <string name="tuner_picker_title">Instrument and tuning</string>
@@ -165,23 +238,31 @@
 
     <!-- The tuning editor: a screen to make a tuning of your own, or change one. -->
     <string name="tuning_editor_title_edit">Edit tuning</string>
+    <!-- TalkBack name of the tuning editor's close (X) button at the top: leaves without saving. -->
     <string name="tuning_editor_close">Close without saving</string>
+    <!-- Tuning editor: the button at the top that saves the tuning. Short. -->
     <string name="tuning_editor_save">Save</string>
     <!-- %1$s is the instrument the tuning is for, e.g. "Guitar". -->
     <string name="tuning_editor_instrument">Instrument: %1$s</string>
+    <!-- Tuning editor: the label of the field where the player types the tuning's name. -->
     <string name="tuning_editor_name">Name</string>
     <!-- Shown under the name only after Save is tapped, until the name is changed. -->
     <string name="tuning_editor_name_empty">Give the tuning a name</string>
+    <!-- Tuning editor: error under the name field when another tuning has the same name. -->
     <string name="tuning_editor_name_taken">There is already a tuning with this name</string>
     <!-- Asks before the editor is closed (close button, Back) with edits that are not saved. -->
     <string name="tuning_editor_discard_title">Discard changes?</string>
+    <!-- Discard changes dialog: the button that closes the editor and loses the changes. Short. -->
     <string name="tuning_editor_discard">Discard</string>
+    <!-- Discard changes dialog: the button that goes back to the editor. Short. -->
     <string name="tuning_editor_keep_editing">Keep editing</string>
+    <!-- Tuning editor: heading over the list of strings with their − and + buttons. -->
     <string name="tuning_editor_strings">Strings</string>
     <!-- A string by its note in the standard tuning, e.g. "E2 string"; as TalkBack says it, "E 2 string". -->
     <string name="tuning_editor_string">%1$s string</string>
     <!-- The − and + buttons beside a string's note. %1$s is the string as TalkBack says it, e.g. "E 2 string". -->
     <string name="tuning_editor_lower">%1$s, a semitone lower</string>
+    <!-- TalkBack name of the + button beside a string's note: one semitone higher. %1$s is the string ("E 2 string"). -->
     <string name="tuning_editor_raise">%1$s, a semitone higher</string>
     <!-- A string's note as TalkBack says it: %1$s the string ("E 2 string"), %2$s its note now ("D 2"). -->
     <string name="tuning_editor_spoken_note" translatable="false">%1$s, %2$s</string>
@@ -192,30 +273,43 @@
     <string name="tuner_tuning_options">Options for %1$s</string>
     <!-- The ⋮ button's menu, and the button that confirms the delete. -->
     <string name="tuner_edit_tuning">Edit</string>
+    <!-- The ⋮ menu's item that deletes one of the player's own tunings, and the delete dialog's confirm button. Short. -->
     <string name="tuner_delete_tuning">Delete</string>
     <!-- Asks before one of the player's own tunings is deleted. %1$s is its name, e.g. "“Drop D loose” will be gone for good." -->
     <string name="tuner_delete_tuning_title">Delete this tuning?</string>
+    <!-- Delete dialog: the text under "Delete this tuning?". %1$s is the tuning's name; keep your language's quotation marks around it. -->
     <string name="tuner_delete_tuning_text">“%1$s” will be gone for good.</string>
+    <!-- Delete dialog: the button that keeps the tuning. Short. -->
     <string name="tuner_delete_tuning_cancel">Cancel</string>
     <!-- Strum check: strum once and every string shows flat, in tune or sharp at once (guitar mode). -->
     <string name="tuner_strum_check">Strum check</string>
+    <!-- Strum check, the title line before a strum: strum all strings open (unfretted) at once. -->
     <string name="tuner_strum_waiting">Strum all the open strings</string>
+    <!-- Strum check, the line under "Strum all the open strings": what the check will show. -->
     <string name="tuner_strum_waiting_detail">Every string shows flat, in tune or sharp</string>
+    <!-- Strum check and chord name: the title line while a strum is being heard. -->
     <string name="tuner_strum_hearing">Listening…</string>
+    <!-- Strum check, the title line after a strum: %1$d is how many strings are out of tune. -->
     <plurals name="tuner_strum_to_tune">
         <item quantity="one">%1$d string to tune</item>
         <item quantity="other">%1$d strings to tune</item>
     </plurals>
+    <!-- Strum check, the title line when some strings of the strum were not heard. -->
     <string name="tuner_strum_not_all_heard">Not every string was heard</string>
+    <!-- Strum check, the title line when every string is in tune. -->
     <string name="tuner_strum_all_in_tune">All strings in tune</string>
+    <!-- Strum check, the line under the title while the strummed strings ring: tapping a string leaves the check and tunes it. -->
     <string name="tuner_strum_tap_to_tune">Tap a string to tune it</string>
+    <!-- Strum check, the line under the title once the strum has died away: strum again, or tap a string to tune it. -->
     <string name="tuner_strum_again">Strum again, or tap a string to tune it</string>
     <!-- TalkBack action on a string of the strum check: leave it and tune that string. %1$s is the string as spoken ("A 2"). -->
     <string name="tuner_strum_tune_string">Tune %1$s</string>
     <!-- TalkBack, one string of the strum check. %1$s is the string as spoken ("A 2"), %2$s its reading
          ("12 cents flat, tune up" or "in tune"). -->
     <string name="tuner_strum_spoken_string">%1$s, %2$s</string>
+    <!-- TalkBack, one string of the strum check that the strum didn't let the tuner hear. %1$s is the string ("A 2"). -->
     <string name="tuner_strum_spoken_not_heard">%1$s, not heard</string>
+    <!-- TalkBack, one string of the strum check before any strum. %1$s is the string ("A 2"). -->
     <string name="tuner_strum_spoken_waiting">%1$s, not strummed yet</string>
     <!-- A string read from sounds that overlap another string's, so the reading is less certain. -->
     <string name="tuner_strum_spoken_less_sure">%1$s, less sure</string>
@@ -227,11 +321,17 @@
     <string name="tour_step_spoken">Step %1$d of %2$d. %3$s.</string>
     <!-- The tour's first step: the meter and the note under it, lit together. -->
     <string name="tour_readout">How far off, and which note</string>
+    <!-- Tour balloon pointing at the strum check's switch: strum once to check all strings. Short. -->
     <string name="tour_strum">Strum to check every string</string>
+    <!-- Tour balloon pointing at the string buttons: tap one to lock the tuner to it, hold one to hear its note. Short. -->
     <string name="tour_strings">Tap to lock, hold to hear</string>
+    <!-- Tour balloon pointing at the instrument button: it picks the instrument and its tuning. Short. -->
     <string name="tour_picker">Pick instrument and tuning</string>
+    <!-- Tour balloon's button that ends the tour at once. Short. -->
     <string name="tour_skip">Skip tour</string>
+    <!-- Tour balloon's button that goes to the next step. Short. -->
     <string name="tour_next">Next</string>
+    <!-- Tour balloon's button on the last step: ends the tour. Short. -->
     <string name="tour_done">Done</string>
     <!-- More tools: one small button above the strings opens a menu of the tuner's tools (strum check, the 12th-fret check). -->
     <string name="tuner_more_tools">More tools</string>
@@ -239,49 +339,74 @@
     <string name="tuner_intonation_check">12th-fret check</string>
     <!-- The check's two steps, at the top of its panel: the open string, then the 12th fret. -->
     <string name="tuner_intonation_step_open">Open</string>
+    <!-- 12th-fret check, the second step's label at the top of its panel: the string pressed at the 12th fret. Short. -->
     <string name="tuner_intonation_step_fret">12th fret</string>
+    <!-- 12th-fret check: in the panel's drawing while no string is picked yet. Short. -->
     <string name="tuner_intonation_which_string">Which string?</string>
+    <!-- 12th-fret check, the title line before any string is checked. -->
     <string name="tuner_intonation_choose">Choose a string</string>
+    <!-- 12th-fret check, the line under "Choose a string": tune the string before checking it. -->
     <string name="tuner_intonation_choose_detail">Tune it first, then check it</string>
     <!-- %1$s is the string with its octave, e.g. "A2". -->
     <string name="tuner_intonation_play_open">Play the open %1$s string</string>
+    <!-- 12th-fret check, the line under "Play the open … string": let the string sound until it is heard. -->
     <string name="tuner_intonation_let_ring">Let it ring</string>
+    <!-- 12th-fret check, the title line when the open string is out of tune. %1$s is the string with its octave ("A2"). -->
     <string name="tuner_intonation_tune_first">Tune the %1$s string first</string>
+    <!-- 12th-fret check, the title line after the open string: now play it pressed down at the 12th fret. -->
     <string name="tuner_intonation_press_fret">Now press it at the 12th fret</string>
     <!-- A light touch at the 12th fret gives a harmonic, which always sounds the exact octave. -->
     <string name="tuner_intonation_press_detail">Press it down, not a light touch</string>
+    <!-- 12th-fret check, the title line when the fretted note heard is not the octave of the open string. -->
     <string name="tuner_intonation_not_octave">That wasn\'t the octave</string>
+    <!-- 12th-fret check, the line under "That wasn't the octave". -->
     <string name="tuner_intonation_not_octave_detail">Press it at the 12th fret and play again</string>
+    <!-- 12th-fret check, the verdict when the string's intonation is good. One short word. -->
     <string name="tuner_intonation_fine">Fine</string>
+    <!-- 12th-fret check, the line under "Fine": the saddle (where the string rests on the bridge) needs no change. -->
     <string name="tuner_intonation_fine_detail">Leave the saddle where it is</string>
     <!-- The verdict. Back = away from the neck (the 12th fret is sharp), forward = towards the neck (flat). -->
     <string name="tuner_intonation_back">Move the saddle back</string>
+    <!-- 12th-fret check, the verdict when the fretted note is flat: move the string's saddle towards the neck. -->
     <string name="tuner_intonation_forward">Move the saddle forward</string>
+    <!-- 12th-fret check, the line under "Move the saddle back" (on instruments without a millimetre figure). -->
     <string name="tuner_intonation_back_detail">Away from the neck</string>
+    <!-- 12th-fret check, the line under "Move the saddle forward" (on instruments without a millimetre figure). -->
     <string name="tuner_intonation_forward_detail">Towards the neck</string>
     <!-- %1$s is a number of millimetres, e.g. "3" or "1.5" (guitars only). -->
     <string name="tuner_intonation_back_mm">Away from the neck, about %1$s mm</string>
+    <!-- 12th-fret check, the line under "Move the saddle forward" on guitars. %1$s is the millimetres, e.g. "1.5". -->
     <string name="tuner_intonation_forward_mm">Towards the neck, about %1$s mm</string>
+    <!-- 12th-fret check, the line under "Move the saddle back" when the move is tiny. %1$s is the smallest step in millimetres, e.g. "0.5". -->
     <string name="tuner_intonation_back_less">Away from the neck, less than %1$s mm</string>
+    <!-- 12th-fret check, the line under "Move the saddle forward" when the move is tiny. %1$s is the smallest step in millimetres, e.g. "0.5". -->
     <string name="tuner_intonation_forward_less">Towards the neck, less than %1$s mm</string>
+    <!-- 12th-fret check, a button after the verdict: checks the same string again. Short. -->
     <string name="tuner_intonation_check_again">Check again</string>
+    <!-- 12th-fret check, a button after the verdict: goes on to the next string. Short. -->
     <string name="tuner_intonation_next_string">Next string</string>
     <!-- After every string has been checked, or between strings: how many saddles should move. -->
     <plurals name="tuner_intonation_to_move">
         <item quantity="one">%1$d saddle to move</item>
         <item quantity="other">%1$d saddles to move</item>
     </plurals>
+    <!-- 12th-fret check, the title line between strings when every string checked so far is fine. -->
     <string name="tuner_intonation_all_fine">Every string checked is fine</string>
+    <!-- 12th-fret check, the line under the title between strings. -->
     <string name="tuner_intonation_tap_string">Tap a string to check it</string>
     <!-- Small labels in the drawing of the string from the neck to the saddle. -->
     <string name="tuner_intonation_neck">neck</string>
+    <!-- 12th-fret check: small label at the bridge end of the string's drawing (the saddle the string rests on). Lower case, one short word. -->
     <string name="tuner_intonation_saddle">saddle</string>
     <!-- TalkBack action on a string in the 12th-fret check. %1$s is the string as spoken ("A 2"). -->
     <string name="tuner_intonation_check_string">Check %1$s</string>
     <!-- TalkBack: a string's result in the 12th-fret check, said after its name. -->
     <string name="tuner_intonation_mark_fine">saddle fine</string>
+    <!-- TalkBack, after a string's name in the 12th-fret check: its saddle should move back (away from the neck). -->
     <string name="tuner_intonation_mark_back">move saddle back</string>
+    <!-- TalkBack, after a string's name in the 12th-fret check: its saddle should move forward (towards the neck). -->
     <string name="tuner_intonation_mark_forward">move saddle forward</string>
+    <!-- TalkBack, a string in the 12th-fret check not checked yet. %1$s is the string ("A 2"). -->
     <string name="tuner_intonation_spoken_not_checked">%1$s, not checked yet</string>
     <!-- The tour's step for the "more tools" button (instead of tour_strum, where the button replaces the strum check's switch). -->
     <string name="tour_more_tools">More tools, like strum check</string>
@@ -289,16 +414,25 @@
     <string name="tuner_chord_name">Chord name</string>
     <!-- A chord's name in words, under its symbol ("Am") and as TalkBack says it. %1$s is the chord's root ("A", "B♭", "La"). -->
     <string name="tuner_chord_major">%1$s major</string>
+    <!-- Chord name tool: a minor chord in words, under its symbol ("Am") and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="tuner_chord_minor">%1$s minor</string>
+    <!-- Chord name tool: a seventh chord (dominant seventh, "A7") in words. %1$s is the root. -->
     <string name="tuner_chord_seventh">%1$s seventh</string>
+    <!-- Chord name tool: a major seventh chord ("Amaj7") in words. %1$s is the root. -->
     <string name="tuner_chord_major_seventh">%1$s major seventh</string>
+    <!-- Chord name tool: a minor seventh chord ("Am7") in words. %1$s is the root. -->
     <string name="tuner_chord_minor_seventh">%1$s minor seventh</string>
+    <!-- Chord name tool: a suspended second chord ("Asus2") in words. %1$s is the root. -->
     <string name="tuner_chord_sus2">%1$s suspended second</string>
+    <!-- Chord name tool: a suspended fourth chord ("Asus4") in words. %1$s is the root. -->
     <string name="tuner_chord_sus4">%1$s suspended fourth</string>
     <!-- Phase 49: the power chord ("E5", root and fifth, no third), the 7♯9, m9 and maj9, as TalkBack says them. As the Chords tool. -->
     <string name="tuner_chord_power_chord">%1$s power chord</string>
+    <!-- Chord name tool: a seven sharp nine chord ("E7♯9", the "Hendrix chord") in words, for TalkBack. %1$s is the root. -->
     <string name="tuner_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
+    <!-- Chord name tool: a minor ninth chord ("Am9") in words. %1$s is the root. -->
     <string name="tuner_chord_minor_ninth">%1$s minor ninth</string>
+    <!-- Chord name tool: a major ninth chord ("Amaj9") in words. %1$s is the root. -->
     <string name="tuner_chord_major_ninth">%1$s major ninth</string>
     <!-- A slash chord ("C/E"): %1$s is the chord in words ("C major"), %2$s its bass note ("E"). -->
     <string name="tuner_chord_slash">%1$s, %2$s in the bass</string>
@@ -306,12 +440,15 @@
     <string name="tuner_chord_bass">bass</string>
     <!-- The line under the chord: waiting for a strum (with the detail under it), and once a chord is named. -->
     <string name="tuner_chord_strum">Strum a chord</string>
+    <!-- Chord name tool, the line under "Strum a chord": strum every string of the chord. -->
     <string name="tuner_chord_strum_detail">All the strings of it</string>
+    <!-- Chord name tool, the line under a named chord: strum again to name the next chord. -->
     <string name="tuner_chord_next">Strum again for the next</string>
     <!-- Detail under "Listening…" while a strum is heard and not named yet. -->
     <string name="tuner_chord_let_ring">Let it ring</string>
     <!-- A strum that named no chord for 1.5 s; never a guess. -->
     <string name="tuner_chord_unclear">Not a clear chord</string>
+    <!-- Chord name tool, the line under "Not a clear chord". -->
     <string name="tuner_chord_unclear_detail">Strum all the strings of it</string>
     <!-- TalkBack, the chord's place before any chord is named. -->
     <string name="tuner_chord_none">No chord yet</string>
@@ -325,11 +462,16 @@
     <string name="tuner_trail_spoken">Pitch trail, %1$s</string>
     <!-- How the line runs over the last moments. %1$s is where the note sits: "in tune" or "10 cents sharp". -->
     <string name="tuner_trail_no_note">no note</string>
+    <!-- TalkBack, the pitch trail: the note holds steady. %1$s is where it sits ("in tune", "10 cents sharp"). -->
     <string name="tuner_trail_steady">steady, %1$s</string>
+    <!-- TalkBack, the pitch trail: the note wobbles up and down. %1$s is where it sits ("in tune", "10 cents sharp"). -->
     <string name="tuner_trail_wavering">wavering, %1$s</string>
+    <!-- TalkBack, the pitch trail: the note slides upwards (as when a string is bent or tuned up). -->
     <string name="tuner_trail_bending_up">bending up</string>
+    <!-- TalkBack, the pitch trail: the note slides downwards. -->
     <string name="tuner_trail_bending_down">bending down</string>
     <!-- Keep screen on's warning, 10 s before the screen is left to the phone's own timeout after 3 minutes without playing. -->
     <string name="tuner_screen_off_soon">Screen turns off soon</string>
+    <!-- Keep screen on's warning, the line under "Screen turns off soon": a tap keeps the screen on. -->
     <string name="tuner_screen_off_keep_on">Tap to keep it on</string>
 </resources>

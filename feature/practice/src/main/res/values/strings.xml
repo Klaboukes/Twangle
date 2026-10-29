@@ -2,12 +2,15 @@
 <resources>
     <!-- Practice tab (Phase 32): the tools' names on the tool button at its top and in its list (Phase 47). -->
     <string name="practice_tool_metronome">Metronome</string>
+    <!-- Practice tab: the Chords tool's name (chord charts) on the tool button at the top and in its list. One or two words. -->
     <string name="practice_tool_chords">Chords</string>
+    <!-- Practice tab: the Scales tool's name (scales on the neck, with the drone) on the tool button at the top and in its list. One or two words. -->
     <string name="practice_tool_scales">Scales</string>
     <!-- Phase 55: Ear training, a Practice tool of its own (Play it back, Intervals, Chord type). -->
     <string name="practice_tool_ear_training">Ear training</string>
     <!-- TalkBack (Phase 47): the tool button at the top of Practice, said before the tool picked ("Tool, Chords, drop-down list"), and the list of tools it opens. -->
     <string name="practice_tool_button">Tool</string>
+    <!-- TalkBack: the list of Practice tools that the tool button opens. -->
     <string name="practice_tool_list">Tools</string>
     <!-- Chords (Phase 32): TalkBack, the group of root buttons (C, C♯, D …) the chord is built on. -->
     <string name="practice_root">Root</string>
@@ -15,30 +18,49 @@
     <string name="practice_chord_type">Chord type</string>
     <!-- A chord in words: the chart's title, and how TalkBack says a chord type button. %1$s is the root ("A", "B♭", "La"). As the tuner's chord name. -->
     <string name="practice_chord_major">%1$s major</string>
+    <!-- Chords: a minor (Cm) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor">%1$s minor</string>
+    <!-- Chords: a seventh (dominant seventh, C7) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_seventh">%1$s seventh</string>
+    <!-- Chords: a major seventh (Cmaj7) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_major_seventh">%1$s major seventh</string>
+    <!-- Chords: a minor seventh (Cm7) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor_seventh">%1$s minor seventh</string>
+    <!-- Chords: a suspended second (Csus2) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_sus2">%1$s suspended second</string>
+    <!-- Chords: a suspended fourth (Csus4) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_sus4">%1$s suspended fourth</string>
+    <!-- Chords: a seventh suspended fourth (C7sus4) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_seventh_sus4">%1$s seventh suspended fourth</string>
+    <!-- Chords: a sixth (C6) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_sixth">%1$s sixth</string>
+    <!-- Chords: a minor sixth (Cm6) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor_sixth">%1$s minor sixth</string>
+    <!-- Chords: a added ninth (Cadd9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_add9">%1$s added ninth</string>
+    <!-- Chords: a ninth (C9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_ninth">%1$s ninth</string>
+    <!-- Chords: a diminished (Cdim) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_diminished">%1$s diminished</string>
+    <!-- Chords: a diminished seventh (Cdim7) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_diminished_seventh">%1$s diminished seventh</string>
+    <!-- Chords: a half-diminished (Cm7b5) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_half_diminished">%1$s half-diminished</string>
+    <!-- Chords: a augmented (Caug) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_augmented">%1$s augmented</string>
     <!-- Phase 49: the power chord ("C5"), the 7♯9 ("Hendrix chord"), m9 and maj9. Words for TalkBack, so "sharp" in words, not ♯. -->
     <string name="practice_chord_power_chord">%1$s power chord</string>
+    <!-- Chords: a seven sharp nine (C7#9, the "Hendrix chord"); in words for TalkBack chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
+    <!-- Chords: a minor ninth (Cm9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor_ninth">%1$s minor ninth</string>
+    <!-- Chords: a major ninth (Cmaj9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_major_ninth">%1$s major ninth</string>
     <!-- Between the ‹ › buttons under the chart: shape %1$d of the %2$d found. -->
     <string name="practice_shape_count">%1$d of %2$d</string>
     <!-- TalkBack, the ‹ and › buttons that step through the shapes of the chord. -->
     <string name="practice_shape_previous">Previous shape</string>
+    <!-- TalkBack name of the › button under the chord chart: shows the chord's next shape. -->
     <string name="practice_shape_next">Next shape</string>
     <!-- Beside the first fret row of a chart that starts higher up the neck, as songbooks write it ("5fr"). -->
     <string name="practice_chart_fret">%1$dfr</string>
@@ -46,7 +68,9 @@
     <string name="practice_chord_none">No shape within reach in this tuning</string>
     <!-- In the chart's, the neck's or the table's place for the 5-string banjo, whose short fifth string (starting at the fifth fret) Chords, Scales and Capo don't draw yet. The instrument button is at the top of the screen. -->
     <string name="practice_chords_short_string">Chord charts don\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
+    <!-- Scales: shown in the neck's place for the 5-string banjo, whose short fifth string the tool doesn't draw yet. The instrument button is at the top of the screen. -->
     <string name="practice_scales_short_string">Scales don\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
+    <!-- Capo helper: shown in the table's place for the 5-string banjo, whose short fifth string the tool doesn't handle yet. The instrument button is at the top of the screen. -->
     <string name="practice_capo_short_string">The capo table doesn\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
     <!-- TalkBack: between the parts of a spoken chart. -->
     <string name="practice_spoken_separator">", "</string>
@@ -56,46 +80,77 @@
     <string name="practice_spoken_string">%1$s string</string>
     <!-- TalkBack, each string of the shape: %1$s the string ("E 2 string"); played strings add the fret, the finger and the note sounded. A barre: its finger, its fret and the first and last string's notes ("A 2", "E 4"). -->
     <string name="practice_spoken_muted">%1$s, not played</string>
+    <!-- TalkBack, a string of the chord shape played open: %1$s is the string ("E 2 string"). -->
     <string name="practice_spoken_open">%1$s, open</string>
+    <!-- TalkBack, a string of the chord shape: %1$s the string ("E 2 string"), %2$d the fret, %3$d the finger (1 index to 4 little finger), %4$s the note it sounds ("C"). -->
     <string name="practice_spoken_fret">%1$s, fret %2$d, finger %3$d, %4$s</string>
+    <!-- TalkBack, a barre (one finger across several strings): %1$d the finger, %2$d the fret, %3$s and %4$s the first and last string's notes ("A 2", "E 4"). Note %2$d comes before %1$d in English. -->
     <string name="practice_spoken_barre">barre, fret %2$d, finger %1$d, strings %3$s to %4$s</string>
     <!-- Scales (Phase 32, a tool of its own since Phase 47): TalkBack, the scale panel's one group of scale buttons (Major, Minor …). -->
     <string name="practice_scale_type">Scale</string>
     <!-- The scale buttons, two to a row, the most used first (long names take two lines, set smaller to fit). Major and Minor are the major and the (natural) minor scale: each language's usual word for them. -->
     <string name="practice_scale_type_major">Major</string>
+    <!-- Scales: the button for the natural minor scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_minor">Minor</string>
+    <!-- Scales: the button for the major pentatonic scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_major_pentatonic">Major pentatonic</string>
+    <!-- Scales: the button for the minor pentatonic scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_minor_pentatonic">Minor pentatonic</string>
+    <!-- Scales: the button for the blues scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_blues">Blues</string>
+    <!-- Scales: the button for the major blues scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_major_blues">Major blues</string>
+    <!-- Scales: the button for the Dorian mode scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_dorian">Dorian</string>
+    <!-- Scales: the button for the Phrygian mode scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_phrygian">Phrygian</string>
+    <!-- Scales: the button for the Phrygian dominant scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_phrygian_dominant">Phrygian dominant</string>
+    <!-- Scales: the button for the Lydian mode scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_lydian">Lydian</string>
+    <!-- Scales: the button for the Mixolydian mode scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_mixolydian">Mixolydian</string>
+    <!-- Scales: the button for the Locrian mode scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_locrian">Locrian</string>
+    <!-- Scales: the button for the harmonic minor scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_harmonic_minor">Harmonic minor</string>
+    <!-- Scales: the button for the melodic minor scale, in a grid two to a row (a long name takes two lines). Musicians' usual name. -->
     <string name="practice_scale_type_melodic_minor">Melodic minor</string>
     <!-- A scale in words, on the name button (large, on one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_major">%1$s major</string>
+    <!-- Scales: the natural minor scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_minor">%1$s minor</string>
+    <!-- Scales: the major pentatonic scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_major_pentatonic">%1$s major pentatonic</string>
+    <!-- Scales: the minor pentatonic scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_minor_pentatonic">%1$s minor pentatonic</string>
+    <!-- Scales: the blues scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_blues">%1$s blues</string>
+    <!-- Scales: the major blues scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_major_blues">%1$s major blues</string>
+    <!-- Scales: the Dorian mode scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_dorian">%1$s Dorian</string>
+    <!-- Scales: the Phrygian mode scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_phrygian">%1$s Phrygian</string>
+    <!-- Scales: the Phrygian dominant scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_phrygian_dominant">%1$s Phrygian dominant</string>
+    <!-- Scales: the Lydian mode scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_lydian">%1$s Lydian</string>
+    <!-- Scales: the Mixolydian mode scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_mixolydian">%1$s Mixolydian</string>
+    <!-- Scales: the Locrian mode scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_locrian">%1$s Locrian</string>
+    <!-- Scales: the harmonic minor scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_harmonic_minor">%1$s harmonic minor</string>
+    <!-- Scales: the melodic minor scale in words, on the name button (large, one line where it fits) and for TalkBack. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_scale_melodic_minor">%1$s melodic minor</string>
     <!-- TalkBack, the neck: %1$s the scale in words ("A minor pentatonic"), %2$s its notes from the root ("A, C, D, E, G"). -->
     <string name="practice_spoken_scale_notes">%1$s, notes %2$s</string>
     <!-- TalkBack, each note on a string: open, or the fret %1$d and the note's name %2$s; the root's places add "root". -->
     <string name="practice_spoken_scale_open">open %1$s</string>
+    <!-- TalkBack, a note of the scale on a string: %1$d the fret, %2$s the note's name ("fret 5 A"). -->
     <string name="practice_spoken_scale_fret">fret %1$d %2$s</string>
+    <!-- TalkBack, a place of the scale's root note on the neck: %1$s is the place as said above ("fret 5 A"), then "root". -->
     <string name="practice_spoken_scale_root">%1$s, root</string>
     <!-- TalkBack, the neck: a place of the scale's colour note, ringed on the neck (Dorian's 6th, Lydian's ♯4 …). -->
     <string name="practice_spoken_scale_colour">%1$s, colour note</string>
@@ -113,9 +168,11 @@
     <string name="practice_capo_on_fret">Capo on fret %1$d</string>
     <!-- TalkBack, the ‹ and › buttons that move the capo one fret towards the nut or the body. -->
     <string name="practice_capo_lower">Capo one fret down</string>
+    <!-- TalkBack name of the › button: moves the capo one fret towards the body (the note goes up). -->
     <string name="practice_capo_higher">Capo one fret up</string>
     <!-- The table's two column heads: the shape the player fingers, and the chord it sounds with the capo on. -->
     <string name="practice_capo_shape_column">Shape</string>
+    <!-- Capo helper: the table's column head over the chord each shape sounds with the capo on. One short word. -->
     <string name="practice_capo_sounds_column">Sounds</string>
     <!-- Under the table: %1$s the key the song then sounds in ("E♭", "Cm"; TalkBack hears "E flat major"). -->
     <string name="practice_capo_sounds_in">Sounds in %1$s</string>
@@ -127,19 +184,27 @@
     <string name="practice_drone">Drone</string>
     <!-- TalkBack, the ▶ / ■ half of the drone button. -->
     <string name="practice_drone_play">Play the drone</string>
+    <!-- TalkBack, the ■ half of the drone button while the drone plays: stops it. -->
     <string name="practice_drone_stop">Stop the drone</string>
     <!-- TalkBack, the drone button's other half, which opens the drone panel: %1$s the sound picked ("Drone sound: Tanpura"). -->
     <string name="practice_drone_sound_spoken">Drone sound: %1$s</string>
     <!-- The drone panel: the sound's section, then its four sounds in this order (the instruments' common names). -->
     <string name="practice_drone_sound">Sound</string>
+    <!-- Drone panel: sound of the tanpura (Indian drone lute). The instrument's common name. -->
     <string name="practice_drone_tanpura">Tanpura</string>
+    <!-- Drone panel: sound of the harmonium (pump organ). The instrument's common name. -->
     <string name="practice_drone_harmonium">Harmonium</string>
+    <!-- Drone panel: sound of a soft organ with flute pipes. -->
     <string name="practice_drone_flute_organ">Flute organ</string>
+    <!-- Drone panel: a warm synthesizer pad sound (a soft, sustained synth chord). -->
     <string name="practice_drone_warm_pad">Warm pad</string>
     <!-- The drone panel: which notes sound: the scale's root alone, with its fifth, with its fifth and the octave above. -->
     <string name="practice_drone_notes">Notes</string>
+    <!-- Drone panel, under Notes: only the scale's root note sounds. One short word. -->
     <string name="practice_drone_root">Root</string>
+    <!-- Drone panel, under Notes: the root with its fifth. Short; keep the plus sign. -->
     <string name="practice_drone_fifth">+ fifth</string>
+    <!-- Drone panel, under Notes: the root with its fifth and the octave above. Short; keep the plus sign. -->
     <string name="practice_drone_fifth_octave">+ fifth and octave</string>
     <!-- The drone panel's switch: the whole drone an octave lower. -->
     <string name="practice_drone_lower">Lower</string>
