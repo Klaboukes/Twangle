@@ -194,7 +194,8 @@ internal fun AnswerButton(
             style = signStyle,
             color = lerp(ink, inTune, glow),
             maxLines = 1,
-            // A long word ("Maggiore" at 2× text in a narrow column) set smaller, never cut off.
+            // A long word ("Maggiore" at 2× text in a narrow column) set smaller, never cut off; not wrapped (the name says why).
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = with(density) { NAME_MIN_SIZE.toSp() }, maxFontSize = signStyle.fontSize, stepSize = 0.5.sp),
         )
         val nameStyle = MaterialTheme.typography.labelSmall
@@ -204,7 +205,11 @@ internal fun AnswerButton(
             color = lerp(muted, inTune, glow),
             maxLines = 1,
             textAlign = TextAlign.Center,
-            // Set smaller on its one line where a name is long, so every button keeps one height.
+            // Set smaller on its one line where a name is long, so every button keeps one height. Never wrapped:
+            // Compose 1.12's auto-size takes a size at which the one line wraps for fitting, as long as the line
+            // it keeps fits the height (Spanish "segunda mayor" at 2× text on a phone on its side showed "segunda",
+            // 2026-10-29); unwrapped, a name too wide overflows its box instead, which the auto-size sees and sets smaller.
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = with(density) { NAME_MIN_SIZE.toSp() }, maxFontSize = nameStyle.fontSize, stepSize = 0.5.sp),
         )
     }

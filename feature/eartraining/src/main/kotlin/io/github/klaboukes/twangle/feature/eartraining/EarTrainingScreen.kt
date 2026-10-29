@@ -364,7 +364,9 @@ private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> 
                     style = style,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    // Set smaller where the room between the icons and the button is short (2× text on a narrow phone).
+                    // Set smaller where the room between the icons and the button is short (2× text on a narrow phone);
+                    // never wrapped, so the auto-size sees it too wide (IntervalsPart's AnswerButton says why).
+                    softWrap = false,
                     autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
                     modifier = Modifier.testTag(EarTrainingTestTags.TALLY).semantics {
                         contentDescription = spoken

@@ -319,6 +319,8 @@ private fun Chip(text: AnnotatedString, spoken: String, on: Boolean, tag: String
             style = style.copy(fontWeight = FontWeight.Medium),
             color = if (on) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
             maxLines = 1,
+            // Never wrapped, so the auto-size sees a text too wide (IntervalsPart's AnswerButton says why).
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = style.fontSize, stepSize = 0.5.sp),
         )
     }
