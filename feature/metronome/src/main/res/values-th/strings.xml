@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">จำนวนจังหวะในห้อง</string>
+    <string name="metronome_tempo">เทมโป ลากเพื่อเปลี่ยน</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">%1$d จังหวะต่อนาที, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">ช้าลง</string>
+    <string name="metronome_faster">เร็วขึ้น</string>
+    <string name="metronome_tap">แตะจังหวะ</string>
+    <string name="metronome_start">เริ่ม</string>
+    <string name="metronome_stop">หยุด</string>
+    <string name="metronome_vibrate">สั่นตามจังหวะ</string>
+    <string name="metronome_sound">เสียง</string>
+    <string name="metronome_sound_wood_block">วูดบล็อก</string>
+    <string name="metronome_sound_cowbell">คาวเบล</string>
+    <string name="metronome_sound_claves">เคลฟส์</string>
+    <string name="metronome_sound_rim_click">ริมคลิก</string>
+    <string name="metronome_sound_spoken">เสียง: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">เสียง: %1$s, สั่นตามจังหวะ</string>
+
+    <string name="metronome_meter_2_4_spoken">จังหวะสองสี่</string>
+    <string name="metronome_meter_3_4_spoken">จังหวะสามสี่</string>
+    <string name="metronome_meter_4_4_spoken">จังหวะสี่สี่</string>
+    <string name="metronome_meter_5_4_spoken">จังหวะห้าสี่</string>
+    <string name="metronome_meter_6_8_spoken">จังหวะหกแปด</string>
+    <string name="metronome_meter_7_8_spoken">จังหวะเจ็ดแปด</string>
+
+    <string name="metronome_listen">ฟัง</string>
+    <string name="metronome_listen_stop_spoken">หยุดฟัง</string>
+    <string name="metronome_listening">กำลังฟัง…</string>
+    <string name="metronome_heard">ได้ยิน</string>
+    <string name="metronome_use">ใช้</string>
+    <string name="metronome_not_now">ไว้ทีหลัง</string>
+    <string name="metronome_listen_speed">ความเร็ว</string>
+    <string name="metronome_pick_half">ครึ่งเท่า</string>
+    <string name="metronome_pick_as_heard">ตามที่ได้ยิน</string>
+    <string name="metronome_pick_double">สองเท่า</string>
+    <string name="metronome_no_beat">ไม่ได้ยินจังหวะที่สม่ำเสมอ</string>
+    <string name="metronome_try_again">ลองอีกครั้ง</string>
+    <string name="metronome_mic_off">ไมโครโฟนปิดอยู่</string>
+    <string name="metronome_open_settings">เปิดการตั้งค่า</string>
+</resources>

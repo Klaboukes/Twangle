@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">จูนเนอร์</string>
+    <string name="nav_metronome">เมโทรนอม</string>
+    <string name="nav_practice">ฝึกซ้อม</string>
+    <string name="nav_settings">การตั้งค่า</string>
+    <string name="widget_name">จูนเนอร์</string>
+    <string name="widget_description">แสดงเครื่องดนตรีและการตั้งสายของคุณ แตะครั้งเดียวเพื่อเปิดจูนเนอร์</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">เปิดจูนเนอร์</string>
+    <string name="widget_preview_title">กีตาร์ · มาตรฐาน</string>
+</resources>

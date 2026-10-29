@@ -1,0 +1,13 @@
+<resources>
+    <string name="wear_play_note">เล่นสักโน้ต</string>
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s เซนต์</item>
+    </plurals>
+    <string name="wear_in_tune">ตรงเสียง</string>
+    <string name="wear_mic_needed">Twangle ฟังเสียงเครื่องดนตรีของคุณผ่านไมโครโฟนของนาฬิกา</string>
+    <string name="wear_allow_mic">อนุญาตไมโครโฟน</string>
+    <string name="wear_open_settings">เปิดการตั้งค่า</string>
+    <string name="wear_mic_busy">มีแอปอื่นกำลังใช้ไมโครโฟน</string>
+    <string name="wear_mic_unavailable">เปิดไมโครโฟนไม่ได้</string>
+    <string name="wear_try_again">ลองอีกครั้ง</string>
+</resources>
