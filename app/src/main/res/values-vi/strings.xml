@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Lên dây</string>
+    <string name="nav_metronome">Đếm nhịp</string>
+    <string name="nav_practice">Luyện tập</string>
+    <string name="nav_settings">Cài đặt</string>
+    <string name="widget_name">Lên dây</string>
+    <string name="widget_description">Hiện nhạc cụ và kiểu lên dây của bạn. Chạm một lần để mở máy lên dây.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Mở máy lên dây</string>
+    <string name="widget_preview_title">Guitar · Tiêu chuẩn</string>
+</resources>

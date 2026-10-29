@@ -1,0 +1,16 @@
+<resources>
+    <string name="style_ancient">Cổ xưa</string>
+    <string name="style_classic">Cổ điển</string>
+    <string name="style_retro">Retro</string>
+    <string name="style_contemporary">Hiện đại</string>
+    <string name="style_futuristic">Tương lai</string>
+    <string name="style_space_age">Vũ trụ</string>
+
+    <string name="spoken_sharp">%1$s thăng</string>
+    <string name="spoken_flat">%1$s giáng</string>
+
+    <string name="meter_cents_label">CENT</string>
+
+    <string name="instrument_button">Nhạc cụ</string>
+    <string name="instrument_button_action">Đổi nhạc cụ hoặc kiểu lên dây</string>
+</resources>

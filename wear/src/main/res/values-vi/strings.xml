@@ -1,0 +1,13 @@
+<resources>
+    <string name="wear_play_note">Đàn một nốt</string>
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s cent</item>
+    </plurals>
+    <string name="wear_in_tune">chuẩn</string>
+    <string name="wear_mic_needed">Twangle nghe nhạc cụ của bạn qua micrô của đồng hồ.</string>
+    <string name="wear_allow_mic">Cho phép micrô</string>
+    <string name="wear_open_settings">Mở cài đặt</string>
+    <string name="wear_mic_busy">Một ứng dụng khác đang dùng micrô.</string>
+    <string name="wear_mic_unavailable">Không mở được micrô.</string>
+    <string name="wear_try_again">Thử lại</string>
+</resources>

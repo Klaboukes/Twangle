@@ -119,7 +119,7 @@ class StyleFontCoverageTest {
     fun theLanguageListsMatchTheFonts() {
         // Every language in the lists is shipped, so a stale entry shows.
         val shipped = qualifiers.map { it.substringBefore("-r") }.toSet()
-        assertTrue((EXTENDED_LATIN_LANGUAGES + OTHER_SCRIPT_LANGUAGES - shipped).isEmpty())
+        assertTrue((EXTENDED_LATIN_LANGUAGES + TONE_LETTER_LANGUAGES + OTHER_SCRIPT_LANGUAGES - shipped).isEmpty())
     }
 
     private companion object {

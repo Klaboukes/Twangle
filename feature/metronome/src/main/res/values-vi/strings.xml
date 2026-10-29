@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Số phách trong ô nhịp</string>
+    <string name="metronome_tempo">Nhịp độ, kéo để đổi</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">%1$d phách mỗi phút, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Chậm hơn</string>
+    <string name="metronome_faster">Nhanh hơn</string>
+    <string name="metronome_tap">Gõ nhịp</string>
+    <string name="metronome_start">Bắt đầu</string>
+    <string name="metronome_stop">Dừng</string>
+    <string name="metronome_vibrate">Rung theo phách</string>
+    <string name="metronome_sound">Âm thanh</string>
+    <string name="metronome_sound_wood_block">Mõ gỗ</string>
+    <string name="metronome_sound_cowbell">Chuông bò</string>
+    <string name="metronome_sound_claves">Phách gỗ</string>
+    <string name="metronome_sound_rim_click">Gõ vành trống</string>
+    <string name="metronome_sound_spoken">Âm thanh: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Âm thanh: %1$s, rung theo phách</string>
+
+    <string name="metronome_meter_2_4_spoken">Nhịp hai bốn</string>
+    <string name="metronome_meter_3_4_spoken">Nhịp ba bốn</string>
+    <string name="metronome_meter_4_4_spoken">Nhịp bốn bốn</string>
+    <string name="metronome_meter_5_4_spoken">Nhịp năm bốn</string>
+    <string name="metronome_meter_6_8_spoken">Nhịp sáu tám</string>
+    <string name="metronome_meter_7_8_spoken">Nhịp bảy tám</string>
+
+    <string name="metronome_listen">Nghe</string>
+    <string name="metronome_listen_stop_spoken">Dừng nghe</string>
+    <string name="metronome_listening">Đang nghe…</string>
+    <string name="metronome_heard">Nghe được</string>
+    <string name="metronome_use">Dùng</string>
+    <string name="metronome_not_now">Để sau</string>
+    <string name="metronome_listen_speed">Tốc độ</string>
+    <string name="metronome_pick_half">Một nửa</string>
+    <string name="metronome_pick_as_heard">Như đã nghe</string>
+    <string name="metronome_pick_double">Gấp đôi</string>
+    <string name="metronome_no_beat">Không nghe thấy nhịp đều</string>
+    <string name="metronome_try_again">Thử lại</string>
+    <string name="metronome_mic_off">Micrô đang tắt</string>
+    <string name="metronome_open_settings">Mở cài đặt</string>
+</resources>

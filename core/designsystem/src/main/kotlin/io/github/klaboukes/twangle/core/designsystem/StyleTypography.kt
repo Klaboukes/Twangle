@@ -91,9 +91,11 @@ internal data class StyleFaces(
 /**
  * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Orbitron lacks
  * Polish and Turkish letters (ą ę ś ż, ł, ğ ş İ), so a word there would mix two faces: Futuristic's
- * display and titles take Space Age's Michroma. Scripts the display faces don't have
+ * display and titles take Space Age's Michroma. Vietnamese's tone letters are only in Playfair
+ * Display, so outside Classic its display text and titles take the phone's font
+ * ([TONE_LETTER_LANGUAGES]). Scripts the display faces don't have
  * ([OTHER_SCRIPT_LANGUAGES]) are drawn whole in the phone's own font; the extra letter spacing meant
- * for the display face is left out there, so Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks both lists
+ * for the display face is left out there, so Chinese and Japanese characters don't stand apart. `StyleFontCoverageTest` checks the lists
  * against the bundled fonts and every language's texts.
  */
 internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
@@ -101,6 +103,8 @@ internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
     return when {
         language in EXTENDED_LATIN_LANGUAGES && style == VisualStyle.FUTURISTIC ->
             own.copy(display = StyleFonts.JetAge, title = StyleFonts.JetAge, displayWeight = null, titleSpacing = SPACE_AGE_SPACING)
+        language in TONE_LETTER_LANGUAGES && style != VisualStyle.CLASSIC ->
+            own.copy(display = own.body, title = own.body, titleSpacing = TextUnit.Unspecified)
         language in OTHER_SCRIPT_LANGUAGES -> own.copy(titleSpacing = TextUnit.Unspecified)
         else -> own
     }
@@ -108,6 +112,14 @@ internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
 
 /** Languages with Latin letters that Orbitron (Futuristic) lacks. */
 internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr")
+
+/**
+ * Latin languages whose letters only Classic's Playfair Display has among the display faces:
+ * Vietnamese's ơ ư and tone letters (ạ ế ỗ ặ). Forum, Righteous, Orbitron and Michroma have the
+ * plain letters but not those, so a word would mix two faces; in every style but Classic the display
+ * text and titles take the style's reading face (the phone's font), without the extra spacing.
+ */
+internal val TONE_LETTER_LANGUAGES = setOf("vi")
 
 /**
  * Languages in a script none of the display faces has (Arabic, Devanagari, Chinese, Japanese,
