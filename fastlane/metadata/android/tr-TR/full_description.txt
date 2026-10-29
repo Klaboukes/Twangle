@@ -28,7 +28,7 @@ HERKES İÇİN
 • TalkBack ile çalışır: Twangle notayı ve ne kadar saptığını söyler ("Mi 2, 12 sent düşük, yükselt"), akor şemalarını ve gamları tel tel okur, her düğmenin anlaşılır bir adı vardır ve seni asla konuşmaya boğmaz
 • Her ekran, normal boyutun iki katına kadar büyük yazıyla çalışır
 • Bir tel akortlu olduğunda kısa bir titreşim, böylece bunu hissedebilirsin de
-• 16 dilde: Türkçe, Almanca, Arapça, Çince, Endonezce, Felemenkçe, Fransızca, Hintçe, İngilizce, İspanyolca, İtalyanca, Japonca, Korece, Lehçe, Portekizce ve Rusça
+• 25 dilde: Türkçe, Almanca, Arapça, Bengalce, Çince (Basitleştirilmiş), Çince (Geleneksel), Danca, Endonezce, Felemenkçe, Fince, Fransızca, Hintçe, İngilizce, İspanyolca, İsveççe, İtalyanca, Japonca, Korece, Lehçe, Norveççe, Portekizce, Rusça, Tayca, Ukraynaca ve Vietnamca
 • Nota adları öğrendiğin gibi: Do Re Mi ya da C D E harfleri, Alman usulü H ile de
 
 SANA GÖRE

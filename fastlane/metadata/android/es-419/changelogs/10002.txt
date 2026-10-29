@@ -1,0 +1,1 @@
+- En el recorrido del primer inicio, Saltar y Siguiente ya responden al primer toque.

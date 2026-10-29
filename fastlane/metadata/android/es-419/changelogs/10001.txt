@@ -1,0 +1,1 @@
+- En celulares con pantalla más corta, el indicador ahora conserva siempre todo su ancho; en su lugar, la nota de arriba se hace un poco más pequeña.

@@ -28,7 +28,7 @@ DÀNH CHO MỌI NGƯỜI
 • Hoạt động với TalkBack: Twangle đọc nốt và độ lệch ("E 2, thấp 12 cent, căng lên"), đọc sơ đồ hợp âm và âm giai từng dây một, mỗi nút đều có tên rõ ràng, và không bao giờ nói dồn dập
 • Mọi màn hình đều dùng được với chữ lớn, tới gấp đôi cỡ thường
 • Rung ngắn khi một dây đã chuẩn, để bạn cảm nhận được
-• Có 16 ngôn ngữ: tiếng Anh, Ả Rập, Trung, Hà Lan, Pháp, Đức, Hindi, Indonesia, Ý, Nhật, Hàn, Ba Lan, Bồ Đào Nha, Nga, Tây Ban Nha và Thổ Nhĩ Kỳ
+• Có 25 ngôn ngữ: tiếng Việt, Anh, Ả Rập, Ba Lan, Bengal, Bồ Đào Nha, Đan Mạch, Đức, Hà Lan, Hàn, Hindi, Indonesia, Na Uy, Nga, Nhật, Pháp, Phần Lan, Tây Ban Nha, Thái, Thổ Nhĩ Kỳ, Thụy Điển, Trung (giản thể), Trung (phồn thể), Ukraina và Ý
 • Tên nốt theo cách bạn đã học: C D E, kiểu Đức với H thay cho B, hoặc Đô Rê Mi
 
 THEO CÁCH CỦA BẠN

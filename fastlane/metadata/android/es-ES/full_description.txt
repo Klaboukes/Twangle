@@ -28,7 +28,7 @@ PARA TODOS
 • Funciona con TalkBack: Twangle dice la nota y cuánto se desvía («Mi 2, 12 cents bajo, subir»), lee los diagramas de acordes y las escalas cuerda por cuerda, cada botón tiene un nombre claro y nunca te satura con voz
 • Todas las pantallas funcionan con texto grande, hasta el doble del tamaño normal
 • Una vibración corta cuando una cuerda está afinada, para que también lo sientas
-• En 16 idiomas: español, alemán, árabe, chino, coreano, francés, hindi, indonesio, inglés, italiano, japonés, neerlandés, polaco, portugués, ruso y turco
+• En 25 idiomas: español, alemán, árabe, bengalí, chino simplificado, chino tradicional, coreano, danés, finlandés, francés, hindi, indonesio, inglés, italiano, japonés, neerlandés, noruego, polaco, portugués, ruso, sueco, tailandés, turco, ucraniano y vietnamita
 • Los nombres de las notas como los aprendiste: Do Re Mi, o las letras C D E, también con H a la alemana
 
 A TU GUSTO

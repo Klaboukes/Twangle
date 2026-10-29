@@ -28,7 +28,7 @@ FÖR ALLA
 • Fungerar med TalkBack: Twangle säger tonen och hur långt ifrån den är (”E 2, 12 cent för lågt, stäm upp”), läser upp ackordscheman och skalor sträng för sträng, varje knapp har ett tydligt namn och du dränks aldrig i tal
 • Varje skärm fungerar med stor text, upp till dubbel normal storlek
 • En kort vibration när en sträng är stämd, så att du kan känna det också
-• På 16 språk: engelska, arabiska, kinesiska, nederländska, franska, tyska, hindi, indonesiska, italienska, japanska, koreanska, polska, portugisiska, ryska, spanska och turkiska
+• På 25 språk: svenska, arabiska, bengali, danska, engelska, finska, franska, hindi, indonesiska, italienska, japanska, kinesiska (förenklad), kinesiska (traditionell), koreanska, nederländska, norska, polska, portugisiska, ryska, spanska, thailändska, turkiska, tyska, ukrainska och vietnamesiska
 • Tonnamn som du lärde dig dem: C D E, med H för B, eller Do Re Mi
 
 GÖR DEN TILL DIN

@@ -28,7 +28,7 @@ DLA KAŻDEGO
 • Działa z TalkBack: Twangle mówi, jaki to dźwięk i jak bardzo odbiega („E 2, 12 centów za nisko, podciągnij”), czyta chwyty akordów i skale struna po strunie, każdy przycisk ma jasną nazwę i nigdy nie zasypuje cię mową
 • Każdy ekran działa z dużym tekstem, aż do dwukrotności normalnego rozmiaru
 • Krótka wibracja, gdy struna jest nastrojona, żeby dało się to też poczuć
-• W 16 językach: polski, angielski, arabski, chiński, francuski, hindi, hiszpański, indonezyjski, japoński, koreański, niderlandzki, niemiecki, portugalski, rosyjski, turecki i włoski
+• W 25 językach: polski, angielski, arabski, bengalski, chiński (uproszczony), chiński (tradycyjny), duński, fiński, francuski, hindi, hiszpański, indonezyjski, japoński, koreański, niderlandzki, niemiecki, norweski, portugalski, rosyjski, szwedzki, tajski, turecki, ukraiński, wietnamski i włoski
 • Nazwy dźwięków po twojemu: C D E … H, z B zamiast H albo Do Re Mi
 
 DOPASUJ DO SIEBIE

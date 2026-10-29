@@ -13,7 +13,7 @@ they do next.
 
 **Ask before anything reaches Google Play.** `upload`, `promote`, `rollout`, `halt` and `listing`
 change what people get or see, so each one waits for the owner's clear yes in chat, every time. Name
-exactly what goes where: "Send Twangle 1.0.1 (versionCode 10001) and its notes in 16 languages to
+exactly what goes where: "Send Twangle 1.0.1 (versionCode 10001) and its notes in every language to
 the internal track on Google Play, as a draft?" A yes to one step is not a yes to the next. When the
 owner's own message asks for that very step ("halt the rollout", "raise it to 50 %"), that is the
 yes. Everything else only builds or reads (`bump`, `notes`, `bundle`, `status`, `health`, `reviews`,
@@ -87,6 +87,8 @@ Steps 6–8 follow later, each on the owner's word.
 - Translate it into every other folder in `fastlane/metadata/android/`, using the app's own words for
   that language (`res/values-<language>/strings.xml`: "Strings", "Focus mode" and so on as the app
   calls them). Play counts code points: CJK and Hindi texts come out short, German and Russian long.
+  Two folders share a language: `es-419` is `es-ES` with Latin American words (*celular*, not
+  *teléfono*), `zh-HK` is `zh-TW` with Hong Kong's (結他 for guitar) ([store listing](../../../docs/store-listing.md), *Folders*).
 - `./gradlew :app:testDebugUnitTest --tests '*.StoreListingTest'` checks every language and the limit.
 - Commit (`Release <version>`), push, `gh pr create` (body: what goes out, the notes in English),
   `gh pr merge --squash --delete-branch`, then `git switch main && git pull`.
