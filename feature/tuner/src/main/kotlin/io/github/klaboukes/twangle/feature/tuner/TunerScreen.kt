@@ -102,6 +102,7 @@ import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
@@ -239,6 +240,7 @@ fun TunerScreen(
     val waveLook by viewModel.waveLook.collectAsStateWithLifecycle()
     val meterLook by viewModel.meterLook.collectAsStateWithLifecycle()
     val inTuneEffect by viewModel.inTuneEffect.collectAsStateWithLifecycle()
+    val inTunePrecision by viewModel.inTunePrecision.collectAsStateWithLifecycle()
     val showTuneHint by viewModel.showTuneHint.collectAsStateWithLifecycle()
     val showSignalBars by viewModel.showSignalBars.collectAsStateWithLifecycle()
     val focusMode by viewModel.focusMode.collectAsStateWithLifecycle()
@@ -319,6 +321,7 @@ fun TunerScreen(
                     waveLook = waveLook,
                     meterLook = meterLook,
                     inTuneEffect = inTuneEffect,
+                    inTunePrecision = inTunePrecision,
                     meterGlow = glowing,
                     animationsOff = animationsOff,
                     showTuneHint = showTuneHint,
@@ -573,7 +576,8 @@ private fun KeepScreenOn() {
  * far off a note is shown under it: in cents (the needle) or with the wave view in [waveLook] (holding
  * perfectly still on the note); the meter above the note is drawn in
  * [meterLook] (its in-tune glow lit by [meterGlow], from [rememberInTuneGlow]; by default while the note is in
- * tune; as strong as [inTuneEffect]; with [animationsOff] its in-tune colour and glow switch without easing), and
+ * tune; as strong as [inTuneEffect]; showing the in-tune window of [inTunePrecision] where the look has one; with
+ * [animationsOff] its in-tune colour and glow switch without easing), and
  * [showTuneHint] adds "Tune up ↑" / "Tune down ↓" under an off-pitch note (saved settings). [showSignalBars]
  * adds small signal bars at the start of the mode switch's row ([ModeSwitchRow], across from focus mode's button, which [onFocusModeChange] adds at its end), which open the
  * live [signalFigures] when tapped; focus mode, with its controls hidden, leaves them out. While
@@ -627,6 +631,7 @@ fun TunerContent(
     waveLook: WaveLook = WaveLook.DEFAULT,
     meterLook: MeterLook = MeterLook.DEFAULT,
     inTuneEffect: InTuneEffect = InTuneEffect.DEFAULT,
+    inTunePrecision: InTunePrecision = InTunePrecision.DEFAULT,
     meterGlow: Boolean = (state as? TunerUiState.Detected)?.inTune == true,
     animationsOff: Boolean = false,
     showTuneHint: Boolean = false,
@@ -756,6 +761,7 @@ fun TunerContent(
             MeterFrame(
                 look = meterLook,
                 effect = inTuneEffect,
+                precision = inTunePrecision,
                 cents = needleCents,
                 inTune = (state as? TunerUiState.Detected)?.inTune == true,
                 glow = meterGlow,

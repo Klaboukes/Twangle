@@ -63,6 +63,15 @@ class MeterFeelTest {
     }
 
     @Test
+    fun `the note's pointer follows closely, hardly swinging past the note`() {
+        val pointers = meterFeel(MeterLook.POINTERS)
+        assertEquals(1.9f, pointers.frequencyHz)
+        assertEquals(0.8f, pointers.dampingRatio)
+        // From 38 cents flat: under a cent past the note, which the stretched middle shows 7.5u per cent.
+        assertTrue(pointers.overshoot(-38f, 0f) < 1f)
+    }
+
+    @Test
     fun `the spring swings at the look's frequency`() {
         // ω² for a unit mass: 1.6 Hz → (2π · 1.6)² ≈ 101.
         assertEquals(101.06f, MeterFeel(1.6f, 0.6f).stiffness, 0.05f)

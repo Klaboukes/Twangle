@@ -357,7 +357,7 @@ class DataStoreSettingsRepository internal constructor(
                 enumOrNull<TunerDisplay>(prefs[DISPLAY]) ?: displayFromWaveSwitch(prefs[SHOW_WAVES]) ?: defaults.display
             },
             waveLook = if (oldStrobe) WaveLook.STROBE else waveLookOrNull(prefs[WAVE_LOOK]) ?: defaults.waveLook,
-            meterLook = enumOrNull<MeterLook>(prefs[METER_LOOK]) ?: defaults.meterLook,
+            meterLook = meterLookOrNull(prefs[METER_LOOK]) ?: defaults.meterLook,
             inTuneEffect = enumOrNull<InTuneEffect>(prefs[IN_TUNE_EFFECT]) ?: defaults.inTuneEffect,
             focusMode = prefs[FOCUS_MODE] ?: defaults.focusMode,
             tourSeen = tourSeen(prefs),
@@ -416,6 +416,9 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The stripes look of versions before the strobe look took its place. */
         private const val OLD_STRIPES_LOOK = "STRIPES"
+
+        /** Meter looks of older versions and the looks that took their places (Phase 60: Pointers for Spirit level). */
+        private val OLD_METER_LOOKS = mapOf("SPIRIT_LEVEL" to MeterLook.POINTERS)
 
         /** The styles of versions before the six styles of October 2026, both merged into [VisualStyle.ANCIENT]. */
         private val OLD_ANCIENT_STYLES = setOf("PREHISTORIC", "MIDDLE_AGES")
@@ -564,6 +567,9 @@ class DataStoreSettingsRepository internal constructor(
         /** The saved look, with the old stripes look read as the strobe look that replaced it. */
         private fun waveLookOrNull(name: String?): WaveLook? =
             if (name == OLD_STRIPES_LOOK) WaveLook.STROBE else enumOrNull<WaveLook>(name)
+
+        /** The saved meter look, with an old look read as the one that took its place ([OLD_METER_LOOKS]). */
+        private fun meterLookOrNull(name: String?): MeterLook? = name?.let { OLD_METER_LOOKS[it] } ?: enumOrNull<MeterLook>(name)
 
         /** The saved style, with the old Prehistoric and Middle Ages read as Ancient, which replaced both. */
         private fun styleOrNull(name: String?): VisualStyle? =

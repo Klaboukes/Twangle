@@ -69,8 +69,8 @@
     <string name="settings_meter_look_classic">Classic</string>
     <!-- Meter look, the name under its card: a fan of little lights, like an LED pedal tuner. Shown on one line. -->
     <string name="settings_meter_look_light_arc">Light arc</string>
-    <!-- Meter look, the name under its card: a bubble in a vial, like a carpenter's spirit level. Shown on one line. -->
-    <string name="settings_meter_look_spirit_level">Spirit level</string>
+    <!-- Meter look, the name under its card: two triangular pointers, a fixed one above a straight scale and the note's one sliding below it; in tune their tips meet. Shown on one line. -->
+    <string name="settings_meter_look_pointers">Pointers</string>
     <!-- Meter look, the name under its card: a moon that covers the sun when in tune, like a solar eclipse. Shown on one line. -->
     <string name="settings_meter_look_eclipse">Eclipse</string>
     <!-- Meter look, the name under its card: chevrons each side that light towards the middle, as on a pedal tuner. Shown on one line. -->

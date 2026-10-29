@@ -464,8 +464,8 @@ class SettingsContentTest {
 
     @Test
     fun meterLooksShowTheChoiceAndReportEachOne() {
-        show(AppSettings(meterLook = MeterLook.SPIRIT_LEVEL))
-        compose.onNodeWithTag(meterLookCardTag(MeterLook.SPIRIT_LEVEL)).performScrollTo().assertIsSelected()
+        show(AppSettings(meterLook = MeterLook.POINTERS))
+        compose.onNodeWithTag(meterLookCardTag(MeterLook.POINTERS)).performScrollTo().assertIsSelected()
         compose.onNodeWithTag(meterLookCardTag(MeterLook.CLASSIC)).assertIsNotSelected()
         for (look in MeterLook.entries) compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo().performClick()
         assertEquals(MeterLook.entries, meterLookChanges)
@@ -544,13 +544,13 @@ class SettingsContentTest {
     fun dutchTalkBackReadsEveryMeterLookAsARadioButton() = assertMeterLooksSpoken(locale = "nl")
 
     private fun assertMeterLooksSpoken(locale: String?) {
-        show(AppSettings(meterLook = MeterLook.SPIRIT_LEVEL), locale = locale)
+        show(AppSettings(meterLook = MeterLook.POINTERS), locale = locale)
         val res = resourcesIn(locale)
         for ((look, id) in meterLookNames) {
             val name = res.getString(id)
             val card = compose.onNodeWithTag(meterLookCardTag(look)).performScrollTo()
             card.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
-            if (look == MeterLook.SPIRIT_LEVEL) card.assertIsSelected() else card.assertIsNotSelected()
+            if (look == MeterLook.POINTERS) card.assertIsSelected() else card.assertIsNotSelected()
             // Its name, said once: the moving meter inside says nothing.
             assertEquals("$look", listOf(name), card.fetchSemanticsNode().config[SemanticsProperties.Text].map { it.text })
             card.assert(hasAnyAncestor(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)))
@@ -611,7 +611,7 @@ class SettingsContentTest {
     private val meterLookNames = mapOf(
         MeterLook.CLASSIC to R.string.settings_meter_look_classic,
         MeterLook.LIGHT_ARC to R.string.settings_meter_look_light_arc,
-        MeterLook.SPIRIT_LEVEL to R.string.settings_meter_look_spirit_level,
+        MeterLook.POINTERS to R.string.settings_meter_look_pointers,
         MeterLook.ECLIPSE to R.string.settings_meter_look_eclipse,
         MeterLook.ARROWS to R.string.settings_meter_look_arrows,
         MeterLook.LIGHT_BARS to R.string.settings_meter_look_light_bars,

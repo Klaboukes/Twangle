@@ -89,9 +89,9 @@ class SettingsViewModelTest {
     @Test
     fun `saves the meter look`() = runTest(dispatcher) {
         val vm = SettingsViewModel(repository)
-        vm.setMeterLook(MeterLook.SPIRIT_LEVEL)
+        vm.setMeterLook(MeterLook.POINTERS)
         runCurrent()
-        assertEquals(MeterLook.SPIRIT_LEVEL, repository.current.meterLook)
+        assertEquals(MeterLook.POINTERS, repository.current.meterLook)
     }
 
     @Test

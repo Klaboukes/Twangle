@@ -54,7 +54,7 @@ fun BoxScope.MeterLookArt(look: MeterLook, reading: MeterReading, effect: InTune
         when (look) {
             MeterLook.CLASSIC -> ClassicMeter(reading, effect)
             MeterLook.LIGHT_ARC -> LightArcMeter(reading, effect)
-            MeterLook.SPIRIT_LEVEL -> SpiritLevelMeter(reading, effect)
+            MeterLook.POINTERS -> PointersMeter(reading, effect)
             MeterLook.ECLIPSE -> EclipseMeter(reading, effect)
             MeterLook.ARROWS -> ArrowsMeter(reading, effect)
             MeterLook.LIGHT_BARS -> LightBarsMeter(reading, effect)

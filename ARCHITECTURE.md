@@ -169,8 +169,8 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     SegmentedSwitch, InstrumentButton, StringChipShape, NavMark, FitColumn, OneLineAutoSize, ScaledUp, ScreenDensity,
     AnimationsOff, AppLanguage, LocalDigits
     dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
-    meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, LightArc, LightArcHeat, SpiritLevel,
-                Eclipse, Arrows, LightBars, MeterFinish
+    meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat,
+                Pointers, Eclipse, Arrows, LightBars, MeterFinish
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/

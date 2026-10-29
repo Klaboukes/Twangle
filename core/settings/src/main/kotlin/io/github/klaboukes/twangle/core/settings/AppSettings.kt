@@ -134,7 +134,8 @@ enum class WaveLook {
  * 2:1 box, ±50 cents, left flat and right sharp), so picking one moves nothing else on the screen.
  * Saved in settings by [name], so don't rename the entries. (Rolling scale, Comet and Studio meter,
  * saved as "ROLLING_SCALE", "COMET" and "STUDIO_METER", went in Phase 25; a saved one reads as the
- * default.)
+ * default. Spirit level, saved as "SPIRIT_LEVEL", went in Phase 60; a saved one reads as [POINTERS],
+ * which took its place.)
  */
 enum class MeterLook {
     /** The half-circle dial with a needle and a numbered scale. */
@@ -143,8 +144,8 @@ enum class MeterLook {
     /** A fan of little lights that opens from the centre toward the note. */
     LIGHT_ARC,
 
-    /** A bubble in a straight glass vial that slides to the side the note is off. */
-    SPIRIT_LEVEL,
+    /** The note's pointer slides along a straight track under a fixed one; in tune their tips meet. */
+    POINTERS,
 
     /** The note is a moon sliding across the sun; in tune, a total eclipse. */
     ECLIPSE,

@@ -23,8 +23,8 @@ import html, os, sys
 sheet = sys.argv[1]
 styles = [("ancient", "Ancient"), ("classic", "Classic"), ("retro", "Retro"),
           ("contemporary", "Contemporary"), ("futuristic", "Futuristic"), ("space-age", "Space Age")]
-looks = [("classic", "Classic"), ("light-arc", "Light arc"), ("spirit-level", "Spirit level"),
-         ("rolling-scale", "Rolling scale"), ("comet", "Comet"), ("studio-meter", "Studio meter")]
+looks = [("classic", "Classic"), ("light-arc", "Light arc"), ("pointers", "Pointers"),
+         ("eclipse", "Eclipse"), ("arrows", "Arrows"), ("light-bars", "Light bars")]
 sets = [("a", "A. 20 cents flat"), ("b", "B. In tune, Bold glow")]
 found = set(os.listdir(sheet))
 parts, count, missing = [], 0, []

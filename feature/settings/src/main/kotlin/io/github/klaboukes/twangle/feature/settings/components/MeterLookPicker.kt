@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.GraphicsLayerScope
@@ -18,7 +20,9 @@ import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.meter.METER_ASPECT_RATIO
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterLookArt
 import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
+import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.feature.settings.R
 import kotlin.math.abs
@@ -30,7 +34,8 @@ import kotlin.math.exp
  * ([MeterLookArt] in `core.designsystem.meter`), in the current style, moving through one short
  * loop ([MeterDemo]): flat, tuned up to the note, in tune, sharp, tuned down, in tune. The cards
  * form one selectable group for TalkBack, which reads each card as a radio button with its name.
- * The cards glow on the note as strongly as [effect] (Calm or Bold), so they preview that choice too.
+ * The cards glow on the note as strongly as [effect] (Calm or Bold) and show the in-tune window of
+ * [precision] where a look has one (Pointers' tall tick at its edge), so they preview those choices too.
  *
  * The loop only runs while some of the cards are on screen, and each frame only moves the cards'
  * markers in their layers: nothing is recomposed.
@@ -42,10 +47,12 @@ fun MeterLookPicker(
     onSelect: (MeterLook) -> Unit,
     modifier: Modifier = Modifier,
     effect: InTuneEffect = InTuneEffect.DEFAULT,
+    precision: InTunePrecision = InTunePrecision.DEFAULT,
     label: @Composable (MeterLook) -> String,
 ) {
     val demo = remember { MeterDemo() }
-    val reading = remember(demo) { DemoReading(demo) }
+    val window = rememberUpdatedState(meterInTuneWindow(precision))
+    val reading = remember(demo) { DemoReading(demo, window) }
     LookCardGrid(
         title = title,
         looks = MeterLook.entries,
@@ -68,14 +75,15 @@ fun meterLookCardTag(look: MeterLook): String = "meter_look_card_" + look.name.l
 
 /**
  * The previews' reading: the demo's cents, always "with a note", fading to "in tune" (and glowing)
- * with the demo.
+ * with the demo, with the in-tune window of the chosen precision ([window]).
  * Reading it allocates nothing.
  */
 @Stable
-private class DemoReading(private val demo: MeterDemo) : MeterReading {
+private class DemoReading(private val demo: MeterDemo, private val window: State<Float>) : MeterReading {
     override val cents: Float get() = demo.cents.floatValue
     override val presence: Float get() = 1f
     override val tuned: Float get() = demo.tuned.floatValue
+    override val inTuneWindow: Float get() = window.value
 
     // The cards glow gently with their colour as the loop reaches the note.
     override val glow: Float get() = demo.tuned.floatValue

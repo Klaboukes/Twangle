@@ -4,6 +4,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import io.github.klaboukes.twangle.core.designsystem.dial.DIAL_RANGE_CENTS
 import io.github.klaboukes.twangle.core.designsystem.dial.dialAngle
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 
 /**
  * What every meter look reads while drawing, the same for all six. The tuner's meter frame gives
@@ -23,9 +25,18 @@ interface MeterReading {
 
     /**
      * How fast the marker moves, in cents per second (0 when it is still, and in readings that don't
-     * follow a spring). The spirit level's bubble stretches a little while it moves.
+     * follow a spring).
      */
     val velocity: Float get() = 0f
+
+    /**
+     * The in-tune window: how close to the note, in cents each way, counts as in tune, as the
+     * tuner decides it ([meterInTuneWindow]: [IN_TUNE_WINDOW_CENTS], or 2 with the Precise
+     * setting). A look that shows the window (Pointers' tall tick at its edge) reads it here, in
+     * a draw phase or a drawWithCache block, so a change of setting redraws it; it changes only
+     * with the setting, never per frame.
+     */
+    val inTuneWindow: Float get() = IN_TUNE_WINDOW_CENTS
 
     /** How far the meter is from its resting look: 0 without a note, 1 with one (eased in and out). */
     val presence: Float
@@ -59,6 +70,15 @@ const val METER_ASPECT_RATIO = 2f
 
 /** Range shown on each side of the meter, the same for every look. */
 const val METER_RANGE_CENTS = DIAL_RANGE_CENTS
+
+/** The in-tune window with the Relaxed setting (the default): 5 cents each way, as the tuner's [InTuneDetector]. */
+const val IN_TUNE_WINDOW_CENTS = InTuneDetector.DEFAULT_ENTER_CENTS
+
+/** The in-tune window, in cents each way, with [precision]: 5 Relaxed, 2 Precise (the tuner's [InTuneDetector] windows). */
+fun meterInTuneWindow(precision: InTunePrecision): Float = when (precision) {
+    InTunePrecision.RELAXED -> IN_TUNE_WINDOW_CENTS
+    InTunePrecision.PRECISE -> InTuneDetector.PRECISE_ENTER_CENTS
+}
 
 /** Where the marker points for [cents]: pinned to the meter's edge beyond it, centre when there is no reading. */
 fun meterCents(cents: Float?): Float = cents?.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS) ?: 0f

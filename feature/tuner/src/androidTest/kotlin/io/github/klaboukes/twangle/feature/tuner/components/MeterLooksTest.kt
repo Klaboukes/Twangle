@@ -47,7 +47,7 @@ import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 /**
- * All six meter looks (Classic, Light arc, Spirit level, Eclipse, Arrows and Light bars) in
+ * All six meter looks (Classic, Light arc, Pointers, Eclipse, Arrows and Light bars) in
  * each of the six styles, light and dark: clearly drawn in their 2:1 box, straight on the background
  * (no plate), with a calm field and an in-tune glow that reach past the box and fade out there,
  * never cut off at its edge; skipped by TalkBack, moved by a new reading without recomposing, and

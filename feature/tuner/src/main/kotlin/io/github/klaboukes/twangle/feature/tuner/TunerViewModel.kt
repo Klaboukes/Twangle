@@ -16,6 +16,7 @@ import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.CustomTuning
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
@@ -175,6 +176,11 @@ class TunerViewModel(
     val inTuneEffect: StateFlow<InTuneEffect> = settingsRepository.settings
         .map { it.inTuneEffect }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InTuneEffect.DEFAULT)
+
+    /** How close to the note counts as in tune: Relaxed or Precise (a saved setting), for the meter's in-tune window. */
+    val inTunePrecision: StateFlow<InTunePrecision> = settingsRepository.settings
+        .map { it.inTunePrecision }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InTunePrecision.DEFAULT)
 
     /**
      * Whether focus mode is on, so a phone on its side shows the compact layout instead of the

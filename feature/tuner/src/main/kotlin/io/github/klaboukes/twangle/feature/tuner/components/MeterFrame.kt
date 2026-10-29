@@ -31,8 +31,10 @@ import io.github.klaboukes.twangle.core.designsystem.meter.MeterReading
 import io.github.klaboukes.twangle.core.designsystem.meter.meterCents
 import io.github.klaboukes.twangle.core.designsystem.meter.meterFeel
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
+import io.github.klaboukes.twangle.core.designsystem.meter.meterInTuneWindow
 import io.github.klaboukes.twangle.core.designsystem.meter.meterTunedSpec
 import io.github.klaboukes.twangle.core.settings.InTuneEffect
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import io.github.klaboukes.twangle.core.settings.MeterLook
 import kotlinx.coroutines.launch
 
@@ -55,6 +57,8 @@ import kotlinx.coroutines.launch
  *   as strong as [effect] (Bold: brighter and larger, eased the same way);
  * - with [animationsOff] (Android's "Remove animations", [rememberAnimationsOff]) the colour and the
  *   glow switch at once, without easing;
+ * - the in-tune window of [precision] (5 cents each way, 2 with Precise: [meterInTuneWindow]), for
+ *   the looks that show it ([MeterReading.inTuneWindow]);
  * - how well the note is heard ([reception], 0..1, null without a note) makes the marker crisp and
  *   solid or faint and soft ([ReceptionLook], applied with [MeterReading.applyMarkerLook]); the scale
  *   stays as it is;
@@ -72,6 +76,7 @@ fun MeterFrame(
     glow: Boolean = inTune,
     effect: InTuneEffect = InTuneEffect.DEFAULT,
     animationsOff: Boolean = false,
+    precision: InTunePrecision = InTunePrecision.DEFAULT,
     reception: () -> Float? = { null },
 ) {
     val currentCents by rememberUpdatedState(cents)
@@ -99,9 +104,10 @@ fun MeterFrame(
         animationSpec = if (animationsOff) snap() else meterGlowSpec(glow),
         label = "meterGlow",
     )
+    val window = rememberUpdatedState(meterInTuneWindow(precision))
     val currentReception = rememberUpdatedState(reception)
     val blurs = rememberReceptionBlurs()
-    val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, glowAmount, currentReception, blurs) }
+    val reading = remember(blurs) { TunerMeterReading(marker, restFade, tuned, glowAmount, window, currentReception, blurs) }
 
     // Android 15+ picks the screen's rate from what apps ask for, and a plain Compose animation
     // only asks for the "normal" rate (60 Hz on the S26). The moving meter asks for 120 Hz; the
@@ -119,7 +125,7 @@ fun MeterFrame(
 
 /**
  * The tuner's live [MeterReading]: the marker's spring, the resting fade, the "in tune" amount, the
- * in-tune glow and the reception's fade and blur. Nothing here allocates.
+ * in-tune glow, the in-tune window and the reception's fade and blur. Nothing here allocates.
  */
 @Stable
 private class TunerMeterReading(
@@ -127,6 +133,7 @@ private class TunerMeterReading(
     private val restFade: State<Float>,
     private val tunedAmount: State<Float>,
     private val glowAmount: State<Float>,
+    private val window: State<Float>,
     private val reception: State<() -> Float?>,
     private val blurs: Array<RenderEffect?>,
 ) : MeterReading {
@@ -142,6 +149,8 @@ private class TunerMeterReading(
     override val tuned: Float get() = tunedAmount.value
 
     override val glow: Float get() = glowAmount.value
+
+    override val inTuneWindow: Float get() = window.value
 
     override fun applyMarkerLook(layer: GraphicsLayerScope) {
         val presence = presence

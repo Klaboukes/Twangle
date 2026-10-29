@@ -384,6 +384,7 @@ private fun SettingsGroups(
                     selected = settings.meterLook,
                     onSelect = onMeterLookChange,
                     effect = settings.inTuneEffect,
+                    precision = settings.inTunePrecision,
                 ) { stringResource(meterLookLabel(it)) }
                 RadioGroupSetting(
                     title = stringResource(R.string.settings_in_tune_effect_title),
@@ -546,7 +547,7 @@ private fun displayLabel(display: TunerDisplay): Int = when (display) {
 private fun meterLookLabel(look: MeterLook): Int = when (look) {
     MeterLook.CLASSIC -> R.string.settings_meter_look_classic
     MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
-    MeterLook.SPIRIT_LEVEL -> R.string.settings_meter_look_spirit_level
+    MeterLook.POINTERS -> R.string.settings_meter_look_pointers
     MeterLook.ECLIPSE -> R.string.settings_meter_look_eclipse
     MeterLook.ARROWS -> R.string.settings_meter_look_arrows
     MeterLook.LIGHT_BARS -> R.string.settings_meter_look_light_bars

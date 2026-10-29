@@ -549,9 +549,9 @@ class TunerViewModelTest {
         runCurrent()
         assertEquals(MeterLook.CLASSIC, vm.meterLook.value)
 
-        settings.setMeterLook(MeterLook.SPIRIT_LEVEL)
+        settings.setMeterLook(MeterLook.POINTERS)
         runCurrent()
-        assertEquals(MeterLook.SPIRIT_LEVEL, vm.meterLook.value)
+        assertEquals(MeterLook.POINTERS, vm.meterLook.value)
     }
 
     @Test
@@ -564,6 +564,18 @@ class TunerViewModelTest {
         settings.setInTuneEffect(InTuneEffect.BOLD)
         runCurrent()
         assertEquals(InTuneEffect.BOLD, vm.inTuneEffect.value)
+    }
+
+    @Test
+    fun `inTunePrecision follows the setting, Relaxed by default, for the meter's in-tune window`() = runTest(dispatcher) {
+        val vm = viewModel(a2Recorder())
+        backgroundScope.launch { vm.inTunePrecision.collect {} }
+        runCurrent()
+        assertEquals(InTunePrecision.RELAXED, vm.inTunePrecision.value)
+
+        settings.setInTunePrecision(InTunePrecision.PRECISE)
+        runCurrent()
+        assertEquals(InTunePrecision.PRECISE, vm.inTunePrecision.value)
     }
 
     @Test

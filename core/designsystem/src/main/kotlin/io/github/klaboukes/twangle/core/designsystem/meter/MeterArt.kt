@@ -78,7 +78,7 @@ import kotlin.math.sin
 internal data class MeterRoles(
     /** The stage behind the meter. */
     val background: Color,
-    /** The surface colour: what the spirit level's bubble is made of. */
+    /** The surface colour: what a glass window's face is sunk from in light. */
     val plate: Color,
     /** Lines, numbers, needles. */
     val ink: Color,
@@ -253,7 +253,8 @@ internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
 private const val FIELD_CENTRE_UNITS = 47f
 
 /**
- * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube): [outline] filled in [fill] with a shadow
+ * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube
+ * until Phase 60; kept for the loupe that takes Eclipse's place): [outline] filled in [fill] with a shadow
  * 10u blurred and 4u down (black at 50 % in dark, 16 % in light). Drawn first; the glass covers the
  * fill.
  */
@@ -270,11 +271,11 @@ internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill
 }
 
 /**
- * The recessed glass over a look's window [face] (the spirit level's tube): under the
+ * The recessed glass over a look's window [face] (the spirit level's tube until Phase 60): under the
  * look's art ([drawUnder]) the face sunk toward the stage with a soft inner shadow under its top
  * edge (7u blur, 2.5u down); over the art ([drawOver]) one sheen from the top (white at 28 % in
  * light, 7 % in dark, gone by 45 % of the way from [top] to [bottom]) and a 1u rim in ink at 14 %.
- * The face is [fill]: the roles' glass face, or a tint of it (the spirit level's tube).
+ * The face is [fill]: the roles' glass face, or a tint of it (as the spirit level's tube was).
  */
 internal class GlassArt(
     private val face: Path,

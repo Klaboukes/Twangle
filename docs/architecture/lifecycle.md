@@ -72,7 +72,7 @@ What each does:
 | `dynamicColor`, `keepScreenOn`, `vibrateInTune`, `showTuneHint` | true | |
 | `showSignalBars` | false | |
 | `display` | `WAVE` | `TunerDisplay.NEEDLE` / `WAVE`; key `tuner_display` (see migrations) |
-| `meterLook` | `CLASSIC` | `MeterLook`: `CLASSIC`, `LIGHT_ARC`, `SPIRIT_LEVEL`, `ECLIPSE`, `ARROWS`, `LIGHT_BARS`; key `meter_look` (a saved `ROLLING_SCALE`, `COMET` or `STUDIO_METER` reads as `CLASSIC`) |
+| `meterLook` | `CLASSIC` | `MeterLook`: `CLASSIC`, `LIGHT_ARC`, `POINTERS`, `ECLIPSE`, `ARROWS`, `LIGHT_BARS`; key `meter_look` (a saved `ROLLING_SCALE`, `COMET` or `STUDIO_METER` reads as `CLASSIC`, a saved `SPIRIT_LEVEL` as `POINTERS`) |
 | `inTuneEffect` | `CALM` | `BOLD`; key `in_tune_effect` |
 | `waveLook` | `RIBBON` | `WaveLook`: `STROBE`, `RIBBON`, `DOTS`, `FIREFLIES`, `LOOP`, `RIPPLES`; key `wave_look` |
 | `focusMode` | false | Key `focus_mode`: "Focus mode", the whole app on its side and the tuner full screen with one big meter ([UI](ui.md), *Landscape and wide screens*) |

@@ -84,7 +84,6 @@ Measured on the S26 (Android 16, portrait) with `scripts/meter-frames.sh`, which
 | Old needle (same build and input) | 120 | 1 | 5 / 8 / 9 / 11 ms | 22.0 % | 1.83 ms | 19.0 % |
 | Classic | 120 | 3 | 8 / 10 / 11 / 12 ms | 19.3 % | 1.60 ms | 27.0 % |
 | Light arc | 119 | 0 | 8 / 10 / 10 / 12 ms | 19.8 % | 1.66 ms | 28.5 % |
-| Spirit level | 120 | 3 | 13 / 17 / 17 / 18 ms | 17.1 % | 1.43 ms | 28.2 % |
 
 Every look draws at 120 Hz with at most 0.5 % late frames, and uses less main thread than the old needle (±2 points between runs, brackets = repeat runs). At 120 Hz the pipeline may take more than one vsync, so p50 above 8.3 ms is not a dropped frame. Before the frame-rate request every look ran at 60 Hz.
 
@@ -94,9 +93,9 @@ Every look draws at 120 Hz with at most 0.5 % late frames, and uses less main th
 |---|---|
 | Classic | 110, 567, 13 / 23 / 27 / 34 ms, 3.73 ms (114, 398, 11 / 21 / 24 / 34 ms, 3.39 ms) |
 | Light arc | 115, 350, 12 / 19 / 22 / 30 ms, 3.34 ms (116, 271, 11 / 18 / 21 / 31 ms, 3.10 ms) |
-| Spirit level | 103, 1,258, 16 / 26 / 31 / 40 ms, 3.18 ms |
+| Pointers (Phase 60, 2026-10-30; Classic in the same run: 122, 2 of ~2,580, 8 / 13 / 14 / 16 ms, 3.77 ms) | 122, 0 of ~2,580, 7 / 12 / 12 / 13 ms, 3.70 ms; RenderThread 35.8 % (Classic 40.9 %) |
 
-Eclipse, Arrows and Light bars (Phase 25) have no row yet; `scripts/meter-frames.sh` measures them.
+Eclipse, Arrows and Light bars (Phase 25) have no row yet; `scripts/meter-frames.sh` measures them. Spirit level's rows went to [history](history.md) with the look (Phase 60).
 
 **Pitch trail** (Phase 31; Xiaomi 12X, 2026-10-17, Contemporary dark, `scripts/meter-frames.sh CLASSIC:PITCH_TRAIL`): measured as one more look, always last. `MeterFramesBenchmark` starts the app afresh asking for the tools (see *Release build*, below), picks the trail from the more-tools menu and switches to chromatic, so the line follows the same synthetic sweep all the time. Classic is from the same run, for comparison (the phone ran faster that day than in the table above: same script, other day).
 

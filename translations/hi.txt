@@ -293,7 +293,6 @@ feature/settings settings_meter_look_classic ae25d648
 feature/settings settings_meter_look_eclipse de24e677
 feature/settings settings_meter_look_light_arc 456d8906
 feature/settings settings_meter_look_light_bars 2025dcf2
-feature/settings settings_meter_look_spirit_level 7cc9dc09
 feature/settings settings_meter_look_title 2293b30e
 feature/settings settings_notation_automatic 2d5700af
 feature/settings settings_notation_flats b3400ed7

@@ -1,5 +1,8 @@
 package io.github.klaboukes.twangle.core.designsystem.meter
 
+import androidx.compose.ui.graphics.GraphicsLayerScope
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
+import io.github.klaboukes.twangle.core.settings.InTunePrecision
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -31,6 +34,26 @@ class MeterReadingTest {
     @Test
     fun `no reading rests the marker in the centre`() {
         assertEquals(0f, meterCents(null))
+    }
+
+    @Test
+    fun `the in-tune window is the tuner's own, 5 cents each way or 2 with Precise`() {
+        assertEquals(InTuneDetector.DEFAULT_ENTER_CENTS, meterInTuneWindow(InTunePrecision.RELAXED))
+        assertEquals(InTuneDetector.PRECISE_ENTER_CENTS, meterInTuneWindow(InTunePrecision.PRECISE))
+        assertEquals(5f, meterInTuneWindow(InTunePrecision.DEFAULT))
+        assertEquals(2f, meterInTuneWindow(InTunePrecision.PRECISE))
+    }
+
+    @Test
+    fun `a reading that says nothing of the window has the default one`() {
+        val reading = object : MeterReading {
+            override val cents = 0f
+            override val presence = 1f
+            override val tuned = 0f
+            override val glow = 0f
+            override fun applyMarkerLook(layer: GraphicsLayerScope) = Unit
+        }
+        assertEquals(IN_TUNE_WINDOW_CENTS, reading.inTuneWindow)
     }
 
     @Test

@@ -239,7 +239,7 @@ class DataStoreSettingsRepositoryTest {
             setStyle(VisualStyle.ANCIENT)
             setInTunePrecision(InTunePrecision.PRECISE)
             setFocusMode(true)
-            setMeterLook(MeterLook.SPIRIT_LEVEL)
+            setMeterLook(MeterLook.POINTERS)
             setInTuneEffect(InTuneEffect.BOLD)
             setMetronomeBpm(72)
             setMetronomeMeter(Meter.SIX_EIGHT)
@@ -275,7 +275,7 @@ class DataStoreSettingsRepositoryTest {
         assertEquals(VisualStyle.ANCIENT, settings.style)
         assertEquals(InTunePrecision.PRECISE, settings.inTunePrecision)
         assertEquals("the focus mode choice is kept", true, settings.focusMode)
-        assertEquals("the meter look is kept", MeterLook.SPIRIT_LEVEL, settings.meterLook)
+        assertEquals("the meter look is kept", MeterLook.POINTERS, settings.meterLook)
         assertEquals("the bold in-tune effect is kept", InTuneEffect.BOLD, settings.inTuneEffect)
         assertEquals("the metronome's tempo is kept", 72, settings.metronomeBpm)
         assertEquals("the metronome's meter is kept", Meter.SIX_EIGHT, settings.metronomeMeter)
@@ -847,7 +847,7 @@ class DataStoreSettingsRepositoryTest {
             listOf(
                 MeterLook.CLASSIC,
                 MeterLook.LIGHT_ARC,
-                MeterLook.SPIRIT_LEVEL,
+                MeterLook.POINTERS,
                 MeterLook.ECLIPSE,
                 MeterLook.ARROWS,
                 MeterLook.LIGHT_BARS,
@@ -865,6 +865,17 @@ class DataStoreSettingsRepositoryTest {
             store.edit { it[stringPreferencesKey("meter_look")] = gone }
             assertEquals(gone, MeterLook.CLASSIC, repo.settings.first().meterLook)
         }
+    }
+
+    @Test
+    fun `a saved spirit level opens as Pointers, which took its place in Phase 60`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        store.edit { it[stringPreferencesKey("meter_look")] = "SPIRIT_LEVEL" }
+        assertEquals(MeterLook.POINTERS, repo.settings.first().meterLook)
+        // Picking a look again saves it under its own name.
+        repo.setMeterLook(MeterLook.POINTERS)
+        assertEquals("POINTERS", store.data.first()[stringPreferencesKey("meter_look")])
     }
 
     @Test
