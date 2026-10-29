@@ -455,6 +455,7 @@ Moved from ROADMAP.md's *Waiting on the owner* and *Owner checks* once done.
 - ☑ **Note names:** owner chose "what is most common in those countries" (2026-10-15): Polish and Russian call B "H" as German does, Turkish and Arabic use Do-Re-Mi
 
 - ☑ **A service account for the Google Play API (Phase 41):** a robot user that lets Claude's scripts upload to Play, made in Google Cloud and the Play Console with Claude guiding in the browser (owner, 2026-10-22)
+- ☑ **Set JAVA_HOME on the desktop PC:** the laptop has it since 2026-10-28, so Claude no longer sets it for every command there. On the desktop, open PowerShell and run `[Environment]::SetEnvironmentVariable('JAVA_HOME', 'C:\Program Files\Android\Android Studio\jbr', 'User')` once, then restart the Claude app (owner, 2026-10-29: set, after that night's overnight session wasn't allowed to change a user variable itself; a session started before the restart still sets it per command)
 
 ### Owner checks (live tests)
 - ☑ Phase 3: tested on at least 2 physical devices with a real guitar (owner, 2026-10-16: fine)
