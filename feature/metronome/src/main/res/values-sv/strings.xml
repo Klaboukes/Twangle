@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Slag per takt</string>
+    <string name="metronome_tempo">Tempo, dra för att ändra</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d slag per minut, %2$s</item>
+        <item quantity="other">%1$d slag per minut, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Långsammare</string>
+    <string name="metronome_faster">Snabbare</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Starta</string>
+    <string name="metronome_stop">Stoppa</string>
+    <string name="metronome_vibrate">Vibrera på slaget</string>
+    <string name="metronome_sound">Ljud</string>
+    <string name="metronome_sound_wood_block">Träblock</string>
+    <string name="metronome_sound_cowbell">Koskälla</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Kantslag</string>
+    <string name="metronome_sound_spoken">Ljud: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Ljud: %1$s, vibrerar på slaget</string>
+
+    <string name="metronome_meter_2_4_spoken">Tvåfjärdedelstakt</string>
+    <string name="metronome_meter_3_4_spoken">Trefjärdedelstakt</string>
+    <string name="metronome_meter_4_4_spoken">Fyrfjärdedelstakt</string>
+    <string name="metronome_meter_5_4_spoken">Femfjärdedelstakt</string>
+    <string name="metronome_meter_6_8_spoken">Sexåttondelstakt</string>
+    <string name="metronome_meter_7_8_spoken">Sjuåttondelstakt</string>
+
+    <string name="metronome_listen">Lyssna</string>
+    <string name="metronome_listen_stop_spoken">Sluta lyssna</string>
+    <string name="metronome_listening">Lyssnar…</string>
+    <string name="metronome_heard">Hört</string>
+    <string name="metronome_use">Använd</string>
+    <string name="metronome_not_now">Inte nu</string>
+    <string name="metronome_listen_speed">Hastighet</string>
+    <string name="metronome_pick_half">Halva</string>
+    <string name="metronome_pick_as_heard">Som hört</string>
+    <string name="metronome_pick_double">Dubbla</string>
+    <string name="metronome_no_beat">Ingen stadig puls hördes</string>
+    <string name="metronome_try_again">Försök igen</string>
+    <string name="metronome_mic_off">Mikrofonen är av</string>
+    <string name="metronome_open_settings">Öppna inställningar</string>
+</resources>

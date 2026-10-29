@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Stemmer</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Øving</string>
+    <string name="nav_settings">Innstillinger</string>
+    <string name="widget_name">Stemmer</string>
+    <string name="widget_description">Viser instrumentet og stemmingen din. Ett trykk åpner stemmeren.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Åpne stemmeren</string>
+    <string name="widget_preview_title">Gitar · Standard</string>
+</resources>

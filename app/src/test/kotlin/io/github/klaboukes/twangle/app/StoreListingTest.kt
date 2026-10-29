@@ -240,10 +240,11 @@ class StoreListingTest {
         )
 
         /**
-         * The languages with more than one Play folder: Play has no Traditional Chinese, only
-         * Taiwan's and Hong Kong's, so the one `b+zh+Hant` gets both (docs/store-listing.md, *Folders*).
+         * The languages whose Play folders don't follow from their code: Play has no Traditional
+         * Chinese, only Taiwan's and Hong Kong's, so the one `b+zh+Hant` gets both, and Play's
+         * Norwegian is `no-NO`, which Android's Bokmål `nb` fills (docs/store-listing.md, *Folders*).
          */
-        val PLAY_FOLDERS = mapOf("b+zh+Hant" to listOf("zh-TW", "zh-HK"))
+        val PLAY_FOLDERS = mapOf("b+zh+Hant" to listOf("zh-TW", "zh-HK"), "nb" to listOf("no-NO"))
 
         val BANNED_IN_TITLE = listOf("""\bfree\b""", """\bno ads\b""", """\bbest\b""", """#1\b""")
             .map { Regex(it, RegexOption.IGNORE_CASE) }

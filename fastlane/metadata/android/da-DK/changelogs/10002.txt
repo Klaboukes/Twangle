@@ -1,0 +1,1 @@
+- I rundvisningen ved første start virker Spring over og Næste nu ved første tryk.

@@ -90,7 +90,7 @@ internal data class StyleFaces(
 
 /**
  * The faces of [style] for text in [language] (`Locale.language`, e.g. "pl"). Orbitron lacks
- * Polish and Turkish letters (ą ę ś ż, ł, ğ ş İ), so a word there would mix two faces: Futuristic's
+ * Polish, Turkish, Danish and Norwegian letters (ą ę ś ż, ł, ğ ş İ, ø), so a word there would mix two faces: Futuristic's
  * display and titles take Space Age's Michroma. Vietnamese's tone letters are only in Playfair
  * Display, so outside Classic its display text and titles take the phone's font
  * ([TONE_LETTER_LANGUAGES]). Scripts the display faces don't have
@@ -110,8 +110,12 @@ internal fun facesFor(style: VisualStyle, language: String = ""): StyleFaces {
     }
 }
 
-/** Languages with Latin letters that Orbitron (Futuristic) lacks. */
-internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr")
+/**
+ * Languages with Latin letters that Orbitron (Futuristic) lacks: Polish, Turkish, and Danish and
+ * Norwegian's ø. Norwegian is "nb" only: Android puts the locale whose texts it found first, so the
+ * Bokmål texts always come with "nb", also on a phone that lists Nynorsk before Bokmål.
+ */
+internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr", "da", "nb")
 
 /**
  * Latin languages whose letters only Classic's Playfair Display has among the display faces:

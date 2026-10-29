@@ -1,0 +1,44 @@
+Twangle är en gitarrstämmare som även stämmer bas, ukulele, fiol och mer, och varje funktion är gratis. Ingen reklam, inget konto, inga köp i appen och ingen spårning. Twangle har inte ens behörighet att använda internet: ljudet från din mikrofon analyseras direkt på din telefon och spelas aldrig in eller skickas någonstans.
+
+Twangle är enkel att använda och exakt ner till en cent. Spela en sträng, så visar Twangle tonen och hur långt den är från att vara stämd, på en stor och tydlig mätare. ”Stäm upp” eller ”Stäm ner” säger åt vilket håll du ska vrida stämskruven. När allt är stämt hjälper Twangle dig att spela: den känner igen ackorden du slår an, visar ackordscheman och skalor, räknar ut var capon ska sitta och håller takten.
+
+STÄM VILKET INSTRUMENT SOM HELST
+• Gitarr (6, 7 eller 8 strängar), bas (4 eller 5 strängar), ukulele (även baryton), fiol, altfiol, cello och mandolin
+• Gitarrstämningar: Standard, Drop D, halvt tonsteg ner, helt tonsteg ner, DADGAD, Open G, Open D, Open E och Open C
+• Gör egna stämningar för vilket instrument som helst
+• Kromatisk stämmare för alla andra instrument eller din röst
+• Håll fingret på en sträng för att höra dess ton och stämma på gehör
+• Ställ in A4 från 415 till 466 Hz, till exempel 442 Hz för att spela med en orkester
+
+VERKTYG SOM LYSSNAR
+• Anslagstest: slå an alla strängar på en gång och se vilka som är för låga, för höga eller stämda
+• Ackordnamn: slå an ett ackord på gitarr, ukulele eller mandolin och se vad det heter
+• Tonkurva: se hur stadig en uthållen ton, ett bend eller ditt vibrato är, även för sångare
+• Test vid 12:e bandet: spela en sträng lös och vid 12:e bandet för att se om sadeln behöver flyttas
+
+ÖVA
+• Ackordscheman för ditt instrument och din stämning, även dina egna stämningar
+• Skalor på greppbrädan: dur, moll, pentatonisk och blues, med varje ton namngiven
+• Capohjälp: välj låtens tonart och de grepp du gillar, och se var capon ska sitta
+• Metronom: 30 till 250 slag per minut på en rund temporatt, med tap tempo
+• 2/4, 3/4, 4/4, 5/4, 6/8 och 7/8, med betoning på första slaget och lampor att följa
+• Klickar över din egen musik eller ditt kompspår och kan vibrera på slaget
+
+FÖR ALLA
+• Fungerar med TalkBack: Twangle säger tonen och hur långt ifrån den är (”E 2, 12 cent för lågt, stäm upp”), läser upp ackordscheman och skalor sträng för sträng, varje knapp har ett tydligt namn och du dränks aldrig i tal
+• Varje skärm fungerar med stor text, upp till dubbel normal storlek
+• En kort vibration när en sträng är stämd, så att du kan känna det också
+• På 16 språk: engelska, arabiska, kinesiska, nederländska, franska, tyska, hindi, indonesiska, italienska, japanska, koreanska, polska, portugisiska, ryska, spanska och turkiska
+• Tonnamn som du lärde dig dem: C D E, med H för B, eller Do Re Mi
+
+GÖR DEN TILL DIN
+• Sex stilar, från Antik till Rymdålder, var och en med egna färger, typsnitt och bakgrund
+• Sex mätarutseenden och sex vågutseenden, bland dem ett stroboskop
+• Ljust, mörkt eller som telefonen, med bakgrundsbildens färger på Android 12 och senare
+• Fokusläge: en stor mätare på en telefon som ligger på sidan, lätt att läsa på avstånd
+
+DESSUTOM
+• En widget på hemskärmen som öppnar stämmaren med ett tryck
+• Håller skärmen tänd medan du stämmer
+
+Twangle förblir gratis och offline, för alltid.

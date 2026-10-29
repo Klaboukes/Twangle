@@ -125,7 +125,8 @@ class StoreScreenshots(private val shot: Shot) {
             shell("settings put system user_rotation 1")
             check(waitUntil { app.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }) { "the tablet didn't turn on its side" }
         }
-        showLanguage(locale)
+        // Play's Norwegian folder is no-NO, but Android finds the texts (values-nb) only for nb.
+        showLanguage(if (locale == "no-NO") "nb-NO" else locale)
         runBlocking {
             settings.setTourSeen(true)
             settings.setFocusMode(false)

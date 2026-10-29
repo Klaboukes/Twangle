@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Tuner</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Øvelse</string>
+    <string name="nav_settings">Indstillinger</string>
+    <string name="widget_name">Tuner</string>
+    <string name="widget_description">Viser dit instrument og din stemning. Ét tryk åbner tuneren.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Åbn tuneren</string>
+    <string name="widget_preview_title">Guitar · Standard</string>
+</resources>

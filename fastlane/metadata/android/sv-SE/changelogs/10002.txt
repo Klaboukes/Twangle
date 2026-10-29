@@ -1,0 +1,1 @@
+- I rundturen vid första starten fungerar Hoppa över och Nästa nu vid första trycket.

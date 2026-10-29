@@ -1,0 +1,9 @@
+- Nye instrumenter: 12-strengs gitar og 5-strengs banjo.
+- Nye stemminger: åpen C, barytonukulele og alle stemminger opptil 2½ toner lavere.
+- Skalaer er et eget verktøy: 14 skalaer og en bordun å spille sammen med.
+- Fire nye akkordtyper, blant dem powerakkorden.
+- Fire metronomlyder å velge mellom.
+- Skjemaer for venstrehendte, i Innstillinger.
+- Twangle fyller nå en nettbrettskjerm.
+- Referansetonene låter som instrumentet.
+- En kortere omvisning og mange små rettelser.

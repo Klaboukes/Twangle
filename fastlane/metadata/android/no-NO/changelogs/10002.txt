@@ -1,0 +1,1 @@
+- I omvisningen ved første oppstart virker Hopp over og Neste nå på første trykk.

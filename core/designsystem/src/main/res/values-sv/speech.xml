@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Svenska tonnamn: ciss, dess, ess, fiss, ass, bess … -->
+    <string name="spoken_letter_names" translatable="false" tools:ignore="ExtraTranslation">swedish</string>
+</resources>

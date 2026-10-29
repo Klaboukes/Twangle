@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">Stämmare</string>
+    <string name="nav_metronome">Metronom</string>
+    <string name="nav_practice">Öva</string>
+    <string name="nav_settings">Inställningar</string>
+    <string name="widget_name">Stämmare</string>
+    <string name="widget_description">Visar ditt instrument och din stämning. Ett tryck öppnar stämmaren.</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">Öppna stämmaren</string>
+    <string name="widget_preview_title">Gitarr · Standard</string>
+</resources>

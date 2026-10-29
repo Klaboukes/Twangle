@@ -5,11 +5,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 
 /**
- * How letter names are said: the sign as a word ("C sharp", "Do dièse"), or as one word the Dutch
- * or German way ("cis", "Cis"). Set per language with the `spoken_letter_names` resource ("words",
- * "dutch" or "german").
+ * How letter names are said: the sign as a word ("C sharp", "Do dièse"), or as one word the Dutch,
+ * German or Swedish way ("cis", "Cis", "ciss"). Set per language with the `spoken_letter_names`
+ * resource ("words", "dutch", "german" or "swedish").
  */
-enum class LetterNames { WORDS, DUTCH, GERMAN }
+enum class LetterNames { WORDS, DUTCH, GERMAN, SWEDISH }
 
 /**
  * How a screen reader says note names. Every TalkBack text that names a note goes through here, so
@@ -23,6 +23,9 @@ enum class LetterNames { WORDS, DUTCH, GERMAN }
  * - With [LetterNames.GERMAN], the German way: Cis, Dis … Ais, His; Des, Es, Ges, As, and B for B♭;
  *   naturals as written, so the German notation's H is said "H" (B in letters picked from Settings
  *   stays "B", as on screen: speech never changes what a name says, only how).
+ * - With [LetterNames.SWEDISH], the Dutch way with the s doubled, as Swedish spells it: ciss, fiss,
+ *   aiss; dess, ess, ass, bess. A Swedish voice reads the one-s Dutch forms with a long vowel, and
+ *   "fis", "as" and "dis" are Swedish words.
  * - Solfège has no such forms, so "Sol♯" still uses the pattern ("Sol kruis"). [solfege] holds
  *   the seven syllables Do … Si as this language says them (French "Ré", Portuguese "Dó", "Fá",
  *   "Lá"), so the screen reader pronounces them as players do.
@@ -45,6 +48,7 @@ class NoteNameSpeech(
             when (letters) {
                 LetterNames.DUTCH -> return dutchLetterName(base[0], sign)
                 LetterNames.GERMAN -> return germanLetterName(base[0], sign)
+                LetterNames.SWEDISH -> return swedishLetterName(base[0], sign)
                 LetterNames.WORDS -> Unit
             }
         }
@@ -98,6 +102,20 @@ internal fun dutchLetterName(letter: Char, sign: Char?): String {
 }
 
 /**
+ * A letter name the Swedish way (see [NoteNameSpeech]): "ciss", "dess", "ess", "ass", "bess", or the
+ * plain lower-case letter for a natural.
+ */
+internal fun swedishLetterName(letter: Char, sign: Char?): String {
+    val base = letter.lowercaseChar()
+    return when (sign) {
+        '♯' -> "${base}iss"
+        // E♭ and A♭ drop the e: "ess", "ass".
+        '♭' -> if (base == 'e' || base == 'a') "${base}ss" else "${base}ess"
+        else -> base.toString()
+    }
+}
+
+/**
  * A letter name the German way (see [NoteNameSpeech]): "Cis", "Des", "Es", "As", "B" for B♭ and
  * "His" for B♯, or the letter as written for a natural.
  */
@@ -138,6 +156,7 @@ private fun noteNameSpeech(sharp: String, flat: String, letters: String, solfege
     val style = when (letters) {
         "dutch" -> LetterNames.DUTCH
         "german" -> LetterNames.GERMAN
+        "swedish" -> LetterNames.SWEDISH
         else -> LetterNames.WORDS
     }
     return NoteNameSpeech(sharp, flat, style, solfege.split(' '))

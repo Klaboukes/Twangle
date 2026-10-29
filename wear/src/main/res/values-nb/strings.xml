@@ -1,0 +1,14 @@
+<resources>
+    <string name="wear_play_note">Spill en tone</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s cent</item>
+        <item quantity="other">%1$s cent</item>
+    </plurals>
+    <string name="wear_in_tune">stemt</string>
+    <string name="wear_mic_needed">Twangle lytter til instrumentet ditt med mikrofonen på klokken.</string>
+    <string name="wear_allow_mic">Tillat mikrofon</string>
+    <string name="wear_open_settings">Åpne innstillinger</string>
+    <string name="wear_mic_busy">En annen app bruker mikrofonen.</string>
+    <string name="wear_mic_unavailable">Mikrofonen kan ikke åpnes.</string>
+    <string name="wear_try_again">Prøv igjen</string>
+</resources>

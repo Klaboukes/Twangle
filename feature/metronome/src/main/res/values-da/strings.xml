@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">Slag pr. takt</string>
+    <string name="metronome_tempo">Tempo, træk for at ændre</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d slag pr. minut, %2$s</item>
+        <item quantity="other">%1$d slag pr. minut, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Langsommere</string>
+    <string name="metronome_faster">Hurtigere</string>
+    <string name="metronome_tap">Tap tempo</string>
+    <string name="metronome_start">Start</string>
+    <string name="metronome_stop">Stop</string>
+    <string name="metronome_vibrate">Vibrér på slaget</string>
+    <string name="metronome_sound">Lyd</string>
+    <string name="metronome_sound_wood_block">Træblok</string>
+    <string name="metronome_sound_cowbell">Koklokke</string>
+    <string name="metronome_sound_claves">Claves</string>
+    <string name="metronome_sound_rim_click">Kantslag</string>
+    <string name="metronome_sound_spoken">Lyd: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Lyd: %1$s, vibrerer på slaget</string>
+
+    <string name="metronome_meter_2_4_spoken">Tofjerdedelstakt</string>
+    <string name="metronome_meter_3_4_spoken">Trefjerdedelstakt</string>
+    <string name="metronome_meter_4_4_spoken">Firefjerdedelstakt</string>
+    <string name="metronome_meter_5_4_spoken">Femfjerdedelstakt</string>
+    <string name="metronome_meter_6_8_spoken">Seksottendedelstakt</string>
+    <string name="metronome_meter_7_8_spoken">Syvottendedelstakt</string>
+
+    <string name="metronome_listen">Lyt</string>
+    <string name="metronome_listen_stop_spoken">Stop med at lytte</string>
+    <string name="metronome_listening">Lytter…</string>
+    <string name="metronome_heard">Hørt</string>
+    <string name="metronome_use">Brug</string>
+    <string name="metronome_not_now">Ikke nu</string>
+    <string name="metronome_listen_speed">Hastighed</string>
+    <string name="metronome_pick_half">Halv</string>
+    <string name="metronome_pick_as_heard">Som hørt</string>
+    <string name="metronome_pick_double">Dobbelt</string>
+    <string name="metronome_no_beat">Ingen fast puls hørt</string>
+    <string name="metronome_try_again">Prøv igen</string>
+    <string name="metronome_mic_off">Mikrofonen er slået fra</string>
+    <string name="metronome_open_settings">Åbn indstillinger</string>
+</resources>

@@ -35,11 +35,13 @@ class NotationTest {
 
     @Test
     fun `each language gets the notation its players usually write`() {
-        for (language in listOf("de", "pl", "ru", "uk")) assertEquals(language, Notation.GERMAN, Notation.forLanguage(language))
+        for (language in listOf("de", "pl", "ru", "uk", "da", "nb", "nn", "no")) {
+            assertEquals(language, Notation.GERMAN, Notation.forLanguage(language))
+        }
         for (language in listOf("fr", "it", "es", "pt", "tr", "ar")) {
             assertEquals(language, Notation.SOLFEGE, Notation.forLanguage(language))
         }
-        for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "vi", "th", "bn", "")) {
+        for (language in listOf("en", "nl", "zh", "ja", "ko", "hi", "in", "id", "vi", "th", "bn", "sv", "")) {
             assertEquals(language, Notation.SHARPS, Notation.forLanguage(language))
         }
         assertEquals(Notation.DEFAULT, Notation.forLanguage("xx"))

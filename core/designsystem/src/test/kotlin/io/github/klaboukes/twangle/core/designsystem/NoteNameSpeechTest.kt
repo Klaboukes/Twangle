@@ -47,6 +47,22 @@ class NoteNameSpeechTest {
     }
 
     @Test
+    fun `swedish says every letter name the app can show the way Swedish musicians do`() {
+        val swedish = NoteNameSpeech("%1\$s med kors", "%1\$s med b", LetterNames.SWEDISH)
+        val expected = mapOf(
+            "C" to "c", "C♯" to "ciss", "D♭" to "dess", "D" to "d", "D♯" to "diss", "E♭" to "ess",
+            "E" to "e", "F" to "f", "F♯" to "fiss", "G♭" to "gess", "G" to "g", "G♯" to "giss",
+            "A♭" to "ass", "A" to "a", "A♯" to "aiss", "B♭" to "bess", "B" to "b",
+        )
+        assertEquals(expected.keys, letterNamesShown())
+        expected.forEach { (name, spoken) -> assertEquals(name, spoken, swedish.name(name)) }
+        assertEquals("eiss", swedish.name("E♯"))
+        assertEquals("fess", swedish.name("F♭"))
+        assertEquals("Korsförtecken: c, ciss, d …", swedish.text("Korsförtecken: C, C♯, D …"))
+        assertEquals("Do med kors", swedish.name("Do♯"))
+    }
+
+    @Test
     fun `german says every name the german notation can show the way German musicians do`() {
         val expected = mapOf(
             "C" to "C", "C♯" to "Cis", "D♭" to "Des", "D" to "D", "D♯" to "Dis", "E♭" to "Es",

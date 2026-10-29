@@ -1,0 +1,9 @@
+- Nye instrumenter: 12-strenget guitar og 5-strenget banjo.
+- Nye stemninger: Open C, barytonukulele og enhver stemning op til 2½ tone lavere.
+- Skalaer er nu et værktøj for sig: 14 skalaer og en bordun at spille med til.
+- Fire nye akkordtyper, blandt dem powerchord.
+- Fire metronomlyde at vælge imellem.
+- Diagrammer til venstrehåndede i Indstillinger.
+- Twangle fylder nu hele tabletskærmen.
+- Referencetonerne lyder som instrumentet.
+- En kortere rundvisning og mange små rettelser.

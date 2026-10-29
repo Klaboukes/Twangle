@@ -1,0 +1,1 @@
+- På telefoner med en kortere skærm beholder måleren nu altid sin fulde bredde; tonen over den bliver lidt mindre i stedet.
