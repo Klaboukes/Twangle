@@ -18,8 +18,9 @@ import kotlin.math.roundToInt
  *    rather than the attack's single estimate.
  * 1. **Octave-jump rejection.** A reading a whole number of octaves (±[octaveToleranceCents]) away
  *    from the recent median is dropped. That is the classic detector glitch on decaying or
- *    weak-fundamental notes. If it repeats for [octaveConfirmFrames] frames in a row it's a real
- *    change and is accepted.
+ *    weak-fundamental notes. If it repeats for [octaveConfirmFrames] frames loud enough to start a
+ *    reading (`loudEnough`), it's a real change and is accepted; in quieter frames it is the
+ *    fundamental dying away ahead of the 2nd partial, and the reading stays.
  * 2. **Median** of the last [medianSize] readings removes other one-frame outliers.
  * 3. **EMA** with [emaAlpha] averages out remaining jitter. When the median is more than
  *    [snapCents] away (a new string was plucked), it snaps instead of sliding the needle across.
@@ -98,6 +99,10 @@ class PitchSmoother(
             return true
         }
         if (medianFilter.count > 0 && isOctaveJump(midi - medianFilter.median)) {
+            // A frame too quiet to start a reading can't move it an octave either: that is the
+            // fundamental dying into the room's noise ahead of the 2nd partial, as a picked high E
+            // does about 2 s in (Phase 46's recordings), not a new note, which comes with an attack.
+            if (!loudEnough) return false
             pendingOctaveFrames++
             if (pendingOctaveFrames < octaveConfirmFrames) return false
             // The jump persisted, so the player really did move by an octave: start over there.

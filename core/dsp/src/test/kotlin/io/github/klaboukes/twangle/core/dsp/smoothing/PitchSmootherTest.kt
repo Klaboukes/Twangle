@@ -144,6 +144,23 @@ class PitchSmootherTest {
     }
 
     @Test
+    fun `an octave up in frames too quiet to start a reading is the fundamental dying, not a new note`() {
+        // A picked high E through a phone: its 2nd partial is louder than its fundamental, which
+        // sinks into the room's noise about 2 s in, and the detector then reads E5 at −52 dBFS, under
+        // the gate's threshold, until the gate closes. The reading stays E4.
+        repeat(10) { smoother.update(E4 + 0.02f) }
+        repeat(30) { assertFalse(smoother.update(E4 + 12.01f, loudEnough = false)) }
+        assertTrue(smoother.hasReading)
+        assertEquals(Note(64), smoother.note)
+        assertEquals(2f, smoother.cents, 0.01f)
+        // A real octave played (the 12th-fret harmonic) comes loud enough, and is followed as before.
+        assertFalse(smoother.update(E4 + 12.01f, loudEnough = true))
+        assertFalse(smoother.update(E4 + 12.01f, loudEnough = true))
+        assertTrue(smoother.update(E4 + 12.01f, loudEnough = true))
+        assertEquals(Note(76), smoother.note)
+    }
+
+    @Test
     fun `plucking another string jumps straight to it`() {
         repeat(10) { smoother.update(E2) }
         val readings = mutableListOf<Float>()

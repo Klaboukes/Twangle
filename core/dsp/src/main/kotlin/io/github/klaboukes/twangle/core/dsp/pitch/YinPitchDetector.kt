@@ -281,9 +281,10 @@ class YinPitchDetector(
     }
 
     // How much the lowest partials' period counts as far as the attack goes: fully for a note that
-    // decays or holds steady over the window, not at all once its first half is ATTACK_MARGIN quieter
-    // than its second (the window holds the attack, where that period strays by up to 20 cents), and
-    // linearly in between.
+    // decays, holds steady or swells a little over the window (its first half at least
+    // SETTLED_HALF_RATIO of its second in energy), not at all once the first half is under
+    // ATTACK_HALF_RATIO of the second (the window holds the attack, where that period strays by up
+    // to 20 cents), and linearly in between.
     private fun settledWeight(): Double {
         val half = integrationLength / 2
         var first = 0.0
@@ -295,7 +296,7 @@ class YinPitchDetector(
             second += b * b
         }
         if (!(second > 0.0)) return 0.0
-        return ((first / second - (1 - ATTACK_MARGIN)) / ATTACK_MARGIN).coerceIn(0.0, 1.0)
+        return ((first / second - ATTACK_HALF_RATIO) / (SETTLED_HALF_RATIO - ATTACK_HALF_RATIO)).coerceIn(0.0, 1.0)
     }
 
     // Step 5 again, on the note's lowest partials: the sound limited to below about BAND_STOP × f0
@@ -453,8 +454,14 @@ class YinPitchDetector(
         // ≈ 1 % short just after the pick. Lags that far plus the fit's are worked out.
         private const val BAND_SEARCH_FRACTION = 0.02
 
-        // A window whose first half is 10 % quieter than its second holds the attack.
-        private const val ATTACK_MARGIN = 0.1
+        // A window whose first half has under half the energy of its second (3 dB) holds the
+        // attack; from 80 % (1 dB) the note counts as ringing on. A real string's level wobbles as
+        // its two planes of vibration beat (Phase 46's recordings: a window's first half up to 15 %
+        // quieter than its second, 0.7 dB, on a note ringing for seconds), which at a 10 % margin
+        // handed a third of the frames back to the whole waveform, 2–4 cents sharp. The attack
+        // itself leaves the first half far quieter: a tenth or less.
+        private const val ATTACK_HALF_RATIO = 0.5
+        private const val SETTLED_HALF_RATIO = 0.8
 
         // The band's dip floor, as a share of its mean, up to which its period counts in full
         // (CLARITY_ON) and from which it doesn't count (CLARITY_OFF).

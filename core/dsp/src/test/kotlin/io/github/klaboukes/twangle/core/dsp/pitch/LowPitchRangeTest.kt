@@ -234,7 +234,11 @@ class LowPitchRangeTest {
     @Test
     fun `a note already sounding as the canceller starts reads as it would without it`() {
         // The canceller learns it as the room; taking that out would ring the notches beside it.
-        // A2 (110 Hz) is a whole number of 10 Hz from every notch.
+        // A2 (110 Hz) is a whole number of 10 Hz from every notch. Within 0.2 cents: while the
+        // canceller is still learning, the lowest partials of a G2 (98 Hz, beside the 100 and
+        // 200 Hz notches) read up to 0.15 cents off, and the refinement on them counts in full
+        // for a steady note (0.1 before 2026-10-29, when it dropped out at random, with the
+        // window's halves' alignment to the cycle, and hid that in the whole waveform's reading).
         for (f in listOf(30.87f, 41.2f, 49f, 58.27f, 61.74f, 82.41f, 98f, 110f, 123.47f)) {
             for ((name, note) in listOf(
                 "sine" to TestSignals.sine(f, 2 * RATE),
@@ -247,7 +251,7 @@ class LowPitchRangeTest {
                     assertEquals("$message: shown", without[i].isShown, with[i].isShown)
                     if (!with[i].isShown) continue
                     val moved = abs(NoteMapper.centsBetween(with[i].shownHz, without[i].shownHz))
-                    assertTrue("$message: moved $moved cents", moved <= 0.1f)
+                    assertTrue("$message: moved $moved cents", moved <= 0.2f)
                 }
             }
         }
@@ -291,7 +295,12 @@ class LowPitchRangeTest {
         return lead to TunerChain(settings).run(stream)
     }
 
-    // Shown from at most 0.25 s after the pluck, in every frame to 2.5 s, and every reading within 1 cent.
+    // Shown from at most 0.25 s after the pluck, in every frame to 2.5 s, and every reading within
+    // 1 cent from 0.25 s on. The first readings may be off by up to 2: they are the median of the
+    // first three frames, whose windows still hold the attack (a B0 over 50.05 Hz hum showed −1.5
+    // cents for one frame, 0.18 s in, since the refinement on the lowest partials counts from a
+    // window whose first half has 80 % of the second's energy; before 2026-10-29 that was 90 %,
+    // which handed every other frame of a real, ringing string to the whole waveform).
     private fun assertHumFreeReading(message: String, f: Float, frames: List<TunerChain.Frame>, onset: Int) {
         val after = frames.filter { it.endSample > onset && it.endSample <= onset + 5 * RATE / 2 }
         val first = after.indexOfFirst { it.isShown }
@@ -299,7 +308,8 @@ class LowPitchRangeTest {
         for (frame in after.drop(first)) {
             assertTrue("$message: lost at ${(frame.endSample - onset) / RATE.toFloat()} s", frame.isShown)
             val error = NoteMapper.centsBetween(frame.shownHz, f)
-            assertTrue("$message: off by $error cents at ${(frame.endSample - onset) / RATE.toFloat()} s", abs(error) <= ACCURACY_CENTS)
+            val limit = if (frame.endSample < onset + RATE / 4) 2 * ACCURACY_CENTS else ACCURACY_CENTS
+            assertTrue("$message: off by $error cents at ${(frame.endSample - onset) / RATE.toFloat()} s", abs(error) <= limit)
         }
     }
 

@@ -15,6 +15,8 @@ internal class TunerChain(
     private val mapper: NoteMapper = NoteMapper(),
     /** The hum canceller, as the range has it (none in the standard range); null for none, to compare. */
     private val humCanceller: () -> MainsHumCanceller? = { settings.newHumCanceller() },
+    /** The refinement on the lowest partials, as the tuner has it; false to compare (the whole waveform). */
+    private val refineOnLowestPartials: Boolean = true,
 ) {
     /** What the chain produced for one frame. */
     class Frame(
@@ -45,7 +47,7 @@ internal class TunerChain(
         assembler.filter = humCanceller()
         val gate = SignalGate()
         val sustain = settings.newSustainCheck()
-        val detector = settings.newPitchDetector()
+        val detector = settings.newPitchDetector(refineOnLowestPartials)
         val smoother = PitchSmoother()
         val noise = settings.newNoiseFloorTracker()
         val window = FloatArray(settings.windowSize)
