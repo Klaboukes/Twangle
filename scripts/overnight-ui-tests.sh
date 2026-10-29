@@ -86,7 +86,7 @@ if [ $languages = 1 ]; then
         for style in "${STYLES[@]}"; do
             wait_cool | tee -a "$OUT/languages.txt"
             echo "-- $module $style" | tee -a "$OUT/languages.txt"
-            MODULE_TIMEOUT=1800 scripts/ui-tests.sh "$module" --thorough --all-languages -f "everyLanguage.*\[$style\]" 2>&1 | tee -a "$OUT/languages.txt"
+            MODULE_TIMEOUT=3000 scripts/ui-tests.sh "$module" --thorough --all-languages -f "everyLanguage.*\[$style\]" 2>&1 | tee -a "$OUT/languages.txt"
             [ "${PIPESTATUS[0]}" = 0 ] || status=1
         done
     done

@@ -122,9 +122,9 @@ private fun SemanticsNodeInteractionsProvider.saveScreen(case: String) {
 }
 
 /**
- * A test's time limit: [normal] seconds, or in a language run 15 minutes, since an
- * [EveryLanguage] test may go through 16 languages.
+ * A test's time limit: [normal] seconds, or in a language run 25 minutes, since an
+ * [EveryLanguage] test may go through 25 languages.
  */
 fun timeLimitSeconds(normal: Long): Long = if (isEveryLanguageRun) EVERY_LANGUAGE_TIME_LIMIT_SECONDS else normal
 
-private const val EVERY_LANGUAGE_TIME_LIMIT_SECONDS = 900L
+private const val EVERY_LANGUAGE_TIME_LIMIT_SECONDS = 1500L
