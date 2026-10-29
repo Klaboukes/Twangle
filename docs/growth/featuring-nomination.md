@@ -8,8 +8,8 @@ The form was checked on 2026-10-29: https://support.google.com/googleplay/contac
 
 The form's rules: send it **at least 8 weeks before the date you want to be featured, for a new app** (3 weeks for other requests). The app has to be on a Play track already (it is: the closed track), and it has to launch on production within 4 months of that date. Apps need a rating of 3.0 or more. A new app with no public ratings yet can still be sent as a new launch.
 
-- **For Christmas week:** Christmas week, 24–28 December, is the busiest week of the year for tuner searches ([store listing](../store-listing.md), *Timing: Christmas*). Eight weeks before Thursday 24 December 2026 is **Thursday 29 October 2026**. To ask for Christmas week, send the form now, with the closed track's version, while production access is still being applied for. Production around mid-November fits within the 4 months.
-- **If that date is missed:** send it with Phase 53's production rollout anyway, asking for a date at least 8 weeks after the day you send it (mid-January for a mid-November launch).
+- **After launch, once Twangle has a track record** (owner, 2026-10-29): not at launch and not for Christmas week. A brand-new app with no ratings, installs or reviews is a long shot for Google's editors, so the owner sends it when Twangle is public on Play and has its first few hundred ratings (Phase 56). By then it is no longer a new launch: answer **No – Title update**, send it at least 3 weeks before the date asked for, and check the answers below (written for a new launch) against the form and the app as they are then.
+- **Christmas week was let go:** it meant sending by 29 October 2026 with no public ratings yet; the owner chose not to.
 - **Again with the watch app:** the update that brings the Wear OS watch app (decision 3, Phase 56) is a *major update* with a new device, so it gets its own nomination at least 3 weeks before it goes out. Its answers are under *The watch-app update* below.
 
 ## The form, field by field (new launch)
