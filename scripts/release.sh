@@ -366,7 +366,9 @@ need_screenshots() {
     local locale want dir file n w h info tablets oldest="" problems=() missing=() tablet_counts=()
     for locale in $(locales); do
         dir="$LISTINGS/$locale/images/tenInchScreenshots"
-        tablets="$(find "$dir" -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)"
+        # A PC that never made the tablet set has no such folder (find fails, and pipefail would end the script).
+        tablets=0
+        [[ -d "$dir" ]] && tablets="$(find "$dir" -maxdepth 1 -name '*.png' | wc -l)"
         tablet_counts+=("$locale:$tablets")
     done
     if printf '%s\n' "${tablet_counts[@]}" | grep -qv ':0$' &&
