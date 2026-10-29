@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="metronome_beats_in_bar">每小節拍數</string>
+    <string name="metronome_tempo">速度，拖曳以調整</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="other">每分鐘 %1$d 拍，%2$s</item>
+    </plurals>
+    <string name="metronome_slower">減慢</string>
+    <string name="metronome_faster">加快</string>
+    <string name="metronome_tap">輕觸測速</string>
+    <string name="metronome_start">開始</string>
+    <string name="metronome_stop">停止</string>
+    <string name="metronome_vibrate">隨節拍震動</string>
+    <string name="metronome_sound">音色</string>
+    <string name="metronome_sound_wood_block">木魚</string>
+    <string name="metronome_sound_cowbell">牛鈴</string>
+    <string name="metronome_sound_claves">響棒</string>
+    <string name="metronome_sound_rim_click">鼓框</string>
+    <string name="metronome_sound_spoken">音色：%1$s</string>
+    <string name="metronome_sound_spoken_vibrating">音色：%1$s，隨節拍震動</string>
+
+    <string name="metronome_meter_2_4_spoken">四分之二拍</string>
+    <string name="metronome_meter_3_4_spoken">四分之三拍</string>
+    <string name="metronome_meter_4_4_spoken">四分之四拍</string>
+    <string name="metronome_meter_5_4_spoken">四分之五拍</string>
+    <string name="metronome_meter_6_8_spoken">八分之六拍</string>
+    <string name="metronome_meter_7_8_spoken">八分之七拍</string>
+
+    <string name="metronome_listen">聆聽</string>
+    <string name="metronome_listen_stop_spoken">停止聆聽</string>
+    <string name="metronome_listening">正在聆聽…</string>
+    <string name="metronome_heard">聽到</string>
+    <string name="metronome_use">使用</string>
+    <string name="metronome_not_now">以後再說</string>
+    <string name="metronome_listen_speed">速度</string>
+    <string name="metronome_pick_half">減半</string>
+    <string name="metronome_pick_as_heard">原速</string>
+    <string name="metronome_pick_double">加倍</string>
+    <string name="metronome_no_beat">沒有聽到穩定的節拍</string>
+    <string name="metronome_try_again">重試</string>
+    <string name="metronome_mic_off">麥克風已關閉</string>
+    <string name="metronome_open_settings">開啟設定</string>
+</resources>

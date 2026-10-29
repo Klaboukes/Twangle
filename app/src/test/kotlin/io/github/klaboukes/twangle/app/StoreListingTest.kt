@@ -9,7 +9,8 @@ import java.util.Properties
 
 /**
  * Guards the Play Store texts in `fastlane/metadata/android/<Play locale>/` (the fastlane / Triple-T
- * layout, which F-Droid reads too): every language in `twangle.languages` has exactly one folder with a
+ * layout, which F-Droid reads too): every language in `twangle.languages` has exactly one folder (or
+ * the few [PLAY_FOLDERS] names) with a
  * title, a short and a full description, no folder is for an unlisted language, and each text keeps
  * within Google Play's limits, counted in Unicode code points as Play counts characters. The title
  * also keeps clear of the price and promotion words Google bans there (docs/store-listing.md). Each
@@ -36,9 +37,17 @@ class StoreListingTest {
     private val folders: List<String> =
         listings.listFiles().orEmpty().filter { it.isDirectory }.map { it.name }.sorted()
 
-    /** Language → its store-listing folder; fails when a language has none, or more than one. */
-    private val folderOf: Map<String, String> by lazy {
+    /**
+     * Language → its store-listing folders: one, or those [PLAY_FOLDERS] names for a language Play
+     * lists by region only; fails when a language has none, or more than it should.
+     */
+    private val foldersOf: Map<String, List<String>> by lazy {
         languages.associateWith { language ->
+            PLAY_FOLDERS[language]?.let { wanted ->
+                val missing = wanted - folders.toSet()
+                assertTrue("Expected the folders $wanted for $language in ${listings.relativeTo(root)}, missing $missing", missing.isEmpty())
+                return@associateWith wanted
+            }
             val tag = languageTag(language)
             val matches = folders.filter { it == tag || (!tag.contains('-') && it.startsWith("$tag-")) }
             assertEquals(
@@ -47,9 +56,17 @@ class StoreListingTest {
                 1,
                 matches.size,
             )
-            matches.single()
+            matches
         }
     }
+
+    /** Each store-listing folder with its language: (language, folder). */
+    private val folderOf: List<Pair<String, String>> by lazy {
+        foldersOf.flatMap { (language, folders) -> folders.map { language to it } }
+    }
+
+    /** Every listed language's store-listing folders. */
+    private val listedFolders: List<String> by lazy { folderOf.map { it.second } }
 
     @Test
     fun `every language has a title, short and full description`() {
@@ -66,7 +83,7 @@ class StoreListingTest {
 
     @Test
     fun `no store listing for a language that is not listed`() {
-        val extra = folders - folderOf.values.toSet()
+        val extra = folders - listedFolders.toSet()
         assertTrue(
             "Store listings for languages missing from twangle.languages (gradle.properties): $extra",
             extra.isEmpty(),
@@ -75,7 +92,7 @@ class StoreListingTest {
 
     @Test
     fun `every text keeps within Google Play's length limits`() {
-        val tooLong = folderOf.values.flatMap { folder ->
+        val tooLong = listedFolders.flatMap { folder ->
             FILES.mapNotNull { (name, limit) ->
                 val length = text(folder, name)?.let { it.codePointCount(0, it.length) } ?: 0
                 if (length > limit) "$folder/$name: $length characters, limit $limit" else null
@@ -86,7 +103,7 @@ class StoreListingTest {
 
     @Test
     fun `the title is Twangle plus what it is, without promotion words`() {
-        folderOf.values.forEach { folder ->
+        listedFolders.forEach { folder ->
             val title = text(folder, "title.txt").orEmpty()
             assertTrue("$folder/title.txt must start with Twangle: $title", title.startsWith("Twangle"))
             BANNED_IN_TITLE.forEach { banned ->
@@ -100,7 +117,7 @@ class StoreListingTest {
 
     @Test
     fun `the texts are plain text without emoji`() {
-        folderOf.values.forEach { folder ->
+        listedFolders.forEach { folder ->
             FILES.keys.forEach { name ->
                 val emoji = text(folder, name).orEmpty().codePoints()
                     .filter { it in 0x1F000..0x1FAFF || it == 0xFE0F }.toArray()
@@ -130,7 +147,7 @@ class StoreListingTest {
 
     @Test
     fun `release notes are in every language and within Play's limit`() {
-        val notes = folderOf.values.associateWith { folder ->
+        val notes = listedFolders.associateWith { folder ->
             File(listings, "$folder/$CHANGELOGS").listFiles().orEmpty().filter { it.isFile }.map { it.name }.toSet()
         }
         notes.forEach { (folder, names) ->
@@ -221,6 +238,12 @@ class StoreListingTest {
             Picture("icon.png", 512, 512, RGBA, "a 32-bit PNG (with alpha)", 1L shl 20),
             Picture("featureGraphic.png", 1024, 500, RGB, "a 24-bit PNG (without alpha)", 15L shl 20),
         )
+
+        /**
+         * The languages with more than one Play folder: Play has no Traditional Chinese, only
+         * Taiwan's and Hong Kong's, so the one `b+zh+Hant` gets both (docs/store-listing.md, *Folders*).
+         */
+        val PLAY_FOLDERS = mapOf("b+zh+Hant" to listOf("zh-TW", "zh-HK"))
 
         val BANNED_IN_TITLE = listOf("""\bfree\b""", """\bno ads\b""", """\bbest\b""", """#1\b""")
             .map { Regex(it, RegexOption.IGNORE_CASE) }

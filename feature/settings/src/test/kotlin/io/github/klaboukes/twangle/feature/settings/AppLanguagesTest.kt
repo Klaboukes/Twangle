@@ -17,6 +17,7 @@ class AppLanguagesTest {
         assertEquals("pt-BR", AppLanguages.tagOf("pt-rBR"))
         assertEquals("zh-CN", AppLanguages.tagOf("zh-rCN"))
         assertEquals("sr-Latn", AppLanguages.tagOf("b+sr+Latn"))
+        assertEquals("zh-Hant", AppLanguages.tagOf("b+zh+Hant"))
     }
 
     @Test
@@ -47,6 +48,8 @@ class AppLanguagesTest {
         val name = AppLanguages.nameOf("zh-CN")
         assertTrue(name, name.contains("简体") && name.split("中文").size == 2)
         assertTrue(AppLanguages.nameOf("zh-TW").contains("繁體"))
+        val traditional = AppLanguages.nameOf("zh-Hant")
+        assertTrue(traditional, traditional.contains("繁體") && traditional.split("中文").size == 2)
     }
 
     @Test
@@ -77,6 +80,18 @@ class AppLanguagesTest {
         assertEquals("en", AppLanguages.selectedOf(Locale.forLanguageTag("en-GB"), tags))
         assertEquals("pt-BR", AppLanguages.selectedOf(Locale.forLanguageTag("pt-PT"), tags))
         assertNull(AppLanguages.selectedOf(Locale.forLanguageTag("sv"), tags))
+    }
+
+    @Test
+    fun `a Chinese language is matched by its script`() {
+        val tags = listOf("en", "zh-CN", "zh-Hant")
+        assertEquals("zh-Hant", AppLanguages.selectedOf(Locale.forLanguageTag("zh-Hant"), tags))
+        assertEquals("zh-Hant", AppLanguages.selectedOf(Locale.forLanguageTag("zh-TW"), tags))
+        assertEquals("zh-Hant", AppLanguages.selectedOf(Locale.forLanguageTag("zh-HK"), tags))
+        assertEquals("zh-Hant", AppLanguages.selectedOf(Locale.forLanguageTag("zh-Hant-TW"), tags))
+        assertEquals("zh-CN", AppLanguages.selectedOf(Locale.forLanguageTag("zh-SG"), tags))
+        assertEquals("zh-CN", AppLanguages.selectedOf(Locale.forLanguageTag("zh-Hans"), tags))
+        assertEquals("zh-CN", AppLanguages.selectedOf(Locale.forLanguageTag("zh"), tags))
     }
 
     /** `twangle.languages` from the root gradle.properties, the list the app passes to the setting. */

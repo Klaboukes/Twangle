@@ -23,9 +23,14 @@ import java.io.FileOutputStream
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 annotation class EveryLanguage
 
-/** The languages Twangle ships (`twangle.languages` in gradle.properties) as locale tags: "nl", "pt-BR", "zh-CN". */
+/**
+ * The languages Twangle ships (`twangle.languages` in gradle.properties) as locale tags: "nl", "pt-BR",
+ * "zh-CN", and "zh-Hant" for the qualifier `b+zh+Hant`.
+ */
 val shippedLanguages: List<String> =
-    BuildConfig.LANGUAGES.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { it.replace("-r", "-") }
+    BuildConfig.LANGUAGES.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map {
+        if (it.startsWith("b+")) it.removePrefix("b+").replace('+', '-') else it.replace("-r", "-")
+    }
 
 /**
  * The languages an [EveryLanguage] test goes through: those of [shippedLanguages] the run names

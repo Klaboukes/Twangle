@@ -32,7 +32,7 @@ internal object AppLanguages {
         // Android (and older Java) still report Indonesian as "in", its old code.
         if (locale.language == "id" || locale.language == "in") return INDONESIAN
         val name = if (locale.language == "zh") {
-            val script = locale.script.ifEmpty { if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans" }
+            val script = chineseScriptOf(locale)
             val scriptName = Locale.Builder().setScript(script).build().getDisplayScript(locale)
             val language = locale.getDisplayLanguage(locale)
             if (language in scriptName) scriptName else "$language ($scriptName)"
@@ -44,15 +44,24 @@ internal object AppLanguages {
 
     /**
      * Which of [tags] the app's language [current] is: the same tag, else the same language (a
-     * regional variant picked in phone Settings, "en-GB" for "en"). Null for the phone's language
-     * ([current] null) or a language that isn't offered.
+     * regional variant picked in phone Settings, "en-GB" for "en"; for Chinese the same script too,
+     * so "zh-TW" is "zh-Hant", not "zh-CN"). Null for the phone's language ([current] null) or a
+     * language that isn't offered.
      */
     fun selectedOf(current: Locale?, tags: List<String>): String? {
         if (current == null) return null
         val currentTag = current.toLanguageTag()
         return tags.firstOrNull { it.equals(currentTag, ignoreCase = true) }
-            ?: tags.firstOrNull { Locale.forLanguageTag(it).language == current.language }
+            ?: tags.firstOrNull { tag ->
+                val offered = Locale.forLanguageTag(tag)
+                offered.language == current.language &&
+                    (current.language != "zh" || chineseScriptOf(offered) == chineseScriptOf(current))
+            }
     }
+
+    /** Chinese's script: the tag's own, else Traditional for Taiwan, Hong Kong and Macau, Simplified elsewhere. */
+    private fun chineseScriptOf(locale: Locale): String =
+        locale.script.ifEmpty { if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans" }
 
     private const val INDONESIAN = "Bahasa Indonesia"
 }

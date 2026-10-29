@@ -79,7 +79,7 @@ class StyleFontCoverageTest {
     fun noWordMixesTwoFaces() {
         val problems = mutableListOf<String>()
         qualifiers.forEachIndexed { index, qualifier ->
-            val language = qualifier.substringBefore("-r")
+            val language = languageOf(qualifier)
             val runs = letterRuns(textsOf(qualifier, default = index == 0))
             for (style in VisualStyle.entries) {
                 val faces = facesFor(style, language)
@@ -101,7 +101,7 @@ class StyleFontCoverageTest {
     @Test
     fun noExtraLetterSpacingWhereTheFaceLacksTheScript() {
         qualifiers.forEachIndexed { index, qualifier ->
-            val language = qualifier.substringBefore("-r")
+            val language = languageOf(qualifier)
             val runs = letterRuns(textsOf(qualifier, default = index == 0))
             for (style in VisualStyle.entries) {
                 val faces = facesFor(style, language)
@@ -118,11 +118,15 @@ class StyleFontCoverageTest {
     @Test
     fun theLanguageListsMatchTheFonts() {
         // Every language in the lists is shipped, so a stale entry shows.
-        val shipped = qualifiers.map { it.substringBefore("-r") }.toSet()
+        val shipped = qualifiers.map(::languageOf).toSet()
         assertTrue((EXTENDED_LATIN_LANGUAGES + TONE_LETTER_LANGUAGES + OTHER_SCRIPT_LANGUAGES - shipped).isEmpty())
     }
 
     private companion object {
+        /** A resource qualifier's language, as the app's locale gives it: "pt-rBR" → "pt", "b+zh+Hant" → "zh". */
+        fun languageOf(qualifier: String): String =
+            if (qualifier.startsWith("b+")) qualifier.removePrefix("b+").substringBefore('+') else qualifier.substringBefore("-r")
+
         /** The characters a TrueType font maps to a glyph: its cmap's format 4 and 12 subtables. */
         fun characterMap(font: ByteArray): Set<Int> {
             val data = ByteBuffer.wrap(font)

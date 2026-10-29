@@ -1,0 +1,13 @@
+<resources>
+    <string name="wear_play_note">彈一個音</string>
+    <plurals name="wear_cents">
+        <item quantity="other">%1$s 音分</item>
+    </plurals>
+    <string name="wear_in_tune">已調準</string>
+    <string name="wear_mic_needed">Twangle 透過手錶的麥克風聆聽你的樂器。</string>
+    <string name="wear_allow_mic">允許使用麥克風</string>
+    <string name="wear_open_settings">開啟設定</string>
+    <string name="wear_mic_busy">另一個應用程式正在使用麥克風。</string>
+    <string name="wear_mic_unavailable">無法開啟麥克風。</string>
+    <string name="wear_try_again">重試</string>
+</resources>

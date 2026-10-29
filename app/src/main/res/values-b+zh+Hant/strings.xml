@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">調音器</string>
+    <string name="nav_metronome">節拍器</string>
+    <string name="nav_practice">練習</string>
+    <string name="nav_settings">設定</string>
+    <string name="widget_name">調音器</string>
+    <string name="widget_description">顯示你的樂器和調音。輕觸一下即可開啟調音器。</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">開啟調音器</string>
+    <string name="widget_preview_title">吉他 · 標準</string>
+</resources>
