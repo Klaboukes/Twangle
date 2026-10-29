@@ -275,7 +275,7 @@
     <string name="tuner_edit_tuning">Edit</string>
     <!-- The ⋮ menu's item that deletes one of the player's own tunings, and the delete dialog's confirm button. Short. -->
     <string name="tuner_delete_tuning">Delete</string>
-    <!-- Asks before one of the player's own tunings is deleted. %1$s is its name, e.g. "“Drop D loose” will be gone for good." -->
+    <!-- Title of the box that asks before one of the player's own tunings is deleted; the text under it names the tuning. -->
     <string name="tuner_delete_tuning_title">Delete this tuning?</string>
     <!-- Delete dialog: the text under "Delete this tuning?". %1$s is the tuning's name; keep your language's quotation marks around it. -->
     <string name="tuner_delete_tuning_text">“%1$s” will be gone for good.</string>

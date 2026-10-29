@@ -255,7 +255,7 @@ feature/settings settings_about_free_title 56f9c1ca
 feature/settings settings_about_licence_close 7d9eb7ac
 feature/settings settings_about_licence_open 7f7f7f5a
 feature/settings settings_about_link_summary d5021d52
-feature/settings settings_about_privacy_summary f1a8eb40
+feature/settings settings_about_privacy_summary 24003433
 feature/settings settings_about_privacy_title 54a57c31
 feature/settings settings_about_rate_summary 2c974b3d
 feature/settings settings_about_rate_title c06ba01b
