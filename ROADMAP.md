@@ -11,7 +11,7 @@ Every finished phase is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the ov
 **Where things stand (2026-10-29):**
 - **On Play:** v1.0.2 is live on the internal and closed tracks (2026-10-23), and the closed test's 14 days are running (Phase 53). **The owner decides when a new version goes to Play** (owner, 2026-10-26), so phases have no release step of their own; `/release` runs only when the owner asks.
 - **The next release:** the version number was raised to 1.1.0 on 2026-10-27 (PR #417, with its release notes), but nothing was built, tagged or sent. What landed since is not in those notes yet: About's *Help & website* row (#426) and Ear training (Phase 55, #440–#446 and #456, on in release builds after the owner's check). The next `/release` starts by bringing the notes up to date.
-- **Now:** Phase 46 is done (2026-10-29: the owner's guitar recorded through the Xiaomi is in the tests, and the needle is quick and steady on it, in a noisy room too). Open before launch: Phase 50's store listing (below) and the owner's checks.
+- **Now:** Phase 46 is done (2026-10-29: the owner's guitar recorded through the Xiaomi is in the tests, and the needle is quick and steady on it, in a noisy room too; the owner's live check passed the same day). Open before launch: Phase 50's store listing (below).
 - **Phase 50** has one thing left: sending the store listing. The store screenshots of all 27 store folders are made on the desktop (2026-10-29, `scripts/store-screenshots.sh`); what is missing there is the Play key, which only the laptop has, and the owner's yes, then `scripts/release.sh listing`. The featuring nomination waits until after launch (owner, 2026-10-29; Phase 56).
 - **Next:** Phase 53's production launch once the closed test's 14 days are done.
 - **After launch:** Phase 56, the rest of getting found; Phase 58, opening the code; Phase 59, chord charts and scales for the banjo.
@@ -30,7 +30,6 @@ Done by the owner by hand, with a real guitar or headset. They are not roadmap i
   - Phase 5, a Bluetooth headset: with one connected, the tuner still listens through the phone's mic and reads a string correctly
   - Phase 15, a bass (or a 7-string guitar or cello): the lowest strings read correctly (B0, E1, B1, C2), and the tuner shows no note while the amp only hums
   - Phase 20, a Wear OS watch: install Twangle on it and tune a real guitar: the note and cents follow the string, the ring glows softly in tune, and the microphone icon disappears when the screen goes dark or dims to always-on (the watch app follows in an update, decision 3)
-- ☐ **Phase 46, stiff strings:** with a real guitar and a pick, play each open string hard and watch the needle: it shows the note within a fifth of a second and settles smoothly, never jumping to another note. On the low E, A and D expect it to start several cents sharp and come down over about two seconds, on the G, B and high E to settle within half a second: that is the string itself, whose overtones start sharp and settle (measured on your own guitar in Phase 46's recordings), not the tuner. Then run the 12th-fret check on a guitar a shop has set up: every string `FINE`
 
 ---
 
