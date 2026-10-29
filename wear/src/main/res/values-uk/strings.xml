@@ -1,0 +1,16 @@
+<resources>
+    <string name="wear_play_note">Зіграй ноту</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s цент</item>
+        <item quantity="few">%1$s центи</item>
+        <item quantity="many">%1$s центів</item>
+        <item quantity="other">%1$s цента</item>
+    </plurals>
+    <string name="wear_in_tune">налаштовано</string>
+    <string name="wear_mic_needed">Twangle слухає твій інструмент через мікрофон годинника.</string>
+    <string name="wear_allow_mic">Дозволити мікрофон</string>
+    <string name="wear_open_settings">Відкрити налаштування</string>
+    <string name="wear_mic_busy">Мікрофон використовує інший додаток.</string>
+    <string name="wear_mic_unavailable">Не вдається відкрити мікрофон.</string>
+    <string name="wear_try_again">Повторити</string>
+</resources>

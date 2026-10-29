@@ -1,0 +1,43 @@
+<resources>
+    <string name="metronome_beats_in_bar">Долі в такті</string>
+    <string name="metronome_tempo">Темп, потягни, щоб змінити</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">%1$d удар за хвилину, %2$s</item>
+        <item quantity="few">%1$d удари за хвилину, %2$s</item>
+        <item quantity="many">%1$d ударів за хвилину, %2$s</item>
+        <item quantity="other">%1$d удару за хвилину, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">Повільніше</string>
+    <string name="metronome_faster">Швидше</string>
+    <string name="metronome_tap">Тап-темп</string>
+    <string name="metronome_start">Старт</string>
+    <string name="metronome_stop">Стоп</string>
+    <string name="metronome_vibrate">Вібрація в такт</string>
+    <string name="metronome_sound">Звук</string>
+    <string name="metronome_sound_wood_block">Вуд-блок</string>
+    <string name="metronome_sound_cowbell">Ковбел</string>
+    <string name="metronome_sound_claves">Клавес</string>
+    <string name="metronome_sound_rim_click">Крос-стік</string>
+    <string name="metronome_sound_spoken">Звук: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">Звук: %1$s, вібрація в такт</string>
+    <string name="metronome_meter_2_4_spoken">Розмір дві чверті</string>
+    <string name="metronome_meter_3_4_spoken">Розмір три чверті</string>
+    <string name="metronome_meter_4_4_spoken">Розмір чотири чверті</string>
+    <string name="metronome_meter_5_4_spoken">Розмір п’ять чвертей</string>
+    <string name="metronome_meter_6_8_spoken">Розмір шість восьмих</string>
+    <string name="metronome_meter_7_8_spoken">Розмір сім восьмих</string>
+    <string name="metronome_listen">Слухати</string>
+    <string name="metronome_listen_stop_spoken">Припинити слухати</string>
+    <string name="metronome_listening">Слухаю…</string>
+    <string name="metronome_heard">Почуто</string>
+    <string name="metronome_use">Застосувати</string>
+    <string name="metronome_not_now">Не зараз</string>
+    <string name="metronome_listen_speed">Швидкість</string>
+    <string name="metronome_pick_half">Удвічі повільніше</string>
+    <string name="metronome_pick_as_heard">Як почуто</string>
+    <string name="metronome_pick_double">Удвічі швидше</string>
+    <string name="metronome_no_beat">Рівного ритму не чути</string>
+    <string name="metronome_try_again">Ще раз</string>
+    <string name="metronome_mic_off">Мікрофон вимкнено</string>
+    <string name="metronome_open_settings">Відкрити налаштування</string>
+</resources>

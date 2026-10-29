@@ -124,9 +124,9 @@ internal val TONE_LETTER_LANGUAGES = setOf("vi")
 /**
  * Languages in a script none of the display faces has (Arabic, Bengali, Devanagari, Thai, Chinese,
  * Japanese, Korean, and Cyrillic, which only Classic's Playfair Display and Ancient's Forum have;
- * Android says "ru").
+ * Android says "ru" and "uk", whose і ї є ґ both faces have too).
  */
-internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "bn", "hi", "ja", "ko", "ru", "th", "zh")
+internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "bn", "hi", "ja", "ko", "ru", "th", "uk", "zh")
 
 private val SPACE_AGE_SPACING = 0.02.em
 
