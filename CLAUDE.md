@@ -46,7 +46,7 @@ scripts/ui-tests.sh                     # on-device UI tests, only the modules t
 scripts/ui-tests.sh --dry-run           # which modules that would run, and why (no build, no phone)
 scripts/ui-tests.sh --since-pass        # before a release: only the modules changed since they last passed whole on this PC
 scripts/overnight-ui-tests.sh           # the overnight run: every UI test in every style, then every language, then the store screenshots (~2–3 h, see /overnight-run)
-scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2–3 min a language; git-ignored, docs/store-listing.md)
+scripts/store-screenshots.sh [locale…]  # the Play Store screenshots on the phone, or the 10-inch tablet set with the tablet connected (~2–3 min a language; git-ignored, shared between the PCs through GitHub, docs/store-listing.md)
 scripts/meter-frames.sh                 # frame times of every meter look on the phone (synthetic tone, ~4 min)
 scripts/dsp-phone-benchmark.sh          # pitch detector CPU per frame on the phone (no app, no sound, ~20 s)
 scripts/metronome-drift.sh              # metronome steadiness on the phone: 120 BPM for 10 min, quietly (~11 min)
@@ -64,7 +64,7 @@ scripts/style-screens.sh                # pictures of the tuner in every style, 
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
 ```
-`scripts/ui-test-scope.py`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
+`scripts/ui-test-scope.py`, `scripts/share-store-screenshots.sh`, `scripts/strum-wav.py`, `scripts/subset-font.py` and `scripts/PlayReports.java` are helpers of the scripts above and of the docs that name them.
 ### Dev machine environment (Windows)
 - Java is Android Studio's bundled JDK (JBR, JDK 25), with no separate install (owner, 2026-10-28). Each PC has it as a Windows user variable,
   `JAVA_HOME=C:\Program Files\Android\Android Studio\jbr`, so commands don't set it themselves.

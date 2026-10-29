@@ -37,7 +37,7 @@
 #       phone and tablet screenshots, the icon and feature graphic (one pair for every language), and the
 #       app details (default language en-US, contact email, website). From fastlane/metadata/android/
 #       as it is on main. Refuses unless every language has its screenshots (scripts/store-screenshots.sh;
-#       git-ignored, so made on this PC), and checks the texts and pictures against Play's rules first.
+#       git-ignored; it first takes the latest set the other PC shared on GitHub, scripts/share-store-screenshots.sh), and checks the texts and pictures against Play's rules first.
 #       Each send is noted as a tag listing/<date-time> on the commit sent.
 #   scripts/release.sh listing-changes
 #       Whether the store listing needs sending: what changed in its texts and pictures since the last
@@ -406,7 +406,8 @@ need_screenshots() {
     done
     if [[ ${#missing[@]} -gt 0 ]]; then
         fail "no phone screenshots (1.png ... 8.png) for: ${missing[*]}
-They are made on the phone and kept only on this PC (git-ignored): connect the phone and run
+They are made on the phone (git-ignored), and the other PC shares its set on GitHub only after a run
+that made them all. Connect the phone and run
   scripts/store-screenshots.sh ${missing[*]}
 (about 2 minutes a language; without arguments it makes every language). Nothing was sent to Google Play."
     fi
@@ -425,6 +426,9 @@ listing() {
     [[ -z "$(git status --porcelain -- "$LISTINGS")" ]] || fail "uncommitted changes in $LISTINGS; land them first"
     git fetch --quiet origin main
     [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] || fail "main differs from origin/main; git pull first"
+    # The screenshots are git-ignored: take the latest set the owner's other PC shared on GitHub, if newer.
+    scripts/share-store-screenshots.sh pull phone || true
+    scripts/share-store-screenshots.sh pull tablet || true
     need_screenshots
     use_java
 

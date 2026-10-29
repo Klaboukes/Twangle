@@ -46,7 +46,7 @@ Steps 6–8 follow later, each on the owner's word.
 ## 1. Is main ready?
 - Work in the main folder, which belongs to releases and the overnight run (CLAUDE.md, *One worktree
   per session that changes files*): the overnight summary and the store screenshots are there.
-- `git switch main && git pull`, then `git describe --tags --abbrev=0`. If nothing a player would
+- `git switch main && git pull`, then `git describe --tags --abbrev=0 --match 'v*'` (the `listing/*` and `store-screenshots` tags are no versions). If nothing a player would
   notice changed since that tag, say so and stop.
 - **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
   (every UI test in every style, every language, the store screenshots) hasn't passed. The first line
@@ -149,11 +149,13 @@ moves on.
 - `scripts/release.sh listing-changes` says what changed since the listing was last sent: the texts
   or pictures, a new language, and the app's screen changes since (do the screenshots still show the
   app as it looks?). Nothing changed: there is nothing to send.
-- Every language needs its eight screenshots on this PC: `scripts/store-screenshots.sh` (phone
-  connected, about 2 minutes a language; [docs/store-listing.md](../../../docs/store-listing.md)).
-  `listing` refuses without them and says how old the oldest are. The 10-inch tablet set (the same
-  script with the tablet connected instead, *Tablet screenshots*) goes along where it was made, and
-  then every language needs it.
+- Every language needs its eight screenshots: `scripts/store-screenshots.sh` (phone connected,
+  about 2 minutes a language; [docs/store-listing.md](../../../docs/store-listing.md)). They are
+  git-ignored, but a run that made them all shares them on GitHub, and `listing` first takes that set
+  when it is newer than this PC's (`scripts/share-store-screenshots.sh`), so the owner can make them
+  on one PC and send from the other. `listing` refuses without them and says how old the oldest are. The 10-inch tablet set (the same
+  script with the tablet connected instead, *Tablet screenshots*) is shared the same way, and then
+  every language needs it.
 - Ask: "Send the store listing to Google Play in all <n> languages: the texts, screenshots, icon,
   feature graphic and contact details? It replaces what is there, also anything changed by hand in the
   Play Console." On a yes: `scripts/release.sh listing` (it tags the send `listing/<date-time>` for

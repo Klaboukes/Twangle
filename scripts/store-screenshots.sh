@@ -15,7 +15,8 @@
 # The finished pictures go where fastlane and F-Droid look for them,
 #   fastlane/metadata/android/<locale>/images/phoneScreenshots/1.png ... 8.png
 #   fastlane/metadata/android/<locale>/images/tenInchScreenshots/<n>.png (the tablet's, numbered as their captions)
-# (git-ignored: made again by this script, sent by scripts/release.sh listing), the screens as they were (without the
+# (git-ignored: made again by this script, sent by scripts/release.sh listing, shared with the owner's other PC
+# through GitHub by scripts/share-store-screenshots.sh after a run that made them all), the screens as they were (without the
 # status bar) to build/store-screenshots/<locale>/ (the tablet's to build/store-screenshots-tablet/<locale>/). Captions: fastlane/metadata/android/<locale>/
 # screenshot_captions.txt, one a line. Needs the phone connected, like scripts/ui-tests.sh, whose
 # exit codes it passes on (3 no phone, 4 locked, 5 busy). Leaves Twangle in the last screenshot's
@@ -87,6 +88,12 @@ put_back() {
 }
 trap put_back EXIT
 
+# A run of only some languages keeps this PC's pictures of the others: first take the latest set shared
+# on GitHub, so what it shares afterwards is no older than what the other PC made (share-store-screenshots.sh).
+kind=phone
+[ "$tablet" = true ] && kind=tablet
+[ $# -gt 0 ] && scripts/share-store-screenshots.sh pull $kind
+
 mkdir -p build "$RAW"
 status=0
 for locale in "${locales[@]}"; do
@@ -126,4 +133,6 @@ for locale in "${locales[@]}"; do
         echo
     fi
 done
+# Every picture made: share the set with the owner's other PC.
+[ $status = 0 ] && scripts/share-store-screenshots.sh push $kind
 exit $status
