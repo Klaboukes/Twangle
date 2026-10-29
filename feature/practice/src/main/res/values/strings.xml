@@ -36,7 +36,7 @@
     <string name="practice_chord_sixth">%1$s sixth</string>
     <!-- Chords: a minor sixth (Cm6) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor_sixth">%1$s minor sixth</string>
-    <!-- Chords: a added ninth (Cadd9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
+    <!-- Chords: an added ninth (Cadd9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_add9">%1$s added ninth</string>
     <!-- Chords: a ninth (C9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_ninth">%1$s ninth</string>
@@ -46,11 +46,11 @@
     <string name="practice_chord_diminished_seventh">%1$s diminished seventh</string>
     <!-- Chords: a half-diminished (Cm7b5) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_half_diminished">%1$s half-diminished</string>
-    <!-- Chords: a augmented (Caug) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
+    <!-- Chords: an augmented (Caug) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_augmented">%1$s augmented</string>
     <!-- Phase 49: the power chord ("C5"), the 7♯9 ("Hendrix chord"), m9 and maj9. Words for TalkBack, so "sharp" in words, not ♯. -->
     <string name="practice_chord_power_chord">%1$s power chord</string>
-    <!-- Chords: a seven sharp nine (C7#9, the "Hendrix chord"); in words for TalkBack chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
+    <!-- Chords: a seven sharp nine (C7#9, the "Hendrix chord") in words: the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_seventh_sharp_nine">%1$s seven sharp nine</string>
     <!-- Chords: a minor ninth (Cm9) chord in words, the chart's title and TalkBack's name for its button. %1$s is the root ("A", "B♭", "La"). -->
     <string name="practice_chord_minor_ninth">%1$s minor ninth</string>

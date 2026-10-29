@@ -84,7 +84,7 @@
     <string name="ear_interval_short_minor_seventh">m7</string>
     <!-- Intervals: the sign for a major seventh on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_major_seventh">M7</string>
-    <!-- Intervals: the sign for a octave on its answer button and chip. This language's usual sign, at most 3 characters. -->
+    <!-- Intervals: the sign for an octave on its answer button and chip. This language's usual sign, at most 3 characters. -->
     <string name="ear_interval_short_octave">P8</string>
     <!-- The intervals' names, small under the sign on each answer button, and what TalkBack says for a button or chip: minor second to octave (a fourth, fifth and octave are perfect; the tritone is the augmented fourth). -->
     <string name="ear_interval_minor_second">minor 2nd</string>
@@ -108,7 +108,7 @@
     <string name="ear_interval_minor_seventh">minor 7th</string>
     <!-- Intervals: the name of a major seventh, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_major_seventh">major 7th</string>
-    <!-- Intervals: the name of a octave, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
+    <!-- Intervals: the name of an octave, small under its sign on the answer button; TalkBack says it too. Lower case unless your language needs otherwise. -->
     <string name="ear_interval_octave">octave</string>
     <!-- Chord type (Phase 55): under the play button, the question. A chord strummed; the player names its type with a button. -->
     <string name="ear_chord_prompt">Which kind of chord?</string>

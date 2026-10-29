@@ -271,7 +271,7 @@
     <string name="tuner_my_tunings">My tunings</string>
     <!-- The ⋮ button at the end of one of the player's own tunings, as TalkBack says it. %1$s is its name. -->
     <string name="tuner_tuning_options">Options for %1$s</string>
-    <!-- The ⋮ button's menu, and the button that confirms the delete. -->
+    <!-- In the ⋮ menu of one of the player's own tunings: opens it for editing. -->
     <string name="tuner_edit_tuning">Edit</string>
     <!-- The ⋮ menu's item that deletes one of the player's own tunings, and the delete dialog's confirm button. Short. -->
     <string name="tuner_delete_tuning">Delete</string>
@@ -460,7 +460,7 @@
     <string name="tuner_pitch_trail">Pitch trail</string>
     <!-- TalkBack: the pitch trail in words. %1$s is one of the next lines, e.g. "steady, in tune" or "bending up". -->
     <string name="tuner_trail_spoken">Pitch trail, %1$s</string>
-    <!-- How the line runs over the last moments. %1$s is where the note sits: "in tune" or "10 cents sharp". -->
+    <!-- TalkBack, the pitch trail: no note is heard. -->
     <string name="tuner_trail_no_note">no note</string>
     <!-- TalkBack, the pitch trail: the note holds steady. %1$s is where it sits ("in tune", "10 cents sharp"). -->
     <string name="tuner_trail_steady">steady, %1$s</string>
