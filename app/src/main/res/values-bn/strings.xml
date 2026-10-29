@@ -1,0 +1,11 @@
+<resources>
+    <string name="nav_tuner">টিউনার</string>
+    <string name="nav_metronome">মেট্রোনোম</string>
+    <string name="nav_practice">অনুশীলন</string>
+    <string name="nav_settings">সেটিংস</string>
+    <string name="widget_name">টিউনার</string>
+    <string name="widget_description">আপনার বাদ্যযন্ত্র আর টিউনিং দেখায়। এক ট্যাপে টিউনার খোলে।</string>
+    <string name="widget_title">%1$s · %2$s</string>
+    <string name="widget_open_tuner">টিউনার খুলুন</string>
+    <string name="widget_preview_title">গিটার · স্ট্যান্ডার্ড</string>
+</resources>

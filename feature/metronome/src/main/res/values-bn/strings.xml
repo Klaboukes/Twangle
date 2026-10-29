@@ -1,0 +1,41 @@
+<resources>
+    <string name="metronome_beats_in_bar">প্রতি বারে বিট</string>
+    <string name="metronome_tempo">টেম্পো, বদলাতে টেনে সরান</string>
+    <plurals name="metronome_tempo_value">
+        <item quantity="one">প্রতি মিনিটে %1$d বিট, %2$s</item>
+        <item quantity="other">প্রতি মিনিটে %1$d বিট, %2$s</item>
+    </plurals>
+    <string name="metronome_slower">আরও ধীরে</string>
+    <string name="metronome_faster">আরও দ্রুত</string>
+    <string name="metronome_tap">ট্যাপ টেম্পো</string>
+    <string name="metronome_start">শুরু করুন</string>
+    <string name="metronome_stop">থামান</string>
+    <string name="metronome_vibrate">বিটে ভাইব্রেট করুন</string>
+    <string name="metronome_sound">সাউন্ড</string>
+    <string name="metronome_sound_wood_block">উড ব্লক</string>
+    <string name="metronome_sound_cowbell">কাউবেল</string>
+    <string name="metronome_sound_claves">ক্লেভস</string>
+    <string name="metronome_sound_rim_click">রিম ক্লিক</string>
+    <string name="metronome_sound_spoken">সাউন্ড: %1$s</string>
+    <string name="metronome_sound_spoken_vibrating">সাউন্ড: %1$s, বিটে ভাইব্রেট করে</string>
+    <string name="metronome_meter_2_4_spoken">টু বাই ফোর তাল</string>
+    <string name="metronome_meter_3_4_spoken">থ্রি বাই ফোর তাল</string>
+    <string name="metronome_meter_4_4_spoken">ফোর বাই ফোর তাল</string>
+    <string name="metronome_meter_5_4_spoken">ফাইভ বাই ফোর তাল</string>
+    <string name="metronome_meter_6_8_spoken">সিক্স বাই এইট তাল</string>
+    <string name="metronome_meter_7_8_spoken">সেভেন বাই এইট তাল</string>
+    <string name="metronome_listen">শুনুন</string>
+    <string name="metronome_listen_stop_spoken">শোনা বন্ধ করুন</string>
+    <string name="metronome_listening">শুনছে…</string>
+    <string name="metronome_heard">শোনা গেছে</string>
+    <string name="metronome_use">ব্যবহার করুন</string>
+    <string name="metronome_not_now">এখন না</string>
+    <string name="metronome_listen_speed">গতি</string>
+    <string name="metronome_pick_half">অর্ধেক</string>
+    <string name="metronome_pick_as_heard">যেমন শোনা গেছে</string>
+    <string name="metronome_pick_double">দ্বিগুণ</string>
+    <string name="metronome_no_beat">স্থির কোনো বিট শোনা যায়নি</string>
+    <string name="metronome_try_again">আবার চেষ্টা করুন</string>
+    <string name="metronome_mic_off">মাইক্রোফোন বন্ধ</string>
+    <string name="metronome_open_settings">সেটিংস খুলুন</string>
+</resources>

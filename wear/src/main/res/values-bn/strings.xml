@@ -1,0 +1,14 @@
+<resources>
+    <string name="wear_play_note">একটি নোট বাজান</string>
+    <plurals name="wear_cents">
+        <item quantity="one">%1$s সেন্ট</item>
+        <item quantity="other">%1$s সেন্ট</item>
+    </plurals>
+    <string name="wear_in_tune">সুরে আছে</string>
+    <string name="wear_mic_needed">Twangle ঘড়ির মাইক্রোফোন দিয়ে আপনার বাদ্যযন্ত্র শোনে।</string>
+    <string name="wear_allow_mic">মাইক্রোফোনের অনুমতি দিন</string>
+    <string name="wear_open_settings">সেটিংস খুলুন</string>
+    <string name="wear_mic_busy">অন্য একটি অ্যাপ মাইক্রোফোন ব্যবহার করছে।</string>
+    <string name="wear_mic_unavailable">মাইক্রোফোন চালু করা যাচ্ছে না।</string>
+    <string name="wear_try_again">আবার চেষ্টা করুন</string>
+</resources>

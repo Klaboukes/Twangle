@@ -122,11 +122,11 @@ internal val EXTENDED_LATIN_LANGUAGES = setOf("pl", "tr")
 internal val TONE_LETTER_LANGUAGES = setOf("vi")
 
 /**
- * Languages in a script none of the display faces has (Arabic, Devanagari, Thai, Chinese, Japanese,
- * Korean, and Cyrillic, which only Classic's Playfair Display and Ancient's Forum have; Android says
- * "ru").
+ * Languages in a script none of the display faces has (Arabic, Bengali, Devanagari, Thai, Chinese,
+ * Japanese, Korean, and Cyrillic, which only Classic's Playfair Display and Ancient's Forum have;
+ * Android says "ru").
  */
-internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "hi", "ja", "ko", "ru", "th", "zh")
+internal val OTHER_SCRIPT_LANGUAGES = setOf("ar", "bn", "hi", "ja", "ko", "ru", "th", "zh")
 
 private val SPACE_AGE_SPACING = 0.02.em
 
