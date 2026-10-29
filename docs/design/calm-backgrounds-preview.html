@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Calm Backgrounds</title>
+<!--
+TWANGLE CALM BACKGROUNDS (October 2026). The brief: calm, in the style's own colours (StylePalettes.kt) and never in
+the way of the meter, the note, the pill, the string row and the tabs.
+Round 1 (bare stone, faded strata, pigment; soft velvet, faint shell, satin light; sunset wash, thin lines, soft circles;
+two washes, aurora, sparse silk; faint grid, ambient glow, dot matrix; nebula, faint halftone, orbits) only watered today's
+pictures down: the owner found none better than today's, except perhaps Classic's Soft velvet, which stays.
+Round 2 (this page) tries whole-screen materials and light instead, calm because they are even (no shape to look at),
+plus today's picture softened for each style: Ancient sandstone, fresco, layers softened; Classic soft velvet, damask,
+house lights; Retro wallpaper, sunburst, supergraphic softened; Contemporary soft gradient, silk softened, light bands;
+Futuristic grid calmer, hex panel, radar; Space Age halftone softened, sunburst, rings.
+The "In tune" switch tries the in-tune green matched to each style (the owner: today's greens clash with the
+backgrounds, above all Space Age by night) or softened; the page checks every green at 4.5:1 (StylePaletteTest's rule).
+"Now" is StyleBackdrop.kt as it is. The phone on top is the tuner as it is on the phone: the meter's calm field (75 %
+background) and the tab bar's field (70 %) are drawn too, so the options show through them as they would.
+The picked option gets a softer Settings version, as today's backgrounds have.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@500&family=Bodoni+Moda:wght@500&family=Forum&family=Michroma&family=Orbitron:wght@500;600&family=Playfair+Display:wght@400;500&family=Righteous&family=Roboto:wght@300;400;500;700&display=swap">
+<style>
+  :root { --page: #55565b; --ink: #f4f4f6; --muted: #d2d3d8; --line: rgba(255,255,255,.18); --chip: rgba(255,255,255,.10); --accent: #ffd27a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 Roboto, system-ui, sans-serif; }
+  header, .controls, main, footer { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 28px; }
+  h1 { font-weight: 500; font-size: 26px; margin: 0 0 6px; }
+  header p { margin: 0 0 6px; color: var(--muted); max-width: 860px; }
+  header p b { color: var(--ink); font-weight: 500; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding-top: 12px; padding-bottom: 12px;
+    position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--line); }
+  .controls .lbl { color: var(--muted); font-size: 13px; margin-right: -14px; }
+  .picks { flex: 1 1 100%; color: var(--muted); font-size: 13px; }
+  .picks b { color: var(--accent); font-weight: 500; }
+  .note { flex: 1 1 100%; color: var(--muted); font-size: 12px; margin-top: -6px; }
+  button { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+  button:hover { background: rgba(255,255,255,.18); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; }
+  .seg button[aria-pressed="true"] { background: rgba(255,255,255,.22); }
+  section.style { padding: 26px 0 14px; border-bottom: 1px solid var(--line); }
+  section.style h2 { font-weight: 500; font-size: 20px; margin: 0; }
+  section.style .tag { color: var(--muted); margin: 0 0 14px; }
+  .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+  figure { margin: 0; border-radius: 26px; padding: 8px; border: 2px solid transparent; }
+  figure.picked { border-color: var(--accent); background: rgba(255,210,122,.08); }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 4.2em; }
+  figcaption b { color: var(--ink); font-weight: 500; display: block; }
+  .pick { margin-top: 6px; width: 100%; }
+  figure.picked .pick { background: var(--accent); color: #2a2208; border-color: var(--accent); }
+  .phone { width: 100%; aspect-ratio: 393 / 873; border-radius: 22px; overflow: hidden; cursor: zoom-in;
+    box-shadow: 0 0 0 6px #1b1b1d, 0 10px 30px rgba(0,0,0,.35); background: #000; }
+  .phone canvas { width: 100%; height: 100%; display: block; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,22,.94); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px; }
+  .overlay.open { display: flex; }
+  .overlay .phone { height: min(82vh, 860px); width: auto; cursor: pointer; }
+  .overlay .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .overlay .which { min-width: 230px; text-align: center; }
+  footer { padding-top: 22px; padding-bottom: 40px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 760px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Calm backgrounds, round 2</h1>
+  <p>Each style: today's background first, then three others. Two are new: whole-screen materials and light, calm because they are even, with no shape to look at. The third is today's picture softened, in case that turns out the better fit. Classic keeps <b>Soft velvet</b> from round 1.</p>
+  <p><b>In tune</b>, at the top, changes the green of the note, the pill and the string in tune on every phone. <b>Today</b> is the green as it is. <b>Matched</b> tunes each style's green to its own colours: Space Age's turns to a cooler mint by night, Ancient's to olive on its warm stone, Classic's to jade. <b>Softer</b> keeps today's greens but takes the shine off them. The page checks that every green stays readable by the app's rule.</p>
+  <p>Tap a phone to see it big. Use <b>Pick</b> under the one you like (today's is fine too), switch light and dark, and try the greens. Then just tell me your picks, e.g. "Ancient F, Classic A, green matched".</p>
+</header>
+<div class="controls">
+  <span class="seg"><button type="button" id="modeLight" aria-pressed="true">Light</button><button type="button" id="modeDark" aria-pressed="false">Dark</button></span>
+  <span class="lbl">In tune:</span>
+  <span class="seg" id="greenSeg"><button type="button" data-green="today" aria-pressed="true">Today</button><button type="button" data-green="matched" aria-pressed="false">Matched</button><button type="button" data-green="softer" aria-pressed="false">Softer</button></span>
+  <span class="picks" id="picks"></span>
+  <span class="note" id="greenNote"></span>
+</div>
+<main id="styles"></main>
+<footer>Static sketches: the real backgrounds are drawn by the app and never move. A computer screen is not the phone's screen, so the final check happens on the phone.</footer>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="Big view">
+  <div class="phone" id="bigPhone"><canvas></canvas></div>
+  <div class="bar">
+    <button type="button" id="prev" aria-label="Previous">‹</button>
+    <span class="which" id="which"></span>
+    <button type="button" id="next" aria-label="Next">›</button>
+    <button type="button" id="bigPick">Pick</button>
+    <button type="button" id="bigMode">Dark</button>
+    <button type="button" id="bigGreen">Green</button>
+    <button type="button" id="close">Close</button>
+  </div>
+</div>
+
+<script type="application/json" id="style-data">
+{"order":["ancient","classic","retro","contemporary","futuristic","spaceage"],"styles":{
+"ancient":{"name":"Ancient","tag":"Terracotta and charcoal on stone","font":"Forum","fb":"serif","w":400,"num":"Alegreya Sans","numFb":"sans-serif","numW":500,"numScale":1,"shape":{"pill":18,"card":14,"strW":48,"strH":46,"strR":18},
+"light":{"bg":"#ECE4DC","surface":"#F5EFE9","ink":"#2A1E1A","muted":"#5E4A42","track":"#CFC1B6","accent":"#A8431F","onAccent":"#FFF4EE","inTune":"#2F6A2A","onInTune":"#F3FAEF","second":"#3A2E2A","third":"#9A6A3A"},
+"dark":{"bg":"#261B16","surface":"#2F2622","ink":"#EFE4DD","muted":"#C2ADA3","track":"#4A3D37","accent":"#F0957A","onAccent":"#3A1206","inTune":"#9DD47F","onInTune":"#13260A","second":"#8C7A72","third":"#D19A6A"},
+"options":[{"key":"now","name":"Now","desc":"Stone with wavy bands of earth colours at the top and bottom, like rock layers."},
+{"key":"D","name":"D · Sandstone","desc":"The whole wall is faint sediment: thin layers of terracotta, ochre and charcoal from top to bottom, all as soft as each other, with the grain of stone."},
+{"key":"E","name":"E · Fresco","desc":"A plastered wall whose old colours have faded into it: large soft stains of terracotta and ochre everywhere, with grain. No edges anywhere."},
+{"key":"F","name":"F · Layers, softened","desc":"Today's rock layers kept where they are, but blurred, without the dark seams and at six tenths of their strength."}]},
+"classic":{"name":"Classic","tag":"Burgundy velvet, ivory and gold in a concert hall","font":"Playfair Display","fb":"serif","w":400,"num":"Bodoni Moda","numFb":"serif","numW":500,"numScale":1,"shape":{"pill":4,"card":4,"strW":38,"strH":50,"strR":4},
+"light":{"bg":"#ECE6DA","surface":"#F7F2E8","ink":"#1C1518","muted":"#5A4A50","track":"#DCCFC4","accent":"#7A1F45","onAccent":"#FFF6F9","inTune":"#22663A","onInTune":"#F2FAF4","second":"#7A1F45","third":"#A8863C"},
+"dark":{"bg":"#261A1F","surface":"#2F2529","ink":"#F2E6EA","muted":"#C4AAB5","track":"#45303A","accent":"#EBA3C0","onAccent":"#3A0B1F","inTune":"#86D3A0","onInTune":"#062A12","second":"#8C2A52","third":"#D4AF5C"},
+"options":[{"key":"now","name":"Now","desc":"Velvet folds, a spotlight and five gold curves of a concert-hall shell over the meter."},
+{"key":"A","name":"A · Soft velvet","desc":"Round 1's: the folds at half strength and the spotlight, nothing else. No gold."},
+{"key":"E","name":"E · Damask","desc":"Soft velvet with a faint damask pattern woven into it, like a concert hall's wall covering, quieter in the middle."},
+{"key":"F","name":"F · House lights","desc":"Soft velvet under a warm golden light from above, deepening to burgundy at the bottom, as a hall looks before the concert."}]},
+"retro":{"name":"Retro","tag":"Avocado, mustard and orange: a 70s living room","font":"Righteous","fb":"sans-serif","w":400,"num":"Righteous","numFb":"sans-serif","numW":400,"numScale":1,"shape":{"pill":22,"card":18,"strW":50,"strH":44,"strR":14},
+"light":{"bg":"#ECE7CD","surface":"#F7F3DD","ink":"#21220A","muted":"#55573A","track":"#D5D2AE","accent":"#5F6E0E","onAccent":"#FBFDEB","inTune":"#1C6E4A","onInTune":"#F0FAF4","second":"#C9961A","third":"#C8561A"},
+"dark":{"bg":"#1D1E14","surface":"#272920","ink":"#EEF0D2","muted":"#B9BC92","track":"#3E412A","accent":"#C5D45A","onAccent":"#252B00","inTune":"#6FD6A4","onInTune":"#002A16","second":"#E3B23C","third":"#E8783A"},
+"options":[{"key":"now","name":"Now","desc":"Three thick stripes turning the top right corner, a 70s supergraphic."},
+{"key":"D","name":"D · Wallpaper","desc":"A 70s wallpaper: big soft circles of mustard, orange and avocado in even rows over the whole screen, faint, and fainter still in the middle."},
+{"key":"E","name":"E · Sunburst","desc":"Wide soft rays of mustard and orange from beyond the top right corner, a 70s poster, fading away before they reach the strings."},
+{"key":"F","name":"F · Supergraphic, softened","desc":"Today's three stripes in the same corner, blurred and at just over half their strength."}]},
+"contemporary":{"name":"Contemporary","tag":"Calm and clean, like the phone itself","font":"Roboto","fb":"sans-serif","w":300,"num":"Roboto","numFb":"sans-serif","numW":400,"numScale":1,"shape":{"pill":22,"card":24,"strW":46,"strH":46,"strR":23},
+"light":{"bg":"#E3E7F0","surface":"#EFF2FA","ink":"#10141F","muted":"#4A5268","track":"#CDD3E3","accent":"#3A4FD6","onAccent":"#FFFFFF","inTune":"#15763B","onInTune":"#FFFFFF","second":"#8FA0F0","third":"#B9C4EA"},
+"dark":{"bg":"#171D2E","surface":"#232736","ink":"#E6E9F4","muted":"#A6AECB","track":"#2B3350","accent":"#A6ADFF","onAccent":"#121A5A","inTune":"#6DD58C","onInTune":"#00391A","second":"#3C4FB8","third":"#2A3160"},
+"options":[{"key":"now","name":"Now","desc":"Fine flowing silk lines at the top and lower down, every sixth in blue."},
+{"key":"D","name":"D · Soft gradient","desc":"Blues melting into each other over the whole screen with a fine grain, like the phone's own wallpapers. No lines."},
+{"key":"E","name":"E · Silk, softened","desc":"Today's silk lines, two thirds as many, a little further apart and a third fainter."},
+{"key":"F","name":"F · Light bands","desc":"Three wide, very soft bands of light falling across the top left, as sunlight through a blind, and a pale wash below."}]},
+"futuristic":{"name":"Futuristic","tag":"Neon cyan and magenta on a heads-up display","font":"Orbitron","fb":"sans-serif","w":500,"num":"Orbitron","numFb":"sans-serif","numW":500,"numScale":0.82,"shape":{"pill":10,"card":8,"strW":50,"strH":40,"strR":8,"cut":true},
+"light":{"bg":"#DDE9EE","surface":"#EAF4F8","ink":"#061822","muted":"#3A5463","track":"#BFD2DC","accent":"#00717F","onAccent":"#FFFFFF","inTune":"#007642","onInTune":"#FFFFFF","second":"#C2187F","third":"#4FD2EA"},
+"dark":{"bg":"#0D1920","surface":"#1A2329","ink":"#DDF8FF","muted":"#84B3C4","track":"#143040","accent":"#22E5FF","onAccent":"#00252B","inTune":"#39FF9A","onInTune":"#00261A","second":"#FF4FD0","third":"#22E5FF"},
+"options":[{"key":"now","name":"Now","desc":"A glowing perspective grid over the lower half, fading away upwards, sparks at the sides, scan lines by night."},
+{"key":"D","name":"D · Grid, calmer","desc":"Today's glowing grid a little lower, its glow at six tenths, no sparks, the scan lines at half."},
+{"key":"E","name":"E · Hex panel","desc":"A faint honeycomb over the whole screen, the skin of a HUD panel, clear in the middle; cyan light from below, a hint of magenta above."},
+{"key":"F","name":"F · Radar","desc":"Faint range rings round a point beyond the top right corner with one soft cyan sweep, and cyan light from below."}]},
+"spaceage":{"name":"Space Age","tag":"Violet night, rocket orange and silver","font":"Michroma","fb":"sans-serif","w":400,"num":"Michroma","numFb":"sans-serif","numW":400,"numScale":0.82,"shape":{"pill":999,"card":20,"strW":44,"strH":52,"strR":22},
+"light":{"bg":"#E9E5EF","surface":"#F4F1F9","ink":"#1A1530","muted":"#4E4766","track":"#D6D0E4","accent":"#8A35B8","onAccent":"#FFFFFF","inTune":"#26703A","onInTune":"#FFFFFF","second":"#D9561E","third":"#8E94AC"},
+"dark":{"bg":"#1D1939","surface":"#29243E","ink":"#F1EDFA","muted":"#B3A9D2","track":"#352C5A","accent":"#D9A0FF","onAccent":"#2E0B4A","inTune":"#7EE08A","onInTune":"#05290B","second":"#FF8A4C","third":"#C9CEDF"},
+"options":[{"key":"now","name":"Now","desc":"1960s halftone dots, big in the top right corner and low on the left, shrinking to nothing."},
+{"key":"D","name":"D · Halftone, softened","desc":"Today's dots in the same two corners, a little smaller and at two thirds of their strength."},
+{"key":"E","name":"E · Sunburst","desc":"Wide soft rays of orange and violet from beyond the top right corner, a 60s poster, fading away before the strings."},
+{"key":"F","name":"F · Rings","desc":"Soft rings of orange and violet spreading from a warm glow beyond the top right corner, like a signal, fading with distance."}]}}}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('style-data').textContent);
+  const STY = DATA.styles, ORDER = DATA.order;
+  for (const id in STY) STY[id].id = id;
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } },
+  };
+
+  // ---- Small helpers -------------------------------------------------------------------------------
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0], TAU = Math.PI * 2;
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const rgba = (c, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${clamp(a, 0, 1)})`;
+  const stack = (fnt, fb) => `"${fnt}", ${fb === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif'}`;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+  function rrAdd(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  /** A HUD tile: every corner cut off by [c]. */
+  function cutAdd(ctx, x, y, w, h, c) {
+    c = Math.min(c, w / 2, h / 2);
+    ctx.moveTo(x + c, y); ctx.lineTo(x + w - c, y); ctx.lineTo(x + w, y + c); ctx.lineTo(x + w, y + h - c); ctx.lineTo(x + w - c, y + h);
+    ctx.lineTo(x + c, y + h); ctx.lineTo(x, y + h - c); ctx.lineTo(x, y + c); ctx.closePath();
+  }
+  function seg(ctx, x1, y1, x2, y2, col, w, cap = 'round') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.stroke(); }
+  function dot(ctx, x, y, r, col) { ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, TAU); ctx.fillStyle = col; ctx.fill(); }
+  function radial(B, x, y, r, col, a) {
+    if (r <= 0 || a <= 0) return;
+    const g = B.ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H);
+  }
+  function vignette(B, col, a) {
+    const { ctx, W, H } = B; const r = Math.max(W, H) * 0.78;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r); g.addColorStop(0.55, rgba(col, 0)); g.addColorStop(1, rgba(col, a));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  function vertical(B, stops) { const g = B.ctx.createLinearGradient(0, 0, 0, B.H); for (const [o, c, a] of stops) g.addColorStop(o, rgba(c, a === undefined ? 1 : a)); B.ctx.fillStyle = g; B.ctx.fillRect(0, 0, B.W, B.H); }
+  function blur(B, px) { B.ctx.filter = px ? `blur(${(px * B.u).toFixed(2)}px)` : 'none'; }
+  function blobPath(ctx, x, y, R, f) { ctx.beginPath(); for (let i = 0; i <= 180; i++) { const t = i / 180 * TAU, rr = R * f(t); const px = x + Math.cos(t) * rr, py = y + Math.sin(t) * rr; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); }
+  function noisyBlob(B, x, y, R, ph, rough) { blobPath(B.ctx, x, y, R, (t) => 1 + rough * (0.5 * Math.sin(3 * t + ph) + 0.3 * Math.sin(5 * t + ph * 1.7) + 0.2 * Math.sin(9 * t + ph * 2.3))); }
+  const sideX = (t, W) => (t < 0.5 ? W * (0.05 + t * 0.34) : W * (0.78 + (t - 0.5) * 0.34));
+  function stars(B, n, aMin, aMax) { const { ctx, W, H, u, p, r } = B; for (let i = 0; i < n; i++) { const rr = r(); dot(ctx, r() * W, r() * H, (0.4 + rr * rr * 1.4) * u, rgba(p.ink, aMin + r() * (aMax - aMin))); } }
+  function scanlines(B, a) { const { ctx, W, H, u } = B; for (let y = 0; y < H; y += 3 * u) seg(ctx, 0, y, W, y, rgba(BLACK, a), u, 'butt'); }
+  const vig = { ancient: [90, 58, 26], classic: [90, 30, 50], retro: [90, 80, 20] };
+  const edge = (B) => (B.dark ? BLACK : vig[B.s.id]);
+
+  // ---- Shared pieces, ported from StyleBackdrop.kt --------------------------------------------------
+  /** Ancient's stone: light from the top by day (from below at night), soft patches and fine grit. */
+  function stone(B, grit) {
+    const { ctx, W, H, u, p, dark, r } = B;
+    radial(B, W * 0.5, dark ? H * 1.02 : -H * 0.05, H * 0.8, p.accent, dark ? 0.22 : 0.16);
+    for (let i = 0; i < 16; i++) { const x = r() * W, y = r() * H, rr = r() * W * 0.3; ctx.beginPath(); ctx.ellipse(x, y, rr, rr * 0.6, 0, 0, TAU); ctx.fillStyle = rgba(i % 2 ? p.second : p.ink, 0.035); ctx.fill(); }
+    for (let i = 0; i < grit; i++) dot(ctx, r() * W, r() * H, (0.6 + r() * 1.6) * u, rgba(i % 3 ? p.ink : p.surface, 0.04 + r() * 0.08));
+  }
+  /** Ancient's rock layers: [count] wavy bands from [start], thicker each, with a [seam] between them. */
+  function strata(B, start, down, count, alpha, seam = 0.07) {
+    const { ctx, W, u, p, r } = B, cols = [p.accent, p.third, p.second, p.third];
+    const ph = r() * 6, tilt = (r() - 0.5) * 0.14, dir = down ? 1 : -1, step = 4 * u;
+    const at = (x, k) => start + dir * k * (9 + k * 1.2) * u + 6 * u * Math.sin(x / W * 5 + ph + k * 0.4) + 3 * u * Math.sin(x / W * 13 + ph * 2 + k) + tilt * (x - W / 2);
+    for (let k = 0; k < count; k++) {
+      const fade = 1 - k / count;
+      ctx.beginPath();
+      for (let x = -step; x <= W + step; x += step) { const y = at(x, k); x <= -step ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      for (let x = W + step; x >= -step; x -= step) ctx.lineTo(x, at(x, k + 1));
+      ctx.closePath(); ctx.fillStyle = rgba(cols[k % 4], alpha * fade); ctx.fill();
+      if (seam > 0) {
+        ctx.beginPath(); for (let x = -step; x <= W + step; x += step) { const y = at(x, k + 1); x <= -step ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+        ctx.strokeStyle = rgba(p.ink, seam * fade); ctx.lineWidth = 0.8 * u; ctx.stroke();
+      }
+    }
+  }
+  /** Classic's velvet folds: [n] soft vertical shades across the width. */
+  function folds(B, n, alpha) { const { ctx, W, H, p, dark } = B; const g = ctx.createLinearGradient(0, 0, W, 0); for (let k = 0; k <= n * 2; k++) g.addColorStop(k / (n * 2), rgba(dark ? BLACK : p.second, k % 2 ? 0 : alpha)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  /** Classic's concert-hall shell: gold curves [ks] of the five, round a point at [cy]. */
+  function shell(B, cy, ks, alpha) { const { ctx, W, u, p } = B; for (const k of ks) { ctx.beginPath(); ctx.ellipse(W / 2, cy, W * (0.42 + k * 0.1), W * (0.22 + k * 0.07), 0, Math.PI, TAU); ctx.strokeStyle = rgba(p.third, alpha); ctx.lineWidth = (k === 0 ? 1.2 : 0.7) * u; ctx.stroke(); } }
+  /** Retro's supergraphic: three stripes from the top edge turning a rounded corner at ([cx], [cy]) and running right. */
+  function stripes(B, cx, cy, cols, alpha, band, width) {
+    const { ctx, W, u } = B, bw = band * u;
+    cols.forEach((c, k) => {
+      const R = 60 * u - k * bw, x = cx + k * bw, y = cy - k * bw;
+      ctx.beginPath(); ctx.moveTo(x, -bw); ctx.lineTo(x, y - R); ctx.arcTo(x, y, x + R, y, R); ctx.lineTo(W + bw, y);
+      ctx.strokeStyle = rgba(c, alpha); ctx.lineWidth = width; ctx.lineCap = 'butt'; ctx.stroke();
+    });
+  }
+  /** Contemporary's silk: [count] lines [gap] apart from [start]; every sixth in the accent unless [plain]. */
+  function silk(B, start, count, amp, phase, dir, strength, plain = false, gap = 5) {
+    const { ctx, W, u, p, dark } = B, step = 4 * u;
+    for (let k = 0; k < count; k++) {
+      const t = k / (count - 1);
+      const y = (x) => start + dir * k * gap * u + amp * u * (1 - t * 0.5) * Math.sin(x / W * Math.PI * 1.6 + phase + t * 1.2) + 10 * u * t * Math.sin(x / W * Math.PI * 3.1 + phase * 0.7);
+      ctx.beginPath(); for (let x = -6 * u; x < W + 6 * u; x += step) { x <= -6 * u ? ctx.moveTo(x, y(x)) : ctx.lineTo(x, y(x)); }
+      ctx.strokeStyle = k % 6 === 0 && !plain ? rgba(p.accent, (dark ? 0.30 : 0.26) * strength) : rgba(p.ink, (dark ? 0.11 : 0.10) * (1 - t * 0.6) * strength);
+      ctx.lineWidth = 0.8 * u; ctx.stroke();
+    }
+  }
+  /** Futuristic's perspective grid below [hz] towards [vanish], one pass per [width, alpha]. */
+  function grid(B, hz, vanish, passes) {
+    const { ctx, W, H, u, p } = B, t = (hz - vanish) / (H - vanish);
+    for (const [w, a] of passes) {
+      const col = rgba(p.accent, a);
+      for (let i = -16; i <= 16; i++) { const bx = W * 0.5 + i * W * 0.12; seg(ctx, W / 2 + (bx - W / 2) * t, hz, bx, H, col, w * u, 'butt'); }
+      for (let k = 0; k <= 12; k++) { const f = k / 12, y = hz + (H - hz) * f * f; seg(ctx, 0, y, W, y, col, w * u, 'butt'); }
+    }
+  }
+  /** The grid's top fades away under the background over [fade] of the height. */
+  function gridFade(B, hz, fade) {
+    const { ctx, W, H, u, p } = B, top = hz - 12 * u, bottom = hz + H * fade;
+    const g = ctx.createLinearGradient(0, top, 0, bottom);
+    g.addColorStop(0, rgba(p.bg, 1)); g.addColorStop(0.12, rgba(p.bg, 1)); g.addColorStop(0.45, rgba(p.bg, 0.7)); g.addColorStop(0.75, rgba(p.bg, 0.28)); g.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, top, W, bottom - top);
+  }
+  /** Space Age's halftone: dots on an offset grid, largest ([maxR]) at the origin and gone at [reach]. */
+  function halftone(B, ox, oy, reach, col, maxR = 4.8) {
+    const { ctx, W, H, u } = B, s = 11 * u;
+    for (let row = 0, y = s / 2; y < H; row++, y += s * 0.87) for (let x = (row % 2 ? s / 2 : 0); x < W + s; x += s) { const d = Math.hypot(x - ox, y - oy) / reach; if (d < 1) dot(ctx, x, y, (1 - d) * (1 - d) * maxR * u, col); }
+  }
+  /** Space Age by night: a violet gradient and [n] faint stars. */
+  function night(B, n, amount) { if (!B.dark) return; vertical(B, [[0, B.p.bg], [1, mix(B.p.bg, B.p.accent, amount)]]); stars(B, n, 0.15, 0.5); }
+
+  // ---- Round 2 pieces: materials ------------------------------------------------------------------------
+  let grainTile = null;
+  /** Fine film grain over the whole screen at [alpha]: the material's surface. */
+  function grain(B, alpha) {
+    const { ctx, W, H } = B;
+    if (!grainTile) {
+      grainTile = document.createElement('canvas'); grainTile.width = grainTile.height = 128;
+      const g = grainTile.getContext('2d'), img = g.createImageData(128, 128), rr = rng(99);
+      for (let i = 0; i < img.data.length; i += 4) { const v = rr() < 0.5 ? 0 : 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = Math.floor(rr() * 255); }
+      g.putImageData(img, 0, 0);
+    }
+    ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = ctx.createPattern(grainTile, 'repeat'); ctx.fillRect(0, 0, W, H); ctx.restore();
+  }
+  /** Lays the background colour back over the middle (meter, note, pill), so an even texture goes quiet there. */
+  function hole(B, alpha) {
+    const { ctx, W, H, p } = B, rx = W * 0.6, ry = H * 0.42;
+    ctx.save(); ctx.translate(W / 2, H * 0.42); ctx.scale(1, ry / rx);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx); g.addColorStop(0, rgba(p.bg, alpha)); g.addColorStop(0.6, rgba(p.bg, alpha * 0.7)); g.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = g; ctx.fillRect(-rx, -rx, rx * 2, rx * 2); ctx.restore();
+  }
+  /** Fades what was drawn back into the background with distance from ([cx], [cy]): untouched within [near], [alpha] gone by [far]. */
+  function fadeFrom(B, cx, cy, near, far, alpha) {
+    const { ctx, W, H, p } = B;
+    const g = ctx.createRadialGradient(cx, cy, near, cx, cy, far); g.addColorStop(0, rgba(p.bg, 0)); g.addColorStop(1, rgba(p.bg, alpha));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  /** Soft rays from ([cx], [cy]) between angles [a0] and [a1]: every other wedge filled, the two colours in turn. */
+  function sunburst(B, cx, cy, a0, a1, n, cols, alphas, blurPx) {
+    const { ctx, W, H } = B, L = Math.hypot(W, H) * 1.4;
+    blur(B, blurPx);
+    for (let i = 0; i < n; i++) {
+      const s = a0 + (a1 - a0) * i / n, e = a0 + (a1 - a0) * (i + 0.5) / n;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(s) * L, cy + Math.sin(s) * L); ctx.lineTo(cx + Math.cos(e) * L, cy + Math.sin(e) * L); ctx.closePath();
+      ctx.fillStyle = rgba(cols[i % 2], alphas[i % 2]); ctx.fill();
+    }
+    blur(B, 0);
+  }
+  /** [n] rings round ([cx], [cy]) from radius [r0], [step] apart, [width] thick, the colours in turn. */
+  function rings(B, cx, cy, n, r0, step, width, cols, alpha) { const { ctx } = B; for (let k = 0; k < n; k++) { ctx.beginPath(); ctx.arc(cx, cy, r0 + k * step, 0, TAU); ctx.strokeStyle = rgba(cols[k % cols.length], alpha); ctx.lineWidth = width; ctx.stroke(); } }
+  /** A soft sweep of [col] round ([cx], [cy]) from angle [from] to [to], brightest at its leading edge. */
+  function sweep(B, cx, cy, from, to, col, alpha) {
+    const { ctx, W, H } = B; if (!ctx.createConicGradient) return;
+    const g = ctx.createConicGradient(0, cx, cy), f = from / TAU, t = to / TAU;
+    g.addColorStop(0, rgba(col, 0)); g.addColorStop(f, rgba(col, 0)); g.addColorStop(t - 0.004, rgba(col, alpha)); g.addColorStop(t, rgba(col, 0)); g.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  /** A flat-top honeycomb of circumradius [r] over the whole screen, each edge drawn once. */
+  function hexMesh(B, r, col, width) {
+    const { ctx, W, H } = B, dx = 1.5 * r, dy = Math.sqrt(3) * r;
+    ctx.beginPath();
+    for (let i = -1; i * dx < W + r; i++) for (let j = -1; j * dy < H + dy; j++) {
+      const cx = i * dx, cy = j * dy + (i % 2 ? dy / 2 : 0);
+      const v = (k) => [cx + r * Math.cos(k * Math.PI / 3), cy + r * Math.sin(k * Math.PI / 3)];
+      const a = v(0), b = v(1), c = v(2), d = v(3);
+      ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]);
+    }
+    ctx.strokeStyle = col; ctx.lineWidth = width; ctx.lineJoin = 'round'; ctx.stroke();
+  }
+  /** A damask lattice: a pointed oval with a smaller one inside and four leaves, in a diamond grid. */
+  function damask(B, col, alpha) {
+    const { ctx, W, H, u } = B, cw = 64 * u, ch = 88 * u;
+    const vesica = (x, y, w, h) => { ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.quadraticCurveTo(x + w, y, x, y + h / 2); ctx.quadraticCurveTo(x - w, y, x, y - h / 2); ctx.closePath(); };
+    for (let j = -1; j * ch / 2 < H + ch; j++) for (let i = -1; i * cw < W + cw; i++) {
+      const x = i * cw + (j % 2 ? cw / 2 : 0), y = j * ch / 2;
+      vesica(x, y, 22 * u, 48 * u); ctx.fillStyle = rgba(col, alpha); ctx.fill();
+      vesica(x, y, 11 * u, 26 * u); ctx.strokeStyle = rgba(col, alpha * 1.6); ctx.lineWidth = 0.7 * u; ctx.stroke();
+      for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { ctx.beginPath(); ctx.ellipse(x + sx * 16 * u, y + sy * 25 * u, 8 * u, 3.5 * u, sx * sy * Math.PI / 4, 0, TAU); ctx.fillStyle = rgba(col, alpha); ctx.fill(); }
+    }
+  }
+  /** 70s wallpaper: big faint circles of radius [R] on an offset grid, the three colours in turn. */
+  function wallpaper(B, R, cols, alpha) {
+    const { ctx, W, H, u } = B, dx = 64 * u, dy = 56 * u;
+    for (let j = -1; j * dy < H + dy; j++) for (let i = -1; i * dx < W + dx; i++) dot(ctx, i * dx + (j % 2 ? dx / 2 : 0), j * dy, R, rgba(cols[((i + j) % 3 + 3) % 3], alpha));
+  }
+  /** Sandstone: thin wavy layers of the earth colours from top to bottom, each a little different in thickness and strength. */
+  function sandstone(B, alpha) {
+    const { ctx, W, H, u, p, r } = B, cols = [p.accent, p.third, p.second, p.third];
+    const ph = r() * 6, tilt = (r() - 0.5) * 0.06;
+    blur(B, 2);
+    let y0 = -30 * u, k = 0;
+    while (y0 < H + 30 * u) {
+      const thick = (22 + r() * 22) * u;
+      const at = (x, off) => y0 + off + 4 * u * Math.sin(x / W * 4 + ph + k * 0.9) + 2 * u * Math.sin(x / W * 11 + ph * 2 + k) + tilt * (x - W / 2);
+      ctx.beginPath();
+      for (let x = -8 * u; x <= W + 8 * u; x += 4 * u) { const y = at(x, 0); x <= -8 * u ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      for (let x = W + 8 * u; x >= -8 * u; x -= 4 * u) ctx.lineTo(x, at(x, thick));
+      ctx.closePath(); ctx.fillStyle = rgba(cols[k % 4], alpha * (0.6 + r() * 0.8)); ctx.fill();
+      y0 += thick + 2 * u; k++;
+    }
+    blur(B, 0);
+  }
+
+  // ---- The backgrounds: today's and three options per style ------------------------------------------
+  const MOTIFS = {
+    // Ancient -----------------------------------------------------------------------------------------
+    ancient_now(B) {
+      const { H, u, dark } = B; stone(B, 300);
+      const a = dark ? 0.24 : 0.22;
+      strata(B, -8 * u, true, 7, a); strata(B, H * 0.8, false, 6, a * 0.75);
+      vignette(B, edge(B), dark ? 0.45 : 0.16);
+    },
+    ancient_D(B) {
+      const { dark } = B; stone(B, 200);
+      sandstone(B, dark ? 0.05 : 0.04);
+      grain(B, dark ? 0.06 : 0.045);
+      vignette(B, edge(B), dark ? 0.45 : 0.16);
+    },
+    ancient_E(B) {
+      const { ctx, W, H, u, p, dark, r } = B; stone(B, 250);
+      const cols = [p.accent, p.third, p.second];
+      blur(B, 20);
+      for (let i = 0; i < 7; i++) { noisyBlob(B, r() * W, r() * H, (90 + r() * 80) * u, r() * 6, 0.3); ctx.fillStyle = rgba(cols[i % 3], dark ? 0.07 : 0.055); ctx.fill(); }
+      blur(B, 0);
+      grain(B, dark ? 0.07 : 0.05);
+      vignette(B, edge(B), dark ? 0.45 : 0.16);
+    },
+    ancient_F(B) {
+      const { H, u, dark } = B; stone(B, 300);
+      const a = (dark ? 0.24 : 0.22) * 0.6;
+      blur(B, 2); strata(B, -8 * u, true, 6, a, 0); strata(B, H * 0.82, false, 5, a * 0.75, 0); blur(B, 0);
+      vignette(B, edge(B), dark ? 0.45 : 0.16);
+    },
+    // Classic -----------------------------------------------------------------------------------------
+    classic_now(B) {
+      const { W, H, p, dark } = B;
+      folds(B, 9, dark ? 0.22 : 0.05);
+      if (dark) vertical(B, [[0, p.second, 0.22], [0.6, p.second, 0.06], [1, p.second, 0.18]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.10 : 0.8);
+      shell(B, H * 0.36, [0, 1, 2, 3, 4], dark ? 0.16 : 0.22);
+      vignette(B, edge(B), dark ? 0.55 : 0.10);
+    },
+    classic_A(B) {
+      const { W, H, p, dark } = B;
+      folds(B, 7, dark ? 0.12 : 0.03);
+      if (dark) vertical(B, [[0, p.second, 0.14], [0.6, p.second, 0.04], [1, p.second, 0.12]]);
+      radial(B, W * 0.5, H * 0.22, Math.max(W, H) * 0.6, dark ? p.third : WHITE, dark ? 0.08 : 0.7);
+      vignette(B, edge(B), dark ? 0.45 : 0.08);
+    },
+    classic_E(B) {
+      const { p, dark } = B;
+      MOTIFS.classic_A(B);
+      damask(B, dark ? p.third : p.second, dark ? 0.05 : 0.04);
+      hole(B, 0.5);
+    },
+    classic_F(B) {
+      const { W, H, p, dark } = B;
+      MOTIFS.classic_A(B);
+      radial(B, W * 0.5, -H * 0.1, W * 0.9, p.third, dark ? 0.14 : 0.16);
+      vertical(B, [[0, p.second, 0], [0.6, p.second, 0], [1, p.second, dark ? 0.22 : 0.08]]);
+    },
+    // Retro -------------------------------------------------------------------------------------------
+    retro_now(B) {
+      const { W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      stripes(B, W * 0.81, H * 0.172, [p.third, p.second, p.accent], dark ? 0.34 : 0.36, 13, 11 * u);
+      vignette(B, edge(B), dark ? 0.5 : 0.10);
+    },
+    retro_D(B) {
+      const { W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.05 : 0.08);
+      blur(B, 1); wallpaper(B, 26 * u, [p.second, p.third, p.accent], dark ? 0.08 : 0.06); blur(B, 0);
+      hole(B, 0.55);
+      vignette(B, edge(B), dark ? 0.45 : 0.08);
+    },
+    retro_E(B) {
+      const { W, H, p, dark } = B, cx = W * 1.06, cy = -H * 0.05;
+      sunburst(B, cx, cy, Math.PI * 0.42, Math.PI * 1.08, 12, [p.second, p.third], [dark ? 0.10 : 0.08, dark ? 0.07 : 0.055], 6);
+      fadeFrom(B, cx, cy, W * 0.3, Math.hypot(W, H) * 0.95, 0.92);
+      vignette(B, edge(B), dark ? 0.4 : 0.06);
+    },
+    retro_F(B) {
+      const { W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, Math.max(W, H) * 0.6, p.second, dark ? 0.06 : 0.10);
+      blur(B, 1.5); stripes(B, W * 0.81, H * 0.172, [p.third, p.second, p.accent], 0.20, 13, 10 * u); blur(B, 0);
+      vignette(B, edge(B), dark ? 0.5 : 0.10);
+    },
+    // Contemporary ------------------------------------------------------------------------------------
+    contemporary_now(B) {
+      const { W, H, u, p } = B;
+      radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.07);
+      silk(B, -12 * u, 14, 18, 0.6, 1, 1); silk(B, H * 0.8, 20, 26, 2.4, -1, 1);
+    },
+    contemporary_D(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      blur(B, 70);
+      dot(ctx, W * 0.1, H * 0.1, 220 * u, rgba(p.accent, dark ? 0.30 : 0.22));
+      dot(ctx, W * 0.95, H * 0.85, 240 * u, rgba(p.second, dark ? 0.26 : 0.18));
+      dot(ctx, W * 0.9, H * 0.35, 150 * u, rgba(p.third, dark ? 0.22 : 0.35));
+      dot(ctx, W * 0.15, H * 0.75, 140 * u, rgba(p.third, dark ? 0.15 : 0.25));
+      blur(B, 0);
+      grain(B, dark ? 0.07 : 0.05);
+    },
+    contemporary_E(B) {
+      const { W, H, u, p } = B;
+      radial(B, W * 0.1, H * 0.08, Math.max(W, H) * 0.6, p.accent, 0.06);
+      silk(B, -12 * u, 10, 16, 0.6, 1, 0.65, false, 6); silk(B, H * 0.8, 14, 22, 2.4, -1, 0.65, false, 6);
+    },
+    contemporary_F(B) {
+      const { ctx, W, H, u, p, dark } = B;
+      blur(B, 36);
+      for (let k = 0; k < 3; k++) seg(ctx, -80 * u + k * 95 * u, -60 * u, W * 0.45 + k * 95 * u, H * 0.6, dark ? rgba(p.accent, 0.09 - k * 0.02) : rgba(WHITE, 0.38 - k * 0.08), 44 * u, 'butt');
+      blur(B, 0);
+      radial(B, W * 0.95, H * 0.92, Math.max(W, H) * 0.6, dark ? p.second : p.third, dark ? 0.14 : 0.7);
+      grain(B, dark ? 0.05 : 0.035);
+    },
+    // Futuristic --------------------------------------------------------------------------------------
+    futuristic_now(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.12 : 0.08);
+      const hz = H * 0.62, glow = dark ? 0.30 : 0.16;
+      grid(B, hz, hz - H * 0.12, [[7, glow * 0.35], [3.5, glow * 0.6], [0.9, dark ? 0.32 : 0.19]]);
+      gridFade(B, hz, 0.26);
+      radial(B, W * 0.5, hz + H * 0.26 * 0.6, W * 0.8, p.second, dark ? 0.10 : 0.05);
+      for (let i = 0; i < 40; i++) { const x = sideX(r(), W), up = r(), y = hz + H * 0.26 * 0.5 - up * H * 0.36, c = r() < 0.3 ? p.second : p.accent; dot(ctx, x, y, (0.6 + r() * 1.2) * u, rgba(c, (dark ? 0.6 : 0.35) * (1 - up))); }
+      if (dark) scanlines(B, 0.16);
+    },
+    futuristic_D(B) {
+      const { W, H, p, dark } = B;
+      radial(B, W * 0.5, H * 0.3, W * 0.9, p.accent, dark ? 0.10 : 0.07);
+      const hz = H * 0.66, glow = (dark ? 0.30 : 0.16) * 0.6;
+      grid(B, hz, hz - H * 0.12, [[7, glow * 0.35], [3.5, glow * 0.6], [0.9, (dark ? 0.32 : 0.19) * 0.75]]);
+      gridFade(B, hz, 0.26);
+      radial(B, W * 0.5, hz + H * 0.16, W * 0.8, p.second, dark ? 0.08 : 0.04);
+      if (dark) scanlines(B, 0.08);
+    },
+    futuristic_E(B) {
+      const { W, H, u, p, dark } = B;
+      radial(B, W * 0.5, H * 1.05, W * 0.9, p.accent, dark ? 0.18 : 0.10);
+      radial(B, W * 1.0, -H * 0.05, W * 0.7, p.second, dark ? 0.08 : 0.04);
+      hexMesh(B, 13 * u, rgba(p.accent, dark ? 0.09 : 0.07), 0.7 * u);
+      hole(B, 0.7);
+      if (dark) scanlines(B, 0.08);
+    },
+    futuristic_F(B) {
+      const { W, H, u, p, dark } = B, cx = W * 1.1, cy = -H * 0.08;
+      radial(B, W * 0.5, H * 1.05, W * 0.9, p.accent, dark ? 0.16 : 0.09);
+      sweep(B, cx, cy, Math.PI * 0.58, Math.PI * 0.86, p.accent, dark ? 0.12 : 0.08);
+      rings(B, cx, cy, 7, 110 * u, 92 * u, 0.8 * u, [p.accent], dark ? 0.10 : 0.07);
+      radial(B, cx, cy, 160 * u, p.second, dark ? 0.12 : 0.07);
+      if (dark) scanlines(B, 0.08);
+    },
+    // Space Age ---------------------------------------------------------------------------------------
+    spaceage_now(B) {
+      const { ctx, W, H, u, p, dark, r } = B;
+      if (dark) { vertical(B, [[0, p.bg], [1, mix(p.bg, p.accent, 0.14)]]); for (let i = 0; i < 60; i++) { const s = r(); dot(ctx, r() * W, r() * H, (0.4 + s * s * 1.4) * u, rgba(p.ink, 0.2 + r() * 0.4)); } }
+      const reach = 300 * u, a = dark ? 0.5 : 0.34;
+      radial(B, W, 0, reach, p.second, dark ? 0.12 : 0.08);
+      halftone(B, W, 0, reach, rgba(p.second, a));
+      halftone(B, 0, H * 0.62, reach * 0.83, rgba(p.accent, a));
+    },
+    spaceage_D(B) {
+      const { W, H, u, p, dark } = B;
+      night(B, 60, 0.14);
+      const reach = 260 * u, a = dark ? 0.32 : 0.22;
+      radial(B, W, 0, reach, p.second, dark ? 0.10 : 0.07);
+      halftone(B, W, 0, reach, rgba(p.second, a), 4.2);
+      halftone(B, 0, H * 0.62, reach * 0.83, rgba(p.accent, a), 4.2);
+    },
+    spaceage_E(B) {
+      const { W, H, p, dark } = B, cx = W * 1.06, cy = -H * 0.05;
+      night(B, 50, 0.10);
+      sunburst(B, cx, cy, Math.PI * 0.42, Math.PI * 1.08, 14, [p.second, p.accent], [dark ? 0.12 : 0.08, dark ? 0.10 : 0.06], 6);
+      fadeFrom(B, cx, cy, W * 0.3, Math.hypot(W, H) * 0.95, 0.92);
+    },
+    spaceage_F(B) {
+      const { W, H, u, p, dark } = B, cx = W * 1.1, cy = -H * 0.08;
+      night(B, 50, 0.10);
+      radial(B, cx, cy, 200 * u, p.second, dark ? 0.16 : 0.10);
+      rings(B, cx, cy, 10, 90 * u, 52 * u, 26 * u, [p.second, p.accent], dark ? 0.06 : 0.045);
+      fadeFrom(B, cx, cy, W * 0.4, Math.hypot(W, H) * 1.0, 0.9);
+      radial(B, 0, H * 0.64, 240 * u, p.accent, dark ? 0.08 : 0.06);
+    },
+  };
+
+  // ---- The in-tune greens: today's, matched to each style, or softened; light then dark ----------------
+  const GREENS = {
+    today: null,
+    matched: { ancient: ['#4D6A24', '#B8CF7C'], classic: ['#1F6B50', '#8ED3B2'], retro: ['#1E6E58', '#6FD6B0'], contemporary: ['#0E6E52', '#6FD6A8'], futuristic: ['#167034', '#39FF9A'], spaceage: ['#1F6E5A', '#6FD9B0'] },
+    softer: { ancient: ['#3A6633', '#A2C98E'], classic: ['#2A6644', '#93CCA6'], retro: ['#27694D', '#7FCBA6'], contemporary: ['#237344', '#80CC98'], futuristic: ['#1E7348', '#62E8A6'], spaceage: ['#2D6B41', '#8CD596'] },
+  };
+  const GREEN_NAMES = { today: 'today', matched: 'matched', softer: 'softer' };
+  function greenFor(s, dark, set) { const g = GREENS[set]; return g ? hex(g[s.id][dark ? 1 : 0]) : hex(s[dark ? 'dark' : 'light'].inTune); }
+  /** WCAG 2.2 relative luminance and contrast ratio, as StylePaletteTest checks them. */
+  const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+  const contrast = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+  function greensNote(set) {
+    let worst = 99, where = '';
+    for (const id of ORDER) for (const dark of [false, true]) {
+      const pal = STY[id][dark ? 'dark' : 'light'], g = greenFor(STY[id], dark, set);
+      const surface = hex(pal.surface), tint = mix(surface, hex(pal.ink), 0.06);
+      for (const [name, bg] of [['background', hex(pal.bg)], ['panels', surface], ['lists', tint]]) { const c = contrast(g, bg); if (c < worst) { worst = c; where = `${STY[id].name} ${dark ? 'dark' : 'light'} on the ${name}`; } }
+      const on = contrast(g, hex(pal.onInTune)); if (on < worst) { worst = on; where = `${STY[id].name} ${dark ? 'dark' : 'light'}, the text on the pill`; }
+    }
+    const which = GREEN_NAMES[set];
+    return worst >= 4.5 ? `The ${which} greens read everywhere: the lowest contrast is ${worst.toFixed(1)}:1 (${where}); the app's rule is 4.5:1.` : `The ${which} greens fall short: ${worst.toFixed(1)}:1 for ${where} (the rule is 4.5:1).`;
+  }
+
+  // ---- One phone: the background with the tuner screen on top, laid out as on the phone -----------
+  function drawPhone(canvas, s, opt, dark, green) {
+    const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = rect.width, H = rect.height, u = W / 393;
+    const palHex = s[dark ? 'dark' : 'light'], p = {}; for (const k in palHex) p[k] = hex(palHex[k]);
+    p.inTune = greenFor(s, dark, green);
+    const container = mix(p.surface, p.accent, dark ? 0.32 : 0.22);
+    const sh = s.shape, num = stack(s.num, s.numFb), disp = stack(s.font, s.fb), body = 'Roboto, system-ui, sans-serif';
+    const shape = (x, y, w, h, r) => { ctx.beginPath(); if (sh.cut) cutAdd(ctx, x, y, w, h, Math.min(r, 10) * u); else rrAdd(ctx, x, y, w, h, r * u); };
+
+    ctx.fillStyle = rgba(p.bg); ctx.fillRect(0, 0, W, H);
+    const B = { ctx, W, H, u, p, dark, s, r: rng(7 + s.id.length * 31 + opt.key.charCodeAt(0)) };
+    ctx.save();
+    try { MOTIFS[`${s.id}_${opt.key}`](B); } catch (err) { console.error(err); }
+    ctx.restore(); ctx.filter = 'none';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    // The mode switch and the focus button.
+    const swX = 80 * u, swY = 36 * u, swW = 233 * u, swH = 44 * u;
+    shape(swX, swY, swW / 2, swH, Math.min(sh.pill, 22)); ctx.fillStyle = rgba(container); ctx.fill();
+    shape(swX, swY, swW, swH, Math.min(sh.pill, 22)); ctx.strokeStyle = rgba(p.muted, 0.8); ctx.lineWidth = u; ctx.stroke();
+    seg(ctx, swX + swW / 2, swY, swX + swW / 2, swY + swH, rgba(p.muted, 0.8), u, 'butt');
+    ctx.fillStyle = rgba(p.ink); ctx.font = `500 ${14 * u}px ${body}`;
+    ctx.fillText('Strings', swX + swW / 4, swY + swH / 2 + u); ctx.fillText('Chromatic', swX + swW * 3 / 4, swY + swH / 2 + u);
+    const fbX = W - 60 * u, fbY = swY;
+    shape(fbX, fbY, 44 * u, 44 * u, sh.card); ctx.strokeStyle = rgba(p.muted, 0.8); ctx.lineWidth = u; ctx.stroke();
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const cx = fbX + 22 * u + sx * 7 * u, cy = fbY + 22 * u + sy * 7 * u; seg(ctx, cx, cy, cx - sx * 4 * u, cy, rgba(p.ink), 1.4 * u); seg(ctx, cx, cy, cx, cy - sy * 4 * u, rgba(p.ink), 1.4 * u); }
+
+    // The meter: Classic look on its calm field (75 % background in the middle, gone at the edge).
+    const cx = W / 2, cy = 280 * u, R = 160 * u, span = 84 * Math.PI / 180;
+    const fx = cx, fy = 250 * u, frx = 190 * u, fry = 150 * u;
+    ctx.save(); ctx.translate(fx, fy); ctx.scale(1, fry / frx);
+    const fg = ctx.createRadialGradient(0, 0, 0, 0, 0, frx); fg.addColorStop(0, rgba(p.bg, 0.75)); fg.addColorStop(0.62, rgba(p.bg, 0.56)); fg.addColorStop(1, rgba(p.bg, 0));
+    ctx.fillStyle = fg; ctx.fillRect(-frx, -frx, frx * 2, frx * 2); ctx.restore();
+    ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2 - span, -Math.PI / 2 + span); ctx.strokeStyle = rgba(p.track); ctx.lineWidth = 1.5 * u; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.font = `${s.numW} ${13 * s.numScale * u}px ${num}`;
+    for (let v = -50; v <= 50; v += 5) {
+      const major = v % 10 === 0, a = -Math.PI / 2 + v / 50 * span, len = (v === 0 ? 16 : major ? 12 : 6) * u;
+      const x1 = cx + Math.cos(a) * (R - 2 * u), y1 = cy + Math.sin(a) * (R - 2 * u);
+      seg(ctx, x1, y1, x1 - Math.cos(a) * len, y1 - Math.sin(a) * len, v === 0 ? rgba(p.inTune) : rgba(p.ink, major ? 0.8 : 0.5), (v === 0 ? 3 : major ? 2.2 : 1.2) * u);
+      if (major && v !== 0) { ctx.fillStyle = rgba(p.ink, 0.8); ctx.fillText(String(Math.abs(v)), cx + Math.cos(a) * (R - 34 * u), cy + Math.sin(a) * (R - 34 * u)); }
+    }
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${13 * u}px ${body}`; ctx.fillText('♭', cx - R - 2 * u, cy + 14 * u); ctx.fillText('♯', cx + R + 2 * u, cy + 14 * u);
+    ctx.font = `500 ${8 * u}px ${body}`; ctx.fillText('C E N T S', cx, 236 * u);
+    const na = -Math.PI / 2 + 2 / 50 * span, tipX = cx + Math.cos(na) * (R - 8 * u), tipY = cy + Math.sin(na) * (R - 8 * u);
+    radial(B, tipX, tipY, 40 * u, p.inTune, dark ? 0.28 : 0.16);
+    seg(ctx, cx, cy, tipX, tipY, rgba(p.inTune), 3 * u);
+    dot(ctx, cx, cy, 6 * u, rgba(p.ink));
+
+    // The note, the pill and the frequency.
+    radial(B, cx - 8 * u, 397 * u, 70 * u, p.inTune, dark ? 0.26 : 0.14);
+    ctx.fillStyle = rgba(p.inTune); ctx.font = `${s.w} ${96 * u}px ${disp}`; ctx.fillText('A', cx - 10 * u, 397 * u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${30 * s.numScale * u}px ${num}`; ctx.fillText('2', cx + 42 * u, 424 * u);
+    const pw = 232 * u, ph = 44 * u, px = cx - pw / 2, py = 471 * u;
+    shape(px, py, pw, ph, Math.min(sh.pill, 22)); ctx.fillStyle = rgba(p.inTune); ctx.fill();
+    dot(ctx, px + 26 * u, py + ph / 2, 10 * u, rgba(p.onInTune));
+    ctx.beginPath(); ctx.moveTo(px + 21 * u, py + ph / 2); ctx.lineTo(px + 25 * u, py + ph / 2 + 4 * u); ctx.lineTo(px + 31 * u, py + ph / 2 - 4 * u); ctx.strokeStyle = rgba(p.inTune); ctx.lineWidth = 2 * u; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.fillStyle = rgba(p.onInTune); ctx.font = `500 ${17 * u}px ${body}`; ctx.fillText('In tune', cx + 6 * u, py + ph / 2 + u);
+    ctx.fillStyle = rgba(p.muted); ctx.font = `${s.numW} ${16 * s.numScale * u}px ${num}`; ctx.fillText('110.0 Hz', cx, 563 * u);
+
+    // The tuning row: instrument button, name, new-tuning button.
+    const rowY = 663 * u;
+    shape(16 * u, rowY, 48 * u, 48 * u, sh.card); ctx.strokeStyle = rgba(p.muted, 0.8); ctx.lineWidth = u; ctx.stroke();
+    shape(28 * u, rowY + 12 * u, 24 * u, 24 * u, 6); ctx.strokeStyle = rgba(p.ink); ctx.lineWidth = 1.4 * u; ctx.stroke();
+    for (let i = 0; i < 3; i++) { const y = rowY + 17 * u + i * 7 * u; seg(ctx, 28 * u, y, 24 * u, y, rgba(p.ink), 1.4 * u); seg(ctx, 52 * u, y, 56 * u, y, rgba(p.ink), 1.4 * u); }
+    ctx.fillStyle = rgba(p.muted); ctx.font = `400 ${15 * u}px ${body}`; ctx.textAlign = 'left'; ctx.fillText('Guitar · Standard', 78 * u, rowY + 25 * u); ctx.textAlign = 'center';
+    const nbX = W - 64 * u;
+    shape(nbX, rowY, 48 * u, 48 * u, sh.card); ctx.strokeStyle = rgba(p.muted, 0.8); ctx.lineWidth = u; ctx.stroke();
+    for (const [sx, sy] of [[0, 0], [1, 0], [0, 1]]) { ctx.beginPath(); rrAdd(ctx, nbX + 13 * u + sx * 12 * u, rowY + 13 * u + sy * 12 * u, 9 * u, 9 * u, 1.5 * u); ctx.strokeStyle = rgba(p.ink); ctx.lineWidth = 1.4 * u; ctx.stroke(); }
+    seg(ctx, nbX + 29.5 * u, rowY + 26 * u, nbX + 29.5 * u, rowY + 34 * u, rgba(p.ink), 1.6 * u); seg(ctx, nbX + 25.5 * u, rowY + 30 * u, nbX + 33.5 * u, rowY + 30 * u, rgba(p.ink), 1.6 * u);
+
+    // The string row, in the style's shape; A is the string in tune.
+    const names = [['E', '2'], ['A', '2'], ['D', '3'], ['G', '3'], ['B', '3'], ['E', '4']];
+    const sw = sh.strW * u, shh = sh.strH * u, gap = (W - 32 * u - sw * 6) / 5, stripY = 743 * u;
+    names.forEach(([n, o], i) => {
+      const x = 16 * u + i * (sw + gap), y = stripY - shh / 2, on = i === 1;
+      shape(x, y, sw, shh, sh.strR);
+      if (on) { ctx.fillStyle = rgba(p.inTune); ctx.fill(); }
+      else { ctx.fillStyle = sh.cut ? rgba(mix(p.bg, p.accent, 0.1)) : rgba(p.surface, 0.7); ctx.fill(); ctx.strokeStyle = sh.cut ? rgba(p.accent, 0.55) : rgba(p.muted, 0.6); ctx.lineWidth = u; ctx.stroke(); }
+      ctx.fillStyle = rgba(on ? p.onInTune : p.ink); ctx.font = `${s.numW} ${16 * s.numScale * u}px ${num}`; ctx.fillText(n, x + sw / 2 - 3 * u, stripY + (sh.strR === 4 ? 8 : 0) * u);
+      ctx.font = `${s.numW} ${10 * s.numScale * u}px ${num}`; ctx.fillText(o, x + sw / 2 + 7 * u, stripY + 5 * u + (sh.strR === 4 ? 8 : 0) * u);
+    });
+
+    // The tab bar on its calm field (70 % background, starting 36 dp above the bar).
+    const barY = 775 * u, reach = 36 * u;
+    const ng = ctx.createLinearGradient(0, barY - reach, 0, H); ng.addColorStop(0, rgba(p.bg, 0)); ng.addColorStop(0.55, rgba(p.bg, 0.7)); ng.addColorStop(1, rgba(p.bg, 0.7));
+    ctx.fillStyle = ng; ctx.fillRect(0, barY - reach, W, H - barY + reach);
+    const tabs = ['Tuner', 'Practice', 'Settings'];
+    tabs.forEach((label, i) => {
+      const x = W * (1 + 2 * i) / 6, iy = 801 * u, col = rgba(i === 0 ? p.accent : p.muted), lw = (i === 0 ? 2.2 : 1.8) * u;
+      if (i === 0) { seg(ctx, x, iy - 10 * u, x, iy + 10 * u, col, lw); seg(ctx, x - 5 * u, iy - 10 * u, x - 5 * u, iy - 2 * u, col, lw); seg(ctx, x + 5 * u, iy - 10 * u, x + 5 * u, iy - 2 * u, col, lw); seg(ctx, x - 5 * u, iy - 2 * u, x + 5 * u, iy - 2 * u, col, lw); }
+      else if (i === 1) { ctx.beginPath(); ctx.moveTo(x - 7 * u, iy + 10 * u); ctx.lineTo(x - 4 * u, iy - 10 * u); ctx.lineTo(x + 4 * u, iy - 10 * u); ctx.lineTo(x + 7 * u, iy + 10 * u); ctx.closePath(); ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.stroke(); seg(ctx, x, iy + 6 * u, x + 5 * u, iy - 6 * u, col, lw); }
+      else { ctx.beginPath(); ctx.arc(x, iy, 7 * u, 0, TAU); ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.stroke(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; seg(ctx, x + Math.cos(a) * 8 * u, iy + Math.sin(a) * 8 * u, x + Math.cos(a) * 11 * u, iy + Math.sin(a) * 11 * u, col, lw); } }
+      ctx.fillStyle = col; ctx.font = `500 ${12 * u}px ${body}`; ctx.fillText(label, x, iy + 26 * u);
+      if (i === 0) { ctx.beginPath(); rrAdd(ctx, x - 12 * u, iy + 40 * u, 24 * u, 3 * u, 1.5 * u); ctx.fillStyle = col; ctx.fill(); }
+    });
+    ctx.beginPath(); rrAdd(ctx, cx - 55 * u, 858 * u, 110 * u, 3.5 * u, 2 * u); ctx.fillStyle = rgba(p.ink, 0.5); ctx.fill();
+  }
+
+  // ---- Page --------------------------------------------------------------------------------------------
+  let dark = store.get('twangle.calm.dark') === '1';
+  let green = GREENS.hasOwnProperty(store.get('twangle.calm2.green')) ? store.get('twangle.calm2.green') : 'today';
+  let picks = {}; try { picks = JSON.parse(store.get('twangle.calm2.picks') || '{}') || {}; } catch (e) { picks = {}; }
+  const VIEWS = [];
+  const main = $('styles');
+  for (const id of ORDER) {
+    const s = STY[id];
+    const sec = document.createElement('section'); sec.className = 'style';
+    sec.innerHTML = `<h2>${s.name}</h2><p class="tag">${s.tag}</p><div class="row"></div>`;
+    const row = sec.querySelector('.row');
+    for (const opt of s.options) {
+      const fig = document.createElement('figure');
+      fig.innerHTML = `<div class="phone" tabindex="0" role="button" aria-label="${s.name}, ${opt.name}, see big"><canvas></canvas></div><figcaption><b>${opt.name}</b>${opt.desc}</figcaption><button type="button" class="pick">Pick</button>`;
+      row.appendChild(fig);
+      const v = { s, opt, fig, canvas: fig.querySelector('canvas'), index: VIEWS.length };
+      fig.querySelector('.phone').addEventListener('click', () => openBig(v.index));
+      fig.querySelector('.phone').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBig(v.index); } });
+      fig.querySelector('.pick').addEventListener('click', () => pick(v));
+      VIEWS.push(v);
+    }
+    main.appendChild(sec);
+  }
+  function pick(v) {
+    picks[v.s.id] = picks[v.s.id] === v.opt.key ? undefined : v.opt.key;
+    store.set('twangle.calm2.picks', JSON.stringify(picks)); showPicks();
+  }
+  function showPicks() {
+    for (const v of VIEWS) { const on = picks[v.s.id] === v.opt.key; v.fig.classList.toggle('picked', on); v.fig.querySelector('.pick').textContent = on ? 'Picked' : 'Pick'; }
+    const parts = ORDER.map((id) => `${STY[id].name} <b>${picks[id] ? (picks[id] === 'now' ? 'today' : picks[id]) : '–'}</b>`);
+    $('picks').innerHTML = 'Your picks: ' + parts.join(' · ') + ` · In tune <b>${GREEN_NAMES[green]}</b>`;
+    if (big.open) syncBigBar();
+  }
+  function renderAll() { for (const v of VIEWS) drawPhone(v.canvas, v.s, v.opt, dark, green); if (big.open) drawBig(); }
+  function setMode(d) {
+    dark = d; store.set('twangle.calm.dark', d ? '1' : '0');
+    $('modeLight').setAttribute('aria-pressed', String(!d)); $('modeDark').setAttribute('aria-pressed', String(d));
+    renderAll();
+  }
+  function setGreen(g) {
+    green = g; store.set('twangle.calm2.green', g);
+    for (const b of $('greenSeg').querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.green === g));
+    $('greenNote').textContent = greensNote(g);
+    showPicks(); renderAll();
+  }
+  $('modeLight').addEventListener('click', () => setMode(false));
+  $('modeDark').addEventListener('click', () => setMode(true));
+  for (const b of $('greenSeg').querySelectorAll('button')) b.addEventListener('click', () => setGreen(b.dataset.green));
+
+  const overlay = $('overlay'), big = { index: 0, open: false };
+  function syncBigBar() {
+    const v = VIEWS[big.index];
+    $('which').textContent = `${v.s.name} · ${v.opt.name}`;
+    $('bigPick').textContent = picks[v.s.id] === v.opt.key ? 'Picked' : 'Pick';
+    $('bigMode').textContent = dark ? 'Light' : 'Dark';
+    $('bigGreen').textContent = `Green: ${GREEN_NAMES[green]}`;
+  }
+  function drawBig() { const v = VIEWS[big.index]; drawPhone($('bigPhone').querySelector('canvas'), v.s, v.opt, dark, green); syncBigBar(); }
+  function openBig(i) { big.index = i; big.open = true; overlay.classList.add('open'); requestAnimationFrame(drawBig); }
+  function closeBig() { big.open = false; overlay.classList.remove('open'); }
+  function step(d) { big.index = (big.index + d + VIEWS.length) % VIEWS.length; drawBig(); }
+  const GREEN_ORDER = ['today', 'matched', 'softer'];
+  $('prev').addEventListener('click', () => step(-1));
+  $('next').addEventListener('click', () => step(1));
+  $('close').addEventListener('click', closeBig);
+  $('bigPhone').addEventListener('click', () => step(1));
+  $('bigPick').addEventListener('click', () => pick(VIEWS[big.index]));
+  $('bigMode').addEventListener('click', () => setMode(!dark));
+  $('bigGreen').addEventListener('click', () => setGreen(GREEN_ORDER[(GREEN_ORDER.indexOf(green) + 1) % GREEN_ORDER.length]));
+  document.addEventListener('keydown', (e) => {
+    if (!big.open) return;
+    if (e.key === 'Escape') closeBig(); else if (e.key === 'ArrowRight') step(1); else if (e.key === 'ArrowLeft') step(-1);
+  });
+
+  setGreen(green); setMode(dark);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderAll);
+  let t = 0; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(renderAll, 120); });
+})();
+</script>
+</body>
+</html>

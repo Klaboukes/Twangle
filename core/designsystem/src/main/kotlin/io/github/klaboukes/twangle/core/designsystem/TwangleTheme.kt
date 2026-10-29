@@ -90,9 +90,10 @@ fun colorSchemeFor(context: Context, style: VisualStyle, dark: Boolean, dynamicC
  * How near, in degrees of perceptual hue ([hueOf]), the wallpaper's accent may come to the "in tune" green before it gives
  * way to Contemporary's own blue (Phase 43). The six styles keep their accents out of the greens by
  * design (`StylePaletteTest`); a green wallpaper would otherwise make every picked segment, the open
- * tab and the Start button look "in tune".
+ * tab and the Start button look "in tune". It was 40° until the matched greens of October 2026 moved the
+ * in-tune hue towards teal, which left a yellow-green wallpaper 43° away.
  */
-internal const val IN_TUNE_HUE_GUARD = 40f
+internal const val IN_TUNE_HUE_GUARD = 50f
 
 /**
  * This wallpaper scheme (light or [dark]) with its accent swapped for Contemporary's own blue when it

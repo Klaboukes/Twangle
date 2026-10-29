@@ -18,7 +18,7 @@ object WatchColors {
     val track = Color(0xFF2B3350)
     val accent = Color(0xFFA6ADFF)
     val onAccent = Color(0xFF121A5A)
-    val inTune = Color(0xFF6DD58C)
+    val inTune = Color(0xFF6FD6A8)
 }
 
 /** Wear Material 3 in [WatchColors]: buttons in the accent, text in ink and muted, on black. */

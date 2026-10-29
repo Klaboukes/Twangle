@@ -60,6 +60,7 @@ scripts/website-pictures.sh             # the website's small screenshots and ic
 scripts/publish-privacy.sh              # publish PRIVACY.md and PRIVACY.nl.md to the public policy page after a policy change landed on main
 scripts/store-graphics.sh               # the Play Store's icon and feature graphic, drawn on the phone (docs/store-listing.md)
 scripts/meter-look-screens.sh           # pictures of every meter look in every style for the owner (~1½ min)
+scripts/style-screens.sh                # pictures of the tuner in every style, light and dark, for the owner (~1 min)
 scripts/strum-check.sh [bass]           # plays synthetic strums from the PC's speaker to the phone (strum-and-metronome.md, *Phone check*)
 scripts/record-plucks.sh                # records plucked strings on the phone into core/dsp's test fixtures, the phone guiding the player (~15 min; --test: one 2 s check, no playing; testing.md, *Real recordings*)
 ```

@@ -27,6 +27,12 @@ import kotlin.math.min
  * Readable by rule (checked in StylePaletteTest): ink, muted, accent and inTune at least 4.5:1 on the
  * background, the surface and the surface container; onAccent and onInTune 4.5:1 on their fills; ink
  * 4.5:1 on the selected container.
+ *
+ * The in-tune greens are matched to each style (owner, October 2026, the "matched" set of
+ * docs/design/calm-backgrounds-preview.html): one fresh grass green for every style clashed with the
+ * backgrounds, above all Space Age by night, so each style's green leans its way (Ancient olive, Classic
+ * and Space Age a cool mint, Retro and Contemporary sea green, Futuristic's neon green kept), still
+ * 4.5:1 on its grounds and still plainly green, so "in tune" reads the same in every style.
  */
 @Immutable
 data class Palette(
@@ -133,7 +139,7 @@ private val AncientLight = Palette(
     track = Color(0xFFCFC1B6),
     accent = Color(0xFFA8431F),
     onAccent = Color(0xFFFFF4EE),
-    inTune = Color(0xFF2F6A2A),
+    inTune = Color(0xFF4D6A24),
     onInTune = Color(0xFFF3FAEF),
     second = Color(0xFF3A2E2A),
     third = Color(0xFF9A6A3A),
@@ -147,7 +153,7 @@ private val AncientDark = Palette(
     track = Color(0xFF4A3D37),
     accent = Color(0xFFF0957A),
     onAccent = Color(0xFF3A1206),
-    inTune = Color(0xFF9DD47F),
+    inTune = Color(0xFFB8CF7C),
     onInTune = Color(0xFF13260A),
     second = Color(0xFF8C7A72),
     third = Color(0xFFD19A6A),
@@ -162,7 +168,7 @@ private val ClassicLight = Palette(
     track = Color(0xFFDCCFC4),
     accent = Color(0xFF7A1F45),
     onAccent = Color(0xFFFFF6F9),
-    inTune = Color(0xFF22663A),
+    inTune = Color(0xFF1F6B50),
     onInTune = Color(0xFFF2FAF4),
     second = Color(0xFF7A1F45),
     third = Color(0xFFA8863C),
@@ -176,7 +182,7 @@ private val ClassicDark = Palette(
     track = Color(0xFF45303A),
     accent = Color(0xFFEBA3C0),
     onAccent = Color(0xFF3A0B1F),
-    inTune = Color(0xFF86D3A0),
+    inTune = Color(0xFF8ED3B2),
     onInTune = Color(0xFF062A12),
     second = Color(0xFF8C2A52),
     third = Color(0xFFD4AF5C),
@@ -191,7 +197,7 @@ private val RetroLight = Palette(
     track = Color(0xFFD5D2AE),
     accent = Color(0xFF5F6E0E),
     onAccent = Color(0xFFFBFDEB),
-    inTune = Color(0xFF1C6E4A),
+    inTune = Color(0xFF1E6E58),
     onInTune = Color(0xFFF0FAF4),
     second = Color(0xFFC9961A),
     third = Color(0xFFC8561A),
@@ -205,7 +211,7 @@ private val RetroDark = Palette(
     track = Color(0xFF3E412A),
     accent = Color(0xFFC5D45A),
     onAccent = Color(0xFF252B00),
-    inTune = Color(0xFF6FD6A4),
+    inTune = Color(0xFF6FD6B0),
     onInTune = Color(0xFF002A16),
     second = Color(0xFFE3B23C),
     third = Color(0xFFE8783A),
@@ -220,7 +226,7 @@ private val ContemporaryLight = Palette(
     track = Color(0xFFCDD3E3),
     accent = Color(0xFF3A4FD6),
     onAccent = Color(0xFFFFFFFF),
-    inTune = Color(0xFF15763B),
+    inTune = Color(0xFF0E6E52),
     onInTune = Color(0xFFFFFFFF),
     second = Color(0xFF8FA0F0),
     third = Color(0xFFB9C4EA),
@@ -234,7 +240,7 @@ private val ContemporaryDark = Palette(
     track = Color(0xFF2B3350),
     accent = Color(0xFFA6ADFF),
     onAccent = Color(0xFF121A5A),
-    inTune = Color(0xFF6DD58C),
+    inTune = Color(0xFF6FD6A8),
     onInTune = Color(0xFF00391A),
     second = Color(0xFF3C4FB8),
     third = Color(0xFF2A3160),
@@ -249,7 +255,7 @@ private val FuturisticLight = Palette(
     track = Color(0xFFBFD2DC),
     accent = Color(0xFF00717F),
     onAccent = Color(0xFFFFFFFF),
-    inTune = Color(0xFF007642),
+    inTune = Color(0xFF167034),
     onInTune = Color(0xFFFFFFFF),
     second = Color(0xFFC2187F),
     third = Color(0xFF4FD2EA),
@@ -278,7 +284,7 @@ private val SpaceAgeLight = Palette(
     track = Color(0xFFD6D0E4),
     accent = Color(0xFF8A35B8),
     onAccent = Color(0xFFFFFFFF),
-    inTune = Color(0xFF26703A),
+    inTune = Color(0xFF1F6E5A),
     onInTune = Color(0xFFFFFFFF),
     second = Color(0xFFD9561E),
     third = Color(0xFF8E94AC),
@@ -292,7 +298,7 @@ private val SpaceAgeDark = Palette(
     track = Color(0xFF352C5A),
     accent = Color(0xFFD9A0FF),
     onAccent = Color(0xFF2E0B4A),
-    inTune = Color(0xFF7EE08A),
+    inTune = Color(0xFF6FD9B0),
     onInTune = Color(0xFF05290B),
     second = Color(0xFFFF8A4C),
     third = Color(0xFFC9CEDF),

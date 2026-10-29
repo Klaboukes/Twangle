@@ -22,7 +22,7 @@ Background and measurements: [docs/architecture/testing.md](../../../docs/archit
 
 ## Traps
 
-- `MeterLookScreenshots` has no cases unless `-a meterScreenshots=true` is passed (`scripts/meter-look-screens.sh` passes it).
+- `MeterLookScreenshots` has no cases unless `-a meterScreenshots=true` is passed (`scripts/meter-look-screens.sh` passes it). `StyleScreenshots` likewise with `-a styleScreenshots=true` (`scripts/style-screens.sh`).
 
 ## Profiling a slow test
 
