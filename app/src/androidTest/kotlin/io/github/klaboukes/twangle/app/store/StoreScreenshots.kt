@@ -368,15 +368,31 @@ class StoreScreenshots(private val shot: Shot) {
         return String(Base64.decode(encoded, Base64.DEFAULT), Charsets.UTF_8).replace("\r\n", "\n").trimEnd().lines()
     }
 
-    /** What TalkBack says about the note: the live region over it, as TalkBack reads it. */
+    /**
+     * What TalkBack says about the note: the live region over it, as TalkBack reads it. Waited for,
+     * up to [READING_WAIT_MS], the tree read afresh every [READING_POLL_MS]: the reading is paced
+     * (`PacedSpeech`, the region's text blank until the first is published), and on a phone warm from
+     * the earlier languages, at twice the text size, it once came after the note's 3 s settle (sv-SE
+     * and vi, 2026-10-29).
+     */
     private fun reading(): SpeechBubble {
-        val root = instrumentation.uiAutomation.rootInActiveWindow ?: error("no window to read")
-        val node = generateSequence(listOf(root)) { level -> level.flatMap { n -> (0 until n.childCount).mapNotNull { n.getChild(it) } }.ifEmpty { null } }
+        val end = SystemClock.uptimeMillis() + READING_WAIT_MS
+        var said = spokenNote()
+        while (said == null && SystemClock.uptimeMillis() < end) {
+            settle(READING_POLL_MS)
+            said = spokenNote()
+        }
+        // As a sentence on the screen: Dutch note names are said in small letters ("e 2, …").
+        return SpeechBubble((said ?: error("TalkBack's reading of the note wasn't found")).replaceFirstChar { it.titlecase(Locale.forLanguageTag(locale)) })
+    }
+
+    /** The live region's text as it is now, or null while there is none yet. */
+    private fun spokenNote(): String? {
+        val root = instrumentation.uiAutomation.rootInActiveWindow ?: return null
+        return generateSequence(listOf(root)) { level -> level.flatMap { n -> (0 until n.childCount).mapNotNull { n.getChild(it) } }.ifEmpty { null } }
             .flatten()
             .firstOrNull { it.liveRegion != android.view.View.ACCESSIBILITY_LIVE_REGION_NONE && !it.contentDescription.isNullOrBlank() }
-            ?: error("TalkBack's reading of the note wasn't found")
-        // As a sentence on the screen: Dutch note names are said in small letters ("e 2, …").
-        return SpeechBubble(node.contentDescription.toString().replaceFirstChar { it.titlecase(Locale.forLanguageTag(locale)) })
+            ?.contentDescription?.toString()
     }
 
     /** The low E string 12 cents flat. */
@@ -526,5 +542,9 @@ class StoreScreenshots(private val shot: Shot) {
 
         /** TalkBack users often read at large text: the screenshot shows the largest Twangle supports. */
         private const val TALKBACK_FONT_SCALE = 2f
+
+        /** How long [reading] waits for TalkBack's paced reading of the note, and how often it looks. */
+        private const val READING_WAIT_MS = 5_000L
+        private const val READING_POLL_MS = 200L
     }
 }
