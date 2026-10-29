@@ -475,7 +475,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     @androidx.compose.runtime.Composable
     private fun PracticeToolButtonStandIn() {
         Box(Modifier.testTag(HEADER).size(160.dp, 48.dp).padding(start = 42.dp, end = 26.dp), contentAlignment = Alignment.CenterStart) {
-            Text("Metronome", maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 16.sp, stepSize = 0.5.sp))
+            Text("Metronome", maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 16.sp, stepSize = 0.5.sp))
         }
     }
 

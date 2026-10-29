@@ -168,6 +168,9 @@ private fun ToolName(text: String, color: Color, modifier: Modifier = Modifier) 
         style = style,
         color = color,
         maxLines = 1,
+        // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says
+        // why).
+        softWrap = false,
         autoSize = TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = NAME_SIZE, stepSize = 0.5.sp),
         modifier = modifier,
     )

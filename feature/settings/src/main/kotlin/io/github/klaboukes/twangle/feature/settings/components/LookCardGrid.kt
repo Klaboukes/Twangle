@@ -149,8 +149,10 @@ private fun LookCard(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = if (selected) colors.onSurface else colors.onSurfaceVariant,
-            // One line, shrinking to fit: a long name never breaks in the middle of a word.
+            // One line, shrinking to fit: a long name never breaks in the middle of a word. Never wrapped, so the
+            // auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
             maxLines = 1,
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(
                 minFontSize = LABEL_MIN_SIZE,
                 maxFontSize = MaterialTheme.typography.bodyMedium.fontSize,

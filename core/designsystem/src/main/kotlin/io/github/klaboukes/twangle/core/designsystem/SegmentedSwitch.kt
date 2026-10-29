@@ -117,8 +117,11 @@ fun <T> SegmentedSwitch(
                         text,
                         style = labelStyle,
                         modifier = Modifier.segmentLabel(whole, give = if (crowded) 0.dp else GIVING_PADDING),
-                        // Wrapping on, so a word too wide for one line counts as not fitting and shrinks.
+                        // One line, never wrapped: a word too wide overflows in width, which the auto-size sees and
+                        // shrinks (as every one-line auto-sized text; Ear training's AnswerButton in IntervalsPart.kt
+                        // says why).
                         maxLines = 1,
+                        softWrap = false,
                         // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE), each tried in turn.
                         autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, LAST_RESORT_LABEL_SIZE) },
                     )

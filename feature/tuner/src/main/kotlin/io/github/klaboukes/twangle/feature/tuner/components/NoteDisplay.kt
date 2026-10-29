@@ -332,6 +332,9 @@ fun NoteDisplay(
                             else -> colors.onSurfaceVariant.copy(alpha = 0.35f)
                         },
                         maxLines = 1,
+                        // Never wrapped, as every one-line auto-sized text (Ear training's AnswerButton in
+                        // IntervalsPart.kt says why).
+                        softWrap = false,
                         modifier = Modifier
                             .alignByBaseline()
                             .widthIn(max = BIG_NOTE_MAX_WIDTH)
@@ -443,6 +446,9 @@ fun NoteDisplay(
                         },
                         textAlign = TextAlign.Center,
                         maxLines = if (oneLineInPill) 1 else Int.MAX_VALUE,
+                        // On its one line never wrapped, so the auto-size sees a tip too wide (Ear training's
+                        // AnswerButton in IntervalsPart.kt says why).
+                        softWrap = !oneLineInPill,
                         autoSize = if (oneLineInPill) tipAutoSize(pillStyle.fontSize) else null,
                         modifier = Modifier
                             .weight(1f, fill = false)
@@ -464,6 +470,9 @@ fun NoteDisplay(
                     color = colors.primary,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
+                    // Never wrapped, so the auto-size sees a line too wide (Ear training's AnswerButton in
+                    // IntervalsPart.kt says why).
+                    softWrap = false,
                     autoSize = tipAutoSize(MaterialTheme.typography.titleMedium.fontSize),
                     modifier = Modifier.keepLineHeight(directionLine).hiddenFromTalkBack(),
                 )
@@ -481,6 +490,9 @@ fun NoteDisplay(
                     color = if (tipInLine) colors.primary else colors.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
+                    // Never wrapped, so the auto-size sees a tip too wide (Ear training's AnswerButton in
+                    // IntervalsPart.kt says why).
+                    softWrap = false,
                     autoSize = if (tipInLine) tipAutoSize(MaterialTheme.typography.bodyLarge.fontSize) else null,
                     modifier = Modifier
                         .then(if (tipInLine) Modifier.keepLineHeight(frequencyLine) else Modifier)

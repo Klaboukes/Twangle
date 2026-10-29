@@ -325,6 +325,9 @@ private fun NavLabel(text: String, color: Color) {
             style = style,
             maxLines = 1,
             textAlign = TextAlign.Center,
+            // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt
+            // says why).
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp),
         )
     }

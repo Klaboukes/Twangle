@@ -275,6 +275,9 @@ private fun SoundRow(sound: ClickSound, picked: Boolean, onPick: () -> Unit) {
             style = text,
             color = scheme.onSurface,
             maxLines = 1,
+            // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt
+            // says why).
+            softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = text.fontSize, stepSize = 0.5.sp),
         )
     }

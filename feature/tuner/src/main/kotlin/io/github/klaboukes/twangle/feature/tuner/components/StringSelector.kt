@@ -404,7 +404,9 @@ private fun StringChip(
                 color = content,
                 maxLines = 1,
                 // The name keeps its size where it fits; in a squeezed button, or in a wide face
-                // (Space Age's "Mi" at 2× text), it shrinks as far as it must to fit.
+                // (Space Age's "Mi" at 2× text), it shrinks as far as it must to fit. Never wrapped, so the
+                // auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
+                softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL, maxFontSize = textStyle.fontSize, stepSize = 0.5.sp),
                 modifier = if (keyLabel) Modifier.padding(bottom = KEY_LABEL_PADDING * fit.buttonScale) else Modifier,
             )

@@ -192,6 +192,9 @@ private fun NameButton(
                 ),
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = if (words == null) SCALE_NAME_LINES else 1,
+                // A chord's one-line name never wraps, so the auto-size sees it too wide (Ear training's AnswerButton
+                // in IntervalsPart.kt says why); a scale's name may take two lines.
+                softWrap = words == null,
                 autoSize = if (words == null) {
                     remember(title.fontSize) { OneLineFirstAutoSize(title.fontSize, title.fontSize * TWO_LINES_SCALE, NAME_MIN_SIZE, LAST_RESORT_NAME_SIZE) }
                 } else {
@@ -505,6 +508,9 @@ private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign =
         ),
         color = color,
         maxLines = lines,
+        // A one-line label never wraps, so the auto-size sees it too wide (Ear training's AnswerButton in
+        // IntervalsPart.kt says why).
+        softWrap = lines > 1,
         autoSize = if (lines > 1) {
             LabelAutoSize
         } else {

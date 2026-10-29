@@ -215,6 +215,9 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
                 style = body,
                 color = scheme.onSurfaceVariant,
                 maxLines = 1,
+                // Never wrapped, so the auto-size sees a line too wide (Ear training's AnswerButton in IntervalsPart.kt
+                // says why).
+                softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = MIN_LINE_TEXT, maxFontSize = body.fontSize, stepSize = 0.5.sp),
             )
         }

@@ -234,7 +234,9 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
                         contentAlignment = Alignment.Center,
                     ) {
                         if (tight) {
-                            Text(meterLabel(option), style = numbers, maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = numbers.fontSize, stepSize = 0.5.sp))
+                            // Never wrapped, so the auto-size sees a label too wide (Ear training's AnswerButton in
+                            // IntervalsPart.kt says why).
+                            Text(meterLabel(option), style = numbers, maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = numbers.fontSize, stepSize = 0.5.sp))
                         } else {
                             Text(meterLabel(option), style = numbers)
                         }

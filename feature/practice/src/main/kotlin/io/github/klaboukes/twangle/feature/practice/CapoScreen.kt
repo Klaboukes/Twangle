@@ -306,6 +306,9 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
+                        // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in
+                        // IntervalsPart.kt says why).
+                        softWrap = false,
                         autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp),
                         modifier = Modifier.weight(1f),
                     )
@@ -395,6 +398,9 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 1.2.em),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
+                    // Never wrapped, so the auto-size sees the word too wide (Ear training's AnswerButton in
+                    // IntervalsPart.kt says why).
+                    softWrap = false,
                     autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.bodyMedium.fontSize, stepSize = 0.5.sp),
                     modifier = Modifier.weight(1f, fill = false).alignByBaseline().semantics { hideFromAccessibility() },
                 )
@@ -418,6 +424,9 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
+                        // Never wrapped, so the auto-size sees the line too wide (Ear training's AnswerButton in
+                        // IntervalsPart.kt says why).
+                        softWrap = false,
                         autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleLarge.fontSize, stepSize = 0.5.sp),
                         modifier = Modifier.fillMaxWidth().testTag(PracticeTestTags.CAPO_NONE).semantics { hideFromAccessibility() },
                     )
@@ -466,15 +475,17 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
             val color = MaterialTheme.colorScheme.onSurfaceVariant
             // One line each, set smaller where a long word would not fit (Italian "Diteggiatura" at 2× text);
             // below MIN_LABEL_SIZE only where it would otherwise be cut off (Russian "Аппликатура" in Classic
-            // at 2× text on a 320 dp phone).
+            // at 2× text on a 320 dp phone). Never wrapped, so the auto-size sees a word too wide (Ear training's
+            // AnswerButton in IntervalsPart.kt says why).
             val autoSize = TextAutoSize.StepBased(minFontSize = LAST_RESORT_LABEL_SIZE, maxFontSize = style.fontSize, stepSize = 0.5.sp)
-            Text(stringResource(R.string.practice_capo_shape_column), style = style, color = color, maxLines = 1, autoSize = autoSize, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.practice_capo_shape_column), style = style, color = color, maxLines = 1, softWrap = false, autoSize = autoSize, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.practice_capo_sounds_column), style = style, color = color, textAlign = TextAlign.End, maxLines = 1, autoSize = autoSize, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.practice_capo_sounds_column), style = style, color = color, textAlign = TextAlign.End, maxLines = 1, softWrap = false, autoSize = autoSize, modifier = Modifier.weight(1f))
         }
         Spacer(Modifier.height(4.dp))
         val band = MaterialTheme.colorScheme.onSurface.copy(alpha = BAND_ALPHA)
-        // A long name at 2× text on a narrow phone ("Sol♯m") is set smaller rather than cut off.
+        // A long name at 2× text on a narrow phone ("Sol♯m") is set smaller rather than cut off, and never wrapped (as
+        // the header's).
         val rowAutoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = MaterialTheme.typography.titleMedium.fontSize, stepSize = 0.5.sp)
         val shape = MaterialTheme.shapes.small
         capoChordsOf(plan.shapeKey).forEachIndexed { index, chord ->
@@ -505,6 +516,7 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
+                    softWrap = false,
                     autoSize = rowAutoSize,
                     modifier = Modifier.weight(1f),
                 )
@@ -521,6 +533,7 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
                     color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.End,
                     maxLines = 1,
+                    softWrap = false,
                     autoSize = rowAutoSize,
                     modifier = Modifier.weight(1f),
                 )
