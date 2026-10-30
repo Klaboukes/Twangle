@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,9 +45,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.klaboukes.twangle.core.designsystem.OneLineAutoSize
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -243,7 +246,18 @@ private fun SettingsScaffold(
                 contentAlignment = Alignment.TopCenter,
             ) {
                 TopAppBar(
-                    title = { Text(title) },
+                    title = {
+                        // One line, set smaller where it doesn't fit the bar: Bengali's About title in Futuristic,
+                        // Orbitron's "Twangle" beside Bengali letters, made a line taller than the bar at 2× text
+                        // (the overnight run of 2026-10-30). Never wrapped (OneLineAutoSize says why).
+                        val style = LocalTextStyle.current
+                        Text(
+                            title,
+                            maxLines = 1,
+                            softWrap = false,
+                            autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) },
+                        )
+                    },
                     modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth(),
                     windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
@@ -516,6 +530,9 @@ private val ROW_INSET = 16.dp
 
 /** Wide enough for comfortable rows; on wider screens the settings stay centred at this width. */
 private val CONTENT_MAX_WIDTH = 600.dp
+
+/** The top bar's title is set no smaller than this where it doesn't fit. */
+private val TITLE_SMALLEST = 14.sp
 
 private fun notationLabel(notation: Notation): Int = when (notation) {
     Notation.SHARPS -> R.string.settings_notation_sharps

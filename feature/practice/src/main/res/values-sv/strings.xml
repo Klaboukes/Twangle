@@ -60,8 +60,8 @@
     <string name="practice_scale_type_melodic_minor">Melodisk moll</string>
     <string name="practice_scale_major">%1$s-dur</string>
     <string name="practice_scale_minor">%1$s-moll</string>
-    <string name="practice_scale_major_pentatonic">%1$s durpentatonisk</string>
-    <string name="practice_scale_minor_pentatonic">%1$s mollpentatonisk</string>
+    <string name="practice_scale_major_pentatonic">%1$s dur\u200Bpentatonisk</string>
+    <string name="practice_scale_minor_pentatonic">%1$s moll\u200Bpentatonisk</string>
     <string name="practice_scale_blues">%1$s blues</string>
     <string name="practice_scale_major_blues">%1$s durblues</string>
     <string name="practice_scale_dorian">%1$s dorisk</string>

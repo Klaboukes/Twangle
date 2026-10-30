@@ -168,7 +168,7 @@
     <string name="tour_strum">Yksi lyönti tarkistaa kaikki kielet</string>
     <string name="tour_strings">Napauta lukitaksesi, pidä kuullaksesi</string>
     <string name="tour_picker">Valitse soitin ja viritys</string>
-    <string name="tour_skip">Ohita esittely</string>
+    <string name="tour_skip">Ohita</string>
     <string name="tour_next">Seuraava</string>
     <string name="tour_done">Valmis</string>
     <string name="tuner_more_tools">Lisää työkaluja</string>
