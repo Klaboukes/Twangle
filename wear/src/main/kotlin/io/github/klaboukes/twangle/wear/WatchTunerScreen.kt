@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.Button
@@ -89,6 +91,7 @@ fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
                     viewModel.setScreenOn(on)
                     if (on) awake.touched()
                 }
+                LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.shown() }
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 // The ring runs along the edge, where the time would be, so the tuner leaves it out.
                 ScreenScaffold(timeText = {}) {

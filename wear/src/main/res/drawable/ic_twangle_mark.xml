@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Twangle's mark on its own, for the tile and the watch-face shortcut: the launcher icon's wobble
+     settling into a straight line that ends in a dot (ic_launcher_foreground.xml), cropped to the mark
+     (the launcher icon's 108-unit canvas minus 21 units each side, so the line runs through the middle).
+     White, so the tile and the watch face can tint it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="66"
+    android:viewportHeight="66">
+
+    <group
+        android:translateX="-21"
+        android:translateY="-21">
+
+        <path
+            android:pathData="M24.4,54 C25.48,45.1 26.57,39.59 27.65,40.68 C28.73,41.76 29.82,48.53 30.9,54 C31.98,59.47 33.07,62.85 34.15,62.18 C35.23,61.52 36.32,57.36 37.4,54 C38.48,50.64 39.57,48.57 40.65,48.97 C41.73,49.38 42.82,51.94 43.9,54 C44.98,56.06 46.07,57.34 47.15,57.09 C48.23,56.84 49.32,55.27 50.4,54 C51.48,52.73 52.57,51.95 53.65,52.1 C54.73,52.26 55.82,53.22 56.9,54 C57.98,54.78 59.07,55.26 60.15,55.16 C61.23,55.07 62.32,54.48 63.4,54 L82,54"
+            android:strokeWidth="5.5"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M82,54 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    </group>
+</vector>

@@ -79,6 +79,12 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.wear.compose.foundation)
     implementation(libs.androidx.wear.compose.material3)
+    // The tile and the watch-face shortcut: they only open the tuner, never the microphone.
+    implementation(libs.androidx.wear.tiles)
+    implementation(libs.androidx.wear.protolayout)
+    implementation(libs.androidx.wear.protolayout.material3)
+    implementation(libs.androidx.wear.complications.data.source.ktx)
+    implementation(libs.androidx.concurrent.futures)
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 

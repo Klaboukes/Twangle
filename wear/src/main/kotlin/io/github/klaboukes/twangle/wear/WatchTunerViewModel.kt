@@ -53,6 +53,16 @@ class WatchTunerViewModel(
         attempt.value++
     }
 
+    /**
+     * The tuner is on screen again (from the watch face, the tile or the shortcut). A failure from
+     * while it was away gets a fresh try: Android silences a recording the moment its app leaves the
+     * screen, which reads as a busy mic, and within the 5 s grace that would greet the player on
+     * their return.
+     */
+    fun shown() {
+        if (state.value is WatchTunerState.Failed) retry()
+    }
+
     companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L
     }

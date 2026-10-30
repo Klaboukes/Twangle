@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- The only permission, asked for at runtime. No INTERNET: audio never leaves the watch. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -31,5 +32,44 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- The Twangle tile beside the watch face: one Tune button that opens the tuner.
+             Only the system's tile host may bind it. It never listens. -->
+        <service
+            android:name=".WatchTileService"
+            android:description="@string/wear_shortcut_open"
+            android:exported="true"
+            android:icon="@drawable/ic_twangle_mark"
+            android:label="@string/app_name"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <!-- One preview for every screen: a screenshot of the tile, black round the circle, which
+                 reads the same on a square watch (a second copy only trades lint's warning for another). -->
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview"
+                tools:ignore="SquareAndRoundTilePreviews" />
+        </service>
+
+        <!-- The watch-face shortcut (a complication): Twangle's mark, one tap opens the tuner.
+             Only the watch face may bind it; it never changes, so it asks for no updates. It never listens. -->
+        <service
+            android:name=".WatchShortcutService"
+            android:exported="true"
+            android:icon="@drawable/ic_twangle_mark"
+            android:label="@string/app_name"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="SHORT_TEXT,MONOCHROMATIC_IMAGE,SMALL_IMAGE" />
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0" />
+        </service>
     </application>
 </manifest>

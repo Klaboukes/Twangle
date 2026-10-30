@@ -12,6 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase
 import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakeRule
 import kotlinx.coroutines.delay
@@ -79,7 +82,13 @@ internal class WatchScreenAwake(private val clock: () -> Long) {
 internal fun rememberWatchScreenAwake(states: StateFlow<WatchTunerState>): WatchScreenAwake {
     val awake = remember { WatchScreenAwake(SystemClock::elapsedRealtime) }
     LaunchedEffect(awake) { awake.run() }
-    LaunchedEffect(awake, states) { states.collect(awake::heard) }
+    // Only while the tuner is on screen, as the screen's own collector: a collector that stayed on in
+    // the background would keep the microphone open there (Hard rule 4) until Android silenced it,
+    // and the tuner would come back saying another app has the microphone.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(awake, states, lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { states.collect(awake::heard) }
+    }
     if (awake.held) {
         val view = LocalView.current
         DisposableEffect(view) {

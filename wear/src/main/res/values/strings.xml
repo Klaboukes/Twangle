@@ -21,4 +21,10 @@
     <string name="wear_mic_unavailable">The microphone can\'t be opened.</string>
     <!-- Watch: button under a microphone message that tries to start listening again. Short. -->
     <string name="wear_try_again">Try again</string>
+    <!-- Watch tile (the screen beside the watch face): the button along its bottom edge that opens the tuner. One short word. -->
+    <string name="wear_tile_tune">Tune</string>
+    <!-- Watch-face shortcut: the word under Twangle's mark in a small round slot of the watch face; a tap opens the tuner. At most 5 letters: watch faces cut longer words. -->
+    <string name="wear_shortcut_tune">Tune</string>
+    <!-- Watch: what the tile and the watch-face shortcut do, read by TalkBack and shown in the watch's tile list. -->
+    <string name="wear_shortcut_open">Open the tuner</string>
 </resources>

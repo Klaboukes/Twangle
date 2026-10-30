@@ -131,6 +131,27 @@ class WatchTunerViewModelTest {
     }
 
     @Test
+    fun `coming back on screen after a failure opens the mic again, but leaves a working mic alone`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(failure = AudioRecorderException.MicrophoneBusy())
+        val vm = viewModel(recorder)
+        backgroundScope.launch { vm.state.collect {} }
+        advanceTimeBy(100)
+        assertEquals(WatchTunerState.Failed(WatchTunerError.MICROPHONE_BUSY), vm.state.value)
+
+        recorder.failure = null
+        recorder.signal = TestSignals.sawtooth(329.63f, length = 48_000)
+        recorder.loop = true
+        vm.shown()
+        advanceTimeBy(1_000)
+        assertEquals(2, recorder.startCount)
+        assertTrue(vm.state.value is WatchTunerState.Detected)
+
+        vm.shown()
+        advanceTimeBy(1_000)
+        assertEquals("a working mic isn't restarted", 2, recorder.startCount)
+    }
+
+    @Test
     fun `failures map to what the watch says`() {
         assertEquals(WatchTunerError.PERMISSION_MISSING, WatchTunerError.of(AudioRecorderException.PermissionMissing()))
         assertEquals(WatchTunerError.MICROPHONE_BUSY, WatchTunerError.of(AudioRecorderException.MicrophoneBusy()))
