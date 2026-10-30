@@ -26,6 +26,7 @@ class ScaleSpeechTest {
         root = "%1\$s, root",
         locale = Locale.ENGLISH,
         colour = "%1\$s, colour note",
+        shortString = "short %1\$s string",
     )
 
     /** As TalkBack's speech would, so the test sees which names went through it. */
@@ -110,6 +111,35 @@ class ScaleSpeechTest {
         assertTrue(c, c.contains("C 2 string, open C, root, fret 2 D") && c.contains("G 2 string, open G, fret 2 A"))
     }
 
+    /**
+     * The banjo (Phase 59): the short fifth string is the "short G 4 string" (the owner's pick A), said first as the neck
+     * draws it, its open note and then its frets counted on the neck ("fret 7 A", the note the 1st string has there),
+     * none below its start; the long strings as on any instrument. Double C and double D too ("short F sharp 4 string").
+     */
+    @Test
+    fun `the banjo's short string is said as the short G 4 string, its frets counted on the neck`() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        val g = spoken(Scale(PitchClass.G, ScaleType.MAJOR), banjo, name = "G major")
+        assertTrue(
+            g,
+            g.startsWith(
+                "G major, notes G, A, B, C, D, E, F sharp, " +
+                    "short G 4 string, open G, root, fret 7 A, fret 9 B, fret 10 C, fret 12 D, " +
+                    "D 3 string, open D, fret 2 E, fret 4 F sharp, fret 5 G, root, ",
+            ),
+        )
+        assertEquals("one short string, four long ones", 1, Regex("short [^,]+ string, ").findAll(g).count())
+        assertEquals("every string", 5, Regex(" string, ").findAll(g).count())
+        val doubleC = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_c" }
+        val c = spoken(Scale(PitchClass.C, ScaleType.MAJOR), doubleC, name = "C major")
+        assertTrue(c, c.contains("short G 4 string, open G, fret 7 A, fret 9 B, fret 10 C, root, fret 12 D, C 3 string, open C, root"))
+        val doubleD = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_d" }
+        val d = spoken(Scale(PitchClass.D, ScaleType.MAJOR), doubleD, name = "D major")
+        assertTrue(d, d.contains("short F sharp 4 string, open F sharp, fret 6 G, fret 8 A, fret 10 B, fret 12 C sharp, D 3 string, open D, root"))
+        // On any other instrument no string is short.
+        assertTrue(!spoken(Scale(PitchClass.G, ScaleType.MAJOR)).contains("short"))
+    }
+
     @Test
     fun `fret numbers are said in the language's digits`() {
         val arabic = english.let { ScaleWords(it.separator, it.notes, it.string, it.open, it.fret, it.root, Locale.forLanguageTag("ar"), it.colour) }
@@ -128,6 +158,29 @@ class ScaleSpeechTest {
         assertEquals("never past the largest unit", MAX_UNIT, six.unitFor(NeckLie.SIDEWAYS, 5000f, 5000f))
         val eight = NeckGeometry(8)
         assertTrue("more strings, a wider neck", eight.across > six.across)
+    }
+
+    /**
+     * The banjo's neck (Phase 59, the owner's pick B): its short string (string 0) is drawn in full from the 5th fret and
+     * its open note's dot sits just before it, in the 5th fret's space, as the other strings' sit before the nut; a fretted
+     * note in its fret on every string. As big as any 5-string neck, either hand.
+     */
+    @Test
+    fun `the banjo's short string starts at the 5th fret, its open note just before it`() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        for (mirrored in listOf(false, true)) {
+            val g = NeckGeometry.of(banjo, mirrored = mirrored)
+            assertEquals(5, g.strings)
+            assertEquals("short string", 5, g.startOf(0))
+            for (string in 1 until 5) assertEquals("long string $string", 0, g.startOf(string))
+            assertEquals("the open g in the 5th fret's space", g.fretMiddle(5), g.noteMiddle(0, 0))
+            assertTrue("before its start", g.noteMiddle(0, 0) < g.fretLine(5) && g.noteMiddle(0, 0) > g.fretLine(4))
+            assertEquals("the long strings' open notes before the nut", g.fretMiddle(0), g.noteMiddle(1, 0))
+            for (fret in 6..12) assertEquals("fret $fret", g.fretMiddle(fret), g.noteMiddle(0, fret))
+            assertEquals("the size of any 5-string neck", NeckGeometry(5).along to NeckGeometry(5).across, g.along to g.across)
+        }
+        val guitar = NeckGeometry.of(Tunings.STANDARD)
+        for (string in 0 until 6) assertEquals(0, guitar.startOf(string))
     }
 
     @Test

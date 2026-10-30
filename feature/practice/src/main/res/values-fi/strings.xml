@@ -34,7 +34,6 @@
     <string name="practice_shape_next">Seuraava ote</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Tässä virityksessä ei ole mukavaa otetta</string>
-    <string name="practice_scales_short_string">Asteikot eivät vielä tunne banjon lyhyttä kieltä. Valitse ylhäältä toinen soitin.</string>
     <string name="practice_capo_short_string">Kapotaulukko ei vielä tunne banjon lyhyttä kieltä. Valitse ylhäältä toinen soitin.</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, ote %2$d, yhteensä %3$d</string>

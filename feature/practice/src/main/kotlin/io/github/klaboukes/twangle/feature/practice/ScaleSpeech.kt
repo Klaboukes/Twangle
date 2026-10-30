@@ -71,6 +71,8 @@ internal class ScaleWords(
     val root: String,
     val locale: Locale,
     val colour: String,
+    /** A short string ([Tuning.shortStrings]): "short %1$s string", as the chord charts say it. */
+    val shortString: String = string,
 )
 
 @Composable
@@ -78,13 +80,14 @@ internal fun rememberScaleWords(): ScaleWords {
     val separator = stringResource(R.string.practice_spoken_separator)
     val notes = stringResource(R.string.practice_spoken_scale_notes)
     val string = stringResource(R.string.practice_spoken_string)
+    val shortString = stringResource(R.string.practice_spoken_short_string)
     val open = stringResource(R.string.practice_spoken_scale_open)
     val fret = stringResource(R.string.practice_spoken_scale_fret)
     val root = stringResource(R.string.practice_spoken_scale_root)
     val colour = stringResource(R.string.practice_spoken_scale_colour)
     val locale = appLocale()
-    return remember(separator, notes, string, open, fret, root, colour, locale) {
-        ScaleWords(separator, notes, string, open, fret, root, locale, colour)
+    return remember(separator, notes, string, shortString, open, fret, root, colour, locale) {
+        ScaleWords(separator, notes, string, open, fret, root, locale, colour, shortString)
     }
 }
 
@@ -96,6 +99,9 @@ internal fun rememberScaleWords(): ScaleWords {
  * colour note" in D Dorian. Strings are named by their open note in [tuning] (its own spelling, as the chord
  * charts and the tuner's string buttons), notes as the scale writes them in [notation], both
  * through [sayNote] ("B♭" → "B flat"). [notes] are [scale]'s on [tuning], as the neck draws them.
+ * A short string (the banjo's fifth) is the "short G 4 string" ([spokenStringWords], the owner's pick A of
+ * Phase 59), its open note first and then its frets counted on the neck, as the neck draws them: "short G 4
+ * string, open G, root, fret 7 A, fret 9 B, …".
  */
 internal fun spokenScale(
     scale: Scale,
@@ -110,7 +116,7 @@ internal fun spokenScale(
     val parts = ArrayList<String>(notes.size + tuning.stringCount + 1)
     parts += format(words.notes, scaleWords, scale.notes.joinToString(words.separator) { sayNote(scale.nameOf(it, notation)) })
     for (string in 0 until tuning.stringCount) {
-        parts += format(words.string, spokenStringName(tuning, string, notation, sayNote))
+        parts += spokenStringWords(tuning, string, notation, words.string, words.shortString, words.locale, sayNote)
         for (note in notes) {
             if (note.string != string) continue
             val name = sayNote(scale.nameOf(note.note.pitchClass, notation))

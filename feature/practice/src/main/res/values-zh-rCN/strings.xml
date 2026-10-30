@@ -33,7 +33,6 @@
     <string name="practice_shape_next">下一个指法</string>
     <string name="practice_chart_fret">%1$d品</string>
     <string name="practice_chord_none">此定弦下没有可按的指法</string>
-    <string name="practice_scales_short_string">音阶暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
     <string name="practice_capo_short_string">变调夹表暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
     <string name="practice_spoken_separator">，</string>
     <string name="practice_spoken_shape">%1$s，指法 %2$d / %3$d</string>

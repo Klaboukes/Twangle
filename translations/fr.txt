@@ -217,7 +217,6 @@ feature/practice practice_scale_type_minor_pentatonic 201f7ebd
 feature/practice practice_scale_type_mixolydian 9586ec38
 feature/practice practice_scale_type_phrygian f7ad67e5
 feature/practice practice_scale_type_phrygian_dominant 13325dc2
-feature/practice practice_scales_short_string 629bbba2
 feature/practice practice_shape_count 71e2d6ca
 feature/practice practice_shape_next 86894d6e
 feature/practice practice_shape_previous 3a310929

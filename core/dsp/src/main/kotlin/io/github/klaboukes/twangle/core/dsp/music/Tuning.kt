@@ -26,9 +26,10 @@ import kotlin.math.abs
  *
  * [shortStrings] are the strings (by index) that start partway up the neck rather than at the nut,
  * as a 5-string banjo's fifth (its index 0), which starts at the fifth fret ([startFretOf]): the
- * tuner's row sets it a little apart, the chord shapes never fret it below its start ([midiAt]) and
- * the chord charts draw it from there; the scale neck and the capo helper, which draw every string
- * from the nut, don't offer the tuning yet ([hasShortString]). Empty on every other instrument.
+ * tuner's row sets it a little apart, the chord shapes and the scale's notes never fret it below its
+ * start ([midiAt]) and the chord charts and the scale neck draw it from there; the capo helper, whose
+ * sums take every string from the nut, doesn't offer the tuning yet ([hasShortString]). Empty on every
+ * other instrument.
  *
  * Positions are compared as fractional MIDI note numbers (see [NoteMapper.midiOf]), so they
  * follow the user's A4 calibration and lookups are allocation-free.

@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.feature.practice
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
-import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.audio.DronePlay
 import io.github.klaboukes.twangle.core.audio.FakeDronePlayer
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
@@ -62,9 +62,12 @@ import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -80,7 +83,8 @@ import org.junit.runners.Parameterized
  * neck in words, and it all fits: without scrolling upright and on its side at normal text, wholly
  * shown at 2× text, the panel too; the neck lies upright where that is clearly bigger (a phone held upright), else sideways.
  * The drone (Phase 48): its split button at the end of the name's row plays the root and follows it, stops when Scales
- * goes and starts again only on a tap, and its panel's picks are heard and passed on to be saved.
+ * goes and starts again only on a tap, and its panel's picks are heard and passed on to be saved. The banjo (Phase 59):
+ * its neck with the short string faded below its start, in both hands, TalkBack naming the short string.
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -363,45 +367,159 @@ class ScalesScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The banjo's short fifth string (Phase 57): the neck's place says Scales doesn't draw it yet, the scale's name
-     * stays; another instrument brings the neck straight back. Upright and on its side, at normal and 2x text.
+     * The banjo (Phase 59, the owner's picks in docs/design/banjo-charts-preview.html): Scales draws its neck, no quiet line
+     * in its place, and TalkBack calls the short fifth string the "short G 4 string" (pick A), its open note first and its
+     * frets counted on the neck, none below its start. G major on open G, C major on double C, D major on double D
+     * ("short F sharp 4 string"). Upright and on its side, at normal and 2x text; another instrument and back changes only
+     * the strings.
      */
     @Test
-    fun theBanjoGetsAQuietLineInTheNecksPlace() {
-        val line = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_scales_short_string)
+    fun theBanjoIsOnTheNeckAndTalkBackNamesItsShortString() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        shownTuning.value = banjo
         show(PitchClass.G, ScaleType.MAJOR)
-        compose.waitForIdle()
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
             val case = "$style $size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
-            shownTuning.value = Instruments.BANJO_5.defaultTuning
             compose.waitForIdle()
-            assertFalse("$case: no neck", exists(PracticeTestTags.NECK))
-            assertWhollyShown(node(PracticeTestTags.SHORT_STRING).assertTextEquals(line), "$case: the banjo's line", scroll = true)
-            node(PracticeTestTags.NAME_PICKER).assertExists()
-            shownTuning.value = Tunings.STANDARD
-            compose.waitForIdle()
-            neck().assertExists()
-            assertFalse("$case: the line goes", exists(PracticeTestTags.SHORT_STRING))
+            val spoken = spokenNeck()
+            assertTrue(
+                "$case: $spoken",
+                spoken.startsWith(
+                    "G major, notes G, A, B, C, D, E, F sharp, short G 4 string, open G, root, fret 7 A, fret 9 B, fret 10 C, fret 12 D, " +
+                        "D 3 string, open D, fret 2 E, ",
+                ),
+            )
+            assertEquals("$case: five strings, one of them short", 5, Regex(" string, ").findAll(spoken).count())
+            assertFalse("$case: no line in the neck's place", exists(PracticeTestTags.SHORT_STRING))
+            for (tag in listOf(PracticeTestTags.neckLie(lie()), PracticeTestTags.NAME_PICKER, PracticeTestTags.DRONE_PLAY)) {
+                assertWhollyShown(node(tag), "$case: $tag", scroll = true)
+            }
         }
+        shownFontScale.value = 1f
+        shownSize.value = XIAOMI
+        shownTuning.value = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_c" }
+        pick(PracticeTestTags.root(PitchClass.C))
+        compose.waitUntil(WAIT_MS) { spokenNeck().startsWith("C major") }
+        assertTrue(spokenNeck(), spokenNeck().contains("C major, notes C, D, E, F, G, A, B, short G 4 string, open G, fret 7 A, fret 9 B, fret 10 C, root, fret 12 D, C 3 string, open C, root"))
+        shownTuning.value = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_d" }
+        pick(PracticeTestTags.root(PitchClass.D))
+        compose.waitUntil(WAIT_MS) { spokenNeck().startsWith("D major") }
+        assertTrue(spokenNeck(), spokenNeck().contains("short F sharp 4 string, open F sharp, fret 6 G, fret 8 A, fret 10 B, fret 12 C sharp, D 3 string, open D, root"))
+        // Another instrument: its strings as they always were, no short one; the banjo again: straight back.
+        shownTuning.value = Tunings.STANDARD
+        compose.waitUntil(WAIT_MS) { spokenNeck().contains("E 2 string") }
+        assertFalse(spokenNeck(), spokenNeck().contains("short"))
+        shownTuning.value = banjo
+        compose.waitUntil(WAIT_MS) { spokenNeck().contains("short G 4 string, open G, fret 7 A, fret 9 B, fret 11 C sharp, fret 12 D, root") }
     }
 
-    /** The banjo's line in every language at 2× text, upright on a 320 dp phone and on its side. Only with `--languages`. */
+    /**
+     * Neck B drawn (the owner's pick): G major on the banjo, its short string (string 0) solid from its start at the 5th
+     * fret, faded and dashed from the nut to there with no notes on it, and its open g's dot just before its start, in the
+     * 5th fret's space; the long string beside it solid the whole way. Upright and on its side, both hands: left-handed a
+     * mirror image, in the same place and size, TalkBack hearing the same words.
+     */
+    @Test
+    fun theShortStringIsFadedBelowItsStartInBothHands() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        shownTuning.value = banjo
+        show(PitchClass.G, ScaleType.MAJOR)
+        val lies = mutableSetOf<NeckLie>()
+        for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            shownLeftHanded.value = false
+            shownSize.value = size
+            compose.waitUntil(WAIT_MS) { spokenNeck().contains("short G 4 string") }
+            compose.waitForIdle()
+            val lie = lie()
+            lies += lie
+            val drawing = node(PracticeTestTags.neckLie(lie))
+            val spoken = spokenNeck()
+            val bounds = drawing.getBoundsInRoot()
+            val normal = drawing.captureToImage()
+            val case = "$style $size $lie"
+            assertShortStringFaded(normal, NeckGeometry.of(banjo), lie, "$case right-handed")
+            shownLeftHanded.value = true
+            compose.waitForIdle()
+            assertEquals("$case: TalkBack hears the same left-handed", spoken, spokenNeck())
+            assertEquals("$case: in the same place and size", bounds, drawing.getBoundsInRoot())
+            val mirrored = drawing.captureToImage()
+            assertShortStringFaded(mirrored, NeckGeometry.of(banjo, mirrored = true), lie, "$case left-handed")
+            assertMirrored(normal, mirrored, case)
+        }
+        assertEquals("both lies checked", NeckLie.entries.toSet(), lies)
+        shownLeftHanded.value = false
+        shownSize.value = XIAOMI
+    }
+
+    /**
+     * In the neck [image] (the drawing's own size, [geometry] lying [lie]) of G major on the banjo: string 0, the short one,
+     * is drawn solid in the 6th and 8th fret's spaces (no notes there), fainter and broken by the dashes' gaps in the 1st to
+     * the 4th (no notes there either), and the open g's dot covers it in the 5th; the long string beside it is solid in the
+     * 1st and 3rd fret's spaces (none of its notes there), a check of this check.
+     */
+    private fun assertShortStringFaded(image: ImageBitmap, geometry: NeckGeometry, lie: NeckLie, case: String) {
+        val pixels = IntArray(image.width * image.height).also { image.readPixels(it) }
+        val unit = image.width / geometry.width(lie)
+        fun colour(along: Float, across: Float): Int {
+            val p = geometry.point(lie, along, across) * unit
+            val x = p.x.roundToInt().coerceIn(0, image.width - 1)
+            val y = p.y.roundToInt().coerceIn(0, image.height - 1)
+            return pixels[y * image.width + x]
+        }
+        fun difference(a: Int, b: Int) =
+            abs((a shr 16 and 0xFF) - (b shr 16 and 0xFF)) + abs((a shr 8 and 0xFF) - (b shr 8 and 0xFF)) + abs((a and 0xFF) - (b and 0xFF))
+        // How strongly something is drawn on string [string] at [along]: the largest difference across the string's width
+        // from the field, by default a little way towards the thinner strings, where nothing is drawn.
+        fun ink(string: Int, along: Float, field: Int = colour(along, geometry.stringLine(string) + FIELD_AWAY)): Int {
+            val across = geometry.stringLine(string)
+            val step = 1f / unit
+            return (-ACROSS_REACH..ACROSS_REACH).maxOf { difference(colour(along, across + it * step), field) }
+        }
+        // Along fret [fret]'s space, clear of the fret lines and the nut.
+        fun inkAlong(string: Int, fret: Int): List<Int> {
+            val from = geometry.fretLine(fret - 1) + SPACE_MARGIN
+            val to = geometry.fretLine(fret) - SPACE_MARGIN
+            return (0..SAMPLES).map { ink(string, from + (to - from) * it / SAMPLES) }
+        }
+        val solid = inkAlong(0, 6) + inkAlong(0, 8)
+        val level = solid.sorted()[solid.size / 2]
+        if (level < DRAWN_INK) fail("$case: the short string from its start not drawn ($level)")
+        if (solid.min() < level * 0.6f) fail("$case: the short string from its start not solid: $solid")
+        val long = inkAlong(1, 1) + inkAlong(1, 3)
+        if (long.min() < level * 0.6f) fail("$case: the long string beside it not solid: $long")
+        val faded = (1..4).flatMap { inkAlong(0, it) }
+        if (faded.max() > level * 0.75f) fail("$case: the short string below its start not faded, or a note there: $faded (solid $level)")
+        if (faded.count { it > level * 0.2f } < 3) fail("$case: the short string below its start not drawn: $faded (solid $level)")
+        if (faded.count { it < level * 0.15f } < 3) fail("$case: the short string below its start not dashed: $faded (solid $level)")
+        // The dot off its middle (clear of its name), against the field beside the 4th fret's space, clear of every dot.
+        val field = colour(geometry.fretMiddle(4), geometry.stringLine(0) + FIELD_AWAY)
+        val open = ink(0, geometry.noteMiddle(0, 0) - NeckGeometry.DOT_RADIUS * 0.6f, field)
+        if (open < level * 0.6f) fail("$case: no dot for the open g in the 5th fret's space ($open, solid $level)")
+    }
+
+    /**
+     * The banjo's neck in every language at 2x text, upright on a 320 dp phone and on its side: the neck, the name and the
+     * drone button wholly shown, every text too. Only with `--languages`.
+     */
     @EveryLanguage
     @Test
-    fun theBanjosLineFitsInEveryLanguageAtTwiceTheTextSize() {
+    fun theBanjosNeckFitsInEveryLanguageAtTwiceTheTextSize() {
         shownFontScale.value = 2f
         shownTuning.value = Instruments.BANJO_5.defaultTuning
-        show()
+        show(PitchClass.G, ScaleType.MAJOR)
         for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$style $language $size at 2x: the banjo's line", scroll = true)
-                compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
-                compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
+                val case = "$style $language $size at 2x, banjo:"
+                for (tag in listOf(PracticeTestTags.neckLie(lie()), PracticeTestTags.NAME_PICKER, PracticeTestTags.DRONE_PLAY, PracticeTestTags.DRONE_SOUND)) {
+                    assertWhollyShown(node(tag), "$case $tag", scroll = true)
+                }
+                compose.assertEveryTextWhollyShown(case)
+                compose.assertNoWordBroken(case)
             }
         }
     }
@@ -919,6 +1037,18 @@ class ScalesScreenTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L
+
+        /**
+         * The short string's pixel check ([assertShortStringFaded]), in the neck's units: the field this far from a string,
+         * towards the thinner ones (clear of the next string's dots); the pixels either side of the string looked at; the
+         * part of a fret's space left out at each end (the fret lines, the nut); how many steps along a space; and the
+         * least difference from the field that is a string drawn in full (of the three colours' 0..255 together).
+         */
+        private const val FIELD_AWAY = 6f
+        private const val ACROSS_REACH = 3
+        private const val SPACE_MARGIN = 3f
+        private const val SAMPLES = 28
+        private const val DRAWN_INK = 60
 
         /** The Xiaomi 12X less the status and navigation bars, a short narrow phone (360 x 720 dp with navigation buttons) less the bars, on its side less the rail, a 320 dp phone and a tall tablet. */
         private val XIAOMI = DpSize(393.dp, 760.dp)

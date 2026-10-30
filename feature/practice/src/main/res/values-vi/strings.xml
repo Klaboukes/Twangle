@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Thế bấm sau</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Không có thế bấm vừa tầm tay với kiểu lên dây này</string>
-    <string name="practice_scales_short_string">Âm giai chưa hỗ trợ dây ngắn của banjo. Hãy chọn nhạc cụ khác ở trên cùng.</string>
     <string name="practice_capo_short_string">Bảng capo chưa hỗ trợ dây ngắn của banjo. Hãy chọn nhạc cụ khác ở trên cùng.</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, thế bấm %2$d trên %3$d</string>

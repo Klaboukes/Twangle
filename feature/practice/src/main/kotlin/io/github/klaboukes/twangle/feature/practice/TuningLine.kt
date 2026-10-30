@@ -172,10 +172,10 @@ private val ROW_GAP = 8.dp
 private val INSTRUMENT_TOUCH = 48.dp
 
 /**
- * The quiet line in the neck's or the capo table's place for a tuning with a short string (the banjo's
- * fifth, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings]), which Scales and Capo don't
- * draw yet (Chords does since Phase 59): [text], in the look of the chart's "No shape within reach in
- * this tuning", centred in its room, set smaller where the room is short. TalkBack reads it as it is.
+ * The quiet line in the capo table's place for a tuning with a short string (the banjo's fifth,
+ * [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings]), which Capo doesn't know yet (Chords
+ * and Scales draw it since Phase 59): [text], in the look of the chart's "No shape within reach in this
+ * tuning", centred in its room, set smaller where the room is short. TalkBack reads it as it is.
  */
 @Composable
 internal fun ShortStringLine(text: String, modifier: Modifier = Modifier) {

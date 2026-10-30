@@ -33,7 +33,6 @@
     <string name="practice_shape_next">次の押さえ方</string>
     <string name="practice_chart_fret">%1$dF</string>
     <string name="practice_chord_none">このチューニングでは手の届く押さえ方がありません</string>
-    <string name="practice_scales_short_string">スケールはまだバンジョーの短い弦に対応していません。上で別の楽器を選んでください。</string>
     <string name="practice_capo_short_string">カポ表はまだバンジョーの短い弦に対応していません。上で別の楽器を選んでください。</string>
     <string name="practice_spoken_separator">、</string>
     <string name="practice_spoken_shape">%1$s、押さえ方 %2$d / %3$d</string>

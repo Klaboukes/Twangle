@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Bentuk berikutnya</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Tidak ada bentuk yang terjangkau di stem ini</string>
-    <string name="practice_scales_short_string">Tangga nada belum mengenal senar pendek banjo. Pilih instrumen lain di atas.</string>
     <string name="practice_capo_short_string">Tabel kapo belum mengenal senar pendek banjo. Pilih instrumen lain di atas.</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, bentuk %2$d dari %3$d</string>

@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
@@ -28,6 +30,7 @@ import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.scale.FretNote
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleFinder
@@ -42,9 +45,9 @@ internal enum class NeckLie {
 }
 
 /**
- * A scale on the whole neck (the owner's pick I in docs/design/practice-preview.html): [strings]
- * strings, frets 0 to [ScaleFinder.HIGHEST_FRET], every note of the scale ([notes], from
- * [ScaleFinder.notesOf]) a dot with its name in the player's [notation] as the scale writes it
+ * A scale on the whole neck (the owner's pick I in docs/design/practice-preview.html): the strings of
+ * [tuning], frets 0 to [ScaleFinder.HIGHEST_FRET], every note of the scale ([notes], from
+ * [ScaleFinder.notesOf] on [tuning]) a dot with its name in the player's [notation] as the scale writes it
  * ([Scale.nameOf]); the root's dots filled in the accent, the colour note's ([Scale.colourNote],
  * the owner's pick F of Phase 47) ringed in the accent with its name in it, the others outlined; the open strings' notes
  * before the nut, the fret numbers 3 5 7 9 12 beside the thickest string. In the style's own colours
@@ -59,13 +62,18 @@ internal enum class NeckLie {
  * thickest string and the fret numbers beside it are on the right; the lettering itself isn't mirrored. It
  * draws only; the Chords tool gives it its words for TalkBack, the same either way.
  *
+ * A short string ([Tuning.startFretOf], the 5-string banjo's fifth, which starts at the 5th fret; Phase 59, the owner's
+ * pick B of the neck in docs/design/banjo-charts-preview.html) is drawn the whole length, but faded and dashed from the
+ * nut to where it starts, with no notes there; its open note's dot sits just before its start, in the 5th fret's space,
+ * as the other strings' open notes sit before the nut. Mirrored left-handed with the rest.
+ *
  * With [halo] (while the drone sounds, Phase 48) each root's dot has a soft accent ring around it, as opaque as
  * [halo] says, read while drawing only, so its slow breathing redraws without composing or measuring again.
  */
 @Composable
 internal fun ScaleNeck(
     scale: Scale,
-    strings: Int,
+    tuning: Tuning,
     notes: List<FretNote>,
     notation: Notation,
     modifier: Modifier = Modifier,
@@ -73,7 +81,7 @@ internal fun ScaleNeck(
     leftHanded: Boolean = false,
 ) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val geometry = NeckGeometry(strings, mirrored = leftHanded)
+        val geometry = remember(tuning, leftHanded) { NeckGeometry.of(tuning, mirrored = leftHanded) }
         val lie = geometry.lieFor(maxWidth.value, maxHeight.value)
         val unit = geometry.unitFor(lie, maxWidth.value, maxHeight.value)
         Box(
@@ -91,9 +99,19 @@ internal fun ScaleNeck(
  * the phone): 30 before the nut for the open strings' notes, 20.5 a fret, 19 between strings, room
  * beside the thickest string for the fret numbers. Measured along the neck (from the open notes'
  * end to the 12th fret) and across it (from the thinnest string's side to the fret numbers' side).
- * [mirrored] (left-handed) flips every [point] left to right.
+ * [mirrored] (left-handed) flips every [point] left to right. [starts] holds the neck fret each string
+ * starts at ([Tuning.startFretOf]: 0 at the nut, 5 for the banjo's short fifth); [of] takes it from a tuning.
  */
-internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHEST_FRET, val mirrored: Boolean = false) {
+internal class NeckGeometry(
+    val strings: Int,
+    val frets: Int = ScaleFinder.HIGHEST_FRET,
+    val mirrored: Boolean = false,
+    private val starts: IntArray = IntArray(strings),
+) {
+    init {
+        require(starts.size == strings) { "A start fret per string" }
+    }
+
     val along: Float = OPEN + frets * FRET + END
     val across: Float = EDGE + (strings - 1) * STRING_GAP + LABELS
 
@@ -118,6 +136,16 @@ internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHE
     /** Along the neck: fret line [fret] (0 = the nut). */
     fun fretLine(fret: Int): Float = OPEN + fret * FRET
 
+    /** The neck fret string [string] starts at (0 = the nut; the banjo's short fifth, 5): where it is drawn in full from. */
+    fun startOf(string: Int): Int = starts[string]
+
+    /**
+     * Along the neck: the middle of the dot for string [string]'s note at [fret] ([io.github.klaboukes.twangle.core.dsp.scale.FretNote.fret],
+     * 0 open): an open note before where the string starts, before the nut or, on a short string, in the space just
+     * before its start (the banjo's open g in the 5th fret's); a fretted one in its fret.
+     */
+    fun noteMiddle(string: Int, fret: Int): Float = fretMiddle(if (fret == 0) starts[string] else fret)
+
     /** Across the neck, from the fret numbers' side: string [string] (0 = the thickest). */
     fun stringLine(string: Int): Float = LABELS + string * STRING_GAP
 
@@ -131,6 +159,10 @@ internal class NeckGeometry(val strings: Int, val frets: Int = ScaleFinder.HIGHE
     }
 
     companion object {
+        /** The geometry for [tuning]'s neck: its strings and where each starts ([Tuning.startFretOf]). */
+        fun of(tuning: Tuning, frets: Int = ScaleFinder.HIGHEST_FRET, mirrored: Boolean = false): NeckGeometry =
+            NeckGeometry(tuning.stringCount, frets, mirrored, IntArray(tuning.stringCount) { tuning.startFretOf(it) })
+
         const val OPEN = 30f
         const val OPEN_MIDDLE = 16f
         const val FRET = 20.5f
@@ -230,6 +262,7 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
         val thinnest = g.stringLine(g.strings - 1)
         val thickest = g.stringLine(0)
         val line = LINE_WIDTH * u
+        val dashes = PathEffect.dashPathEffect(floatArrayOf(DASH * u, DASH * u))
         onDrawBehind {
             val centre = Offset(size.width / 2f, size.height / 2f)
             scale(1f, size.height / size.width, centre) { drawCircle(field, size.width * 0.62f, centre) }
@@ -237,8 +270,12 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
             for (fret in 1..g.frets) {
                 drawLine(muted.copy(alpha = FRET_ALPHA), at(g.fretLine(fret), thickest), at(g.fretLine(fret), thinnest), line)
             }
+            // The strings; a short one (the banjo's fifth) faded and dashed from the nut to where it starts, no notes there.
             for (string in 0 until g.strings) {
-                drawLine(muted, at(g.fretLine(0), g.stringLine(string)), at(g.fretLine(g.frets), g.stringLine(string)), line)
+                val across = g.stringLine(string)
+                val start = g.startOf(string)
+                if (start > 0) drawLine(muted.copy(alpha = FADED_ALPHA), at(g.fretLine(0), across), at(g.fretLine(start), across), line, pathEffect = dashes)
+                drawLine(muted, at(g.fretLine(start), across), at(g.fretLine(g.frets), across), line)
             }
             drawLine(ink, at(g.fretLine(0), thickest - NUT_OVERHANG), at(g.fretLine(0), thinnest + NUT_OVERHANG), NUT_WIDTH * u, StrokeCap.Round)
             numberLayouts.forEach { (fret, layout) -> centred(layout, at(g.fretMiddle(fret), NeckGeometry.LABEL_MIDDLE)) }
@@ -246,7 +283,7 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
             val ring = halo?.invoke() ?: 0f
             for (note in notes) {
                 val pc = note.note.pitchClass
-                val middle = at(g.fretMiddle(note.fret), g.stringLine(note.string))
+                val middle = at(g.noteMiddle(note.string, note.fret), g.stringLine(note.string))
                 if (note.isRoot) {
                     if (ring > 0f) drawCircle(accent.copy(alpha = ring), radius + HALO_GAP * u, middle, style = Stroke(HALO_STROKE * u))
                     drawCircle(accent, radius, middle)
@@ -275,6 +312,10 @@ private const val HOLLOW_STROKE = 1.2f
 private const val COLOUR_STROKE = 2.2f
 private const val COLOUR_RING_ALPHA = 0.9f
 private const val FRET_ALPHA = 0.6f
+
+/** A short string below its start: dashes and gaps this long, in units, the muted colour this opaque (the mock-up's B). */
+private const val DASH = 3f
+private const val FADED_ALPHA = 0.45f
 
 /** The breathing ring round a root while the drone sounds: this far out from the dot, this wide, in units (clear of the next fret's dot). */
 private const val HALO_GAP = 2.4f

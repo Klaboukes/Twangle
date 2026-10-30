@@ -267,22 +267,68 @@ class ScaleTest {
         assertEquals(36, notes.size) // 5 notes an octave, the 12th fret again as the open string: 6 a string.
     }
 
+    /**
+     * Every preset of every instrument, the banjo's open G, double C and double D included, and a tuning of one's own: a
+     * string from the nut has every scale note from its open note to the 12th fret; a short string (the banjo's fifth,
+     * which starts at the 5th fret) its open note and then only frets above its start, counted on the neck, none at the
+     * 1st to the 5th.
+     */
     @Test
     fun `every note on the neck of any tuning is in the scale, and every scale note is there`() {
         val tunings = Instruments.all.flatMap { it.tunings } + tuningOf("my_own", "C2 G2 D3 G3 B3 D4")
+        assertTrue("the banjo's tunings are checked too", tunings.count { it.hasShortString } == 3)
         for (tuning in tunings) for (type in ScaleType.entries) for (root in PitchClass.entries) {
             val scale = Scale(root, type)
             val notes = ScaleFinder.notesOf(scale, tuning)
             for (string in 0 until tuning.stringCount) {
-                val expected = (0..ScaleFinder.HIGHEST_FRET).filter { PitchClass.entries[(tuning.strings[string].midi + it).mod(12)] in scale }
+                val start = tuning.startFretOf(string)
+                val open = tuning.strings[string].midi
+                // On the neck, a fret above the start sounds that many frets past the open note (banjo tab's count).
+                val expected = (0..ScaleFinder.HIGHEST_FRET)
+                    .filter { it == 0 || it > start }
+                    .filter { PitchClass.entries[(open + if (it == 0) 0 else it - start).mod(12)] in scale }
                 assertEquals("${tuning.id} $root $type string $string", expected, notes.filter { it.string == string }.map { it.fret })
             }
             for (n in notes) {
-                assertEquals(tuning.strings[n.string].midi + n.fret, n.note.midi)
+                assertEquals(tuning.midiAt(n.string, n.fret), n.note.midi)
                 assertEquals(scale.degreeOf(n.note.pitchClass), n.degree)
                 assertEquals(n.note.pitchClass == root, n.isRoot)
             }
         }
+    }
+
+    /**
+     * G major on the banjo's open G (g D G B D): the short g string has its open g (the root, at its own nut by the
+     * 5th fret), then a, b, c and d at the neck's 7th, 9th, 10th and 12th frets, the notes the 1st string (D4) has
+     * there; nothing at the 1st to the 5th. The long strings as on any instrument.
+     */
+    @Test
+    fun `G major on the banjo, the short string from its start`() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        val notes = ScaleFinder.notesOf(Scale(G, MAJOR), banjo)
+        val short = notes.filter { it.string == 0 }
+        assertEquals(listOf(0, 7, 9, 10, 12), short.map { it.fret })
+        assertEquals(listOf("G4", "A4", "B4", "C5", "D5"), short.map { it.note.toString() })
+        assertEquals("the open g is the root", listOf(true, false, false, false, false), short.map { it.isRoot })
+        val first = notes.filter { it.string == 4 && it.fret >= 5 }.associate { it.fret to it.note }
+        for (n in short.drop(1)) assertEquals("fret ${n.fret}: the note the 1st string has there", first[n.fret], n.note)
+        assertEquals(listOf(0, 2, 4, 5, 7, 9, 10, 12), notes.filter { it.string == 1 }.map { it.fret }) // D E F♯ G A B C D on D3.
+        // Fewer frets than the start: the open note alone.
+        assertEquals(listOf(0), ScaleFinder.notesOf(Scale(G, MAJOR), banjo, highestFret = 4).filter { it.string == 0 }.map { it.fret })
+    }
+
+    /** Double C (g C G C D) and double D (f♯ D F♯ A D): the short string's open note, then from the 6th fret up. */
+    @Test
+    fun `the banjo's double C and double D, the short string from its start`() {
+        val doubleC = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_c" }
+        val c = ScaleFinder.notesOf(Scale(C, MAJOR), doubleC).filter { it.string == 0 }
+        assertEquals(listOf(0, 7, 9, 10, 12), c.map { it.fret })
+        assertEquals(listOf("G4", "A4", "B4", "C5", "D5"), c.map { it.note.toString() })
+        val doubleD = Instruments.BANJO_5.tunings.single { it.id == "banjo_double_d" }
+        val d = ScaleFinder.notesOf(Scale(D, MAJOR), doubleD).filter { it.string == 0 }
+        assertEquals(listOf(0, 6, 8, 10, 12), d.map { it.fret })
+        assertEquals(listOf("F#4", "G4", "A4", "B4", "C#5"), d.map { it.note.toString() })
+        assertTrue("no note below the start", (c + d).none { it.fret in 1..5 })
     }
 
     @Test

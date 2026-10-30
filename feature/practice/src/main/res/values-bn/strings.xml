@@ -32,7 +32,6 @@
     <string name="practice_shape_next">পরের শেপ</string>
     <string name="practice_chart_fret">%1$d</string>
     <string name="practice_chord_none">এই টিউনিংয়ে হাতের নাগালে কোনো শেপ নেই</string>
-    <string name="practice_scales_short_string">স্কেল এখনো ব্যাঞ্জোর ছোট তারটি চেনে না। উপর থেকে অন্য একটি বাদ্যযন্ত্র বেছে নিন।</string>
     <string name="practice_capo_short_string">ক্যাপোর তালিকা এখনো ব্যাঞ্জোর ছোট তারটি চেনে না। উপর থেকে অন্য একটি বাদ্যযন্ত্র বেছে নিন।</string>
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, শেপ %2$d, মোট %3$d</string>

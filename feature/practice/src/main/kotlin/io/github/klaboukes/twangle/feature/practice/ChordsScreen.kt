@@ -117,10 +117,9 @@ import kotlinx.coroutines.withContext
  * the whole neck: it is long).
  *
  * A [tuning] with a short string ([Tuning.shortStrings], the 5-string banjo's fifth, which starts at
- * the fifth fret) is charted with that string from its own small nut (Phase 59, [ChordChart]), and
- * TalkBack calls it the "short G 4 string" ([spokenChart]). Scales doesn't draw it yet: the neck's place
- * shows a quiet line saying so ([ShortStringLine]), in the look of "No shape within reach", and nothing
- * else moves, so picking another instrument with the button at the top brings the neck straight back.
+ * the fifth fret) is charted with that string from its own small nut (Phase 59, [ChordChart]) and drawn
+ * on the neck the whole length, faded below its start with no notes there ([ScaleNeck]); TalkBack calls
+ * it the "short G 4 string" ([spokenChart], [spokenScale]).
  *
  * With [leftHanded] (Phase 57, a setting) the chart and the neck are drawn mirrored ([ChordChart], [ScaleNeck]) for a
  * guitar held the other way round; nothing else moves and TalkBack hears the same words.
@@ -159,13 +158,11 @@ fun ChordsScreen(
     var scaleType by rememberSaveable { mutableStateOf(savedScaleType) }
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
-    // The banjo's short fifth string: Scales doesn't draw it yet (Chords does, Phase 59).
-    val uncharted = scales && tuning.hasShortString
     // The chart at its smallest, 1 dp a unit: the banjo's is taller (a fret row more), so its smallest room is too.
     val chartSmallest = remember(tuning) { ChartGeometry.of(tuning).height }.dp
-    val found = rememberShapes(chord, tuning, enabled = !uncharted)
+    val found = rememberShapes(chord, tuning)
     var index by rememberSaveable(chord, tuning) { mutableIntStateOf(0) }
-    val count = if (uncharted) 0 else found?.shapes?.size ?: 0
+    val count = found?.shapes?.size ?: 0
     val shown = index.coerceIn(0, (count - 1).coerceAtLeast(0))
     val step: (Int) -> Unit = { by -> index = (shown + by).coerceIn(0, (count - 1).coerceAtLeast(0)) }
 
@@ -272,10 +269,10 @@ fun ChordsScreen(
         )
     }
     val fill = @Composable {
-        when {
-            uncharted -> ShortStringLine(stringResource(R.string.practice_scales_short_string), Modifier.fillMaxSize())
-            scales -> NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying, leftHanded = leftHanded)
-            else -> ChartArea(found, shown, notation, step, Modifier.fillMaxSize(), leftHanded = leftHanded)
+        if (scales) {
+            NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying, leftHanded = leftHanded)
+        } else {
+            ChartArea(found, shown, notation, step, Modifier.fillMaxSize(), leftHanded = leftHanded)
         }
     }
     val bottom: (gap: Float) -> @Composable ColumnScope.() -> Unit = { gap ->
@@ -384,7 +381,7 @@ private fun NeckArea(scale: Scale, tuning: Tuning, notation: Notation, modifier:
             .semantics { contentDescription = spoken },
         contentAlignment = Alignment.Center,
     ) {
-        ScaleNeck(scale, tuning.stringCount, notes, notation, Modifier.fillMaxSize(), halo = if (breathing) rememberBreath() else null, leftHanded = leftHanded)
+        ScaleNeck(scale, tuning, notes, notation, Modifier.fillMaxSize(), halo = if (breathing) rememberBreath() else null, leftHanded = leftHanded)
     }
 }
 
@@ -414,13 +411,13 @@ private class FoundShapes(val chord: Chord, val tuning: Tuning, val shapes: List
 
 /**
  * The shapes of [chord] on [tuning], or the last ones found while the new ones are worked out (null at
- * first); none are worked out while not [enabled] (a tuning the charts don't draw).
+ * first).
  */
 @Composable
-private fun rememberShapes(chord: Chord, tuning: Tuning, enabled: Boolean = true): FoundShapes? {
+private fun rememberShapes(chord: Chord, tuning: Tuning): FoundShapes? {
     var found by remember { mutableStateOf<FoundShapes?>(null) }
-    LaunchedEffect(chord, tuning, enabled) {
-        if (!enabled || (found?.chord == chord && found?.tuning == tuning)) return@LaunchedEffect
+    LaunchedEffect(chord, tuning) {
+        if (found?.chord == chord && found?.tuning == tuning) return@LaunchedEffect
         val shapes = withContext(Dispatchers.Default) { ChordShapeFinder.shapesOf(chord, tuning) }
         found = FoundShapes(chord, tuning, shapes)
     }
