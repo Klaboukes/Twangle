@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">المقياس</string>
     <string name="settings_meter_look_classic">كلاسيكي</string>
     <string name="settings_meter_look_light_arc">قوس ضوئي</string>
+    <string name="settings_meter_look_pointers">مؤشران</string>
+    <string name="settings_meter_look_loupe">عدسة مكبّرة</string>
     <string name="settings_meter_look_arrows">أسهم</string>
     <string name="settings_meter_look_light_bars">أشرطة ضوئية</string>
     <string name="settings_in_tune_effect_title">تأثير الضبط</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">مجاني إلى الأبد</string>
     <string name="settings_about_free_summary">بلا إعلانات ولا حساب ولا مشتريات داخل التطبيق ولا تتبّع. لا الآن ولا لاحقًا.</string>
     <string name="settings_about_privacy_title">الخصوصية</string>
-    <string name="settings_about_privacy_summary">لا يجمع Twangle أي بيانات عنك. لا يعمل الميكروفون إلا وشاشة الموالف مفتوحة. يُحلَّل الصوت مباشرةً ولا يُسجَّل أو يُحفَظ أو يُرسَل أبدًا. ليس لدى Twangle إذن الوصول إلى الإنترنت، فلا يمكنه إرسال أي شيء إلى أي مكان. تبقى إعداداتك على هذا الجهاز (وفي نسخة Android الاحتياطية، إن كنت قد فعّلتها).</string>
+    <string name="settings_about_privacy_summary">لا يجمع Twangle أي بيانات عنك. لا يعمل الميكروفون إلا وشاشة تستمع مفتوحة: الموالف، أو «استمع» في المترونوم، أو «أعد عزفها» في تدريب الأذن. يُحلَّل الصوت مباشرةً ولا يُسجَّل أو يُحفَظ أو يُرسَل أبدًا. ليس لدى Twangle إذن الوصول إلى الإنترنت، فلا يمكنه إرسال أي شيء إلى أي مكان. تبقى إعداداتك على هذا الجهاز (وفي نسخة Android الاحتياطية، إن كنت قد فعّلتها).</string>
     <string name="settings_about_rate_title">قيّم Twangle</string>
     <string name="settings_about_rate_summary">Twangle على Google Play</string>
     <string name="settings_about_website_title">المساعدة والموقع الإلكتروني</string>

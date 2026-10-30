@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">मीटर</string>
     <string name="settings_meter_look_classic">क्लासिक</string>
     <string name="settings_meter_look_light_arc">लाइट आर्क</string>
+    <string name="settings_meter_look_pointers">पॉइंटर</string>
+    <string name="settings_meter_look_loupe">आवर्धक लेंस</string>
     <string name="settings_meter_look_arrows">तीर</string>
     <string name="settings_meter_look_light_bars">लाइट बार</string>
     <string name="settings_in_tune_effect_title">सुर में आने का इफ़ेक्ट</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">हमेशा के लिए मुफ़्त</string>
     <string name="settings_about_free_summary">न विज्ञापन, न अकाउंट, न इन-ऐप खरीदारी और न ट्रैकिंग। न अभी, न बाद में।</string>
     <string name="settings_about_privacy_title">निजता</string>
-    <string name="settings_about_privacy_summary">Twangle आपके बारे में कोई डेटा इकट्ठा नहीं करता। माइक्रोफ़ोन सिर्फ़ तभी चालू रहता है जब ट्यूनर स्क्रीन खुली हो। आवाज़ का विश्लेषण उसी समय होता है, उसे कभी रिकॉर्ड, सेव या कहीं भेजा नहीं जाता। Twangle के पास इंटरनेट की अनुमति नहीं है, इसलिए वह कहीं कुछ नहीं भेज सकता। आपकी सेटिंग्स इसी डिवाइस पर रहती हैं (और अगर आपने Android का अपना बैकअप चालू किया है, तो उसमें भी)।</string>
+    <string name="settings_about_privacy_summary">Twangle आपके बारे में कोई डेटा इकट्ठा नहीं करता। माइक्रोफ़ोन सिर्फ़ तभी चालू रहता है जब सुनने वाली कोई स्क्रीन खुली हो: ट्यूनर, मेट्रोनोम का “सुनें” या कान की ट्रेनिंग का “सुनकर बजाएँ”। आवाज़ का विश्लेषण उसी समय होता है, उसे कभी रिकॉर्ड, सेव या कहीं भेजा नहीं जाता। Twangle के पास इंटरनेट की अनुमति नहीं है, इसलिए वह कहीं कुछ नहीं भेज सकता। आपकी सेटिंग्स इसी डिवाइस पर रहती हैं (और अगर आपने Android का अपना बैकअप चालू किया है, तो उसमें भी)।</string>
     <string name="settings_about_rate_title">Twangle को रेटिंग दें</string>
     <string name="settings_about_rate_summary">Google Play पर Twangle</string>
     <string name="settings_about_website_title">सहायता और वेबसाइट</string>

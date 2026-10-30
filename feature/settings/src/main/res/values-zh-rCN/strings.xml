@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">表盘</string>
     <string name="settings_meter_look_classic">经典</string>
     <string name="settings_meter_look_light_arc">光弧</string>
+    <string name="settings_meter_look_pointers">双指针</string>
+    <string name="settings_meter_look_loupe">放大镜</string>
     <string name="settings_meter_look_arrows">箭头</string>
     <string name="settings_meter_look_light_bars">光柱</string>
     <string name="settings_in_tune_effect_title">调准效果</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">永久免费</string>
     <string name="settings_about_free_summary">无广告、无需账号、无应用内购买、无跟踪。现在没有，以后也不会有。</string>
     <string name="settings_about_privacy_title">隐私</string>
-    <string name="settings_about_privacy_summary">Twangle 不收集任何关于你的数据。麦克风只在调音器界面打开时开启。声音只做实时分析，从不录制、保存或发送。Twangle 没有联网权限，因此无法向任何地方发送任何内容。你的设置保存在这台设备上（如果你开启了 Android 自带的备份，也会包含在备份中）。</string>
+    <string name="settings_about_privacy_summary">Twangle 不收集任何关于你的数据。麦克风只在会聆听的界面打开时开启：调音器、节拍器的“聆听”或练耳的“听音弹奏”。声音只做实时分析，从不录制、保存或发送。Twangle 没有联网权限，因此无法向任何地方发送任何内容。你的设置保存在这台设备上（如果你开启了 Android 自带的备份，也会包含在备份中）。</string>
     <string name="settings_about_rate_title">为 Twangle 评分</string>
     <string name="settings_about_rate_summary">Google Play 上的 Twangle</string>
     <string name="settings_about_website_title">帮助与网站</string>

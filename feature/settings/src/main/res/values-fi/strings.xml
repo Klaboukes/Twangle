@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Mittari</string>
     <string name="settings_meter_look_classic">Klassinen</string>
     <string name="settings_meter_look_light_arc">Valokaari</string>
+    <string name="settings_meter_look_pointers">Osoittimet</string>
+    <string name="settings_meter_look_loupe">Luuppi</string>
     <string name="settings_meter_look_arrows">Nuolet</string>
     <string name="settings_meter_look_light_bars">Valopalkit</string>
     <string name="settings_in_tune_effect_title">Vire-efekti</string>

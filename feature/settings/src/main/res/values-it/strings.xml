@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Indicatore</string>
     <string name="settings_meter_look_classic">Classico</string>
     <string name="settings_meter_look_light_arc">Arco di luce</string>
+    <string name="settings_meter_look_pointers">Indici</string>
+    <string name="settings_meter_look_loupe">Lente</string>
     <string name="settings_meter_look_arrows">Frecce</string>
     <string name="settings_meter_look_light_bars">Barre di luce</string>
     <string name="settings_in_tune_effect_title">Effetto d\'intonazione</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">Gratis per sempre</string>
     <string name="settings_about_free_summary">Niente pubblicità, niente account, niente acquisti in-app e nessun tracciamento. Né ora né mai.</string>
     <string name="settings_about_privacy_title">Privacy</string>
-    <string name="settings_about_privacy_summary">Twangle non raccoglie alcun dato su di te. Il microfono è attivo solo mentre la schermata dell\'accordatore è aperta. Il suono viene analizzato dal vivo e mai registrato, salvato o inviato. Twangle non ha il permesso di accedere a Internet, quindi non può inviare nulla da nessuna parte. Le tue impostazioni restano su questo dispositivo (e nel backup di Android, se l\'hai attivato).</string>
+    <string name="settings_about_privacy_summary">Twangle non raccoglie alcun dato su di te. Il microfono è attivo solo mentre è aperta una schermata che ascolta: l\'accordatore, «Ascolta» del metronomo o «Risuonala» in Orecchio musicale. Il suono viene analizzato dal vivo e mai registrato, salvato o inviato. Twangle non ha il permesso di accedere a Internet, quindi non può inviare nulla da nessuna parte. Le tue impostazioni restano su questo dispositivo (e nel backup di Android, se l\'hai attivato).</string>
     <string name="settings_about_rate_title">Valuta Twangle</string>
     <string name="settings_about_rate_summary">Twangle su Google Play</string>
     <string name="settings_about_website_title">Aiuto e sito web</string>

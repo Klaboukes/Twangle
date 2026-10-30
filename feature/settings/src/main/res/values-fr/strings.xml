@@ -38,6 +38,8 @@
     <string name="settings_meter_look_title">Cadran</string>
     <string name="settings_meter_look_classic">Classique</string>
     <string name="settings_meter_look_light_arc">Arc lumineux</string>
+    <string name="settings_meter_look_pointers">Pointeurs</string>
+    <string name="settings_meter_look_loupe">Loupe</string>
     <string name="settings_meter_look_arrows">Flèches</string>
     <string name="settings_meter_look_light_bars">Barres lumineuses</string>
     <string name="settings_in_tune_effect_title">Effet de justesse</string>
@@ -80,7 +82,7 @@
     <string name="settings_about_free_title">Gratuit pour toujours</string>
     <string name="settings_about_free_summary">Pas de pub, pas de compte, pas d\'achats intégrés, pas de pistage. Ni maintenant, ni plus tard.</string>
     <string name="settings_about_privacy_title">Confidentialité</string>
-    <string name="settings_about_privacy_summary">Twangle ne collecte aucune donnée sur vous. Le micro n\'est actif que lorsque l\'écran de l\'accordeur est ouvert. Le son est analysé en direct, jamais enregistré, sauvegardé ni envoyé. Twangle n\'a pas l\'autorisation d\'accéder à Internet, il ne peut donc rien envoyer nulle part. Vos réglages restent sur cet appareil (et dans la sauvegarde d\'Android, si vous l\'avez activée).</string>
+    <string name="settings_about_privacy_summary">Twangle ne collecte aucune donnée sur vous. Le micro n\'est actif que lorsqu\'un écran qui écoute est ouvert : l\'accordeur, « Écouter » du métronome ou « Rejouer » dans l\'Oreille musicale. Le son est analysé en direct, jamais enregistré, sauvegardé ni envoyé. Twangle n\'a pas l\'autorisation d\'accéder à Internet, il ne peut donc rien envoyer nulle part. Vos réglages restent sur cet appareil (et dans la sauvegarde d\'Android, si vous l\'avez activée).</string>
     <string name="settings_about_rate_title">Noter Twangle</string>
     <string name="settings_about_rate_summary">Twangle sur Google Play</string>
     <string name="settings_about_website_title">Aide et site web</string>

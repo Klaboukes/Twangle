@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">미터</string>
     <string name="settings_meter_look_classic">클래식</string>
     <string name="settings_meter_look_light_arc">빛의 호</string>
+    <string name="settings_meter_look_pointers">포인터</string>
+    <string name="settings_meter_look_loupe">돋보기</string>
     <string name="settings_meter_look_arrows">화살표</string>
     <string name="settings_meter_look_light_bars">빛 막대</string>
     <string name="settings_in_tune_effect_title">음이 맞을 때 효과</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">영원히 무료</string>
     <string name="settings_about_free_summary">광고, 계정, 인앱 구매, 추적이 없어요. 지금도, 앞으로도.</string>
     <string name="settings_about_privacy_title">개인정보 보호</string>
-    <string name="settings_about_privacy_summary">Twangle은 사용자에 관한 데이터를 전혀 수집하지 않아요. 마이크는 튜너 화면이 열려 있을 때만 켜져요. 소리는 실시간으로 분석될 뿐, 녹음되거나 저장되거나 전송되지 않아요. Twangle에는 인터넷 권한이 없어서 어디로도 아무것도 보낼 수 없어요. 설정은 이 기기에 저장돼요(Android 자체 백업을 켜 두었다면 백업에도 포함돼요).</string>
+    <string name="settings_about_privacy_summary">Twangle은 사용자에 관한 데이터를 전혀 수집하지 않아요. 마이크는 소리를 듣는 화면(튜너, 메트로놈의 ‘듣기’, 청음 훈련의 ‘따라 치기’)이 열려 있을 때만 켜져요. 소리는 실시간으로 분석될 뿐, 녹음되거나 저장되거나 전송되지 않아요. Twangle에는 인터넷 권한이 없어서 어디로도 아무것도 보낼 수 없어요. 설정은 이 기기에 저장돼요(Android 자체 백업을 켜 두었다면 백업에도 포함돼요).</string>
     <string name="settings_about_rate_title">Twangle 평가하기</string>
     <string name="settings_about_rate_summary">Google Play의 Twangle</string>
     <string name="settings_about_website_title">도움말 및 웹사이트</string>

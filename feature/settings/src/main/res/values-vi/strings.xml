@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Đồng hồ đo</string>
     <string name="settings_meter_look_classic">Cổ điển</string>
     <string name="settings_meter_look_light_arc">Cung đèn</string>
+    <string name="settings_meter_look_pointers">Con trỏ</string>
+    <string name="settings_meter_look_loupe">Kính lúp</string>
     <string name="settings_meter_look_arrows">Mũi tên</string>
     <string name="settings_meter_look_light_bars">Thanh đèn</string>
     <string name="settings_in_tune_effect_title">Hiệu ứng khi chuẩn</string>

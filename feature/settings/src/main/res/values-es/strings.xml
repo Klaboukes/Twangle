@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Indicador</string>
     <string name="settings_meter_look_classic">Clásico</string>
     <string name="settings_meter_look_light_arc">Arco de luz</string>
+    <string name="settings_meter_look_pointers">Punteros</string>
+    <string name="settings_meter_look_loupe">Lupa</string>
     <string name="settings_meter_look_arrows">Flechas</string>
     <string name="settings_meter_look_light_bars">Barras de luz</string>
     <string name="settings_in_tune_effect_title">Efecto al afinar</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">Gratis para siempre</string>
     <string name="settings_about_free_summary">Sin anuncios, sin cuenta, sin compras en la app y sin rastreo. Ni ahora ni más adelante.</string>
     <string name="settings_about_privacy_title">Privacidad</string>
-    <string name="settings_about_privacy_summary">Twangle no recopila ningún dato sobre ti. El micrófono solo está activo mientras la pantalla del afinador está abierta. El sonido se analiza en directo y nunca se graba, guarda ni envía. Twangle no tiene permiso de acceso a internet, así que no puede enviar nada a ningún sitio. Tus ajustes se quedan en este dispositivo (y en la copia de seguridad del propio Android, si la tienes activada).</string>
+    <string name="settings_about_privacy_summary">Twangle no recopila ningún dato sobre ti. El micrófono solo está activo mientras hay abierta una pantalla que escucha: el afinador, «Escuchar» del metrónomo o «Repítela» de Oído musical. El sonido se analiza en directo y nunca se graba, guarda ni envía. Twangle no tiene permiso de acceso a internet, así que no puede enviar nada a ningún sitio. Tus ajustes se quedan en este dispositivo (y en la copia de seguridad del propio Android, si la tienes activada).</string>
     <string name="settings_about_rate_title">Valorar Twangle</string>
     <string name="settings_about_rate_summary">Twangle en Google Play</string>
     <string name="settings_about_website_title">Ayuda y sitio web</string>

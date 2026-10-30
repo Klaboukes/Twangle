@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">มาตรวัด</string>
     <string name="settings_meter_look_classic">คลาสสิก</string>
     <string name="settings_meter_look_light_arc">โค้งไฟ</string>
+    <string name="settings_meter_look_pointers">ตัวชี้</string>
+    <string name="settings_meter_look_loupe">แว่นขยาย</string>
     <string name="settings_meter_look_arrows">ลูกศร</string>
     <string name="settings_meter_look_light_bars">แถบไฟ</string>
     <string name="settings_in_tune_effect_title">เอฟเฟกต์เมื่อตรงเสียง</string>

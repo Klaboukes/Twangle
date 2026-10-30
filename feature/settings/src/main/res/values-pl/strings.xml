@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Wskaźnik</string>
     <string name="settings_meter_look_classic">Klasyczny</string>
     <string name="settings_meter_look_light_arc">Świetlny łuk</string>
+    <string name="settings_meter_look_pointers">Wskaźniki</string>
+    <string name="settings_meter_look_loupe">Lupa</string>
     <string name="settings_meter_look_arrows">Strzałki</string>
     <string name="settings_meter_look_light_bars">Paski świetlne</string>
     <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">Za darmo na zawsze</string>
     <string name="settings_about_free_summary">Bez reklam, bez konta, bez zakupów w aplikacji i bez śledzenia. Ani teraz, ani później.</string>
     <string name="settings_about_privacy_title">Prywatność</string>
-    <string name="settings_about_privacy_summary">Twangle nie zbiera o tobie żadnych danych. Mikrofon działa tylko wtedy, gdy ekran stroika jest otwarty. Dźwięk jest analizowany na bieżąco i nigdy nie jest nagrywany, zapisywany ani wysyłany. Twangle nie ma uprawnienia do internetu, więc nie może nic nigdzie wysłać. Twoje ustawienia zostają na tym urządzeniu (i w kopii zapasowej samego Androida, jeśli ją włączono).</string>
+    <string name="settings_about_privacy_summary">Twangle nie zbiera o tobie żadnych danych. Mikrofon działa tylko wtedy, gdy otwarty jest ekran, który słucha: stroik, „Słuchaj” w metronomie lub „Zagraj ze słuchu” w treningu słuchu. Dźwięk jest analizowany na bieżąco i nigdy nie jest nagrywany, zapisywany ani wysyłany. Twangle nie ma uprawnienia do internetu, więc nie może nic nigdzie wysłać. Twoje ustawienia zostają na tym urządzeniu (i w kopii zapasowej samego Androida, jeśli ją włączono).</string>
     <string name="settings_about_rate_title">Oceń Twangle</string>
     <string name="settings_about_rate_summary">Twangle w Google Play</string>
     <string name="settings_about_website_title">Pomoc i strona internetowa</string>

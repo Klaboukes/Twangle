@@ -292,6 +292,8 @@ feature/settings settings_meter_look_arrows 423c677c
 feature/settings settings_meter_look_classic ae25d648
 feature/settings settings_meter_look_light_arc 456d8906
 feature/settings settings_meter_look_light_bars 2025dcf2
+feature/settings settings_meter_look_loupe cacfdbfb
+feature/settings settings_meter_look_pointers eb8d6096
 feature/settings settings_meter_look_title 2293b30e
 feature/settings settings_notation_automatic 2d5700af
 feature/settings settings_notation_flats b3400ed7

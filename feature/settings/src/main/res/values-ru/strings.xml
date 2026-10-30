@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Индикатор</string>
     <string name="settings_meter_look_classic">Классический</string>
     <string name="settings_meter_look_light_arc">Световая дуга</string>
+    <string name="settings_meter_look_pointers">Указатели</string>
+    <string name="settings_meter_look_loupe">Лупа</string>
     <string name="settings_meter_look_arrows">Стрелки</string>
     <string name="settings_meter_look_light_bars">Световые полосы</string>
     <string name="settings_in_tune_effect_title">Эффект «настроено»</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">Бесплатно навсегда</string>
     <string name="settings_about_free_summary">Без рекламы, без аккаунта, без покупок в приложении и без слежки. Ни сейчас, ни потом.</string>
     <string name="settings_about_privacy_title">Конфиденциальность</string>
-    <string name="settings_about_privacy_summary">Twangle не собирает о тебе никаких данных. Микрофон включён, только пока открыт экран тюнера. Звук анализируется на лету и никогда не записывается, не сохраняется и не отправляется. У Twangle нет разрешения на доступ к интернету, поэтому он ничего не может никуда отправить. Твои настройки хранятся на этом устройстве (и в резервной копии самого Android, если она у тебя включена).</string>
+    <string name="settings_about_privacy_summary">Twangle не собирает о тебе никаких данных. Микрофон включён, только пока открыт экран, который слушает: тюнер, «Слушать» в метрономе или «Повтори» в тренировке слуха. Звук анализируется на лету и никогда не записывается, не сохраняется и не отправляется. У Twangle нет разрешения на доступ к интернету, поэтому он ничего не может никуда отправить. Твои настройки хранятся на этом устройстве (и в резервной копии самого Android, если она у тебя включена).</string>
     <string name="settings_about_rate_title">Оценить Twangle</string>
     <string name="settings_about_rate_summary">Twangle в Google Play</string>
     <string name="settings_about_website_title">Помощь и сайт</string>

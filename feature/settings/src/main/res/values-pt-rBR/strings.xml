@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">Medidor</string>
     <string name="settings_meter_look_classic">Clássico</string>
     <string name="settings_meter_look_light_arc">Arco de luz</string>
+    <string name="settings_meter_look_pointers">Ponteiros</string>
+    <string name="settings_meter_look_loupe">Lupa</string>
     <string name="settings_meter_look_arrows">Setas</string>
     <string name="settings_meter_look_light_bars">Barras de luz</string>
     <string name="settings_in_tune_effect_title">Efeito ao afinar</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">Grátis para sempre</string>
     <string name="settings_about_free_summary">Sem anúncios, sem conta, sem compras no app e sem rastreamento. Nem agora, nem depois.</string>
     <string name="settings_about_privacy_title">Privacidade</string>
-    <string name="settings_about_privacy_summary">O Twangle não coleta nenhum dado sobre você. O microfone só fica ligado enquanto a tela do afinador está aberta. O som é analisado ao vivo e nunca é gravado, salvo ou enviado. O Twangle não tem permissão de internet, então não pode enviar nada para lugar nenhum. Suas configurações ficam neste dispositivo (e no backup do próprio Android, se você o ativou).</string>
+    <string name="settings_about_privacy_summary">O Twangle não coleta nenhum dado sobre você. O microfone só fica ligado enquanto uma tela que escuta está aberta: o afinador, “Ouvir” no metrônomo ou “Tirar de ouvido” no Treino de ouvido. O som é analisado ao vivo e nunca é gravado, salvo ou enviado. O Twangle não tem permissão de internet, então não pode enviar nada para lugar nenhum. Suas configurações ficam neste dispositivo (e no backup do próprio Android, se você o ativou).</string>
     <string name="settings_about_rate_title">Avaliar o Twangle</string>
     <string name="settings_about_rate_summary">Twangle no Google Play</string>
     <string name="settings_about_website_title">Ajuda e site</string>

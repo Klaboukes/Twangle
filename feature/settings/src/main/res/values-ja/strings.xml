@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">メーター</string>
     <string name="settings_meter_look_classic">クラシック</string>
     <string name="settings_meter_look_light_arc">光のアーチ</string>
+    <string name="settings_meter_look_pointers">ポインター</string>
+    <string name="settings_meter_look_loupe">ルーペ</string>
     <string name="settings_meter_look_arrows">矢印</string>
     <string name="settings_meter_look_light_bars">光のバー</string>
     <string name="settings_in_tune_effect_title">合ったときの効果</string>
@@ -79,7 +81,7 @@
     <string name="settings_about_free_title">ずっと無料</string>
     <string name="settings_about_free_summary">広告なし、アカウント不要、アプリ内課金なし、トラッキングなし。今もこれからも。</string>
     <string name="settings_about_privacy_title">プライバシー</string>
-    <string name="settings_about_privacy_summary">Twangle はあなたに関するデータを一切収集しません。マイクはチューナー画面を開いている間だけオンになります。音はその場で解析され、録音・保存・送信されることはありません。Twangle にはインターネットの権限がないため、どこにも何も送信できません。設定はこの端末に保存されます（Android 本体のバックアップをオンにしている場合は、そこにも含まれます）。</string>
+    <string name="settings_about_privacy_summary">Twangle はあなたに関するデータを一切収集しません。マイクがオンになるのは、音を聞く画面（チューナー、メトロノームの「聞き取る」、耳トレーニングの「聞いて弾く」）を開いている間だけです。音はその場で解析され、録音・保存・送信されることはありません。Twangle にはインターネットの権限がないため、どこにも何も送信できません。設定はこの端末に保存されます（Android 本体のバックアップをオンにしている場合は、そこにも含まれます）。</string>
     <string name="settings_about_rate_title">Twangle を評価</string>
     <string name="settings_about_rate_summary">Google Play の Twangle</string>
     <string name="settings_about_website_title">ヘルプとウェブサイト</string>

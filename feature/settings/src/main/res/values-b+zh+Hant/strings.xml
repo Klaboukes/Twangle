@@ -37,6 +37,8 @@
     <string name="settings_meter_look_title">儀表</string>
     <string name="settings_meter_look_classic">經典</string>
     <string name="settings_meter_look_light_arc">光弧</string>
+    <string name="settings_meter_look_pointers">雙指針</string>
+    <string name="settings_meter_look_loupe">放大鏡</string>
     <string name="settings_meter_look_arrows">箭頭</string>
     <string name="settings_meter_look_light_bars">光條</string>
     <string name="settings_in_tune_effect_title">調準效果</string>
