@@ -14,6 +14,7 @@ Every finished phase is in [ROADMAP-ARCHIVE.md](ROADMAP-ARCHIVE.md), with the ov
 - **Now:** Phases 46, 50, 60 and 59 are done (2026-10-29: the needle quick and steady on the owner's guitar; the store listing sent in all 27 store folders with fresh screenshots; 2026-10-30: every meter look reads nearly to the cent, Pointers and Loupe in place of Spirit level and Eclipse; chord charts, scales and Ear training's Chord type for the banjo). Nothing else is open before launch but the closed test and the owner's checks. The featuring nomination waits until after launch (owner, 2026-10-29; Phase 56).
 - **Next:** Phase 53's production launch once the closed test's 14 days are done.
 - **After launch:** Phase 56, the rest of getting found; Phase 58, opening the code.
+- **Any time:** Phase 61, the watch's tile, watch-face shortcut and wrist tap, for the update that brings the watch app to Play; the owner's real-watch check first.
 
 ---
 
@@ -61,3 +62,10 @@ Goal: the Twangle repository goes public as open source, once v1.0 is live on Pl
 - ☐ The owner makes the repository public; later commits use the GitHub no-reply email
 - ☐ While the owner is the only author, the licence can still change; once others contribute, it can't without them, so settle any change before accepting outside code
 - ☐ Google's rating window (Phase 50) comes from a library under Google's own terms, not open source: F-Droid and IzzyOnDroid flag such a library, and GPL 3 alone doesn't allow it in a copy someone else builds. Settle it before opening: a build without it for F-Droid (`RatingWindow.NONE`, e.g. a `foss` flavour), and either a short GPL exception for that one library in `LICENSE`, or the Play build only made by the owner
+
+## Phase 61 — The watch, one swipe away and felt on the wrist (owner, 2026-10-30)
+Goal: two small things a watch does better than a phone, for the update that brings the watch app to Play (decision 3). A watch tuner is worth it only if it opens faster than finding the phone, and the watch can tap the wrist, which a phone can't. Picked from the mock-up [docs/design/watch-ideas-preview.html](docs/design/watch-ideas-preview.html) (cards 1 and 6); its other ideas are in [IDEAS.md](IDEAS.md), *More for the watch*. Not tied to launch: `/roadmap-step 61` can run any time. The owner's real-watch check (*Owner checks*, Phase 20) comes first, as it may change or add items.
+- ☐ **A Twangle tile:** a Wear OS tile beside the watch face with Twangle's name and one Tune button that opens the tuner, in the watch's Contemporary colours. The tile never listens: the microphone starts only once the tuner is open (Hard rule 4). The mock-up's metronome button waits for the wrist metronome (IDEAS.md)
+- ☐ **A watch-face shortcut:** a complication (the small round slot a watch face offers) with Twangle's icon that opens the tuner with one tap
+- ☐ **Feel it in tune:** one soft tap on the wrist the moment the note comes in tune, when the ring starts to glow; once per tuned note, again only after the note leaves tune or changes (as the phone's `InTuneHaptic`). The watch's microphone must not hear the motor: the reading stays steady across the tap (a JVM test on the pipeline, then the real watch). Whether the watch needs a way to turn it off is decided with the owner after trying it
+- ☐ Check on the Galaxy Watch 5 with a real guitar (and the Wear OS emulator): the tile and the shortcut open the tuner, the tap comes once per tuned string; texts in English and Dutch (the night languages by `/translate`); the watch's UI tests; the watch part of [ui-other-screens.md](docs/architecture/ui-other-screens.md) brought up to date

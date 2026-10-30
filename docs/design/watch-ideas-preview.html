@@ -1,0 +1,599 @@
+<!doctype html>
+<!--
+  Twangle on the watch: ideas for after the Phase 20 tuner (2026-10-30). Mock-up only, nothing built.
+  Owner decided (2026-10-30): the tile with a watch-face shortcut (card 6, without its metronome button)
+  and the wrist tap (card 1) become Phase 61; the other cards wait in IDEAS.md, "More for the watch".
+  Each card is an idea drawn on a Galaxy Watch 5-sized round screen (198 dp, drawn here at 236 px)
+  in the phone's Contemporary colours on black, as the watch app is today (WatchColors). The ring's
+  proportions are WatchDial's. Card 7 shows the six styles' dark palettes (StylePalettes.kt).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Twangle watch ideas</title>
+<style>
+  :root {
+    --bg: #0a0d16; --card: #121726; --ink: #e6e9f4; --muted: #a6aecb; --faint: #6f7898;
+    --accent: #a6adff; --green: #6fd6a8; --line: #1f2640; --s: 236px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--ink); background-color: var(--bg);
+    background-image: radial-gradient(1100px 520px at 50% -120px, #1b2243 0%, rgba(10,13,22,0) 70%);
+    font: 15px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  }
+  header, main, footer { max-width: 1200px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  header { padding-top: 56px; }
+  .eyebrow { color: var(--green); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+  h1 { font: 300 44px/1.1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; margin: 10px 0 14px; letter-spacing: -.5px; }
+  .lead { color: var(--muted); max-width: 780px; margin: 0; font-size: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 22px; padding-top: 34px; padding-bottom: 20px; }
+  .card {
+    position: relative; border-radius: 26px; padding: 8px 24px 22px;
+    background: linear-gradient(180deg, #141a2b 0%, #0f1320 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px rgba(0,0,0,.35);
+  }
+  .card.now { background: linear-gradient(180deg, #10141f 0%, #0d1019 100%); }
+  .num { position: absolute; top: 18px; left: 22px; font-size: 12px; color: var(--faint); font-weight: 600; letter-spacing: .1em; }
+  .stage { display: flex; justify-content: center; padding: 58px 0 50px; }
+  h2 { font-weight: 500; font-size: 19px; margin: 0 0 6px; }
+  .card p { margin: 0 0 8px; }
+  .who, .risk { color: var(--muted); font-size: 13.5px; }
+  .who b, .risk b { color: var(--ink); font-weight: 600; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .chip { font-size: 12px; padding: 3px 11px; border-radius: 999px; background: #1c2338; color: var(--muted); }
+  .chip.pick { background: rgba(111,214,168,.13); color: var(--green); }
+  .chip.big { background: rgba(166,173,255,.14); color: var(--accent); }
+  .feel {
+    position: absolute; right: 22px; top: 16px; font-size: 12px; color: var(--faint);
+    padding: 3px 10px; border-radius: 999px; background: #161c2e; transition: none;
+  }
+  .feel.on { animation: feel 1s ease-out; }
+  @keyframes feel { 0% { color: #0b1a12; background: var(--green); box-shadow: 0 0 18px rgba(111,214,168,.5); } 100% { color: var(--faint); background: #161c2e; box-shadow: none; } }
+  .feel.accent.on { animation-name: feelA; }
+  @keyframes feelA { 0% { color: #121a5a; background: var(--accent); box-shadow: 0 0 18px rgba(166,173,255,.5); } 100% { color: var(--faint); background: #161c2e; box-shadow: none; } }
+
+  /* The watch: a Galaxy Watch 5-like case, strap stubs, two buttons on the right. */
+  .watch { position: relative; width: calc(var(--s) + 32px); height: calc(var(--s) + 32px); }
+  .strap { position: absolute; left: 50%; transform: translateX(-50%); width: 56%; height: 74px; border-radius: 16px;
+    background: linear-gradient(90deg, #15181f, #262a34 50%, #15181f); }
+  .strap.top { top: -44px; border-radius: 16px 16px 8px 8px; }
+  .strap.bot { bottom: -44px; border-radius: 8px 8px 16px 16px; }
+  .strap::after { content: ""; position: absolute; left: 12%; right: 12%; height: 1px; background: rgba(255,255,255,.05); }
+  .strap.top::after { top: 18px; } .strap.bot::after { bottom: 18px; }
+  .btnw { position: absolute; inset: 0; }
+  .btnw::after { content: ""; position: absolute; right: -5px; top: 50%; margin-top: -14px; width: 10px; height: 28px; border-radius: 4px;
+    background: linear-gradient(90deg, #2c3039, #8b919e 60%, #4b505b); }
+  .btnw.b1 { transform: rotate(-30deg); } .btnw.b2 { transform: rotate(30deg); }
+  .case { position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 200deg, #5d636f, #2a2e36 18%, #8d93a0 34%, #3b3f48 52%, #6e7480 70%, #2a2e36 86%, #5d636f);
+    box-shadow: 0 22px 44px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.6); }
+  .bezel { position: absolute; inset: 5px; border-radius: 50%; background: #050608; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .watch canvas, .glass { position: absolute; left: 16px; top: 16px; width: var(--s); height: var(--s); border-radius: 50%; }
+  .glass { pointer-events: none; background: linear-gradient(140deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,0) 38%); }
+  .watch.buzz { animation: buzz .16s linear; }
+  .watch.buzz-s { animation: buzzS .22s linear; }
+  @keyframes buzz { 20% { transform: translate(.9px,-.4px); } 40% { transform: translate(-.9px,.4px); } 60% { transform: translate(.6px,.3px); } 80% { transform: translate(-.4px,-.2px); } }
+  @keyframes buzzS { 15% { transform: translate(1.6px,-.6px); } 35% { transform: translate(-1.6px,.6px); } 55% { transform: translate(1.1px,.5px); } 75% { transform: translate(-.7px,-.3px); } }
+  .ripple { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(111,214,168,.5); pointer-events: none; animation: rip 1s ease-out forwards; }
+  .ripple.accent { border-color: rgba(166,173,255,.45); }
+  @keyframes rip { from { transform: scale(1); opacity: .85; } to { transform: scale(1.2); opacity: 0; } }
+
+  section.after { padding-top: 28px; padding-bottom: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 22px; }
+  .panel { border-radius: 22px; padding: 22px 24px; background: #10141f; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+  .panel h3 { margin: 0 0 12px; font-weight: 500; font-size: 18px; }
+  .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  .panel li { margin-bottom: 10px; }
+  .panel li b { color: var(--ink); font-weight: 600; }
+  footer { color: var(--faint); font-size: 13px; padding-top: 18px; padding-bottom: 48px; }
+  @media (max-width: 420px) {
+    :root { --s: 210px; }
+    header, main, footer, section.after { padding-left: 16px; padding-right: 16px; }
+    h1 { font-size: 34px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Mock-up · Twangle on the watch</div>
+  <h1>What the watch could do next</h1>
+  <p class="lead">Seven ideas beyond today's tuner, each drawn live on a Galaxy Watch 5-sized screen. Every one works on any Wear OS watch; the Watch 5 is where we check them, and its touch bezel (a swipe round the edge of the screen) and strong vibration make them shine there. Nothing here is built yet.</p>
+</header>
+
+<main class="grid">
+  <article class="card now">
+    <span class="num">NOW</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="today"></canvas><div class="glass"></div></div></div>
+    <h2>Today's watch tuner</h2>
+    <p>One ring along the edge, the note large in the middle, the cents under it, a soft glow when in tune. The base for everything below.</p>
+    <div class="meta"><span class="chip">Built in Phase 20</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">1</span><span class="feel">soft tap</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="haptic"></canvas><div class="glass"></div></div></div>
+    <h2>Feel it in tune</h2>
+    <p>One soft tap on the wrist the moment the string comes in tune, so your eyes can stay on the peg.</p>
+    <p class="who"><b>Who:</b> everyone, most of all on a dark stage or with the watch turned away.</p>
+    <p class="risk"><b>Keep in mind:</b> one tap per tuned note, never a buzz; it rides on the in-tune glow, so it is as calm as the glow.</p>
+    <div class="meta"><span class="chip pick">Phase 61</span><span class="chip">Small</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">2</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="strings"></canvas><div class="glass"></div></div></div>
+    <h2>Strings around the ring</h2>
+    <p>The tuning's strings sit as beads along the bottom of the ring. The string you play lights up, each turns green once it is in tune, and when all six are, the whole ring glows once.</p>
+    <p class="who"><b>Who:</b> anyone tuning a whole guitar: the phone's guitar mode, on the wrist. A swipe round the edge picks the tuning.</p>
+    <p class="risk"><b>Keep in mind:</b> the watch then needs a small tuning list (the phone's presets; its own tunings stay on the phone).</p>
+    <div class="meta"><span class="chip">Medium</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">3</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="trail"></canvas><div class="glass"></div></div></div>
+    <h2>A tail that shows the drift</h2>
+    <p>The marker leaves a short tail that curls inward as it ages. A note that settles draws a curve that straightens; a steady note, a straight line to the middle; a slipping peg, a wobble.</p>
+    <p class="who"><b>Who:</b> players chasing the last cent: the phone's pitch trail, folded onto the ring.</p>
+    <p class="risk"><b>Keep in mind:</b> a little more drawing each frame, so it gets a battery check on the watch.</p>
+    <div class="meta"><span class="chip">Small</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">4</span><span class="feel accent">beat</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="metro"></canvas><div class="glass"></div></div></div>
+    <h2>A silent metronome on the wrist</h2>
+    <p>The beat as a tap on the wrist, the first beat of the bar stronger, with four beat lights round the ring. A swipe round the edge changes the tempo. Nobody else hears it: play along with a band, with headphones, or at night.</p>
+    <p class="who"><b>Who:</b> anyone practising; a beat you feel doesn't fight the music the way a click does.</p>
+    <p class="risk"><b>Keep in mind:</b> a tool of its own, so it gets a switch; it must stay on time while the watch dims (a drift check like the phone's).</p>
+    <div class="meta"><span class="chip big">The stand-out</span><span class="chip">Large</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">5</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="ambient"></canvas><div class="glass"></div></div></div>
+    <h2>A calm always-on look</h2>
+    <p>When the wrist drops, the microphone stops (as now), the ring thins to a hairline and the time comes back in outline. One tap and you are tuning again.</p>
+    <p class="who"><b>Who:</b> everyone: the watch stays a watch, and nearly every pixel stays dark.</p>
+    <div class="meta"><span class="chip">Small</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">6</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="tile"></canvas><div class="glass"></div></div></div>
+    <h2>One swipe from the watch face</h2>
+    <p>A Twangle tile next to the watch face: Tune, or the metronome at your last tempo. Plus a small Twangle shortcut to put on the watch face itself.</p>
+    <p class="who"><b>Who:</b> anyone who opens it often; quicker than the app list.</p>
+    <p class="risk"><b>Keep in mind:</b> the tile never listens; the microphone starts only once the tuner is open.</p>
+    <div class="meta"><span class="chip pick">Phase 61</span><span class="chip">Small</span></div>
+  </article>
+
+  <article class="card">
+    <span class="num">7</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-scene="styles"></canvas><div class="glass"></div></div></div>
+    <h2>The six styles on the watch</h2>
+    <p>Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own ring finish and colours on the watch's black.</p>
+    <p class="who"><b>Who:</b> players who picked a style on the phone and want the watch to match.</p>
+    <p class="risk"><b>Keep in mind:</b> phone and watch don't talk to each other, so the watch needs its own small style setting.</p>
+    <div class="meta"><span class="chip">Medium</span></div>
+  </article>
+</main>
+
+<section class="after" style="max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px">
+  <div class="panel">
+    <h3>Decided (2026-10-30)</h3>
+    <ol>
+      <li><b>Phase 61:</b> the tile with a watch-face shortcut (6) and Feel it in tune (1): a watch tuner is only worth it if it opens faster than finding the phone, and a tap on the wrist is what only a watch can do.</li>
+      <li><b>Waiting in IDEAS.md:</b> the wrist metronome (4) once players use the watch app; the strings, the always-on look, the tail and the styles if players ask.</li>
+    </ol>
+  </div>
+  <div class="panel">
+    <h3>Left on the shelf</h3>
+    <ul>
+      <li><b>Phone and watch in step</b> (style, tuning, your own tunings): needs Google's watch-link library and a line in the privacy policy, though still no internet. Only if players ask.</li>
+      <li><b>A reference note from the watch's speaker:</b> it is too small for a low E (82 Hz); only higher strings would sound right. Only if ukulele or violin players ask.</li>
+      <li><b>Strum check and chord name on the watch:</b> the watch's microphone and small screen make both weaker than on the phone, where they already are.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>The edge swipe uses the Watch 5's touch bezel (on in the watch's settings); watches with a crown use the crown, and any watch can swipe up or down instead. Colours: the phone's Contemporary style on black, as the watch app today; card 7 the six styles' dark palettes.</footer>
+
+<script>
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const FONT = '"Google Sans", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif';
+const SYM = '"Segoe UI Symbol", "Noto Sans Symbols", ' + FONT;
+const PAL = {
+  ancient:      { name: 'Ancient',      ink: '#EFE4DD', muted: '#C2ADA3', track: '#4A3D37', accent: '#F0957A', inTune: '#B8CF7C', bg: '#261B16', onAccent: '#3A1206' },
+  classic:      { name: 'Classic',      ink: '#F2E6EA', muted: '#C4AAB5', track: '#45303A', accent: '#EBA3C0', inTune: '#8ED3B2', bg: '#261A1F', onAccent: '#3A0B1F' },
+  retro:        { name: 'Retro',        ink: '#EEF0D2', muted: '#B9BC92', track: '#3E412A', accent: '#C5D45A', inTune: '#6FD6B0', bg: '#1D1E14', onAccent: '#1D2204' },
+  contemporary: { name: 'Contemporary', ink: '#E6E9F4', muted: '#A6AECB', track: '#2B3350', accent: '#A6ADFF', inTune: '#6FD6A8', bg: '#171D2E', onAccent: '#121A5A' },
+  futuristic:   { name: 'Futuristic',   ink: '#DDF8FF', muted: '#84B3C4', track: '#143040', accent: '#22E5FF', inTune: '#39FF9A', bg: '#0D1920', onAccent: '#002A33' },
+  spaceage:     { name: 'Space Age',    ink: '#F1EDFA', muted: '#B3A9D2', track: '#352C5A', accent: '#D9A0FF', inTune: '#6FD9B0', bg: '#1D1939', onAccent: '#2A0A45' },
+};
+const C = PAL.contemporary;
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+const easeInOut = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+const approach = (v, t, s) => v < t ? Math.min(t, v + s) : Math.max(t, v - s);
+const DEG = Math.PI / 180;
+const angFor = c => (-90 + clamp(c, -50, 50) / 50 * 60) * DEG;   // WatchDial.angleFor
+const at = (cx, cy, r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+const noise = (t, s = 0) => Math.sin(t * 7.3 + s) * .5 + Math.sin(t * 13.1 + s * 2) * .3 + Math.sin(t * 3.7 + s * 3) * .2;
+function hex(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function rgba(h, a) { const [r, g, b] = hex(h); return `rgba(${r},${g},${b},${a})`; }
+function mixHex(a, b, t) { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+function ring(ctx, cx, cy, r) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+function dot(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+function seg(ctx, x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+
+/** A plucked string seen by the tuner: a damped swing into tune with a little life left in it. */
+function pluck(tl, amp, tau = .75, w = 2.6, seed = 0) {
+  return amp * Math.exp(-tl / tau) * Math.cos(tl * w) + .7 * noise(tl, seed) * (Math.exp(-tl / .9) + .25);
+}
+
+/** The watch tuner's motion: the marker's low-stiffness spring, the 400 ms fade, the 700 ms glow. */
+class Tuner {
+  constructor(onInTune) { this.mc = 0; this.mv = 0; this.alpha = 0; this.gp = 0; this.hold = 0; this.inTune = false; this.shown = 0; this.onInTune = onInTune; }
+  step(raw, dt) {
+    const target = raw == null ? 0 : raw, w = 14, n = Math.max(1, Math.ceil(dt * 240)), h = dt / n;
+    for (let i = 0; i < n; i++) { const a = w * w * (target - this.mc) - 2 * w * this.mv; this.mv += a * h; this.mc += this.mv * h; }
+    const on = raw != null;
+    this.alpha = approach(this.alpha, on ? 1 : 0, dt / .4);
+    if (on && Math.abs(raw) <= 2.5) this.hold += dt; else if (!on || Math.abs(raw) > 4) this.hold = 0;
+    const was = this.inTune;
+    this.inTune = on && this.hold >= .35;
+    if (this.inTune && !was && this.onInTune) this.onInTune();
+    this.gp = approach(this.gp, this.inTune ? 1 : 0, dt / .7);
+    if (on) this.shown = Math.round(raw);
+  }
+  get glow() { return easeInOut(this.gp); }
+}
+
+/** The ring (WatchDial's proportions), in one of the styles' finishes. */
+function drawDial(ctx, S, o) {
+  const p = o.pal, f = o.finish || 'contemporary', st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2, g = o.glow || 0;
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = p.track;
+  const trackW = f === 'retro' ? st * 1.8 : st;
+  if (f === 'ancient') { ctx.lineWidth = st * .5; ring(ctx, cx, cy, R - st * .9); ring(ctx, cx, cy, R + st * .9); }
+  else if (f === 'futuristic') { ctx.lineWidth = st; ctx.lineCap = 'butt'; ctx.setLineDash([st * 2.6, st * 1.6]); ring(ctx, cx, cy, R); ctx.setLineDash([]); ctx.lineCap = 'round'; }
+  else if (f === 'spaceage') { ctx.lineWidth = st * 1.2; ctx.setLineDash([.001, st * 2.3]); ring(ctx, cx, cy, R); ctx.setLineDash([]); }
+  else { ctx.lineWidth = trackW; ring(ctx, cx, cy, R); }
+
+  if (o.drawTrack !== false) {
+    for (let s = -10; s <= 10; s++) {
+      const half = s % 2 !== 0;
+      if (half && f !== 'classic') continue;
+      const a = angFor(s * 5), centre = s === 0, len = S * (centre ? .055 : half ? .018 : .03), out = R - st * (f === 'retro' ? 1.5 : 1);
+      ctx.strokeStyle = centre ? p.ink : rgba(p.muted, half ? .3 : .45);
+      ctx.lineWidth = st * (centre ? .9 : .6) * (f === 'retro' ? 1.7 : 1);
+      ctx.lineCap = f === 'retro' ? 'butt' : 'round';
+      if (f === 'futuristic') { ctx.shadowColor = p.accent; ctx.shadowBlur = centre ? 8 : 4; }
+      seg(ctx, ...at(cx, cy, out, a), ...at(cx, cy, out - len, a));
+      ctx.shadowBlur = 0;
+    }
+    if (f === 'classic') {
+      ctx.fillStyle = rgba(p.muted, .8); ctx.font = `400 ${S * .06}px ${SYM}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('♭', ...at(cx, cy, R - S * .1, angFor(-50)));
+      ctx.fillText('♯', ...at(cx, cy, R - S * .1, angFor(50)));
+    }
+  }
+
+  if (g > 0) {
+    const band = S * .05, outer = R + band, grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer);
+    grad.addColorStop(0, rgba(p.inTune, 0));
+    grad.addColorStop((R - band) / outer, rgba(p.inTune, 0));
+    grad.addColorStop(R / outer, rgba(p.inTune, .35 * g));
+    grad.addColorStop(1, rgba(p.inTune, 0));
+    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, outer, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = rgba(p.inTune, g); ctx.lineCap = 'round';
+    if (f === 'ancient') { ctx.lineWidth = st * .5; ring(ctx, cx, cy, R - st * .9); ring(ctx, cx, cy, R + st * .9); }
+    else { ctx.lineWidth = trackW; ring(ctx, cx, cy, R); }
+  }
+
+  const ma = o.alpha || 0, col = mixHex(p.accent, p.inTune, g);
+  if (o.trail && ma > .01) {
+    // Older points sit further in: a tail that curls toward the middle as it ages.
+    const tr = o.trail, now = o.now, span = 1.6;
+    ctx.strokeStyle = col; ctx.lineCap = 'round';
+    for (let i = 1; i < tr.length; i++) {
+      const age = (now - tr[i].t) / span; if (age >= 1) continue;
+      const age0 = (now - tr[i - 1].t) / span;
+      const r0 = R - age0 * S * .17, r1 = R - age * S * .17;
+      ctx.globalAlpha = ma * Math.pow(1 - age, 1.6) * .85;
+      ctx.lineWidth = st * (1.9 * (1 - age) + .35);
+      seg(ctx, ...at(cx, cy, r0, angFor(tr[i - 1].c)), ...at(cx, cy, r1, angFor(tr[i].c)));
+    }
+    ctx.globalAlpha = 1;
+  }
+  if (ma > .01) {
+    const a = angFor(o.cents), [x, y] = at(cx, cy, R, a), ux = Math.cos(a), uy = Math.sin(a);
+    ctx.globalAlpha = ma; ctx.fillStyle = col; ctx.strokeStyle = col;
+    if (f === 'ancient') {
+      const rl = st * 3.4, tl = st * 2.2;
+      ctx.beginPath(); ctx.moveTo(x + ux * rl, y + uy * rl); ctx.lineTo(x - uy * tl, y + ux * tl); ctx.lineTo(x - ux * rl, y - uy * rl); ctx.lineTo(x + uy * tl, y - ux * tl); ctx.closePath(); ctx.fill();
+    } else if (f === 'classic') {
+      ctx.lineWidth = st * .8; seg(ctx, ...at(cx, cy, R - st * 5.5, a), ...at(cx, cy, R + st * 1.4, a)); dot(ctx, x, y, st * 1.5);
+    } else if (f === 'retro') {
+      ctx.lineWidth = st * 2.6; ctx.lineCap = 'round'; seg(ctx, ...at(cx, cy, R - st * 2, a), ...at(cx, cy, R + st * 2, a));
+    } else if (f === 'futuristic') {
+      ctx.shadowColor = col; ctx.shadowBlur = 14; dot(ctx, x, y, st * 2.3); ctx.shadowBlur = 0;
+    } else if (f === 'spaceage') {
+      ctx.lineWidth = st * .7; ring(ctx, x, y, st * 2.9); dot(ctx, x, y, st * 1.2);
+    } else {
+      dot(ctx, x, y, st * 2.6);
+    }
+  }
+  ctx.restore();
+}
+
+/** The note (letter large, ♯ raised, octave small) with the cents under it. */
+function drawReading(ctx, S, p, name, oct, cents, glow, alpha) {
+  if (alpha <= .01) return;
+  ctx.save(); ctx.globalAlpha *= alpha;
+  const cx = S / 2, cy = S / 2, letters = name.replace(/[♯♭]/g, '').length;
+  const ns = S * .30 * (letters === 1 ? 1 : letters === 2 ? .8 : .65), base = cy + S * .045;
+  const parts = [...name].map(ch => {
+    const sym = ch === '♯' || ch === '♭';
+    ctx.font = sym ? `400 ${ns * .7}px ${SYM}` : `300 ${ns}px ${FONT}`;
+    return { ch, sym, w: ctx.measureText(ch).width };
+  });
+  ctx.font = `400 ${S * .11}px ${FONT}`;
+  const ow = ctx.measureText(oct).width;
+  let x = cx - (parts.reduce((s, q) => s + q.w, 0) + ow) / 2;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = mixHex(p.ink, p.inTune, glow);
+  for (const q of parts) {
+    ctx.font = q.sym ? `400 ${ns * .7}px ${SYM}` : `300 ${ns}px ${FONT}`;
+    ctx.fillText(q.ch, x, q.sym ? base - ns * .32 : base); x += q.w;
+  }
+  ctx.fillStyle = p.muted; ctx.font = `400 ${S * .11}px ${FONT}`; ctx.fillText(oct, x, base);
+  const a = Math.abs(cents);
+  ctx.textAlign = 'center'; ctx.font = `400 ${S * .085}px ${FONT}`;
+  ctx.fillText((cents > 0 ? '+' : cents < 0 ? '−' : '') + a + (a === 1 ? ' cent' : ' cents'), cx, base + S * .12);
+  ctx.restore();
+}
+
+function drawCentred(ctx, S, text, color, size, y, weight = 500, alpha = 1) {
+  if (alpha <= .01) return;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.fillStyle = color; ctx.font = `${weight} ${size}px ${FONT}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, S / 2, y); ctx.restore();
+}
+
+function frameTuner(ctx, S, p, tu, name, oct, extra = {}) {
+  drawDial(ctx, S, { pal: p, cents: tu.mc, alpha: tu.alpha, glow: tu.glow, ...extra });
+  drawCentred(ctx, S, 'Play a note', p.muted, S * .075, S / 2, 500, 1 - tu.alpha);
+  drawReading(ctx, S, p, name, oct, tu.shown, tu.glow, tu.alpha);
+}
+
+function buzz(card, strong, accent) {
+  const w = card.querySelector('.watch');
+  w.classList.remove('buzz', 'buzz-s'); void w.offsetWidth; w.classList.add(strong ? 'buzz-s' : 'buzz');
+  if (strong || !accent) {
+    const r = document.createElement('span'); r.className = 'ripple' + (accent ? ' accent' : '');
+    w.appendChild(r); setTimeout(() => r.remove(), 1000);
+  }
+  const chip = card.querySelector('.feel');
+  if (chip) { chip.classList.remove('on'); void chip.offsetWidth; chip.classList.add('on'); }
+}
+
+function tapRipple(ctx, S, x, y, u) {
+  if (u < 0 || u > 1) return;
+  ctx.save(); ctx.fillStyle = `rgba(255,255,255,${.22 * (1 - u)})`; dot(ctx, x, y, S * (.04 + .12 * smooth(u))); ctx.restore();
+}
+
+const SCENES = {
+  today() {
+    const tu = new Tuner();
+    return (ctx, S, t, dt) => {
+      const k = t % 8;
+      tu.step(k > 1.2 && k < 6.8 ? pluck(k - 1.2, -21, .75, 2.6, 1) : null, dt);
+      frameTuner(ctx, S, C, tu, 'E', '2');
+    };
+  },
+
+  haptic(card) {
+    const tu = new Tuner(() => buzz(card, false, false));
+    return (ctx, S, t, dt) => {
+      const k = (t + 2.5) % 8;
+      tu.step(k > 1.2 && k < 6.8 ? pluck(k - 1.2, 16, .7, 2.4, 2) : null, dt);
+      frameTuner(ctx, S, C, tu, 'A', '2');
+    };
+  },
+
+  strings() {
+    const T = [['E', '2', -16], ['A', '2', 12], ['D', '3', -9], ['G', '3', 18], ['B', '3', -6], ['E', '4', 9]];
+    const tuned = new Set(); let cur = -1, last = 0, prevK = 0;
+    const tu = new Tuner(() => { if (cur >= 0) tuned.add(cur); });
+    const SEG = 2.9, LEAD = .7, FIN = 3.4, PER = LEAD + SEG * 6 + FIN;
+    return (ctx, S, t, dt) => {
+      const k = (t + 1.0) % PER;
+      if (k < prevK) tuned.clear();
+      prevK = k;
+      let raw = null, fin = 0;
+      if (k >= LEAD && k < LEAD + SEG * 6) {
+        cur = Math.floor((k - LEAD) / SEG); last = cur;
+        raw = pluck(k - LEAD - cur * SEG, T[cur][2], .5, 2.8, cur);
+      } else { cur = -1; if (k >= LEAD + SEG * 6) fin = k - LEAD - SEG * 6; }
+      tu.step(raw, dt);
+      const fg = fin > 0 ? (fin < .8 ? easeInOut(fin / .8) : fin < FIN - .8 ? 1 : easeInOut((FIN - fin) / .8)) : 0;
+      const fade = fin > FIN - .8 ? (FIN - fin) / .8 : 1;
+      drawDial(ctx, S, { pal: C, cents: tu.mc, alpha: tu.alpha, glow: Math.max(tu.glow, fg) });
+      // The beads: low string at lower left, high at lower right, on the ring itself.
+      const st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2;
+      T.forEach(([n], i) => {
+        const a = (140 - 20 * i) * DEG, [x, y] = at(cx, cy, R, a), isCur = i === cur, done = tuned.has(i);
+        ctx.save();
+        if (done) { ctx.fillStyle = mixHex(C.track, C.inTune, fade); ctx.shadowColor = rgba(C.inTune, .6 * fade); ctx.shadowBlur = 8; dot(ctx, x, y, st * 2.1); }
+        else if (isCur) { ctx.fillStyle = '#000'; dot(ctx, x, y, st * 2.4); ctx.strokeStyle = C.accent; ctx.lineWidth = st * .8; ring(ctx, x, y, st * 2.1); }
+        else { ctx.fillStyle = C.track; dot(ctx, x, y, st * 1.7); }
+        ctx.restore();
+        const [lx, ly] = at(cx, cy, R - st * 5.4, a);
+        ctx.save(); ctx.font = `600 ${S * .047}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = done ? mixHex(C.muted, C.inTune, fade) : isCur ? C.ink : rgba(C.muted, .6); ctx.fillText(n, lx, ly); ctx.restore();
+      });
+      if (fin > 0) {
+        drawReading(ctx, S, C, T[last][0], T[last][1], tu.shown, tu.glow, tu.alpha);
+        drawCentred(ctx, S, 'All in tune', C.inTune, S * .085, S / 2 - S * .02, 400, fg * (1 - tu.alpha));
+      } else {
+        drawCentred(ctx, S, 'Play a string', C.muted, S * .075, S / 2, 500, 1 - tu.alpha);
+        drawReading(ctx, S, C, T[last][0], T[last][1], tu.shown, tu.glow, tu.alpha);
+      }
+    };
+  },
+
+  trail() {
+    const tu = new Tuner(), hist = [];
+    return (ctx, S, t, dt) => {
+      const k = t % 7.5;
+      let raw = null;
+      if (k > .8 && k < 6.6) { const tl = k - .8; raw = 15 * Math.exp(-tl / .9) + 3.5 * Math.exp(-tl / .35) * Math.sin(tl * 10) + .5 * noise(tl, 5) * (Math.exp(-tl) + .3); }
+      tu.step(raw, dt);
+      if (tu.alpha > .02) hist.push({ t, c: tu.mc });
+      while (hist.length && t - hist[0].t > 1.6) hist.shift();
+      if (tu.alpha <= .02) hist.length = 0;
+      frameTuner(ctx, S, C, tu, 'E', '2', { trail: hist, now: t });
+    };
+  },
+
+  metro(card) {
+    let bpm = 96, phase = .9, beat = -1;
+    const lit = [0, 0, 0, 0];
+    return (ctx, S, t, dt) => {
+      const k = t % 11, st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2;
+      let edge = null;
+      if (k > 4 && k < 5.8) { const u = (k - 4) / 1.8; bpm = Math.round(96 + 8 * smooth(u)); edge = { a: -70 + u * 80, on: Math.sin(u * Math.PI) }; }
+      else if (k > 7.6 && k < 9.4) { const u = (k - 7.6) / 1.8; bpm = Math.round(104 - 8 * smooth(u)); edge = { a: 10 - u * 80, on: Math.sin(u * Math.PI) }; }
+      else bpm = k >= 5.8 && k <= 7.6 ? 104 : 96;
+      phase += dt * bpm / 60;
+      if (phase >= 1) { phase -= 1; beat = (beat + 1) % 4; lit[beat] = 1; buzz(card, beat === 0, true); }
+      for (let i = 0; i < 4; i++) lit[i] *= Math.exp(-dt / .28);
+      // Four beat lights round the ring, the first at 12 o'clock, clockwise.
+      for (let i = 0; i < 4; i++) {
+        const mid = (-90 + 90 * i) * DEG, half = 34 * DEG, col = i === 0 ? C.accent : C.ink;
+        ctx.save(); ctx.lineCap = 'round';
+        ctx.strokeStyle = C.track; ctx.lineWidth = st * 1.5;
+        ctx.beginPath(); ctx.arc(cx, cy, R, mid - half, mid + half); ctx.stroke();
+        if (lit[i] > .01) {
+          ctx.strokeStyle = rgba(col, lit[i] * .95); ctx.shadowColor = rgba(col, lit[i] * .8); ctx.shadowBlur = S * .05 * lit[i];
+          ctx.beginPath(); ctx.arc(cx, cy, R, mid - half, mid + half); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      drawCentred(ctx, S, String(bpm), C.ink, S * .25, cy - S * .03, 300);
+      drawCentred(ctx, S, 'BPM · Andante', C.muted, S * .06, cy + S * .1, 500);
+      ctx.save(); ctx.fillStyle = C.accent; dot(ctx, cx, cy + S * .255, S * .07); ctx.fillStyle = C.onAccent;
+      const q = S * .023; ctx.beginPath(); ctx.roundRect(cx - q, cy + S * .255 - q, 2 * q, 2 * q, q * .25); ctx.fill(); ctx.restore();
+      if (edge) {
+        // A finger running round the screen's edge: the Watch 5's touch bezel.
+        ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = S * .016; ctx.strokeStyle = rgba('#ffffff', .55 * edge.on);
+        ctx.shadowColor = rgba(C.accent, .9 * edge.on); ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(cx, cy, S / 2 - S * .012, (edge.a - 12) * DEG, (edge.a + 12) * DEG); ctx.stroke(); ctx.restore();
+      }
+    };
+  },
+
+  ambient() {
+    return (ctx, S, t) => {
+      const k = t % 9.5;
+      const a = k < 4 ? 1 : k < 4.8 ? 1 - smooth((k - 4) / .8) : k < 8.7 ? 0 : smooth((k - 8.7) / .8);
+      if (a > 0) {
+        ctx.save(); ctx.globalAlpha = a;
+        drawDial(ctx, S, { pal: C, cents: .3 * noise(t), alpha: 1, glow: 1 });
+        drawReading(ctx, S, C, 'A', '2', 0, 1, 1);
+        ctx.restore();
+      }
+      if (a < 1) {
+        const cx = S / 2, cy = S / 2, R = S / 2 - S * .06, now = new Date();
+        ctx.save(); ctx.globalAlpha = 1 - a;
+        ctx.strokeStyle = rgba(C.muted, .38); ctx.lineWidth = 1; ring(ctx, cx, cy, R);
+        ctx.strokeStyle = rgba(C.ink, .6); ctx.lineWidth = 1.2; seg(ctx, cx, cy - R + 2, cx, cy - R + S * .04);
+        ctx.font = `200 ${S * .22}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+        ctx.strokeStyle = rgba(C.ink, .85); ctx.lineWidth = 1.1;
+        ctx.strokeText(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), cx, cy + S * .07);
+        ctx.fillStyle = rgba(C.muted, .7); ctx.font = `500 ${S * .055}px ${FONT}`; ctx.fillText('Tap to tune', cx, cy + S * .19);
+        ctx.restore();
+      }
+      tapRipple(ctx, S, S / 2, S / 2 + S * .02, (k - 8.45) / .7);
+    };
+  },
+
+  tile() {
+    const tu = new Tuner();
+    return (ctx, S, t, dt) => {
+      const k = t % 9.5, cx = S / 2, cy = S / 2;
+      const ta = k < 3.4 ? 1 : k < 3.9 ? 1 - smooth((k - 3.4) / .5) : k < 8.9 ? 0 : smooth((k - 8.9) / .6);
+      tu.step(k > 4.5 && k < 8.4 ? pluck(k - 4.5, -12, .6, 2.6, 7) : null, dt);
+      if (ta < 1) { ctx.save(); ctx.globalAlpha = 1 - ta; frameTuner(ctx, S, C, tu, 'E', '2'); ctx.restore(); }
+      if (ta > 0) {
+        ctx.save(); ctx.globalAlpha = ta;
+        drawCentred(ctx, S, 'Twangle', C.ink, S * .062, cy - S * .3, 500);
+        const by = cy - S * .03, br = S * .125, lx = cx - S * .155, rx = cx + S * .155;
+        const press = k > 2.9 && k < 3.5 ? Math.sin((k - 2.9) / .6 * Math.PI) : 0;
+        // Tune: the accent button with a little ring and marker.
+        ctx.fillStyle = C.accent; dot(ctx, lx, by, br * (1 - .05 * press));
+        ctx.strokeStyle = C.onAccent; ctx.fillStyle = C.onAccent; ctx.lineWidth = S * .012; ctx.lineCap = 'round';
+        ring(ctx, lx, by, S * .05);
+        dot(ctx, lx, by - S * .05, S * .017);
+        // Metronome: a quieter button with the metronome's shape.
+        ctx.fillStyle = '#232a42'; dot(ctx, rx, by, br);
+        ctx.strokeStyle = C.ink; ctx.lineWidth = S * .01; ctx.lineJoin = 'round';
+        const mb = by + S * .055, mt = by - S * .055;
+        ctx.beginPath(); ctx.moveTo(rx - S * .045, mb); ctx.lineTo(rx - S * .018, mt); ctx.lineTo(rx + S * .018, mt); ctx.lineTo(rx + S * .045, mb); ctx.closePath(); ctx.stroke();
+        seg(ctx, rx, mb - S * .012, rx + S * .04, mt - S * .005);
+        ctx.fillStyle = C.ink; dot(ctx, rx + S * .022, by - S * .005, S * .011);
+        ctx.restore();
+        ctx.save(); ctx.globalAlpha = ta; ctx.font = `500 ${S * .052}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = C.ink; ctx.fillText('Tune', lx, cy + S * .145); ctx.fillText('96 BPM', rx, cy + S * .145);
+        ctx.fillStyle = C.muted; ctx.font = `500 ${S * .048}px ${FONT}`; ctx.fillText('Guitar · Standard', cx, cy + S * .27);
+        ctx.restore();
+        tapRipple(ctx, S, lx, by, (k - 2.9) / .7);
+      }
+    };
+  },
+
+  styles() {
+    const order = ['ancient', 'classic', 'retro', 'contemporary', 'futuristic', 'spaceage'], D = 3.6, tu = new Tuner();
+    return (ctx, S, t, dt) => {
+      const i = Math.floor(t / D) % 6, k = t % D, p = PAL[order[i]], cx = S / 2, cy = S / 2;
+      tu.step(pluck(k, i % 2 ? 11 : -13, .45, 2.8, i), dt);
+      const fade = Math.min(smooth(k / .35), smooth((D - k) / .35));
+      ctx.save(); ctx.globalAlpha = fade;
+      const vg = ctx.createRadialGradient(cx, cy, 0, cx, cy, S / 2);
+      vg.addColorStop(0, rgba(p.bg, .9)); vg.addColorStop(.7, rgba(p.bg, .4)); vg.addColorStop(1, rgba(p.bg, 0));
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, S, S);
+      frameTuner(ctx, S, p, tu, 'G', '3', { finish: order[i] });
+      drawCentred(ctx, S, p.name, p.muted, S * .05, cy + S * .29, 500);
+      for (let j = 0; j < 6; j++) { ctx.fillStyle = j === i ? p.accent : rgba(p.muted, .3); dot(ctx, cx + (j - 2.5) * S * .03, cy + S * .345, S * .008); }
+      ctx.restore();
+    };
+  },
+};
+
+const items = [];
+document.querySelectorAll('canvas[data-scene]').forEach(cv => {
+  const S = cv.clientWidth;
+  cv.width = Math.round(S * DPR); cv.height = Math.round(S * DPR);
+  items.push({ ctx: cv.getContext('2d'), S, draw: SCENES[cv.dataset.scene](cv.closest('.card')) });
+});
+let last = performance.now();
+const t0 = last;
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000), t = (now - t0) / 1000;
+  last = now;
+  for (const it of items) {
+    const { ctx, S } = it;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, S, S);
+    it.draw(ctx, S, t, dt);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
