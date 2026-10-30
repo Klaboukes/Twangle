@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
+
 /**
  * Decides when the meter's in-tune glow is lit, the visual partner of [InTuneTickRule]. It lights on
  * the same update that rises `inTune` (so it eases in together with the vibration tick), stays lit

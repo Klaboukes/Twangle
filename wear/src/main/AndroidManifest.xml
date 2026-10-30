@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- The only permission, asked for at runtime. No INTERNET: audio never leaves the watch. -->
+    <!-- The only permission asked for at runtime. No INTERNET: audio never leaves the watch. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- The tap on the wrist when a note comes in tune; granted at install, never asked for. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-feature android:name="android.hardware.type.watch" />
     <uses-feature

@@ -31,6 +31,12 @@ import kotlin.math.roundToInt
  * A note that is lost for a moment stays on screen for [HOLD_SECONDS], and keeps "in tune" if
  * the same note comes back, so the watch never flickers between a reading and "Play a note".
  *
+ * The moment a note comes in tune the watch taps the wrist ([WatchInTuneTap]), and the microphone,
+ * in the same case, hears the motor's short buzz. So the pipeline looks away for as long as that
+ * buzz can be in a frame ([TAP_SECONDS] plus one window): the reading, already in tune, holds still
+ * meanwhile instead of being nudged a few cents (`WatchPitchPipelineTest` mixes a motor's buzz in at
+ * the tap).
+ *
  * Everything is made once per collection and the per-frame loop allocates nothing: a new
  * [WatchTunerState] is only emitted when what the watch shows changes (the note or the whole
  * cents, or whether it is in tune), a few times a second at most while a note rings. DSP runs on [dspDispatcher].
@@ -51,6 +57,7 @@ class WatchPitchPipeline(
         var shownMidi = NO_NOTE
         var shownCents = 0
         var shownInTune = false
+        var tapFrames = 0
         var first = true
 
         emit(WatchTunerState.Listening)
@@ -74,6 +81,11 @@ class WatchPitchPipeline(
                 pos += assembler.push(chunk, pos, chunk.size - pos)
                 if (!assembler.isFrameReady) continue
                 assembler.readFrame(frame)
+                if (tapFrames > 0) {
+                    // These frames may hear the wrist tap's buzz: the reading holds as it is.
+                    tapFrames--
+                    continue
+                }
                 val open = gate.process(frame)
                 // A tick that has already died away is not a note, nor the end of one (SustainCheck).
                 val sustained = !open || sustain.isSustained(frame, floorDbfs = noise.floorDbfs)
@@ -98,6 +110,7 @@ class WatchPitchPipeline(
                 if (midi != shownMidi) inTune.reset()
                 val isInTune = midi != NO_NOTE && inTune.update(smoother.cents, frameSeconds)
                 if (midi != shownMidi || cents != shownCents || isInTune != shownInTune) {
+                    if (isInTune && !shownInTune) tapFrames = analysis.tapFrames
                     shownMidi = midi
                     shownCents = cents
                     shownInTune = isInTune
@@ -129,6 +142,9 @@ class WatchPitchPipeline(
         val detector = settings.newPitchDetector()
         val frameSeconds = settings.hopSeconds
         val holdFrames = ceil(HOLD_SECONDS / frameSeconds).toInt()
+
+        // Every frame whose window may hold some of the tap's buzz.
+        val tapFrames = ceil((TAP_SECONDS + settings.windowSize.toFloat() / rate) / frameSeconds).toInt()
     }
 
     private companion object {
@@ -139,5 +155,12 @@ class WatchPitchPipeline(
          * phone's in-tune glow outlasts a dropout (`InTuneGlowRule`, 600 ms).
          */
         const val HOLD_SECONDS = 0.6f
+
+        /**
+         * How long after a note comes in tune the wrist tap's buzz may still be heard: the tap is
+         * played a frame or two of the screen after the reading (up to some 60 ms with the motor's
+         * start) and a short click rings for about 40 ms. About 190 ms of frames with the window.
+         */
+        const val TAP_SECONDS = 0.1f
     }
 }

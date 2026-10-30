@@ -77,7 +77,8 @@ import kotlin.math.sin
  * The watch app: the microphone permission first, then the tuner. [tuner] is only asked for (and
  * so the microphone only opened) once the permission is granted. While the tuner is shown, the
  * watch's screen state goes to the view model, which lets go of the mic when the screen goes off,
- * and the screen is held on while the tuner hears playing.
+ * the screen is held on while the tuner hears playing, and the wrist feels a tap as a note comes
+ * in tune.
  */
 @Composable
 fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
@@ -93,6 +94,8 @@ fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
                 }
                 LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.shown() }
                 val state by viewModel.state.collectAsStateWithLifecycle()
+                // One soft tap on the wrist as the note comes in tune, with the ring's glow.
+                WatchInTuneTapEffect(state)
                 // The ring runs along the edge, where the time would be, so the tuner leaves it out.
                 ScreenScaffold(timeText = {}) {
                     WatchTuner(state, onRetry = viewModel::retry)

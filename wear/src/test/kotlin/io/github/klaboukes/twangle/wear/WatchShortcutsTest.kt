@@ -64,10 +64,11 @@ class WatchShortcutsTest {
     }
 
     @Test
-    fun theMicrophoneIsStillTheOnlyPermission() {
+    fun theMicrophoneIsStillTheOnlyPermissionAskedFor() {
+        // VIBRATE (the in-tune tap) is granted at install and never asked for; no INTERNET.
         val permissions = manifest.getElementsByTagName("uses-permission")
         assertEquals(
-            listOf("android.permission.RECORD_AUDIO"),
+            listOf("android.permission.RECORD_AUDIO", "android.permission.VIBRATE"),
             (0 until permissions.length).map { (permissions.item(it) as Element).android("name") },
         )
     }

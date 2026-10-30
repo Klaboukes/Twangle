@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.dsp.smoothing
 
 /**
  * Decides when reaching "in tune" earns a haptic tick. Every rise of `inTune` ticks, except when the

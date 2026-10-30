@@ -14,7 +14,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
-import io.github.klaboukes.twangle.feature.tuner.InTuneTickRule
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
 
 /**
  * Plays [tick] when the note becomes in tune, if [enabled] (rules in [InTuneTickRule]). [target]

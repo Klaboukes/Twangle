@@ -1,11 +1,15 @@
 package io.github.klaboukes.twangle.wear
 
 import io.github.klaboukes.twangle.core.audio.AudioConfig
+import io.github.klaboukes.twangle.core.audio.AudioRecorder
 import io.github.klaboukes.twangle.core.audio.AudioRecorderException
 import io.github.klaboukes.twangle.core.audio.FakeAudioRecorder
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.testsignals.TestSignals
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -140,6 +144,140 @@ class WatchPitchPipelineTest {
             fail("expected a failure")
         } catch (e: AudioRecorderException.InitializationFailed) {
             assertTrue(e.message.orEmpty().contains("4000"))
+        }
+    }
+
+    /**
+     * The microphone hears the watch's own motor. A watch's vibration motor (a linear resonant
+     * actuator) rings at its resonance, about 150–250 Hz, and a system click drives it for a few
+     * cycles that die away within some 30 ms; the microphone sits in the same case, so it picks the
+     * buzz up through the body. Modelled as a damped sine at [hz] (8 ms decay, 40 ms long), its peak
+     * [level] times the note's peak.
+     */
+    private fun motorBuzz(hz: Float, level: Float, notePeak: Float): FloatArray =
+        TestSignals.tick(floatArrayOf(hz), decaySeconds = 0.008, length = 48_000 * 40 / 1000, amplitude = level * notePeak)
+
+    /**
+     * Plays [signal] like the fake recorder, chunk by chunk in virtual time, and mixes [buzz] in from
+     * [latencyMillis] after [tap] was called (the motor starting a little after the tap is asked for):
+     * the loop of a real watch, whose microphone hears the tap its own reading set off.
+     */
+    private class WristRecorder(
+        private val signal: FloatArray,
+        private val buzz: FloatArray,
+        latencyMillis: Int,
+        override val config: AudioConfig = AudioConfig(),
+    ) : AudioRecorder {
+        private val latency = config.sampleRate * latencyMillis / 1000
+        private var played = 0
+        var buzzAt = -1
+            private set
+
+        fun tap() {
+            // Only the first tap buzzes here; the test counts any further ones.
+            if (buzzAt < 0) buzzAt = played + latency
+        }
+
+        override fun chunks(): Flow<FloatArray> = flow {
+            val chunk = FloatArray(config.chunkSize)
+            while (played < signal.size) {
+                // Waits first, so a tap asked for meanwhile starts after the chunks heard so far.
+                delay(chunk.size * 1000L / config.sampleRate)
+                for (i in chunk.indices) {
+                    val n = played + i
+                    var sample = if (n < signal.size) signal[n] else 0f
+                    if (buzzAt in 0..n && n - buzzAt < buzz.size) sample += buzz[n - buzzAt]
+                    chunk[i] = sample
+                }
+                played += chunk.size
+                emit(chunk)
+            }
+        }
+    }
+
+    private class TapRun(val taps: Int, val buzzAt: Int, val afterTap: List<WatchTunerState>)
+
+    /** Runs [signal] through the pipeline and the watch's tap rule, the motor buzzing on the tap. */
+    private suspend fun TestScope.tapRun(signal: FloatArray, buzz: FloatArray, latencyMillis: Int): TapRun {
+        val recorder = WristRecorder(signal, buzz, latencyMillis)
+        val rule = WatchInTuneTap()
+        var taps = 0
+        val afterTap = mutableListOf<WatchTunerState>()
+        WatchPitchPipeline(recorder, dspDispatcher = StandardTestDispatcher(testScheduler)).states().collect { state ->
+            if (taps > 0) afterTap += state
+            if (rule.update(state, testScheduler.currentTime)) {
+                taps++
+                recorder.tap()
+            }
+        }
+        return TapRun(taps, recorder.buzzAt, afterTap)
+    }
+
+    /**
+     * Steady across the tap: one tap only (the buzz never earns a second), and every reading after it
+     * the same note, still in tune, within a cent of [cleanCents] (the rounding of the whole cents),
+     * and at [cleanCents] once the buzz has passed. Without the pipeline looking away during the tap
+     * a buzz near a string's own partials nudged the number by up to 3 cents for a few frames (a
+     * 250 Hz buzz on the plucked D string, 60 ms late), though the note always stayed in tune.
+     */
+    private fun assertSteadyAcrossTheTap(name: String, signal: FloatArray, buzz: FloatArray, latencyMillis: Int, cleanCents: Int) = runTest {
+        val run = tapRun(signal, buzz, latencyMillis)
+        assertEquals("$name: taps", 1, run.taps)
+        assertTrue("$name: the buzz came while the note rang (at ${run.buzzAt})", run.buzzAt in 0 until signal.size - buzz.size)
+        for (state in run.afterTap) {
+            assertTrue("$name: after the tap $state", state is WatchTunerState.Detected && state.inTune)
+            val cents = (state as WatchTunerState.Detected).cents
+            assertTrue("$name: read $cents cents after the tap, $cleanCents before", abs(cents - cleanCents) <= 1)
+        }
+        val last = run.afterTap.lastOrNull() as WatchTunerState.Detected?
+        assertTrue("$name: back at $cleanCents cents, not ${last?.cents}", last == null || last.cents == cleanCents)
+    }
+
+    @Test
+    fun `the wrist tap leaves the reading steady on every string`() {
+        // Each string of a guitar in standard tuning, held (a bright sawtooth) and plucked (dying
+        // away), the motor buzzing across a watch motor's range at half the note's level, starting at
+        // once, 30 or 60 ms late.
+        for (hz in floatArrayOf(82.41f, 110f, 146.83f, 196f, 246.94f, 329.63f)) {
+            val held = TestSignals.sawtooth(hz, length = 72_000)
+            val plucked = TestSignals.pluck(hz, length = 72_000, decaySeconds = 2.0)
+            for ((kind, signal) in listOf("held" to held, "plucked" to plucked)) {
+                val peak = signal.maxOf { abs(it) }
+                for (buzzHz in floatArrayOf(150f, 175f, 200f, 225f, 250f)) {
+                    for (latency in intArrayOf(0, 30, 60)) {
+                        assertSteadyAcrossTheTap(
+                            "$kind $hz Hz, $buzzHz Hz buzz $latency ms late",
+                            signal,
+                            motorBuzz(buzzHz, level = 0.5f, notePeak = peak),
+                            latency,
+                            cleanCents = 0,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `the wrist tap leaves a note a few cents off where it was`() {
+        // +3.5 cents earns "in tune" (within 5); the tap must not push it out (past 7).
+        val signal = TestSignals.sawtooth(196f * 1.002f, length = 72_000)
+        var clean = 0
+        runTest { clean = statesFor(signal).lastDetected().cents }
+        assertSteadyAcrossTheTap("G3 +3.5 cents", signal, motorBuzz(175f, level = 0.5f, notePeak = 0.5f), latencyMillis = 15, cleanCents = clean)
+    }
+
+    @Test
+    fun `even a buzz as loud as the note or twice as loud leaves the reading steady`() {
+        // A margin: the motor heard as loud as the string, or louder, on the strings round its range.
+        for (hz in floatArrayOf(110f, 146.83f, 196f, 246.94f)) {
+            val plucked = TestSignals.pluck(hz, length = 72_000, decaySeconds = 2.0)
+            val peak = plucked.maxOf { abs(it) }
+            for (level in floatArrayOf(1f, 2f)) {
+                for (buzzHz in floatArrayOf(150f, 200f, 250f)) {
+                    assertSteadyAcrossTheTap("$hz Hz, $buzzHz Hz buzz at $level×", plucked, motorBuzz(buzzHz, level, peak), latencyMillis = 20, cleanCents = 0)
+                }
+            }
         }
     }
 }

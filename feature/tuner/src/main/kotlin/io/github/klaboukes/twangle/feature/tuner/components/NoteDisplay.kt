@@ -86,7 +86,7 @@ import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.settings.TunerDisplay
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
-import io.github.klaboukes.twangle.feature.tuner.InTuneTickRule
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneTickRule
 import io.github.klaboukes.twangle.feature.tuner.R
 import io.github.klaboukes.twangle.feature.tuner.ReceptionTip
 import io.github.klaboukes.twangle.feature.tuner.SteadyHint

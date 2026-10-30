@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.dsp.smoothing
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

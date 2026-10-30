@@ -125,7 +125,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     level/      NoiseFloorTracker, ReceptionTracker
     music/      Note, NoteMapper, Tuning (+ Tunings presets), Instrument (+ Instruments), Notation, KeySpelling,
                 LoweredTunings (any tuning lowered by up to 2½ steps)
-    smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector
+    smoothing/  PitchSmoother, MedianFilter, ExponentialSmoother, InTuneDetector, InTuneTickRule (the in-tune tap, phone and watch)
     strobe/     StrobeMotion
     trail/      PitchHistory (the pitch trail's last seconds of readings)
     synth/      StringSynth, StringVoice (+ BodyMode, StringVoices): the reference tone in each instrument's voice
@@ -180,7 +180,7 @@ core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/
 
 feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     TunerViewModel, TunerUiState, TunerOptions, TunerInterpreter, TunerLayout, TunerScreen,
-    PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision), InTuneTickRule,
+    PitchPipeline (+ PitchReading), TunerError, MicPermission, InTunePrecisionDetector (forPrecision),
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
     SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
@@ -225,7 +225,8 @@ app/src/main/kotlin/io/github/klaboukes/twangle/app/
 wear/src/main/kotlin/io/github/klaboukes/twangle/wear/
     WatchActivity, WatchTunerViewModel, WatchPitchPipeline, WatchTunerState (+ WatchTunerError),
     WatchTunerScreen (WatchTunerApp, WatchTuner, WatchDial, WatchNoteName), WatchTheme (WatchColors),
-    ScreenState (ScreenOnEffect), WatchScreenAwake (rememberWatchScreenAwake), MicPermission (rememberWatchMicPermission)
+    ScreenState (ScreenOnEffect), WatchScreenAwake (rememberWatchScreenAwake), MicPermission (rememberWatchMicPermission),
+    WatchInTuneTap (WatchInTuneTapEffect, rememberWristTap)
 
 baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, MeterFramesBenchmark, TunerJourney
