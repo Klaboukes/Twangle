@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakeRule
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
@@ -68,7 +70,7 @@ internal class ScreenAwake(private val rule: ScreenAwakeRule, private val clock:
     }
 
     fun heard(state: TunerUiState) {
-        rule.heard(ScreenAwakeRule.soundOf(state), clock())
+        rule.heard(soundOf(state), clock())
         update()
     }
 
@@ -91,6 +93,13 @@ internal class ScreenAwake(private val rule: ScreenAwakeRule, private val clock:
             }
         }
     }
+}
+
+/** What [state] tells [ScreenAwakeRule] of the player. */
+internal fun soundOf(state: TunerUiState): ScreenAwakeRule.Sound = when (state) {
+    is TunerUiState.Detected -> ScreenAwakeRule.Sound.SOUNDING
+    is TunerUiState.StrumCheck, is TunerUiState.IntonationCheck, is TunerUiState.ChordName -> ScreenAwakeRule.Sound.PLAYED
+    is TunerUiState.Listening, is TunerUiState.Error, TunerUiState.PermissionRequired -> ScreenAwakeRule.Sound.QUIET
 }
 
 /**

@@ -69,7 +69,8 @@ import kotlin.math.sin
 /**
  * The watch app: the microphone permission first, then the tuner. [tuner] is only asked for (and
  * so the microphone only opened) once the permission is granted. While the tuner is shown, the
- * watch's screen state goes to the view model, which lets go of the mic when the screen goes off.
+ * watch's screen state goes to the view model, which lets go of the mic when the screen goes off,
+ * and the screen is held on while the tuner hears playing.
  */
 @Composable
 fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
@@ -78,7 +79,11 @@ fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
             val permission = rememberWatchMicPermission()
             if (permission.granted) {
                 val viewModel = tuner()
-                ScreenOnEffect(viewModel::setScreenOn)
+                val awake = rememberWatchScreenAwake(viewModel.state)
+                ScreenOnEffect { on ->
+                    viewModel.setScreenOn(on)
+                    if (on) awake.touched()
+                }
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 // The ring runs along the edge, where the time would be, so the tuner leaves it out.
                 ScreenScaffold(timeText = {}) {

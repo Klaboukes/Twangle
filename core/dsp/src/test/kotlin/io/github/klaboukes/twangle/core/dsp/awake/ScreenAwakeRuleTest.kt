@@ -1,13 +1,11 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.dsp.awake
 
-import io.github.klaboukes.twangle.core.dsp.music.Tunings
-import io.github.klaboukes.twangle.core.settings.TunerMode
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakePhase.OFF
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakePhase.ON
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakePhase.WARNING
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakeRule.Sound.PLAYED
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakeRule.Sound.QUIET
-import io.github.klaboukes.twangle.feature.tuner.ScreenAwakeRule.Sound.SOUNDING
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase.OFF
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase.ON
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakePhase.WARNING
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakeRule.Sound.PLAYED
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakeRule.Sound.QUIET
+import io.github.klaboukes.twangle.core.dsp.awake.ScreenAwakeRule.Sound.SOUNDING
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -98,22 +96,13 @@ class ScreenAwakeRuleTest {
     }
 
     @Test
-    fun `a shown note is sounding, a tool's panel is played, listening is quiet`() {
-        val tuning = Tunings.STANDARD
-        val detected = TunerUiState.Detected(
-            mode = TunerMode.AUTO,
-            tuning = tuning,
-            noteName = "A",
-            octave = 2,
-            frequencyHz = 110f,
-            cents = 0f,
-            targetString = 1,
-            inTune = true,
-        )
-        assertEquals(SOUNDING, ScreenAwakeRule.soundOf(detected))
-        assertEquals(PLAYED, ScreenAwakeRule.soundOf(TunerUiState.ChordName(tuning)))
-        assertEquals(PLAYED, ScreenAwakeRule.soundOf(TunerUiState.StrumCheck(tuning)))
-        assertEquals(QUIET, ScreenAwakeRule.soundOf(TunerUiState.Listening(TunerMode.AUTO, tuning)))
-        assertEquals(QUIET, ScreenAwakeRule.soundOf(TunerUiState.PermissionRequired))
+    fun `without a warning the screen goes straight from held to let go`() {
+        // The watch's rule: no warning, so no in-between phase and no bar.
+        val watch = ScreenAwakeRule(startMillis = 0, warningMillis = 0)
+        assertEquals(ON, watch.phase(minutes3 - 1))
+        assertEquals(OFF, watch.phase(minutes3))
+        assertEquals(minutes3, watch.millisUntilChange(0))
+        assertNull(watch.millisUntilChange(minutes3))
+        assertEquals(0f, watch.warningLeft(minutes3), 0f)
     }
 }

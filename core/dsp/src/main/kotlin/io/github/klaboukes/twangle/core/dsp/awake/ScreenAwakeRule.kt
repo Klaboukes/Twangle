@@ -1,16 +1,17 @@
-package io.github.klaboukes.twangle.feature.tuner
+package io.github.klaboukes.twangle.core.dsp.awake
 
-/** Where Keep screen on stands: the screen held on, the last seconds' warning, or let go to the phone's own timeout. */
+/** Where Keep screen on stands: the screen held on, the last seconds' warning, or let go to the device's own timeout. */
 enum class ScreenAwakePhase { ON, WARNING, OFF }
 
 /**
- * Keep screen on's quiet timer (owner, 2026-10-20): the screen stays on while the tuner hears
- * playing, and [quietMillis] after the last of it (or the last touch) a warning shows for
- * [warningMillis]; then the screen is left to the phone's own timeout, so a phone forgotten on a
- * music stand goes dark. A note ([Sound.SOUNDING]) counts once it has sounded [noteMillis]: a
- * quiet room's sounds come and go as notes of about 0.2 s (Xiaomi 12X, 2026-10-20), a plucked
- * string rings for seconds. It then holds the screen on however long it lasts, and the quiet time
- * counts from the moment it stops. Not thread-safe.
+ * Keep screen on's quiet timer (owner, 2026-10-20), for the phone's tuner and the watch's: the
+ * screen stays on while the tuner hears playing, and [quietMillis] after the last of it (or the
+ * last touch) a warning shows for [warningMillis] (none on the watch); then the screen is left to
+ * the device's own timeout, so a phone forgotten on a music stand goes dark. A note
+ * ([Sound.SOUNDING]) counts once it has sounded [noteMillis]: a quiet room's sounds come and go as
+ * notes of about 0.2 s (Xiaomi 12X, 2026-10-20), a plucked string rings for seconds. It then holds
+ * the screen on however long it lasts, and the quiet time counts from the moment it stops. Not
+ * thread-safe.
  */
 class ScreenAwakeRule(
     startMillis: Long,
@@ -57,8 +58,9 @@ class ScreenAwakeRule(
         }
     }
 
-    /** How much of the warning is left at [nowMillis], 1 when it starts to 0 when it ends. */
+    /** How much of the warning is left at [nowMillis], 1 when it starts to 0 when it ends (0 without a warning). */
     fun warningLeft(nowMillis: Long): Float {
+        if (warningMillis <= 0) return 0f
         val left = quietMillis + warningMillis - (nowMillis - lastActivityMillis)
         return (left.toFloat() / warningMillis).coerceIn(0f, 1f)
     }
@@ -86,12 +88,5 @@ class ScreenAwakeRule(
         const val DEFAULT_QUIET_MILLIS = 3 * 60_000L
         const val DEFAULT_WARNING_MILLIS = 10_000L
         const val DEFAULT_NOTE_MILLIS = 1_000L
-
-        /** What [state] tells of the player. */
-        fun soundOf(state: TunerUiState): Sound = when (state) {
-            is TunerUiState.Detected -> Sound.SOUNDING
-            is TunerUiState.StrumCheck, is TunerUiState.IntonationCheck, is TunerUiState.ChordName -> Sound.PLAYED
-            is TunerUiState.Listening, is TunerUiState.Error, TunerUiState.PermissionRequired -> Sound.QUIET
-        }
     }
 }

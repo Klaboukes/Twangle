@@ -144,6 +144,7 @@ core/dsp/src/main/kotlin/io/github/klaboukes/twangle/core/dsp/
     intonation/ Intonation (+ IntonationResult, IntonationVerdict), SettledPitch, SaddleMove: 12th fret against the
                 open string
     buffer/     FrameAssembler
+    awake/      ScreenAwakeRule (+ ScreenAwakePhase): Keep screen on's quiet timer, for the phone's tuner and the watch's
 core/dsp/src/testFixtures/…/core/dsp/testsignals/
                 TestSignals (sine, saw, square, weak fundamental, pluck, noise, hum, mix, band-limit)
 
@@ -183,7 +184,7 @@ feature/tuner/src/main/kotlin/io/github/klaboukes/twangle/feature/tuner/
     InTuneGlowRule, TunerHint (+ TuningCue), SteadyHint, ReceptionTip (+ TipCue),
     SignalBars (+ SignalFigures),
     StrumCheck (StrumPhase, StrumString, StrumReading, StrumCheckInterpreter, StrumAnalysis),
-    IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake (+ ScreenAwakeRule)
+    IntonationCheck, ChordName, PitchTrailFeed, PitchTrailDescription, ScreenAwake
     components/ MeterFrame, NoteDisplay, WaveView, ChromaticReadout, StringSelector (+ StringRowFit),
                 InstrumentTuningPanel (+ TuningRow), MyTunings, PickerNames, ModeSwitch, InTuneColor, InTuneGlow, InTuneHaptic, ReceptionLook,
                 SignalBarsButton, PermissionPrompt, StrumCheckView (StrumPanel, StrumStatus, StrumCheckToggle),
@@ -224,7 +225,7 @@ app/src/main/kotlin/io/github/klaboukes/twangle/app/
 wear/src/main/kotlin/io/github/klaboukes/twangle/wear/
     WatchActivity, WatchTunerViewModel, WatchPitchPipeline, WatchTunerState (+ WatchTunerError),
     WatchTunerScreen (WatchTunerApp, WatchTuner, WatchDial, WatchNoteName), WatchTheme (WatchColors),
-    ScreenState (ScreenOnEffect), MicPermission (rememberWatchMicPermission)
+    ScreenState (ScreenOnEffect), WatchScreenAwake (rememberWatchScreenAwake), MicPermission (rememberWatchMicPermission)
 
 baselineprofile/src/main/kotlin/io/github/klaboukes/twangle/baselineprofile/
     BaselineProfileGenerator, StartupBenchmark, MeterFramesBenchmark, TunerJourney
