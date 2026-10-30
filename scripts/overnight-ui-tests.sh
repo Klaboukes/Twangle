@@ -16,7 +16,7 @@
 # "<commit> <seconds since 1970> <date>". A later night skips them while nothing the module shows has
 # changed since (scripts/ui-test-scope.py, the rule --since-pass uses) and the pass is under
 # LANGUAGES_MAX_AGE_DAYS old (7): so a check runs again within a week whatever happens, in case the
-# scope missed a change. With 25 languages the checks of every module in every style take about 6 h;
+# scope missed a change. With 25 languages the checks of every module in every style took about 6 h (2 h since the same day's faster checks);
 # owner, 2026-10-30: skip what hasn't changed, and make the store screenshots only before a listing is
 # sent (scripts/release.sh listing refuses screenshots older than the app's screens), not every night.
 #

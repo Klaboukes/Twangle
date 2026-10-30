@@ -55,7 +55,7 @@ gh run list --branch main --limit 3          # a failed nightly run is fixed fir
 
 ```bash
 scripts/overnight-ui-tests.sh --dry-run                        # which language checks tonight runs (no phone)
-scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~1–7 h
+scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~1–3 h
 ```
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, every style, one class at a
 time, waiting while the phone is 37 °C or warmer; about 55 minutes), then the `@EveryLanguage`
@@ -69,7 +69,8 @@ noted (`build/ui-tests-passed/languages/`), and a later night skips them while n
 shows changed since (the rule `--since-pass` uses) and the pass is under a week old; the log says
 "passed …, nothing it shows changed since", and the summary's second line how many ran. A night after
 a change every screen shows (the design system, a new language, the night's translations of texts in
-every module) runs nearly all of them, about 7 hours; a quiet one, very few. `--full` runs all
+every module) runs nearly all of them, about 2 hours since the checks got faster the same day (about 20
+minutes a style); a quiet one, very few. `--full` runs all
 (after a change to the test helpers' scoping, or when in doubt). Skipped checks count as passed for the
 release, as `--since-pass` modules do.
 
@@ -102,6 +103,11 @@ For each failure decide first: **app bug or outdated test?**
   Class#method`, `-f` for parameterized names like `test[ANCIENT]`, `--thorough` for style
   variants, `DAY_LANGUAGES=<tag> … --languages` for the failing language's checks, `--all-languages`
   for all of them).
+- **Re-check a language fix in every language** (`scripts/ui-tests.sh <module> --thorough
+  --all-languages -f 'everyLanguage.*\[<STYLE>\]'`, a few minutes a style now), not the failing language
+  alone: some fail only after the languages before them. Bengali's About title in Futuristic
+  (2026-10-30) never failed on its own, and its first fix ran French off the bar, which only the run
+  in every language showed. Then the fixed language alone is no proof either way.
 - When it isn't clear, add a temporary probe (a `Log.i("PROBE", …)` read back with
   `adb logcat -d -s PROBE`, or a screenshot to the extra output) and remove it before committing.
 - A real bug: fix the app, keep the test. A test that is wrong about the app (a tag on the wrong
