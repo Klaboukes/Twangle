@@ -50,7 +50,7 @@ From the tools button above the strings, one at a time:
 
 ### Make it yours
 - **Six visual styles:** Ancient, Classic, Retro, Contemporary, Futuristic and Space Age, each with its own colours, lettering and background.
-- **Six meter looks** (Classic, Light arc, Spirit level, Eclipse, Arrows, Light bars) and **six wave looks** (a strobe among them).
+- **Six meter looks** (Classic, Light arc, Pointers, Loupe, Arrows, Light bars) and **six wave looks** (a strobe among them).
 - Light, dark or follow the phone, with colours from your wallpaper on Android 12+.
 - **Note names:** C, C♯, D (or with flats), German style with H for B, or Do Re Mi. By default they follow what is usual in your language.
 - **25 languages:** English, Dutch, German, French, Spanish, Italian, Portuguese (Brazil), Chinese (Simplified), Chinese (Traditional), Japanese, Korean, Hindi, Bengali, Indonesian, Vietnamese, Thai, Russian, Ukrainian, Turkish, Polish, Swedish, Norwegian, Danish, Finnish and Arabic (right to left). Pick one in the app or follow the phone.
