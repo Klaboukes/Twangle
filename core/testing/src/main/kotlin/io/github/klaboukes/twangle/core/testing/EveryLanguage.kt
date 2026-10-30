@@ -56,24 +56,36 @@ val isEveryLanguageRun: Boolean
  */
 fun SemanticsNodeInteractionsProvider.assertEveryTextWhollyShown(case: String) {
     val hasText = SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)
-    fun count() = onAllNodes(hasText, useUnmergedTree = true).fetchSemanticsNodes().size
-    if (count() == 0) throw AssertionError("$case: no text on screen")
-    // Counted again each time: a text may go meanwhile (the compact layout's tap hint fades out after a few seconds).
-    var index = 0
-    while (index < count()) {
-        val node = onAllNodes(hasText, useUnmergedTree = true)[index++]
-        val semantics = node.fetchSemanticsNode()
+    val texts = onAllNodes(hasText, useUnmergedTree = true)
+    var shown = texts.fetchSemanticsNodes()
+    if (shown.isEmpty()) throw AssertionError("$case: no text on screen")
+    // Each text once (by its semantics id), in the order found. The texts are fetched once, and again
+    // only after a scroll, which may bring others in: between scrolls nothing moves. (Until 2026-10-30
+    // they were fetched again for each text, which took two thirds of an every-language check.) A text
+    // may go meanwhile (the compact layout's tap hint fades out after a few seconds): one no longer
+    // placed is skipped.
+    val checked = HashSet<Int>()
+    while (true) {
+        val semantics = shown.firstOrNull { it.id !in checked } ?: break
+        checked += semantics.id
         val text = semantics.config[SemanticsProperties.Text].joinToString(" ")
         // A text only measured, never placed (a line keeping the room of its longest wording), is not on screen.
         if (text.isBlank() || !semantics.layoutInfo.isPlacedInTree()) continue
         try {
-            assertWhollyShown(node, "$case \"$text\"")
+            if (!checkedWithoutScrolling(semantics, "$case \"$text\"")) {
+                scrollToTheTop(semantics)
+                assertWhollyShown(onNode(hasId(semantics.id), useUnmergedTree = true), "$case \"$text\"")
+                shown = texts.fetchSemanticsNodes()
+            }
         } catch (e: AssertionError) {
             saveScreen(case)
             throw e
         }
     }
 }
+
+/** The node with semantics id [id]. */
+private fun hasId(id: Int) = SemanticsMatcher("semantics id $id") { it.id == id }
 
 /**
  * No text on screen breaks a word across two lines ("Majeur-pentatonisc / h"): every line but the

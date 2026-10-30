@@ -2,9 +2,13 @@ package io.github.klaboukes.twangle.core.testing
 
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import org.junit.Assert.fail
 import kotlin.math.abs
@@ -17,14 +21,62 @@ import kotlin.math.abs
  * [what] names it in the failure message.
  */
 fun assertWhollyShown(node: SemanticsNodeInteraction, what: String, scroll: Boolean = true) {
-    // Only where it can scroll: a pane sized to fit has nothing to scroll.
-    if (scroll && scrollingColumnHeight(node.fetchSemanticsNode()) != null) node.performScrollTo()
-    node.assertIsDisplayed()
     val semantics = node.fetchSemanticsNode()
+    if (!scroll) {
+        node.assertIsDisplayed()
+        checkWhollyShown(semantics, what)
+        return
+    }
+    // Only where it can scroll, and only when not wholly in view already (it wouldn't move): a pane
+    // sized to fit has nothing to scroll. Each fetch and scroll waits for the screen to settle, so
+    // fetching once saves most of a check's time (2026-10-30).
+    if (checkedWithoutScrolling(semantics, what)) return
+    node.performScrollTo()
+    node.assertIsDisplayed()
+    checkWhollyShown(node.fetchSemanticsNode(), what)
+}
+
+/**
+ * Scrolls the vertical scrolling column [semantics] is in so that its top is at the column's top,
+ * as far as the column goes: then the texts after it are in view too. performScrollTo moves a text
+ * only just into view, so in [assertEveryTextWhollyShown] each next text needed a scroll of its own
+ * (17 on one Ear training screen, about 90 ms each). Nothing where it isn't in one.
+ */
+internal fun SemanticsNodeInteractionsProvider.scrollToTheTop(semantics: SemanticsNode) {
+    val column = scrollingColumn(semantics) ?: return
+    if (!column.config.contains(SemanticsProperties.VerticalScrollAxisRange)) return
+    val by = semantics.positionInRoot.y - column.boundsInRoot.top
+    if (abs(by) < 1f) return
+    onNode(SemanticsMatcher("semantics id ${column.id}") { it.id == column.id }, useUnmergedTree = true)
+        .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, by) }
+}
+
+/**
+ * [semantics], as fetched, checked as [assertWhollyShown] checks a node once scrolled to, when it needs
+ * no scroll: outside a scrolling column, or wholly in view in one already (scrolling to it would not
+ * move it). Else false, with nothing checked: it must be scrolled to first. For
+ * [assertEveryTextWhollyShown], which fetches a screen's texts once rather than once for each.
+ */
+internal fun checkedWithoutScrolling(semantics: SemanticsNode, what: String): Boolean {
+    if (scrollingColumnHeight(semantics) != null && !wholly(semantics, semantics.size.height.toFloat())) return false
+    // As assertIsDisplayed, which is not called here: a text of no size shows nothing.
+    if (semantics.size.width <= 0 || semantics.size.height <= 0) fail("\"$what\" is not displayed (${semantics.size})")
+    checkWhollyShown(semantics, what)
+    return true
+}
+
+/** Whether [semantics]'s visible part is its width and [height] (px), within a px. */
+private fun wholly(semantics: SemanticsNode, height: Float): Boolean {
+    val visible = semantics.boundsInRoot
+    return abs(semantics.size.width - visible.width) <= 1f && abs(height - visible.height) <= 1f
+}
+
+/** The checks of [assertWhollyShown] on [semantics] where it is now. */
+private fun checkWhollyShown(semantics: SemanticsNode, what: String) {
     val visible = semantics.boundsInRoot
     val column = scrollingColumnHeight(semantics)
     val shownHeight = if (column != null && semantics.size.height > column + 1f) column else semantics.size.height.toFloat()
-    if (abs(semantics.size.width - visible.width) > 1f || abs(shownHeight - visible.height) > 1f) {
+    if (!wholly(semantics, shownHeight)) {
         fail("\"$what\" shows ${visible.width} x ${visible.height} of ${semantics.size.width} x ${semantics.size.height} px")
     }
     val layouts = mutableListOf<TextLayoutResult>()
@@ -70,8 +122,11 @@ fun TextLayoutResult.isCutOffAtTheBottom() =
     didOverflowHeight && (multiParagraph.didExceedMaxLines || multiParagraph.height > size.height + 1f)
 
 /** The visible height of the nearest scrolling ancestor of [node] (px), or null outside one. */
-private fun scrollingColumnHeight(node: SemanticsNode): Float? {
+private fun scrollingColumnHeight(node: SemanticsNode): Float? = scrollingColumn(node)?.boundsInRoot?.height
+
+/** The nearest scrolling ancestor of [node], or null outside one. */
+private fun scrollingColumn(node: SemanticsNode): SemanticsNode? {
     var parent = node.parent
     while (parent != null && !parent.config.contains(SemanticsActions.ScrollBy)) parent = parent.parent
-    return parent?.boundsInRoot?.height
+    return parent
 }

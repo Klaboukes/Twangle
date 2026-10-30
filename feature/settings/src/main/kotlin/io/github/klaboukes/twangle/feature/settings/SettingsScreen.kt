@@ -247,16 +247,12 @@ private fun SettingsScaffold(
             ) {
                 TopAppBar(
                     title = {
-                        // One line, set smaller where it doesn't fit the bar: Bengali's About title in Futuristic,
-                        // Orbitron's "Twangle" beside Bengali letters, made a line taller than the bar at 2× text
-                        // (the overnight run of 2026-10-30). Never wrapped (OneLineAutoSize says why).
+                        // Set smaller where it doesn't fit the bar: Bengali's About title in Futuristic, Orbitron's
+                        // "Twangle" beside Bengali letters, made a line taller than the bar at 2× text (the
+                        // overnight run of 2026-10-30). It still wraps where it is too wide, as French "À propos
+                        // de Twangle" does at 2× text, in two lines that fit; one line never wrapped ran off the bar.
                         val style = LocalTextStyle.current
-                        Text(
-                            title,
-                            maxLines = 1,
-                            softWrap = false,
-                            autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) },
-                        )
+                        Text(title, autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, TITLE_SMALLEST) })
                     },
                     modifier = Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxWidth(),
                     windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
