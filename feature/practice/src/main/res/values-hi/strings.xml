@@ -33,7 +33,6 @@
     <string name="practice_shape_next">अगला शेप</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">इस ट्यूनिंग में कोई शेप पहुँच में नहीं</string>
-    <string name="practice_chords_short_string">कॉर्ड चार्ट अभी बैंजो का छोटा तार नहीं जानते। ऊपर कोई दूसरा वाद्य चुनें।</string>
     <string name="practice_scales_short_string">स्केल अभी बैंजो का छोटा तार नहीं जानते। ऊपर कोई दूसरा वाद्य चुनें।</string>
     <string name="practice_capo_short_string">कैपो तालिका अभी बैंजो का छोटा तार नहीं जानती। ऊपर कोई दूसरा वाद्य चुनें।</string>
     <string name="practice_spoken_separator">", "</string>

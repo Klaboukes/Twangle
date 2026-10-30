@@ -66,8 +66,6 @@
     <string name="practice_chart_fret">%1$dfr</string>
     <!-- In the chart's place when the chord has no comfortable shape in the picked tuning. -->
     <string name="practice_chord_none">No shape within reach in this tuning</string>
-    <!-- In the chart's, the neck's or the table's place for the 5-string banjo, whose short fifth string (starting at the fifth fret) Chords, Scales and Capo don't draw yet. The instrument button is at the top of the screen. -->
-    <string name="practice_chords_short_string">Chord charts don\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
     <!-- Scales: shown in the neck's place for the 5-string banjo, whose short fifth string the tool doesn't draw yet. The instrument button is at the top of the screen. -->
     <string name="practice_scales_short_string">Scales don\'t know the banjo\'s short string yet. Pick another instrument at the top.</string>
     <!-- Capo helper: shown in the table's place for the 5-string banjo, whose short fifth string the tool doesn't handle yet. The instrument button is at the top of the screen. -->
@@ -78,6 +76,8 @@
     <string name="practice_spoken_shape">%1$s, shape %2$d of %3$d</string>
     <!-- TalkBack: a string by its open note, %1$s e.g. "E 2", as the tuning editor says it. -->
     <string name="practice_spoken_string">%1$s string</string>
+    <!-- TalkBack: the 5-string banjo's short fifth string (it starts at the fifth fret) by its open note, %1$s e.g. "G 4", as practice_spoken_string with the word "short": "short G 4 string". -->
+    <string name="practice_spoken_short_string">short %1$s string</string>
     <!-- TalkBack, each string of the shape: %1$s the string ("E 2 string"); played strings add the fret, the finger and the note sounded. A barre: its finger, its fret and the first and last string's notes ("A 2", "E 4"). -->
     <string name="practice_spoken_muted">%1$s, not played</string>
     <!-- TalkBack, a string of the chord shape played open: %1$s is the string ("E 2 string"). -->

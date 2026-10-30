@@ -133,6 +133,26 @@ class ChordShapeFinderTest {
     }
 
     @Test
+    fun `a banjo chart shows five fret rows, so the short string's start at the 5th fret is in view`() {
+        // Chart A of docs/design/banjo-charts-preview.html: one row more than every other instrument's.
+        for (tuning in Instruments.BANJO_5.tunings) assertEquals(tuning.id, 5, ChordShape.chartRowsFor(tuning))
+        for (instrument in Instruments.all - Instruments.BANJO_5) for (tuning in instrument.tunings) {
+            assertEquals(tuning.id, ChordShape.CHART_ROWS, ChordShape.chartRowsFor(tuning))
+        }
+        val openG = Instruments.BANJO_5.defaultTuning
+        val rows = ChordShape.chartRowsFor(openG)
+        fun shape(root: PitchClass, quality: ChordQuality, frets: String) =
+            ChordShapeFinder.shapesOf(Chord.of(root, quality), openG).first { it.toString() == frets }
+        // Up to the 5th fret: drawn from the nut, the short string's own nut on the chart's last line.
+        assertEquals(1, shape(G, MAJOR, "00000").startFret(rows))
+        assertEquals(1, shape(C, MAJOR, "05555").startFret(rows))
+        // Higher: from the lowest fret, its own nut inside the chart (x3666 from the 3rd) or above it (77777 from the 7th).
+        assertEquals(3, shape(C_SHARP, MAJOR, "x3666").startFret(rows))
+        assertEquals(6, shape(C_SHARP, MAJOR, "66666").startFret(rows))
+        assertEquals(7, shape(D, MAJOR, "77777").startFret(rows))
+    }
+
+    @Test
     fun `ukulele shapes play every string`() {
         val ukulele = Instruments.UKULELE.defaultTuning
         assertEquals("0003", first(C, MAJOR, ukulele).toString())

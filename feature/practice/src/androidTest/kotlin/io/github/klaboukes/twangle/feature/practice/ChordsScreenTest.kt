@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
@@ -30,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
-import androidx.test.platform.app.InstrumentationRegistry
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -54,6 +54,8 @@ import io.github.klaboukes.twangle.core.testing.checkedLanguages
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -70,7 +72,7 @@ import org.junit.runners.Parameterized
  * closing on each pick so the chart shows it, the chart follows the picked tuning and notation, ‹ › and a swipe
  * step through the shapes, TalkBack hears the name as a heading and a list, the panel's grids as
  * radio groups and the chart in words, and the whole tool fits: without scrolling upright and on its
- * side at normal text, wholly shown at 2× text, the panel too.
+ * side at normal text, wholly shown at 2× text, the panel too; the banjo charted with its short string, in both hands (Phase 59).
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
  */
@@ -306,43 +308,152 @@ class ChordsScreenTest(private val style: VisualStyle) {
     }
 
     /**
-     * The banjo's short fifth string (Phase 57): the chart's place says Chords doesn't draw it yet and
-     * the name stays; another instrument brings the chart straight back. Upright and on its side, at
-     * normal and 2x text.
+     * The banjo (Phase 59, the owner's picks A in docs/design/banjo-charts-preview.html): Chords charts it with its short
+     * fifth string, and TalkBack calls that one the "short G 4 string", its frets counted on the neck. The first three
+     * chords a beginner learns, G, C and D7, then D, whose first shape is barred at the 7th fret over all five strings.
+     * Upright and on its side, at normal and 2x text; another instrument and back changes only the strings.
      */
     @Test
-    fun theBanjoGetsAQuietLineInTheChartsPlace() {
-        val line = InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.practice_chords_short_string)
+    fun theBanjoIsChartedAndTalkBackNamesItsShortString() {
+        shownTuning.value = Instruments.BANJO_5.defaultTuning
         show(PitchClass.G, ChordQuality.MAJOR)
-        awaitChart("G major")
         for (scale in listOf(1f, 2f)) for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
             val case = "$style $size at ${scale}x"
             shownFontScale.value = scale
             shownSize.value = size
-            shownTuning.value = Instruments.BANJO_5.defaultTuning
             compose.waitForIdle()
-            assertFalse("$case: no chart", exists(PracticeTestTags.CHART))
-            assertWhollyShown(node(PracticeTestTags.SHORT_STRING).assertTextEquals(line), "$case: the banjo's line", scroll = true)
-            picker().assertExists()
-            shownTuning.value = Tunings.STANDARD
-            awaitChart("G major")
-            assertFalse("$case: the line goes", exists(PracticeTestTags.SHORT_STRING))
+            pick(PracticeTestTags.root(PitchClass.G), PracticeTestTags.type(ChordQuality.MAJOR))
+            assertEquals(
+                "$case: G",
+                "G major, shape 1 of 6, short G 4 string, open, D 3 string, open, G 3 string, open, B 3 string, open, D 4 string, open",
+                awaitChart("G major, shape 1 of"),
+            )
+            assertFalse("$case: no line in the chart's place", exists(PracticeTestTags.SHORT_STRING))
+            for (tag in listOf(PracticeTestTags.CHART, PracticeTestTags.NAME_PICKER, PracticeTestTags.NEXT)) assertWhollyShown(node(tag), "$case: $tag", scroll = true)
+            pick(PracticeTestTags.root(PitchClass.C))
+            assertEquals(
+                "$case: C",
+                "C major, shape 1 of 6, short G 4 string, open, D 3 string, fret 2, finger 2, E, G 3 string, open, " +
+                    "B 3 string, fret 1, finger 1, C, D 4 string, fret 2, finger 3, E",
+                awaitChart("C major, shape 1 of"),
+            )
+            pick(PracticeTestTags.root(PitchClass.D), PracticeTestTags.type(ChordQuality.DOMINANT_SEVENTH))
+            assertEquals(
+                "$case: D7, the open g no D7 note",
+                "D seventh, shape 1 of 6, short G 4 string, not played, D 3 string, open, G 3 string, fret 2, finger 2, A, " +
+                    "B 3 string, fret 1, finger 1, C, D 4 string, fret 4, finger 4, F sharp",
+                awaitChart("D seventh, shape 1 of"),
+            )
+            pick(PracticeTestTags.type(ChordQuality.MAJOR))
+            assertTrue(
+                "$case: D barred over the short string at the 7th fret, as banjo tab counts it",
+                awaitChart("D major, shape 1 of").contains("barre, fret 7, finger 1, strings G 4 to D 4, short G 4 string, fret 7, finger 1, A"),
+            )
+            node(PracticeTestTags.COUNT).assertTextEquals("1 of 6")
+        }
+        // Another instrument: its strings as they always were, no short one; the banjo again: the chart straight back.
+        shownTuning.value = Tunings.STANDARD
+        assertFalse(awaitChart("D major, shape 1 of 6, E 2 string").contains("short"))
+        shownTuning.value = Instruments.BANJO_5.defaultTuning
+        awaitChart("D major, shape 1 of 6, barre, fret 7")
+        shownFontScale.value = 1f
+        shownSize.value = XIAOMI
+    }
+
+    /**
+     * Chart A drawn: the short string starts at its own small nut on the 5th fret's line, so above it (frets 1 to 4) there
+     * is no string, below it there is; on a chart starting above the 5th fret (D, from the 7th) it runs the whole way. Both
+     * hands: left-handed the chart is a mirror image, the short string on the right, and TalkBack hears the same words.
+     * Upright and on its side.
+     */
+    @Test
+    fun theShortStringStartsAtItsOwnNutInBothHands() {
+        val banjo = Instruments.BANJO_5.defaultTuning
+        shownTuning.value = banjo
+        show(PitchClass.G, ChordQuality.MAJOR)
+        for (size in listOf(XIAOMI, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            for ((root, quality, words) in listOf(
+                Triple(PitchClass.G, ChordQuality.MAJOR, "G major"),
+                Triple(PitchClass.C, ChordQuality.MAJOR, "C major"),
+                Triple(PitchClass.D, ChordQuality.DOMINANT_SEVENTH, "D seventh"),
+                Triple(PitchClass.D, ChordQuality.MAJOR, "D major"),
+            )) {
+                shownLeftHanded.value = false
+                pick(PracticeTestTags.root(root), PracticeTestTags.type(quality))
+                val spoken = awaitChart("$words, shape 1 of")
+                compose.waitForIdle()
+                val case = "$style $size $words"
+                val fromNut = quality != ChordQuality.MAJOR || root != PitchClass.D
+                val normal = chart().captureToImage()
+                assertShortString(normal, ChartGeometry.of(banjo), fromNut, "$case right-handed")
+                shownLeftHanded.value = true
+                compose.waitForIdle()
+                assertEquals("$case: TalkBack hears the same left-handed", spoken, spokenChart())
+                val mirrored = chart().captureToImage()
+                assertShortString(mirrored, ChartGeometry.of(banjo, mirrored = true), fromNut, "$case left-handed")
+                // D, barred over all five strings, is nearly the same either way round; G, C and D7 show the mirror.
+                if (fromNut) assertMirrored(normal, mirrored, case)
+            }
+        }
+        shownLeftHanded.value = false
+        shownSize.value = XIAOMI
+    }
+
+    /**
+     * In the chart [image] (the chart's whole room, the chart centred in it as [ChordChart] draws it with [geometry]), the
+     * short string (string 0) is drawn below its own nut at the 5th fret and not above it when the chart starts at the
+     * nut ([fromNut]), else the whole way; the long string beside it runs the whole way either way.
+     */
+    private fun assertShortString(image: ImageBitmap, geometry: ChartGeometry, fromNut: Boolean, case: String) {
+        val pixels = IntArray(image.width * image.height).also { image.readPixels(it) }
+        val unit = minOf(image.width / geometry.width, image.height / geometry.height)
+        val left = (image.width - geometry.width * unit) / 2f
+        val top = (image.height - geometry.height * unit) / 2f
+
+        // Whether a string is drawn at [x] units across, [y] units down: a pixel within a unit of it clearly differs from the
+        // field [away] units further out, where nothing is drawn.
+        fun drawn(x: Float, y: Float, away: Float): Boolean {
+            val row = (top + y * unit).roundToInt()
+            fun colour(atX: Float) = pixels[row * image.width + (left + atX * unit).roundToInt().coerceIn(0, image.width - 1)]
+            val field = colour(x + away)
+            val reach = unit.roundToInt().coerceAtLeast(1)
+            val middle = (left + x * unit).roundToInt()
+            return (middle - reach..middle + reach).any { px ->
+                val c = pixels[row * image.width + px.coerceIn(0, image.width - 1)]
+                abs((c shr 16 and 0xFF) - (field shr 16 and 0xFF)) + abs((c shr 8 and 0xFF) - (field shr 8 and 0xFF)) + abs((c and 0xFF) - (field and 0xFF)) > CLEAR_INK
+            }
+        }
+        val short = geometry.stringX(0)
+        val out = ChartGeometry.STRING_GAP * 0.4f * geometry.outward(0)
+        // The first long string, beside it, in the 3rd fret row (nothing pressed there in these four): drawn, a check of this check.
+        assertTrue("$case: the long string beside the short one", drawn(geometry.stringX(1), geometry.rowY(2), -out))
+        val belowNut = geometry.gridBottom + geometry.run / 2f
+        assertTrue("$case: the short string below its own nut", drawn(short, belowNut, out))
+        for (row in 1..3) {
+            assertEquals("$case: the short string in fret row ${row + 1}", !fromNut, drawn(short, geometry.rowY(row), out))
         }
     }
 
-    /** The banjo's line in every language at 2× text, upright on a 320 dp phone and on its side. Only with `--languages`. */
+    /**
+     * The banjo's chart in every language at 2x text, upright on a 320 dp phone and on its side: the chart, the name and the
+     * pager wholly shown, every text too. Only with `--languages`.
+     */
     @EveryLanguage
     @Test
-    fun theBanjosLineFitsInEveryLanguageAtTwiceTheTextSize() {
+    fun theBanjosChartFitsInEveryLanguageAtTwiceTheTextSize() {
         shownFontScale.value = 2f
         shownTuning.value = Instruments.BANJO_5.defaultTuning
-        show()
+        show(PitchClass.D, ChordQuality.DOMINANT_SEVENTH)
         for (language in checkedLanguages) {
             shownLocale.value = language
             for (size in listOf(NARROW_UPRIGHT, PHONE_LANDSCAPE)) {
                 shownSize.value = size
                 compose.waitForIdle()
-                assertWhollyShown(node(PracticeTestTags.SHORT_STRING), "$style $language $size at 2x: the banjo's line", scroll = true)
+                compose.waitUntil(WAIT_MS) { spokenChart().isNotEmpty() }
+                for (tag in listOf(PracticeTestTags.CHART, PracticeTestTags.NAME_PICKER, PracticeTestTags.COUNT, PracticeTestTags.NEXT)) {
+                    assertWhollyShown(node(tag), "$style $language $size at 2x, banjo: $tag", scroll = true)
+                }
                 compose.assertEveryTextWhollyShown("$style $language $size at 2x, banjo:")
                 compose.assertNoWordBroken("$style $language $size at 2x, banjo:")
             }
@@ -383,11 +494,17 @@ class ChordsScreenTest(private val style: VisualStyle) {
     @Test
     fun itFitsWithoutScrollingUprightAndOnItsSideInLightAndDark() = assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false, true))
 
+    /** The banjo's chart (Phase 59), a fret row taller: it fits as the guitar's, upright and on its side. */
+    @Test
+    fun theBanjoFitsWithoutScrollingUprightAndOnItsSide() =
+        assertItFits(listOf(XIAOMI, PHONE_UPRIGHT, PHONE_LANDSCAPE), listOf(false), Instruments.BANJO_5.defaultTuning)
+
     /** On a tablet, upright and on its side (Phase 52): it fits as on a phone, and the chart takes the whole width under the rows, and on its side the name shares the top row. */
     @Test
     fun onATabletTheChartUsesTheWholeScreen() = assertItFits(listOf(TABLET_UPRIGHT, TABLET_LANDSCAPE), listOf(false))
 
-    private fun assertItFits(sizes: List<DpSize>, themes: List<Boolean>) {
+    private fun assertItFits(sizes: List<DpSize>, themes: List<Boolean>, tuning: Tuning = Tunings.STANDARD) {
+        shownTuning.value = tuning
         show()
         for (dark in themes) for (size in sizes) {
             shownDark.value = dark
@@ -411,8 +528,9 @@ class ChordsScreenTest(private val style: VisualStyle) {
             // The tablets' forced windows are scaled to fit the screen and their panels (windows of their own) are not.
             assertThePanel(case, wide = size == PHONE_LANDSCAPE || size == TABLET_LANDSCAPE || size == TABLET_UPRIGHT)
             val chart = chart().getBoundsInRoot()
-            // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp).
-            assertTrue("$case a big chart ${chart.height}", chart.height >= if (size == PHONE_UPRIGHT) 156.dp else 170.dp)
+            // The short phone leaves the chart near its smallest, 1 dp a unit (156 dp; the banjo's, a fret row taller, 194 dp).
+            val least = if (tuning.hasShortString) 194.dp else if (size == PHONE_UPRIGHT) 156.dp else 170.dp
+            assertTrue("$case a big chart ${chart.height}", chart.height >= least - 0.5.dp)
             val pager = node(PracticeTestTags.NEXT).getBoundsInRoot()
             val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
@@ -437,6 +555,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
             }
             assertTrue("$case the name over the chart", name.bottom <= chart.top + 1.dp)
         }
+        shownTuning.value = Tunings.STANDARD
     }
 
     @Test
@@ -568,6 +687,9 @@ class ChordsScreenTest(private val style: VisualStyle) {
         private const val WINDOW = "window"
         private const val TEST_TIMEOUT_SECONDS = 30L
         private const val WAIT_MS = 5_000L
+
+        /** Of a pixel's three 0..255 colours together: a string's line against the field around it, as [assertMirrored]'s. */
+        private const val CLEAR_INK = 150
 
         /** The Xiaomi 12X less the status and navigation bars, a short narrow phone (360 x 720 dp with navigation buttons) less the bars, on its side less the rail, and a 320 dp phone. */
         private val XIAOMI = DpSize(393.dp, 760.dp)

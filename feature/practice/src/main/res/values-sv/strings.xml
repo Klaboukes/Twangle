@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Nästa grepp</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Inget grepp inom räckhåll i den här stämningen</string>
-    <string name="practice_chords_short_string">Ackordscheman känner inte till banjons korta sträng än. Välj ett annat instrument högst upp.</string>
     <string name="practice_scales_short_string">Skalor känner inte till banjons korta sträng än. Välj ett annat instrument högst upp.</string>
     <string name="practice_capo_short_string">Capotabellen känner inte till banjons korta sträng än. Välj ett annat instrument högst upp.</string>
     <string name="practice_spoken_separator">", "</string>

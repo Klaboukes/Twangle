@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Następny chwyt</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Brak wygodnego chwytu w tym stroju</string>
-    <string name="practice_chords_short_string">Diagramy akordów nie znają jeszcze krótkiej struny banjo. Wybierz u góry inny instrument.</string>
     <string name="practice_scales_short_string">Skale nie znają jeszcze krótkiej struny banjo. Wybierz u góry inny instrument.</string>
     <string name="practice_capo_short_string">Tabela kapodastra nie zna jeszcze krótkiej struny banjo. Wybierz u góry inny instrument.</string>
     <string name="practice_spoken_separator">", "</string>

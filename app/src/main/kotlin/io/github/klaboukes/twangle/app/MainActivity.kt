@@ -458,7 +458,7 @@ class MainActivity : AppCompatActivity() {
                     },
                     header = header ?: {},
                     onPickInstrument = openPanel,
-                    // The banjo's short fifth string: the capo table opens shapes Chords doesn't draw for it yet.
+                    // The banjo's short fifth string needs a capo of its own, so the capo table's sums don't hold for it.
                     shortString = settings.tuning.hasShortString,
                 )
                 PracticeTool.EAR_TRAINING -> {

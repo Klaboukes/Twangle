@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -53,16 +54,24 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
  * it, the low string on the right, as a left-handed player sees their guitar from the front: the strings
  * with their dots, o, × and notes swap sides, the "5fr" label stays at the left of the first row, where
  * a label is read first. It draws only; [ChordsScreen] gives it its words for TalkBack, the same either way.
+ *
+ * A [tuning] with a short string (the 5-string banjo's fifth, [Tuning.startFretOf], Phase 59, the owner's pick A
+ * in docs/design/banjo-charts-preview.html) gets one fret row more ([ChordShape.chartRowsFor]: frets 1 to 5 from
+ * the nut) and the strings run on a little past the last row ([ChartGeometry.run]). The short string starts at
+ * its own small nut, with its peg on the chart's outer side, on the line of the 5th fret, wherever that line is in
+ * the chart; above it the neck is only as wide as the long strings, and its o or × sits in the row above its nut,
+ * by its peg. A chart starting at the 6th fret or higher has the short string the whole way (from the 6th, its own
+ * nut on the top line), its o or × at the top as any string's. Mirrored left-handed with everything else.
  */
 @Composable
 internal fun ChordChart(shape: ChordShape, tuning: Tuning, notation: Notation, modifier: Modifier = Modifier, leftHanded: Boolean = false) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val geometry = ChartGeometry(shape.stringCount, mirrored = leftHanded)
+        val geometry = remember(tuning, leftHanded) { ChartGeometry.of(tuning, mirrored = leftHanded) }
         val unit = geometry.unitFor(maxWidth.value, maxHeight.value)
         Box(
             Modifier
                 .size((geometry.width * unit).dp, (geometry.height * unit).dp)
-                .chartDrawing(rememberChartPaint(shape, tuning, notation), geometry),
+                .chartDrawing(rememberChartPaint(shape, tuning, notation, geometry.rows), geometry),
         )
     }
 }
@@ -71,11 +80,28 @@ internal fun ChordChart(shape: ChordShape, tuning: Tuning, notation: Notation, m
  * The chart's layout in units (1 dp each at its smallest, see [ChartGeometry.unitFor]): the mock-up's
  * 22 between strings and 26 a fret row, with room at the sides for "5fr" and at the top and bottom
  * for the o × marks and the notes. [mirrored] (left-handed) puts string 0, the lowest, on the right.
+ * [starts] holds the neck fret each string starts at ([Tuning.startFretOf]: 0 at the nut, 5 for the banjo's
+ * short fifth), and [rows] the fret rows drawn ([ChordShape.chartRowsFor]); [of] takes both from a tuning.
  */
-internal class ChartGeometry(val strings: Int, val mirrored: Boolean = false) {
+internal class ChartGeometry(
+    val strings: Int,
+    val mirrored: Boolean = false,
+    private val starts: IntArray = IntArray(strings),
+    val rows: Int = ChordShape.CHART_ROWS,
+) {
+    init {
+        require(starts.size == strings) { "A start fret per string" }
+    }
+
     val gridWidth: Float = (strings - 1) * STRING_GAP
+
+    /** How far the strings run on past the last fret line: with a short string, so one starting on that line shows. */
+    val run: Float = if (starts.any { it > 0 }) RUN else 0f
     val width: Float = 2 * SIDE + gridWidth
-    val height: Float = TOP + ChordShape.CHART_ROWS * ROW + BOTTOM
+
+    /** The last fret line. */
+    val gridBottom: Float = TOP + rows * ROW
+    val height: Float = gridBottom + run + BOTTOM
 
     /** The dp a unit for a chart that fits [roomWidth] × [roomHeight] dp, at most [MAX_UNIT]. */
     fun unitFor(roomWidth: Float, roomHeight: Float): Float =
@@ -91,12 +117,51 @@ internal class ChartGeometry(val strings: Int, val mirrored: Boolean = false) {
     /** The middle of fret row [row] (0 = the first row drawn). */
     fun rowY(row: Int): Float = TOP + (row + 0.5f) * ROW
 
+    /** Down the chart: fret line [line] (0 = the top one, the nut in a chart from the 1st fret). */
+    fun lineY(line: Int): Float = TOP + line * ROW
+
+    /**
+     * In a chart from fret [start], the fret line where string [string]'s own nut is (the banjo's short fifth at the
+     * 5th fret: line 5 from the 1st fret, 2 from the 4th, 0 from the 6th), or null for a string from the nut or one
+     * whose own nut lies above the chart, which runs the whole way.
+     */
+    fun ownNutLine(string: Int, start: Int): Int? {
+        if (starts[string] == 0) return null
+        return (starts[string] - start + 1).takeIf { it >= 0 }
+    }
+
+    /** The fret line string [string] starts at in a chart from fret [start]: its own nut's ([ownNutLine]), else the top. */
+    fun startLine(string: Int, start: Int): Int = ownNutLine(string, start) ?: 0
+
+    /** Where string [string]'s o or × goes in a chart from fret [start]: above where it starts, so a short one's by its peg. */
+    fun markY(string: Int, start: Int): Float = lineY(startLine(string, start)) - ROW / 2f
+
+    /** Fret line [line]'s left and right ends in a chart from fret [start]: the outermost strings already there. */
+    fun lineEnds(line: Int, start: Int): Pair<Float, Float> {
+        var left = Float.MAX_VALUE
+        var right = -Float.MAX_VALUE
+        for (string in 0 until strings) {
+            if (startLine(string, start) > line) continue
+            left = minOf(left, stringX(string))
+            right = maxOf(right, stringX(string))
+        }
+        return left to right
+    }
+
+    /** Which way a peg sticks out from string [string]: −1 to the left, +1 to the right, towards the chart's nearer side. */
+    fun outward(string: Int): Float = if (stringX(string) * 2 < width) -1f else 1f
+
     companion object {
+        /** The geometry for [tuning]'s charts: its strings, where each starts and its fret rows ([ChordShape.chartRowsFor]). */
+        fun of(tuning: Tuning, mirrored: Boolean = false): ChartGeometry =
+            ChartGeometry(tuning.stringCount, mirrored, IntArray(tuning.stringCount) { tuning.startFretOf(it) }, ChordShape.chartRowsFor(tuning))
+
         const val STRING_GAP = 22f
         const val ROW = 26f
         const val SIDE = 34f
         const val TOP = 26f
         const val BOTTOM = 26f
+        const val RUN = 12f
         const val DOT_RADIUS = 9f
         const val MARK_RADIUS = 4.6f
         const val MARK_Y = 13f
@@ -104,6 +169,13 @@ internal class ChartGeometry(val strings: Int, val mirrored: Boolean = false) {
         const val FINGER_SIZE = 11f
         const val NOTE_SIZE = 11f
         const val FRET_SIZE = 10.5f
+
+        /** A short string's own nut reaches this far each side of it; its peg, a stem then a knob, beyond that (the mock-up's). */
+        const val OWN_NUT_HALF = 6f
+        const val PEG_STEM_END = 12f
+        const val PEG_KNOB = 15f
+        const val PEG_KNOB_RADIUS = 3.4f
+        const val PEG_STEM_WIDTH = 2f
     }
 }
 
@@ -133,10 +205,10 @@ private class ChartPaint(
 )
 
 @Composable
-private fun rememberChartPaint(shape: ChordShape, tuning: Tuning, notation: Notation): ChartPaint {
+private fun rememberChartPaint(shape: ChordShape, tuning: Tuning, notation: Notation, rows: Int): ChartPaint {
     val scheme = MaterialTheme.colorScheme
     val locale = appLocale()
-    val start = shape.startFret()
+    val start = shape.startFret(rows)
     return ChartPaint(
         shape = shape,
         ink = scheme.onBackground,
@@ -190,28 +262,34 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
         onDrawBehind {
             val centre = Offset(size.width / 2f, size.height / 2f)
             scale(1f, size.height / size.width, centre) { drawCircle(field, size.width * 0.62f, centre) }
-            val top = ChartGeometry.TOP * u
-            val bottom = (ChartGeometry.TOP + ChordShape.CHART_ROWS * ChartGeometry.ROW) * u
-            val left = g.gridLeft * u
-            val right = g.gridRight * u
+            val bottom = g.gridBottom * u
             val line = LINE_WIDTH * u
-            // Fret lines, the top one as the nut when the chart starts at the first fret.
-            for (row in 0..ChordShape.CHART_ROWS) {
-                val y = top + row * ChartGeometry.ROW * u
+            // Fret lines, the top one as the nut when the chart starts at the first fret; each only as wide as the strings
+            // already there (above the banjo's short string's own nut, the long strings).
+            for (row in 0..g.rows) {
+                val y = g.lineY(row) * u
+                val (left, right) = g.lineEnds(row, start).let { (l, r) -> l * u to r * u }
                 if (row == 0 && start == 1) {
                     drawLine(ink, Offset(left - line, y), Offset(right + line, y), NUT_WIDTH * u, StrokeCap.Round)
                 } else {
                     drawLine(muted.copy(alpha = FRET_ALPHA), Offset(left, y), Offset(right, y), line)
                 }
             }
+            // The strings, from where each starts on to just past the last row; a short one from its own nut, with its peg.
             for (string in 0 until g.strings) {
                 val x = g.stringX(string) * u
-                drawLine(muted, Offset(x, top), Offset(x, bottom), line)
+                drawLine(muted, Offset(x, g.lineY(g.startLine(string, start)) * u), Offset(x, bottom + g.run * u), line)
+                val nut = g.ownNutLine(string, start) ?: continue
+                val y = g.lineY(nut) * u
+                val out = g.outward(string) * u
+                drawLine(ink, Offset(x - ChartGeometry.OWN_NUT_HALF * u, y), Offset(x + ChartGeometry.OWN_NUT_HALF * u, y), NUT_WIDTH * u, StrokeCap.Round)
+                drawLine(ink, Offset(x + out * ChartGeometry.OWN_NUT_HALF, y), Offset(x + out * ChartGeometry.PEG_STEM_END, y), ChartGeometry.PEG_STEM_WIDTH * u)
+                drawCircle(ink, ChartGeometry.PEG_KNOB_RADIUS * u, Offset(x + out * ChartGeometry.PEG_KNOB, y))
             }
             fretLayout?.let { drawText(it, topLeft = Offset((ChartGeometry.SIDE - ChartGeometry.DOT_RADIUS - 2.5f) * u - it.size.width, g.rowY(0) * u - it.size.height / 2f)) }
-            // o and × over the strings.
+            // o and × over the strings; a short string's in the row above its own nut, by its peg.
             for (string in 0 until g.strings) {
-                val centreMark = Offset(g.stringX(string) * u, ChartGeometry.MARK_Y * u)
+                val centreMark = Offset(g.stringX(string) * u, g.markY(string, start) * u)
                 val r = ChartGeometry.MARK_RADIUS * u
                 when {
                     shape.isOpen(string) -> drawCircle(ink, r, centreMark, style = Stroke(MARK_STROKE * u))
@@ -241,7 +319,7 @@ private fun Modifier.chartDrawing(paint: ChartPaint, g: ChartGeometry): Modifier
                 fingerLayouts[string]?.let { centred(it, centreDot) }
             }
             noteLayouts.forEachIndexed { string, layout ->
-                layout?.let { centred(it, Offset(g.stringX(string) * u, bottom + ChartGeometry.NOTE_Y * u)) }
+                layout?.let { centred(it, Offset(g.stringX(string) * u, bottom + (g.run + ChartGeometry.NOTE_Y) * u)) }
             }
         }
     }

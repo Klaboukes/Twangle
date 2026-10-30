@@ -2,6 +2,7 @@ package io.github.klaboukes.twangle.feature.practice
 
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
+import io.github.klaboukes.twangle.core.dsp.chord.ChordShape
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -106,5 +107,71 @@ class ChordSpeechTest {
         assertEquals(1.5f, six.unitFor(six.width * 1.5f, six.height * 3f), 1e-4f)
         assertEquals("at most the largest unit", MAX_UNIT, six.unitFor(10_000f, 10_000f), 1e-4f)
         assertTrue("a ukulele's chart is narrower", ChartGeometry(4).width < six.width)
+    }
+
+    private val banjoWords = ChartWords(
+        english.separator, english.shape, english.string, english.muted, english.open, english.fret, english.barre, english.locale,
+        shortString = "short %1\$s string",
+    )
+
+    @Test
+    fun `the banjo's short string is the short G 4 string, its frets counted on the neck`() {
+        val openG = Instruments.BANJO_5.defaultTuning
+        // The owner's pick A (docs/design/banjo-charts-preview.html, row 5): its open note and the word "short".
+        assertEquals(
+            "C major, shape 1 of 6, short G 4 string, open, D 3 string, fret 2, finger 2, E, G 3 string, open, " +
+                "B 3 string, fret 1, finger 1, C, D 4 string, fret 2, finger 3, E",
+            spokenChart(first(PitchClass.C, ChordQuality.MAJOR, openG), 0, 6, openG, Notation.SHARPS, "C major", banjoWords, say),
+        )
+        assertEquals(
+            "D seventh, shape 1 of 6, short G 4 string, not played, D 3 string, open, G 3 string, fret 2, finger 2, A, " +
+                "B 3 string, fret 1, finger 1, C, D 4 string, fret 4, finger 4, F sharp",
+            spokenChart(first(PitchClass.D, ChordQuality.DOMINANT_SEVENTH, openG), 0, 6, openG, Notation.SHARPS, "D seventh", banjoWords, say),
+        )
+        // Up the neck under a barre: fret 7, as banjo tab counts it.
+        val d = ChordShapeFinder.shapesOf(Chord.of(PitchClass.D, ChordQuality.MAJOR), openG).first { it.toString() == "77777" }
+        val spoken = spokenChart(d, 0, 6, openG, Notation.SHARPS, "D major", banjoWords, say)
+        assertTrue(spoken, spoken.contains("barre, fret 7, finger 1, strings G 4 to D 4, short G 4 string, fret 7, finger 1, A, D 3 string, fret 7"))
+        // Double D's short string is the short F sharp 4 string.
+        val doubleD = Instruments.BANJO_5.tuningById("banjo_double_d")!!
+        val dd = spokenChart(first(PitchClass.D, ChordQuality.MAJOR, doubleD), 0, 1, doubleD, Notation.SHARPS, "D major", banjoWords, say)
+        assertTrue(dd, dd.contains("short F sharp 4 string, open, D 3 string"))
+        // Every other instrument's strings stay as they were.
+        assertEquals(
+            spokenChart(first(PitchClass.C, ChordQuality.MAJOR), 0, 6, Tunings.STANDARD, Notation.SHARPS, "C major", english, say),
+            spokenChart(first(PitchClass.C, ChordQuality.MAJOR), 0, 6, Tunings.STANDARD, Notation.SHARPS, "C major", banjoWords, say),
+        )
+    }
+
+    @Test
+    fun `a banjo chart has a fret row more and the short string from its own nut at the 5th fret`() {
+        val openG = Instruments.BANJO_5.defaultTuning
+        val banjo = ChartGeometry.of(openG)
+        assertEquals("frets 1 to 5", 5, banjo.rows)
+        assertEquals("the strings run on past the last row", ChartGeometry.RUN, banjo.run)
+        assertEquals(ChartGeometry(5).height + ChartGeometry.ROW + ChartGeometry.RUN, banjo.height)
+        assertEquals("a guitar's chart as it was", ChordShape.CHART_ROWS to 0f, ChartGeometry.of(Tunings.STANDARD).let { it.rows to it.run })
+        assertEquals(ChartGeometry(6).height, ChartGeometry.of(Tunings.STANDARD).height)
+        // From the nut: the short string's own nut on the last line, its o or × in the row above it, the neck above
+        // four strings wide; the long strings start at the top.
+        assertEquals(5, banjo.ownNutLine(0, start = 1))
+        assertEquals(banjo.rowY(4), banjo.markY(0, start = 1))
+        assertEquals(ChartGeometry.MARK_Y, banjo.markY(1, start = 1))
+        assertEquals(banjo.stringX(1) to banjo.stringX(4), banjo.lineEnds(0, start = 1))
+        assertEquals(banjo.stringX(1) to banjo.stringX(4), banjo.lineEnds(4, start = 1))
+        assertEquals("the 5th fret's line the whole width", banjo.stringX(0) to banjo.stringX(4), banjo.lineEnds(5, start = 1))
+        for (string in 1 until 5) assertEquals(null, banjo.ownNutLine(string, start = 1))
+        // Higher up: its nut on the 5th fret's line wherever that is, the top line from the 6th; above it the whole way.
+        assertEquals(3, banjo.ownNutLine(0, start = 3))
+        assertEquals(0, banjo.ownNutLine(0, start = 6))
+        assertEquals("by its peg, where any o goes", ChartGeometry.MARK_Y, banjo.markY(0, start = 6))
+        assertEquals(null, banjo.ownNutLine(0, start = 7))
+        assertEquals(ChartGeometry.MARK_Y, banjo.markY(0, start = 7))
+        assertEquals(banjo.stringX(0) to banjo.stringX(4), banjo.lineEnds(0, start = 7))
+        // Its peg on the outer side: the left, or the right when mirrored (left-handed).
+        assertEquals(-1f, banjo.outward(0))
+        val mirrored = ChartGeometry.of(openG, mirrored = true)
+        assertEquals(1f, mirrored.outward(0))
+        assertEquals(mirrored.stringX(4) to mirrored.stringX(1), mirrored.lineEnds(0, start = 1))
     }
 }

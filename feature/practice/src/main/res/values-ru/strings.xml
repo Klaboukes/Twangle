@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Следующая аппликатура</string>
     <string name="practice_chart_fret">%1$d лад</string>
     <string name="practice_chord_none">В этом строе нет удобной аппликатуры</string>
-    <string name="practice_chords_short_string">Аккордовые схемы пока не поддерживают короткую струну банджо. Выбери другой инструмент наверху.</string>
     <string name="practice_scales_short_string">Гаммы пока не поддерживают короткую струну банджо. Выбери другой инструмент наверху.</string>
     <string name="practice_capo_short_string">Таблица каподастра пока не поддерживает короткую струну банджо. Выбери другой инструмент наверху.</string>
     <string name="practice_spoken_separator">", "</string>

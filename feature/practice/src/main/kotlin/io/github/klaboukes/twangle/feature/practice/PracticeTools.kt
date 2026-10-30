@@ -65,9 +65,9 @@ object PracticeTestTags {
     const val NECK = "practice_scale_neck"
 
     /**
-     * The quiet line in the chart's, the neck's or the capo table's place for a tuning with a short
-     * string ([io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings], the banjo's), which
-     * Chords, Scales and Capo don't draw yet.
+     * The quiet line in the neck's or the capo table's place for a tuning with a short string
+     * ([io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings], the banjo's), which Scales and
+     * Capo don't draw yet (Chords does since Phase 59).
      */
     const val SHORT_STRING = "practice_short_string"
 

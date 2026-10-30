@@ -71,6 +71,14 @@ data class ChordShape(
 
         /** Fret rows a chord chart shows: the comfortable span ([ChordShapeFinder.MAX_SPAN]) and one more. */
         const val CHART_ROWS = 4
+
+        /**
+         * Fret rows a chart of [tuning] shows: [CHART_ROWS], or as many as the fret a string starts at
+         * ([Tuning.startFretOf]) where that is more, so a chart from the nut shows where the banjo's short
+         * fifth starts, at the 5th fret (the owner's pick A in `docs/design/banjo-charts-preview.html`).
+         */
+        fun chartRowsFor(tuning: Tuning): Int =
+            maxOf(CHART_ROWS, (0 until tuning.stringCount).maxOf { tuning.startFretOf(it) })
     }
 }
 

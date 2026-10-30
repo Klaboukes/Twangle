@@ -117,9 +117,10 @@ import kotlinx.coroutines.withContext
  * the whole neck: it is long).
  *
  * A [tuning] with a short string ([Tuning.shortStrings], the 5-string banjo's fifth, which starts at
- * the fifth fret) is not charted yet: the chart's or the neck's place shows a quiet line saying so
- * ([ShortStringLine]), in the look of "No shape within reach", and nothing else moves, so picking
- * another instrument with the button at the top brings the chart straight back.
+ * the fifth fret) is charted with that string from its own small nut (Phase 59, [ChordChart]), and
+ * TalkBack calls it the "short G 4 string" ([spokenChart]). Scales doesn't draw it yet: the neck's place
+ * shows a quiet line saying so ([ShortStringLine]), in the look of "No shape within reach", and nothing
+ * else moves, so picking another instrument with the button at the top brings the neck straight back.
  *
  * With [leftHanded] (Phase 57, a setting) the chart and the neck are drawn mirrored ([ChordChart], [ScaleNeck]) for a
  * guitar held the other way round; nothing else moves and TalkBack hears the same words.
@@ -158,8 +159,10 @@ fun ChordsScreen(
     var scaleType by rememberSaveable { mutableStateOf(savedScaleType) }
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
-    // The banjo's short fifth string: Chords and Scales don't draw it yet.
-    val uncharted = tuning.hasShortString
+    // The banjo's short fifth string: Scales doesn't draw it yet (Chords does, Phase 59).
+    val uncharted = scales && tuning.hasShortString
+    // The chart at its smallest, 1 dp a unit: the banjo's is taller (a fret row more), so its smallest room is too.
+    val chartSmallest = remember(tuning) { ChartGeometry.of(tuning).height }.dp
     val found = rememberShapes(chord, tuning, enabled = !uncharted)
     var index by rememberSaveable(chord, tuning) { mutableIntStateOf(0) }
     val count = if (uncharted) 0 else found?.shapes?.size ?: 0
@@ -270,10 +273,7 @@ fun ChordsScreen(
     }
     val fill = @Composable {
         when {
-            uncharted -> ShortStringLine(
-                stringResource(if (scales) R.string.practice_scales_short_string else R.string.practice_chords_short_string),
-                Modifier.fillMaxSize(),
-            )
+            uncharted -> ShortStringLine(stringResource(R.string.practice_scales_short_string), Modifier.fillMaxSize())
             scales -> NeckArea(scale, tuning, notation, Modifier.fillMaxSize(), breathing = droning && dronePlaying, leftHanded = leftHanded)
             else -> ChartArea(found, shown, notation, step, Modifier.fillMaxSize(), leftHanded = leftHanded)
         }
@@ -294,7 +294,7 @@ fun ChordsScreen(
             // name, as upright), and the chart or the neck runs the whole width under it.
             FillColumn(
                 viewport = height,
-                minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
+                minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
                 top = {
                     Spacer(Modifier.height(HEADER_TOP))
@@ -326,7 +326,7 @@ fun ChordsScreen(
                 Spacer(Modifier.width(16.dp))
                 FillColumn(
                     viewport = height,
-                    minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT_WIDE,
+                    minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     top = {
                         Spacer(Modifier.height(HEADER_TOP))
@@ -344,7 +344,7 @@ fun ChordsScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 FillColumn(
                     viewport = height,
-                    minFill = if (scales) NECK_MIN_HEIGHT else CHART_MIN_HEIGHT,
+                    minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT, chartSmallest),
                     modifier = Modifier
                         .widthIn(max = if (large) Dp.Unspecified else COLUMN_MAX_WIDTH)
                         .fillMaxWidth()
@@ -588,7 +588,8 @@ private const val TIGHT_GAPS = 0.25f
 
 /**
  * The smallest chart's height (a 6-string chart 1 dp a unit, the smallest it is drawn at, which a
- * narrow phone with navigation buttons needs); below it the column scrolls.
+ * narrow phone with navigation buttons needs); below it the column scrolls. A banjo's chart, a fret row
+ * taller and its strings running on past it, takes its own height at 1 dp a unit (`chartSmallest`, 194 dp).
  */
 private val CHART_MIN_HEIGHT = 156.dp
 private val CHART_MIN_HEIGHT_WIDE = 170.dp

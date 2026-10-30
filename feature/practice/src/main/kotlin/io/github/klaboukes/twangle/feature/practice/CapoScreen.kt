@@ -97,8 +97,8 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * E flat major"), and each row as one button ("C major shape, sounds E flat major", "open in Chords").
  *
  * With [shortString] (a tuning with a short string, the 5-string banjo's, [io.github.klaboukes.twangle.core.dsp.music.Tuning.shortStrings])
- * the table's place shows a quiet line instead ([ShortStringLine]), since its rows open shapes Chords
- * doesn't draw for it yet; nothing else moves.
+ * the table's place shows a quiet line instead ([ShortStringLine]): on a banjo the short string needs a capo of its
+ * own, so the table's sums don't hold for it (Phase 59 left that for when players ask); nothing else moves.
  */
 @Composable
 fun CapoScreen(

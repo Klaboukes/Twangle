@@ -33,7 +33,6 @@
     <string name="practice_shape_next">Næste greb</string>
     <string name="practice_chart_fret">%1$dfr</string>
     <string name="practice_chord_none">Intet greb inden for rækkevidde i denne stemning</string>
-    <string name="practice_chords_short_string">Akkorddiagrammerne kender endnu ikke banjoens korte streng. Vælg et andet instrument øverst.</string>
     <string name="practice_scales_short_string">Skalaerne kender endnu ikke banjoens korte streng. Vælg et andet instrument øverst.</string>
     <string name="practice_capo_short_string">Capotabellen kender endnu ikke banjoens korte streng. Vælg et andet instrument øverst.</string>
     <string name="practice_spoken_separator">", "</string>

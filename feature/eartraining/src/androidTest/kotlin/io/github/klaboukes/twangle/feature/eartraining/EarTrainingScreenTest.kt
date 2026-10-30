@@ -576,7 +576,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.SHORT_STRING)
         show()
         node(EarTrainingTestTags.CHORDS_UNAVAILABLE)
-            .assert(hasText("Chord charts don't know the banjo's short string yet. Pick another instrument at the top."))
+            .assert(hasText("Chord type doesn't know the banjo's short string yet. Pick another instrument at the top."))
             .assertIsDisplayed()
         assertTrue("no question, no play button", !exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.CHORD_LINE))
         node(EarTrainingTestTags.CHOICES).assertIsDisplayed()

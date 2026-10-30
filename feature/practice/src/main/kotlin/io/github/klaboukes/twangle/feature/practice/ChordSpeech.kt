@@ -66,6 +66,8 @@ internal class ChartWords(
     val fret: String,
     val barre: String,
     val locale: Locale,
+    /** A short string ([Tuning.shortStrings]): "short %1$s string". */
+    val shortString: String = string,
 )
 
 @Composable
@@ -73,13 +75,14 @@ internal fun rememberChartWords(): ChartWords {
     val separator = stringResource(R.string.practice_spoken_separator)
     val shape = stringResource(R.string.practice_spoken_shape)
     val string = stringResource(R.string.practice_spoken_string)
+    val shortString = stringResource(R.string.practice_spoken_short_string)
     val muted = stringResource(R.string.practice_spoken_muted)
     val open = stringResource(R.string.practice_spoken_open)
     val fret = stringResource(R.string.practice_spoken_fret)
     val barre = stringResource(R.string.practice_spoken_barre)
     val locale = appLocale()
-    return remember(separator, shape, string, muted, open, fret, barre, locale) {
-        ChartWords(separator, shape, string, muted, open, fret, barre, locale)
+    return remember(separator, shape, string, shortString, muted, open, fret, barre, locale) {
+        ChartWords(separator, shape, string, muted, open, fret, barre, locale, shortString)
     }
 }
 
@@ -89,7 +92,9 @@ internal fun rememberChartWords(): ChartWords {
  * D 3 string, fret 2, finger 2, E, G 3 string, open, …". A barre is said once before the strings
  * ("barre, fret 3, finger 1, strings A 2 to E 4"). Strings are named by their open note in
  * [tuning] (its own spelling, as the tuner's string buttons), the notes sounded as the chart writes
- * them under the strings, both through [sayNote] ("B♭" → "B flat"). [index] counts from 0.
+ * them under the strings, both through [sayNote] ("B♭" → "B flat"). [index] counts from 0. A short
+ * string (the banjo's fifth) is the "short G 4 string" ([spokenStringWords], the owner's pick A of
+ * Phase 59), its frets counted on the neck as the chart draws them ("fret 7").
  */
 internal fun spokenChart(
     shape: ChordShape,
@@ -108,7 +113,7 @@ internal fun spokenChart(
     shape.barre?.let { parts += format(words.barre, it.finger, it.fret, stringNote(it.firstString), stringNote(it.lastString)) }
     val notes = shape.notesIn(tuning)
     for (string in 0 until shape.stringCount) {
-        val name = format(words.string, stringNote(string))
+        val name = spokenStringWords(tuning, string, notation, words.string, words.shortString, words.locale, sayNote)
         val note = notes[string]
         parts += when {
             note == null -> format(words.muted, name)
@@ -133,3 +138,19 @@ internal fun spokenStringName(tuning: Tuning, string: Int, notation: Notation, s
     val open = tuning.strings[string]
     return sayNote(notation.nameIn(tuning, open.pitchClass)) + " " + open.octave
 }
+
+/**
+ * String [string] of [tuning] as TalkBack names it in a chart or on the neck: [stringPattern] ("%1$s string",
+ * "E 2 string") with its open note ([spokenStringName]), or for a short string ([Tuning.shortStrings], the
+ * banjo's fifth, which starts at the 5th fret) [shortPattern] ("short %1$s string", "short G 4 string"; the
+ * owner's pick A of Phase 59), so a TalkBack user hears what the picture shows. Numbers in [locale].
+ */
+internal fun spokenStringWords(
+    tuning: Tuning,
+    string: Int,
+    notation: Notation,
+    stringPattern: String,
+    shortPattern: String,
+    locale: Locale,
+    sayNote: (String) -> String,
+): String = String.format(locale, if (string in tuning.shortStrings) shortPattern else stringPattern, spokenStringName(tuning, string, notation, sayNote))
