@@ -25,16 +25,20 @@ import kotlin.math.max
 import kotlin.math.sin
 
 /*
- * 2. Light arc, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html, drawFan):
- * a fan of little lights, like an LED pedal's, with no numbers. The rays from the centre out to the
- * reading light up as a wedge, brightest at the reading; the middle ray is the centre mark.
+ * 2. Light arc, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html, drawFan),
+ * sharpened in Phase 60 (docs/design/meter-precision-preview.html, drawFan with `sharp`): a fan of
+ * little lights, like an LED pedal's, with no numbers. The rays from the centre out to the reading
+ * light up as a wedge, brightest at the reading; the middle ray is the centre mark. The rays stand
+ * on the stretched scale, so the ones near the middle are a few cents apart, and tiny dots just
+ * past the outer lights mark 5 and 10 cents and the in-tune window.
  */
 
 /**
  * The fan's geometry in a box of [size]: rays from a pivot [PIVOT_BELOW_UNITS] under the box's
- * bottom middle, ±50 cents at ±[FAN_SWEEP] radians, each with [LIGHT_ARC_DOTS] lights from
- * [FIRST_DOT_UNITS] out, [DOT_STEP_UNITS] apart, growing from [FIRST_DOT_RADIUS] by [DOT_GROWTH]
- * each. Angles are measured clockwise from straight up, so a positive angle is to the right (sharp).
+ * bottom middle, evenly spaced from −[FAN_SWEEP] to +[FAN_SWEEP] radians ([lightArcRayPlace]), each
+ * with [LIGHT_ARC_DOTS] lights from [FIRST_DOT_UNITS] out, [DOT_STEP_UNITS] apart, growing from
+ * [FIRST_DOT_RADIUS] by [DOT_GROWTH] each, and room for a mark [MARK_GAP_UNITS] past the outer
+ * light. Angles are measured clockwise from straight up, so a positive angle is to the right (sharp).
  */
 internal class FanGeometry(size: Size) {
     val u = meterUnit(size.width)
@@ -44,7 +48,7 @@ internal class FanGeometry(size: Size) {
     /** Each light's middle (x, y) and radius, in index order. */
     val lights = FloatArray(LIGHT_ARC_LIGHTS * 3).also {
         for (i in 0 until LIGHT_ARC_LIGHTS) {
-            val angle = lightArcRayCents(i / LIGHT_ARC_DOTS) / METER_RANGE_CENTS * FAN_SWEEP
+            val angle = rayAngle(i / LIGHT_ARC_DOTS)
             val dot = i % LIGHT_ARC_DOTS
             val distance = (FIRST_DOT_UNITS + DOT_STEP_UNITS * dot) * u
             it[i * 3] = cx + distance * sin(angle)
@@ -56,6 +60,16 @@ internal class FanGeometry(size: Size) {
     /** The middle of the in-tune glow: in the fan, over the middle ray. */
     val glowCentre = Offset(cx, pivotY - GLOW_UP_UNITS * u)
 
+    /** Ray [ray]'s angle, in radians clockwise from straight up. */
+    fun rayAngle(ray: Int): Float = lightArcRayPlace(ray) / METER_RANGE_CENTS * FAN_SWEEP
+
+    /** Where a mark on ray [ray] sits: [MARK_GAP_UNITS] past its outer light's middle. */
+    fun markAt(ray: Int): Offset {
+        val angle = rayAngle(ray)
+        val distance = (FIRST_DOT_UNITS + DOT_STEP_UNITS * (LIGHT_ARC_DOTS - 1) + MARK_GAP_UNITS) * u
+        return Offset(cx + distance * sin(angle), pivotY - distance * cos(angle))
+    }
+
     companion object {
         const val PIVOT_BELOW_UNITS = 6f
         const val FAN_SWEEP = 1.2f
@@ -64,15 +78,18 @@ internal class FanGeometry(size: Size) {
         const val FIRST_DOT_RADIUS = 3.4f
         const val DOT_GROWTH = 0.55f
         const val GLOW_UP_UNITS = 120f
+        const val MARK_GAP_UNITS = 12f
     }
 }
 
 /**
  * Light arc: the calm field, the fan's lights unlit (in the track colour, like dark LEDs) and the ♭
  * and ♯ (static); the in-tune glow; the middle ray (the centre mark: two dim lights in the accent off
- * the note, all five in the centre colour as it is reached, and its neighbours half lit); and the lit
+ * the note, all five in the centre colour as it is reached, and its neighbours half lit); the lit
  * wedge with a small halo round each light, redrawn from the reading and [LightArcHeat] in its own
- * layer. A frame loop runs only while some light is still fading, so a steady reading moves nothing.
+ * layer; and over it the marks just past the outer lights ([lightArcMarks], static, made again only
+ * when the in-tune window changes). A frame loop runs only while some light is still fading, so a
+ * steady reading moves nothing.
  */
 @Composable
 internal fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect) {
@@ -123,6 +140,20 @@ internal fun BoxScope.LightArcMeter(reading: MeterReading, effect: InTuneEffect)
             }
         },
     )
+    // The marks, over the lit lights' halos so they stay crisp. Reading the window here makes them
+    // again when the setting changes.
+    StaticArt {
+        val fan = FanGeometry(size)
+        val marks = lightArcMarks(reading.inTuneWindow).flatMap { (out, mark) ->
+            listOf(-1, 1).map { side ->
+                Triple(fan.markAt(LIGHT_ARC_CENTRE_RAY + side * out), mark.radiusUnits * fan.u, roles.ink.copy(alpha = mark.ink))
+            }
+        }.toTypedArray()
+        val draw: DrawScope.() -> Unit = {
+            for ((place, radius, color) in marks) drawCircle(color, radius, place)
+        }
+        draw
+    }
 }
 
 /**

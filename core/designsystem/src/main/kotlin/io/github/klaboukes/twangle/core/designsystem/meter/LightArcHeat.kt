@@ -3,15 +3,19 @@ package io.github.klaboukes.twangle.core.designsystem.meter
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sign
 
 /*
- * The light arc's fan (Phase 25, the round-2 mock-up's drawFan): rays of little lights fanning out
- * from under the box, one ray every LIGHT_ARC_STEP_CENTS from −50 to +50, each a row of
- * LIGHT_ARC_DOTS lights from the inside out. Light i is dot i % LIGHT_ARC_DOTS of ray i / LIGHT_ARC_DOTS.
+ * The light arc's fan (Phase 25, the round-2 mock-up's drawFan; sharpened in Phase 60,
+ * docs/design/meter-precision-preview.html): rays of little lights fanning out from under the box,
+ * evenly spaced on the stretched scale ([meterStretch]), one every LIGHT_ARC_STEP_CENTS of it from
+ * −50 to +50, each a row of LIGHT_ARC_DOTS lights from the inside out. So the rays near the middle
+ * stand a few cents apart and the outer ones far apart: the first out is reached at about 3 cents,
+ * then 6, 10, 14, 20, 27, 37 and 50. Light i is dot i % LIGHT_ARC_DOTS of ray i / LIGHT_ARC_DOTS.
  */
 
-/** Rays of the fan, one every [LIGHT_ARC_STEP_CENTS] from −50 to +50, the middle one at 0. */
+/** Rays of the fan, one every [LIGHT_ARC_STEP_CENTS] of the stretched scale from −50 to +50, the middle one at 0. */
 internal const val LIGHT_ARC_RAYS = 17
 internal const val LIGHT_ARC_STEP_CENTS = 6.25f
 
@@ -24,12 +28,15 @@ internal const val LIGHT_ARC_LIGHTS = LIGHT_ARC_RAYS * LIGHT_ARC_DOTS
 /** The middle ray, at 0 cents: the centre mark, lit from the in-tune amount rather than the reading. */
 internal const val LIGHT_ARC_CENTRE_RAY = LIGHT_ARC_RAYS / 2
 
-/** Where ray [ray] points, in cents. */
-internal fun lightArcRayCents(ray: Int): Float = -METER_RANGE_CENTS + ray * LIGHT_ARC_STEP_CENTS
+/**
+ * Where ray [ray] points, on the stretched scale ([meterStretch], so in the plain scale's cents,
+ * ±50 at the ends): its angle in the fan is this share of the sweep.
+ */
+internal fun lightArcRayPlace(ray: Int): Float = -METER_RANGE_CENTS + ray * LIGHT_ARC_STEP_CENTS
 
 /**
- * How brightly light [index] is lit with the marker at [cents]: the rays from the centre out to the
- * reading light up as a wedge, the ray at the reading with all its lights and the rays nearer the
+ * How brightly light [index] is lit with the marker at [cents], placed on the stretched scale like
+ * the rays ([meterStretch]): the rays from the centre out to the reading light up as a wedge, the ray at the reading with all its lights and the rays nearer the
  * centre with fewer (at least 1.6), brighter towards the reading (40 % to 100 %). The ray just past
  * the reading lights part of the way as the reading nears it, so the wedge grows smoothly. The middle
  * ray and the other side stay dark (0).
@@ -37,8 +44,8 @@ internal fun lightArcRayCents(ray: Int): Float = -METER_RANGE_CENTS + ray * LIGH
 internal fun lightArcGoal(index: Int, cents: Float): Float {
     val ray = index / LIGHT_ARC_DOTS
     if (ray == LIGHT_ARC_CENTRE_RAY) return 0f
-    val reading = cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS)
-    val at = lightArcRayCents(ray)
+    val reading = meterStretch(cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS))
+    val at = lightArcRayPlace(ray)
     if (sign(at) != sign(reading)) return 0f
     val far = abs(reading)
     val near = abs(at)
@@ -56,6 +63,32 @@ private const val MIN_LIT_DOTS = 1.6f
 
 /** … at this share of full brightness. */
 private const val DIMMEST = 0.4f
+
+/** A mark just past the fan's outer lights ([lightArcMarks]): an ink dot [radiusUnits] round, at [ink]. */
+internal enum class ArcMark(val radiusUnits: Float, val ink: Float) {
+    /** 5 cents and the in-tune window's edge. */
+    STRONG(1.8f, 0.55f),
+
+    /** 10 cents. */
+    LIGHT(1.3f, 0.32f),
+}
+
+/** How many rays out from the middle (1 the first) the ray nearest [cents] off the note is, either side. */
+internal fun lightArcMarkRay(cents: Float): Int =
+    (meterStretch(abs(cents)) / LIGHT_ARC_STEP_CENTS).roundToInt().coerceIn(1, LIGHT_ARC_CENTRE_RAY)
+
+/**
+ * The fan's marks with the in-tune window [window] cents each way ([MeterReading.inTuneWindow]), by
+ * rays out from the middle, the same on both sides: a strong one on the rays nearest 5 cents and the
+ * window's edge (so with Precise on the first ray too), a light one on the ray nearest 10. They sit
+ * on the rays, as on the mock-up, so each says which ray it belongs to: Relaxed marks the second ray
+ * (reached at 5.9 cents) and the third (9.7).
+ */
+internal fun lightArcMarks(window: Float): Map<Int, ArcMark> =
+    sortedMapOf(lightArcMarkRay(10f) to ArcMark.LIGHT).apply {
+        put(lightArcMarkRay(5f), ArcMark.STRONG)
+        put(lightArcMarkRay(window), ArcMark.STRONG)
+    }
 
 /**
  * The fan's lights: each one lights up quickly when the reading reaches it and fades slowly when the
@@ -106,8 +139,11 @@ internal class LightArcHeat(cents: Float = 0f) {
         /** How quickly a light the reading reaches lights up (per second). */
         const val RISE_RATE = 18f
 
-        /** How much of its light a light the reading has left loses per second: the trail (about 0.22 s). */
-        const val FADE_PER_SECOND = 4.5f
+        /** How long a fully lit light the reading has left takes to go dark: the trail. */
+        const val TRAIL_SECONDS = 0.12f
+
+        /** How much of its light a light the reading has left loses per second. */
+        const val FADE_PER_SECOND = 1f / TRAIL_SECONDS
 
         /** Closer than this to its goal, a brightening light has arrived. */
         private const val SNAP = 0.002f

@@ -23,7 +23,10 @@ import kotlin.math.abs
  * 5. Arrows, as on the round-2 mock-up page (docs/design/meter-looks-round2-preview.html, drawArrows),
  * after the converging wedges of a pedal tuner: four chevrons each side point at a centre bar. On the
  * side the note is off they light one by one, the inner one first, so they point the way to turn the
- * peg and more lit means further off. In tune the inner pair and the bar take the "in tune" colour.
+ * peg and more lit means further off. Since Phase 60 (docs/design/meter-precision-preview.html,
+ * drawArrows with `sharp`) each lights over a step of its own, 2 to 5 cents, then 5 to 10, 10 to 20
+ * and 20 to 40, so one lit arrow means "almost there" and two "close". In tune the inner pair and the
+ * bar take the "in tune" colour.
  * The mock-up's slow shimmer is left out: it would keep redrawing while a note holds, and the lit
  * arrows read the same without it.
  */
@@ -31,21 +34,29 @@ import kotlin.math.abs
 /** Chevrons on each side of the centre bar. */
 internal const val ARROW_COUNT = 4
 
-/** Each further chevron lights for this many more cents off … */
-internal const val CENTS_PER_ARROW = 10.5f
+/**
+ * Where the chevrons light, in cents off the note: chevron k starts lighting at the k-th of these
+ * and is fully lit at the next, so each step means something (the mock-up's ARROW_STEPS).
+ */
+private val ARROW_STEPS_CENTS = floatArrayOf(2f, 5f, 10f, 20f, 40f)
 
-/** … and the first starts lighting this far off. */
-internal const val ARROWS_DEAD_CENTS = 2f
+/** How far off the note chevron [index] (0 the inner one) starts lighting, in cents … */
+internal fun arrowLightsFrom(index: Int): Float = ARROW_STEPS_CENTS[index]
+
+/** … and how far off it is fully lit. */
+internal fun arrowFullAt(index: Int): Float = ARROW_STEPS_CENTS[index + 1]
 
 /**
  * How brightly chevron [index] (0 the inner one) on the [side] (−1 flat, 1 sharp) is lit with the
- * marker at [cents]: the chevrons on the side the note is off light one after the other, each over
- * [CENTS_PER_ARROW] cents, from [ARROWS_DEAD_CENTS] off; the other side stays dark.
+ * marker at [cents]: the chevrons on the side the note is off light one after the other, each from
+ * [arrowLightsFrom] to [arrowFullAt] (2 to 5 cents, 5 to 10, 10 to 20, 20 to 40); the other side
+ * stays dark.
  */
 internal fun arrowLight(side: Int, index: Int, cents: Float): Float {
     val reading = cents.coerceIn(-METER_RANGE_CENTS, METER_RANGE_CENTS)
     if (reading == 0f || (reading < 0f) != (side < 0)) return 0f
-    return ((abs(reading) - ARROWS_DEAD_CENTS) / CENTS_PER_ARROW - index).coerceIn(0f, 1f)
+    val from = arrowLightsFrom(index)
+    return ((abs(reading) - from) / (arrowFullAt(index) - from)).coerceIn(0f, 1f)
 }
 
 /**
