@@ -23,24 +23,20 @@ enum class NoteChoice(val highestFret: Int, val naturalsOnly: Boolean) {
     /**
      * The distinct notes [tuning] sounds from its open strings up to [highestFret], lowest first. A
      * course with a second string an octave up ([Tuning.octaveCourses]) counts as its own string's note.
-     * A short string ([Tuning.shortStrings], a banjo's fifth) starts at the neck's 5th fret, so it adds
-     * only the frets above that: its open note up to the 5th fret, seven frets more up to the 12th.
+     * A short string ([Tuning.shortStrings], a banjo's fifth) starts at the neck's 5th fret
+     * ([Tuning.startFretOf]), so it adds only the frets above that: its open note up to the 5th fret,
+     * seven frets more up to the 12th.
      */
     fun notesOn(tuning: Tuning): List<Note> {
         val midis = sortedSetOf<Int>()
         tuning.strings.forEachIndexed { string, open ->
-            val frets = if (string in tuning.shortStrings) (highestFret - SHORT_STRING_START_FRET).coerceAtLeast(0) else highestFret
+            val frets = (highestFret - tuning.startFretOf(string)).coerceAtLeast(0)
             for (fret in 0..frets) {
                 val note = Note(open.midi + fret)
                 if (!naturalsOnly || note.isNatural) midis += note.midi
             }
         }
         return midis.map(::Note)
-    }
-
-    private companion object {
-        /** The neck fret a short string starts at: the 5-string banjo's fifth string, the only one. */
-        const val SHORT_STRING_START_FRET = 5
     }
 }
 

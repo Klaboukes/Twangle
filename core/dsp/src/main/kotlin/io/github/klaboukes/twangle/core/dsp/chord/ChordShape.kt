@@ -6,9 +6,11 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
 /**
  * One finger shape of [chord] on a tuning, as a chord chart draws it. Per string, in the tuning's
  * instrument order (thickest string first, see [Tuning]): [frets] holds [MUTED] for a string not
- * played, 0 for one played open, or the fret pressed; [fingers] the suggested finger for a pressed
- * string (1 index … 4 little finger), 0 for an open or muted one. A [barre] is one finger lying across
- * several strings at one fret; the strings it holds down show its finger in [fingers] too.
+ * played, 0 for one played open, or the fret pressed, counted on the neck (the banjo's short string
+ * is pressed only above its start, at the 6th fret or higher, [Tuning.startFretOf]); [fingers] the
+ * suggested finger for a pressed string (1 index … 4 little finger), 0 for an open or muted one. A
+ * [barre] is one finger lying across several strings at one fret; the strings it holds down show its
+ * finger in [fingers] too (a banjo's barre at the 7th fret holds its short string there too).
  *
  * Made by [ChordShapeFinder]; [toString] writes it the way chord charts do, e.g. "x32010".
  */
@@ -41,10 +43,14 @@ data class ChordShape(
      */
     fun startFret(rows: Int = CHART_ROWS): Int = if (highestFret <= rows) 1 else lowestFret
 
-    /** The note each string sounds in [tuning], null for a muted string. */
+    /**
+     * The note each string sounds in [tuning], null for a muted string. A string that starts up the
+     * neck (the banjo's short fifth, [Tuning.startFretOf]) has its frets counted on the neck, so its
+     * 7th fret sounds two frets above its open note ([Tuning.midiAt]).
+     */
     fun notesIn(tuning: Tuning): List<Note?> {
         require(tuning.stringCount == stringCount) { "Shape has $stringCount strings, '${tuning.id}' has ${tuning.stringCount}" }
-        return frets.mapIndexed { string, fret -> if (fret == MUTED) null else Note(tuning.strings[string].midi + fret) }
+        return frets.mapIndexed { string, fret -> if (fret == MUTED) null else Note(tuning.midiAt(string, fret)) }
     }
 
     /** The lowest note sounded in [tuning] (not always on the first string played, see [Tuning]). */

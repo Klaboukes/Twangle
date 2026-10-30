@@ -15,7 +15,7 @@ class ChordShapeReport {
     @Test
     fun report() {
         val tunings = Instruments.GUITAR.tunings + Instruments.UKULELE.tunings + Instruments.MANDOLIN.tunings +
-            Instruments.GUITAR_7.tunings + Instruments.BASS_4.tunings
+            Instruments.GUITAR_7.tunings + Instruments.BASS_4.tunings + Instruments.BANJO_5.tunings
         for (tuning in tunings) {
             println("== ${tuning.id}")
             for (quality in ChordQuality.entries) for (root in PitchClass.entries) print(tuning, Chord.of(root, quality))

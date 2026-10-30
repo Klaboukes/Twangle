@@ -21,9 +21,20 @@ import io.github.klaboukes.twangle.core.dsp.music.Tuning
  * the thinnest string muted as well, as jazz charts voice it (D♭maj9 x4354x, the ring finger's tip
  * damping the top string).
  *
+ * **A short string** (one that starts up the neck, [Tuning.startFretOf]: the 5-string banjo's fifth,
+ * from the 5th fret) is pressed only above its start, its frets counted on the neck as banjo tab does
+ * ([Tuning.midiAt]). It follows the owner's drone rule (Phase 59, option B of
+ * `docs/design/banjo-charts-preview.html`): it rings open where its open note is a chord tone, else it
+ * is pressed above its start on a chord tone within the shape's span, and it is left out only where no
+ * such tone has a finger to spare; so it, too, sounds only chord tones (G 00000, D7 x0214, A7 02222).
+ * The rules above that count strings count only the strings from the nut ([stringsFromNut]): the banjo
+ * plays its chords on four long strings, as a ukulele does, inversions included (C 02012 has E in the
+ * bass, as banjo books show it).
+ *
  * **Power chords** ([ChordQuality.POWER_CHORD]) are played on two or three neighbouring strings with
  * the rest muted, the root lowest and on one of the thick strings (the lowest three of a guitar, the
- * first two of a ukulele, mandolin or bass), so they sound full: E5 022xxx, F5 133xxx, A5 x022xx, D5 xx023x.
+ * first two of a ukulele, mandolin or bass, or a banjo's long strings, the short one left out), so they
+ * sound full: E5 022xxx, F5 133xxx, A5 x022xx, D5 xx023x.
  *
  * **Fingers** ([fingeringOf]): one finger per fret, counted from the lowest fret pressed, or from the
  * 1st fret when the shape rings open strings and that fits exactly (C is x32010 with fingers 3 2 1,
@@ -58,11 +69,10 @@ object ChordShapeFinder {
 
     /** Up to [limit] shapes of [chord] on [tuning], easiest first; empty if it has none within reach. */
     fun shapesOf(chord: Chord, tuning: Tuning, limit: Int = DEFAULT_LIMIT): List<ChordShape> {
-        val opens = IntArray(tuning.stringCount) { tuning.strings[it].midi }
-        var search = Search(opens, chord, topMuted = false)
+        var search = Search(tuning, chord, topMuted = false)
         for (lowest in 1..HIGHEST_FRET) search.fromFret(lowest)
-        if (search.found.isEmpty() && opens.size >= 5) {
-            search = Search(opens, chord, topMuted = true)
+        if (search.found.isEmpty() && search.fromNut.size >= 5) {
+            search = Search(tuning, chord, topMuted = true)
             for (lowest in 1..HIGHEST_FRET) search.fromFret(lowest)
         }
         return search.found.sortedWith(compareBy({ it.first }, { it.second.lowestFret }, { it.second.toString() }))
@@ -80,7 +90,27 @@ object ChordShapeFinder {
     /** The pitch-class mask (bit i = i semitones above C) of [mask] built on [root] instead of C. */
     internal fun rotate(mask: Int, root: Int): Int = ((mask shl root) or (mask ushr (12 - root))) and 0xFFF
 
-    private class Search(val opens: IntArray, val chord: Chord, val topMuted: Boolean) {
+    /**
+     * The strings of [tuning] that start at the nut ([Tuning.startFretOf]), in instrument order: all of
+     * them but a banjo's short fifth.
+     */
+    internal fun stringsFromNut(tuning: Tuning): List<Int> =
+        (0 until tuning.stringCount).filter { tuning.startFretOf(it) == 0 }
+
+    /**
+     * The strings a power chord may start on ([powerFirstStringMax]), counted among the strings from the
+     * nut ([stringsFromNut]): a banjo's 4th and 3rd, never its short fifth.
+     */
+    internal fun powerFirstStrings(tuning: Tuning): List<Int> =
+        stringsFromNut(tuning).let { it.take(powerFirstStringMax(it.size) + 1) }
+
+    private class Search(tuning: Tuning, val chord: Chord, val topMuted: Boolean) {
+        val opens = IntArray(tuning.stringCount) { tuning.strings[it].midi }
+
+        // Where each string starts: 0 at the nut, else up the neck (the banjo's short fifth at 5).
+        val starts = IntArray(tuning.stringCount) { tuning.startFretOf(it) }
+        val fromNut = stringsFromNut(tuning)
+        val powerFirsts = powerFirstStrings(tuning)
         val strings = opens.size
         val root = chord.root.ordinal
         val tones = rotate(chord.quality.mask, root)
@@ -89,7 +119,7 @@ object ChordShapeFinder {
             root,
         )
         val fifth = 1 shl ((root + 7) % 12)
-        val maxMuted = strings - minPlayed(strings) - (if (topMuted) 1 else 0)
+        val maxMuted = strings - minPlayed(fromNut.size) - (if (topMuted) 1 else 0)
         val power = chord.quality == ChordQuality.POWER_CHORD
         val frets = IntArray(strings)
 
@@ -101,8 +131,8 @@ object ChordShapeFinder {
 
         fun fromFret(lowest: Int) {
             if (!power) return place(0, lowest, minOf(lowest + MAX_SPAN, HIGHEST_FRET))
-            for (first in 0..powerFirstStringMax(strings)) for (count in POWER_STRINGS) {
-                if (first + count > strings) continue
+            for (first in powerFirsts) for (count in POWER_STRINGS) {
+                if (first + count > strings || (first until first + count).any { starts[it] > 0 }) continue
                 powerFirst = first
                 powerLast = first + count - 1
                 place(0, lowest, minOf(lowest + MAX_SPAN, HIGHEST_FRET))
@@ -113,6 +143,11 @@ object ChordShapeFinder {
             if (string == strings) return judge()
             if (power && string !in powerFirst..powerLast) {
                 frets[string] = ChordShape.MUTED
+                return place(string + 1, low, high)
+            }
+            // The drone rule: a string from up the neck whose open note is a chord tone always rings open.
+            if (!power && starts[string] > 0 && isTone(opens[string])) {
+                frets[string] = 0
                 return place(string + 1, low, high)
             }
             if (!power && string < maxMuted && (string == 0 || frets[string - 1] == ChordShape.MUTED)) {
@@ -127,8 +162,9 @@ object ChordShapeFinder {
                 frets[string] = 0
                 place(string + 1, low, high)
             }
-            for (fret in low..high) {
-                if (!isTone(opens[string] + fret)) continue
+            // A short string's frets are counted on the neck and start above its own nut.
+            for (fret in maxOf(low, starts[string] + 1)..high) {
+                if (!isTone(midiAt(string, fret))) continue
                 frets[string] = fret
                 place(string + 1, low, high)
             }
@@ -136,12 +172,15 @@ object ChordShapeFinder {
 
         private fun isTone(midi: Int) = tones and (1 shl midi.mod(12)) != 0
 
+        // As Tuning.midiAt, from the arrays: open at 0, else the fret counted from the string's start.
+        private fun midiAt(string: Int, fret: Int) = opens[string] + if (fret == 0) 0 else fret - starts[string]
+
         private fun judge() {
             var sounded = 0
             var bass = Int.MAX_VALUE
             for (s in 0 until strings) {
                 if (frets[s] == ChordShape.MUTED) continue
-                val midi = opens[s] + frets[s]
+                val midi = midiAt(s, frets[s])
                 sounded = sounded or (1 shl midi.mod(12))
                 bass = minOf(bass, midi)
             }
@@ -150,13 +189,46 @@ object ChordShapeFinder {
             // chord (open G strummed open is 000000, its C 555555), played as a root-position chord.
             val wholeNeck = !power && frets.all { it == frets[0] } && bass.mod(12) == (root + 7) % 12
             val rootInBass = bass.mod(12) == root || wholeNeck
-            if (!rootInBass && (strings >= 5 || power)) return
+            // Five strings from the nut or more want the root in the bass. A banjo has four (its short
+            // fifth is a drone on top), so like a ukulele it may play an inversion, which ranks lower:
+            // its C is 02012, E in the bass, as banjo books show it first.
+            if (!rootInBass && (fromNut.size >= 5 || power)) return
+            if (silencesAPlayableDrone()) return
             val key = frets.joinToString(",")
             if (key in seen) return
             val fingering = fingeringOf(frets) ?: return
             seen += key
             val shape = ChordShape(chord, frets.toList(), fingering.fingers.toList(), fingering.barre)
             found += effortOf(shape, rootInBass, hasFifth = sounded and fifth != 0) to shape
+        }
+
+        /**
+         * The drone rule's last part: whether a string from up the neck is left out although a chord
+         * tone on it lies within the shape's span ([MAX_SPAN] from the other frets pressed, anywhere up to
+         * [HIGHEST_FRET] when none is) with a finger to spare. Its open note is no chord tone here: [place]
+         * rings it open when it is. A power chord leaves it out, as all its other strings.
+         */
+        private fun silencesAPlayableDrone(): Boolean {
+            if (power) return false
+            for (s in 0 until strings) {
+                if (starts[s] == 0 || frets[s] != ChordShape.MUTED) continue
+                // Strings left out on the thick side run on from it: then it can't be played alone.
+                if (s + 1 < strings && frets[s + 1] == ChordShape.MUTED) continue
+                var lowest = HIGHEST_FRET
+                var highest = 1
+                for (t in 0 until strings) if (frets[t] > 0) {
+                    lowest = minOf(lowest, frets[t])
+                    highest = maxOf(highest, frets[t])
+                }
+                for (fret in maxOf(starts[s] + 1, highest - MAX_SPAN)..minOf(lowest + MAX_SPAN, HIGHEST_FRET)) {
+                    if (!isTone(midiAt(s, fret))) continue
+                    frets[s] = fret
+                    val playable = fingeringOf(frets) != null
+                    frets[s] = ChordShape.MUTED
+                    if (playable) return true
+                }
+            }
+            return false
         }
     }
 

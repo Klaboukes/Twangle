@@ -242,6 +242,26 @@ class InstrumentTest {
     }
 
     @Test
+    fun `the banjo's short string starts at the 5th fret, its frets counted on the neck`() {
+        val openG = Instruments.BANJO_5.defaultTuning
+        assertEquals(5, openG.startFretOf(0))
+        for (string in 1 until openG.stringCount) assertEquals("string $string starts at the nut", 0, openG.startFretOf(string))
+        assertEquals("open, its own g", "G4", Note(openG.midiAt(0, 0)).toString())
+        assertEquals("its own first fret is the neck's 6th", "G#4", Note(openG.midiAt(0, 6)).toString())
+        assertEquals("the 7th fret, as banjo tab writes it: the first string's 7th", openG.midiAt(4, 7), openG.midiAt(0, 7))
+        assertEquals("A4", Note(openG.midiAt(0, 7)).toString())
+        for (fret in 1..5) assertThrows("no fret $fret below its start", IllegalArgumentException::class.java) { openG.midiAt(0, fret) }
+        // Lowered, it still starts there; every other instrument's strings start at the nut.
+        assertEquals(5, openG.lowered(2).startFretOf(0))
+        for (tuning in Instruments.all.flatMap { it.tunings } - Instruments.BANJO_5.tunings.toSet()) {
+            for (string in 0 until tuning.stringCount) {
+                assertEquals(tuning.id, 0, tuning.startFretOf(string))
+                assertEquals(tuning.id, tuning.strings[string].midi + 3, tuning.midiAt(string, 3))
+            }
+        }
+    }
+
+    @Test
     fun `a banjo tuning lowered has no other name, and the five-string bass keeps its own`() {
         val openG = Instruments.BANJO_5.defaultTuning
         assertEquals(LoweredName.Shifted(2), openG.lowered(2).loweredName)

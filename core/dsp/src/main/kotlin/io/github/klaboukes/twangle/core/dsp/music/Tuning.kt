@@ -25,9 +25,10 @@ import kotlin.math.abs
  * every instrument with single strings or unison pairs (the mandolin).
  *
  * [shortStrings] are the strings (by index) that start partway up the neck rather than at the nut,
- * as a 5-string banjo's fifth (its index 0), which starts at the fifth fret: the tuner's row sets it
- * a little apart, and the chord charts, the scale neck and the capo helper, which draw every string
- * from the nut, don't offer the tuning ([hasShortString]). Empty on every other instrument.
+ * as a 5-string banjo's fifth (its index 0), which starts at the fifth fret ([startFretOf]): the
+ * tuner's row sets it a little apart, the chord shapes never fret it below its start ([midiAt]), and
+ * the chord charts, the scale neck and the capo helper, which draw every string from the nut, don't
+ * offer the tuning yet ([hasShortString]). Empty on every other instrument.
  *
  * Positions are compared as fractional MIDI note numbers (see [NoteMapper.midiOf]), so they
  * follow the user's A4 calibration and lookups are allocation-free.
@@ -67,6 +68,25 @@ data class Tuning(
 
     /** Whether any string starts partway up the neck ([shortStrings], a banjo's fifth). */
     val hasShortString: Boolean get() = shortStrings.isNotEmpty()
+
+    /**
+     * The neck fret string [stringIndex] starts at, its own nut: 0 for a string from the nut,
+     * [SHORT_STRING_START_FRET] for a short one ([shortStrings], the banjo's fifth at the 5th fret).
+     * Its open note sounds there, and frets 1 up to its start aren't on it.
+     */
+    fun startFretOf(stringIndex: Int): Int = if (stringIndex in shortStrings) SHORT_STRING_START_FRET else 0
+
+    /**
+     * The MIDI note string [stringIndex] sounds at neck [fret] (0 open, else a fret above its start,
+     * [startFretOf]). Frets are counted on the neck, as banjo tab does: a string starting at fret k
+     * sounds its open note plus (fret − k), so the banjo's short g4 at the 7th fret is an a4, the same
+     * note as the first string's 7th in open G.
+     */
+    fun midiAt(stringIndex: Int, fret: Int): Int {
+        val start = startFretOf(stringIndex)
+        require(fret == 0 || fret > start) { "String $stringIndex of '$id' starts at fret $start, so it has no fret $fret" }
+        return stringMidis[stringIndex] + if (fret == 0) 0 else fret - start
+    }
 
     /**
      * How far [midi] is from string [stringIndex], in semitones: from the string itself, or from its
@@ -147,6 +167,9 @@ data class Tuning(
          * reads a semitone flat in the detector's low window (`PitchRange.LOW`, 28 Hz).
          */
         val LOWEST_STRING = Note(23)
+
+        /** The neck fret a short string ([shortStrings]) starts at: the 5-string banjo's fifth, the only one. */
+        const val SHORT_STRING_START_FRET = 5
 
         private const val CENTS_PER_SEMITONE = 100f
         private const val SEMITONES_PER_OCTAVE = 12
