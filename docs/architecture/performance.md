@@ -97,8 +97,9 @@ Every look draws at 120 Hz with at most 0.5 % late frames, and uses less main th
 | Loupe (Phase 60, 2026-10-30; Classic in the same run: 122, 6 of ~2,580, 13 / 15 / 15 / 16 ms, 3.77 ms) | 122, 2 of ~2,570, 7 / 13 / 13 / 15 ms, 3.61 ms; RenderThread 42.1 % (Classic 41.3 %) |
 | Light arc, sharpened (Phase 60, 2026-10-30; Classic in the same run: 122, 1 of ~2,580, 7 / 13 / 14 / 15 ms, 3.72 ms) | 122, 1 of ~2,580, 7 / 12 / 13 / 14 ms, 3.74 ms; RenderThread 40.4 % (Classic 40.3 %) |
 | Arrows, sharpened (Phase 60, 2026-10-30, the same run) | 122, 0 of ~2,580, 8 / 13 / 13 / 15 ms, 3.62 ms; RenderThread 37.1 % |
+| Light bars, sharpened (Phase 60, 2026-10-30; Classic in the same run: 122, 2 of ~2,580, 8 / 13 / 14 / 16 ms, 3.77 ms) | 122, 0 of ~2,580, 7 / 12 / 13 / 14 ms, 3.70 ms; RenderThread 37.4 % (Classic 40.6 %) |
 
-Light bars (Phase 25) has no row yet; `scripts/meter-frames.sh` measures it. Spirit level's rows went to [history](history.md) with the look (Phase 60); Eclipse, which Loupe replaced, was never measured.
+Light bars before Phase 60 was never measured. Spirit level's rows went to [history](history.md) with the look (Phase 60); Eclipse, which Loupe replaced, was never measured.
 
 **Pitch trail** (Phase 31; Xiaomi 12X, 2026-10-17, Contemporary dark, `scripts/meter-frames.sh CLASSIC:PITCH_TRAIL`): measured as one more look, always last. `MeterFramesBenchmark` starts the app afresh asking for the tools (see *Release build*, below), picks the trail from the more-tools menu and switches to chromatic, so the line follows the same synthetic sweep all the time. Classic is from the same run, for comparison (the phone ran faster that day than in the table above: same script, other day).
 
