@@ -72,6 +72,15 @@ class MeterFeelTest {
     }
 
     @Test
+    fun `the loupe's marker follows as closely, its swing past the note under a cent`() {
+        val loupe = meterFeel(MeterLook.LOUPE)
+        assertEquals(1.8f, loupe.frequencyHz)
+        assertEquals(0.8f, loupe.dampingRatio)
+        // From 38 cents flat: under a cent past the note, which the glass shows about 9u per cent.
+        assertTrue(loupe.overshoot(-38f, 0f) < 1f)
+    }
+
+    @Test
     fun `the spring swings at the look's frequency`() {
         // ω² for a unit mass: 1.6 Hz → (2π · 1.6)² ≈ 101.
         assertEquals(101.06f, MeterFeel(1.6f, 0.6f).stiffness, 0.05f)

@@ -37,7 +37,6 @@
     <string name="settings_meter_look_title">Wskaźnik</string>
     <string name="settings_meter_look_classic">Klasyczny</string>
     <string name="settings_meter_look_light_arc">Świetlny łuk</string>
-    <string name="settings_meter_look_eclipse">Zaćmienie</string>
     <string name="settings_meter_look_arrows">Strzałki</string>
     <string name="settings_meter_look_light_bars">Paski świetlne</string>
     <string name="settings_in_tune_effect_title">Efekt nastrojenia</string>

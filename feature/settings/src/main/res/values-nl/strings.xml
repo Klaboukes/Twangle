@@ -43,7 +43,7 @@
     <string name="settings_meter_look_classic">Klassiek</string>
     <string name="settings_meter_look_light_arc">Lichtboog</string>
     <string name="settings_meter_look_pointers">Wijzers</string>
-    <string name="settings_meter_look_eclipse">Eclips</string>
+    <string name="settings_meter_look_loupe">Loep</string>
     <string name="settings_meter_look_arrows">Pijlen</string>
     <string name="settings_meter_look_light_bars">Lichtbalken</string>
     <string name="settings_in_tune_effect_title">Effect bij zuiver</string>

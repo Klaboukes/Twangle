@@ -454,7 +454,7 @@ class CompactLandscapeStylesTest(private val style: VisualStyle) {
 
         /**
          * Outside the meter's box a look may differ from Classic by this much (of 255) at most: a soft
-         * glow (Eclipse's sun halo reaches past the box), not a drawn mark or a moved part.
+         * glow (the in-tune glow reaches past the box; Eclipse's sun halo did until Phase 60), not a drawn mark or a moved part.
          */
         private const val GLOW_STEP = 24
 

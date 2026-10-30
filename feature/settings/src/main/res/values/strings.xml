@@ -71,8 +71,8 @@
     <string name="settings_meter_look_light_arc">Light arc</string>
     <!-- Meter look, the name under its card: two triangular pointers, a fixed one above a straight scale and the note's one sliding below it; in tune their tips meet. Shown on one line. -->
     <string name="settings_meter_look_pointers">Pointers</string>
-    <!-- Meter look, the name under its card: a moon that covers the sun when in tune, like a solar eclipse. Shown on one line. -->
-    <string name="settings_meter_look_eclipse">Eclipse</string>
+    <!-- Meter look, the name under its card: a straight scale with a slim marker under a round magnifying glass that enlarges its middle, like a jeweller's loupe. Shown on one line. -->
+    <string name="settings_meter_look_loupe">Loupe</string>
     <!-- Meter look, the name under its card: chevrons each side that light towards the middle, as on a pedal tuner. Shown on one line. -->
     <string name="settings_meter_look_arrows">Arrows</string>
     <!-- Meter look, the name under its card: a row of bars that light up around the note, as on a pedal tuner. Shown on one line. -->

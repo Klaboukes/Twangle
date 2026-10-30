@@ -548,7 +548,7 @@ private fun meterLookLabel(look: MeterLook): Int = when (look) {
     MeterLook.CLASSIC -> R.string.settings_meter_look_classic
     MeterLook.LIGHT_ARC -> R.string.settings_meter_look_light_arc
     MeterLook.POINTERS -> R.string.settings_meter_look_pointers
-    MeterLook.ECLIPSE -> R.string.settings_meter_look_eclipse
+    MeterLook.LOUPE -> R.string.settings_meter_look_loupe
     MeterLook.ARROWS -> R.string.settings_meter_look_arrows
     MeterLook.LIGHT_BARS -> R.string.settings_meter_look_light_bars
 }

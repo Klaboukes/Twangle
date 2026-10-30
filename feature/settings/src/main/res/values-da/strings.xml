@@ -37,7 +37,6 @@
     <string name="settings_meter_look_title">Måler</string>
     <string name="settings_meter_look_classic">Klassisk</string>
     <string name="settings_meter_look_light_arc">Lysbue</string>
-    <string name="settings_meter_look_eclipse">Formørkelse</string>
     <string name="settings_meter_look_arrows">Pile</string>
     <string name="settings_meter_look_light_bars">Lysbjælker</string>
     <string name="settings_in_tune_effect_title">Effekt ved stemt tone</string>

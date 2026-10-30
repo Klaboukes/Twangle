@@ -253,10 +253,9 @@ internal fun meterField(size: Size, roles: MeterRoles): FieldArt {
 private const val FIELD_CENTRE_UNITS = 47f
 
 /**
- * The soft contact shadow of a window that lies on the screen as an object (the spirit level's tube
- * until Phase 60; kept for the loupe that takes Eclipse's place): [outline] filled in [fill] with a shadow
- * 10u blurred and 4u down (black at 50 % in dark, 16 % in light). Drawn first; the glass covers the
- * fill.
+ * The soft contact shadow of a window that lies on the screen as an object (the loupe's glass; the
+ * spirit level's tube until Phase 60): [outline] filled in [fill] with a shadow 10u blurred and 4u
+ * down (black at 50 % in dark, 16 % in light). Drawn first; the glass's art goes over the fill.
  */
 internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill: Color = roles.face) {
     private val path = outline.asAndroidPath()
@@ -271,11 +270,13 @@ internal class ContactShadowArt(outline: Path, u: Float, roles: MeterRoles, fill
 }
 
 /**
- * The recessed glass over a look's window [face] (the spirit level's tube until Phase 60): under the
- * look's art ([drawUnder]) the face sunk toward the stage with a soft inner shadow under its top
- * edge (7u blur, 2.5u down); over the art ([drawOver]) one sheen from the top (white at 28 % in
- * light, 7 % in dark, gone by 45 % of the way from [top] to [bottom]) and a 1u rim in ink at 14 %.
- * The face is [fill]: the roles' glass face, or a tint of it (as the spirit level's tube was).
+ * The glass over a look's window [face]: under the look's art ([drawUnder], for a recessed window,
+ * as the spirit level's tube was until Phase 60) the face sunk toward the stage with a soft inner
+ * shadow under its top edge (7u blur, 2.5u down); over the art ([drawOver], the loupe's glass too)
+ * one sheen from the top (white at 28 % in light, 7 % in dark, gone by 45 % of the way from [top] to
+ * [bottom]) and a 1u rim in ink at 14 %. The face is [fill]: the roles' glass face, or a tint of it
+ * (as the spirit level's tube was). The loupe lies on the screen rather than in it, so it draws its
+ * face with its [ContactShadowArt] and only the sheen and rim with this.
  */
 internal class GlassArt(
     private val face: Path,

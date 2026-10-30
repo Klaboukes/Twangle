@@ -249,7 +249,7 @@ class MeterFramesBenchmark {
         const val CARD_TAG_PREFIX = "meter_look_card_"
         const val CURRENT = "CURRENT"
         const val PITCH_TRAIL = "PITCH_TRAIL"
-        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:POINTERS:ECLIPSE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
+        const val ALL_LOOKS = "CLASSIC:LIGHT_ARC:POINTERS:LOUPE:ARROWS:LIGHT_BARS:$PITCH_TRAIL"
 
         const val MORE_TOOLS_TAG = "tuner_more_tools"
         const val PITCH_TRAIL_TOOL_TAG = "tuner_tool_pitch_trail"

@@ -290,7 +290,6 @@ feature/settings settings_left_handed_summary 0b2dd917
 feature/settings settings_left_handed_title e72cb958
 feature/settings settings_meter_look_arrows 423c677c
 feature/settings settings_meter_look_classic ae25d648
-feature/settings settings_meter_look_eclipse de24e677
 feature/settings settings_meter_look_light_arc 456d8906
 feature/settings settings_meter_look_light_bars 2025dcf2
 feature/settings settings_meter_look_title 2293b30e

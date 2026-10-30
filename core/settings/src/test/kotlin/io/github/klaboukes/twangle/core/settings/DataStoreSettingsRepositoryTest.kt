@@ -848,7 +848,7 @@ class DataStoreSettingsRepositoryTest {
                 MeterLook.CLASSIC,
                 MeterLook.LIGHT_ARC,
                 MeterLook.POINTERS,
-                MeterLook.ECLIPSE,
+                MeterLook.LOUPE,
                 MeterLook.ARROWS,
                 MeterLook.LIGHT_BARS,
             ),
@@ -876,6 +876,17 @@ class DataStoreSettingsRepositoryTest {
         // Picking a look again saves it under its own name.
         repo.setMeterLook(MeterLook.POINTERS)
         assertEquals("POINTERS", store.data.first()[stringPreferencesKey("meter_look")])
+    }
+
+    @Test
+    fun `a saved eclipse opens as Loupe, which took its place in Phase 60`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        store.edit { it[stringPreferencesKey("meter_look")] = "ECLIPSE" }
+        assertEquals(MeterLook.LOUPE, repo.settings.first().meterLook)
+        // Picking a look again saves it under its own name.
+        repo.setMeterLook(MeterLook.LOUPE)
+        assertEquals("LOUPE", store.data.first()[stringPreferencesKey("meter_look")])
     }
 
     @Test

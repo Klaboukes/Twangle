@@ -417,8 +417,8 @@ class DataStoreSettingsRepository internal constructor(
         /** The stripes look of versions before the strobe look took its place. */
         private const val OLD_STRIPES_LOOK = "STRIPES"
 
-        /** Meter looks of older versions and the looks that took their places (Phase 60: Pointers for Spirit level). */
-        private val OLD_METER_LOOKS = mapOf("SPIRIT_LEVEL" to MeterLook.POINTERS)
+        /** Meter looks of older versions and the looks that took their places (Phase 60: Pointers for Spirit level, Loupe for Eclipse). */
+        private val OLD_METER_LOOKS = mapOf("SPIRIT_LEVEL" to MeterLook.POINTERS, "ECLIPSE" to MeterLook.LOUPE)
 
         /** The styles of versions before the six styles of October 2026, both merged into [VisualStyle.ANCIENT]. */
         private val OLD_ANCIENT_STYLES = setOf("PREHISTORIC", "MIDDLE_AGES")

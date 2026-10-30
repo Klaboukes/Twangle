@@ -170,7 +170,7 @@ core/designsystem/src/main/kotlin/io/github/klaboukes/twangle/core/designsystem/
     AnimationsOff, AppLanguage, LocalDigits
     dial/       DialGeometry, SoundRibbon, Strobe, WaveLooks, WaveMotion
     meter/      MeterReading, MeterLooks, MeterArt, MeterFeel, MeterStretch, LightArc, LightArcHeat,
-                Pointers, Eclipse, Arrows, LightBars, MeterFinish
+                Pointers, Loupe, Arrows, LightBars, MeterFinish
     metronome/  TempoDialArt (+ dialDegrees, bpmAtTouch, isOnDialRing), BeatLightsArt
 
 core/testing/src/main/kotlin/io/github/klaboukes/twangle/core/testing/

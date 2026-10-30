@@ -37,7 +37,6 @@
     <string name="settings_meter_look_title">Индикатор</string>
     <string name="settings_meter_look_classic">Классический</string>
     <string name="settings_meter_look_light_arc">Световая дуга</string>
-    <string name="settings_meter_look_eclipse">Затмение</string>
     <string name="settings_meter_look_arrows">Стрелки</string>
     <string name="settings_meter_look_light_bars">Световые полосы</string>
     <string name="settings_in_tune_effect_title">Эффект «настроено»</string>

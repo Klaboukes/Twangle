@@ -37,7 +37,6 @@
     <string name="settings_meter_look_title">Mätare</string>
     <string name="settings_meter_look_classic">Klassisk</string>
     <string name="settings_meter_look_light_arc">Ljusbåge</string>
-    <string name="settings_meter_look_eclipse">Förmörkelse</string>
     <string name="settings_meter_look_arrows">Pilar</string>
     <string name="settings_meter_look_light_bars">Ljusstaplar</string>
     <string name="settings_in_tune_effect_title">Effekt vid stämd ton</string>

@@ -24,7 +24,7 @@ sheet = sys.argv[1]
 styles = [("ancient", "Ancient"), ("classic", "Classic"), ("retro", "Retro"),
           ("contemporary", "Contemporary"), ("futuristic", "Futuristic"), ("space-age", "Space Age")]
 looks = [("classic", "Classic"), ("light-arc", "Light arc"), ("pointers", "Pointers"),
-         ("eclipse", "Eclipse"), ("arrows", "Arrows"), ("light-bars", "Light bars")]
+         ("loupe", "Loupe"), ("arrows", "Arrows"), ("light-bars", "Light bars")]
 sets = [("a", "A. 20 cents flat"), ("b", "B. In tune, Bold glow")]
 found = set(os.listdir(sheet))
 parts, count, missing = [], 0, []

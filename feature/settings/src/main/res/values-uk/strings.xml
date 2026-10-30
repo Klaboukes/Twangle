@@ -31,7 +31,6 @@
     <string name="settings_meter_look_title">Індикатор</string>
     <string name="settings_meter_look_classic">Класичний</string>
     <string name="settings_meter_look_light_arc">Світлова дуга</string>
-    <string name="settings_meter_look_eclipse">Затемнення</string>
     <string name="settings_meter_look_arrows">Стрілки</string>
     <string name="settings_meter_look_light_bars">Світлові смуги</string>
     <string name="settings_in_tune_effect_title">Ефект «налаштовано»</string>
