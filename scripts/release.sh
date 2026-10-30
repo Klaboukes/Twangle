@@ -69,6 +69,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 LISTINGS="fastlane/metadata/android"
+# What the phone screenshots show: the app's screens, their captions, and the test that draws them.
+SCREENSHOT_SOURCES=(app/src/main ':(glob)feature/*/src/main/**' core/designsystem/src/main
+    app/src/androidTest/kotlin/io/github/klaboukes/twangle/app/store "$LISTINGS/*/screenshot_captions.txt")
 OUT="release"
 APP_ID="io.github.klaboukes.twangle"
 PLAY_KEY="${TWANGLE_PLAY_SERVICE_ACCOUNT:-$HOME/.twangle-keys/play-service-account.json}"
@@ -415,7 +418,35 @@ that made them all. Connect the phone and run
 $(printf '  %s\n' "${problems[@]}")
 Make them again with scripts/store-screenshots.sh. Nothing was sent to Google Play."
     echo "Screenshots for every language; the oldest made $(date -r "$oldest" '+%Y-%m-%d %H:%M')."
-    echo "(If the app looks different since, make them again first: scripts/store-screenshots.sh.)"
+}
+
+# Whether the phone screenshots show the app as it is now: the commit scripts/store-screenshots.sh
+# noted after a run of every language (build/phone-screenshots.made-at, shared with the set on GitHub)
+# has no change since to what they show (SCREENSHOT_SOURCES). Says which, and returns 1 when not. They
+# are made before a listing is sent, not every night (owner, 2026-10-30), so this is what keeps a
+# listing from going out with pictures of an older app.
+screenshots_current() {
+    local made_at="build/phone-screenshots.made-at" commit state when changes
+    if [[ ! -f "$made_at" ]]; then
+        echo "Which version of the app the phone screenshots show isn't known (no $made_at: made before 2026-10-30, or only some languages since)."
+        return 1
+    fi
+    read -r commit state when < "$made_at"
+    if ! git cat-file -e "$commit^{commit}" 2>/dev/null; then
+        echo "The phone screenshots were made ($when) at ${commit:0:8}, a commit this clone doesn't have."
+        return 1
+    fi
+    if [[ "$state" != clean ]]; then
+        echo "The phone screenshots were made ($when) from uncommitted changes."
+        return 1
+    fi
+    changes="$(git log --oneline "$commit..HEAD" -- "${SCREENSHOT_SOURCES[@]}")"
+    if [[ -n "$changes" ]]; then
+        echo "The app's screens changed since the phone screenshots were made ($when, at ${commit:0:8}):"
+        echo "$changes" | head -10 | sed 's/^/  /'
+        return 1
+    fi
+    echo "The phone screenshots show the app as it is now (made $when, at ${commit:0:8})."
 }
 
 # The store listing as it is on main, for every language, with the app details.
@@ -430,6 +461,9 @@ listing() {
     scripts/share-store-screenshots.sh pull phone || true
     scripts/share-store-screenshots.sh pull tablet || true
     need_screenshots
+    screenshots_current || fail "make the phone screenshots again first, with the phone connected:
+  scripts/store-screenshots.sh
+(every language, about 50 minutes), look them over, then send. Nothing was sent to Google Play."
     use_java
 
     # Titles, descriptions and captions within Play's limits, the icon and feature graphic at Play's
@@ -478,13 +512,14 @@ listing_changes() {
     else
         echo "Its texts and pictures are unchanged since."
     fi
-    screens="$(git log --oneline "$mark..HEAD" -- app/src/main feature/*/src/main core/designsystem/src/main)"
+    screens="$(git log --oneline "$mark..HEAD" -- "${SCREENSHOT_SOURCES[@]}")"
     if [[ -n "$screens" ]]; then
-        echo "Changes to the app's screens since; do the screenshots still match them?"
+        echo "Changes to the app's screens since:"
         echo "$screens" | head -20
     else
-        echo "The app's screens are unchanged since, so the screenshots still match."
+        echo "The app's screens are unchanged since."
     fi
+    screenshots_current || echo "Before sending, make them again with the phone connected: scripts/store-screenshots.sh (about 50 minutes); listing refuses until then."
 }
 
 # Runs one of the read-only looks at Play (scripts/PlayReports.java, plain JDK, no Gradle).

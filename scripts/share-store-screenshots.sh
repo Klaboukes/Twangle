@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Shares the store screenshots between the owner's PCs through GitHub (docs/store-listing.md, *Phone
-# screenshots*). They are git-ignored, since a set is about 180 MB and is made again every night, so
+# screenshots*). They are git-ignored, since a set is about 180 MB and is made again before each listing, so
 # instead the latest set lives as a download on one fixed GitHub release, "store-screenshots", that
-# keeps no history: each upload replaces the one before.
+# keeps no history: each upload replaces the one before. Beside it goes the note of the commit the set
+# shows (build/<kind>-screenshots.made-at, from scripts/store-screenshots.sh), which release.sh listing
+# reads to refuse pictures older than the app's screens.
 #
 #   scripts/share-store-screenshots.sh push phone|tablet   upload this PC's set, if every store folder has it
 #   scripts/share-store-screenshots.sh pull phone|tablet   download the set, if GitHub's is newer than this PC's
@@ -25,6 +27,7 @@ case "${2:-}" in
 esac
 ASSET="$2.tar"
 TAR="build/shared-store-screenshots/$ASSET"   # GitHub names the download after the file
+MADE_AT="build/$2-screenshots.made-at"        # uploaded as "<kind>-screenshots.made-at"
 
 # Every store folder's pictures of this kind, one a line ("<locale>/images/<folder>/<n>.png").
 pictures() { (cd "$ROOT/$LISTINGS" && find . -path "*/images/$FOLDER/*.png" | sed 's|^\./||' | sort); }
@@ -66,6 +69,12 @@ push() {
         gh release upload "$TAG" "$TAR" --clobber > /dev/null ||
         { rm -f "$TAR"; echo "Sharing the $2 screenshots on GitHub failed; the other PC won't have this set (run: scripts/share-store-screenshots.sh push $2)."; return 1; }
     rm -f "$TAR"
+    # The commit the set shows goes with it; without a note, none (an old one would vouch for this set).
+    if [[ -f "$MADE_AT" ]]; then
+        gh release upload "$TAG" "$MADE_AT" --clobber > /dev/null || echo "Sharing which commit the $2 screenshots show failed; the other PC's release.sh listing will ask for them again."
+    else
+        gh release delete-asset "$TAG" "$(basename "$MADE_AT")" --yes > /dev/null 2>&1 || true
+    fi
     # Dated now, so this PC doesn't take its own upload for a newer set at the next pull.
     find "$LISTINGS" -path "*/images/$FOLDER/*.png" -exec touch {} +
     echo "Shared: the other PC gets them with scripts/share-store-screenshots.sh pull $2 (release.sh listing does it)."
@@ -91,6 +100,8 @@ pull() {
     find "$LISTINGS" -type d -path "*/images/$FOLDER" -exec rm -rf {} +
     tar -xf "$TAR" -C "$LISTINGS" || { rm -f "$TAR"; echo "Unpacking the $2 screenshots failed."; return 1; }
     rm -f "$TAR"
+    # And the note of the commit they show; a set shared without one shows no known commit.
+    gh release download "$TAG" --pattern "$(basename "$MADE_AT")" --output "$MADE_AT" --clobber > /dev/null 2>&1 || rm -f "$MADE_AT"
     # Dated now, so they count as newer than GitHub's copy until a newer set is shared.
     find "$LISTINGS" -path "*/images/$FOLDER/*.png" -exec touch {} +
     echo "Got $(pictures | wc -l) $2 screenshots from GitHub."

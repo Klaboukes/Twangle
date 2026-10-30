@@ -1,7 +1,7 @@
 ---
 name: overnight-run
-description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test in every style, then every language at 2× text, then the store screenshots — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
-argument-hint: "[optional: --sweep, --languages or --store to run only one part]"
+description: Run Twangle's overnight on-device check while the owner sleeps — first the night's translations (/translate), then every UI test in every style, then every language at 2× text where a screen changed since it last passed — fix what it finds, re-check the fixes, tick the roadmap and land it through a PR, without asking the owner anything. Use when the owner says "start the overnight run", "run the overnight tests", "/overnight-run", or plugs the phone in at bedtime for the tests the roadmap left for the night.
+argument-hint: "[optional: --sweep or --languages to run only one part, --full to skip no language check, --store for the store screenshots]"
 ---
 
 # The overnight run
@@ -54,14 +54,30 @@ gh run list --branch main --limit 3          # a failed nightly run is fixed fir
 ## 2. The run
 
 ```bash
-scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~2–3 h
+scripts/overnight-ui-tests.sh --dry-run                        # which language checks tonight runs (no phone)
+scripts/overnight-ui-tests.sh > build/overnight-run.txt 2>&1   # in the background, ~1–7 h
 ```
 It runs `scripts/ui-tests.sh --all --thorough --cool` (every module, every style, one class at a
-time, waiting while the phone is 37 °C or warmer), then the `@EveryLanguage` checks one module and
-style at a time with cooling pauses, then the Play Store screenshots in every language
-(`scripts/store-screenshots.sh`, about 2 minutes a language), and writes `build/overnight/summary.txt`. A screen where a
+time, waiting while the phone is 37 °C or warmer; about 55 minutes), then the `@EveryLanguage`
+checks one module and style at a time with cooling pauses, and writes `build/overnight/summary.txt`. A screen where a
 language didn't fit is saved as a picture under the module's
 `build/outputs/connected_android_test_additional_output`; look at it with Read.
+
+**Only the language checks that need it run** (owner, 2026-10-30: with 25 languages all 36 module
+and style checks took 6 of the night's 8 hours). A module's checks in a style that passed whole are
+noted (`build/ui-tests-passed/languages/`), and a later night skips them while nothing the module
+shows changed since (the rule `--since-pass` uses) and the pass is under a week old; the log says
+"passed …, nothing it shows changed since", and the summary's second line how many ran. A night after
+a change every screen shows (the design system, a new language, the night's translations of texts in
+every module) runs nearly all of them, about 7 hours; a quiet one, very few. `--full` runs all
+(after a change to the test helpers' scoping, or when in doubt). Skipped checks count as passed for the
+release, as `--since-pass` modules do.
+
+**The store screenshots are no longer made at night** (owner, 2026-10-30, they took 50 minutes):
+they are made before the store listing is sent, and `scripts/release.sh listing` refuses pictures of
+an older app ([release skill](../release/SKILL.md), step 8). Make them only when the owner asks, or
+when the morning summary should show a change to them: `scripts/overnight-ui-tests.sh --store` (or
+`scripts/store-screenshots.sh`).
 
 - **While it runs, don't edit code, tests or scripts**: each language run rebuilds from the working
   tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
@@ -70,9 +86,10 @@ language didn't fit is saved as a picture under the module's
   early (the sweep prints each class as it finishes).
 - Never play test tones, never loop a tone, and never re-run the whole sweep for a fix.
 
-**The store screenshots:** look at every language's eight pictures in
-`fastlane/metadata/android/<locale>/images/phoneScreenshots/` (a contact sheet per language with
-`magick 1.png 2.png 3.png 4.png +append -resize 50% sheet.png` is quickest): a caption cut off or set in
+**When store screenshots were made:** look at every language's eight pictures in
+`fastlane/metadata/android/<locale>/images/phoneScreenshots/` (a contact sheet per language: this PC
+has no ImageMagick, so draw them with PowerShell's System.Drawing, 4 × 2 at 35 %, into
+`build/overnight/sheets/`): a caption cut off or set in
 the wrong script, a screen without its note or chord, a bubble in the wrong language. Fix and make
 only those languages again (`scripts/store-screenshots.sh <locale> …`). The pictures are git-ignored
 (docs/store-listing.md, *Phone screenshots*); put the en-US and one other language in the morning

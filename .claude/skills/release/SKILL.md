@@ -49,7 +49,8 @@ Steps 6–8 follow later, each on the owner's word.
 - `git switch main && git pull`, then `git describe --tags --abbrev=0 --match 'v*'` (the `listing/*` and `store-screenshots` tags are no versions). If nothing a player would
   notice changed since that tag, say so and stop.
 - **A clean overnight run first** (owner, 2026-10-28): nothing is released that the overnight run
-  (every UI test in every style, every language, the store screenshots) hasn't passed. The first line
+  (every UI test in every style, every language; a language check skipped because nothing it shows
+  changed since it passed counts as passed) hasn't passed. The first line
   of `build/overnight/summary.txt` says which commit it ran on and whether everything passed. It counts
   when everything passed, or when its failures were fixed and re-checked by the run's own fix PR (the
   morning summary says so), and `git diff --stat <that commit>..main` shows no code change since but
@@ -149,8 +150,12 @@ moves on.
 - `scripts/release.sh listing-changes` says what changed since the listing was last sent: the texts
   or pictures, a new language, and the app's screen changes since (do the screenshots still show the
   app as it looks?). Nothing changed: there is nothing to send.
-- Every language needs its eight screenshots: `scripts/store-screenshots.sh` (phone connected,
-  about 2 minutes a language; [docs/store-listing.md](../../../docs/store-listing.md)). They are
+- Every language needs its eight screenshots of the app as it is now: `scripts/store-screenshots.sh`
+  (phone connected, about 2 minutes a language, 50 for all; [docs/store-listing.md](../../../docs/store-listing.md)).
+  They are no longer made every night (owner, 2026-10-30), so make them when `listing-changes` says
+  the app's screens changed since they were made: `listing` refuses them then (it reads the commit
+  the last run of every language noted, `build/phone-screenshots.made-at`). Look them over as the
+  overnight-run skill says (*When store screenshots were made*) before asking to send. They are
   git-ignored, but a run that made them all shares them on GitHub, and `listing` first takes that set
   when it is newer than this PC's (`scripts/share-store-screenshots.sh`), so the owner can make them
   on one PC and send from the other. `listing` refuses without them and says how old the oldest are. The 10-inch tablet set (the same

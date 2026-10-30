@@ -9,7 +9,7 @@
 # captions, the shots in TABLET_SHOTS only, to images/tenInchScreenshots/. Which one it makes follows
 # from the device; there is no switch.
 #
-#   scripts/store-screenshots.sh                 every language (the overnight run; ~2 min a language)
+#   scripts/store-screenshots.sh                 every language (before a listing is sent; ~2 min a language)
 #   scripts/store-screenshots.sh en-US nl-NL     only these Play locales
 #
 # The finished pictures go where fastlane and F-Droid look for them,
@@ -95,6 +95,11 @@ kind=phone
 [ $# -gt 0 ] && scripts/share-store-screenshots.sh pull $kind
 
 mkdir -p build "$RAW"
+# The app these pictures show: after a run of every language, build/<kind>-screenshots.made-at says at
+# which commit, and whether from uncommitted changes, so scripts/release.sh listing can refuse pictures
+# older than the app's screens (made before a listing is sent since 2026-10-30, not every night).
+# Shared on GitHub with the pictures (share-store-screenshots.sh). A run of some languages leaves it.
+made_at="$(git rev-parse HEAD) $([ -z "$(git status --porcelain)" ] && echo clean || echo uncommitted) $(date '+%Y-%m-%d %H:%M')"
 status=0
 for locale in "${locales[@]}"; do
     captions="$LISTINGS/$locale/screenshot_captions.txt"
@@ -133,6 +138,7 @@ for locale in "${locales[@]}"; do
         echo
     fi
 done
+[ $status = 0 ] && [ $# -eq 0 ] && echo "$made_at" > "build/$kind-screenshots.made-at"
 # Every picture made: share the set with the owner's other PC.
 [ $status = 0 ] && scripts/share-store-screenshots.sh push $kind
 exit $status
