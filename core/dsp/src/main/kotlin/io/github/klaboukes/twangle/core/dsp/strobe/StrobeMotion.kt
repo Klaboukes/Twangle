@@ -7,7 +7,7 @@ import kotlin.math.sign
 
 /**
  * How a strobe's striped pattern moves, one animation frame at a time: the drift that every wave
- * look follows (WaveMotion in :core:designsystem runs one), the strobe look's stripes among them.
+ * look follows (WaveMotion runs one), the strobe look's stripes and the watch's ribbon among them.
  *
  * A mechanical strobe tuner spins a striped disc lit by the string's own vibration: the stripes
  * seem to stand still when the note matches the disc and drift when it doesn't, at the beat rate

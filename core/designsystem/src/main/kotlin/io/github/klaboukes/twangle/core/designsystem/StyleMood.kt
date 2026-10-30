@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.dial.WaveMotion
+import io.github.klaboukes.twangle.core.dsp.strobe.WaveMotion
 import io.github.klaboukes.twangle.core.designsystem.dial.drawWave
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook

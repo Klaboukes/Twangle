@@ -1,11 +1,10 @@
-package io.github.klaboukes.twangle.core.designsystem
+package io.github.klaboukes.twangle.core.dsp.strobe
 
-import io.github.klaboukes.twangle.core.designsystem.dial.ribbonAt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class SoundRibbonTest {
+class RibbonShapeTest {
 
     @Test
     fun `the ribbon narrows to nothing at both ends`() {

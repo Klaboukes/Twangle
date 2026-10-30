@@ -15,6 +15,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Dp
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -111,11 +113,37 @@ class WatchTunerTest {
         }
     }
 
-    private fun assertInsideRing(bounds: Rect, size: Dp, what: String) {
+    /** The cents line keeps its place and width while the number changes, so it doesn't shift sideways. */
+    @Test
+    fun theCentsLineKeepsItsPlaceAsTheNumberChanges() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.E, 2), -48))
+        val readings = listOf(-48 to "−48 cents", 0 to "0 cents", 1 to "+1 cent", 7 to "+7 cents", 12 to "+12 cents")
+        val places = readings.map { (cents, text) ->
+            state = WatchTunerState.Detected(Note.of(PitchClass.E, 2), cents)
+            compose.waitForIdle()
+            compose.onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        }
+        for (place in places) assertEquals(places.first(), place)
+    }
+
+    /** The ribbon under the cents stays clear of the ring at the bottom, on small and large round screens. */
+    @Test
+    fun theRibbonFitsInsideTheRing() {
+        show(WatchTunerState.Detected(Note.of(PitchClass.C_SHARP, 3), -48))
+        for (size in listOf(170.dp, 192.dp, 210.dp, 225.dp)) {
+            dial = size
+            compose.waitForIdle()
+            val bounds = compose.onNodeWithTag(WatchDial.RIBBON_TAG, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+            // Below the middle there are no ticks: inside the ring's own line is enough.
+            assertInsideRing(bounds, size, "ribbon", ticks = false)
+        }
+    }
+
+    private fun assertInsideRing(bounds: Rect, size: Dp, what: String, ticks: Boolean = true) {
         val px = with(compose.density) { size.toPx() }
         val centre = Offset(px / 2f, px / 2f)
-        // Inside the ring's ticks: the ring sits 6 % in from the edge, the longest tick reaches 5.5 % further.
-        val inner = px / 2f - px * (WatchDial.INSET + WatchDial.CENTRE_TICK + WatchDial.STROKE)
+        // Inside the ring's ticks: the ring sits 6 % in from the edge, the longest tick reaches 4.5 % further.
+        val inner = px / 2f - px * (WatchDial.INSET + (if (ticks) WatchDial.CENTRE_TICK else 0f) + WatchDial.STROKE)
         for (corner in listOf(bounds.topLeft, bounds.topRight, bounds.bottomLeft, bounds.bottomRight)) {
             val distance = hypot(corner.x - centre.x, corner.y - centre.y)
             assertTrue("$what at $size: corner $corner is ${distance}px from the centre, ring inside is ${inner}px", distance <= inner)

@@ -1,6 +1,5 @@
-package io.github.klaboukes.twangle.core.designsystem.dial
+package io.github.klaboukes.twangle.core.dsp.strobe
 
-import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -27,8 +26,8 @@ import kotlin.math.sqrt
  *   on the note the wave holds perfectly still in its calm shape, like a strobe (the owner's pick,
  *   October 2026, over breathing on gently).
  *
- * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view and
- * the previews in Settings both use it.
+ * Plain Kotlin, so the JVM tests can step it. Allocates nothing per frame. The tuner's wave view, the
+ * previews in Settings and the watch tuner's ribbon all use it, with [ribbonAt] for the shape.
  */
 class WaveMotion {
 

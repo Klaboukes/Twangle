@@ -1,6 +1,5 @@
-package io.github.klaboukes.twangle.core.designsystem
+package io.github.klaboukes.twangle.core.dsp.strobe
 
-import io.github.klaboukes.twangle.core.designsystem.dial.WaveMotion
 import io.github.klaboukes.twangle.core.dsp.strobe.StrobeMotion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

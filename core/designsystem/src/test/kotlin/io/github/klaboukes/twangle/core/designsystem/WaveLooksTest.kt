@@ -1,14 +1,14 @@
 package io.github.klaboukes.twangle.core.designsystem
 
 import io.github.klaboukes.twangle.core.designsystem.dial.FIREFLY_COUNT
-import io.github.klaboukes.twangle.core.designsystem.dial.WaveMotion
+import io.github.klaboukes.twangle.core.dsp.strobe.WaveMotion
 import io.github.klaboukes.twangle.core.designsystem.dial.dotColumnAt
 import io.github.klaboukes.twangle.core.designsystem.dial.edgeFade
 import io.github.klaboukes.twangle.core.designsystem.dial.fireflyAt
 import io.github.klaboukes.twangle.core.designsystem.dial.loopAt
 import io.github.klaboukes.twangle.core.designsystem.dial.loopNearSide
 import io.github.klaboukes.twangle.core.designsystem.dial.loopWidth
-import io.github.klaboukes.twangle.core.designsystem.dial.pulseAt
+import io.github.klaboukes.twangle.core.dsp.strobe.pulseAt
 import io.github.klaboukes.twangle.core.designsystem.dial.rippleAt
 import io.github.klaboukes.twangle.core.designsystem.dial.rippleWobble
 import io.github.klaboukes.twangle.core.designsystem.dial.unrest

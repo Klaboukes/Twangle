@@ -1,0 +1,293 @@
+<!doctype html>
+<!--
+  Phase 61, a finer look and a bigger marker for the watch tuner (2026-10-30). Mock-up only.
+  Today's ring (WatchDial's proportions) beside four options, all in the watch's Contemporary colours
+  on black, all playing the same tuning in step. Buttons freeze them 20 cents sharp or in tune.
+  Owner decided (2026-10-30): C, Needle ("looks the most useful"), with a small wave added under the
+  cents in round 2, watch-wave-preview.html. Built in Phase 61 (WatchDial, drawNeedle).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Watch look options</title>
+<style>
+  :root { --bg: #0a0d16; --ink: #e6e9f4; --muted: #a6aecb; --faint: #6f7898; --accent: #a6adff; --green: #6fd6a8; --s: 236px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background-color: var(--bg);
+    background-image: radial-gradient(1100px 520px at 50% -120px, #1b2243 0%, rgba(10,13,22,0) 70%);
+    font: 15px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  header, main { max-width: 1240px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  header { padding-top: 48px; }
+  .eyebrow { color: var(--green); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+  h1 { font: 300 40px/1.1 "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif; margin: 10px 0 12px; }
+  .lead { color: var(--muted); max-width: 760px; margin: 0; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+  .controls button { font: inherit; font-size: 14px; color: var(--muted); background: #161c2e; border: 0; border-radius: 999px; padding: 7px 16px; cursor: pointer; }
+  .controls button.on { background: var(--accent); color: #121a5a; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding-top: 28px; padding-bottom: 48px; }
+  .card { position: relative; border-radius: 26px; padding: 8px 22px 22px; background: linear-gradient(180deg, #141a2b 0%, #0f1320 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px rgba(0,0,0,.35); }
+  .card.now { background: linear-gradient(180deg, #10141f 0%, #0d1019 100%); }
+  .num { position: absolute; top: 18px; left: 22px; font-size: 13px; color: var(--faint); font-weight: 700; letter-spacing: .1em; }
+  .stage { display: flex; justify-content: center; padding: 56px 0 48px; }
+  h2 { font-weight: 500; font-size: 18px; margin: 0 0 6px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  .watch { position: relative; width: calc(var(--s) + 32px); height: calc(var(--s) + 32px); }
+  .strap { position: absolute; left: 50%; transform: translateX(-50%); width: 56%; height: 74px; background: linear-gradient(90deg, #15181f, #262a34 50%, #15181f); }
+  .strap.top { top: -44px; border-radius: 16px 16px 8px 8px; } .strap.bot { bottom: -44px; border-radius: 8px 8px 16px 16px; }
+  .btnw { position: absolute; inset: 0; }
+  .btnw::after { content: ""; position: absolute; right: -5px; top: 50%; margin-top: -14px; width: 10px; height: 28px; border-radius: 4px; background: linear-gradient(90deg, #2c3039, #8b919e 60%, #4b505b); }
+  .btnw.b1 { transform: rotate(-30deg); } .btnw.b2 { transform: rotate(30deg); }
+  .case { position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 200deg, #5d636f, #2a2e36 18%, #8d93a0 34%, #3b3f48 52%, #6e7480 70%, #2a2e36 86%, #5d636f);
+    box-shadow: 0 22px 44px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.6); }
+  .bezel { position: absolute; inset: 5px; border-radius: 50%; background: #050608; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .watch canvas, .glass { position: absolute; left: 16px; top: 16px; width: var(--s); height: var(--s); border-radius: 50%; }
+  .glass { pointer-events: none; background: linear-gradient(140deg, rgba(255,255,255,.075) 0%, rgba(255,255,255,0) 38%); }
+  @media (max-width: 420px) { :root { --s: 210px; } header, main { padding-left: 16px; padding-right: 16px; } h1 { font-size: 32px; } .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Mock-up · Phase 61 · the watch tuner's look</div>
+  <h1>A finer look, a bigger marker</h1>
+  <p class="lead">Today's watch tuner beside four options, same colours, same calm in-tune glow. Every option has a bigger marker; they differ in what else the ring shows. All five play the same string together.</p>
+  <div class="controls" role="group" aria-label="What the watches show">
+    <button data-mode="play" class="on">Playing a string</button>
+    <button data-mode="off">Hold 20 cents sharp</button>
+    <button data-mode="tune">Hold in tune</button>
+  </div>
+</header>
+
+<main class="grid">
+  <article class="card now"><span class="num">NOW</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-look="today"></canvas><div class="glass"></div></div></div>
+    <h2>Today</h2><p>A thin ring, the ticks at the top, a 14 dp dot.</p>
+  </article>
+  <article class="card"><span class="num">A</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-look="dot"></canvas><div class="glass"></div></div></div>
+    <h2>Bigger dot</h2><p>Only the marker changes: half as big again, with a soft light round it. The smallest step.</p>
+  </article>
+  <article class="card"><span class="num">B</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-look="arc"></canvas><div class="glass"></div></div></div>
+    <h2>Lit arc</h2><p>A big dot, and the ring lit from the middle to it, so how far off you are shows as a length. ♭ and ♯ at the scale's ends.</p>
+  </article>
+  <article class="card"><span class="num">C</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-look="needle"></canvas><div class="glass"></div></div></div>
+    <h2>Needle</h2><p>A short needle pointing in from the ring, like the phone's meter, over a finer scale with a tick every 5 cents.</p>
+  </article>
+  <article class="card"><span class="num">D</span>
+    <div class="stage"><div class="watch"><div class="strap top"></div><div class="strap bot"></div><div class="btnw b1"></div><div class="btnw b2"></div><div class="case"></div><div class="bezel"></div><canvas data-look="glass"></canvas><div class="glass"></div></div></div>
+    <h2>Deep glass</h2><p>The fanciest: a faint deep-blue light behind the note, a scale band that brightens toward the middle, a large ring-shaped marker, and the note itself glowing softly in tune.</p>
+  </article>
+</main>
+
+<script>
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+const FONT = '"Google Sans", "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif';
+const SYM = '"Segoe UI Symbol", "Noto Sans Symbols", ' + FONT;
+const C = { ink: '#E6E9F4', muted: '#A6AECB', track: '#2B3350', accent: '#A6ADFF', onAccent: '#121A5A', inTune: '#6FD6A8', bg: '#171D2E' };
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeInOut = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+const approach = (v, t, s) => v < t ? Math.min(t, v + s) : Math.max(t, v - s);
+const DEG = Math.PI / 180;
+const angFor = c => (-90 + clamp(c, -50, 50) / 50 * 60) * DEG;   // WatchDial.angleFor
+const at = (cx, cy, r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+const noise = (t, s = 0) => Math.sin(t * 7.3 + s) * .5 + Math.sin(t * 13.1 + s * 2) * .3 + Math.sin(t * 3.7 + s * 3) * .2;
+function hex(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function rgba(h, a) { const [r, g, b] = hex(h); return `rgba(${r},${g},${b},${a})`; }
+function mixHex(a, b, t) { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+function ring(ctx, cx, cy, r) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+function dot(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+function seg(ctx, x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+function halo(ctx, x, y, r, color, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, rgba(color, a)); g.addColorStop(1, rgba(color, 0));
+  ctx.fillStyle = g; dot(ctx, x, y, r);
+}
+
+/** The watch tuner's motion: the marker's low-stiffness spring, the 400 ms fade, the 700 ms glow. */
+class Tuner {
+  constructor() { this.mc = 0; this.mv = 0; this.alpha = 0; this.gp = 0; this.hold = 0; this.inTune = false; this.shown = 0; }
+  step(raw, dt) {
+    const target = raw == null ? 0 : raw, w = 14, n = Math.max(1, Math.ceil(dt * 240)), h = dt / n;
+    for (let i = 0; i < n; i++) { const a = w * w * (target - this.mc) - 2 * w * this.mv; this.mv += a * h; this.mc += this.mv * h; }
+    const on = raw != null;
+    this.alpha = approach(this.alpha, on ? 1 : 0, dt / .4);
+    if (on && Math.abs(raw) <= 2.5) this.hold += dt; else if (!on || Math.abs(raw) > 4) this.hold = 0;
+    this.inTune = on && this.hold >= .35;
+    this.gp = approach(this.gp, this.inTune ? 1 : 0, dt / .7);
+    if (on) this.shown = Math.round(raw);
+  }
+  get glow() { return easeInOut(this.gp); }
+}
+
+/** The track, its ticks and the in-tune glow band, shared by every look; `o` tweaks them. */
+function baseRing(ctx, S, g, o = {}) {
+  const st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = C.track; ctx.lineWidth = st; ring(ctx, cx, cy, R);
+  const steps = o.fine ? 10 : 5;
+  for (let s = -steps; s <= steps; s++) {
+    const cents = s * 50 / steps, a = angFor(cents), centre = s === 0, major = Math.abs(cents) % 10 === 0;
+    const len = S * (centre ? (o.centreTick || .055) : major ? .03 : .017), out = R - st;
+    ctx.strokeStyle = centre ? C.ink : rgba(C.muted, major ? .45 : .28);
+    ctx.lineWidth = st * (centre ? .9 : .6);
+    seg(ctx, ...at(cx, cy, out, a), ...at(cx, cy, out - len, a));
+  }
+  if (o.signs) {
+    ctx.save(); ctx.fillStyle = rgba(C.muted, .75); ctx.font = `400 ${S * .062}px ${SYM}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('♭', ...at(cx, cy, R - S * .085, angFor(-50) - 4 * DEG));
+    ctx.fillText('♯', ...at(cx, cy, R - S * .085, angFor(50) + 4 * DEG));
+    ctx.restore();
+  }
+  if (g > 0) {
+    const band = S * .05, outer = R + band, grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outer);
+    grad.addColorStop(0, rgba(C.inTune, 0)); grad.addColorStop((R - band) / outer, rgba(C.inTune, 0));
+    grad.addColorStop(R / outer, rgba(C.inTune, .35 * g)); grad.addColorStop(1, rgba(C.inTune, 0));
+    ctx.fillStyle = grad; dot(ctx, cx, cy, outer);
+    ctx.strokeStyle = rgba(C.inTune, g); ctx.lineWidth = st; ring(ctx, cx, cy, R);
+  }
+}
+
+const LOOKS = {
+  today(ctx, S, tu) {
+    const st = S * .014, R = S / 2 - S * .06, g = tu.glow;
+    baseRing(ctx, S, g);
+    if (tu.alpha > .01) {
+      ctx.globalAlpha = tu.alpha; ctx.fillStyle = mixHex(C.accent, C.inTune, g);
+      dot(ctx, ...at(S / 2, S / 2, R, angFor(tu.mc)), st * 2.6); ctx.globalAlpha = 1;
+    }
+  },
+
+  dot(ctx, S, tu) {
+    const st = S * .014, R = S / 2 - S * .06, g = tu.glow, col = mixHex(C.accent, C.inTune, g);
+    baseRing(ctx, S, g);
+    if (tu.alpha > .01) {
+      const [x, y] = at(S / 2, S / 2, R, angFor(tu.mc));
+      ctx.globalAlpha = tu.alpha;
+      halo(ctx, x, y, st * 8, col, .35);
+      ctx.fillStyle = col; dot(ctx, x, y, st * 3.9);
+      ctx.globalAlpha = 1;
+    }
+  },
+
+  arc(ctx, S, tu) {
+    const st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2, g = tu.glow, col = mixHex(C.accent, C.inTune, g);
+    baseRing(ctx, S, g, { signs: true });
+    // The scale's own stretch of the ring a shade brighter, so its ends read as ♭ and ♯.
+    ctx.strokeStyle = rgba(C.muted, .16); ctx.lineWidth = st; ctx.beginPath(); ctx.arc(cx, cy, R, angFor(-50), angFor(50)); ctx.stroke();
+    if (tu.alpha > .01) {
+      const a = angFor(tu.mc), [x, y] = at(cx, cy, R, a);
+      ctx.globalAlpha = tu.alpha;
+      ctx.strokeStyle = rgba(col, .7); ctx.lineWidth = st * 1.9;
+      ctx.beginPath(); ctx.arc(cx, cy, R, Math.min(a, -90 * DEG), Math.max(a, -90 * DEG)); ctx.stroke();
+      ctx.fillStyle = '#000'; dot(ctx, x, y, st * 4.4);
+      ctx.fillStyle = col; dot(ctx, x, y, st * 3.6);
+      ctx.globalAlpha = 1;
+    }
+  },
+
+  needle(ctx, S, tu) {
+    const st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2, g = tu.glow, col = mixHex(C.accent, C.inTune, g);
+    baseRing(ctx, S, g, { fine: true, signs: true, centreTick: .045 });
+    if (tu.alpha > .01) {
+      const a = angFor(tu.mc), ux = Math.cos(a), uy = Math.sin(a), tx = -uy, ty = ux;
+      const [hx, hy] = at(cx, cy, R, a), tipR = R - S * .15, [px, py] = at(cx, cy, tipR, a), w = st * .85;
+      ctx.globalAlpha = tu.alpha; ctx.fillStyle = col;
+      ctx.beginPath(); ctx.moveTo(hx + tx * w, hy + ty * w); ctx.lineTo(px + tx * w * .25, py + ty * w * .25);
+      ctx.lineTo(px - tx * w * .25, py - ty * w * .25); ctx.lineTo(hx - tx * w, hy - ty * w); ctx.closePath(); ctx.fill();
+      halo(ctx, hx, hy, st * 7, col, .3);
+      ctx.fillStyle = col; dot(ctx, hx, hy, st * 2.4);
+      ctx.globalAlpha = 1;
+    }
+  },
+
+  glass(ctx, S, tu) {
+    const st = S * .014, R = S / 2 - S * .06, cx = S / 2, cy = S / 2, g = tu.glow, col = mixHex(C.accent, C.inTune, g);
+    const bg = ctx.createRadialGradient(cx, cy - S * .05, 0, cx, cy, S / 2);
+    bg.addColorStop(0, rgba(mixHex(C.bg, C.inTune, g * .25), .95)); bg.addColorStop(.6, rgba(C.bg, .45)); bg.addColorStop(1, rgba(C.bg, 0));
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+    baseRing(ctx, S, g, { signs: true });
+    // The scale band: wider than the ring, brightest at the middle, fading toward ♭ and ♯.
+    const band = ctx.createConicGradient(-90 * DEG - Math.PI, cx, cy);
+    band.addColorStop(.5 - 60 / 360, rgba(C.accent, 0)); band.addColorStop(.5, rgba(C.accent, .28)); band.addColorStop(.5 + 60 / 360, rgba(C.accent, 0));
+    ctx.strokeStyle = band; ctx.lineWidth = st * 3; ctx.lineCap = 'butt';
+    ctx.beginPath(); ctx.arc(cx, cy, R, angFor(-50), angFor(50)); ctx.stroke(); ctx.lineCap = 'round';
+    if (tu.alpha > .01) {
+      const [x, y] = at(cx, cy, R, angFor(tu.mc));
+      ctx.globalAlpha = tu.alpha;
+      halo(ctx, x, y, st * 9, col, .4);
+      ctx.fillStyle = '#000'; dot(ctx, x, y, st * 4.1);
+      ctx.strokeStyle = col; ctx.lineWidth = st * 1.3; ring(ctx, x, y, st * 3.7);
+      ctx.fillStyle = col; dot(ctx, x, y, st * 1.5);
+      ctx.globalAlpha = 1;
+    }
+  },
+};
+
+/** The note (letter large, octave small) and the cents under it, as the watch draws them today. */
+function drawReading(ctx, S, tu, noteGlow) {
+  const cx = S / 2, cy = S / 2, base = cy + S * .045, g = tu.glow;
+  ctx.save();
+  ctx.globalAlpha = 1 - tu.alpha;
+  ctx.fillStyle = C.muted; ctx.font = `500 ${S * .075}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (ctx.globalAlpha > .01) ctx.fillText('Play a note', cx, cy);
+  ctx.globalAlpha = tu.alpha; ctx.textBaseline = 'alphabetic';
+  if (tu.alpha > .01) {
+    ctx.font = `300 ${S * .30}px ${FONT}`; const nw = ctx.measureText('E').width;
+    ctx.font = `400 ${S * .11}px ${FONT}`; const ow = ctx.measureText('2').width;
+    const x = cx - (nw + ow) / 2;
+    ctx.textAlign = 'left'; ctx.font = `300 ${S * .30}px ${FONT}`; ctx.fillStyle = mixHex(C.ink, C.inTune, g);
+    if (noteGlow && g > 0) { ctx.shadowColor = rgba(C.inTune, .55 * g); ctx.shadowBlur = S * .06; }
+    ctx.fillText('E', x, base); ctx.shadowBlur = 0;
+    ctx.fillStyle = C.muted; ctx.font = `400 ${S * .11}px ${FONT}`; ctx.fillText('2', x + nw, base);
+    const c = tu.shown, a = Math.abs(c);
+    ctx.textAlign = 'center'; ctx.font = `400 ${S * .085}px ${FONT}`;
+    ctx.fillText((c > 0 ? '+' : c < 0 ? '−' : '') + a + (a === 1 ? ' cent' : ' cents'), cx, base + S * .12);
+  }
+  ctx.restore();
+}
+
+let mode = 'play';
+document.querySelectorAll('.controls button').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.controls button').forEach(x => x.classList.toggle('on', x === b));
+}));
+
+/** One string for every watch: a pluck that swings into tune, holds, and fades. */
+function rawAt(t) {
+  if (mode === 'off') return 20 + .4 * noise(t, 3);
+  if (mode === 'tune') return .4 * noise(t, 3);
+  const k = t % 9;
+  if (k < 1 || k > 7.6) return null;
+  const tl = k - 1;
+  return -24 * Math.exp(-tl / .8) * Math.cos(tl * 2.5) + .7 * noise(tl, 1) * (Math.exp(-tl / .9) + .25);
+}
+
+const items = [...document.querySelectorAll('canvas[data-look]')].map(cv => {
+  const S = cv.clientWidth;
+  cv.width = Math.round(S * DPR); cv.height = Math.round(S * DPR);
+  return { ctx: cv.getContext('2d'), S, look: cv.dataset.look, tu: new Tuner() };
+});
+let last = performance.now();
+const t0 = last;
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000), t = (now - t0) / 1000, raw = rawAt(t);
+  last = now;
+  for (const it of items) {
+    const { ctx, S, tu } = it;
+    tu.step(raw, dt);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, S, S);
+    ctx.save(); LOOKS[it.look](ctx, S, tu); ctx.restore();
+    drawReading(ctx, S, tu, it.look === 'glass');
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

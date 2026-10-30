@@ -12,19 +12,24 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -33,8 +38,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
@@ -103,9 +108,10 @@ fun WatchTunerApp(tuner: @Composable () -> WatchTunerViewModel) {
 }
 
 /**
- * The tuner: a ring along the edge of the screen with the cents scale at the top, the note large
- * in the middle and the cents under it. When the note is in tune the ring and the note glow in the
- * in-tune colour, easing in and out. A failure shows a message instead. Stateless.
+ * The tuner: a ring along the edge of the screen with the cents scale at the top (♭ and ♯ at its
+ * ends) and a needle pointing in from the ring, the note large in the middle, the cents under it and
+ * the ribbon under them. When the note is in tune the ring, the needle, the note and the ribbon glow
+ * in the in-tune colour, easing in and out. A failure shows a message instead. Stateless.
  */
 @Composable
 fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
@@ -141,11 +147,15 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
         label = "markerCents",
     )
 
+    val needle = remember { Path() }
+
     BoxWithConstraints(Modifier.fillMaxSize().testTag(WatchDial.TAG), contentAlignment = Alignment.Center) {
         val dial = min(maxWidth, maxHeight)
         Canvas(Modifier.fillMaxSize()) {
-            drawDial(cents = markerCents, markerAlpha = markerAlpha, glow = glow)
+            drawDial(cents = markerCents, markerAlpha = markerAlpha, glow = glow, needle = needle)
         }
+        DialSign("♭", -WatchDial.MAX_CENTS, dial)
+        DialSign("♯", WatchDial.MAX_CENTS, dial)
         AnimatedContent(
             targetState = state,
             contentKey = { it is WatchTunerState.Detected },
@@ -153,7 +163,16 @@ fun WatchTuner(state: WatchTunerState, onRetry: () -> Unit) {
             label = "reading",
         ) { shown ->
             if (shown is WatchTunerState.Detected) {
-                Reading(shown, dial, glow = { glow })
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Reading(shown, dial, glow = { glow })
+                    WatchRibbon(
+                        cents = shown.cents,
+                        glow = { glow },
+                        modifier = Modifier
+                            .absoluteOffset(y = dial * WatchDial.RIBBON_Y)
+                            .size(dial * WatchDial.RIBBON_WIDTH, dial * WatchDial.RIBBON_HEIGHT),
+                    )
+                }
             } else {
                 Box(Modifier.fillMaxSize().padding(horizontal = dial * 0.18f), contentAlignment = Alignment.Center) {
                     Text(
@@ -208,12 +227,32 @@ private fun Reading(reading: WatchTunerState.Detected, dial: Dp, glow: () -> Flo
                 )
             }
         }
-        Text(
-            pluralStringResource(R.plurals.wear_cents, abs(reading.cents), WatchNoteName.signedCents(reading.cents, locale)),
-            color = WatchColors.muted,
-            style = TextStyle(fontSize = (dial * WatchDial.CENTS_SIZE).fixedSp()),
+        WatchCents(
+            reading.cents,
+            style = TextStyle(color = WatchColors.muted, fontSize = (dial * WatchDial.CENTS_SIZE).fixedSp()),
         )
     }
+}
+
+/**
+ * ♭ or ♯ just beyond one end of the cents scale (its [cents], −50 or +50), inside the ring, so the
+ * scale says which way is flat. It stays on its side in right-to-left languages too, as the scale does.
+ */
+@Composable
+private fun BoxScope.DialSign(sign: String, cents: Float, dial: Dp) {
+    val density = LocalDensity.current
+    val degrees = WatchDial.angleFor(cents) + if (cents < 0f) -WatchDial.SIGN_SPREAD_DEGREES else WatchDial.SIGN_SPREAD_DEGREES
+    val radians = Math.toRadians(degrees.toDouble())
+    val reach = dial / 2 - dial * (WatchDial.INSET + WatchDial.SIGN_INSET)
+    Text(
+        sign,
+        modifier = Modifier
+            .align(Alignment.Center)
+            .absoluteOffset(x = reach * cos(radians).toFloat(), y = reach * sin(radians).toFloat())
+            .clearAndSetSemantics {},
+        color = WatchColors.muted.copy(alpha = WatchDial.SIGN_ALPHA),
+        style = TextStyle(fontFamily = MusicSigns, fontSize = with(density) { (dial * WatchDial.SIGN_SIZE).toSp() }),
+    )
 }
 
 /**
@@ -230,15 +269,18 @@ private fun noteNameText(name: String): AnnotatedString = buildAnnotatedString {
     }
 }
 
+/** The phone's cut of Noto Sans Symbols: ♭ ♮ ♯ and the notes. */
+private val MusicSigns = FontFamily(Font(R.font.music_signs))
+
 private val RaisedSharp = SpanStyle(
-    fontFamily = FontFamily(Font(R.font.music_signs)),
+    fontFamily = MusicSigns,
     fontSize = 0.7f.em,
     baselineShift = BaselineShift(0.5f),
     letterSpacing = 0.sp,
 )
 
-/** The ring: track, cents ticks at the top, the in-tune glow, and the marker at [cents]. */
-private fun DrawScope.drawDial(cents: Float, markerAlpha: Float, glow: Float) {
+/** The ring: track, cents ticks at the top, the in-tune glow, and the needle at [cents] (drawn in [needle]). */
+private fun DrawScope.drawDial(cents: Float, markerAlpha: Float, glow: Float, needle: Path) {
     val d = size.minDimension
     val stroke = d * WatchDial.STROKE
     val radius = d / 2f - d * WatchDial.INSET
@@ -246,13 +288,23 @@ private fun DrawScope.drawDial(cents: Float, markerAlpha: Float, glow: Float) {
 
     drawCircle(WatchColors.track, radius, c, style = Stroke(stroke))
 
+    // A tick every 5 cents, the tens longer and the middle longest.
     for (step in -WatchDial.TICKS..WatchDial.TICKS) {
         val angle = WatchDial.angleFor(step * WatchDial.CENTS_PER_TICK.toFloat())
         val centre = step == 0
-        val length = d * if (centre) WatchDial.CENTRE_TICK else WatchDial.TICK
+        val ten = step % 2 == 0
+        val length = d * when {
+            centre -> WatchDial.CENTRE_TICK
+            ten -> WatchDial.TICK
+            else -> WatchDial.MINOR_TICK
+        }
         val outer = radius - stroke
         drawLine(
-            color = if (centre) WatchColors.ink else WatchColors.muted.copy(alpha = WatchDial.TICK_ALPHA),
+            color = when {
+                centre -> WatchColors.ink
+                ten -> WatchColors.muted.copy(alpha = WatchDial.TICK_ALPHA)
+                else -> WatchColors.muted.copy(alpha = WatchDial.MINOR_TICK_ALPHA)
+            },
             start = pointAt(c, outer, angle),
             end = pointAt(c, outer - length, angle),
             strokeWidth = stroke * if (centre) 0.9f else 0.6f,
@@ -280,9 +332,43 @@ private fun DrawScope.drawDial(cents: Float, markerAlpha: Float, glow: Float) {
     }
 
     if (markerAlpha > 0f) {
-        val color = lerp(WatchColors.accent, WatchColors.inTune, glow)
-        drawCircle(color.copy(alpha = markerAlpha), stroke * WatchDial.MARKER, pointAt(c, radius, WatchDial.angleFor(cents)))
+        drawNeedle(cents, markerAlpha, lerp(WatchColors.accent, WatchColors.inTune, glow), radius, stroke, needle)
     }
+}
+
+/**
+ * The needle (the owner's pick C of docs/design/watch-look-preview.html): a slim taper pointing in
+ * from the ring at [cents], its head a dot on the ring with a soft light round it.
+ */
+private fun DrawScope.drawNeedle(cents: Float, alpha: Float, color: Color, radius: Float, stroke: Float, needle: Path) {
+    val degrees = WatchDial.angleFor(cents)
+    val radians = Math.toRadians(degrees.toDouble())
+    // Across the needle: a right angle to the line from the middle.
+    val acrossX = -sin(radians).toFloat()
+    val acrossY = cos(radians).toFloat()
+    val head = pointAt(center, radius, degrees)
+    val tip = pointAt(center, radius - size.minDimension * WatchDial.NEEDLE_LENGTH, degrees)
+    val half = stroke * WatchDial.NEEDLE_HALF_WIDTH
+    val tipHalf = half * WatchDial.NEEDLE_TIP
+    needle.reset()
+    needle.moveTo(head.x + acrossX * half, head.y + acrossY * half)
+    needle.lineTo(tip.x + acrossX * tipHalf, tip.y + acrossY * tipHalf)
+    needle.lineTo(tip.x - acrossX * tipHalf, tip.y - acrossY * tipHalf)
+    needle.lineTo(head.x - acrossX * half, head.y - acrossY * half)
+    needle.close()
+    drawPath(needle, color, alpha = alpha)
+    val light = stroke * WatchDial.HALO
+    drawCircle(
+        brush = Brush.radialGradient(
+            0f to color.copy(alpha = WatchDial.HALO_ALPHA * alpha),
+            1f to color.copy(alpha = 0f),
+            center = head,
+            radius = light,
+        ),
+        radius = light,
+        center = head,
+    )
+    drawCircle(color.copy(alpha = alpha), stroke * WatchDial.HEAD, head)
 }
 
 private fun pointAt(center: Offset, radius: Float, degrees: Float): Offset {
@@ -294,24 +380,52 @@ private fun pointAt(center: Offset, radius: Float, degrees: Float): Offset {
 object WatchDial {
     const val TAG = "watchDial"
 
-    /** The scale runs ±50 cents over ±60° either side of 12 o'clock. */
+    const val RIBBON_TAG = "watchRibbon"
+
+    /** The scale runs ±50 cents over ±60° either side of 12 o'clock, a tick every 5 cents. */
     const val MAX_CENTS = 50f
     const val MAX_SWEEP_DEGREES = 60f
-    const val TICKS = 5
-    const val CENTS_PER_TICK = 10
+    const val TICKS = 10
+    const val CENTS_PER_TICK = 5
 
     const val INSET = 0.06f
     const val STROKE = 0.014f
     const val TICK = 0.03f
-    const val CENTRE_TICK = 0.055f
+    const val MINOR_TICK = 0.017f
+    const val CENTRE_TICK = 0.045f
     const val TICK_ALPHA = 0.45f
-    const val MARKER = 2.6f
+    const val MINOR_TICK_ALPHA = 0.28f
     const val GLOW_BAND = 0.05f
     const val GLOW_ALPHA = 0.35f
+
+    /**
+     * The needle, in the ring's line widths ([STROKE]) unless said: it reaches 15 % of the screen in
+     * from the ring (about 30 dp on the Watch 5), 1.7 lines wide at the head narrowing to a quarter of
+     * that, and its head is a dot 4.8 lines across in a soft light 14 lines across.
+     */
+    const val NEEDLE_LENGTH = 0.15f
+    const val NEEDLE_HALF_WIDTH = 0.85f
+    const val NEEDLE_TIP = 0.25f
+    const val HEAD = 2.4f
+    const val HALO = 7f
+    const val HALO_ALPHA = 0.3f
+
+    /** ♭ and ♯: 4° beyond the scale's ends, 8.5 % of the screen inside the ring. */
+    const val SIGN_SIZE = 0.062f
+    const val SIGN_INSET = 0.085f
+    const val SIGN_SPREAD_DEGREES = 4f
+    const val SIGN_ALPHA = 0.75f
 
     const val NOTE_SIZE = 0.30f
     const val OCTAVE_SIZE = 0.11f
     const val CENTS_SIZE = 0.085f
+
+    /** The ribbon: half the screen wide, 6.5 % tall, its middle 27.5 % below the screen's, soft. */
+    const val RIBBON_WIDTH = 0.5f
+    const val RIBBON_HEIGHT = 0.065f
+    const val RIBBON_Y = 0.275f
+    const val RIBBON_ALPHA = 0.45f
+    const val RIBBON_HALO_ALPHA = 0.3f
 
     /** The in-tune glow eases in and out over this long: calm, never a flash. */
     const val GLOW_MILLIS = 700

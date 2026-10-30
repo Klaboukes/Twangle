@@ -7,34 +7,18 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.dsp.strobe.ribbonAt
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.settings.WaveLook
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.max
-import kotlin.math.sin
 
 /*
  * The wave view of every style: a soft ribbon of sound under the note, drawn in the style's own
  * marks and without a frame, so it stays in the background. Off pitch it swells into pulses that
  * drift along, like the beats you hear when two notes are close but not the same, at the strobe's
  * speed; on the note it settles into one smooth, even band that stands still. WaveMotion decides
- * how the pulses move. The other looks the user can pick are in WaveLooks.kt.
+ * how the pulses move and ribbonAt their shape (both in :core:dsp, shared with the watch). The other looks the user can pick are in WaveLooks.kt.
  */
-
-/**
- * Height of the ribbon at [u] (0 at the left, 1 at the right) in 0..1. It is widest in the middle
- * and narrows to nothing at both ends. [depth] (0..1) pinches it into [beats] pulses across the
- * width, moved along by [phase] pulses: a larger [phase] moves the pulses to the right.
- */
-fun ribbonAt(u: Float, beats: Float, phase: Float, depth: Float): Float =
-    max(0f, sin(PI.toFloat() * u.coerceIn(0f, 1f))) * pulseAt(u, beats, phase, depth)
-
-/** [ribbonAt] without the narrowing at the ends: 1 on a pulse, down to 1 − [depth] between them. */
-fun pulseAt(u: Float, beats: Float, phase: Float, depth: Float): Float {
-    val pulse = 0.5f + 0.5f * cos(2f * PI.toFloat() * (beats * (u - 0.5f) - phase))
-    return 1f - depth.coerceIn(0f, 1f) * (1f - pulse)
-}
 
 /** [style]'s own sound ribbon: the [WaveLook.RIBBON] look. */
 internal fun DrawScope.drawStyleRibbon(style: VisualStyle, ribbon: Ribbon, path: Path) {
