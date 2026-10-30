@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twangle Banjo Charts</title>
+<!--
+TWANGLE PHASE 59 (rough mock-up, 2026-10-30): chord charts and scales for the 5-string banjo.
+Plain on purpose: Contemporary only, bare elements, a one-line note each. The owner picks with the Pick buttons.
+The banjo  Open G in instrument order (Instrument.BANJO_5, Tuning "banjo_open_g"): g4 D3 G3 B3 D4, the short 5th
+           string first (index 0, Tuning.shortStrings). It starts at the neck's 5th fret: its open g is what a full
+           string tuned to D4 would sound at the 5th fret, its own first fret is the neck's 6th (g♯), and frets on it
+           are counted on the neck, as banjo tab does (its a is "fret 7").
+Shapes     Checked note by note (the self-check at the end of the script): G 00000 sounds G D G B D; C 02012
+           (fingers 2 1 3) sounds G E G C E, E3 in the bass; D7 00214 (fingers 2 1 4) sounds D A C F♯, the open g
+           on top only where the drone rule lets it ring (it is not a D7 note and sits a half step above the F♯4).
+Rows       1 chart: A starts at its own small nut at the 5th fret (frets 1-5 shown, the neck narrower above it);
+             B full length, dashed above the 5th fret, "from 5" by its o; C four strings, the short one in words.
+           2 drone: A always rings; B rings only where g is a chord note, otherwise fretted above the 5th fret when
+             a chord note is within the hand's four frets, else not played (×). Drawn in the row-1 pick.
+           3 neck, G major, on its side and upright: A its lane starts at the 5th fret; B full length, faded above it.
+           4 left-handed: rows 1 and 3's picks mirrored (no pick).
+           5 TalkBack: A "short G 4 string"; B "G 4 string", as every other string.
+Picks      localStorage, one key per row, value "A" / "B" / "C" (absent: not picked yet): twangle.p59.chart,
+           twangle.p59.drone, twangle.p59.neck, twangle.p59.talkback; the page's theme twangle.p59.theme.
+Sound      The ▶ in row 2 strums the chart's strings in WebAudio, short plucks that stop by themselves.
+Scale      Charts in ChordChart.ChartGeometry's units (22 between strings, 26 a fret row) at 1 px a unit; the neck
+           in ScaleNeck's (NeckGeometry), 1 px a unit, the Xiaomi 12X's size at 0.8 px per dp.
+Look       Contemporary colours (core/designsystem StylePalettes.kt), light or dark with the system or the switch.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --on-accent: #FFFFFF; --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --line: color-mix(in srgb, var(--muted) 60%, var(--bg));
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --on-accent: #10141F; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --on-accent: #10141F; --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 980px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2.sec { font: 400 24px/1.2 var(--ui); margin: 44px 0 4px; }
+h2.sec + .sub { color: var(--muted); font-size: 14px; max-width: 70ch; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+
+/* The bar: the theme switch and the picks so far. */
+.bar { position: sticky; top: 0; z-index: 5; margin: 8px -16px 0; padding: 10px 16px; display: flex; flex-wrap: wrap;
+  gap: 8px 16px; align-items: center; background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.themes { display: flex; gap: 4px; }
+button { font: 500 13px/1 var(--ui); padding: 9px 13px; border-radius: 999px; cursor: pointer; color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 7%, transparent); border: 0; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.picks { font-size: 13px; color: var(--muted); }
+.picks b { color: var(--accent); font-weight: 500; }
+
+.list { margin-top: 18px; display: grid; gap: 26px; }
+.cand { display: grid; gap: 8px; padding: 12px; margin: 0 -12px; border-radius: 16px; border: 2px solid transparent; }
+.cand.picked { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.cand h3 { font: 500 17px/1.3 var(--ui); margin: 0; }
+.cand .note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.why { font-size: 14px; max-width: 70ch; }
+.cand .pick { justify-self: start; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container);
+  color: var(--ink); margin-left: 8px; vertical-align: 2px; }
+.panels { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-start; }
+.cap { font-size: 12px; color: var(--muted); margin-bottom: 4px; max-width: 314px; }
+
+/* A piece of the Practice screen: the app's background, 393 dp at 0.8 px per dp, 16 dp (13 px) margins. */
+.screen { border-radius: 12px; background: var(--bg); padding: 12px 13px; max-width: 100%; overflow: hidden; }
+.screen.phone { width: 314px; }
+.charts { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; }
+.charts figure { margin: 0; display: grid; justify-items: center; gap: 2px; }
+.charts figcaption { font: 500 13px/1.2 var(--ui); display: flex; align-items: center; gap: 6px; }
+.play { width: 28px; height: 28px; padding: 0 0 0 2px; border-radius: 50%; font-size: 11px; display: grid; place-items: center; }
+svg { display: block; max-width: 100%; height: auto; }
+.speech { font: 400 14px/1.5 var(--ui); padding: 10px 12px; border-radius: 10px; background: var(--bg); max-width: 70ch; }
+.speech b { font-weight: 500; }
+
+footer { margin-top: 44px; display: grid; gap: 10px; max-width: 70ch; color: var(--muted); font-size: 14px; }
+footer h2 { font: 400 22px/1.2 var(--ui); margin: 0; color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 59 · rough mock-up</p>
+  <h1>Banjo chord charts and scales</h1>
+  <p class="lede">What's being decided: how Chords and Scales draw the banjo's short 5th string, and when it rings.
+    Each row has options <strong>A</strong> and <strong>B</strong> (row 1 a <strong>C</strong> too), the one I'd pick
+    marked. Choose one per row with its <strong>Pick</strong> button; the page keeps your picks.</p>
+</header>
+<div class="bar">
+  <div class="themes" id="themes" role="group" aria-label="Light or dark"></div>
+  <span class="picks" id="picks"></span>
+</div>
+
+<h2 class="sec">1. Where the chart draws the short string</h2>
+<p class="sub">The first three banjo chords, G, C and D7, in open G (g D G B D). The short string is the first one, on the thick side.</p>
+<div class="list" id="row-chart"></div>
+
+<h2 class="sec">2. When the short string rings</h2>
+<p class="sub">Its g is a G chord note (the root) and a C chord note (the 5th), but not a D7 note. Drawn the way you picked in row 1
+  (my pick until you choose). ▶ strums the chart.</p>
+<div class="list" id="row-drone"></div>
+
+<h2 class="sec">3. The Scales neck</h2>
+<p class="sub">G major on the whole neck, on its side as on a phone and upright as on a tablet held upright. The short string
+  has no notes below the 5th fret either way; its open g sits where its own nut is.</p>
+<div class="list" id="row-neck"></div>
+
+<h2 class="sec">4. Left-handed</h2>
+<p class="sub">Not a choice: rows 1 and 3 as you picked them (or my picks), mirrored with Phase 57's Left-handed switch.</p>
+<div class="list" id="row-lefty"></div>
+
+<h2 class="sec">5. What TalkBack says for the short string</h2>
+<p class="sub">Every string is named by its open note today ("D 3 string"). Frets on the short string are counted on the neck
+  either way, as banjo tab does ("fret 7" for its a).</p>
+<div class="list" id="row-talkback"></div>
+
+<footer>
+  <h2>The shapes, checked note by note</h2>
+  <p><b>G</b>: every string open: g D G B D, all G chord notes. <b>C</b>: 4th string 2nd fret (finger 2), 2nd string 1st fret
+    (finger 1), 1st string 2nd fret (finger 3): g E G C E; the lowest note is the E, not the C, as banjo players play it.
+    <b>D7</b>: 3rd string 2nd fret (finger 2), 2nd string 1st fret (finger 1), 1st string 4th fret (finger 4): D A C F♯, the
+    4th string open as the root; the short string's g is not a D7 note.</p>
+  <p>Not shown: the other five styles, every language and 2× text, double C and double D (the same rules), and the Capo
+    helper, which keeps its quiet line for the banjo until players ask.</p>
+</footer>
+</div>
+
+<script>
+"use strict";
+const store = {
+  get(k, d = null) { try { return localStorage.getItem(k) ?? d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private window or blocked storage */ } },
+  remove(k) { try { localStorage.removeItem(k); } catch (e) { /* as above */ } },
+};
+
+// ---------- Theme: Auto / Light / Dark ----------
+const root = document.documentElement;
+let theme = store.get("twangle.p59.theme", "auto");
+if (!["auto", "light", "dark"].includes(theme)) theme = "auto";
+function applyTheme() {
+  if (theme === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
+  document.querySelectorAll("#themes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === theme)));
+}
+[["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]].forEach(([id, label]) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.id = id; b.textContent = label;
+  b.onclick = () => { theme = id; store.set("twangle.p59.theme", id); applyTheme(); };
+  document.getElementById("themes").append(b);
+});
+applyTheme();
+
+// ---------- The banjo and its first chords ----------
+// Open G in instrument order: the short 5th string first (g4), then D3 G3 B3 D4. MIDI numbers.
+const OPEN = [67, 50, 55, 59, 62];
+const OPEN_SAID = ["G 4", "D 3", "G 3", "B 3", "D 4"];
+const SHORT = 0, SHORT_START = 5, HIGHEST_FRET = 12, MAX_SPAN = 3;
+const PCS = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+const pcOf = m => PCS[((m % 12) + 12) % 12];
+// The note string s sounds at neck fret f; the short string's open note is at its own nut, the neck's 5th fret.
+const noteAt = (s, f) => s === SHORT ? OPEN[SHORT] + (f === 0 ? 0 : f - SHORT_START) : OPEN[s] + f;
+
+// Per string, thick side first: the neck fret (-1 not played, 0 open) and the finger. The short string's entry is
+// set by the drone rule (row 2).
+const CHORDS = [
+  { id: "G", words: "G major", root: "G", tones: ["G", "B", "D"], frets: [0, 0, 0, 0, 0], fingers: [0, 0, 0, 0, 0] },
+  { id: "C", words: "C major", root: "C", tones: ["C", "E", "G"], frets: [0, 2, 0, 1, 2], fingers: [0, 2, 0, 1, 3] },
+  { id: "D7", words: "D seventh", root: "D", tones: ["D", "F♯", "A", "C"], frets: [0, 0, 2, 1, 4], fingers: [0, 0, 2, 1, 4] },
+];
+
+// The drone rule. A: the short string always rings open. B: open only where its note is a chord note; otherwise
+// fretted above its start where a chord note lies within the hand's four frets, else not played.
+function withDrone(ch, rule) {
+  const frets = ch.frets.slice(), fingers = ch.fingers.slice();
+  const belongs = ch.tones.includes(pcOf(OPEN[SHORT]));
+  frets[SHORT] = 0;
+  if (rule === "B" && !belongs) {
+    const pressed = frets.filter((f, s) => s !== SHORT && f > 0);
+    const lo = Math.min(...pressed), hi = Math.max(...pressed);
+    frets[SHORT] = -1;
+    for (let f = SHORT_START + 1; f <= HIGHEST_FRET; f++) {
+      if (f >= hi - MAX_SPAN && f <= lo + MAX_SPAN && ch.tones.includes(pcOf(noteAt(SHORT, f)))) { frets[SHORT] = f; break; }
+    }
+  }
+  const notes = frets.map((f, s) => f < 0 ? null : noteAt(s, f));
+  return { ...ch, frets, fingers, notes, clash: rule === "A" && !belongs };
+}
+
+// ---------- The chord chart (ChordChart.ChartGeometry units, 1 px each) ----------
+const NS = 'font-family="Roboto, system-ui, -apple-system, Segoe UI, sans-serif"';
+function chordChart(style, ch, { mirror = false } = {}) {
+  const shown = style === "C" ? [1, 2, 3, 4] : [0, 1, 2, 3, 4];
+  const n = shown.length, GAP = 22, ROW = 26, SIDE = 34, TOP = 26, MARK_Y = 13, DOT = 9, MARK = 4.6;
+  const ROWS = style === "A" ? 5 : 4, grid = TOP + ROWS * ROW, run = style === "A" ? 12 : 0;
+  const words = style === "C" ? 18 : 0, nameY = grid + run + 14;
+  const W = 2 * SIDE + (n - 1) * GAP, H = nameY + 12 + words;
+  const x = s => SIDE + (mirror ? n - 1 - shown.indexOf(s) : shown.indexOf(s)) * GAP;
+  const out = mirror ? 1 : -1; // the outer side of the short string: left, or right when mirrored
+  const span = (a, b) => [Math.min(x(a), x(b)), Math.max(x(a), x(b))];
+  let o = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" ${NS} role="img" aria-label="${ch.id} chord chart, option ${style}">`;
+  const line = (x1, y1, x2, y2, stroke, w, extra = "") => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${w}" ${extra}/>`;
+  const openMark = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="${MARK}" fill="none" stroke="var(--ink)" stroke-width="1.5"/>`;
+  const mutedMark = (cx, cy) => line(cx - MARK, cy - MARK, cx + MARK, cy + MARK, "var(--muted)", 1.5, 'stroke-linecap="round"') +
+    line(cx - MARK, cy + MARK, cx + MARK, cy - MARK, "var(--muted)", 1.5, 'stroke-linecap="round"');
+  // Above its own nut (A) the neck is only as wide as the four long strings, as a banjo's is.
+  const first = style === "A" ? 1 : shown[0];
+  for (let r = 0; r <= ROWS; r++) {
+    const y = TOP + r * ROW, [l, rr] = span(r === SHORT_START && style === "A" ? 0 : first, 4);
+    o += r === 0 ? line(l - 1.2, y, rr + 1.2, y, "var(--ink)", 4.5, 'stroke-linecap="round"')
+                 : line(l, y, rr, y, "var(--muted)", 1.2, 'stroke-opacity=".6"');
+  }
+  for (const s of shown) {
+    const cx = x(s);
+    if (s === SHORT && style === "A") {
+      // Its own small nut at the 5th fret, a peg beside it, the string from there on.
+      const y5 = TOP + SHORT_START * ROW;
+      o += line(cx, y5, cx, grid + run, "var(--muted)", 1.2);
+      o += line(cx - 6, y5, cx + 6, y5, "var(--ink)", 4.5, 'stroke-linecap="round"');
+      o += line(cx + out * 6, y5, cx + out * 12, y5, "var(--ink)", 2) + `<circle cx="${cx + out * 15}" cy="${y5}" r="3.4" fill="var(--ink)"/>`;
+    } else if (s === SHORT && style === "B") {
+      o += line(cx, TOP, cx, grid, "var(--muted)", 1.2, 'stroke-dasharray="3 3" stroke-opacity=".55"');
+    } else {
+      o += line(cx, TOP, cx, grid, "var(--muted)", 1.2);
+      if (run) o += line(cx, grid, cx, grid + run, "var(--muted)", 1.2); // the neck goes on past the chart
+    }
+  }
+  // o and ×: above the nut, the short string's by its own nut (A), "from 5" beside it (B).
+  for (const s of shown) {
+    const f = ch.frets[s], cx = x(s);
+    const cy = s === SHORT && style === "A" ? TOP + (SHORT_START - 0.5) * ROW : MARK_Y;
+    if (f === 0) o += openMark(cx, cy);
+    else if (f < 0) o += mutedMark(cx, cy);
+    else if (f <= ROWS) {
+      const y = TOP + (f - 0.5) * ROW;
+      o += `<circle cx="${cx}" cy="${y}" r="${DOT}" fill="var(--ink)"/>`;
+      if (ch.fingers[s]) o += `<text x="${cx}" y="${y + 4}" font-size="11" font-weight="500" text-anchor="middle" fill="var(--page)">${ch.fingers[s]}</text>`;
+    }
+    if (s === SHORT && style === "B") {
+      o += `<text x="${cx + out * 8}" y="${MARK_Y + 3}" font-size="7.5" text-anchor="${mirror ? "start" : "end"}" fill="var(--muted)">from 5</text>`;
+    }
+  }
+  // The notes under the strings, the root in the accent; a drone that isn't a chord note soft.
+  for (const s of shown) {
+    const m = ch.notes[s];
+    if (m == null) continue;
+    const name = pcOf(m), isRoot = name === ch.root, soft = s === SHORT && ch.clash;
+    o += `<text x="${x(s)}" y="${nameY}" font-size="11" text-anchor="middle" fill="${isRoot ? "var(--accent)" : "var(--muted)"}"` +
+      ` font-weight="${isRoot ? 700 : 400}"${soft ? ' font-style="italic" fill-opacity=".55"' : ""}>${name}</text>`;
+  }
+  if (style === "C") {
+    const f = ch.frets[SHORT];
+    const said = f === 0 ? (ch.clash ? `5th string: open G, not in ${ch.id}` : "5th string: open G") : f < 0 ? "5th string: not played" : `5th string: fret ${f}`;
+    o += `<text x="${W / 2}" y="${H - 5}" font-size="9.5" text-anchor="middle" fill="var(--muted)">${said}</text>`;
+  }
+  return o + `</svg>`;
+}
+
+// ---------- The Scales neck (ScaleNeck.NeckGeometry units, 1 px each) ----------
+const G_MAJOR = { root: "G", notes: ["G", "A", "B", "C", "D", "E", "F♯"] };
+function neck(style, lie, { mirror = false } = {}) {
+  const OPENU = 30, OPEN_MIDDLE = 16, FRET = 20.5, END = 6, GAP = 19, EDGE = 12, LABELS = 26, LABEL_MIDDLE = 11, R = 8.5;
+  const strings = 5, frets = HIGHEST_FRET;
+  const along = OPENU + frets * FRET + END, across = EDGE + (strings - 1) * GAP + LABELS;
+  const side = lie === "side", W = side ? along : across, H = side ? across : along;
+  const pt = (a, c) => { const p = side ? [a, across - c] : [c, a]; if (mirror) p[0] = W - p[0]; return p; };
+  const fretLine = f => OPENU + f * FRET, fretMid = f => f === 0 ? OPEN_MIDDLE : OPENU + (f - 0.5) * FRET;
+  const sLine = s => LABELS + s * GAP;
+  const seg = (a1, c1, a2, c2, stroke, w, extra = "") => { const [x1, y1] = pt(a1, c1), [x2, y2] = pt(a2, c2);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${w}" ${extra}/>`; };
+  let o = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" ${NS} role="img" aria-label="G major on the banjo neck, option ${style}">`;
+  // Frets; with A, those above the 5th only as wide as the four long strings.
+  for (let f = 1; f <= frets; f++) {
+    const from = style === "A" && f < SHORT_START ? sLine(1) : sLine(0);
+    o += seg(fretLine(f), from, fretLine(f), sLine(strings - 1), "var(--muted)", 1, 'stroke-opacity=".6"');
+  }
+  for (let s = 0; s < strings; s++) {
+    if (s === SHORT && style === "A") {
+      o += seg(fretLine(SHORT_START), sLine(s), fretLine(frets), sLine(s), "var(--muted)", 1);
+    } else if (s === SHORT) {
+      o += seg(fretLine(0), sLine(s), fretLine(SHORT_START), sLine(s), "var(--muted)", 1, 'stroke-dasharray="3 3" stroke-opacity=".45"');
+      o += seg(fretLine(SHORT_START), sLine(s), fretLine(frets), sLine(s), "var(--muted)", 1);
+    } else {
+      o += seg(fretLine(0), sLine(s), fretLine(frets), sLine(s), "var(--muted)", 1);
+    }
+  }
+  o += seg(fretLine(0), (style === "A" ? sLine(1) : sLine(0)) - 1, fretLine(0), sLine(strings - 1) + 1, "var(--ink)", 4, 'stroke-linecap="round"');
+  if (style === "A") o += seg(fretLine(SHORT_START), sLine(SHORT) - 4.5, fretLine(SHORT_START), sLine(SHORT) + 4.5, "var(--ink)", 4, 'stroke-linecap="round"');
+  for (const f of [3, 5, 7, 9, 12]) { const [x, y] = pt(fretMid(f), LABEL_MIDDLE);
+    o += `<text x="${x}" y="${y + 3.5}" font-size="10" text-anchor="middle" fill="var(--muted)">${f}</text>`; }
+  for (let s = 0; s < strings; s++) {
+    for (let f = s === SHORT ? SHORT_START : 0; f <= frets; f++) {
+      const name = pcOf(noteAt(s, f === SHORT_START && s === SHORT ? 0 : f));
+      if (!G_MAJOR.notes.includes(name)) continue;
+      const [x, y] = pt(fretMid(f), sLine(s)), isRoot = name === G_MAJOR.root;
+      o += isRoot ? `<circle cx="${x}" cy="${y}" r="${R}" fill="var(--accent)"/>`
+                  : `<circle cx="${x}" cy="${y}" r="${R - 0.6}" fill="var(--page)" stroke="var(--muted)" stroke-width="1.2"/>`;
+      o += `<text x="${x}" y="${y + 3.2}" font-size="9" text-anchor="middle" fill="${isRoot ? "var(--on-accent)" : "var(--ink)"}"` +
+        `${isRoot ? ' font-weight="500"' : ""}>${name}</text>`;
+    }
+  }
+  return o + `</svg>`;
+}
+
+// ---------- Picks ----------
+const ROWS = { chart: ["A", "B", "C"], drone: ["A", "B"], neck: ["A", "B"], talkback: ["A", "B"] };
+const MINE = { chart: "A", drone: "B", neck: "A", talkback: "A" };
+const LABEL = { chart: "Chart", drone: "Rings", neck: "Neck", talkback: "TalkBack" };
+const key = row => `twangle.p59.${row}`;
+const picked = row => { const v = store.get(key(row)); return ROWS[row].includes(v) ? v : null; };
+const pickOr = row => picked(row) || MINE[row];
+
+const cand = (row, opt, title, body, note) => `<div class="cand" data-row="${row}" data-opt="${opt}">
+  <h3>${opt}. ${title}${MINE[row] === opt ? `<span class="tag">I'd pick</span>` : ""}</h3>
+  <div class="panels">${body}</div><p class="note">${note}</p>
+  <button type="button" class="pick" data-row="${row}" data-opt="${opt}" aria-pressed="false">Pick</button></div>`;
+const why = (row, text) => `<p class="note why"><b>Why I'd pick ${MINE[row]}:</b> ${text}</p>`;
+const fig = (svg, caption, sound) => `<figure>${svg}<figcaption>${caption}${sound ? `<button type="button" class="play" data-sound="${sound}" aria-label="Hear ${caption}">▶</button>` : ""}</figcaption></figure>`;
+const chartRow = (style, rule, { sound = false, mirror = false } = {}) => `<div class="screen"><div class="charts">${CHORDS.map(ch => {
+  const c = withDrone(ch, rule);
+  return fig(chordChart(style, c, { mirror }), ch.id, sound ? `${ch.id}-${rule}` : "");
+}).join("")}</div></div>`;
+const capped = (cap, html) => `<div><div class="cap">${cap}</div>${html}</div>`;
+
+function renderChart() {
+  const rule = pickOr("drone");
+  document.getElementById("row-chart").innerHTML = [
+    cand("chart", "A", "It starts at its own small nut at the 5th fret", chartRow("A", rule),
+      "The chart shows frets 1 to 5 (one more than today), so the start is in view. Above it the neck is only as wide as the four long strings, as a banjo's is; the short string's o or × sits by its peg."),
+    cand("chart", "B", "Full length, dashed above the 5th fret", chartRow("B", rule),
+      "Today's chart with four fret rows; the short string is dashed where it isn't really there, its o or × in the usual row, and \"from 5\" beside it."),
+    cand("chart", "C", "Four strings, the short one in words", chartRow("C", rule),
+      "As most banjo books draw it: only the four long strings, and one line under the chart for the short string."),
+  ].join("") + why("chart", "it draws the banjo as it is, so nobody looks for the short string at the nut, and the Scales neck can draw it the same way (row 3 A).");
+}
+
+function renderDrone() {
+  const style = pickOr("chart");
+  document.getElementById("row-drone").innerHTML = [
+    cand("drone", "A", "It always rings", chartRow(style, "A", { sound: true }),
+      "Open on every chart, as a drone. On D7 its g is not a chord note: its name is shown softly, and it sits a half step above the F♯ on the 1st string (hear it with ▶)."),
+    cand("drone", "B", "It rings only where its g belongs", chartRow(style, "B", { sound: true }),
+      "Open on G (the root) and C (the 5th); on D7 it is marked not played (×). On a shape higher up the neck it would be fretted instead where a chord note is within the hand's four frets (at the 7th fret its a is D7's 5th); on these three it never is."),
+  ].join("") + why("drone", "every note on the chart belongs to the chord, as on every other instrument, so D7 sounds clean; on G and C, the chords it suits, it rings anyway.");
+}
+
+function renderNeck() {
+  const both = style => capped("On its side (phones)", `<div class="screen phone">${neck(style, "side")}</div>`) +
+    capped("Upright (tall rooms)", `<div class="screen">${neck(style, "up")}</div>`);
+  document.getElementById("row-neck").innerHTML = [
+    cand("neck", "A", "Its lane starts at the 5th fret", both("A"),
+      "No line where there is no string; a small nut at the 5th fret, as on the chart in row 1 A. Its notes: open g (the root), then a, b, c and d at the 7th, 9th, 10th and 12th frets."),
+    cand("neck", "B", "Full length, faded above the 5th fret", both("B"),
+      "The string drawn the whole way, faded and dashed where it isn't really there, still with no notes there. Closer to today's neck."),
+  ].join("") + why("neck", "the same picture as the chart (row 1 A) and nothing drawn that the banjo doesn't have.");
+}
+
+function renderLefty() {
+  const style = pickOr("chart"), rule = pickOr("drone"), n = pickOr("neck");
+  const c = withDrone(CHORDS[1], rule);
+  document.getElementById("row-lefty").innerHTML = `<div class="cand"><h3>Mirrored: chart ${style}, rings ${rule}, neck ${n}</h3>
+    <div class="panels">${capped("C major, the short string on the right", `<div class="screen"><div class="charts">${fig(chordChart(style, c), "Right-handed")}${fig(chordChart(style, c, { mirror: true }), "Left-handed")}</div></div>`)}
+    ${capped("G major on its side, the nut on the right", `<div class="screen phone">${neck(n, "side", { mirror: true })}</div>`)}</div>
+    <p class="note">The short string moves with its peg and its o or ×; the fret numbers and TalkBack's words stay the same.</p></div>`;
+}
+
+function spokenChart(ch, short) {
+  const parts = [`${ch.words}, shape 1 of 6`];
+  ch.frets.forEach((f, s) => {
+    const name = `${s === SHORT && short ? "short " : ""}${OPEN_SAID[s]} string`;
+    if (f < 0) parts.push(`${name}, not played`);
+    else if (f === 0) parts.push(`${name}, open`);
+    else parts.push(`${name}, fret ${f}, finger ${ch.fingers[s]}, ${pcOf(ch.notes[s]).replace("♯", " sharp")}`);
+  });
+  return parts.join(", ");
+}
+function spokenShortOnNeck(short) {
+  const parts = [`${short ? "short " : ""}G 4 string`];
+  for (let f = SHORT_START; f <= HIGHEST_FRET; f++) {
+    const name = pcOf(noteAt(SHORT, f === SHORT_START ? 0 : f));
+    if (!G_MAJOR.notes.includes(name)) continue;
+    const place = f === SHORT_START ? `open ${name}` : `fret ${f} ${name}`;
+    parts.push(name === G_MAJOR.root ? `${place}, root` : place);
+  }
+  return parts.join(", ");
+}
+function renderTalkback() {
+  const rule = pickOr("drone");
+  const say = short => `<div class="speech"><b>C:</b> ${spokenChart(withDrone(CHORDS[1], rule), short)}<br>
+    <b>D7:</b> ${spokenChart(withDrone(CHORDS[2], rule), short)}<br><b>G major on the neck, the short string:</b> ${spokenShortOnNeck(short)} …</div>`;
+  document.getElementById("row-talkback").innerHTML = [
+    cand("talkback", "A", "\"short G 4 string\"", say(true),
+      "Named by its open note as every string, with one word more, so someone who can't see the chart hears that this string starts at the 5th fret."),
+    cand("talkback", "B", "\"G 4 string\", as every other string", say(false),
+      "Exactly today's words; nothing new to translate. The start at the 5th fret is left unsaid."),
+  ].join("") + why("talkback", "one word tells a TalkBack user what the picture shows; on double D it reads \"short F sharp 4 string\" just as well.");
+}
+
+function showPicks() {
+  document.querySelectorAll(".cand[data-row]").forEach(c => {
+    const on = picked(c.dataset.row) === c.dataset.opt;
+    c.classList.toggle("picked", on);
+    const b = c.querySelector(".pick"); b.textContent = on ? "Picked" : "Pick"; b.setAttribute("aria-pressed", String(on));
+  });
+  document.getElementById("picks").innerHTML = "Your picks: " +
+    Object.keys(ROWS).map(r => `${LABEL[r]} <b>${picked(r) || "–"}</b>`).join(" · ");
+}
+function renderAll() { renderChart(); renderDrone(); renderNeck(); renderLefty(); renderTalkback(); showPicks(); }
+
+document.addEventListener("click", e => {
+  const b = e.target.closest(".pick");
+  if (!b) return;
+  const row = b.dataset.row, opt = b.dataset.opt;
+  if (picked(row) === opt) store.remove(key(row)); else store.set(key(row), opt);
+  renderAll();
+});
+
+// ---------- Sound: the chart strummed from the short string to the 1st, short plucks that stop by themselves ----------
+let ctx;
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function pluck(m, t0, dur = 1.6, gain = 0.12) {
+  const f = hz(m), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+  lp.type = "lowpass"; lp.frequency.setValueAtTime(Math.min(7000, f * 10), t0); lp.frequency.exponentialRampToValueAtTime(f * 2.5, t0 + dur * 0.6);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  for (const [mult, type, lvl] of [[1, "triangle", 1], [2, "sine", 0.45], [3, "sine", 0.2], [4, "sine", 0.08]]) {
+    const osc = ctx.createOscillator(), og = ctx.createGain();
+    osc.type = type; osc.frequency.value = f * mult; og.gain.value = lvl;
+    osc.connect(og).connect(lp); osc.start(t0); osc.stop(t0 + dur + 0.05);
+  }
+  lp.connect(g).connect(ctx.destination);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".play");
+  if (!b) return;
+  ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+  ctx.resume();
+  const [id, rule] = b.dataset.sound.split("-");
+  const ch = withDrone(CHORDS.find(c => c.id === id), rule), t = ctx.currentTime + 0.03;
+  ch.notes.filter(m => m != null).forEach((m, i) => pluck(m, t + i * 0.03));
+});
+
+// ---------- Self-check: every note sounded is a chord note (but a drone that clashes), every chord note sounds ----------
+const problems = [];
+for (const ch of CHORDS) for (const rule of ["A", "B"]) {
+  const c = withDrone(ch, rule);
+  c.notes.forEach((m, s) => { if (m != null && !(s === SHORT && c.clash) && !ch.tones.includes(pcOf(m))) problems.push(`${ch.id}/${rule}: string ${s} sounds ${pcOf(m)}`); });
+  for (const t of ch.tones) if (!c.notes.some(m => m != null && pcOf(m) === t)) problems.push(`${ch.id}/${rule}: ${t} missing`);
+}
+const sounded = id => withDrone(CHORDS.find(c => c.id === id), "B").notes.map(m => m == null ? "x" : pcOf(m)).join(" ");
+if (sounded("G") !== "G D G B D") problems.push("G is " + sounded("G"));
+if (sounded("C") !== "G E G C E") problems.push("C is " + sounded("C"));
+if (sounded("D7") !== "x D A C F♯") problems.push("D7 is " + sounded("D7"));
+root.dataset.check = problems.length ? "fail: " + problems.join("; ") : "ok";
+if (problems.length) console.error("Banjo charts self-check:", problems);
+
+renderAll();
+</script>
+</body>
+</html>
