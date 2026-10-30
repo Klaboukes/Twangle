@@ -150,14 +150,15 @@ data class ChordTypeQuestion(val chord: Chord, val shape: ChordShape) {
  * The questions for Chord type: one of the player's [qualities] (any of the Chords tool's twenty,
  * [ChordQuality.inPanel]) on a root drawn afresh, strummed as [ChordShapeFinder]'s easiest shape of
  * it on [tuning]. The root changes every question, so the type, not the pitch, is what is heard. A
- * chord with no shape within reach on the tuning (a player's own tuning may lack some) is skipped.
- * Not offered on a tuning with a short string (the banjo), which the chord charts leave out too.
+ * chord with no shape within reach on the tuning (a player's own tuning may lack some, the banjo's
+ * open G two 9ths) is skipped, so only chords the Chords tool can chart are asked. On a banjo the
+ * shape follows the short string's drone rule ([ChordShapeFinder]): open where its note is in the
+ * chord, else fretted above its start, else not played.
  */
 class ChordTypeQuestions(val tuning: Tuning, val qualities: Set<ChordQuality>) : QuestionSource<ChordTypeQuestion> {
 
     init {
         require(qualities.isNotEmpty()) { "Choose at least one chord type" }
-        require(!tuning.hasShortString) { "No chord shapes on '${tuning.id}', which has a short string" }
     }
 
     private val chosen = ChordQuality.inPanel.filter { it in qualities }

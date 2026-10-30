@@ -42,7 +42,6 @@ feature/eartraining ear_chord_prompt 3eae811c
 feature/eartraining ear_chord_seventh f0412d6d
 feature/eartraining ear_chord_seventh_sharp_nine d8e2b71e
 feature/eartraining ear_chord_seventh_sus4 1e5fbaad
-feature/eartraining ear_chord_short_string 4a75c819
 feature/eartraining ear_chord_sign_major 2bc58fcc
 feature/eartraining ear_chord_sign_minor 5717c39b
 feature/eartraining ear_chord_sign_power 848e9656

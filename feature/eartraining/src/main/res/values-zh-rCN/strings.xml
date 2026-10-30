@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">减七和弦</string>
     <string name="ear_chord_half_diminished">半减七和弦</string>
     <string name="ear_chord_augmented">增三和弦</string>
-    <string name="ear_chord_short_string">和弦图暂不支持班卓琴的短弦。请在顶部选择其他乐器。</string>
     <string name="ear_chord_none">此定弦下没有可按的指法</string>
 </resources>

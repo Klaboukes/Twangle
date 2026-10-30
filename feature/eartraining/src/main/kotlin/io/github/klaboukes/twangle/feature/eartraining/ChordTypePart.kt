@@ -137,8 +137,8 @@ private fun ChordAnswers(
 
 /**
  * Chord type where it can't ask ([reason]): in the question's place, the quiet line the Chords tool
- * shows for it (the banjo's short string, or no shape within reach), centred, set smaller where the
- * room is short, never cut off. TalkBack reads it as it is.
+ * shows for it (no shape within reach), centred, set smaller where the room is short, never cut off.
+ * TalkBack reads it as it is.
  */
 @Composable
 internal fun ChordsUnavailableLine(reason: ChordsUnavailable) {
@@ -147,7 +147,6 @@ internal fun ChordsUnavailableLine(reason: ChordsUnavailable) {
         Text(
             stringResource(
                 when (reason) {
-                    ChordsUnavailable.SHORT_STRING -> R.string.ear_chord_short_string
                     ChordsUnavailable.NO_SHAPE -> R.string.ear_chord_none
                 },
             ),

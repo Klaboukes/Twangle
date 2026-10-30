@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">ดิมินิชเซเวนท์</string>
     <string name="ear_chord_half_diminished">ฮาล์ฟดิมินิช</string>
     <string name="ear_chord_augmented">ออกเมนเต็ด</string>
-    <string name="ear_chord_short_string">ตารางคอร์ดยังไม่รองรับสายสั้นของแบนโจ เลือกเครื่องดนตรีอื่นที่ด้านบน</string>
     <string name="ear_chord_none">ไม่มีฟอร์มที่จับถึงในการตั้งสายนี้</string>
 </resources>

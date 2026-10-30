@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">com sétima diminuta</string>
     <string name="ear_chord_half_diminished">meio diminuto</string>
     <string name="ear_chord_augmented">aumentado</string>
-    <string name="ear_chord_short_string">Os diagramas de acordes ainda não conhecem a corda curta do banjo. Escolha outro instrumento no topo.</string>
     <string name="ear_chord_none">Nenhuma posição ao alcance nesta afinação</string>
 </resources>

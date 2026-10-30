@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">ディミニッシュセブンス</string>
     <string name="ear_chord_half_diminished">マイナーセブンスフラットファイブ</string>
     <string name="ear_chord_augmented">オーギュメント</string>
-    <string name="ear_chord_short_string">コードダイアグラムはまだバンジョーの短い弦に対応していません。上で別の楽器を選んでください。</string>
     <string name="ear_chord_none">このチューニングでは手の届く押さえ方がありません</string>
 </resources>

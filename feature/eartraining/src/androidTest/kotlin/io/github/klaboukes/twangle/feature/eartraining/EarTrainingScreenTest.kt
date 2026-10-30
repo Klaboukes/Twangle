@@ -76,7 +76,7 @@ import org.junit.runners.Parameterized
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
  * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
  * Intervals' choices; Chord type's question and its buttons (three in a column, all twenty scrolling
- * in their own box), right and wrong, its chips, and the banjo's quiet line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
+ * in their own box), right and wrong, its chips, and the no-shape line; and the whole screen fitting, upright and on its side, at 2× text in Dutch
  * (every language with `--languages`).
  *
  * Only in the default style, unless the run is thorough (`scripts/ui-tests.sh --thorough`).
@@ -572,17 +572,12 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun onABanjoChordTypeShowsTheChordsToolsQuietLineInPlaceOfTheQuestion() {
-        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.SHORT_STRING)
+    fun whereNoTypeHasAShapeChordTypeShowsTheChordsToolsQuietLineInPlaceOfTheQuestion() {
+        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.NO_SHAPE)
         show()
-        node(EarTrainingTestTags.CHORDS_UNAVAILABLE)
-            .assert(hasText("Chord type doesn't know the banjo's short string yet. Pick another instrument at the top."))
-            .assertIsDisplayed()
+        node(EarTrainingTestTags.CHORDS_UNAVAILABLE).assert(hasText("No shape within reach in this tuning")).assertIsDisplayed()
         assertTrue("no question, no play button", !exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.CHORD_LINE))
         node(EarTrainingTestTags.CHOICES).assertIsDisplayed()
-        shownState.value = shownState.value.copy(chordsUnavailable = ChordsUnavailable.NO_SHAPE)
-        compose.waitForIdle()
-        node(EarTrainingTestTags.CHORDS_UNAVAILABLE).assert(hasText("No shape within reach in this tuning"))
     }
 
     @Test
@@ -724,7 +719,7 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
 
     /**
      * Chord type at 2× text in [language] on [size]: three types in a column and all twenty, the
-     * question, right and wrong, the banjo's line, and its chips in the panel, wholly shown.
+     * question, right and wrong, the no-shape line, and its chips in the panel, wholly shown.
      */
     private fun checkChordTypeAtTwiceTheTextSize(language: String, size: DpSize) {
         val tally = shownState.value.tally
@@ -741,10 +736,10 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
             if (!state.answered) for (type in state.chordTypes) assertWhollyShown(node(EarTrainingTestTags.chordAnswer(type)), "$style $language $size $name $type at 2x")
             compose.assertEveryTextWhollyShown("$style $language $size chord type $name at 2x:")
         }
-        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.SHORT_STRING, tally = tally)
+        shownState.value = EarTrainingState(exercise = Exercise.CHORD_TYPE, chordsUnavailable = ChordsUnavailable.NO_SHAPE, tally = tally)
         compose.waitForIdle()
-        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$style $language $size banjo at 2x")
-        compose.assertEveryTextWhollyShown("$style $language $size banjo at 2x:")
+        assertWhollyShown(node(EarTrainingTestTags.CHORDS_UNAVAILABLE), "$style $language $size no shape at 2x")
+        compose.assertEveryTextWhollyShown("$style $language $size no shape at 2x:")
         shownState.value = ALL_CHORDS_ASKED.copy(tally = tally)
         compose.waitForIdle()
         node(EarTrainingTestTags.CHOICES).performClick()

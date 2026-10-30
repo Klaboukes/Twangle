@@ -94,9 +94,6 @@ data class EarTrainingState(
 
 /** Why Chord type asks nothing on a tuning, as the Chords tool would say it. */
 enum class ChordsUnavailable {
-    /** A string that starts partway up the neck (the banjo's fifth), which the chord charts don't draw yet. */
-    SHORT_STRING,
-
     /** None of the chord types chosen has a shape within reach on the tuning (a player's own tuning). */
     NO_SHAPE,
 }
@@ -126,10 +123,10 @@ enum class ChordsUnavailable {
  *
  * **Chord type** needs none either: a chord of the types chosen ([toggleChordType]) on a new root
  * each time, strummed low string to high [STRUM_SECONDS] apart in the instrument's voice from the
- * Chords tool's first shape for the tuning picked ([ChordTypeQuestions]), octave courses as pairs;
- * the player names its type with a button ([pickChordType]). On a tuning with a short string (the
- * banjo), or one where none of the types chosen has a shape, it asks nothing and says why
- * ([EarTrainingState.chordsUnavailable]).
+ * Chords tool's first shape for the tuning picked ([ChordTypeQuestions]), octave courses as pairs,
+ * a banjo's from its short string down as a strum crosses them; the player names its type with a
+ * button ([pickChordType]). On a tuning where none of the types chosen has a shape (a player's
+ * own), it asks nothing and says why ([EarTrainingState.chordsUnavailable]).
  *
  * **Listening.** Only Play it back listens ([Exercise.listens]), and only while the microphone is
  * allowed ([setMicAllowed]) and [heard] is collected: `WhileSubscribed(5 s)`, as the tuner, so the
@@ -464,14 +461,14 @@ class EarTrainingViewModel(
 
     /**
      * The chord types asked changed (choice, tuning): a question the new choices don't offer gives
-     * way to a new one. A tuning with a short string ends Chord type's visit; one that can ask again
-     * starts a new visit when Chord type is shown.
+     * way to a new one. Where Chord type asked nothing (no shape on the tuning before), a new visit
+     * starts when Chord type is shown.
      */
     private fun changeChordTypes() {
         val tuning = settings.value.tuning
         val visit = chordVisit
         val showing = shown.value.exercise == Exercise.CHORD_TYPE
-        if (visit == null || tuning.hasShortString) {
+        if (visit == null) {
             chordVisit = null
             if (showing) {
                 nextJob?.cancel()
@@ -505,15 +502,8 @@ class EarTrainingViewModel(
                 ask(visit)
             }
             Exercise.CHORD_TYPE -> {
-                val tuning = settings.value.tuning
-                if (tuning.hasShortString) {
-                    // The chord charts don't draw the banjo's short string yet, so there is nothing to strum.
-                    chordsUnavailable = ChordsUnavailable.SHORT_STRING
-                    publish()
-                    return
-                }
                 chordsUnavailable = null
-                val visit = EarTrainingVisit(ChordTypeQuestions(tuning, shown.value.chordTypes), random())
+                val visit = EarTrainingVisit(ChordTypeQuestions(settings.value.tuning, shown.value.chordTypes), random())
                 chordVisit = visit
                 ask(visit)
             }
@@ -594,8 +584,10 @@ class EarTrainingViewModel(
     }
 
     /**
-     * Strums [question]'s chord: the strings its shape sounds on the tuning it was asked on, lowest
-     * string first, [STRUM_SECONDS] apart, an octave course as its pair. Returns how many strings.
+     * Strums [question]'s chord: the strings its shape sounds on the tuning it was asked on, in the
+     * tuning's order as a down-strum crosses them (the lowest string first; a banjo's short string,
+     * where the shape lets it ring), [STRUM_SECONDS] apart, an octave course as its pair. Returns how
+     * many strings.
      */
     private fun strum(question: ChordTypeQuestion): Int {
         val tuning = (chordVisit?.source as? ChordTypeQuestions)?.tuning ?: settings.value.tuning

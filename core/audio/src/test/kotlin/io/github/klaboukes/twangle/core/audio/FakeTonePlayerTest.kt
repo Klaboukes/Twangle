@@ -34,6 +34,7 @@ class FakeTonePlayerTest {
 
         assertEquals(listOf(listOf(220f, 329.63f), listOf(110f, 164.81f, 220f)), player.together)
         assertEquals(listOf(0f, 0.035f), player.strums)
+        assertEquals(listOf(StringVoices.STEEL_GUITAR, StringVoices.STEEL_GUITAR), player.togetherVoices)
         assertEquals("not single notes", emptyList<Float>(), player.played)
         assertThrows(IllegalArgumentException::class.java) { player.playTogether(emptyList(), StringVoices.VIOLIN) }
     }

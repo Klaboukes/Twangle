@@ -1,7 +1,9 @@
 package io.github.klaboukes.twangle.core.dsp.eartraining
 
+import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordShapeFinder
+import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection.DOWN
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection.TOGETHER
 import io.github.klaboukes.twangle.core.dsp.eartraining.IntervalDirection.UP
@@ -205,8 +207,8 @@ class EarTrainingTest {
     }
 
     @Test
-    fun `every chord type alone can be asked on every instrument's every tuning but the banjo's`() {
-        for (instrument in Instruments.all) for (tuning in instrument.tunings.filterNot { it.hasShortString }) {
+    fun `every chord type alone can be asked on every instrument's every tuning, the banjo's too`() {
+        for (instrument in Instruments.all) for (tuning in instrument.tunings) {
             for (quality in ChordQuality.inPanel) {
                 val question = ChordTypeQuestions(tuning, setOf(quality)).draw(Random(3), null)
                 assertEquals("${tuning.id} $quality", quality, question.quality)
@@ -221,9 +223,70 @@ class EarTrainingTest {
     }
 
     @Test
-    fun `chord type isn't offered on a banjo, nor with no type chosen`() {
-        assertThrows(IllegalArgumentException::class.java) { ChordTypeQuestions(Instruments.BANJO_5.defaultTuning, setOf(ChordQuality.MAJOR)) }
+    fun `chord type isn't offered with no type chosen`() {
         assertThrows(IllegalArgumentException::class.java) { ChordTypeQuestions(Tunings.STANDARD, emptySet()) }
+    }
+
+    @Test
+    fun `on the banjo chord type asks only chords Chords can chart, the short string by the drone rule`() {
+        for (tuning in Instruments.BANJO_5.tunings) {
+            val source = ChordTypeQuestions(tuning, ChordQuality.inPanel.toSet())
+            val visit = EarTrainingVisit(source, Random(7))
+            repeat(400) {
+                val question = visit.next()
+                val label = "${tuning.id} ${question.chord}"
+                val shapes = ChordShapeFinder.shapesOf(question.chord, tuning)
+                assertTrue("$label has a shape within reach", shapes.isNotEmpty())
+                assertEquals("$label: the Chords tool's first shape", shapes.first(), question.shape)
+                val sounding = question.shape.notesIn(tuning)
+                val tones = ChordSpelling.tonesOf(question.chord).toSet()
+                assertTrue("$label: only chord notes", sounding.filterNotNull().all { it.pitchClass in tones })
+                // The short string (first): open where its note is in the chord, else above its start or
+                // not played; a power chord leaves it out, as in Chords.
+                val short = question.shape.frets[0]
+                val openIsTone = tuning.strings[0].pitchClass in tones && question.quality != ChordQuality.POWER_CHORD
+                assertEquals("$label: open exactly where its note is in the chord", openIsTone, short == 0)
+                assertTrue("$label: never pressed at or below its start", short <= 0 || short > tuning.startFretOf(0))
+                visit.answer(it % 3 != 0)
+            }
+        }
+    }
+
+    @Test
+    fun `a chord with no shape on the tuning and root is never asked, though its type is on other roots`() {
+        // Open G has no B♭m9 or D♭maj9 within reach ("No shape within reach" in Chords).
+        val openG = Instruments.BANJO_5.defaultTuning
+        val out = setOf(Chord.of(PitchClass.A_SHARP, ChordQuality.MINOR_NINTH), Chord.of(PitchClass.C_SHARP, ChordQuality.MAJOR_NINTH))
+        for (chord in out) assertTrue("$chord has no shape on open G", ChordShapeFinder.shapesOf(chord, openG).isEmpty())
+        val ninths = setOf(ChordQuality.MINOR_NINTH, ChordQuality.MAJOR_NINTH)
+        val visit = EarTrainingVisit(ChordTypeQuestions(openG, ninths), Random(2))
+        val asked = (1..400).map { visit.next().chord }.toSet()
+        assertTrue("never $out: $asked", asked.none { it in out })
+        assertEquals("every other root of both", 2 * PitchClass.entries.size - out.size, asked.size)
+        // Double C and double D: each type alone still asks, and only chords with a shape.
+        for (tuning in Instruments.BANJO_5.tunings - openG) for (quality in ninths) {
+            val source = ChordTypeQuestions(tuning, setOf(quality))
+            var previous: ChordTypeQuestion? = null
+            repeat(100) {
+                val question = source.draw(Random(it), previous)
+                assertEquals(quality, question.quality)
+                assertTrue("${tuning.id} ${question.chord}", ChordShapeFinder.shapesOf(question.chord, tuning).isNotEmpty())
+                previous = question
+            }
+        }
+    }
+
+    @Test
+    fun `the banjo's first chords strum as banjo books play them, the short string first`() {
+        val openG = Instruments.BANJO_5.defaultTuning
+        fun strum(root: PitchClass, quality: ChordQuality): List<String?> {
+            val visit = EarTrainingVisit(ChordTypeQuestions(openG, setOf(quality)), Random(1))
+            val question = generateSequence { visit.next() }.take(200).first { it.chord.root == root }
+            return question.shape.notesIn(openG).map { it?.toString() }
+        }
+        assertEquals("G 00000: all five, the short g open", listOf("G4", "D3", "G3", "B3", "D4"), strum(PitchClass.G, ChordQuality.MAJOR))
+        assertEquals("C 02012", listOf("G4", "E3", "G3", "C4", "E4"), strum(PitchClass.C, ChordQuality.MAJOR))
+        assertEquals("D7 x0214: the short string not played", listOf(null, "D3", "A3", "C4", "F#4"), strum(PitchClass.D, ChordQuality.DOMINANT_SEVENTH))
     }
 
     // ---------- The visit ----------

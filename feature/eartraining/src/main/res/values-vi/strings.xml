@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">giảm bảy</string>
     <string name="ear_chord_half_diminished">nửa giảm</string>
     <string name="ear_chord_augmented">tăng</string>
-    <string name="ear_chord_short_string">Sơ đồ hợp âm chưa hỗ trợ dây ngắn của banjo. Hãy chọn nhạc cụ khác ở trên cùng.</string>
     <string name="ear_chord_none">Không có thế bấm vừa tầm tay với kiểu lên dây này</string>
 </resources>

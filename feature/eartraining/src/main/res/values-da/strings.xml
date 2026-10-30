@@ -79,6 +79,5 @@
     <string name="ear_chord_diminished_seventh">formindsket septimakkord</string>
     <string name="ear_chord_half_diminished">halvformindsket</string>
     <string name="ear_chord_augmented">forstørret</string>
-    <string name="ear_chord_short_string">Akkorddiagrammerne kender endnu ikke banjoens korte streng. Vælg et andet instrument øverst.</string>
     <string name="ear_chord_none">Intet greb inden for rækkevidde i denne stemning</string>
 </resources>

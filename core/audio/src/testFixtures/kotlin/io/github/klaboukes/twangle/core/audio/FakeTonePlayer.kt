@@ -26,6 +26,7 @@ class FakeTonePlayer : TonePlayer {
     private val playedTogether = mutableListOf<List<Float>>()
     private val playedStrums = mutableListOf<Float>()
     private val playedTogetherPairs = mutableListOf<List<Boolean>>()
+    private val playedTogetherVoices = mutableListOf<StringVoice>()
 
     /** Every frequency [play] was called with, oldest first. */
     val played: List<Float> get() = plays.toList()
@@ -45,6 +46,9 @@ class FakeTonePlayer : TonePlayer {
     /** The octave pairs of every [playTogether] call, oldest first, alongside [together]. */
     val togetherPairs: List<List<Boolean>> get() = playedTogetherPairs.toList()
 
+    /** The voice of every [playTogether] call, oldest first, alongside [together]. */
+    val togetherVoices: List<StringVoice> get() = playedTogetherVoices.toList()
+
     /** How many times [stop] was called, whether or not a tone was playing. */
     var stopCount: Int = 0
         private set
@@ -63,6 +67,7 @@ class FakeTonePlayer : TonePlayer {
         playedTogether += frequenciesHz.toList()
         playedStrums += strumSeconds
         playedTogetherPairs += octavePairs.toList()
+        playedTogetherVoices += voice
         playing.value = true
     }
 

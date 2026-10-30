@@ -18,6 +18,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.Tally
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
+import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
 import io.github.klaboukes.twangle.core.dsp.music.Tunings
 import io.github.klaboukes.twangle.core.dsp.pitch.PitchRange
@@ -818,33 +819,60 @@ class EarTrainingViewModelTest {
     }
 
     @Test
-    fun `on a banjo Chord type asks nothing and says why, and asks again on another instrument`() = runTest(dispatcher) {
-        val banjo = AppSettings(earExercise = Exercise.CHORD_TYPE, instrument = Instruments.BANJO_5, tuning = Instruments.BANJO_5.defaultTuning)
+    fun `on a banjo Chord type strums the Chords tool's first shape in the banjo voice, the short string first`() = runTest(dispatcher) {
+        val openG = Instruments.BANJO_5.defaultTuning
+        val banjo = AppSettings(earExercise = Exercise.CHORD_TYPE, instrument = Instruments.BANJO_5, tuning = openG, earChordTypes = setOf(ChordQuality.MAJOR))
         val repository = FakeSettingsRepository(banjo)
         val vm = chordType(banjo, repository)
-        assertEquals(ChordsUnavailable.SHORT_STRING, vm.state.value.chordsUnavailable)
+        assertNull("asked, no line in its place", vm.state.value.chordsUnavailable)
+        val first = vm.state.value.chord!!
+        assertEquals("the Chords tool's first shape", ChordShapeFinder.shapesOf(first.chord, openG).first(), first.shape)
+        assertEquals("strummed in one call", listOf(strumOf(first, openG)), tone.together)
+        assertEquals("in the banjo's voice", listOf(Instruments.BANJO_5.voice), tone.togetherVoices)
+        assertEquals(listOf(EarTrainingViewModel.STRUM_SECONDS), tone.strums)
+        assertEquals("no octave courses", listOf(List(strumOf(first, openG).size) { false }), tone.togetherPairs)
+
+        // G major, 00000: all five strings, the short g first, as a strum crosses them.
+        repeat(40) {
+            if (vm.state.value.chord!!.chord.root == PitchClass.G) return@repeat
+            vm.pickChordType(ChordQuality.MAJOR)
+            advanceTimeBy(EarTrainingViewModel.NEXT_DELAY_MILLIS + 100)
+            runCurrent()
+        }
+        assertEquals(PitchClass.G, vm.state.value.chord!!.chord.root)
+        assertEquals("g4 D3 G3 B3 D4, all open", openG.strings.map { NoteMapper().frequencyOf(it) }, tone.together.last())
+
+        // Another banjo tuning strums its own shape; the guitar its own, in its voice.
+        val doubleD = Instruments.BANJO_5.tuningById("banjo_double_d")!!
+        repository.setTuning(doubleD)
+        runCurrent()
+        val onDoubleD = vm.state.value.chord!!
+        assertEquals(ChordShapeFinder.shapesOf(onDoubleD.chord, doubleD).first(), onDoubleD.shape)
+        assertEquals(strumOf(onDoubleD, doubleD), tone.together.last())
+        repository.setInstrument(Instruments.GUITAR)
+        repository.setTuning(Tunings.STANDARD)
+        runCurrent()
+        val onGuitar = vm.state.value.chord!!
+        assertEquals(strumOf(onGuitar), tone.together.last())
+        assertEquals(Instruments.GUITAR.voice, tone.togetherVoices.last())
+    }
+
+    @Test
+    fun `where none of the types chosen has a shape Chord type asks nothing and says why, and asks again on another tuning`() = runTest(dispatcher) {
+        val oneString = Tuning("custom_one", listOf(Note(40))) // a player's own, one string: no chord at all
+        val repository = FakeSettingsRepository(AppSettings(earExercise = Exercise.CHORD_TYPE, tuning = oneString))
+        val vm = chordType(repository.settings.value, repository)
+        assertEquals(ChordsUnavailable.NO_SHAPE, vm.state.value.chordsUnavailable)
         assertNull(vm.state.value.chord)
         assertTrue("nothing strummed", tone.together.isEmpty())
         vm.pickChordType(ChordQuality.MAJOR)
         assertEquals(Tally(), vm.state.value.tally)
-        vm.replay()
-        runCurrent()
-        assertTrue(tone.together.isEmpty())
 
-        repository.setInstrument(Instruments.GUITAR)
-        repository.setTuning(Tunings.STANDARD)
-        runCurrent()
-        assertNull(vm.state.value.chordsUnavailable)
-        assertNotNull("asks at once on the guitar", vm.state.value.chord)
-        assertEquals(1, tone.together.size)
-
-        // Back to the banjo mid-visit: the question gives way to the line, and its sound stops.
-        repository.setInstrument(Instruments.BANJO_5)
         repository.setTuning(Instruments.BANJO_5.defaultTuning)
         runCurrent()
-        assertEquals(ChordsUnavailable.SHORT_STRING, vm.state.value.chordsUnavailable)
-        assertNull(vm.state.value.chord)
-        assertTrue("silenced", tone.stopCount > 0)
+        assertNull(vm.state.value.chordsUnavailable)
+        assertNotNull("asks at once on the banjo", vm.state.value.chord)
+        assertEquals(1, tone.together.size)
     }
 
     @Test

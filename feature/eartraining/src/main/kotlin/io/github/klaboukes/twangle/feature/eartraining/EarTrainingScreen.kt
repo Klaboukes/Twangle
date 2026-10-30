@@ -338,7 +338,7 @@ object EarTrainingTestTags {
     /** In the What is asked panel, Chord type: a type's chip, e.g. "ear_ask_chord_sus4". */
     fun askChordType(type: ChordQuality): String = "ear_ask_chord_" + type.name.lowercase()
 
-    /** Chord type where it can't ask (the banjo's short string, no shape): the quiet line in the question's place. */
+    /** Chord type where it can't ask (no shape within reach): the quiet line in the question's place. */
     const val CHORDS_UNAVAILABLE = "ear_chords_unavailable"
 
     /** Play it back without the microphone: "Microphone is off" and its button. */
