@@ -127,6 +127,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val pendingSound = Array(PENDING_BEATS) { ClickSound.DEFAULT }
     private val pendingBpm = IntArray(PENDING_BEATS)
     private val pendingTrainerBar = LongArray(PENDING_BEATS)
+    private val pendingClicks = IntArray(PENDING_BEATS)
     private var pendingFirst = 0
     private var pendingCount = 0
 
@@ -150,6 +151,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         // The tempo from this beat on: a trainer's step on its downbeat is taken before onBeat.
         pendingBpm[slot] = clickTrack.bpm
         pendingTrainerBar[slot] = if (clickTrack.trainer != null) clickTrack.trainerBar else -1L
+        // The clicks this beat is split into, as the track sets them right after onBeat.
+        pendingClicks[slot] = clickTrack.subdivision.within(clickTrack.meter).clicksPerBeat
         pendingCount++
     }
 
@@ -426,6 +429,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         pendingSound[pendingFirst],
         pendingBpm[pendingFirst],
         pendingTrainerBar[pendingFirst],
+        pendingClicks[pendingFirst],
     )
 
     /** Frames the track has played since it started: its playback head, an unsigned 32-bit count. */

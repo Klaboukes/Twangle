@@ -230,7 +230,8 @@ data class TrainerUi(val plan: SpeedTrainer, val on: Boolean, val saved: Boolean
 
 /**
  * The metronome's last beat and the frame clock, for the beat lights and the glow behind the tempo:
- * the beat that sounded lights up at once and eases to a resting glow until the next one; the glow
+ * the beat that sounded lights up at once and eases to a resting glow until the next one, and each
+ * click between the beats lights its small mark and fades back (Phase 62); the glow
  * behind the tempo fades out after each beat, brighter on a downbeat. While Listen listens, the
  * beats it hears light the lights more softly instead ([followHeard]), with no glow. Read in the
  * draw phase only.
@@ -259,6 +260,21 @@ class BeatClock {
         if (heardBeat < 0) return 0f
         val since = max(0L, frameNanos - heardAtNanos) / 1e6f
         return HEARD_RESTING + HEARD_FLASH * exp(-since / LIGHT_DECAY_MILLIS)
+    }
+
+    /**
+     * The click between the beats lit after [litBeat] (1 to the beat's clicks − 1), or 0: the one heard
+     * last, until the next beat ([betweenClickAt]; none while listening, or where clicks come too close).
+     */
+    fun litBetween(): Int {
+        val beat = beat ?: return 0
+        return betweenClickAt(millisSinceBeat(beat), beat.bpm, beat.clicksPerBeat)
+    }
+
+    /** How brightly [litBetween]'s small mark shines: 1 at its click, fading back to 0 ([betweenClickLevel]). */
+    fun litBetweenLevel(): Float {
+        val beat = beat ?: return 0f
+        return betweenClickLevel(millisSinceBeat(beat), beat.bpm, beat.clicksPerBeat)
     }
 
     /** The glow behind the tempo: fading out over a 220 ms decay, at full only after a downbeat. */
@@ -428,6 +444,10 @@ fun MetronomeContent(
                     meter = meter,
                     litBeat = clock::litBeat,
                     litLevel = clock::litLevel,
+                    // A small mark for each click between the beats, shown stopped too.
+                    clicksPerBeat = between.clicksPerBeat,
+                    litBetween = clock::litBetween,
+                    litBetweenLevel = clock::litBetweenLevel,
                     modifier = Modifier
                         .widthIn(max = LIGHTS_MAX_WIDTH)
                         .fillMaxWidth()

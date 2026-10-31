@@ -149,6 +149,7 @@ class FakeMetronomePlayer : MetronomePlayer {
                 sound,
                 bpm = bpm,
                 trainerBar = if (climbing != null) trainerBar else -1L,
+                clicksPerBeat = subdivision.within(meter).clicksPerBeat,
             ),
         )
     }

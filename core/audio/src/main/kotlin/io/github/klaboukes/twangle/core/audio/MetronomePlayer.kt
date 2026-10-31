@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.StateFlow
  *   with the step it took on this downbeat.
  * @property trainerBar the speed trainer's bar this beat plays in, from 0 at its first downbeat; −1
  *   before that, or with no trainer climbing.
+ * @property clicksPerBeat the clicks this beat is split into (Phase 62): 1 with none between the
+ *   beats, else its own and the [Subdivision] clicks after it, evenly up to the next beat at [bpm].
  */
 data class MetronomeBeat(
     val index: Long,
@@ -31,6 +33,7 @@ data class MetronomeBeat(
     val sound: ClickSound = ClickSound.DEFAULT,
     val bpm: Int = 0,
     val trainerBar: Long = -1L,
+    val clicksPerBeat: Int = 1,
 )
 
 /**

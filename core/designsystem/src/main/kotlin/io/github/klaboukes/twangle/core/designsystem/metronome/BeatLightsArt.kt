@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -39,26 +40,42 @@ import kotlin.math.sin
  * a rounded voice-memo bar, Futuristic a neon bar, Space Age a pair of stars), beat 1 the largest and
  * the first beat of each later group (5/4, 6/8, 7/8) middle sized. The beat that sounds lights up in
  * the accent with a soft glow, never in the "in tune" green, and stays faintly lit until the next
- * one. The beat's number is under each mark in the style's number face. All lengths in dp, at a
- * row [BASE_HEIGHT_DP] tall; a taller row (upright on a tall phone, Phase 43) draws everything larger
+ * one. The beat's number is under each mark in the style's number face. Since 2026-10-31 (owner's
+ * pick, Phase 62) the clicks between the beats show too: one small mark per click, the style's own
+ * mark at a fourth, smallest size (Contemporary a dot, Futuristic a short dash, Ancient a tiny dab,
+ * Space Age a tiny star, Classic and Retro a small band), fainter than a plain beat at rest, evenly
+ * in the gaps (the last beat's after it); each lights in the accent when its click sounds, dimmer
+ * than a beat and without the glow, and fades back. The beats keep their places. All lengths in dp,
+ * at a row [BASE_HEIGHT_DP] tall; a taller row (upright on a tall phone, Phase 43) draws everything larger
  * in proportion, so the beat reads from a music stand.
  */
 
 /**
  * The beat lights for [meter]: beat [litBeat] (0-based, −1 for none) lit at [litLevel] (0..1, eased
- * by the caller from 1 just after the click to a resting glow). Both are read in the draw phase
- * only, so lighting the beats never recomposes. Fills its width; the marks, their glow and numbers
- * grow with its height past [BASE_HEIGHT_DP] (never smaller). Says nothing to TalkBack itself.
+ * by the caller from 1 just after the click to a resting glow). With [clicksPerBeat] over 1 (the
+ * clicks between the beats, `Subdivision.clicksPerBeat`) a small mark stands for each click between
+ * the beats, and click [litBetween] (1 to [clicksPerBeat] − 1, 0 for none) after beat [litBeat] is lit
+ * at [litBetweenLevel] (0..1, 0 at rest). All four are read in the draw phase only, so lighting the
+ * marks never recomposes. Fills its width; the marks, their glow and numbers grow with its height
+ * past [BASE_HEIGHT_DP] (never smaller). Says nothing to TalkBack itself.
  */
 @Composable
-fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modifier: Modifier = Modifier) {
+fun BeatLightsArt(
+    meter: Meter,
+    litBeat: () -> Int,
+    litLevel: () -> Float,
+    modifier: Modifier = Modifier,
+    clicksPerBeat: Int = 1,
+    litBetween: () -> Int = { 0 },
+    litBetweenLevel: () -> Float = { 0f },
+) {
     val roles = meterRoles()
     val style = MaterialTheme.styleTokens.style
     val measurer = rememberTextMeasurer()
     Spacer(
         modifier.drawWithCache {
             val d = 1.dp.toPx() * lightsScale(size.height / 1.dp.toPx())
-            val lights = BeatLights(meter, style, roles, size, d)
+            val lights = BeatLights(meter, clicksPerBeat.coerceAtLeast(1), style, roles, size, d)
             val numberStyle = TextStyle(
                 fontFamily = roles.numbers,
                 fontSize = (NUMBER_DP * roles.numberScale * d).toSp(),
@@ -71,6 +88,15 @@ fun BeatLightsArt(meter: Meter, litBeat: () -> Int, litLevel: () -> Float, modif
             onDrawBehind {
                 val lit = litBeat()
                 val level = litLevel().coerceIn(0f, 1f)
+                if (lights.between > 1) {
+                    val litClick = if (lit >= 0) litBetween() else 0
+                    val clickLevel = litBetweenLevel().coerceIn(0f, 1f)
+                    for (i in 0 until meter.beatsPerBar) {
+                        for (j in 1 until lights.between) {
+                            lights.drawSmallMark(this, i, j, if (i == lit && j == litClick) clickLevel else 0f)
+                        }
+                    }
+                }
                 for (i in 0 until meter.beatsPerBar) {
                     val l = if (i == lit) level else 0f
                     lights.drawMark(this, i, l)
@@ -102,9 +128,36 @@ private const val NUMBER_DP = 11f
 /** Marks are at most this many dp apart. */
 private const val MAX_SPACING_DP = 48f
 
-/** Every mark's places and pieces, made once per meter, style, colours and size. */
-private class BeatLights(private val meter: Meter, private val style: VisualStyle, private val roles: MeterRoles, size: Size, private val d: Float) {
-    private val spacing = min(MAX_SPACING_DP * d, (size.width - 16f * d) / meter.beatsPerBar)
+/** The beat marks keep this many dp in all from the row's ends (8 dp each side); the last beat's small marks too. */
+private const val EDGE_DP = 16f
+
+/**
+ * How far apart (px) the beat marks stand in a row [width] px wide, for [beats] beats with
+ * [clicksPerBeat] clicks to a beat, at [dp] px to a dp: at most [MAX_SPACING_DP], and no wider than
+ * the row less [EDGE_DP] allows. The beats are centred, so the last beat's small marks (its clicks
+ * between the beats, at j / [clicksPerBeat] of a spacing after it) take the room right of it; only
+ * where they wouldn't fit inside the row's 8 dp end (triplets or sixteenths on a narrow row) are the
+ * beats set closer, just enough.
+ */
+internal fun beatSpacing(width: Float, beats: Int, clicksPerBeat: Int, dp: Float): Float {
+    val beatsOnly = min(MAX_SPACING_DP * dp, (width - EDGE_DP * dp) / beats)
+    if (clicksPerBeat <= 1) return beatsOnly
+    // The last small mark: centre + (beats − 1) / 2 · s + (k − 1) / k · s ≤ width − 8 dp.
+    val trailing = (clicksPerBeat - 1f) / clicksPerBeat
+    return min(beatsOnly, (width / 2f - EDGE_DP / 2f * dp) / ((beats - 1) / 2f + trailing))
+}
+
+/** Every mark's places and pieces, made once per meter, subdivision, style, colours and size. */
+private class BeatLights(
+    private val meter: Meter,
+    /** Clicks to a beat: 1 for none, else a small mark for each of the [between] − 1 between the beats. */
+    val between: Int,
+    private val style: VisualStyle,
+    private val roles: MeterRoles,
+    size: Size,
+    private val d: Float,
+) {
+    private val spacing = beatSpacing(size.width, meter.beatsPerBar, between, d)
     private val left = size.width / 2f - (meter.beatsPerBar - 1) / 2f * spacing
     private val y = size.height * MARK_Y
     private val glows = Array(3) { GlowArt(GLOW_DP * d * TIER_SCALES[it], roles.accent) }
@@ -127,6 +180,39 @@ private class BeatLights(private val meter: Meter, private val style: VisualStyl
     }
 
     fun x(i: Int): Float = left + i * spacing
+
+    /**
+     * Click [j] (1 to [between] − 1) after beat [i] as a small mark, lit at [level] (0 at rest): the
+     * style's own mark at [SMALL_SCALE], fainter than a plain beat at rest; lit, it turns to the accent,
+     * at most [SMALL_LIT_ALPHA], with no glow.
+     */
+    fun drawSmallMark(scope: DrawScope, i: Int, j: Int, level: Float) = with(scope) {
+        val x = x(i) + j * spacing / between
+        val rest = roles.ink.faded(restingAlpha * SMALL_REST_SHARE)
+        val color = if (level > 0f) lerp(rest, roles.accent.faded(SMALL_LIT_ALPHA), level) else rest
+        val sz = SMALL_SCALE
+        when (style) {
+            VisualStyle.ANCIENT -> {
+                val r = 9f * d * sz
+                drawCircle(color.faded(0.35f), r * 1.08f, Offset(x + r * 0.18f, y + r * 0.14f))
+                drawCircle(color, r, Offset(x, y))
+            }
+            VisualStyle.CLASSIC, VisualStyle.RETRO -> {
+                val w = 13f * d * sz
+                val h = 38f * d * sz
+                val corner = CornerRadius(if (style == VisualStyle.RETRO) w / 2f else 1f * d)
+                drawRoundRect(color, Offset(x - w / 2f, y - h / 2f), Size(w, h), corner)
+            }
+            // The rounded bar so short it is a dot, a little narrower than a plain beat's bar.
+            VisualStyle.CONTEMPORARY -> drawCircle(color, 7f * d * 0.65f / 2f, Offset(x, y))
+            VisualStyle.FUTURISTIC -> {
+                val h = 40f * d * sz
+                drawLine(color, Offset(x, y - h / 2f), Offset(x, y + h / 2f), 3.5f * d * 0.7f, StrokeCap.Square)
+            }
+            // As small as a beat's companion star.
+            VisualStyle.SPACE_AGE -> starAt(x, y, 13f * d * 0.22f, color)
+        }
+    }
 
     fun drawMark(scope: DrawScope, i: Int, level: Float) = with(scope) {
         val tier = when (meter.accentOf(i)) {
@@ -194,5 +280,14 @@ private class BeatLights(private val meter: Meter, private val style: VisualStyl
 
         /** A lit mark's glow reaches this far (times its size). */
         const val GLOW_DP = 24f
+
+        /** The small marks for the clicks between the beats: their size against a downbeat's, below the plain beat's 0.62. */
+        const val SMALL_SCALE = 0.28f
+
+        /** A small mark at rest is this share of a plain beat's resting strength. */
+        const val SMALL_REST_SHARE = 0.65f
+
+        /** A lit small mark's strength at its click: below a lit beat's full accent. */
+        const val SMALL_LIT_ALPHA = 0.7f
     }
 }
