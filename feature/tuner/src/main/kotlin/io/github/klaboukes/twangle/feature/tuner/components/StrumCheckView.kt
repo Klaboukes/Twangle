@@ -2,9 +2,10 @@ package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -77,14 +76,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
-import io.github.klaboukes.twangle.core.designsystem.styleButtonShape
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.strum.StrumVerdict
@@ -429,8 +423,8 @@ internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (Strin
 }
 
 /**
- * The strum check's switch above the strings: an icon of strings with a sweep
- * across them, in the style's button outline and shape; filled with the accent's container while on.
+ * The strum check's switch above the strings: an icon of strings with a sweep across them on the style's button
+ * ([StyleButton], Phase 63), picked (the container colour with a 2 dp accent outline) while on.
  * TalkBack: "Strum check, switch, on/off". A long-press (or a mouse resting on it) shows its name,
  * "Strum check", in a small tooltip above it, which goes by itself. With [inTour] its outline is the
  * tour's strum check step.
@@ -438,52 +432,26 @@ internal fun TallestOf(texts: List<String>, shown: Int, text: @Composable (Strin
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier, inTour: Boolean = false) {
-    val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape = styleButtonShape()
     val label = stringResource(R.string.tuner_strum_check)
-    val outline = when {
-        checked -> scheme.primary
-        neon -> scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA)
-        else -> scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
-    }
-    val fill = when {
-        checked -> scheme.primaryContainer
-        neon -> neonFill(scheme)
-        else -> scheme.surface.copy(alpha = BACKING_ALPHA)
-    }
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { PlainTooltip(Modifier.testTag(TunerTestTags.STRUM_TOOLTIP)) { Text(label) } },
         state = rememberTooltipState(),
     ) {
-        // The press effect: the button sinks, and the light lies over its fill, under its icon.
-        val press = remember { MutableInteractionSource() }
-        Box(
-            modifier
-                .minimumInteractiveComponentSize()
+        StyleButton(
+            onClick = { onCheckedChange(!checked) },
+            label = label,
+            modifier = modifier,
+            face = STRUM_TOGGLE_SIZE,
+            picked = checked,
+            role = Role.Switch,
+            faceModifier = Modifier
                 .testTag(TunerTestTags.STRUM_TOGGLE)
-                .size(STRUM_TOGGLE_SIZE)
                 // The tour lights up the outline, not the touch target round it.
                 .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
-                .pressSink(press)
-                .clip(shape)
-                .background(fill, shape)
-                .border(if (checked) 2.dp else 1.dp, outline, shape)
-                .toggleable(value = checked, interactionSource = press, indication = PressIndication(shape, face = true), role = Role.Switch) {
-                    press.pressFlash()
-                    onCheckedChange(it)
-                }
-                .semantics { contentDescription = label },
-            contentAlignment = Alignment.Center,
+                .semantics { toggleableState = ToggleableState(checked) },
         ) {
-            Icon(
-                painterResource(R.drawable.ic_strum),
-                contentDescription = null,
-                tint = if (checked) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
-                modifier = Modifier.size(ICON_SIZE),
-            )
+            Icon(painterResource(R.drawable.ic_strum), contentDescription = null, modifier = Modifier.size(ICON_SIZE))
         }
     }
 }
@@ -491,8 +459,6 @@ fun StrumCheckToggle(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modif
 /** The toggle's outline: 44 dp like the style's buttons, in a 48 dp touch target. */
 internal val STRUM_TOGGLE_SIZE = 44.dp
 private val ICON_SIZE = 26.dp
-private const val OUTLINE_ALPHA = 0.6f
-private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val BACKING_ALPHA = 0.45f
 
 private class PanelColours(

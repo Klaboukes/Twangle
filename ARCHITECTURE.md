@@ -208,7 +208,7 @@ feature/practice/src/main/kotlin/io/github/klaboukes/twangle/feature/practice/
 
 feature/eartraining/src/main/kotlin/io/github/klaboukes/twangle/feature/eartraining/
     EarTrainingScreen (+ EarTrainingContent, EarTrainingTestTags), EarTrainingViewModel (+ EarTrainingState), Exercise,
-    PitchListener (+ HeardFrame), ChoicesPanel, EarMicPermission (rememberEarMicPermission), EarTrainingIcons
+    PitchListener (+ HeardFrame), ChoicesPanel, EarMicPermission (rememberEarMicPermission)
 
 feature/settings/src/main/kotlin/io/github/klaboukes/twangle/feature/settings/
     SettingsScreen (+ SettingsContent), AboutScreen, SettingsViewModel, AppLanguages, PlayPage

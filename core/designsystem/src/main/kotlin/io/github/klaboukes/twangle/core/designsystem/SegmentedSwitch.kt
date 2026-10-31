@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.layout.IntrinsicMeasurable
 import androidx.compose.ui.layout.IntrinsicMeasureScope
 import androidx.compose.ui.layout.Measurable
@@ -21,6 +23,8 @@ import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.ceil
@@ -38,7 +42,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * fill alone tells it, with no check mark: the owner's choice, 2026-10-18), a tap on another calls
  * [onSelect]. The tuner's mode switch (Strings · Chromatic) is this switch (the Practice tab's tool switch was too, until Phase 47 gave it a tool button). Each
  * segment shows [label] on one line, shrinking to fit where it must, and carries the test tag [tag].
- * TalkBack hears the segments as radio buttons by their labels, the picked one selected.
+ * TalkBack hears the segments as radio buttons by their labels, the picked one selected, or by [spoken]
+ * where a short word stands for a longer name (Ear training's exercises: "Play back" for "Play it back").
  */
 @Composable
 fun <T> SegmentedSwitch(
@@ -48,12 +53,14 @@ fun <T> SegmentedSwitch(
     label: @Composable (T) -> String,
     tag: (T) -> String,
     modifier: Modifier = Modifier,
+    spoken: (@Composable (T) -> String)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     // Futuristic's buttons are neon outlines in the accent, the unpicked one on a solid tint.
     val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
     val crowded = options.size >= CROWDED_SEGMENTS
     val measurer = rememberTextMeasurer()
+    val smallest = lastResortLabelSize(LocalDensity.current)
     // The press effect in place of Material's ripple, the light over the segment's own fill; the
     // touch area set round the light, as the Twangle buttons do (OwnTouchArea).
     OwnTouchArea { touch ->
@@ -61,6 +68,7 @@ fun <T> SegmentedSwitch(
             options.forEachIndexed { index, option ->
                 val shape = SegmentedButtonDefaults.itemShape(index, options.size)
                 val press = remember { MutableInteractionSource() }
+                val name = spoken?.invoke(option)
                 SegmentedButton(
                     selected = option == selected,
                     onClick = {
@@ -87,7 +95,11 @@ fun <T> SegmentedSwitch(
                     // mode's button.
                     contentPadding = CROWDED_PADDING,
                     icon = {},
-                    modifier = Modifier.testTag(tag(option)).touchArea(touch).pressFeedback(press, shape, above = true),
+                    modifier = Modifier
+                        .testTag(tag(option))
+                        .touchArea(touch)
+                        .pressFeedback(press, shape, above = true)
+                        .then(if (name != null) Modifier.semantics { contentDescription = name } else Modifier),
                 ) {
                     // One line, its whole width counted as its minimum ([segmentLabel]): the row sizes every
                     // segment by the largest minimum width, and Chinese, Japanese and Korean text may break
@@ -122,8 +134,8 @@ fun <T> SegmentedSwitch(
                         // says why).
                         maxLines = 1,
                         softWrap = false,
-                        // The largest size that fits, from the style's own down (LAST_RESORT_LABEL_SIZE), each tried in turn.
-                        autoSize = remember(style.fontSize) { OneLineAutoSize(style.fontSize, LAST_RESORT_LABEL_SIZE) },
+                        // The largest size that fits, from the style's own down (lastResortLabelSize), each tried in turn.
+                        autoSize = remember(style.fontSize, smallest) { OneLineAutoSize(style.fontSize, smallest) },
                     )
                 }
             }
@@ -177,6 +189,16 @@ private class SegmentLabelNode(var whole: IntSize, var give: Dp) : Modifier.Node
  * on its side, which needs 5.5 sp on the Xiaomi 12X (the overnight run of 2026-10-27).
  */
 private val LAST_RESORT_LABEL_SIZE = 5.sp
+
+/**
+ * [LAST_RESORT_LABEL_SIZE], or 5 dp where large text makes 5 sp more: Ear training's three words at 2× text on a
+ * 320 dp phone (Dutch "Akkoorden" needs about 4.5 sp there, Phase 63). It is reached only where a word would
+ * otherwise be cut off; at the usual text size the two are the same.
+ */
+private fun lastResortLabelSize(density: Density): TextUnit =
+    with(density) { if (LAST_RESORT_LABEL_DP.toSp().value < LAST_RESORT_LABEL_SIZE.value) LAST_RESORT_LABEL_DP.toSp() else LAST_RESORT_LABEL_SIZE }
+
+private val LAST_RESORT_LABEL_DP = 5.dp
 
 /** From this many segments, each keeps [CROWDED_PADDING] at its sides instead of Material's 12 dp. */
 private const val CROWDED_SEGMENTS = 3

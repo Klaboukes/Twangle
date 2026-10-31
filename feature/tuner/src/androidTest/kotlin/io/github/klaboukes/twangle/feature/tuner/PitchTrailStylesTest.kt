@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.compose.ui.state.ToggleableState
 import android.Manifest
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
@@ -225,12 +226,12 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
         }
     }
 
-    /** The "more tools" menu lists the four tools, the pitch trail ticked (selected); picking it again turns it off. */
+    /** The "more tools" menu lists the four tools, the pitch trail on (a switch); picking it again turns it off. */
     @Test
     fun theMoreToolsMenuListsThePitchTrail() {
         show()
         assertEquals(
-            context.getString(R.string.tuner_pitch_trail),
+            context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_pitch_trail)),
             moreTools.fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription),
         )
         moreTools.performClick()
@@ -240,7 +241,7 @@ class PitchTrailStylesTest(private val style: VisualStyle) {
         for (tool in listOf(TunerTool.STRUM_CHECK, TunerTool.INTONATION_CHECK, TunerTool.CHORD_NAME)) {
             compose.onNodeWithTag(TunerTestTags.tool(tool)).assertIsDisplayed()
         }
-        assertEquals(true, trail.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Selected))
+        assertEquals(ToggleableState.On, trail.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
         trail.performClick()
         compose.waitForIdle()
         assertEquals(listOf("trail" to false), toolChanges)

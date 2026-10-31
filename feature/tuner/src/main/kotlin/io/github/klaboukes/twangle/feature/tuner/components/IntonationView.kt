@@ -1,10 +1,17 @@
 package io.github.klaboukes.twangle.feature.tuner.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.faceFill
+import io.github.klaboukes.twangle.core.designsystem.faceOutline
+import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,9 +80,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.AnnotatedString
@@ -96,15 +99,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleButton
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
-import io.github.klaboukes.twangle.core.designsystem.styleButtonShape
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
-import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.intonation.IntonationResult
@@ -695,11 +694,13 @@ private fun Kept(shown: Boolean, content: @Composable () -> Unit) {
 /**
  * The tuner's tools (strum check, the 12th-fret check, the chord name, the pitch trail; later ones join) behind one small "more tools"
  * button above the strings (three tiles and a plus, Material Symbols `dashboard_customize`, no word), where the strum
- * check's switch sits when it is the only tool. Outlined like the strum check's switch; filled with the accent's container while a tool is on. A tap opens a
- * small menu that lifts softly off the screen (no outline): each tool with its icon and name, the one
- * that is on ticked and in the accent; picking one turns it on (and the other off), picking the ticked
- * one turns it off. TalkBack: "More tools, button, Strum check" (the tool that is on); a long-press
- * shows its name in a tooltip. With [inTour] its outline is the tour's step.
+ * check's switch sits when it is the only tool: the style's button ([StyleButton]), picked (the container colour with
+ * a 2 dp accent outline) while a tool is on. A tap opens a small menu that lifts softly off the screen (no outline):
+ * each tool with its icon and name, the one that is on marked as Practice's tool menu marks its tool (the container
+ * colour with a 2 dp accent outline; Phase 63, never green, which means in tune); picking one turns it on (and the
+ * other off), picking the one that is on turns it off. TalkBack: "More tools, 12th-fret check on, button" (just
+ * "More tools" with none on), and each tool in the menu as a switch, on or off, since one can be turned off and
+ * leave none; a long-press shows its name in a tooltip. With [inTour] its outline is the tour's step.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -711,23 +712,9 @@ fun MoreToolsButton(
     inTour: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape = styleButtonShape()
     val label = stringResource(R.string.tuner_more_tools)
-    val activeName = active?.let { toolName(it) }
-    val on = active != null
+    val state = active?.let { stringResource(R.string.tuner_tool_on, toolName(it)) }
     var open by remember { mutableStateOf(false) }
-    val outline = when {
-        on -> scheme.primary
-        neon -> scheme.primary.copy(alpha = 0.55f)
-        else -> scheme.onSurfaceVariant.copy(alpha = 0.6f)
-    }
-    val fill = when {
-        on -> scheme.primaryContainer
-        neon -> neonFill(scheme)
-        else -> scheme.surface.copy(alpha = 0.45f)
-    }
     // The menu ends in line with the button wherever it opens (Phase 52): Material opens it from the button's start
     // where it fits, which on a tablet upright pushed it against the screen's edge (3 dp from it), and from its end
     // elsewhere. Moved by the button's width less its own, its start-aligned place is the end-aligned one, so
@@ -741,33 +728,17 @@ fun MoreToolsButton(
             tooltip = { PlainTooltip { Text(label) } },
             state = rememberTooltipState(),
         ) {
-            val press = remember { MutableInteractionSource() }
-            Box(
-                Modifier
-                    .minimumInteractiveComponentSize()
+            StyleButton(
+                onClick = { open = true },
+                label = label,
+                face = STRUM_TOGGLE_SIZE,
+                picked = active != null,
+                state = state,
+                faceModifier = Modifier
                     .testTag(TunerTestTags.MORE_TOOLS)
-                    .size(STRUM_TOGGLE_SIZE)
-                    .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier)
-                    .pressSink(press)
-                    .clip(shape)
-                    .background(fill, shape)
-                    .border(if (on) 2.dp else 1.dp, outline, shape)
-                    .clickable(press, PressIndication(shape, face = true), role = Role.Button) {
-                        press.pressFlash()
-                        open = true
-                    }
-                    .semantics {
-                        contentDescription = label
-                        if (activeName != null) stateDescription = activeName
-                    },
-                contentAlignment = Alignment.Center,
+                    .then(if (inTour) Modifier.tourTarget(TourPart.STRUM) else Modifier),
             ) {
-                Icon(
-                    painterResource(R.drawable.ic_more_tools),
-                    contentDescription = null,
-                    tint = if (on) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
-                    modifier = Modifier.size(MORE_ICON_SIZE),
-                )
+                Icon(painterResource(R.drawable.ic_more_tools), contentDescription = null, modifier = Modifier.size(MORE_ICON_SIZE))
             }
         }
         val density = LocalDensity.current
@@ -786,33 +757,46 @@ fun MoreToolsButton(
                 .semantics { testTagsAsResourceId = true },
         ) {
             ScreenDensity(density) {
-                for (tool in tools) {
-                    val picked = tool == active
-                    val tint = if (picked) scheme.primary else scheme.onSurface
-                    val itemPress = remember { MutableInteractionSource() }
-                    DropdownMenuItem(
-                        text = { Text(toolName(tool), color = tint, style = MaterialTheme.typography.bodyLarge) },
-                        onClick = {
-                            itemPress.pressFlash()
+                // As wide as the longest name, every row as wide as the menu, so each mark is the same width.
+                Column(Modifier.width(IntrinsicSize.Max).padding(horizontal = MENU_PADDING)) {
+                    for (tool in tools) {
+                        val picked = tool == active
+                        ToolRow(tool, picked) {
                             open = false
                             onToolChange(tool, !picked)
-                        },
-                        leadingIcon = { Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = tint, modifier = Modifier.size(MENU_ICON_SIZE)) },
-                        trailingIcon = {
-                            // Always the check's room, so the menu keeps its width whichever tool is on.
-                            Box(Modifier.size(MENU_ICON_SIZE)) {
-                                if (picked) Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary)
-                            }
-                        },
-                        interactionSource = itemPress,
-                        modifier = Modifier
-                            .indication(itemPress, PressIndication.Row)
-                            .testTag(TunerTestTags.tool(tool))
-                            .semantics { selected = picked },
-                    )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+/**
+ * One tool in the "more tools" menu, as a row of Practice's tool menu: its icon and name in a 48 dp row, the one
+ * that is on ([picked]) in the container colour with a 2 dp accent outline. TalkBack hears it as a switch.
+ */
+@Composable
+private fun ToolRow(tool: TunerTool, picked: Boolean, onToggle: () -> Unit) {
+    val source = remember { MutableInteractionSource() }
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier
+            .testTag(TunerTestTags.tool(tool))
+            .fillMaxWidth()
+            .heightIn(min = MENU_ROW_HEIGHT)
+            .pressFeedback(source, MaterialTheme.shapes.medium, fill = if (picked) faceFill(picked = true) else Color.Transparent, outline = if (picked) faceOutline(picked = true) else null)
+            .toggleable(value = picked, interactionSource = source, indication = null, role = Role.Switch) {
+                source.pressFlash()
+                onToggle()
+            }
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val color = if (picked) scheme.onPrimaryContainer else scheme.onSurface
+        Icon(painterResource(toolIcon(tool)), contentDescription = null, tint = color, modifier = Modifier.size(MENU_ICON_SIZE))
+        Spacer(Modifier.width(12.dp))
+        Text(toolName(tool), color = color, style = MaterialTheme.typography.labelLarge.copy(fontSize = MENU_NAME_SIZE), modifier = Modifier.padding(end = 8.dp))
     }
 }
 
@@ -830,7 +814,7 @@ fun toolName(tool: TunerTool): String = stringResource(
 private fun toolIcon(tool: TunerTool): Int = when (tool) {
     TunerTool.STRUM_CHECK -> R.drawable.ic_strum
     TunerTool.INTONATION_CHECK -> R.drawable.ic_twelfth_fret
-    TunerTool.CHORD_NAME -> R.drawable.ic_chord
+    TunerTool.CHORD_NAME -> R.drawable.ic_chord_name
     TunerTool.PITCH_TRAIL -> R.drawable.ic_pitch_trail
 }
 
@@ -917,4 +901,9 @@ private val BUTTON_ROW_TOP_GAP = 6.dp
 private val MORE_ICON_SIZE = 24.dp
 private val MENU_ICON_SIZE = 24.dp
 private val MENU_LIFT = 8.dp
+
+/** The menu's rows: this far in from its sides, at least this tall, their names this big (as Practice's tool menu). */
+private val MENU_PADDING = 6.dp
+private val MENU_ROW_HEIGHT = 48.dp
+private val MENU_NAME_SIZE = 16.sp
 private val BADGE_RADIUS = 8.dp

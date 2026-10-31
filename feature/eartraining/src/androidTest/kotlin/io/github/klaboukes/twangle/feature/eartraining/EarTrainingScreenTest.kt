@@ -18,6 +18,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -70,8 +71,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * The Ear training screen (Phase 55) in each style, from its state alone: the three exercises as icons
- * TalkBack names, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
+ * The Ear training screen (Phase 55) in each style, from its state alone: the three exercises as words
+ * TalkBack names in full, a pick passed on; the ▶ that sounds the question again; this visit's tally shown once
  * a question was answered, with nothing moving; Play it back's heard note or "Listening…", and
  * "Microphone is off" with its button; Intervals' question and its answer buttons of one size, right
  * and wrong shown gently with nothing moving; the "What is asked" panel with Play it back's and
@@ -181,6 +182,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 .assertIsDisplayed()
         }
+        val words = mapOf(Exercise.PLAY_IT_BACK to "Play back", Exercise.INTERVALS to "Intervals", Exercise.CHORD_TYPE to "Chords")
+        for (exercise in Exercise.entries) node(EarTrainingTestTags.exercise(exercise)).assert(hasText(words.getValue(exercise)))
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsSelected()
         val before = Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() }
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).performClick()
@@ -188,8 +191,9 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         assertEquals(listOf(Exercise.INTERVALS), picked)
         node(EarTrainingTestTags.exercise(Exercise.INTERVALS)).assertIsSelected()
         node(EarTrainingTestTags.exercise(Exercise.PLAY_IT_BACK)).assertIsNotSelected()
-        assertEquals("the icons keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
-        assertEquals("one steady width each", 56f, before[0].width.value, 0.5f)
+        assertEquals("the words keep their places", before, Exercise.entries.map { node(EarTrainingTestTags.exercise(it)).getBoundsInRoot() })
+        // On the Xiaomi the switch is at its widest: three equal segments of 84 dp (less the 1 dp the outlines share).
+        for (bounds in before) assertEquals("one steady width each", 84f, bounds.width.value, 1.5f)
         // Until Intervals' first question is in the state, nothing shows under the row.
         assertTrue(!exists(EarTrainingTestTags.REPLAY) && !exists(EarTrainingTestTags.HEARD))
     }
@@ -429,7 +433,8 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         show()
         node(EarTrainingTestTags.CHOICES).performScrollTo().performClick()
         compose.waitForIdle()
-        compose.onNode(hasText("Intervals")).assertExists()
+        // The panel's heading; the exercise switch above it says "Intervals" too.
+        compose.onNode(hasText("Intervals") and !hasTestTag(EarTrainingTestTags.exercise(Exercise.INTERVALS))).assertExists()
         compose.onNode(hasText("Played")).assertExists()
         val widths = Interval.entries.map { interval ->
             val chip = node(EarTrainingTestTags.askInterval(interval))

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -30,9 +29,6 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -70,6 +66,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -80,18 +77,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
-import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.OptionsButton
+import io.github.klaboukes.twangle.core.designsystem.OPTIONS_FACE
+import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonFill
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.designsystem.touchArea
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 import io.github.klaboukes.twangle.core.dsp.eartraining.Interval
@@ -104,7 +98,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.Note
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * Ear training (Phase 55), a Practice tool, as the owner picked from docs/design/ear-training-preview.html
@@ -343,88 +336,83 @@ object EarTrainingTestTags {
 }
 
 /**
- * The exercise row: the three exercises as icons in one switch (each [EXERCISE_WIDTH] wide, named for
- * TalkBack), this visit's [tally] once a question was answered, quiet, at the end, and the "What is
- * asked" button: the shared options button ([OptionsButton], the metronome's), picked while its sheet
- * is open ([choicesOpen]). The icons and the button never move: the tally takes the room between them.
+ * The exercise row: the three exercises in one switch of words ([ExerciseSwitch]), this visit's [tally] once a
+ * question was answered, quiet, at the end, and the "What is asked" button: the shared options button
+ * ([OptionsButton], the metronome's), picked while its sheet is open ([choicesOpen]). The switch's width
+ * depends only on the row's ([exerciseSwitchWidth]), so the words and the button never move: the tally takes
+ * the room between them.
  */
 @Composable
 private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> Unit, choicesOpen: Boolean, onOpenChoices: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-        ExerciseSwitch(exercise, onPick)
-        Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
-            if (tally.asked > 0) {
-                val spoken = stringResource(R.string.ear_tally_spoken, tally.right, tally.asked)
-                val style = MaterialTheme.typography.bodyMedium
-                Text(
-                    stringResource(R.string.ear_tally, tally.right, tally.asked),
-                    style = style,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    // Set smaller where the room between the icons and the button is short (2× text on a narrow phone);
-                    // never wrapped, so the auto-size sees it too wide (IntervalsPart's AnswerButton says why).
-                    softWrap = false,
-                    autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-                    modifier = Modifier.testTag(EarTrainingTestTags.TALLY).semantics {
-                        contentDescription = spoken
-                        liveRegion = LiveRegionMode.Polite
-                    },
-                )
-            }
-        }
-        OptionsButton(
-            open = choicesOpen,
-            onClick = onOpenChoices,
-            label = stringResource(R.string.ear_choices),
-            modifier = Modifier.testTag(EarTrainingTestTags.CHOICES),
-        )
-    }
-}
-
-/** The three exercises in a segmented switch of icons, the picked one in the accent container as the tuner's mode switch. */
-@Composable
-private fun ExerciseSwitch(selected: Exercise, onPick: (Exercise) -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
-    val group = stringResource(R.string.ear_exercises)
-    OwnTouchArea { touch ->
-        SingleChoiceSegmentedButtonRow(Modifier.semantics { contentDescription = group }) {
-            Exercise.entries.forEachIndexed { index, exercise ->
-                val shape = SegmentedButtonDefaults.itemShape(index, Exercise.entries.size)
-                val press = remember { MutableInteractionSource() }
-                val name = stringResource(exercise.label)
-                SegmentedButton(
-                    selected = exercise == selected,
-                    onClick = {
-                        press.pressFlash()
-                        onPick(exercise)
-                    },
-                    shape = shape,
-                    interactionSource = press,
-                    colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = scheme.primaryContainer,
-                        activeContentColor = scheme.onPrimaryContainer,
-                        inactiveContainerColor = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.6f),
-                        inactiveContentColor = scheme.onSurfaceVariant,
-                        activeBorderColor = if (neon) scheme.primary else scheme.outline,
-                        inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
-                    ),
-                    icon = {},
-                    modifier = Modifier
-                        .testTag(EarTrainingTestTags.exercise(exercise))
-                        .width(EXERCISE_WIDTH)
-                        .touchArea(touch)
-                        .pressFeedback(press, shape, above = true)
-                        .semantics { contentDescription = name },
-                ) {
-                    Icon(exerciseIcon(exercise), contentDescription = null, modifier = Modifier.size(ICON_SIZE))
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val switchWidth = exerciseSwitchWidth(maxWidth)
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+            ExerciseSwitch(exercise, onPick, Modifier.width(switchWidth))
+            Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
+                if (tally.asked > 0) {
+                    val spoken = stringResource(R.string.ear_tally_spoken, tally.right, tally.asked)
+                    val style = MaterialTheme.typography.bodyMedium
+                    Text(
+                        stringResource(R.string.ear_tally, tally.right, tally.asked),
+                        style = style,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        // Set smaller where the room between the switch and the button is short (2× text on a narrow phone);
+                        // never wrapped, so the auto-size sees it too wide (IntervalsPart's AnswerButton says why).
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(minFontSize = with(LocalDensity.current) { TALLY_MIN_SIZE.toSp() }, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+                        modifier = Modifier.testTag(EarTrainingTestTags.TALLY).semantics {
+                            contentDescription = spoken
+                            liveRegion = LiveRegionMode.Polite
+                        },
+                    )
                 }
             }
+            OptionsButton(
+                open = choicesOpen,
+                onClick = onOpenChoices,
+                label = stringResource(R.string.ear_choices),
+                modifier = Modifier.testTag(EarTrainingTestTags.CHOICES),
+            )
         }
     }
 }
 
-/** Each exercise's name, as TalkBack says its icon. A new exercise needs its name here (the `when` says so). */
+/**
+ * The exercise switch's width in a row [row] wide: [EXERCISE_SWITCH_MAX], or less where the row is narrower,
+ * keeping the options button's face and [TALLY_ROOM] beside it. The same whatever the language, the font size and
+ * the exercise picked, so nothing moves; the words are set smaller where they don't fit.
+ */
+internal fun exerciseSwitchWidth(row: Dp): Dp = (row - OPTIONS_FACE - TALLY_ROOM).coerceIn(0.dp, EXERCISE_SWITCH_MAX)
+
+/**
+ * The three exercises in the app's switch of words ([SegmentedSwitch], as the tuner's Strings · Chromatic; Phase 63:
+ * three note-symbol icons were hard to tell apart): a short word each ("Play back · Intervals · Chords"), TalkBack
+ * hearing its whole name ("Play it back", "Chord type") in the group "Exercise".
+ */
+@Composable
+private fun ExerciseSwitch(selected: Exercise, onPick: (Exercise) -> Unit, modifier: Modifier = Modifier) {
+    val group = stringResource(R.string.ear_exercises)
+    SegmentedSwitch(
+        options = Exercise.entries,
+        selected = selected,
+        onSelect = onPick,
+        label = { stringResource(it.word) },
+        tag = EarTrainingTestTags::exercise,
+        spoken = { stringResource(it.label) },
+        modifier = modifier.semantics { contentDescription = group },
+    )
+}
+
+/** Each exercise's short word on the switch. A new exercise needs its word here (the `when` says so). */
+internal val Exercise.word: Int
+    get() = when (this) {
+        Exercise.PLAY_IT_BACK -> R.string.ear_exercise_word_play_back
+        Exercise.INTERVALS -> R.string.ear_exercise_word_intervals
+        Exercise.CHORD_TYPE -> R.string.ear_exercise_word_chord_type
+    }
+
+/** Each exercise's name, as TalkBack says its word on the switch. A new exercise needs its name here (the `when` says so). */
 internal val Exercise.label: Int
     get() = when (this) {
         Exercise.PLAY_IT_BACK -> R.string.ear_exercise_play_back
@@ -642,7 +630,6 @@ private val PLAY_ICON: ImageVector = ImageVector.Builder(
     strokeLineJoin = StrokeJoin.Round,
 ).build()
 
-private const val NEON_OUTLINE_ALPHA = 0.55f
 
 private val HEADER_TOP = 8.dp
 /** Under the exercise row: 24 dp less the 4 dp the options button's 52 dp face adds to the row, so the ▶ keeps its place. */
@@ -654,9 +641,9 @@ private val COLUMN_MAX_WIDTH = 480.dp
 /** From this wide, a window wider than tall is laid out in two halves (as the Practice tools on their side). */
 private val HALVES_MIN_WIDTH = 600.dp
 
-/** Each exercise's segment, the same whatever the language (icons only); its icon. */
-private val EXERCISE_WIDTH = 56.dp
-private val ICON_SIZE = 24.dp
+/** The exercise switch at most this wide (each word's segment a third of it), and the room it leaves for the tally at least. */
+private val EXERCISE_SWITCH_MAX = 252.dp
+private val TALLY_ROOM = 56.dp
 
 /** The ▶: as the mock-up's, a round button this big, its triangle this big. */
 private val REPLAY_SIZE = 72.dp

@@ -1,5 +1,6 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.compose.ui.state.ToggleableState
 import android.Manifest
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
@@ -222,7 +223,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         again.assertDoesNotExist()
     }
 
-    /** The "more tools" menu lists both tools, the one that is on ticked (selected); picking one calls back. */
+    /** The "more tools" menu lists both tools, the one that is on as a switch that is on; the button names it; picking one calls back. */
     @Test
     fun theMoreToolsMenuListsBothToolsAndTurnsOneOn() {
         show()
@@ -232,8 +233,12 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         val intonation = compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK))
         strum.assertIsDisplayed()
         intonation.assertIsDisplayed()
-        assertEquals(false, strum.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Selected))
-        assertEquals(true, intonation.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Selected))
+        assertEquals(ToggleableState.Off, strum.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
+        assertEquals(ToggleableState.On, intonation.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
+        assertEquals(
+            context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_intonation_check)),
+            moreTools.fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription),
+        )
         strum.performClick()
         compose.waitForIdle()
         assertEquals(listOf("strum" to true), toolChanges)
@@ -320,7 +325,7 @@ class IntonationCheckStylesTest(private val style: VisualStyle) {
         )
         val button = moreTools.fetchSemanticsNode().config
         assertEquals(listOf(context.getString(R.string.tuner_more_tools)), button.getOrNull(SemanticsProperties.ContentDescription))
-        assertEquals(context.getString(R.string.tuner_intonation_check), button.getOrNull(SemanticsProperties.StateDescription))
+        assertEquals(context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_intonation_check)), button.getOrNull(SemanticsProperties.StateDescription))
 
         // The summary: each string a button with its result.
         shownState.value = check(IntonationStep.CHOOSE, string = null)

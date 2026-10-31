@@ -335,6 +335,8 @@
     <string name="tour_done">Done</string>
     <!-- More tools: one small button above the strings opens a menu of the tuner's tools (strum check, the 12th-fret check). -->
     <string name="tuner_more_tools">More tools</string>
+    <!-- TalkBack, after "More tools": which of the tuner's tools is on, e.g. "12th-fret check on"; %1$s is the tool's name. -->
+    <string name="tuner_tool_on">%1$s on</string>
     <!-- The 12th-fret check (intonation): a string played open, then pressed at the 12th fret, says whether its saddle should move. -->
     <string name="tuner_intonation_check">12th-fret check</string>
     <!-- The check's two steps, at the top of its panel: the open string, then the 12th fret. -->

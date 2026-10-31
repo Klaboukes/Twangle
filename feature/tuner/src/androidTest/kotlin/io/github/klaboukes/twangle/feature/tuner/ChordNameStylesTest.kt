@@ -1,5 +1,7 @@
 package io.github.klaboukes.twangle.feature.tuner
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.state.ToggleableState
 import android.Manifest
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
@@ -193,7 +195,7 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         }
     }
 
-    /** The "more tools" menu lists the three tools, the chord name ticked (selected); picking it again turns it off. */
+    /** The "more tools" menu lists the three tools, the chord name on (a switch); picking it again turns it off; the button names it. */
     @Test
     fun theMoreToolsMenuListsTheChordName() {
         show()
@@ -203,12 +205,13 @@ class ChordNameStylesTest(private val style: VisualStyle) {
         compose.onNodeWithText(context.getString(R.string.tuner_chord_name)).assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.tool(TunerTool.STRUM_CHECK)).assertIsDisplayed()
         compose.onNodeWithTag(TunerTestTags.tool(TunerTool.INTONATION_CHECK)).assertIsDisplayed()
-        assertEquals(true, chord.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Selected))
+        assertEquals(ToggleableState.On, chord.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ToggleableState))
+        assertEquals(Role.Switch, chord.fetchSemanticsNode().config.getOrNull(SemanticsProperties.Role))
         chord.performClick()
         compose.waitForIdle()
         assertEquals(listOf("chord" to false), toolChanges)
         assertEquals(
-            context.getString(R.string.tuner_chord_name),
+            context.getString(R.string.tuner_tool_on, context.getString(R.string.tuner_chord_name)),
             moreTools.fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription),
         )
     }

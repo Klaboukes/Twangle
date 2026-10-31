@@ -179,6 +179,7 @@
     <string name="tour_next">Volgende</string>
     <string name="tour_done">Klaar</string>
     <string name="tuner_more_tools">Meer functies</string>
+    <string name="tuner_tool_on">%1$s aan</string>
     <string name="tuner_intonation_check">12e-fretcheck</string>
     <string name="tuner_intonation_step_open">Los</string>
     <string name="tuner_intonation_step_fret">12e fret</string>
