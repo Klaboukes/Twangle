@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -291,6 +292,13 @@ data class AppSettings(
      * picked in a meter that doesn't offer it (6/8 and 7/8 offer none and two), where it plays as none.
      */
     val metronomeSubdivision: Subdivision = Subdivision.DEFAULT,
+    /**
+     * The metronome's speed trainer (Phase 62): its start, goal, step and bars, or null until it is
+     * first turned on (then it is filled in from the tempo shown, [SpeedTrainer.startingAt]).
+     */
+    val metronomeTrainer: SpeedTrainer? = null,
+    /** Whether the speed trainer is on (only with its tool switch, [ToolSwitches.speedTrainer]). */
+    val metronomeTrainerOn: Boolean = false,
     /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
     val practiceTool: PracticeTool = PracticeTool.DEFAULT,
     /** The root picked last in the Practice tab's chord charts and scales, one for both (C on a fresh install). */

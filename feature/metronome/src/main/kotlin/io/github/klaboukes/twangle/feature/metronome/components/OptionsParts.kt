@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.paneTitle
@@ -74,8 +75,9 @@ import kotlin.math.roundToInt
  * set less often than the tempo, behind the one button at the end of the row under the dial. Its rows,
  * top to bottom: the four click sounds (Phase 45, before Phase 62 behind a Sound button of their own),
  * the clicks between the beats ("Between the beats", Phase 62), Vibrate on the beat, and Listen
- * (Phase 27, before Phase 62 a button in the row). The panel takes its rows as content
- * ([OptionsPanel]), so a new one slots in between them: the speed trainer comes under Listen.
+ * (Phase 27, before Phase 62 a button in the row), then the speed trainer's row (Phase 62, with its
+ * tool switch). The panel takes its rows as content ([OptionsPanel]); the trainer's row opens the
+ * trainer's settings in place of them, same size and spot, with a back arrow ([TrainerSettings]).
  */
 
 /** [sound]'s line icon (wood block A3, claves A5, cowbell and rim click as on the mock-up). */
@@ -149,6 +151,11 @@ internal fun soundName(sound: ClickSound): String = stringResource(
  *
  * Back or a tap beside it calls [onDismiss], and the tap does nothing else. TalkBack hears the panel by
  * name ("Options").
+ *
+ * With [page] ([trainerPage], Phase 62) the panel shows that page in place of its rows: the same size
+ * (as tall as the rows, taller only if the page needs it, as at very large text) in the same spot; the
+ * rows stay measured but aren't placed, drawn or heard. Back there calls [onPageBack], and TalkBack
+ * hears the page by its name ([pageTitle]).
  */
 @Composable
 fun OptionsPanel(
@@ -157,10 +164,16 @@ fun OptionsPanel(
     wide: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    trainerPage: Boolean = false,
+    pageTitle: String = "",
+    onPageBack: () -> Unit = {},
+    page: (@Composable ColumnScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val showing = open && anchor != null
     BackHandler(enabled = showing, onBack = onDismiss)
+    // Composed after the panel's own, so it comes first while the page shows.
+    BackHandler(enabled = showing && trainerPage && page != null, onBack = onPageBack)
     // Where it was opened from stays while the panel fades out.
     var place by remember { mutableStateOf(Rect.Zero) }
     if (anchor != null && open) place = anchor
@@ -183,7 +196,7 @@ fun OptionsPanel(
                             }
                         },
                 )
-                Panel(content)
+                Panel(if (page != null && trainerPage) pageTitle else null, page, content)
             },
             modifier = Modifier.fillMaxSize(),
         ) { measurables, constraints ->
@@ -219,13 +232,19 @@ fun OptionsPanel(
     }
 }
 
+/**
+ * The panel's surface holding its rows, or [page] in their place while [pageTitle] is set: the page
+ * gets the rows' size (or more, if it needs it); the side not shown is measured but not placed, so it
+ * is neither drawn, touched nor heard.
+ */
 @Composable
-private fun Panel(content: @Composable ColumnScope.() -> Unit) {
+private fun Panel(pageTitle: String?, page: (@Composable ColumnScope.() -> Unit)?, content: @Composable ColumnScope.() -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     val shape = MaterialTheme.shapes.large
-    val title = stringResource(R.string.metronome_options)
-    Column(
+    val title = pageTitle ?: stringResource(R.string.metronome_options)
+    val onPage = pageTitle != null
+    Box(
         Modifier
             .testTag(MetronomeTestTags.OPTIONS_PANEL)
             .semantics { paneTitle = title }
@@ -238,8 +257,21 @@ private fun Panel(content: @Composable ColumnScope.() -> Unit) {
             .background(scheme.surfaceContainerHigh, shape)
             .verticalScroll(rememberScrollState())
             .padding(PANEL_PADDING),
-        content = content,
-    )
+    ) {
+        Layout(
+            content = {
+                Column(if (onPage) Modifier.clearAndSetSemantics {} else Modifier, content = content)
+                if (page != null) Column(if (onPage) Modifier else Modifier.clearAndSetSemantics {}, content = page)
+            },
+        ) { measurables, constraints ->
+            val rows = measurables[0].measure(constraints)
+            val other = measurables.getOrNull(1)?.measure(
+                constraints.copy(minWidth = rows.width, maxWidth = rows.width, minHeight = rows.height),
+            )
+            val shown = if (onPage && other != null) other else rows
+            layout(shown.width, shown.height) { shown.place(0, 0) }
+        }
+    }
 }
 
 /**
@@ -318,7 +350,7 @@ internal fun SubdivisionChoice(
 
 /** A row's name over its choices: one line in the muted colour, set smaller where a language needs it. */
 @Composable
-private fun PanelHeading(text: String) {
+internal fun PanelHeading(text: String) {
     val style = MaterialTheme.typography.labelLarge
     // In dp, so it holds at any font size.
     val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
@@ -350,8 +382,52 @@ private fun IconSegment(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
+    Segment(name, tag, picked, onPick, modifier, enabled) {
+        Icon(painterResource(icon), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
+    }
+}
+
+/**
+ * One choice of a row shown as a short [text] (the speed trainer's "+5", "4"), as [IconSegment]: the
+ * text set smaller where it doesn't fit (very large text), never cut.
+ */
+@Composable
+internal fun TextSegment(
+    text: String,
+    name: String,
+    tag: String,
+    picked: Boolean,
+    onPick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp)
+    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
+    Segment(name, tag, picked, onPick, modifier) {
+        Text(
+            text,
+            style = style,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+    }
+}
+
+/** A choice's face and touch area, holding [face] (an icon or a short text). */
+@Composable
+private fun Segment(
+    name: String,
+    tag: String,
+    picked: Boolean,
+    onPick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    face: @Composable () -> Unit,
+) {
+    val look = buttonLook()
     val source = remember { MutableInteractionSource() }
     Box(
         modifier
@@ -378,7 +454,7 @@ private fun IconSegment(
                 .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(icon), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
+            face()
         }
     }
 }
@@ -469,14 +545,14 @@ private val PANEL_MARGIN = 8.dp
 private val PANEL_LIFT = 12.dp
 private const val LIGHT_SHADOW = 0.3f
 private const val DARK_SHADOW = 0.6f
-private val ROW_HEIGHT = 48.dp
+internal val ROW_HEIGHT = 48.dp
 private val SWITCH_ROW_HEIGHT = 56.dp
-private val ROW_PADDING = 14.dp
-private val MIN_NAME_SIZE = 8.dp
+internal val ROW_PADDING = 14.dp
+internal val MIN_NAME_SIZE = 8.dp
 
 /** A sound's face, 40 dp tall as the meter picker's buttons, in its 48 dp touch area, 4 dp from the next. */
 private val SEGMENT_FACE = 40.dp
-private val SEGMENT_GAP = 4.dp
+internal val SEGMENT_GAP = 4.dp
 
 /** A choice the meter doesn't offer (triplets, sixteenths in 6/8 and 7/8), as Practice's disabled buttons. */
-private const val DISABLED_ALPHA = 0.38f
+internal const val DISABLED_ALPHA = 0.38f

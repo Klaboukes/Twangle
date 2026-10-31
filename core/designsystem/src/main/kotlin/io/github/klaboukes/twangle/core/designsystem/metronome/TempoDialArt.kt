@@ -62,7 +62,9 @@ import kotlin.math.sin
  * with the beat's glow behind its middle at [beatGlow] (0..1; the caller eases it out after each
  * beat). While Listen listens, [ringBpm] (0 for none) puts a small hollow ring on the arc at the
  * tempo it is settling on, at [ringAlpha]; [foundGlow] (0..1) is the one soft glow behind the tempo
- * when a found tempo is used (Phase 27, docs/design/metronome-listen-preview.html). All are read in
+ * when a found tempo is used (Phase 27, docs/design/metronome-listen-preview.html). [goalBpm] (0 for
+ * none) marks the speed trainer's goal with a small hollow ring on the arc in the accent (Phase 62,
+ * docs/design/metronome-layout-preview.html), a little larger than Listen's. All are read in
  * the draw phase only, so a moving tempo or glow redraws the dynamic layer without recomposing.
  * Square; the field fades out at its edge. The tempo's figures go over its middle (the caller's),
  * and the dial says nothing to TalkBack itself.
@@ -75,6 +77,7 @@ fun TempoDialArt(
     ringBpm: () -> Float = { 0f },
     ringAlpha: () -> Float = { 0f },
     foundGlow: () -> Float = { 0f },
+    goalBpm: () -> Float = { 0f },
 ) {
     val roles = meterRoles()
     val measurer = rememberTextMeasurer()
@@ -102,6 +105,7 @@ fun TempoDialArt(
                 val found = GlowArt(FOUND_GLOW_UNITS * dial.u, roles.accent)
                 val foundPeak = if (roles.dark) FOUND_GLOW_DARK_ALPHA else FOUND_GLOW_LIGHT_ALPHA
                 val ring = ListenRing(dial, roles)
+                val goal = GoalRing(dial, roles)
                 val track = DialTrack(dial, roles)
                 val needle = NeedleArt(dial.cx, dial.cy - (dial.r - NEEDLE_IN_UNITS * dial.u), NEEDLE_UNITS * dial.u, dial.u, roles)
                 val needleColor = roles.marker(0f)
@@ -114,6 +118,8 @@ fun TempoDialArt(
                     found.draw(this, dial.cx, dial.cy, foundGlow().coerceIn(0f, 1f) * foundPeak)
                     val tempo = bpm()
                     track.drawLit(this, tempo)
+                    val goalAt = goalBpm()
+                    if (goalAt > 0f) goal.draw(this, goalAt)
                     val degrees = dialDegrees(tempo)
                     // The shadow always falls down and to the right, however the needle turns.
                     translate(shadowX, shadowY) { rotate(degrees, centre) { needle.drawShadow(this) } }
@@ -230,6 +236,11 @@ private const val RING_LINE_UNITS = 1.8f
 private const val RING_DISC_UNITS = 6f
 private const val RING_INK = 0.75f
 
+/** The trainer's goal ring: 7 units across its line's middle, a 2 unit line in the accent over an 8 unit disc of the background. */
+private const val GOAL_UNITS = 7f
+private const val GOAL_LINE_UNITS = 2f
+private const val GOAL_DISC_UNITS = 8f
+
 /** A tick every 10 BPM; major ticks (and numbers) at 30 and every 50. */
 private const val TICK_STEP = 10
 private const val MAJOR_STEP = 50
@@ -269,6 +280,24 @@ private class ListenRing(private val dial: DialShape, roles: MeterRoles) {
         val centre = Offset(at[0], at[1])
         drawCircle(disc, RING_DISC_UNITS * dial.u, centre, alpha = alpha)
         drawCircle(ink, RING_UNITS * dial.u, centre, alpha = RING_INK * alpha, style = line)
+    }
+}
+
+/**
+ * The speed trainer's goal: a small hollow ring on the arc in the accent, over a disc of the
+ * background, so the lit arc passes under it. Allocates nothing to draw.
+ */
+private class GoalRing(private val dial: DialShape, roles: MeterRoles) {
+    private val at = FloatArray(4)
+    private val disc = roles.background
+    private val accent = roles.accent
+    private val line = Stroke(GOAL_LINE_UNITS * dial.u)
+
+    fun draw(scope: DrawScope, bpm: Float) = with(scope) {
+        dial.at(bpm.coerceIn(ClickTrack.MIN_BPM.toFloat(), ClickTrack.MAX_BPM.toFloat()), dial.r, at)
+        val centre = Offset(at[0], at[1])
+        drawCircle(disc, GOAL_DISC_UNITS * dial.u, centre)
+        drawCircle(accent, GOAL_UNITS * dial.u, centre, style = line)
     }
 }
 

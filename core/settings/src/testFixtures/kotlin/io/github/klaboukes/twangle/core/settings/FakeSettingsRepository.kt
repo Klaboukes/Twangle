@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -152,6 +153,10 @@ class FakeSettingsRepository(initial: AppSettings = AppSettings()) : SettingsRep
     override suspend fun setMetronomeClickSound(sound: ClickSound) = state.update { it.copy(metronomeClickSound = sound) }
 
     override suspend fun setMetronomeSubdivision(subdivision: Subdivision) = state.update { it.copy(metronomeSubdivision = subdivision) }
+
+    override suspend fun setMetronomeTrainer(trainer: SpeedTrainer) = state.update { it.copy(metronomeTrainer = trainer) }
+
+    override suspend fun setMetronomeTrainerOn(on: Boolean) = state.update { it.copy(metronomeTrainerOn = on) }
 
     override suspend fun setPracticeTool(tool: PracticeTool) = state.update { it.copy(practiceTool = tool) }
 

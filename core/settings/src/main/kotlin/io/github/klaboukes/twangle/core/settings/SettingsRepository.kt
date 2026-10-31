@@ -13,6 +13,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -148,6 +149,12 @@ interface SettingsRepository {
 
     /** The metronome's clicks between the beats ([AppSettings.metronomeSubdivision]). */
     suspend fun setMetronomeSubdivision(subdivision: Subdivision)
+
+    /** The metronome's speed trainer's plan ([AppSettings.metronomeTrainer]). */
+    suspend fun setMetronomeTrainer(trainer: SpeedTrainer)
+
+    /** Whether the speed trainer is on ([AppSettings.metronomeTrainerOn]). */
+    suspend fun setMetronomeTrainerOn(on: Boolean)
 
     /** The Practice tab's tool picked last ([AppSettings.practiceTool]). */
     suspend fun setPracticeTool(tool: PracticeTool)

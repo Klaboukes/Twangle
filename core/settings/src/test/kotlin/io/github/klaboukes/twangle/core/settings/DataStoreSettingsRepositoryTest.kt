@@ -22,6 +22,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteChoice
 import io.github.klaboukes.twangle.core.dsp.eartraining.NoteMatch
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -118,6 +119,8 @@ class DataStoreSettingsRepositoryTest {
         assertEquals("the metronome doesn't vibrate until asked", false, settings.metronomeVibrate)
         assertEquals("the metronome clicks with the wood block", ClickSound.WOOD_BLOCK, settings.metronomeClickSound)
         assertEquals("the metronome clicks only on the beats", Subdivision.NONE, settings.metronomeSubdivision)
+        assertEquals("the speed trainer was never set up", null, settings.metronomeTrainer)
+        assertEquals("the speed trainer is off", false, settings.metronomeTrainerOn)
         assertEquals("Practice opens on the metronome", PracticeTool.METRONOME, settings.practiceTool)
         assertEquals("the chord charts open on C major", PitchClass.C to ChordQuality.MAJOR, settings.practiceRoot to settings.practiceChordQuality)
         assertEquals("the scales open on major", ScaleType.MAJOR, settings.practiceScaleType)
@@ -160,6 +163,8 @@ class DataStoreSettingsRepositoryTest {
         repo.setMetronomeVibrate(true)
         repo.setMetronomeClickSound(ClickSound.CLAVES)
         repo.setMetronomeSubdivision(Subdivision.THREE)
+        repo.setMetronomeTrainer(SpeedTrainer(80, 120, 2, 8))
+        repo.setMetronomeTrainerOn(true)
         repo.setPracticeTool(PracticeTool.SCALES)
         repo.setPracticeRoot(PitchClass.A_SHARP)
         repo.setPracticeChordQuality(ChordQuality.MINOR_SEVENTH)
@@ -202,6 +207,8 @@ class DataStoreSettingsRepositoryTest {
             metronomeVibrate = true,
             metronomeClickSound = ClickSound.CLAVES,
             metronomeSubdivision = Subdivision.THREE,
+            metronomeTrainer = SpeedTrainer(80, 120, 2, 8),
+            metronomeTrainerOn = true,
             practiceTool = PracticeTool.SCALES,
             practiceRoot = PitchClass.A_SHARP,
             practiceChordQuality = ChordQuality.MINOR_SEVENTH,
@@ -383,6 +390,24 @@ class DataStoreSettingsRepositoryTest {
             assertEquals(subdivision.name, store.data.first()[stringPreferencesKey("metronome_subdivision")])
             assertEquals(subdivision, repo.settings.first().metronomeSubdivision)
         }
+    }
+
+    @Test
+    fun `the speed trainer is saved in four numbers and read back within its lists`() = runTest {
+        val store = dataStore()
+        val repo = repository(store)
+        repo.setMetronomeTrainer(SpeedTrainer(95, 140, 10, 2))
+        val prefs = store.data.first()
+        assertEquals(
+            listOf(95, 140, 10, 2),
+            listOf("start", "goal", "step", "bars").map { prefs[intPreferencesKey("metronome_trainer_$it")] },
+        )
+        assertEquals(SpeedTrainer(95, 140, 10, 2), repo.settings.first().metronomeTrainer)
+        store.edit {
+            it[intPreferencesKey("metronome_trainer_step")] = 7
+            it[intPreferencesKey("metronome_trainer_goal")] = 90
+        }
+        assertEquals("a step not on the list and a goal under the start are put right", SpeedTrainer(95, 100, 5, 2), repo.settings.first().metronomeTrainer)
     }
 
     @Test

@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -76,6 +77,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
@@ -91,6 +93,9 @@ import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
 import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
+import io.github.klaboukes.twangle.feature.metronome.components.TrainerRow
+import io.github.klaboukes.twangle.feature.metronome.components.TrainerSettings
+import io.github.klaboukes.twangle.feature.metronome.components.trainerStatus
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -111,6 +116,9 @@ import kotlin.math.roundToInt
  * Listen (Phase 27) hears music nearby through [recorder], only while listening, after asking for the
  * microphone by the tuner's rules ([savedMicRefused] is the refusal saved before).
  *
+ * The speed trainer (Phase 62) comes with its switch ([ToolSwitches.speedTrainer]): its plan and
+ * whether it is on, saved last ([savedTrainer], [savedTrainerOn]).
+ *
  * [tools] says which music tools show (Phase 28, decided in `:app`): with
  * [ToolSwitches.ALL_OFF] this is the metronome alone. In the Practice tab (Phase 32) [header] is
  * its tool button, at the top start ([MetronomeContent]).
@@ -128,6 +136,8 @@ fun MetronomeScreen(
     savedSound: ClickSound = ClickSound.DEFAULT,
     savedSubdivision: Subdivision = Subdivision.DEFAULT,
     savedMicRefused: Boolean = false,
+    savedTrainer: SpeedTrainer? = null,
+    savedTrainerOn: Boolean = false,
     header: (@Composable () -> Unit)? = null,
 ) {
     val viewModel: MetronomeViewModel = viewModel {
@@ -140,6 +150,8 @@ fun MetronomeScreen(
             savedSound,
             savedSubdivision,
             recorder = recorder,
+            savedTrainer = savedTrainer,
+            savedTrainerOn = savedTrainerOn,
             savedMicRefused = savedMicRefused,
             tools = tools,
         )
@@ -152,6 +164,10 @@ fun MetronomeScreen(
     val playing by viewModel.isPlaying.collectAsStateWithLifecycle()
     val listen by viewModel.listen.collectAsStateWithLifecycle()
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
+    val trainerPlan by viewModel.trainer.collectAsStateWithLifecycle()
+    val trainerOn by viewModel.trainerOn.collectAsStateWithLifecycle()
+    val trainerSaved by viewModel.trainerSaved.collectAsStateWithLifecycle()
+    val trainerBar by viewModel.trainerBar.collectAsStateWithLifecycle()
     StopWhenHidden(viewModel::stop)
     if (playing || listen.listening) KeepScreenOn()
 
@@ -197,9 +213,20 @@ fun MetronomeScreen(
         onTryAgain = permission::listen,
         onOpenSettings = permission::openSettings,
         modifier = modifier,
+        trainer = if (viewModel.tools.speedTrainer) TrainerUi(trainerPlan, trainerOn, trainerSaved, trainerBar) else null,
+        onTrainerOn = viewModel::setTrainerOn,
+        onTrainerPlan = viewModel::setTrainer,
         header = header,
     )
 }
+
+/**
+ * The speed trainer as the screen shows it (Phase 62): its [plan], whether it is [on], whether a plan
+ * was [saved] (turning it on the first time opens its settings), and the [bar] it climbs in (−1 before
+ * its first downbeat, or stopped).
+ */
+@Immutable
+data class TrainerUi(val plan: SpeedTrainer, val on: Boolean, val saved: Boolean = true, val bar: Long = -1L)
 
 /**
  * The metronome's last beat and the frame clock, for the beat lights and the glow behind the tempo:
@@ -287,6 +314,13 @@ class BeatClock {
  * ([onVibrateChange]) and Listen ([onListen], which closes the panel); Back or a tap beside it closes
  * it. What is on in it shows as small icons on the status line ([StatusMark]: the note value playing
  * between the beats, then vibration).
+ *
+ * The speed trainer (Phase 62; [trainer] null without its switch, and then nothing of it shows): a row
+ * under Listen in the panel with its switch ([onTrainerOn]); the row opens its settings in place of the
+ * panel's rows, with a back arrow ([TrainerSettings], [onTrainerPlan]), and turning it on the first time
+ * goes straight there, already filled in. While it is on the status line shows its icon and where it
+ * stands ("95 → 120 · +5 in 2 bars"), a tap there opens its settings, and a small ring on the dial
+ * marks its goal.
  * Upright the beat lights stand right over the dial and grow with the height a tall screen has to
  * spare (Phase 43). Upright they stand in one column; on a wide screen on its side the dial is at the
  * start and the rest in a column beside it. With a very large font the column scrolls. Only the beat
@@ -330,6 +364,9 @@ fun MetronomeContent(
     onNotNow: () -> Unit = {},
     onTryAgain: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    trainer: TrainerUi? = null,
+    onTrainerOn: (Boolean) -> Unit = {},
+    onTrainerPlan: (SpeedTrainer) -> Unit = {},
     header: (@Composable () -> Unit)? = null,
 ) {
     val listening = listen.listening
@@ -357,6 +394,10 @@ fun MetronomeContent(
     var optionsBounds by remember { mutableStateOf<Rect?>(null) }
     // Kept when the phone turns: the panel opens again in its place for the new layout.
     var optionsOpen by rememberSaveable { mutableStateOf(false) }
+    // The panel shows the speed trainer's settings in place of its rows.
+    var trainerPage by rememberSaveable { mutableStateOf(false) }
+    val trainerOn = trainer?.on == true
+    val trainerLine = if (trainer != null && trainerOn) trainerStatus(trainer.plan, bpm, trainer.bar, playing) else null
     val vibrateName = stringResource(R.string.metronome_vibrate)
     // What is on in the options panel, on the status line (Phase 62), in the panel's order. The note
     // value is the one playing in this meter: none (no mark) where the meter doesn't offer the choice.
@@ -403,6 +444,11 @@ fun MetronomeContent(
                     modifier = Modifier.padding(top = 2.dp),
                     marks = marks,
                     onStopListening = onListen,
+                    trainer = trainerLine,
+                    onTrainer = {
+                        trainerPage = true
+                        optionsOpen = true
+                    },
                 )
             }
             val tempoDial: @Composable (Dp) -> Unit = { size ->
@@ -417,6 +463,7 @@ fun MetronomeContent(
                     ringBpm = dial::ringBpm,
                     ringAlpha = dial::ringAlpha,
                     foundGlow = dial::foundGlow,
+                    goalBpm = if (trainerOn) trainer.plan.goalBpm else 0,
                 )
             }
             val row: @Composable () -> Unit = {
@@ -427,7 +474,10 @@ fun MetronomeContent(
                     onToggle = onToggle,
                     startResting = listening,
                     optionsOpen = optionsOpen,
-                    onOptions = { optionsOpen = true },
+                    onOptions = {
+                        trainerPage = false
+                        optionsOpen = true
+                    },
                     onOptionsPlaced = { optionsBounds = it },
                 )
             }
@@ -523,13 +573,27 @@ fun MetronomeContent(
                         onNotNow = onNotNow,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    // Its rows, top to bottom; the speed trainer comes under Listen.
+                    // Its rows, top to bottom, the speed trainer's last; its settings in their place.
                     OptionsPanel(
                         open = optionsOpen,
                         anchor = anchor,
                         wide = wide,
                         onDismiss = { optionsOpen = false },
                         modifier = Modifier.fillMaxSize(),
+                        trainerPage = trainerPage && trainer != null,
+                        pageTitle = stringResource(R.string.metronome_trainer),
+                        onPageBack = { trainerPage = false },
+                        page = trainer?.let { shown ->
+                            {
+                                TrainerSettings(
+                                    plan = shown.plan,
+                                    on = shown.on,
+                                    onOnChange = onTrainerOn,
+                                    onPlan = onTrainerPlan,
+                                    onBack = { trainerPage = false },
+                                )
+                            }
+                        },
                     ) {
                         SoundChoice(sound, onSoundPick)
                         SubdivisionChoice(subdivision, meter, onSubdivisionPick, Modifier.padding(top = 4.dp))
@@ -541,6 +605,17 @@ fun MetronomeContent(
                                 onListen()
                             },
                         )
+                        if (trainer != null) {
+                            TrainerRow(
+                                on = trainer.on,
+                                onOnChange = { on ->
+                                    onTrainerOn(on)
+                                    // The first time straight to its settings, already filled in.
+                                    if (on && !trainer.saved) trainerPage = true
+                                },
+                                onOpen = { trainerPage = true },
+                            )
+                        }
                     }
                 }
             }
@@ -678,6 +753,26 @@ object MetronomeTestTags {
     /** The panel's "Vibrate on the beat" switch and its Listen row. */
     const val VIBRATE = "metronome_vibrate"
     const val LISTEN = "metronome_listen"
+
+    /**
+     * The speed trainer (Phase 62): its row in the options panel, the row's switch, its settings with
+     * their back arrow, start and goal tempos (with "_slower" and "_faster" for their − and +), and
+     * its icon and words on the status line.
+     */
+    const val TRAINER = "metronome_trainer"
+    const val TRAINER_SWITCH = "metronome_trainer_switch"
+    const val TRAINER_SETTINGS = "metronome_trainer_settings"
+    const val TRAINER_BACK = "metronome_trainer_back"
+    const val TRAINER_START = "metronome_trainer_start"
+    const val TRAINER_GOAL = "metronome_trainer_goal"
+    const val TRAINER_MARK = "metronome_mark_trainer"
+    const val TRAINER_TEXT = "metronome_trainer_text"
+
+    /** The trainer's step choice of [bpm], e.g. "metronome_trainer_step_5". */
+    fun trainerStep(bpm: Int): String = "metronome_trainer_step_$bpm"
+
+    /** The trainer's bars choice of [bars], e.g. "metronome_trainer_bars_4". */
+    fun trainerBars(bars: Int): String = "metronome_trainer_bars_$bars"
 
     /** The status line's marks of what is on, and the note value's and vibration's among them. */
     const val MARKS = "metronome_marks"

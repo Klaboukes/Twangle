@@ -29,6 +29,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.annotation.DrawableRes
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -115,10 +116,17 @@ import kotlin.math.roundToInt
  * Something on in the options panel that changes how the metronome sounds or feels, shown on the
  * status line as a small [icon] while Listen has nothing to say (Phase 62); TalkBack hears [spoken].
  * [tag] is its test tag: the note value between the beats (none has no mark) and "Vibrate on the
- * beat"; the speed trainer comes next.
+ * beat"; the speed trainer has its own, with words ([TrainerStatus]).
  */
 @Immutable
 data class StatusMark(@param:DrawableRes val icon: Int, val spoken: String, val tag: String)
+
+/**
+ * The speed trainer on the status line while it is on (Phase 62): its rising-line icon in the accent,
+ * then [text] ("95 → 120 · +5 in 2 bars"); TalkBack hears [spoken].
+ */
+@Immutable
+data class TrainerStatus(val text: String, val spoken: String)
 
 /** What the status line says. */
 private sealed interface LineText {
@@ -151,7 +159,10 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
  *
  * While Listen has nothing to say the line shows [marks], small icons of what is on in the options
  * panel, in the muted colour; they are outside the live region (switching one on is heard from its
- * switch), and TalkBack hears them by name.
+ * switch), and TalkBack hears them by name. After them comes the speed trainer's [trainer] while it is
+ * on: its icon and words, set smaller where they don't fit (large text); a tap on the line then opens
+ * the trainer's settings ([onTrainer]). Its words change with every step and bar, so they are outside
+ * the live region too: TalkBack reads them when the line is touched, and never talks over the clicks.
  */
 @Composable
 fun ListenLine(
@@ -161,6 +172,8 @@ fun ListenLine(
     modifier: Modifier = Modifier,
     marks: List<StatusMark> = emptyList(),
     onStopListening: () -> Unit = {},
+    trainer: TrainerStatus? = null,
+    onTrainer: () -> Unit = {},
 ) {
     val text = TextStyle(fontSize = 14.sp, lineHeight = 1.2.em)
     val body = MaterialTheme.typography.bodyMedium.merge(text)
@@ -173,25 +186,47 @@ fun ListenLine(
     Box(modifier.fillMaxWidth().heightIn(min = LINE_HEIGHT), contentAlignment = Alignment.Center) {
         ListenWords(shown, spokenTempo, body, onTryAgain, onOpenSettings, onStopListening)
         // The last marks stay drawn while they fade out.
+        val any = marks.isNotEmpty() || trainer != null
         var shownMarks by remember { mutableStateOf(marks) }
-        if (marks.isNotEmpty()) shownMarks = marks
+        var shownTrainer by remember { mutableStateOf(trainer) }
+        if (any) {
+            shownMarks = marks
+            shownTrainer = trainer
+        }
         AnimatedVisibility(
-            visible = shown == LineText.Nothing && marks.isNotEmpty(),
+            visible = shown == LineText.Nothing && any,
             enter = fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)),
             exit = fadeOut(tween(LINE_FADE_MILLIS)),
         ) {
-            StatusMarks(shownMarks)
+            StatusMarks(shownMarks, shownTrainer, body, onTrainer)
         }
     }
 }
 
-/** The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, as one node TalkBack hears by their names. */
+/**
+ * The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, then the trainer's icon and words, as
+ * one node TalkBack hears by their names; with the trainer on, a button that opens its settings.
+ */
 @Composable
-private fun StatusMarks(marks: List<StatusMark>) {
-    val spoken = marks.joinToString(", ") { it.spoken }
+private fun StatusMarks(marks: List<StatusMark>, trainer: TrainerStatus?, body: TextStyle, onTrainer: () -> Unit) {
+    val spoken = (marks.map { it.spoken } + listOfNotNull(trainer?.spoken)).joinToString(", ")
+    val source = remember { MutableInteractionSource() }
+    val tap = if (trainer != null) {
+        Modifier
+            .heightIn(min = LINE_HEIGHT)
+            .pressFeedback(source, PILL, lightInset = 0.dp)
+            .clickable(interactionSource = source, indication = null, role = Role.Button) {
+                source.pressFlash()
+                onTrainer()
+            }
+            .padding(horizontal = ACTION_PADDING)
+    } else {
+        Modifier
+    }
     Row(
         Modifier
             .testTag(MetronomeTestTags.MARKS)
+            .then(tap)
             .semantics(mergeDescendants = true) { contentDescription = spoken },
         horizontalArrangement = Arrangement.spacedBy(MARK_GAP),
         verticalAlignment = Alignment.CenterVertically,
@@ -203,6 +238,30 @@ private fun StatusMarks(marks: List<StatusMark>) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(MARK_SIZE).testTag(mark.tag),
             )
+        }
+        if (trainer != null) {
+            Row(
+                Modifier.weight(1f, fill = false).testTag(MetronomeTestTags.TRAINER_MARK),
+                horizontalArrangement = Arrangement.spacedBy(TRAINER_GAP),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_trainer),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(MARK_SIZE),
+                )
+                val smallest = MIN_LINE_TEXT
+                Text(
+                    trainer.text,
+                    style = body.copy(fontFeatureSettings = "$LINING_FIGURES, tnum"),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false,
+                    autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = body.fontSize, stepSize = 0.5.sp),
+                    modifier = Modifier.testTag(MetronomeTestTags.TRAINER_TEXT),
+                )
+            }
         }
     }
 }
@@ -393,6 +452,9 @@ private const val LINE_FADE_MILLIS = 160
 /** The marks of what is on: small, beside each other, as the mock-up. */
 private val MARK_SIZE = 18.dp
 private val MARK_GAP = 8.dp
+
+/** Between the trainer's icon and its words. */
+private val TRAINER_GAP = 6.dp
 
 /**
  * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where

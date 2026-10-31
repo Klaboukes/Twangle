@@ -5,10 +5,8 @@ import io.github.klaboukes.twangle.core.settings.ToolSwitches
 /**
  * The tools a build shows (docs/architecture/performance.md, *Release build*): every live tool in
  * every build; a tool still being built only in debug builds ([debugBuild], `BuildConfig.DEBUG`),
- * until the owner's check passes and it goes live. Today every tool is live (Ear training, the last,
- * since Phase 55's check passed on 2026-10-28), so debug and release builds show the same. A new tool
- * while it is built is turned off here when [debugBuild] is false (`ToolSwitches.ALL_ON.copy(...)`),
- * so the `release` build and the `nonMinifiedRelease` and `benchmarkRelease` builds made from it hide it.
+ * until the owner's check passes and it goes live. Today that is the metronome's speed trainer
+ * (Phase 62). The `release` build and the `nonMinifiedRelease` and `benchmarkRelease` builds made from
+ * it are not debug builds, so they hide it.
  */
-@Suppress("UNUSED_PARAMETER")
-fun toolSwitchesFor(debugBuild: Boolean): ToolSwitches = ToolSwitches.ALL_ON
+fun toolSwitchesFor(debugBuild: Boolean): ToolSwitches = ToolSwitches.ALL_ON.copy(speedTrainer = debugBuild)

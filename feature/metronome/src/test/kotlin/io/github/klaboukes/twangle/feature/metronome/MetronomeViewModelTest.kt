@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModelStore
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
+import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -42,6 +44,9 @@ class MetronomeViewModelTest {
         vibrate: Boolean = false,
         sound: ClickSound = ClickSound.DEFAULT,
         subdivision: Subdivision = Subdivision.DEFAULT,
+        trainer: SpeedTrainer? = null,
+        trainerOn: Boolean = false,
+        tools: ToolSwitches = ToolSwitches.ALL_ON,
     ) = MetronomeViewModel(
         player,
         settings,
@@ -50,6 +55,9 @@ class MetronomeViewModelTest {
         savedVibrate = vibrate,
         savedSound = sound,
         savedSubdivision = subdivision,
+        savedTrainer = trainer,
+        savedTrainerOn = trainerOn,
+        tools = tools,
     )
 
     @Test
@@ -262,6 +270,113 @@ class MetronomeViewModelTest {
         vm.toggle()
         vm.viewModelStore().clear()
         assertFalse("cleared ViewModel stops the clicks", player.isPlaying.value)
+    }
+
+    @Test
+    fun `the speed trainer turned on the first time is filled in from the tempo shown and saved`() = runTest(dispatcher) {
+        val vm = viewModel(bpm = 96)
+        assertFalse(vm.trainerSaved.value)
+        assertEquals("filled in, not saved yet", SpeedTrainer(96, 116, 5, 4), vm.trainer.value)
+        vm.stepBpm(-1)
+        assertEquals("it follows the tempo until saved", SpeedTrainer(95, 115, 5, 4), vm.trainer.value)
+        vm.setTrainerOn(true)
+        advanceUntilIdle()
+        assertTrue(vm.trainerOn.value)
+        assertTrue(vm.trainerSaved.value)
+        assertEquals(SpeedTrainer(95, 115, 5, 4), settings.current.metronomeTrainer)
+        assertTrue(settings.current.metronomeTrainerOn)
+        assertEquals("the dial shows the start", 95, vm.bpm.value)
+    }
+
+    @Test
+    fun `Start climbs from the start tempo, the dial following each downbeat, and holds at the goal`() = runTest(dispatcher) {
+        val vm = viewModel(bpm = 120, meter = Meter.TWO_FOUR, trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
+        advanceUntilIdle()
+        assertEquals("stopped it shows the start", 80, vm.bpm.value)
+        vm.toggle()
+        assertEquals(80, player.bpm)
+        assertEquals(SpeedTrainer(80, 90, 5, 1), player.trainer)
+        val shown = mutableListOf<Int>()
+        for (beat in 0L until 8L) {
+            player.beat(beat)
+            advanceUntilIdle()
+            shown += vm.bpm.value
+        }
+        assertEquals("each step on a downbeat, never past the goal", listOf(80, 80, 85, 85, 90, 90, 90, 90), shown)
+        assertEquals(3L, vm.trainerBar.value)
+        advanceUntilIdle()
+        assertEquals("climbing tempos aren't saved as the metronome's", AppSettings().metronomeBpm, settings.current.metronomeBpm)
+    }
+
+    @Test
+    fun `Stop and Start begin again from the start tempo`() = runTest(dispatcher) {
+        val vm = viewModel(meter = Meter.TWO_FOUR, trainer = SpeedTrainer(80, 100, 10, 1), trainerOn = true)
+        advanceUntilIdle()
+        vm.toggle()
+        for (beat in 0L until 4L) player.beat(beat)
+        advanceUntilIdle()
+        assertEquals(90, vm.bpm.value)
+        vm.toggle()
+        assertEquals("stopped, back at the start", 80, vm.bpm.value)
+        assertEquals(-1L, vm.trainerBar.value)
+        assertTrue("still on", vm.trainerOn.value)
+        vm.toggle()
+        assertEquals(80, player.bpm)
+        assertEquals(2, player.startCount)
+    }
+
+    @Test
+    fun `a tempo by hand, Tap tempo or the switch end the trainer and keep the tempo it reached`() = runTest(dispatcher) {
+        val plan = SpeedTrainer(80, 100, 10, 1)
+        for (end in listOf<(MetronomeViewModel) -> Unit>({ it.stepBpm(+1) }, { it.tap(1_000L) }, { it.setTrainerOn(false) })) {
+            val vm = viewModel(meter = Meter.TWO_FOUR, trainer = plan, trainerOn = true)
+            advanceUntilIdle()
+            vm.toggle()
+            for (beat in 0L until 4L) player.beat(beat)
+            advanceUntilIdle()
+            assertEquals(90, vm.bpm.value)
+            end(vm)
+            advanceUntilIdle()
+            assertFalse(vm.trainerOn.value)
+            assertFalse(settings.current.metronomeTrainerOn)
+            assertEquals("the trainer ends in the clicks", null, player.trainer)
+            assertTrue(vm.bpm.value in 90..91)
+            assertEquals("the clicks keep the tempo shown", vm.bpm.value, player.bpm)
+            assertEquals("and it is saved", vm.bpm.value, settings.current.metronomeBpm)
+            player.beat(4L)
+            advanceUntilIdle()
+            assertEquals("no more climbing", vm.bpm.value, player.bpm)
+            vm.toggle()
+            settings.setMetronomeTrainerOn(true)
+        }
+    }
+
+    @Test
+    fun `a new plan while climbing begins again from its start, and is saved`() = runTest(dispatcher) {
+        val vm = viewModel(meter = Meter.TWO_FOUR, trainer = SpeedTrainer(80, 100, 10, 1), trainerOn = true)
+        advanceUntilIdle()
+        vm.toggle()
+        for (beat in 0L until 4L) player.beat(beat)
+        advanceUntilIdle()
+        vm.setTrainer(SpeedTrainer(70, 100, 10, 2))
+        advanceUntilIdle()
+        assertEquals(70, vm.bpm.value)
+        assertEquals(SpeedTrainer(70, 100, 10, 2), player.trainer)
+        assertEquals(SpeedTrainer(70, 100, 10, 2), settings.current.metronomeTrainer)
+        assertEquals(1, player.trainerChanges)
+        assertTrue(vm.trainerOn.value)
+    }
+
+    @Test
+    fun `without its switch there is no trainer, whatever was saved`() = runTest(dispatcher) {
+        val vm = viewModel(bpm = 100, trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true, tools = ToolSwitches.ALL_ON.copy(speedTrainer = false))
+        assertFalse(vm.trainerOn.value)
+        assertEquals("the saved tempo, not the trainer's start", 100, vm.bpm.value)
+        vm.setTrainerOn(true)
+        vm.toggle()
+        assertEquals(null, player.trainer)
+        assertFalse(vm.trainerOn.value)
+        assertEquals(100, player.bpm)
     }
 
     /** Puts the ViewModel in a store, as its owner would, so clearing the store clears it. */

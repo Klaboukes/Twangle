@@ -46,6 +46,7 @@ import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
@@ -71,7 +72,7 @@ import java.util.concurrent.TimeUnit
  * none on its middle or deep in its gap, and TalkBack's slider), the row under the dial (Tap tempo ·
  * − · Start · + · options, Phase 62) and the options panel (the four sounds, a pick playing one bar
  * while stopped, the clicks between the beats and their mark, the vibration switch and its mark on the
- * status line, Listen) work and are saved,
+ * status line, Listen, the speed trainer with its settings, status line and switch) work and are saved,
  * and the clicks stop when the screen leaves the composition. TalkBack hears every control by name.
  * [MetronomeStylesTest] covers the layout in every style.
  */
@@ -97,6 +98,9 @@ class MetronomeScreenTest {
         fontScale: Float = 1f,
         size: DpSize = PHONE,
         subdivision: Subdivision = Subdivision.NONE,
+        tools: ToolSwitches = ToolSwitches.ALL_ON,
+        trainer: SpeedTrainer? = null,
+        trainerOn: Boolean = false,
     ) {
         compose.setContent {
             PhoneScreen(size, SystemBars.tab(onItsSide = size.width > size.height, Navigation.BUTTONS), fontScale, locale) {
@@ -107,11 +111,13 @@ class MetronomeScreenTest {
                             player,
                             settings,
                             recorder,
-                            ToolSwitches.ALL_ON,
+                            tools,
                             savedBpm = 96,
                             savedMeter = Meter.THREE_FOUR,
                             savedVibrate = false,
                             savedSubdivision = subdivision,
+                            savedTrainer = trainer,
+                            savedTrainerOn = trainerOn,
                         )
                     }
                 }
@@ -565,9 +571,167 @@ class MetronomeScreenTest {
         }
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE).performScrollTo().assert(hasText("Trillen op de tel")), "$case Trillen op de tel")
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN).performScrollTo().assert(hasText("Luisteren")), "$case Luisteren")
+        val row = compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().assert(hasText("Tempotrainer"))
+        assertWhollyShown(row, "$case Tempotrainer")
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH), "$case its switch")
+        // Its settings, in the panel's place, every control wholly shown.
+        row.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertIsDisplayed()
+        for (name in listOf("Terug naar de opties", "Langzamer beginnen", "Sneller beginnen", "Lager doel", "Hoger doel")) {
+            assertWhollyShown(compose.onNodeWithContentDescription(name).performScrollTo(), "$case $name")
+        }
+        for (tag in listOf(MetronomeTestTags.TRAINER_START, MetronomeTestTags.TRAINER_GOAL)) {
+            assertWhollyShown(compose.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo(), "$case $tag")
+        }
+        for (words in listOf("Begin", "Doel", "Stap", "Maten")) {
+            assertWhollyShown(compose.onNodeWithText(words, useUnmergedTree = true).performScrollTo(), "$case $words")
+        }
+        for (step in SpeedTrainer.STEPS) {
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.trainerStep(step)).performScrollTo(), "$case +$step")
+        }
+        for (bars in SpeedTrainer.BAR_CHOICES) {
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.trainerBars(bars)).performScrollTo(), "$case $bars")
+        }
+        // Back goes to the rows first, then closes the panel.
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertExists()
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         compose.waitForIdle()
         panel.assertDoesNotExist()
+    }
+
+    @Test
+    fun dutchAtTwiceTheTextSizeTheClimbingTrainersLineIsWhollyShown() {
+        show(locale = "nl", fontScale = 2f, trainer = SpeedTrainer(80, 120, 10, 8), trainerOn = true)
+        start.performClick()
+        compose.waitForIdle()
+        player.beat(0)
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true).assert(hasText("80 → 120 · +10 over 8 maten"))
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true), "the trainer's words")
+        start.performClick()
+    }
+
+    @Test
+    fun turningTheTrainerOnTheFirstTimeOpensItsSettingsFilledInFromTheTempo() {
+        show()
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().assert(hasText("Speed trainer"))
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertContentDescriptionEquals("Speed trainer").assertIsOff().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertIsDisplayed()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertDoesNotExist()
+        panel.assertIsDisplayed()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertIsOn()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_START, useUnmergedTree = true).assert(hasText("96"))
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_GOAL, useUnmergedTree = true).assert(hasText("116"))
+        compose.onNodeWithTag(MetronomeTestTags.trainerStep(5)).assertIsSelected().assertContentDescriptionEquals("+5 BPM")
+        compose.onNodeWithTag(MetronomeTestTags.trainerBars(4)).assertIsSelected().assertContentDescriptionEquals("4 bars")
+        compose.onNodeWithContentDescription("Start, 96 BPM").assertExists()
+        assertEquals(SpeedTrainer(96, 116, 5, 4), settings.current.metronomeTrainer)
+        assertTrue(settings.current.metronomeTrainerOn)
+        // The back arrow returns to the rows, the trainer still on.
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_BACK).assertContentDescriptionEquals("Back to the options").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertIsDisplayed()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SWITCH).assertIsOn()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Speed trainer, from 96 to 116 BPM, +5 every 4 bars")
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true).assert(hasText("96 → 116 · +5 every 4 bars"))
+    }
+
+    @Test
+    fun theTrainersSettingsAreSavedAndKeepTheGoalAboveTheStart() {
+        runBlocking { settings.setMetronomeTrainer(SpeedTrainer(80, 90, 5, 4)) }
+        show(trainer = SpeedTrainer(80, 90, 5, 4), trainerOn = true)
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("80"))
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER).performScrollTo().performClick()
+        compose.waitForIdle()
+        val startFaster = compose.onNodeWithContentDescription("Start faster")
+        startFaster.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_START, useUnmergedTree = true).assert(hasText("85"))
+        startFaster.assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Lower goal").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Higher goal").assertIsEnabled().performClick()
+        compose.onNodeWithTag(MetronomeTestTags.trainerStep(10)).performClick()
+        compose.onNodeWithTag(MetronomeTestTags.trainerBars(2)).performClick()
+        compose.waitForIdle()
+        assertEquals(SpeedTrainer(85, 95, 10, 2), settings.current.metronomeTrainer)
+        compose.onNodeWithTag(MetronomeTestTags.trainerBars(2)).assertIsSelected()
+        compose.onNodeWithTag(MetronomeTestTags.trainerBars(4)).assertIsNotSelected()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("85"))
+        assertFalse("nothing plays", player.isPlaying.value)
+    }
+
+    @Test
+    fun climbingTheLineAndDialFollowEachDownbeatAndATapOnTheLineOpensTheSettings() {
+        show(trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
+        start.performClick()
+        compose.waitForIdle()
+        assertEquals(80, player.bpm)
+        val text = compose.onNodeWithTag(MetronomeTestTags.TRAINER_TEXT, useUnmergedTree = true)
+        player.beat(0)
+        compose.waitForIdle()
+        text.assert(hasText("80 → 90 · +5 in 1 bar"))
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Speed trainer, 80 BPM, climbing to 90, +5 in 1 bar")
+        for (beat in 1L..3L) player.beat(beat)
+        compose.waitForIdle()
+        text.assert(hasText("85 → 90 · +5 in 1 bar"))
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("85"))
+        for (beat in 4L..6L) player.beat(beat)
+        compose.waitForIdle()
+        text.assert(hasText("At the goal · 90 BPM"))
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("90"))
+        // Not a live region: TalkBack reads it when touched, never over the clicks.
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.LiveRegion))
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertHasClickAction().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_SETTINGS).assertIsDisplayed()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertIsDisplayed()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        panel.assertDoesNotExist()
+        // Stop: back at the start.
+        start.performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("80"))
+        text.assert(hasText("80 → 90 · +5 every bar"))
+    }
+
+    @Test
+    fun aTempoByHandEndsTheTrainer() {
+        show(trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
+        start.performClick()
+        compose.waitForIdle()
+        for (beat in 0L..3L) player.beat(beat)
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.FASTER).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_MARK, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("86"))
+        assertEquals(86, player.bpm)
+        assertFalse(settings.current.metronomeTrainerOn)
+        start.performClick()
+    }
+
+    @Test
+    fun withItsSwitchOffThereIsNoTrainer() {
+        show(tools = ToolSwitches.ALL_ON.copy(speedTrainer = false), trainer = SpeedTrainer(80, 90, 5, 1), trainerOn = true)
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("96"))
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER_MARK, useUnmergedTree = true).assertDoesNotExist()
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertExists()
+        compose.onNodeWithTag(MetronomeTestTags.TRAINER).assertDoesNotExist()
+        compose.onNodeWithText("Speed trainer", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

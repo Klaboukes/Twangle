@@ -46,6 +46,14 @@ fun interface BeatListener {
  * - [subdivision]: the next beat is split the new way; the beat sounding keeps its clicks.
  * - [sound]: the next click sounds with the new sound; a click still sounding ends as it began.
  *
+ * **The speed trainer** (Phase 62, [startTrainer]): the track climbs the tempo itself, on its own
+ * thread, so each step lands on its bar's downbeat to the sample. On every downbeat it counts a bar
+ * ([trainerBar]) and asks the [SpeedTrainer] for that bar's tempo; a new one takes effect from the
+ * downbeat itself: the downbeat comes one old interval after the beat before it, and the beats (and
+ * clicks between them) after it follow the new tempo, by the same integer formula counted from the
+ * downbeat. Setting [bpm] by hand leaves the trainer on; the caller ends it ([startTrainer] with null)
+ * when the player takes over.
+ *
  * **One voice.** The tempo is clamped to [MIN_BPM]..[MAX_BPM], so beats are always at least 0.24 s
  * apart (a tempo change never brings the next beat closer than one new interval), and without a
  * subdivision every click (0.04–0.18 s, [ClickSounds]) ends before the next starts. With one, clicks
@@ -81,14 +89,31 @@ class ClickTrack(
             field = value
         }
 
-    /** Beats per minute, kept within [MIN_BPM]..[MAX_BPM]. Setting it takes effect from the next beat. */
-    var bpm: Int = clampBpm(bpm)
+    private var tempo: Int = clampBpm(bpm)
+
+    /**
+     * Beats per minute, kept within [MIN_BPM]..[MAX_BPM]. Setting it takes effect from the next beat;
+     * while a [trainer] climbs, it changes on the downbeats by itself.
+     */
+    var bpm: Int
+        get() = tempo
         set(value) {
             val clamped = clampBpm(value)
-            if (clamped == field) return
-            field = clamped
+            if (clamped == tempo) return
+            tempo = clamped
             retime()
         }
+
+    /** The speed trainer climbing the tempo ([startTrainer]), or null. */
+    var trainer: SpeedTrainer? = null
+        private set
+
+    /**
+     * The [trainer]'s bar the last beat played in: 0 from its first downbeat, −1 before it (or
+     * without a trainer).
+     */
+    var trainerBar: Long = -1L
+        private set
 
     /** The time signature. Setting it makes the next beat a downbeat. */
     var meter: Meter = meter
@@ -137,8 +162,24 @@ class ClickTrack(
         FloatArray(size) { i -> (0.5 - 0.5 * cos(PI * (i + 1) / (size + 1))).toFloat() }
     }
 
-    /** Starts over: the next [render] begins at sample 0 with beat 0, a downbeat. Tempo, meter, subdivision and sound stay. */
+    /**
+     * Starts the speed trainer [trainer] (or ends the one climbing, for null): the tempo goes to its
+     * start from the next beat, as setting [bpm] does, and its bars count from the next downbeat, bar 0.
+     * Ending it leaves the tempo where it climbed to. Allocates nothing.
+     */
+    fun startTrainer(trainer: SpeedTrainer?) {
+        this.trainer = trainer
+        trainerBar = -1L
+        if (trainer != null) bpm = trainer.startBpm
+    }
+
+    /**
+     * Starts over: the next [render] begins at sample 0 with beat 0, a downbeat. Tempo, meter,
+     * subdivision and sound stay; a [trainer] begins again from its start.
+     */
     fun reset() {
+        trainer?.let { tempo = clampBpm(it.startBpm) }
+        trainerBar = -1L
         framesRendered = 0L
         anchorBeat = 0L
         anchorFrame = 0L
@@ -162,7 +203,7 @@ class ClickTrack(
     // exact integer arithmetic.
     private fun frameOfClick(beat: Long, click: Int, clicks: Int): Long {
         val numerator = ((beat - anchorBeat) * clicks + click) * SECONDS_PER_MINUTE * sampleRate
-        val denominator = bpm.toLong() * clicks
+        val denominator = tempo.toLong() * clicks
         return anchorFrame + (2 * numerator + denominator) / (2 * denominator)
     }
 
@@ -220,12 +261,25 @@ class ClickTrack(
         val accent = meter.accentOf(beatInBar)
         voice = sounds.waveform(sound, accent)
         voicePosition = 0
+        if (beatInBar == 0) climb(frame)
         listener?.onBeat(nextBeat, beatInBar, accent, frame)
         lastBeatFrame = frame
         beatClicks = subdivision.within(meter).clicksPerBeat
         nextClick = 1
         nextBeat++
         nextBeatFrame = frameOfBeat(nextBeat)
+    }
+
+    // A downbeat on [frame] with a trainer on: the next bar, at the trainer's tempo for it from this
+    // beat on (the anchor moves here, so the beats after it count from its sample). Nothing allocated.
+    private fun climb(frame: Long) {
+        val trainer = trainer ?: return
+        trainerBar++
+        val next = clampBpm(trainer.bpmOfBar(trainerBar))
+        if (next == tempo) return
+        tempo = next
+        anchorBeat = nextBeat
+        anchorFrame = frame
     }
 
     // A new tempo: count from the last beat that sounded, never scheduling a click in the past, nor

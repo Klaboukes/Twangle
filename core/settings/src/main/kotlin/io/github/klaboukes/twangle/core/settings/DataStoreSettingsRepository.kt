@@ -29,6 +29,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -260,6 +261,19 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[METRONOME_SUBDIVISION] = subdivision.name }
     }
 
+    override suspend fun setMetronomeTrainer(trainer: SpeedTrainer) {
+        dataStore.edit {
+            it[TRAINER_START] = trainer.startBpm
+            it[TRAINER_GOAL] = trainer.goalBpm
+            it[TRAINER_STEP] = trainer.stepBpm
+            it[TRAINER_BARS] = trainer.bars
+        }
+    }
+
+    override suspend fun setMetronomeTrainerOn(on: Boolean) {
+        dataStore.edit { it[TRAINER_ON] = on }
+    }
+
     override suspend fun setPracticeTool(tool: PracticeTool) {
         dataStore.edit {
             it[PRACTICE_TOOL] = tool.name
@@ -374,6 +388,8 @@ class DataStoreSettingsRepository internal constructor(
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
             metronomeClickSound = enumOrNull<ClickSound>(prefs[METRONOME_CLICK_SOUND]) ?: defaults.metronomeClickSound,
             metronomeSubdivision = enumOrNull<Subdivision>(prefs[METRONOME_SUBDIVISION]) ?: defaults.metronomeSubdivision,
+            metronomeTrainer = trainer(prefs) ?: defaults.metronomeTrainer,
+            metronomeTrainerOn = prefs[TRAINER_ON] ?: defaults.metronomeTrainerOn,
             practiceTool = practiceTool(prefs) ?: defaults.practiceTool,
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
@@ -455,6 +471,20 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The metronome's [Subdivision], by its name. */
         private val METRONOME_SUBDIVISION = stringPreferencesKey("metronome_subdivision")
+
+        /** The speed trainer's plan, all four or none ([trainer]), and whether it is on. */
+        private val TRAINER_START = intPreferencesKey("metronome_trainer_start")
+        private val TRAINER_GOAL = intPreferencesKey("metronome_trainer_goal")
+        private val TRAINER_STEP = intPreferencesKey("metronome_trainer_step")
+        private val TRAINER_BARS = intPreferencesKey("metronome_trainer_bars")
+        private val TRAINER_ON = booleanPreferencesKey("metronome_trainer_on")
+
+        /** The speed trainer saved, kept within its lists ([SpeedTrainer.of]), or null if it never was. */
+        private fun trainer(prefs: Preferences): SpeedTrainer? {
+            val start = prefs[TRAINER_START] ?: return null
+            val goal = prefs[TRAINER_GOAL] ?: return null
+            return SpeedTrainer.of(start, goal, prefs[TRAINER_STEP] ?: SpeedTrainer.DEFAULT_STEP, prefs[TRAINER_BARS] ?: SpeedTrainer.DEFAULT_BARS)
+        }
 
         /** The Practice tab's [PracticeTool] used last, by its name. */
         private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")

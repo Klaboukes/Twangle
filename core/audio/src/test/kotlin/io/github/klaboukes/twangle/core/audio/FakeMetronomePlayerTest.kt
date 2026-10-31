@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.audio
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -74,5 +75,23 @@ class FakeMetronomePlayerTest {
         assertEquals(BeatAccent.DOWNBEAT, heard[0].accent)
         assertEquals(listOf(2, 4), heard.withIndex().filter { it.value.accent == BeatAccent.GROUP }.map { it.index })
         assertEquals(6_000L, heard[6].heardAtNanos)
+    }
+
+    @Test
+    fun `a trainer climbs on the downbeats and ignores setTempo until it ends`() = runTest(UnconfinedTestDispatcher()) {
+        player.start(120, Meter.TWO_FOUR, trainer = SpeedTrainer(80, 90, 5, 1))
+        assertEquals(80, player.bpm)
+        val heard = mutableListOf<MetronomeBeat>()
+        val job = launch { player.beats.take(6).toList(heard) }
+        for (i in 0L until 6L) player.beat(i)
+        job.join()
+        assertEquals(listOf(80, 80, 85, 85, 90, 90), heard.map { it.bpm })
+        assertEquals(listOf(0L, 0L, 1L, 1L, 2L, 2L), heard.map { it.trainerBar })
+        player.setTempo(100)
+        assertEquals("ignored while it climbs", 90, player.bpm)
+        player.setTrainer(null)
+        assertEquals("ending it keeps the tempo", 90, player.bpm)
+        player.setTempo(100)
+        assertEquals(100, player.bpm)
     }
 }

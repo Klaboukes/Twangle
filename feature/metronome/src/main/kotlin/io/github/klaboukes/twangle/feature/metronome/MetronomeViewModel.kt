@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.OnsetTempoDetector
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.metronome.TapTempo
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoDetector
@@ -53,6 +54,17 @@ import kotlinx.coroutines.withTimeoutOrNull
  * comes back when the meter does. The beats ([beats]) and so the lights and the vibration stay on the
  * beats.
  *
+ * **The speed trainer** (Phase 62, a tool with its own switch, [ToolSwitches.speedTrainer]): its plan
+ * ([trainer]: start, goal, step, bars) and whether it is on ([trainerOn]) are saved ([savedTrainer],
+ * [savedTrainerOn]). While it is on, Start plays from its start tempo and the player's click track
+ * climbs ([MetronomePlayer.setTrainer]): each step lands on its bar's downbeat to the sample, decided on
+ * the audio thread, not here, so a busy main thread can't move it. The ViewModel only follows: each beat
+ * tells its tempo and the trainer's bar, and [bpm] takes it as the beat is heard, so the dial moves
+ * with the downbeat; [trainerBar] says which bar it is in. Stopped, the dial shows the start tempo
+ * again (Stop and Start begin again from it). A tempo set by hand ([setBpm], [stepBpm]), Tap tempo
+ * ([tap]) or Listen ([listen]) ends it: the switch goes off and the tempo stays where it was. The
+ * climbing tempos aren't saved as the metronome's tempo; the one it is left at when it ends is.
+ *
  * **Listen** (Phase 27, docs/design/metronome-listen-preview.html): [listen] opens [recorder] (the
  * microphone; the screen has asked for the permission first) and feeds a [TempoDetector] on
  * [dspDispatcher], with the metronome's own clicks paused. It ends by itself once the tempo is
@@ -74,6 +86,8 @@ class MetronomeViewModel(
     savedSound: ClickSound = ClickSound.DEFAULT,
     savedSubdivision: Subdivision = Subdivision.DEFAULT,
     private val recorder: AudioRecorder? = null,
+    savedTrainer: SpeedTrainer? = null,
+    savedTrainerOn: Boolean = false,
     savedMicRefused: Boolean = false,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val nanoTime: () -> Long = System::nanoTime,
@@ -81,7 +95,16 @@ class MetronomeViewModel(
     val tools: ToolSwitches = ToolSwitches.ALL_ON,
 ) : ViewModel() {
 
-    private val _bpm = MutableStateFlow(ClickTrack.clampBpm(savedBpm))
+    private val savedPlan = MutableStateFlow(savedTrainer)
+
+    private val _trainerOn = MutableStateFlow(tools.speedTrainer && savedTrainerOn && savedTrainer != null)
+
+    /** Whether the speed trainer is on (never without its switch). */
+    val trainerOn: StateFlow<Boolean> = _trainerOn.asStateFlow()
+
+    private val _bpm = MutableStateFlow(
+        ClickTrack.clampBpm(if (_trainerOn.value && savedTrainer != null) savedTrainer.startBpm else savedBpm),
+    )
 
     /** The tempo, whole BPM within 30–250. */
     val bpm: StateFlow<Int> = _bpm.asStateFlow()
@@ -106,6 +129,28 @@ class MetronomeViewModel(
 
     /** True while the clicks play. */
     val isPlaying: StateFlow<Boolean> = player.isPlaying
+
+    private val _trainer = MutableStateFlow(plan())
+
+    /**
+     * The speed trainer's plan: the one saved, or, until one is ([trainerSaved] false), one filled in
+     * from the tempo shown ([SpeedTrainer.startingAt]).
+     */
+    val trainer: StateFlow<SpeedTrainer> = _trainer.asStateFlow()
+
+    private val _trainerSaved = MutableStateFlow(savedTrainer != null)
+
+    /** Whether a plan was saved: turning the trainer on the first time goes straight to its settings. */
+    val trainerSaved: StateFlow<Boolean> = _trainerSaved.asStateFlow()
+
+    private val _trainerBar = MutableStateFlow(-1L)
+
+    /** The trainer's bar the beat heard last plays in, from 0 at its first downbeat; −1 before it, stopped, or off. */
+    val trainerBar: StateFlow<Long> = _trainerBar.asStateFlow()
+
+    // After the trainer (re)starts, beats still on their way from the old climb are let pass until the
+    // new one's first (bar −1 or 0).
+    private var awaitingFirstBar = true
 
     /** True while a picked sound's bar plays with the metronome stopped ([previewSound]). */
     val isPreviewing: StateFlow<Boolean> = player.isPreviewing
@@ -138,15 +183,40 @@ class MetronomeViewModel(
     private var resumeJob: Job? = null
     private var detector: TempoDetector? = null
 
+    init {
+        viewModelScope.launch { player.beats.collect(::follow) }
+    }
+
+    private fun plan(): SpeedTrainer = savedPlan.value ?: SpeedTrainer.startingAt(_bpm.value)
+
+    /** A beat heard while the trainer is on: the dial and the bar follow its climb. */
+    private fun follow(beat: MetronomeBeat) {
+        if (!_trainerOn.value || !player.isPlaying.value) return
+        if (awaitingFirstBar) {
+            if (beat.trainerBar > 0L) return
+            awaitingFirstBar = false
+        }
+        if (beat.trainerBar < 0L) return
+        _trainerBar.value = beat.trainerBar
+        if (beat.bpm > 0) _bpm.value = ClickTrack.clampBpm(beat.bpm)
+    }
+
+    /** The tempo shown changed: a plan not saved yet is filled in from it. */
+    private fun showTempo(bpm: Int) {
+        _bpm.value = bpm
+        if (savedPlan.value == null) _trainer.value = plan()
+    }
+
     /** Sets the tempo (clamped to 30–250 BPM); saved too unless [save] is false (a dial drag still moving). */
     fun setBpm(bpm: Int, save: Boolean = true) {
         takeOver()
+        endTrainer()
         applyBpm(bpm, save)
     }
 
     private fun applyBpm(bpm: Int, save: Boolean) {
         val clamped = ClickTrack.clampBpm(bpm)
-        _bpm.value = clamped
+        showTempo(clamped)
         player.setTempo(clamped)
         if (save) saveBpm()
     }
@@ -163,6 +233,7 @@ class MetronomeViewModel(
     /** A tap on Tap tempo at [atMillis] (a steady clock): from the second tap on, the tempo follows the taps. */
     fun tap(atMillis: Long) {
         takeOver()
+        endTrainer()
         tapTempo.tap(atMillis)?.let { applyBpm(it, save = true) }
     }
 
@@ -214,7 +285,80 @@ class MetronomeViewModel(
             else -> Unit
         }
         resumeJob?.cancel()
-        if (player.isPlaying.value) player.stop() else player.start(_bpm.value, _meter.value, _sound.value, _subdivision.value)
+        if (player.isPlaying.value) {
+            player.stop()
+            // Stop and Start begin again from the start tempo.
+            if (_trainerOn.value) _bpm.value = _trainer.value.startBpm
+            _trainerBar.value = -1L
+        } else if (_trainerOn.value) {
+            val plan = _trainer.value
+            _bpm.value = plan.startBpm
+            _trainerBar.value = -1L
+            awaitingFirstBar = true
+            player.start(plan.startBpm, _meter.value, _sound.value, _subdivision.value, plan)
+        } else {
+            player.start(_bpm.value, _meter.value, _sound.value, _subdivision.value)
+        }
+    }
+
+    /**
+     * Turns the speed trainer on or off (saved; only with its switch). On: the plan shown is saved (the
+     * first time it is the one filled in from the tempo), and while playing the climb begins from its
+     * start tempo at the next beat; stopped, the dial shows the start tempo. Off: the tempo stays where
+     * it is.
+     */
+    fun setTrainerOn(on: Boolean) {
+        if (!tools.speedTrainer) return
+        takeOver()
+        if (!on) {
+            endTrainer()
+            return
+        }
+        if (_trainerOn.value) return
+        val plan = _trainer.value
+        if (savedPlan.value == null) savePlan(plan)
+        _trainerOn.value = true
+        viewModelScope.launch { settingsRepository.setMetronomeTrainerOn(true) }
+        beginClimb(plan)
+    }
+
+    /**
+     * A new plan for the speed trainer (saved): its start, goal, step or bars changed. While it is on
+     * the climb begins again from the new start tempo, from the next beat while playing.
+     */
+    fun setTrainer(plan: SpeedTrainer) {
+        if (!tools.speedTrainer) return
+        takeOver()
+        savePlan(plan)
+        if (_trainerOn.value) beginClimb(plan)
+    }
+
+    private fun savePlan(plan: SpeedTrainer) {
+        savedPlan.value = plan
+        _trainer.value = plan
+        _trainerSaved.value = true
+        viewModelScope.launch { settingsRepository.setMetronomeTrainer(plan) }
+    }
+
+    private fun beginClimb(plan: SpeedTrainer) {
+        _bpm.value = plan.startBpm
+        _trainerBar.value = -1L
+        awaitingFirstBar = true
+        if (player.isPlaying.value) player.setTrainer(plan)
+    }
+
+    /** The player took over the tempo: the trainer goes off (saved); the tempo stays where it climbed to, saved. */
+    private fun endTrainer() {
+        if (!_trainerOn.value) return
+        _trainerOn.value = false
+        _trainerBar.value = -1L
+        viewModelScope.launch { settingsRepository.setMetronomeTrainerOn(false) }
+        if (player.isPlaying.value) {
+            player.setTrainer(null)
+            // The tempo the dial shows, which the clicks may have just stepped past.
+            player.setTempo(_bpm.value)
+        }
+        saveBpm()
     }
 
     /** Stops the clicks, a preview and any listening (the screen left); a suggestion still open goes. */
@@ -223,6 +367,8 @@ class MetronomeViewModel(
         resumeJob?.cancel()
         lineJob?.cancel()
         _listen.value = _listen.value.copy(phase = ListenPhase.IDLE)
+        if (player.isPlaying.value && _trainerOn.value) _bpm.value = _trainer.value.startBpm
+        _trainerBar.value = -1L
         if (player.isPlaying.value || player.isPreviewing.value) player.stop()
     }
 
@@ -239,6 +385,7 @@ class MetronomeViewModel(
         }
         resumeJob?.cancel()
         lineJob?.cancel()
+        endTrainer()
         // Listening again from an open suggestion keeps what was playing before the first time.
         val wasPlaying = player.isPlaying.value || (now.phase == ListenPhase.FOUND && now.wasPlaying)
         // A preview isn't the metronome playing: it ends, and nothing comes back after listening.

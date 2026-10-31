@@ -8,6 +8,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSounds
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -51,12 +52,14 @@ class MetronomeListenTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun TestScope.viewModel(recorder: FakeAudioRecorder, bpm: Int = 80) = MetronomeViewModel(
+    private fun TestScope.viewModel(recorder: FakeAudioRecorder, bpm: Int = 80, trainer: SpeedTrainer? = null) = MetronomeViewModel(
         player,
         settings,
         savedBpm = bpm,
         savedMeter = Meter.FOUR_FOUR,
         recorder = recorder,
+        savedTrainer = trainer,
+        savedTrainerOn = trainer != null,
         dspDispatcher = dispatcher,
         nanoTime = { testScheduler.currentTime * 1_000_000L },
     )
@@ -314,5 +317,24 @@ class MetronomeListenTest {
         }
         assertTrue("shown $shown", shown.size in 1..3)
         assertTrue("shown $shown", shown.all { abs(it - 97) <= 1 })
+    }
+
+    @Test
+    fun `listening ends the speed trainer, and the clicks come back at the tempo it reached`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(clicks(120.0))
+        val vm = viewModel(recorder, trainer = SpeedTrainer(80, 100, 10, 1))
+        runCurrent()
+        vm.toggle()
+        for (beat in 0L until 5L) player.beat(beat)
+        runCurrent()
+        assertEquals(90, vm.bpm.value)
+        vm.listen()
+        runCurrent()
+        assertFalse(vm.trainerOn.value)
+        vm.stopListening()
+        runCurrent()
+        assertTrue(player.isPlaying.value)
+        assertEquals(null, player.trainer)
+        assertEquals(90, player.bpm)
     }
 }

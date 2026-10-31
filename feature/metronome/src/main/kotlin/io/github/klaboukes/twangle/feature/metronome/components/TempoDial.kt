@@ -64,7 +64,7 @@ import kotlin.math.roundToInt
  * The dial holds only the tempo (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html):
  * − Start + stand in the row under it ([TempoRow]). [shown] is the tempo the arc, needle and figures
  * show (gliding to a used tempo), [ringBpm] and [ringAlpha] the listening ring, [foundGlow] the glow
- * when a found tempo is used.
+ * when a found tempo is used, [goalBpm] (0 for none) the speed trainer's goal ring (Phase 62).
  */
 @Composable
 fun TempoDial(
@@ -79,6 +79,7 @@ fun TempoDial(
     ringBpm: () -> Float = { 0f },
     ringAlpha: () -> Float = { 0f },
     foundGlow: () -> Float = { 0f },
+    goalBpm: Int = 0,
 ) {
     val currentBpm by rememberUpdatedState(bpm)
     val currentOnChange by rememberUpdatedState(onBpmChange)
@@ -145,6 +146,7 @@ fun TempoDial(
             ringBpm = ringBpm,
             ringAlpha = ringAlpha,
             foundGlow = foundGlow,
+            goalBpm = { goalBpm.toFloat() },
             modifier = Modifier.size(size),
         )
         TempoReadout(

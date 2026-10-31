@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.audio
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,10 @@ import kotlinx.coroutines.flow.StateFlow
  * @property heardAtNanos when the click leaves the speaker, on the `System.nanoTime()` clock (the
  *   clock of Compose's frame times), best estimate from the audio output's timestamps. It is within
  *   a few milliseconds of the moment the beat is emitted.
+ * @property bpm the tempo from this beat to the next (0 where unknown): while the speed trainer climbs,
+ *   with the step it took on this downbeat.
+ * @property trainerBar the speed trainer's bar this beat plays in, from 0 at its first downbeat; −1
+ *   before that, or with no trainer climbing.
  */
 data class MetronomeBeat(
     val index: Long,
@@ -24,6 +29,8 @@ data class MetronomeBeat(
     val accent: BeatAccent,
     val heardAtNanos: Long,
     val sound: ClickSound = ClickSound.DEFAULT,
+    val bpm: Int = 0,
+    val trainerBar: Long = -1L,
 )
 
 /**
@@ -52,17 +59,33 @@ interface MetronomePlayer {
 
     /**
      * Starts clicking at [bpm] (clamped to 30–250) in [meter] with [sound] and [subdivision], beat 0
-     * a downbeat, the first click at once; a preview still sounding ends. While already playing it
-     * only changes tempo, meter, sound and subdivision, like [setTempo], [setMeter], [setSound] and
-     * [setSubdivision].
+     * a downbeat, the first click at once; a preview still sounding ends. With a [trainer] (Phase 62)
+     * it starts at the trainer's start tempo instead and climbs, as [setTrainer]. While already
+     * playing it only changes tempo, meter, sound, subdivision and trainer, like [setTempo],
+     * [setMeter], [setSound], [setSubdivision] and [setTrainer].
      */
-    fun start(bpm: Int, meter: Meter, sound: ClickSound = ClickSound.DEFAULT, subdivision: Subdivision = Subdivision.NONE)
+    fun start(
+        bpm: Int,
+        meter: Meter,
+        sound: ClickSound = ClickSound.DEFAULT,
+        subdivision: Subdivision = Subdivision.NONE,
+        trainer: SpeedTrainer? = null,
+    )
 
     /**
      * Changes the tempo (clamped to 30–250) from the next beat, which comes one new interval after
-     * the last one heard (or at once, if that moment has passed). Ignored while stopped.
+     * the last one heard (or at once, if that moment has passed). Ignored while stopped, and while a
+     * speed trainer climbs (end it first: [setTrainer] with null).
      */
     fun setTempo(bpm: Int)
+
+    /**
+     * Starts the speed trainer [trainer] while playing (Phase 62): its start tempo from the next beat,
+     * then its steps, each on its bar's downbeat to the sample (`ClickTrack` climbs on the audio
+     * thread); each of [beats] tells the tempo it plays at. A new trainer begins again from its start.
+     * Null ends it, leaving the tempo where it climbed to. Ignored while stopped (and during a preview).
+     */
+    fun setTrainer(trainer: SpeedTrainer?)
 
     /** Changes the meter: the next beat starts a new bar, at the same time as before. Ignored while stopped. */
     fun setMeter(meter: Meter)

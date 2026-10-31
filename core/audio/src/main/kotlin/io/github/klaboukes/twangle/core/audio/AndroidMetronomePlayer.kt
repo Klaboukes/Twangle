@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatListener
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,9 @@ import kotlinx.coroutines.launch
  * [BUFFERED_CHUNKS] chunks queued, enough that a busy moment on the phone doesn't starve the
  * speaker. Tempo, meter, sound, subdivision and stop requests reach it through fields it reads before every
  * chunk, so a change is heard about one buffer later (≈ 0.1 s) and the clicks stay on their samples.
+ * The speed trainer (Phase 62) reaches the [ClickTrack] the same way, once per [setTrainer] or [start];
+ * the track then climbs by itself on each downbeat, and while it climbs the wanted tempo isn't copied
+ * to it (the climb rules until the trainer ends).
  * A sound not played yet is rendered there, on the writer thread, the first time (a few ms).
  *
  * A preview ([previewBar]) is a session too: it renders one bar from beat 0, then silence until the
@@ -89,6 +93,11 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private var wantedSound = ClickSound.DEFAULT
     private var wantedSubdivision = Subdivision.DEFAULT
 
+    // Guarded by lock: the speed trainer wanted, and a count bumped whenever one is started or ended,
+    // so the session hands it to the click track once each time.
+    private var wantedTrainer: SpeedTrainer? = null
+    private var trainerStarts = 0
+
     // Guarded by lock: whether the session plays one bar (a preview) rather than the metronome, and
     // a count bumped whenever it must start over from beat 0 (a new preview, or Start during one).
     private var wantedPreview = false
@@ -116,6 +125,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private val pendingAccent = Array(PENDING_BEATS) { BeatAccent.PLAIN }
     private val pendingFrame = LongArray(PENDING_BEATS)
     private val pendingSound = Array(PENDING_BEATS) { ClickSound.DEFAULT }
+    private val pendingBpm = IntArray(PENDING_BEATS)
+    private val pendingTrainerBar = LongArray(PENDING_BEATS)
     private var pendingFirst = 0
     private var pendingCount = 0
 
@@ -123,6 +134,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     // track's sample 0 was written at, frames written to the track, and where a preview's bar ends.
     private var preview = false
     private var seenRestarts = 0
+    private var seenTrainerStarts = 0
     private var clickOffset = 0L
     private var framesWritten = 0L
     private var barEnd = Long.MAX_VALUE
@@ -135,6 +147,9 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         pendingAccent[slot] = accent
         pendingFrame[slot] = clickOffset + frame
         pendingSound[slot] = clickTrack.sound
+        // The tempo from this beat on: a trainer's step on its downbeat is taken before onBeat.
+        pendingBpm[slot] = clickTrack.bpm
+        pendingTrainerBar[slot] = if (clickTrack.trainer != null) clickTrack.trainerBar else -1L
         pendingCount++
     }
 
@@ -150,12 +165,14 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         }
     }
 
-    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
+    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision, trainer: SpeedTrainer?) {
         synchronized(lock) {
-            wantedBpm = ClickTrack.clampBpm(bpm)
+            wantedBpm = ClickTrack.clampBpm(trainer?.startBpm ?: bpm)
             wantedMeter = meter
             wantedSound = sound
             wantedSubdivision = subdivision
+            wantedTrainer = trainer
+            trainerStarts++
             stopRequested = false
             playing.value = true
             if (active) {
@@ -185,6 +202,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             wantedMeter = meter
             wantedSound = sound
             wantedSubdivision = subdivision
+            wantedTrainer = null
+            trainerStarts++
             stopRequested = false
             wantedPreview = true
             playing.value = false
@@ -200,6 +219,17 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
     override fun setTempo(bpm: Int) {
         synchronized(lock) { if (active && !wantedPreview) wantedBpm = ClickTrack.clampBpm(bpm) }
+    }
+
+    override fun setTrainer(trainer: SpeedTrainer?) {
+        synchronized(lock) {
+            if (active && !wantedPreview) {
+                wantedTrainer = trainer
+                trainerStarts++
+                // Ended: the tempo stays where the climb got to, until a setTempo.
+                if (trainer == null) wantedBpm = KEEP_TEMPO
+            }
+        }
     }
 
     override fun setMeter(meter: Meter) {
@@ -229,6 +259,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         val meter: Meter
         val sound: ClickSound
         val subdivision: Subdivision
+        val trainer: SpeedTrainer?
+        val newTrainer: Boolean
         val restart: Boolean
         synchronized(lock) {
             if (stopRequested || (previewHeard && wantedPreview && restarts == seenRestarts)) {
@@ -243,11 +275,16 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             meter = wantedMeter
             sound = wantedSound
             subdivision = wantedSubdivision
+            trainer = wantedTrainer
+            newTrainer = trainerStarts != seenTrainerStarts
+            seenTrainerStarts = trainerStarts
             preview = wantedPreview
             restart = restarts != seenRestarts
             seenRestarts = restarts
         }
-        clickTrack.bpm = bpm
+        if (newTrainer) clickTrack.startTrainer(trainer)
+        // While the trainer climbs it sets the tempo; the wanted one counts again once it ends.
+        if (clickTrack.trainer == null && bpm != KEEP_TEMPO) clickTrack.bpm = bpm
         clickTrack.meter = meter
         clickTrack.sound = sound // A sound not played yet is rendered here, once.
         clickTrack.subdivision = subdivision
@@ -387,6 +424,8 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         pendingAccent[pendingFirst],
         heardAtNanos,
         pendingSound[pendingFirst],
+        pendingBpm[pendingFirst],
+        pendingTrainerBar[pendingFirst],
     )
 
     /** Frames the track has played since it started: its playback head, an unsigned 32-bit count. */
@@ -399,6 +438,9 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
 
     private companion object {
         const val TAG = "MetronomePlayer"
+
+        /** The wanted tempo once a trainer ended: whatever the click track climbed to. */
+        const val KEEP_TEMPO = -1
 
         const val CHUNKS_PER_SECOND = 100
 

@@ -405,6 +405,8 @@ class MainActivity : AppCompatActivity() {
                         savedSound = settings.metronomeClickSound,
                         savedSubdivision = settings.metronomeSubdivision,
                         savedMicRefused = settings.micRefused,
+                        savedTrainer = settings.metronomeTrainer,
+                        savedTrainerOn = settings.metronomeTrainerOn,
                         header = header,
                     )
                 }

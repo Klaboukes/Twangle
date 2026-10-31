@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.audio
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.SpeedTrainer
 import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * [MetronomePlayer] for tests: makes no sound and emits no beats by itself.
  *
- * - [bpm], [meter], [sound] and [subdivision] follow the calls the way the real player does (clamped, ignored while
- *   stopped); [startCount], [stopCount] and [previewCount] count calls.
- * - [beat] emits a beat as if it had just been heard, with the accent the meter gives it.
+ * - [bpm], [meter], [sound], [subdivision] and [trainer] follow the calls the way the real player
+ *   does (clamped, ignored while stopped); [startCount], [stopCount] and [previewCount] count calls.
+ * - [beat] emits a beat as if it had just been heard, with the accent the meter gives it; with a
+ *   [trainer] on, each downbeat counts a bar and takes the trainer's tempo for it, as the real click
+ *   track climbs.
  * - A preview lasts until [finishPreview] (its bar heard), [stop] or [start].
  */
 class FakeMetronomePlayer : MetronomePlayer {
@@ -30,7 +33,7 @@ class FakeMetronomePlayer : MetronomePlayer {
     private val beatFlow = MutableSharedFlow<MetronomeBeat>(extraBufferCapacity = 64)
     override val beats: SharedFlow<MetronomeBeat> = beatFlow.asSharedFlow()
 
-    /** The tempo playing (or last played or previewed). */
+    /** The tempo playing (or last played or previewed); while a trainer climbs, the tempo it climbed to. */
     var bpm: Int = ClickTrack.DEFAULT_BPM
         private set
 
@@ -46,6 +49,14 @@ class FakeMetronomePlayer : MetronomePlayer {
     var subdivision: Subdivision = Subdivision.DEFAULT
         private set
 
+    /** The speed trainer climbing, or null. */
+    var trainer: SpeedTrainer? = null
+        private set
+
+    /** The trainer's bar the last beat played in: −1 before its first downbeat, or with none. */
+    var trainerBar: Long = -1L
+        private set
+
     var startCount: Int = 0
         private set
 
@@ -56,18 +67,32 @@ class FakeMetronomePlayer : MetronomePlayer {
     var previewCount: Int = 0
         private set
 
-    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
+    /** Trainers started or ended with [setTrainer] while playing. */
+    var trainerChanges: Int = 0
+        private set
+
+    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision, trainer: SpeedTrainer?) {
         startCount++
-        this.bpm = ClickTrack.clampBpm(bpm)
+        this.bpm = ClickTrack.clampBpm(trainer?.startBpm ?: bpm)
         this.meter = meter
         this.sound = sound
         this.subdivision = subdivision
+        this.trainer = trainer
+        trainerBar = -1L
         previewing.value = false
         playing.value = true
     }
 
     override fun setTempo(bpm: Int) {
-        if (playing.value) this.bpm = ClickTrack.clampBpm(bpm)
+        if (playing.value && trainer == null) this.bpm = ClickTrack.clampBpm(bpm)
+    }
+
+    override fun setTrainer(trainer: SpeedTrainer?) {
+        if (!playing.value) return
+        trainerChanges++
+        this.trainer = trainer
+        trainerBar = -1L
+        if (trainer != null) bpm = ClickTrack.clampBpm(trainer.startBpm)
     }
 
     override fun setMeter(meter: Meter) {
@@ -89,6 +114,7 @@ class FakeMetronomePlayer : MetronomePlayer {
         previewCount++
         this.bpm = ClickTrack.clampBpm(bpm)
         this.meter = meter
+        this.trainer = null
         previewing.value = true
     }
 
@@ -103,9 +129,27 @@ class FakeMetronomePlayer : MetronomePlayer {
         previewing.value = false
     }
 
-    /** Emits beat [index] (counted from the start, in the current meter) as heard at [heardAtNanos]. */
+    /**
+     * Emits beat [index] (counted from the start, in the current meter) as heard at [heardAtNanos]; a
+     * downbeat with a [trainer] on first takes the next bar's tempo.
+     */
     fun beat(index: Long, heardAtNanos: Long = 0L) {
         val beatInBar = (index % meter.beatsPerBar).toInt()
-        beatFlow.tryEmit(MetronomeBeat(index, beatInBar, meter.accentOf(beatInBar), heardAtNanos, sound))
+        val climbing = trainer
+        if (climbing != null && beatInBar == 0) {
+            trainerBar++
+            bpm = ClickTrack.clampBpm(climbing.bpmOfBar(trainerBar))
+        }
+        beatFlow.tryEmit(
+            MetronomeBeat(
+                index,
+                beatInBar,
+                meter.accentOf(beatInBar),
+                heardAtNanos,
+                sound,
+                bpm = bpm,
+                trainerBar = if (climbing != null) trainerBar else -1L,
+            ),
+        )
     }
 }

@@ -447,6 +447,117 @@ class ClickTrackTest {
     }
 
     @Test
+    fun `the speed trainer steps on each downbeat, every click on its sample, never past the goal`() {
+        for ((rate, meter, subdivision) in listOf(
+            Triple(48_000, Meter.FOUR_FOUR, Subdivision.TWO),
+            Triple(44_100, Meter.THREE_FOUR, Subdivision.THREE),
+            Triple(48_000, Meter.SEVEN_EIGHT, Subdivision.NONE),
+        )) {
+            val trainer = SpeedTrainer(startBpm = 97, goalBpm = 120, stepBpm = 5, bars = 2)
+            val track = ClickTrack(rate, bpm = 60, meter = meter, subdivision = subdivision)
+            track.startTrainer(trainer)
+            val recorder = Recorder()
+            track.play(rate * 120L, chunk = 441, recorder = recorder)
+
+            // The ideal: each bar's beats (and the clicks between them) counted from its first
+            // downbeat at the bar's tempo; a bar at the same tempo as the one before goes on counting.
+            val k = subdivision.within(meter).clicksPerBeat
+            var anchorBeat = 0L
+            var anchorFrame = 0L
+            var tempo = trainer.startBpm
+            var bar = -1L
+            fun ideal(beat: Long, click: Int): Long =
+                anchorFrame + Math.round(((beat - anchorBeat) * k + click) * 60.0 * rate / (tempo * k))
+            val beats = recorder.beats
+            for (beat in beats) {
+                if (beat.beatInBar == 0) {
+                    bar++
+                    val next = trainer.bpmOfBar(bar)
+                    if (next != tempo) {
+                        // The step lands on the downbeat, which keeps the old tempo's place.
+                        assertEquals("downbeat ${beat.index}, $rate Hz", ideal(beat.index, 0), beat.frame)
+                        anchorBeat = beat.index
+                        anchorFrame = beat.frame
+                        tempo = next
+                    }
+                }
+                assertEquals("beat ${beat.index}, $rate Hz", ideal(beat.index, 0), beat.frame)
+                assertEquals(bar, if (beat.index < beats.last().index) bar else track.trainerBar)
+                assertTrue("never past the goal", tempo <= trainer.goalBpm)
+            }
+            for (click in recorder.clicks.filter { it.click > 0 }) {
+                val beatFrame = beats.first { it.index == click.beat }.frame
+                val next = beats.firstOrNull { it.index == click.beat + 1 }?.frame ?: continue
+                // Between its beat and the next, evenly: the beat's own interval split k ways.
+                val exact = beatFrame + (next - beatFrame) * click.click / k.toDouble()
+                assertTrue("click ${click.beat}.${click.click}", kotlin.math.abs(click.frame - exact) <= 1.0)
+            }
+            assertEquals("it holds at the goal", trainer.goalBpm, track.bpm)
+            val last = beats.takeLast(2)
+            assertEquals(Math.round(60.0 * rate / trainer.goalBpm), last[1].frame - last[0].frame)
+        }
+    }
+
+    @Test
+    fun `a trainer started while playing takes its start tempo from the next beat and counts bars from the next downbeat`() {
+        val rate = 48_000
+        val track = ClickTrack(rate, bpm = 120, meter = Meter.FOUR_FOUR)
+        val recorder = Recorder()
+        track.play(24_000L + 100, chunk = 480, recorder = recorder) // beats 0 and 1 sounded
+        track.startTrainer(SpeedTrainer(startBpm = 60, goalBpm = 70, stepBpm = 10, bars = 1))
+        assertEquals(60, track.bpm)
+        assertEquals(-1L, track.trainerBar)
+        track.play(rate * 12L, chunk = 480, recorder = recorder)
+        val frames = recorder.beats.map { it.frame }
+        assertEquals("beat 2 one new interval after beat 1", 24_000L + 48_000L, frames[2])
+        assertEquals("beat 3, still before the first downbeat", 24_000L + 2 * 48_000L, frames[3])
+        assertEquals("beat 4, the first downbeat, bar 0 at the start", 24_000L + 3 * 48_000L, frames[4])
+        // Bar 1 (beat 8) is at 70 BPM: from its downbeat on, 41 143 samples apart.
+        assertEquals(frames[7] + 48_000L, frames[8])
+        assertEquals(frames[8] + Math.round(60.0 * rate / 70), frames[9])
+        assertEquals(70, track.bpm)
+    }
+
+    @Test
+    fun `ending the trainer keeps the tempo it climbed to, and a reset begins it again from the start`() {
+        val track = ClickTrack(48_000, bpm = 90, meter = Meter.TWO_FOUR)
+        val trainer = SpeedTrainer(startBpm = 90, goalBpm = 100, stepBpm = 10, bars = 1)
+        track.startTrainer(trainer)
+        track.play(48_000L * 3)
+        assertEquals(100, track.bpm)
+        track.reset()
+        assertEquals("a reset begins the climb again", 90, track.bpm)
+        assertEquals(-1L, track.trainerBar)
+        track.play(48_000L * 3)
+        assertEquals(100, track.bpm)
+        track.startTrainer(null)
+        track.play(48_000L * 3)
+        assertEquals(100, track.bpm)
+        assertEquals(null, track.trainer)
+        track.reset()
+        assertEquals("without a trainer a reset keeps the tempo", 100, track.bpm)
+    }
+
+    @Test
+    fun `climbing and starting the trainer allocate nothing`() {
+        val track = ClickTrack(48_000, bpm = 120, subdivision = Subdivision.FOUR)
+        val buffer = FloatArray(480)
+        val listener = BeatListener { _, _, _, _ -> }
+        val slow = SpeedTrainer(60, 250, 10, 1)
+        val fast = SpeedTrainer(200, 250, 1, 1)
+        repeat(1_000) { track.render(buffer, listener = listener) }
+        val bytes = allocatedBytes {
+            track.startTrainer(slow)
+            repeat(2_000) { track.render(buffer, listener = listener) }
+            track.startTrainer(fast)
+            repeat(2_000) { track.render(buffer, listener = listener) }
+            track.startTrainer(null)
+            repeat(200) { track.render(buffer, listener = listener) }
+        }
+        assertEquals(0L, bytes)
+    }
+
+    @Test
     fun `rejects a bad sample rate or range`() {
         assertThrows(IllegalArgumentException::class.java) { ClickTrack(0) }
         val track = ClickTrack(48_000)

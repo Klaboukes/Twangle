@@ -26,6 +26,34 @@
     <string name="metronome_subdivision_triplets_on">Triolen tussen de tellen</string>
     <string name="metronome_subdivision_sixteenths_on">Zestienden tussen de tellen</string>
     <string name="metronome_options">Opties</string>
+    <string name="metronome_trainer">Tempotrainer</string>
+    <string name="metronome_trainer_back">Terug naar de opties</string>
+    <string name="metronome_trainer_start">Begin</string>
+    <string name="metronome_trainer_goal">Doel</string>
+    <string name="metronome_trainer_start_slower">Langzamer beginnen</string>
+    <string name="metronome_trainer_start_faster">Sneller beginnen</string>
+    <string name="metronome_trainer_goal_slower">Lager doel</string>
+    <string name="metronome_trainer_goal_faster">Hoger doel</string>
+    <string name="metronome_trainer_step">Stap</string>
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <string name="metronome_trainer_bars">Maten</string>
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s maat</item>
+        <item quantity="other">%1$s maten</item>
+    </plurals>
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s over %2$s maat</item>
+        <item quantity="other">%1$s over %2$s maten</item>
+    </plurals>
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s elke maat</item>
+        <item quantity="other">%1$s per %2$s maten</item>
+    </plurals>
+    <string name="metronome_trainer_at_goal">Op het doel · %1$s BPM</string>
+    <string name="metronome_trainer_spoken_climbing">Tempotrainer, %1$s BPM, op weg naar %2$s, %3$s</string>
+    <string name="metronome_trainer_spoken_set">Tempotrainer, van %1$s naar %2$s BPM, %3$s</string>
+    <string name="metronome_trainer_spoken_goal">Tempotrainer, op het doel, %1$s BPM</string>
     <string name="metronome_meter_2_4_spoken">Tweekwartsmaat</string>
     <string name="metronome_meter_3_4_spoken">Driekwartsmaat</string>
     <string name="metronome_meter_4_4_spoken">Vierkwartsmaat</string>

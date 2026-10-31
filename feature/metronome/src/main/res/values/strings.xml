@@ -48,8 +48,56 @@
     <string name="metronome_subdivision_triplets_on">Triplets between the beats</string>
     <!-- TalkBack name of the small note icon on the status line under the beat lights while sixteenths click between the beats. -->
     <string name="metronome_subdivision_sixteenths_on">Sixteenths between the beats</string>
-    <!-- TalkBack name of the button at the end of the row under the tempo dial (a three-sliders icon, no word shown): opens the panel with the click sounds, Vibrate on the beat and Listen. Also the panel's name. -->
+    <!-- TalkBack name of the button at the end of the row under the tempo dial (a three-sliders icon, no word shown): opens the panel with the click sounds, Vibrate on the beat, Listen and the speed trainer. Also the panel's name. -->
     <string name="metronome_options">Options</string>
+
+    <!-- The speed trainer (Phase 62): the metronome starts slower and speeds up step by step to a goal tempo, for practising a fast passage. Its row in the options panel (with a switch and a rising-line icon), the heading of its settings, and TalkBack's name for its switch. -->
+    <string name="metronome_trainer">Speed trainer</string>
+    <!-- TalkBack name of the back arrow at the top of the speed trainer's settings: back to the options panel's list. -->
+    <string name="metronome_trainer_back">Back to the options</string>
+    <!-- Speed trainer settings: the label of the tempo it starts at (a number with − and + beside it). -->
+    <string name="metronome_trainer_start">Start</string>
+    <!-- Speed trainer settings: the label of the tempo it climbs to and then holds (a number with − and + beside it). -->
+    <string name="metronome_trainer_goal">Goal</string>
+    <!-- TalkBack name of the − beside the speed trainer's start tempo: start 5 beats per minute slower. -->
+    <string name="metronome_trainer_start_slower">Start slower</string>
+    <!-- TalkBack name of the + beside the speed trainer's start tempo: start 5 beats per minute faster. -->
+    <string name="metronome_trainer_start_faster">Start faster</string>
+    <!-- TalkBack name of the − beside the speed trainer's goal tempo: a goal 5 beats per minute slower. -->
+    <string name="metronome_trainer_goal_slower">Lower goal</string>
+    <!-- TalkBack name of the + beside the speed trainer's goal tempo: a goal 5 beats per minute faster. -->
+    <string name="metronome_trainer_goal_faster">Higher goal</string>
+    <!-- Speed trainer settings: the small heading over the four choices of how many beats per minute each step adds (+1, +2, +5, +10), and TalkBack's name for that group. -->
+    <string name="metronome_trainer_step">Step</string>
+    <!-- Speed trainer: a step in beats per minute with its plus sign, as on its buttons and the status line ("+5"). %1$s is the number. -->
+    <string name="metronome_trainer_plus">+%1$s</string>
+    <!-- Speed trainer settings: the small heading over the four choices of how many bars each tempo lasts before the next step (1, 2, 4, 8), and TalkBack's name for that group. "Bar" as in a bar (measure) of music. -->
+    <string name="metronome_trainer_bars">Bars</string>
+    <!-- TalkBack name of a bar-count button in the speed trainer's settings (it shows only the number). %1$s is the number of bars. -->
+    <plurals name="metronome_trainer_bars_value">
+        <item quantity="one">%1$s bar</item>
+        <item quantity="other">%1$s bars</item>
+    </plurals>
+    <!-- The status line under the beat lights while the speed trainer is on: the tempo now, an arrow, the goal tempo, then what comes next. %1$s the tempo now, %2$s the goal, %3$s one of the texts below (e.g. "+5 in 2 bars"). Example: "95 → 120 · +5 in 2 bars". -->
+    <string name="metronome_trainer_line">%1$s → %2$s · %3$s</string>
+    <!-- The end of the speed trainer's status line while it climbs: the next step and in how many bars it comes. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
+    <plurals name="metronome_trainer_next">
+        <item quantity="one">%1$s in %2$s bar</item>
+        <item quantity="other">%1$s in %2$s bars</item>
+    </plurals>
+    <!-- The end of the speed trainer's status line while the metronome is stopped: its step and how often. %1$s the step with its plus sign ("+5"), %2$s the number of bars. -->
+    <plurals name="metronome_trainer_every">
+        <item quantity="one">%1$s every bar</item>
+        <item quantity="other">%1$s every %2$s bars</item>
+    </plurals>
+    <!-- The status line once the speed trainer reached its goal tempo and holds it. %1$s is the tempo. -->
+    <string name="metronome_trainer_at_goal">At the goal · %1$s BPM</string>
+    <!-- TalkBack: the speed trainer's status line while it climbs. %1$s the tempo now, %2$s the goal tempo, %3$s the next step (e.g. "+5 in 2 bars"). -->
+    <string name="metronome_trainer_spoken_climbing">Speed trainer, %1$s BPM, climbing to %2$s, %3$s</string>
+    <!-- TalkBack: the speed trainer's status line while the metronome is stopped. %1$s the start tempo, %2$s the goal tempo, %3$s the step and how often (e.g. "+5 every 4 bars"). -->
+    <string name="metronome_trainer_spoken_set">Speed trainer, from %1$s to %2$s BPM, %3$s</string>
+    <!-- TalkBack: the speed trainer's status line once it reached its goal. %1$s is the tempo. -->
+    <string name="metronome_trainer_spoken_goal">Speed trainer, at the goal, %1$s BPM</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
     <string name="metronome_meter_2_4_spoken">Two-four time</string>
