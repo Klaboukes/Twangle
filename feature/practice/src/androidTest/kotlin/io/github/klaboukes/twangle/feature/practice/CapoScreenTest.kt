@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.unit.height
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -22,6 +23,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.capo.Capo
 import io.github.klaboukes.twangle.core.dsp.capo.SongKey
@@ -219,6 +221,9 @@ class CapoScreenTest(private val style: VisualStyle) {
         node(PracticeTestTags.CAPO_SHAPES)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
             .assert(hasContentDescription("Shapes I play: C major"))
+            // The one picker face (Phase 63): the key in words, as Chords and Scales write theirs, in their height.
+            .assertTextEquals("C major")
+        assertEquals(NAME_PICKER_HEIGHT.value, node(PracticeTestTags.CAPO_SHAPES).getBoundsInRoot().height.value, 0.5f)
         node(PracticeTestTags.CAPO_LOWER).assert(hasContentDescription("Capo one fret down"))
         node(PracticeTestTags.CAPO_HIGHER).assert(hasContentDescription("Capo one fret up"))
         node(PracticeTestTags.INSTRUMENT_BUTTON)

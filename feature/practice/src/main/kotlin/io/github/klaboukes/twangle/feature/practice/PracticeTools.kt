@@ -74,11 +74,8 @@ object PracticeTestTags {
     /** The neck's drawing as it lies, e.g. "practice_neck_sideways". */
     internal fun neckLie(lie: NeckLie): String = "practice_neck_" + lie.name.lowercase()
 
-    /** The chord's symbol or the scale's full name over its chart or neck ("Csus2 ⌄", "A minor pentatonic ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
+    /** The chord's or the scale's full name over its chart or neck ("C suspended second ⌄", "A minor pentatonic ⌄"): opens the panel of [root] and [type] or [scale] buttons. */
     const val NAME_PICKER = "practice_name_picker"
-
-    /** The chord's name in words, small, in [NAME_PICKER] under the symbol ("C suspended second"); a scale has none (its name in words is the button's). */
-    const val NAME_WORDS = "practice_name_words"
 
     /** The drone button on Scales (Phase 48): its ▶ / ■ half, and its other half with the sound's icon, which opens the drone panel. */
     const val DRONE_PLAY = "practice_drone_play"

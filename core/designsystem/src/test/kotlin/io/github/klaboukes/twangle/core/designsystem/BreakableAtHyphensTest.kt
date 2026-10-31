@@ -1,4 +1,4 @@
-package io.github.klaboukes.twangle.feature.practice
+package io.github.klaboukes.twangle.core.designsystem
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

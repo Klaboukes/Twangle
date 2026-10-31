@@ -57,13 +57,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
-import io.github.klaboukes.twangle.core.designsystem.faceFill
-import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -261,90 +260,48 @@ fun CapoScreen(
 }
 
 /**
- * "Shapes I play" over a button of one steady size showing the shapes picked ("C ▾"); a tap opens
- * the list of [CAPO_SHAPES]. TalkBack hears the button as a list with what is picked, each entry in
- * words ("A minor").
+ * "Shapes I play" over Twangle's one picker face ([NamePickerButton], Phase 63) showing the key of the
+ * shapes picked in words ("C major ⌄", "A minor ⌄"; until Phase 63 a small 132 dp button with "C ▾"), as
+ * wide as the table under it; a tap opens the list of [CAPO_SHAPES]. TalkBack hears the button as a list
+ * with what is picked, each entry in words ("A minor").
  */
 @Composable
 private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSpeech, onPick: (SongKey) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    val label = stringResource(R.string.practice_capo_shapes)
     val spoken = stringResource(R.string.practice_capo_shapes_spoken, keyWords(shapes, notation, speech))
     val words = CAPO_SHAPES.associateWith { keyWords(it, notation, speech) }
-    val source = remember { MutableInteractionSource() }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            // The button says it with what is picked.
-            modifier = Modifier.semantics { hideFromAccessibility() },
+    Box {
+        NamePickerButton(
+            name = keyWords(shapes, notation),
+            spoken = spoken,
+            onClick = { open = true },
+            caption = stringResource(R.string.practice_capo_shapes),
+            faceModifier = Modifier.testTag(PracticeTestTags.CAPO_SHAPES),
+            modifier = Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth(),
         )
-        Box {
-            Box(
-                modifier = Modifier
-                    .testTag(PracticeTestTags.CAPO_SHAPES)
-                    .size(SHAPES_BUTTON_WIDTH, TOUCH_HEIGHT)
-                    .clickable(interactionSource = source, indication = null) {
-                        source.pressFlash()
-                        open = true
-                    }
-                    .clearAndSetSemantics {
-                        role = Role.DropdownList
-                        contentDescription = spoken
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                Row(
-                    Modifier
-                        .size(SHAPES_BUTTON_WIDTH, FACE_HEIGHT)
-                        .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
-                        .padding(start = 12.dp, end = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        musicText(shapes.symbolOf(notation)),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        maxLines = 1,
-                        // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in
-                        // IntervalsPart.kt says why).
-                        softWrap = false,
-                        autoSize = TextAutoSize.StepBased(minFontSize = MIN_LABEL_SIZE, maxFontSize = LABEL_SIZE, stepSize = 0.5.sp),
-                        modifier = Modifier.weight(1f),
+        val density = LocalDensity.current
+        // Under the box, from its start, the keys in words as the box writes them.
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            ScreenDensity(density) {
+                for (option in CAPO_SHAPES) {
+                    val picked = option == shapes
+                    TwangleMenuItem(
+                        text = {
+                            Text(
+                                musicText(keyWords(option, notation)),
+                                fontWeight = if (picked) FontWeight.Bold else null,
+                                color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            )
+                        },
+                        onClick = {
+                            open = false
+                            onPick(option)
+                        },
+                        modifier = Modifier
+                            .widthIn(min = SHAPES_MENU_WIDTH)
+                            .testTag(PracticeTestTags.capoShapes(option))
+                            .semantics { contentDescription = words.getValue(option) },
                     )
-                    Icon(
-                        painterResource(R.drawable.ic_expand_more),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-            }
-            val density = LocalDensity.current
-            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                ScreenDensity(density) {
-                    for (option in CAPO_SHAPES) {
-                        val picked = option == shapes
-                        TwangleMenuItem(
-                            text = {
-                                Text(
-                                    musicText(option.symbolOf(notation)),
-                                    fontWeight = if (picked) FontWeight.Bold else null,
-                                    color = if (picked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                )
-                            },
-                            onClick = {
-                                open = false
-                                onPick(option)
-                            },
-                            modifier = Modifier
-                                .widthIn(min = SHAPES_BUTTON_WIDTH)
-                                .testTag(PracticeTestTags.capoShapes(option))
-                                .semantics { contentDescription = words.getValue(option) },
-                        )
-                    }
                 }
             }
         }
@@ -533,15 +490,17 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
     }
 }
 
-/** [key] in words, "E flat major", "C minor", its tonic as the key writes it, as TalkBack says it. */
+/** [key] in words, "E♭ major", "C minor", its tonic as the key writes it; with [speech] as TalkBack says it ("E flat major"). */
 @Composable
-private fun keyWords(key: SongKey, notation: Notation, speech: NoteNameSpeech): String =
+private fun keyWords(key: SongKey, notation: Notation, speech: NoteNameSpeech? = null): String =
     chordWordsInKey(key, key.tonicChord, notation, speech)
 
-/** [chord] in words as [key] writes its root ("A sharp minor" in F♯ major), as TalkBack says it. */
+/** [chord] in words as [key] writes its root ("A♯ minor" in F♯ major); with [speech] as TalkBack says it ("A sharp minor"). */
 @Composable
-private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, speech: NoteNameSpeech): String =
-    stringResource(qualityWords(chord.quality), speech.name(rootInKey(key, chord, notation)))
+private fun chordWordsInKey(key: SongKey, chord: Chord, notation: Notation, speech: NoteNameSpeech?): String {
+    val root = rootInKey(key, chord, notation)
+    return stringResource(qualityWords(chord.quality), speech?.name(root) ?: root)
+}
 
 /** On its side from this width, as the other Practice tools. */
 
@@ -562,11 +521,8 @@ private val TABLE_HEADER_HEIGHT = 24.dp
 private val ROW_PADDING = 20.dp
 private const val BAND_ALPHA = 0.06f
 
-/** Wide enough for "Lam" or "Sol" at 2× text; the label is set smaller only beyond that. */
-private val SHAPES_BUTTON_WIDTH = 132.dp
-private val TOUCH_HEIGHT = 48.dp
-private val FACE_HEIGHT = 40.dp
-private val LABEL_SIZE = 16.sp
+/** The shapes' list is at least this wide (the shapes button's width until Phase 63). */
+private val SHAPES_MENU_WIDTH = 132.dp
 private val MIN_LABEL_SIZE = 8.sp
 private val LAST_RESORT_LABEL_SIZE = 6.sp
 

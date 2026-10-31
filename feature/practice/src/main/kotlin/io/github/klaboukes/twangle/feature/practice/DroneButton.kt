@@ -64,6 +64,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.klaboukes.twangle.core.audio.DronePlayer
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -167,7 +168,7 @@ internal fun DroneButton(
         ) {
             Icon(droneSoundIcon(sound), contentDescription = null, tint = scheme.onBackground, modifier = Modifier.size(ICON_SIZE))
             Icon(
-                painterResource(R.drawable.ic_expand_more),
+                painterResource(DesignR.drawable.ic_expand_more),
                 contentDescription = null,
                 tint = scheme.onSurfaceVariant,
                 modifier = Modifier.size(CHEVRON_SIZE),

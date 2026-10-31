@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
@@ -97,7 +98,7 @@ fun PracticeToolButton(
                 Spacer(Modifier.width(8.dp))
                 ToolName(name, MaterialTheme.colorScheme.onBackground, Modifier.weight(1f))
                 Icon(
-                    painterResource(R.drawable.ic_expand_more),
+                    painterResource(DesignR.drawable.ic_expand_more),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 2.dp).size(20.dp),

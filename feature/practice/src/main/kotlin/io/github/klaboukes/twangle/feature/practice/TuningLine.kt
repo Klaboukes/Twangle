@@ -25,7 +25,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +34,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
@@ -148,19 +148,6 @@ fun ToolAndTuningRow(
             }
         }
     }
-}
-
-/** Whether every line but the last of this layout of [text] ends between two words (or where Chinese and Japanese may break). */
-internal fun TextLayoutResult.breaksBetweenWords(text: String): Boolean =
-    (0 until lineCount - 1).all { line ->
-        val end = getLineEnd(line)
-        end <= 0 || end >= text.length || text[end - 1].isWhitespace() || text[end - 1] == '-' || text[end - 1] == ZERO_WIDTH_SPACE ||
-            text[end].isWhitespace() || (text[end - 1].breaksAnywhere() && text[end].breaksAnywhere())
-    }
-
-private fun Char.breaksAnywhere(): Boolean = when (Character.UnicodeScript.of(code)) {
-    Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA -> true
-    else -> this == 'ー'
 }
 
 /** Between the instrument button's touch target and the name's pressable box; the name this far in from that box's ends. */

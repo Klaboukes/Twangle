@@ -1,6 +1,5 @@
 package io.github.klaboukes.twangle.feature.practice
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +19,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,15 +28,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.hideFromAccessibility
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -52,7 +46,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
+import io.github.klaboukes.twangle.core.designsystem.NamePickerButton
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
+import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
+import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -68,22 +66,20 @@ import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
 
 /**
- * The chord's or the scale's name as one button as wide as the row (Phase 47, the owner's pick D in
- * docs/design/tool-button-preview.html) with ⌄ after the name. A chord: two lines inside it, the
- * symbol large ("Am7 ⌄") and its name in words under it, small and muted ("A minor seventh"). A scale:
- * its full name in words, large, on one line ("D Dorian ⌄", "A minor pentatonic ⌄"; the owner's pick
- * of 2026-10-26), on two lines set smaller only where one doesn't fit. One steady height whatever the
- * name, so the chart or the neck under it never moves ([NameButton]). A tap calls
- * [onClick] to open the [ChordPanel]; [panel] places it right under the button, given the row's width
- * (upright, so the name stays in sight while picking), or the screen puts it elsewhere (on its side,
- * over the start half, so the panel doesn't hide the name and the chart).
+ * The chord's or the scale's full name in words on Twangle's one picker face ([NamePickerButton], Phase 63,
+ * docs/architecture/ui.md *Shared controls*), as wide as the row: "A minor seventh ⌄", "D Dorian ⌄". Until
+ * Phase 63 a chord showed its symbol large over its words, small ("Am7 ⌄" over "A minor seventh"; the
+ * panel and the tuner still write symbols). One steady height whatever the name, so the chart or the
+ * neck under it never moves. A tap calls [onClick] to open the [ChordPanel]; [panel] places it right
+ * under the button, given the row's width (upright, so the name stays in sight while picking), or the
+ * screen puts it elsewhere (on its side, over the start half, so the panel doesn't hide the name and the chart).
  *
  * With [end] (the drone button on Scales, Phase 48, the owner's pick A in docs/design/drone-button-preview.html)
  * the name gives up [endWidth] and a small gap to it at the row's end; [end] is given the name's steady height,
  * so both are one height whatever the name and the language, and the row's width.
  *
- * TalkBack hears the button as a heading and a list with the name in words ("C suspended second"; a
- * scale's name is a polite live region, as the neck isn't), and skips the words drawn in it, which say the same.
+ * TalkBack hears the button as a heading and a list with the name in words as said ("C suspended second", "B flat
+ * major"; a scale's name is a polite live region, as the neck isn't).
  */
 @Composable
 internal fun ChordNameButton(
@@ -101,146 +97,29 @@ internal fun ChordNameButton(
     val speech = rememberNoteNameSpeech()
     val scale = Scale(root, scaleType)
     val chord = Chord.of(root, quality)
-    val symbol = if (scales) scaleWords(scale, notation) else chordSymbol(chord, notation)
-    val name = if (scales) null else chordWords(chord, notation)
+    val name = if (scales) scaleWords(scale, notation) else chordWords(chord, notation)
     val spoken = if (scales) scaleWords(scale, notation, speech) else chordWords(chord, notation, speech)
     BoxWithConstraints(modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         val width = minOf(maxWidth, NAME_ROW_MAX_WIDTH)
-        val height = nameButtonHeight()
         Box {
             Row(Modifier.width(width)) {
-                NameButton(
-                    symbol = symbol,
-                    words = name,
+                NamePickerButton(
+                    name = name,
                     spoken = spoken,
-                    live = scales,
                     onClick = onClick,
-                    height = height,
+                    heading = true,
+                    live = scales,
+                    faceModifier = Modifier.testTag(PracticeTestTags.NAME_PICKER),
                     modifier = if (end == null) Modifier.width(width) else Modifier.width(width - endWidth - NAME_END_GAP),
                 )
                 if (end != null) {
                     Spacer(Modifier.width(NAME_END_GAP))
-                    end(height, width)
+                    end(NAME_PICKER_HEIGHT, width)
                 }
             }
             panel(width)
         }
     }
-}
-
-/**
- * The name button: the short name [symbol] in the title's size with ⌄ after it, centred, and [words]
- * under it, small and muted, on a see-through face as the pickers' buttons. Its height stays the same
- * whatever the name: the larger of [NAME_BUTTON_HEIGHT] and one line of the smallest short name over
- * the words' line at the player's text size. A short name that doesn't fit is set smaller; long words
- * (Dutch "Sol♯ mineur-pentatonisch" at 2× text on a 320 dp phone) are set smaller too, onto a second
- * line only where one would be smaller still, never making the button taller.
- *
- * Without [words] (a scale) [symbol] is the full name: in the title's size on one line where it fits,
- * else on two lines, whole words, at most [TWO_LINES_SCALE] of that size and smaller where it must (on three only where
- * two would not fit at the smallest size, at large text on a narrow phone beside the drone button: Russian
- * "Соль♯ гармонический минор" at 2× text on a 320 dp phone)
- * ([OneLineFirstAutoSize]), in the same steady height.
- *
- * The face with the short name is the button (tagged [PracticeTestTags.NAME_PICKER]); the words are
- * drawn over its lower part without taking touches (a tap there is the button's), hidden from
- * TalkBack, which hears them in the button's description ([spoken]).
- */
-@Composable
-private fun NameButton(
-    symbol: String,
-    words: String?,
-    spoken: String,
-    live: Boolean,
-    onClick: () -> Unit,
-    height: Dp,
-    modifier: Modifier = Modifier,
-) {
-    val source = remember { MutableInteractionSource() }
-    val title = MaterialTheme.typography.titleLarge
-    val small = MaterialTheme.typography.bodyMedium
-    val wordsHeight = with(LocalDensity.current) { small.fontSize.toDp() } * WORDS_LINE
-    Box(modifier.height(height)) {
-        Row(
-            modifier = Modifier
-                .matchParentSize()
-                .testTag(PracticeTestTags.NAME_PICKER)
-                .clickable(interactionSource = source, indication = null) {
-                    source.pressFlash()
-                    onClick()
-                }
-                // Its text stays in the tree for the tests' checks; TalkBack says the description.
-                .semantics {
-                    role = Role.DropdownList
-                    contentDescription = spoken
-                    heading()
-                    if (live) liveRegion = LiveRegionMode.Polite
-                }
-                .pressFeedback(source, MaterialTheme.shapes.small, fill = faceFill(picked = false), outline = faceOutline(picked = false))
-                .padding(start = 12.dp, end = 12.dp, top = NAME_BUTTON_PADDING, bottom = NAME_BUTTON_PADDING + if (words != null) wordsHeight else 0.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                musicText(if (words == null) breakableAtHyphens(symbol) else symbol),
-                style = title.copy(
-                    textAlign = TextAlign.Center,
-                    lineHeight = ONE_LINE_HEIGHT,
-                    lineHeightStyle = TRIMMED,
-                ),
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = if (words == null) SCALE_NAME_LINES else 1,
-                // A chord's one-line name never wraps, so the auto-size sees it too wide (Ear training's AnswerButton
-                // in IntervalsPart.kt says why); a scale's name may take two lines.
-                softWrap = words == null,
-                autoSize = if (words == null) {
-                    remember(title.fontSize) { OneLineFirstAutoSize(title.fontSize, title.fontSize * TWO_LINES_SCALE, NAME_MIN_SIZE, LAST_RESORT_NAME_SIZE) }
-                } else {
-                    TextAutoSize.StepBased(minFontSize = NAME_MIN_SIZE, maxFontSize = title.fontSize, stepSize = 0.5.sp)
-                },
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            Icon(
-                painterResource(R.drawable.ic_expand_more),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 2.dp).size(20.dp),
-            )
-        }
-        if (words != null) Box(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, bottom = NAME_BUTTON_PADDING)
-                .height(wordsHeight),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                musicText(breakableAtHyphens(words)),
-                style = small.copy(textAlign = TextAlign.Center, lineHeight = ONE_LINE_HEIGHT, lineHeightStyle = TRIMMED),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                autoSize = remember(small.fontSize) { WholeWordsAutoSize(small.fontSize, WORDS_MIN_SIZE) },
-                modifier = Modifier.testTag(PracticeTestTags.NAME_WORDS).semantics { hideFromAccessibility() },
-            )
-        }
-    }
-}
-
-/**
- * The name button's one steady height at the player's text size: the larger of [NAME_BUTTON_HEIGHT] and one line of the
- * smallest short name over the words' line.
- */
-@Composable
-private fun nameButtonHeight(): Dp {
-    // Each line's size to dp first, then its room: from Android 14 large text sizes grow less than small
-    // ones (nonlinear font scaling), so turning the sum into dp in one go came out too short.
-    val density = LocalDensity.current
-    val wordsHeight = with(density) { MaterialTheme.typography.bodyMedium.fontSize.toDp() } * WORDS_LINE
-    return maxOf(
-        NAME_BUTTON_HEIGHT,
-        with(density) { NAME_LINE_SIZE.toDp() } * NAME_LINE + wordsHeight + NAME_BUTTON_PADDING * 2,
-    )
 }
 
 /**
@@ -575,50 +454,6 @@ internal class WholeWordsAutoSize(
 /** A label keeps its side room ([WholeWordsAutoSize]'s sideMargin) only down to this share of the size it would have without. */
 private const val SIDE_ROOM_SHARE = 0.85f
 
-/**
- * The largest size from [largest] at which the text fits its box on one line; where it doesn't, the
- * largest from [twoLines] down to [smallest] at which it fits on its lines without breaking a word (as
- * [WholeWordsAutoSize]), below that down to [lastResort] only where a word would otherwise be broken
- * (Space Age's wide letters at 2× text beside the drone button: "pentatonisch" on a 320 dp phone, the
- * overnight run of 2026-10-27). Smallest if none. A scale's name on the name button: "A minor
- * pentatonic" large on one line, "Sol♯ mineur-pentatonisch" at 2× text on two, smaller.
- */
-internal class OneLineFirstAutoSize(
-    private val largest: TextUnit,
-    private val twoLines: TextUnit,
-    private val smallest: TextUnit,
-    private val lastResort: TextUnit = smallest,
-) : TextAutoSize {
-    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
-        val one = performLayout(constraints, text, largest)
-        if (one.lineCount == 1 && !one.didOverflowWidth && !one.didOverflowHeight) return largest
-        var size = minOf(twoLines.value, largest.value)
-        while (size >= lastResort.value) {
-            val layout = performLayout(constraints, text, size.sp)
-            if (!layout.didOverflowWidth && !layout.didOverflowHeight && layout.breaksBetweenWords(text.text)) return size.sp
-            size -= LABEL_STEP
-        }
-        return smallest
-    }
-
-    override fun equals(other: Any?): Boolean =
-        other is OneLineFirstAutoSize && other.largest == largest && other.twoLines == twoLines && other.smallest == smallest &&
-            other.lastResort == lastResort
-    override fun hashCode(): Int = ((largest.hashCode() * 31 + twoLines.hashCode()) * 31 + smallest.hashCode()) * 31 + lastResort.hashCode()
-}
-
-/**
- * [text] with a line break allowed after each hyphen between two letters (a zero-width space), a ♭ or ♯
- * counting as a letter before it. Android breaks a compound such as "majeur-pentatonisch" at its
- * hyphen only when hyphenation is on, which it isn't, so a long one (Dutch "A♭ majeur-pentatonisch"
- * at 2× text in Futuristic; German "A♭-Mixolydisch" at 2× text in Space Age beside the drone button,
- * the overnight run of 2026-10-27) was broken in the middle of a word instead.
- */
-internal fun breakableAtHyphens(text: String): String = text.replace(HYPHEN_BETWEEN_LETTERS, "-$ZERO_WIDTH_SPACE")
-
-private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=[\\p{L}♭♯])-(?=\\p{L})")
-internal const val ZERO_WIDTH_SPACE = '\u200B'
-
 private const val ROOTS_PER_ROW = 6
 private const val SCALES_PER_ROW = 2
 private const val TYPES_PER_ROW = 4
@@ -630,42 +465,15 @@ private val BUTTON_HEIGHT = 40.dp
 private val TOUCH_HEIGHT = 48.dp
 
 /**
- * The name button: as wide as the row, at most this wide (the panel as wide), and at least this tall
- * (two lines, about as tall as the small button and its quiet line under it were before Phase 47), its
- * lines this far in from top and bottom; the panel's grids this far in from its edges, its sections this far apart.
+ * The name button: as wide as the row, at most this wide (the panel as wide); the panel's grids this far in
+ * from its edges, its sections this far apart.
  */
 private val NAME_ROW_MAX_WIDTH = 400.dp
-private val NAME_BUTTON_HEIGHT = 64.dp
-private val NAME_BUTTON_PADDING = 4.dp
 
 /** Between the name and the part at the row's end (the drone button on Scales). */
 private val NAME_END_GAP = 8.dp
 private val MENU_PADDING = 4.dp
 private val SECTION_GAP = 4.dp
-
-/**
- * The short name shrinks at most to this: at 2× text the wide Space Age letters need it for "Sol♯m pent."
- * on the small button of before Phase 47 (10 sp didn't fit, the overnight run of 2026-10-20); at 1× it never
- * gets this small; a scale's full name too, at worst. The button's upper line is one line of [NAME_LINE_SIZE] tall, with room for rounding.
- */
-private val NAME_MIN_SIZE = 7.sp
-
-/** A scale's full name goes this small only where a word would otherwise be broken ([OneLineFirstAutoSize]). */
-private val LAST_RESORT_NAME_SIZE = 6.sp
-
-/** A scale's full name that doesn't fit on one line takes two, at most this share of the title's size. */
-private const val TWO_LINES_SCALE = 0.8f
-private const val SCALE_NAME_LINES = 3
-private val NAME_LINE_SIZE = 12.sp
-private const val NAME_LINE = 1.5f
-
-/** The words in the button shrink at most to this; their line is [WORDS_LINE] of their size tall. */
-private val WORDS_MIN_SIZE = 8.sp
-private const val WORDS_LINE = 1.5f
-
-// One line of either, its room trimmed above and below, so it is as tall at any size as the line counted on.
-private val ONE_LINE_HEIGHT = 1.2.em
-private val TRIMMED = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
 
 private val LABEL_SIZE = 16.sp
 private val MIN_LABEL_SIZE = 8.sp

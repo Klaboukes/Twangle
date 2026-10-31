@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.espresso.Espresso
+import io.github.klaboukes.twangle.core.designsystem.NAME_PICKER_HEIGHT
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
@@ -137,10 +138,9 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
-    /** The name button says [symbol], the words in it under the short name [words]. */
-    private fun assertName(symbol: String, words: String) {
-        picker().assertTextEquals(symbol)
-        node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
+    /** The name button says the chord's full name in [words] (Phase 63: one line, no symbol over it). */
+    private fun assertName(words: String) {
+        picker().assertTextEquals(words)
     }
 
     /** Opens the panel and waits for it: a window of its own. */
@@ -184,7 +184,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 "G 3 string, fret 2, finger 3, A, B 3 string, fret 1, finger 1, C, E 4 string, open",
             awaitChart("A minor, shape 1 of"),
         )
-        assertName("Am", "A minor")
+        assertName("A minor")
         assertFalse("the panel is closed", exists(PracticeTestTags.root(PitchClass.A)) || exists(PracticeTestTags.type(ChordQuality.MINOR)))
         assertPicked(PracticeTestTags.root(PitchClass.A), PracticeTestTags.type(ChordQuality.MINOR))
 
@@ -192,7 +192,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         awaitChart("G minor, shape 1 of")
         pick(PracticeTestTags.type(ChordQuality.DOMINANT_SEVENTH))
         awaitChart("G seventh, shape 1 of")
-        assertName("G7", "G seventh")
+        assertName("G seventh")
         openPanel()
         node(PracticeTestTags.root(PitchClass.G)).assertIsSelected()
         node(PracticeTestTags.root(PitchClass.A)).assertIsNotSelected()
@@ -213,25 +213,25 @@ class ChordsScreenTest(private val style: VisualStyle) {
         openPanel()
         node(PracticeTestTags.type(ChordQuality.MINOR)).performClick()
         awaitPanelClosed()
-        assertName("Cm", "C minor")
+        assertName("C minor")
         awaitChart("C minor, shape 1 of")
         chart().assertIsDisplayed()
         openPanel()
         node(PracticeTestTags.root(PitchClass.D)).performClick()
         awaitPanelClosed()
-        assertName("Dm", "D minor")
+        assertName("D minor")
         awaitChart("D minor, shape 1 of")
         openPanel()
         node(PracticeTestTags.root(PitchClass.D)).performClick()
         awaitPanelClosed()
-        assertName("Dm", "D minor")
+        assertName("D minor")
         assertEquals("the root already picked isn't saved again", listOf(PitchClass.D), savedRoots)
         assertEquals(listOf(ChordQuality.MINOR), savedQualities)
         // One of Phase 49's four: the power chord, its chart with the strings it doesn't play.
         openPanel()
         node(PracticeTestTags.type(ChordQuality.POWER_CHORD)).performClick()
         awaitPanelClosed()
-        assertName("D5", "D power chord")
+        assertName("D power chord")
         assertTrue("D5 on the D, A and D strings, the rest not played", awaitChart("D power chord, shape 1 of").contains("E 2 string, not played"))
         assertEquals(listOf(ChordQuality.MINOR, ChordQuality.POWER_CHORD), savedQualities)
     }
@@ -241,8 +241,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
         show(PitchClass.A_SHARP, ChordQuality.MAJOR)
         awaitChart("B flat major")
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
-        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭")
-        assertTrue("the words under it are skipped", node(PracticeTestTags.NAME_WORDS).fetchSemanticsNode().config.contains(SemanticsProperties.HideFromAccessibility))
+        picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭ major")
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         openPanel()
         node(PracticeTestTags.root(PitchClass.A_SHARP)).assert(radio).assert(hasContentDescription("B flat"))
@@ -298,13 +297,13 @@ class ChordsScreenTest(private val style: VisualStyle) {
         compose.waitUntil(WAIT_MS) { spokenChart().contains("C 2 string") }
         shownNotation.value = Notation.SOLFEGE
         awaitChart("Re major")
-        assertName("Re", "Re major")
+        assertName("Re major")
         openPanel()
         node(PracticeTestTags.type(ChordQuality.MAJOR)).assertTextEquals("Re")
         node(PracticeTestTags.type(ChordQuality.MINOR)).assertTextEquals("Rem")
         node(PracticeTestTags.type(ChordQuality.SUS2)).performClick()
         awaitPanelClosed()
-        assertName("Resus2", "Re suspended second")
+        assertName("Re suspended second")
     }
 
     /**
@@ -634,7 +633,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
 
 
     /**
-     * The name is one button as wide as the row (Phase 47), the short name over the words inside it, and one steady
+     * The name is one button as wide as the row (Phase 47), the full name in words on it (Phase 63), and one steady
      * height whatever the name, so the chart never moves: C major and the longest name in words (Russian
      * "Sol♯ большой мажорный септаккорд" at 2× text on a 320 dp phone) alike, upright and on its side.
      */
@@ -654,18 +653,14 @@ class ChordsScreenTest(private val style: VisualStyle) {
             pick(PracticeTestTags.root(PitchClass.G_SHARP), PracticeTestTags.type(ChordQuality.MAJOR_SEVENTH))
             val long = picker().getBoundsInRoot()
             assertEquals("$name one steady height", short.height.value, long.height.value, 0.5f)
+            assertEquals("$name the one picker face's height", NAME_PICKER_HEIGHT.value, long.height.value, 0.5f)
             assertEquals("$name the chart stays put", chartTop.value, chart().getBoundsInRoot().top.value, 0.5f)
-            val words = node(PracticeTestTags.NAME_WORDS).getBoundsInRoot()
-            assertTrue(
-                "$name the words in the button, under the short name $words $long",
-                words.left >= long.left && words.right <= long.right && words.bottom <= long.bottom && words.top >= long.top + long.height / 3,
-            )
             if (case.size.width < case.size.height) {
                 val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()
                 assertEquals("$name at the row's start", tool.left.value, long.left.value, 1f)
                 assertTrue("$name as wide as the row ${long.width}", long.width >= case.size.width - 32.dp - 1.dp)
             }
-            assertWhollyShown(node(PracticeTestTags.NAME_WORDS), "$name the words")
+            assertWhollyShown(picker(), "$name the name")
             compose.assertEveryTextWhollyShown(name)
             compose.assertNoWordBroken(name)
         }

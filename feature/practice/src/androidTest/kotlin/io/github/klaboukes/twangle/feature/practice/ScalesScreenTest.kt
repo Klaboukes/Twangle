@@ -153,16 +153,14 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
     private fun picker() = node(PracticeTestTags.NAME_PICKER)
 
-    /** On Scales the name button says the scale's full [name] in words, nothing under it. */
+    /** On Scales the name button says the scale's full [name] in words. */
     private fun assertName(name: String) {
         picker().assertTextEquals(name)
-        assertFalse("no words under a scale's name", exists(PracticeTestTags.NAME_WORDS))
     }
 
-    /** On Chords the name button says [symbol], the words in it under the symbol [words]. */
-    private fun assertChordName(symbol: String, words: String) {
-        picker().assertTextEquals(symbol)
-        node(PracticeTestTags.NAME_WORDS).assertTextEquals(words)
+    /** On Chords the name button says the chord's full name in [words]. */
+    private fun assertChordName(words: String) {
+        picker().assertTextEquals(words)
     }
 
     /** How wide the name's first "o" is set, in pixels: its size (the layout's style keeps the size asked, not the one fitted). Every name tried has one. */
@@ -334,7 +332,7 @@ class ScalesScreenTest(private val style: VisualStyle) {
 
         shownScales.value = false
         compose.waitUntil(WAIT_MS) { exists(PracticeTestTags.CHART) }
-        assertChordName("E", "E major")
+        assertChordName("E major")
         assertPicked(PracticeTestTags.root(PitchClass.E), PracticeTestTags.type(ChordQuality.MAJOR))
         assertEquals(listOf(PitchClass.E), savedRoots)
     }
@@ -346,7 +344,6 @@ class ScalesScreenTest(private val style: VisualStyle) {
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         val list = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList)
         picker().assert(list).assert(isHeading()).assert(hasContentDescription("B flat major")).assertTextEquals("B♭ major")
-        assertFalse("no words under it", exists(PracticeTestTags.NAME_WORDS))
         assertTrue("the scale's name is a polite live region", picker().fetchSemanticsNode().config.contains(SemanticsProperties.LiveRegion))
         openPanel()
         node(PracticeTestTags.scale(ScaleType.MINOR_PENTATONIC)).assert(radio).assert(hasContentDescription("Minor pentatonic"))
