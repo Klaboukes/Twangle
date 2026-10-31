@@ -13,10 +13,19 @@ class ClickTrackTest {
 
     private data class Beat(val index: Long, val beatInBar: Int, val accent: BeatAccent, val frame: Long)
 
+    // Every click: a beat's own (click 0, its accent) or one between beats (SUBDIVISION).
+    private data class Click(val beat: Long, val click: Int, val accent: BeatAccent, val frame: Long)
+
     private class Recorder : BeatListener {
         val beats = mutableListOf<Beat>()
+        val clicks = mutableListOf<Click>()
         override fun onBeat(index: Long, beatInBar: Int, accent: BeatAccent, frame: Long) {
             beats += Beat(index, beatInBar, accent, frame)
+            clicks += Click(index, 0, accent, frame)
+        }
+
+        override fun onSubdivision(beat: Long, click: Int, frame: Long) {
+            clicks += Click(beat, click, BeatAccent.SUBDIVISION, frame)
         }
     }
 
@@ -223,8 +232,195 @@ class ClickTrackTest {
     }
 
     @Test
-    fun `rendering and changing tempo, meter or a sound played before allocate nothing`() {
-        val track = ClickTrack(48_000, bpm = 250)
+    fun `every click of ten minutes lands on its ideal sample, in every subdivision and at odd tempos`() {
+        for ((rate, bpm, chunk) in listOf(Triple(44_100, 97, 441), Triple(48_000, 233, 37), Triple(16_000, 31, 4096))) {
+            for (subdivision in Subdivision.entries) {
+                val k = subdivision.clicksPerBeat
+                val recorder = Recorder()
+                ClickTrack(rate, bpm = bpm, subdivision = subdivision).play(rate * 600L, chunk, recorder)
+                val at = "$subdivision at $bpm BPM, $rate Hz"
+                val exact = rate * 60.0 / (bpm * k)
+                assertEquals("clicks in ten minutes, $at", 10 * bpm * k, recorder.clicks.size)
+                for ((n, click) in recorder.clicks.withIndex()) {
+                    assertEquals("click $n, $at", n.toLong(), click.beat * k + click.click)
+                    val ideal = n * exact
+                    assertEquals("click $n, $at", ideal.roundToLong(), click.frame)
+                    assertTrue(abs(click.frame - ideal) <= 0.5)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `the clicks between the beats are the softest click, and the beats stay as they were`() {
+        val rate = 44_100
+        val total = rate * 4
+        val alone = Recorder()
+        ClickTrack(rate, bpm = 97, meter = Meter.FIVE_FOUR).play(total.toLong(), recorder = alone)
+        for (subdivision in Subdivision.entries) {
+            val track = ClickTrack(rate, bpm = 97, meter = Meter.FIVE_FOUR, subdivision = subdivision)
+            val recorder = Recorder()
+            val out = FloatArray(total)
+            var at = 0
+            for (size in generateSequence(1) { it * 3 % 1013 + 1 }) {
+                val n = minOf(size, total - at)
+                track.render(out, at, n, recorder)
+                at += n
+                if (at == total) break
+            }
+            assertEquals("$subdivision", alone.beats, recorder.beats)
+            val k = subdivision.clicksPerBeat
+            val heard = generateSequence(0L) { it + 1 }.takeWhile { (it * rate * 60 * 2 / (97 * k) + 1) / 2 < total }.count()
+            assertEquals("$subdivision", heard, recorder.clicks.size)
+
+            val expected = FloatArray(total)
+            for (click in recorder.clicks) {
+                val samples = track.sounds.waveform(click.accent)
+                val start = click.frame.toInt()
+                System.arraycopy(samples, 0, expected, start, minOf(samples.size, total - start))
+            }
+            assertArrayEquals("$subdivision", expected, out, 0f)
+        }
+    }
+
+    @Test
+    fun `in 6-8 and 7-8 only none and two split the beat, and the others play as none`() {
+        for (meter in Meter.entries) {
+            val offered = if (meter.noteValue == 8) listOf(Subdivision.NONE, Subdivision.TWO) else Subdivision.entries
+            assertEquals("$meter", offered, Subdivision.offeredIn(meter))
+            for (subdivision in Subdivision.entries) {
+                val k = if (subdivision in offered) subdivision.clicksPerBeat else 1
+                assertEquals(if (k == 1) Subdivision.NONE else subdivision, subdivision.within(meter))
+                val recorder = Recorder()
+                ClickTrack(48_000, bpm = 120, meter = meter, subdivision = subdivision).play(48_000, recorder = recorder)
+                assertEquals("$subdivision in $meter", (0 until 2 * k).map { it * 24_000L / k }, recorder.clicks.map { it.frame })
+            }
+        }
+    }
+
+    @Test
+    fun `a new subdivision is heard from the next beat`() {
+        val rate = 48_000
+        val track = ClickTrack(rate, bpm = 120)
+        val recorder = Recorder()
+        track.play(rate / 4L, recorder = recorder) // into beat 0
+        track.subdivision = Subdivision.FOUR
+        track.play(rate * 3L / 4 - rate / 4, recorder = recorder) // into beat 1, after its second click
+        track.subdivision = Subdivision.NONE
+        track.play(rate.toLong(), recorder = recorder)
+        assertEquals(
+            listOf(0L, 24_000L, 30_000L, 36_000L, 42_000L, 48_000L, 72_000L),
+            recorder.clicks.map { it.frame },
+        )
+        assertEquals(Subdivision.NONE, track.subdivision)
+    }
+
+    @Test
+    fun `a new tempo moves the clicks left in the beat, leaving out those already past`() {
+        val rate = 48_000
+        // Faster: at 120 BPM beat 0's clicks would have been at 6000, 12 000 and 18 000, all past at 20 000.
+        val faster = ClickTrack(rate, bpm = 60, subdivision = Subdivision.FOUR)
+        val fast = Recorder()
+        faster.play(20_000, recorder = fast) // beat 0 and its click at 12 000
+        faster.bpm = 120
+        faster.play(30_000, recorder = fast)
+        assertEquals(listOf(0L, 12_000L, 24_000L, 30_000L, 36_000L, 42_000L, 48_000L), fast.clicks.map { it.frame })
+
+        // Slower: beat 0's third click comes at 60 BPM's 24 000, the fourth at 36 000.
+        val slower = ClickTrack(rate, bpm = 120, subdivision = Subdivision.FOUR)
+        val slow = Recorder()
+        slower.play(7_000, recorder = slow) // beat 0 and its click at 6000
+        slower.bpm = 60
+        slower.play(43_000, recorder = slow)
+        assertEquals(listOf(0L, 6_000L, 24_000L, 36_000L, 48_000L), slow.clicks.map { it.frame })
+        assertEquals(listOf(0, 1, 2, 3, 0), slow.clicks.map { it.click })
+    }
+
+    @Test
+    fun `a new meter starts a new bar on the next beat, the clicks between beats unmoved`() {
+        val rate = 48_000
+        val track = ClickTrack(rate, bpm = 120, meter = Meter.FOUR_FOUR, subdivision = Subdivision.TWO)
+        val recorder = Recorder()
+        track.play(rate * 3L / 4 - 1000, recorder = recorder) // beats 0 and 1 and their halves
+        track.meter = Meter.SEVEN_EIGHT
+        track.play(rate * 5L, recorder = recorder)
+        assertEquals((0L until 11L * 2).map { it * 12_000 }, recorder.clicks.map { it.frame }.take(22))
+        assertEquals(listOf(0, 1, 0, 1, 2, 3, 4, 5, 6, 0, 1), recorder.beats.map { it.beatInBar }.take(11))
+    }
+
+    @Test
+    fun `at 250 BPM a click the next one catches up with fades out to 0 just before it, every sound`() {
+        val rate = 44_100
+        val fade = (ClickTrack.CUT_FADE_SECONDS * rate).toInt()
+        for (sound in ClickSound.entries) {
+            for (subdivision in listOf(Subdivision.TWO, Subdivision.THREE, Subdivision.FOUR)) {
+                val at = "$sound in ${subdivision.clicksPerBeat}s"
+                val track = ClickTrack(rate, bpm = 250, meter = Meter.FIVE_FOUR, sound = sound, subdivision = subdivision)
+                val recorder = Recorder()
+                val total = rate * 3
+                val out = FloatArray(total)
+                var done = 0
+                while (done < total) {
+                    val n = minOf(441, total - done)
+                    track.render(out, done, n, recorder)
+                    done += n
+                }
+                val clicks = recorder.clicks
+                fun frameOf(n: Int) = ((n * rate * 60L * 2 / (250 * subdivision.clicksPerBeat) + 1) / 2).toInt()
+                assertEquals(at, (0 until clicks.size).map { frameOf(it).toLong() }, clicks.map { it.frame })
+                var cut = 0
+                for ((n, click) in clicks.withIndex()) {
+                    val samples = track.sounds.waveform(sound, click.accent)
+                    val start = click.frame.toInt()
+                    val next = frameOf(n + 1) // also for the last: the fade comes before the next click, heard or not
+                    val overruns = start + samples.size > next
+                    val whole = minOf(if (overruns) next - fade else start + samples.size, total)
+                    for (i in start until whole) assertEquals("$at: click $n, sample ${i - start}", samples[i - start], out[i], 0f)
+                    if (!overruns || next > total) continue
+                    cut++
+                    for (i in next - fade until next) {
+                        assertTrue("$at: click $n louder in its fade", abs(out[i]) <= abs(samples[i - start]))
+                    }
+                    assertTrue("$at: click $n ends on ${out[next - 1]}", abs(out[next - 1]) < 1e-3f)
+                }
+                val interval = rate * 60 / (250 * subdivision.clicksPerBeat)
+                assertEquals("$at: clicks cut", track.sounds.frames(sound) > interval, cut > 0)
+            }
+        }
+    }
+
+    @Test
+    fun `tempo changes at any moment between subdivided clicks never crackle`() {
+        val rate = 48_000
+        val random = java.util.Random(62)
+        for (sound in ClickSound.entries) {
+            val track = ClickTrack(rate, bpm = 250, sound = sound, subdivision = Subdivision.FOUR)
+            // The steepest step inside any of the sound's clicks: no step of the track may be much steeper.
+            val steepest = BeatAccent.entries.maxOf { a ->
+                val click = track.sounds.waveform(sound, a)
+                (1 until click.size).maxOf { abs(click[it] - click[it - 1]) }
+            }
+            val recorder = Recorder()
+            val total = rate * 20
+            val out = FloatArray(total)
+            var done = 0
+            while (done < total) {
+                if (random.nextInt(4) == 0) track.bpm = 30 + random.nextInt(221)
+                if (random.nextInt(20) == 0) track.subdivision = Subdivision.entries[random.nextInt(4)]
+                val n = minOf(1 + random.nextInt(600), total - done)
+                track.render(out, done, n, recorder)
+                done += n
+            }
+            val worst = (1 until total).maxOf { abs(out[it] - out[it - 1]) }
+            assertTrue("$sound: a step of $worst, the clicks' steepest $steepest", worst <= steepest + 0.02f)
+            val frames = recorder.clicks.map { it.frame }
+            assertTrue("$sound: clicks out of order", frames.zipWithNext().all { (a, b) -> b > a })
+        }
+    }
+
+    @Test
+    fun `rendering and changing tempo, meter, subdivision or a sound played before allocate nothing`() {
+        val track = ClickTrack(48_000, bpm = 250, subdivision = Subdivision.FOUR)
         val buffer = FloatArray(480)
         val listener = BeatListener { _, _, _, _ -> }
         for (sound in ClickSound.entries) track.sound = sound // each rendered once
@@ -235,13 +431,17 @@ class ClickTrackTest {
             repeat(500) { track.render(buffer, listener = listener) }
             track.bpm = 90
             track.meter = Meter.SEVEN_EIGHT
+            track.subdivision = Subdivision.TWO
             repeat(500) { track.render(buffer, listener = listener) }
             track.sound = ClickSound.RIM_CLICK
+            track.subdivision = Subdivision.THREE
             repeat(500) { track.render(buffer, listener = listener) }
             track.bpm = 250
             track.meter = Meter.FOUR_FOUR
             track.sound = ClickSound.COWBELL
-            repeat(500) { track.render(buffer, listener = listener) }
+            repeat(250) { track.render(buffer, listener = listener) }
+            track.subdivision = Subdivision.NONE
+            repeat(250) { track.render(buffer, listener = listener) }
         }
         assertEquals(0L, bytes)
     }

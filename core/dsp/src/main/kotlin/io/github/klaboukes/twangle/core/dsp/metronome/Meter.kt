@@ -1,6 +1,6 @@
 package io.github.klaboukes.twangle.core.dsp.metronome
 
-/** How strongly a beat is played, and so which click sounds on it (see [ClickSounds]). */
+/** How strongly a beat (or a click between beats) is played, and so which click sounds on it (see [ClickSounds]). */
 enum class BeatAccent {
     /** The first beat of a bar: the highest and loudest click. */
     DOWNBEAT,
@@ -10,6 +10,12 @@ enum class BeatAccent {
 
     /** Every other beat. */
     PLAIN,
+
+    /**
+     * A click between the beats ([Subdivision]): the softest, at its own pitch. Never a beat's
+     * accent: [Meter.accentOf] doesn't give it.
+     */
+    SUBDIVISION,
 }
 
 /**

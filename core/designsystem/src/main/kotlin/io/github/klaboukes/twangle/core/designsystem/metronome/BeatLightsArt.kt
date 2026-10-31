@@ -132,7 +132,7 @@ private class BeatLights(private val meter: Meter, private val style: VisualStyl
         val tier = when (meter.accentOf(i)) {
             BeatAccent.DOWNBEAT -> 2
             BeatAccent.GROUP -> 1
-            BeatAccent.PLAIN -> 0
+            BeatAccent.PLAIN, BeatAccent.SUBDIVISION -> 0 // A meter's beats are never SUBDIVISION.
         }
         val sz = TIER_SCALES[tier]
         val lit = level > 0f

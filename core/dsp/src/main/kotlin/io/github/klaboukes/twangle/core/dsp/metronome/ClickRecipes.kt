@@ -49,10 +49,13 @@ internal object ClickRecipes {
         downbeatVelocity = 1.3,
         downbeatPitch = 2.0,
         groupPitch = 1.5,
+        subdivisionVelocity = 0.4,
+        subdivisionPitch = 0.75,
         bursts = listOf(Burst(4000.0, 1.0, 0.0015, 0.15)),
         downbeatListener = 160,
         groupListener = 165,
         plainListener = 254,
+        subdivisionListener = 163,
     ) { p, listener ->
         val f = 560.0 * p
         // (ratio, strength, pair split, time constant)
@@ -91,10 +94,13 @@ internal object ClickRecipes {
         downbeatVelocity = 1.35,
         downbeatPitch = 1.5,
         groupPitch = 1.25,
+        subdivisionVelocity = 0.4,
+        subdivisionPitch = 0.75,
         bursts = listOf(Burst(5000.0, 0.8, 0.0005, 0.06)),
         downbeatListener = 231,
         groupListener = 42,
         plainListener = 232,
+        subdivisionListener = 248,
     ) { p, listener ->
         val f = 2200.0 * p
         val ratios = barRatios(4, gyrationOverLength = 0.03125, eOverKappaG = 13.5)
@@ -124,6 +130,8 @@ internal object ClickRecipes {
         downbeatVelocity = 0.72,
         downbeatPitch = 2.0,
         groupPitch = 1.5,
+        subdivisionVelocity = 0.4,
+        subdivisionPitch = 0.75,
         bursts = listOf(
             Burst(3000.0, 0.5, 0.009, 2.5),
             Burst(5000.0, 0.7, 0.004, 1.0),
@@ -131,6 +139,7 @@ internal object ClickRecipes {
         downbeatListener = 69,
         groupListener = 33,
         plainListener = 215,
+        subdivisionListener = 112,
     ) { p, listener ->
         buildList {
             val stick = barRatios(5, gyrationOverLength = 0.00875, eOverKappaG = 13.0)
@@ -142,11 +151,13 @@ internal object ClickRecipes {
                 val hz = 180.0 * j / MEMBRANE[0].third
                 add(Mode(hz, 1.6 * besselJ(m, j * 0.93) * listener.sign(), 0.025 * sqrt(180.0 / hz)))
             }
-            // The hoop's ring: faint on a plain beat (strength 0.3), clear on beat 1's harder hit (1.3).
+            // The hoop's ring: faint on a plain beat and between beats (strength 0.3), clear on
+            // beat 1's harder hit (1.3).
             val ring = 1200.0 * p
             val ringSign = listener.sign()
-            add(Mode(ring * 0.997, (p - 0.7) * ringSign, 0.012))
-            add(Mode(ring * 1.003, (p - 0.7) * ringSign, 0.012))
+            val ringLevel = maxOf(p - 0.7, 0.3)
+            add(Mode(ring * 0.997, ringLevel * ringSign, 0.012))
+            add(Mode(ring * 1.003, ringLevel * ringSign, 0.012))
         }
     }
 }

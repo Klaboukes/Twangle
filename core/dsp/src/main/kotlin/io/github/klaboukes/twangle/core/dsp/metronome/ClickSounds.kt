@@ -19,19 +19,22 @@ import kotlin.math.sqrt
  * raised-cosine fade over the last [END_FADE_SECONDS], ending on exactly 0 after [CLICK_SECONDS].
  * The upper mode is left out where it would pass 0.45 × the sample rate, so nothing aliases.
  * The accent is told apart by pitch and level: the downbeat at A6 (1760 Hz) and the loudest, a group
- * accent at E6 (1318.5 Hz), the other beats at A5 (880 Hz) and the quietest.
+ * accent at E6 (1318.5 Hz), the other beats at A5 (880 Hz), and the clicks between the beats
+ * ([BeatAccent.SUBDIVISION]) a fourth lower, at E5 (659.3 Hz), and the quietest.
  *
  * **The cowbell, claves and rim click** are struck by [PercussionSynth] from [ClickRecipes]: a
  * contact pulse, a few hard-damped modes and a strike noise, 80–180 ms long. Beat 1 is struck harder
- * and rings higher (an octave, the claves a fifth), a group accent halfway. They are struck at
- * [STRUCK_RATE] and, at any other rate, resampled from it ([Resampler]). Each is then scaled so a
- * bar of 4/4 (beat 1 and three plain beats) carries the wood block's energy, as loud by RMS, unless
- * one of its three clicks would then pass [MAX_PEAK]: then the loudest peaks at [MAX_PEAK].
+ * and rings higher (an octave, the claves a fifth), a group accent halfway; a click between the
+ * beats is struck softest and rings lower. They are struck at [STRUCK_RATE] and, at any other rate,
+ * resampled from it ([Resampler]). Each sound is then scaled so a bar of 4/4 (beat 1 and three plain
+ * beats) carries the wood block's energy, as loud by RMS, unless one of its clicks would then pass
+ * [MAX_PEAK]: then the loudest peaks at [MAX_PEAK].
  *
- * Every click is shorter than a beat at the fastest tempo (0.24 s), so one never runs into the next.
- * Memory per sample rate: the wood block's three clicks (23 KB at 48 kHz) at once, each other sound
- * the first time it is asked for (cowbell 104 KB, claves 69 KB, rim click 46 KB at 48 kHz); all
- * four together hold 60,480 floats at 48 kHz, 242 KB.
+ * Every click is shorter than a beat at the fastest tempo (0.24 s), so without a subdivision one
+ * never runs into the next; between the beats [ClickTrack] cuts a click the next one catches up with.
+ * Memory per sample rate: the wood block's four clicks (31 KB at 48 kHz) at once, each other sound
+ * the first time it is asked for (cowbell 138 KB, claves 92 KB, rim click 61 KB at 48 kHz); all
+ * four together hold 80,640 floats at 48 kHz, 323 KB.
  *
  * Not thread-safe: one thread (the audio writer) uses it, as [ClickTrack] does.
  */
@@ -52,7 +55,7 @@ class ClickSounds(val sampleRate: Int) {
 
     /**
      * The click of [sound] for [accent]. Shared and read-only: callers must not change it. The
-     * first call for a sound other than the wood block renders its three clicks (a few
+     * first call for a sound other than the wood block renders its four clicks (a few
      * milliseconds, see [prepare]); later calls only look them up and allocate nothing.
      */
     fun waveform(sound: ClickSound, accent: BeatAccent): FloatArray = clicksOf(sound)[accent.ordinal]
@@ -90,7 +93,7 @@ class ClickSounds(val sampleRate: Int) {
         return FloatArray(clickFrames) { n -> (samples[n] * peak / loudest).toFloat() }
     }
 
-    // The recipe's three hits, scaled to the wood block's loudness (see the class comment).
+    // The recipe's four hits, scaled to the wood block's loudness (see the class comment).
     private fun struck(recipe: PercussionSynth.Recipe, wood: Array<FloatArray>): Array<FloatArray> {
         val raw = Array(BeatAccent.entries.size) { a ->
             val hit = PercussionSynth.hit(recipe, BeatAccent.entries[a], STRUCK_RATE)
@@ -167,6 +170,7 @@ class ClickSounds(val sampleRate: Int) {
             BeatAccent.DOWNBEAT -> 1760.0
             BeatAccent.GROUP -> 1318.51
             BeatAccent.PLAIN -> 880.0
+            BeatAccent.SUBDIVISION -> 659.26
         }
 
         /** Largest sample of the wood block's click for [accent]; the loudest is [MAX_PEAK]. */
@@ -174,6 +178,7 @@ class ClickSounds(val sampleRate: Int) {
             BeatAccent.DOWNBEAT -> 0.8
             BeatAccent.GROUP -> 0.6
             BeatAccent.PLAIN -> 0.45
+            BeatAccent.SUBDIVISION -> 0.28
         }
     }
 }

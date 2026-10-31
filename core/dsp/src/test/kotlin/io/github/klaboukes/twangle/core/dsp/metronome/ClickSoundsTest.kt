@@ -61,9 +61,11 @@ class ClickSoundsTest {
                 val plain = sounds.waveform(sound, BeatAccent.PLAIN)
                 val at = "$sound at $rate Hz"
 
-                // Pitch: each accent's click is strongest at its own pitch of the sound's main tone.
+                // Pitch: each accent's click (the one between beats too) is strongest at its own
+                // pitch of the sound's main tone.
                 val tones = BeatAccent.entries.map { TONE_HZ.getValue(sound) * pitchOf(sound, it) }
-                for ((accent, click) in listOf(BeatAccent.DOWNBEAT to down, BeatAccent.GROUP to group, BeatAccent.PLAIN to plain)) {
+                for (accent in BeatAccent.entries) {
+                    val click = sounds.waveform(sound, accent)
                     val own = tones[accent.ordinal]
                     val levels = tones.map { bandLevel(click, rate, it) }
                     assertEquals("$at: $accent strongest at $own Hz of $tones ($levels)", own, tones[levels.indexOf(levels.max())], 0.0)
@@ -74,6 +76,23 @@ class ClickSoundsTest {
                 val step = 20 * log10(peaks[0] / peaks[2].toDouble())
                 assertTrue("$at: beat 1 only %+.2f dB over a plain beat".format(step), step >= 4.5)
                 assertTrue("$at: peaks $peaks", peaks[0] > peaks[1] && peaks[1] > peaks[2])
+            }
+        }
+    }
+
+    @Test
+    fun `a click between the beats is the softest, at least 3 dB under a plain beat, and lower`() {
+        for (rate in RATES) {
+            val sounds = ClickSounds(rate)
+            for (sound in ClickSound.entries) {
+                val at = "$sound at $rate Hz"
+                val between = sounds.waveform(sound, BeatAccent.SUBDIVISION)
+                val plain = sounds.waveform(sound, BeatAccent.PLAIN)
+                val peakStep = 20 * log10(plain.maxOf { abs(it) } / between.maxOf { abs(it) }.toDouble())
+                val energyStep = 10 * log10(plain.sumOf { it.toDouble() * it } / between.sumOf { it.toDouble() * it })
+                assertTrue("$at: only %.2f dB under a plain beat at the peak".format(peakStep), peakStep >= 3.0)
+                assertTrue("$at: only %.2f dB under a plain beat by energy".format(energyStep), energyStep >= 3.0)
+                assertTrue("$at: not lower than a plain beat", pitchOf(sound, BeatAccent.SUBDIVISION) < 1.0)
             }
         }
     }

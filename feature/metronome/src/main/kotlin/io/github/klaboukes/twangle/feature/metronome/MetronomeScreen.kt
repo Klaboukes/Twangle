@@ -226,7 +226,7 @@ class BeatClock {
         val strength = when (beat.accent) {
             BeatAccent.DOWNBEAT -> 1f
             BeatAccent.GROUP -> 0.75f
-            BeatAccent.PLAIN -> 0.55f
+            BeatAccent.PLAIN, BeatAccent.SUBDIVISION -> 0.55f // Beats are never SUBDIVISION.
         }
         return strength * exp(-millisSinceBeat(beat) / GLOW_DECAY_MILLIS)
     }

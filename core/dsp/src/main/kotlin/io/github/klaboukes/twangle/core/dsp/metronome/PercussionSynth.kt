@@ -63,6 +63,10 @@ internal object PercussionSynth {
         val downbeatPitch: Double,
         /** How much higher a group accent's modes ring than a plain beat's: between the two. */
         val groupPitch: Double,
+        /** Striking speed of a click between the beats ([BeatAccent.SUBDIVISION]): the softest. */
+        val subdivisionVelocity: Double,
+        /** How much lower than a plain beat's a click between the beats rings (a factor under 1). */
+        val subdivisionPitch: Double,
         val bursts: List<Burst>,
         /**
          * Where each accent is heard from (a seed for the modes' signs and the noise): of 300
@@ -72,6 +76,7 @@ internal object PercussionSynth {
         val downbeatListener: Long,
         val groupListener: Long,
         val plainListener: Long,
+        val subdivisionListener: Long,
         /** The modes at [pitchFactor]; [listener] gives each mode's sign where it is heard. */
         val modes: (pitchFactor: Double, listener: Random) -> List<Mode>,
     )
@@ -80,18 +85,21 @@ internal object PercussionSynth {
         BeatAccent.DOWNBEAT -> recipe.downbeatVelocity
         BeatAccent.GROUP -> (recipe.downbeatVelocity + recipe.plainVelocity) / 2
         BeatAccent.PLAIN -> recipe.plainVelocity
+        BeatAccent.SUBDIVISION -> recipe.subdivisionVelocity
     }
 
     fun pitchOf(recipe: Recipe, accent: BeatAccent): Double = when (accent) {
         BeatAccent.DOWNBEAT -> recipe.downbeatPitch
         BeatAccent.GROUP -> recipe.groupPitch
         BeatAccent.PLAIN -> 1.0
+        BeatAccent.SUBDIVISION -> recipe.subdivisionPitch
     }
 
     fun listenerOf(recipe: Recipe, accent: BeatAccent): Long = when (accent) {
         BeatAccent.DOWNBEAT -> recipe.downbeatListener
         BeatAccent.GROUP -> recipe.groupListener
         BeatAccent.PLAIN -> recipe.plainListener
+        BeatAccent.SUBDIVISION -> recipe.subdivisionListener
     }
 
     /**
