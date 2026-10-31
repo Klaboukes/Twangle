@@ -179,7 +179,7 @@ internal fun TrainerSettings(
             onFaster = { onPlan(plan.copy(goalBpm = SpeedTrainer.higher(plan.goalBpm))) },
         )
         val locale = appLocale()
-        ChoiceRow(stringResource(R.string.metronome_trainer_step), Modifier.padding(top = 2.dp)) {
+        FaceRow(stringResource(R.string.metronome_trainer_step), Modifier.padding(top = 2.dp)) {
             val bpm = stringResource(R.string.metronome_bpm)
             for (option in SpeedTrainer.STEPS) {
                 val text = stringResource(R.string.metronome_trainer_plus, localDigits(option, locale))
@@ -193,7 +193,7 @@ internal fun TrainerSettings(
                 )
             }
         }
-        ChoiceRow(stringResource(R.string.metronome_trainer_bars), Modifier.padding(top = 4.dp)) {
+        FaceRow(stringResource(R.string.metronome_trainer_bars), Modifier.padding(top = 4.dp)) {
             for (option in SpeedTrainer.BAR_CHOICES) {
                 val digits = localDigits(option, locale)
                 TextSegment(
@@ -232,7 +232,7 @@ private fun BackArrow(onBack: () -> Unit) {
 
 /** A heading over four choices side by side, a radio group TalkBack hears by the heading. */
 @Composable
-private fun ChoiceRow(title: String, modifier: Modifier = Modifier, choices: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+private fun FaceRow(title: String, modifier: Modifier = Modifier, choices: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
     Column(modifier) {
         PanelHeading(title)
         Row(

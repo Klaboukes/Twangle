@@ -18,13 +18,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.TextAutoSize
@@ -40,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -60,7 +57,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.buttonLook
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceFace
+import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -370,8 +369,8 @@ internal fun PanelHeading(text: String) {
 }
 
 /**
- * One choice of a row (a sound, a note value): its [icon] on a [SEGMENT_FACE] tall face in a 48 dp
- * touch area, a radio button TalkBack hears by [name]. Not [enabled]: dimmed in place, untouchable.
+ * One choice of a row (a sound, a note value): its [icon] on the shared face ([ChoiceFace]), a radio
+ * button TalkBack hears by [name]. Not [enabled]: dimmed in place, untouchable.
  */
 @Composable
 private fun IconSegment(
@@ -384,15 +383,12 @@ private fun IconSegment(
     enabled: Boolean = true,
 ) {
     val scheme = MaterialTheme.colorScheme
-    Segment(name, tag, picked, onPick, modifier, enabled) {
+    ChoiceFace(name, picked, onPick, modifier.testTag(tag), enabled) {
         Icon(painterResource(icon), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
     }
 }
 
-/**
- * One choice of a row shown as a short [text] (the speed trainer's "+5", "4"), as [IconSegment]: the
- * text set smaller where it doesn't fit (very large text), never cut.
- */
+/** One choice of a row shown as a short [text] (the speed trainer's "+5", "4"): the shared [TextChoiceFace]. */
 @Composable
 internal fun TextSegment(
     text: String,
@@ -401,64 +397,7 @@ internal fun TextSegment(
     picked: Boolean,
     onPick: () -> Unit,
     modifier: Modifier = Modifier,
-) {
-    val style = MaterialTheme.typography.labelLarge.copy(fontSize = 15.sp)
-    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
-    Segment(name, tag, picked, onPick, modifier) {
-        Text(
-            text,
-            style = style,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            softWrap = false,
-            autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = style.fontSize, stepSize = 0.5.sp),
-            modifier = Modifier.padding(horizontal = 4.dp),
-        )
-    }
-}
-
-/** A choice's face and touch area, holding [face] (an icon or a short text). */
-@Composable
-private fun Segment(
-    name: String,
-    tag: String,
-    picked: Boolean,
-    onPick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    face: @Composable () -> Unit,
-) {
-    val look = buttonLook()
-    val source = remember { MutableInteractionSource() }
-    Box(
-        modifier
-            .testTag(tag)
-            .heightIn(min = ROW_HEIGHT)
-            .selectable(
-                selected = picked,
-                interactionSource = source,
-                indication = null,
-                enabled = enabled,
-                role = Role.RadioButton,
-            ) {
-                source.pressFlash()
-                onPick()
-            }
-            .semantics { contentDescription = name },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(SEGMENT_FACE)
-                .alpha(if (enabled) 1f else DISABLED_ALPHA)
-                .pressFeedback(source, look.shape, fill = look.fill(picked), outline = look.outline(picked)),
-            contentAlignment = Alignment.Center,
-        ) {
-            face()
-        }
-    }
-}
+) = TextChoiceFace(text, name, picked, onPick, modifier.testTag(tag))
 
 /** "Vibrate on the beat" with a switch at the end; the whole row toggles it. */
 @Composable
@@ -551,9 +490,5 @@ private val SWITCH_ROW_HEIGHT = 56.dp
 internal val ROW_PADDING = 14.dp
 internal val MIN_NAME_SIZE = 8.dp
 
-/** A sound's face, 40 dp tall as the meter picker's buttons, in its 48 dp touch area, 4 dp from the next. */
-private val SEGMENT_FACE = 40.dp
-internal val SEGMENT_GAP = 4.dp
-
-/** A choice the meter doesn't offer (triplets, sixteenths in 6/8 and 7/8), as Practice's disabled buttons. */
-internal const val DISABLED_ALPHA = 0.38f
+/** The faces of a row ([ChoiceFace]: 40 dp tall as the meter picker's buttons, in a 48 dp touch area) stand 4 dp apart. */
+internal val SEGMENT_GAP = CHOICE_FACE_GAP

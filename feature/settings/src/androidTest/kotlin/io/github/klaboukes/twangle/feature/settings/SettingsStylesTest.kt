@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -45,6 +46,7 @@ import io.github.klaboukes.twangle.feature.settings.components.styleCardTag
 import io.github.klaboukes.twangle.feature.settings.components.waveLookCardTag
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -250,6 +252,14 @@ class SettingsStylesTest(private val style: VisualStyle) {
                 row.assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 if (selected) row.assertIsSelected() else row.assertIsNotSelected()
             }
+            // The app's one choice row (ui.md, *Shared controls*): at least 48 dp tall, and every
+            // name starts at the same place, picked or not (the ✓'s room is kept on each row).
+            val starts = listOf(R.string.settings_theme_system, R.string.settings_theme_light, R.string.settings_theme_dark).map { id ->
+                val height = compose.onNodeWithText(context.getString(id)).getBoundsInRoot().let { it.bottom - it.top }
+                assertTrue("$case row $height", height >= 47.5.dp)
+                compose.onNodeWithText(context.getString(id), useUnmergedTree = true).getBoundsInRoot().left.value
+            }
+            assertTrue("$case names line up $starts", starts.all { kotlin.math.abs(it - starts[0]) < 0.5f })
         }
     }
 

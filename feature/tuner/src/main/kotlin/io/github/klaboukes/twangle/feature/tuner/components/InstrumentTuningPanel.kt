@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -63,6 +64,8 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
@@ -462,8 +465,8 @@ private fun InstrumentChip(name: String, selected: Boolean, index: Int, onClick:
 }
 
 /**
- * A tuning in the panel: its [name] over its open strings, the [selected] one in the container colour
- * and ticked. TalkBack says the name and the strings ("Half step down, E flat, A flat …"). The
+ * A tuning in the panel: its [name] over its open strings on the shared [ChoiceRow], the [selected]
+ * one in the container colour with the accent outline and ticked. TalkBack says the name and the strings ("Half step down, E flat, A flat …"). The
  * player's own tunings put their ⋮ button in [trailing], at the end, outside the part that picks it.
  */
 @Composable
@@ -479,45 +482,28 @@ internal fun TuningRow(
     val scheme = MaterialTheme.colorScheme
     val speech = rememberNoteNameSpeech()
     val spoken = stringResource(R.string.tuner_spoken_tuning, speech.text(name), spokenOpenStrings(tuning, notation, speech, stringResource(R.string.tuner_spoken_separator)))
-    val shape = MaterialTheme.shapes.medium
-    Row(
-        modifier = modifier
-            .padding(top = 4.dp)
-            .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .clip(shape)
-            .background(if (selected) scheme.primaryContainer else Color.Transparent, shape),
-        verticalAlignment = Alignment.CenterVertically,
+    ChoiceRow(
+        selected = selected,
+        onClick = onClick,
+        modifier = modifier.padding(top = CHOICE_ROW_GAP),
+        minHeight = ROW_HEIGHT,
+        spoken = spoken,
+        trailing = trailing,
     ) {
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .heightIn(min = ROW_HEIGHT)
-                .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-                .semantics { contentDescription = spoken }
-                .padding(start = 12.dp, end = if (trailing != null) 4.dp else 12.dp, top = 6.dp, bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(
-                    musicText(name),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
-                )
-                // Lowest string first, left to right, in right-to-left languages too (else "E♭ … E♭"
-                // would put its last ♭ in front).
-                Text(
-                    openStrings(tuning, notation),
-                    style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr),
-                    color = scheme.onSurfaceVariant,
-                )
-            }
-            if (selected) {
-                Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
-            }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Text(
+                musicText(name),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = LocalContentColor.current,
+            )
+            // Lowest string first, left to right, in right-to-left languages too (else "E♭ … E♭"
+            // would put its last ♭ in front).
+            Text(
+                openStrings(tuning, notation),
+                style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr),
+                color = scheme.onSurfaceVariant,
+            )
         }
-        trailing?.invoke()
     }
 }
 

@@ -1,7 +1,6 @@
 package io.github.klaboukes.twangle.feature.eartraining
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,10 +15,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CutCornerShape
@@ -27,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
@@ -37,13 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -53,8 +46,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
-import io.github.klaboukes.twangle.core.designsystem.SegmentedSwitch
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
+import io.github.klaboukes.twangle.core.designsystem.TextChoiceFace
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
@@ -131,21 +126,35 @@ internal fun ChoicesPanel(
                     GroupHeading(stringResource(R.string.ear_notes))
                     Column(Modifier.selectableGroup()) {
                         for (choice in NoteChoice.entries) {
-                            ChoiceRow(stringResource(choice.label), selected = choice == state.noteChoice, tag = EarTrainingTestTags.noteChoice(choice)) {
-                                onNoteChoice(choice)
-                            }
+                            ChoiceRow(
+                                stringResource(choice.label),
+                                selected = choice == state.noteChoice,
+                                onClick = { onNoteChoice(choice) },
+                                modifier = Modifier.padding(top = CHOICE_ROW_GAP).testTag(EarTrainingTestTags.noteChoice(choice)),
+                            )
                         }
                     }
+                    // A count, so separate faces as the metronome's values, not a switch (ui.md, *Shared controls*).
                     GroupHeading(stringResource(R.string.ear_notes_in_row))
                     val locale = appLocale()
-                    SegmentedSwitch(
-                        options = NOTES_IN_ROW,
-                        selected = state.notesInRow,
-                        onSelect = onNotesInRow,
-                        label = { localDigits(it, locale) },
-                        tag = EarTrainingTestTags::notesInRow,
-                        modifier = Modifier.padding(start = PANEL_PADDING - LIST_PADDING, top = 6.dp).fillMaxWidth(),
-                    )
+                    Row(
+                        Modifier
+                            .padding(start = PANEL_PADDING - LIST_PADDING, top = 2.dp)
+                            .fillMaxWidth()
+                            .selectableGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(CHOICE_FACE_GAP),
+                    ) {
+                        for (count in NOTES_IN_ROW) {
+                            val digits = localDigits(count, locale)
+                            TextChoiceFace(
+                                text = digits,
+                                name = digits,
+                                picked = count == state.notesInRow,
+                                onPick = { onNotesInRow(count) },
+                                modifier = Modifier.weight(1f).testTag(EarTrainingTestTags.notesInRow(count)),
+                            )
+                        }
+                    }
                     SwitchRow(
                         text = stringResource(R.string.ear_any_octave),
                         checked = state.noteMatch == NoteMatch.ANY_OCTAVE,
@@ -205,38 +214,6 @@ private fun GroupHeading(text: String) {
             .padding(start = PANEL_PADDING - LIST_PADDING, top = 10.dp, bottom = 2.dp)
             .semantics { heading() },
     )
-}
-
-/** One choice of a group where one is picked: its [text], the [selected] one in the container colour and ticked. TalkBack hears a radio button. */
-@Composable
-private fun ChoiceRow(text: String, selected: Boolean, tag: String, onClick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.medium
-    Row(
-        Modifier
-            .testTag(tag)
-            .padding(top = 4.dp)
-            .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .clip(shape)
-            .background(if (selected) scheme.primaryContainer else Color.Transparent, shape)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-            color = if (selected) scheme.onPrimaryContainer else scheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        Spacer(Modifier.width(12.dp))
-        if (selected) {
-            Icon(painterResource(DesignR.drawable.ic_check), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
-        } else {
-            Spacer(Modifier.size(CHECK_SIZE))
-        }
-    }
 }
 
 /** A choice that is on or off: its [text] with a switch at the end; the whole row toggles it (as the drone's Lower). */
@@ -347,7 +324,6 @@ private val HANDLE_HEIGHT = 48.dp
 private val PANEL_PADDING = 20.dp
 private val LIST_PADDING = 12.dp
 private val ROW_HEIGHT = 48.dp
-private val CHECK_SIZE = 20.dp
 
 /** The chips, three to a row (twelve intervals in four rows, up · down · together in one, twenty chord types in seven), this far apart. */
 private const val CHIPS_PER_ROW = 3

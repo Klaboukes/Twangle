@@ -15,13 +15,11 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +38,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.feature.settings.R
 
@@ -104,29 +104,21 @@ fun LanguageSetting(
                             .heightIn(max = windowHeight * LIST_MAX_SHARE)
                             .verticalScroll(scroll)
                             .selectableGroup(),
+                        verticalArrangement = Arrangement.spacedBy(CHOICE_ROW_GAP),
                     ) {
                         (listOf(null) + languages).forEach { tag ->
-                            Row(
+                            // The app's choice row, as Settings' other lists.
+                            ChoiceRow(
+                                text = label(tag),
+                                selected = tag == selected,
+                                onClick = {
+                                    open = false
+                                    if (tag != selected) onSelect(tag)
+                                },
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
                                     .then(if (tag == selected) Modifier.bringIntoViewRequester(picked) else Modifier)
-                                    .selectable(
-                                        selected = tag == selected,
-                                        role = Role.RadioButton,
-                                        onClick = {
-                                            open = false
-                                            if (tag != selected) onSelect(tag)
-                                        },
-                                    )
                                     .testTag(languageOptionTag(tag)),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                // The row handles the click, so the button itself doesn't.
-                                RadioButton(selected = tag == selected, onClick = null)
-                                Text(text = label(tag), style = MaterialTheme.typography.bodyLarge)
-                            }
+                            )
                         }
                     }
                     HorizontalDivider(color = edgeColor(scroll.canScrollForward))
