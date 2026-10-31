@@ -63,6 +63,9 @@ import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.OPTIONS_FACE
+import io.github.klaboukes.twangle.core.designsystem.OptionsButton
+import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.buttonLook
 import io.github.klaboukes.twangle.core.designsystem.styleButtonFace
@@ -189,19 +192,19 @@ private val MIN_LABEL_SIZE = 9.sp
 private val METER_BUTTON_WIDTH = 50.dp
 
 /**
- * − or + (one BPM slower or faster) either side of Start in the row under the dial: a [face] across
- * in the style's shape (round in Contemporary and Space Age), in a touch area of at least 48 dp.
+ * − or + (one BPM slower or faster) either side of Start in the row under the dial: the shared
+ * stepper ([StepperButton]) with a [face] across, in a touch area of at least 48 dp.
  */
 @Composable
 fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier) {
-    StyleButton(
-        onClick = onClick,
+    StepperButton(
+        more = faster,
         label = stringResource(if (faster) R.string.metronome_faster else R.string.metronome_slower),
+        onClick = onClick,
         modifier = modifier.testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER),
         face = face,
-    ) {
-        Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(face * STEP_ICON_SHARE))
-    }
+        icon = face * STEP_ICON_SHARE,
+    )
 }
 
 /** − and +'s icon: this share of the face. */
@@ -244,17 +247,20 @@ fun TempoRow(
                     StepButton(faster = true, onClick = { onStep(+1) }, face = STEP_FACE)
                 }
             }
+            // The shared options button (OPTIONS_FACE, as SIDE_BUTTON); TalkBack hears "Options" as a drop-down list.
             OptionsButton(
                 open = optionsOpen,
                 onClick = onOptions,
-                modifier = Modifier.size(SIDE_BUTTON).onGloballyPositioned { onOptionsPlaced(it.boundsInRoot()) },
+                label = stringResource(R.string.metronome_options),
+                role = Role.DropdownList,
+                modifier = Modifier.testTag(MetronomeTestTags.OPTIONS).onGloballyPositioned { onOptionsPlaced(it.boundsInRoot()) },
             )
         }
     }
 }
 
-/** Tap tempo and the options button: as the mock-up, a little smaller so the row fits a 320 dp phone. */
-private val SIDE_BUTTON = 52.dp
+/** Tap tempo and the options button: the shared options face (52 dp), so the row fits a 320 dp phone. */
+private val SIDE_BUTTON = OPTIONS_FACE
 
 /** − and +'s faces, a whole touch area. */
 private val STEP_FACE = 48.dp
@@ -304,24 +310,6 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(R.drawable.ic_tap), contentDescription = null, tint = look.content(), modifier = Modifier.size(ROW_ICON))
-    }
-}
-
-/**
- * The options button at the row's end: three sliders (`ic_tune`), picked (the container colour with an
- * accent outline) while its panel is [open]. TalkBack hears "Options" as a drop-down list.
- */
-@Composable
-private fun OptionsButton(open: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    StyleButton(
-        onClick = onClick,
-        label = stringResource(R.string.metronome_options),
-        modifier = modifier.testTag(MetronomeTestTags.OPTIONS),
-        face = SIDE_BUTTON,
-        picked = open,
-        role = Role.DropdownList,
-    ) {
-        Icon(painterResource(R.drawable.ic_tune), contentDescription = null, modifier = Modifier.size(ROW_ICON))
     }
 }
 

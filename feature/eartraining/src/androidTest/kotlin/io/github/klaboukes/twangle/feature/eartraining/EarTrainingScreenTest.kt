@@ -220,6 +220,9 @@ class EarTrainingScreenTest(private val style: VisualStyle) {
         assertEquals("7 right of 9", spoken(EarTrainingTestTags.TALLY))
         assertEquals("nothing moves", before, tags.map { node(it).getBoundsInRoot() })
         assertEquals("What is asked", spoken(EarTrainingTestTags.CHOICES))
+        val choices = node(EarTrainingTestTags.CHOICES).getBoundsInRoot()
+        assertEquals("the shared options button, 52 dp", 52f, choices.width.value, 0.5f)
+        assertEquals(52f, choices.height.value, 0.5f)
     }
 
     @Test

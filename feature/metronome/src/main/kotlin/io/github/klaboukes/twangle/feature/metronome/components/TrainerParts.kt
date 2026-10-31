@@ -37,7 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
-import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
@@ -275,7 +275,7 @@ private fun TempoStepper(
         ) {
             RowName(label, Modifier.weight(1f).padding(start = ROW_PADDING))
         }
-        StepperButton(faster = false, name = slower, enabled = canSlower, tag = "${tag}_slower", onClick = onSlower)
+        TrainerStepper(faster = false, name = slower, enabled = canSlower, tag = "${tag}_slower", onClick = onSlower)
         val numbers = numberFontFor(MaterialTheme.styleTokens.style)
         val style = TextStyle(fontFamily = numbers, fontSize = 18.sp, fontFeatureSettings = "$LINING_FIGURES, tnum")
         val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
@@ -292,16 +292,14 @@ private fun TempoStepper(
                 .widthIn(min = NUMBER_WIDTH, max = NUMBER_WIDTH)
                 .semantics { hideFromAccessibility() },
         )
-        StepperButton(faster = true, name = faster, enabled = canFaster, tag = "${tag}_faster", onClick = onFaster)
+        TrainerStepper(faster = true, name = faster, enabled = canFaster, tag = "${tag}_faster", onClick = onFaster)
     }
 }
 
-/** − or + beside a trainer tempo: a [STEPPER_FACE] face in the style's button shape, a 48 dp touch area. */
+/** − or + beside a trainer tempo: the shared stepper ([StepperButton], a 36 dp face in a 48 dp touch area). */
 @Composable
-private fun StepperButton(faster: Boolean, name: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
-    StyleButton(onClick = onClick, label = name, modifier = Modifier.testTag(tag), face = STEPPER_FACE, enabled = enabled) {
-        Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(20.dp))
-    }
+private fun TrainerStepper(faster: Boolean, name: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
+    StepperButton(more = faster, label = name, onClick = onClick, modifier = Modifier.testTag(tag), enabled = enabled)
 }
 
 /**
@@ -349,9 +347,6 @@ internal fun trainerStatus(plan: SpeedTrainer, bpm: Int, bar: Long, playing: Boo
         }
     }
 }
-
-/** − and +'s face beside a trainer tempo, as the mock-up's 36 dp. */
-private val STEPPER_FACE = 36.dp
 
 /** The trainer tempo's number between − and +: room for three figures. */
 private val NUMBER_WIDTH = 52.dp

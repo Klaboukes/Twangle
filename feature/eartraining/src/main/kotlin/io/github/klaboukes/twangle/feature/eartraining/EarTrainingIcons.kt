@@ -11,8 +11,9 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.Exercise
 
 /**
  * Ear training's icons, drawn as the Practice tools' (1.8 dp round-ended lines on a 24 dp grid, note
- * heads filled), from the mock-up (docs/design/ear-training-preview.html): each exercise's, and the
- * sliders of the "What is asked" button. A new exercise needs its icon here (the `when` says so).
+ * heads filled), from the mock-up (docs/design/ear-training-preview.html): each exercise's. The
+ * "What is asked" button has the shared options button's sliders. A new exercise needs its icon here
+ * (the `when` says so).
  */
 internal fun exerciseIcon(exercise: Exercise): ImageVector = EXERCISE_ICONS.getValue(exercise)
 
@@ -38,16 +39,6 @@ private val EXERCISE_ICONS = Exercise.entries.associateWith { exercise ->
         )
     }
 }
-
-/** Two sliders, for the button that opens what is asked. */
-internal val ChoicesIcon: ImageVector = icon(
-    "ear_choices",
-    lines = listOf(
-        "M4,7h9", "M17,7h3", "M4,17h3", "M11,17h9",
-        "M13,7a2,2 0,1 0,4,0a2,2 0,1 0,-4,0z", "M7,17a2,2 0,1 0,4,0a2,2 0,1 0,-4,0z",
-    ),
-    heads = emptyList(),
-)
 
 /** A note head at [x], [y] on the 24 dp grid: an oval 2.9 by 2.2 tilted back 20°, filled. */
 private data class Head(val x: Float, val y: Float)

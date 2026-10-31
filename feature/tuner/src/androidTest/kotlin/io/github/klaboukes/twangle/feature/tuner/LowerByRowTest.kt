@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
@@ -26,6 +28,7 @@ import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
 import io.github.klaboukes.twangle.core.testing.timeLimitSeconds
 import io.github.klaboukes.twangle.feature.tuner.components.LowerByRow
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -35,7 +38,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The instrument and tuning panel's "Lower by" row on its own, as wide as on a 360 dp phone: the
- * buttons step a half step at a time and stop at the ends, keep their place whatever the amount, and
+ * − and + step a half step at a time and stop at the ends, − on the left in every language, keep
+ * their place whatever the amount, and
  * at 2× text every word fits: in Dutch by day, every language overnight. (The row in the panel, a
  * window of its own that takes the phone's text size, is checked in [TunerContentTest].)
  */
@@ -65,8 +69,25 @@ class LowerByRowTest {
         }
     }
 
+    /** − (back up a half step) and + (a half step lower): the shared stepper. */
     private val up get() = compose.onNodeWithTag(TunerTestTags.LOWER_LESS)
     private val down get() = compose.onNodeWithTag(TunerTestTags.LOWER_MORE)
+
+    @Test
+    fun minusIsOnTheLeftAndPlusOnTheRightInEveryDirectionOnTheSteppersFace() {
+        for (language in listOf("en", "ar")) {
+            shownLocale.value = language
+            if (language == "en") show() else compose.waitForIdle()
+            val less = up.getBoundsInRoot()
+            val more = down.getBoundsInRoot()
+            assertTrue("$language: − left of +", less.right <= more.left)
+            for (bounds in listOf(less, more)) {
+                // The face; minimumInteractiveComponentSize keeps 48 dp to touch round it.
+                assertEquals("$language: the stepper's 36 dp face", 36f, bounds.width.value, 0.5f)
+                assertEquals(36f, bounds.height.value, 0.5f)
+            }
+        }
+    }
 
     @Test
     fun theButtonsStepAHalfStepAndStopAtTheEnds() {

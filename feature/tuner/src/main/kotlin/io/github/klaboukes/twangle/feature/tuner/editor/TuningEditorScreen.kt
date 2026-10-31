@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.designsystem.TwangleFilledTonalIconButton
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
@@ -369,7 +370,7 @@ private fun StringStepper(
         // the string row, which are not mirrored in right-to-left languages.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StepButton(R.drawable.ic_remove, stringResource(R.string.tuning_editor_lower, spokenString), canLower, onLower)
+                StepButton(DesignR.drawable.ic_remove, stringResource(R.string.tuning_editor_lower, spokenString), canLower, onLower)
                 Text(
                     noteText(noteName, note.octave),
                     style = MaterialTheme.typography.headlineSmall,
@@ -382,7 +383,7 @@ private fun StringStepper(
                             liveRegion = LiveRegionMode.Polite
                         },
                 )
-                StepButton(R.drawable.ic_add, stringResource(R.string.tuning_editor_raise, spokenString), canRaise, onRaise)
+                StepButton(DesignR.drawable.ic_add, stringResource(R.string.tuning_editor_raise, spokenString), canRaise, onRaise)
             }
         }
     }

@@ -82,7 +82,7 @@ import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
 import io.github.klaboukes.twangle.core.designsystem.StyleButton
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.OptionsButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
 import io.github.klaboukes.twangle.core.designsystem.musicText
@@ -214,7 +214,7 @@ fun EarTrainingContent(
         Spacer(Modifier.height(HEADER_TOP))
         header()
         Spacer(Modifier.height(8.dp))
-        ExerciseRow(state.exercise, state.tally, onPickExercise, onOpenChoices = { choicesOpen = true })
+        ExerciseRow(state.exercise, state.tally, onPickExercise, choicesOpen = choicesOpen, onOpenChoices = { choicesOpen = true })
     }
     // Chord type's answers scroll in their own box, which takes the room left under the question, so
     // the ▶ and the question stay put; its column doesn't scroll then.
@@ -345,10 +345,11 @@ object EarTrainingTestTags {
 /**
  * The exercise row: the three exercises as icons in one switch (each [EXERCISE_WIDTH] wide, named for
  * TalkBack), this visit's [tally] once a question was answered, quiet, at the end, and the "What is
- * asked" button. The icons and the button never move: the tally takes the room between them.
+ * asked" button: the shared options button ([OptionsButton], the metronome's), picked while its sheet
+ * is open ([choicesOpen]). The icons and the button never move: the tally takes the room between them.
  */
 @Composable
-private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> Unit, onOpenChoices: () -> Unit) {
+private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> Unit, choicesOpen: Boolean, onOpenChoices: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
         ExerciseSwitch(exercise, onPick)
         Box(Modifier.weight(1f).padding(start = 8.dp, end = 4.dp), contentAlignment = Alignment.CenterEnd) {
@@ -371,10 +372,12 @@ private fun ExerciseRow(exercise: Exercise, tally: Tally, onPick: (Exercise) -> 
                 )
             }
         }
-        val choices = stringResource(R.string.ear_choices)
-        TwangleIconButton(onClick = onOpenChoices, modifier = Modifier.testTag(EarTrainingTestTags.CHOICES)) {
-            Icon(ChoicesIcon, contentDescription = choices, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        OptionsButton(
+            open = choicesOpen,
+            onClick = onOpenChoices,
+            label = stringResource(R.string.ear_choices),
+            modifier = Modifier.testTag(EarTrainingTestTags.CHOICES),
+        )
     }
 }
 
@@ -642,7 +645,8 @@ private val PLAY_ICON: ImageVector = ImageVector.Builder(
 private const val NEON_OUTLINE_ALPHA = 0.55f
 
 private val HEADER_TOP = 8.dp
-private val QUESTION_TOP = 24.dp
+/** Under the exercise row: 24 dp less the 4 dp the options button's 52 dp face adds to the row, so the ▶ keeps its place. */
+private val QUESTION_TOP = 20.dp
 
 /** The column at most this wide, in the middle of a tablet. */
 private val COLUMN_MAX_WIDTH = 480.dp

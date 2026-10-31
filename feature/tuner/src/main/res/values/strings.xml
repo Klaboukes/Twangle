@@ -96,7 +96,7 @@
     <string name="tuning_lowered_4">%1$s, 2 steps down</string>
     <!-- A tuning lowered 2½ steps, without a name of its own. %1$s is its name ("Open G"). -->
     <string name="tuning_lowered_5">%1$s, 2½ steps down</string>
-    <!-- The "Lower by" row at the bottom of the instrument and tuning panel: its label, then how far the picked tuning is lowered (none, then ½ step to 2½ steps), between an up and a down button. -->
+    <!-- The "Lower by" row at the bottom of the instrument and tuning panel: its label, then how far the picked tuning is lowered (none, then ½ step to 2½ steps), between a − and a + button. -->
     <string name="tuner_lower_by">Lower by</string>
     <!-- "Lower by" row of the instrument and tuning panel: the tuning is not lowered. One short word. -->
     <string name="tuner_lowered_none">None</string>
@@ -112,9 +112,9 @@
     <string name="tuner_lowered_5">2½ steps</string>
     <!-- TalkBack: the row's label and its amount, "Lower by, ½ step". -->
     <string name="tuner_spoken_lower_by" translatable="false">%1$s, %2$s</string>
-    <!-- TalkBack: the row's down button and its up button. -->
+    <!-- TalkBack name of the "Lower by" row's + button: lowers the tuning a semitone further. -->
     <string name="tuner_lower_more">Lower a half step</string>
-    <!-- TalkBack name of the "Lower by" row's up button: raises the tuning back up a semitone. -->
+    <!-- TalkBack name of the "Lower by" row's − button: raises the tuning back up a semitone. -->
     <string name="tuner_lower_less">Back up a half step</string>
 
     <!-- Instruments, see Instruments in :core:dsp: the row along the top of the instrument and tuning panel. -->

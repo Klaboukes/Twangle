@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -21,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -29,7 +27,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -38,7 +36,7 @@ import kotlin.math.roundToInt
 
 /**
  * A4 calibration: a slider over 415–466 Hz in 1 Hz steps (low on the left in every language), − and +
- * buttons for single steps, and a reset to 440 Hz. A drag is saved once the finger lifts; until the
+ * for single steps (the shared stepper, [StepperButton]), and a reset to 440 Hz. A drag is saved once the finger lifts; until the
  * saved value comes back the slider keeps showing where it was dropped, so it doesn't jump back.
  */
 @Composable
@@ -76,9 +74,12 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
         // keyboard: a pitch scale is not mirrored in right-to-left languages.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                TwangleIconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) }, enabled = shown > MIN_HZ) {
-                    Icon(painterResource(R.drawable.ic_remove), contentDescription = stringResource(R.string.settings_a4_lower))
-                }
+                StepperButton(
+                    more = false,
+                    label = stringResource(R.string.settings_a4_lower),
+                    onClick = { onA4Change(AppSettings.normalizeA4(shown - 1f)) },
+                    enabled = shown > MIN_HZ,
+                )
                 Slider(
                     value = shown,
                     onValueChange = { pending = AppSettings.normalizeA4(it) },
@@ -96,9 +97,12 @@ fun A4Calibration(a4Hz: Float, onA4Change: (Float) -> Unit, modifier: Modifier =
                             stateDescription = a4Value
                         },
                 )
-                TwangleIconButton(onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) }, enabled = shown < MAX_HZ) {
-                    Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.settings_a4_raise))
-                }
+                StepperButton(
+                    more = true,
+                    label = stringResource(R.string.settings_a4_raise),
+                    onClick = { onA4Change(AppSettings.normalizeA4(shown + 1f)) },
+                    enabled = shown < MAX_HZ,
+                )
             }
         }
         TwangleTextButton(

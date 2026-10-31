@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -59,9 +61,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
-import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
+import io.github.klaboukes.twangle.core.designsystem.StepperButton
+import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
@@ -228,10 +232,11 @@ private fun Instrument.ownsTuning(tuning: Tuning, mine: List<CustomTuning>): Boo
     tuningById(tuning.id) != null || mine.any { it.id == tuning.id }
 
 /**
- * The panel's bottom row: "Lower by", then an up button (back up a half step), how far the picked
- * tuning is lowered ("None", "½ step" … "2½ steps") and a down button (a half step lower, at most to
- * [lowest]). The amount takes the room of the widest one, so the buttons never move; TalkBack hears
- * the label with the amount, and again when it changes.
+ * The panel's bottom row: "Lower by", then − (back up a half step), how far the picked tuning is
+ * lowered ("None", "½ step" … "2½ steps") and + (a half step lower, at most to [lowest]): the shared
+ * stepper ([StepperButton]), as it changes a number, left to right in every language. The amount
+ * takes the room of the widest one, so the buttons never move; TalkBack hears the label with the
+ * amount, and again when it changes.
  */
 @Composable
 internal fun LowerByRow(loweredBy: Int, lowest: Int, onChange: (Int) -> Unit) {
@@ -255,44 +260,49 @@ internal fun LowerByRow(loweredBy: Int, lowest: Int, onChange: (Int) -> Unit) {
                 .weight(1f)
                 .semantics { hideFromAccessibility() },
         )
-        TwangleIconButton(
-            onClick = { onChange(loweredBy - 1) },
-            enabled = loweredBy > 0,
-            modifier = Modifier.testTag(TunerTestTags.LOWER_LESS),
-        ) {
-            Icon(painterResource(R.drawable.ic_expand_less), contentDescription = stringResource(R.string.tuner_lower_less))
-        }
-        Box(contentAlignment = Alignment.Center) {
-            for (semitones in 0..Tuning.MAX_LOWERED_BY) {
-                Text(
-                    stringResource(loweredAmountRes(semitones)),
-                    style = amountStyle,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .alpha(0f)
-                        .clearAndSetSemantics {},
+        // − on the left, + on the right in every language, as every stepper.
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                StepperButton(
+                    more = false,
+                    label = stringResource(R.string.tuner_lower_less),
+                    onClick = { onChange(loweredBy - 1) },
+                    modifier = Modifier.testTag(TunerTestTags.LOWER_LESS),
+                    enabled = loweredBy > 0,
+                )
+                Box(contentAlignment = Alignment.Center) {
+                    for (semitones in 0..Tuning.MAX_LOWERED_BY) {
+                        Text(
+                            stringResource(loweredAmountRes(semitones)),
+                            style = amountStyle,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .alpha(0f)
+                                .clearAndSetSemantics {},
+                        )
+                    }
+                    Text(
+                        musicText(amount),
+                        style = amountStyle,
+                        color = scheme.onSurface,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .testTag(TunerTestTags.LOWERED_AMOUNT)
+                            .semantics {
+                                contentDescription = spoken
+                                liveRegion = LiveRegionMode.Polite
+                            },
+                    )
+                }
+                StepperButton(
+                    more = true,
+                    label = stringResource(R.string.tuner_lower_more),
+                    onClick = { onChange(loweredBy + 1) },
+                    modifier = Modifier.testTag(TunerTestTags.LOWER_MORE),
+                    enabled = loweredBy < lowest,
                 )
             }
-            Text(
-                musicText(amount),
-                style = amountStyle,
-                color = scheme.onSurface,
-                maxLines = 1,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .testTag(TunerTestTags.LOWERED_AMOUNT)
-                    .semantics {
-                        contentDescription = spoken
-                        liveRegion = LiveRegionMode.Polite
-                    },
-            )
-        }
-        TwangleIconButton(
-            onClick = { onChange(loweredBy + 1) },
-            enabled = loweredBy < lowest,
-            modifier = Modifier.testTag(TunerTestTags.LOWER_MORE),
-        ) {
-            Icon(painterResource(R.drawable.ic_expand_more), contentDescription = stringResource(R.string.tuner_lower_more))
         }
     }
 }
@@ -362,7 +372,7 @@ private fun NewTuningRow(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
+        Icon(painterResource(DesignR.drawable.ic_add), contentDescription = null, tint = scheme.primary, modifier = Modifier.size(CHECK_SIZE))
         Text(
             stringResource(R.string.tuner_new_tuning),
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),

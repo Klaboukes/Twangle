@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -35,7 +37,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * screen's main action filled in the accent. Futuristic's are neon outlines in the accent on a solid
  * tint ([neonFill]). Every one shows Twangle's press effect ([pressFeedback]). It began as the
  * metronome's buttons (docs/design/metronome-nav-preview.html); the instrument button, Chords' and
- * Capo's ‹ › and Ear training's ▶ use it too.
+ * Capo's ‹ ›, Ear training's ▶, the options button ([OptionsButton]) and the steppers (Settings' A4,
+ * the tuning sheet's "Lower by") use it too.
  */
 
 /** How [style]'s buttons look, [shape] its `shapes.small`, in the colours of [scheme]. */
@@ -183,6 +186,55 @@ fun StyleButton(
         CompositionLocalProvider(LocalContentColor provides look.content(main)) { content() }
     }
 }
+
+/**
+ * Twangle's one options button (ui.md *Shared controls*): three sliders (`ic_tune`) on a
+ * [OPTIONS_FACE] [StyleButton], picked while what it opens is [open]. The metronome's opens its small
+ * floating panel (a few quick options, TalkBack hears it as a drop-down list), Ear training's its
+ * "What is asked" sheet (a list to pick from). TalkBack hears [label] as [role].
+ */
+@Composable
+fun OptionsButton(
+    open: Boolean,
+    onClick: () -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    role: Role = Role.Button,
+) {
+    StyleButton(onClick = onClick, label = label, modifier = modifier, face = OPTIONS_FACE, picked = open, role = role) {
+        Icon(painterResource(R.drawable.ic_tune), contentDescription = null, modifier = Modifier.size(OPTIONS_ICON))
+    }
+}
+
+/**
+ * Twangle's one stepper button (ui.md *Shared controls*): − or + ([more]) where it changes a number by
+ * one step, on a [face] [StyleButton] ([STEPPER_FACE] by default, as the speed trainer's, in a 48 dp
+ * touch area; the metronome's tempo a larger face), [icon] across. Lower on the left, higher on the
+ * right in every language: the caller lays its row out left to right. Not [enabled] at the end of the
+ * range. TalkBack hears [label].
+ */
+@Composable
+fun StepperButton(
+    more: Boolean,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    face: Dp = STEPPER_FACE,
+    icon: Dp = STEPPER_ICON,
+) {
+    StyleButton(onClick = onClick, label = label, modifier = modifier, face = face, enabled = enabled) {
+        Icon(painterResource(if (more) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(icon))
+    }
+}
+
+/** A stepper's face by default: small enough to sit in a row of text, in a whole 48 dp touch area. */
+val STEPPER_FACE = 36.dp
+private val STEPPER_ICON = 20.dp
+
+/** The options button's face:the mock-up's, a little smaller so the metronome's row fits a 320 dp phone. */
+val OPTIONS_FACE = 52.dp
+private val OPTIONS_ICON = 24.dp
 
 /** A [StyleButton]'s face by default: a whole touch area. */
 val STYLE_BUTTON_FACE = 48.dp
