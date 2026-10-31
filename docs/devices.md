@@ -25,6 +25,8 @@ The owner takes turns between the two for the overnight run. UI tests give the s
 - The watch drops off when its screen sleeps for a while: ask the owner to wake it, then `adb shell input keyevent KEYCODE_WAKEUP` keeps it up.
 - Another PC pairs once: *Wireless debugging → Pair new device*, then `adb pair <ip>:<port> <code>` while that screen stays open (it expires when the watch dims).
 - The watch records through voice recognition, like the emulator.
+- Its screen sleeps after 15 s (the owner's setting) and always-on is off. The watch's UI tests (`./gradlew :wear:installDebug :wear:installDebugAndroidTest`, then `adb shell am instrument -w -r -e package io.github.klaboukes.twangle.wear io.github.klaboukes.twangle.test/androidx.test.runner.AndroidJUnitRunner`) need the screen kept on, or the tuner's screen tests fail with "No compose hierarchies": raise `settings put system screen_off_timeout` for the run and put back 15000 after. A check of always-on (`settings put global ambient_enabled 1`) puts back 0.
+- Whether Twangle holds the microphone shows in the watch's log, as the mic icon follows it: `adb logcat -d | grep "IndicatorPresenter.*record_audio"` (`active=true`/`false`), beside `QuickpanelView.onDisplayChanged` (SCREEN ON/OFF).
 
 ## Emulators
 - Phone: AVD `Medium_Phone_API_37.0` exists but needs the **Windows Hypervisor Platform** feature enabled.
