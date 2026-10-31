@@ -8,6 +8,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSounds
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -211,6 +212,22 @@ class MetronomeListenTest {
         assertEquals(81, vm.bpm.value)
         assertTrue(player.isPlaying.value)
         assertEquals(81, player.bpm)
+    }
+
+    @Test
+    fun `picking clicks between the beats ends listening, and the clicks come back with them`() = runTest(dispatcher) {
+        val recorder = FakeAudioRecorder(clicks(120.0))
+        val vm = viewModel(recorder)
+        vm.toggle()
+        vm.listen()
+        advanceTimeBy(2_000)
+        vm.setSubdivision(Subdivision.TWO)
+        runCurrent()
+        assertFalse(vm.listen.value.listening)
+        assertFalse(recorder.isRecording.value)
+        assertTrue(player.isPlaying.value)
+        assertEquals(Subdivision.TWO, player.subdivision)
+        assertEquals("no preview: the clicks play", 0, player.previewCount)
     }
 
     @Test

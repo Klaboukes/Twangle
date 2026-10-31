@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.audio
 import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -27,8 +28,10 @@ data class MetronomeBeat(
 
 /**
  * Plays the metronome: clicks with sample-exact timing (`ClickTrack` in `:core:dsp`) at 30–250 BPM
- * in any [Meter], the first beat of each bar accented, in any [ClickSound]. All calls return at once
- * and may come from the main thread. It never touches the microphone.
+ * in any [Meter], the first beat of each bar accented, in any [ClickSound], with softer clicks between
+ * the beats when a [Subdivision] is set (Phase 62; one a meter doesn't offer plays as none there,
+ * [Subdivision.within]). All calls return at once and may come from the main thread. It never
+ * touches the microphone.
  *
  * Besides the metronome it plays a preview ([previewBar]): one bar of a sound, once, while the
  * metronome is stopped, so a player can hear a click before picking it.
@@ -41,15 +44,19 @@ interface MetronomePlayer {
     /** True from [previewBar] until its bar has been heard, or [stop] or [start] ended it. */
     val isPreviewing: StateFlow<Boolean>
 
-    /** Every click of the metronome, emitted as it is heard (a preview's aren't). Nothing is replayed to a new collector. */
+    /**
+     * Every beat of the metronome, emitted as it is heard (a preview's aren't); the clicks between the
+     * beats aren't beats and aren't told. Nothing is replayed to a new collector.
+     */
     val beats: SharedFlow<MetronomeBeat>
 
     /**
-     * Starts clicking at [bpm] (clamped to 30–250) in [meter] with [sound], beat 0 a downbeat, the
-     * first click at once; a preview still sounding ends. While already playing it only changes
-     * tempo, meter and sound, like [setTempo], [setMeter] and [setSound].
+     * Starts clicking at [bpm] (clamped to 30–250) in [meter] with [sound] and [subdivision], beat 0
+     * a downbeat, the first click at once; a preview still sounding ends. While already playing it
+     * only changes tempo, meter, sound and subdivision, like [setTempo], [setMeter], [setSound] and
+     * [setSubdivision].
      */
-    fun start(bpm: Int, meter: Meter, sound: ClickSound = ClickSound.DEFAULT)
+    fun start(bpm: Int, meter: Meter, sound: ClickSound = ClickSound.DEFAULT, subdivision: Subdivision = Subdivision.NONE)
 
     /**
      * Changes the tempo (clamped to 30–250) from the next beat, which comes one new interval after
@@ -67,11 +74,18 @@ interface MetronomePlayer {
     fun setSound(sound: ClickSound)
 
     /**
-     * While stopped: plays one bar of [sound] at [bpm] in [meter], once (never looping), then
-     * stops by itself; a preview already sounding starts over with this one. While playing it
-     * only changes the sound, as [setSound]. [stop] and [start] end a preview.
+     * Changes the clicks between the beats from the next beat; the beat sounding keeps its clicks.
+     * Ignored while stopped (and during a preview).
      */
-    fun previewBar(bpm: Int, meter: Meter, sound: ClickSound)
+    fun setSubdivision(subdivision: Subdivision)
+
+    /**
+     * While stopped: plays one bar of [sound] at [bpm] in [meter] with [subdivision], once (never
+     * looping), then stops by itself; a preview already sounding starts over with this one. While
+     * playing it only changes the sound and subdivision, as [setSound] and [setSubdivision]. [stop]
+     * and [start] end a preview.
+     */
+    fun previewBar(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision = Subdivision.NONE)
 
     /** Stops the clicks (or a preview) within a few tens of ms. Does nothing when nothing plays. */
     fun stop()

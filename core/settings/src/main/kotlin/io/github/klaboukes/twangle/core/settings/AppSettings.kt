@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -285,6 +286,11 @@ data class AppSettings(
     val metronomeVibrate: Boolean = false,
     /** The metronome's click (Phase 45): the wood block until another is picked. */
     val metronomeClickSound: ClickSound = ClickSound.DEFAULT,
+    /**
+     * The metronome's clicks between the beats (Phase 62): none until the player picks some. Kept as
+     * picked in a meter that doesn't offer it (6/8 and 7/8 offer none and two), where it plays as none.
+     */
+    val metronomeSubdivision: Subdivision = Subdivision.DEFAULT,
     /** The Practice tab's tool used last, which it opens on (only with the Practice tab's switch on). */
     val practiceTool: PracticeTool = PracticeTool.DEFAULT,
     /** The root picked last in the Practice tab's chord charts and scales, one for both (C on a fresh install). */

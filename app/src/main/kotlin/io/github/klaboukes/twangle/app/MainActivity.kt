@@ -403,6 +403,7 @@ class MainActivity : AppCompatActivity() {
                         savedMeter = settings.metronomeMeter,
                         savedVibrate = settings.metronomeVibrate,
                         savedSound = settings.metronomeClickSound,
+                        savedSubdivision = settings.metronomeSubdivision,
                         savedMicRefused = settings.micRefused,
                         header = header,
                     )

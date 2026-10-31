@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Between the beats: sixteenths in 2/4 to 5/4, four clicks per beat. Four notes joined by two beams, as on the mock-up (docs/design/metronome-layout-preview.html, option II). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group android:rotation="-20" android:pivotX="3.4" android:pivotY="19.5">
+        <path android:fillColor="#FF000000" android:pathData="M1.2,19.5a2.2,1.7 0 1,0 4.4,0a2.2,1.7 0 1,0 -4.4,0z" />
+    </group>
+    <group android:rotation="-20" android:pivotX="8.9" android:pivotY="19.5">
+        <path android:fillColor="#FF000000" android:pathData="M6.7,19.5a2.2,1.7 0 1,0 4.4,0a2.2,1.7 0 1,0 -4.4,0z" />
+    </group>
+    <group android:rotation="-20" android:pivotX="14.4" android:pivotY="19.5">
+        <path android:fillColor="#FF000000" android:pathData="M12.2,19.5a2.2,1.7 0 1,0 4.4,0a2.2,1.7 0 1,0 -4.4,0z" />
+    </group>
+    <group android:rotation="-20" android:pivotX="19.9" android:pivotY="19.5">
+        <path android:fillColor="#FF000000" android:pathData="M17.7,19.5a2.2,1.7 0 1,0 4.4,0a2.2,1.7 0 1,0 -4.4,0z" />
+    </group>
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.6" android:strokeLineCap="butt" android:pathData="M5.3,18.9V5.5M10.8,18.9V5.5M16.3,18.9V5.5M21.8,18.9V5.5" />
+    <path android:strokeColor="#FF000000" android:strokeWidth="2.2" android:strokeLineCap="butt" android:pathData="M4.6,6.3H22.5M4.6,10.1H22.5" />
+</vector>

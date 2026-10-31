@@ -76,6 +76,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatAccent
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
@@ -85,6 +86,9 @@ import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
 import io.github.klaboukes.twangle.feature.metronome.components.OptionsPanel
 import io.github.klaboukes.twangle.feature.metronome.components.SoundChoice
 import io.github.klaboukes.twangle.feature.metronome.components.StatusMark
+import io.github.klaboukes.twangle.feature.metronome.components.SubdivisionChoice
+import io.github.klaboukes.twangle.feature.metronome.components.subdivisionIcon
+import io.github.klaboukes.twangle.feature.metronome.components.subdivisionMarkName
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
 import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
@@ -96,8 +100,9 @@ import kotlin.math.roundToInt
 
 /**
  * The metronome screen (Phase 19), as on the approved mock-ups (docs/design/metronome-nav-preview.html,
- * docs/design/metronome-listen-preview.html). It opens stopped, at the tempo, meter, vibration and
- * click sound saved last ([savedBpm], [savedMeter], [savedVibrate], [savedSound], from the settings
+ * docs/design/metronome-listen-preview.html). It opens stopped, at the tempo, meter, vibration, click
+ * sound and clicks between the beats saved last ([savedBpm], [savedMeter], [savedVibrate], [savedSound],
+ * [savedSubdivision], from the settings
  * already read, so the first frame and the first beat are right), and plays through [player]. The clicks stop when it leaves the screen: another
  * screen takes its place, or the app goes to the background (no foreground service); they play on
  * when the phone turns or dark mode switches. While it plays the screen stays on, so the phone's
@@ -121,6 +126,7 @@ fun MetronomeScreen(
     savedMeter: Meter = Meter.DEFAULT,
     savedVibrate: Boolean = false,
     savedSound: ClickSound = ClickSound.DEFAULT,
+    savedSubdivision: Subdivision = Subdivision.DEFAULT,
     savedMicRefused: Boolean = false,
     header: (@Composable () -> Unit)? = null,
 ) {
@@ -132,6 +138,7 @@ fun MetronomeScreen(
             savedMeter,
             savedVibrate,
             savedSound,
+            savedSubdivision,
             recorder = recorder,
             savedMicRefused = savedMicRefused,
             tools = tools,
@@ -141,6 +148,7 @@ fun MetronomeScreen(
     val meter by viewModel.meter.collectAsStateWithLifecycle()
     val vibrate by viewModel.vibrate.collectAsStateWithLifecycle()
     val sound by viewModel.sound.collectAsStateWithLifecycle()
+    val subdivision by viewModel.subdivision.collectAsStateWithLifecycle()
     val playing by viewModel.isPlaying.collectAsStateWithLifecycle()
     val listen by viewModel.listen.collectAsStateWithLifecycle()
     val micRefused by viewModel.micRefused.collectAsStateWithLifecycle()
@@ -171,6 +179,8 @@ fun MetronomeScreen(
         vibrate = vibrate,
         sound = sound,
         onSoundPick = viewModel::previewSound,
+        subdivision = subdivision,
+        onSubdivisionPick = viewModel::setSubdivision,
         clock = clock,
         onBpmChange = { viewModel.setBpm(it, save = false) },
         onBpmChangeFinished = viewModel::saveBpm,
@@ -272,9 +282,11 @@ class BeatClock {
  * room for, holding only the tempo) and one row of icon buttons under it: Tap tempo · − · Start · + ·
  * options (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html). The options
  * button opens a panel over the screen ([OptionsPanel]) with the four sounds ([onSoundPick]: while
- * stopped one bar of the sound plays, while playing it is heard from the next beat), "Vibrate on the
- * beat" ([onVibrateChange]) and Listen ([onListen], which closes the panel); Back or a tap beside it
- * closes it. What is on in it shows as small icons on the status line ([StatusMark]: today vibration).
+ * stopped one bar of the sound plays, while playing it is heard from the next beat), the clicks between
+ * the beats ([subdivision], [onSubdivisionPick], the same way), "Vibrate on the beat"
+ * ([onVibrateChange]) and Listen ([onListen], which closes the panel); Back or a tap beside it closes
+ * it. What is on in it shows as small icons on the status line ([StatusMark]: the note value playing
+ * between the beats, then vibration).
  * Upright the beat lights stand right over the dial and grow with the height a tall screen has to
  * spare (Phase 43). Upright they stand in one column; on a wide screen on its side the dial is at the
  * start and the rest in a column beside it. With a very large font the column scrolls. Only the beat
@@ -308,6 +320,8 @@ fun MetronomeContent(
     modifier: Modifier = Modifier,
     sound: ClickSound = ClickSound.DEFAULT,
     onSoundPick: (ClickSound) -> Unit = {},
+    subdivision: Subdivision = Subdivision.DEFAULT,
+    onSubdivisionPick: (Subdivision) -> Unit = {},
     clock: BeatClock = remember { BeatClock() },
     listen: ListenUi = ListenUi(),
     heard: () -> HeardBeats? = { null },
@@ -344,8 +358,12 @@ fun MetronomeContent(
     // Kept when the phone turns: the panel opens again in its place for the new layout.
     var optionsOpen by rememberSaveable { mutableStateOf(false) }
     val vibrateName = stringResource(R.string.metronome_vibrate)
-    // What is on in the options panel, on the status line (Phase 62).
+    // What is on in the options panel, on the status line (Phase 62), in the panel's order. The note
+    // value is the one playing in this meter: none (no mark) where the meter doesn't offer the choice.
+    val between = subdivision.within(meter)
+    val betweenName = subdivisionMarkName(between, meter)
     val marks = buildList {
+        if (betweenName != null) add(StatusMark(subdivisionIcon(between, meter), betweenName, MetronomeTestTags.SUBDIVISION_MARK))
         if (vibrate) add(StatusMark(R.drawable.ic_vibrate, vibrateName, MetronomeTestTags.VIBRATE_MARK))
     }
     var layerOrigin by remember { mutableStateOf(Offset.Zero) }
@@ -505,7 +523,7 @@ fun MetronomeContent(
                         onNotNow = onNotNow,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    // Its rows, top to bottom; "Between the beats" comes under the sounds, the speed trainer under Listen.
+                    // Its rows, top to bottom; the speed trainer comes under Listen.
                     OptionsPanel(
                         open = optionsOpen,
                         anchor = anchor,
@@ -514,6 +532,7 @@ fun MetronomeContent(
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         SoundChoice(sound, onSoundPick)
+                        SubdivisionChoice(subdivision, meter, onSubdivisionPick, Modifier.padding(top = 4.dp))
                         VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
                         ListenRow(
                             listening = listening,
@@ -660,8 +679,9 @@ object MetronomeTestTags {
     const val VIBRATE = "metronome_vibrate"
     const val LISTEN = "metronome_listen"
 
-    /** The status line's marks of what is on, and vibration's among them. */
+    /** The status line's marks of what is on, and the note value's and vibration's among them. */
     const val MARKS = "metronome_marks"
+    const val SUBDIVISION_MARK = "metronome_mark_subdivision"
     const val VIBRATE_MARK = "metronome_mark_vibrate"
     const val LINE = "metronome_listen_line"
     const val LINE_ACTION = "metronome_listen_line_action"
@@ -675,6 +695,9 @@ object MetronomeTestTags {
 
     /** The options panel's button for [sound], e.g. "metronome_sound_cowbell". */
     fun sound(sound: ClickSound): String = "metronome_sound_" + sound.name.lowercase()
+
+    /** The options panel's button for [subdivision] between the beats, e.g. "metronome_subdivision_three". */
+    fun subdivision(subdivision: Subdivision): String = "metronome_subdivision_" + subdivision.name.lowercase()
 
     /** The meter picker's button for [meter], e.g. "metronome_meter_six_eight". */
     fun meter(meter: Meter): String = "metronome_meter_" + meter.name.lowercase()

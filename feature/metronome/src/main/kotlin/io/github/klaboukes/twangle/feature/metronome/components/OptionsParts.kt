@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -62,6 +63,8 @@ import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
+import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
 import kotlin.math.roundToInt
@@ -70,9 +73,9 @@ import kotlin.math.roundToInt
  * The options panel (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html): what is
  * set less often than the tempo, behind the one button at the end of the row under the dial. Its rows,
  * top to bottom: the four click sounds (Phase 45, before Phase 62 behind a Sound button of their own),
- * Vibrate on the beat, and Listen (Phase 27, before Phase 62 a button in the row). The panel takes its
- * rows as content ([OptionsPanel]), so a new one slots in between them: "Between the beats" under the
- * sounds, the speed trainer under Listen.
+ * the clicks between the beats ("Between the beats", Phase 62), Vibrate on the beat, and Listen
+ * (Phase 27, before Phase 62 a button in the row). The panel takes its rows as content
+ * ([OptionsPanel]), so a new one slots in between them: the speed trainer comes under Listen.
  */
 
 /** [sound]'s line icon (wood block A3, claves A5, cowbell and rim click as on the mock-up). */
@@ -82,6 +85,46 @@ internal fun soundIcon(sound: ClickSound): Int = when (sound) {
     ClickSound.CLAVES -> R.drawable.ic_sound_claves
     ClickSound.RIM_CLICK -> R.drawable.ic_sound_rim_click
 }
+
+/**
+ * [subdivision]'s note-value icon in [meter]: a single note for none, then two, three (with its 3) and
+ * four beamed notes. In 6/8 and 7/8, where a click is already an eighth, two to a beat are sixteenths,
+ * so the pair has two beams there.
+ */
+internal fun subdivisionIcon(subdivision: Subdivision, meter: Meter): Int = when (subdivision) {
+    Subdivision.NONE -> R.drawable.ic_note_quarter
+    Subdivision.TWO -> if (inEighths(meter)) R.drawable.ic_note_sixteenth_pair else R.drawable.ic_note_eighths
+    Subdivision.THREE -> R.drawable.ic_note_triplets
+    Subdivision.FOUR -> R.drawable.ic_note_sixteenths
+}
+
+/** [subdivision]'s name in [meter] (TalkBack): None, Eighths, Triplets, Sixteenths; two to a beat in 6/8 and 7/8 are sixteenths. */
+@Composable
+internal fun subdivisionName(subdivision: Subdivision, meter: Meter): String = stringResource(
+    when (subdivision) {
+        Subdivision.NONE -> R.string.metronome_subdivision_none
+        Subdivision.TWO -> if (inEighths(meter)) R.string.metronome_subdivision_sixteenths else R.string.metronome_subdivision_eighths
+        Subdivision.THREE -> R.string.metronome_subdivision_triplets
+        Subdivision.FOUR -> R.string.metronome_subdivision_sixteenths
+    },
+)
+
+/**
+ * What the status line's mark says for [subdivision] in [meter] ("Eighths between the beats"), or null
+ * for none, which has no mark.
+ */
+@Composable
+internal fun subdivisionMarkName(subdivision: Subdivision, meter: Meter): String? = when (subdivision) {
+    Subdivision.NONE -> null
+    Subdivision.TWO -> stringResource(
+        if (inEighths(meter)) R.string.metronome_subdivision_sixteenths_on else R.string.metronome_subdivision_eighths_on,
+    )
+    Subdivision.THREE -> stringResource(R.string.metronome_subdivision_triplets_on)
+    Subdivision.FOUR -> stringResource(R.string.metronome_subdivision_sixteenths_on)
+}
+
+/** Whether a click in [meter] is an eighth (6/8, 7/8), so two to a beat are sixteenths: those meters offer only none and two. */
+private fun inEighths(meter: Meter): Boolean = !Subdivision.THREE.isOfferedIn(meter)
 
 /** [sound]'s name, the instrument's common name in the app's language. */
 @Composable
@@ -218,7 +261,56 @@ internal fun SoundChoice(sound: ClickSound, onPick: (ClickSound) -> Unit, modifi
             horizontalArrangement = Arrangement.spacedBy(SEGMENT_GAP),
         ) {
             for (option in ClickSound.entries) {
-                SoundSegment(option, picked = option == sound, onPick = { onPick(option) }, modifier = Modifier.weight(1f))
+                IconSegment(
+                    icon = soundIcon(option),
+                    name = soundName(option),
+                    tag = MetronomeTestTags.sound(option),
+                    picked = option == sound,
+                    onPick = { onPick(option) },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The panel's second row (Phase 62): "Between the beats" over its four note values as icons side by
+ * side, as the sounds: none, eighths, triplets, sixteenths. [subdivision] is the choice saved; the
+ * one marked picked is what plays in [meter] ([Subdivision.within]). 6/8 and 7/8 offer only none and
+ * two to a beat (sixteenths there, drawn and named so), so triplets and sixteenths stay in their
+ * places, dimmed and untouchable, and a triplets or sixteenths choice shows none picked there while it
+ * is kept for the next meter that offers it. A tap calls [onPick] and leaves the panel open. TalkBack
+ * hears a radio group "Between the beats" and each choice by its name, a dimmed one as unavailable.
+ */
+@Composable
+internal fun SubdivisionChoice(
+    subdivision: Subdivision,
+    meter: Meter,
+    onPick: (Subdivision) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val title = stringResource(R.string.metronome_subdivision)
+    val playing = subdivision.within(meter)
+    Column(modifier) {
+        PanelHeading(title)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .selectableGroup()
+                .semantics { contentDescription = title },
+            horizontalArrangement = Arrangement.spacedBy(SEGMENT_GAP),
+        ) {
+            for (option in Subdivision.entries) {
+                IconSegment(
+                    icon = subdivisionIcon(option, meter),
+                    name = subdivisionName(option, meter),
+                    tag = MetronomeTestTags.subdivision(option),
+                    picked = option == playing,
+                    enabled = option.isOfferedIn(meter),
+                    onPick = { onPick(option) },
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
     }
@@ -244,18 +336,34 @@ private fun PanelHeading(text: String) {
     )
 }
 
-/** One sound: its icon on a [SEGMENT_FACE] tall face in a 48 dp touch area, a radio button named for TalkBack. */
+/**
+ * One choice of a row (a sound, a note value): its [icon] on a [SEGMENT_FACE] tall face in a 48 dp
+ * touch area, a radio button TalkBack hears by [name]. Not [enabled]: dimmed in place, untouchable.
+ */
 @Composable
-private fun SoundSegment(sound: ClickSound, picked: Boolean, onPick: () -> Unit, modifier: Modifier = Modifier) {
+private fun IconSegment(
+    icon: Int,
+    name: String,
+    tag: String,
+    picked: Boolean,
+    onPick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
-    val name = soundName(sound)
     Box(
         modifier
-            .testTag(MetronomeTestTags.sound(sound))
+            .testTag(tag)
             .heightIn(min = ROW_HEIGHT)
-            .selectable(selected = picked, interactionSource = source, indication = null, role = Role.RadioButton) {
+            .selectable(
+                selected = picked,
+                interactionSource = source,
+                indication = null,
+                enabled = enabled,
+                role = Role.RadioButton,
+            ) {
                 source.pressFlash()
                 onPick()
             }
@@ -266,10 +374,11 @@ private fun SoundSegment(sound: ClickSound, picked: Boolean, onPick: () -> Unit,
             Modifier
                 .fillMaxWidth()
                 .height(SEGMENT_FACE)
+                .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(painterResource(soundIcon(sound)), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
+            Icon(painterResource(icon), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
         }
     }
 }
@@ -368,3 +477,6 @@ private val MIN_NAME_SIZE = 8.dp
 /** A sound's face, 40 dp tall as the meter picker's buttons, in its 48 dp touch area, 4 dp from the next. */
 private val SEGMENT_FACE = 40.dp
 private val SEGMENT_GAP = 4.dp
+
+/** A choice the meter doesn't offer (triplets, sixteenths in 6/8 and 7/8), as Practice's disabled buttons. */
+private const val DISABLED_ALPHA = 0.38f

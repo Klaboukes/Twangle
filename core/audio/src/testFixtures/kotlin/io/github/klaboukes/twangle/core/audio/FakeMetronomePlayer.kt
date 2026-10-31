@@ -3,6 +3,7 @@ package io.github.klaboukes.twangle.core.audio
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * [MetronomePlayer] for tests: makes no sound and emits no beats by itself.
  *
- * - [bpm], [meter] and [sound] follow the calls the way the real player does (clamped, ignored while
+ * - [bpm], [meter], [sound] and [subdivision] follow the calls the way the real player does (clamped, ignored while
  *   stopped); [startCount], [stopCount] and [previewCount] count calls.
  * - [beat] emits a beat as if it had just been heard, with the accent the meter gives it.
  * - A preview lasts until [finishPreview] (its bar heard), [stop] or [start].
@@ -41,21 +42,26 @@ class FakeMetronomePlayer : MetronomePlayer {
     var sound: ClickSound = ClickSound.DEFAULT
         private set
 
+    /** The subdivision playing (or last played or previewed), as picked (not yet [Subdivision.within] the meter). */
+    var subdivision: Subdivision = Subdivision.DEFAULT
+        private set
+
     var startCount: Int = 0
         private set
 
     var stopCount: Int = 0
         private set
 
-    /** Previews started (not counting [previewBar] calls while playing, which only change the sound). */
+    /** Previews started (not counting [previewBar] calls while playing, which only change the sound and subdivision). */
     var previewCount: Int = 0
         private set
 
-    override fun start(bpm: Int, meter: Meter, sound: ClickSound) {
+    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
         startCount++
         this.bpm = ClickTrack.clampBpm(bpm)
         this.meter = meter
         this.sound = sound
+        this.subdivision = subdivision
         previewing.value = false
         playing.value = true
     }
@@ -72,8 +78,13 @@ class FakeMetronomePlayer : MetronomePlayer {
         if (playing.value) this.sound = sound
     }
 
-    override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound) {
+    override fun setSubdivision(subdivision: Subdivision) {
+        if (playing.value) this.subdivision = subdivision
+    }
+
+    override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
         this.sound = sound
+        this.subdivision = subdivision
         if (playing.value) return
         previewCount++
         this.bpm = ClickTrack.clampBpm(bpm)

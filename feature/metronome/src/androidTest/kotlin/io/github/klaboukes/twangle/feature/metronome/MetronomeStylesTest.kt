@@ -30,6 +30,7 @@ import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.designsystem.columnScaleFor
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.core.testing.EveryLanguage
 import io.github.klaboukes.twangle.core.testing.Navigation
@@ -112,6 +113,8 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                         onToggle = {},
                         onVibrateChange = {},
                         sound = ClickSound.COWBELL,
+                        // Two to a beat, in 7/8 sixteenths: their mark beside vibration's, triplets and sixteenths dimmed.
+                        subdivision = Subdivision.TWO,
                         clock = clock,
                         listen = shownListen.value,
                         modifier = Modifier.fillMaxSize().testTag(WINDOW),
@@ -353,6 +356,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                 if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
             }
             for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
+            for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$name $option")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$name listen")
             if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
@@ -368,14 +372,16 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun theVibrationMarkStandsOnTheStatusLine() {
+    fun theMarksStandOnTheStatusLine() {
         show()
         for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
             shownSize.value = size
             compose.waitForIdle()
             val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
-            val mark = compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
-            assertTrue("$style ${size.width} x ${size.height} mark $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+            for (tag in listOf(MetronomeTestTags.SUBDIVISION_MARK, MetronomeTestTags.VIBRATE_MARK)) {
+                val mark = compose.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
+                assertTrue("$style ${size.width} x ${size.height} $tag $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+            }
         }
         shownSize.value = PHONE_UPRIGHT
     }
@@ -448,6 +454,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         assertEquals("$case panel's end in line with the button's", options.right.value, panel.right.value, 1f)
         assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.top >= 0.dp)
         for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$case $option", scroll = false)
+        for (option in Subdivision.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.subdivision(option)), "$case $option", scroll = false)
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$case listen", scroll = false)
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         compose.waitForIdle()

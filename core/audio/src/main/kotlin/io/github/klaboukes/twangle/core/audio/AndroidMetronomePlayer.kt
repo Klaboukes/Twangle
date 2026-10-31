@@ -15,6 +15,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.BeatListener
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ import kotlinx.coroutines.launch
  * The track exists only while the metronome plays. [start] launches a session on a dedicated single
  * thread (`AudioTrack.write` blocks); the session renders 10 ms chunks into one buffer and keeps
  * [BUFFERED_CHUNKS] chunks queued, enough that a busy moment on the phone doesn't starve the
- * speaker. Tempo, meter, sound and stop requests reach it through fields it reads before every
+ * speaker. Tempo, meter, sound, subdivision and stop requests reach it through fields it reads before every
  * chunk, so a change is heard about one buffer later (≈ 0.1 s) and the clicks stay on their samples.
  * A sound not played yet is rendered there, on the writer thread, the first time (a few ms).
  *
@@ -86,6 +87,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     private var wantedBpm = ClickTrack.DEFAULT_BPM
     private var wantedMeter = Meter.DEFAULT
     private var wantedSound = ClickSound.DEFAULT
+    private var wantedSubdivision = Subdivision.DEFAULT
 
     // Guarded by lock: whether the session plays one bar (a preview) rather than the metronome, and
     // a count bumped whenever it must start over from beat 0 (a new preview, or Start during one).
@@ -148,11 +150,12 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         }
     }
 
-    override fun start(bpm: Int, meter: Meter, sound: ClickSound) {
+    override fun start(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
         synchronized(lock) {
             wantedBpm = ClickTrack.clampBpm(bpm)
             wantedMeter = meter
             wantedSound = sound
+            wantedSubdivision = subdivision
             stopRequested = false
             playing.value = true
             if (active) {
@@ -170,16 +173,18 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         scope.launch(writeDispatcher) { session() }
     }
 
-    override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound) {
+    override fun previewBar(bpm: Int, meter: Meter, sound: ClickSound, subdivision: Subdivision) {
         synchronized(lock) {
-            // Playing (and not about to stop): only the sound changes.
+            // Playing (and not about to stop): only the sound and subdivision change.
             if (active && !wantedPreview && !stopRequested) {
                 wantedSound = sound
+                wantedSubdivision = subdivision
                 return
             }
             wantedBpm = ClickTrack.clampBpm(bpm)
             wantedMeter = meter
             wantedSound = sound
+            wantedSubdivision = subdivision
             stopRequested = false
             wantedPreview = true
             playing.value = false
@@ -205,6 +210,10 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         synchronized(lock) { if (active && !wantedPreview) wantedSound = sound }
     }
 
+    override fun setSubdivision(subdivision: Subdivision) {
+        synchronized(lock) { if (active && !wantedPreview) wantedSubdivision = subdivision }
+    }
+
     override fun stop() {
         synchronized(lock) { if (active) stopRequested = true }
     }
@@ -212,13 +221,14 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
     /**
      * Takes the latest requests: true if the session must end, for a stop or because the preview
      * was heard to its end ([previewHeard]) and nothing new came (then it is marked ended already, so
-     * a [start] from now on launches a new one); else copies the wanted tempo, meter and sound to the
+     * a [start] from now on launches a new one); else copies the wanted tempo, meter, sound and subdivision to the
      * track, and starts it over from beat 0 for a new preview or a start during one.
      */
     private fun takeRequests(previewHeard: Boolean): Boolean {
         val bpm: Int
         val meter: Meter
         val sound: ClickSound
+        val subdivision: Subdivision
         val restart: Boolean
         synchronized(lock) {
             if (stopRequested || (previewHeard && wantedPreview && restarts == seenRestarts)) {
@@ -232,6 +242,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
             bpm = wantedBpm
             meter = wantedMeter
             sound = wantedSound
+            subdivision = wantedSubdivision
             preview = wantedPreview
             restart = restarts != seenRestarts
             seenRestarts = restarts
@@ -239,6 +250,7 @@ class AndroidMetronomePlayer(context: Context) : MetronomePlayer {
         clickTrack.bpm = bpm
         clickTrack.meter = meter
         clickTrack.sound = sound // A sound not played yet is rendered here, once.
+        clickTrack.subdivision = subdivision
         if (restart) startOver()
         return false
     }

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelStore
 import io.github.klaboukes.twangle.core.audio.FakeMetronomePlayer
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.AppSettings
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +41,16 @@ class MetronomeViewModelTest {
         meter: Meter = Meter.THREE_FOUR,
         vibrate: Boolean = false,
         sound: ClickSound = ClickSound.DEFAULT,
-    ) = MetronomeViewModel(player, settings, savedBpm = bpm, savedMeter = meter, savedVibrate = vibrate, savedSound = sound)
+        subdivision: Subdivision = Subdivision.DEFAULT,
+    ) = MetronomeViewModel(
+        player,
+        settings,
+        savedBpm = bpm,
+        savedMeter = meter,
+        savedVibrate = vibrate,
+        savedSound = sound,
+        savedSubdivision = subdivision,
+    )
 
     @Test
     fun `it opens stopped at the saved tempo, meter and vibration`() {
@@ -171,6 +181,62 @@ class MetronomeViewModelTest {
         assertEquals(0, player.previewCount)
         assertEquals("the clicks go on", 1, player.startCount)
         assertEquals(ClickSound.CLAVES, settings.current.metronomeClickSound)
+    }
+
+    @Test
+    fun `it opens with the saved clicks between the beats, and Start plays them`() {
+        val vm = viewModel(subdivision = Subdivision.THREE)
+        assertEquals(Subdivision.THREE, vm.subdivision.value)
+        vm.toggle()
+        assertEquals(Subdivision.THREE, player.subdivision)
+        assertEquals(0, player.previewCount)
+    }
+
+    @Test
+    fun `clicks between the beats picked while stopped are saved and play one bar`() = runTest(dispatcher) {
+        val vm = viewModel(bpm = 84, sound = ClickSound.COWBELL)
+        vm.setSubdivision(Subdivision.TWO)
+        advanceUntilIdle()
+        assertEquals(Subdivision.TWO, vm.subdivision.value)
+        assertEquals(Subdivision.TWO, settings.current.metronomeSubdivision)
+        assertTrue(vm.isPreviewing.value)
+        assertFalse(vm.isPlaying.value)
+        assertEquals(1, player.previewCount)
+        assertEquals(Triple(84, ClickSound.COWBELL, Subdivision.TWO), Triple(player.bpm, player.sound, player.subdivision))
+        vm.previewSound(ClickSound.CLAVES)
+        assertEquals("a sound's bar plays with them too", Subdivision.TWO, player.subdivision)
+    }
+
+    @Test
+    fun `clicks between the beats picked while playing are heard from the next beat, with no preview`() = runTest(dispatcher) {
+        val vm = viewModel()
+        vm.toggle()
+        vm.setSubdivision(Subdivision.FOUR)
+        advanceUntilIdle()
+        assertEquals(Subdivision.FOUR, player.subdivision)
+        assertTrue(vm.isPlaying.value)
+        assertFalse(vm.isPreviewing.value)
+        assertEquals(0, player.previewCount)
+        assertEquals("the clicks go on", 1, player.startCount)
+        assertEquals(Subdivision.FOUR, settings.current.metronomeSubdivision)
+        vm.setSubdivision(Subdivision.NONE)
+        advanceUntilIdle()
+        assertEquals(Subdivision.NONE, player.subdivision)
+        assertEquals(Subdivision.NONE, settings.current.metronomeSubdivision)
+    }
+
+    @Test
+    fun `triplets are kept through 6-8, which plays them as none, and come back in 4-4`() = runTest(dispatcher) {
+        val vm = viewModel(meter = Meter.FOUR_FOUR)
+        vm.setSubdivision(Subdivision.THREE)
+        vm.toggle()
+        vm.setMeter(Meter.SIX_EIGHT)
+        advanceUntilIdle()
+        assertEquals("the choice stays", Subdivision.THREE, vm.subdivision.value)
+        assertEquals(Subdivision.THREE, settings.current.metronomeSubdivision)
+        assertEquals("6/8 plays it as none", Subdivision.NONE, player.subdivision.within(player.meter))
+        vm.setMeter(Meter.FOUR_FOUR)
+        assertEquals(Subdivision.THREE, player.subdivision.within(player.meter))
     }
 
     @Test

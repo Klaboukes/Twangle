@@ -10,6 +10,7 @@ import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.dsp.metronome.OnsetTempoDetector
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.metronome.TapTempo
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoDetector
 import io.github.klaboukes.twangle.core.dsp.metronome.TempoStatus
@@ -34,16 +35,23 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * The metronome screen's state: tempo, meter, the click's sound and the vibration switch, saved in
- * settings, and whether the clicks play ([MetronomePlayer]). It opens stopped, at the tempo, meter,
- * sound and vibration last saved ([savedBpm], [savedMeter], [savedSound], [savedVibrate], from the
- * settings already read, so the first beat is right). Every change is saved at once, except a dial
+ * The metronome screen's state: tempo, meter, the click's sound, the clicks between the beats and the
+ * vibration switch, saved in settings, and whether the clicks play ([MetronomePlayer]). It opens
+ * stopped, at the tempo, meter, sound, subdivision and vibration last saved ([savedBpm], [savedMeter],
+ * [savedSound], [savedSubdivision], [savedVibrate], from the settings already read, so the first beat
+ * is right). Every change is saved at once, except a dial
  * drag, which is saved when the finger lifts ([saveBpm]). A change while playing is heard from the
  * next beat. The clicks stop when the screen asks ([stop], when it leaves the screen) and when the
  * ViewModel goes.
  *
  * **The sound** (Phase 45): [previewSound] picks one; while stopped it also plays one bar of it,
  * once ([isPreviewing] meanwhile), which the next pick, Start, Listen or leaving the screen ends.
+ *
+ * **Between the beats** (Phase 62): [setSubdivision] picks the clicks between the beats the same way,
+ * one bar of them while stopped. The choice is kept as picked; in a meter that doesn't offer it
+ * (triplets or sixteenths in 6/8 and 7/8) the player plays none there ([Subdivision.within]), and it
+ * comes back when the meter does. The beats ([beats]) and so the lights and the vibration stay on the
+ * beats.
  *
  * **Listen** (Phase 27, docs/design/metronome-listen-preview.html): [listen] opens [recorder] (the
  * microphone; the screen has asked for the permission first) and feeds a [TempoDetector] on
@@ -64,6 +72,7 @@ class MetronomeViewModel(
     savedMeter: Meter = Meter.DEFAULT,
     savedVibrate: Boolean = false,
     savedSound: ClickSound = ClickSound.DEFAULT,
+    savedSubdivision: Subdivision = Subdivision.DEFAULT,
     private val recorder: AudioRecorder? = null,
     savedMicRefused: Boolean = false,
     private val dspDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -89,6 +98,11 @@ class MetronomeViewModel(
 
     /** The instrument the metronome clicks with. */
     val sound: StateFlow<ClickSound> = _sound.asStateFlow()
+
+    private val _subdivision = MutableStateFlow(savedSubdivision)
+
+    /** The clicks between the beats, as picked (in the meter it plays as [Subdivision.within]). */
+    val subdivision: StateFlow<Subdivision> = _subdivision.asStateFlow()
 
     /** True while the clicks play. */
     val isPlaying: StateFlow<Boolean> = player.isPlaying
@@ -172,8 +186,23 @@ class MetronomeViewModel(
     fun previewSound(sound: ClickSound) {
         takeOver()
         _sound.value = sound
-        player.previewBar(_bpm.value, _meter.value, sound)
+        player.previewBar(_bpm.value, _meter.value, sound, _subdivision.value)
         viewModelScope.launch { settingsRepository.setMetronomeClickSound(sound) }
+    }
+
+    /**
+     * Picks the clicks between the beats (saved). While playing they are heard from the next beat;
+     * while stopped one bar plays with them at the tempo, meter and sound shown, once, as a sound's.
+     */
+    fun setSubdivision(subdivision: Subdivision) {
+        takeOver()
+        _subdivision.value = subdivision
+        if (player.isPlaying.value) {
+            player.setSubdivision(subdivision)
+        } else {
+            player.previewBar(_bpm.value, _meter.value, _sound.value, subdivision)
+        }
+        viewModelScope.launch { settingsRepository.setMetronomeSubdivision(subdivision) }
     }
 
     /** Start / Stop. It takes no taps while listening (the screen shows it resting). */
@@ -185,7 +214,7 @@ class MetronomeViewModel(
             else -> Unit
         }
         resumeJob?.cancel()
-        if (player.isPlaying.value) player.stop() else player.start(_bpm.value, _meter.value, _sound.value)
+        if (player.isPlaying.value) player.stop() else player.start(_bpm.value, _meter.value, _sound.value, _subdivision.value)
     }
 
     /** Stops the clicks, a preview and any listening (the screen left); a suggestion still open goes. */
@@ -287,7 +316,7 @@ class MetronomeViewModel(
     }
 
     private fun resume() {
-        if (!player.isPlaying.value) player.start(_bpm.value, _meter.value, _sound.value)
+        if (!player.isPlaying.value) player.start(_bpm.value, _meter.value, _sound.value, _subdivision.value)
     }
 
     private fun endListening() {

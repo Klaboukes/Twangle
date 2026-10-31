@@ -32,6 +32,22 @@
     <string name="metronome_sound_claves">Claves</string>
     <!-- Click sound in the options panel (TalkBack): a rim click (a drumstick laid on the snare drum, its rim struck). -->
     <string name="metronome_sound_rim_click">Rim click</string>
+    <!-- The options panel: the small heading over the four choices of soft clicks the metronome plays between its beats (note-value icons: none, eighths, triplets, sixteenths), and TalkBack's name for that group. "Beat" as in counting the beats of a bar. -->
+    <string name="metronome_subdivision">Between the beats</string>
+    <!-- Between the beats (TalkBack name of a single-note icon in the options panel): no clicks between the beats, only the beats themselves. -->
+    <string name="metronome_subdivision_none">None</string>
+    <!-- Between the beats (TalkBack name of an icon of two beamed notes): one soft click halfway between beats, eighth notes (quavers). -->
+    <string name="metronome_subdivision_eighths">Eighths</string>
+    <!-- Between the beats (TalkBack name of an icon of three beamed notes with a 3): three even clicks per beat, triplets. -->
+    <string name="metronome_subdivision_triplets">Triplets</string>
+    <!-- Between the beats (TalkBack name of an icon of beamed notes with two beams): sixteenth notes (semiquavers), four clicks per beat; in 6/8 and 7/8 two per beat, which there are sixteenths too. -->
+    <string name="metronome_subdivision_sixteenths">Sixteenths</string>
+    <!-- TalkBack name of the small note icon on the status line under the beat lights while eighths click between the beats. -->
+    <string name="metronome_subdivision_eighths_on">Eighths between the beats</string>
+    <!-- TalkBack name of the small note icon on the status line under the beat lights while triplets click between the beats. -->
+    <string name="metronome_subdivision_triplets_on">Triplets between the beats</string>
+    <!-- TalkBack name of the small note icon on the status line under the beat lights while sixteenths click between the beats. -->
+    <string name="metronome_subdivision_sixteenths_on">Sixteenths between the beats</string>
     <!-- TalkBack name of the button at the end of the row under the tempo dial (a three-sliders icon, no word shown): opens the panel with the click sounds, Vibrate on the beat and Listen. Also the panel's name. -->
     <string name="metronome_options">Options</string>
 

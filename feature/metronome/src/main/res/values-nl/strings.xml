@@ -17,6 +17,14 @@
     <string name="metronome_sound_cowbell">Koebel</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rimclick</string>
+    <string name="metronome_subdivision">Tussen de tellen</string>
+    <string name="metronome_subdivision_none">Geen</string>
+    <string name="metronome_subdivision_eighths">Achtsten</string>
+    <string name="metronome_subdivision_triplets">Triolen</string>
+    <string name="metronome_subdivision_sixteenths">Zestienden</string>
+    <string name="metronome_subdivision_eighths_on">Achtsten tussen de tellen</string>
+    <string name="metronome_subdivision_triplets_on">Triolen tussen de tellen</string>
+    <string name="metronome_subdivision_sixteenths_on">Zestienden tussen de tellen</string>
     <string name="metronome_options">Opties</string>
     <string name="metronome_meter_2_4_spoken">Tweekwartsmaat</string>
     <string name="metronome_meter_3_4_spoken">Driekwartsmaat</string>

@@ -46,6 +46,7 @@ import io.github.klaboukes.twangle.core.designsystem.SpokenReadingThrottle
 import io.github.klaboukes.twangle.core.designsystem.TwangleTheme
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.settings.FakeSettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
 import io.github.klaboukes.twangle.core.settings.VisualStyle
@@ -54,6 +55,7 @@ import io.github.klaboukes.twangle.core.testing.PhoneScreen
 import io.github.klaboukes.twangle.core.testing.SystemBars
 import io.github.klaboukes.twangle.core.testing.assertWhollyShown
 import io.github.klaboukes.twangle.core.testing.createSharedActivityComposeRule
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -68,7 +70,8 @@ import java.util.concurrent.TimeUnit
  * the saved tempo and meter, Start / Stop, − and +, the meter picker, the dial (a touch on its ring,
  * none on its middle or deep in its gap, and TalkBack's slider), the row under the dial (Tap tempo ·
  * − · Start · + · options, Phase 62) and the options panel (the four sounds, a pick playing one bar
- * while stopped, the vibration switch and its mark on the status line, Listen) work and are saved,
+ * while stopped, the clicks between the beats and their mark, the vibration switch and its mark on the
+ * status line, Listen) work and are saved,
  * and the clicks stop when the screen leaves the composition. TalkBack hears every control by name.
  * [MetronomeStylesTest] covers the layout in every style.
  */
@@ -89,13 +92,27 @@ class MetronomeScreenTest {
     @get:Rule
     val microphone: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.RECORD_AUDIO)
 
-    private fun show(locale: String? = null, fontScale: Float = 1f, size: DpSize = PHONE) {
+    private fun show(
+        locale: String? = null,
+        fontScale: Float = 1f,
+        size: DpSize = PHONE,
+        subdivision: Subdivision = Subdivision.NONE,
+    ) {
         compose.setContent {
             PhoneScreen(size, SystemBars.tab(onItsSide = size.width > size.height, Navigation.BUTTONS), fontScale, locale) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
                     backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                     if (shown.value) {
-                        MetronomeScreen(player, settings, recorder, ToolSwitches.ALL_ON, savedBpm = 96, savedMeter = Meter.THREE_FOUR, savedVibrate = false)
+                        MetronomeScreen(
+                            player,
+                            settings,
+                            recorder,
+                            ToolSwitches.ALL_ON,
+                            savedBpm = 96,
+                            savedMeter = Meter.THREE_FOUR,
+                            savedVibrate = false,
+                            savedSubdivision = subdivision,
+                        )
                     }
                 }
             }
@@ -290,12 +307,111 @@ class MetronomeScreenTest {
         }
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).assertIsSelected()
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.COWBELL)).assertIsNotSelected()
-        // Sound, Vibrate on the beat, then Listen, one under the other.
+        compose.onNodeWithContentDescription("Between the beats").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup))
+        for ((subdivision, name) in listOf(
+            Subdivision.NONE to "None",
+            Subdivision.TWO to "Eighths",
+            Subdivision.THREE to "Triplets",
+            Subdivision.FOUR to "Sixteenths",
+        )) {
+            compose.onNodeWithTag(MetronomeTestTags.subdivision(subdivision)).assertContentDescriptionEquals(name)
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
+                .assertIsEnabled()
+                .assertIsDisplayed()
+        }
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsSelected()
+        // Sound, Between the beats, Vibrate on the beat, then Listen, one under the other, with steady sizes.
         val sounds = compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).getBoundsInRoot()
+        val between = Subdivision.entries.map { compose.onNodeWithTag(MetronomeTestTags.subdivision(it)).getBoundsInRoot() }
         val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE).getBoundsInRoot()
         val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Listen")).assertHasClickAction().getBoundsInRoot()
-        assertTrue("the sounds $sounds over the switch $vibrate", sounds.bottom <= vibrate.top)
+        assertTrue("the sounds $sounds over the note values ${between[0]}", sounds.bottom <= between[0].top)
+        assertTrue("the note values ${between[0]} over the switch $vibrate", between[0].bottom <= vibrate.top)
         assertTrue("the switch $vibrate over Listen $listen", vibrate.bottom <= listen.top)
+        for (bounds in between) {
+            assertEquals("each note value as wide as a sound", sounds.width.value, bounds.width.value, 0.5f)
+            assertEquals("each note value as tall as a sound", sounds.height.value, bounds.height.value, 0.5f)
+        }
+    }
+
+    @Test
+    fun stoppedANoteValuePlaysOneBarIsSavedAndShowsOnTheStatusLine() {
+        show()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).performClick()
+        compose.waitForIdle()
+        assertEquals("one bar of it", 1, player.previewCount)
+        assertEquals(Subdivision.THREE, player.subdivision)
+        assertFalse("a preview is not playing", player.isPlaying.value)
+        assertEquals(Subdivision.THREE, settings.current.metronomeSubdivision)
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).assertIsSelected()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsNotSelected()
+        panel.assertIsDisplayed()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertIsDisplayed().assertContentDescriptionEquals("Triplets between the beats")
+        compose.onNodeWithTag(MetronomeTestTags.SUBDIVISION_MARK, useUnmergedTree = true).assertExists()
+        // None again: the mark goes.
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).performClick()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
+        assertEquals(Subdivision.NONE, settings.current.metronomeSubdivision)
+    }
+
+    @Test
+    fun playingANoteValueIsHeardFromTheNextBeatAndItsMarkComesBeforeVibration() {
+        show()
+        start.performClick()
+        compose.waitForIdle()
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.VIBRATE).performClick()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.FOUR)).performClick()
+        compose.waitForIdle()
+        assertEquals("no bar of its own while playing", 0, player.previewCount)
+        assertEquals(Subdivision.FOUR, player.subdivision)
+        assertTrue(player.isPlaying.value)
+        assertEquals(1, player.startCount)
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Sixteenths between the beats, Vibrate on the beat")
+        val note = compose.onNodeWithTag(MetronomeTestTags.SUBDIVISION_MARK, useUnmergedTree = true).getBoundsInRoot()
+        val buzz = compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).getBoundsInRoot()
+        assertTrue("the note value $note before vibration $buzz", note.right <= buzz.left)
+        start.performClick()
+    }
+
+    @Test
+    fun sixEightDimsTripletsAndSixteenthsAndKeepsTheChoiceForFourFour() {
+        runBlocking { settings.setMetronomeSubdivision(Subdivision.THREE) }
+        show(subdivision = Subdivision.THREE)
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Triplets between the beats")
+        compose.onNodeWithTag(MetronomeTestTags.meter(Meter.SIX_EIGHT)).performClick()
+        compose.waitForIdle()
+        // 6/8 plays triplets as none: no mark, none shown picked, triplets and sixteenths dimmed in place.
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.NONE)).assertIsSelected().assertIsEnabled()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.TWO)).assertIsEnabled()
+            .assertContentDescriptionEquals("Sixteenths")
+        for (dimmed in listOf(Subdivision.THREE, Subdivision.FOUR)) {
+            compose.onNodeWithTag(MetronomeTestTags.subdivision(dimmed)).assertIsNotEnabled().assertIsNotSelected().assertIsDisplayed()
+        }
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.FOUR)).performClick()
+        compose.waitForIdle()
+        assertEquals("a dimmed one takes no tap", 0, player.previewCount)
+        assertEquals("the choice is kept", Subdivision.THREE, settings.current.metronomeSubdivision)
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        // Back in 4/4 the triplets come back.
+        compose.onNodeWithTag(MetronomeTestTags.meter(Meter.FOUR_FOUR)).performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertContentDescriptionEquals("Triplets between the beats")
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.THREE)).assertIsSelected().assertIsEnabled()
+        compose.onNodeWithTag(MetronomeTestTags.subdivision(Subdivision.TWO)).assertContentDescriptionEquals("Eighths")
     }
 
     @Test
@@ -422,19 +538,33 @@ class MetronomeScreenTest {
     @Test
     fun dutchAtTwiceTheTextSizeOnItsSideTheOptionsPanelIsWhollyShown() = assertDutchOptionsPanel(PHONE_LANDSCAPE)
 
-    /** The options panel in Dutch at 2x text on a phone of [size]: its heading, every sound, the switch and Listen wholly shown. */
+    /**
+     * The options panel in Dutch at 2x text on a phone of [size]: its headings, every sound and note
+     * value, the switch and Listen wholly shown (scrolled to, where the panel scrolls).
+     */
     private fun assertDutchOptionsPanel(size: DpSize) {
         show(locale = "nl", fontScale = 2f, size = size)
         openPanel()
         val case = "${size.width} x ${size.height}"
-        assertWhollyShown(compose.onNodeWithText("Geluid", useUnmergedTree = true), "$case Geluid")
+        assertWhollyShown(compose.onNodeWithText("Geluid", useUnmergedTree = true).performScrollTo(), "$case Geluid")
         for ((sound, name) in listOf(ClickSound.WOOD_BLOCK to "Woodblock", ClickSound.COWBELL to "Koebel", ClickSound.CLAVES to "Claves", ClickSound.RIM_CLICK to "Rimclick")) {
-            val segment = compose.onNodeWithTag(MetronomeTestTags.sound(sound))
+            val segment = compose.onNodeWithTag(MetronomeTestTags.sound(sound)).performScrollTo()
             segment.assertContentDescriptionEquals(name)
             assertWhollyShown(segment, "$case $name")
         }
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE).assert(hasText("Trillen op de tel")), "$case Trillen op de tel")
-        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Luisteren")), "$case Luisteren")
+        assertWhollyShown(compose.onNodeWithText("Tussen de tellen", useUnmergedTree = true).performScrollTo(), "$case Tussen de tellen")
+        for ((subdivision, name) in listOf(
+            Subdivision.NONE to "Geen",
+            Subdivision.TWO to "Achtsten",
+            Subdivision.THREE to "Triolen",
+            Subdivision.FOUR to "Zestienden",
+        )) {
+            val segment = compose.onNodeWithTag(MetronomeTestTags.subdivision(subdivision)).performScrollTo()
+            segment.assertContentDescriptionEquals(name)
+            assertWhollyShown(segment, "$case $name")
+        }
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE).performScrollTo().assert(hasText("Trillen op de tel")), "$case Trillen op de tel")
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN).performScrollTo().assert(hasText("Luisteren")), "$case Luisteren")
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         compose.waitForIdle()
         panel.assertDoesNotExist()

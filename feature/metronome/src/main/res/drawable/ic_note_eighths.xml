@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Between the beats: eighths in 2/4 to 5/4, two clicks per beat. Two notes joined by one beam, as on the mock-up (docs/design/metronome-layout-preview.html, option II). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group android:rotation="-20" android:pivotX="6" android:pivotY="18">
+        <path android:fillColor="#FF000000" android:pathData="M2.8,18a3.2,2.3 0 1,0 6.4,0a3.2,2.3 0 1,0 -6.4,0z" />
+    </group>
+    <group android:rotation="-20" android:pivotX="16.5" android:pivotY="18">
+        <path android:fillColor="#FF000000" android:pathData="M13.3,18a3.2,2.3 0 1,0 6.4,0a3.2,2.3 0 1,0 -6.4,0z" />
+    </group>
+    <path android:strokeColor="#FF000000" android:strokeWidth="1.8" android:strokeLineCap="butt" android:pathData="M8.8,17.2V4.2M19.3,17.2V4.2" />
+    <path android:strokeColor="#FF000000" android:strokeWidth="3" android:strokeLineCap="butt" android:pathData="M8,4.8H20.1" />
+</vector>

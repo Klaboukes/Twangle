@@ -29,6 +29,7 @@ import io.github.klaboukes.twangle.core.dsp.eartraining.NoteQuestions
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
+import io.github.klaboukes.twangle.core.dsp.metronome.Subdivision
 import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Instruments
 import io.github.klaboukes.twangle.core.dsp.music.Notation
@@ -255,6 +256,10 @@ class DataStoreSettingsRepository internal constructor(
         dataStore.edit { it[METRONOME_CLICK_SOUND] = sound.name }
     }
 
+    override suspend fun setMetronomeSubdivision(subdivision: Subdivision) {
+        dataStore.edit { it[METRONOME_SUBDIVISION] = subdivision.name }
+    }
+
     override suspend fun setPracticeTool(tool: PracticeTool) {
         dataStore.edit {
             it[PRACTICE_TOOL] = tool.name
@@ -368,6 +373,7 @@ class DataStoreSettingsRepository internal constructor(
             metronomeMeter = enumOrNull<Meter>(prefs[METRONOME_METER]) ?: defaults.metronomeMeter,
             metronomeVibrate = prefs[METRONOME_VIBRATE] ?: defaults.metronomeVibrate,
             metronomeClickSound = enumOrNull<ClickSound>(prefs[METRONOME_CLICK_SOUND]) ?: defaults.metronomeClickSound,
+            metronomeSubdivision = enumOrNull<Subdivision>(prefs[METRONOME_SUBDIVISION]) ?: defaults.metronomeSubdivision,
             practiceTool = practiceTool(prefs) ?: defaults.practiceTool,
             practiceRoot = enumOrNull<PitchClass>(prefs[PRACTICE_ROOT]) ?: defaults.practiceRoot,
             practiceChordQuality = enumOrNull<ChordQuality>(prefs[PRACTICE_CHORD_QUALITY]) ?: defaults.practiceChordQuality,
@@ -446,6 +452,9 @@ class DataStoreSettingsRepository internal constructor(
 
         /** The metronome's [ClickSound], by its name. */
         private val METRONOME_CLICK_SOUND = stringPreferencesKey("metronome_click_sound")
+
+        /** The metronome's [Subdivision], by its name. */
+        private val METRONOME_SUBDIVISION = stringPreferencesKey("metronome_subdivision")
 
         /** The Practice tab's [PracticeTool] used last, by its name. */
         private val PRACTICE_TOOL = stringPreferencesKey("practice_tool")

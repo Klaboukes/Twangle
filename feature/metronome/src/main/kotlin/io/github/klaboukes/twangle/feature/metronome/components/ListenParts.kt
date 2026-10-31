@@ -114,8 +114,8 @@ import kotlin.math.roundToInt
 /**
  * Something on in the options panel that changes how the metronome sounds or feels, shown on the
  * status line as a small [icon] while Listen has nothing to say (Phase 62); TalkBack hears [spoken].
- * [tag] is its test tag. Today only "Vibrate on the beat"; the note values between the beats and the
- * speed trainer come next.
+ * [tag] is its test tag: the note value between the beats (none has no mark) and "Vibrate on the
+ * beat"; the speed trainer comes next.
  */
 @Immutable
 data class StatusMark(@param:DrawableRes val icon: Int, val spoken: String, val tag: String)
