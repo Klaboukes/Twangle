@@ -20,6 +20,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.log2
 
 class WatchPitchPipelineTest {
@@ -149,13 +150,16 @@ class WatchPitchPipelineTest {
 
     /**
      * The microphone hears the watch's own motor. A watch's vibration motor (a linear resonant
-     * actuator) rings at its resonance, about 150–250 Hz, and a system click drives it for a few
-     * cycles that die away within some 30 ms; the microphone sits in the same case, so it picks the
-     * buzz up through the body. Modelled as a damped sine at [hz] (8 ms decay, 40 ms long), its peak
-     * [level] times the note's peak.
+     * actuator) rings at its resonance, about 150–250 Hz; the tap drives it for [TAP_MILLIS], then
+     * it dies away; the microphone sits in the same case, so it picks the buzz up through the body.
+     * Modelled as a sine at [hz] at full strength for [TAP_MILLIS], then fading (8 ms decay) for
+     * 40 ms more, its peak [level] times the note's peak.
      */
-    private fun motorBuzz(hz: Float, level: Float, notePeak: Float): FloatArray =
-        TestSignals.tick(floatArrayOf(hz), decaySeconds = 0.008, length = 48_000 * 40 / 1000, amplitude = level * notePeak)
+    private fun motorBuzz(hz: Float, level: Float, notePeak: Float): FloatArray {
+        val drive = (48_000 * TAP_MILLIS / 1000).toInt()
+        val sine = TestSignals.sine(hz, length = drive + 48_000 * 40 / 1000, amplitude = level * notePeak)
+        return FloatArray(sine.size) { i -> if (i < drive) sine[i] else sine[i] * exp(-(i - drive) / (48_000 * 0.008)).toFloat() }
+    }
 
     /**
      * Plays [signal] like the fake recorder, chunk by chunk in virtual time, and mixes [buzz] in from

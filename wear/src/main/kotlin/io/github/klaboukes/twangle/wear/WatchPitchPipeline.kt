@@ -159,8 +159,9 @@ class WatchPitchPipeline(
         /**
          * How long after a note comes in tune the wrist tap's buzz may still be heard: the tap is
          * played a frame or two of the screen after the reading (up to some 60 ms with the motor's
-         * start) and a short click rings for about 40 ms. About 190 ms of frames with the window.
+         * start), drives the motor for [TAP_MILLIS] and rings out for some 20 ms more. About 320 ms
+         * of frames with the window.
          */
-        const val TAP_SECONDS = 0.1f
+        const val TAP_SECONDS = (60 + TAP_MILLIS + 20) / 1000f
     }
 }

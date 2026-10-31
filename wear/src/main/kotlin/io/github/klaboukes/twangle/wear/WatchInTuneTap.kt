@@ -62,26 +62,20 @@ private val TAP_RULE_SAVER = Saver<WatchInTuneTap, Boolean>(
 )
 
 /**
- * One soft, short tap of the watch's motor: the system's click primitive at [TAP_SCALE] of its
- * strength where the motor can play it (a crisp tap of about 10–20 ms, felt but gentle), else the
- * system's predefined click, as the phone's tick. Short, so the microphone hears it for as little
- * as possible (`WatchPitchPipelineTest` checks the reading stays steady across it). It drives the
- * motor directly, as the phone does; Android files it as touch feedback (the emulator's vibrator
- * history: usage TOUCH), so the watch's touch-vibration strength applies to it.
+ * One short pulse of the watch's motor, [TAP_MILLIS] at full strength: the shortest the owner felt
+ * on the Galaxy Watch 5 while playing (2026-10-31). The system's click, predefined or as a
+ * primitive, ran on its motor but wasn't felt on the wrist, so the tap is a plain pulse on every
+ * watch. Short, so the microphone hears it for as little as possible (`WatchPitchPipelineTest`
+ * checks the reading stays steady across it). It drives the motor directly, as the phone does.
  */
 @Composable
 fun rememberWristTap(): () -> Unit {
     val context = LocalContext.current
     return remember(context) {
         val vibrator = context.vibrator()
-        val effect = if (vibrator.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_CLICK)) {
-            VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, TAP_SCALE)
-                .compose()
-        } else {
-            VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-        }
-        { if (vibrator.hasVibrator()) vibrator.vibrate(effect) }
+        val effect = VibrationEffect.createOneShot(TAP_MILLIS, TAP_AMPLITUDE)
+        val tap: () -> Unit = { if (vibrator.hasVibrator()) vibrator.vibrate(effect) }
+        tap
     }
 }
 
@@ -92,5 +86,12 @@ private fun Context.vibrator(): Vibrator =
         getSystemService(Vibrator::class.java)
     }
 
-/** How strong the tap is, as a share of the motor's full click: soft, still felt on the wrist. */
-const val TAP_SCALE = 0.6f
+/**
+ * How long the tap drives the motor. On the Galaxy Watch 5 (owner, 2026-10-31) 40 ms wasn't felt,
+ * 80 ms only with the arm still, and 150 ms while playing, through the guitar's own vibration; a
+ * double tap of 80 ms wasn't felt then either.
+ */
+const val TAP_MILLIS = 150L
+
+/** The tap's strength, the motor's full amplitude (1–255). */
+private const val TAP_AMPLITUDE = 255
