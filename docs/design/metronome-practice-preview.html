@@ -1,0 +1,319 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metronome Practice Options</title>
+<!--
+TWANGLE METRONOME FOR PRACTICE: WHERE SUBDIVISIONS AND THE SPEED TRAINER GO (Phase 62 preview). ROUGH, plain on purpose.
+The ask   ROADMAP.md Phase 62. Subdivisions: none (default), 2 (eighths), 3 (triplets), 4 (sixteenths); in 6/8 and 7/8
+          only none and 2. Speed trainer: a start tempo, a goal tempo and a step ("+5 BPM every 4 bars", step and
+          bars from short lists); the tempo rises on a bar's downbeat, the dial following, and holds at the goal; a
+          change by hand, Tap tempo or Listen ends it; Stop and Start begin again from the start tempo. The trainer is a
+          tool with its own switch (ToolSwitches); subdivisions are an option of the metronome.
+Fixed     The row of three buttons (Sound · Tap tempo · Listen, never a fourth) and the tempo dial stay as they are.
+          Buttons keep one size; no hint text; controls keep their places.
+Options   Subdivision A (a row under the meter picker), B (in the Sound panel), C (a note-value button at the end of
+          the tool button's row). Trainer 1 (long press on Start), 2 (a row in the Sound panel), 3 (a button at the end
+          of the tool button's row). Recommended: C and 3, drawn together under "While it climbs".
+Phone     393 × 740 dp (the Xiaomi 12X between the bars), upright only. The screen as built (ui-other-screens.md,
+          Metronome screen): the Practice tool button "Metronome ⌄" at the top start, the meter picker, the beat
+          lights, Listen's status line, the dial (− tempo +, Start in its opening), the row of three. The dial and
+          lights are flat placeholders, no ticks.
+Icons     Line icons on a 24-unit grid, 1.8 stroke, as the row's icons; the note values drawn as plain notes; the
+          trainer as a rising line with an arrow (Material "trending_up").
+Look      Contemporary (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --track: #CDD3E3; --on-accent: #FFFFFF; --lift: rgba(16,20,31,.22);
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --face: color-mix(in srgb, var(--surface) 45%, var(--bg));
+  --outline: color-mix(in srgb, var(--muted) 60%, var(--bg));
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --track: #2B3350; --on-accent: #121A5A; --lift: rgba(0,0,0,.5);
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --track: #2B3350; --on-accent: #121A5A; --lift: rgba(0,0,0,.5);
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 920px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 500 20px/1.3 var(--ui); margin: 40px 0 4px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.cards { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 12px; }
+.cand { width: 280px; max-width: 100%; display: grid; gap: 8px; align-content: start; }
+.cand h3 { font: 500 16px/1.3 var(--ui); margin: 0; }
+.cand h3 b { color: var(--accent); font-weight: 500; margin-right: 4px; }
+.note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 6px; vertical-align: 2px; }
+svg.sk { width: 100%; height: auto; display: block; background: var(--bg); border-radius: 18px; }
+svg.real { width: 280px; max-width: 100%; height: auto; display: block; }
+.sk text, .real text { font-family: var(--ui); }
+.f { fill: var(--face); stroke: var(--outline); stroke-width: 1; }
+.pk { fill: var(--container); stroke: var(--accent); stroke-width: 2; }
+.bar { fill: var(--track); } .bar1 { fill: var(--accent); }
+.st { fill: var(--accent); }
+.pn { fill: var(--surface); filter: drop-shadow(0 6px 14px var(--lift)); }
+.t { fill: var(--ink); font-size: 14px; } .tm { fill: var(--muted); font-size: 12px; }
+.num { fill: var(--ink); font-size: 56px; font-weight: 300; }
+.dim { opacity: .38; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Note values, plain notes: filled heads, 1.8 stems, beams. -->
+    <symbol id="q" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <ellipse cx="9.5" cy="18" rx="3.6" ry="2.6" transform="rotate(-20 9.5 18)" stroke="none"/><path d="M12.6,17V3.5" fill="none"/></g></symbol>
+    <symbol id="e8" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8">
+      <ellipse cx="6" cy="18" rx="3.2" ry="2.3" transform="rotate(-20 6 18)" stroke="none"/>
+      <ellipse cx="16.5" cy="18" rx="3.2" ry="2.3" transform="rotate(-20 16.5 18)" stroke="none"/>
+      <path d="M8.8,17.2V4.2M19.3,17.2V4.2" fill="none"/><path d="M8,4.8H20.1" stroke-width="3" fill="none"/></g></symbol>
+    <symbol id="t3" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8">
+      <ellipse cx="4.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 4.6 19.5)" stroke="none"/>
+      <ellipse cx="11.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 11.6 19.5)" stroke="none"/>
+      <ellipse cx="18.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 18.6 19.5)" stroke="none"/>
+      <path d="M6.9,18.8V8.6M13.9,18.8V8.6M20.9,18.8V8.6" fill="none"/><path d="M6.1,9.1H21.7" stroke-width="2.6" fill="none"/>
+      <text x="14" y="5.6" text-anchor="middle" font-size="6.5" font-weight="700" stroke="none" font-family="Roboto, system-ui, sans-serif">3</text></g></symbol>
+    <symbol id="s16" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.6">
+      <ellipse cx="3.4" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 3.4 19.5)" stroke="none"/>
+      <ellipse cx="8.9" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 8.9 19.5)" stroke="none"/>
+      <ellipse cx="14.4" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 14.4 19.5)" stroke="none"/>
+      <ellipse cx="19.9" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 19.9 19.5)" stroke="none"/>
+      <path d="M5.3,18.9V5.5M10.8,18.9V5.5M16.3,18.9V5.5M21.8,18.9V5.5" fill="none"/>
+      <path d="M4.6,6.3H22.5M4.6,10.1H22.5" stroke-width="2.2" fill="none"/></g></symbol>
+    <!-- The speed trainer: a rising line with an arrow (as Material "trending_up"). -->
+    <symbol id="up" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3,17.5L9,11.5L13,15.5L21,7.5"/><path d="M15,7.5H21V13.5"/></g></symbol>
+    <!-- The row's icons, as built: ic_tap, ic_listen; Sound shows the wood block (ic_sound_wood_block). -->
+    <symbol id="tap" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5,2.5v12a2.5,2.5 0,0 0,5 0v-12"/><path d="M3.5,20.5h17M5.5,16.5l1.5,1.2M18.5,16.5l-1.5,1.2"/></g></symbol>
+    <symbol id="listen" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12,2.5a3,3 0,0 1,3 3v5.5a3,3 0,0 1,-6 0v-5.5a3,3 0,0 1,3 -3z"/><path d="M5.5,11a6.5,6.5 0,0 0,13 0"/><path d="M12,17.5v3.5M9,21h6"/></g></symbol>
+    <symbol id="wood" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="11" width="19" height="9.5" rx="2"/><path d="M5.5,14.4q3,-1.4 6,0t6.5,0M5.5,17.4q3,-1.4 6,0t6.5,0"/>
+      <path d="M11,8.6L20.5,2.4"/><path d="M7.4,8.6l-1.4,-1.4M9.2,6.4l-.4,-1.8"/></g></symbol>
+    <symbol id="cowbell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8,5h8l3,15H5z"/><path d="M10,5V2.5h4V5"/></g></symbol>
+    <symbol id="claves" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="16.6" width="20" height="2.8" rx="1.4"/><rect x="2.6" y="7.4" width="12.4" height="2.8" rx="1.4" transform="rotate(30 2.6 8.8)"/></g></symbol>
+    <symbol id="rim" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="11" cy="13" rx="8.5" ry="3"/><path d="M2.5,13v4.5c0,1.7 3.8,3 8.5,3s8.5,-1.3 8.5,-3V13"/><path d="M6,6.5L22,11"/></g></symbol>
+    <!-- The Practice tool button's metronome. -->
+    <symbol id="met" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8,20.5L10.5,3.5h3L16,20.5Z"/><path d="M12,15L17.5,6.5"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 62 · rough mock-up</p>
+  <h1>Where do subdivisions and the speed trainer go?</h1>
+  <p class="lede">The metronome screen keeps its dial and its row of three buttons (Sound · Tap tempo · Listen). So both new
+    things need room somewhere else. Pick one place for the <strong>subdivision</strong> (A, B or C) and one for the
+    <strong>speed trainer</strong> (1, 2 or 3).</p>
+  <p class="lede"><strong>My pick: C and 3</strong>, two small buttons at the empty end of the "Metronome ⌄" row (drawn together
+    at the bottom). They take no height from the dial and leave the meter picker and the three buttons alone. Each
+    shows its state at a glance: the note value picked, and the trainer button lit while it is on.</p>
+</header>
+
+<h2>Subdivisions: softer clicks between the beats</h2>
+<p class="note">Four choices: beats only, eighths, triplets, sixteenths. The beat lights stay on the beats.</p>
+<div class="cards" id="subs"></div>
+<div class="cards">
+  <div class="cand" style="width: 340px">
+    <h3>In 6/8 and 7/8, all three</h3>
+    <svg class="real" viewBox="0 0 340 44" id="strip" style="width: 340px"></svg>
+    <p class="note">The click is already an eighth there, so triplets and sixteenths rest at 38 % and take no taps. They keep
+      their places, so nothing moves when the meter changes.</p>
+  </div>
+</div>
+
+<h2>Speed trainer: start slower, climb to the goal</h2>
+<div class="cards" id="trainers"></div>
+
+<h2>The trainer's panel</h2>
+<p class="note">The same panel whichever way it opens. Real size (1 px per dp). Start and Goal step by 5 BPM; Step and
+  Bars are short lists.</p>
+<div class="cards">
+  <div class="cand"><svg class="real" viewBox="0 0 280 260" id="panelReal"></svg></div>
+</div>
+
+<h2>While it climbs (C and 3 together)</h2>
+<div class="cards" id="running"></div>
+
+<footer>
+  <p>Left out on purpose: a fourth button in the row (the owner's rule), anything inside the dial (− + and Start fill it),
+    and a tap on the beat lights (nobody would find it).</p>
+  <p>On its side, the "Metronome ⌄" row stands over the dial's half, so C and 3 would sit at its end there too. With the
+    Practice tab switched off there is no tool button: the two buttons then stand alone at the top end, in the same
+    place.</p>
+  <p>Not shown: TalkBack names ("Between the beats: Eighths", "Speed trainer, on"), large text, Dutch.</p>
+</footer>
+</div>
+
+<script>
+// ---- flat sketches, in dp (393 × 740) ----
+const ico = (id, x, y, s = 24, color = "var(--ink)") =>
+  `<use href="#${id}" x="${x}" y="${y}" width="${s}" height="${s}" style="color:${color}"/>`;
+const phone = inner => `<svg class="sk" viewBox="0 0 393 740">${inner}</svg>`;
+
+const toolRow = () => `<rect x="16" y="8" width="160" height="44" rx="14" class="f"/>${ico("met", 28, 18)}` +
+  `<text x="58" y="35" class="t">Metronome ⌄</text>`;
+const iconBtn = (x, id, on = false) => `<rect x="${x}" y="8" width="44" height="44" rx="14" class="${on ? "pk" : "f"}"/>${ico(id, x + 10, 18)}`;
+const meters = y => ["2/4", "3/4", "4/4", "5/4", "6/8", "7/8"].map((m, i) =>
+  `<rect x="${36.5 + i * 54}" y="${y}" width="50" height="40" rx="20" class="${i === 2 ? "pk" : "f"}"/>` +
+  `<text x="${61.5 + i * 54}" y="${y + 25}" text-anchor="middle" class="t">${m}</text>`).join("");
+// Four equal buttons across w, 4 dp apart; items are icon ids or plain words.
+const segs = (x, y, w, h, items, picked, dim = []) => {
+  const bw = (w - 4 * (items.length - 1)) / items.length;
+  return items.map((it, i) => {
+    const bx = x + i * (bw + 4), d = dim.includes(i) ? ` class="dim"` : "";
+    const face = `<rect x="${bx}" y="${y}" width="${bw}" height="${h}" rx="${h / 2}" class="${i === picked ? "pk" : "f"}"/>`;
+    const c = it.startsWith("#") ? ico(it.slice(1), bx + bw / 2 - 12, y + h / 2 - 12)
+      : `<text x="${bx + bw / 2}" y="${y + h / 2 + 5}" text-anchor="middle" class="t">${it}</text>`;
+    return `<g${d}>${face}${c}</g>`;
+  }).join("");
+};
+const NOTES = ["#q", "#e8", "#t3", "#s16"];
+const lights = (y, h, lit = 0) => [0, 1, 2, 3].map(i => {
+  const w = i === 0 ? 30 : 22, bh = i === 0 ? h * .62 : h * .46, x = 196.5 - 105 + i * 70 - w / 2;
+  return `<rect x="${x}" y="${y + h * .62 - bh}" width="${w}" height="${bh}" rx="6" class="${i === lit ? "bar1" : "bar"}"/>` +
+    `<text x="${x + w / 2}" y="${y + h * .95}" text-anchor="middle" class="tm">${i + 1}</text>`;
+}).join("");
+const status = (y, text) => text ? `<text x="196.5" y="${y + 17}" text-anchor="middle" class="tm" style="font-size:13px">${text}</text>` : "";
+
+// The dial: 30–250 BPM over 300°, the gap at the bottom; lit up to the tempo; an optional hollow ring at the goal.
+const ang = bpm => -150 + 300 * (bpm - 30) / 220;
+const pt = (cx, cy, a, rad) => [cx + rad * Math.sin(a * Math.PI / 180), cy - rad * Math.cos(a * Math.PI / 180)];
+const arc = (cx, cy, rad, a0, a1) => { const [x0, y0] = pt(cx, cy, a0, rad), [x1, y1] = pt(cx, cy, a1, rad);
+  return `M${x0},${y0}A${rad},${rad} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1},${y1}`; };
+const marking = b => b < 76 ? "Adagio" : b < 108 ? "Andante" : b < 120 ? "Moderato" : "Allegro";
+const dial = (cy, r, bpm, o = {}) => {
+  const cx = 196.5, rad = r - 8, a = ang(bpm), [n0x, n0y] = pt(cx, cy, a, rad - 30), [n1x, n1y] = pt(cx, cy, a, rad - 13);
+  let s = `<path d="${arc(cx, cy, rad, -150, 150)}" fill="none" stroke="var(--track)" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="${arc(cx, cy, rad, -150, a)}" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round"/>` +
+    `<line x1="${n0x}" y1="${n0y}" x2="${n1x}" y2="${n1y}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
+  if (o.goal) { const [gx, gy] = pt(cx, cy, ang(o.goal), rad);
+    s += `<circle cx="${gx}" cy="${gy}" r="7" fill="var(--bg)" stroke="var(--accent)" stroke-width="2"/>`; }
+  const mx = r * .44, sy = cy + r * .72;
+  s += `<circle cx="${cx - mx}" cy="${cy - 14}" r="18" class="f"/><circle cx="${cx + mx}" cy="${cy - 14}" r="18" class="f"/>` +
+    `<text x="${cx - mx}" y="${cy - 7}" text-anchor="middle" class="t" font-size="22">−</text>` +
+    `<text x="${cx + mx}" y="${cy - 7}" text-anchor="middle" class="t" font-size="22">+</text>` +
+    `<text x="${cx}" y="${cy + 6}" text-anchor="middle" class="num">${bpm}</text>` +
+    `<text x="${cx}" y="${cy + 28}" text-anchor="middle" class="tm">BPM</text>` +
+    `<text x="${cx}" y="${cy + 44}" text-anchor="middle" class="tm">${marking(bpm)}</text>` +
+    `<circle cx="${cx}" cy="${sy}" r="28" class="st"/>` +
+    (o.playing ? `<rect x="${cx - 8}" y="${sy - 8}" width="16" height="16" rx="2" fill="var(--on-accent)"/>`
+      : `<path d="M${cx - 6},${sy - 10}v20l16,-10z" fill="var(--on-accent)"/>`);
+  if (o.hold) s += `<circle cx="${cx}" cy="${sy}" r="37" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 5"/>`;
+  return s;
+};
+const btn = (x, y, id, word) => `<rect x="${x}" y="${y}" width="72" height="52" rx="26" class="f"/>${ico(id, x + 24, y + 14)}` +
+  `<text x="${x + 36}" y="${y + 68}" text-anchor="middle" class="tm">${word}</text>`;
+const row = y => btn(72.5, y, "wood", "Sound") + btn(160.5, y, "tap", "Tap tempo") + btn(248.5, y, "listen", "Listen");
+
+// A switch, on or off.
+const sw = (x, y, on) => on
+  ? `<rect x="${x}" y="${y}" width="52" height="32" rx="16" fill="var(--accent)"/><circle cx="${x + 36}" cy="${y + 16}" r="12" fill="var(--on-accent)"/>`
+  : `<rect x="${x}" y="${y}" width="52" height="32" rx="16" fill="var(--track)" stroke="var(--muted)" stroke-width="2"/><circle cx="${x + 16}" cy="${y + 16}" r="8" fill="var(--muted)"/>`;
+// The Sound panel as built (248 dp wide, four sounds, then the vibrate switch); `extra` adds Phase 62's part.
+const SOUNDS = [["wood", "Wood block"], ["cowbell", "Cowbell"], ["claves", "Claves"], ["rim", "Rim click"]];
+const soundPanel = (x, bottom, extra) => {
+  const h = 8 + 192 + (extra === "subs" ? 52 : 0) + 56 + (extra === "trainer" ? 48 : 0) + 8, y = bottom - h;
+  let s = `<rect x="${x}" y="${y}" width="248" height="${h}" rx="16" class="pn"/>`;
+  SOUNDS.forEach(([id, name], i) => { const ry = y + 8 + i * 48;
+    if (i === 0) s += `<rect x="${x + 8}" y="${ry}" width="232" height="48" rx="12" class="pk"/>`;
+    s += ico(id, x + 22, ry + 12) + `<text x="${x + 60}" y="${ry + 29}" class="t">${name}</text>`; });
+  let ny = y + 200;
+  if (extra === "subs") { s += segs(x + 12, ny + 6, 224, 40, NOTES, 1); ny += 52; }
+  s += `<text x="${x + 22}" y="${ny + 33}" class="t">Vibrate on the beat</text>` + sw(x + 182, ny + 12, false);
+  ny += 56;
+  if (extra === "trainer") s += ico("up", x + 22, ny + 12) + `<text x="${x + 60}" y="${ny + 29}" class="t">Speed trainer</text>` +
+    `<text x="${x + 226}" y="${ny + 30}" text-anchor="end" class="t" font-size="18">›</text>`;
+  return s;
+};
+// The note-value list, a small dropdown under its button.
+const noteList = (x, y) => {
+  const names = ["Beats only", "Eighths", "Triplets", "Sixteenths"];
+  let s = `<rect x="${x}" y="${y}" width="200" height="208" rx="16" class="pn"/>`;
+  NOTES.forEach((n, i) => { const ry = y + 8 + i * 48;
+    if (i === 1) s += `<rect x="${x + 8}" y="${ry}" width="184" height="48" rx="12" class="pk"/>`;
+    s += ico(n.slice(1), x + 22, ry + 12) + `<text x="${x + 60}" y="${ry + 29}" class="t">${names[i]}</text>`; });
+  return s;
+};
+// The trainer's panel, 280 × 260 dp.
+const trainerPanel = (x, y, shadow = true) => {
+  let s = `<rect x="${x}" y="${y}" width="280" height="260" rx="16" class="pn" ${shadow ? "" : `style="filter:none"`}/>`;
+  s += ico("up", x + 16, y + 22) + `<text x="${x + 52}" y="${y + 39}" class="t" font-weight="500">Speed trainer</text>` + sw(x + 212, y + 18, true);
+  const stepper = (ry, label, v) => `<text x="${x + 16}" y="${ry + 29}" class="t">${label}</text>` +
+    `<circle cx="${x + 140}" cy="${ry + 24}" r="18" class="f"/><text x="${x + 140}" y="${ry + 31}" text-anchor="middle" class="t" font-size="20">−</text>` +
+    `<text x="${x + 196}" y="${ry + 30}" text-anchor="middle" class="t" font-size="18">${v}</text>` +
+    `<circle cx="${x + 252}" cy="${ry + 24}" r="18" class="f"/><text x="${x + 252}" y="${ry + 31}" text-anchor="middle" class="t" font-size="20">+</text>`;
+  s += stepper(y + 60, "Start", 80) + stepper(y + 108, "Goal", 120);
+  s += `<text x="${x + 16}" y="${y + 185}" class="t">Step</text>` + segs(x + 76, y + 162, 192, 36, ["+1", "+2", "+5", "+10"], 2);
+  s += `<text x="${x + 16}" y="${y + 233}" class="t">Bars</text>` + segs(x + 76, y + 210, 192, 36, ["1", "2", "4", "8"], 2);
+  return s;
+};
+
+// Base layout: meters 64, lights 116 (64 tall), status line 186, dial centre 400 (r 170), row 606.
+const base = (o = {}) => toolRow() + meters(64) + lights(116, 64, o.lit ?? 0) + status(186, o.status) +
+  dial(400, 170, o.bpm ?? 96, o) + row(606);
+
+const SUBS = [
+  ["A", "A row under the meter picker", false,
+    phone(toolRow() + meters(64) + segs(36.5, 112, 320, 40, NOTES, 1) + lights(162, 52) + dial(414, 154, 96) + row(606)),
+    ["+ Always in sight, one tap, sits with the meter it belongs to.",
+     "− Takes about 48 dp from the dial, and the screen is already full on a 360 dp phone with navigation buttons."]],
+  ["B", "Inside the Sound panel", false,
+    phone(base() + soundPanel(72.5, 598, "subs")),
+    ["+ Nothing new on the screen; the panel is already about how it clicks.",
+     "− Hidden: two taps, and the screen never shows that eighths are on."]],
+  ["C", "A note button in the top row", true,
+    phone(base() + iconBtn(333, "e8") + noteList(177, 58)),
+    ["+ The row's end is empty today: no height lost, the note shows what is on, one tap opens the list.",
+     "− A little apart from the meter picker."]],
+];
+const TRAINERS = [
+  ["1", "Long press on Start", false,
+    phone(base({ hold: true }) + trainerPanel(56.5, 214)),
+    ["+ Nothing new on the screen.",
+     "− Nobody finds a long press without a hint, and the screen can't show the trainer is set."]],
+  ["2", "A row in the Sound panel", false,
+    phone(base() + soundPanel(72.5, 598, "trainer")),
+    ["+ No new button; the row opens the trainer's panel in its place.",
+     "− The trainer is not a sound, and it hides two taps away under \"Sound\"."]],
+  ["3", "A trainer button in the top row", true,
+    phone(base() + iconBtn(333, "up", true) + trainerPanel(97, 58)),
+    ["+ Easy to find, lit while the trainer is on, and Start stays a plain tap.",
+     "− One more small button on the screen."]],
+];
+const card = ([k, title, rec, svg, notes]) => `<div class="cand"><h3><b>${k}.</b>${title}${rec ? `<span class="tag">recommended</span>` : ""}</h3>` +
+  `${svg}${notes.map(n => `<p class="note">${n}</p>`).join("")}</div>`;
+document.getElementById("subs").innerHTML = SUBS.map(card).join("");
+document.getElementById("trainers").innerHTML = TRAINERS.map(card).join("");
+document.getElementById("strip").innerHTML = segs(0, 2, 340, 40, NOTES, 0, [2, 3]);
+document.getElementById("panelReal").innerHTML = trainerPanel(0, 0, false);
+
+const both = o => base(o) + iconBtn(281, "e8") + iconBtn(333, "up", true);
+document.getElementById("running").innerHTML = [
+  ["Climbing", phone(both({ bpm: 95, goal: 120, playing: true, lit: 1, status: "Climbing to 120 · +5 in 2 bars" })),
+    "The dial's arc and number follow each step on a downbeat; a hollow ring marks the goal (as Listen's ring). The line under the beat lights is Listen's, so nothing moves."],
+  ["At the goal", phone(both({ bpm: 120, playing: true, lit: 0, status: "At the goal · 120 BPM" })),
+    "It holds at 120. A change by hand, Tap tempo or Listen ends the trainer (its button goes unlit); Stop, then Start, climbs again from 80."],
+].map(([t, svg, n]) => `<div class="cand"><h3>${t}</h3>${svg}<p class="note">${n}</p></div>`).join("");
+</script>

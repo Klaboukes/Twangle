@@ -1,0 +1,299 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metronome Layout Options</title>
+<!--
+TWANGLE METRONOME, A CALMER WHOLE SCREEN (Phase 62 preview, round 2). ROUGH, plain on purpose.
+ROUND 1, OWNER'S REPLY, 2026-10-31: "C and 3 is fine, but maybe we should overthink the metronome UI once more":
+          there are now three tools in big buttons (Sound, Tap tempo, Listen) and two small ones at the top end
+          (subdivision, speed trainer). Group the five better, and bring Start and − + under the dial again.
+Fixed     The Practice tool button "Metronome ⌄" at the top start, the meter picker, the beat lights, Listen's status
+          line and the dial as built. The dial keeps only the tempo, "BPM" and the marking in its middle; − Start +
+          move to a row right under it (as before 2026-10-18, when a 196 dp Start stood under a 288 dp dial).
+          Steady sizes, no hint text, controls keep their places, icons without words where they read alone.
+Options   I   one row of five small icon buttons, each opening or doing its own thing.
+          II  Tap tempo and − Start + in one row, the other four in one panel behind a single button; what is on
+              shows as small icons in the status line. Recommended.
+          III today's row of three, regrouped: Sound (with subdivision) · Tap tempo · Tempo (Listen and trainer).
+Sketches  Each option twice: playing in eighths with the trainer climbing (95 → 120), then listening or its panel open.
+Phone     393 × 740 dp (the Xiaomi 12X between the bars), upright only. Dial and lights are flat placeholders.
+Look      Contemporary (core/designsystem StylePalettes.kt), light or dark with the system setting.
+-->
+<style>
+:root {
+  --page: #F5F7FC; --bg: #E3E7F0; --surface: #EFF2FA; --ink: #10141F; --muted: #4A5268; --accent: #3A4FD6;
+  --track: #CDD3E3; --on-accent: #FFFFFF; --lift: rgba(16,20,31,.22);
+  --container: color-mix(in srgb, #3A4FD6 22%, #EFF2FA);
+  --face: color-mix(in srgb, var(--surface) 45%, var(--bg));
+  --outline: color-mix(in srgb, var(--muted) 60%, var(--bg));
+  --ui: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+    --track: #2B3350; --on-accent: #121A5A; --lift: rgba(0,0,0,.5);
+    --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0E1220; --bg: #171D2E; --surface: #232736; --ink: #E6E9F4; --muted: #A6AECB; --accent: #A6ADFF;
+  --track: #2B3350; --on-accent: #121A5A; --lift: rgba(0,0,0,.5);
+  --container: color-mix(in srgb, #A6ADFF 32%, #232736); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); }
+body { margin: 0; color: var(--ink); font: 400 16px/1.5 var(--ui); padding: 0 16px 56px; }
+.wrap { max-width: 920px; margin: 0 auto; }
+header { padding: 28px 0 8px; display: grid; gap: 8px; }
+.eyebrow { font: 500 12px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-weight: 400; font-size: clamp(26px, 6vw, 36px); line-height: 1.15; margin: 0; }
+h2 { font: 500 20px/1.3 var(--ui); margin: 40px 0 4px; }
+h2 b { color: var(--accent); font-weight: 500; margin-right: 6px; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 70ch; }
+.lede strong { color: var(--ink); font-weight: 500; }
+.cards { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 12px; }
+.cand { width: 280px; max-width: 100%; display: grid; gap: 8px; align-content: start; }
+.cand h3 { font: 500 15px/1.3 var(--ui); margin: 0; color: var(--muted); }
+.notes { display: grid; gap: 4px; margin-top: 12px; max-width: 70ch; }
+.note { color: var(--muted); font-size: 14px; max-width: 70ch; }
+.note b { color: var(--ink); font-weight: 500; }
+.tag { display: inline-block; font: 500 11px/1 var(--ui); padding: 4px 8px; border-radius: 999px; background: var(--container); color: var(--ink); margin-left: 8px; vertical-align: 3px; }
+svg.sk { width: 100%; height: auto; display: block; background: var(--bg); border-radius: 18px; }
+.sk text { font-family: var(--ui); }
+.f { fill: var(--face); stroke: var(--outline); stroke-width: 1; }
+.pk { fill: var(--container); stroke: var(--accent); stroke-width: 2; }
+.bar { fill: var(--track); } .bar1 { fill: var(--accent); }
+.st { fill: var(--accent); }
+.pn { fill: var(--surface); filter: drop-shadow(0 6px 14px var(--lift)); }
+.t { fill: var(--ink); font-size: 14px; } .tm { fill: var(--muted); font-size: 12px; }
+.num { fill: var(--ink); font-size: 60px; font-weight: 300; }
+.dim { opacity: .38; }
+footer { margin-top: 40px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; max-width: 70ch; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="q" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <ellipse cx="9.5" cy="18" rx="3.6" ry="2.6" transform="rotate(-20 9.5 18)" stroke="none"/><path d="M12.6,17V3.5" fill="none"/></g></symbol>
+    <symbol id="e8" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8">
+      <ellipse cx="6" cy="18" rx="3.2" ry="2.3" transform="rotate(-20 6 18)" stroke="none"/>
+      <ellipse cx="16.5" cy="18" rx="3.2" ry="2.3" transform="rotate(-20 16.5 18)" stroke="none"/>
+      <path d="M8.8,17.2V4.2M19.3,17.2V4.2" fill="none"/><path d="M8,4.8H20.1" stroke-width="3" fill="none"/></g></symbol>
+    <symbol id="t3" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.8">
+      <ellipse cx="4.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 4.6 19.5)" stroke="none"/>
+      <ellipse cx="11.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 11.6 19.5)" stroke="none"/>
+      <ellipse cx="18.6" cy="19.5" rx="2.6" ry="1.9" transform="rotate(-20 18.6 19.5)" stroke="none"/>
+      <path d="M6.9,18.8V8.6M13.9,18.8V8.6M20.9,18.8V8.6" fill="none"/><path d="M6.1,9.1H21.7" stroke-width="2.6" fill="none"/>
+      <text x="14" y="5.6" text-anchor="middle" font-size="6.5" font-weight="700" stroke="none" font-family="Roboto, system-ui, sans-serif">3</text></g></symbol>
+    <symbol id="s16" viewBox="0 0 24 24"><g fill="currentColor" stroke="currentColor" stroke-width="1.6">
+      <ellipse cx="3.4" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 3.4 19.5)" stroke="none"/>
+      <ellipse cx="8.9" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 8.9 19.5)" stroke="none"/>
+      <ellipse cx="14.4" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 14.4 19.5)" stroke="none"/>
+      <ellipse cx="19.9" cy="19.5" rx="2.2" ry="1.7" transform="rotate(-20 19.9 19.5)" stroke="none"/>
+      <path d="M5.3,18.9V5.5M10.8,18.9V5.5M16.3,18.9V5.5M21.8,18.9V5.5" fill="none"/>
+      <path d="M4.6,6.3H22.5M4.6,10.1H22.5" stroke-width="2.2" fill="none"/></g></symbol>
+    <symbol id="up" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3,17.5L9,11.5L13,15.5L21,7.5"/><path d="M15,7.5H21V13.5"/></g></symbol>
+    <symbol id="tap" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5,2.5v12a2.5,2.5 0,0 0,5 0v-12"/><path d="M3.5,20.5h17M5.5,16.5l1.5,1.2M18.5,16.5l-1.5,1.2"/></g></symbol>
+    <symbol id="listen" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12,2.5a3,3 0,0 1,3 3v5.5a3,3 0,0 1,-6 0v-5.5a3,3 0,0 1,3 -3z"/><path d="M5.5,11a6.5,6.5 0,0 0,13 0"/><path d="M12,17.5v3.5M9,21h6"/></g></symbol>
+    <symbol id="wood" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="11" width="19" height="9.5" rx="2"/><path d="M5.5,14.4q3,-1.4 6,0t6.5,0M5.5,17.4q3,-1.4 6,0t6.5,0"/>
+      <path d="M11,8.6L20.5,2.4"/><path d="M7.4,8.6l-1.4,-1.4M9.2,6.4l-.4,-1.8"/></g></symbol>
+    <symbol id="cowbell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8,5h8l3,15H5z"/><path d="M10,5V2.5h4V5"/></g></symbol>
+    <symbol id="claves" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="16.6" width="20" height="2.8" rx="1.4"/><rect x="2.6" y="7.4" width="12.4" height="2.8" rx="1.4" transform="rotate(30 2.6 8.8)"/></g></symbol>
+    <symbol id="rim" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="11" cy="13" rx="8.5" ry="3"/><path d="M2.5,13v4.5c0,1.7 3.8,3 8.5,3s8.5,-1.3 8.5,-3V13"/><path d="M6,6.5L22,11"/></g></symbol>
+    <symbol id="met" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8,20.5L10.5,3.5h3L16,20.5Z"/><path d="M12,15L17.5,6.5"/></g></symbol>
+    <!-- II's one button: three sliders (Material "tune"), the metronome's own options. -->
+    <symbol id="tune" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M3.5,6.5H13M18,6.5H20.5M3.5,12H6M11,12H20.5M3.5,17.5H15M20,17.5H20.5"/>
+      <circle cx="15.5" cy="6.5" r="2.4"/><circle cx="8.5" cy="12" r="2.4"/><circle cx="17.5" cy="17.5" r="2.4"/></g></symbol>
+    <!-- III's Tempo button: a gauge with its needle (Material "speed"), Listen and the trainer behind it. -->
+    <symbol id="gauge" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.2,18.5A9,9 0 1 1 19.8,18.5"/><path d="M12,14.5L16.5,8.5"/><circle cx="12" cy="14.5" r="1.4" fill="currentColor"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Phase 62 · rough mock-up · round 2</p>
+  <h1>A calmer metronome screen</h1>
+  <p class="lede">Your words: group the five tools (Sound, Tap tempo, Listen, subdivision, speed trainer) better, and bring
+    Start and − + back under the dial. Each option has Start in the middle under the dial with − and + either side; the
+    dial keeps only the tempo. The top row holds only the Practice tab's "Metronome ⌄", so no second picker sits beside it.</p>
+  <p class="lede">Each is drawn twice: playing in eighths with the trainer climbing from 80 to 120 (now at 95), then
+    listening or with its panel open.</p>
+  <p class="lede"><strong>My pick: II.</strong> It's the calmest: one row under the dial, with Start in the middle and Tap
+    tempo at hand. The four you set less often sit behind one button, and what is on shows on the line that is already there.</p>
+</header>
+
+<h2><b>I.</b>One row of five small icons</h2>
+<div class="cards" id="o1"></div>
+<div class="notes">
+  <p class="note"><b>How it works:</b> − Start + under the dial, then five 48 dp icon buttons, no words: Sound, note value,
+    Tap tempo, Listen, trainer. Sound, note value and trainer each open their own small panel; Tap tempo and Listen act at once.</p>
+  <p class="note"><b>What is on:</b> each icon shows its own: the click picked, the note value, the trainer lit, Listen's
+    stop square with its trace (Start resting meanwhile). The line under the beat lights adds the trainer's progress.</p>
+  <p class="note">+ Everything one tap away, every state in sight. − Five things in a row is the busiest of the three, and
+    Tap tempo gets a small target for something tapped in rhythm.</p>
+</div>
+
+<h2><b>II.</b>Tap tempo at hand, the rest in one panel<span class="tag">recommended</span></h2>
+<div class="cards" id="o2"></div>
+<div class="notes">
+  <p class="note"><b>How it works:</b> one row under the dial: Tap tempo · − · Start · + · options (three sliders). The
+    options panel opens above its button: the four sounds, the four note values, Vibrate, Listen and the speed
+    trainer (its switch, and › to the trainer's panel from round 1).</p>
+  <p class="note"><b>What is on:</b> Listen's status line under the beat lights shows small icons of what differs from
+    plain beats, only while on: the note value, the trainer with "95 → 120". While listening it says
+    "Listening… 96 BPM" and Stop, as today, and Start rests.</p>
+  <p class="note">+ The calmest screen, a bigger dial, nothing at the bottom. − Subdivision and Listen are two taps away;
+    the sound picked no longer shows on the screen.</p>
+</div>
+
+<h2><b>III.</b>Today's row of three, regrouped</h2>
+<div class="cards" id="o3"></div>
+<div class="notes">
+  <p class="note"><b>How it works:</b> − Start + under the dial, then today's three 72 × 52 dp buttons with their names:
+    <b>Sound</b> (its panel gains the four note values), <b>Tap tempo</b>, and <b>Tempo</b> (a gauge), whose short list
+    holds Listen and the speed trainer.</p>
+  <p class="note"><b>What is on:</b> Sound's icon carries a small note when not plain beats; Tempo's icon becomes the
+    trainer's rising line, lit while it climbs, or Listen's stop square with its trace while listening.</p>
+  <p class="note">+ Familiar, and grouped by what they do: how it clicks, tapping, help with the tempo. − Listen needs
+    a tap more than today, and the screen keeps a second row of big buttons under − Start +.</p>
+</div>
+
+<footer>
+  <p>On its side every option keeps its order in the column beside the dial, the − Start + row first.</p>
+  <p>Not shown: large text, Dutch, TalkBack names (each icon button has one, as today's row).</p>
+</footer>
+</div>
+
+<script>
+const ico = (id, x, y, s = 24, color = "var(--ink)") =>
+  `<use href="#${id}" x="${x}" y="${y}" width="${s}" height="${s}" style="color:${color}"/>`;
+const phone = inner => `<svg class="sk" viewBox="0 0 393 740">${inner}</svg>`;
+const CX = 196.5;
+
+const topRow = () => `<rect x="16" y="8" width="160" height="44" rx="14" class="f"/>${ico("met", 28, 18)}` +
+  `<text x="58" y="35" class="t">Metronome ⌄</text>` +
+  ["2/4", "3/4", "4/4", "5/4", "6/8", "7/8"].map((m, i) =>
+    `<rect x="${36.5 + i * 54}" y="64" width="50" height="40" rx="20" class="${i === 2 ? "pk" : "f"}"/>` +
+    `<text x="${61.5 + i * 54}" y="89" text-anchor="middle" class="t">${m}</text>`).join("");
+const lights = (lit = 1) => [0, 1, 2, 3].map(i => {
+  const y = 116, h = 64, w = i === 0 ? 30 : 22, bh = i === 0 ? h * .62 : h * .46, x = CX - 105 + i * 70 - w / 2;
+  return `<rect x="${x}" y="${y + h * .62 - bh}" width="${w}" height="${bh}" rx="6" class="${i === lit ? "bar1" : "bar"}"/>` +
+    `<text x="${x + w / 2}" y="${y + h * .95}" text-anchor="middle" class="tm">${i + 1}</text>`;
+}).join("");
+const line = text => `<text x="${CX}" y="203" text-anchor="middle" class="tm" style="font-size:13px">${text}</text>`;
+// II's line: small icons of what is on, then the trainer's progress.
+const iconLine = () => ico("e8", 118, 189, 18, "var(--muted)") + ico("up", 150, 189, 18, "var(--accent)") +
+  `<text x="174" y="203" class="tm" style="font-size:13px">95 → 120 · +5 in 2 bars</text>`;
+
+// The dial, only the tempo in its middle; a hollow ring at the trainer's goal; Listen's ring at the heard tempo.
+const ang = b => -150 + 300 * (b - 30) / 220;
+const pt = (cy, a, r) => [CX + r * Math.sin(a * Math.PI / 180), cy - r * Math.cos(a * Math.PI / 180)];
+const arc = (cy, r, a0, a1) => { const [x0, y0] = pt(cy, a0, r), [x1, y1] = pt(cy, a1, r);
+  return `M${x0},${y0}A${r},${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1},${y1}`; };
+const marking = b => b < 76 ? "Adagio" : b < 108 ? "Andante" : b < 120 ? "Moderato" : "Allegro";
+const dial = (cy, r, bpm, o = {}) => {
+  const a = ang(bpm), [n0x, n0y] = pt(cy, a, r - 30), [n1x, n1y] = pt(cy, a, r - 13);
+  let s = `<path d="${arc(cy, r, -150, 150)}" fill="none" stroke="var(--track)" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="${arc(cy, r, -150, a)}" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round"/>` +
+    `<line x1="${n0x}" y1="${n0y}" x2="${n1x}" y2="${n1y}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
+  if (o.goal) { const [gx, gy] = pt(cy, ang(o.goal), r);
+    s += `<circle cx="${gx}" cy="${gy}" r="7" fill="var(--bg)" stroke="var(--accent)" stroke-width="2"/>`; }
+  if (o.heard) { const [hx, hy] = pt(cy, ang(o.heard), r - 20);
+    s += `<circle cx="${hx}" cy="${hy}" r="6" fill="none" stroke="var(--accent)" stroke-width="1.5"/>`; }
+  return s + `<text x="${CX}" y="${cy + 14}" text-anchor="middle" class="num">${bpm}</text>` +
+    `<text x="${CX}" y="${cy + 38}" text-anchor="middle" class="tm">BPM</text>` +
+    `<text x="${CX}" y="${cy + 54}" text-anchor="middle" class="tm">${marking(bpm)}</text>`;
+};
+// − Start + under the dial; Start 76 dp, − and + 48 dp, centres 74 dp from Start's.
+const play = (y, o = {}) => {
+  const sy = y + 38, g = o.rest ? ` class="dim"` : "";
+  const pm = (x, ch) => `<circle cx="${x}" cy="${sy}" r="24" class="f"/><text x="${x}" y="${sy + 8}" text-anchor="middle" class="t" font-size="24">${ch}</text>`;
+  return pm(CX - 74, "−") + pm(CX + 74, "+") + `<g${g}><circle cx="${CX}" cy="${sy}" r="38" class="st"/>` +
+    (o.playing ? `<rect x="${CX - 10}" y="${sy - 10}" width="20" height="20" rx="3" fill="var(--on-accent)"/>`
+      : `<path d="M${CX - 8},${sy - 13}v26l21,-13z" fill="var(--on-accent)"/>`) + `</g>`;
+};
+// A round or rounded-square icon button.
+const roundBtn = (cx, cy, id, on = false, r = 28) => `<circle cx="${cx}" cy="${cy}" r="${r}" class="${on ? "pk" : "f"}"/>${ico(id, cx - 12, cy - 12)}`;
+const sqBtn = (x, y, id, on = false) => `<rect x="${x}" y="${y}" width="48" height="48" rx="14" class="${on ? "pk" : "f"}"/>${ico(id, x + 12, y + 12)}`;
+const listening = (x, y, w, h, rx) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" class="f" opacity=".5"/>` +
+  `<rect x="${x + w / 2 - 7}" y="${y + h / 2 - 7}" width="14" height="14" rx="2" fill="var(--accent)"/>` +
+  `<path d="M${x + w / 2},${y} H${x + w - rx} A${rx},${rx} 0 0 1 ${x + w},${y + rx} V${y + h - rx} A${rx},${rx} 0 0 1 ${x + w - rx},${y + h}" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".7"/>`;
+const sw = (x, y, on) => on
+  ? `<rect x="${x}" y="${y}" width="52" height="32" rx="16" fill="var(--accent)"/><circle cx="${x + 36}" cy="${y + 16}" r="12" fill="var(--on-accent)"/>`
+  : `<rect x="${x}" y="${y}" width="52" height="32" rx="16" fill="var(--track)" stroke="var(--muted)" stroke-width="2"/><circle cx="${x + 16}" cy="${y + 16}" r="8" fill="var(--muted)"/>`;
+const segs = (x, y, w, ids, picked) => { const bw = (w - 12) / 4;
+  return ids.map((id, i) => `<rect x="${x + i * (bw + 4)}" y="${y}" width="${bw}" height="40" rx="20" class="${i === picked ? "pk" : "f"}"/>` +
+    ico(id, x + i * (bw + 4) + bw / 2 - 12, y + 8)).join(""); };
+const NOTES = ["q", "e8", "t3", "s16"], SOUNDS = ["wood", "cowbell", "claves", "rim"];
+
+// ---- I: five icons ----
+const five = (y, o = {}) => {
+  const xs = [36.5, 104.5, 172.5, 240.5, 308.5];
+  return sqBtn(xs[0], y, "wood") + sqBtn(xs[1], y, "e8", true) + sqBtn(xs[2], y, "tap") +
+    (o.listening ? listening(xs[3], y, 48, 48, 14) : sqBtn(xs[3], y, "listen")) + sqBtn(xs[4], y, "up", o.trainer);
+};
+const O1 = [
+  ["Playing, eighths, trainer climbing", phone(topRow() + lights(1) + line("Climbing to 120 · +5 in 2 bars") +
+    dial(390, 160, 95, { goal: 120 }) + play(560, { playing: true }) + five(668, { trainer: true }))],
+  ["Listening", phone(topRow() + lights(2) + line("Listening… 96 BPM") +
+    dial(390, 160, 80, { heard: 96 }) + play(560, { rest: true }) + five(668, { listening: true }))],
+];
+
+// ---- II: one row, one panel ----
+const row2 = (y, o = {}) => { const cy = y + 38;
+  return roundBtn(46, cy, "tap") + play(y, o) + roundBtn(347, cy, "tune", o.open); };
+const panel2 = (right, bottom) => {
+  const w = 280, h = 8 + 20 + 40 + 10 + 20 + 40 + 8 + 48 + 48 + 48 + 8, x = right - w, y = bottom - h;
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" class="pn"/>`;
+  let ry = y + 8;
+  s += `<text x="${x + 16}" y="${ry + 14}" class="tm">Sound</text>` + segs(x + 12, ry + 20, w - 24, SOUNDS, 0); ry += 70;
+  s += `<text x="${x + 16}" y="${ry + 14}" class="tm">Between the beats</text>` + segs(x + 12, ry + 20, w - 24, NOTES, 1); ry += 68;
+  s += `<text x="${x + 16}" y="${ry + 29}" class="t">Vibrate on the beat</text>` + sw(x + w - 64, ry + 8, false); ry += 48;
+  s += ico("listen", x + 16, ry + 12) + `<text x="${x + 52}" y="${ry + 29}" class="t">Listen</text>`; ry += 48;
+  s += ico("up", x + 16, ry + 12) + `<text x="${x + 52}" y="${ry + 29}" class="t">Speed trainer</text>` + sw(x + w - 92, ry + 8, true) +
+    `<text x="${x + w - 18}" y="${ry + 30}" text-anchor="middle" class="t" font-size="18">›</text>`;
+  return s;
+};
+const O2 = [
+  ["Playing, eighths, trainer climbing", phone(topRow() + lights(1) + iconLine() +
+    dial(406, 178, 95, { goal: 120 }) + row2(616, { playing: true }))],
+  ["Options open", phone(topRow() + lights(1) + iconLine() +
+    dial(406, 178, 95, { goal: 120 }) + row2(616, { playing: true, open: true }) + panel2(377, 606))],
+];
+
+// ---- III: three regrouped ----
+const btn3 = (x, y, word, inner, on = false) => `<rect x="${x}" y="${y}" width="72" height="52" rx="26" class="${on ? "pk" : "f"}"/>${inner}` +
+  `<text x="${x + 36}" y="${y + 68}" text-anchor="middle" class="tm">${word}</text>`;
+const row3 = (y, o = {}) => {
+  const sound = ico("wood", 97, y + 14) + `<circle cx="125" cy="${y + 13}" r="10" fill="var(--bg)"/>` + ico("e8", 117, y + 5, 16);
+  const tempo = o.listening ? listening(248.5, y, 72, 52, 26) : ico(o.trainer ? "up" : "gauge", 272.5, y + 14, 24, o.trainer ? "var(--accent)" : "var(--ink)");
+  return btn3(72.5, y, "Sound", sound) + btn3(160.5, y, "Tap tempo", ico("tap", 184.5, y + 14)) +
+    (o.listening ? tempo + `<text x="284.5" y="${y + 68}" text-anchor="middle" class="tm">Tempo</text>` : btn3(248.5, y, "Tempo", tempo, o.trainer));
+};
+const menu3 = (x, bottom) => { const y = bottom - 112;
+  return `<rect x="${x}" y="${y}" width="200" height="112" rx="16" class="pn"/>` +
+    ico("listen", x + 16, y + 20) + `<text x="${x + 52}" y="${y + 37}" class="t">Listen</text>` +
+    ico("up", x + 16, y + 68) + `<text x="${x + 52}" y="${y + 85}" class="t">Speed trainer ›</text>`; };
+const O3 = [
+  ["Playing, eighths, trainer climbing", phone(topRow() + lights(1) + line("Climbing to 120 · +5 in 2 bars") +
+    dial(386, 156, 95, { goal: 120 }) + play(548, { playing: true }) + row3(652, { trainer: true }))],
+  ["Tempo's list open", phone(topRow() + lights(1) + line("") +
+    dial(386, 156, 96) + play(548) + row3(652) + menu3(177, 644))],
+];
+
+const cards = list => list.map(([t, svg]) => `<div class="cand"><h3>${t}</h3>${svg}</div>`).join("");
+document.getElementById("o1").innerHTML = cards(O1);
+document.getElementById("o2").innerHTML = cards(O2);
+document.getElementById("o3").innerHTML = cards(O3);
+</script>
