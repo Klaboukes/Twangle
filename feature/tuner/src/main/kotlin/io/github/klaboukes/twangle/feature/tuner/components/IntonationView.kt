@@ -94,7 +94,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
@@ -103,6 +102,7 @@ import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
+import io.github.klaboukes.twangle.core.designsystem.styleButtonShape
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
@@ -713,7 +713,7 @@ fun MoreToolsButton(
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     val neon = style == VisualStyle.FUTURISTIC
-    val shape = pickerButtonShape(style, MaterialTheme.shapes.small)
+    val shape = styleButtonShape()
     val label = stringResource(R.string.tuner_more_tools)
     val activeName = active?.let { toolName(it) }
     val on = active != null

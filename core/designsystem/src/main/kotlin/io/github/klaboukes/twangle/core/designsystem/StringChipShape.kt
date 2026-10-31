@@ -70,7 +70,7 @@ fun pickerButtonShape(style: VisualStyle, otherwise: Shape): Shape =
     if (style == VisualStyle.ANCIENT) PICKER_PEBBLE else otherwise
 
 /** The mock-up's pebble for the instrument-and-tuning button (`42% 58% 46% 54% / 60% 52% 48% 40%`). */
-private val PICKER_PEBBLE = PebbleShape(floatArrayOf(0.42f, 0.58f, 0.46f, 0.54f), floatArrayOf(0.60f, 0.52f, 0.48f, 0.40f))
+internal val PICKER_PEBBLE: Shape = PebbleShape(floatArrayOf(0.42f, 0.58f, 0.46f, 0.54f), floatArrayOf(0.60f, 0.52f, 0.48f, 0.40f))
 
 /**
  * A pebble: a rounded box whose eight corner radii (as fractions of its width and height, like CSS's

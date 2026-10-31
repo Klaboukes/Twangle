@@ -4,9 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -62,11 +59,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -86,6 +81,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.klaboukes.twangle.core.audio.MicPermissionStatus
 import io.github.klaboukes.twangle.core.audio.TonePlayer
 import io.github.klaboukes.twangle.core.designsystem.OwnTouchArea
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.meter.meterGlowSpec
@@ -433,28 +429,17 @@ internal val Exercise.label: Int
         Exercise.CHORD_TYPE -> R.string.ear_exercise_chord_type
     }
 
-/** The round ▶, [REPLAY_SIZE] across, that sounds the question again. */
+/** The ▶, [REPLAY_SIZE] across, that sounds the question again: the style's button ([StyleButton]). */
 @Composable
 private fun ReplayButton(onReplay: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    val spoken = stringResource(R.string.ear_replay)
-    Box(
-        Modifier
-            .testTag(EarTrainingTestTags.REPLAY)
-            .size(REPLAY_SIZE)
-            .pressFeedback(source, CircleShape, fill = faceFill(), outline = faceOutline())
-            .clickable(interactionSource = source, indication = null) {
-                source.pressFlash()
-                onReplay()
-            }
-            .semantics {
-                role = Role.Button
-                contentDescription = spoken
-            },
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onReplay,
+        label = stringResource(R.string.ear_replay),
+        modifier = Modifier.testTag(EarTrainingTestTags.REPLAY),
+        face = REPLAY_SIZE,
     ) {
-        // Nudged right, so the triangle looks centred in the circle.
-        Icon(PLAY_ICON, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
+        // Nudged right, so the triangle looks centred in the face.
+        Icon(PLAY_ICON, contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))
     }
 }
 
@@ -612,24 +597,6 @@ private fun NoteDots(count: Int, found: Int) {
     }
 }
 
-/** A see-through button's face, as the Practice tools' buttons: Futuristic's a neon tint. */
-@Composable
-internal fun faceFill(): Color {
-    val scheme = MaterialTheme.colorScheme
-    return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) neonFill(scheme) else scheme.surface.copy(alpha = 0.45f)
-}
-
-/** Its outline: muted, Futuristic's in the accent. */
-@Composable
-internal fun faceOutline(): BorderStroke {
-    val scheme = MaterialTheme.colorScheme
-    return if (MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC) {
-        BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))
-    } else {
-        BorderStroke(1.dp, scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA))
-    }
-}
-
 /**
  * The question stops sounding when the screen is hidden ([onHidden]: the app goes to the background,
  * or another tool or tab takes its place), and the visit ends when the tool is left ([onLeft]), but
@@ -673,7 +640,6 @@ private val PLAY_ICON: ImageVector = ImageVector.Builder(
 ).build()
 
 private const val NEON_OUTLINE_ALPHA = 0.55f
-private const val MUTED_OUTLINE_ALPHA = 0.6f
 
 private val HEADER_TOP = 8.dp
 private val QUESTION_TOP = 24.dp

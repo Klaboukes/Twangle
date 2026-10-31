@@ -1,10 +1,6 @@
 package io.github.klaboukes.twangle.core.designsystem
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -14,13 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
@@ -28,18 +20,11 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
- * The instrument and tuning button: a headstock ([INSTRUMENT_ICON], no word) in the style's button
- * outline and shape, see-through, like the tuner's "more tools" button and strum check switch, so the
+ * The instrument and tuning button: a headstock ([INSTRUMENT_ICON], no word) on the style's button
+ * ([StyleButton]), see-through, like the tuner's "more tools" button and strum check switch, so the
  * row above the strings has a button of the same kind at each end. It sits at the start of that row
  * and at the Practice tools' tuning line; a tap ([onClick]) opens the instrument and tuning panel.
  * A long-press shows "Instrument" in a tooltip. TalkBack: "Instrument, Guitar, Standard ([current]),
@@ -57,46 +42,23 @@ fun InstrumentButton(
     faceModifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    val style = MaterialTheme.styleTokens.style
-    val neon = style == VisualStyle.FUTURISTIC
-    val shape = pickerButtonShape(style, MaterialTheme.shapes.small)
     val label = stringResource(R.string.instrument_button)
-    val action = stringResource(R.string.instrument_button_action)
-    val outline = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.onSurfaceVariant.copy(alpha = OUTLINE_ALPHA)
-    val fill = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = BACKING_ALPHA)
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { PlainTooltip { Text(label) } },
         state = rememberTooltipState(),
         modifier = modifier,
     ) {
-        val press = interactionSource ?: remember { MutableInteractionSource() }
-        Box(
-            Modifier
-                .minimumInteractiveComponentSize()
-                .size(INSTRUMENT_BUTTON_SIZE)
-                .then(faceModifier)
-                .pressSink(press)
-                .clip(shape)
-                .background(fill, shape)
-                .border(1.dp, outline, shape)
-                .clickable(press, PressIndication(shape, face = true), onClickLabel = action, role = Role.Button) {
-                    press.pressFlash()
-                    onClick()
-                }
-                .clearAndSetSemantics {
-                    contentDescription = label
-                    stateDescription = current
-                    role = Role.Button
-                    onClick(label = action) {
-                        onClick()
-                        true
-                    }
-                },
-            contentAlignment = Alignment.Center,
+        StyleButton(
+            onClick = onClick,
+            label = label,
+            face = INSTRUMENT_BUTTON_SIZE,
+            state = current,
+            onClickLabel = stringResource(R.string.instrument_button_action),
+            faceModifier = faceModifier,
+            interactionSource = interactionSource,
         ) {
-            Icon(INSTRUMENT_ICON, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(INSTRUMENT_ICON_SIZE))
+            Icon(INSTRUMENT_ICON, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(INSTRUMENT_ICON_SIZE))
         }
     }
 }
@@ -133,6 +95,3 @@ val INSTRUMENT_ICON: ImageVector = ImageVector.Builder(
 }.build()
 
 private val INSTRUMENT_ICON_SIZE = 24.dp
-private const val OUTLINE_ALPHA = 0.6f
-private const val NEON_OUTLINE_ALPHA = 0.55f
-private const val BACKING_ALPHA = 0.45f

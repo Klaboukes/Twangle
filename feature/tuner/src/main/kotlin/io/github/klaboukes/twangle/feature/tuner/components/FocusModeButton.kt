@@ -30,7 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.neonFill
-import io.github.klaboukes.twangle.core.designsystem.pickerButtonShape
+import io.github.klaboukes.twangle.core.designsystem.styleButtonShape
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -64,7 +64,7 @@ internal fun FocusModeButton(action: FocusAction, onClick: () -> Unit, modifier:
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     val neon = style == VisualStyle.FUTURISTIC
-    val shape = pickerButtonShape(style, MaterialTheme.shapes.small)
+    val shape = styleButtonShape()
     val label = stringResource(
         when (action) {
             FocusAction.ENTER -> R.string.tuner_focus_mode

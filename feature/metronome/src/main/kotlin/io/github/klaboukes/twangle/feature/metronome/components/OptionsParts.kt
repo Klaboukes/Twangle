@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.buttonLook
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
@@ -451,7 +452,7 @@ private fun Segment(
                 .fillMaxWidth()
                 .height(SEGMENT_FACE)
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
-                .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked)),
+                .pressFeedback(source, look.shape, fill = look.fill(picked), outline = look.outline(picked)),
             contentAlignment = Alignment.Center,
         ) {
             face()

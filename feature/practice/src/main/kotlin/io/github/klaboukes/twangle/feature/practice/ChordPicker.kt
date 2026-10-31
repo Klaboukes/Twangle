@@ -1,12 +1,11 @@
 package io.github.klaboukes.twangle.feature.practice
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -54,12 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
+import io.github.klaboukes.twangle.core.designsystem.faceFill
+import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
-import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
 import io.github.klaboukes.twangle.core.dsp.chord.ChordSpelling
@@ -67,7 +66,6 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.PitchClass
 import io.github.klaboukes.twangle.core.dsp.scale.Scale
 import io.github.klaboukes.twangle.core.dsp.scale.ScaleType
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /**
  * The chord's or the scale's name as one button as wide as the row (Phase 47, the owner's pick D in
@@ -621,31 +619,6 @@ internal fun breakableAtHyphens(text: String): String = text.replace(HYPHEN_BETW
 private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=[\\p{L}♭♯])-(?=\\p{L})")
 internal const val ZERO_WIDTH_SPACE = '\u200B'
 
-/** A see-through button's backing; picked ones in the container colour (Futuristic: a faint accent). */
-@Composable
-internal fun faceFill(picked: Boolean): Color {
-    val scheme = MaterialTheme.colorScheme
-    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
-    return when {
-        picked && neon -> scheme.primary.copy(alpha = 0.12f)
-        picked -> scheme.primaryContainer
-        neon -> neonFill(scheme)
-        else -> scheme.surface.copy(alpha = 0.45f)
-    }
-}
-
-/** A see-through button's outline: muted, Futuristic's in the accent, picked ones 2 dp in the accent. */
-@Composable
-internal fun faceOutline(picked: Boolean): BorderStroke {
-    val scheme = MaterialTheme.colorScheme
-    val neon = MaterialTheme.styleTokens.style == VisualStyle.FUTURISTIC
-    return when {
-        picked -> BorderStroke(2.dp, scheme.primary)
-        neon -> BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))
-        else -> BorderStroke(1.dp, scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA))
-    }
-}
-
 private const val ROOTS_PER_ROW = 6
 private const val SCALES_PER_ROW = 2
 private const val TYPES_PER_ROW = 4
@@ -703,8 +676,6 @@ private val TWO_LINE_MARGIN = 3.dp
 
 /** A scale's name keeps this much clear at either side inside the face's own 3 dp, where it can (Phase 52). */
 private val LABEL_SIDE_ROOM = 6.dp
-private const val NEON_OUTLINE_ALPHA = 0.55f
-private const val MUTED_OUTLINE_ALPHA = 0.6f
 
 /**
  * A picker label: from [LABEL_SIZE] down to [MIN_LABEL_SIZE], with [TWO_LINE_MARGIN] where it can.

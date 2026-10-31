@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
@@ -36,10 +35,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,10 +57,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
 import io.github.klaboukes.twangle.core.designsystem.NoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.ScreenDensity
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleMenuItem
 import io.github.klaboukes.twangle.core.designsystem.appLocale
+import io.github.klaboukes.twangle.core.designsystem.faceFill
+import io.github.klaboukes.twangle.core.designsystem.faceOutline
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
@@ -350,7 +352,7 @@ private fun ShapesPicker(shapes: SongKey, notation: Notation, speech: NoteNameSp
 }
 
 /**
- * ‹ "Capo 3" › : round buttons of one steady size ("Capo one fret down", "Capo one fret up"),
+ * ‹ "Capo 3" › : the style's buttons ([StyleButton]) of one steady size ("Capo one fret down", "Capo one fret up"),
  * resting at no capo ("No capo" between them) and at [Capo.HIGHEST_FRET]. The fret is a polite
  * live region, said with the key the shapes then sound in ([spokenSoundsIn]).
  */
@@ -439,25 +441,14 @@ private fun CapoStepper(fret: Int, spokenSoundsIn: String, step: (Int) -> Unit, 
 
 @Composable
 private fun StepButton(higher: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    Box(
-        modifier = Modifier
-            .testTag(if (higher) PracticeTestTags.CAPO_HIGHER else PracticeTestTags.CAPO_LOWER)
-            .size(STEP_BUTTON_SIZE)
-            .alpha(if (enabled) 1f else DISABLED_ALPHA)
-            .pressFeedback(source, CircleShape, fill = faceFill(picked = false), outline = faceOutline(picked = false))
-            .clickable(enabled = enabled, interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            },
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onClick,
+        label = stringResource(if (higher) R.string.practice_capo_higher else R.string.practice_capo_lower),
+        modifier = Modifier.testTag(if (higher) PracticeTestTags.CAPO_HIGHER else PracticeTestTags.CAPO_LOWER),
+        face = STEP_BUTTON_SIZE,
+        enabled = enabled,
     ) {
-        Icon(
-            painterResource(if (higher) R.drawable.ic_chevron_right else R.drawable.ic_chevron_left),
-            contentDescription = stringResource(if (higher) R.string.practice_capo_higher else R.string.practice_capo_lower),
-            tint = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.size(24.dp),
-        )
+        Icon(painterResource(if (higher) R.drawable.ic_chevron_right else R.drawable.ic_chevron_left), contentDescription = null, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -587,4 +578,3 @@ private val STEP_BUTTON_SIZE = 48.dp
 
 /** Between the capo's buttons, as on a 320 dp phone: "Capo 11" and "No capo" at normal text in every language; longer, set smaller. */
 private val FRET_SLOT_WIDTH = 168.dp
-private const val DISABLED_ALPHA = 0.38f

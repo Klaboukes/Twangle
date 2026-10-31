@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -38,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
@@ -299,33 +299,8 @@ private fun TempoStepper(
 /** − or + beside a trainer tempo: a [STEPPER_FACE] face in the style's button shape, a 48 dp touch area. */
 @Composable
 private fun StepperButton(faster: Boolean, name: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
-    val look = buttonLook()
-    val source = remember { MutableInteractionSource() }
-    Box(
-        Modifier
-            .testTag(tag)
-            .size(ROW_HEIGHT)
-            .clickable(interactionSource = source, indication = null, enabled = enabled, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics { contentDescription = name },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            Modifier
-                .size(STEPPER_FACE)
-                .alpha(if (enabled) 1f else DISABLED_ALPHA)
-                .pressFeedback(source, look.buttonShape, fill = faceFill(look), outline = faceOutline(look)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(20.dp),
-            )
-        }
+    StyleButton(onClick = onClick, label = name, modifier = Modifier.testTag(tag), face = STEPPER_FACE, enabled = enabled) {
+        Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(20.dp))
     }
 }
 

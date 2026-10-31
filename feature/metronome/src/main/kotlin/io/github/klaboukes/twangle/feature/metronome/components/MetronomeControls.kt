@@ -1,8 +1,6 @@
 package io.github.klaboukes.twangle.feature.metronome.components
 
 import android.os.SystemClock
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
@@ -36,12 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -64,71 +57,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.LINING_FIGURES
-import io.github.klaboukes.twangle.core.designsystem.PressTone
 import io.github.klaboukes.twangle.core.designsystem.appLocale
 import io.github.klaboukes.twangle.core.designsystem.localDigits
 import io.github.klaboukes.twangle.core.designsystem.meter.numberScaleFor
-import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
+import io.github.klaboukes.twangle.core.designsystem.buttonLook
+import io.github.klaboukes.twangle.core.designsystem.styleButtonFace
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
-import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
 import io.github.klaboukes.twangle.feature.metronome.R
 
 /*
  * The metronome's buttons, as on the approved mock-ups (docs/design/metronome-nav-preview.html and,
- * since Phase 27, docs/design/metronome-listen-preview.html): see-through buttons on the background
- * (the surface at 45 % behind a thin outline in the muted colour) in the style's own shape, picked
- * ones in the container colour with an accent outline, and Start in the accent. Futuristic's are neon
- * outlines in the accent on a solid tint ([neonFill]), as its tuner's. Every one shows Twangle's press
- * effect ([pressFeedback]) instead of Material's ripple; Tap tempo its own crisp flash.
+ * since Phase 27, docs/design/metronome-listen-preview.html): the style's own button ([StyleButton],
+ * shared with the other screens since Phase 63), see-through, picked ones in the container colour
+ * with an accent outline, and Start in the accent. Every one shows Twangle's press effect
+ * ([pressFeedback]) instead of Material's ripple; Tap tempo its own crisp flash.
  */
-
-/** How the buttons look in the current style. */
-internal class ButtonLook(val neon: Boolean, val round: Boolean, val shape: Shape) {
-    /** The row's buttons under the dial: round in Contemporary and Space Age, else in the style's shape. */
-    val buttonShape: Shape get() = if (round) CircleShape else shape
-}
-
-@Composable
-internal fun buttonLook(): ButtonLook {
-    val style = MaterialTheme.styleTokens.style
-    return ButtonLook(
-        neon = style == VisualStyle.FUTURISTIC,
-        round = style == VisualStyle.CONTEMPORARY || style == VisualStyle.SPACE_AGE,
-        shape = MaterialTheme.shapes.small,
-    )
-}
-
-/** A see-through button's backing; [picked] ones in the container colour. */
-@Composable
-internal fun faceFill(look: ButtonLook, picked: Boolean = false): Color {
-    val scheme = MaterialTheme.colorScheme
-    return when {
-        picked && look.neon -> scheme.primary.copy(alpha = 0.12f)
-        picked -> scheme.primaryContainer
-        look.neon -> neonFill(scheme)
-        else -> scheme.surface.copy(alpha = 0.45f)
-    }
-}
-
-/** A see-through button's outline: muted, Futuristic's in the accent, [picked] ones 2 dp in the accent. */
-@Composable
-internal fun faceOutline(look: ButtonLook, picked: Boolean = false): BorderStroke {
-    val scheme = MaterialTheme.colorScheme
-    return when {
-        picked -> BorderStroke(2.dp, scheme.primary)
-        look.neon -> BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))
-        else -> BorderStroke(1.dp, scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA))
-    }
-}
-
-/** Futuristic's outline: the accent at 55 %, as its tuner's neon buttons. */
-private const val NEON_OUTLINE_ALPHA = 0.55f
-private const val MUTED_OUTLINE_ALPHA = 0.6f
 
 /** The meter's label, e.g. "6/8", in the app language's digits (٦/٨ in Arabic). */
 @Composable
@@ -214,7 +163,7 @@ fun MeterPicker(meter: Meter, onMeterChange: (Meter) -> Unit, modifier: Modifier
                     Box(
                         modifier = Modifier
                             .defaultMinSize(minWidth = faceWidth, minHeight = 40.dp)
-                            .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked))
+                            .pressFeedback(source, look.shape, fill = look.fill(picked), outline = look.outline(picked))
                             .padding(horizontal = 6.dp, vertical = 4.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -245,26 +194,13 @@ private val METER_BUTTON_WIDTH = 50.dp
  */
 @Composable
 fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier) {
-    val look = buttonLook()
-    val shape = look.buttonShape
-    val source = remember { MutableInteractionSource() }
-    val label = stringResource(if (faster) R.string.metronome_faster else R.string.metronome_slower)
-    Box(
-        modifier = modifier
-            .testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER)
-            .size(maxOf(face, MIN_TOUCH))
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            },
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onClick,
+        label = stringResource(if (faster) R.string.metronome_faster else R.string.metronome_slower),
+        modifier = modifier.testTag(if (faster) MetronomeTestTags.FASTER else MetronomeTestTags.SLOWER),
+        face = face,
     ) {
-        Box(
-            Modifier.size(face).pressFeedback(source, shape, fill = faceFill(look), outline = faceOutline(look)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = label, modifier = Modifier.size(face * STEP_ICON_SHARE))
-        }
+        Icon(painterResource(if (faster) R.drawable.ic_add else R.drawable.ic_remove), contentDescription = null, modifier = Modifier.size(face * STEP_ICON_SHARE))
     }
 }
 
@@ -348,7 +284,7 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
     Box(
         modifier = modifier
             .testTag(MetronomeTestTags.TAP)
-            .pressFeedback(source, look.buttonShape, fill = faceFill(look), outline = faceOutline(look), crisp = true)
+            .styleButtonFace(source, look, crisp = true)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
                 contentDescription = label
@@ -367,7 +303,7 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
             },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(R.drawable.ic_tap), contentDescription = null, modifier = Modifier.size(ROW_ICON))
+        Icon(painterResource(R.drawable.ic_tap), contentDescription = null, tint = look.content(), modifier = Modifier.size(ROW_ICON))
     }
 }
 
@@ -377,25 +313,15 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
  */
 @Composable
 private fun OptionsButton(open: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val look = buttonLook()
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    val label = stringResource(R.string.metronome_options)
-    Box(
-        modifier = modifier
-            .testTag(MetronomeTestTags.OPTIONS)
-            .pressFeedback(source, look.buttonShape, fill = faceFill(look, picked = open), outline = faceOutline(look, picked = open))
-            .clickable(interactionSource = source, indication = null) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics {
-                role = Role.DropdownList
-                contentDescription = label
-            },
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onClick,
+        label = stringResource(R.string.metronome_options),
+        modifier = modifier.testTag(MetronomeTestTags.OPTIONS),
+        face = SIDE_BUTTON,
+        picked = open,
+        role = Role.DropdownList,
     ) {
-        Icon(painterResource(R.drawable.ic_tune), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
+        Icon(painterResource(R.drawable.ic_tune), contentDescription = null, modifier = Modifier.size(ROW_ICON))
     }
 }
 
@@ -407,38 +333,17 @@ private fun OptionsButton(open: Boolean, onClick: () -> Unit, modifier: Modifier
  */
 @Composable
 fun StartStopButton(playing: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier, resting: Boolean = false) {
-    val look = buttonLook()
-    val scheme = MaterialTheme.colorScheme
-    val shape = look.buttonShape
-    val source = remember { MutableInteractionSource() }
-    // Futuristic's tint lies on the background colour, not over the picture: the grid's lines would
-    // run through the button.
-    val fill = if (look.neon) scheme.primary.copy(alpha = 0.14f).compositeOver(scheme.background) else scheme.primary
-    val content = if (look.neon) scheme.primary else scheme.onPrimary
-    val label = stringResource(if (playing) R.string.metronome_stop else R.string.metronome_start)
-    Box(
-        modifier = modifier
-            .alpha(if (resting) RESTING_ALPHA else 1f)
-            .size(face)
-            .pressFeedback(
-                source,
-                shape,
-                fill = fill,
-                outline = if (look.neon) BorderStroke(1.5.dp, scheme.primary) else null,
-                tone = PressTone.ACCENT_FILL,
-            )
-            .clickable(interactionSource = source, indication = null, enabled = !resting, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics { contentDescription = label }
-            .testTag(MetronomeTestTags.START),
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onClick,
+        label = stringResource(if (playing) R.string.metronome_stop else R.string.metronome_start),
+        modifier = modifier.testTag(MetronomeTestTags.START),
+        face = face,
+        enabled = !resting,
+        main = true,
     ) {
         Icon(
             painterResource(if (playing) R.drawable.ic_stop else R.drawable.ic_play),
             contentDescription = null,
-            tint = content,
             modifier = Modifier.size(face * START_ICON_SHARE),
         )
     }
@@ -447,8 +352,6 @@ fun StartStopButton(playing: Boolean, onClick: () -> Unit, face: Dp, modifier: M
 /** Start / Stop's icon: this share of its face. */
 private const val START_ICON_SHARE = 0.42f
 
-/** Start / Stop while listening. */
-private const val RESTING_ALPHA = 0.38f
 
 /** A text button's press light (Listen's status line): a pill with 12 dp corners, 8 dp in from the top and bottom of its 48 dp. */
 internal val PILL = RoundedCornerShape(12.dp)

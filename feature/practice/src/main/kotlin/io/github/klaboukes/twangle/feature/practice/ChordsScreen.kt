@@ -6,9 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -28,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +50,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -65,9 +61,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.klaboukes.twangle.core.audio.DronePlayer
-import io.github.klaboukes.twangle.core.designsystem.pressFeedback
+import io.github.klaboukes.twangle.core.designsystem.StyleButton
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
-import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
 import io.github.klaboukes.twangle.core.dsp.chord.Chord
 import io.github.klaboukes.twangle.core.dsp.chord.ChordQuality
@@ -480,7 +475,7 @@ private fun ChartArea(found: FoundShapes?, index: Int, notation: Notation, step:
 }
 
 /**
- * ‹ "2 of 3" › under the chart: round buttons of one steady size, also for TalkBack ("Previous
+ * ‹ "2 of 3" › under the chart: the style's buttons ([StyleButton]) of one steady size, also for TalkBack ("Previous
  * shape", "Next shape"), resting at the first and the last shape. Kept in place, empty, while the
  * chord has no shape, so nothing moves.
  */
@@ -509,25 +504,14 @@ private fun ShapePager(index: Int, count: Int, step: (Int) -> Unit, modifier: Mo
 
 @Composable
 private fun PagerButton(next: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val source = remember { MutableInteractionSource() }
-    Box(
-        modifier = Modifier
-            .testTag(if (next) PracticeTestTags.NEXT else PracticeTestTags.PREVIOUS)
-            .size(PAGER_BUTTON_SIZE)
-            .alpha(if (enabled) 1f else DISABLED_ALPHA)
-            .pressFeedback(source, CircleShape, fill = faceFill(picked = false), outline = faceOutline(picked = false))
-            .clickable(enabled = enabled, interactionSource = source, indication = null, role = Role.Button) {
-                source.pressFlash()
-                onClick()
-            },
-        contentAlignment = Alignment.Center,
+    StyleButton(
+        onClick = onClick,
+        label = stringResource(if (next) R.string.practice_shape_next else R.string.practice_shape_previous),
+        modifier = Modifier.testTag(if (next) PracticeTestTags.NEXT else PracticeTestTags.PREVIOUS),
+        face = PAGER_BUTTON_SIZE,
+        enabled = enabled,
     ) {
-        Icon(
-            painterResource(if (next) R.drawable.ic_chevron_right else R.drawable.ic_chevron_left),
-            contentDescription = stringResource(if (next) R.string.practice_shape_next else R.string.practice_shape_previous),
-            tint = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.size(24.dp),
-        )
+        Icon(painterResource(if (next) R.drawable.ic_chevron_right else R.drawable.ic_chevron_left), contentDescription = null, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -596,7 +580,6 @@ private val NECK_MIN_HEIGHT = 140.dp
 
 private val PAGER_HEIGHT = 56.dp
 private val PAGER_BUTTON_SIZE = 48.dp
-private const val DISABLED_ALPHA = 0.38f
 
 /** A swipe this far across the chart steps to the next shape. */
 private val SWIPE_DISTANCE = 48.dp
