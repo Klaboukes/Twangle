@@ -11,4 +11,7 @@
     <string name="wear_mic_busy">অন্য একটি অ্যাপ মাইক্রোফোন ব্যবহার করছে।</string>
     <string name="wear_mic_unavailable">মাইক্রোফোন চালু করা যাচ্ছে না।</string>
     <string name="wear_try_again">আবার চেষ্টা করুন</string>
+    <string name="wear_tile_tune">টিউন করুন</string>
+    <string name="wear_shortcut_tune">টিউন</string>
+    <string name="wear_shortcut_open">টিউনার খুলুন</string>
 </resources>

@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, аппликатура %2$d из %3$d</string>
     <string name="practice_spoken_string">Струна %1$s</string>
+    <string name="practice_spoken_short_string">Короткая струна %1$s</string>
     <string name="practice_spoken_muted">%1$s, не играется</string>
     <string name="practice_spoken_open">%1$s, открытая</string>
     <string name="practice_spoken_fret">%1$s, лад %2$d, палец %3$d, %4$s</string>

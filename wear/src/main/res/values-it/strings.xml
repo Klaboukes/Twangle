@@ -13,4 +13,7 @@
     <string name="wear_mic_busy">Un\'altra app sta usando il microfono.</string>
     <string name="wear_mic_unavailable">Impossibile aprire il microfono.</string>
     <string name="wear_try_again">Riprova</string>
+    <string name="wear_tile_tune">Accorda</string>
+    <string name="wear_shortcut_tune">Tuner</string>
+    <string name="wear_shortcut_open">Apri l\'accordatore</string>
 </resources>

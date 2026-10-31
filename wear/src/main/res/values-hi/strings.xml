@@ -12,4 +12,7 @@
     <string name="wear_mic_busy">कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है।</string>
     <string name="wear_mic_unavailable">माइक्रोफ़ोन नहीं खुल सका।</string>
     <string name="wear_try_again">फिर से कोशिश करें</string>
+    <string name="wear_tile_tune">ट्यून करें</string>
+    <string name="wear_shortcut_tune">ट्यून</string>
+    <string name="wear_shortcut_open">ट्यूनर खोलें</string>
 </resources>

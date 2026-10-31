@@ -230,6 +230,7 @@ feature/practice practice_spoken_scale_open 3adb3b0c
 feature/practice practice_spoken_scale_root 48275659
 feature/practice practice_spoken_separator f240463d
 feature/practice practice_spoken_shape d1ab5cf8
+feature/practice practice_spoken_short_string f74a73ba
 feature/practice practice_spoken_string 5db5f4ae
 feature/practice practice_tool_button 2e53bdcd
 feature/practice practice_tool_capo 936e4161
@@ -549,4 +550,7 @@ wear wear_mic_needed ae234ba5
 wear wear_mic_unavailable 58ff1c7c
 wear wear_open_settings ca381c1e
 wear wear_play_note 4d452ac3
+wear wear_shortcut_open 27616cdc
+wear wear_shortcut_tune 22c58d84
+wear wear_tile_tune 22c58d84
 wear wear_try_again d8b8392e

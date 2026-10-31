@@ -11,4 +11,7 @@
     <string name="wear_mic_busy">다른 앱이 마이크를 사용 중이에요.</string>
     <string name="wear_mic_unavailable">마이크를 열 수 없어요.</string>
     <string name="wear_try_again">다시 시도</string>
+    <string name="wear_tile_tune">튜닝</string>
+    <string name="wear_shortcut_tune">튜닝</string>
+    <string name="wear_shortcut_open">튜너 열기</string>
 </resources>

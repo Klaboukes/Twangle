@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, शेप %3$d में से %2$d</string>
     <string name="practice_spoken_string">%1$s तार</string>
+    <string name="practice_spoken_short_string">छोटा %1$s तार</string>
     <string name="practice_spoken_muted">%1$s, नहीं बजाना</string>
     <string name="practice_spoken_open">%1$s, खुला</string>
     <string name="practice_spoken_fret">%1$s, फ़्रेट %2$d, उंगली %3$d, %4$s</string>

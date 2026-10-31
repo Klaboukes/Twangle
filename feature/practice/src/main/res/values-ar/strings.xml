@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">"، "</string>
     <string name="practice_spoken_shape">%1$s، الشكل %2$d من %3$d</string>
     <string name="practice_spoken_string">وتر %1$s</string>
+    <string name="practice_spoken_short_string">وتر %1$s القصير</string>
     <string name="practice_spoken_muted">%1$s، لا يُعزف</string>
     <string name="practice_spoken_open">%1$s، مفتوح</string>
     <string name="practice_spoken_fret">%1$s، الدستان %2$d، الإصبع %3$d، %4$s</string>

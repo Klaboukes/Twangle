@@ -10,4 +10,7 @@
     <string name="wear_mic_busy">另一個應用程式正在使用麥克風。</string>
     <string name="wear_mic_unavailable">無法開啟麥克風。</string>
     <string name="wear_try_again">重試</string>
+    <string name="wear_tile_tune">調音</string>
+    <string name="wear_shortcut_tune">調音</string>
+    <string name="wear_shortcut_open">開啟調音器</string>
 </resources>

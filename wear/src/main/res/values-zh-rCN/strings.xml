@@ -11,4 +11,7 @@
     <string name="wear_mic_busy">另一个应用正在使用麦克风。</string>
     <string name="wear_mic_unavailable">无法打开麦克风。</string>
     <string name="wear_try_again">重试</string>
+    <string name="wear_tile_tune">调音</string>
+    <string name="wear_shortcut_tune">调音</string>
+    <string name="wear_shortcut_open">打开调音器</string>
 </resources>

@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, grep %2$d av %3$d</string>
     <string name="practice_spoken_string">%1$s-streng</string>
+    <string name="practice_spoken_short_string">kort %1$s-streng</string>
     <string name="practice_spoken_muted">%1$s, ikke spilt</string>
     <string name="practice_spoken_open">%1$s, åpen</string>
     <string name="practice_spoken_fret">%1$s, bånd %2$d, finger %3$d, %4$s</string>

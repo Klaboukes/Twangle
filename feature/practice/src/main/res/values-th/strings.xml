@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, ฟอร์ม %2$d จาก %3$d</string>
     <string name="practice_spoken_string">สาย %1$s</string>
+    <string name="practice_spoken_short_string">สาย %1$s สั้น</string>
     <string name="practice_spoken_muted">%1$s, ไม่เล่น</string>
     <string name="practice_spoken_open">%1$s, สายเปล่า</string>
     <string name="practice_spoken_fret">%1$s, เฟรต %2$d, นิ้ว %3$d, %4$s</string>

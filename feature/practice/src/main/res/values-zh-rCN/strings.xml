@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">，</string>
     <string name="practice_spoken_shape">%1$s，指法 %2$d / %3$d</string>
     <string name="practice_spoken_string">%1$s 弦</string>
+    <string name="practice_spoken_short_string">%1$s 短弦</string>
     <string name="practice_spoken_muted">%1$s，不弹</string>
     <string name="practice_spoken_open">%1$s，空弦</string>
     <string name="practice_spoken_fret">%1$s，%2$d 品，%3$d 指，%4$s</string>

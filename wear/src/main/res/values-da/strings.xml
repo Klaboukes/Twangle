@@ -11,4 +11,7 @@
     <string name="wear_mic_busy">En anden app bruger mikrofonen.</string>
     <string name="wear_mic_unavailable">Mikrofonen kan ikke åbnes.</string>
     <string name="wear_try_again">Prøv igen</string>
+    <string name="wear_tile_tune">Stem</string>
+    <string name="wear_shortcut_tune">Stem</string>
+    <string name="wear_shortcut_open">Åbn tuneren</string>
 </resources>

@@ -38,6 +38,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, ote %2$d, yhteensä %3$d</string>
     <string name="practice_spoken_string">Kieli %1$s</string>
+    <string name="practice_spoken_short_string">Lyhyt kieli %1$s</string>
     <string name="practice_spoken_muted">%1$s, ei soiteta</string>
     <string name="practice_spoken_open">%1$s, avoin</string>
     <string name="practice_spoken_fret">%1$s, nauha %2$d, sormi %3$d, %4$s</string>

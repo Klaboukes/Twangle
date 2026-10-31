@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, bentuk %2$d dari %3$d</string>
     <string name="practice_spoken_string">Senar %1$s</string>
+    <string name="practice_spoken_short_string">Senar %1$s pendek</string>
     <string name="practice_spoken_muted">%1$s, tidak dibunyikan</string>
     <string name="practice_spoken_open">%1$s, lepas</string>
     <string name="practice_spoken_fret">%1$s, fret %2$d, jari %3$d, %4$s</string>

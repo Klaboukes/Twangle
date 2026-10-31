@@ -37,6 +37,7 @@
     <string name="practice_spoken_separator">", "</string>
     <string name="practice_spoken_shape">%1$s, thế bấm %2$d trên %3$d</string>
     <string name="practice_spoken_string">dây %1$s</string>
+    <string name="practice_spoken_short_string">dây %1$s ngắn</string>
     <string name="practice_spoken_muted">%1$s, không đánh</string>
     <string name="practice_spoken_open">%1$s, dây buông</string>
     <string name="practice_spoken_fret">%1$s, phím %2$d, ngón %3$d, %4$s</string>

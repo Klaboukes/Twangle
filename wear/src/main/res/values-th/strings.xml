@@ -10,4 +10,7 @@
     <string name="wear_mic_busy">มีแอปอื่นกำลังใช้ไมโครโฟน</string>
     <string name="wear_mic_unavailable">เปิดไมโครโฟนไม่ได้</string>
     <string name="wear_try_again">ลองอีกครั้ง</string>
+    <string name="wear_tile_tune">จูน</string>
+    <string name="wear_shortcut_tune">จูน</string>
+    <string name="wear_shortcut_open">เปิดจูนเนอร์</string>
 </resources>

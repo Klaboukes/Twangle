@@ -10,4 +10,7 @@
     <string name="wear_mic_busy">Một ứng dụng khác đang dùng micrô.</string>
     <string name="wear_mic_unavailable">Không mở được micrô.</string>
     <string name="wear_try_again">Thử lại</string>
+    <string name="wear_tile_tune">Lên dây</string>
+    <string name="wear_shortcut_tune">Tuner</string>
+    <string name="wear_shortcut_open">Mở máy lên dây</string>
 </resources>
