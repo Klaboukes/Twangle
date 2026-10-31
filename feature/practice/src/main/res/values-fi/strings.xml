@@ -60,8 +60,8 @@
     <string name="practice_scale_type_melodic_minor">Melodinen molli</string>
     <string name="practice_scale_major">%1$s-duuri</string>
     <string name="practice_scale_minor">%1$s-molli</string>
-    <string name="practice_scale_major_pentatonic">%1$s-duuripentatoninen</string>
-    <string name="practice_scale_minor_pentatonic">%1$s-mollipentatoninen</string>
+    <string name="practice_scale_major_pentatonic">%1$s-duuri\u200Bpentatoninen</string>
+    <string name="practice_scale_minor_pentatonic">%1$s-molli\u200Bpentatoninen</string>
     <string name="practice_scale_blues">%1$s-blues</string>
     <string name="practice_scale_major_blues">%1$s-duuriblues</string>
     <string name="practice_scale_dorian">%1$s-doorinen</string>
