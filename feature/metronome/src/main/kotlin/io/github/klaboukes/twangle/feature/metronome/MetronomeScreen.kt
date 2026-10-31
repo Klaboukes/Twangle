@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
@@ -55,6 +54,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -78,12 +78,16 @@ import io.github.klaboukes.twangle.core.dsp.metronome.ClickTrack
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.SettingsRepository
 import io.github.klaboukes.twangle.core.settings.ToolSwitches
-import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
-import io.github.klaboukes.twangle.feature.metronome.components.SoundPanel
 import io.github.klaboukes.twangle.feature.metronome.components.ListenBalloon
 import io.github.klaboukes.twangle.feature.metronome.components.ListenLine
+import io.github.klaboukes.twangle.feature.metronome.components.ListenRow
+import io.github.klaboukes.twangle.feature.metronome.components.MeterPicker
+import io.github.klaboukes.twangle.feature.metronome.components.OptionsPanel
+import io.github.klaboukes.twangle.feature.metronome.components.SoundChoice
+import io.github.klaboukes.twangle.feature.metronome.components.StatusMark
 import io.github.klaboukes.twangle.feature.metronome.components.TempoDial
 import io.github.klaboukes.twangle.feature.metronome.components.TempoRow
+import io.github.klaboukes.twangle.feature.metronome.components.VibrateSwitch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
@@ -264,18 +268,19 @@ class BeatClock {
 
 /**
  * The metronome's controls for [bpm], [meter], [playing], [vibrate] and [sound], stateless: the meter
- * picker at the top, the beat lights, Listen's status line, the tempo dial (as large as the screen
- * leaves room for, with − and + beside the tempo and Start / Stop in its opening) and one row of icon
- * buttons with their names under them: Sound, Tap tempo and Listen (the owner's pick A, 2026-10-18,
- * docs/design/metronome-roomy-preview.html; Sound since Phase 45, docs/design/metronome-sound-preview.html).
- * Sound opens a panel over the screen with the four sounds ([onSoundPick]: while stopped one bar of
- * the sound plays, while playing it is heard from the next beat) and "Vibrate on the beat"
- * ([onVibrateChange]); Back or a tap beside it closes it. Upright the beat lights stand right over the
- * dial and grow with the height a tall screen has to spare (Phase 43). Upright they stand in one column; on a wide screen on
- * its side the dial is at the start and the rest in a column beside it. With a very large font the
- * column scrolls. Only the beat lights and the dial's glow move, and only while
- * playing or listening. [listen] says where Listen stands; a found tempo shows in a balloon over
- * the screen, pointing at Listen ([onUse], [onNotNow]; Back is Not now).
+ * picker at the top, the beat lights, the status line, the tempo dial (as large as the screen leaves
+ * room for, holding only the tempo) and one row of icon buttons under it: Tap tempo · − · Start · + ·
+ * options (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html). The options
+ * button opens a panel over the screen ([OptionsPanel]) with the four sounds ([onSoundPick]: while
+ * stopped one bar of the sound plays, while playing it is heard from the next beat), "Vibrate on the
+ * beat" ([onVibrateChange]) and Listen ([onListen], which closes the panel); Back or a tap beside it
+ * closes it. What is on in it shows as small icons on the status line ([StatusMark]: today vibration).
+ * Upright the beat lights stand right over the dial and grow with the height a tall screen has to
+ * spare (Phase 43). Upright they stand in one column; on a wide screen on its side the dial is at the
+ * start and the rest in a column beside it. With a very large font the column scrolls. Only the beat
+ * lights and the dial's glow move, and only while playing or listening. [listen] says where Listen
+ * stands (its status line has Stop while it listens, [onListen] again); a found tempo shows in a
+ * balloon over the screen, pointing at the options button ([onUse], [onNotNow]; Back is Not now).
  *
  * A [header] (the Practice tab's tool button, Phase 47) stands at the very top at the start, 8 dp
  * down as the tuner's mode switch, with the meter picker under it; on its side it stands at the top
@@ -283,7 +288,7 @@ class BeatClock {
  *
  * On a large upright window (a tablet held upright, Phase 52) the column is laid out as on a phone and
  * drawn bigger, by the tuner's rule ([columnScaleFor], [ScaledUp]): the meter picker, the beat lights,
- * the dial, the row of buttons, their text and the gaps grow together, and the Sound panel and the
+ * the dial, the row of buttons and the gaps grow together, and the options panel and the
  * suggestion with them. The [header] keeps its own size there, at the start of a phone's column, as
  * over the other Practice tools. On a phone, and on its side, nothing changes.
  */
@@ -335,10 +340,14 @@ fun MetronomeContent(
         onUse(pick, if (animationsOff) 0L else MetronomeViewModel.USE_GLIDE_MILLIS)
     }
     BackHandler(enabled = listen.phase == ListenPhase.FOUND, onBack = onNotNow)
-    var listenBounds by remember { mutableStateOf<Rect?>(null) }
-    var soundBounds by remember { mutableStateOf<Rect?>(null) }
+    var optionsBounds by remember { mutableStateOf<Rect?>(null) }
     // Kept when the phone turns: the panel opens again in its place for the new layout.
-    var soundOpen by rememberSaveable { mutableStateOf(false) }
+    var optionsOpen by rememberSaveable { mutableStateOf(false) }
+    val vibrateName = stringResource(R.string.metronome_vibrate)
+    // What is on in the options panel, on the status line (Phase 62).
+    val marks = buildList {
+        if (vibrate) add(StatusMark(R.drawable.ic_vibrate, vibrateName, MetronomeTestTags.VIBRATE_MARK))
+    }
     var layerOrigin by remember { mutableStateOf(Offset.Zero) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -369,17 +378,20 @@ fun MetronomeContent(
                 )
             }
             val line: @Composable () -> Unit = {
-                ListenLine(listen, onTryAgain = onTryAgain, onOpenSettings = onOpenSettings, modifier = Modifier.padding(top = 2.dp))
+                ListenLine(
+                    listen,
+                    onTryAgain = onTryAgain,
+                    onOpenSettings = onOpenSettings,
+                    modifier = Modifier.padding(top = 2.dp),
+                    marks = marks,
+                    onStopListening = onListen,
+                )
             }
             val tempoDial: @Composable (Dp) -> Unit = { size ->
                 TempoDial(
                     bpm = bpm,
                     onBpmChange = onBpmChange,
                     onBpmChangeFinished = onBpmChangeFinished,
-                    onStep = onStep,
-                    playing = playing || (listening && listen.wasPlaying),
-                    onToggle = onToggle,
-                    startResting = listening,
                     beatGlow = clock::glow,
                     size = size,
                     shown = dial::shown,
@@ -392,16 +404,13 @@ fun MetronomeContent(
             val row: @Composable () -> Unit = {
                 TempoRow(
                     onTap = onTap,
-                    listening = listening,
-                    listenStartedAtNanos = listen.startedAtNanos,
-                    listenEndedAtNanos = listen.endedAtNanos,
-                    frameNanos = { clock.frameNanos },
-                    onListen = onListen,
-                    sound = sound,
-                    vibrate = vibrate,
-                    onSound = { soundOpen = true },
-                    onListenPlaced = { listenBounds = it },
-                    onSoundPlaced = { soundBounds = it },
+                    onStep = onStep,
+                    playing = playing || (listening && listen.wasPlaying),
+                    onToggle = onToggle,
+                    startResting = listening,
+                    optionsOpen = optionsOpen,
+                    onOptions = { optionsOpen = true },
+                    onOptionsPlaced = { optionsBounds = it },
                 )
             }
             if (wide) {
@@ -482,30 +491,38 @@ fun MetronomeContent(
                     }
                 }
             }
-            // The suggestion and the Sound panel float on their own layer over the screen, pointing at
-            // Listen and opening from Sound. The layer is always there, so its place is known before
-            // either shows (one that isn't showing has no place of its own). On an upright tablet they
-            // are drawn as big as the column, so they open from its buttons at its size.
+            // The suggestion and the options panel float on their own layer over the screen, both from
+            // the options button. The layer is always there, so its place is known before either shows
+            // (one that isn't showing has no place of its own). On an upright tablet they are drawn as
+            // big as the column, so they open from its button at its size.
             ScaledUp(scale) {
                 Box(Modifier.fillMaxSize().onGloballyPositioned { layerOrigin = it.positionInRoot() }) {
+                    val anchor = optionsBounds?.translate(-layerOrigin)
                     ListenBalloon(
                         listen = listen,
-                        anchor = listenBounds?.translate(-layerOrigin),
+                        anchor = anchor,
                         onUse = use,
                         onNotNow = onNotNow,
                         modifier = Modifier.fillMaxSize(),
                     )
-                    SoundPanel(
-                        open = soundOpen,
-                        sound = sound,
-                        vibrate = vibrate,
-                        anchor = soundBounds?.translate(-layerOrigin),
+                    // Its rows, top to bottom; "Between the beats" comes under the sounds, the speed trainer under Listen.
+                    OptionsPanel(
+                        open = optionsOpen,
+                        anchor = anchor,
                         wide = wide,
-                        onPick = onSoundPick,
-                        onVibrateChange = onVibrateChange,
-                        onDismiss = { soundOpen = false },
+                        onDismiss = { optionsOpen = false },
                         modifier = Modifier.fillMaxSize(),
-                    )
+                    ) {
+                        SoundChoice(sound, onSoundPick)
+                        VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
+                        ListenRow(
+                            listening = listening,
+                            onClick = {
+                                optionsOpen = false
+                                onListen()
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -634,20 +651,18 @@ object MetronomeTestTags {
     const val FASTER = "metronome_faster"
     const val TAP = "metronome_tap"
     const val START = "metronome_start"
-    const val LISTEN = "metronome_listen"
-    const val SOUND = "metronome_sound"
 
-    /** The two vibration marks beside Sound's icon while "Vibrate on the beat" is on. */
-    const val SOUND_VIBRATE_MARKS = "metronome_sound_vibrate_marks"
+    /** The options button at the row's end, and its panel. */
+    const val OPTIONS = "metronome_options"
+    const val OPTIONS_PANEL = "metronome_options_panel"
 
-    /** The Sound panel, and the "Vibrate on the beat" switch in it. */
-    const val SOUND_PANEL = "metronome_sound_panel"
+    /** The panel's "Vibrate on the beat" switch and its Listen row. */
     const val VIBRATE = "metronome_vibrate"
+    const val LISTEN = "metronome_listen"
 
-    /** The names under Sound, Tap tempo and Listen (hidden from TalkBack: the buttons say them). */
-    const val SOUND_LABEL = "metronome_sound_label"
-    const val TAP_LABEL = "metronome_tap_label"
-    const val LISTEN_LABEL = "metronome_listen_label"
+    /** The status line's marks of what is on, and vibration's among them. */
+    const val MARKS = "metronome_marks"
+    const val VIBRATE_MARK = "metronome_mark_vibrate"
     const val LINE = "metronome_listen_line"
     const val LINE_ACTION = "metronome_listen_line_action"
     const val BALLOON = "metronome_listen_balloon"
@@ -658,7 +673,7 @@ object MetronomeTestTags {
     /** The suggestion's ½× 1× 2× chip for [pick], e.g. "metronome_listen_pick_double". */
     fun pick(pick: TempoPick): String = "metronome_listen_pick_" + pick.name.lowercase()
 
-    /** The Sound panel's row for [sound], e.g. "metronome_sound_cowbell". */
+    /** The options panel's button for [sound], e.g. "metronome_sound_cowbell". */
     fun sound(sound: ClickSound): String = "metronome_sound_" + sound.name.lowercase()
 
     /** The meter picker's button for [meter], e.g. "metronome_meter_six_eight". */

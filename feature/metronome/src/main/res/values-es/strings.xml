@@ -18,8 +18,6 @@
     <string name="metronome_sound_cowbell">Cencerro</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Golpe de aro</string>
-    <string name="metronome_sound_spoken">Sonido: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Sonido: %1$s, vibra con el pulso</string>
     <string name="metronome_meter_2_4_spoken">Compás de dos por cuatro</string>
     <string name="metronome_meter_3_4_spoken">Compás de tres por cuatro</string>
     <string name="metronome_meter_4_4_spoken">Compás de cuatro por cuatro</string>

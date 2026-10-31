@@ -10,32 +10,30 @@
         <item quantity="other">%1$d beats per minute, %2$s</item>
     </plurals>
     <string name="metronome_bpm" translatable="false">BPM</string>
-    <!-- TalkBack name of the − button inside the tempo dial: one beat per minute slower. -->
+    <!-- TalkBack name of the − button under the tempo dial, left of Start: one beat per minute slower. -->
     <string name="metronome_slower">Slower</string>
-    <!-- TalkBack name of the + button inside the tempo dial: one beat per minute faster. -->
+    <!-- TalkBack name of the + button under the tempo dial, right of Start: one beat per minute faster. -->
     <string name="metronome_faster">Faster</string>
-    <!-- Button under the tempo dial: tap it in time and the tempo follows your taps. Its word under the button (short, one line in a row of three) and its TalkBack name. -->
+    <!-- TalkBack name of the button at the start of the row under the tempo dial (a fingertip icon, no word shown): tap it in time and the tempo follows your taps. -->
     <string name="metronome_tap">Tap tempo</string>
     <!-- TalkBack name of the big play button that starts the clicks (an icon, no word shown). -->
     <string name="metronome_start">Start</string>
     <!-- TalkBack name of the big button while the clicks play: stops them (an icon, no word shown). -->
     <string name="metronome_stop">Stop</string>
-    <!-- Switch in the Sound panel: the phone vibrates on every beat as well. One line. -->
+    <!-- Switch in the options panel: the phone vibrates on every beat as well. Also TalkBack's name for its small icon on the status line under the beat lights while it is on. -->
     <string name="metronome_vibrate">Vibrate on the beat</string>
-    <!-- The Sound button, first under the dial: the word under it (always this, whatever is picked), and its panel's name. -->
+    <!-- The options panel: the small heading over the four click sounds (icons), and TalkBack's name for that group. -->
     <string name="metronome_sound">Sound</string>
-    <!-- The four click sounds, in the Sound panel: each instrument's common name. -->
+    <!-- The four click sounds, icons in the options panel: each instrument's common name, for TalkBack. -->
     <string name="metronome_sound_wood_block">Wood block</string>
-    <!-- Click sound in the Sound panel: the cowbell (percussion instrument). -->
+    <!-- Click sound in the options panel (TalkBack): the cowbell (percussion instrument). -->
     <string name="metronome_sound_cowbell">Cowbell</string>
-    <!-- Click sound in the Sound panel: claves (two wooden sticks struck together). -->
+    <!-- Click sound in the options panel (TalkBack): claves (two wooden sticks struck together). -->
     <string name="metronome_sound_claves">Claves</string>
-    <!-- Click sound in the Sound panel: a rim click (a drumstick laid on the snare drum, its rim struck). -->
+    <!-- Click sound in the options panel (TalkBack): a rim click (a drumstick laid on the snare drum, its rim struck). -->
     <string name="metronome_sound_rim_click">Rim click</string>
-    <!-- The Sound button for TalkBack: the sound picked, and whether it vibrates on the beat. -->
-    <string name="metronome_sound_spoken">Sound: %1$s</string>
-    <!-- TalkBack: the Sound button while vibration is on. %1$s is the sound picked, e.g. "Cowbell". -->
-    <string name="metronome_sound_spoken_vibrating">Sound: %1$s, vibrates on the beat</string>
+    <!-- TalkBack name of the button at the end of the row under the tempo dial (a three-sliders icon, no word shown): opens the panel with the click sounds, Vibrate on the beat and Listen. Also the panel's name. -->
+    <string name="metronome_options">Options</string>
 
     <!-- The time signatures (drawn from their numbers, see meterLabel) as TalkBack says them (it would read "3/4" as a date or a fraction). -->
     <string name="metronome_meter_2_4_spoken">Two-four time</string>
@@ -61,12 +59,14 @@
     <string name="metronome_marking_presto" translatable="false">Presto</string>
     <string name="metronome_marking_prestissimo" translatable="false">Prestissimo</string>
 
-    <!-- Listen (Phase 27): the microphone button beside Tap tempo that listens to music nearby and suggests its tempo. An icon; this name is for TalkBack and its long-press tooltip. -->
+    <!-- Listen (Phase 27): the row in the options panel, beside a microphone icon, that listens to music nearby and suggests its tempo. -->
     <string name="metronome_listen">Listen</string>
-    <!-- TalkBack's name for the Listen button while it listens. -->
+    <!-- The options panel's Listen row while it listens (a tap stops it); also TalkBack's name for Stop on the status line. -->
     <string name="metronome_listen_stop_spoken">Stop listening</string>
     <!-- The status line while listening; the tempo it is settling on may follow ("Listening… 96 BPM"). -->
     <string name="metronome_listening">Listening…</string>
+    <!-- Action after "Listening… 96 BPM" on the same status line: stops listening. Short, one word if it can. -->
+    <string name="metronome_listen_line_stop">Stop</string>
     <!-- The suggestion balloon's heading over the tempo heard; also its TalkBack title. -->
     <string name="metronome_heard">Heard</string>
     <!-- The balloon's button that sets the suggested tempo. -->

@@ -16,8 +16,6 @@
     <string name="metronome_sound_cowbell">Cowbell</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rim click</string>
-    <string name="metronome_sound_spoken">Suara: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Suara: %1$s, bergetar mengikuti ketukan</string>
     <string name="metronome_meter_2_4_spoken">Birama dua per empat</string>
     <string name="metronome_meter_3_4_spoken">Birama tiga per empat</string>
     <string name="metronome_meter_4_4_spoken">Birama empat per empat</string>

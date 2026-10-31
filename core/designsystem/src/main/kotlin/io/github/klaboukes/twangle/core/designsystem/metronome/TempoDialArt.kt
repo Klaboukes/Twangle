@@ -176,6 +176,20 @@ fun isClearOfDialMiddle(dx: Float, dy: Float, width: Float): Boolean {
 }
 
 /**
+ * Whether a touch at ([dx], [dy]) from the dial's middle lands deep in the gap at the bottom, more than
+ * [GAP_GRACE_DEGREES] past either end of the arc. Nothing stands there since Start moved under the dial
+ * (Phase 62), so such a touch starts no drag: else a stray tap there would jump the tempo to 30 or 250.
+ * A touch just past an end still grabs it.
+ */
+fun isInDialGap(dx: Float, dy: Float): Boolean {
+    val degrees = (atan2(dx.toDouble(), -dy.toDouble()) * 180.0 / PI).toFloat()
+    return abs(degrees) > DIAL_HALF_SWEEP + GAP_GRACE_DEGREES
+}
+
+/** A touch up to this far past an end of the arc still grabs that end. */
+private const val GAP_GRACE_DEGREES = 10f
+
+/**
  * Touches this far from the middle and further out are on the ring: 20 units inside the arc, just
  * clear of the tempo's figures and marking at their widest (≈ 52u across and 53u up or down).
  */

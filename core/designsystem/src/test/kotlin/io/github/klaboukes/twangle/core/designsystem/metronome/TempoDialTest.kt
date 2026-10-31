@@ -55,6 +55,20 @@ class TempoDialTest {
     }
 
     @Test
+    fun `a touch deep in the gap starts nothing, one just past an end still grabs it`() {
+        // Straight down, and 20 degrees past either end (the ends at 150 degrees from straight up).
+        assertTrue(isInDialGap(0f, 100f))
+        assertTrue(isInDialGap(100f * sin(10.0 * PI / 180).toFloat(), 100f * cos(10.0 * PI / 180).toFloat()))
+        assertTrue(isInDialGap(-100f * sin(10.0 * PI / 180).toFloat(), 100f * cos(10.0 * PI / 180).toFloat()))
+        // 5 degrees past an end, on the arc's ends, and anywhere along the arc.
+        assertFalse(isInDialGap(100f * sin(25.0 * PI / 180).toFloat(), 100f * cos(25.0 * PI / 180).toFloat()))
+        assertFalse(isInDialGap(-100f * sin(30.0 * PI / 180).toFloat(), 100f * cos(30.0 * PI / 180).toFloat()))
+        assertFalse(isInDialGap(0f, -100f))
+        assertFalse(isInDialGap(100f, 0f))
+        assertFalse(isInDialGap(-100f, 50f))
+    }
+
+    @Test
     fun `the middle with the tempo is not the ring, so tapping BPM leaves the tempo alone`() {
         val width = 288f
         assertFalse(isOnDialRing(0f, 0f, width))

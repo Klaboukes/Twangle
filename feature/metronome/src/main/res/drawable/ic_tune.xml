@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The options button at the end of the row under the dial: three sliders (Material's "tune"), the metronome's own options, in the navigation bar's line style (1.8 dp round lines on a 24 dp grid), as docs/design/metronome-layout-preview.html. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M3.5,6.5H13M18,6.5H20.5M3.5,12H6M11,12H20.5M3.5,17.5H15M20,17.5H20.5" />
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:pathData="M15.5,4.1a2.4,2.4 0,1 1,0 4.8a2.4,2.4 0,1 1,0 -4.8zM8.5,9.6a2.4,2.4 0,1 1,0 4.8a2.4,2.4 0,1 1,0 -4.8zM17.5,15.1a2.4,2.4 0,1 1,0 4.8a2.4,2.4 0,1 1,0 -4.8z" />
+</vector>

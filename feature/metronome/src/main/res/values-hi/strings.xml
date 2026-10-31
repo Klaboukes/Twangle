@@ -17,8 +17,6 @@
     <string name="metronome_sound_cowbell">काउबेल</string>
     <string name="metronome_sound_claves">क्लेव्स</string>
     <string name="metronome_sound_rim_click">रिम क्लिक</string>
-    <string name="metronome_sound_spoken">साउंड: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">साउंड: %1$s, बीट पर वाइब्रेट</string>
     <!-- भिन्न की तरह पढ़ा जाता है: 3/4 = "तीन बटा चार"। -->
     <string name="metronome_meter_2_4_spoken">दो बटा चार ताल</string>
     <string name="metronome_meter_3_4_spoken">तीन बटा चार ताल</string>

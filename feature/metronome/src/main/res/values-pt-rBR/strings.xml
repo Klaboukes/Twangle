@@ -18,8 +18,6 @@
     <string name="metronome_sound_cowbell">Cowbell</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Aro</string>
-    <string name="metronome_sound_spoken">Som: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Som: %1$s, vibra na batida</string>
     <string name="metronome_meter_2_4_spoken">Compasso dois por quatro</string>
     <string name="metronome_meter_3_4_spoken">Compasso três por quatro</string>
     <string name="metronome_meter_4_4_spoken">Compasso quatro por quatro</string>

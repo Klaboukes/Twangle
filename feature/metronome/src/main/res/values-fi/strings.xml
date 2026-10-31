@@ -17,8 +17,6 @@
     <string name="metronome_sound_cowbell">Lehmänkello</string>
     <string name="metronome_sound_claves">Klaavit</string>
     <string name="metronome_sound_rim_click">Vannelyönti</string>
-    <string name="metronome_sound_spoken">Ääni: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Ääni: %1$s, värisee joka iskulla</string>
 
     <string name="metronome_meter_2_4_spoken">Kaksi neljäsosaa</string>
     <string name="metronome_meter_3_4_spoken">Kolme neljäsosaa</string>

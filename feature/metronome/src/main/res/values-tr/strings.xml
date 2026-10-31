@@ -17,8 +17,6 @@
     <string name="metronome_sound_cowbell">İnek çanı</string>
     <string name="metronome_sound_claves">Klaves</string>
     <string name="metronome_sound_rim_click">Rim click</string>
-    <string name="metronome_sound_spoken">Ses: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Ses: %1$s, vuruşta titreşim</string>
     <string name="metronome_meter_2_4_spoken">İki dörtlük ölçü</string>
     <string name="metronome_meter_3_4_spoken">Üç dörtlük ölçü</string>
     <string name="metronome_meter_4_4_spoken">Dört dörtlük ölçü</string>

@@ -16,8 +16,6 @@
     <string name="metronome_sound_cowbell">カウベル</string>
     <string name="metronome_sound_claves">クラベス</string>
     <string name="metronome_sound_rim_click">クロススティック</string>
-    <string name="metronome_sound_spoken">音色：%1$s</string>
-    <string name="metronome_sound_spoken_vibrating">音色：%1$s、拍に合わせて振動</string>
     <string name="metronome_meter_2_4_spoken">4分の2拍子</string>
     <string name="metronome_meter_3_4_spoken">4分の3拍子</string>
     <string name="metronome_meter_4_4_spoken">4分の4拍子</string>

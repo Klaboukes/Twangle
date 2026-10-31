@@ -16,8 +16,6 @@
     <string name="metronome_sound_cowbell">คาวเบล</string>
     <string name="metronome_sound_claves">เคลฟส์</string>
     <string name="metronome_sound_rim_click">ริมคลิก</string>
-    <string name="metronome_sound_spoken">เสียง: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">เสียง: %1$s, สั่นตามจังหวะ</string>
 
     <string name="metronome_meter_2_4_spoken">จังหวะสองสี่</string>
     <string name="metronome_meter_3_4_spoken">จังหวะสามสี่</string>

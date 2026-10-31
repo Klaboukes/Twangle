@@ -10,15 +10,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -49,8 +51,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
@@ -65,9 +67,12 @@ import io.github.klaboukes.twangle.feature.metronome.R
 import kotlin.math.roundToInt
 
 /*
- * The Sound button and its panel (Phase 45, the owner's pick A of docs/design/metronome-sound-preview.html,
- * round 2): the button first in the row shows the click picked, and opens a calm panel with the four
- * sounds and "Vibrate on the beat".
+ * The options panel (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html): what is
+ * set less often than the tempo, behind the one button at the end of the row under the dial. Its rows,
+ * top to bottom: the four click sounds (Phase 45, before Phase 62 behind a Sound button of their own),
+ * Vibrate on the beat, and Listen (Phase 27, before Phase 62 a button in the row). The panel takes its
+ * rows as content ([OptionsPanel]), so a new one slots in between them: "Between the beats" under the
+ * sounds, the speed trainer under Listen.
  */
 
 /** [sound]'s line icon (wood block A3, claves A5, cowbell and rim click as on the mock-up). */
@@ -90,68 +95,26 @@ internal fun soundName(sound: ClickSound): String = stringResource(
 )
 
 /**
- * Sound, the row's first button: the icon of the click picked ([sound]), with the two vibration marks
- * either side while "Vibrate on the beat" is on ([vibrate]); a tap opens the panel ([onClick]). It
- * looks like the row's other buttons and keeps their size; the word under it is always "Sound".
- * TalkBack hears "Sound: Cowbell" (", vibrates on the beat" while on) as a drop-down list.
- */
-@Composable
-internal fun SoundButton(sound: ClickSound, vibrate: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val look = buttonLook()
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
-    val name = soundName(sound)
-    val spoken = stringResource(if (vibrate) R.string.metronome_sound_spoken_vibrating else R.string.metronome_sound_spoken, name)
-    Box(
-        modifier = modifier
-            .testTag(MetronomeTestTags.SOUND)
-            .pressFeedback(source, look.shape, fill = faceFill(look), outline = faceOutline(look))
-            .clickable(interactionSource = source, indication = null) {
-                source.pressFlash()
-                onClick()
-            }
-            .semantics {
-                role = Role.DropdownList
-                contentDescription = spoken
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(painterResource(soundIcon(sound)), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
-        if (vibrate) {
-            Icon(
-                painterResource(R.drawable.ic_sound_vibrate_marks),
-                contentDescription = null,
-                tint = scheme.onSurface,
-                modifier = Modifier.requiredSize(MARKS_WIDTH, ROW_ICON).testTag(MetronomeTestTags.SOUND_VIBRATE_MARKS),
-            )
-        }
-    }
-}
-
-/**
- * The Sound panel while [open], on its own layer over the screen: the four sounds (icon and name, the
- * picked one, [sound], in the container colour with an accent outline) and the "Vibrate on the beat"
- * switch, on the raised surface colour (`surfaceContainerHigh`, as the tuner's pill: plain `surface` is the background's own colour in some schemes) with a soft lift and no border, as the mock-up. [anchor] is the Sound
- * button, in this layer's coordinates. Upright the panel opens above the row, its start edge in line
- * with Sound's; on a wide screen on its side ([wide]) there is no room above, so it opens beside
- * Sound, towards the dial, its bottom level with the button. Where the room is short (very large
- * text) it scrolls.
+ * The options panel while [open], on its own layer over the screen, holding its rows ([content], one
+ * under the other: [SoundChoice], [VibrateSwitch], [ListenRow]) on the raised surface colour
+ * (`surfaceContainerHigh`, as the tuner's pill: plain `surface` is the background's own colour in some
+ * schemes) with a soft lift and no border, as the mock-up; [PANEL_WIDTH] wide (less on a narrow window),
+ * as tall as its rows. [anchor] is the options button, in this layer's coordinates. Upright the panel
+ * opens above the row, its end edge in line with the button's; on a wide screen on its side ([wide])
+ * there is no room above, so it opens beside the button, towards the dial, its bottom level with the
+ * button. Where the room is short (very large text) it scrolls.
  *
- * A tap on a sound calls [onPick] and leaves the panel open for another try; Back or a tap beside it
- * calls [onDismiss]. TalkBack hears the panel by name, the sounds as a radio group and the switch by
- * its name.
+ * Back or a tap beside it calls [onDismiss], and the tap does nothing else. TalkBack hears the panel by
+ * name ("Options").
  */
 @Composable
-fun SoundPanel(
+fun OptionsPanel(
     open: Boolean,
-    sound: ClickSound,
-    vibrate: Boolean,
     anchor: Rect?,
     wide: Boolean,
-    onPick: (ClickSound) -> Unit,
-    onVibrateChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val showing = open && anchor != null
     BackHandler(enabled = showing, onBack = onDismiss)
@@ -177,7 +140,7 @@ fun SoundPanel(
                             }
                         },
                 )
-                Panel(sound, vibrate, onPick, onVibrateChange)
+                Panel(content)
             },
             modifier = Modifier.fillMaxSize(),
         ) { measurables, constraints ->
@@ -188,18 +151,18 @@ fun SoundPanel(
             val rtl = layoutDirection == LayoutDirection.Rtl
             val scrim = measurables[0].measure(Constraints.fixed(width, height))
             val panelWidth = minOf(PANEL_WIDTH.roundToPx(), (width - 2 * margin).coerceAtLeast(0))
-            // Upright the room above Sound; on its side the whole height.
+            // Upright the room above the button; on its side the whole height.
             val room = if (wide) height - 2 * margin else place.top.roundToInt() - gap - margin
             val panel = measurables[1].measure(Constraints(minWidth = panelWidth, maxWidth = panelWidth, maxHeight = room.coerceAtLeast(0)))
             val x: Int
             val y: Int
             if (wide) {
-                // Beside Sound, towards the dial (the start side), its bottom level with the button.
+                // Beside the button, towards the dial (the start side), its bottom level with the button.
                 x = if (rtl) place.right.roundToInt() + gap else place.left.roundToInt() - gap - panel.width
                 y = place.bottom.roundToInt() - panel.height
             } else {
-                // Above the row, its start edge in line with Sound's.
-                x = if (rtl) place.right.roundToInt() - panel.width else place.left.roundToInt()
+                // Above the row, its end edge in line with the button's.
+                x = if (rtl) place.left.roundToInt() else place.right.roundToInt() - panel.width
                 y = place.top.roundToInt() - gap - panel.height
             }
             layout(width, height) {
@@ -214,14 +177,14 @@ fun SoundPanel(
 }
 
 @Composable
-private fun Panel(sound: ClickSound, vibrate: Boolean, onPick: (ClickSound) -> Unit, onVibrateChange: (Boolean) -> Unit) {
+private fun Panel(content: @Composable ColumnScope.() -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val tokens = MaterialTheme.styleTokens
     val shape = MaterialTheme.shapes.large
-    val title = stringResource(R.string.metronome_sound)
+    val title = stringResource(R.string.metronome_options)
     Column(
         Modifier
-            .testTag(MetronomeTestTags.SOUND_PANEL)
+            .testTag(MetronomeTestTags.OPTIONS_PANEL)
             .semantics { paneTitle = title }
             .shadow(
                 PANEL_LIFT,
@@ -232,60 +195,88 @@ private fun Panel(sound: ClickSound, vibrate: Boolean, onPick: (ClickSound) -> U
             .background(scheme.surfaceContainerHigh, shape)
             .verticalScroll(rememberScrollState())
             .padding(PANEL_PADDING),
-    ) {
-        Column(Modifier.selectableGroup().semantics { contentDescription = title }) {
-            for (option in ClickSound.entries) SoundRow(option, picked = option == sound, onPick = { onPick(option) })
+        content = content,
+    )
+}
+
+/**
+ * The panel's first row: "Sound" over the four click sounds as icons side by side, the one picked
+ * ([sound]) in the container colour with an accent outline. A tap calls [onPick] and leaves the panel
+ * open for another try. TalkBack hears a radio group "Sound" and each sound by its name; the word over
+ * them is hidden from it, as the group says it.
+ */
+@Composable
+internal fun SoundChoice(sound: ClickSound, onPick: (ClickSound) -> Unit, modifier: Modifier = Modifier) {
+    val title = stringResource(R.string.metronome_sound)
+    Column(modifier) {
+        PanelHeading(title)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .selectableGroup()
+                .semantics { contentDescription = title },
+            horizontalArrangement = Arrangement.spacedBy(SEGMENT_GAP),
+        ) {
+            for (option in ClickSound.entries) {
+                SoundSegment(option, picked = option == sound, onPick = { onPick(option) }, modifier = Modifier.weight(1f))
+            }
         }
-        VibrateSwitch(vibrate, onVibrateChange, Modifier.padding(top = 4.dp))
     }
 }
 
-/** One sound in the panel: its icon and name on a 48 dp row, a radio button for TalkBack. */
+/** A row's name over its choices: one line in the muted colour, set smaller where a language needs it. */
 @Composable
-private fun SoundRow(sound: ClickSound, picked: Boolean, onPick: () -> Unit) {
+private fun PanelHeading(text: String) {
+    val style = MaterialTheme.typography.labelLarge
+    // In dp, so it holds at any font size.
+    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
+    Text(
+        text,
+        style = style,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt says why).
+        softWrap = false,
+        autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = style.fontSize, stepSize = 0.5.sp),
+        modifier = Modifier
+            .padding(start = ROW_PADDING, end = ROW_PADDING, top = 4.dp, bottom = 2.dp)
+            .semantics { hideFromAccessibility() },
+    )
+}
+
+/** One sound: its icon on a [SEGMENT_FACE] tall face in a 48 dp touch area, a radio button named for TalkBack. */
+@Composable
+private fun SoundSegment(sound: ClickSound, picked: Boolean, onPick: () -> Unit, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
-    val text = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
-    // In dp, so it holds at any font size.
-    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
-    Row(
-        Modifier
+    val name = soundName(sound)
+    Box(
+        modifier
             .testTag(MetronomeTestTags.sound(sound))
-            .fillMaxWidth()
             .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(
-                source,
-                MaterialTheme.shapes.medium,
-                fill = if (picked) faceFill(look, picked = true) else Color.Transparent,
-                outline = if (picked) faceOutline(look, picked = true) else null,
-            )
             .selectable(selected = picked, interactionSource = source, indication = null, role = Role.RadioButton) {
                 source.pressFlash()
                 onPick()
             }
-            .padding(horizontal = ROW_PADDING),
-        verticalAlignment = Alignment.CenterVertically,
+            .semantics { contentDescription = name },
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(painterResource(soundIcon(sound)), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
-        Spacer(Modifier.width(ROW_PADDING))
-        // One line whatever the language: a long name at large text is set smaller.
-        Text(
-            soundName(sound),
-            style = text,
-            color = scheme.onSurface,
-            maxLines = 1,
-            // Never wrapped, so the auto-size sees a name too wide (Ear training's AnswerButton in IntervalsPart.kt
-            // says why).
-            softWrap = false,
-            autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = text.fontSize, stepSize = 0.5.sp),
-        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(SEGMENT_FACE)
+                .pressFeedback(source, look.shape, fill = faceFill(look, picked), outline = faceOutline(look, picked)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(soundIcon(sound)), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
+        }
     }
 }
 
 /** "Vibrate on the beat" with a switch at the end; the whole row toggles it. */
 @Composable
-private fun VibrateSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+internal fun VibrateSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
     Row(
@@ -312,17 +303,56 @@ private fun VibrateSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, 
     }
 }
 
-/** The marks' grid is 7 units wider each side than the 24 unit icon (ic_sound_vibrate_marks). */
-private val MARKS_WIDTH = 38.dp
+/**
+ * Listen: the microphone and its name on a 48 dp row; a tap ([onClick]) closes the panel and starts
+ * listening. While [listening] it shows the stop square in the accent and "Stop listening", and a tap
+ * stops it (the status line's Stop does the same).
+ */
+@Composable
+internal fun ListenRow(listening: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val source = remember { MutableInteractionSource() }
+    val text = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
+    val smallest = with(LocalDensity.current) { MIN_NAME_SIZE.toSp() }
+    Row(
+        modifier
+            .testTag(MetronomeTestTags.LISTEN)
+            .fillMaxWidth()
+            .heightIn(min = ROW_HEIGHT)
+            .pressFeedback(source, MaterialTheme.shapes.medium)
+            .clickable(interactionSource = source, indication = null, role = Role.Button) {
+                source.pressFlash()
+                onClick()
+            }
+            .padding(horizontal = ROW_PADDING),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painterResource(if (listening) R.drawable.ic_listen_stop else R.drawable.ic_listen),
+            contentDescription = null,
+            tint = if (listening) scheme.primary else scheme.onSurface,
+            modifier = Modifier.size(ROW_ICON),
+        )
+        Spacer(Modifier.width(ROW_PADDING))
+        Text(
+            stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen),
+            style = text,
+            color = scheme.onSurface,
+            maxLines = 1,
+            softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = smallest, maxFontSize = text.fontSize, stepSize = 0.5.sp),
+        )
+    }
+}
 
 private const val PANEL_IN_MILLIS = 150
 private const val PANEL_OUT_MILLIS = 120
 
-/** As the mock-up: 232 dp, a little wider for longer names; less on a narrow window. */
-private val PANEL_WIDTH = 248.dp
+/** As the mock-up: 280 dp; less on a narrow window. */
+private val PANEL_WIDTH = 280.dp
 private val PANEL_PADDING = 8.dp
 
-/** Between the panel and Sound. */
+/** Between the panel and the options button. */
 private val PANEL_GAP = 8.dp
 
 /** The panel keeps this far from the window's edges. */
@@ -334,3 +364,7 @@ private val ROW_HEIGHT = 48.dp
 private val SWITCH_ROW_HEIGHT = 56.dp
 private val ROW_PADDING = 14.dp
 private val MIN_NAME_SIZE = 8.dp
+
+/** A sound's face, 40 dp tall as the meter picker's buttons, in its 48 dp touch area, 4 dp from the next. */
+private val SEGMENT_FACE = 40.dp
+private val SEGMENT_GAP = 4.dp

@@ -16,8 +16,6 @@
     <string name="metronome_sound_cowbell">Chuông bò</string>
     <string name="metronome_sound_claves">Phách gỗ</string>
     <string name="metronome_sound_rim_click">Gõ vành trống</string>
-    <string name="metronome_sound_spoken">Âm thanh: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Âm thanh: %1$s, rung theo phách</string>
 
     <string name="metronome_meter_2_4_spoken">Nhịp hai bốn</string>
     <string name="metronome_meter_3_4_spoken">Nhịp ba bốn</string>

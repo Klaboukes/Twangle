@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -28,10 +29,12 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
+import androidx.annotation.DrawableRes
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +58,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -64,6 +68,7 @@ import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -71,7 +76,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -103,8 +107,18 @@ import kotlin.math.roundToInt
 
 /*
  * Listen's status line and its suggestion balloon (Phase 27, docs/design/metronome-listen-preview.html,
- * "Line" and "Found").
+ * "Line" and "Found"). Since Phase 62 the line also shows, as small icons, what is on in the options
+ * panel while Listen has nothing to say ([StatusMark]).
  */
+
+/**
+ * Something on in the options panel that changes how the metronome sounds or feels, shown on the
+ * status line as a small [icon] while Listen has nothing to say (Phase 62); TalkBack hears [spoken].
+ * [tag] is its test tag. Today only "Vibrate on the beat"; the note values between the beats and the
+ * speed trainer come next.
+ */
+@Immutable
+data class StatusMark(@param:DrawableRes val icon: Int, val spoken: String, val tag: String)
 
 /** What the status line says. */
 private sealed interface LineText {
@@ -129,13 +143,25 @@ private fun lineFor(listen: ListenUi): LineText = when (listen.phase) {
  * The status line under the beat lights: 24 dp whose room is always kept (one line of its text at
  * larger fonts), so nothing moves when it shows or hides. 14 sp in the muted colour, centred; a
  * change crossfades (160 ms out, 160 ms in). "Listening…", then "Listening… 96 BPM" with the number
- * in ink; "No steady beat heard  Try again"; "Microphone is off" (with "Open settings" when only
+ * in ink, each with Stop after it ([onStopListening]; Listen itself is in the options panel since
+ * Phase 62); "No steady beat heard  Try again"; "Microphone is off" (with "Open settings" when only
  * Settings can allow it). TalkBack hears it as a polite live region; the tempo, which can change many
  * times a second while Listen settles, is passed on paced ([pacedSpeech]: at most every 2 s), and a
  * new number takes the old one's place without the crossfade.
+ *
+ * While Listen has nothing to say the line shows [marks], small icons of what is on in the options
+ * panel, in the muted colour; they are outside the live region (switching one on is heard from its
+ * switch), and TalkBack hears them by name.
  */
 @Composable
-fun ListenLine(listen: ListenUi, onTryAgain: () -> Unit, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+fun ListenLine(
+    listen: ListenUi,
+    onTryAgain: () -> Unit,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    marks: List<StatusMark> = emptyList(),
+    onStopListening: () -> Unit = {},
+) {
     val text = TextStyle(fontSize = 14.sp, lineHeight = 1.2.em)
     val body = MaterialTheme.typography.bodyMedium.merge(text)
     val shown = lineFor(listen)
@@ -144,8 +170,55 @@ fun ListenLine(listen: ListenUi, onTryAgain: () -> Unit, onOpenSettings: () -> U
     val spokenTempo = (shown as? LineText.Listening)?.let { line ->
         pacedSpeech(listeningText(line.estimate), key = line.estimate > 0, speech = speech)
     }
+    Box(modifier.fillMaxWidth().heightIn(min = LINE_HEIGHT), contentAlignment = Alignment.Center) {
+        ListenWords(shown, spokenTempo, body, onTryAgain, onOpenSettings, onStopListening)
+        // The last marks stay drawn while they fade out.
+        var shownMarks by remember { mutableStateOf(marks) }
+        if (marks.isNotEmpty()) shownMarks = marks
+        AnimatedVisibility(
+            visible = shown == LineText.Nothing && marks.isNotEmpty(),
+            enter = fadeIn(tween(LINE_FADE_MILLIS, delayMillis = LINE_FADE_MILLIS)),
+            exit = fadeOut(tween(LINE_FADE_MILLIS)),
+        ) {
+            StatusMarks(shownMarks)
+        }
+    }
+}
+
+/** The marks side by side, [MARK_SIZE] each, [MARK_GAP] apart, as one node TalkBack hears by their names. */
+@Composable
+private fun StatusMarks(marks: List<StatusMark>) {
+    val spoken = marks.joinToString(", ") { it.spoken }
+    Row(
+        Modifier
+            .testTag(MetronomeTestTags.MARKS)
+            .semantics(mergeDescendants = true) { contentDescription = spoken },
+        horizontalArrangement = Arrangement.spacedBy(MARK_GAP),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        for (mark in marks) {
+            Icon(
+                painterResource(mark.icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(MARK_SIZE).testTag(mark.tag),
+            )
+        }
+    }
+}
+
+/** Listen's words on the line: the polite live region. */
+@Composable
+private fun ListenWords(
+    shown: LineText,
+    spokenTempo: String?,
+    body: TextStyle,
+    onTryAgain: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onStopListening: () -> Unit,
+) {
     Box(
-        modifier
+        Modifier
             .fillMaxWidth()
             .heightIn(min = LINE_HEIGHT)
             .testTag(MetronomeTestTags.LINE)
@@ -168,15 +241,9 @@ fun ListenLine(listen: ListenUi, onTryAgain: () -> Unit, onOpenSettings: () -> U
             contentAlignment = Alignment.Center,
             label = "listen line",
         ) { line ->
-            val semantics = when {
-                // The words fading out are not heard again.
-                line != shown -> Modifier.clearAndSetSemantics {}
-                // The tempo shown is left to the line's paced words; hidden, not cleared, so the
-                // language checks still find it.
-                line is LineText.Listening -> Modifier.semantics(mergeDescendants = true) { hideFromAccessibility() }
-                else -> Modifier
-            }
-            Box(semantics) { LineContent(line, body, onTryAgain, onOpenSettings) }
+            // The words fading out are not heard again.
+            val semantics = if (line != shown) Modifier.clearAndSetSemantics {} else Modifier
+            Box(semantics) { LineContent(line, body, onTryAgain, onOpenSettings, onStopListening) }
         }
     }
 }
@@ -190,7 +257,7 @@ private fun listeningText(estimate: Int): String {
 }
 
 @Composable
-private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit) {
+private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit, onOpenSettings: () -> Unit, onStopListening: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val style = MaterialTheme.styleTokens.style
     when (line) {
@@ -200,30 +267,31 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
             val bpmLabel = stringResource(R.string.metronome_bpm)
             val digits = if (line.estimate > 0) localDigits(line.estimate, appLocale()) else ""
             val numbers = numberFontFor(style)
-            Text(
-                buildAnnotatedString {
-                    append(listening)
-                    if (line.estimate > 0) {
-                        append(" ")
-                        withStyle(SpanStyle(color = scheme.onBackground, fontFamily = numbers, fontWeight = FontWeight.Medium, fontFeatureSettings = "$LINING_FIGURES, tnum")) {
-                            append(digits)
-                        }
-                        append(" ")
-                        append(bpmLabel)
+            val words = buildAnnotatedString {
+                append(listening)
+                if (line.estimate > 0) {
+                    append(" ")
+                    withStyle(SpanStyle(color = scheme.onBackground, fontFamily = numbers, fontWeight = FontWeight.Medium, fontFeatureSettings = "$LINING_FIGURES, tnum")) {
+                        append(digits)
                     }
-                },
-                style = body,
-                color = scheme.onSurfaceVariant,
-                maxLines = 1,
-                // Never wrapped, so the auto-size sees a line too wide (Ear training's AnswerButton in IntervalsPart.kt
-                // says why).
-                softWrap = false,
-                autoSize = TextAutoSize.StepBased(minFontSize = MIN_LINE_TEXT, maxFontSize = body.fontSize, stepSize = 0.5.sp),
+                    append(" ")
+                    append(bpmLabel)
+                }
+            }
+            // The tempo shown is left to the line's paced words; hidden, not cleared, so the language
+            // checks still find it. Stop is heard as "Stop listening".
+            LineWithAction(
+                words,
+                stringResource(R.string.metronome_listen_line_stop),
+                body,
+                onStopListening,
+                textHidden = true,
+                actionSpoken = stringResource(R.string.metronome_listen_stop_spoken),
             )
         }
-        LineText.NoBeat -> LineWithAction(stringResource(R.string.metronome_no_beat), stringResource(R.string.metronome_try_again), body, onTryAgain)
+        LineText.NoBeat -> LineWithAction(AnnotatedString(stringResource(R.string.metronome_no_beat)), stringResource(R.string.metronome_try_again), body, onTryAgain)
         is LineText.MicOff -> LineWithAction(
-            stringResource(R.string.metronome_mic_off),
+            AnnotatedString(stringResource(R.string.metronome_mic_off)),
             if (line.needsSettings) stringResource(R.string.metronome_open_settings) else null,
             body,
             onOpenSettings,
@@ -234,10 +302,19 @@ private fun LineContent(line: LineText, body: TextStyle, onTryAgain: () -> Unit,
 /**
  * The line's words and, after them, an action in the accent with a 48 dp touch area. Both keep their
  * size while they fit side by side; where they don't (large text, long languages) both are set
- * smaller by the same factor, measured from their full widths, to stay on one line.
+ * smaller by the same factor, measured from their full widths, to stay on one line. [textHidden]
+ * hides the words from TalkBack (the line says them its own way); [actionSpoken] is the action's
+ * TalkBack name where its word alone is too short.
  */
 @Composable
-private fun LineWithAction(text: String, action: String?, body: TextStyle, onAction: () -> Unit) {
+private fun LineWithAction(
+    text: AnnotatedString,
+    action: String?,
+    body: TextStyle,
+    onAction: () -> Unit,
+    textHidden: Boolean = false,
+    actionSpoken: String? = null,
+) {
     val scheme = MaterialTheme.colorScheme
     val actionStyle = body.copy(fontWeight = FontWeight.Medium)
     val measurer = rememberTextMeasurer()
@@ -257,7 +334,15 @@ private fun LineWithAction(text: String, action: String?, body: TextStyle, onAct
         val scale = if (full <= room && tighter == 1f) 1f else max(min(1f, room * FIT_MARGIN / full) * tighter, smallest)
         val fit: (TextLayoutResult) -> Unit = { if (it.didOverflowWidth && scale > smallest) tighter *= TIGHTER_STEP }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(ACTION_GAP)) {
-            Text(text, style = body.copy(fontSize = body.fontSize * scale), color = scheme.onSurfaceVariant, maxLines = 1, softWrap = false, onTextLayout = fit)
+            Text(
+                text,
+                style = body.copy(fontSize = body.fontSize * scale),
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false,
+                onTextLayout = fit,
+                modifier = if (textHidden) Modifier.semantics { hideFromAccessibility() } else Modifier,
+            )
             if (action != null) {
                 val source = remember { MutableInteractionSource() }
                 Box(
@@ -272,6 +357,7 @@ private fun LineWithAction(text: String, action: String?, body: TextStyle, onAct
                             source.pressFlash()
                             onAction()
                         }
+                        .then(if (actionSpoken != null) Modifier.semantics { contentDescription = actionSpoken } else Modifier)
                         .padding(horizontal = ACTION_PADDING),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -304,9 +390,13 @@ private val MIN_LINE_TEXT = 6.sp
 private val PILL_HEIGHT = 32.dp
 private const val LINE_FADE_MILLIS = 160
 
+/** The marks of what is on: small, beside each other, as the mock-up. */
+private val MARK_SIZE = 18.dp
+private val MARK_GAP = 8.dp
+
 /**
- * The suggestion: a balloon on its own layer over the screen, pointing at Listen ([anchor], in this
- * layer's coordinates), the tour's balloon (the style's accent with on-accent text, no outline, a
+ * The suggestion: a balloon on its own layer over the screen, pointing at the options button, where
+ * Listen is ([anchor], in this layer's coordinates), the tour's balloon (the style's accent with on-accent text, no outline, a
  * soft lift; Futuristic an accent glow and cut corners). Inside: the style's mark and "Heard", the
  * tempo big in the number face with "BPM" and its marking, ½× 1× 2× (only those within 30–250), then
  * Not now and Use. It fades in and out; nothing changes until Use.
@@ -350,7 +440,7 @@ fun ListenBalloon(
             val left: Float
             val top: Float
             when {
-                // Above Listen, as the mock-up; below where there is no room above (a short window).
+                // Above the button, as the mock-up; below where there is no room above (a short window).
                 h <= place.top - gap || h <= height - place.bottom - gap -> {
                     val above = h <= place.top - gap
                     left = (place.center.x - w / 2f).coerceIn(side, (width - side - w).coerceAtLeast(side))
@@ -560,7 +650,7 @@ private fun useShape(style: VisualStyle): Shape = when (style) {
     VisualStyle.RETRO, VisualStyle.CONTEMPORARY, VisualStyle.SPACE_AGE -> RoundedCornerShape(20.dp)
 }
 
-/** Where the balloon stands from Listen. */
+/** Where the balloon stands from the options button. */
 private enum class BalloonSide { ABOVE, BELOW, LEFT_OF, RIGHT_OF }
 
 /** The balloon's pointer: on which side, and where along it (px from its top or left). Set in layout, read in draw. */
@@ -641,7 +731,7 @@ private const val BALLOON_OUT_MILLIS = 150
 private val BALLOON_MAX_WIDTH = 260.dp
 private val BALLOON_SIDE_MARGIN = 16.dp
 
-/** The balloon's pointer tip stands this far above Listen. */
+/** The balloon's pointer tip stands this far above the options button. */
 private val BALLOON_GAP = 11.dp
 private val POINTER_WIDTH = 14.dp
 private val POINTER_HEIGHT = 9.dp

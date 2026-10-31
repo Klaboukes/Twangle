@@ -1,10 +1,6 @@
 package io.github.klaboukes.twangle.feature.metronome.components
 
 import android.os.SystemClock
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -14,20 +10,16 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
@@ -38,43 +30,34 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -90,7 +73,6 @@ import io.github.klaboukes.twangle.core.designsystem.numberFontFor
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.styleTokens
-import io.github.klaboukes.twangle.core.dsp.metronome.ClickSound
 import io.github.klaboukes.twangle.core.dsp.metronome.Meter
 import io.github.klaboukes.twangle.core.settings.VisualStyle
 import io.github.klaboukes.twangle.feature.metronome.MetronomeTestTags
@@ -106,7 +88,10 @@ import io.github.klaboukes.twangle.feature.metronome.R
  */
 
 /** How the buttons look in the current style. */
-internal class ButtonLook(val neon: Boolean, val round: Boolean, val shape: Shape)
+internal class ButtonLook(val neon: Boolean, val round: Boolean, val shape: Shape) {
+    /** The row's buttons under the dial: round in Contemporary and Space Age, else in the style's shape. */
+    val buttonShape: Shape get() = if (round) CircleShape else shape
+}
 
 @Composable
 internal fun buttonLook(): ButtonLook {
@@ -255,13 +240,13 @@ private val MIN_LABEL_SIZE = 9.sp
 private val METER_BUTTON_WIDTH = 50.dp
 
 /**
- * − or + (one BPM slower or faster) beside the tempo inside the dial: a [face] across in the style's
- * shape (round in Contemporary and Space Age), in a touch area of at least 48 dp.
+ * − or + (one BPM slower or faster) either side of Start in the row under the dial: a [face] across
+ * in the style's shape (round in Contemporary and Space Age), in a touch area of at least 48 dp.
  */
 @Composable
 fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier) {
     val look = buttonLook()
-    val shape = if (look.round) CircleShape else look.shape
+    val shape = look.buttonShape
     val source = remember { MutableInteractionSource() }
     val label = stringResource(if (faster) R.string.metronome_faster else R.string.metronome_slower)
     Box(
@@ -287,114 +272,72 @@ fun StepButton(faster: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifie
 private const val STEP_ICON_SHARE = 0.5f
 
 /**
- * Sound, Tap tempo and Listen in one quiet row under the dial (2026-10-18, the owner's pick A in
- * docs/design/metronome-roomy-preview.html; Sound first since Phase 45, in Vibrate's place): three
- * icon buttons of one fixed size, [ICON_BUTTON_WIDTH] × [ICON_BUTTON_HEIGHT], [ICON_ROW_GAP] apart,
- * each with its short name under it ("Sound", "Tap tempo", "Listen"; one line, all three in one size,
- * set smaller where a language needs it, [rowLabelSize]). The buttons say their names to TalkBack, so
- * the words under them are hidden from it. Sound shows the click picked ([sound], with vibration marks
- * while [vibrate] is on) and opens its panel ([onSound], [SoundPanel]).
+ * The one row under the dial (Phase 62, the owner's pick II of docs/design/metronome-layout-preview.html):
+ * Tap tempo · − · Start · + · options. Every button keeps one size whatever the language or font size
+ * (icons, no words; TalkBack hears each by name): Tap tempo and options [SIDE_BUTTON] across, − and +
+ * [STEP_FACE], Start [START_FACE]. − Start + stand together in the middle, [TRIO_GAP] apart, and Tap
+ * tempo and options at the row's ends, as far out as [ROW_WIDEST] allows; on a narrow window the gaps
+ * close up evenly. − is slower on the left and + faster on the right in every language, like the
+ * dial; Tap tempo is at the start and options at the end. [playing], [onToggle] and [startResting] are
+ * Start / Stop's ([StartStopButton]); [optionsOpen] shows the options button picked while its panel is
+ * open ([onOptions], [OptionsPanel]); [onOptionsPlaced] gives its place, for the panel and Listen's
+ * suggestion to open from.
  */
 @Composable
 fun TempoRow(
     onTap: (atMillis: Long) -> Unit,
-    listening: Boolean,
-    listenStartedAtNanos: Long,
-    listenEndedAtNanos: Long,
-    frameNanos: () -> Long,
-    onListen: () -> Unit,
-    sound: ClickSound,
-    vibrate: Boolean,
-    onSound: () -> Unit,
+    onStep: (Int) -> Unit,
+    playing: Boolean,
+    onToggle: () -> Unit,
+    optionsOpen: Boolean,
+    onOptions: () -> Unit,
     modifier: Modifier = Modifier,
-    onListenPlaced: (Rect) -> Unit = {},
-    onSoundPlaced: (Rect) -> Unit = {},
+    startResting: Boolean = false,
+    onOptionsPlaced: (Rect) -> Unit = {},
 ) {
-    val names = listOf(
-        // Always "Sound", whatever is picked, so the row never changes.
-        stringResource(R.string.metronome_sound),
-        stringResource(R.string.metronome_tap),
-        // Listen keeps its word while listening (its stop square and TalkBack say "Stop listening"), so nothing moves.
-        stringResource(R.string.metronome_listen),
-    )
-    val label = rowLabelStyle(names, MaterialTheme.typography.labelMedium).copy(textAlign = TextAlign.Center)
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-    Row(modifier, verticalAlignment = Alignment.Top) {
-        val button = Modifier.size(ICON_BUTTON_WIDTH, ICON_BUTTON_HEIGHT)
-        for ((index, name) in names.withIndex()) {
-            Column(Modifier.width(ROW_ITEM_WIDTH), horizontalAlignment = Alignment.CenterHorizontally) {
-                when (index) {
-                    0 -> SoundButton(sound, vibrate, onSound, button.onGloballyPositioned { onSoundPlaced(it.boundsInRoot()) })
-                    1 -> TapTempoButton(onTap, button)
-                    else -> ListenButton(
-                        listening = listening,
-                        startedAtNanos = listenStartedAtNanos,
-                        endedAtNanos = listenEndedAtNanos,
-                        frameNanos = frameNanos,
-                        onClick = onListen,
-                        modifier = button.onGloballyPositioned { onListenPlaced(it.boundsInRoot()) },
-                    )
+    BoxWithConstraints(modifier.widthIn(max = ROW_WIDEST).fillMaxWidth(), contentAlignment = Alignment.Center) {
+        val buttons = SIDE_BUTTON * 2 + STEP_FACE * 2 + START_FACE
+        // Six gaps' worth of room: the trio's two gaps take a share each, the two ends the rest.
+        val trioGap = ((maxWidth - buttons) / 6).coerceIn(0.dp, TRIO_GAP)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            TapTempoButton(onTap, Modifier.size(SIDE_BUTTON))
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(horizontalArrangement = Arrangement.spacedBy(trioGap), verticalAlignment = Alignment.CenterVertically) {
+                    StepButton(faster = false, onClick = { onStep(-1) }, face = STEP_FACE)
+                    StartStopButton(playing = playing, onClick = onToggle, face = START_FACE, resting = startResting)
+                    StepButton(faster = true, onClick = { onStep(+1) }, face = STEP_FACE)
                 }
-                Spacer(Modifier.height(LABEL_GAP))
-                Text(
-                    name,
-                    style = label,
-                    color = labelColor,
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.width(ROW_LABEL_WIDTH).testTag(LABEL_TAGS[index]).semantics { hideFromAccessibility() },
-                )
             }
+            OptionsButton(
+                open = optionsOpen,
+                onClick = onOptions,
+                modifier = Modifier.size(SIDE_BUTTON).onGloballyPositioned { onOptionsPlaced(it.boundsInRoot()) },
+            )
         }
     }
 }
 
-/**
- * The one style the row's [names] are set in: [style], or smaller where the widest wouldn't fit
- * [ROW_LABEL_WIDTH] on one line (long languages, large text), down to [ROW_LABEL_SMALLEST] (in dp, so
- * it holds at any font size). Its letter spacing shrinks with it: Material's 0.5 sp, kept whole beside
- * the smallest letters, left Turkish "Dokunarak tempo" 2 px too wide at 2× text in Classic (the
- * overnight run of 2026-10-27).
- */
-@Composable
-private fun rowLabelStyle(names: List<String>, style: TextStyle): TextStyle {
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    return remember(names, style, density) {
-        val room = with(density) { ROW_LABEL_WIDTH.toPx() }
-        val smallest = with(density) { ROW_LABEL_SMALLEST.toSp() }.value
-        fun at(size: Float) = style.copy(
-            fontSize = size.sp,
-            letterSpacing = if (style.letterSpacing.isSp) (style.letterSpacing.value * size / style.fontSize.value).sp else style.letterSpacing,
-        )
-        var size = style.fontSize.value
-        fun widest() = names.maxOf { measurer.measure(it, at(size), maxLines = 1, softWrap = false).size.width }
-        // The sizes don't scale evenly at large text, so step down until it fits.
-        while (size > smallest && widest() > room) size = maxOf(smallest, size * 0.94f)
-        at(size)
-    }
-}
+/** Tap tempo and the options button: as the mock-up, a little smaller so the row fits a 320 dp phone. */
+private val SIDE_BUTTON = 52.dp
 
-private val LABEL_TAGS = listOf(MetronomeTestTags.SOUND_LABEL, MetronomeTestTags.TAP_LABEL, MetronomeTestTags.LISTEN_LABEL)
+/** − and +'s faces, a whole touch area. */
+private val STEP_FACE = 48.dp
 
-private val ICON_BUTTON_WIDTH = 72.dp
-private val ICON_BUTTON_HEIGHT = 52.dp
-private val ICON_ROW_GAP = 16.dp
+/** Start / Stop, the row's largest. */
+private val START_FACE = 72.dp
 
-/** Each button with its name takes this width, so the buttons stand [ICON_ROW_GAP] apart. */
-private val ROW_ITEM_WIDTH = ICON_BUTTON_WIDTH + ICON_ROW_GAP
+/** Between − , Start and + at most. */
+private val TRIO_GAP = 12.dp
 
-/** A name under a button keeps 2 dp from the next one's. */
-private val ROW_LABEL_WIDTH = ROW_ITEM_WIDTH - 4.dp
-private val ROW_LABEL_SMALLEST = 8.dp
-private val LABEL_GAP = 4.dp
+/** The row reaches no wider than this (the mock-up's, on the Xiaomi); it keeps to the column's width below it. */
+private val ROW_WIDEST = 344.dp
 internal val ROW_ICON = 24.dp
 
 /**
  * Tap tempo, a fingertip with two ripples. A tap counts the moment the finger touches (not when it
  * lifts), so the tempo follows the player's taps as closely as it can; the same touch gives the crisp
  * flash (full for 70 ms, gone 110 ms after the touch, never smeared into the next tap). TalkBack's
- * double tap counts too.
+ * double tap counts too. Round in Contemporary and Space Age, else in the style's shape.
  */
 @Composable
 private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier = Modifier) {
@@ -405,7 +348,7 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
     Box(
         modifier = modifier
             .testTag(MetronomeTestTags.TAP)
-            .pressFeedback(source, look.shape, fill = faceFill(look), outline = faceOutline(look), crisp = true)
+            .pressFeedback(source, look.buttonShape, fill = faceFill(look), outline = faceOutline(look), crisp = true)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
                 contentDescription = label
@@ -429,171 +372,35 @@ private fun TapTempoButton(onTap: (atMillis: Long) -> Unit, modifier: Modifier =
 }
 
 /**
- * Listen, a microphone line icon; while [listening] a stop square in the accent ("Stop listening"
- * for TalkBack). Its 15 s show as a subtle trace round its own
- * edge, clockwise from the top centre ([drawListenTrace]): the outline dims, the trace grows with the
- * time (read from [frameNanos], every frame) and fades out over 300 ms where it is when listening ends.
+ * The options button at the row's end: three sliders (`ic_tune`), picked (the container colour with an
+ * accent outline) while its panel is [open]. TalkBack hears "Options" as a drop-down list.
  */
 @Composable
-private fun ListenButton(
-    listening: Boolean,
-    startedAtNanos: Long,
-    endedAtNanos: Long,
-    frameNanos: () -> Long,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun OptionsButton(open: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
     val source = remember { MutableInteractionSource() }
-    val outlineColor by animateColorAsState(
-        when {
-            listening && look.neon -> scheme.primary.copy(alpha = NEON_LISTENING_OUTLINE_ALPHA)
-            listening -> scheme.onSurfaceVariant.copy(alpha = LISTENING_OUTLINE_ALPHA)
-            look.neon -> scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA)
-            else -> scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA)
-        },
-        animationSpec = tween(OUTLINE_FADE_MILLIS),
-        label = "listen outline",
-    )
-    // The trace: full while listening, fading out where it is once listening ends.
-    val trace = remember { Animatable(0f) }
-    LaunchedEffect(listening, startedAtNanos) {
-        if (listening) trace.snapTo(1f) else trace.animateTo(0f, tween(TRACE_FADE_MILLIS, easing = LinearEasing))
-    }
-    val traceColor = scheme.primary.copy(alpha = TRACE_ALPHA)
-    val spoken = stringResource(if (listening) R.string.metronome_listen_stop_spoken else R.string.metronome_listen)
-    val content = if (listening) scheme.primary else scheme.onSurface
-    val shape = look.shape
+    val label = stringResource(R.string.metronome_options)
     Box(
         modifier = modifier
-            .testTag(MetronomeTestTags.LISTEN)
-            .pressFeedback(source, shape, fill = faceFill(look), outline = BorderStroke(1.dp, outlineColor))
-            .drawWithCache {
-                val traced = ListenTrace(shape, size, layoutDirection, this, 1.dp.toPx())
-                onDrawWithContent {
-                    drawContent()
-                    val alpha = trace.value
-                    if (alpha > 0f && startedAtNanos != 0L) {
-                        val until = if (listening || endedAtNanos == 0L) frameNanos() else endedAtNanos
-                        val progress = ((until - startedAtNanos).toFloat() / LISTEN_NANOS).coerceIn(0f, 1f)
-                        traced.draw(this, progress, traceColor, alpha, TRACE_WIDTH.toPx())
-                    }
-                }
-            }
-            .clickable(interactionSource = source, indication = null, role = Role.Button) {
+            .testTag(MetronomeTestTags.OPTIONS)
+            .pressFeedback(source, look.buttonShape, fill = faceFill(look, picked = open), outline = faceOutline(look, picked = open))
+            .clickable(interactionSource = source, indication = null) {
                 source.pressFlash()
                 onClick()
             }
-            .semantics { contentDescription = spoken },
+            .semantics {
+                role = Role.DropdownList
+                contentDescription = label
+            },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            painterResource(if (listening) R.drawable.ic_listen_stop else R.drawable.ic_listen),
-            contentDescription = null,
-            tint = content,
-            modifier = Modifier.size(ROW_ICON),
-        )
-    }
-}
-
-private const val LISTENING_OUTLINE_ALPHA = 0.35f
-private const val NEON_LISTENING_OUTLINE_ALPHA = 0.25f
-private const val OUTLINE_FADE_MILLIS = 200
-private const val TRACE_FADE_MILLIS = 300
-private const val TRACE_ALPHA = 0.6f
-private val TRACE_WIDTH = 1.25.dp
-private const val LISTEN_NANOS = 15_000_000_000f
-
-/**
- * The Listen button's outline as a trace: the same path as its 1 dp outline (round, pebble or cut),
- * measured clockwise from the top centre, with a soft head (its last 8° of the way round fade out).
- * Made once per size; drawing reuses its paths.
- */
-private class ListenTrace(shape: Shape, size: Size, direction: LayoutDirection, density: Density, outlineWidth: Float) {
-    private val measure = PathMeasure()
-    private val length: Float
-    private val start: Float
-    private val clockwise: Boolean
-    private val piece = Path()
-
-    init {
-        val inner = Size((size.width - outlineWidth).coerceAtLeast(0f), (size.height - outlineWidth).coerceAtLeast(0f))
-        val path = Path().apply {
-            addOutline(shape.createOutline(inner, direction, density))
-            translate(Offset(outlineWidth / 2f, outlineWidth / 2f))
-        }
-        measure.setPath(path, true)
-        length = measure.length
-        // Sample the path: where its top centre is, and which way it runs (y grows downwards).
-        var best = 0f
-        var bestScore = Float.MAX_VALUE
-        var area = 0.0
-        var previous = measure.getPosition(0f)
-        for (i in 1..SAMPLES) {
-            val d = length * i / SAMPLES
-            val p = measure.getPosition(d)
-            area += previous.x.toDouble() * p.y - p.x.toDouble() * previous.y
-            val score = kotlin.math.abs(p.x - size.width / 2f) + (if (p.y > size.height / 2f) size.width * 4f else 0f)
-            if (score < bestScore) {
-                bestScore = score
-                best = d
-            }
-            previous = p
-        }
-        start = if (length > 0f) best % length else 0f
-        clockwise = area > 0.0
-    }
-
-    /** The trace [progress] of the way round, in [color] at [alpha], [width] wide. */
-    fun draw(scope: DrawScope, progress: Float, color: Color, alpha: Float, width: Float) {
-        if (length <= 0f || progress <= 0f) return
-        val drawn = progress * length
-        val head = minOf(drawn, length * HEAD_DEGREES / 360f)
-        val stroke = Stroke(width, cap = StrokeCap.Butt)
-        piece.rewind()
-        append(0f, drawn - head)
-        scope.drawPath(piece, color, alpha = alpha, style = stroke)
-        // The head fades out to nothing in a few steps, so there is no hard end.
-        for (step in 0 until HEAD_STEPS) {
-            val from = drawn - head + head * step / HEAD_STEPS
-            val to = drawn - head + head * (step + 1) / HEAD_STEPS
-            piece.rewind()
-            append(from, to)
-            scope.drawPath(piece, color, alpha = alpha * (1f - (step + 0.5f) / HEAD_STEPS), style = stroke)
-        }
-    }
-
-    /** Adds the part of the outline from [from] to [to] (clockwise from the top centre) to [piece]. */
-    private fun append(from: Float, to: Float) {
-        if (to <= from) return
-        if (clockwise) segment(start + from, start + to) else segment(start - to, start - from)
-    }
-
-    private fun segment(a: Float, b: Float) {
-        var from = a
-        var to = b
-        while (from < 0f) {
-            from += length
-            to += length
-        }
-        if (to <= length) {
-            measure.getSegment(from, to, piece, true)
-        } else {
-            measure.getSegment(from, length, piece, true)
-            measure.getSegment(0f, to - length, piece, true)
-        }
-    }
-
-    private companion object {
-        const val SAMPLES = 180
-        const val HEAD_DEGREES = 8f
-        const val HEAD_STEPS = 6
+        Icon(painterResource(R.drawable.ic_tune), contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ROW_ICON))
     }
 }
 
 /**
- * Start / Stop in the dial's opening: a play or stop icon on a [face] across in the accent, round in
+ * Start / Stop in the middle of the row under the dial: a play or stop icon on a [face] across in the accent, round in
  * Contemporary and Space Age, else in the style's shape (Futuristic: a neon outline on a solid tint).
  * It keeps its size whatever it does; TalkBack hears "Start" or "Stop". While Listen listens it rests
  * at 38 % and takes no taps ([resting]).
@@ -602,7 +409,7 @@ private class ListenTrace(shape: Shape, size: Size, direction: LayoutDirection, 
 fun StartStopButton(playing: Boolean, onClick: () -> Unit, face: Dp, modifier: Modifier = Modifier, resting: Boolean = false) {
     val look = buttonLook()
     val scheme = MaterialTheme.colorScheme
-    val shape = if (look.round) CircleShape else look.shape
+    val shape = look.buttonShape
     val source = remember { MutableInteractionSource() }
     // Futuristic's tint lies on the background colour, not over the picture: the grid's lines would
     // run through the button.

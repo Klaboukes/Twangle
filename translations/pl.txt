@@ -125,8 +125,6 @@ feature/metronome metronome_sound 46124e02
 feature/metronome metronome_sound_claves 425917c9
 feature/metronome metronome_sound_cowbell f07ba449
 feature/metronome metronome_sound_rim_click e7d80678
-feature/metronome metronome_sound_spoken 08e2ac91
-feature/metronome metronome_sound_spoken_vibrating 2009afb2
 feature/metronome metronome_sound_wood_block 45f032b3
 feature/metronome metronome_start e4bb9f1e
 feature/metronome metronome_stop cae7d57b

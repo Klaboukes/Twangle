@@ -59,8 +59,9 @@ import org.junit.runners.Parameterized
  * owner's Xiaomi 12X at 1.25×) and on its side everything fits without scrolling, inside the window,
  * and nothing overlaps; at 2× text, upright and on its side, every control can be scrolled to and is
  * then wholly shown. Playing, in 7/8, so every mark size and Stop show, with the cowbell picked and
- * vibration on (its marks beside Sound's icon). The Sound panel opens from Sound, above the row
- * upright and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
+ * vibration on (its mark on the status line). The row under the dial (Tap tempo · − · Start · + ·
+ * options, Phase 62) keeps its sizes. The options panel opens from its button, above the row upright
+ * and beside it on its side, wholly shown at 1x, 2x and in Dutch at 2x. With the Practice
  * tab's tool button over it at the top start (Phase 47, a stand-in as large with an English name),
  * as the app shows it, and without, as the plain Metronome tab.
  *
@@ -129,16 +130,12 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         (if (shownHeader.value) listOf("tool button" to compose.onNodeWithTag(HEADER)) else emptyList()) + Meter.entries.map { "meter $it" to compose.onNodeWithTag(MetronomeTestTags.meter(it)) } + listOf(
             "beat lights" to compose.onNodeWithTag(MetronomeTestTags.LIGHTS),
             "dial" to compose.onNodeWithTag(MetronomeTestTags.DIAL),
-            "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
-            "tap tempo" to compose.onNodeWithTag(MetronomeTestTags.TAP),
-            "listen" to compose.onNodeWithTag(MetronomeTestTags.LISTEN),
             "status line" to compose.onNodeWithTag(MetronomeTestTags.LINE),
-            "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
+            "tap tempo" to compose.onNodeWithTag(MetronomeTestTags.TAP),
+            "slower" to compose.onNodeWithTag(MetronomeTestTags.SLOWER),
             "start" to compose.onNodeWithTag(MetronomeTestTags.START),
-            "sound" to compose.onNodeWithTag(MetronomeTestTags.SOUND),
-            "sound's name" to compose.onNodeWithTag(MetronomeTestTags.SOUND_LABEL),
-            "tap tempo's name" to compose.onNodeWithTag(MetronomeTestTags.TAP_LABEL),
-            "listen's name" to compose.onNodeWithTag(MetronomeTestTags.LISTEN_LABEL),
+            "faster" to compose.onNodeWithTag(MetronomeTestTags.FASTER),
+            "options" to compose.onNodeWithTag(MetronomeTestTags.OPTIONS),
         )
 
     @Test
@@ -194,59 +191,49 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             for (j in i + 1 until bounds.size) {
                 val (a, first) = bounds[i]
                 val (b, second) = bounds[j]
-                // − and + and Start stand inside the dial by design.
-                val inDial = setOf(a, b).let { "dial" in it && ("slower" in it || "faster" in it || "start" in it) }
-                if (!inDial && first.overlaps(second)) fail("$case $a $first overlaps $b $second")
+                if (first.overlaps(second)) fail("$case $a $first overlaps $b $second")
             }
         }
-        // Inside the dial: − and +'s faces (32 units of a 288 unit dial, at least 32 dp, in their 48 dp
-        // touch areas) clear of the tempo's figures, Start clear of the marking.
+        // The tempo, BPM and the marking inside the dial, the marking above the bottom of the arc's ends.
         val figures = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
         val marking = compose.onNodeWithText("Presto", useUnmergedTree = true).getBoundsInRoot()
         val dial = bounds.first { it.first == "dial" }.second
-        val face = maxOf(dial.width * (32f / 288f), 32.dp)
-        for ((name, rect) in bounds) {
-            val inset = ((rect.width - face) / 2).coerceAtLeast(0.dp)
-            val faceRect = DpRect(rect.left + inset, rect.top + inset, rect.right - inset, rect.bottom - inset)
-            if ((name == "slower" || name == "faster") && faceRect.overlaps(figures)) fail("$case $name $faceRect overlaps the tempo $figures")
-            if (name == "start" && rect.overlaps(marking)) fail("$case start $rect overlaps the marking $marking")
+        for ((name, rect) in listOf("tempo" to figures, "marking" to marking)) {
+            if (rect.left < dial.left || rect.right > dial.right || rect.top < dial.top) fail("$case $name $rect outside the dial $dial")
         }
+        val arcEnds = dial.top + dial.height / 2 + dial.height * (81f / 288f)
+        assertTrue("$case marking $marking above the arc's ends ($arcEnds)", marking.bottom <= arcEnds + SLACK)
     }
 
     @Test
-    fun theIconRowKeepsOneSizeAndTheDialsButtonsStayInsideIt() {
+    fun theRowUnderTheDialKeepsItsSizesAndOrder() {
         show()
-        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, NARROW_UPRIGHT to 1f, PHONE_LANDSCAPE to 1f)) {
+        for ((size, scale) in listOf(PHONE_UPRIGHT to 1f, XIAOMI_UPRIGHT to OWNER_FONT_SCALE, NARROW_UPRIGHT to 1f, PHONE_LANDSCAPE to 1f, PHONE_UPRIGHT to 2f)) {
             shownSize.value = size
             shownFontScale.value = scale
             for (listening in listOf(false, true)) {
                 shownListen.value = if (listening) ListenUi(ListenPhase.LISTENING, wasPlaying = true, startedAtNanos = 1L, estimate = 96) else ListenUi()
                 compose.waitForIdle()
                 val case = "$style ${size.width} x ${size.height} at ${scale}x${if (listening) " listening" else ""}:"
-                val labels = mutableListOf<DpRect>()
-                for ((tag, labelTag) in BUTTONS_AND_NAMES) {
-                    val button = compose.onNodeWithTag(tag).getBoundsInRoot()
-                    assertEquals("$case $tag width", 72f, button.width.value, 0.5f)
-                    assertEquals("$case $tag height", 52f, button.height.value, 0.5f)
-                    // Its name right under it, centred.
-                    val label = compose.onNodeWithTag(labelTag).getBoundsInRoot().also { labels += it }
-                    assertTrue("$case $labelTag $label under $button", label.top >= button.bottom - SLACK && label.top <= button.bottom + 8.dp)
-                    assertEquals("$case $labelTag centred", ((button.left + button.right) / 2).value, ((label.left + label.right) / 2).value, 0.5f)
+                val row = ROW_SIZES.map { (tag, side) ->
+                    val bounds = compose.onNodeWithTag(tag).performScrollTo().getBoundsInRoot()
+                    // Icons, no words: the same size whatever the language or font size.
+                    assertEquals("$case $tag width", side, bounds.width.value, 0.5f)
+                    assertEquals("$case $tag height", side, bounds.height.value, 0.5f)
+                    tag to bounds
                 }
-                // One line each, all three alike.
-                for (label in labels) assertEquals("$case names one height", labels.first().height.value, label.height.value, 0.5f)
+                val middle = row.first().second.let { (it.top + it.bottom) / 2 }
+                for ((first, second) in row.zipWithNext()) {
+                    assertTrue("$case ${first.first} ${first.second} before ${second.first} ${second.second}", first.second.right <= second.second.left + SLACK)
+                }
+                for ((tag, bounds) in row) assertEquals("$case $tag on one line", middle.value, ((bounds.top + bounds.bottom) / 2).value, 0.5f)
                 val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
-                for (tag in listOf(MetronomeTestTags.SLOWER, MetronomeTestTags.FASTER, MetronomeTestTags.START)) {
-                    val part = compose.onNodeWithTag(tag).getBoundsInRoot()
-                    assertTrue(
-                        "$case $tag $part inside the dial $dial",
-                        part.left >= dial.left - SLACK && part.right <= dial.right + SLACK && part.top >= dial.top - SLACK && part.bottom <= dial.bottom + SLACK,
-                    )
-                }
-                assertTrue("$case slower on the left", compose.onNodeWithTag(MetronomeTestTags.SLOWER).getBoundsInRoot().right < dial.left + dial.width / 2)
+                if (size.width < size.height) assertTrue("$case the row under the dial $dial", row.all { it.second.top >= dial.bottom - SLACK })
             }
         }
         shownListen.value = ListenUi()
+        shownFontScale.value = 1f
+        shownSize.value = PHONE_UPRIGHT
     }
 
     @Test
@@ -296,7 +283,7 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun theSuggestionIsWhollyShownAboveListenInEveryStyle() {
+    fun theSuggestionIsWhollyShownAboveTheOptionsButtonInEveryStyle() {
         show()
         shownListen.value = ListenUi(ListenPhase.FOUND, wasPlaying = true, found = 84, half = 42, double = 168)
         for ((size, dark) in listOf(PHONE_UPRIGHT to false, XIAOMI_UPRIGHT to true, PHONE_LANDSCAPE to false)) {
@@ -305,13 +292,13 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             compose.waitForIdle()
             val case = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height}"
             val balloon = compose.onNodeWithTag(MetronomeTestTags.BALLOON).assertIsDisplayed().getBoundsInRoot()
-            val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
+            val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
             val window = bars().safeArea(size)
-            // Above Listen upright; on its side above it where there is room, else beside it over the dial.
+            // Above the options button (where Listen is) upright; on its side above it where there is room, else beside it over the dial.
             if (size == PHONE_LANDSCAPE) {
-                assertTrue("$case balloon $balloon above or beside Listen $listen", balloon.bottom <= listen.top || balloon.right <= listen.left)
+                assertTrue("$case balloon $balloon above or beside the options button $options", balloon.bottom <= options.top || balloon.right <= options.left)
             } else {
-                assertTrue("$case balloon $balloon above Listen $listen", balloon.bottom <= listen.top)
+                assertTrue("$case balloon $balloon above the options button $options", balloon.bottom <= options.top)
             }
             assertTrue("$case balloon $balloon inside the window $window", balloon.left >= window.left && balloon.right <= window.right && balloon.top >= window.top)
             assertTrue("$case at most 260 dp wide", balloon.width <= 260.5.dp)
@@ -323,12 +310,13 @@ class MetronomeStylesTest(private val style: VisualStyle) {
     }
 
     @Test
-    fun theSoundPanelOpensFromSoundAndIsWhollyShown() {
+    fun theOptionsPanelOpensFromItsButtonAndIsWhollyShown() {
         show()
         val cases = listOf(
             Triple(PHONE_UPRIGHT, 1f, null),
             Triple(XIAOMI_UPRIGHT, OWNER_FONT_SCALE, null),
             Triple(PHONE_LANDSCAPE, 1f, null),
+            Triple(NARROW_UPRIGHT, 1f, null),
             Triple(PHONE_UPRIGHT, 2f, null),
             Triple(XIAOMI_UPRIGHT, 2f, null),
             Triple(PHONE_LANDSCAPE, 2f, null),
@@ -344,38 +332,52 @@ class MetronomeStylesTest(private val style: VisualStyle) {
             shownDark.value = dark
             compose.waitForIdle()
             val name = "$style ${if (dark) "dark" else "light"} ${size.width} x ${size.height} at ${scale}x ${locale ?: "en"}:"
-            compose.onNodeWithTag(MetronomeTestTags.SOUND).performScrollTo().performClick()
+            compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
             compose.waitForIdle()
-            val sound = compose.onNodeWithTag(MetronomeTestTags.SOUND).getBoundsInRoot()
-            val panel = compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertIsDisplayed().getBoundsInRoot()
+            val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).getBoundsInRoot()
+            val panel = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertIsDisplayed().getBoundsInRoot()
             val window = bars().safeArea(size)
             assertTrue(
                 "$name panel $panel inside the window $window",
                 panel.left >= window.left - SLACK && panel.right <= window.right + SLACK && panel.top >= window.top - SLACK && panel.bottom <= window.bottom + SLACK,
             )
             if (size.width > size.height) {
-                // Beside Sound, towards the dial (at the start), its bottom level with the button where it can be.
-                assertTrue("$name panel $panel beside Sound $sound, towards the dial", panel.right <= sound.left + SLACK)
+                // Beside the button, towards the dial (at the start), its bottom level with the button where it can be.
+                assertTrue("$name panel $panel beside the options button $options, towards the dial", panel.right <= options.left + SLACK)
                 val dial = compose.onNodeWithTag(MetronomeTestTags.DIAL).getBoundsInRoot()
                 assertTrue("$name panel $panel over the dial's half $dial", panel.left < dial.right)
-                if (panel.top > window.top + 8.dp + SLACK) assertEquals("$name panel's bottom level with Sound's", sound.bottom.value, panel.bottom.value, 1f)
+                if (panel.top > window.top + 8.dp + SLACK) assertEquals("$name panel's bottom level with the button's", options.bottom.value, panel.bottom.value, 1f)
             } else {
-                // Above the row, its start edge in line with Sound's.
-                assertTrue("$name panel $panel above Sound $sound", panel.bottom <= sound.top + SLACK)
-                assertEquals("$name panel's start in line with Sound's", sound.left.value, panel.left.value, 1f)
+                // Above the row, its end edge in line with the button's (where the window leaves room).
+                assertTrue("$name panel $panel above the options button $options", panel.bottom <= options.top + SLACK)
+                if (options.right - panel.width >= window.left + 8.dp) assertEquals("$name panel's end in line with the button's", options.right.value, panel.right.value, 1f)
             }
             for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$name $option")
             assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE), "$name vibrate switch")
+            assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$name listen")
             if (scale == 2f) compose.assertEveryTextWhollyShown("$name with the panel open")
             // Back closes it.
             compose.runOnUiThread { backDispatcher!!.onBackPressed() }
             compose.waitForIdle()
-            compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertDoesNotExist()
+            compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
         }
         shownLocale.value = null
         shownFontScale.value = 1f
         shownSize.value = PHONE_UPRIGHT
         shownDark.value = false
+    }
+
+    @Test
+    fun theVibrationMarkStandsOnTheStatusLine() {
+        show()
+        for (size in listOf(PHONE_UPRIGHT, PHONE_LANDSCAPE)) {
+            shownSize.value = size
+            compose.waitForIdle()
+            val line = compose.onNodeWithTag(MetronomeTestTags.LINE).getBoundsInRoot()
+            val mark = compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).assertIsDisplayed().getBoundsInRoot()
+            assertTrue("$style ${size.width} x ${size.height} mark $mark on the line $line", mark.top >= line.top - SLACK && mark.bottom <= line.bottom + SLACK)
+        }
+        shownSize.value = PHONE_UPRIGHT
     }
 
     /**
@@ -384,8 +386,8 @@ class MetronomeStylesTest(private val style: VisualStyle) {
      * scale, that much bigger, at the tablet's own 1.3x text, with no text cut off (before, the column
      * stopped at 480 dp and the dial at 440 dp, a wide empty band either side on the Lenovo Tab M11).
      * The Practice tab's tool button keeps its own size and its place over Chords and Scales: at the
-     * start of a phone's 480 dp column, 8 dp down, clear of the rest. The Sound panel opens from Sound
-     * at the column's size. A phone keeps its own size (the other tests).
+     * start of a phone's 480 dp column, 8 dp down, clear of the rest. The options panel opens from its
+     * button at the column's size. A phone keeps its own size (the other tests).
      */
     @Test
     fun anUprightTabletShowsThePhonesColumnBigger() {
@@ -437,18 +439,19 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         }
         compose.assertEveryTextWhollyShown("$case at ${TABLET_FONT_SCALE}x")
 
-        // The Sound panel opens above Sound, its start in line with Sound's, inside the window.
-        compose.onNodeWithTag(MetronomeTestTags.SOUND).performClick()
+        // The options panel opens above its button, its end in line with the button's, inside the window.
+        compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performClick()
         compose.waitForIdle()
-        val sound = compose.onNodeWithTag(MetronomeTestTags.SOUND).windowBounds()
-        val panel = compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).windowBounds()
-        assertTrue("$case panel $panel above Sound $sound", panel.bottom <= sound.top + TABLET_SLACK)
-        assertEquals("$case panel's start in line with Sound's", sound.left.value, panel.left.value, 1f)
+        val options = compose.onNodeWithTag(MetronomeTestTags.OPTIONS).windowBounds()
+        val panel = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).windowBounds()
+        assertTrue("$case panel $panel above the options button $options", panel.bottom <= options.top + TABLET_SLACK)
+        assertEquals("$case panel's end in line with the button's", options.right.value, panel.right.value, 1f)
         assertTrue("$case panel $panel inside the window", panel.left >= 0.dp && panel.right <= TABLET_UPRIGHT.width && panel.top >= 0.dp)
         for (option in ClickSound.entries) assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.sound(option)), "$case $option", scroll = false)
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN), "$case listen", scroll = false)
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         compose.waitForIdle()
-        compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL).assertDoesNotExist()
     }
 
     /**
@@ -483,8 +486,8 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         left < other.right - SLACK && other.left < right - SLACK && top < other.bottom - SLACK && other.top < bottom - SLACK
 
     /**
-     * Every language at 2× text, upright and on its side, with each of Listen's status lines:
-     * every text wholly shown (every style in a thorough run). Only with `--languages`.
+     * Every language at 2× text, upright and on its side, with each of Listen's status lines and with
+     * the options panel open: every text wholly shown (every style in a thorough run). Only with `--languages`.
      */
     @EveryLanguage
     @Test
@@ -506,6 +509,12 @@ class MetronomeStylesTest(private val style: VisualStyle) {
                     compose.waitForIdle()
                     compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} ${listen.phase} at 2x:")
                 }
+                shownListen.value = ListenUi()
+                compose.onNodeWithTag(MetronomeTestTags.OPTIONS).performScrollTo().performClick()
+                compose.waitForIdle()
+                compose.assertEveryTextWhollyShown("$style $language ${size.width} x ${size.height} options panel at 2x:")
+                compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+                compose.waitForIdle()
             }
         }
     }
@@ -546,10 +555,13 @@ class MetronomeStylesTest(private val style: VisualStyle) {
         /** A px of rounding at the tablet's 1.5 px to the dp. */
         private val TABLET_SLACK = 0.75.dp
 
-        private val BUTTONS_AND_NAMES = listOf(
-            MetronomeTestTags.SOUND to MetronomeTestTags.SOUND_LABEL,
-            MetronomeTestTags.TAP to MetronomeTestTags.TAP_LABEL,
-            MetronomeTestTags.LISTEN to MetronomeTestTags.LISTEN_LABEL,
+        /** The row under the dial in its order, each button's width and height in dp. */
+        private val ROW_SIZES = listOf(
+            MetronomeTestTags.TAP to 52f,
+            MetronomeTestTags.SLOWER to 48f,
+            MetronomeTestTags.START to 72f,
+            MetronomeTestTags.FASTER to 48f,
+            MetronomeTestTags.OPTIONS to 52f,
         )
     }
 }

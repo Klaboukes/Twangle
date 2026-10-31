@@ -17,8 +17,7 @@
     <string name="metronome_sound_cowbell">Koebel</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rimclick</string>
-    <string name="metronome_sound_spoken">Geluid: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Geluid: %1$s, trilt op de tel</string>
+    <string name="metronome_options">Opties</string>
     <string name="metronome_meter_2_4_spoken">Tweekwartsmaat</string>
     <string name="metronome_meter_3_4_spoken">Driekwartsmaat</string>
     <string name="metronome_meter_4_4_spoken">Vierkwartsmaat</string>
@@ -28,6 +27,7 @@
 
     <string name="metronome_listen">Luisteren</string>
     <string name="metronome_listen_stop_spoken">Stop met luisteren</string>
+    <string name="metronome_listen_line_stop">Stop</string>
     <string name="metronome_listening">Luisteren…</string>
     <string name="metronome_heard">Gehoord</string>
     <string name="metronome_use">Gebruiken</string>

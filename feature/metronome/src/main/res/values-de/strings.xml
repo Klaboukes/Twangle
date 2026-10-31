@@ -17,8 +17,6 @@
     <string name="metronome_sound_cowbell">Kuhglocke</string>
     <string name="metronome_sound_claves">Claves</string>
     <string name="metronome_sound_rim_click">Rimclick</string>
-    <string name="metronome_sound_spoken">Klang: %1$s</string>
-    <string name="metronome_sound_spoken_vibrating">Klang: %1$s, vibriert im Takt</string>
     <string name="metronome_meter_2_4_spoken">Zweivierteltakt</string>
     <string name="metronome_meter_3_4_spoken">Dreivierteltakt</string>
     <string name="metronome_meter_4_4_spoken">Viervierteltakt</string>

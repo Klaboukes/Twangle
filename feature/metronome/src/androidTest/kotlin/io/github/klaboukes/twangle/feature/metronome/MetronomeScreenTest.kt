@@ -66,10 +66,11 @@ import java.util.concurrent.TimeUnit
 /**
  * The metronome screen with a fake player and settings, in the default style: it opens stopped at
  * the saved tempo and meter, Start / Stop, − and +, the meter picker, the dial (a touch on its ring,
- * none on its middle, and TalkBack's slider), the Sound button and its panel (the four sounds, a pick
- * playing one bar while stopped, the vibration switch) work and are saved, and the clicks stop when
- * the screen leaves the composition. TalkBack hears every control by name. [MetronomeStylesTest] covers the
- * layout in every style.
+ * none on its middle or deep in its gap, and TalkBack's slider), the row under the dial (Tap tempo ·
+ * − · Start · + · options, Phase 62) and the options panel (the four sounds, a pick playing one bar
+ * while stopped, the vibration switch and its mark on the status line, Listen) work and are saved,
+ * and the clicks stop when the screen leaves the composition. TalkBack hears every control by name.
+ * [MetronomeStylesTest] covers the layout in every style.
  */
 class MetronomeScreenTest {
 
@@ -104,13 +105,22 @@ class MetronomeScreenTest {
     private var backDispatcher: OnBackPressedDispatcher? = null
 
     private val dial get() = compose.onNodeWithTag(MetronomeTestTags.DIAL)
-    private val soundButton get() = compose.onNodeWithTag(MetronomeTestTags.SOUND)
-    private val panel get() = compose.onNodeWithTag(MetronomeTestTags.SOUND_PANEL)
+    private val optionsButton get() = compose.onNodeWithTag(MetronomeTestTags.OPTIONS)
+    private val panel get() = compose.onNodeWithTag(MetronomeTestTags.OPTIONS_PANEL)
 
     private fun openPanel() {
-        soundButton.performClick()
+        optionsButton.performScrollTo().performClick()
         compose.waitForIdle()
         panel.assertIsDisplayed()
+    }
+
+    /** Opens the panel and starts listening from its Listen row, which closes it. */
+    private fun listen() {
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
+        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        compose.waitForIdle()
+        panel.assertDoesNotExist()
     }
     private val start get() = compose.onNodeWithTag(MetronomeTestTags.START)
 
@@ -194,6 +204,18 @@ class MetronomeScreenTest {
     }
 
     @Test
+    fun aTouchDeepInTheDialsEmptyGapLeavesItAlone() {
+        show()
+        // Straight down near the bottom edge, where Start stood before Phase 62: it would jump to 30 or 250.
+        dial.performTouchInput {
+            down(center.copy(y = center.y + width * 0.4f))
+            up()
+        }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("96"))
+    }
+
+    @Test
     fun talkBackHearsTheDialAsASliderThatStepsOneBpm() {
         show()
         dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf("Tempo, drag to change")))
@@ -214,6 +236,9 @@ class MetronomeScreenTest {
         compose.onNodeWithContentDescription("Slower").assertHasClickAction()
         compose.onNodeWithContentDescription("Faster").assertHasClickAction()
         compose.onNodeWithTag(MetronomeTestTags.TAP).assertContentDescriptionEquals("Tap tempo").assertHasClickAction()
+        optionsButton.assertContentDescriptionEquals("Options")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
+            .assertHasClickAction()
         compose.onNodeWithContentDescription("Beats in a bar").assertExists()
         for (meter in Meter.entries) {
             compose.onNodeWithTag(MetronomeTestTags.meter(meter))
@@ -225,9 +250,9 @@ class MetronomeScreenTest {
     }
 
     @Test
-    fun theVibrationSwitchIsInTheSoundPanelAndIsSaved() {
+    fun theVibrationSwitchIsInTheOptionsPanelAndItsMarkOnTheStatusLine() {
         show()
-        compose.onNodeWithTag(MetronomeTestTags.SOUND_VIBRATE_MARKS, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
         openPanel()
         val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE)
         vibrate.assert(hasText("Vibrate on the beat"))
@@ -237,29 +262,40 @@ class MetronomeScreenTest {
         compose.waitForIdle()
         vibrate.assertIsOn()
         assertTrue(settings.current.metronomeVibrate)
-        // The panel stays open; Sound's icon now has the vibration marks and says so.
+        // The panel stays open; the status line now shows the vibration mark, heard by its name.
         panel.assertIsDisplayed()
-        compose.onNodeWithTag(MetronomeTestTags.SOUND_VIBRATE_MARKS, useUnmergedTree = true).assertExists()
-        soundButton.assertContentDescriptionEquals("Sound: Wood block, vibrates on the beat")
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertIsDisplayed().assertContentDescriptionEquals("Vibrate on the beat")
+        compose.onNodeWithTag(MetronomeTestTags.VIBRATE_MARK, useUnmergedTree = true).assertExists()
+        // Off again, the mark goes.
+        openPanel()
+        vibrate.performClick()
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
+        compose.onNodeWithTag(MetronomeTestTags.MARKS).assertDoesNotExist()
     }
 
     @Test
-    fun soundShowsThePickedClickAndOpensThePanelWithTheFourSounds() {
+    fun theOptionsButtonOpensThePanelWithTheFourSoundsVibrationAndListen() {
         show()
-        soundButton.assertContentDescriptionEquals("Sound: Wood block")
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.DropdownList))
-            .assertHasClickAction()
         panel.assertDoesNotExist()
         openPanel()
-        panel.assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Sound"))
+        panel.assert(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Options"))
         compose.onNodeWithContentDescription("Sound").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup))
         for ((sound, name) in listOf(ClickSound.WOOD_BLOCK to "Wood block", ClickSound.COWBELL to "Cowbell", ClickSound.CLAVES to "Claves", ClickSound.RIM_CLICK to "Rim click")) {
-            compose.onNodeWithTag(MetronomeTestTags.sound(sound)).assert(hasText(name))
+            compose.onNodeWithTag(MetronomeTestTags.sound(sound)).assertContentDescriptionEquals(name)
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
                 .assertIsDisplayed()
         }
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).assertIsSelected()
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.COWBELL)).assertIsNotSelected()
+        // Sound, Vibrate on the beat, then Listen, one under the other.
+        val sounds = compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).getBoundsInRoot()
+        val vibrate = compose.onNodeWithTag(MetronomeTestTags.VIBRATE).getBoundsInRoot()
+        val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Listen")).assertHasClickAction().getBoundsInRoot()
+        assertTrue("the sounds $sounds over the switch $vibrate", sounds.bottom <= vibrate.top)
+        assertTrue("the switch $vibrate over Listen $listen", vibrate.bottom <= listen.top)
     }
 
     @Test
@@ -277,7 +313,6 @@ class MetronomeScreenTest {
         assertEquals(ClickSound.COWBELL, settings.current.metronomeClickSound)
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.COWBELL)).assertIsSelected()
         compose.onNodeWithTag(MetronomeTestTags.sound(ClickSound.WOOD_BLOCK)).assertIsNotSelected()
-        soundButton.assertContentDescriptionEquals("Sound: Cowbell")
         // Still open for another try; closing it needs no stop, the bar ends by itself.
         panel.assertIsDisplayed()
         player.finishPreview()
@@ -330,14 +365,19 @@ class MetronomeScreenTest {
     }
 
     @Test
-    fun theRowReadsSoundTapTempoListen() {
+    fun theRowReadsTapTempoSlowerStartFasterOptions() {
         show()
-        val sound = soundButton.getBoundsInRoot()
-        val tap = compose.onNodeWithTag(MetronomeTestTags.TAP).getBoundsInRoot()
-        val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN).getBoundsInRoot()
-        assertTrue("Sound $sound first, then Tap tempo $tap", sound.right <= tap.left)
-        assertTrue("Tap tempo $tap, then Listen $listen", tap.right <= listen.left)
-        assertEquals(sound.top, listen.top)
+        val dialBounds = dial.getBoundsInRoot()
+        val row = listOf(MetronomeTestTags.TAP, MetronomeTestTags.SLOWER, MetronomeTestTags.START, MetronomeTestTags.FASTER, MetronomeTestTags.OPTIONS)
+            .map { it to compose.onNodeWithTag(it).getBoundsInRoot() }
+        for ((first, second) in row.zipWithNext()) {
+            assertTrue("${first.first} ${first.second}, then ${second.first} ${second.second}", first.second.right <= second.second.left)
+        }
+        val middle = row.first().second.let { (it.top + it.bottom) / 2 }
+        for ((tag, bounds) in row) {
+            assertEquals("$tag on the row's line", middle.value, ((bounds.top + bounds.bottom) / 2).value, 0.5f)
+            assertTrue("$tag $bounds under the dial $dialBounds", bounds.top >= dialBounds.bottom)
+        }
     }
 
     @Test
@@ -356,83 +396,58 @@ class MetronomeScreenTest {
     @Test
     fun dutchAtTwiceTheTextSizeOnItsSideIsWhollyShown() {
         show(locale = "nl", fontScale = 2f, size = PHONE_LANDSCAPE)
-        for (name in listOf("Tempo tikken", "Luisteren", "Start", "Geluid: Woodblock")) {
-            assertWhollyShown(compose.onNodeWithContentDescription(name), name)
-        }
+        assertDutchRowWhollyShown("on its side")
         compose.onNodeWithContentDescription("Langzamer").assertExists()
         compose.onNodeWithContentDescription("Tellen per maat").assertExists()
         compose.onNodeWithContentDescription("Driekwartsmaat").assertExists()
         dial.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "96 slagen per minuut, Andante"))
-        assertDutchNamesUnderTheButtons("on its side")
     }
 
     @Test
-    fun dutchAtTwiceTheTextSizeUprightShowsTheNamesUnderTheButtons() {
+    fun dutchAtTwiceTheTextSizeUprightIsWhollyShown() {
         show(locale = "nl", fontScale = 2f)
-        assertDutchNamesUnderTheButtons("upright")
+        assertDutchRowWhollyShown("upright")
+    }
+
+    /** The row's buttons, each by its Dutch TalkBack name, wholly shown. */
+    private fun assertDutchRowWhollyShown(case: String) {
+        for (name in listOf("Tempo tikken", "Langzamer", "Start", "Sneller", "Opties")) {
+            assertWhollyShown(compose.onNodeWithContentDescription(name), "$case $name")
+        }
     }
 
     @Test
-    fun dutchAtTwiceTheTextSizeUprightTheSoundPanelIsWhollyShown() = assertDutchSoundPanel(PHONE)
+    fun dutchAtTwiceTheTextSizeUprightTheOptionsPanelIsWhollyShown() = assertDutchOptionsPanel(PHONE)
 
     @Test
-    fun dutchAtTwiceTheTextSizeOnItsSideTheSoundPanelIsWhollyShown() = assertDutchSoundPanel(PHONE_LANDSCAPE)
+    fun dutchAtTwiceTheTextSizeOnItsSideTheOptionsPanelIsWhollyShown() = assertDutchOptionsPanel(PHONE_LANDSCAPE)
 
-    /** The Sound panel in Dutch at 2x text on a phone of [size]: every sound and the switch wholly shown, by name. */
-    private fun assertDutchSoundPanel(size: DpSize) {
+    /** The options panel in Dutch at 2x text on a phone of [size]: its heading, every sound, the switch and Listen wholly shown. */
+    private fun assertDutchOptionsPanel(size: DpSize) {
         show(locale = "nl", fontScale = 2f, size = size)
-        soundButton.performScrollTo().performClick()
-        compose.waitForIdle()
+        openPanel()
         val case = "${size.width} x ${size.height}"
+        assertWhollyShown(compose.onNodeWithText("Geluid", useUnmergedTree = true), "$case Geluid")
         for ((sound, name) in listOf(ClickSound.WOOD_BLOCK to "Woodblock", ClickSound.COWBELL to "Koebel", ClickSound.CLAVES to "Claves", ClickSound.RIM_CLICK to "Rimclick")) {
-            val row = compose.onNodeWithTag(MetronomeTestTags.sound(sound))
-            row.assert(hasText(name))
-            assertWhollyShown(row, "$case $name")
+            val segment = compose.onNodeWithTag(MetronomeTestTags.sound(sound))
+            segment.assertContentDescriptionEquals(name)
+            assertWhollyShown(segment, "$case $name")
         }
         assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.VIBRATE).assert(hasText("Trillen op de tel")), "$case Trillen op de tel")
+        assertWhollyShown(compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Luisteren")), "$case Luisteren")
         compose.runOnUiThread { backDispatcher!!.onBackPressed() }
         compose.waitForIdle()
         panel.assertDoesNotExist()
     }
 
-    /** "Geluid", "Tempo tikken" and "Luisteren" under the buttons, each on one line and wholly shown. */
-    private fun assertDutchNamesUnderTheButtons(case: String) {
-        for ((tag, name) in listOf(MetronomeTestTags.SOUND_LABEL to "Geluid", MetronomeTestTags.TAP_LABEL to "Tempo tikken", MetronomeTestTags.LISTEN_LABEL to "Luisteren")) {
-            val label = compose.onNodeWithTag(tag)
-            label.assertTextEquals(name)
-            assertWhollyShown(label, "$case $name")
-            val lines = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
-            label.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(lines) }
-            assertEquals("$case $name on one line", 1, lines.single().lineCount)
-        }
-    }
-
     @Test
-    fun theButtonsShowTheirNamesButTalkBackHearsOnlyTheButtons() {
+    fun theStepButtonsStandEitherSideOfStartAndStepTheTempo() {
         show()
-        for ((tag, name) in listOf(MetronomeTestTags.SOUND_LABEL to "Sound", MetronomeTestTags.TAP_LABEL to "Tap tempo", MetronomeTestTags.LISTEN_LABEL to "Listen")) {
-            compose.onNodeWithTag(tag).assertTextEquals(name).assertIsDisplayed()
-                .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility))
-        }
-        // Listen keeps its word while listening; its button says "Stop listening".
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
-        compose.waitForIdle()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN_LABEL).assertTextEquals("Listen")
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assertContentDescriptionEquals("Stop listening").performClick()
-        compose.waitForIdle()
-    }
-
-    @Test
-    fun theStepButtonsSitBesideTheTempoAndStartInTheOpeningAndNeitherTurnsTheDial() {
-        show()
-        val dialBounds = dial.getBoundsInRoot()
-        val figures = compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).getBoundsInRoot()
+        val startBounds = start.getBoundsInRoot()
         val slower = compose.onNodeWithTag(MetronomeTestTags.SLOWER)
         val faster = compose.onNodeWithTag(MetronomeTestTags.FASTER)
-        fun level(it: androidx.compose.ui.unit.DpRect) = it.top < figures.bottom && it.bottom > figures.top
-        assertTrue("slower left of the tempo, level with it", slower.getBoundsInRoot().let { it.left > dialBounds.left && it.right <= figures.left + 4.dp && level(it) })
-        assertTrue("faster right of the tempo, level with it", faster.getBoundsInRoot().let { it.right < dialBounds.right && it.left >= figures.right - 4.dp && level(it) })
-        assertTrue("start in the dial's opening", start.getBoundsInRoot().let { it.top > figures.bottom && it.bottom <= dialBounds.bottom })
+        assertTrue("slower left of Start", slower.getBoundsInRoot().right <= startBounds.left)
+        assertTrue("faster right of Start", faster.getBoundsInRoot().left >= startBounds.right)
         slower.performClick()
         slower.performClick()
         faster.performClick()
@@ -442,33 +457,48 @@ class MetronomeScreenTest {
     }
 
     @Test
+    fun theStepButtonsKeepSlowerOnTheLeftInArabic() {
+        show(locale = "ar")
+        val slower = compose.onNodeWithTag(MetronomeTestTags.SLOWER).getBoundsInRoot()
+        val faster = compose.onNodeWithTag(MetronomeTestTags.FASTER).getBoundsInRoot()
+        assertTrue("slower $slower left of faster $faster, as on the dial", slower.right <= faster.left)
+        // The row's ends do mirror: Tap tempo at the start (the right), options at the end.
+        assertTrue("Tap tempo at the start", compose.onNodeWithTag(MetronomeTestTags.TAP).getBoundsInRoot().left >= faster.right)
+        assertTrue("options at the end", optionsButton.getBoundsInRoot().right <= slower.left)
+    }
+
+    @Test
     fun listenHoldsTheMicrophoneOnlyWhileListeningAndRestsStartStop() {
         show()
         start.performClick()
         compose.waitForIdle()
-        val listen = compose.onNodeWithTag(MetronomeTestTags.LISTEN)
-        listen.assertContentDescriptionEquals("Listen").assertHasClickAction()
         assertFalse(recorder.isRecording.value)
 
-        listen.performClick()
-        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
-        listen.assertContentDescriptionEquals("Stop listening")
+        listen()
         assertFalse("the clicks pause while listening", player.isPlaying.value)
         start.assertIsNotEnabled()
         lineSaysSoon("Listening…")
+        // Stop on the status line, heard as "Stop listening".
+        val stop = compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION)
+        stop.assert(hasText("Stop")).assertContentDescriptionEquals("Stop listening")
+        // The panel's Listen row says so too while it listens.
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Stop listening"))
+        compose.runOnUiThread { backDispatcher!!.onBackPressed() }
+        compose.waitForIdle()
 
-        listen.performClick()
+        stop.performClick()
         compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
-        listen.assertContentDescriptionEquals("Listen")
         start.assertIsEnabled()
         assertTrue("the clicks come back", player.isPlaying.value)
+        openPanel()
+        compose.onNodeWithTag(MetronomeTestTags.LISTEN).assert(hasText("Listen"))
     }
 
     @Test
     fun anotherControlEndsListening() {
         show()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
-        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        listen()
         compose.onNodeWithTag(MetronomeTestTags.FASTER).performClick()
         compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
         compose.onNodeWithTag(MetronomeTestTags.BPM, useUnmergedTree = true).assert(hasText("97"))
@@ -478,8 +508,7 @@ class MetronomeScreenTest {
     @Test
     fun leavingTheScreenWhileListeningReleasesTheMicrophone() {
         show()
-        compose.onNodeWithTag(MetronomeTestTags.LISTEN).performClick()
-        compose.waitUntil(TIMEOUT_MILLIS) { recorder.isRecording.value }
+        listen()
         shown.value = false
         compose.waitUntil(TIMEOUT_MILLIS) { !recorder.isRecording.value }
     }
@@ -533,6 +562,7 @@ class MetronomeScreenTest {
     fun theStatusLineSaysWhatListenHeard() {
         val listen = mutableStateOf(ListenUi(ListenPhase.LISTENING, startedAtNanos = 1L))
         var again = 0
+        var stops = 0
         compose.setContent {
             PhoneScreen(PHONE, SystemBars.tab(onItsSide = false)) {
                 TwangleTheme(style = VisualStyle.DEFAULT, darkTheme = false, animate = false) {
@@ -541,6 +571,7 @@ class MetronomeScreenTest {
                         onBpmChange = {}, onBpmChangeFinished = {}, onStep = {}, onTap = {}, onMeterChange = {},
                         onToggle = {}, onVibrateChange = {},
                         listen = listen.value,
+                        onListen = { stops++ },
                         onTryAgain = { again++ },
                     )
                 }
@@ -557,6 +588,8 @@ class MetronomeScreenTest {
         line.assert(hasContentDescription("Listening… 96 BPM"))
         listen.value = listen.value.copy(estimate = 98)
         lineSaysSoon("Listening… 98 BPM")
+        compose.onNodeWithTag(MetronomeTestTags.LINE_ACTION).assert(hasText("Stop")).performClick()
+        assertEquals(1, stops)
         listen.value = ListenUi(ListenPhase.NO_BEAT)
         compose.waitForIdle()
         line.assert(hasText("No steady beat heard", substring = true))
