@@ -10,7 +10,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * "Help & website" asks the phone's browser to show the page: a plain view of the address, for any
+ * "Help and website" asks the phone's browser to show the page: a plain view of the address, for any
  * browser, so Twangle itself needs no internet permission.
  */
 @RunWith(AndroidJUnit4::class)

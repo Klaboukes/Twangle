@@ -17,12 +17,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -64,6 +64,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.klaboukes.twangle.core.audio.DronePlayer
+import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
+import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.R as DesignR
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
@@ -181,7 +183,7 @@ internal fun DroneButton(
  * The drone panel, [expanded] or not, a Material dropdown under the place it is put in, as the name button's panel:
  * "Sound" over the four sounds with their icons (tanpura, harmonium, flute organ, warm pad), "Notes" over Root,
  * + fifth and + fifth and octave, then the Lower switch; the picked ones in the container colour with an accent
- * outline. One column, at most [width] wide; [wide] (on its side, over the empty start half) in two columns, the
+ * outline and a ✓ ([ChoiceRow]). One column, at most [width] wide; [wide] (on its side, over the empty start half) in two columns, the
  * sounds beside the notes. A pick calls [onChoiceChange] and leaves the panel open, so another can be heard (the
  * drone crossfades to it while it sounds); Back or a tap beside it calls [onDismiss]. On a short screen it scrolls.
  * TalkBack hears it by name ("Drone"), the sounds and the notes as radio groups and Lower as a switch.
@@ -247,7 +249,7 @@ internal fun DronePanel(
 private fun Sounds(picked: DroneSound, onPick: (DroneSound) -> Unit) {
     val label = stringResource(R.string.practice_drone_sound)
     PanelLabel(label)
-    Column(Modifier.selectableGroup().semantics { contentDescription = label }) {
+    Column(Modifier.selectableGroup().semantics { contentDescription = label }, verticalArrangement = Arrangement.spacedBy(CHOICE_ROW_GAP)) {
         for (sound in DroneSound.entries) {
             OptionRow(droneSoundName(sound), droneSoundIcon(sound), sound == picked, PracticeTestTags.droneSound(sound)) { onPick(sound) }
         }
@@ -258,46 +260,31 @@ private fun Sounds(picked: DroneSound, onPick: (DroneSound) -> Unit) {
 private fun Notes(picked: DroneVoicing, onPick: (DroneVoicing) -> Unit) {
     val label = stringResource(R.string.practice_drone_notes)
     PanelLabel(label)
-    Column(Modifier.selectableGroup().semantics { contentDescription = label }) {
+    Column(Modifier.selectableGroup().semantics { contentDescription = label }, verticalArrangement = Arrangement.spacedBy(CHOICE_ROW_GAP)) {
         for (voicing in DroneVoicing.entries) {
             OptionRow(droneVoicingName(voicing), null, voicing == picked, PracticeTestTags.droneVoicing(voicing)) { onPick(voicing) }
         }
     }
 }
 
-/** One choice in the panel: its [icon] (if any) and [text] on a 48 dp row, a radio button for TalkBack; a long name takes two lines, whole words. */
+/**
+ * One choice in the panel: its [icon] (if any) and [text] on Twangle's one row for picking one of a list
+ * ([ChoiceRow]: at least 48 dp, the picked one marked with the accent outline and a ✓, a radio button for
+ * TalkBack; Phase 63, until then a row of its own without the ✓); a long name takes two lines, whole words.
+ */
 @Composable
 private fun OptionRow(text: String, icon: ImageVector?, picked: Boolean, tag: String, onPick: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    val source = remember { MutableInteractionSource() }
     val style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp)
     val smallest = with(LocalDensity.current) { MIN_TEXT_SIZE.toSp() }
-    Row(
-        Modifier
-            .testTag(tag)
-            .fillMaxWidth()
-            .heightIn(min = ROW_HEIGHT)
-            .pressFeedback(
-                source,
-                MaterialTheme.shapes.medium,
-                fill = if (picked) faceFill(picked = true) else Color.Transparent,
-                outline = if (picked) faceOutline(picked = true) else null,
-            )
-            .selectable(selected = picked, interactionSource = source, indication = null, role = Role.RadioButton) {
-                source.pressFlash()
-                onPick()
-            }
-            .padding(horizontal = ROW_PADDING, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    ChoiceRow(selected = picked, onClick = onPick, modifier = Modifier.testTag(tag)) {
         if (icon != null) {
-            Icon(icon, contentDescription = null, tint = scheme.onSurface, modifier = Modifier.size(ICON_SIZE))
+            Icon(icon, contentDescription = null, tint = LocalContentColor.current, modifier = Modifier.size(ICON_SIZE))
             Spacer(Modifier.width(ROW_PADDING))
         }
         Text(
             text,
             style = style,
-            color = if (picked) scheme.onPrimaryContainer else scheme.onSurface,
+            color = LocalContentColor.current,
             maxLines = 2,
             autoSize = remember(style.fontSize, smallest) { WholeWordsAutoSize(style.fontSize, smallest) },
         )
@@ -493,7 +480,6 @@ private val PANEL_WIDTH_WIDE = 380.dp
 private val PANEL_PADDING = 8.dp
 private val COLUMN_GAP = 8.dp
 private val SECTION_GAP = 4.dp
-private val ROW_HEIGHT = 48.dp
 private val SWITCH_ROW_HEIGHT = 52.dp
 private val ROW_PADDING = 12.dp
 

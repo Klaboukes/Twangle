@@ -829,13 +829,14 @@ class SettingsContentTest {
     )
 
     @Test
-    fun settingsComeInFourHeadedGroupsThenTheAboutLink() {
+    fun settingsComeInFiveHeadedGroupsTheLastEndingInTheAboutLink() {
         show(AppSettings(display = TunerDisplay.WAVE))
         val headings = listOf(
             R.string.settings_group_pitch,
             R.string.settings_group_look,
             R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
+            R.string.settings_group_app,
         )
         headings.forEach { compose.onNodeWithText(context.getString(it)).assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)) }
 
@@ -849,8 +850,9 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_in_tune_precision_title)),
             top(context.getString(R.string.settings_group_look)),
             compose.onNodeWithTag(styleCardTag(VisualStyle.CONTEMPORARY)).fetchSemanticsNode().positionInRoot.y,
-            top(context.getString(R.string.settings_theme_title)),
+            // The wallpaper colours belong to the style (Contemporary only), so they come right under it (Phase 63).
             top(context.getString(R.string.settings_dynamic_color_title)),
+            top(context.getString(R.string.settings_theme_title)),
             top(context.getString(R.string.settings_group_tuner_screen)),
             top(context.getString(R.string.settings_meter_look_title)),
             top(context.getString(R.string.settings_in_tune_effect_title)),
@@ -862,6 +864,7 @@ class SettingsContentTest {
             top(context.getString(R.string.settings_vibrate_in_tune_title)),
             top(context.getString(R.string.settings_show_tune_hint_title)),
             top(context.getString(R.string.settings_show_signal_bars_title)),
+            top(context.getString(R.string.settings_group_app)),
             top(context.getString(R.string.about_title)),
         )
         assertEquals("tops $order", order.sorted(), order)
@@ -999,7 +1002,7 @@ class SettingsContentTest {
     }
 
     /**
-     * "Help & website": a quiet row like "Rate Twangle", and one tap asks to open the website's home page
+     * "Help and website": a quiet row like "Rate Twangle", and one tap asks to open the website's home page
      * once, in the app's language where the site has it (Dutch), else in English.
      */
     @Test
@@ -1197,6 +1200,7 @@ class SettingsContentTest {
             R.string.settings_group_look,
             R.string.settings_group_tuner_screen,
             R.string.settings_group_while_tuning,
+            R.string.settings_group_app,
             R.string.about_title,
         ).map { res.getString(it) } + res.getString(R.string.settings_about_link_summary, VERSION)
         texts.forEach { assertWhollyShown(compose.onNodeWithText(it, useUnmergedTree = true), it) }

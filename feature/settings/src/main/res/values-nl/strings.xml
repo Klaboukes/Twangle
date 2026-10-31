@@ -7,6 +7,7 @@
     <string name="settings_group_look">Uiterlijk</string>
     <string name="settings_group_tuner_screen">Stemmerscherm</string>
     <string name="settings_group_while_tuning">Tijdens het stemmen</string>
+    <string name="settings_group_app">App</string>
 
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Stemtoon (A4)</string>

@@ -170,7 +170,6 @@
     <string name="tuner_intonation_step_open">Dây buông</string>
     <string name="tuner_intonation_step_fret">Phím 12</string>
     <string name="tuner_intonation_which_string">Dây nào?</string>
-    <string name="tuner_intonation_choose">Chọn một dây</string>
     <string name="tuner_intonation_choose_detail">Lên dây trước, rồi kiểm tra</string>
     <string name="tuner_intonation_play_open">Gảy dây buông %1$s</string>
     <string name="tuner_intonation_let_ring">Để dây ngân</string>

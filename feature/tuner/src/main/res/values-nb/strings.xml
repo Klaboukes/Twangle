@@ -173,7 +173,6 @@
     <string name="tuner_intonation_step_open">Åpen</string>
     <string name="tuner_intonation_step_fret">12. bånd</string>
     <string name="tuner_intonation_which_string">Hvilken streng?</string>
-    <string name="tuner_intonation_choose">Velg en streng</string>
     <string name="tuner_intonation_choose_detail">Stem den først, og sjekk den så</string>
     <string name="tuner_intonation_play_open">Spill den åpne %1$s-strengen</string>
     <string name="tuner_intonation_let_ring">La den klinge</string>

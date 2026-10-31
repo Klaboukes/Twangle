@@ -135,7 +135,7 @@ fun SettingsScreen(
 
 /**
  * The settings screen body. Stateless, so previews and UI tests can drive it. Empty while [settings]
- * load. The settings come in four headed groups, then a link to the About page (see [SettingsGroups]);
+ * load. The settings come in five headed groups, the last ending in a link to the About page (see [SettingsGroups]);
  * the wallpaper-colours switch only shows in the contemporary style when [dynamicColorAvailable]
  * (Android 12+); the meter looks always show, and the wave looks only while the wave is the
  * display. The Language row shows when there are [languages]
@@ -290,13 +290,14 @@ private fun SettingsScaffold(
 }
 
 /**
- * Every setting, in four headed groups: Pitch and notes (which note it is and what counts as in
+ * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
  * tune; not "Tuning", which the navigation bar's Instrument item was called until 2026-10-16), Look (the
- * style, light or dark and the wallpaper colours), Tuner screen (the meter's look and in-tune effect,
- * what shows below the note and the layout on its side) and While tuning (what the tuner does while
- * it listens), followed by the app's language,
- * the tour and one row that opens the About page (version, promise, privacy and licences), so those
- * long texts don't crowd the settings. Rows, including the card grids, keep 16 dp from the column's edges.
+ * style with its wallpaper colours, then light or dark), Tuner screen (the meter's look and in-tune effect,
+ * what shows below the note and the layout on its side), While tuning (what the tuner does while
+ * it listens) and App (the app's language, the tour and one row that opens the About page: version,
+ * promise, privacy and licences, so those long texts don't crowd the settings). A line divides two
+ * subjects; a setting that belongs to the one above stays with it. Rows, including the card grids, keep
+ * 16 dp from the column's edges.
  */
 @Composable
 private fun SettingsGroups(
@@ -369,13 +370,8 @@ private fun SettingsGroups(
                     selected = settings.style,
                     onSelect = onStyleChange,
                 )
-                HorizontalDivider()
-                RadioGroupSetting(
-                    title = stringResource(R.string.settings_theme_title),
-                    options = ThemeMode.entries,
-                    selected = settings.theme,
-                    onSelect = onThemeChange,
-                ) { stringResource(themeLabel(it)) }
+                // The wallpaper colours belong to the Contemporary style (they show only with it), so they stay
+                // with the style, as the in-tune effect with the meter's look and the wave's look with the display.
                 if (dynamicColorAvailable && settings.style == VisualStyle.CONTEMPORARY) {
                     SwitchSetting(
                         title = stringResource(R.string.settings_dynamic_color_title),
@@ -384,6 +380,13 @@ private fun SettingsGroups(
                         onCheckedChange = onDynamicColorChange,
                     )
                 }
+                HorizontalDivider()
+                RadioGroupSetting(
+                    title = stringResource(R.string.settings_theme_title),
+                    options = ThemeMode.entries,
+                    selected = settings.theme,
+                    onSelect = onThemeChange,
+                ) { stringResource(themeLabel(it)) }
             }
         }
         SettingsGroup(title = stringResource(R.string.settings_group_tuner_screen)) {
@@ -454,31 +457,33 @@ private fun SettingsGroups(
                 )
             }
         }
-        Rows {
-            HorizontalDivider()
-            if (languages.isNotEmpty()) {
-                val names = remember(languages) { languages.associateWith(AppLanguages::nameOf) }
-                LanguageSetting(
-                    languages = languages,
-                    selected = appLanguage,
-                    nameOf = { names.getValue(it) },
-                    onSelect = onAppLanguageChange,
-                )
-            }
-            if (onShowTour != null) {
+        // The app itself: its language, the tour and About (until Phase 63 the only rows without a heading).
+        SettingsGroup(title = stringResource(R.string.settings_group_app)) {
+            Rows {
+                if (languages.isNotEmpty()) {
+                    val names = remember(languages) { languages.associateWith(AppLanguages::nameOf) }
+                    LanguageSetting(
+                        languages = languages,
+                        selected = appLanguage,
+                        nameOf = { names.getValue(it) },
+                        onSelect = onAppLanguageChange,
+                    )
+                }
+                if (onShowTour != null) {
+                    LinkSetting(
+                        title = stringResource(R.string.settings_show_tour_title),
+                        summary = stringResource(R.string.settings_show_tour_summary),
+                        onClick = onShowTour,
+                        modifier = Modifier.testTag(SHOW_TOUR_TAG),
+                    )
+                }
                 LinkSetting(
-                    title = stringResource(R.string.settings_show_tour_title),
-                    summary = stringResource(R.string.settings_show_tour_summary),
-                    onClick = onShowTour,
-                    modifier = Modifier.testTag(SHOW_TOUR_TAG),
+                    title = stringResource(R.string.about_title),
+                    summary = stringResource(R.string.settings_about_link_summary, appVersion),
+                    onClick = onOpenAbout,
+                    modifier = Modifier.testTag(ABOUT_LINK_TAG),
                 )
             }
-            LinkSetting(
-                title = stringResource(R.string.about_title),
-                summary = stringResource(R.string.settings_about_link_summary, appVersion),
-                onClick = onOpenAbout,
-                modifier = Modifier.testTag(ABOUT_LINK_TAG),
-            )
         }
     }
 }

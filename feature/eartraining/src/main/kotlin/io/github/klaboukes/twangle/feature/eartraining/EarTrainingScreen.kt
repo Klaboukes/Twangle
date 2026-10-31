@@ -420,7 +420,10 @@ internal val Exercise.label: Int
         Exercise.CHORD_TYPE -> R.string.ear_exercise_chord_type
     }
 
-/** The ▶, [REPLAY_SIZE] across, that sounds the question again: the style's button ([StyleButton]). */
+/**
+ * The ▶, [REPLAY_SIZE] across, that sounds the question again: the style's button ([StyleButton]), filled in
+ * the accent as the screen's main action (`main`, as the metronome's Start; until Phase 63 a plain outline).
+ */
 @Composable
 private fun ReplayButton(onReplay: () -> Unit) {
     StyleButton(
@@ -428,6 +431,7 @@ private fun ReplayButton(onReplay: () -> Unit) {
         label = stringResource(R.string.ear_replay),
         modifier = Modifier.testTag(EarTrainingTestTags.REPLAY),
         face = REPLAY_SIZE,
+        main = true,
     ) {
         // Nudged right, so the triangle looks centred in the face.
         Icon(PLAY_ICON, contentDescription = null, modifier = Modifier.padding(start = 3.dp).size(REPLAY_ICON_SIZE))

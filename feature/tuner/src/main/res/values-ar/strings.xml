@@ -187,7 +187,6 @@
     <string name="tuner_intonation_step_open">مفتوح</string>
     <string name="tuner_intonation_step_fret">الدستان ١٢</string>
     <string name="tuner_intonation_which_string">أي وتر؟</string>
-    <string name="tuner_intonation_choose">اختر وترًا</string>
     <string name="tuner_intonation_choose_detail">اضبطه أولًا ثم افحصه</string>
     <string name="tuner_intonation_play_open">اعزف الوتر %1$s مفتوحًا</string>
     <string name="tuner_intonation_let_ring">دعه يرنّ</string>

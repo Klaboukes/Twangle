@@ -86,8 +86,9 @@ import io.github.klaboukes.twangle.core.dsp.music.Notation
  * Upright, one column: the tool button ([header]) 8 dp from the top at the start with the tuning
  * line beside it ([ToolAndTuningRow]), the shapes, the capo, the table and "Sounds in". On its side
  * (≥ 600 dp wide and wider than tall) that row, the shapes, the capo and "Sounds in" fill the start
- * half, the table the end half. On a large window ([practiceLayoutFor], a tablet) all but the top row stand
- * in the middle of the height (on its side the two halves under the top row), as the metronome's column.
+ * half, the table the end half. All but the top row stand in the middle of the height they have (on a
+ * tablet on its side, [practiceLayoutFor], the two halves together under the top row), as Chords centres
+ * its chart and the metronome its column (on phones since Phase 63; until then they hung at the top).
  *
  * Names follow the player's [notation], written as the key writes them ([CapoPlan.shapeSymbolOf],
  * [CapoPlan.soundingSymbolOf]: E♭ in E♭, A♯m in F♯). It opens on [savedShapes] and [savedFret], and
@@ -153,11 +154,12 @@ fun CapoScreen(
     }
     val table = @Composable {
         if (shortString) {
-            // As tall as the table, so nothing round it moves.
-            ShortStringLine(
-                stringResource(R.string.practice_capo_short_string),
-                Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth().heightIn(min = ROW_HEIGHT * capoChordsOf(plan.shapeKey).size + TABLE_HEADER_HEIGHT),
-            )
+            // Exactly the table's room, the table laid out unseen under it, so nothing round it moves (with the
+            // content centred in the height since Phase 63, a line only about as tall moved the capo too).
+            Box(Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth()) {
+                CapoTableView(plan, notation, speech, onOpenChord, shown = false)
+                ShortStringLine(stringResource(R.string.practice_capo_short_string), Modifier.matchParentSize())
+            }
         } else {
             CapoTableView(plan, notation, speech, onOpenChord)
         }
@@ -198,28 +200,35 @@ fun CapoScreen(
                 Spacer(Modifier.height(8.dp))
             }
         } else if (layout == PracticeLayout.HALVES) {
+            // A phone on its side: the top row at the top of the start half and the rest of that half in the middle
+            // of the height it leaves; the table in the middle of the end half (Phase 63, as Chords centres its chart;
+            // until then both hung at the top). Each half scrolls only where it doesn't fit.
             Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp))
                     stepper(false)
                     Spacer(Modifier.height(8.dp))
                     soundsInLine()
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(TABLE_TOP_WIDE))
+                    Spacer(Modifier.weight(1f))
                     table()
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
             }
@@ -227,22 +236,22 @@ fun CapoScreen(
             // A short screen (a narrow phone with navigation buttons) gets the gaps closer, so it all still fits.
             val tight = maxHeight < ROOMY_HEIGHT
             val gap = if (tight) 0.5f else 1f
-            // On a large window (a tablet held upright) the part under the top row stands in the middle of the height
-            // left, as the metronome's column, instead of hanging at the top.
-            val large = layout == PracticeLayout.LARGE_COLUMN
+            // The part under the top row stands in the middle of the height left, as Chords centres its chart and the
+            // metronome its column, instead of hanging at the top with the lower half empty (on a phone until Phase 63;
+            // on a tablet held upright since Phase 52). Where it doesn't fit, it scrolls as before.
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 Column(
                     Modifier
                         .widthIn(max = COLUMN_MAX_WIDTH)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
-                        .then(if (large) Modifier.heightIn(min = height) else Modifier)
+                        .heightIn(min = height)
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
-                    if (large) Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(if (tight) 2.dp else 12.dp))
                     picker()
                     Spacer(Modifier.height(8.dp * gap))
@@ -251,7 +260,7 @@ fun CapoScreen(
                     table()
                     Spacer(Modifier.height(12.dp * gap))
                     soundsInLine()
-                    if (large) Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp * gap))
                 }
             }
@@ -412,12 +421,18 @@ private fun StepButton(higher: Boolean, enabled: Boolean, onClick: () -> Unit) {
 /**
  * The table: "Shape · Sounds" over one row per chord of the shapes' key ([capoChordsOf]), the shape
  * in the muted colour, an arrow, then the chord it sounds in the ink colour; every other row on a
- * faint band, no lines. A row is one button that opens its shape in Chords ([onOpenChord]).
+ * faint band, no lines. A row is one button that opens its shape in Chords ([onOpenChord]). Not [shown], it only
+ * takes its room: unseen, unheard and not tapped (under the banjo's line).
  */
 @Composable
-private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSpeech, onOpenChord: (Chord) -> Unit) {
+private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSpeech, onOpenChord: (Chord) -> Unit, shown: Boolean = true) {
     val openLabel = stringResource(R.string.practice_capo_open_chord)
-    Column(Modifier.widthIn(max = TABLE_MAX_WIDTH).fillMaxWidth()) {
+    Column(
+        Modifier
+            .widthIn(max = TABLE_MAX_WIDTH)
+            .fillMaxWidth()
+            .then(if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics {}),
+    ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
             val style = MaterialTheme.typography.labelMedium
             val color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -450,12 +465,19 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
                     .fillMaxWidth()
                     .height(ROW_HEIGHT)
                     .then(if (index % 2 == 0) Modifier.background(band, shape) else Modifier)
-                    .pressFeedback(source, shape)
-                    .clickable(interactionSource = source, indication = null, role = Role.Button, onClickLabel = openLabel) {
-                        source.pressFlash()
-                        onOpenChord(chord)
-                    }
-                    .clearAndSetSemantics { contentDescription = spoken }
+                    .then(
+                        if (shown) {
+                            Modifier
+                                .pressFeedback(source, shape)
+                                .clickable(interactionSource = source, indication = null, role = Role.Button, onClickLabel = openLabel) {
+                                    source.pressFlash()
+                                    onOpenChord(chord)
+                                }
+                                .clearAndSetSemantics { contentDescription = spoken }
+                        } else {
+                            Modifier
+                        },
+                    )
                     .padding(horizontal = ROW_PADDING),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -516,8 +538,6 @@ private val TABLE_TOP_WIDE = 12.dp
 private val TABLE_MAX_WIDTH = 320.dp
 private val ROW_HEIGHT = 48.dp
 
-/** About the table's "Shape · Sounds" row and the gap under it, so the short-string line takes the table's height. */
-private val TABLE_HEADER_HEIGHT = 24.dp
 private val ROW_PADDING = 20.dp
 private const val BAND_ALPHA = 0.06f
 

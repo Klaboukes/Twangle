@@ -171,8 +171,15 @@ internal class NeckGeometry(
         const val EDGE = 12f
         const val LABELS = 26f
 
+        /**
+         * Across the neck: the fret numbers keep within this much from their side, clear of the thickest string's
+         * dots and the drone's ring round a root (dot 8.5, ring out to 11.8 from the string, then 0.7 to spare).
+         * Until Phase 63 they were centred at 11 and "12" touched the dot beside it.
+         */
+        const val LABEL_ROOM = 13.5f
+
         /** Across the neck: the fret numbers' middle, from their side. */
-        const val LABEL_MIDDLE = 11f
+        const val LABEL_MIDDLE = LABEL_ROOM / 2f
         const val DOT_RADIUS = 8.5f
         const val NOTE_SIZE = 9f
         const val FRET_NUMBER_SIZE = 10f
@@ -249,8 +256,15 @@ private fun Modifier.neckDrawing(paint: NeckPaint, g: NeckGeometry, lie: NeckLie
             }
             measurer.fitted(musicText(name), text, inDot)
         }
+        // Each number within its fret along the neck and within LABEL_ROOM across it, whatever its digits and face.
+        val alongRoom = NeckGeometry.FRET * 0.96f * u
+        val acrossRoom = NeckGeometry.LABEL_ROOM * u
         val numberLayouts = fretNumbers.map { (fret, text) ->
-            fret to measurer.fitted(AnnotatedString(text), style(NeckGeometry.FRET_NUMBER_SIZE, muted), NeckGeometry.FRET * 0.96f * u)
+            fret to if (lie == NeckLie.SIDEWAYS) {
+                measurer.fitted(AnnotatedString(text), style(NeckGeometry.FRET_NUMBER_SIZE, muted), alongRoom, acrossRoom)
+            } else {
+                measurer.fitted(AnnotatedString(text), style(NeckGeometry.FRET_NUMBER_SIZE, muted), acrossRoom, alongRoom)
+            }
         }
         val field = Brush.radialGradient(
             0f to background.copy(alpha = FIELD_ALPHA),
@@ -318,6 +332,6 @@ private const val DASH = 3f
 private const val FADED_ALPHA = 0.45f
 
 /** The breathing ring round a root while the drone sounds: this far out from the dot, this wide, in units (clear of the next fret's dot). */
-private const val HALO_GAP = 2.4f
-private const val HALO_STROKE = 1.8f
+internal const val HALO_GAP = 2.4f
+internal const val HALO_STROKE = 1.8f
 private const val FIELD_ALPHA = 0.72f

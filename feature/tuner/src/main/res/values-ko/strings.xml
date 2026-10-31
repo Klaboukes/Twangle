@@ -170,7 +170,6 @@
     <string name="tuner_intonation_step_open">개방현</string>
     <string name="tuner_intonation_step_fret">12프렛</string>
     <string name="tuner_intonation_which_string">어느 줄인가요?</string>
-    <string name="tuner_intonation_choose">줄을 고르세요</string>
     <string name="tuner_intonation_choose_detail">먼저 튜닝한 뒤 확인하세요</string>
     <string name="tuner_intonation_play_open">%1$s 줄을 개방현으로 치세요</string>
     <string name="tuner_intonation_let_ring">울리게 두세요</string>

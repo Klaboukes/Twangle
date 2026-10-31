@@ -170,7 +170,6 @@
     <string name="tuner_intonation_step_open">開放</string>
     <string name="tuner_intonation_step_fret">12フレット</string>
     <string name="tuner_intonation_which_string">どの弦？</string>
-    <string name="tuner_intonation_choose">弦を選んでください</string>
     <string name="tuner_intonation_choose_detail">先にチューニングしてからチェック</string>
     <string name="tuner_intonation_play_open">%1$s 弦を開放で弾いてください</string>
     <string name="tuner_intonation_let_ring">そのまま鳴らしてください</string>

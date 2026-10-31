@@ -184,7 +184,6 @@
     <string name="tuner_intonation_step_open">Los</string>
     <string name="tuner_intonation_step_fret">12e fret</string>
     <string name="tuner_intonation_which_string">Welke snaar?</string>
-    <string name="tuner_intonation_choose">Kies een snaar</string>
     <string name="tuner_intonation_choose_detail">Stem hem eerst, check hem dan</string>
     <string name="tuner_intonation_play_open">Speel de losse %1$s-snaar</string>
     <string name="tuner_intonation_let_ring">Laat hem doorklinken</string>

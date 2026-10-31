@@ -197,6 +197,7 @@ class SettingsStylesTest(private val style: VisualStyle) {
             R.string.settings_show_tune_hint_title,
             R.string.settings_show_signal_bars_title,
             R.string.settings_focus_mode_title,
+            R.string.settings_group_app,
             R.string.about_title,
         ).map { context.getString(it) } +
             context.getString(R.string.settings_a4_value, 440) +

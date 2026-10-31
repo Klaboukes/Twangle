@@ -177,7 +177,6 @@
     <string name="tuner_intonation_step_open">A vuoto</string>
     <string name="tuner_intonation_step_fret">12° tasto</string>
     <string name="tuner_intonation_which_string">Quale corda?</string>
-    <string name="tuner_intonation_choose">Scegli una corda</string>
     <string name="tuner_intonation_choose_detail">Prima accordala, poi controllala</string>
     <string name="tuner_intonation_play_open">Suona la corda %1$s a vuoto</string>
     <string name="tuner_intonation_let_ring">Lasciala suonare</string>

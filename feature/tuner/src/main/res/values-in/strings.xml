@@ -170,7 +170,6 @@
     <string name="tuner_intonation_step_open">Lepas</string>
     <string name="tuner_intonation_step_fret">Fret ke-12</string>
     <string name="tuner_intonation_which_string">Senar yang mana?</string>
-    <string name="tuner_intonation_choose">Pilih senar</string>
     <string name="tuner_intonation_choose_detail">Setem dulu, lalu cek</string>
     <string name="tuner_intonation_play_open">Petik senar %1$s lepas</string>
     <string name="tuner_intonation_let_ring">Biarkan berbunyi</string>

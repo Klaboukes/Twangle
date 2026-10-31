@@ -170,7 +170,6 @@
     <string name="tuner_intonation_step_open">สายเปล่า</string>
     <string name="tuner_intonation_step_fret">เฟรตที่ 12</string>
     <string name="tuner_intonation_which_string">สายไหน</string>
-    <string name="tuner_intonation_choose">เลือกสาย</string>
     <string name="tuner_intonation_choose_detail">จูนก่อน แล้วค่อยเช็ก</string>
     <string name="tuner_intonation_play_open">เล่นสายเปล่า %1$s</string>
     <string name="tuner_intonation_let_ring">ปล่อยให้เสียงก้อง</string>

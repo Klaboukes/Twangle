@@ -177,7 +177,6 @@
     <string name="tuner_intonation_step_open">Solta</string>
     <string name="tuner_intonation_step_fret">Casa 12</string>
     <string name="tuner_intonation_which_string">Qual corda?</string>
-    <string name="tuner_intonation_choose">Escolha uma corda</string>
     <string name="tuner_intonation_choose_detail">Afine primeiro, depois teste</string>
     <string name="tuner_intonation_play_open">Toque a corda %1$s solta</string>
     <string name="tuner_intonation_let_ring">Deixe soar</string>

@@ -176,7 +176,6 @@
     <string name="tuner_intonation_step_open">Avoin</string>
     <string name="tuner_intonation_step_fret">12. nauha</string>
     <string name="tuner_intonation_which_string">Mikä kieli?</string>
-    <string name="tuner_intonation_choose">Valitse kieli</string>
     <string name="tuner_intonation_choose_detail">Viritä se ensin, tarkista sitten</string>
     <string name="tuner_intonation_play_open">Soita avoin kieli %1$s</string>
     <string name="tuner_intonation_let_ring">Anna soida</string>

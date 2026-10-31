@@ -63,8 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.klaboukes.twangle.core.designsystem.TwangleFilledTonalIconButton
-import io.github.klaboukes.twangle.core.designsystem.R as DesignR
+import io.github.klaboukes.twangle.core.designsystem.StepperButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleIconButton
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
 import io.github.klaboukes.twangle.core.designsystem.appLanguage
@@ -370,7 +369,7 @@ private fun StringStepper(
         // the string row, which are not mirrored in right-to-left languages.
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StepButton(DesignR.drawable.ic_remove, stringResource(R.string.tuning_editor_lower, spokenString), canLower, onLower)
+                StepperButton(more = false, label = stringResource(R.string.tuning_editor_lower, spokenString), onClick = onLower, enabled = canLower)
                 Text(
                     noteText(noteName, note.octave),
                     style = MaterialTheme.typography.headlineSmall,
@@ -383,17 +382,9 @@ private fun StringStepper(
                             liveRegion = LiveRegionMode.Polite
                         },
                 )
-                StepButton(DesignR.drawable.ic_add, stringResource(R.string.tuning_editor_raise, spokenString), canRaise, onRaise)
+                StepperButton(more = true, label = stringResource(R.string.tuning_editor_raise, spokenString), onClick = onRaise, enabled = canRaise)
             }
         }
-    }
-}
-
-/** A − or + button in the style's button shape, turned off at the end of the range. */
-@Composable
-private fun StepButton(icon: Int, label: String, enabled: Boolean, onClick: () -> Unit) {
-    TwangleFilledTonalIconButton(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small) {
-        Icon(painterResource(icon), contentDescription = label)
     }
 }
 

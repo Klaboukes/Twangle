@@ -3,12 +3,14 @@ package io.github.klaboukes.twangle.feature.settings.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -33,7 +36,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * The About rows: the app's name and [appVersion], the free-forever promise, the privacy statement,
- * "Help & website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
+ * "Help and website" ([onOpenWebsite] gets the website's home page in the app's language, [websiteLink],
  * to open in the browser), a quiet "Rate Twangle" row ([onRate] opens the Play page; Google's own
  * rating window is asked for once from the tuner, Phase 50), and a credit for
  * every bundled font and open-source library. Tapping a credit shows its licence text, read from
@@ -94,20 +97,28 @@ private fun AboutText(title: String, body: String) {
     }
 }
 
-/** One credit: name, then who made it and the licence. The whole row (at least 48 dp) opens the licence. */
+/**
+ * One credit: name, then who made it and the licence, and the › of the rows above ([LinkSetting]), as it opens
+ * something too (until Phase 63 it had none). The whole row (at least 48 dp) opens the licence.
+ */
 @Composable
 private fun CreditRow(credit: Credit, onClick: () -> Unit) {
     val byLine = listOf(credit.author, credit.licenceName).joinToString(" · ")
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .clickable(onClickLabel = stringResource(R.string.settings_about_licence_open), role = Role.Button, onClick = onClick)
             .testTag(creditTag(credit.name)),
-        verticalArrangement = Arrangement.spacedBy(2.dp, alignment = Alignment.CenterVertically),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = credit.name, style = MaterialTheme.typography.bodyLarge)
-        Text(text = byLine, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text = credit.name, style = MaterialTheme.typography.bodyLarge)
+            Text(text = byLine, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        // The licence's name above says what opens.
+        Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null)
     }
 }
 
@@ -144,7 +155,7 @@ private fun LicenceDialog(credit: Credit, onDismiss: () -> Unit) {
 /** Test tag of a credit's row. */
 fun creditTag(name: String): String = "credit:$name"
 
-/** Test tag of the "Help & website" row. */
+/** Test tag of the "Help and website" row. */
 const val WEBSITE_TAG = "helpAndWebsite"
 
 /** Test tag of the "Rate Twangle" row. */

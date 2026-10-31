@@ -9,7 +9,7 @@ import io.github.klaboukes.twangle.feature.settings.components.AboutSection
 
 /**
  * The About page, opened from the last row of settings: the app's [appVersion], the free-forever
- * promise, the privacy statement, "Help & website", "Rate Twangle" and the credits with their licences.
+ * promise, the privacy statement, "Help and website", "Rate Twangle" and the credits with their licences.
  * [onOpenWebsite] opens the given website link in the browser ([openWebsite]); [onRate] opens
  * Twangle's Play page ([openPlayPage]); [onBack] returns to settings.
  */

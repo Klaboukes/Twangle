@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import io.github.klaboukes.twangle.core.designsystem.SheetUnderNavigationBar
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
@@ -178,6 +179,8 @@ private fun PickerPanel(
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(TunerTestTags.PICKER_PANEL),
     ) {
+        // The sheet's colour under the gesture bar too, no white strip there.
+        SheetUnderNavigationBar()
         // In the panel's own content, which the sheet composes in its own window, later than the
         // code round it: asked from outside, the rows might not be there yet.
         LaunchedEffect(Unit) {

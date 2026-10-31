@@ -403,7 +403,6 @@ feature/tuner tuner_intonation_back_mm e9765036
 feature/tuner tuner_intonation_check 5471e11b
 feature/tuner tuner_intonation_check_again fb7099ad
 feature/tuner tuner_intonation_check_string f86c8b3d
-feature/tuner tuner_intonation_choose cb35577c
 feature/tuner tuner_intonation_choose_detail daa9f673
 feature/tuner tuner_intonation_fine fa67303a
 feature/tuner tuner_intonation_fine_detail eeab2866

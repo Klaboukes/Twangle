@@ -176,7 +176,6 @@
     <string name="tuner_intonation_step_open">Al aire</string>
     <string name="tuner_intonation_step_fret">Traste 12</string>
     <string name="tuner_intonation_which_string">¿Qué cuerda?</string>
-    <string name="tuner_intonation_choose">Elige una cuerda</string>
     <string name="tuner_intonation_choose_detail">Afínala primero y luego revísala</string>
     <string name="tuner_intonation_play_open">Toca la cuerda %1$s al aire</string>
     <string name="tuner_intonation_let_ring">Déjala sonar</string>

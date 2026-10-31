@@ -174,7 +174,6 @@
     <string name="tuner_intonation_step_open">Leer</string>
     <string name="tuner_intonation_step_fret">12. Bund</string>
     <string name="tuner_intonation_which_string">Welche Saite?</string>
-    <string name="tuner_intonation_choose">Wähle eine Saite</string>
     <string name="tuner_intonation_choose_detail">Erst stimmen, dann prüfen</string>
     <string name="tuner_intonation_play_open">Spiel die leere %1$s-Saite</string>
     <string name="tuner_intonation_let_ring">Lass sie klingen</string>

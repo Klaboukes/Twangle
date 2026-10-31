@@ -173,7 +173,6 @@
     <string name="tuner_intonation_step_open">Løs</string>
     <string name="tuner_intonation_step_fret">12. bånd</string>
     <string name="tuner_intonation_which_string">Hvilken streng?</string>
-    <string name="tuner_intonation_choose">Vælg en streng</string>
     <string name="tuner_intonation_choose_detail">Stem den først, og tjek den så</string>
     <string name="tuner_intonation_play_open">Spil den løse %1$s-streng</string>
     <string name="tuner_intonation_let_ring">Lad den klinge</string>

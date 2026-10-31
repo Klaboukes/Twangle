@@ -180,7 +180,6 @@
     <string name="tuner_intonation_step_open">Pusta</string>
     <string name="tuner_intonation_step_fret">12. próg</string>
     <string name="tuner_intonation_which_string">Która struna?</string>
-    <string name="tuner_intonation_choose">Wybierz strunę</string>
     <string name="tuner_intonation_choose_detail">Najpierw nastrój, potem sprawdź</string>
     <string name="tuner_intonation_play_open">Zagraj pustą strunę %1$s</string>
     <string name="tuner_intonation_let_ring">Niech wybrzmi</string>

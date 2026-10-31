@@ -12,6 +12,8 @@
     <string name="settings_group_tuner_screen">Tuner screen</string>
     <!-- Settings group heading over what happens while tuning: keep screen on, vibration, the tune up/down hint, signal bars. -->
     <string name="settings_group_while_tuning">While tuning</string>
+    <!-- Settings group heading over the last rows, about the app itself: its language, the tour ("Show me around") and About. One short word. -->
+    <string name="settings_group_app">App</string>
 
     <!-- A4 calibration. -->
     <string name="settings_a4_title">Reference pitch (A4)</string>
@@ -162,8 +164,8 @@
     <!-- About page: the line under Rate Twangle. Keep "Google Play" as is. -->
     <string name="settings_about_rate_summary">Twangle on Google Play</string>
     <!-- About page: row that opens the app's website (help on each tool, common questions). -->
-    <string name="settings_about_website_title">Help &amp; website</string>
-    <!-- About page: the line under Help & website. -->
+    <string name="settings_about_website_title">Help and website</string>
+    <!-- About page: the line under Help and website. -->
     <string name="settings_about_website_summary">How each tool works, and answers to common questions</string>
     <!-- About page: heading over the list of fonts and open-source libraries the app uses. -->
     <string name="settings_about_credits_title">Fonts and open-source software</string>

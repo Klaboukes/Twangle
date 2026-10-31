@@ -519,9 +519,10 @@ fun IntonationStatus(
     val checked = state.results.count { it != null }
     val result = state.result
 
-    // Every title the check can show, so the line keeps the room of the longest.
+    // Every title the check can show, so the line keeps the room of the longest. Before any string is
+    // checked the title line stays empty, its room kept: the panel above already asks "Which string?"
+    // (until Phase 63 "Choose a string" said it again right under it).
     val titleIds = listOf(
-        R.string.tuner_intonation_choose,
         R.string.tuner_intonation_all_fine,
         R.string.tuner_intonation_press_fret,
         R.string.tuner_intonation_not_octave,
@@ -529,7 +530,7 @@ fun IntonationStatus(
         R.string.tuner_intonation_back,
         R.string.tuner_intonation_forward,
     ).map { stringResource(it) }
-    val titles = titleIds + listOf(
+    val titles = listOf("") + titleIds + listOf(
         stringResource(R.string.tuner_intonation_play_open, name),
         stringResource(R.string.tuner_intonation_tune_first, name),
         pluralStringResource(R.plurals.tuner_intonation_to_move, toMove.coerceAtLeast(1), toMove.coerceAtLeast(1)),
@@ -588,7 +589,7 @@ fun IntonationStatus(
     val titleStyle = MaterialTheme.typography.headlineSmall
     val detailStyle = MaterialTheme.typography.bodyLarge
     val detailColour = MaterialTheme.colorScheme.onSurfaceVariant
-    val spoken = spokenTitle + stringResource(R.string.tuner_spoken_separator) + details[detail]
+    val spoken = if (spokenTitle.isEmpty()) details[detail] else spokenTitle + stringResource(R.string.tuner_spoken_separator) + details[detail]
     Column(
         modifier.testTag(TunerTestTags.INTONATION_STATUS),
         horizontalAlignment = Alignment.CenterHorizontally,

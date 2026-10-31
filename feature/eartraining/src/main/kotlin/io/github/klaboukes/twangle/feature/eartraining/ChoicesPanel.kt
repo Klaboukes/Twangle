@@ -46,6 +46,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.klaboukes.twangle.core.designsystem.SheetUnderNavigationBar
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_FACE_GAP
 import io.github.klaboukes.twangle.core.designsystem.CHOICE_ROW_GAP
 import io.github.klaboukes.twangle.core.designsystem.ChoiceRow
@@ -108,6 +109,8 @@ internal fun ChoicesPanel(
         contentColor = scheme.onSurface,
         modifier = Modifier.testTag(EarTrainingTestTags.CHOICES_PANEL),
     ) {
+        // The sheet's colour under the gesture bar too, no white strip there.
+        SheetUnderNavigationBar()
         Column(
             Modifier
                 .heightIn(max = maxHeight)
