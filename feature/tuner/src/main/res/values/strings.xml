@@ -169,7 +169,7 @@
     <string name="tuner_string_sounding">Playing</string>
     <!-- TalkBack: the state of the locked string button while its reference tone sounds. -->
     <string name="tuner_string_locked_sounding">Locked, playing</string>
-    <!-- TalkBack: the state of a string button whose string has been in tune since the tuner opened (it shows a small check mark), so the player knows it is done. -->
+    <!-- TalkBack: the state of a string button whose string has been in tune since the tuner opened (it shows a small check mark), so the player knows it is done. Only with the Show tuning help setting on. -->
     <string name="tuner_string_tuned">Tuned</string>
     <!-- TalkBack: the state of the locked string button when that string has also been in tune since the tuner opened. -->
     <string name="tuner_string_locked_tuned">Locked, tuned</string>

@@ -602,8 +602,9 @@ private fun KeepScreenOn() {
  * when given, adds its "Lower by" row, which lowers the picked tuning. A long-press on a string calls [onStringLongClick] (play its
  * note); [soundingString] is the string whose tone sounds now, marked on its button, and while it
  * sounds a tap on any string calls [onStringClick], which stops the tone. [tunedStrings] are the strings
- * that have been in tune since the tuner opened, ticked off on their buttons in the plain tuner (not
- * while a tool is on, nor in the compact layout's small row). With [onStrumCheckChange] a
+ * tuned since the tuner opened and not played clearly off since, ticked off on their buttons in the plain tuner (not
+ * while a tool is on, nor in the compact layout's small row), and only with [showTuneHint] on: the
+ * "Show tuning help" setting covers both. With [onStrumCheckChange] a
  * switch at the end of the row above the strings turns strum check on and off ([strumCheck]
  * is whether it is on); the start of that row names the instrument and tuning ("Guitar · Drop D", or
  * the player's own tuning's name), and a tap on it calls [onPickerOpenChange] with true. A [TunerUiState.StrumCheck] state shows its panel in the meter's place and its
@@ -714,7 +715,7 @@ fun TunerContent(
         )
     }
     val guitarSlot = @Composable {
-        val strings = StringActions(onStringClick, onStringLongClick, soundingString, tunedStrings)
+        val strings = StringActions(onStringClick, onStringLongClick, soundingString, tunedStrings.takeIf { showTuneHint })
         val strum = onStrumCheckChange?.let { onStrum ->
             // Only tools whose switch the screen was given; the strum check's alone is its own switch, as in v1.0.
             val offered = tunerTools.filter {
@@ -1477,7 +1478,7 @@ private data class GuitarControlsState(
 /**
  * What the string buttons do: a tap ([onClick]: lock or unlock, or stop a sounding tone), a long-press
  * ([onLongClick]: play the string's note, none without it), which string's tone is [sounding], and
- * which strings have been in tune since the tuner opened ([tuned], ticked off).
+ * which strings are ticked off as tuned ([tuned]).
  */
 private data class StringActions(
     val onClick: (Int) -> Unit,

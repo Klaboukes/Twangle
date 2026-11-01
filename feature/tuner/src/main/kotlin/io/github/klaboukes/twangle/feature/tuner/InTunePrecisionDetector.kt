@@ -8,3 +8,9 @@ fun InTuneDetector.Companion.forPrecision(precision: InTunePrecision): InTuneDet
     InTunePrecision.RELAXED -> InTuneDetector()
     InTunePrecision.PRECISE -> InTuneDetector(InTuneDetector.PRECISE_ENTER_CENTS, InTuneDetector.PRECISE_EXIT_CENTS)
 }
+
+/** The exit margin of [precision]'s in-tune window: further off than this, a note is out of tune (7 or 3 cents). */
+fun InTuneDetector.Companion.exitCentsFor(precision: InTunePrecision): Float = when (precision) {
+    InTunePrecision.RELAXED -> InTuneDetector.DEFAULT_EXIT_CENTS
+    InTunePrecision.PRECISE -> InTuneDetector.PRECISE_EXIT_CENTS
+}

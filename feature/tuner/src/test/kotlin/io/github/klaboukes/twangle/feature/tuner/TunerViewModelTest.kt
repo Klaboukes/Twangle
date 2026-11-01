@@ -34,6 +34,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import kotlin.math.abs
+import kotlin.math.pow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModelTest {
@@ -903,5 +904,46 @@ class TunerViewModelTest {
         advanceTimeBy(200)
         runCurrent()
         assertNull("gone once the tuner stopped listening", vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `a ticked string played clearly out of tune loses its tick, but not for a moment's wobble`() = runTest(dispatcher) {
+        fun tone(hz: Float, seconds: Float) = TestSignals.sawtooth(hz, length = (48_000 * seconds).toInt())
+        // 20 cents sharp of A2: well past the in-tune window's 7-cent exit margin.
+        val sharp = 110f * 2f.pow(20f / 1200f)
+        val signal = tone(110f, 1.5f) + tone(sharp, 0.5f) + tone(110f, 1f) + tone(sharp, 2.5f) + tone(110f, 1.5f)
+        val vm = viewModel(FakeAudioRecorder(signal))
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+        val ticked = TunedStrings(Tunings.STANDARD, 0b10L)
+
+        advanceTimeBy(1_500)
+        assertEquals(ticked, vm.tunedStrings.value)
+        advanceTimeBy(1_400)
+        assertEquals("half a second off and back keeps the tick", ticked, vm.tunedStrings.value)
+
+        advanceTimeBy(2_400)
+        assertEquals(1, vm.detected().targetString)
+        assertTrue(vm.detected().cents > 7f)
+        assertNull("off for over a second: the tick goes", vm.tunedStrings.value)
+
+        advanceTimeBy(1_400)
+        assertEquals("back in tune: ticked again", ticked, vm.tunedStrings.value)
+    }
+
+    @Test
+    fun `with Show tuning help off no string is ticked`() = runTest(dispatcher) {
+        settings.setShowTuneHint(false)
+        val vm = viewModel(a2Recorder())
+        vm.onPermissionChanged(true)
+        backgroundScope.launch { vm.state.collect {} }
+
+        advanceTimeBy(1_000)
+        assertTrue(vm.detected().inTune)
+        assertNull(vm.tunedStrings.value)
+
+        settings.setShowTuneHint(true)
+        advanceTimeBy(100)
+        assertEquals("kept meanwhile, so turning it on shows them", TunedStrings(Tunings.STANDARD, 0b10L), vm.tunedStrings.value)
     }
 }

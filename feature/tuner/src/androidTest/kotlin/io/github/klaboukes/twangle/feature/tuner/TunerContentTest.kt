@@ -837,7 +837,7 @@ class TunerContentTest {
     /** Phase 65: a string in tune since the tuner opened carries a check, TalkBack hears "Tuned", and nothing moves. */
     @Test
     fun tunedStringsAreTickedOffWithoutMovingAnything() {
-        show(detected(-12.3f, targetString = 0))
+        show(detected(-12.3f, targetString = 0), showTuneHint = true)
         val labels = listOf("E2", "A2", "D3", "G3", "B3", "E4")
         val before = labels.map { stringChip(it).getBoundsInRoot() }
         val plain = stringChip("A2").captureToImage().toPixelMap()
@@ -856,7 +856,7 @@ class TunerContentTest {
 
     @Test
     fun aLockedStringTunedSaysBoth() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1))
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), showTuneHint = true)
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b11L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2"))
@@ -865,7 +865,7 @@ class TunerContentTest {
 
     @Test
     fun dutchTalkBackHearsATunedStringAsGestemd() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl")
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), locale = "nl", showTuneHint = true)
         shownTuned.value = TunedStrings(Tunings.STANDARD, 0b1L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("e 2"))
@@ -874,7 +874,7 @@ class TunerContentTest {
 
     @Test
     fun ticksShowOnlyForTheirOwnTuningAndNotUnderATool() {
-        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD), showTuneHint = true)
         shownTuned.value = TunedStrings(Tunings.DROP_D, 0b10L)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
@@ -883,6 +883,19 @@ class TunerContentTest {
         shownState.value = TunerUiState.StrumCheck(Tunings.STANDARD)
         compose.waitForIdle()
         compose.onNode(hasContentDescription("A 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+    }
+
+    /** The "Show tuning help" setting off (owner, 2026-11-01): no check on any button, and TalkBack hears no "Tuned". */
+    @Test
+    fun ticksFollowTheTuningHelpSwitch() {
+        show(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD, lockedString = 1), showTuneHint = false)
+        val plain = stringChip("A2").captureToImage().toPixelMap()
+        shownTuned.value = TunedStrings(Tunings.STANDARD, 0b11L)
+        compose.waitForIdle()
+        compose.onNode(hasContentDescription("E 2")).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+        compose.onNode(hasContentDescription("A 2"))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, context.getString(R.string.tuner_string_locked)))
+        assertFalse("no check drawn", differs(plain, stringChip("A2").captureToImage().toPixelMap()))
     }
 
     private fun differs(a: PixelMap, b: PixelMap): Boolean =

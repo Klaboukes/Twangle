@@ -11,6 +11,7 @@ import io.github.klaboukes.twangle.core.dsp.music.Instrument
 import io.github.klaboukes.twangle.core.dsp.music.Notation
 import io.github.klaboukes.twangle.core.dsp.music.NoteMapper
 import io.github.klaboukes.twangle.core.dsp.music.Tuning
+import io.github.klaboukes.twangle.core.dsp.smoothing.InTuneDetector
 import io.github.klaboukes.twangle.core.dsp.strum.StrumInstruments
 import io.github.klaboukes.twangle.core.dsp.trail.PitchHistory
 import io.github.klaboukes.twangle.core.settings.AppSettings
@@ -76,8 +77,9 @@ import kotlin.math.ceil
  * for [RatingMoment.QUIET_MILLIS], it is past the first day (by [clock]) and it was never asked before.
  * The screen then asks Google ([RatingWindow]) and calls [onRatingAsked].
  *
- * [tunedStrings] are the strings that have been in tune since listening started, ticked off on their
- * buttons (Phase 65); the same [AllStringsInTune] keeps them.
+ * [tunedStrings] are the strings ticked off on their buttons (Phase 65): in tune since listening
+ * started and not played clearly out of tune since, shown only with the "Show tuning help" setting
+ * on; the same [AllStringsInTune] keeps them.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TunerViewModel(
@@ -301,13 +303,18 @@ class TunerViewModel(
     private val tunedNow = MutableStateFlow<TunedStrings?>(null)
 
     /**
-     * The strings that have been in tune since the tuner started listening (Phase 65), ticked off on
-     * their buttons; null while none has. Kept by [AllStringsInTune] on the DSP thread, so it follows
-     * the tuner's own in-tune rule, in guitar mode only; a new tuning or A4 starts it afresh, and it
-     * goes when listening stops (the tuner left for more than 5 s, the app in the background, the
-     * microphone lost). The screen shows it only for the [TunedStrings.tuning] it shows.
+     * The strings ticked off on their buttons (Phase 65): in tune since the tuner started listening,
+     * and not played clearly out of tune since; null while none is, and always null while the "Show
+     * tuning help" setting ([AppSettings.showTuneHint]) is off (owner, 2026-11-01). Kept by
+     * [AllStringsInTune] on the DSP thread, so it follows the tuner's own in-tune and out-of-tune
+     * rules, in guitar mode only; a new tuning or A4 starts it afresh, and it goes when listening
+     * stops (the tuner left for more than 5 s, the app in the background, the microphone lost). The
+     * screen shows it only for the [TunedStrings.tuning] it shows.
      */
-    val tunedStrings: StateFlow<TunedStrings?> = tunedNow
+    val tunedStrings: StateFlow<TunedStrings?> =
+        combine(tunedNow, settingsRepository.settings.map { it.showTuneHint }.distinctUntilChanged()) { tuned, shown ->
+            tuned.takeIf { shown }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     /** The wait for the strings to fall quiet after the last one came in tune; touched only on the DSP thread. */
     private var ratingWait: Job? = null
@@ -630,7 +637,7 @@ class TunerViewModel(
         val intonationInterpreter = IntonationInterpreter(pipeline.frameSeconds, intonationResults)
         val chordInterpreter = ChordNameInterpreter()
         // This session's strings in tune: ticked off on their buttons, and Google's rating window (Phase 50) once the set is complete.
-        val allInTune = AllStringsInTune()
+        val allInTune = AllStringsInTune(pipeline.frameSeconds)
         var ratingArmed = false
         val initial = options.filterNotNull().first()
         emit(
@@ -724,7 +731,7 @@ class TunerViewModel(
                 }
                 state
             }.onEach {
-                val completed = allInTune.update(it)
+                val completed = allInTune.update(it, InTuneDetector.exitCentsFor((options.value ?: initial).inTunePrecision))
                 publishTuned(allInTune)
                 ratingArmed = followRatingMoment(it, completed, ratingArmed)
             },

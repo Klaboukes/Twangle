@@ -71,6 +71,8 @@ class StyleScreenshots(private val style: VisualStyle) {
                         modifier = Modifier.fillMaxSize(),
                         animationsOff = true,
                         tunedStrings = TunedStrings(Tunings.STANDARD, 0b11L),
+                        // As in the app by default: "Show tuning help" on, so the ticks show.
+                        showTuneHint = true,
                     )
                 }
             }

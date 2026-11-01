@@ -389,6 +389,24 @@ class SettingsContentTest {
         assertEquals(listOf(false), tuneHintChanges)
     }
 
+    /** One switch covers the up/down hint and the strings' ticks (owner, 2026-11-01): its words say both, in Dutch too. */
+    @Test
+    fun theTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("en", "Show tuning help")
+
+    @Test
+    fun dutchTuningHelpSwitchNamesTheHintAndTheTicks() = assertTuningHelpSwitch("nl", "Stemhulp tonen")
+
+    private fun assertTuningHelpSwitch(locale: String, title: String) {
+        show(AppSettings(showTuneHint = false), locale = locale)
+        val res = resourcesIn(locale)
+        assertEquals(title, res.getString(R.string.settings_show_tune_hint_title))
+        val switch = compose.onNodeWithText(title)
+        switch.performScrollTo().assertIsOff()
+        compose.onNodeWithText(res.getString(R.string.settings_show_tune_hint_summary)).assertIsDisplayed()
+        switch.performClick()
+        assertEquals(listOf(true), tuneHintChanges)
+    }
+
     @Test
     fun signalBarsSwitchIsOffByDefaultAndToggles() {
         show(AppSettings())

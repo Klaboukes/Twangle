@@ -49,21 +49,31 @@ class RatingMomentTest {
 
     // --- Every string in tune in one go ---------------------------------------------------------
 
-    private fun detected(string: Int, inTune: Boolean = true, mode: TunerMode = TunerMode.AUTO) =
+    private fun detected(
+        string: Int,
+        inTune: Boolean = true,
+        mode: TunerMode = TunerMode.AUTO,
+        cents: Float = 0f,
+        hint: TunerHint? = if (inTune) TunerHint.IN_TUNE else null,
+    ) =
         TunerUiState.Detected(
             mode = mode,
             tuning = Tunings.STANDARD,
             noteName = "E",
             octave = 2,
             frequencyHz = 82.4f,
-            cents = 0f,
+            cents = cents,
             targetString = if (mode == TunerMode.AUTO) string else null,
             inTune = inTune,
+            hint = hint,
         )
+
+    /** Just over one second of frames at the tuner's rate, [FRAME] each. */
+    private val second = (1f / FRAME).toInt() + 1
 
     @Test
     fun `completes once, when the last string not yet in tune comes in tune`() {
-        val all = AllStringsInTune()
+        val all = AllStringsInTune(FRAME)
         for (string in 0 until 5) assertFalse(all.update(detected(string)))
         assertFalse("a string again", all.update(detected(2)))
         assertFalse("off pitch counts nothing", all.update(detected(5, inTune = false)))
@@ -74,7 +84,7 @@ class RatingMomentTest {
 
     @Test
     fun `chromatic mode counts nothing, and a new tuning starts afresh`() {
-        val all = AllStringsInTune()
+        val all = AllStringsInTune(FRAME)
         for (string in 0 until 6) assertFalse(all.update(detected(string, mode = TunerMode.CHROMATIC)))
         for (string in 0 until 5) assertFalse(all.update(detected(string)))
         val dropD = TunerUiState.Detected(
@@ -86,7 +96,7 @@ class RatingMomentTest {
 
     @Test
     fun `keeps the strings in tune so far, the ones ticked off on their buttons`() {
-        val all = AllStringsInTune()
+        val all = AllStringsInTune(FRAME)
         assertEquals(0L, all.tuned)
         all.update(detected(1))
         all.update(detected(4, inTune = false))
@@ -95,7 +105,7 @@ class RatingMomentTest {
         assertEquals("only the A string, in tune in guitar mode", 0b10L, all.tuned)
         assertEquals(Tunings.STANDARD, all.tuning)
         all.update(detected(1, inTune = false))
-        assertEquals("a string off again stays ticked: it has been in tune", 0b10L, all.tuned)
+        assertEquals("a string merely not held in tune stays ticked", 0b10L, all.tuned)
         val ticks = TunedStrings(Tunings.STANDARD, all.tuned)
         assertTrue(1 in ticks)
         assertFalse(0 in ticks)
@@ -104,8 +114,46 @@ class RatingMomentTest {
     }
 
     @Test
+    fun `a ticked string played clearly out of tune for a second loses its tick, and earns it again`() {
+        val all = AllStringsInTune(FRAME)
+        all.update(detected(1))
+        all.update(detected(4))
+        val sharp = detected(1, inTune = false, cents = 15f, hint = TunerHint.TUNE_DOWN)
+        repeat(second - 3) { all.update(sharp) }
+        assertEquals("not yet: under a second", 0b10010L, all.tuned)
+        repeat(3) { all.update(sharp) }
+        assertEquals("the A string's tick goes, the B string's stays", 0b10000L, all.tuned)
+
+        all.update(detected(1))
+        assertEquals("back in tune: ticked again", 0b10010L, all.tuned)
+    }
+
+    @Test
+    fun `a pluck's attack, a passing wobble or a reading near the window keeps the tick`() {
+        val all = AllStringsInTune(FRAME)
+        all.update(detected(1))
+        val sharp = detected(1, inTune = false, cents = 15f, hint = TunerHint.TUNE_DOWN)
+        // Off for most of a second, three times, with a moment back in tune or a gap between plucks.
+        repeat(second - 5) { all.update(sharp) }
+        all.update(detected(1))
+        repeat(second - 5) { all.update(sharp) }
+        all.update(TunerUiState.Listening(TunerMode.AUTO, Tunings.STANDARD))
+        repeat(second - 5) { all.update(sharp) }
+        all.update(detected(1))
+        // Just inside the exit margin (7 cents, Relaxed): not clearly out of tune.
+        repeat(2 * second) { all.update(detected(1, inTune = false, cents = 6.5f, hint = TunerHint.TUNE_DOWN)) }
+        // Another string heard off pitch says nothing about this one.
+        repeat(2 * second) { all.update(detected(2, inTune = false, cents = 15f, hint = TunerHint.TUNE_DOWN)) }
+        assertEquals(0b10L, all.tuned)
+
+        // Precise's narrower window (out past 3 cents) counts 6.5 cents as clearly off.
+        repeat(second) { all.update(detected(1, inTune = false, cents = 6.5f, hint = TunerHint.TUNE_DOWN), outCents = 3f) }
+        assertEquals(0L, all.tuned)
+    }
+
+    @Test
     fun `a new tuning or A4, even while nothing is heard, starts the ticks afresh`() {
-        val all = AllStringsInTune()
+        val all = AllStringsInTune(FRAME)
         all.update(detected(1))
         all.update(TunerUiState.Listening(TunerMode.AUTO, Tunings.DROP_D))
         assertEquals(0L, all.tuned)
@@ -134,6 +182,11 @@ class RatingMomentTest {
     }
 
     private val now = 100L * RatingMoment.FIRST_DAY_MILLIS
+
+    private companion object {
+        /** The tuner's time between two states, near the phone's (1024 samples at 48 kHz). */
+        const val FRAME = 1024f / 48_000f
+    }
 
     private fun TestScope.viewModel(recorder: FakeAudioRecorder, settings: FakeSettingsRepository) =
         TunerViewModel(recorder, settings, FakeTonePlayer(), StandardTestDispatcher(testScheduler), clock = { now })

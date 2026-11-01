@@ -125,10 +125,10 @@
     <string name="settings_vibrate_in_tune_title">Vibrate when in tune</string>
     <!-- The line under the Vibrate when in tune switch. -->
     <string name="settings_vibrate_in_tune_summary">A short buzz when the note reaches pitch</string>
-    <!-- Switch title: show the hint under the meter that says whether to tune up or down. -->
-    <string name="settings_show_tune_hint_title">Show tune up/down hint</string>
-    <!-- The line under the tune up/down hint switch: the hint says whether to tune the string up (higher) or down (lower). -->
-    <string name="settings_show_tune_hint_summary">Says whether to tune up or down while a note is off pitch</string>
+    <!-- Switch title: turns on the tuner's help while tuning: the hint under the meter that says whether to tune up or down, and a small check mark on each string button once that string is in tune. -->
+    <string name="settings_show_tune_hint_title">Show tuning help</string>
+    <!-- The line under the Show tuning help switch: the tuner says whether to tune the string up (higher) or down (lower), and marks each string's button with a check once the string is in tune. -->
+    <string name="settings_show_tune_hint_summary">Says whether to tune up or down, and checks off each string once it\'s in tune</string>
     <!-- Switch title: show small bars by the note for how loud and clear the sound is heard. -->
     <string name="settings_show_signal_bars_title">Show signal bars</string>
     <!-- The line under the Show signal bars switch. -->
