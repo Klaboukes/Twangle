@@ -172,6 +172,18 @@ fun neonFill(scheme: ColorScheme): Color = scheme.primary.copy(alpha = NEON_FILL
 private const val NEON_FILL_ALPHA = 0.10f
 
 /**
+ * A string button's fill when it isn't picked: the high surface container at 85 % on the background,
+ * Futuristic's ([neon]) its [neonFill]. Its name is in the ink on it and its edge [controlOutline]
+ * (Phase 65: the string buttons, the tuner's main control, had their name in the muted colour and a
+ * track-coloured edge, about 1.3:1 against the background, fainter than the round buttons above them);
+ * StylePaletteTest checks both in every style, light and dark.
+ */
+fun stringChipFill(scheme: ColorScheme, neon: Boolean): Color =
+    if (neon) neonFill(scheme) else scheme.surfaceContainerHigh.copy(alpha = STRING_CHIP_FILL_ALPHA).compositeOver(scheme.background)
+
+private const val STRING_CHIP_FILL_ALPHA = 0.85f
+
+/**
  * Futuristic's neon glow round a string button: [color] blurred 8 dp round [shape], drawn behind a
  * box that has [inset] of room round the button, at [alpha] (0..1). [color] and [alpha] are read
  * while drawing, so easing them in and out redraws only this and allocates nothing. Hardware blur

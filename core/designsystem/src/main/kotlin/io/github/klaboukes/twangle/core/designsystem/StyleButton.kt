@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -32,7 +33,8 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
 
 /*
  * Twangle's one button for an icon (Phase 63, docs/architecture/ui.md *Shared controls*): a
- * see-through face on the background (the surface at 45 % behind a thin outline in the muted colour)
+ * see-through face on the background (the surface at 45 % behind a thin outline in the muted colour, 3:1
+ * against the background since Phase 65, [controlOutline])
  * in the style's button shape, picked ones in the container colour with a 2 dp accent outline, a
  * screen's main action filled in the accent. Futuristic's are neon outlines in the accent on a solid
  * tint ([neonFill]). Every one shows Twangle's press effect ([pressFeedback]). It began as the
@@ -49,19 +51,21 @@ class ButtonLook(style: VisualStyle, val shape: Shape, private val scheme: Color
     /** A button's face ([StyleButton]): see [buttonShapeFor]. */
     val buttonShape: Shape = buttonShapeFor(style, shape)
 
-    /** A see-through button's backing; [picked] ones in the container colour (Futuristic: a faint accent). */
+    /**
+     * A see-through button's backing; [picked] ones in the container colour (Futuristic: a faint accent,
+     * solid on the background colour since Phase 65, so its horizon's grid no longer runs through a picked row).
+     */
     fun fill(picked: Boolean = false): Color = when {
-        picked && neon -> scheme.primary.copy(alpha = PICKED_NEON_ALPHA)
+        picked && neon -> scheme.primary.copy(alpha = PICKED_NEON_ALPHA).compositeOver(scheme.background)
         picked -> scheme.primaryContainer
         neon -> neonFill(scheme)
         else -> scheme.surface.copy(alpha = BACKING_ALPHA)
     }
 
-    /** A see-through button's outline: muted, Futuristic's in the accent, [picked] ones 2 dp in the accent. */
+    /** A see-through button's outline: muted, Futuristic's in the accent ([controlOutline]), [picked] ones 2 dp in the accent. */
     fun outline(picked: Boolean = false): BorderStroke = when {
         picked -> BorderStroke(2.dp, scheme.primary)
-        neon -> BorderStroke(1.dp, scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA))
-        else -> BorderStroke(1.dp, scheme.onSurfaceVariant.copy(alpha = MUTED_OUTLINE_ALPHA))
+        else -> BorderStroke(1.dp, controlOutline(scheme, neon))
     }
 
     /**
@@ -244,7 +248,28 @@ private const val PICKED_NEON_ALPHA = 0.12f
 private const val MAIN_NEON_ALPHA = 0.14f
 private val MAIN_NEON_OUTLINE = 1.5.dp
 
-/** Futuristic's outline: the accent at 55 %, as its tuner's neon buttons. */
-private const val NEON_OUTLINE_ALPHA = 0.55f
-private const val MUTED_OUTLINE_ALPHA = 0.6f
 private const val DISABLED_ALPHA = 0.38f
+
+/**
+ * The resting outline of a see-through control in [scheme] (Phase 65): the muted colour, or with
+ * [neon] (Futuristic) the accent, strong enough to stand 3:1 against the background in every style,
+ * light and dark (WCAG's rule for a control's edge, checked in StylePaletteTest). A light ground needs
+ * more of it than a dark one: the muted colour at 75 % in light (60 % gave Ancient, Classic and Space
+ * Age about 2.7:1) and 60 % in dark, the accent at 80 % in light and 55 % in dark. The style's
+ * buttons ([ButtonLook.outline]), the string buttons and the neon segments and chips use it.
+ */
+fun controlOutline(scheme: ColorScheme, neon: Boolean): Color {
+    val light = scheme.background.luminance() >= LIGHT_GROUND
+    return if (neon) {
+        scheme.primary.copy(alpha = if (light) NEON_OUTLINE_LIGHT else NEON_OUTLINE_DARK)
+    } else {
+        scheme.onSurfaceVariant.copy(alpha = if (light) MUTED_OUTLINE_LIGHT else MUTED_OUTLINE_DARK)
+    }
+}
+
+/** A background at least this bright (relative luminance) is a light style's. */
+private const val LIGHT_GROUND = 0.2f
+private const val MUTED_OUTLINE_LIGHT = 0.75f
+private const val MUTED_OUTLINE_DARK = 0.6f
+private const val NEON_OUTLINE_LIGHT = 0.8f
+private const val NEON_OUTLINE_DARK = 0.55f

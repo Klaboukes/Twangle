@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -270,11 +277,13 @@ private fun SettingsScaffold(
     ) { innerPadding ->
         // The whole width scrolls, but the content stays in a centred column no wider than
         // CONTENT_MAX_WIDTH, so rows don't stretch across a tablet or a phone on its side.
+        val scroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
+                .fadeUnderTitle(scroll)
+                .verticalScroll(scroll),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
@@ -288,6 +297,27 @@ private fun SettingsScaffold(
         }
     }
 }
+
+/**
+ * The rows fade out as they pass under the page's fixed title (Phase 65): without it a row scrolled
+ * half under the title was cut off in a hard line. The fade comes in over the first [TITLE_FADE] of
+ * scrolling, so a page at its top shows every row whole, as before. Read while drawing, so scrolling
+ * redraws only this; the page is drawn in a layer of its own for it.
+ */
+private fun Modifier.fadeUnderTitle(scroll: ScrollState): Modifier =
+    graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val reach = TITLE_FADE.toPx()
+            val amount = (scroll.value / reach).coerceIn(0f, 1f)
+            if (amount > 0f) {
+                drawRect(
+                    Brush.verticalGradient(0f to Color.Black.copy(alpha = 1f - amount), 1f to Color.Black, endY = reach),
+                    size = Size(size.width, reach),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+        }
 
 /**
  * Every setting, in five headed groups: Pitch and notes (which note it is and what counts as in
@@ -531,6 +561,9 @@ private val ROW_INSET = 16.dp
 
 /** Wide enough for comfortable rows; on wider screens the settings stay centred at this width. */
 private val CONTENT_MAX_WIDTH = 600.dp
+
+/** How far under the fixed title the rows fade out while the page is scrolled. */
+private val TITLE_FADE = 24.dp
 
 /** The top bar's title is set no smaller than this where it doesn't fit. */
 private val TITLE_SMALLEST = 14.sp

@@ -441,7 +441,7 @@ private fun StepButton(higher: Boolean, enabled: Boolean, onClick: () -> Unit) {
 /**
  * The table: "Shape · Sounds" over one row per chord of the shapes' key ([capoChordsOf]), the shape
  * in the muted colour, an arrow, then the chord it sounds in the ink colour; every other row on a
- * faint band, no lines. A row is one button that opens its shape in Chords ([onOpenChord]). Not [shown], it only
+ * faint band, no lines, all on a card of the surface colour. A row is one button that opens its shape in Chords ([onOpenChord]). Not [shown], it only
  * takes its room: unseen, unheard and not tapped (under the banjo's line).
  */
 @Composable
@@ -451,7 +451,11 @@ private fun CapoTableView(plan: CapoPlan, notation: Notation, speech: NoteNameSp
         Modifier
             .widthIn(max = TABLE_MAX_WIDTH)
             .fillMaxWidth()
-            .then(if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics {}),
+            .then(if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics {})
+            // On a card of the surface colour, so the style's background art (Space Age's dots) stays behind the
+            // rows and their faint bands (Phase 65).
+            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+            .padding(vertical = TABLE_PADDING),
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = ROW_PADDING).semantics(mergeDescendants = true) { heading() }) {
             val style = MaterialTheme.typography.labelMedium
@@ -560,6 +564,9 @@ private val ROW_HEIGHT = 48.dp
 
 private val ROW_PADDING = 20.dp
 private const val BAND_ALPHA = 0.06f
+
+/** The table's card keeps this much above its heading and below its last row. */
+private val TABLE_PADDING = 4.dp
 
 /** The shapes' list is at least this wide (the shapes button's width until Phase 63). */
 private val SHAPES_MENU_WIDTH = 132.dp

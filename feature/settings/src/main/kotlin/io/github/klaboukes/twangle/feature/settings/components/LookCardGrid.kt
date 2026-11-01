@@ -1,6 +1,7 @@
 package io.github.klaboukes.twangle.feature.settings.components
 
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -42,7 +43,7 @@ import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 /**
  * A titled grid of look cards, three to a row (two from 1.3× system font on a small window,
  * [lookCardsPerRow]), shared by the style, wave look and meter look pickers so all three work the
- * same. Each card shows [preview] above its [label]. The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
+ * same. Each card shows [preview] above its [label], on the plain background colour (no art). The [selected] card has a ring; tapping a card calls [onSelect]. A name too long for its card gets
  * smaller rather than breaking in the middle of a word. The cards form one selectable group for
  * TalkBack, which reads each card as a radio button with its name and whether it is selected.
  *
@@ -130,6 +131,9 @@ private fun LookCard(
             .heightIn(min = 48.dp)
             .pressSink(press)
             .clip(shape)
+            // Solid, so the style's background art (Futuristic's horizon, Space Age's dots) stays behind the
+            // card and doesn't run through its picture and name (Phase 65).
+            .background(colors.background)
             .border(
                 width = if (selected) 2.dp else 1.dp,
                 color = if (selected) colors.primary else colors.outlineVariant,

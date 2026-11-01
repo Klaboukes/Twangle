@@ -17,8 +17,8 @@ import androidx.compose.ui.window.DialogWindowProvider
  * Call first thing in a `ModalBottomSheet`'s content (Phase 63): the sheet's own colour then runs under
  * the gesture bar, as the app's screens do. A sheet is a window of its own, and Android lays the
  * system's readable strip behind its navigation bar (MIUI a white one along the gesture bar in light,
- * found on the Xiaomi). The sheet's window takes the activity's choice instead (`MainActivity`: no strip
- * behind the bare gesture handle, the system's scrim behind navigation buttons) and a see-through bar.
+ * found on the Xiaomi). The sheet's window takes the activity's choice instead (`MainActivity`: no strip,
+ * behind the gesture handle or the navigation buttons, since Phase 65) and a see-through bar.
  */
 @Composable
 fun SheetUnderNavigationBar() {

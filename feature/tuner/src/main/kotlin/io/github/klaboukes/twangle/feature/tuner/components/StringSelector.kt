@@ -70,13 +70,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
+import io.github.klaboukes.twangle.core.designsystem.controlOutline
 import io.github.klaboukes.twangle.core.designsystem.musicText
-import io.github.klaboukes.twangle.core.designsystem.neonFill
 import io.github.klaboukes.twangle.core.designsystem.neonGlow
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
 import io.github.klaboukes.twangle.core.designsystem.rememberAnimationsOff
 import io.github.klaboukes.twangle.core.designsystem.rememberNoteNameSpeech
+import io.github.klaboukes.twangle.core.designsystem.stringChipFill
 import io.github.klaboukes.twangle.core.designsystem.stringChipShading
 import io.github.klaboukes.twangle.core.designsystem.stringChipShape
 import io.github.klaboukes.twangle.core.designsystem.stringChipSize
@@ -276,7 +277,8 @@ private fun StringChip(
     val background by animateColorAsState(if (highlighted) accent else Color.Transparent, label = "chip")
     val content by animateColorAsState(
         targetValue = when {
-            !highlighted -> colors.onSurfaceVariant
+            // Full ink, as the round buttons' icons (Phase 65; the muted colour before).
+            !highlighted -> colors.onSurface
             inTune -> onInTuneColor()
             else -> colors.onPrimary
         },
@@ -346,19 +348,12 @@ private fun StringChip(
             // The locked string: a ring outside the chip, so it shows whether or not it's highlighted.
             .border(2.dp, ring, shape)
             .padding(ringGap)
-            .background(if (neon) neonFill(colors) else colors.surfaceContainerHigh.copy(alpha = 0.85f), shape)
+            .background(stringChipFill(colors, neon), shape)
             .background(background, shape)
             // Classic's keys and Retro's push buttons get their shading over the fill.
             .stringChipShading(style, shape, colors.onSurface)
-            .border(
-                1.dp,
-                when {
-                    highlighted -> accent
-                    neon -> colors.primary.copy(alpha = NEON_OUTLINE_ALPHA)
-                    else -> colors.outlineVariant
-                },
-                shape,
-            )
+            // An edge 3:1 against the background in every style, as the round buttons' (Phase 65).
+            .border(1.dp, if (highlighted) accent else controlOutline(colors, neon), shape)
             .indication(press, PressIndication(shape, face = true))
             .semantics(mergeDescendants = true) {
                 contentDescription = spokenName
@@ -518,7 +513,6 @@ private val MIN_LABEL = 8.sp
 private val KEY_LABEL_PADDING = 6.dp
 
 /** Futuristic's tiles: an outline in the accent at 55 %, and a glow in it at 35 % round the picked one (the mock-up's neon). */
-private const val NEON_OUTLINE_ALPHA = 0.55f
 private const val NEON_GLOW_ALPHA = 0.35f
 private val SMALL_CHIP_SPACING = 4.dp
 

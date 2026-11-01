@@ -56,6 +56,20 @@ class StylePaletteTest {
     }
 
     @Test
+    fun `controls' edges stand out from the background and the string buttons' names are in full ink`() = forEach { name, p, dark ->
+        val scheme = p.toColorScheme(dark)
+        // Every style's own look, and Futuristic's neon one in every palette, so a palette change can't slip under.
+        for (neon in listOf(false, true)) {
+            val look = if (neon) "neon" else "muted"
+            assertContrast("$name $look control outline", controlOutline(scheme, neon), p.background, AA_MARKS)
+            val fill = stringChipFill(scheme, neon)
+            // The edge is drawn over the fill's rim, so it must stand out where the fill meets the background.
+            assertContrast("$name $look string button edge", controlOutline(scheme, neon).compositeOver(fill), p.background, AA_MARKS)
+            assertContrast("$name $look string button name", scheme.onSurface, fill, AA_TEXT)
+        }
+    }
+
+    @Test
     fun `the palettes are the approved mock-up's`() {
         // Spot checks, one per style; the rest were copied from the same data blocks (backgrounds and
         // surfaces from background-tones-preview.html).

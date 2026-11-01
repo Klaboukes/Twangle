@@ -26,17 +26,14 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.klaboukes.twangle.core.designsystem.InstrumentButton
 import io.github.klaboukes.twangle.core.designsystem.PressIndication
 import io.github.klaboukes.twangle.core.designsystem.TwangleTextButton
-import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
 import io.github.klaboukes.twangle.core.designsystem.pressSink
@@ -74,7 +71,10 @@ internal fun TuningLine(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = if (onPickInstrument != null) TextAlign.Start else TextAlign.Center,
-            maxLines = 2,
+            // One line (Phase 65), ending in "…" where the name is longer than its room: two lines
+            // made the header taller than the tool button for a long custom tuning's name.
+            maxLines = 1,
+            softWrap = false,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .weight(1f, fill = false)
@@ -109,10 +109,11 @@ internal fun TuningLine(
 /**
  * The top row of the Chords and Capo tools (Phase 47, the owner's pick A in
  * docs/design/tool-button-preview.html): the tool button ([toolButton], [TOOL_BUTTON_WIDTH] wide)
- * at the start, then the instrument and tuning line ([TuningLine]) in the room left, its name on up
- * to two lines. Where even two lines can't hold the name without breaking a word (a 320 dp phone at
- * 2× text), the tuning line goes on a line of its own under the button, at the start too. Public for
- * the tools of other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
+ * at the start, then the instrument and tuning line ([TuningLine]) in the room left, its name on one
+ * line ending in "…" where it is longer (Phase 65; up to two lines before). Only where the room left
+ * is too narrow for a few letters ([MIN_NAME_EMS] wide, a 320 dp phone at a very large text size) does
+ * the tuning line go on a line of its own under the button, at the start too. Public for the tools of
+ * other modules (Ear training, `:feature:eartraining`), whose top row `:app` builds with it.
  */
 @Composable
 fun ToolAndTuningRow(
@@ -123,21 +124,11 @@ fun ToolAndTuningRow(
     modifier: Modifier = Modifier,
 ) {
     val style = MaterialTheme.typography.bodyMedium
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val beforeName = TOOL_BUTTON_WIDTH + ROW_GAP + if (onPickInstrument != null) INSTRUMENT_TOUCH + NAME_GAP + NAME_PADDING * 2 else 0.dp
-        val room = with(density) { (maxWidth - beforeName).roundToPx() }
-        val fits = remember(tuningName, style, room, density, measurer) {
-            room > 0 && measurer.measure(
-                musicText(tuningName),
-                style,
-                maxLines = 2,
-                constraints = Constraints(maxWidth = room),
-                density = density,
-            ).let { !it.hasVisualOverflow && it.breaksBetweenWords(tuningName) }
-        }
-        if (fits) {
+        // A few letters of the name at its size, however large the text is set.
+        val minRoom = with(LocalDensity.current) { style.fontSize.toDp() } * MIN_NAME_EMS
+        if (maxWidth - beforeName >= minRoom) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 toolButton()
                 Spacer(Modifier.width(ROW_GAP))
@@ -151,6 +142,9 @@ fun ToolAndTuningRow(
         }
     }
 }
+
+/** The name stays beside the tool button where its room holds about this many letters' widths (in ems) or more. */
+private const val MIN_NAME_EMS = 4f
 
 /** Between the instrument button's touch target and the name's pressable box; the name this far in from that box's ends. */
 private val NAME_GAP = 2.dp

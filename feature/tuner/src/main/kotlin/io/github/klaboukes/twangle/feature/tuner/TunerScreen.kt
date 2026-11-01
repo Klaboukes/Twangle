@@ -51,6 +51,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.VerticalAlignmentLine
+import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -1085,14 +1087,44 @@ private fun TwoPaneLayout(
                     .widthIn(max = COLUMN_MAX_WIDTH)
                     .padding(vertical = CONTROLS_PANE_CLEARANCE),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SECTION_SPACING),
             ) {
-                header()
-                guitarSlot()
+                HeaderOverSlot(header, guitarSlot)
             }
         }
     }
 }
+
+/**
+ * The controls pane's [header] (the mode switch, focus mode's button and the signal bars) over the
+ * [guitarSlot], [SECTION_SPACING] apart, the header as wide as the string buttons' faces
+ * ([StringFacesLeft]), so on its side focus mode's button ends where the last string's button and the
+ * tools button do, and the signal bars start where the instrument button does (Phase 65: they stood a
+ * few dp further out, the header taking the pane's whole width). Without strings it takes the width.
+ */
+@Composable
+private fun HeaderOverSlot(header: @Composable () -> Unit, guitarSlot: @Composable () -> Unit) {
+    Layout(contents = listOf(header, guitarSlot)) { (headerMeasurables, slotMeasurables), constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val slot = slotMeasurables.single().measure(loose)
+        val faces = slot[StringFacesLeft]
+        val span = slot.width - 2 * faces
+        val headerConstraints = if (faces == AlignmentLine.Unspecified || span <= 0) loose else loose.copy(minWidth = span, maxWidth = span)
+        val headerPlaceable = headerMeasurables.single().measure(headerConstraints)
+        val gap = SECTION_SPACING.roundToPx()
+        val width = maxOf(slot.width, headerPlaceable.width).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = (headerPlaceable.height + gap + slot.height).coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            headerPlaceable.placeRelative((width - headerPlaceable.width) / 2, 0)
+            slot.placeRelative((width - slot.width) / 2, headerPlaceable.height + gap)
+        }
+    }
+}
+
+/**
+ * Where the first string button's face starts in the guitar slot, from its left (the inset is the same
+ * at the right end), for the header over it on its side ([HeaderOverSlot]).
+ */
+private val StringFacesLeft = VerticalAlignmentLine(::minOf)
 
 /**
  * The compact landscape layout (focus mode). With a [focusNote] (the plain tuner) the [gauge] fills
@@ -1604,7 +1636,8 @@ private fun GuitarControls(
         val rowHeight = maxOf(togglePlaceable?.height ?: 0, instrumentPlaceable?.height ?: 0, labelPlaceable?.height ?: 0)
         val stringsY = if (rowHeight > 0) rowHeight + TOGGLE_STRINGS_GAP.roundToPx() else 0
         val height = (stringsY + stringsPlaceable.height).coerceIn(constraints.minHeight, constraints.maxHeight)
-        layout(width, height) {
+        // The faces' inset is the same at both ends, so one line from the left says where both are.
+        layout(width, height, alignmentLines = mapOf<AlignmentLine, Int>(StringFacesLeft to facesStart)) {
             if (togglePlaceable != null && toggleX != null) togglePlaceable.placeRelative(toggleX, (rowHeight - togglePlaceable.height) / 2)
             if (instrumentPlaceable != null && instrumentX != null) instrumentPlaceable.placeRelative(instrumentX, (rowHeight - instrumentPlaceable.height) / 2)
             labelPlaceable?.placeRelative(labelStart, (rowHeight - labelPlaceable.height) / 2)
@@ -1640,7 +1673,11 @@ private fun ModeSlot(
         val parts = listOfNotNull(guitarPlaceable, chromaticPlaceable)
         val width = (parts.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
         val height = (parts.maxOfOrNull { it.height } ?: 0).coerceIn(constraints.minHeight, constraints.maxHeight)
-        layout(width, height) {
+        // Where the string buttons' faces start, in both modes (chromatic mode places no strings), so the
+        // header over the slot on its side keeps the same edges in both ([HeaderOverSlot]).
+        val faces = guitarPlaceable?.get(StringFacesLeft)?.takeIf { it != AlignmentLine.Unspecified }
+        val lines: Map<AlignmentLine, Int> = if (faces != null && guitarPlaceable != null) mapOf(StringFacesLeft to (width - guitarPlaceable.width) / 2 + faces) else emptyMap()
+        layout(width, height, alignmentLines = lines) {
             val shown = if (guitarShown) guitarPlaceable else chromaticPlaceable
             shown?.placeRelative((width - shown.width) / 2, height - shown.height)
         }

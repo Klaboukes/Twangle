@@ -88,7 +88,7 @@ fun <T> SegmentedSwitch(
                         activeContentColor = scheme.onPrimaryContainer,
                         inactiveContainerColor = if (neon) neonFill(scheme) else scheme.surface.copy(alpha = 0.6f),
                         activeBorderColor = if (neon) scheme.primary else scheme.outline,
-                        inactiveBorderColor = if (neon) scheme.primary.copy(alpha = NEON_OUTLINE_ALPHA) else scheme.outline,
+                        inactiveBorderColor = if (neon) controlOutline(scheme, neon = true) else scheme.outline,
                     ),
                     // Three segments (Practice's tool switch until Phase 47; none today) keep less padding, so Dutch
                     // "Metronoom" still fits a 320 dp phone at 2× text. Two keep Material's 12 dp where
@@ -240,7 +240,6 @@ private val CROWDED_PADDING = PaddingValues(horizontal = 6.dp)
 private val GIVING_PADDING = 12.dp
 
 /** Futuristic's unpicked button outline: the accent at 55 %, as the mock-up's neon. */
-private const val NEON_OUTLINE_ALPHA = 0.55f
 
 /** A segment's line, as a multiple of the label style's own font size: the letters at full size fit it. */
 private const val LABEL_LINE_HEIGHT = 1.2f

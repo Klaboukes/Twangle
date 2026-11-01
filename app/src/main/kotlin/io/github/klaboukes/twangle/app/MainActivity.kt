@@ -14,9 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.tappableElement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,8 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -147,29 +143,21 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun TwangleApp(container: AppContainer, settings: AppSettings, openTunerRequest: Int) {
         val darkTheme = settings.theme.useDarkTheme(isSystemInDarkTheme())
-        // Navigation buttons or the gesture bar. Switching between them changes the insets, so the
-        // phone's navigation mode is read again then.
-        val tappable = WindowInsets.tappableElement
-        val density = LocalDensity.current
-        val layoutDirection = LocalLayoutDirection.current
-        val left = tappable.getLeft(density, layoutDirection)
-        val right = tappable.getRight(density, layoutDirection)
-        val bottom = tappable.getBottom(density)
-        val buttonNavigation = remember(left, right, bottom) {
-            navigationButtonsShown(contentResolver.navigationMode(), left, right, bottom)
-        }
 
-        // Status and navigation bar icons follow the app's theme, not just the phone's.
-        DisposableEffect(darkTheme, buttonNavigation) {
+        // Status and navigation bar icons follow the app's theme, not just the phone's. Both bars are
+        // see-through, so the style's background runs to every edge, under the gesture handle and under
+        // the three navigation buttons too, upright and on its side (Phase 65; until then the buttons
+        // stood on the system's white or dark strip). Their icons stay readable: dark on a light style,
+        // light on a dark one, and the navigation bar's calm field lies under them upright.
+        DisposableEffect(darkTheme) {
             enableEdgeToEdge(
                 statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
-                navigationBarStyle = SystemBarStyle.auto(LIGHT_SCRIM, DARK_SCRIM) { darkTheme },
+                navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
             )
-            // enableEdgeToEdge asks the system to keep the navigation bar readable, and MIUI then lays a
-            // white (or dark) strip behind the gesture bar too. The bare handle needs none: only navigation
-            // buttons keep the system's scrim, so the style's background reaches the bottom edge.
+            // enableEdgeToEdge asks the system to keep the navigation bar readable, which lays a strip
+            // behind the buttons (and, on MIUI, behind the gesture bar too): never asked.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                window.isNavigationBarContrastEnforced = buttonNavigation
+                window.isNavigationBarContrastEnforced = false
             }
             onDispose {}
         }
@@ -562,9 +550,5 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         // From this short side on, a screen may letterbox an orientation request instead of turning (FocusTurn).
         const val LARGE_SCREEN_DP = 600
-
-        // The scrims enableEdgeToEdge() uses by default behind 3-button navigation.
-        val LIGHT_SCRIM = Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
-        val DARK_SCRIM = Color.argb(0x80, 0x1b, 0x1b, 0x1b)
     }
 }
