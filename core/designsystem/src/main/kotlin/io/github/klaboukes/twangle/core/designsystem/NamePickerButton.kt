@@ -47,7 +47,8 @@ import androidx.compose.ui.unit.sp
  * the two centred. One steady height ([NAME_PICKER_HEIGHT]) whatever the name, the language and the
  * text size: a name too long for one line is set smaller (down to 7 sp), and only where even that
  * doesn't fit (Russian "Соль♯ гармонический минор" at 2× text on a 320 dp phone beside the drone
- * button) on two or three lines, whole words, smaller still ([NameAutoSize]). Never taller.
+ * button) on two or three lines, whole words, smaller still, down to 5 sp ([NameAutoSize]; German
+ * "G♯ harmonisches Moll" in Space Age's wide letters, the overnight run of 2026-11-01). Never taller.
  *
  * With [caption] a small muted line stands above the box ("Shapes I play"), hidden from TalkBack, so
  * [spoken] should say it. TalkBack hears the box as a drop-down list called [spoken], a [heading]
@@ -103,7 +104,7 @@ fun NamePickerButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                musicText(breakableAtHyphens(name)),
+                musicText(breakableAtHyphens(koreanWordsKeptWhole(name))),
                 style = title.copy(
                     fontWeight = FontWeight.SemiBold,
                     // The one-weight faces (Forum, Righteous, Michroma) stay as drawn, not smeared bolder.
@@ -166,6 +167,6 @@ internal class NameAutoSize(
 val NAME_PICKER_HEIGHT = 56.dp
 private val NAME_PICKER_PADDING = 16.dp
 private val SMALLEST_NAME = 7.sp
-private val LAST_RESORT_NAME = 6.sp
+private val LAST_RESORT_NAME = 5.sp
 private const val MOST_LINES = 3
 private const val STEP = 0.5f

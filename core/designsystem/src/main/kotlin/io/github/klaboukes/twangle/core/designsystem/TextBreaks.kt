@@ -16,6 +16,20 @@ private val HYPHEN_BETWEEN_LETTERS = Regex("(?<=[\\p{L}♭♯])-(?=\\p{L})")
 /** An invisible place where a line may end ([breakableAtHyphens]). */
 const val ZERO_WIDTH_SPACE = '​'
 
+/**
+ * [text] with each Korean word kept whole on a line (a word joiner between its syllables), so a line
+ * ends only at a space, as Korean is set. Android may break Korean between any two syllables, so a
+ * name on two lines filled its first line up to the edge and left the last syllable alone on the
+ * second (Korean "G♯ 프리지안 도미넌 / 트" in the scale panel at 2× text in Ancient, the overnight run of
+ * 2026-11-01). Other scripts come back as they were.
+ */
+fun koreanWordsKeptWhole(text: String): String = text.replace(BETWEEN_HANGUL, WORD_JOINER.toString())
+
+private val BETWEEN_HANGUL = Regex("(?<=\\p{IsHangul})(?=\\p{IsHangul})")
+
+/** An invisible mark that keeps the characters on either side on one line ([koreanWordsKeptWhole]). */
+const val WORD_JOINER = '⁠'
+
 /** Whether every line but the last of this layout of [text] ends between two words (or where Chinese and Japanese may break). */
 fun TextLayoutResult.breaksBetweenWords(text: String): Boolean =
     (0 until lineCount - 1).all { line ->

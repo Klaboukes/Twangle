@@ -83,8 +83,16 @@ when the morning summary should show a change to them: `scripts/overnight-ui-tes
 - **While it runs, don't edit code, tests or scripts**: each language run rebuilds from the working
   tree, and bash reads a running script as it goes. Docs (ARCHITECTURE.md and docs/architecture/, ROADMAP.md, skills) are
   safe to edit.
-- Don't poll; you are told when it finishes. Read the log in between only to start on failures
-  early (the sweep prints each class as it finishes).
+- Don't poll; you are told when it finishes. To start on failures early (the sweep prints each
+  class as it finishes, e.g. `  PhoneScreenTest   3s  1 tests, 0 failed, 2s on the phone`), watch
+  the log with the Monitor tool (30 min at most, re-arm on each expiry) and this filter, which
+  stays quiet on passing lines: a case-insensitive "fail" matches every "0 failed", and a bare
+  "warn" matches test names like `ScreenOffWarningTest`.
+  ```bash
+  tail -n 0 -F build/overnight-run.txt | grep -E --line-buffered "(^|[^0-9])[1-9][0-9]* failed|FAILED|[Aa]wake|[Ww]arning:|WARN|exit=|[Ee]rror:|ERROR|locked|[Cc]annot|can't|[Cc]rash|^== "
+  ```
+  It reports a failed class, a keep-awake or lock warning, each new stage (`== …`) and the end
+  (`exit=` when the run was started with `; echo "exit=$?" >> build/overnight-run.txt`).
 - Never play test tones, never loop a tone, and never re-run the whole sweep for a fix.
 
 **When store screenshots were made:** look at every language's eight pictures in

@@ -53,6 +53,7 @@ import io.github.klaboukes.twangle.core.designsystem.breakableAtHyphens
 import io.github.klaboukes.twangle.core.designsystem.breaksBetweenWords
 import io.github.klaboukes.twangle.core.designsystem.faceFill
 import io.github.klaboukes.twangle.core.designsystem.faceOutline
+import io.github.klaboukes.twangle.core.designsystem.koreanWordsKeptWhole
 import io.github.klaboukes.twangle.core.designsystem.musicText
 import io.github.klaboukes.twangle.core.designsystem.pressFeedback
 import io.github.klaboukes.twangle.core.designsystem.pressFlash
@@ -376,7 +377,7 @@ private fun PickButton(text: String, spoken: String, picked: Boolean, slot: Dp, 
 private fun PickLabel(text: String, color: Color, lines: Int, align: TextAlign = TextAlign.Center) {
     val style = MaterialTheme.typography.labelLarge
     Text(
-        musicText(breakableAtHyphens(text)),
+        musicText(breakableAtHyphens(koreanWordsKeptWhole(text))),
         style = style.copy(
             textAlign = align,
             // Two lines take the size the text is set at, so they fit the face as it shrinks.

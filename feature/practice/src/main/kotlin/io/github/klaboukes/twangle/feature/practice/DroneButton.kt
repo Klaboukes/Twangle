@@ -183,7 +183,7 @@ internal fun DroneButton(
  * The drone panel, [expanded] or not, a Material dropdown under the place it is put in, as the name button's panel:
  * "Sound" over the four sounds with their icons (tanpura, harmonium, flute organ, warm pad), "Notes" over Root,
  * + fifth and + fifth and octave, then the Lower switch; the picked ones in the container colour with an accent
- * outline and a ✓ ([ChoiceRow]). One column, at most [width] wide; [wide] (on its side, over the empty start half) in two columns, the
+ * outline and a ✓ ([ChoiceRow]). One column, at most [width] wide; [wide] (on its side, over the empty start half, 380 dp wide even where the half is narrower) in two columns, the
  * sounds beside the notes. A pick calls [onChoiceChange] and leaves the panel open, so another can be heard (the
  * drone crossfades to it while it sounds); Back or a tap beside it calls [onDismiss]. On a short screen it scrolls.
  * TalkBack hears it by name ("Drone"), the sounds and the notes as radio groups and Lower as a switch.
@@ -217,8 +217,11 @@ internal fun DronePanel(
             LocalContext provides context,
             LocalResources provides resources,
         ) {
-            // A known width: a menu asks its content's intrinsic size.
-            val panelWidth = (if (wide) minOf(width, PANEL_WIDTH_WIDE) else width) - PANEL_PADDING * 2
+            // A known width: a menu asks its content's intrinsic size. On its side always the two columns' width, also
+            // where the start half is narrower: a drone pick changes nothing on the neck it reaches over, and narrower
+            // columns left too little beside the icon and the ✓'s room (Russian "Фисгармония" at 2× text on a
+            // 700 × 330 dp phone broke inside the word, the overnight run of 2026-11-01).
+            val panelWidth = (if (wide) PANEL_WIDTH_WIDE else width) - PANEL_PADDING * 2
             val sounds = @Composable { Sounds(choice.sound) { onChoiceChange(choice.copy(sound = it)) } }
             val notes = @Composable {
                 Notes(choice.voicing) { onChoiceChange(choice.copy(voicing = it)) }
@@ -475,7 +478,7 @@ private val SPLIT_INNER_CORNER = 4.dp
 private val ICON_SIZE = 24.dp
 private val CHEVRON_SIZE = 20.dp
 
-/** The panel on its side, in two columns; upright it is one column as wide as the name's row. */
+/** The panel on its side, in two columns (from the start half's start, over the neck where the half is narrower); upright it is one column as wide as the name's row. */
 private val PANEL_WIDTH_WIDE = 380.dp
 private val PANEL_PADDING = 8.dp
 private val COLUMN_GAP = 8.dp
