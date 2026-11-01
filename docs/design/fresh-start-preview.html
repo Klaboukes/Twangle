@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Twangle, if we started over</title>
+<style>
+:root{--page:#eceef1;--ink:#15191e;--ink2:#5b6470;--card:#fff;--rule:#d9dde3;--brand:#1f6fd6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI Variable Text","Segoe UI",Inter,Roboto,system-ui,sans-serif;background:var(--page);color:var(--ink);line-height:1.45}
+.page{max-width:1320px;margin:0 auto;padding:40px 28px 100px}
+h1{font-size:42px;margin:0 0 8px;letter-spacing:-.025em;line-height:1.1}
+.lede{font-size:19px;color:var(--ink2);max-width:860px;margin:0 0 40px}
+h2{font-size:28px;margin:72px 0 8px;letter-spacing:-.015em}
+.sub{color:var(--ink2);margin:0 0 22px;max-width:860px}
+p{margin:0 0 10px}
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:48px;align-items:start}
+.stage{display:flex;flex-direction:column;gap:14px;align-items:center;position:sticky;top:20px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:414px}
+.controls button{font:inherit;font-size:14px;padding:8px 13px;border-radius:999px;border:1px solid var(--rule);background:var(--card);cursor:pointer;color:var(--ink)}
+.controls button:hover{border-color:#aab2bd}
+.controls button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.slider{display:flex;align-items:center;gap:10px;width:100%;justify-content:center;font-size:14px;color:var(--ink2)}
+.slider input{width:230px}
+.note-ctl{font-size:13px;color:var(--ink2);text-align:center;max-width:414px}
+.why ol{padding:0;margin:0;display:grid;gap:10px;counter-reset:n}
+.why li{list-style:none;background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:13px 16px 13px 56px;position:relative;counter-increment:n}
+.why li::before{content:counter(n);position:absolute;left:16px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.why b{display:block;font-size:16px;margin-bottom:2px}
+.why span{color:var(--ink2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:16px 18px}
+.card h3{margin:0 0 6px;font-size:16px}
+.card p,.card li{color:var(--ink2);font-size:15px}
+.card ul{margin:0;padding-left:18px}
+
+/* ---------- phones ---------- */
+.phone{width:414px;height:868px;background:#0b0c0f;border-radius:58px;padding:12px;box-shadow:0 30px 70px rgba(0,0,0,.28),inset 0 0 0 2px #2b2f36;position:relative;flex:none}
+.phone::after{content:"";position:absolute;left:50%;top:22px;width:110px;height:30px;border-radius:16px;background:#0b0c0f;transform:translateX(-50%)}
+.screen{width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;background:var(--bg);color:var(--fg);user-select:none;
+  --bg:#0e1116;--surface:#171b22;--fg:#eef1f5;--muted:#8d96a3;--line:#262c35;--accent:#5fc4ff;--warm:#ffb648;--good:#3ddc84;--string:#2b313b;--tab:#12151b;--tone:var(--accent)}
+.screen.light{--bg:#f6f7f9;--surface:#fff;--fg:#14181d;--muted:#6b7482;--line:#e1e5ea;--accent:#1e7fe0;--warm:#d98400;--good:#15a35a;--string:#d3d8df;--tab:#fff}
+.screen.close{--tone:var(--warm)}
+.screen.good{--tone:var(--good)}
+.screen::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
+  background:radial-gradient(ellipse 75% 55% at 50% 40%,color-mix(in srgb,var(--good) 24%,transparent),transparent 72%)}
+.screen.good::before{opacity:1}
+.statusbar{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 30px;font-size:14px;font-weight:600;position:relative;z-index:2}
+.topbar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 16px;position:relative;z-index:2}
+.title{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.chip{font:inherit;font-size:15px;font-weight:600;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+.chip .caret{color:var(--muted);font-size:13px}
+.iconbtn{width:44px;height:44px;border-radius:50%;background:transparent;border:0;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.iconbtn svg{width:24px;height:24px}
+
+/* strings backdrop */
+.string{position:absolute;top:100px;height:508px;background:var(--string);border-radius:2px;transition:background .3s,box-shadow .3s}
+.string.active{background:var(--tone);box-shadow:0 0 14px var(--tone);animation:buzz .07s infinite alternate}
+.string.tuned{background:color-mix(in srgb,var(--good) 60%,var(--string))}
+.screen.good .string.active{animation:none}
+@keyframes buzz{from{transform:translateX(-.9px)}to{transform:translateX(.9px)}}
+.chromatic .string,.chromatic .peg,.strum .string.active{display:none}
+
+/* the note */
+.notearea{position:absolute;top:150px;left:0;right:0;text-align:center;padding:0 20px;
+  background:radial-gradient(ellipse 55% 75% at 50% 50%,var(--bg) 38%,transparent 78%)}
+.which{font-size:16px;color:var(--muted);height:24px;letter-spacing:.01em;font-weight:500}
+.note{font-size:178px;line-height:1;font-weight:800;letter-spacing:-.045em;height:196px;display:flex;justify-content:center;align-items:center;font-variant-numeric:tabular-nums}
+.note .oct{font-size:46px;font-weight:600;color:var(--muted);align-self:flex-end;margin:0 0 26px 4px;letter-spacing:0}
+.detail{font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums;height:24px}
+.idlemsg{display:none;height:196px;align-items:center;justify-content:center;font-size:34px;font-weight:600;color:var(--muted)}
+.idle .note{display:none}.idle .idlemsg{display:flex}
+
+/* the meter */
+.meter{position:absolute;top:398px;left:40px;width:310px}
+.track{position:relative;height:28px}
+.track .line{position:absolute;left:0;right:0;top:13px;height:2px;background:var(--line)}
+.track .zone{position:absolute;left:calc(50% - 9px);width:18px;top:3px;height:22px;border-radius:7px;background:color-mix(in srgb,var(--good) 26%,transparent)}
+.tick{position:absolute;top:9px;width:2px;height:10px;background:var(--line);border-radius:1px;transform:translateX(-1px)}
+.tick.major{top:4px;height:20px;background:var(--muted)}
+.needle{position:absolute;top:-7px;width:4px;height:42px;border-radius:2px;background:var(--tone);box-shadow:0 0 12px var(--tone);transform:translateX(-2px);transition:left .1s linear,background .3s,opacity .3s}
+.idle .needle,.strum .needle{opacity:0}
+.trail{display:block;width:310px;height:34px;margin-top:2px}
+.mlabels{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:0}
+
+/* the word */
+.advice{position:absolute;top:492px;left:0;right:0;text-align:center;font-size:31px;font-weight:700;color:var(--tone);letter-spacing:-.01em;transition:color .3s;padding:0 20px}
+.idle .advice{color:var(--muted);font-weight:600;font-size:22px}
+.idle.alldone .advice{color:var(--good);font-weight:700;font-size:31px}
+.strum .advice{color:var(--fg);font-size:26px}
+.strum.good .advice{color:var(--good)}
+
+/* pegs */
+.pegs{position:absolute;top:556px;left:0;right:0;height:110px}
+.peg{position:absolute;top:26px;width:52px;height:52px;border-radius:50%;transform:translateX(-26px);border:2px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:border-color .25s,background .25s,box-shadow .25s;cursor:pointer;padding:0}
+.peg.active{border-color:var(--tone);box-shadow:0 0 0 4px color-mix(in srgb,var(--tone) 22%,transparent),0 0 18px color-mix(in srgb,var(--tone) 45%,transparent)}
+.peg.tuned{background:var(--good);border-color:var(--good);color:#06240f}
+.peg.tuned::after{content:"✓";position:absolute;right:-7px;top:-7px;width:21px;height:21px;border-radius:50%;background:var(--bg);color:var(--good);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--good)}
+.peg .mark{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:800;opacity:0;transition:opacity .3s}
+.peg .mark.show{opacity:1}
+.peg .snd{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap;opacity:0;transition:opacity .25s;font-weight:600}
+.peg.active .snd{opacity:1}
+.peg.playing{animation:pulse .5s ease-out}
+@keyframes pulse{from{box-shadow:0 0 0 0 color-mix(in srgb,var(--tone) 60%,transparent)}to{box-shadow:0 0 0 22px transparent}}
+.hint{position:absolute;top:684px;left:0;right:0;text-align:center;font-size:14px;color:var(--muted)}
+.hint u{text-decoration:none;color:var(--accent);font-weight:600;cursor:pointer}
+
+/* tabs */
+.tabs{position:absolute;left:0;right:0;bottom:0;height:88px;background:var(--tab);border-top:1px solid var(--line);display:flex;padding:8px 10px 22px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--muted);border:0;background:none;font-family:inherit;cursor:pointer}
+.tab .ico{width:62px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.tab .ico svg{width:24px;height:24px}
+.tab.on{color:var(--fg)}
+.tab.on .ico{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent)}
+
+/* ---------- state strip ---------- */
+.states{display:flex;gap:18px;flex-wrap:wrap}
+.state{width:166px}
+.state .shot{width:166px;height:359px;overflow:hidden;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.state .shot .screen{transform:scale(.4255);transform-origin:0 0;border-radius:0}
+.state figcaption{font-size:13px;color:var(--ink2);margin-top:8px;line-height:1.35}
+.state figcaption b{color:var(--ink);display:block}
+figure{margin:0}
+
+/* ---------- mini phones ---------- */
+.minis{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.mini{width:311px}
+.mini .frame{width:311px;height:651px;position:relative}
+.mini .phone{transform:scale(.75);transform-origin:0 0}
+.mini figcaption{font-size:14px;color:var(--ink2);margin-top:10px;line-height:1.4}
+.mini figcaption b{color:var(--ink);display:block;font-size:15px}
+
+/* generic in-screen bits */
+.sec{padding:10px 20px 0;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;font-size:17px}
+.row+.row{border-top:1px solid var(--line)}
+.row .m{color:var(--muted);font-size:15px}
+.row .v{color:var(--muted);display:flex;align-items:center;gap:10px;font-size:16px}
+.group{margin:8px 16px 14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg i{font-style:normal;font-size:14px;font-weight:600;padding:6px 12px;border-radius:999px;color:var(--muted)}
+.seg i.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.toggle{width:46px;height:28px;border-radius:14px;background:var(--line);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted)}
+.toggle.on{background:var(--accent)}.toggle.on::after{left:21px;background:#fff}
+.stepper{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.stepper b{width:38px;height:36px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--fg)}
+.stepper span{padding:0 10px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stepper{flex:none}
+
+/* metronome */
+.bpm{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:40px}
+.bpm .num{font-size:132px;font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.bpm .lbl{text-align:center;color:var(--muted);font-size:16px;margin-top:4px}
+.bpm .step{width:56px;height:56px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:28px;display:flex;align-items:center;justify-content:center}
+.ruler{position:relative;height:56px;margin:28px 24px 0;overflow:hidden}
+.ruler .ticks{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:10px}
+.ruler .ticks i{width:2px;height:14px;background:var(--line);border-radius:1px}
+.ruler .ticks i:nth-child(5n+1){height:26px;background:var(--muted)}
+.ruler .cursor{position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--accent);transform:translateX(-50%);border-radius:2px;box-shadow:0 0 10px var(--accent)}
+.beats{display:flex;justify-content:center;gap:18px;margin:34px 0 26px;align-items:center}
+.beats i{width:22px;height:22px;border-radius:50%;background:var(--line)}
+.beats i.first{width:30px;height:30px}
+.beats i.on{background:var(--accent);box-shadow:0 0 18px var(--accent)}
+.segrow{display:flex;justify-content:center;gap:10px;margin-bottom:14px}
+.bigrow{display:flex;gap:12px;padding:16px 20px 0}
+.big{flex:1;height:72px;border-radius:22px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+.big.start{background:var(--accent);border-color:var(--accent);color:#06243a;flex:1.3}
+.trainer{display:flex;align-items:center;gap:12px;margin:18px 20px 0;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.trainer div{flex:1}.trainer b{display:block;font-size:16px}.trainer span{color:var(--muted);font-size:14px}
+
+/* practice */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 16px 0}
+.tool{aspect-ratio:1/1.08;border-radius:22px;background:var(--surface);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.tool .art{height:92px;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.tool .art svg{width:88px;height:88px}
+.tool b{font-size:19px;letter-spacing:-.01em}
+.tool span{display:block;color:var(--muted);font-size:13.5px;margin-top:2px;line-height:1.3}
+.listrow{margin:14px 16px 0;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 0 28px;box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.sheet .handle{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 16px}
+.sheet h4{margin:0 20px 12px;font-size:22px;letter-spacing:-.01em}
+.sheet .seg{margin:0 20px 10px}
+.opt{display:flex;align-items:center;gap:14px;padding:13px 20px;font-size:17px}
+.opt .radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.opt.on .radio{border-color:var(--accent);background:radial-gradient(circle,var(--accent) 45%,transparent 50%)}
+.opt .n{flex:1;font-weight:600}
+.opt .notes{color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.08em;font-size:15px}
+.opt.add{color:var(--accent);font-weight:600}
+.sheet .foot{margin:12px 20px 0;color:var(--muted);font-size:14px}
+
+/* watch */
+.watch{width:240px;height:240px;border-radius:50%;background:#000;position:relative;box-shadow:0 20px 50px rgba(0,0,0,.35),inset 0 0 0 10px #1a1d22;display:flex;align-items:center;justify-content:center;flex:none;color:#eef1f5}
+.watch svg{position:absolute;inset:0;width:100%;height:100%}
+.watch .wn{font-size:92px;font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:-6px}
+.watch .wn sub{font-size:26px;color:#8d96a3;font-weight:600}
+.watch .ww{position:absolute;bottom:52px;left:0;right:0;text-align:center;font-size:17px;font-weight:700;color:#ffb648}
+.watchrow{display:flex;gap:40px;align-items:center;flex-wrap:wrap}
+.watchrow .txt{max-width:560px;color:var(--ink2)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Twangle, if we started over</h1>
+<p class="lede">Same engine, same tools: YIN, cents, tunings, reference tones, the metronome, the charts. A new face, designed around one moment: a player with both hands on the guitar, glancing at a phone an arm's length away. The big phone is live. Press <b>Play the demo</b>, drag the slider, or let it hear your own guitar.</p>
+
+<div class="hero">
+  <div class="stage">
+    <div class="phone"><div class="screen tune" id="tuneScreen">
+      <div class="statusbar"><span>9:41</span><span>▴▴▴ ▮</span></div>
+      <div class="topbar">
+        <button class="chip">🎸 Guitar · Standard <span class="caret">▾</span></button>
+        <button class="iconbtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
+      <div class="strings"></div>
+      <div class="notearea">
+        <div class="which">Low E · 6th string</div>
+        <div class="note"><span class="nm">E</span><span class="oct">2</span></div>
+        <div class="idlemsg">Listening…</div>
+        <div class="detail">−18 cents · 81.6 Hz</div>
+      </div>
+      <div class="meter">
+        <div class="track"><div class="line"></div><div class="zone"></div><div class="ticks"></div><div class="needle"></div></div>
+        <canvas class="trail" width="620" height="68"></canvas>
+        <div class="mlabels"><span>♭ low</span><span>high ♯</span></div>
+      </div>
+      <div class="advice">↑ Tighten</div>
+      <div class="pegs"></div>
+      <div class="hint">Tap a string to hear it</div>
+      <nav class="tabs">
+        <button class="tab on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l3.2-6.5"/><circle cx="12" cy="17" r="1.6" fill="currentColor"/></svg></span>Tune</button>
+        <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5l3 17H6.5l3-17z"/><path d="M12 15.5 17.5 6"/><path d="M6.5 20h11"/></svg></span>Metronome</button>
+        <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M12 4v16M17 4v16M4 9h16M4 15h16"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"/></svg></span>Practice</button>
+      </nav>
+    </div></div>
+    <div class="controls">
+      <button id="btnDemo">▶ Play the demo</button>
+      <button id="btnMic">🎤 Hear my guitar</button>
+      <button id="btnStrum">Strum check</button>
+      <button id="btnReset">Clear ticks</button>
+      <button id="btnMode">Any note instead of guitar</button>
+      <button id="btnTheme">Light</button>
+      <div class="slider"><span>Drag the pitch</span><input id="cents" type="range" min="-50" max="50" step="0.5" value="-18"><span id="centsOut">−18 ¢</span></div>
+    </div>
+    <p class="note-ctl">Tap a peg on the phone to hear that string and lock to it. "Hear my guitar" uses this PC's microphone and a small pitch detector in the page, so the needle, the word and the colour behave as they would in the app.</p>
+  </div>
+
+  <div class="why">
+    <ol>
+      <li><b>The tuner is the app.</b><span>It opens listening. No mode to pick, nothing to tap. The two other tabs are one tap away and always bring you back here.</span></li>
+      <li><b>Three answers in one glance.</b><span>Which string (the lit string and its peg), what note (the biggest thing on the screen), which way to turn (a word, a needle and a colour). Readable at arm's length in a dark room, while you look at the headstock.</span></li>
+      <li><b>Words a hand understands.</b><span>"Tighten" and "Loosen" are what you do with the peg; ♭ and ♯ still need translating. The needle shows how much, and "a little" warns before you overshoot. In "Any note" mode, where there is no peg, the words become "Too low" and "Too high".</span></li>
+      <li><b>Colour means done.</b><span>Blue while you are far off, amber when close, green when in tune, over the whole screen, so your eye reads it without focusing. No red anywhere: an out-of-tune string is not an error.</span></li>
+      <li><b>Progress you can see.</b><span>A peg gets its tick when its string holds in tune for a moment. When all six are ticked the screen says so. You always know what is left and when you are finished.</span></li>
+      <li><b>Hear it.</b><span>Tap a peg to hear that string and to lock the tuner to it, for a loud room, for tuning by ear, or when the app keeps guessing the neighbouring string.</span></li>
+      <li><b>Strum once to check all six.</b><span>No separate mode. Strum the open strings and every peg shows ↑, ↓ or ✓. Strum a fretted chord and its name appears where the string name is.</span></li>
+      <li><b>A trail under the needle.</b><span>The last two seconds of pitch, fading away. A wobble reads as a band instead of a jumping needle, so you trust what you see and stop chasing it.</span></li>
+      <li><b>One question for setup: what are you tuning?</b><span>Guitar standard, drop D, bass, ukulele, or any note. Instrument, tuning and chromatic in one picker, under the chip at the top.</span></li>
+      <li><b>The metronome gets its own tab.</b><span>It is the second most used tool, so it is one tap, not two. Tune · Metronome · Practice. Settings sit behind the gear, because you set them once.</span></li>
+      <li><b>Practice is four big cards.</b><span>Chords, Scales (the drone lives there), Capo and Ear training, each named for what it does, with a picture that shows it. The intonation check is a row below, next to what you used last.</span></li>
+      <li><b>One look, light and dark.</b><span>Dark by default (stages, bedrooms, OLED), light when the phone is. One accent colour. All the polish goes into the one screen players see every day.</span></li>
+      <li><b>Nothing to learn.</b><span>When it hears nothing it says "Listening…" and the pegs tell you what to do. There is no tour: a hint appears once, in place, and then never again.</span></li>
+    </ol>
+  </div>
+</div>
+
+<h2>The tuner, state by state</h2>
+<p class="sub">The same screen, nothing moves around. Only the note, the word and the colour change.</p>
+<div class="states" id="states"></div>
+
+<h2>The other screens</h2>
+<p class="sub">Each is one screen, no scrolling, and the biggest thing on it is the thing you came for.</p>
+<div class="minis">
+
+  <figure class="mini"><div class="frame"><div class="phone"><div class="screen met">
+    <div class="statusbar"><span>9:41</span><span>▴▴▴ ▮</span></div>
+    <div class="topbar"><div class="title">Metronome</div><button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+    <div class="bpm"><button class="step">−</button><div><div class="num">120</div><div class="lbl">beats per minute · Allegro</div></div><button class="step">+</button></div>
+    <div class="ruler"><div class="ticks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="cursor"></div></div>
+    <div class="beats"><i class="first on"></i><i></i><i></i><i></i></div>
+    <div class="segrow"><div class="seg"><i class="on">4/4</i><i>3/4</i><i>2/4</i><i>6/8</i></div></div>
+    <div class="segrow"><div class="seg"><i class="on">Click</i><i>Wood</i><i>Beep</i><i>Vibrate</i></div></div>
+    <div class="bigrow"><button class="big">👆 Tap the beat</button><button class="big start">▶ Start</button></div>
+    <div class="trainer"><div><b>Speed trainer</b><span>+2 BPM every 4 bars</span></div><div class="toggle"></div></div>
+    <nav class="tabs">
+      <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l3.2-6.5"/><circle cx="12" cy="17" r="1.6" fill="currentColor"/></svg></span>Tune</button>
+      <button class="tab on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5l3 17H6.5l3-17z"/><path d="M12 15.5 17.5 6"/><path d="M6.5 20h11"/></svg></span>Metronome</button>
+      <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M12 4v16M17 4v16M4 9h16M4 15h16"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"/></svg></span>Practice</button>
+    </nav>
+  </div></div></div>
+  <figcaption><b>Metronome</b>The tempo is the screen. Drag the ruler or tap the beat to set it, one big Start. Meter and sound are a tap each. The speed trainer is a switch, not a screen.</figcaption></figure>
+
+  <figure class="mini"><div class="frame"><div class="phone"><div class="screen prac">
+    <div class="statusbar"><span>9:41</span><span>▴▴▴ ▮</span></div>
+    <div class="topbar"><div class="title">Practice</div><button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+    <div class="grid">
+      <div class="tool"><div class="art"><svg viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 18h48" stroke-width="6"/><path d="M22 18v56M33 18v56M44 18v56M55 18v56M66 18v56M20 32h48M20 46h48M20 60h48"/><circle cx="33" cy="39" r="5" fill="currentColor" stroke="none"/><circle cx="44" cy="39" r="5" fill="currentColor" stroke="none"/><circle cx="55" cy="25" r="5" fill="currentColor" stroke="none"/></svg></div><div><b>Chords</b><span>Every shape, left-handed too</span></div></div>
+      <div class="tool"><div class="art"><svg viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 24h64M12 36h64M12 48h64M12 60h64"/><path d="M24 18v48M40 18v48M56 18v48M72 18v48" stroke-opacity=".5"/><circle cx="32" cy="24" r="4.5" fill="currentColor" stroke="none"/><circle cx="48" cy="24" r="4.5" fill="currentColor" stroke="none"/><circle cx="32" cy="36" r="4.5" fill="currentColor" stroke="none"/><circle cx="64" cy="36" r="4.5" fill="currentColor" stroke="none"/><circle cx="48" cy="48" r="4.5" fill="currentColor" stroke="none"/><circle cx="32" cy="60" r="4.5" fill="currentColor" stroke="none"/><circle cx="64" cy="60" r="4.5" fill="currentColor" stroke="none"/></svg></div><div><b>Scales</b><span>With a drone to play along</span></div></div>
+      <div class="tool"><div class="art"><svg viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M16 30h56M16 42h56M16 54h56M16 66h56" stroke-opacity=".5"/><path d="M34 22v52M50 22v52" stroke-opacity=".5"/><rect x="26" y="14" width="40" height="12" rx="6" fill="currentColor" stroke="none"/><path d="M30 26v44a6 6 0 0 0 12 0V62" stroke-width="5"/></svg></div><div><b>Capo</b><span>Which fret for the key you want</span></div></div>
+      <div class="tool"><div class="art"><svg viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M30 44a14 14 0 1 1 28 0c0 10-10 12-10 22a6 6 0 0 1-12 0"/><path d="M38 44a6 6 0 0 1 12 0"/><path d="M66 24q12 20 0 40M74 16q18 28 0 56" stroke-opacity=".6"/></svg></div><div><b>Ear training</b><span>Hear a note, play it back</span></div></div>
+    </div>
+    <div class="listrow"><div class="row"><div><div>Intonation check</div><div class="m">Fret 12 against the open string</div></div><span class="v">›</span></div></div>
+    <div class="listrow"><div class="row"><div><div class="m">Last time</div><div>C major · A minor pentatonic</div></div><span class="v">›</span></div></div>
+    <nav class="tabs">
+      <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l3.2-6.5"/><circle cx="12" cy="17" r="1.6" fill="currentColor"/></svg></span>Tune</button>
+      <button class="tab"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5l3 17H6.5l3-17z"/><path d="M12 15.5 17.5 6"/><path d="M6.5 20h11"/></svg></span>Metronome</button>
+      <button class="tab on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M12 4v16M17 4v16M4 9h16M4 15h16"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="7" cy="18" r="2" fill="currentColor" stroke="none"/></svg></span>Practice</button>
+    </nav>
+  </div></div></div>
+  <figcaption><b>Practice</b>Four cards you can read from the picture alone. Each opens full screen and comes back here. Nothing is hidden behind a "more" button.</figcaption></figure>
+
+  <figure class="mini"><div class="frame"><div class="phone"><div class="screen pick">
+    <div class="statusbar"><span>9:41</span><span>▴▴▴ ▮</span></div>
+    <div class="topbar"><button class="chip">🎸 Guitar · Standard <span class="caret">▾</span></button></div>
+    <div class="dim"></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <h4>What are you tuning?</h4>
+      <div class="seg"><i class="on">Guitar</i><i>Bass</i><i>Ukulele</i><i>Any note</i></div>
+      <div class="opt on"><span class="radio"></span><span class="n">Standard</span><span class="notes">E A D G B E</span></div>
+      <div class="opt"><span class="radio"></span><span class="n">Drop D</span><span class="notes">D A D G B E</span></div>
+      <div class="opt"><span class="radio"></span><span class="n">Half step down</span><span class="notes">E♭ A♭ D♭ G♭ B♭ E♭</span></div>
+      <div class="opt"><span class="radio"></span><span class="n">DADGAD</span><span class="notes">D A D G A D</span></div>
+      <div class="opt"><span class="radio"></span><span class="n">Open G</span><span class="notes">D G D G B D</span></div>
+      <div class="opt"><span class="radio"></span><span class="n">12-string</span><span class="notes">6 pairs</span></div>
+      <div class="opt add"><span class="radio" style="border-style:dashed"></span><span class="n">Make your own…</span></div>
+      <div class="foot">Reference pitch A = 440 Hz · change in Settings</div>
+    </div>
+  </div></div></div>
+  <figcaption><b>What are you tuning?</b>The one setup question, under the chip at the top of the tuner. Instrument, tuning and "any note" (chromatic) in one place. The pegs on the tuner follow it.</figcaption></figure>
+
+  <figure class="mini"><div class="frame"><div class="phone"><div class="screen sett">
+    <div class="statusbar"><span>9:41</span><span>▴▴▴ ▮</span></div>
+    <div class="topbar"><div class="title">Settings</div></div>
+    <div class="sec">Tuning</div>
+    <div class="group">
+      <div class="row"><div>Reference pitch<div class="m">A4, the note the others follow</div></div><span class="stepper"><b>−</b><span>440 Hz</span><b>+</b></span></div>
+      <div class="row"><div>Note names</div><span class="seg"><i class="on">C D E</i><i>Do Re Mi</i></span></div>
+      <div class="row"><div>My tunings<div class="m">2 of your own</div></div><span class="v">›</span></div>
+    </div>
+    <div class="sec">While tuning</div>
+    <div class="group">
+      <div class="row"><div>Keep the screen on</div><span class="toggle on"></span></div>
+      <div class="row"><div>Vibrate when in tune</div><span class="toggle on"></span></div>
+      <div class="row"><div>Short ding when in tune</div><span class="toggle"></span></div>
+    </div>
+    <div class="sec">Look</div>
+    <div class="group">
+      <div class="row"><div>Theme</div><span class="seg"><i class="on">Phone</i><i>Light</i><i>Dark</i></span></div>
+    </div>
+    <div class="sec">Twangle</div>
+    <div class="group">
+      <div class="row"><div>About<div class="m">Version 2.0 · free, no ads, nothing leaves the phone</div></div><span class="v">›</span></div>
+    </div>
+  </div></div></div>
+  <figcaption><b>Settings</b>Set once, so it hides behind the gear. Nine rows, each saying in a few words what it changes. No visual styles to choose: one good look follows the phone's light or dark.</figcaption></figure>
+
+</div>
+
+<h2>On the wrist</h2>
+<div class="watchrow">
+  <div class="watch" id="watch">
+    <svg viewBox="0 0 240 240"><path id="warc" d="M56.4 183.6 A 90 90 0 1 1 183.6 183.6" fill="none" stroke="#262c35" stroke-width="10" stroke-linecap="round"/><circle cx="120" cy="30" r="3" fill="#8d96a3"/><circle id="wdot" cx="78" cy="48" r="9" fill="#ffb648"/></svg>
+    <div class="wn">E<sub>2</sub></div>
+    <div class="ww">↑ Tighten</div>
+  </div>
+  <div class="txt"><p>The top half of the phone screen, nothing else: the note, a dot that moves along the arc, the word. The arc turns green and the watch taps your wrist when the string is in tune. No pegs, no tabs, no settings: the watch takes the tuning the phone has.</p></div>
+</div>
+
+<h2>What I would leave out, starting fresh</h2>
+<div class="cols">
+  <div class="card"><h3>Visual styles and meter looks</h3><p>One look, done very well, that follows the phone's light or dark setting. Every hour spent on a sixth style is an hour not spent on the one screen everybody sees. Fewer choices also mean one set of screenshots, one set of tests and one thing to get right in 27 languages.</p></div>
+  <div class="card"><h3>Modes for things that can just happen</h3><p>Strum check and chord naming are not tools you switch on. The tuner hears one string or six and shows what fits. The same for the pitch trail: it is part of the meter, not a screen of its own.</p></div>
+  <div class="card"><h3>A tour</h3><p>If the first screen needs explaining, the screen is wrong. "Listening…", the lit string and the pegs that say "tap to hear" carry a first-time player through without a single overlay.</p></div>
+  <div class="card"><h3>A Settings tab</h3><p>Settings are set once. A gear in the corner of every screen is enough, and it frees the bottom bar for the two things people actually switch between while playing.</p></div>
+</div>
+
+<h2>What stays exactly as it is</h2>
+<div class="cols">
+  <div class="card"><h3>Everything under the hood</h3><ul><li>YIN pitch detection, smoothing, the cents maths</li><li>Tunings, A4, note names in 27 languages</li><li>Reference tones, the drone, the metronome clock</li><li>Chord, scale and capo charts, Ear training's questions</li><li>No internet, no account, no ads, nothing stored</li></ul></div>
+  <div class="card"><h3>Why it would still feel like Twangle</h3><p>Calm, a single accent colour, green only when it is earned. The app does one thing extremely well and the rest without fuss.</p></div>
+</div>
+
+</div>
+
+<script>
+(() => {
+const STRINGS = [
+  {name:'E', oct:2, hz:82.41,  which:'Low E · 6th string'},
+  {name:'A', oct:2, hz:110.00, which:'A · 5th string'},
+  {name:'D', oct:3, hz:146.83, which:'D · 4th string'},
+  {name:'G', oct:3, hz:196.00, which:'G · 3rd string'},
+  {name:'B', oct:3, hz:246.94, which:'B · 2nd string'},
+  {name:'E', oct:4, hz:329.63, which:'High E · 1st string'},
+];
+const XS = [55,111,167,223,279,335];
+const WIDTHS = [4.2,3.6,3,2.3,1.7,1.3];
+const NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const COLORS = {dark:{accent:'#5fc4ff',warm:'#ffb648',good:'#3ddc84'}, light:{accent:'#1e7fe0',warm:'#d98400',good:'#15a35a'}};
+
+function freshState(){ return {mode:'guitar', idle:true, string:0, cents:0, hz:0, tuned:[false,false,false,false,false,false], locked:false, strum:null, allDone:false, trail:[], chrom:{name:'A',oct:4}}; }
+const state = freshState();
+let light = false;
+
+// ---- build the static parts of a tune screen
+function buildScreen(root){
+  const strings = root.querySelector('.strings');
+  strings.innerHTML = XS.map((x,i)=>`<div class="string" style="left:${x - WIDTHS[i]/2}px;width:${WIDTHS[i]}px"></div>`).join('');
+  const ticks = root.querySelector('.ticks');
+  let t=''; for(let c=-50;c<=50;c+=10){ t+=`<div class="tick ${c===0||Math.abs(c)===50?'major':''}" style="left:${c+50}%"></div>`; }
+  ticks.innerHTML=t;
+  const pegs = root.querySelector('.pegs');
+  pegs.innerHTML = STRINGS.map((s,i)=>`<button class="peg" data-i="${i}" style="left:${XS[i]}px"><span class="mark"></span>${s.name}<span class="snd">♪ hear</span></button>`).join('');
+}
+
+function fmtCents(c){ const r=Math.round(c); return (r>0?'+':r<0?'−':'')+Math.abs(r)+' cents'; }
+function hzFor(i,c){ return STRINGS[i].hz*Math.pow(2,c/1200); }
+
+function render(root, s){
+  const a = Math.abs(s.cents);
+  const live = !s.idle && !s.strum;
+  const good = live && a<=3, close = live && a<=15 && !good;
+  root.classList.toggle('idle', s.idle || !!s.strum);
+  root.classList.toggle('alldone', s.allDone);
+  root.classList.toggle('good', good || s.allDone || (!!s.strum && s.strum.every(c=>Math.abs(c)<=3)));
+  root.classList.toggle('close', close);
+  root.classList.toggle('chromatic', s.mode==='chromatic');
+  root.classList.toggle('strum', !!s.strum);
+  root.classList.toggle('light', light);
+  root.querySelectorAll('.string').forEach((el,i)=>{ el.classList.toggle('active', live && s.mode==='guitar' && s.string===i); el.classList.toggle('tuned', s.tuned[i]); });
+  root.querySelectorAll('.peg').forEach((el,i)=>{
+    el.classList.toggle('active', live && s.string===i);
+    el.classList.toggle('tuned', s.tuned[i]);
+    const m=el.querySelector('.mark');
+    if(s.strum){ const c=s.strum[i]; const ok=Math.abs(c)<=3; m.textContent= ok?'✓':(c<0?'↑':'↓'); m.style.color= ok?'var(--good)':'var(--warm)'; m.classList.add('show'); }
+    else m.classList.remove('show');
+    el.querySelector('.snd').textContent = (s.locked && s.string===i) ? '♪ locked' : '♪ hear';
+  });
+  const which=root.querySelector('.which'), nm=root.querySelector('.nm'), oct=root.querySelector('.oct'), detail=root.querySelector('.detail'),
+        advice=root.querySelector('.advice'), needle=root.querySelector('.needle'), hint=root.querySelector('.hint'), idlemsg=root.querySelector('.idlemsg');
+  idlemsg.style.fontSize=''; idlemsg.style.color='';
+  if (s.strum){
+    const ok = s.strum.filter(c=>Math.abs(c)<=3).length;
+    which.textContent='All six strings'; detail.textContent = ok===6?'Standard tuning':'';
+    const todo = s.strum.map((c,i)=>Math.abs(c)>3?`${STRINGS[i].name} ${c<0?'↑':'↓'}`:null).filter(Boolean);
+    if(ok===6){ idlemsg.textContent='✓'; idlemsg.style.fontSize='120px'; idlemsg.style.color='var(--good)'; advice.textContent='All in tune'; }
+    else { idlemsg.textContent=`${ok} of 6 in tune`; advice.textContent = todo.join('     '); }
+  } else if (s.allDone){
+    which.textContent='All six strings'; idlemsg.textContent='✓'; idlemsg.style.fontSize='120px'; idlemsg.style.color='var(--good)';
+    detail.textContent='Standard tuning · A = 440 Hz'; advice.textContent='In tune. Play.';
+  } else if (s.idle){
+    which.textContent=''; idlemsg.textContent='Listening…'; detail.textContent='';
+    advice.textContent = s.mode==='guitar' ? 'Play a string' : 'Play a note';
+  } else {
+    const t = s.mode==='guitar' ? STRINGS[s.string] : s.chrom;
+    which.textContent = s.mode==='guitar' ? t.which : 'Any note';
+    nm.textContent=t.name; oct.textContent=t.oct;
+    detail.textContent=`${fmtCents(s.cents)} · ${s.hz.toFixed(1)} Hz`;
+    const g = s.mode==='guitar';
+    advice.textContent = good ? '✓ In tune'
+      : s.cents<0 ? (g ? (a<=15?'↑ Tighten a little':'↑ Tighten') : (a<=15?'↑ A little low':'↑ Too low'))
+                  : (g ? (a<=15?'↓ Loosen a little':'↓ Loosen')   : (a<=15?'↓ A little high':'↓ Too high'));
+  }
+  needle.style.left = `${Math.max(0,Math.min(100, s.cents+50))}%`;
+  hint.innerHTML = s.mode==='chromatic' ? 'Any note · <u>pick an instrument</u>' : s.locked ? `Only the ${STRINGS[s.string].name} string · <u data-auto>Auto</u>` : 'Tap a string to hear it';
+  drawTrail(root.querySelector('.trail'), s.trail, good?'good':close?'warm':'accent');
+}
+
+function drawTrail(cv, trail, tone){
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  const col = COLORS[light?'light':'dark'][tone];
+  const n=trail.length; if(!n) return;
+  const W=cv.width, H=cv.height;
+  for(let i=0;i<n;i++){
+    const age=(n-1-i)/40; if(age>1) continue;
+    const x=(trail[i]+50)/100*W, y=6+age*(H-12);
+    ctx.globalAlpha=(1-age)*(1-age)*0.9+0.05; ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,3.2,0,Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+function pushTrail(s){ s.trail.push(s.cents); if(s.trail.length>42) s.trail.shift(); }
+const jitter = k => (Math.random()-0.5)*2*k;
+
+// ---- the live phone
+const main = document.getElementById('tuneScreen');
+buildScreen(main);
+const renderMain = () => render(main, state);
+
+// ---- demo
+let demoOn=false, micOn=false;
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+function animate(dur, fn){ return new Promise(res=>{ const t0=performance.now(); function step(t){ if(!demoOn){res();return;} const p=Math.min(1,(t-t0)/dur); fn(p); renderMain(); if(p<1) requestAnimationFrame(step); else res(); } requestAnimationFrame(step); }); }
+async function runDemo(){
+  stopMic(); demoOn=true; Object.assign(state, freshState(), {mode:state.mode}); updateButtons(); renderMain();
+  await wait(600);
+  for(let i=0;i<6 && demoOn;i++){
+    state.string=i; state.trail=[];
+    const start=(Math.random()<0.5?-1:1)*(20+Math.random()*22);
+    await animate(2600, p=>{ const e=1-Math.pow(1-p,2.4); state.idle=false; state.cents=start*(1-e)+jitter(1.4*(1-e)+0.5); state.hz=hzFor(i,state.cents); pushTrail(state); });
+    if(!demoOn) return;
+    await animate(1100, ()=>{ state.cents=jitter(0.7); state.hz=hzFor(i,state.cents); pushTrail(state); });
+    if(!demoOn) return;
+    state.tuned[i]=true; renderMain();
+    await wait(500); if(!demoOn) return;
+    state.idle=true; state.trail=[]; renderMain();
+    await wait(650);
+  }
+  if(!demoOn) return;
+  state.allDone=true; state.idle=true; renderMain();
+  await wait(3200); if(!demoOn) return;
+  demoOn=false; state.allDone=false; state.tuned=[false,false,false,false,false,false]; renderMain(); updateButtons();
+}
+function stopDemo(){ demoOn=false; }
+
+// ---- the microphone
+let audio=null, smooth=null, quiet=0, stable=0, off=0;
+function yin(buf, sr){
+  const n=buf.length, half=n>>1, tauMax=Math.min(half, Math.floor(sr/55));
+  const d=new Float32Array(tauMax);
+  for(let tau=1;tau<tauMax;tau++){ let s=0; for(let i=0;i<half;i++){ const x=buf[i]-buf[i+tau]; s+=x*x; } d[tau]=s; }
+  const c=new Float32Array(tauMax); c[0]=1; let run=0;
+  for(let tau=1;tau<tauMax;tau++){ run+=d[tau]; c[tau]= run>0 ? d[tau]*tau/run : 1; }
+  let tau=2; while(tau<tauMax){ if(c[tau]<0.12){ while(tau+1<tauMax && c[tau+1]<c[tau]) tau++; break; } tau++; }
+  if(tau>=tauMax) return -1;
+  const x0=tau-1, x2=Math.min(tau+1,tauMax-1), s0=c[x0], s1=c[tau], s2=c[x2];
+  const den=2*(2*s1-s0-s2); const better = den!==0 ? tau+(s2-s0)/den : tau;
+  return sr/better;
+}
+async function startMic(){
+  stopDemo();
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const ctx=new AudioContext(); const src=ctx.createMediaStreamSource(stream); const an=ctx.createAnalyser(); an.fftSize=4096; src.connect(an);
+    audio={ctx,stream,an,buf:new Float32Array(an.fftSize)}; micOn=true; smooth=null; quiet=0; stable=0;
+    Object.assign(state, freshState(), {mode:state.mode}); updateButtons(); loop();
+  }catch(e){ alert('No microphone: '+e.message); micOn=false; updateButtons(); }
+}
+function stopMic(){ if(!audio) return; micOn=false; audio.stream.getTracks().forEach(t=>t.stop()); audio.ctx.close(); audio=null; state.idle=true; state.trail=[]; renderMain(); updateButtons(); }
+function loop(){
+  if(!micOn) return;
+  const {an,buf,ctx}=audio; an.getFloatTimeDomainData(buf);
+  let rms=0; for(let i=0;i<buf.length;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
+  if(rms<0.006){ if(++quiet>10){ state.idle=true; state.trail=[]; smooth=null; stable=0; } }
+  else { const f=yin(buf, ctx.sampleRate); if(f>40 && f<1500){ quiet=0; onPitch(f); } }
+  renderMain(); requestAnimationFrame(loop);
+}
+function onPitch(f){
+  state.idle=false; state.allDone=false; state.strum=null;
+  let c;
+  if(state.mode==='guitar'){
+    let best=state.string;
+    if(!state.locked){ let bc=1e9; STRINGS.forEach((s,i)=>{ const x=1200*Math.log2(f/s.hz); if(Math.abs(x)<Math.abs(bc)){bc=x;best=i;} }); }
+    c=1200*Math.log2(f/STRINGS[best].hz);
+    if(best!==state.string){ state.string=best; state.trail=[]; smooth=null; stable=0; }
+  } else {
+    const midi=69+12*Math.log2(f/440), r=Math.round(midi); c=(midi-r)*100;
+    const chrom={name:NAMES[((r%12)+12)%12], oct:Math.floor(r/12)-1};
+    if(chrom.name!==state.chrom.name||chrom.oct!==state.chrom.oct){ state.chrom=chrom; state.trail=[]; smooth=null; }
+  }
+  smooth = smooth==null ? c : smooth+0.35*(c-smooth);
+  state.cents=Math.max(-50,Math.min(50,smooth)); state.hz=f; pushTrail(state);
+  if(state.mode==='guitar'){
+    if(Math.abs(state.cents)<=3){ if(++stable>22) state.tuned[state.string]=true; off=0; } else { stable=0; if(Math.abs(state.cents)>10 && ++off>25) state.tuned[state.string]=false; }
+  }
+}
+
+// ---- controls
+const $=id=>document.getElementById(id);
+function updateButtons(){ $('btnDemo').textContent = demoOn?'■ Stop the demo':'▶ Play the demo'; $('btnDemo').classList.toggle('on',demoOn); $('btnMic').textContent = micOn?'■ Stop listening':'🎤 Hear my guitar'; $('btnMic').classList.toggle('on',micOn); $('btnMode').textContent = state.mode==='guitar'?'Any note instead of guitar':'Back to guitar'; $('btnTheme').textContent = light?'Dark':'Light'; }
+$('btnDemo').onclick=()=>{ if(demoOn){ stopDemo(); state.idle=true; state.allDone=false; renderMain(); updateButtons(); } else runDemo(); };
+$('btnMic').onclick=()=>{ micOn?stopMic():startMic(); };
+$('btnStrum').onclick=async()=>{ stopDemo(); stopMic(); state.strum=[-1.5,-14,1,2,11,-0.5]; state.idle=false; state.allDone=false; renderMain(); await wait(3500); if(state.strum){ state.strum=[-1,0.5,1,-2,2,0.5]; renderMain(); await wait(2500); } state.strum=null; state.idle=true; renderMain(); };
+$('btnReset').onclick=()=>{ state.tuned=[false,false,false,false,false,false]; state.allDone=false; state.locked=false; renderMain(); };
+$('btnMode').onclick=()=>{ state.mode = state.mode==='guitar'?'chromatic':'guitar'; state.locked=false; state.trail=[]; smooth=null; if(state.mode==='chromatic'&&!state.idle){ state.chrom={name:'F♯',oct:4}; } renderMain(); updateButtons(); };
+$('btnTheme').onclick=()=>{ light=!light; document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('light',light)); renderMain(); renderStates(); updateButtons(); };
+const slider=$('cents');
+slider.oninput=()=>{ stopDemo(); stopMic(); const c=parseFloat(slider.value); state.idle=false; state.allDone=false; state.strum=null; state.cents=c; state.hz = state.mode==='guitar'?hzFor(state.string,c):440*Math.pow(2,(9+c/100)/12); if(state.mode==='chromatic') state.chrom={name:'A',oct:4}; pushTrail(state); $('centsOut').textContent=fmtCents(c).replace(' cents',' ¢'); renderMain(); };
+
+// pegs: lock + pluck
+let toneCtx=null;
+function pluck(hz, el){
+  toneCtx = toneCtx || new AudioContext(); const ctx=toneCtx, t=ctx.currentTime;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.45,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+2.4);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(Math.min(hz*9,9000),t); lp.frequency.exponentialRampToValueAtTime(hz*1.6,t+2.2);
+  [[1,.6],[2,.32],[3,.18],[4,.1],[5,.05]].forEach(([h,a])=>{ const o=ctx.createOscillator(); o.frequency.value=hz*h; const og=ctx.createGain(); og.gain.value=a; o.connect(og).connect(lp); o.start(t); o.stop(t+2.5); });
+  lp.connect(g).connect(ctx.destination);
+  if(el){ el.classList.remove('playing'); void el.offsetWidth; el.classList.add('playing'); }
+}
+main.querySelector('.pegs').addEventListener('click', e=>{
+  const peg=e.target.closest('.peg'); if(!peg) return; const i=+peg.dataset.i;
+  stopDemo(); state.locked=true; state.string=i; state.trail=[]; smooth=null; stable=0;
+  if(!micOn){ state.idle=false; state.allDone=false; state.strum=null; state.cents=jitter(1); state.hz=hzFor(i,state.cents); pushTrail(state); }
+  pluck(STRINGS[i].hz, peg); renderMain();
+});
+main.querySelector('.hint').addEventListener('click', e=>{ if(e.target.dataset.auto!==undefined){ state.locked=false; renderMain(); } });
+
+// ---- the state strip (clones of the same screen)
+const STATES = [
+  {cap:['Listening','Nothing heard yet. The screen tells you what to do.'], s:{idle:true}},
+  {cap:['Far off','Low E, 31 cents flat. Blue, a plain "Tighten".'], s:{idle:false,string:0,cents:-31,hz:80.95}},
+  {cap:['Getting close','Amber. "A little" so you slow down.'], s:{idle:false,string:3,cents:-7,hz:195.2,tuned:[true,true,true,false,false,false]}},
+  {cap:['In tune','Green over the whole screen, a tick on the way.'], s:{idle:false,string:3,cents:0.4,hz:196.05,tuned:[true,true,true,false,false,false]}},
+  {cap:['All six done','You know you are finished.'], s:{idle:true,allDone:true,tuned:[true,true,true,true,true,true]}},
+  {cap:['After a strum','Every peg says ↑, ↓ or ✓. No mode.'], s:{strum:[-1.5,-14,1,2,11,-0.5]}},
+  {cap:['Any note','Chromatic: no pegs, pitch words instead of peg words.'], s:{mode:'chromatic',idle:false,cents:9,hz:371.9,chrom:{name:'F♯',oct:4}}},
+];
+const stripEl=document.getElementById('states');
+function renderStates(){
+  stripEl.innerHTML='';
+  STATES.forEach(({cap,s})=>{
+    const st=Object.assign(freshState(), s);
+    if(!st.idle && !st.strum){ let c=st.cents+(st.cents<0?-12:12)*(Math.random()+0.5); for(let i=0;i<30;i++){ c+= (st.cents-c)*0.18 + jitter(1.2); st.trail.push(c);} st.trail.push(st.cents); }
+    const fig=document.createElement('figure'); fig.className='state';
+    const shot=document.createElement('div'); shot.className='shot';
+    const clone=main.cloneNode(true); clone.removeAttribute('id'); shot.appendChild(clone);
+    fig.appendChild(shot);
+    const fc=document.createElement('figcaption'); fc.innerHTML=`<b>${cap[0]}</b>${cap[1]}`; fig.appendChild(fc);
+    stripEl.appendChild(fig);
+    render(clone, st);
+  });
+}
+
+// ---- watch: a slow loop between close and in tune
+(function watchLoop(){
+  const w=document.getElementById('watch'), dot=document.getElementById('wdot'), arc=document.getElementById('warc'), word=w.querySelector('.ww');
+  let t=0;
+  setInterval(()=>{ t+=0.04; const c = Math.max(-50,Math.min(50, -22*Math.max(0,Math.cos(t))+jitter(0.6))); const good=Math.abs(c)<=3;
+    const ang = (-135 + (c+50)/100*270) * Math.PI/180; dot.setAttribute('cx', (120+90*Math.sin(ang)).toFixed(1)); dot.setAttribute('cy', (120-90*Math.cos(ang)).toFixed(1));
+    const col = good?'#3ddc84':Math.abs(c)<=15?'#ffb648':'#5fc4ff';
+    dot.setAttribute('fill', col); arc.setAttribute('stroke', good?'#1f5a37':'#262c35');
+    word.textContent = good?'✓ In tune': c<0?(Math.abs(c)<=15?'↑ Tighten a little':'↑ Tighten'):'↓ Loosen'; word.style.color=col;
+  }, 50);
+})();
+
+// first paint
+state.idle=false; state.cents=-18; state.hz=hzFor(0,-18); for(let i=0;i<30;i++){ state.trail.push(-34 + i*0.55 + jitter(1.3)); } pushTrail(state);
+renderMain(); renderStates(); updateButtons();
+})();
+</script>
+</body>
+</html>
