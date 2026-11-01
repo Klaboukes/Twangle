@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -96,7 +97,8 @@ import kotlinx.coroutines.withContext
  * docs/design/chords-pickers-labels-preview.html), then the chart or the neck in all the height left
  * (scrolling only where even the smallest wouldn't fit, at large text sizes) and, for chords, the
  * pager. On its side (≥ 600 dp wide and wider than tall) the top row is at the top of the start
- * half, and the panel opens over it; the name button and the chart or neck the end half. On a large
+ * half and the name button in the middle of the rest of it, and the panel opens over that half; the chart or
+ * the neck takes the end half. On a large
  * window ([practiceLayoutFor], a tablet) the chart or the neck takes the whole width: upright under the
  * phone's column of rows, on its side under one row holding the top row and the name button, whose
  * panels then drop under it as upright.
@@ -301,18 +303,26 @@ fun ChordsScreen(
                 bottom = bottom(1f),
             )
         } else if (layout == PracticeLayout.HALVES) {
+            // A phone on its side, both halves used as the metronome and Capo use them (Phase 63's review; until then
+            // the start half held only the top row): the top row at the top of the start half and the name (with
+            // Scales' drone button) in the middle of the height it leaves, the chart or the neck in the end half.
             Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()),
+                    Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).heightIn(min = height),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // The panels' place: from the top of the start half down.
+                    // The panels' place: from the top of the start half down, over the top row and the name, with
+                    // all the height for their choices; the chart beside them shows each pick.
                     BoxWithConstraints(Modifier.fillMaxWidth()) {
                         panel(maxWidth)
                         if (droning) dronePanel(true, maxWidth)
                     }
                     Spacer(Modifier.height(HEADER_TOP))
                     topRow()
+                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(12.dp))
+                    name(true)
+                    Spacer(Modifier.weight(1f))
                     Spacer(Modifier.height(8.dp))
                 }
                 Spacer(Modifier.width(16.dp))
@@ -320,10 +330,7 @@ fun ChordsScreen(
                     viewport = height,
                     minFill = if (scales) NECK_MIN_HEIGHT else maxOf(CHART_MIN_HEIGHT_WIDE, chartSmallest),
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    top = {
-                        Spacer(Modifier.height(HEADER_TOP))
-                        name(true)
-                    },
+                    top = { Spacer(Modifier.height(HEADER_TOP)) },
                     fill = fill,
                     bottom = bottom(1f),
                 )

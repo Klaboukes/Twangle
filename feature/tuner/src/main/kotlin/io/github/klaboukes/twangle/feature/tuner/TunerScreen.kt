@@ -778,9 +778,9 @@ fun TunerContent(
     val speech = rememberPacedSpeech()
     val noteFor = @Composable { compact: Boolean, maxHeight: Dp ->
         when (state) {
-            is TunerUiState.StrumCheck -> StrumStatus(state)
-            is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString)
-            is TunerUiState.ChordName -> ChordStatus(state)
+            is TunerUiState.StrumCheck -> StrumStatus(state, compact = compact)
+            is TunerUiState.IntonationCheck -> IntonationStatus(state, onCheckAgain = onCheckAgain, onNextString = onNextString, compact = compact)
+            is TunerUiState.ChordName -> ChordStatus(state, compact = compact)
             is TunerUiState.Detected -> NoteDisplay(
                 readout = NoteReadout(state.noteName, state.octave, state.frequencyHz, state.cents, state.inTune, state.hint),
                 hint = "",

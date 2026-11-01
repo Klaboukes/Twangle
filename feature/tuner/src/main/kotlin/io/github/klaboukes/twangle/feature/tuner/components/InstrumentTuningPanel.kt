@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -154,7 +158,13 @@ private fun PickerPanel(
     val density = LocalDensity.current
     val window = LocalWindowInfo.current.containerSize.height
     val navigationBar = WindowInsets.navigationBars.getBottom(density)
-    val maxHeight = with(density) { (window * PANEL_MAX_HEIGHT - navigationBar).toDp() - HANDLE_HEIGHT }
+    // A short window (a phone on its side) gives the panel all its height up to the status bar (Phase 63's
+    // review): at 74 % only one tuning showed under the title, the instruments and "Lower by".
+    val short = with(density) { window.toDp() } < SHORT_WINDOW
+    val statusBar = WindowInsets.statusBars.getTop(density)
+    val maxHeight = with(density) {
+        if (short) (window - statusBar - navigationBar).toDp() - HANDLE_HEIGHT - SHORT_TOP_GAP else (window * PANEL_MAX_HEIGHT - navigationBar).toDp() - HANDLE_HEIGHT
+    }
     // Closed before anything else happens, so the panel isn't open again on coming back from the editor.
     val close: (then: () -> Unit) -> Unit = { then ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -189,14 +199,27 @@ private fun PickerPanel(
             ticked.bringIntoView()
         }
         Column(Modifier.heightIn(max = maxHeight)) {
-            Text(
-                stringResource(R.string.tuner_picker_title),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .padding(start = PANEL_PADDING, end = PANEL_PADDING, top = 4.dp, bottom = 6.dp)
-                    .semantics { heading() },
-            )
-            InstrumentRow(instrument, onInstrumentChange)
+            val titleStyle = MaterialTheme.typography.titleLarge
+            val title = @Composable { modifier: Modifier ->
+                Text(
+                    stringResource(R.string.tuner_picker_title),
+                    style = titleStyle,
+                    modifier = modifier.semantics { heading() },
+                    // Beside the instruments at most two lines, set smaller where they don't hold it (large text).
+                    maxLines = if (short) SHORT_TITLE_MAX_LINES else Int.MAX_VALUE,
+                    autoSize = if (short) TextAutoSize.StepBased(minFontSize = SHORT_TITLE_MIN_SIZE, maxFontSize = titleStyle.fontSize, stepSize = 1.sp) else null,
+                )
+            }
+            if (short) {
+                // A short window: the title beside the instruments, so the list under them keeps more rows.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    title(Modifier.padding(start = PANEL_PADDING, bottom = 6.dp).widthIn(max = SHORT_TITLE_MAX_WIDTH))
+                    Box(Modifier.weight(1f)) { InstrumentRow(instrument, onInstrumentChange) }
+                }
+            } else {
+                title(Modifier.padding(start = PANEL_PADDING, end = PANEL_PADDING, top = 4.dp, bottom = 6.dp))
+                InstrumentRow(instrument, onInstrumentChange)
+            }
             HorizontalDivider(color = scheme.outlineVariant)
             Column(
                 Modifier
@@ -533,6 +556,17 @@ private const val RETRO_BACKING_ALPHA = 0.85f
 
 /** The panel is at most this share of the window's height, so the tuner shows above it. */
 private const val PANEL_MAX_HEIGHT = 0.74f
+
+/** Below this window height (every phone on its side, none upright) the panel may take the whole height. */
+private val SHORT_WINDOW = 500.dp
+
+/** In a short window, the panel's top stays this far under the status bar. */
+private val SHORT_TOP_GAP = 8.dp
+
+/** In a short window the title, beside the instruments, takes at most this width (two lines where it needs more). */
+private val SHORT_TITLE_MAX_WIDTH = 220.dp
+private const val SHORT_TITLE_MAX_LINES = 2
+private val SHORT_TITLE_MIN_SIZE = 12.sp
 
 /** Material's drag handle at the panel's top: 4 dp with 22 dp above and below. */
 private val HANDLE_HEIGHT = 48.dp

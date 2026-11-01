@@ -176,7 +176,6 @@
     <string name="tuner_intonation_check">Test de la 12e case</string>
     <string name="tuner_intonation_step_open">À vide</string>
     <string name="tuner_intonation_step_fret">12e case</string>
-    <string name="tuner_intonation_which_string">Quelle corde ?</string>
     <string name="tuner_intonation_choose_detail">Accordez-la d\'abord, puis testez-la</string>
     <string name="tuner_intonation_play_open">Jouez la corde %1$s à vide</string>
     <string name="tuner_intonation_let_ring">Laissez-la sonner</string>

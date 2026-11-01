@@ -584,6 +584,34 @@ private fun HintInNoteSlot(text: AnnotatedString, style: TextStyle, color: Color
     }
 }
 
+/**
+ * The waiting line of the tuner's tool views (Phase 63's review: until then the strum check and chord name said it
+ * smaller in full ink, the 12th-fret check big inside its panel): what to play, in the note's place, in the same
+ * form as the tuner's "Play a string": the note's face at the idle hint's size ([compact] smaller), muted, on at most
+ * two lines, set smaller where they don't fit (a long language at 2× text).
+ */
+@Composable
+internal fun WaitingLine(text: String, compact: Boolean, modifier: Modifier = Modifier) {
+    val density = LocalDensity.current
+    val style = MaterialTheme.typography.displayLarge.copy(
+        fontSize = if (compact) COMPACT_HINT_SIZE else HINT_SIZE,
+        lineHeight = HINT_LINE_HEIGHT,
+    )
+    Text(
+        text = musicText(text),
+        style = style,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        maxLines = HINT_MAX_LINES,
+        autoSize = TextAutoSize.StepBased(
+            minFontSize = with(density) { HINT_MIN_SIZE.toSp() },
+            maxFontSize = style.fontSize,
+            stepSize = 1.sp,
+        ),
+        modifier = modifier.widthIn(max = HINT_MAX_WIDTH),
+    )
+}
+
 /** The idle hint in the note's slot: in the note's face, but at a reading size that grows with the system's text size. */
 private val HINT_SIZE = 32.sp
 private val COMPACT_HINT_SIZE = 24.sp

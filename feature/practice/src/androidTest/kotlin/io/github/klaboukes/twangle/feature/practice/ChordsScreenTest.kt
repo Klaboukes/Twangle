@@ -536,8 +536,10 @@ class ChordsScreenTest(private val style: VisualStyle) {
             assertTrue("$case chart, then pager", chart.bottom <= pager.top + 1.dp)
             val middle = (window.left + window.right) / 2
             if (size == PHONE_LANDSCAPE) {
+                // Both halves used (Phase 63): the top row, then the name, in the start half; the chart alone in the end half.
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
-                assertTrue("$case name and chart in the end half", name.left >= middle && chart.left >= middle)
+                assertTrue("$case the name in the start half, under the top row", name.right <= middle && name.top >= tuning.bottom)
+                assertTrue("$case the chart in the end half", chart.left >= middle)
             } else if (size == TABLET_LANDSCAPE) {
                 // A tablet on its side (Phase 52): the tuning line and the name share the top row, the chart runs the whole width under it.
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
@@ -552,7 +554,7 @@ class ChordsScreenTest(private val style: VisualStyle) {
                 assertTrue("$case the name in the column ${name.width}", name.width <= 448.dp + 1.dp)
                 assertTrue("$case the chart's room the whole width $chart", chart.width >= size.width - 32.dp - 1.dp)
             }
-            assertTrue("$case the name over the chart", name.bottom <= chart.top + 1.dp)
+            if (size != PHONE_LANDSCAPE) assertTrue("$case the name over the chart", name.bottom <= chart.top + 1.dp)
         }
         shownTuning.value = Tunings.STANDARD
     }

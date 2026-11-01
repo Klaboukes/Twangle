@@ -579,12 +579,14 @@ class ScalesScreenTest(private val style: VisualStyle) {
             assertTrue("$case a big neck $drawn", maxOf(drawn.width, drawn.height) >= 300.dp)
             val tuning = node(PracticeTestTags.TUNING).getBoundsInRoot()
             val name = picker().getBoundsInRoot()
-            assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
+            if (size != PHONE_LANDSCAPE) assertTrue("$case the name over the neck", name.bottom <= area.top + 1.dp)
             assertTheDroneButtonBesideTheName(case)
             val middle = (window.left + window.right) / 2
             if (size == PHONE_LANDSCAPE) {
+                // Both halves used (Phase 63): the top row, then the name with the drone button, in the start half; the neck alone in the end half.
                 assertTrue("$case the tuning line in the start half", tuning.right <= middle)
-                assertTrue("$case the name and the neck in the end half", name.left >= middle && area.left >= middle)
+                assertTrue("$case the name in the start half, under the top row", name.right <= middle && name.top >= tuning.bottom)
+                assertTrue("$case the neck in the end half", area.left >= middle)
             } else if (size == TABLET_LANDSCAPE) {
                 // A tablet on its side (Phase 52): the tuning line and the name share the top row, the neck runs the whole width under it.
                 val tool = node(PracticeTestTags.TOOL_BUTTON).getBoundsInRoot()

@@ -343,9 +343,9 @@
     <string name="tuner_intonation_step_open">Open</string>
     <!-- 12th-fret check, the second step's label at the top of its panel: the string pressed at the 12th fret. Short. -->
     <string name="tuner_intonation_step_fret">12th fret</string>
-    <!-- 12th-fret check: in the panel's drawing while no string is picked yet. Short. -->
-    <string name="tuner_intonation_which_string">Which string?</string>
-    <!-- 12th-fret check, the line under the panel before any string is checked (the panel asks "Which string?"): tune the string before checking it. -->
+    <!-- 12th-fret check, the line under the panel before any string is checked: pick the string to check with the string buttons below. Short, an instruction like "Play a string". -->
+    <string name="tuner_intonation_choose_string">Choose a string</string>
+    <!-- 12th-fret check, the smaller line under "Choose a string": tune the string before checking it. -->
     <string name="tuner_intonation_choose_detail">Tune it first, then check it</string>
     <!-- %1$s is the string with its octave, e.g. "A2". -->
     <string name="tuner_intonation_play_open">Play the open %1$s string</string>

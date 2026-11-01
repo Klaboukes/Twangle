@@ -428,7 +428,6 @@ feature/tuner tuner_intonation_step_open ed077f3d
 feature/tuner tuner_intonation_tap_string cc6cda7c
 feature/tuner tuner_intonation_to_move e43df0be
 feature/tuner tuner_intonation_tune_first 25578e0f
-feature/tuner tuner_intonation_which_string e9eaf13d
 feature/tuner tuner_lower_by 8b5c2b0c
 feature/tuner tuner_lower_less ec4689de
 feature/tuner tuner_lower_more da0554cb

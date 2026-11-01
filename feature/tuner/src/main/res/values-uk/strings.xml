@@ -170,7 +170,6 @@
     <string name="tuner_intonation_check">Перевірка на 12-му ладу</string>
     <string name="tuner_intonation_step_open">Відкрита</string>
     <string name="tuner_intonation_step_fret">12-й лад</string>
-    <string name="tuner_intonation_which_string">Яка струна?</string>
     <string name="tuner_intonation_choose_detail">Спершу налаштуй, потім перевір</string>
     <string name="tuner_intonation_play_open">Зіграй відкриту струну %1$s</string>
     <string name="tuner_intonation_let_ring">Дай їй прозвучати</string>

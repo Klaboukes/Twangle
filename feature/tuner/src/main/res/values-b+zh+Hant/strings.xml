@@ -169,7 +169,6 @@
     <string name="tuner_intonation_check">第12格檢查</string>
     <string name="tuner_intonation_step_open">空弦</string>
     <string name="tuner_intonation_step_fret">第12格</string>
-    <string name="tuner_intonation_which_string">哪根弦？</string>
     <string name="tuner_intonation_choose_detail">先調準，再檢查</string>
     <string name="tuner_intonation_play_open">彈空弦 %1$s</string>
     <string name="tuner_intonation_let_ring">讓它繼續響</string>

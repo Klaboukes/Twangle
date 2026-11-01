@@ -151,7 +151,7 @@ fun spokenMark(mark: StringMark): String = stringResource(
  * The 12th-fret check's readout, in the meter's place and at its 2:1 shape (like the strum check's
  * panel), drawn in the style's colours and faces on a calm field and sized by its width, not the font
  * size. Its top says where the check is (Open · 12th fret). Then, by [TunerUiState.IntonationCheck.step]:
- * - choosing: "Which string?", or once a string has a result, one column per string (its name, its
+ * - choosing: the two steps and an empty ring (the line under it asks for a string), or once a string has a result, one column per string (its name, its
  *   mark, its cents), each a button for its string, as on the string row ([onStringClick]);
  * - the open string and the 12th fret: a ring that fills while the steady note is taken, round the
  *   note asked for (A₂, then A₃);
@@ -207,7 +207,7 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
     val measurer = rememberTextMeasurer()
     val openLabel = stringResource(R.string.tuner_intonation_step_open)
     val fretLabel = stringResource(R.string.tuner_intonation_step_fret)
-    val which = stringResource(R.string.tuner_intonation_which_string)
+    val separator = stringResource(R.string.tuner_spoken_separator)
     val neck = stringResource(R.string.tuner_intonation_neck)
     val saddle = stringResource(R.string.tuner_intonation_saddle)
     val labelStyle = MaterialTheme.typography.labelLarge.copy(lineHeight = TextUnit.Unspecified)
@@ -226,7 +226,8 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
     val progress by animateFloatAsState(state.progress, tween(PROGRESS_MILLIS), label = "intonationProgress")
     val mark = markOf(result)
     val spoken = when (state.step) {
-        IntonationStep.CHOOSE -> which
+        // The two steps it shows; the line under it asks for a string.
+        IntonationStep.CHOOSE -> openLabel + separator + fretLabel
         IntonationStep.OPEN -> openLabel
         IntonationStep.FRET -> fretLabel
         IntonationStep.VERDICT -> figure
@@ -248,7 +249,6 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
                 val stepDone = state.step == IntonationStep.FRET || state.step == IntonationStep.VERDICT
                 val open = measurer.fitted(AnnotatedString(openLabel), stepStyle.copy(color = if (state.step == IntonationStep.OPEN) colours.ink else colours.muted), STEP_TEXT_UNITS * u)
                 val fret = measurer.fitted(AnnotatedString(fretLabel), stepStyle.copy(color = if (state.step == IntonationStep.FRET) colours.ink else colours.muted), STEP_TEXT_UNITS * u)
-                val whichLayout = measurer.fitted(AnnotatedString(which), displayStyle.copy(color = colours.muted, fontSize = (WHICH_UNITS * u).toSpNoScale(this)), size.width * 0.9f)
                 val noteLayout = noteName?.let { measurer.fitted(it, displayStyle.copy(color = colours.ink, fontSize = (NOTE_UNITS * u).toSpNoScale(this)), RING_RADIUS * 1.5f * u) }
                 val markColour = if (mark == StringMark.FINE) colours.inTune else colours.accent
                 val figureLayout = if (figure.isEmpty()) null else measurer.fitted(
@@ -260,12 +260,11 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
                 val neckLayout = measurer.fitted(AnnotatedString(neck), smallStyle, 80f * u)
                 val saddleLayout = measurer.fitted(AnnotatedString(saddle), smallStyle, 90f * u)
                 onDrawBehind {
-                    if (state.step == IntonationStep.CHOOSE) {
-                        drawText(whichLayout, topLeft = Offset(x - whichLayout.size.width / 2f, size.height / 2f - whichLayout.size.height / 2f))
-                        return@onDrawBehind
-                    }
+                    // Choosing: the two steps to come and the empty ring, where the string's note will show; the
+                    // line under the panel asks for a string (Phase 63's review; until then "Which string?" here).
                     drawSteps(u, open, fret, state.step, stepDone, colours)
                     when (state.step) {
+                        IntonationStep.CHOOSE -> drawCircle(colours.track, RING_RADIUS * u, Offset(x, RING_Y * u), style = Stroke(RING_STROKE * u))
                         IntonationStep.OPEN, IntonationStep.FRET -> {
                             val centre = Offset(x, RING_Y * u)
                             drawCircle(colours.track, RING_RADIUS * u, centre, style = Stroke(RING_STROKE * u))
@@ -283,7 +282,6 @@ private fun IntonationStepView(state: TunerUiState.IntonationCheck, colours: Int
                             drawSaddle(u, mark, colours, neckLayout, saddleLayout)
                             figureLayout?.let { drawText(it, topLeft = Offset(x - it.size.width / 2f, FIGURE_Y * u - it.size.height / 2f)) }
                         }
-                        IntonationStep.CHOOSE -> Unit
                     }
                 }
             },
@@ -509,6 +507,7 @@ fun IntonationStatus(
     onCheckAgain: () -> Unit,
     onNextString: () -> Unit,
     modifier: Modifier = Modifier,
+    compact: Boolean = false,
 ) {
     val speech = rememberNoteNameSpeech()
     val note = state.string?.let { state.tuning.strings.getOrNull(it) }
@@ -520,8 +519,8 @@ fun IntonationStatus(
     val result = state.result
 
     // Every title the check can show, so the line keeps the room of the longest. Before any string is
-    // checked the title line stays empty, its room kept: the panel above already asks "Which string?"
-    // (until Phase 63 "Choose a string" said it again right under it).
+    // checked the title is "Choose a string", the tuner views' one waiting line ([WaitingLine]; Phase 63's
+    // review: until then the panel above asked "Which string?" in big letters and this line stayed empty).
     val titleIds = listOf(
         R.string.tuner_intonation_all_fine,
         R.string.tuner_intonation_press_fret,
@@ -530,7 +529,7 @@ fun IntonationStatus(
         R.string.tuner_intonation_back,
         R.string.tuner_intonation_forward,
     ).map { stringResource(it) }
-    val titles = listOf("") + titleIds + listOf(
+    val titles = listOf(stringResource(R.string.tuner_intonation_choose_string)) + titleIds + listOf(
         stringResource(R.string.tuner_intonation_play_open, name),
         stringResource(R.string.tuner_intonation_tune_first, name),
         pluralStringResource(R.plurals.tuner_intonation_to_move, toMove.coerceAtLeast(1), toMove.coerceAtLeast(1)),
@@ -604,7 +603,9 @@ fun IntonationStatus(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            TallestOf(titles, title) { Text(it, style = titleStyle, color = titleColour, textAlign = TextAlign.Center) }
+            TallestOf(titles, title) {
+                if (it === titles[0]) WaitingLine(it, compact) else Text(it, style = titleStyle, color = titleColour, textAlign = TextAlign.Center)
+            }
             TallestOf(details, detail) { Text(it, style = detailStyle, color = detailColour, textAlign = TextAlign.Center) }
         }
         Kept(shown = state.step == IntonationStep.VERDICT) {
@@ -866,7 +867,6 @@ private const val STEP_FRET_X = 236f
 private const val STEP_DASH_FROM = 160f
 private const val STEP_DASH_TO = 178f
 
-private const val WHICH_UNITS = 30f
 private const val RING_Y = 96f
 private const val RING_RADIUS = 52f
 private const val RING_STROKE = 4.5f

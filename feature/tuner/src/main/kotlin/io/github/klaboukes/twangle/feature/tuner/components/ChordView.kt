@@ -175,7 +175,7 @@ fun ChordPanel(state: TunerUiState.ChordName, modifier: Modifier = Modifier) {
  * there ("A minor, Strum again for the next").
  */
 @Composable
-fun ChordStatus(state: TunerUiState.ChordName, modifier: Modifier = Modifier) {
+fun ChordStatus(state: TunerUiState.ChordName, modifier: Modifier = Modifier, compact: Boolean = false) {
     val speech = rememberNoteNameSpeech()
     val separator = stringResource(R.string.tuner_spoken_separator)
     val titles = listOf(
@@ -218,7 +218,10 @@ fun ChordStatus(state: TunerUiState.ChordName, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        TallestOf(titles, title) { Text(it, style = titleStyle, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center) }
+        // "Strum a chord", waiting and once named, is the tuner views' one waiting line ([WaitingLine]).
+        TallestOf(titles, title) {
+            if (it === titles[0]) WaitingLine(it, compact) else Text(it, style = titleStyle, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
+        }
         TallestOf(details, detail) { Text(it, style = detailStyle, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center) }
     }
 }

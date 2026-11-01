@@ -353,7 +353,7 @@ private fun StrumCell(
  * polite live region.
  */
 @Composable
-fun StrumStatus(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
+fun StrumStatus(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier, compact: Boolean = false) {
     val outOfTune = state.strings.count { it.verdict == StrumVerdict.FLAT || it.verdict == StrumVerdict.SHARP }
     val notHeard = state.strings.count { it.verdict == StrumVerdict.NOT_HEARD }
     val read = state.phase == StrumPhase.RINGING || state.phase == StrumPhase.DONE
@@ -393,7 +393,10 @@ fun StrumStatus(state: TunerUiState.StrumCheck, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        TallestOf(titles, title) { Text(it, style = titleStyle, color = titleColour, textAlign = TextAlign.Center) }
+        // Before a strum, the tuner views' one waiting line ([WaitingLine]).
+        TallestOf(titles, title) {
+            if (it === titles[0]) WaitingLine(it, compact) else Text(it, style = titleStyle, color = titleColour, textAlign = TextAlign.Center)
+        }
         TallestOf(details, detail) { Text(it, style = detailStyle, color = detailColour, textAlign = TextAlign.Center) }
     }
 }

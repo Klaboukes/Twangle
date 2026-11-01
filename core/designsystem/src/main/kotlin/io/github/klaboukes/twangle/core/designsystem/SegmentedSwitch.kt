@@ -43,7 +43,7 @@ import io.github.klaboukes.twangle.core.settings.VisualStyle
  * Twangle's segmented switch: one of [options], [selected] in the style's main accent container (the
  * fill alone tells it, with no check mark: the owner's choice, 2026-10-18), a tap on another calls
  * [onSelect]. The tuner's mode switch (Strings · Chromatic) is this switch (the Practice tab's tool switch was too, until Phase 47 gave it a tool button). Each
- * segment shows [label] on one line, shrinking to fit where it must, and carries the test tag [tag].
+ * segment shows [label] on one line, all of them shrinking to one size where the widest must, and carries the test tag [tag].
  * TalkBack hears the segments as radio buttons by their labels, the picked one selected, or by [spoken]
  * where a short word stands for a longer name (Ear training's exercises: "Play back" for "Play it back").
  */
@@ -123,10 +123,28 @@ fun <T> SegmentedSwitch(
                         lineHeight = (style.fontSize.value * LABEL_LINE_HEIGHT).sp,
                         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
                     )
+                    // One size for the whole bar (Phase 63's review): every segment is as wide as the others, and
+                    // each sizes its text as if it held the widest label, so a shrunk bar shows one size, not a large
+                    // "Saiten" beside a small "Chromatisch" (German at 2× text).
                     val text = label(option)
+                    val texts = options.map { label(it) }
                     val lineHeight = with(LocalDensity.current) { labelStyle.lineHeight.toPx() }
-                    val whole = remember(text, labelStyle, measurer, lineHeight) {
-                        measurer.measure(text, labelStyle, maxLines = 1, softWrap = false).size.let { IntSize(it.width, maxOf(it.height, ceil(lineHeight).toInt())) }
+                    val (whole, widest) = remember(texts, labelStyle, measurer, lineHeight) {
+                        val sizes = texts.map { measurer.measure(it, labelStyle, maxLines = 1, softWrap = false).size }
+                        val widestAt = sizes.indices.maxBy { sizes[it].width }
+                        IntSize(sizes[widestAt].width, maxOf(sizes.maxOf { it.height }, ceil(lineHeight).toInt())) to texts[widestAt]
+                    }
+                    val widestFits = remember(widest, labelStyle, measurer) {
+                        { size: TextUnit, room: Constraints ->
+                            val laid = measurer.measure(
+                                widest,
+                                labelStyle.copy(fontSize = size),
+                                maxLines = 1,
+                                softWrap = false,
+                                constraints = Constraints(maxWidth = room.maxWidth, maxHeight = room.maxHeight),
+                            )
+                            !laid.didOverflowWidth && !laid.didOverflowHeight
+                        }
                     }
                     Text(
                         text,
@@ -137,8 +155,8 @@ fun <T> SegmentedSwitch(
                         // says why).
                         maxLines = 1,
                         softWrap = false,
-                        // The largest size that fits, from the style's own down (lastResortLabelSize), each tried in turn.
-                        autoSize = remember(style.fontSize, smallest) { OneLineAutoSize(style.fontSize, smallest) },
+                        // The largest size at which the widest label fits, from the style's own down (lastResortLabelSize), each tried in turn.
+                        autoSize = remember(style.fontSize, smallest, widestFits) { OneLineAutoSize(style.fontSize, smallest, sizedBy = widestFits) },
                     )
                 }
             }
